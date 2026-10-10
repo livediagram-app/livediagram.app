@@ -43,7 +43,7 @@ function SlideRow({
       </Label>
       <Label
         x={x + 24}
-        y={y + 11}
+        y={y + 10}
         size={10.5}
         weight={600}
         tone={hidden ? 'muted' : 'strong'}
@@ -51,7 +51,7 @@ function SlideRow({
       >
         {name}
       </Label>
-      <Label x={x + 24} y={y + 23} size={9} tone="muted">
+      <Label x={x + 24} y={y + 23} size={10} tone="muted">
         {`${tab} · ${count} elements`}
       </Label>
       <Label x={x + w - 12} y={y + 16} size={12} tone="muted" anchor="end">
@@ -67,6 +67,14 @@ export function SlideDeckPanel() {
   return (
     <Scene w={420} h={230}>
       <Panel x={96} y={16} w={228} h={198} title="SLIDE DECK">
+        {/* The header's presenter-settings cog, then the help link. */}
+        <g className="stroke-slate-400" strokeWidth={1.4} fill="none" transform="translate(290 27)">
+          <circle r={4.5} />
+          <circle r={1.4} />
+        </g>
+        <Label x={310} y={28} size={10} weight={700} anchor="middle" tone="muted">
+          ?
+        </Label>
         <SlideRow
           x={108}
           y={46}
@@ -80,7 +88,18 @@ export function SlideDeckPanel() {
         <SlideRow x={108} y={80} w={204} n={2} name="The bottleneck" tab="Detail" count={3} />
         <SlideRow x={108} y={114} w={204} n={3} name="Old numbers" tab="Detail" count={7} hidden />
         <Button x={108} y={152} w={204} h={26} label="New slide from 3 elements" />
-        <Button x={108} y={182} w={204} h={24} label="Present · 2" variant="primary" />
+        <Button x={108} y={182} w={204} h={24} label="Present" variant="primary" />
+        <rect
+          x={236}
+          y={187}
+          width={18}
+          height={14}
+          rx={7}
+          className="fill-white/25 help-art-as-drawn"
+        />
+        <Label x={245} y={195} size={10} weight={700} anchor="middle" tone="onAccent">
+          2
+        </Label>
       </Panel>
     </Scene>
   );
@@ -94,9 +113,9 @@ export function SlideMenu() {
     <Scene w={420} h={230}>
       <SlideRow x={40} y={26} w={200} n={2} name="The bottleneck" tab="Detail" count={3} active />
       <rect
-        x={168}
+        x={140}
         y={62}
-        width={214}
+        width={262}
         height={140}
         rx={10}
         className="fill-white stroke-slate-200"
@@ -105,18 +124,18 @@ export function SlideMenu() {
       {quick.map((label, i) => (
         <g key={label}>
           <rect
-            x={178 + i * 49}
+            x={150 + i * 61}
             y={72}
-            width={45}
+            width={57}
             height={34}
             rx={6}
             className={i === 3 ? 'fill-rose-50 stroke-rose-200' : 'fill-slate-50 stroke-slate-200'}
             strokeWidth={1.2}
           />
           <Label
-            x={200.5 + i * 49}
+            x={178.5 + i * 61}
             y={89}
-            size={8.5}
+            size={10}
             anchor="middle"
             weight={600}
             className={i === 3 ? 'fill-rose-500 dark:fill-rose-400' : 'fill-slate-600'}
@@ -125,26 +144,26 @@ export function SlideMenu() {
           </Label>
         </g>
       ))}
-      <rect x={178} y={116} width={194} height={34} rx={6} className="fill-brand-50" />
-      <Label x={190} y={127} size={10} weight={700} tone="accent">
+      <rect x={150} y={116} width={242} height={34} rx={6} className="fill-brand-50" />
+      <Label x={162} y={127} size={10} weight={700} tone="accent">
         Selection
       </Label>
-      <Label x={190} y={141} size={9} tone="muted">
+      <Label x={162} y={141} size={10} tone="muted">
         Add · Remove · 3 on this slide
       </Label>
       <rect
-        x={178}
+        x={150}
         y={156}
-        width={194}
+        width={242}
         height={34}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
         strokeWidth={1.2}
       />
-      <Label x={190} y={167} size={10} weight={700} tone="strong">
+      <Label x={162} y={167} size={10} weight={700} tone="strong">
         Visibility
       </Label>
-      <Label x={190} y={181} size={9} tone="muted">
+      <Label x={162} y={181} size={10} tone="muted">
         Hide this slide from the run
       </Label>
     </Scene>
@@ -212,22 +231,22 @@ export function PresenterHud() {
       <Shape x={230} y={110} w={110} h={44} accent label="Week one" />
       {/* The HUD itself, dark in both appearances */}
       <g className="help-art-as-drawn">
-        <rect x={100} y={32} width={304} height={30} rx={9} className="fill-slate-800" />
-        <Label x={112} y={47} size={10} weight={700} tone="onAccent">
+        <rect x={40} y={32} width={364} height={30} rx={9} className="fill-slate-800" />
+        <Label x={52} y={47} size={10} weight={700} tone="onAccent">
           7 / 23
         </Label>
-        <Label x={146} y={47} size={9} className="fill-slate-400">
+        <Label x={90} y={47} size={10} className="fill-slate-400">
           Rollout plan
         </Label>
-        <Label x={212} y={47} size={9.5} weight={600} className="fill-slate-300">
+        <Label x={160} y={47} size={10} weight={600} className="fill-slate-300">
           12:04
         </Label>
-        <rect x={238} y={39} width={50} height={16} rx={4} className="fill-amber-400/25" />
-        <Label x={263} y={47} size={9} weight={600} anchor="middle" className="fill-amber-300">
+        <rect x={194} y={38} width={70} height={18} rx={4} className="fill-amber-400/25" />
+        <Label x={229} y={47} size={10} weight={600} anchor="middle" className="fill-amber-300">
           4:12 / 3:00
         </Label>
         {['‹', '›'].map((g, i) => (
-          <Label key={g} x={300 + i * 14} y={47} size={13} anchor="middle" tone="onAccent">
+          <Label key={g} x={286 + i * 18} y={47} size={13} anchor="middle" tone="onAccent">
             {g}
           </Label>
         ))}

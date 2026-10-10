@@ -5,17 +5,17 @@
 Three words describe how a document and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                                                      | Where it lives                     |
-| ------------ | ------------------------------ | ----------------------------------------------------------- | ---------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Illustrate, Plan (`EditorMode`)              | Per person, per tab; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                         |
-| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation         |
+| Term         | Answers                        | Values                                                      | Where it lives                                |
+| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
+| **mode**     | How is a tab worked on?        | Diagram, Draw, Illustrate, Plan (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
+| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
+| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
 
-- An **editor mode** is how a person works on a general tab right now: Diagram, Draw, Illustrate or Plan.
+- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Illustrate or Plan.
   (the Editor modes spec in 007-editor).
-- A mode is never a type of document or tab. Switching mode changes no content and nothing for anyone else.
+- A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
 - A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
   new concept.
 - Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
@@ -79,6 +79,40 @@ The words for a program working on documents for a person ([Agents](../024-agent
 - An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
 - A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
 
+## Colours
+
+The words for choosing a colour ([Colour picker](../004-interface-design/colour-picker.md)).
+
+| Term                     | Means                                                                                           | Never called                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **colour picker**        | The one control that chooses a colour, in any skin                                              | swatch picker, palette, colour well   |
+| **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                    | stock colours (outside Draw), presets |
+| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills) | shade, variant                        |
+| **theme colours**        | The active theme's own colours, offered on the canvas only                                      | presets                               |
+| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                   | custom swatches, recent colours       |
+| **custom colour editor** | The square, hue, hex and eyedropper panel that **+** opens                                      | colour wheel, native picker           |
+| **skin**                 | Where and how a picker opens: inline, field, swatch button                                      | variant, mode                         |
+
+## Repositories and workbenches
+
+The words for diagrams living beside code ([Repositories](../027-repositories/README.md),
+[Workbench embeds](../013-workspace/workbench-embeds.md)).
+
+| Term                    | Means                                                                                 | Never called                           |
+| ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
+| **repository link**     | `livediagram.toml`: binds a directory to the documents it **covers**                  | project, workspace, scope              |
+| **mirror level**        | How much of the covered documents a link writes: `none`, `index`, `files`             | sync mode                              |
+| **snapshot**            | A tab as a repository holds it, at a recorded revision                                | copy (that is Drive's), backup, cache  |
+| **sync**                | One pass of a link: read, merge, send, write                                          | refresh, update                        |
+| **base**                | The snapshot a local change was made from; the merge's common ancestor                | original, previous                     |
+| **lost local value**    | A field both sides changed, kept in the report and as a comment, never applied        | conflict (that is a changeset's 409)   |
+| **source**              | A diagram as text in a repository (a Mermaid file or fence), bound to a tab           | diagram file, code diagram             |
+| **bridge**              | One format's parser and serialiser, with the capabilities it expresses                | adapter, converter                     |
+| **compatibility**       | Whether a bound tab may hold residue: `relaxed` (default) or `strict`                 | mode (that is the editor's)            |
+| **residue**             | What a bound tab holds that its source's format cannot express                        | extras, unsupported                    |
+| **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code) | host (that is a profile's server), IDE |
+| **selection reference** | The text naming what was selected, attached to a person's message to their agent      | context, selection payload             |
+
 ## Community
 
 The words for the public gallery of published documents ([Community](../025-community/community.md)).
@@ -94,3 +128,12 @@ The words for the public gallery of published documents ([Community](../025-comm
 | **community key**  | The random per-browser key the Community app sends for likes and reports; never an owner id | voter id, device id                   |
 
 - **Edit Listing** names the act of changing a post's details in copy; the thing is still a post.
+
+## Animation
+
+- An **animation set** is the catalogue of animations one family of elements takes: Shape, Sticky, Drawing,
+  Media, Table, and Text for words ([Element animations](../028-animation/element-animations.md)). Icons, charts
+  and arrows keep sets of their own.
+- An element's **body set** animates the element; the **Text set** animates its words. A set is never a kind or a
+  mode.
+- A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.

@@ -3,7 +3,8 @@
 // grant, for the profile's host. Both end in an ordinary lvd_ API token; what happens with it is login's.
 
 import {
-  bytesToBase64Url,
+  randomBase64Url,
+  pkceChallenge,
   CLI_CLIENT_ID,
   DEVICE_CODE_GRANT,
   DEVICE_SLOW_DOWN_S,
@@ -24,8 +25,6 @@ export type AuthServer = {
 
 const authError = (message: string, hint?: string) =>
   new CliError({ exit: EXIT.auth, code: 'auth', message, ...(hint ? { hint } : {}) });
-
-const random = (n: number) => bytesToBase64Url(crypto.getRandomValues(new Uint8Array(n)));
 
 async function postForm(io: CliIo, url: string, fields: Record<string, string>) {
   const res = await io.fetch(
@@ -80,11 +79,9 @@ export async function loginWithBrowser(
   server: AuthServer,
   log: DebugLog,
 ): Promise<string> {
-  const verifier = random(32);
-  const challenge = bytesToBase64Url(
-    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)),
-  );
-  const state = random(16);
+  const verifier = randomBase64Url(32);
+  const challenge = await pkceChallenge(verifier);
+  const state = randomBase64Url(16);
   const loopback = await io.listenLoopback();
   const redirectUri = `http://127.0.0.1:${loopback.port}/callback`;
   const url = new URL(server.authorization_endpoint);

@@ -5,6 +5,7 @@ import { elementKindLabel, type Element } from '@livediagram/document';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { HoverCard, Glyph } from '@livediagram/ui';
+import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
 
 // One selectable bucket in the Filter Selection menu: a human label plus the
 // ids of every selected element that belongs to it.
@@ -83,11 +84,7 @@ export function SelectionFilterMenu({ selectedElements, onFilter }: SelectionFil
           aria-label="Filter selection by type"
           aria-haspopup="menu"
           aria-expanded={open}
-          className={
-            open
-              ? 'flex h-7 w-7 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-              : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-          }
+          className={open ? TOOLBAR_BTN_ON : TOOLBAR_BTN}
         >
           <FilterIcon />
         </button>

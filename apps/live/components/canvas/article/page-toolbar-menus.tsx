@@ -1,12 +1,11 @@
 'use client';
 
 // The page toolbar's menus and popovers (docs/specs/007-editor/article-pages.md "The page
-// toolbar"): Style, Align, Insert, the text and highlight colours, and the link field. Each opens
+// toolbar"): Style, Align, Insert, the frame the colours open in, and the link field. Each opens
 // under its button, keeps the writing's caret (buttons never take focus; the link field does and
 // hands it back), and closes on a choice, Escape or an outside press.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Tooltip, useClickOutside, useEscape, Portal } from '@livediagram/ui';
-import { ARTICLE_HIGHLIGHT_SWATCHES, ARTICLE_TEXT_SWATCHES } from '@/lib/article/article-swatches';
+import { useClickOutside, useEscape, Portal } from '@livediagram/ui';
 
 /** A popover hung under `anchor`, in the page toolbar's keep-active zone. */
 export function ToolbarPopover({
@@ -86,71 +85,6 @@ export function MenuRow({
     >
       {children}
     </button>
-  );
-}
-
-/** A grid of colour swatches with "Default" first. */
-export function SwatchGrid({
-  kind,
-  current,
-  accent,
-  onPick,
-}: {
-  kind: 'text' | 'highlight';
-  current: string | null;
-  accent: string;
-  onPick: (color: string | null) => void;
-}) {
-  const swatches =
-    kind === 'text'
-      ? [{ label: 'Accent', value: accent }, ...ARTICLE_TEXT_SWATCHES]
-      : ARTICLE_HIGHLIGHT_SWATCHES;
-  return (
-    <div className="flex w-[196px] flex-col gap-1.5 p-1">
-      <button
-        type="button"
-        onClick={() => onPick(null)}
-        aria-pressed={current === null}
-        className={`flex items-center gap-2 rounded-md px-2 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 ${
-          current === null ? 'bg-slate-100 dark:bg-slate-800' : ''
-        }`}
-      >
-        <span
-          aria-hidden
-          className="h-4 w-4 rounded-full border border-slate-300 bg-[linear-gradient(135deg,transparent_45%,#ef4444_45%,#ef4444_55%,transparent_55%)] dark:border-slate-600"
-        />
-        {kind === 'text' ? 'Default colour' : 'No highlight'}
-      </button>
-      <div
-        role="radiogroup"
-        aria-label={kind === 'text' ? 'Text colour' : 'Highlight'}
-        className="grid grid-cols-5 gap-1.5 px-1 pb-1"
-      >
-        {swatches.map((s) => (
-          <Tooltip key={s.label} label={s.label}>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={current?.toLowerCase() === s.value.toLowerCase()}
-              aria-label={s.label}
-              onClick={() => onPick(s.value)}
-              className={`h-7 w-7 rounded-full ring-1 ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
-                current?.toLowerCase() === s.value.toLowerCase()
-                  ? 'outline-2 outline-offset-2 outline-brand-600'
-                  : ''
-              }`}
-              style={{ background: s.value }}
-            >
-              {kind === 'text' ? (
-                <span aria-hidden className="text-xs font-bold text-white">
-                  A
-                </span>
-              ) : null}
-            </button>
-          </Tooltip>
-        ))}
-      </div>
-    </div>
   );
 }
 

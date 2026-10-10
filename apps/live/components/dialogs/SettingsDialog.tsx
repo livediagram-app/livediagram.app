@@ -35,6 +35,7 @@ import { useDriveMirror } from '@/components/drive/drive-mirror-context';
 import type { CloudSyncProviderId } from '@/lib/cloud-sync/providers';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { usePlacementDefaults } from '@/hooks/persistence/usePlacementDefaults';
+import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 
 type SettingsDialogProps = {
   settings: UserPreferences;
@@ -83,8 +84,11 @@ export function SettingsDialog({
   const { emailEnabled } = useCapabilities();
   const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
   const signedIn = Boolean(isSignedIn && clerkUserId);
+  // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
+  // blueprints/workbench-embeds.md, Surface table).
+  const workbench = useWorkbenchSession() !== null;
   // Loads the reader's default folders when the page has not (a no-op when it has).
-  const defaultsOwner = usePlacementDefaults(ownerId).ownerId;
+  const defaultsOwner = usePlacementDefaults(workbench ? null : ownerId).ownerId;
   const readerId = ownerId ?? defaultsOwner;
   const owner = useMemo(
     () => (readerId ? { ownerId: readerId, clerkUserId: clerkUserId ?? null } : null),
@@ -110,8 +114,9 @@ export function SettingsDialog({
         powerUserMode,
         preferences: settings,
         cloudProviders,
+        workbench,
       }),
-    [aiCapable, emailEnabled, signedIn, powerUserMode, settings, cloudProviders],
+    [aiCapable, emailEnabled, signedIn, powerUserMode, settings, cloudProviders, workbench],
   );
 
   // The category the reader chose; null is the phone's root list. Desktop
@@ -207,7 +212,7 @@ export function SettingsDialog({
       size="2xl"
       // The existing see-through backdrop rather than the default dim+blur:
       // Settings is where you flip things whose effect is ON the canvas
-      // behind it (panel layout, opacity, the minimap), so blurring that
+      // behind it (panel opacity, UI scale, the minimap), so blurring that
       // canvas out hides the very thing you are adjusting.
       backdrop="desktop-light"
       // One fixed height on desktop, not a cap: sized to content, the frame

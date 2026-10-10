@@ -12,11 +12,11 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Zen Mode" description="Hide every toolbar and panel to leave just the canvas, while keeping pan and zoom." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("zen-mode")}>
 
-Zen mode is a distraction-free focus mode for the editor. It hides every floating toolbar and panel so only the canvas remains, which is ideal for reading, sharing your screen, or thinking without the toolbars in the way. It is purely a view setting: it changes nothing on the canvas and is not synced to anyone else, so each person can focus independently.
+Zen mode is a distraction-free focus mode for the editor. It hides every toolbar and panel so only the canvas remains, which is ideal for reading, sharing your screen, or thinking without the toolbars in the way. It is purely a view setting: it changes nothing on the canvas and is not synced to anyone else, so each person can focus independently.
 
 ## What it hides and keeps
 
-When zen mode is on, the editor hides the header, the tab bar, the palette, the inspector and other side panels, the Explorer, the Collaborate panel, the AI panel, the status badge, the empty-canvas prompt, and the undo/redo dock.
+When zen mode is on, the editor hides the header, the tab bar, the palette strip, the menu button, the inspector and the panels such as Layers and the minimap, the Explorer, the Collaborate panel, the AI Assistant panel, your role badge, the empty-canvas prompt, and the undo/redo dock.
 
 <Figure caption="Outside zen mode the canvas is framed by the header, tab bar, palette, and zoom dock.">
   <ZenBefore />
@@ -32,14 +32,17 @@ What stays is the part you came for:
 - the **zoom controls** in the bottom-right, so you can still zoom and fit,
 - an **Exit zen mode button on those controls**, shown while you are in zen mode, so there is always a visible way out.
 
-Interaction is unaffected, so you can still pan, zoom, and (if your role allows) edit. Zen mode is available to everyone, including view-only visitors, since focusing is read-only.
+Interaction is unaffected, so you can still pan, zoom, and (if your role allows) edit; keyboard shortcuts keep working too. Zen mode is available to everyone, including view-only visitors, since focusing is read-only. It also only ever affects your own screen: the people you are working with keep their chrome.
 
 ## Turning it on and off
 
-There are two ways to toggle zen mode:
+There are three ways to turn zen mode on:
 
-- **The canvas-tool dropdown.** Open the mode picker in the Palette header and choose **Zen** (it sits under Isometric). It acts immediately and leaves your current tool selected. To come back, use the compress icon labelled "Exit zen mode" on the zoom controls, the only chrome left on screen.
-- **The keyboard.** Press **Z** to toggle it, and **Escape** to exit when it is active. It is listed under Tools in the shortcut reference (the **Keyboard** category in **Settings**), and it never fires while you are typing into a label or text field.
+- **The canvas-tool dropdown.** Open the tool picker at the top of the Palette and choose **Zen**, in the Preview group under Isometric. It acts immediately and leaves your current tool selected. View-only visitors have no palette, so for them the same button sits on the zoom controls instead.
+- **The keyboard.** Press **Z**. It never fires while you are typing into a label or text field, and it is listed under Tools in the shortcut reference (the **Keyboard** category in **Settings**). If you have switched keyboard shortcuts off there, use one of the other routes.
+- **The command palette.** Press ⌘K (Ctrl+K on Windows and Linux) and run "Enter zen mode". See [The Command Palette](/help/search-panel/the-search-panel/command-palette/).
+
+To come back, use the compress icon labelled **Exit zen mode** on the zoom controls, the only chrome left on screen, or press **Z** or **Escape**. Zen mode is not remembered: reloading the page brings the chrome back.
 
 <Tip>
   Reach for zen mode when you share your screen on a call: the canvas fills the view with no

@@ -80,7 +80,8 @@ The same hover-to-preview / click-commit flow extends to **every discrete tile
 control** in the context menus (single-element and multi-selection), not just
 the preset tiles:
 
-- the **colour swatches** (Text / Background / Border) in the Colours section,
+- the **colour swatches** (Text / Background / Border) in the Colours section's
+  [colour picker](../004-interface-design/colour-picker.md),
 - the **Border** tiles (Strength / Pattern / Radius),
 - the **Rotation** angle tiles,
 - the **Shape** morph tiles (the single menu previews just the clicked
@@ -94,9 +95,8 @@ the preset tiles:
 
 Hovering any of these shows the value live on the selection and only commits on
 click, with the same ephemeral-preview / true-undo guarantees as the presets.
-The one exception is each colour row's **custom `+` picker** (the native
-`<input type=color>`): it stays on the debounced direct setter (a colour drag
-must not land a history step per pixel), so it does not hover-preview.
+The custom colour editor behind each picker's **+** commits only on **Use**, so
+a drag in its colour square never lands a history step.
 
 ## Arrows
 

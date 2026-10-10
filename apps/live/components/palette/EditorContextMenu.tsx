@@ -25,6 +25,7 @@ import {
   arrowThicknessOf,
   isBoxed,
   isSelfDrawingShape,
+  supportsRotation,
 } from '@livediagram/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import { ContextMenu, ContextMenuDivider } from '@/components/palette/ContextMenu';
@@ -59,6 +60,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ElementContentSections } from './ElementContentSections';
 import { ElementAppearanceSections } from './ElementAppearanceSections';
+import { MirrorCopyGlyph } from '@/components/canvas/logo-glyphs';
 import { MultiSelectionContextMenu } from './MultiSelectionContextMenu';
 
 import { shapeKindLabel } from '@/lib/element-names';
@@ -230,7 +232,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             <MenuActionRow
               icon={<RemoveIcon />}
               label="Remove"
-              danger
               onClick={runAndClose(props.onDeleteElement)}
             />
           </>
@@ -315,8 +316,9 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         ) : null}
         {/* Rotation — fixed snap angles. Each tile previews the orientation
             (an upright marker rotated by the angle) so the effect is legible
-            before clicking; 0° resets to upright. */}
-        {boxed && !esNote ? (
+            before clicking; 0° resets to upright. Not on an annotation marker
+            (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
+        {supportsRotation(target) && !esNote ? (
           <MenuAccordionSection
             title="Rotation"
             icon={<RotationMenuIcon />}
@@ -339,6 +341,14 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               ))}
             </div>
           </MenuAccordionSection>
+        ) : null}
+        {/* Mirror Copy on a logo page (docs/specs/007-editor/logo-pages.md "Mirror"). */}
+        {props.onMirrorCopy ? (
+          <MenuActionRow
+            icon={<MirrorCopyGlyph />}
+            label="Mirror Copy"
+            onClick={runAndClose(props.onMirrorCopy)}
+          />
         ) : null}
         {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ──
             Skipped entirely for an event-storming note: its colour, text

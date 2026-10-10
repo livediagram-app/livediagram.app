@@ -28,7 +28,7 @@ import { HIGHLIGHTER_COLOR, HIGHLIGHTER_WIDTH } from '@/lib/highlighter-config';
 import { boardShape, whiteboardPenIntent } from '@/lib/whiteboard-tool';
 import { loadWhiteboardPrefs, type WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { buildDressedDrawnArrow, buildDrawnBoxed, buildDrawnComponent } from '@/lib/draw-commit';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { componentTelemetryType, shapeTelemetryToken } from '@/lib/element-telemetry';
 import { makeCommitFreehand } from '@/hooks/canvas/commit-freehand';
 
@@ -289,10 +289,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // One of Draw mode's markers, picked up in another mode from the Toolbar strip's Search
   // (docs/specs/007-editor/toolbar-layout.md "Search: every element type"): the dock's own pen
   // intent, in the pen's colour and width as this browser last set them, held until put down.
-  const beginMarker = (penId: WhiteboardPenId) => {
+  const beginMarker = (penId: WhiteboardPenId, once?: boolean) => {
     const prefs = loadWhiteboardPrefs();
     const pen = prefs.pens.find((p) => p.id === penId);
-    if (pen) armFreehand(whiteboardPenIntent(pen, prefs.recognise));
+    if (pen)
+      armFreehand({ ...whiteboardPenIntent(pen, prefs.recognise), ...(once ? { once } : {}) });
   };
   // A setting chosen while the tile is armed reaches the armed stroke too, so the very next drag
   // (and its preview) lands in it.
@@ -316,6 +317,12 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
   // Polygon tool entry (docs/specs/008-canvas/polygon-tool.md): queues the click-to-place-vertices
   // intent. The vertex accumulation lives canvas-side
   // (useCanvasPolygonGesture); this just arms the mode.
+  // The Path tool from a palette (a logo page's, docs/specs/007-editor/logo-pages.md "The Logo
+  // palette"): the same tool Draw mode's dock holds.
+  const beginPath = () => {
+    if (editsBlocked) return;
+    beginDraw({ type: 'path' });
+  };
   const beginPolygon = () => {
     if (editsBlocked) return;
     setSelectedId(null);
@@ -369,6 +376,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
     beginMarker,
     beginShapePen,
     beginPolygon,
+    beginPath,
     commitFreehand,
     commitPolygon,
     highlighter: {

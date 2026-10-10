@@ -7,6 +7,7 @@ import type { Env } from '../types';
 import { getDocument } from '../db/documents';
 import { answerOverview, parseViewQuery, type ParsedView } from './document-views-route';
 import { handleDocuments } from './documents';
+import { personTagFor } from '../person-tag';
 import { makeTestRouteContext } from './test-route-context';
 
 // Document views over REST on real SQLite (docs/specs/024-agents/document-views.md; blueprint "REST",
@@ -76,8 +77,11 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown, who: W
   );
 }
 
-async function setUp(extraTabs = 0) {
-  const db = sqliteD1({ TELEMETRY_ENABLED: 'true' } as unknown as Partial<Env>);
+async function setUp(extraTabs = 0, room?: unknown) {
+  const db = sqliteD1({
+    TELEMETRY_ENABLED: 'true',
+    ...(room ? { DOCUMENT_ROOM: room } : {}),
+  } as unknown as Partial<Env>);
   const tabs = [
     { id: 't1', name: 'Architecture', elements: ELEMENTS },
     ...Array.from({ length: extraTabs + 1 }, (_, i) => ({
@@ -183,6 +187,74 @@ describe('tab views over REST (R23)', () => {
     const text = await (await tabView(db, 'view=outline')).text();
     expect(text).toContain('? hologram holo "x"');
     expect(logged('[views] unknown kinds')).toEqual({ tab: 't1', hologram: 1, 'shape:blob': 1 });
+  });
+});
+
+type Selection = { elementIds: string[]; name: string; color: string; mine: boolean };
+
+// A room answering /selections, recording what it was asked.
+function room(selections: Selection[] | 'down') {
+  const asked: string[] = [];
+  const binding = {
+    idFromName: (name: string) => name,
+    get: () => ({
+      fetch: async (input: string) => {
+        asked.push(input);
+        if (selections === 'down') return new Response('no', { status: 500 });
+        return Response.json({ selections });
+      },
+    }),
+  };
+  return { asked, binding };
+}
+
+describe('show selected over REST (R27)', () => {
+  const mine = (elementIds: string[]): Selection => ({
+    elementIds,
+    name: 'Webber',
+    color: '#000',
+    mine: true,
+  });
+
+  it("shows what the owner has selected, never anyone else's selection, and logs the read", async () => {
+    quiet();
+    const r = room([mine(['payments']), { ...mine(['orders']), mine: false }]);
+    const db = await setUp(0, r.binding);
+    const res = await tabView(db, 'view=show&ref=selected');
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toContain('square payments "Payments"');
+    expect(text).not.toContain('square orders');
+    expect(r.asked).toHaveLength(1);
+    expect(r.asked[0]).toContain('/selections?tab=t1&person=');
+    expect(r.asked[0]).toContain(await personTagFor('D', OWNER));
+    expect(logged('[views] selection')).toEqual({ doc: 'D', tab: 't1', read: true, count: 1 });
+    await settled();
+    expect(viewed(db)).toEqual(['Show']);
+  });
+
+  it('answers 404 when nothing is selected, or the room cannot be read', async () => {
+    quiet();
+    const empty = await tabView(await setUp(0, room([]).binding), 'view=show&ref=selected');
+    expect(empty.status).toBe(404);
+    expect(await empty.json()).toMatchObject({
+      error: 'target_not_found',
+      message: 'nothing is selected',
+    });
+    quiet();
+    const down = await tabView(await setUp(0, room('down').binding), 'view=show&ref=selected');
+    expect(down.status).toBe(404);
+    expect(await down.json()).toMatchObject({ message: 'the selection could not be read' });
+    expect(logged('[views] selection')).toEqual({ doc: 'D', tab: 't1', read: false, count: 0 });
+  });
+
+  it('asks the room for no other view, and for no other ref', async () => {
+    quiet();
+    const r = room([mine(['payments'])]);
+    const db = await setUp(0, r.binding);
+    expect((await tabView(db, 'view=outline')).status).toBe(200);
+    expect((await tabView(db, 'view=show&ref=orders')).status).toBe(200);
+    expect(r.asked).toEqual([]);
   });
 });
 

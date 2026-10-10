@@ -165,6 +165,24 @@ describe('creating items', () => {
     expect(clash.body.item.key).toBe(3);
   });
 
+  it('keeps the keys a sync or copy names, above the next key too, and numbers the rest around them', async () => {
+    const res = await call<ItemsResponse>({
+      path: '/items/bulk',
+      body: {
+        items: [
+          { type: 'bug', key: 2, fields: { title: 'doing', status: 'new' } },
+          { type: 'bug', fields: { title: 'unnamed', status: 'new' } },
+          { type: 'bug', key: 1, fields: { title: 'todo', status: 'new' } },
+          { type: 'bug', key: 4, fields: { title: 'later', status: 'new' } },
+          { type: 'bug', fields: { title: 'next', status: 'new' } },
+        ],
+      },
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.items.map((i) => i.key)).toEqual([2, 1, 3, 4, 5]);
+    expect((await add({ title: 'after' })).body.item.key).toBe(6);
+  });
+
   it('caps the store', async () => {
     sql.sql.exec('UPDATE documents SET items_next_key = 2001');
     const insert = sql.sql.prepare(
@@ -251,32 +269,10 @@ describe('changing items', () => {
     expect(laned.body.item.fields).toMatchObject({ 'f-stage': 'Won', labels: ['auth'] });
   });
 
-  it('votes per person, never below zero, from a view link too', async () => {
-    const mine = await itemPersonId('visitor');
-    const vote = (delta: number) =>
-      call<ItemResponse>({
-        path: `/items/${item.id}/vote`,
-        owner: 'visitor',
-        code: 'VIEW',
-        body: { delta },
-      });
-    expect((await vote(1)).body.item.fields['votes']).toEqual({ [mine]: 1 });
-    await vote(-1);
-    expect((await vote(-1)).body.item.fields['votes']).toEqual({});
-    expect((await call({ path: `/items/${item.id}/vote`, body: { delta: 2 } })).status).toBe(400);
-  });
-
-  // docs/specs/012-collaboration/vote-integrity.md: guest voters are capped per network per document; one already in
-  // can keep voting, and taking a vote back is never refused.
-  it('caps guest voters per network, and never refuses taking a vote back', async () => {
-    const vote = (owner: string, delta: number) =>
-      call({ path: `/items/${item.id}/vote`, owner, code: 'VIEW', body: { delta } });
-    for (let i = 0; i < 100; i++) expect((await vote(`guest-${i}`, 1)).status).toBe(200);
-    const late = await vote('guest-late', 1);
-    expect(late.status).toBe(429);
-    expect(late.body).toEqual({ error: 'vote_limit' });
-    expect((await vote('guest-0', 1)).status).toBe(200);
-    expect((await vote('guest-late', -1)).status).toBe(200);
+  // docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": a card is voted on through the tab's
+  // session vote; the per-card vote route is gone.
+  it('has no per-card vote route', async () => {
+    expect((await call({ path: `/items/${item.id}/vote`, body: { delta: 1 } })).status).toBe(404);
   });
 
   it('deletes and relays the removal', async () => {
@@ -449,6 +445,138 @@ describe('documents and items', () => {
   });
 });
 
+// docs/specs/026-plan/item-types.md "An item type": the Default State, for a card created without a status.
+describe('a type’s Default State', () => {
+  const withDefault = (extra: Record<string, unknown>) => ({
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['description'],
+        ...extra,
+      },
+    ],
+  });
+
+  it('gives a card made without a status its type’s Default State, never overriding a given one', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: withDefault({ defaultStatus: 'backlog' }) },
+    });
+    expect((await add({ title: 'A' })).body.item.fields['status']).toBe('backlog');
+    expect((await add({ title: 'B', status: 'done' })).body.item.fields['status']).toBe('done');
+    expect(
+      (await add({ title: 'C' }, { place: { status: 'doing' } })).body.item.fields['status'],
+    ).toBe('doing');
+  });
+
+  it('leaves a card unplaced when the type turns its Default State off', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: withDefault({ defaultStatus: 'backlog', excludedStatuses: ['backlog'] }) },
+    });
+    expect((await add({ title: 'A' })).body.item.fields['status']).toBeUndefined();
+  });
+});
+
+// docs/specs/026-plan/item-types.md "An item type": a type's left-out statuses refuse a card moving in.
+describe('statuses a type leaves out', () => {
+  const noDone = {
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['description'],
+        excludedStatuses: ['done'],
+      },
+    ],
+  };
+
+  it('refuses a move or a patch into one, for that type only, but never a make', async () => {
+    const put = await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    expect(put.status).toBe(200);
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    const moved = await call({ path: `/items/${t.id}/move`, body: { status: 'done' } });
+    expect(moved.status).toBe(400);
+    expect(moved.body).toEqual({ error: 'status_excluded', field: 'status' });
+    const patched = await call({
+      path: `/items/${t.id}`,
+      body: { set: { status: 'done' } },
+    });
+    expect(patched.body).toMatchObject({ error: 'status_excluded' });
+    // Made straight into it: allowed (it is only never moved there).
+    expect((await add({ title: 'U', status: 'done' })).status).toBe(201);
+    // Another type may still be Done.
+    expect((await add({ title: 'N', status: 'done' }, { type: 'note' })).status).toBe(201);
+  });
+
+  it('lets a card already in one stay, be reordered there, and move out', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    const a = (await add({ title: 'A', status: 'done' })).body.item;
+    const b = (await add({ title: 'B', status: 'done' })).body.item;
+    expect((await call({ path: `/items/${b.id}/move`, body: { before: a.id } })).status).toBe(200);
+    expect((await call({ path: `/items/${a.id}/move`, body: { status: 'todo' } })).status).toBe(
+      200,
+    );
+  });
+
+  it('restores a trashed card to the status it was trashed from, even a left-out one', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    const t = (await add({ title: 'T', status: 'done' })).body.item;
+    const trashed = await call({
+      path: `/items/${t.id}`,
+      body: { set: { status: 'trash', trashedFrom: 'done' } },
+    });
+    expect(trashed.status).toBe(200);
+    const restored = await call<{ item: { fields: Record<string, unknown> } }>({
+      path: `/items/${t.id}`,
+      body: { set: { status: 'done' }, clear: ['trashedFrom'] },
+    });
+    expect(restored.status).toBe(200);
+    expect(restored.body.item.fields['status']).toBe('done');
+    // Out of the Trash into another left-out status than the one it came from: still refused.
+    const other = (await add({ title: 'O', status: 'todo' })).body.item;
+    await call({
+      path: `/items/${other.id}`,
+      body: { set: { status: 'trash', trashedFrom: 'todo' } },
+    });
+    const sneaked = await call({ path: `/items/${other.id}`, body: { set: { status: 'done' } } });
+    expect(sneaked.body).toMatchObject({ error: 'status_excluded' });
+  });
+
+  it('lets an undo or redo put a card back into one', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
+    const t = (await add({ title: 'T', status: 'done' })).body.item;
+    expect((await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } })).status).toBe(
+      200,
+    );
+    // The undo of that move, and the same as a patch: let through.
+    const undone = await call<{ item: { fields: Record<string, unknown> } }>({
+      path: `/items/${t.id}/move`,
+      body: { status: 'done', undo: true },
+    });
+    expect(undone.status).toBe(200);
+    expect(undone.body.item.fields['status']).toBe('done');
+    await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } });
+    expect(
+      (await call({ path: `/items/${t.id}`, body: { set: { status: 'done' }, undo: true } }))
+        .status,
+    ).toBe(200);
+    // Without the flag the same move is refused.
+    await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } });
+    const plain = await call({ path: `/items/${t.id}/move`, body: { status: 'done' } });
+    expect(plain.body).toMatchObject({ error: 'status_excluded' });
+  });
+});
+
 // docs/specs/026-plan/item-types.md "Storage and sync".
 describe('the type catalogue', () => {
   const catalogue = {
@@ -533,5 +661,164 @@ describe('a create carrying a type catalogue', () => {
       'title',
       'status',
     ]);
+  });
+});
+
+describe('changing many items at once', () => {
+  const trash = { set: { status: 'trash', trashedFrom: 'todo' } };
+
+  it('changes every item in one write, one rev raise and one room op', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    const before = await db.getItemsRev(sql.env, 'd1');
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: b.id, ...trash },
+          { id: a.id, set: { title: 'A2' } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.rev).toBe(before + 1);
+    expect(res.body.items.map((i) => [i.id, i.fields['title'], i.fields['status']])).toEqual([
+      [a.id, 'A2', 'trash'],
+      [b.id, 'B', 'trash'],
+    ]);
+    expect(relayed).toHaveLength(1);
+    expect((relayed[0] as { op: { upserts: unknown[] } }).op.upserts).toHaveLength(2);
+    expect((await db.readItem(sql.env, 'd1', a.id))!.rev).toBeGreaterThan(a.rev);
+  });
+
+  it('refuses the whole request, naming the item, before writing anything', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const missing = await call({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: 'missing-id', ...trash },
+        ],
+      },
+    });
+    expect(missing).toEqual({ status: 404, body: { error: 'item_not_found' } });
+    const bad = await call({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: a.id, clear: ['title'] },
+        ],
+      },
+    });
+    expect(bad.body).toMatchObject({ error: 'title_required', id: a.id });
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['status']).toBe('todo');
+    for (const items of [[], 'x', Array.from({ length: 201 }, () => ({ id: a.id }))])
+      expect((await call({ path: '/items/patches', body: { items } })).status).toBe(400);
+    expect(
+      (await call({ path: '/items/patches', body: { items: [{ ...trash }] } })).body,
+    ).toMatchObject({ message: 'each item needs its id' });
+    expect((await call({ method: 'GET', path: '/items/patches' })).status).toBe(405);
+    expect(
+      (
+        await call({
+          path: '/items/patches',
+          code: 'VIEW',
+          owner: 'guest',
+          body: { items: [{ id: a.id, ...trash }] },
+        })
+      ).status,
+    ).toBe(403);
+  });
+
+  it('refuses a status the type leaves out, unless it is an undo', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: {
+        itemTypes: {
+          version: 1,
+          types: [
+            {
+              id: 'task',
+              label: 'Task',
+              color: '#71717a',
+              glyph: 'task',
+              fields: [],
+              excludedStatuses: ['done'],
+            },
+          ],
+        },
+      },
+    });
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    const items = [{ id: t.id, set: { status: 'done' } }];
+    expect((await call({ path: '/items/patches', body: { items } })).body).toEqual({
+      error: 'status_excluded',
+      field: 'status',
+      id: t.id,
+    });
+    expect((await call({ path: '/items/patches', body: { items, undo: true } })).status).toBe(200);
+  });
+
+  it('writes many at the revs read, reporting which landed', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    const b = (await add({ title: 'B' })).body.item;
+    expect((await db.readItems(sql.env, 'd1', [a.id, b.id, 'missing-id'])).length).toBe(2);
+    const written = await db.updateItemsAtRev(sql.env, 'd1', [
+      { next: { ...a, rev: 2, fields: { title: 'A2' } }, expectedRev: 1 },
+      { next: { ...b, rev: 2, fields: { title: 'B2' } }, expectedRev: 7 },
+    ]);
+    expect([...written.landed]).toEqual([a.id]);
+    expect(written.rev).toBe(await db.getItemsRev(sql.env, 'd1'));
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
+  });
+});
+
+// docs/specs/026-plan/items.md "Tally": a session vote's dots added to cards when it ends.
+describe('a vote’s tally', () => {
+  it('adds each voter’s dots to the cards, skipping a card gone meanwhile', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/tally',
+      body: {
+        items: [
+          { id: a.id, votes: { p1: 2, p2: 1 } },
+          { id: 'missing-id', votes: { p1: 1 } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((i) => i.fields['votes'])).toEqual([{ p1: 2, p2: 1 }]);
+    expect(relayed).toHaveLength(1);
+    await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 1 } }] } });
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
+  });
+
+  it('refuses a malformed tally, and needs edit access', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    for (const items of [
+      [],
+      [{ votes: { p: 1 } }],
+      [{ id: a.id }],
+      [{ id: a.id, votes: { p: 0 } }],
+      [{ id: a.id, votes: { [''.padEnd(65, 'x')]: 1 } }],
+    ])
+      expect((await call({ path: '/items/tally', body: { items } })).status).toBe(400);
+    expect(
+      (
+        await call({
+          path: '/items/tally',
+          code: 'VIEW',
+          owner: 'guest',
+          body: { items: [{ id: a.id, votes: { p: 1 } }] },
+        })
+      ).status,
+    ).toBe(403);
+    expect((await call({ method: 'GET', path: '/items/tally' })).status).toBe(405);
   });
 });

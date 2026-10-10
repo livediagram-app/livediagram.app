@@ -3,11 +3,15 @@
 // A column's head on a Plan board (docs/specs/026-plan/plan-board.md "What the board shows"): its colour
 // bar, name, count (against its WIP limit), and, for someone who may edit, a cog at the far right that
 // opens the column's settings (PlanColumnPopover). The cog shows on hover and focus, and always on a
-// touch screen.
-import { useCallback, useRef, useState } from 'react';
+// touch screen. A column just added from another column's settings opens its own, its name selected.
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlanBoardSetup, ProjectedColumn } from '@livediagram/items';
 import { CountBadge, SettingsIcon } from '@livediagram/ui';
 import { PlanColumnPopover } from './PlanColumnPopover';
+import {
+  subscribeColumnSettingsRequest,
+  takeColumnSettingsRequest,
+} from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
 
 export function PlanColumnHeader({
@@ -17,6 +21,9 @@ export function PlanColumnHeader({
   canEdit,
   onChange,
   onMoveCards,
+  onTrashCards,
+  onDeleteStatus,
+  onFrame,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -24,15 +31,40 @@ export function PlanColumnHeader({
   canEdit: boolean;
   onChange: (next: PlanBoardSetup, part: string) => void;
   onMoveCards: (fromStatus: string, toStatus: string) => void;
+  onTrashCards: (status: string) => void;
+  onDeleteStatus?: ((status: string) => void) | undefined;
+  // A tap on the header (a phone): the view frames this column, given the header. Absent, a tap does nothing.
+  onFrame?: ((header: HTMLElement) => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
+  // Opened for a column just added: its name is selected, ready to type over.
+  const [fresh, setFresh] = useState(false);
   const cog = useRef<HTMLButtonElement>(null);
   const getAnchor = useCallback(() => cog.current, []);
   const { column } = col;
+  useEffect(() => {
+    if (!canEdit) return;
+    const take = () => {
+      if (!takeColumnSettingsRequest(column.id)) return;
+      setFresh(true);
+      setOpen(true);
+    };
+    take();
+    return subscribeColumnSettingsRequest(take);
+  }, [column.id, canEdit]);
   return (
     <div
       className="group sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
       style={{ backgroundColor: palette.column }}
+      onClick={
+        onFrame
+          ? (e) => {
+              // The cog and its popover keep their own presses.
+              if ((e.target as HTMLElement).closest('button, [role="dialog"]')) return;
+              onFrame(e.currentTarget);
+            }
+          : undefined
+      }
     >
       <div
         className="mb-1.5 h-1 rounded-full"
@@ -70,6 +102,7 @@ export function PlanColumnHeader({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => {
               e.stopPropagation();
+              setFresh(false);
               setOpen((o) => !o);
             }}
           >
@@ -87,11 +120,14 @@ export function PlanColumnHeader({
           getAnchor={getAnchor}
           setup={setup}
           column={column}
-          cardCount={col.count}
+          selectName={fresh}
           onChange={onChange}
           onMoveCards={onMoveCards}
+          onTrashCards={onTrashCards}
+          onDeleteStatus={onDeleteStatus}
           onClose={(restoreFocus) => {
             setOpen(false);
+            setFresh(false);
             if (restoreFocus) cog.current?.focus();
           }}
         />

@@ -18,11 +18,9 @@ import {
   WRAP_CONTAINERS,
   type EditOperationName,
 } from './vocabulary';
+import { isRecord } from '@livediagram/document';
 
 type Raw = Record<string, unknown>;
-
-export const isObject = (v: unknown): v is Raw =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const isOneOf = <T extends string>(names: readonly T[], word: unknown): word is T =>
   typeof word === 'string' && names.some((name) => name === word);
@@ -35,7 +33,7 @@ const expected = (member: string, what: string) => `member "${member}": expected
 // The rule a placement breaks, or null.
 export function placementIssue(value: unknown): string | null {
   const what = `{ "rel", "ref" } or { "rel": "at", "x", "y" }`;
-  if (!isObject(value)) return expected('place', what);
+  if (!isRecord(value)) return expected('place', what);
   if (value.rel === 'at') {
     const extra = Object.keys(value).find((key) => !['rel', 'x', 'y'].includes(key));
     if (extra !== undefined) return expected('place', `no "${extra}" with "at"`);
@@ -74,7 +72,7 @@ function memberIssue(name: EditOperationName, raw: Raw, member: string): string 
       return isText(value) ? null : expected(member, 'a non-empty string');
     case 'fields':
     case 'element':
-      return isObject(value) ? null : expected(member, 'an object');
+      return isRecord(value) ? null : expected(member, 'an object');
     case 'place':
       return placementIssue(value);
     case 'by':
@@ -152,7 +150,7 @@ export function validateEditOperation(
   raw: unknown,
   operation: number,
 ): EditOperation | EditRejection {
-  if (!isObject(raw)) return parseError(operation, 'expected an object with an "op" member');
+  if (!isRecord(raw)) return parseError(operation, 'expected an object with an "op" member');
   if (typeof raw.op !== 'string') return parseError(operation, expected('op', 'a string'));
   if (!isOneOf(EDIT_OPERATION_NAMES, raw.op)) return unknownOperation(raw.op, operation);
   const name = raw.op;

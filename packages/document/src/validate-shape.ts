@@ -2,7 +2,9 @@
 // rails, and the closed sets and bounded rows of the content-carrying and collaborative kinds. Each
 // check names its field and rule, so a refusal says which value to fix.
 
-import { isPlanViewId, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
+import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
+import { isPlanSheetRef } from './element-types';
+import { isChartSource } from './chart-source';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -55,6 +57,10 @@ import {
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
+// A Plan card's sizes (PlanCardRef.size): the same three as @livediagram/items' CARD_SIZES, written out because
+// that package imports this one and its binding may be uninitialised at module load; plan-shapes.test.ts keeps
+// the two equal.
+export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'compact', 'detailed'];
 
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
 // A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
@@ -253,14 +259,28 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
       typeof v === 'object' &&
       v !== null &&
       typeof (v as { itemId?: unknown }).itemId === 'string' &&
-      ((v as { itemId: string }).itemId === '' || isValidItemId((v as { itemId: string }).itemId)),
-    rule: 'an object { itemId } naming an item',
+      ((v as { itemId: string }).itemId === '' ||
+        isValidItemId((v as { itemId: string }).itemId)) &&
+      ((v as { size?: unknown }).size === undefined ||
+        PLAN_CARD_SIZES.includes((v as { size: string }).size)),
+    rule: 'an object { itemId, size? } naming an item, size minimal, compact or detailed',
   },
   {
     field: 'planView',
-    valid: (v: unknown) =>
-      typeof v === 'object' && v !== null && isPlanViewId((v as { view?: unknown }).view),
-    rule: 'an object { view } naming a plan view',
+    // Called, not referenced: @livediagram/items imports this package too, so at module load the binding
+    // may not be initialised yet (a ReferenceError in the browser).
+    valid: (v: unknown) => isPlanViewSettings(v),
+    rule: 'an object { view } naming a plan view, with an optional swimlaneBy, swimlaneField, namesWidth (120 to 2000) and rowOrder (up to 2000 card ids)',
+  },
+  {
+    field: 'chartSource',
+    valid: (v: unknown) => isChartSource(v),
+    rule: 'an object { sheetId, range: { r1, c1, r2, c2 } } naming a sheet of the document and row and column ids',
+  },
+  {
+    field: 'planSheet',
+    valid: (v: unknown) => isPlanSheetRef(v),
+    rule: 'an object { sheetId } naming a sheet of the document',
   },
   {
     field: 'legendItems',

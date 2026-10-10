@@ -59,8 +59,8 @@ export async function exportPages({
   if (format === 'pdf') return { blob: await exportPagesAsPdf(tab, chosen, opts), ext: 'pdf' };
   const render = (p: LaidOutPage) =>
     format === 'png'
-      ? exportTabAsPng(tab, { ...opts, page: p })
-      : exportTabAsSvg(tab, { ...opts, page: p });
+      ? exportTabAsPng(tab, { ...opts, page: p, transparentPaper: true })
+      : exportTabAsSvg(tab, { ...opts, page: p, transparentPaper: true });
   if (scope === 'one') return { blob: await render(page), ext: format };
   const files = [];
   for (const p of chosen) {

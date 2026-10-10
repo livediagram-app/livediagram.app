@@ -2,16 +2,19 @@
 // "Performance and limits"). Timed as growth, not as a ceiling: an absolute time depends on the machine
 // and on coverage instrumentation, a ratio does not. Four times the elements in the same containers
 // should cost about four to five times as much (n log n); a quadratic step would cost sixteen.
+// Timed in CPU time (cpuMsOf), not wall-clock: under turbo's parallel suites a wall-clock run also
+// counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Element } from '@livediagram/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
 
 const FRAMES = 10;
-const GROWTH = 4;
-const RATIO_CEILING = 8;
-const RUNS = 3;
+const GROWTH = 8;
+const RATIO_CEILING = 24;
+const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
@@ -41,10 +44,11 @@ function tabOf(perFrame: number) {
 function fastestRender(tab: ReturnType<typeof tabOf>): number {
   let fastest = Infinity;
   for (let run = 0; run < RUNS; run++) {
-    const start = performance.now();
-    outlineView(buildViewModel(tab));
-    outlineView(buildViewModel(tab), { budget: 8000 });
-    fastest = Math.min(fastest, performance.now() - start);
+    const spent = cpuMsOf(() => {
+      outlineView(buildViewModel(tab));
+      outlineView(buildViewModel(tab), { budget: 8000 });
+    });
+    fastest = Math.min(fastest, spent);
   }
   return fastest;
 }

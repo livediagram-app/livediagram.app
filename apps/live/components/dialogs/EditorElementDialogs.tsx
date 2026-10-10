@@ -69,6 +69,7 @@ export function EditorElementDialogs() {
     applyImageToElement,
     closeImagePicker,
     refreshRecentImages,
+    workbenchMode,
   } = useEditorContext();
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
@@ -108,7 +109,7 @@ export function EditorElementDialogs() {
           validate: (url: string) =>
             embedTargetFor(url)
               ? null
-              : "That isn't a link we can embed. Check it starts with https:// — or, for a named service, that it is a link to a real file.",
+              : "That isn't a link we can embed. Check it starts with https://, or, for a named service, that it is a link to a real file.",
         }
       : undefined;
 
@@ -220,6 +221,7 @@ export function EditorElementDialogs() {
         <ImagePicker
           ownerId={selfParticipant.id}
           documentId={documentId}
+          uploadOnly={workbenchMode}
           forElementId={imagePickerOpenFor.forElementId}
           currentImageId={(() => {
             const targetId = imagePickerOpenFor.forElementId;

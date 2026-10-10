@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ThemePicker } from '@/components/illustrations/canvas';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Changing the Theme',
@@ -19,32 +19,41 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("themes").filter((a) => a.slug !== "changing-theme")}
 >
 
-Changing a diagram's look is a matter of picking a new theme and watching the canvas update. livediagram brings the theme picker front and centre in a dedicated dialog, with the same category browse you see when starting a new document, so there is plenty of room to compare looks.
+Changing a diagram's look is a matter of picking a new theme and watching the canvas update. livediagram brings the theme picker front and centre in a dedicated dialog, so there is plenty of room to compare looks.
 
-<Figure caption="The Tab Look & Feel dialog's Theme tab, a grid of swatch cards with the applied theme outlined.">
-  <ThemePicker />
+<Figure caption="The Theme tab of the Tab Look & Feel dialog, with a card for each category and Reset elements to theme beneath.">
+  <LookAndFeelTheme />
 </Figure>
 
-## Opening the dialog
+## Opening the Dialog
 
-Click the **paintbrush button** in the bottom-right corner of the editor (it's there on every screen size, phones included). Either opens the **Tab Look & Feel** dialog on its **Theme** tab. The dialog also has a **Canvas** tab for the backdrop pattern and colours, and you can switch between the two from the tab strip below the header. The same controls also live in the floating palette, but the dialog gives them more room.
+Click the **paintbrush button** in the bottom-right corner of the editor, beside the zoom controls (it is there on every screen size, phones included). It opens the **Tab Look & Feel** dialog on its **Theme** tab. You can also run **Open theme** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The dialog also has a **Canvas** tab for the [backdrop pattern and colours](/help/canvas/the-canvas/changing-the-background/) and a **Font** tab for the [tab's default font](/help/canvas/text-and-fonts/choosing-fonts/), and you can switch between them from the tab strip below the header.
 
-The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies live to the active tab, and closing it (with the X, the Escape key, or a click on the backdrop) simply dismisses it without rolling anything back.
+The paintbrush only appears for people who can edit the tab, so it is missing on a view-only link, in zen mode, and in [Draw mode](/help/canvas/draw-mode/).
 
-## Browsing by category
+The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies live to the active tab, and closing it (with the X, the Escape key, or a click outside it) simply dismisses it without rolling anything back. Undo takes a theme change back like any other edit.
 
-The Theme tab opens on an overview: a **Default** quick-pick plus a card for each category, such as Cool, Warm, Dark, Multi-colour, and Formal, alongside a **Custom** category for your own [saved themes](/help/canvas/themes/custom-themes/). Click a category to drill into its themes, with an "All themes" affordance to step back out.
+## Browsing by Category
 
-<Step n={1}></Step>
+The Theme tab opens on an overview: a **Default** quick-pick plus a card for each category (**Formal**, **Cool**, **Warm**, **Dark** and **Multi-colour**), alongside a **Custom** category for your own [saved themes](/help/canvas/themes/custom-themes/). If the tab already uses a theme from a category, the dialog opens straight into that category.
 
-<Step n={2}>
-  Pick a category, then click a theme to apply it live. Double-click a theme to apply it and close
-  the dialog in one move.
+<Step n={1}>
+  Click a category to drill into its themes. **All themes** at the top steps back out.
 </Step>
 
-## Recolouring elements
+<Step n={2}>
+  Click a theme to apply it live. Double-click a theme to apply it and close the dialog in one move.
+</Step>
 
-Applying a theme keeps colours you have hand-set on individual shapes and text, so deliberate customisations survive the switch. Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. If you want a clean slate, the **Reset elements to theme** action repaints every element on the tab to the new theme's defaults, overriding your customisations.
+The themes inside a category are shuffled each time you open the dialog, so different ones greet you first. While you browse the Dark themes in light chrome (or a light category in dark chrome), a **Turn on Dark mode** (or **Turn on Light mode**) switch below the grid matches the editor's own appearance to what you are looking at.
+
+To build on a built-in theme, hover its card and press **Copy**: the theme builder opens with its colours filled in, ready to save as a [custom theme](/help/canvas/themes/custom-themes/).
+
+## Recolouring Elements
+
+Applying a theme sets the tab's backdrop and recolours the elements on it, but keeps colours you have hand-set on individual shapes and text, so deliberate customisations survive the switch. Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. Sticky notes keep their own note colours.
+
+If you want a clean slate, **Reset elements to theme** at the bottom of the Theme tab repaints every element on the tab to the theme's defaults, overriding your customisations. A shape carrying a [style preset](/help/palette/shapes/style-presets/) keeps its preset, redrawn in the theme's colours.
 
 <Tip>
   Use double-click to apply and close once you have found the theme you want, and single clicks

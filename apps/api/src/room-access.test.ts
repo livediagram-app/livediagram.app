@@ -44,3 +44,27 @@ describe('sessionMatchesAccessClose', () => {
     expect(sessionMatchesAccessClose(null, shareCode)).toBe(false);
   });
 });
+
+describe('the workbench close match', () => {
+  const PAIRING = '3f1c9a2e-7b4d-4c8e-9a1f-2b3c4d5e6f70';
+  const workbench = { match: 'workbench', pairingId: PAIRING } as const;
+
+  it('parses a pairing id, and refuses anything that is not one', () => {
+    expect(parseAccessCloseMatch({ match: 'workbench', pairingId: PAIRING })).toEqual(workbench);
+    expect(parseAccessCloseMatch({ match: 'workbench', pairingId: 'pair1' })).toBeNull();
+    expect(parseAccessCloseMatch({ match: 'workbench' })).toBeNull();
+  });
+
+  it('matches only the sockets of that pairing', () => {
+    expect(sessionMatchesAccessClose({ workbenchPairing: PAIRING }, workbench)).toBe(true);
+    expect(
+      sessionMatchesAccessClose(
+        { workbenchPairing: '00000000-0000-4000-8000-000000000000' },
+        workbench,
+      ),
+    ).toBe(false);
+    expect(sessionMatchesAccessClose({ personTag: TAG, workbenchPairing: null }, workbench)).toBe(
+      false,
+    );
+  });
+});

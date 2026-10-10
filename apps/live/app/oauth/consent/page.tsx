@@ -9,8 +9,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livediagram/api-schema';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
-import { OauthHelpLink, OauthShell } from '../oauth-shell';
+import { OAUTH_PRIMARY, OauthHelpLink, OauthShell } from '../oauth-shell';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
@@ -105,7 +104,7 @@ function Consent() {
         <div className="mt-5 flex items-center gap-2">
           <a
             href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
-            className={`inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+            className={`inline-flex ${OAUTH_PRIMARY}`}
           >
             Sign in
           </a>
@@ -198,7 +197,7 @@ function Consent() {
         className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
       >
         <span className="min-w-0 text-slate-600 dark:text-slate-300">
-          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span> —
+          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
           let it find and view your documents, but not create, edit, delete, or share them. Leave
           off for full read + write.
         </span>
@@ -228,7 +227,7 @@ function Consent() {
           type="button"
           onClick={() => void approve()}
           disabled={status === 'connecting'}
-          className={`rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
+          className={OAUTH_PRIMARY}
         >
           {status === 'connecting' ? 'Connecting…' : 'Connect'}
         </button>

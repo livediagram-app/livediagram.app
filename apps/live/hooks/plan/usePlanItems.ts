@@ -12,10 +12,14 @@ import {
 } from '@livediagram/document';
 import {
   EMPTY_ITEM_STORE,
+  ITEM_TITLE_MAX,
   applyItemWrite,
+  asUndoWrite,
   inverseItemWrites,
   itemPersonId,
+  itemIdsOfWrite,
   mergeItemChanges,
+  refetchedItemStore,
   withCreateIds,
   type Item,
   type ItemPerson,
@@ -32,7 +36,6 @@ import {
 import { track } from '@/lib/telemetry';
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import type { ItemUndoStep } from './item-undo-journal';
-import { isVoteLimitError, VOTE_LIMIT_MESSAGE } from '@/lib/vote-limit';
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").
 export const ITEM_REFETCH_DEBOUNCE_MS = 400;
@@ -63,6 +66,27 @@ export type PlanItems = {
 // "Editor slice"): loaded once the document is, written optimistically through the same pure
 // transitions the api applies, kept live by the room's `items` op, and refetched on a revision gap,
 // a reconnect or a resync. Every write but a vote is undoable through `pushUndo`.
+// What a refused change says, by its reason (the store's or the api's), so a too-long field is named, not a
+// generic failure.
+export function refusalMessage(code: string): string {
+  switch (code) {
+    case 'title_too_long':
+      return `That title is too long: a card title holds up to ${ITEM_TITLE_MAX} characters`;
+    case 'title_required':
+      return 'A card needs a title';
+    case 'fields_too_large':
+      return 'That card is too large to save: shorten its description or fields';
+    case 'fields_too_many':
+      return 'That card has too many fields to save';
+    case 'status_excluded':
+      return 'That card’s type doesn’t use that state';
+    case 'field_value_invalid':
+      return 'That value is too long or isn’t one this field takes';
+    default:
+      return "Couldn't save that change";
+  }
+}
+
 export function usePlanItems(opts: {
   documentId: string | null;
   // Loads once the document has hydrated.
@@ -95,6 +119,8 @@ export function usePlanItems(opts: {
   // optimistic writes never move it.
   const serverRevRef = useRef(0);
   const refetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Items whose last write was refused or failed: the next load takes the server's copy of them as it is.
+  const unconfirmedRef = useRef(new Set<string>());
 
   useEffect(() => {
     let live = true;
@@ -123,18 +149,12 @@ export function usePlanItems(opts: {
     if (!s) return;
     loadedRef.current = true;
     try {
+      // Read before the fetch: a write that fails while it is in flight asks for a load of its own.
+      const unconfirmed = new Set(unconfirmedRef.current);
       const fetched = await fetchItems(s);
-      const fetchedIds = new Set(fetched.items.map((f) => f.id));
       serverRevRef.current = fetched.rev;
-      // Keep anything newer that arrived while the fetch was in flight.
-      setStore((prev) =>
-        mergeItemChanges(
-          fetched,
-          prev.items.filter((i) => fetchedIds.has(i.id)),
-          [],
-          fetched.rev,
-        ),
-      );
+      unconfirmed.forEach((id) => unconfirmedRef.current.delete(id));
+      setStore((prev) => refetchedItemStore(prev, fetched, unconfirmed));
       setStatus('ready');
     } catch (err) {
       console.warn('[plan] plan.items.load-failed', { error: String(err) });
@@ -191,23 +211,33 @@ export function usePlanItems(opts: {
       if (!s || !by) return { ok: false, made: [] };
       const local = applyItemWrite(storeRef.current, write, { now: Date.now(), by });
       if (!local.ok) {
+        // Refused before it is sent: nothing changes, and the person is told why (the field goes back).
         console.warn('[items] items.rejected', { error: local.error });
+        callbacks.current.onError(refusalMessage(local.error));
         return { ok: false, made: [] };
       }
       storeRef.current = local.state;
       setStore(local.state);
       try {
         const answer = await writeItem(s, write, by);
+        // A room op newer than this answer already landed: an item it removed stays removed.
+        const overtaken = answer.rev >= 0 && answer.rev < serverRevRef.current;
         if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
-        setStore((prev) => mergeItemChanges(prev, answer.upserts, answer.removed, answer.rev));
+        setStore((prev) => {
+          const held = new Set(prev.items.map((i) => i.id));
+          const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
+          return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
+        });
         return { ok: true, made: answer.upserts };
       } catch (err) {
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
+        itemIdsOfWrite(write).forEach((id) => unconfirmedRef.current.add(id));
+        const code = (err as { code?: string }).code;
         callbacks.current.onError(
-          (err as { code?: string }).code === 'items_full'
+          code === 'items_full'
             ? 'This document already holds the most items it can'
-            : isVoteLimitError(err)
-              ? VOTE_LIMIT_MESSAGE
+            : code
+              ? refusalMessage(code)
               : "Couldn't save that change",
         );
         void load();
@@ -235,11 +265,12 @@ export function usePlanItems(opts: {
               })),
             }
           : w;
+      // Both sides are marked as an undo, so a card type's left-out statuses never refuse putting a change back.
       callbacks.current.pushUndo({
         undo: () => {
-          for (const back of inverse) void send(back);
+          for (const back of inverse) void send(asUndoWrite(back));
         },
-        redo: () => void send(redo),
+        redo: () => void send(asUndoWrite(redo)),
       });
       return true;
     },

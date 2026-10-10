@@ -2,57 +2,89 @@
 // sharing (links, passwords, expiry, embeds), teams, and session tools.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Cursor, Avatar, Panel, Dialog, Button, Label, TextBar } from './primitives';
+import {
+  Scene,
+  Shape,
+  Arrow,
+  Cursor,
+  Avatar,
+  Panel,
+  Dialog,
+  Button,
+  Label,
+  Tabs,
+  TextBar,
+} from './primitives';
 
 // --- Comments ----------------------------------------------------------------
 
-/** A comment pin on the canvas opening a threaded popover with avatars and a
- *  resolve check. */
+/** An element's comment indicator (top-right, with its count) opening the Comments popover: the
+ *  thread, Resolve in the header, and the Add a comment box with its Comment button. */
 export function CommentThread() {
   return (
     <Scene w={420} h={240}>
-      <Shape x={36} y={92} w={96} h={52} kind="rect" label="Checkout" />
-      {/* Comment pin anchored to the shape's corner */}
-      <g transform="translate(126 84)">
+      <Shape x={30} y={92} w={110} h={56} kind="rect" label="Checkout" />
+      {/* The comment indicator near the element's top-right, with its count. */}
+      <g transform="translate(116 98)">
         <path
-          d="M0 14 a14 14 0 1 1 0.1 0 L0 28 Z"
-          className="fill-brand-500 stroke-white"
-          strokeWidth={2}
+          d="M0 1.5 a1.5 1.5 0 0 1 1.5 -1.5 h9 a1.5 1.5 0 0 1 1.5 1.5 v6 a1.5 1.5 0 0 1 -1.5 1.5 h-5 l-3 2.5 v-2.5 h-1 a1.5 1.5 0 0 1 -1.5 -1.5 Z"
+          className="fill-none stroke-brand-500"
+          strokeWidth={1.3}
         />
-        <Label x={0} y={13} anchor="middle" size={14} weight={700} tone="onAccent">
-          1
-        </Label>
       </g>
-      {/* Threaded popover */}
-      <Panel x={176} y={36} w={224} h={168} title="COMMENT">
-        {/* First message */}
-        <Avatar cx={194} cy={70} r={11} initial="A" colour="brand" />
-        <Label x={212} y={64} size={10} weight={700} tone="strong">
-          Aria
-        </Label>
-        <TextBar x={212} y={78} w={160} />
-        <TextBar x={212} y={88} w={120} tone="faint" />
-        {/* Reply */}
-        <Avatar cx={194} cy={120} r={11} initial="J" colour="violet" />
-        <Label x={212} y={114} size={10} weight={700} tone="strong">
-          Jae
-        </Label>
-        <TextBar x={212} y={128} w={140} />
-        {/* Resolve check */}
-        <circle cx={356} cy={50} r={10} className="fill-emerald-500" />
-        <path
-          d="M351 50 l4 4 l6 -8"
-          fill="none"
-          className="stroke-white"
-          strokeWidth={2.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Label x={336} y={50} anchor="end" size={9} weight={600} tone="muted">
-          Resolve
-        </Label>
-        <Button x={192} y={170} w={200} h={22} label="Reply" variant="default" />
-      </Panel>
+      <Label x={132} y={104} size={10} weight={700} tone="accent">
+        2
+      </Label>
+      {/* The thread popover */}
+      <rect
+        x={170}
+        y={24}
+        width={234}
+        height={196}
+        rx={10}
+        className="fill-white stroke-slate-200"
+        strokeWidth={2}
+      />
+      <Label x={184} y={44} size={12} weight={700} tone="strong">
+        Comments (2)
+      </Label>
+      <Label x={360} y={44} anchor="end" size={10} weight={600} tone="body">
+        Resolve
+      </Label>
+      <path d="M380 39 l9 9 M389 39 l-9 9" className="stroke-slate-400" strokeWidth={1.5} />
+      <line x1={170} y1={58} x2={404} y2={58} className="stroke-slate-200" strokeWidth={1.5} />
+      {/* First message */}
+      <Avatar cx={190} cy={78} r={10} initial="A" colour="brand" />
+      <Label x={206} y={74} size={10} weight={700} tone="strong">
+        Aria
+      </Label>
+      <Label x={238} y={74} size={10} tone="muted">
+        5m ago
+      </Label>
+      <TextBar x={206} y={86} w={160} />
+      {/* Reply */}
+      <Avatar cx={190} cy={114} r={10} initial="J" colour="violet" />
+      <Label x={206} y={110} size={10} weight={700} tone="strong">
+        Jae
+      </Label>
+      <Label x={232} y={110} size={10} tone="muted">
+        just now
+      </Label>
+      <TextBar x={206} y={122} w={130} />
+      {/* Composer */}
+      <rect
+        x={182}
+        y={144}
+        width={210}
+        height={38}
+        rx={7}
+        className="fill-white stroke-slate-300"
+        strokeWidth={1.5}
+      />
+      <Label x={192} y={157} size={10} tone="muted">
+        Add a comment…
+      </Label>
+      <Button x={322} y={188} w={70} h={24} label="Comment" variant="primary" />
     </Scene>
   );
 }
@@ -80,46 +112,55 @@ export function LiveCursors() {
   );
 }
 
-/** A selected element badged with a teammate's initials and a "Locked to" note,
- *  showing how presence gently locks what someone is editing. */
+/** An element a teammate has selected: their initials sit on its top-left corner, and hovering
+ *  them explains the lock. */
 export function PresenceSelection() {
   return (
     <Scene w={420} h={210}>
-      <Shape x={70} y={62} w={104} h={56} kind="rect" label="Schema" />
+      <Shape x={70} y={62} w={112} h={56} kind="rect" label="Schema" />
       {/* Selection outline in the collaborator's colour */}
       <rect
         x={66}
         y={58}
-        width={112}
+        width={120}
         height={64}
         rx={6}
         className="fill-none stroke-violet-500"
         strokeWidth={2}
         strokeDasharray="4 3"
       />
-      <Avatar cx={174} cy={58} r={11} initial="J" colour="violet" />
-      <g transform="translate(196 78)">
-        <rect width={132} height={22} rx={6} className="fill-violet-500 dark:fill-violet-700" />
-        <Label x={11} y={12} tone="onAccent" size={10} weight={600}>
+      <Avatar cx={68} cy={60} r={10} initial="J" colour="violet" />
+      {/* The hover card on the initials. */}
+      <g transform="translate(92 136)">
+        <rect
+          width={250}
+          height={46}
+          rx={8}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <Label x={12} y={15} size={11} weight={700} tone="strong">
           Locked to Jae
         </Label>
+        <Label x={12} y={32} size={10} tone="muted">
+          Selected by them; you can&apos;t edit it right now.
+        </Label>
       </g>
-      <Shape x={232} y={140} w={104} h={48} kind="circle" label="API" />
+      <path d="M72 72 L92 136" className="stroke-slate-300" strokeWidth={1} strokeDasharray="3 3" />
+      <Shape x={262} y={56} w={104} h={48} kind="circle" label="API" />
     </Scene>
   );
 }
 
-// --- Sharing (shared dialog with variants) -----------------------------------
+// --- Sharing ------------------------------------------------------------------
 
-type ShareVariant = 'links' | 'password' | 'expiry';
-
-/** The Share dialog. One scene drawn three ways: the base link list, a password
- *  row, or an expiry dropdown, so the recurring surface is never redrawn. */
-function ShareDialog({ variant }: { variant: ShareVariant }) {
+/** The Share dialog's link list (the Getting Started article's overview). The fuller, current
+ *  dialog scenes for the Sharing articles live in sharing.tsx. */
+function ShareDialog() {
   const dx = 56;
   const dy = 18;
   const dw = 308;
-  const dh = variant === 'links' ? 204 : 212;
+  const dh = 204;
   const sceneH = 240;
   return (
     <Scene w={420} h={sceneH} bg="plain">
@@ -128,90 +169,6 @@ function ShareDialog({ variant }: { variant: ShareVariant }) {
         <ShareLinkRow x={dx + 16} y={dy + 50} role="Edit" />
         {/* View link row */}
         <ShareLinkRow x={dx + 16} y={dy + 92} role="View" />
-
-        {variant === 'password' && (
-          <g>
-            <line
-              x1={dx}
-              y1={dy + 132}
-              x2={dx + dw}
-              y2={dy + 132}
-              className="stroke-slate-200"
-              strokeWidth={1.5}
-            />
-            <Label x={dx + 16} y={dy + 150} size={8} weight={700} tone="muted">
-              PASSWORD PROTECTION
-            </Label>
-            <rect
-              x={dx + 16}
-              y={dy + 160}
-              width={dw - 110}
-              height={26}
-              rx={7}
-              className="fill-white stroke-slate-300"
-              strokeWidth={1.5}
-            />
-            <Label x={dx + 28} y={dy + 174} size={11} tone="body">
-              spring-otter-42
-            </Label>
-            <Button x={dx + dw - 80} y={dy + 160} w={64} h={26} label="Save" variant="primary" />
-          </g>
-        )}
-
-        {variant === 'expiry' && (
-          <g>
-            <line
-              x1={dx}
-              y1={dy + 132}
-              x2={dx + dw}
-              y2={dy + 132}
-              className="stroke-slate-200"
-              strokeWidth={1.5}
-            />
-            <Label x={dx + 16} y={dy + 150} size={8} weight={700} tone="muted">
-              VALID
-            </Label>
-            {/* The four-way segmented control, 1 month selected. */}
-            <rect
-              x={dx + 16}
-              y={dy + 160}
-              width={dw - 32}
-              height={28}
-              rx={8}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.5}
-            />
-            {['Forever', '1 week', '1 month', '6 months'].map((opt, i) => {
-              const segW = (dw - 36) / 4;
-              const sx = dx + 18 + i * segW;
-              const on = i === 2;
-              return (
-                <g key={opt}>
-                  {on && (
-                    <rect
-                      x={sx}
-                      y={dy + 162}
-                      width={segW}
-                      height={24}
-                      rx={6}
-                      className="fill-brand-500"
-                    />
-                  )}
-                  <Label
-                    x={sx + segW / 2}
-                    y={dy + 174}
-                    anchor="middle"
-                    size={10}
-                    tone={on ? 'onAccent' : 'body'}
-                    weight={on ? 600 : 400}
-                  >
-                    {opt}
-                  </Label>
-                </g>
-              );
-            })}
-          </g>
-        )}
       </Dialog>
     </Scene>
   );
@@ -277,15 +234,7 @@ function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'Vi
 }
 
 export function ShareLinks() {
-  return <ShareDialog variant="links" />;
-}
-
-export function SharePassword() {
-  return <ShareDialog variant="password" />;
-}
-
-export function ShareExpiry() {
-  return <ShareDialog variant="expiry" />;
+  return <ShareDialog />;
 }
 
 /** A visitor on a one-tab link: their tab's canvas above a tab bar where the
@@ -325,63 +274,72 @@ export function OneTabShare() {
   );
 }
 
-/** A read-only embedded document inside another page, with an embed-code
- *  snippet beneath it. */
+/** A live document embedded in another page: the canvas with the embed's only chrome (the
+ *  Open in livediagram badge and the tab switcher bottom-left, the zoom dock bottom-right),
+ *  beside the iframe snippet the Share dialog copies. */
 export function EmbeddedDocument() {
   return (
     <Scene w={420} h={240} bg="plain">
       {/* Host page card */}
       <rect
-        x={28}
-        y={16}
-        width={364}
-        height={208}
+        x={14}
+        y={12}
+        width={392}
+        height={216}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      <TextBar x={44} y={32} w={120} h={8} />
-      <TextBar x={44} y={48} w={320} tone="faint" />
+      <TextBar x={30} y={26} w={120} h={8} />
+      <TextBar x={30} y={42} w={360} tone="faint" />
       {/* Embedded document frame */}
       <rect
-        x={44}
-        y={66}
-        width={232}
-        height={96}
+        x={30}
+        y={58}
+        width={250}
+        height={124}
         rx={8}
         className="fill-white stroke-slate-300"
         strokeWidth={1.5}
       />
-      <Shape x={60} y={88} w={64} h={36} kind="rect" label="A" />
-      <Shape x={176} y={108} w={64} h={36} kind="circle" label="B" />
-      {/* Open-in-livediagram badge */}
-      <g transform="translate(196 70)" className="help-art-as-drawn">
-        <rect width={74} height={16} rx={5} className="fill-slate-800/80" />
-        <Label x={8} y={9} size={8} weight={600} tone="onAccent">
-          Open in app
-        </Label>
-      </g>
-      {/* Embed code snippet, dark in both appearances */}
+      <Shape x={48} y={74} w={64} h={36} kind="rect" label="Web" />
+      <Shape x={176} y={74} w={72} h={36} kind="cylinder" label="DB" />
+      <Arrow from={[114, 92]} to={[172, 92]} />
+      {/* Bottom-left: Open in livediagram, then the tab switcher. */}
+      <rect x={38} y={154} width={128} height={20} rx={10} className="fill-slate-100" />
+      <Label x={50} y={165} size={10} weight={600} tone="body">
+        Open in livediagram
+      </Label>
+      <rect x={172} y={154} width={66} height={20} rx={10} className="fill-slate-100" />
+      <Label x={182} y={165} size={10} weight={600} tone="body">
+        Overview
+      </Label>
+      {/* Bottom-right: the zoom dock. */}
+      <rect x={244} y={150} width={28} height={26} rx={7} className="fill-slate-100" />
+      <Label x={258} y={164} anchor="middle" size={12} weight={700} tone="body">
+        +
+      </Label>
+      {/* The iframe snippet, dark in both appearances */}
       <g className="help-art-as-drawn">
-        <rect x={288} y={66} width={88} height={96} rx={8} className="fill-slate-800" />
-        <Label x={300} y={82} size={8} weight={600} className="fill-emerald-400">
+        <rect x={290} y={58} width={100} height={124} rx={8} className="fill-slate-800" />
+        <Label x={300} y={76} size={10} weight={600} className="fill-emerald-400">
           &lt;iframe
         </Label>
-        <Label x={306} y={96} size={8} className="fill-slate-300">
-          src=&quot;…&quot;
+        <Label x={306} y={94} size={10} className="fill-slate-300">
+          src=&quot;…/embed&quot;
         </Label>
-        <Label x={306} y={110} size={8} className="fill-slate-300">
-          width=600
+        <Label x={306} y={112} size={10} className="fill-slate-300">
+          width=&quot;800&quot;
         </Label>
-        <Label x={306} y={124} size={8} className="fill-slate-300">
-          height=400
+        <Label x={306} y={130} size={10} className="fill-slate-300">
+          height=&quot;500&quot;
         </Label>
-        <Label x={300} y={138} size={8} weight={600} className="fill-emerald-400">
-          /&gt;
+        <Label x={300} y={148} size={10} weight={600} className="fill-emerald-400">
+          &gt;&lt;/iframe&gt;
         </Label>
       </g>
-      <TextBar x={44} y={184} w={320} tone="faint" />
-      <TextBar x={44} y={200} w={240} tone="faint" />
+      <TextBar x={30} y={196} w={360} tone="faint" />
+      <TextBar x={30} y={212} w={240} tone="faint" />
     </Scene>
   );
 }
@@ -431,7 +389,7 @@ export function TeamMembers() {
   ];
   return (
     <Scene w={420} h={210} bg="plain">
-      <Panel x={70} y={20} w={280} h={172} title="DESIGN TEAM">
+      <Panel x={70} y={20} w={280} h={172} title="Design team">
         {members.map((m, i) => {
           const ry = 52 + i * 44;
           return (
@@ -459,41 +417,54 @@ export function TeamMembers() {
   );
 }
 
-/** Role badges alongside a pending email-invite row. */
+/** An admin's view of the members: role badges, a pending invite, and the invite-by-email row
+ *  with its Invite button at the foot of the list. */
 export function RolesAndInvites() {
   return (
-    <Scene w={420} h={220} bg="plain">
-      <Panel x={56} y={18} w={308} h={184} title="MEMBERS & INVITES">
+    <Scene w={420} h={236} bg="plain">
+      <Panel x={46} y={12} w={328} h={214} title="Design team">
+        <Label x={62} y={46} size={10} tone="muted">
+          Acme · 2 members · 1 invited
+        </Label>
         {/* Member rows */}
-        <Avatar cx={80} cy={56} r={12} initial="A" colour="brand" />
-        <Label x={100} y={56} size={10} weight={600} tone="strong">
+        <Avatar cx={74} cy={74} r={12} initial="A" colour="brand" />
+        <Label x={94} y={74} size={11} weight={600} tone="strong">
           Aria
         </Label>
-        <RoleBadge x={286} y={46} role="Admin" />
-        <line x1={72} y1={78} x2={348} y2={78} className="stroke-slate-100" strokeWidth={1.5} />
-        <Avatar cx={80} cy={98} r={12} initial="J" colour="violet" />
-        <Label x={100} y={98} size={10} weight={600} tone="strong">
+        <RoleBadge x={300} y={64} role="Admin" />
+        <line x1={62} y1={94} x2={358} y2={94} className="stroke-slate-100" strokeWidth={1.5} />
+        <Avatar cx={74} cy={114} r={12} initial="J" colour="violet" />
+        <Label x={94} y={114} size={11} weight={600} tone="strong">
           Jae
         </Label>
-        <RoleBadge x={286} y={88} role="Member" />
-        {/* Invite-by-email row */}
-        <line x1={72} y1={124} x2={348} y2={124} className="stroke-slate-200" strokeWidth={1.5} />
-        <Label x={72} y={142} size={8} weight={700} tone="muted">
-          INVITE BY EMAIL
-        </Label>
-        <rect
-          x={72}
-          y={154}
-          width={196}
-          height={28}
-          rx={7}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.5}
-        />
-        <Label x={84} y={168} size={11} tone="muted">
+        <RoleBadge x={300} y={104} role="Member" />
+        <line x1={62} y1={134} x2={358} y2={134} className="stroke-slate-100" strokeWidth={1.5} />
+        <Avatar cx={74} cy={154} r={12} initial="M" colour="slate" />
+        <Label x={94} y={154} size={11} weight={600} tone="strong">
           mara@acme.com
         </Label>
-        <Button x={278} y={154} w={70} h={28} label="Invite" variant="primary" />
+        <rect
+          x={232}
+          y={145}
+          width={56}
+          height={18}
+          rx={6}
+          className="fill-amber-50 stroke-amber-400"
+          strokeWidth={1}
+        />
+        <Label x={260} y={155} anchor="middle" size={10} weight={600} className="fill-amber-500">
+          Invited
+        </Label>
+        <RoleBadge x={300} y={144} role="Member" />
+        {/* Invite-by-email row */}
+        <line x1={46} y1={178} x2={374} y2={178} className="stroke-slate-200" strokeWidth={1.5} />
+        <Label x={66} y={201} anchor="middle" size={14} weight={600} tone="muted">
+          +
+        </Label>
+        <Label x={80} y={201} size={10} tone="muted">
+          Add your team by email address…
+        </Label>
+        <Button x={298} y={188} w={62} h={26} label="Invite" variant="primary" />
       </Panel>
     </Scene>
   );
@@ -511,7 +482,7 @@ export function TeamSharedTree() {
   ];
   return (
     <Scene w={420} h={230} bg="plain">
-      <Panel x={70} y={16} w={280} h={198} title="TEAM DOCUMENTS">
+      <Panel x={70} y={16} w={280} h={198} title="Team documents">
         {rows.map((r, i) => {
           const ry = 48 + i * 28;
           const tx = 88 + r.depth * 22;
@@ -544,15 +515,15 @@ export function TeamSharedTree() {
                 {r.label}
               </Label>
               {r.badge && (
-                <g transform={`translate(${308} ${ry - 6})`}>
+                <g transform={`translate(${296} ${ry - 7})`}>
                   <rect
-                    width={34}
-                    height={16}
+                    width={42}
+                    height={18}
                     rx={5}
                     className="fill-brand-100 stroke-brand-300"
                     strokeWidth={1}
                   />
-                  <Label x={17} y={9} anchor="middle" size={8} weight={600} tone="accent">
+                  <Label x={21} y={10} anchor="middle" size={10} weight={600} tone="accent">
                     Team
                   </Label>
                 </g>
@@ -567,164 +538,169 @@ export function TeamSharedTree() {
 
 // --- Session tools -----------------------------------------------------------
 
-/** A countdown timer pill, shared at the top of the canvas. `mode` switches the
- *  display between a countdown and a stopwatch. */
-function TimerPill({ x, y, time, label }: { x: number; y: number; time: string; label: string }) {
+/** The floating timer pill: its kicker, the clock, and (for editors) pause, reset and remove.
+ *  A countdown drains left to right, so the tinted part is the time left. */
+function TimerPill({
+  x,
+  y,
+  time,
+  left = 0.7,
+}: {
+  x: number;
+  y: number;
+  time: string;
+  /** Share of the countdown still to run, drawn as the tinted fill. */
+  left?: number;
+}) {
+  const w = 176;
+  const h = 34;
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width={148}
-        height={34}
+        width={w}
+        height={h}
         rx={17}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      {/* clock ring */}
-      <circle
-        cx={x + 19}
-        cy={y + 17}
-        r={9}
-        className="fill-none stroke-brand-500"
-        strokeWidth={2}
-      />
-      <path
-        d={`M${x + 19} ${y + 12} v5 l4 3`}
-        fill="none"
-        className="stroke-brand-500"
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <Label x={x + 36} y={y + 17} size={15} weight={700} tone="strong">
-        {time}
-      </Label>
-      <Label x={x + 36} y={y + 28} size={8} weight={600} tone="muted">
-        {label}
-      </Label>
-      {/* pause control */}
-      <circle
-        cx={x + 128}
-        cy={y + 17}
-        r={11}
-        className="fill-brand-50 stroke-brand-300"
+        className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <rect x={x + 124} y={y + 12} width={3} height={10} rx={1} className="fill-brand-600" />
-      <rect x={x + 130} y={y + 12} width={3} height={10} rx={1} className="fill-brand-600" />
+      <path
+        d={`M${x + 17} ${y} H${x + w * left} V${y + h} H${x + 17} a17 17 0 0 1 0 -34 Z`}
+        className="fill-brand-100"
+      />
+      <Label x={x + 14} y={y + 18} size={10} weight={700} tone="muted">
+        Timer
+      </Label>
+      <Label x={x + 50} y={y + 18} size={15} weight={700} tone="strong">
+        {time}
+      </Label>
+      {/* pause */}
+      <rect x={x + 112} y={y + 12} width={3} height={10} rx={1} className="fill-slate-500" />
+      <rect x={x + 118} y={y + 12} width={3} height={10} rx={1} className="fill-slate-500" />
+      {/* reset */}
+      <path
+        d={`M${x + 141} ${y + 12} a5 5 0 1 0 5 5`}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <path
+        d={`M${x + 139} ${y + 9} l3 3 l-3 3`}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.5}
+      />
+      {/* remove */}
+      <path
+        d={`M${x + 158} ${y + 13} l8 8 M${x + 166} ${y + 13} l-8 8`}
+        className="stroke-slate-500"
+        strokeWidth={1.5}
+      />
     </g>
   );
 }
 
-/** A votable shape carrying a tally pill of dots. */
+/** A votable shape with the vote stepper inside its bottom-right corner: minus, the tally, plus. */
 function VoteShape({
   x,
   y,
   label,
   count,
   mine = false,
-  winner = false,
 }: {
   x: number;
   y: number;
   label: string;
   count: number;
   mine?: boolean;
-  winner?: boolean;
 }) {
-  const w = 96;
-  const h = 52;
+  const w = 108;
+  const h = 60;
   return (
     <g>
-      {winner && (
-        <rect
-          x={x - 6}
-          y={y - 6}
-          width={w + 12}
-          height={h + 12}
-          rx={11}
-          className="fill-none stroke-emerald-500"
-          strokeWidth={2.5}
-        />
-      )}
       <Shape x={x} y={y} w={w} h={h} kind="rect" label={label} />
-      {/* tally pill */}
-      <g transform={`translate(${x + w - 14} ${y - 10})`}>
+      <g transform={`translate(${x + w - 64} ${y + h - 24})`}>
         <rect
-          width={30}
-          height={20}
-          rx={10}
-          className={mine ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-slate-300'}
-          strokeWidth={1.5}
+          width={58}
+          height={18}
+          rx={9}
+          className={mine ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-300'}
+          strokeWidth={1.2}
         />
-        <circle cx={9} cy={10} r={3.5} className={mine ? 'fill-white' : 'fill-brand-500'} />
+        <Label x={10} y={10} anchor="middle" size={11} weight={700} tone="body">
+          −
+        </Label>
         <Label
-          x={20}
+          x={29}
           y={10}
           anchor="middle"
           size={10}
           weight={700}
-          tone={mine ? 'onAccent' : 'strong'}
+          tone={mine ? 'accent' : 'strong'}
         >
           {count}
+        </Label>
+        <Label x={48} y={10} anchor="middle" size={11} weight={700} tone="body">
+          +
         </Label>
       </g>
     </g>
   );
 }
 
-/** A shared countdown timer pill above a dot-voting tally: the two session
- *  tools at a glance. */
+/** The dots-left banner a vote floats at the top of the canvas. */
+function VoteBannerPill({ x, y, text }: { x: number; y: number; text: string }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect
+        width={150}
+        height={26}
+        rx={13}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <circle cx={16} cy={13} r={4} className="fill-brand-500" />
+      <Label x={28} y={14} size={11} weight={600} tone="strong">
+        {text}
+      </Label>
+    </g>
+  );
+}
+
+/** A shared countdown pill above a dot vote in progress: two of the session tools at a glance. */
 export function SessionTools() {
   return (
     <Scene w={420} h={230}>
-      <TimerPill x={136} y={16} time="4:32" label="TIMER" />
-      <VoteShape x={24} y={110} label="Idea A" count={3} mine winner />
-      <VoteShape x={158} y={110} label="Idea B" count={1} />
-      <VoteShape x={292} y={110} label="Idea C" count={2} />
+      <TimerPill x={42} y={16} time="4:32" />
+      <VoteBannerPill x={228} y={20} text="2 of 3 dots left" />
+      <VoteShape x={20} y={110} label="Idea A" count={3} mine />
+      <VoteShape x={156} y={110} label="Idea B" count={1} />
+      <VoteShape x={292} y={110} label="Idea C" count={0} />
     </Scene>
   );
 }
 
-/** The timer set-up: countdown and stopwatch controls with duration presets. */
+/** The Session Studio on its Timer pane: the Timer / Vote / Poll switcher, Countdown or Stopwatch,
+ *  the dial with its nudge buttons, the presets, and the start button. */
 export function TimerControl() {
   const presets = ['1', '3', '5', '10', '15', '30'];
   // The dial: one lap is an hour, so a 5 minute wedge is a twelfth of it.
   const cx = 210;
-  const cy = 138;
-  const r = 46;
+  const cy = 150;
+  const r = 42;
   const a = (5 / 60) * Math.PI * 2;
   const ex = cx + r * Math.sin(a);
   const ey = cy - r * Math.cos(a);
   return (
-    <Scene w={420} h={300} bg="plain">
-      <Panel x={98} y={16} w={224} h={268} title="COLLABORATE · TIMER">
+    <Scene w={420} h={316} bg="plain">
+      <Panel x={88} y={10} w={244} h={298} title="Collaborate">
+        {/* The switcher */}
+        <Tabs x={104} y={42} items={['Timer', 'Vote', 'Poll']} active={0} tabW={70} />
         {/* Mode toggle */}
-        <rect
-          x={130}
-          y={48}
-          width={78}
-          height={22}
-          rx={11}
-          className="fill-brand-50 stroke-brand-400"
-          strokeWidth={1.2}
-        />
-        <Label x={169} y={59} anchor="middle" size={10} weight={700} tone="accent">
-          Countdown
-        </Label>
-        <rect
-          x={214}
-          y={48}
-          width={76}
-          height={22}
-          rx={11}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.2}
-        />
-        <Label x={252} y={59} anchor="middle" size={10} weight={500} tone="muted">
-          Stopwatch
-        </Label>
-        {/* Dial with the 5 minute wedge and its drag handle */}
+        <Tabs x={124} y={76} items={['Countdown', 'Stopwatch']} active={0} tabW={86} />
+        {/* Dial with the 5 minute wedge and its drag handle, between the nudge buttons */}
         <circle
           cx={cx}
           cy={cy}
@@ -738,31 +714,33 @@ export function TimerControl() {
         />
         <circle cx={cx} cy={cy} r={28} className="fill-white" />
         <circle cx={ex} cy={ey} r={5} className="fill-white stroke-brand-500" strokeWidth={2} />
-        <Label x={cx} y={cy - 2} anchor="middle" size={14} weight={700} tone="strong">
+        <Label x={cx} y={cy - 4} anchor="middle" size={14} weight={700} tone="strong">
           5:00
         </Label>
-        <Label x={cx} y={cy + 12} anchor="middle" size={6} weight={600} tone="muted">
-          DRAG TO SET
+        <Label x={cx} y={cy + 11} anchor="middle" size={10} weight={600} tone="muted">
+          Drag to set
         </Label>
+        <Button x={118} y={cy - 13} w={26} h={26} label="−" />
+        <Button x={276} y={cy - 13} w={26} h={26} label="+" />
         {/* Presets */}
         {presets.map((p, i) => {
-          const px = 114 + i * 32;
+          const px = 106 + i * 35;
           const on = p === '5';
           return (
             <g key={p}>
               <rect
                 x={px}
-                y={206}
-                width={28}
-                height={20}
+                y={214}
+                width={31}
+                height={22}
                 rx={5}
                 className={on ? 'fill-brand-500' : 'fill-slate-100'}
               />
               <Label
-                x={px + 14}
-                y={216}
+                x={px + 15.5}
+                y={225}
                 anchor="middle"
-                size={9}
+                size={10}
                 weight={700}
                 tone={on ? 'onAccent' : 'body'}
               >
@@ -771,30 +749,24 @@ export function TimerControl() {
             </g>
           );
         })}
-        <Button x={114} y={236} w={192} h={28} label="Start 5 min countdown" variant="primary" />
+        <Button x={106} y={246} w={208} h={28} label="Start 5 min countdown" variant="primary" />
+        <Label x={210} y={290} anchor="middle" size={10} tone="muted">
+          Everyone on this tab sees the same clock.
+        </Label>
       </Panel>
     </Scene>
   );
 }
 
-/** Dot voting in progress: shapes with vote dots and a running tally, plus the
- *  dots-remaining banner. */
+/** Dot voting in progress: the dots-left banner, and each votable element's stepper with its
+ *  tally (tinted where you have spent your own dots). */
 export function DotVoting() {
   return (
-    <Scene w={420} h={230}>
-      {/* Dots-remaining banner */}
-      <g transform="translate(120 14)">
-        <rect width={180} height={28} rx={14} className="fill-brand-500" />
-        <circle cx={22} cy={14} r={4} className="fill-white" />
-        <circle cx={34} cy={14} r={4} className="fill-white" />
-        <circle cx={46} cy={14} r={4} className="fill-white/40" />
-        <Label x={62} y={15} size={11} weight={600} tone="onAccent">
-          2 dots left · 7 cast
-        </Label>
-      </g>
-      <VoteShape x={24} y={100} label="Reduce WIP" count={4} mine winner />
-      <VoteShape x={158} y={100} label="Pair more" count={1} />
-      <VoteShape x={292} y={100} label="Auto tests" count={2} mine />
+    <Scene w={420} h={210}>
+      <VoteBannerPill x={135} y={16} text="1 of 3 dots left" />
+      <VoteShape x={20} y={90} label="Reduce WIP" count={4} mine />
+      <VoteShape x={156} y={90} label="Pair more" count={1} />
+      <VoteShape x={292} y={90} label="Auto tests" count={2} mine />
     </Scene>
   );
 }

@@ -40,5 +40,3 @@ export function clusterRows(boxes: Box[], noteSize: number): RowedBox[] {
   });
   return out;
 }
-
-export const ROW_CALIBRATION = { ROW_GAP_FRACTION } as const;

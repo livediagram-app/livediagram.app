@@ -75,13 +75,18 @@ The example is abridged; a real outline prints every element.
 | `graph`        | What connects to what?          | Nodes (ref, kind, label) and arrows (ref, from, to, label), nothing else |
 | `layout`       | Where do things sit?            | Rounded geometry per element, or `--coarse` rows and columns             |
 | `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full   |
-| `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out and its container                |
+| `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out and its container; or `selected` |
 | `find <text>`  | Where is this?                  | Matching elements with their containers                                  |
 | `lint`         | Is the drawing sound?           | The [lint](diagram-lint.md) findings, refs first                         |
 | `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision              |
 
 Every view opens with a header line naming the tab, its counts and its `rev`, so a later write can carry it as a
 base. Every view takes `--json` for the same data as JSON; the stored tab itself is `--raw`.
+
+`show selected` reads what the agent's owner has selected in an open editor now, the selection the `selected`
+selector of [edit operations](edit-operations.md#selectors) reads: every selected element in full, in the tab's order,
+fitted by `--budget`. Nothing selected, or a selection that could not be read, is refused as edit operations refuse
+it. The api serves it; a pulled file has no live selection.
 
 `diff` is computed by the CLI: it keeps the last tab it read of each document and tab, with its revision, and
 compares that copy with the current tab. The api serves no diff.

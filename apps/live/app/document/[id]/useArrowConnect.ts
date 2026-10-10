@@ -2,14 +2,18 @@ import type { Selection } from '@/lib/selection-store';
 import { useState } from 'react';
 import {
   bestAnchorTowards,
+  crossesPages,
   isBoxed,
+  pageIdOf,
   type ArrowElement,
   type ArrowEnds,
   type Element,
+  type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 // CLICK-TO-CONNECT (docs/specs/008-canvas/canvas-and-palette.md): pick the arrow tool with a shape selected and
 // the next element you click is joined to it by a pinned arrow.
@@ -33,6 +37,7 @@ export function useArrowConnect({
   beginDraw,
   commitTabs,
   styleNewElement,
+  pages,
 }: {
   editsBlocked: boolean;
   activeId: string;
@@ -44,6 +49,8 @@ export function useArrowConnect({
   commitTabs: (fn: (tabs: Tab[]) => Tab[]) => void;
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): the connecting arrow is user-drawn.
   styleNewElement: <T extends Element>(el: T) => T;
+  // Illustrate mode's laid-out pages, null outside it: an element on another page is not joined.
+  pages?: readonly LaidOutPage[] | null;
 }) {
   // Click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): when the arrow tool is picked WITH a
   // shape selected, the next element click connects the two with a
@@ -85,6 +92,14 @@ export function useArrowConnect({
     const from = activeTab.elements.find((e) => e.id === fromId);
     const to = activeTab.elements.find((e) => e.id === toId);
     if (!from || !to || !isBoxed(from) || !isBoxed(to)) return;
+    // Arrows stay on one page (docs/specs/007-editor/illustrate-pages.md).
+    if (pages) {
+      const els = activeTab.elements;
+      if (crossesPages(pageIdOf(from, els, pages), pageIdOf(to, els, pages))) {
+        debugLog('[arrow-connect] skipped: another page', { fromId, toId });
+        return;
+      }
+    }
     const fromCenter = { x: from.x + from.width / 2, y: from.y + from.height / 2 };
     const toCenter = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
     // The creation anchor (docs/specs/008-canvas/arrow-anchors.md): the middle

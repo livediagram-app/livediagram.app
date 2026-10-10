@@ -25,6 +25,7 @@ import {
   ITEM_VOTES_PER_PERSON_MAX,
 } from './limits';
 import { HEX_COLOUR } from './validate';
+import { itemColourValue } from './item-colour';
 
 export type ItemFieldKind =
   | 'text'
@@ -36,10 +37,10 @@ export type ItemFieldKind =
   | 'number'
   | 'date'
   | 'checklist'
-  | 'item-ref'
   | 'votes'
   | 'comments'
-  | 'flag';
+  | 'flag'
+  | 'colour';
 
 export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   title: 'text',
@@ -47,12 +48,12 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
   status: 'status',
   assignee: 'person',
   priority: 'priority',
+  color: 'colour',
   labels: 'labels',
   estimate: 'number',
   start: 'date',
   due: 'date',
   checklist: 'checklist',
-  parent: 'item-ref',
   votes: 'votes',
   comments: 'comments',
   archived: 'flag',
@@ -60,6 +61,10 @@ export const KNOWN_FIELDS: Readonly<Record<ItemFieldId, ItemFieldKind>> = {
 };
 
 export const PRIORITIES = ['urgent', 'high', 'medium', 'low'] as const;
+
+// The sizes an Estimate is picked from (docs/specs/026-plan/items.md "Fields"): story points. Any number 0 to 999
+// is still a valid value (an agent may set one); the card panel offers these, and keeps an odd one it finds.
+export const ESTIMATE_POINTS = [1, 2, 3, 5, 8, 13, 21] as const;
 export type Priority = (typeof PRIORITIES)[number];
 
 export const PRIORITY_LABELS: Readonly<Record<Priority, string>> = {
@@ -84,7 +89,9 @@ export type ItemRejection =
   | 'comments_read_only'
   | 'type_invalid'
   | 'id_invalid'
-  | 'place_invalid';
+  | 'place_invalid'
+  // A status the item's card type leaves out (docs/specs/026-plan/item-types.md "An item type").
+  | 'status_excluded';
 
 export type FieldsResult =
   { ok: true; fields: ItemFields } | { ok: false; error: ItemRejection; field?: string };
@@ -184,11 +191,12 @@ function normaliseKnown(kind: ItemFieldKind, v: unknown): ItemFieldValue | undef
       }
       return rows;
     }
-    case 'item-ref':
-      return isValidItemId(v) ? v : undefined;
     // A flag is set (true) or cleared (the key removed); false is not stored.
     case 'flag':
       return v === true ? true : undefined;
+    // One of the twelve Plan swatches (docs/specs/026-plan/items.md "Colour"), stored as the palette spells it.
+    case 'colour':
+      return itemColourValue(v);
   }
 }
 
@@ -233,6 +241,10 @@ export function validateFields(input: unknown, mode: 'create' | 'patch'): Fields
       continue;
     }
     const value = kind ? normaliseKnown(kind, v) : normaliseUnknown(v);
+    // `color` was a free key before it was a field: an item made from older data (offline sync, a duplicated
+    // document, a seed) may hold any value there. Making one drops a value that is not a swatch rather than
+    // refusing the whole item; setting one still has to be a swatch.
+    if (value === undefined && kind === 'colour' && mode === 'create') continue;
     if (value === undefined) return { ok: false, error: 'field_value_invalid', field: key };
     fields[key] = value;
   }

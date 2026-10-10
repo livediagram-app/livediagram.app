@@ -15,34 +15,31 @@ import {
 } from './panel-layout';
 
 describe('panel-layout', () => {
-  it('default layout preserves the historical fixed arrangement', () => {
+  it('default layout puts each corner panel in its home corner', () => {
     const layout = defaultPanelLayout();
-    expect(layout.corners['top-left']).toEqual(['explorer']);
-    // Vote (docs/specs/012-collaboration/session-tools.md) and Poll (docs/specs/012-collaboration/live-poll.md) sit directly under the Palette.
-    // They're the two panels that aren't always present — each exists
-    // only while its session is running — so most of the time this corner
-    // renders as just palette + ai.
-    expect(layout.corners['top-right']).toEqual(['palette', 'vote', 'poll', 'ai']);
+    // The top-left holds the menu button, not a panel (docs/specs/007-editor/toolbar-layout.md).
+    expect(layout.corners['top-left']).toEqual([]);
+    // Vote (docs/specs/012-collaboration/session-tools.md) and Poll (docs/specs/012-collaboration/live-poll.md)
+    // exist only while their session runs, so most of the time this corner is just ai.
+    expect(layout.corners['top-right']).toEqual(['vote', 'poll', 'ai']);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
-    // Collaborate (docs/specs/012-collaboration/assigned-actions.md §5) sits with Layers, above the cluster
-    // buttons they both minimise into.
-    expect(layout.corners['bottom-right']).toEqual(['layers', 'collaborate']);
+    expect(layout.corners['bottom-right']).toEqual(['collaborate']);
     expect(layout.free).toEqual({});
   });
 
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
-    const next = dockPanel(defaultPanelLayout(), 'palette', 'bottom-right');
+    const next = dockPanel(defaultPanelLayout(), 'vote', 'bottom-right');
     // Left its old corner...
-    expect(next.corners['top-right']).toEqual(['vote', 'poll', 'ai']);
+    expect(next.corners['top-right']).toEqual(['poll', 'ai']);
     // ...and joined below whatever is in the target corner.
-    expect(next.corners['bottom-right']).toEqual(['layers', 'collaborate', 'palette']);
+    expect(next.corners['bottom-right']).toEqual(['collaborate', 'vote']);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {
-    const next = freePanel(defaultPanelLayout(), 'explorer', { x: 200, y: 120 });
-    expect(next.corners['top-left']).toEqual([]);
-    expect(next.free.explorer).toEqual({ x: 200, y: 120 });
-    expect(resolvePlacement(next, 'explorer')).toEqual({
+    const next = freePanel(defaultPanelLayout(), 'minimap', { x: 200, y: 120 });
+    expect(next.corners['bottom-left']).toEqual([]);
+    expect(next.free.minimap).toEqual({ x: 200, y: 120 });
+    expect(resolvePlacement(next, 'minimap')).toEqual({
       mode: 'free',
       pos: { x: 200, y: 120 },
     });
@@ -59,14 +56,14 @@ describe('panel-layout', () => {
   });
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
-    // Move the top-right Palette away; vote should now lead the stack.
-    const next = dockPanel(defaultPanelLayout(), 'palette', 'top-left');
-    expect(next.corners['top-right']).toEqual(['vote', 'poll', 'ai']);
+    // Move the top-right Vote panel away; poll should now lead the stack.
+    const next = dockPanel(defaultPanelLayout(), 'vote', 'top-left');
+    expect(next.corners['top-right']).toEqual(['poll', 'ai']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
     const layout: PanelLayout = { corners: normalizePanelLayout({}).corners, free: {} };
-    expect(resolvePlacement(layout, 'palette')).toEqual({
+    expect(resolvePlacement(layout, 'ai')).toEqual({
       mode: 'corner',
       corner: 'top-right',
     });
@@ -76,14 +73,30 @@ describe('panel-layout', () => {
     it('drops unknown ids and dedupes a panel appearing twice', () => {
       const layout = normalizePanelLayout({
         corners: {
-          'top-left': ['explorer', 'bogus', 'explorer'],
-          'top-right': ['explorer', 'palette'],
+          'top-left': ['ai', 'bogus', 'ai'],
+          'top-right': ['ai', 'poll'],
         },
         free: {},
       });
-      expect(layout.corners['top-left']).toEqual(['explorer']);
-      // explorer already seen in top-left, so top-right keeps only palette.
-      expect(layout.corners['top-right']).toEqual(['palette']);
+      expect(layout.corners['top-left']).toEqual(['ai']);
+      // ai already seen in top-left, so top-right keeps only poll.
+      expect(layout.corners['top-right']).toEqual(['poll']);
+    });
+
+    // The retired Floating layout's corner panels (docs/specs/007-editor/toolbar-layout.md "One layout").
+    it('ignores the Palette, Explorer and Layers in a stored layout', () => {
+      const layout = normalizePanelLayout({
+        corners: {
+          'top-left': ['explorer'],
+          'top-right': ['palette', 'ai'],
+          'bottom-right': ['layers'],
+        },
+        free: { palette: { x: 1, y: 2 } },
+      });
+      expect(layout.corners['top-left']).toEqual([]);
+      expect(layout.corners['top-right']).toEqual(['ai']);
+      expect(layout.corners['bottom-right']).toEqual([]);
+      expect(layout.free).toEqual({});
     });
 
     it('keeps a valid free position but ignores a malformed one', () => {

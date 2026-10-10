@@ -1,6 +1,6 @@
 import { relativeSince } from '../relative-time';
+import { DAY_MS } from '@livediagram/items';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const MONTH_DAYS = 30;
 const YEAR_DAYS = 365;
 

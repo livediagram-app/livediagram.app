@@ -173,8 +173,7 @@ The element starts with `aspectLocked: true`; the lock is a user-toggleable flag
 `PaletteMediaTab` renders the ungrouped Media tiles, then one `PaletteTileGroup` titled "Embed"
 holding the six `tileGroup: 'embed'` tiles. `usePaletteGroup(title)` reads the shared `openId`
 under a `PaletteGroupProvider` (one open at a time; the toggle closes an open group); without a
-provider it keeps local state. Closed by default (D75) [QC11]. `ToolbarPalette` and
-`CommandPalette` each mount a provider above their tabs, and the only other `PaletteTileGroup` is
+provider it keeps local state. Closed by default (D75) [QC11]. `ToolbarPalette` mounts a provider above its categories, and the only other `PaletteTileGroup` is
 the Components tab's "Web Elements", so opening one of the two closes the other; the Behaviour
 tab's groups are the drill-in `PaletteGroupBrowser`, which this state does not govern [QC11].
 
@@ -305,10 +304,10 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
 - **Colours.** `supportsColours` exposes Text, Background and Border rows; `VideoView` ignores
   `textColor` [QC7].
 - **Empty state.** `EmbedGlyph`, then:
-  - no provider: "Add a link — double-click", hint "YouTube, Vimeo, Loom, Figma, Google Docs, or any
+  - no provider: "Double-click to add a link", hint "YouTube, Vimeo, Loom, Figma, Google Docs, or any
     website";
-  - `website`: "Add a web address — double-click", hint `EMBED_PROVIDER_HINT.website`;
-  - named: "Add a <Label> link — double-click", hint `EMBED_PROVIDER_HINT[provider]` [QC9].
+  - `website`: "Double-click to add a web address", hint `EMBED_PROVIDER_HINT.website`;
+  - named: "Double-click to add a <Label> link", hint `EMBED_PROVIDER_HINT[provider]` [QC9].
 - **Unembeddable.** "Can't embed that link" and the URL, truncated [QC9].
 - **Poster.** `object-cover`, a 68:48 red play badge at 24 % of the card height (min 26 px),
   `hover:scale-110`.
@@ -338,7 +337,7 @@ states.
 ## Accessibility
 
 - Play badge: `<button aria-label="Play video">`; **Load embed** has visible text.
-- Control buttons: `aria-label`, repeated visually by a `Tooltip` (after a 1 s hover, at once on
+- Control buttons: `aria-label`, repeated visually by a `Tooltip` (after a 500 ms hover, at once on
   keyboard focus, on a long press on touch;
   [Tooltips, hover cards and popovers](../../004-interface-design/tooltips-hover-cards-popovers.md));
   `aria-pressed` on the player toggle. The controls' new-tab anchor carries `aria-label` and a

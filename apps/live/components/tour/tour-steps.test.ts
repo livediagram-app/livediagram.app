@@ -63,18 +63,15 @@ describe('tourStepsFor', () => {
     expect(board).toContain('theme-canvas');
   });
 
-  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Explorer lives behind the top-left menu
-  // button, so its step retells its copy and rings the button too; every
-  // other step is untouched.
-  it('points the Explorer step at the menu button in the Toolbar layout', () => {
-    const toolbar = tourStepsFor({ mobile: false, esBoard: false, toolbar: true });
-    const explorer = toolbar.find((s) => s.id === 'explorer')!;
+  // The Explorer lives behind the top-left menu button (docs/specs/007-editor/toolbar-layout.md), so its
+  // step opens it there and rings the button too.
+  it('points the Explorer step at the menu button', () => {
+    const explorer = tourStepsFor({ mobile: false, esBoard: false }).find(
+      (s) => s.id === 'explorer',
+    )!;
     expect(explorer.target).toBe('explorer');
     expect(explorer.alsoHighlight).toBe('dock-explorer');
     expect(explorer.body).toMatch(/menu button/);
-    const floating = tourStepsFor({ mobile: false, esBoard: false });
-    expect(floating.find((s) => s.id === 'explorer')!.alsoHighlight).toBeUndefined();
-    expect(toolbar.map((s) => s.id)).toEqual(floating.map((s) => s.id));
   });
 
   it('keeps the bookend cards on every surface', () => {

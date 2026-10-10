@@ -35,7 +35,7 @@ Scope, by file:
 | `apps/live/components/chrome/editor-mode/ModeMenuChip.tsx`  | One-of-a-set command menu; its own key handling deleted                                     |
 | `apps/live/components/chrome/AuthControls.tsx`              | Account command menu                                                                        |
 | `apps/live/components/chrome/EmbedChrome.tsx`               | Embed tab command menu                                                                      |
-| `apps/live/components/chrome/OpensInMenuSection.tsx`        | Opens in, inside the Tab control menu: toggle buttons                                       |
+| `apps/live/components/chrome/TabModeMenuSection.tsx`        | The tab's Mode, inside the Tab control menu: toggle buttons                                 |
 | `apps/live/components/dialogs/ShareCopyMenu.tsx`            | Command menu, or control menu when it carries a header control                              |
 | `apps/live/components/canvas/whiteboard/ColourPicker.tsx`   | Custom colour command menu; its own focus and Escape deleted                                |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`      | Canvas shortcuts stand down inside a menu surface                                           |
@@ -170,7 +170,7 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 | `MenuGroupSeparator`   | `role="separator"` exposed                                                                                   | Unchanged                          |
 | `MenuCheckRow`         | `menuitemcheckbox`, `tabIndex -1`                                                                            | Same                               |
 | `ElementMenuItem`      | `menuitem` (its unused `active` prop and `ElementMenuLabel` are gone)                                        | `button`                           |
-| `OpensInMenuSection`   | `menuitemradio` + `aria-checked`                                                                             | `button`, `aria-pressed` (D55)     |
+| `TabModeMenuSection`   | `menuitemradio` + `aria-checked`                                                                             | `button`, `aria-pressed` (D55)     |
 | `FlyoutMobileHeader`   | Its Close is the panel's last item in reading order, drawn first (`order-first`)                             | Same, a button                     |
 
 Collapsed accordion content is `inert` and `aria-hidden` in every kind (Chromium keeps inert content in its tree).
@@ -264,7 +264,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Canvas stands down inside a menu                                                           | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                          |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/live/e2e/menu-keyboard.spec.ts`                                                 |
 | Element quick menu kinds                                                                   | `apps/live/components/canvas/ElementEllipsisMenu.test.tsx`                                |
-| Opens in as toggle buttons                                                                 | `apps/live/components/chrome/OpensInMenuSection.test.tsx`                                 |
+| The tab's Mode as toggle buttons                                                           | `apps/live/components/chrome/TabModeMenuSection.test.tsx`                                 |
 | Locked element menu focus and Escape                                                       | `apps/live/components/canvas/LockedElementMenu.test.tsx`                                  |
 | Row ⋯ opens on Down / Up Arrow                                                             | `apps/live/components/primitives/useRowMenu.test.tsx`                                     |
 | Shape tiles are named                                                                      | `apps/live/lib/element-names.test.ts`                                                     |

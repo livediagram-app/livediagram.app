@@ -19,9 +19,11 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('build').filter((a) => a.slug !== 'frames')}
 >
 
-A **frame** is a labelled, transparent box you draw around a cluster of elements to say "this part is a thing". It lives in the [Build](/help/palette/build/) category, and `F` draws one wherever your pointer is.
+A **frame** is a labelled, transparent box you draw around a cluster of elements to say "this part is a thing". It lives in the [Build](/help/palette/build/) category (in Diagram and Draw mode), and pressing `F` adds one. It is also one of the twelve tiles in Diagram mode's **Popular** category.
 
-Its body has no fill, so everything inside shows through, and its label sits in the top-left corner. Rename it the way you rename anything else, by double-clicking the label.
+A new frame is 360 by 260, titled "Frame". Its body has no fill, so everything inside shows through, and its title sits inside the top-right corner. Rename it the way you rename anything else: double-click it and type.
+
+If you want a backdrop colour, pick a fill from its **Colours** like any shape; the fill still sits behind the contents, never on top of them.
 
 ## It is a section, not a rectangle
 
@@ -29,14 +31,17 @@ That distinction is the whole element. Four behaviours follow from it:
 
 - **It always draws behind its contents**, whatever order things were added in. You never have to send a frame to the back, and one can't accidentally cover the work it is framing.
 - **Clicking inside picks the element, not the frame.** Click an element in a frame and you get the element. Click empty space inside it, or its border or title, and you get the frame. So a frame never gets in the way of the thing it holds.
-- **Moving the frame carries what is inside it.** The section travels as one, arrows between members included. Membership is worked out at the moment you grab it, so an element is "in" a frame simply by sitting inside it; there is nothing to add it to. Containment has to be **full**: an element straddling the edge stays put, because a frame that grabbed its half-out neighbours would read as grabbing things at random.
+- **Moving the frame carries what is inside it.** The section travels as one, arrows between members included. Membership is worked out at the moment you grab it, so an element is "in" a frame simply by sitting inside it; there is nothing to add it to. What counts is the element's **centre**: an element straddling the edge travels if its centre is inside the frame and stays put if it is outside.
+- **Frames can nest.** A smaller frame whose centre sits inside a bigger one travels with it, contents and all. An element inside two frames belongs to the smaller one, and frames that merely overlap don't drag each other along.
 - **Resizing the frame leaves its contents alone.** Only the outline grows, so you size the section around the work rather than scaling the work.
 
 <Figure caption="A frame draws behind its cluster and carries the whole section when you drag it.">
   <FrameSection />
 </Figure>
 
-Being a backdrop rather than a node, a frame has no quick-connect **+** buttons and is not something you can morph another shape into.
+A selected frame shows the quick-connect **+** buttons like any shape, so you can chain an arrow or a duplicate off a whole section. It is not something you can morph into another shape, though.
+
+Arrows that pass behind boxes don't break around a frame: everything inside sits on top of it, so an arrow inside a section stays whole.
 
 ## What else reads a frame
 
@@ -50,6 +55,8 @@ A frame is the one element other features treat as "a section", which is what ma
 A frame and a [multi-selection](/help/canvas/selecting-and-grouping/multi-select/) both move several elements together, and they are not the same tool.
 
 A multi-selection is the set you picked just now, and it scatters as soon as you click away. A frame is a region, so its membership is whatever is sitting inside it right now, and dragging something in or out changes what moves with it. Reach for a frame when some elements should keep travelling together.
+
+A [lane](/help/palette/lanes/) follows the same rule as a frame: dragging it carries what sits in it, and resizing it doesn't.
 
 <Tip>
   Lay the frames down first and fill them in. A canvas that starts as four named empty sections is

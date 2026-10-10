@@ -1,6 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TimelineFeed, TimelineStacking } from '@/components/illustrations/explorer';
+import {
+  AllActivityFeed,
+  AllActivityStack,
+  HomeOverview,
+} from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Home',
@@ -18,7 +22,11 @@ export const metadata = helpMetadata({
 
 **Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
 
-Home is one column: **Jump back in** at the top, then **What happened**. Each opens with its heading and a thin line beneath it, with its link at the right.
+Home is one column: **Jump back in** at the top, then **What happened**. Each opens with its heading and a thin line beneath it, with its link at the right. The header carries **New document**, as every Explorer section does.
+
+<Figure caption="Home: the documents you use most and last, then what other people did, grouped by day.">
+  <HomeOverview />
+</Figure>
 
 ## Jump back in
 
@@ -31,15 +39,19 @@ Home is one column: **Jump back in** at the top, then **What happened**. Each op
 
 On a computer or a tablet they sit in a grid of two rows: the most used on top, the last ones below. On a phone they share one strip you scroll sideways, taking turns, and the strip ends in a **See more** tile. The rows have no titles; the order speaks for itself.
 
-Each document shows a picture of what is drawn on it, with its name underneath; click one to open it. A document saved only in this browser wears the **Local only** pill and takes its place like any other, counted in this browser.
+Each document shows a picture of what is drawn on it, with its name underneath; click one to open it. A document saved only in this browser wears the **Local only** pill and takes its place like any other, counted in this browser. Documents in the [Trash](/help/account-and-data/trash/), and ones whose share link has lapsed or whose team you have left, never appear. With nothing yet to show, the section says "The documents you use most and last will gather here."
+
+Opening a document is private: it counts towards your own Jump back in, and nobody else ever sees that you opened it.
 
 **See more** opens [Recent](/help/explorer/recent/), every document you can open, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
 
 ## What happened
 
-Below Jump back in, **What happened** lists what **other people** did to documents you can open in the last two weeks, under day headings: comments and replies, threads resolved, a day of edits, [actions](/help/collaboration/assigned-actions/) assigned or completed, and documents shared into one of your teams. Each entry says who did it, what they did, which document, and where it lives, and opens the document when you click it.
+Below Jump back in, **What happened** lists what **other people** did to documents you can open in the last 14 days, under day headings (**Today**, **Yesterday**, then the date): comments and replies, threads resolved, a day of edits, [actions](/help/collaboration/assigned-actions/) assigned or completed, and documents shared into one of your teams. Each entry says who did it, what they did, which document, and where it lives (its team or **My documents**, then its folder, or **Shared by** and the owner), and opens the document when you click it. A quiet stretch reads "Nothing from others in the last 14 days."
 
-When several people worked on the same document on the same day, they share **one entry**: their pictures overlap and one sentence says what they did, such as "Priya, Sam and Lee commented, edited and assigned you an action in Payments architecture". Click it to see every action underneath, newest first.
+"Documents you can open" means your own, your teams', and those shared with you through a link that still works. A link that only reaches [one tab](/help/collaboration/sharing/one-tab/) adds nothing here.
+
+When several people worked on the same document on the same day, they share **one entry**: their pictures overlap and one sentence says what they did, such as "Priya, Sam and Lee commented, edited and assigned you an action in Payments architecture", with where it lives, how many updates there were and the time of the latest underneath. Click it to see every action underneath, newest first. A sentence names at most three people, then "and 2 others".
 
 Anything that arrived since you last looked carries a **New** pill, as on All activity. The very first time you visit, nothing is marked: a whole history marked new would tell you nothing.
 
@@ -51,20 +63,22 @@ Visiting Home counts as having caught up: the count on the sidebar's Home row cl
 
 ## All activity
 
-**All activity** is the full feed of everything that has happened across your documents, teams and account, including what you did yourself. Open it from **See all activity** on Home; its breadcrumb leads back to Home.
+**All activity** is the full feed of everything that has happened across your documents, teams and account, including what you did yourself. Open it from **See all activity** on Home (or at `/explorer/timeline`); its breadcrumb leads back to Home. It has no sidebar row of its own.
 
-<Figure caption="One group per day, one card per event, colour-coded by the kind of thing that happened.">
-  <TimelineFeed />
+<Figure caption="One group per day, one card per event, coloured by what happened; a card with nothing left to open is dimmed.">
+  <AllActivityFeed />
 </Figure>
 
 ### What lands here
 
 Every event on the feed comes from something that actually happened in your account. Nothing is guessed, and nothing is written by hand.
 
-- **Your documents** — created, renamed, duplicated, filed into a folder, published to a team, deleted, and a daily summary of the days you worked on one.
-- **Collaboration** — comments added to documents you own or share, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned to you or completed by someone else, and share links created.
-- **Teams** — invites you receive, members joining or leaving, people being removed, and role changes, for every [team](/help/explorer/team-spaces/) you belong to.
-- **Your account** — [API tokens](/help/account-and-data/api-tokens/) created, custom themes saved, and images uploaded.
+- **Your documents:** created, duplicated, moved to a folder, taken offline or synced back to the cloud, shared into or removed from a team, and one "Document Updated" card per person per day for the edits. On a document you own, a visitor opening or copying it through a share link shows too.
+- **Collaboration:** comments, threads resolved, [actions](/help/collaboration/assigned-actions/) assigned or completed, share links created, and a share link about to expire.
+- **Teams:** teams created, renamed or deleted, invites you receive, members joining, leaving or being removed, and role changes, for every [team](/help/explorer/team-spaces/) you belong to. Admins also see declined invites and the team's invite link being turned on or off.
+- **Your account:** [API tokens](/help/account-and-data/api-tokens/) created, revoked or about to expire, custom themes saved or deleted, folders created or deleted, and images uploaded.
+
+Renaming a document is not an event of its own: every card names a document as it is called now, so a rename updates all the older cards about it. (Renaming a team does get a card.)
 
 If a document lives in a team's shared library, everyone in that team sees its events. A personal document's events are yours alone.
 
@@ -73,12 +87,12 @@ If a document lives in a team's shared library, everyone in that team sees its e
 That is the question All activity exists to answer, so it keeps a watermark of when you last read it.
 
 - **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's has its own.
-- **The sidebar's Home row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ renamed a document is not news.
+- **The sidebar's Home row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ moved a document is not news.
 - The watermark moves forward when you visit Home or read the feed, and only from the top of it, so paging back through last month never marks the month as read.
 
 ### Reading a day
 
-Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each day's events are laid out as **cards**, the same cards [Recent](/help/explorer/recent/) uses, so you recognise a document by its picture before you read a word.
+Events are grouped by the day they happened, newest day first, with a dot and a line running down the left. Today's group is marked with a **Today** pill, and each day's events are laid out as **cards** in a grid (one column on a phone, up to three on a wide screen), the same cards [Recent](/help/explorer/recent/) uses in Card view, so you recognise a document by its picture before you read a word.
 
 Days and times are **your local ones**, so an evening's work in Sydney sits under that evening rather than under yesterday.
 
@@ -86,46 +100,44 @@ A card leads with a preview of the document, then its name, then **why it is on 
 
 Click a card to go to whatever it is about: the document, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted folder or theme is the usual case: there is nothing left to open.
 
-**A document card has the same ⋯ menu as it does in Recent.** Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Take Offline or Sync, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
+**A document card has the same ⋯ menu as it does in Recent.** Open, Share, Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Open Team (for a team document), Take Offline or Sync Document, Remove from Timeline, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
 
 **Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over All activity.
 
-**Deleting a document takes it off All activity entirely.** Every card about it goes, and nothing is written in its place: from the feed's point of view it never existed. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
+**Deleting a document takes it off All activity.** While it waits in the [Trash](/help/account-and-data/trash/) its cards are hidden, and restoring it brings them back. Once it is deleted for good, every card about it goes and nothing is written in its place: there is no "Document Deleted" card. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
 
 **Every card's menu ends with "Remove from Timeline".** If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
 
 A document you created and then worked on the same day shows **one card, "Document Created"**, rather than a Created and an Updated card with the same picture. Editing a new document on the day you made it is not news.
 
-Anything that happened since you last looked carries a **New** badge, and the sidebar shows a count of other people's activity waiting for you.
-
 #### Colour tells you what kind of thing happened
 
 The colour of a row is about **what happened**, not which part of the product it happened in:
 
-- **Red** — something was destroyed or someone lost access: a team deleted, a member removed from a team, a token revoked.
-- **Amber** — the shape of things changed: renames, moves, team membership, roles, sharing, and anything about to expire.
-- **Green** — the ordinary business of building: created, edited, commented, completed.
+- **Red:** something was destroyed or someone lost access: a team, folder or theme deleted, a member removed from a team, a token revoked.
+- **Amber:** the shape of things changed: renames, moves, team membership, roles, sharing, and anything about to expire.
+- **Green:** the ordinary business of building: created, edited, commented, completed.
 
 Three colours rather than one per feature, because the question you are asking as you scan is "is any of this alarming?", and only that question has a useful colour answer.
 
 #### Busy days collapse
 
-A day where you renamed six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card that says how many there were.
+A day where you duplicated six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card, such as **Documents Updated**, reading "6 events · click to expand", with the count in its corner.
 
-<Figure caption="Several events of one kind become one stacked card; clicking expands the run in place.">
-  <TimelineStacking />
+<Figure caption="Several events of one kind become one stacked card; a comment always keeps a card of its own.">
+  <AllActivityStack />
 </Figure>
 
-Click it to open the run. The stacked card stays at the front of the run; click it again to fold the run back up.
+Click it to open the run in place. The stacked card stays at the front of the run, now reading "click to collapse"; click it again to fold the run back up. A stack wears a **New** pill if any event inside it is new.
 
 Two kinds never collapse, because collapsing them would hide the thing you came to read:
 
 - **Comments** stay separate, so you can always read what was actually said.
-- **Deleted documents** stay separate, so a deletion can never hide inside a stack.
+- **Team invites** stay separate, because each one is waiting for your answer.
 
 ### What is coming up
 
-Not everything on the feed is in the past. Anything with an expiry — an [API token](/help/account-and-data/api-tokens/) approaching its six-month limit, a [share link](/help/collaboration/sharing/share-link-expiry/) about to lapse — appears **above** today in an Upcoming band.
+Not everything on the feed is in the past. Anything with an expiry (an [API token](/help/account-and-data/api-tokens/) approaching its six-month limit, a [share link](/help/collaboration/sharing/share-link-expiry/) about to lapse) appears **above** today, under an **Upcoming** pill. Upcoming cards never count as new: something scheduled is not news until it happens. Revoking the token, or revoking or extending the link, takes the warning away.
 
 <Tip>
   This is the reason to open All activity before something breaks rather than after: a script that
@@ -134,17 +146,21 @@ Not everything on the feed is in the past. Anything with an expiry — an [API t
 
 ### Calendar view
 
-Switch **Cards** to **Calendar** in the header to see the same events as a month grid. Each day carries one dot per colour present, with a number when there was more than one — so a red dot tells you something was deleted that day without opening anything. Click a dot to read that day's events of that kind, as the same cards the list shows.
+Switch **Cards** to **Calendar** in the header to see the same events as a month grid. Each day carries one dot per colour present, with a number when there was more than one, so a red dot tells you something was deleted that day without opening anything. Click a dot to read that day's events of that kind, as the same cards the list shows. On a phone, the Cards and Calendar switch sits at the top of the **Filter** popover, under **View**.
 
 The arrows page one month at a time, empty or not, because the gaps are part of what you are looking at.
 
 ### Filtering
 
-The **Filter** button opens two things. **Activity by** switches the whole feed between **Everyone** and **Other people**, which is the one to reach for on a busy account where your own edits bury everyone else's. Events nobody performed, a token about to expire, survive that filter: no person did them, and they are exactly what "what did I miss" is asking about.
+The **Filter** button opens three things. **Activity by** switches the whole feed between **Everyone** and **Other people**, which is the one to reach for on a busy account where your own edits bury everyone else's. Events nobody performed, a token about to expire, survive that filter: no person did them, and they are exactly what "what did I miss" is asking about.
 
-Below it sits a chip per area — Documents, Teams, Account — and a small calendar for jumping to a particular day. Turn a chip off and that area drops out of the feed; a dot on the button tells you a filter is on.
+Below it, under **Show**, sits a chip per kind of event: Comments, Actions, New documents, Edits, Renames, Deletions, Sharing, Teams, Organisation and Account. Only the kinds your feed holds get a chip. Turn a chip off and those events drop out of the feed; **Reset** turns everything back on, and a dot on the Filter button tells you a filter is on.
 
-All activity is not live. It loads when you open it, so it never shifts under you while you are reading; reopening the page brings anything new.
+Last comes a small calendar for jumping to a particular day: pick a date and the Cards view scrolls to it, or the Calendar view moves to its month.
+
+The feed shows 50 events at a time; **Show more** at the bottom loads the next page. Filters only look at what has loaded, so if nothing matches yet, load more before concluding there is nothing.
+
+All activity is not live: nothing slides in while you are reading. It loads when you open it, and it checks again when you come back to the browser tab and shortly after you change something yourself (deleting a document from a card, say, takes its cards away straight away).
 
 Filters and the calendar view are per visit. Come back tomorrow and All activity opens on Cards again.
 
@@ -158,12 +174,12 @@ Home and All activity work without an account, like the rest of the canvas. A gu
 
 The same feed appears in two other places:
 
-- **A team's own activity**, on the team page. Unlike your own All activity, it goes back to the beginning of the team — so if you joined last month you can still read what happened before you arrived.
+- **A team's own activity**, on the team page. Unlike your own All activity, it includes what happened before you joined, so if you joined last month you can still read what the team did before you arrived.
 - **One document's history**, from the **History** item in a document's menu. Everything that has happened to that document: created, renamed, commented on, shared, filed.
 
 <Tip>
-  All activity keeps a year of history. To step back your own recent edits on a document, use
-  [Undo](/help/canvas/undo/) in the editor.
+  All activity keeps a year (365 days) of history. To step back your own recent edits on a document,
+  use [Undo](/help/canvas/undo/) in the editor.
 </Tip>
 
 </ArticleLayout>

@@ -74,7 +74,8 @@ const SLOT_LABELS: Record<CtaSlot, string> = {
 // Where one surface words a slot differently from the rest.
 const SOURCE_LABELS: Partial<Record<CtaSource, string>> = {
   'Feature.Hero': 'Hero: Start Drawing',
-  'Help.Header': 'Header: Start Drawing',
+  // Help's header carried a lone Start Drawing until October 2026, then the shared Choose Template pair.
+  'Help.Header': 'Header: Choose Template (was Start Drawing)',
 };
 
 export function ctaSourceLabel(source: CtaSource): string {

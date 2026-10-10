@@ -36,6 +36,7 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity, retrySignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { buildTemplatedTabs } from '@/lib/template-builders';
+import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
   templateFamilyOf,
   untitledNameForTemplate,
@@ -357,6 +358,15 @@ export default function NewDocumentPage() {
     const tabId = crypto.randomUUID();
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
     const tabs = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    // A Plan template's boards bring their card types (docs/specs/026-plan/plan-templates.md "Card types a template
+    // uses"): the document is made with them. Null (the default types) for every other template.
+    const itemTypes = tabs
+      ? catalogueWithBoardTypes(
+          null,
+          tabs.flatMap((t) => t.elements),
+        )
+      : null;
+    if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via: 'new' });
     const tab = tabs
       ? tabs[0]!
       : {
@@ -380,7 +390,7 @@ export default function NewDocumentPage() {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
         // also registers its id so every later load / save routes local.
         await offlineCreateDocument(
-          { id: documentId, name: documentName, tabs: tabs ?? [tab] },
+          { id: documentId, name: documentName, tabs: tabs ?? [tab], itemTypes },
           Date.now(),
         );
       } else {
@@ -393,6 +403,7 @@ export default function NewDocumentPage() {
           id: documentId,
           name: documentName,
           tabs: tabs ?? [tab],
+          ...(itemTypes ? { itemTypes } : {}),
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

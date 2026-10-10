@@ -3,7 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
-import type { PlanBoardSetup, PlanViewId } from '@livediagram/items';
+import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livediagram/items';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
@@ -16,6 +16,7 @@ import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
+import type { ChartSource } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
@@ -39,6 +40,7 @@ import type {
   Reaction,
   CodeLanguage,
   ElementAnimation,
+  TextAnimation,
   ElementId,
   ElementLink,
   IconAnimation,
@@ -336,6 +338,9 @@ export type ShapeElement = {
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
   chartPalette?: ChartPaletteId;
+  // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is read live from there,
+  // the fields above holding the last read. Only meaningful on the pie, bar and line chart kinds.
+  chartSource?: ChartSource;
   // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
@@ -396,6 +401,8 @@ export type ShapeElement = {
   planCard?: PlanCardRef;
   // Plan view (docs/specs/026-plan/plan-views.md): which view of the document's cards a 'plan-view' shows.
   planView?: PlanViewRef;
+  // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
+  planSheet?: PlanSheetRef;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.
@@ -416,6 +423,12 @@ export type ShapeElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -510,6 +523,12 @@ export type TextElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -538,6 +557,16 @@ export type TextElement = {
   // Multiplier on the label size, set by a Shift resize of a whiteboard text box
   // (docs/specs/023-draw-mode/draw-mode.md "Text boxes"). Absent = 1.
   textScale?: number;
+  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"), drawn wherever the text
+  // is. Tracking: em added between letters, -0.2 to 1; absent is none.
+  letterSpacing?: number;
+  // The weight it paints in; wins over `textBold` while set. Absent follows `textBold`.
+  fontWeight?: 400 | 500 | 700;
+  // Shown in capitals or lower case; the label keeps what was typed. Absent is as typed.
+  textCase?: 'upper' | 'lower';
+  // Bends the text along a circle, -360 to 360 degrees: positive bows up, negative down. Absent is
+  // flat. Arched text is one line.
+  textArc?: number;
 };
 
 // --- Tables ----------------------------------------------------------------
@@ -658,6 +687,12 @@ export type TableElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -751,6 +786,12 @@ export type StickyElement = {
   // Whether `animation` loops. Undefined / true = loop forever (the
   // default); false = play once and hold.
   animationRepeat?: boolean;
+  // Text animation on the words this element carries (docs/specs/028-animation/element-animations.md).
+  // Undefined = still words. Speed as for `animation`. Repeat is OFF by default (the words play once
+  // and stay revealed): stored only when true.
+  textAnimation?: TextAnimation;
+  textAnimationSpeed?: AnimationSpeed;
+  textAnimationRepeat?: boolean;
   link?: ElementLink;
   commentThread?: CommentThread;
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
@@ -1013,6 +1054,11 @@ export type PathElement = {
   height: number;
   nodes: PathNode[];
   closed: boolean;
+  // Further contours after `nodes`, closed or open as the path is (docs/specs/007-editor/
+  // logo-pages.md "Combine", "Mirror"): a combined shape's islands and holes, filled even-odd, or a
+  // mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
+  // edited one by one.
+  subpaths?: PathNode[][];
   fillColor?: string;
   strokeColor?: string;
   // A whiteboard stock colour (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted
@@ -1331,6 +1377,7 @@ const UNTYPED_SHAPES = new Set<string>([
   'plan-board',
   'plan-card',
   'plan-view',
+  'plan-sheet',
 ]);
 
 export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
@@ -1340,7 +1387,58 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
 }
 
 // What a Plan card points at: one item of the document's item store (docs/specs/026-plan/items.md).
-export type PlanCardRef = { itemId: string };
+// `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
+// absent is Detailed.
+export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
+
+// What a Sheet element frames: one sheet of the document's sheet store (docs/specs/029-sheets/sheet-store.md).
+// `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
+// one when it is first drawn, then drops the mark (docs/specs/029-sheets/sheet.md "Copying a Sheet element").
+// `fillTab`: the Sheet fills its tab (docs/specs/029-sheets/sheet.md "Fill Tab"), as a board can.
+export type PlanSheetRef = { sheetId: string; copyOf?: string; fillTab?: true };
+
+// A fresh sheet id for a copy (the sheets engine's makeSheetId, without importing it).
+export function newPlanSheetId(): string {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 16);
+}
+
+// The sheet id pattern (@livediagram/sheets SHEET_ID_PATTERN), repeated here so the document package never
+// imports the engine.
+export const PLAN_SHEET_ID_PATTERN = /^[A-Za-z0-9_-]{6,32}$/;
+
+export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
+  if (typeof v !== 'object' || v === null) return false;
+  const {
+    sheetId: id,
+    copyOf,
+    fillTab,
+    ...rest
+  } = v as {
+    sheetId?: unknown;
+    copyOf?: unknown;
+    fillTab?: unknown;
+  };
+  // An empty id is a Sheet element not yet given its sheet (the factory's), as a Plan card's empty item id.
+  const idOk = typeof id === 'string' && (id === '' || PLAN_SHEET_ID_PATTERN.test(id));
+  const copyOk =
+    copyOf === undefined || (typeof copyOf === 'string' && PLAN_SHEET_ID_PATTERN.test(copyOf));
+  return (
+    idOk && copyOk && (fillTab === undefined || fillTab === true) && Object.keys(rest).length === 0
+  );
+}
 
 // What a plan view shows (docs/specs/026-plan/plan-views.md): a metric or a visualisation.
-export type PlanViewRef = { view: PlanViewId };
+// The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.
+export type PlanViewRef = {
+  view: PlanViewId;
+  // The Gantt chart's card types (card type ids); absent is Project alone.
+  types?: string[];
+  swimlaneBy?: SwimlaneBy;
+  swimlaneField?: string;
+  namesWidth?: number;
+  // The Gantt chart's own row order (card ids); absent is date order (docs/specs/026-plan/plan-views.md "Row order").
+  rowOrder?: string[];
+  // Card Search's filters, each a grouping (and field) and the lane a card must fall in (docs/specs/026-plan/plan-views.md
+  // "Card Search"); absent is every card.
+  filters?: CardSearchFilter[];
+};

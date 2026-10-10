@@ -56,7 +56,6 @@ export function useOfflineConversion(
         .filter(Boolean)
         .join(' '),
       confirmLabel: 'Take Offline',
-      variant: 'danger',
     });
     if (!ok) return;
     setConverting(true);

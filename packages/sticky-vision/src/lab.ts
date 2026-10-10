@@ -77,12 +77,6 @@ export function rgbToLab(r: number, g: number, b: number): Lab {
   return { l: out.l[0]!, a: out.a[0]!, b: out.b[0]! };
 }
 
-// CIE76: plain Euclidean distance. The refinements (CIE94, CIEDE2000) matter
-// for telling near-identical swatches apart, not for paper against a wall.
-export function deltaE(p: Lab, q: Lab): number {
-  return Math.hypot(p.l - q.l, p.a - q.a, p.b - q.b);
-}
-
 export function labImageOf(image: ImageBuffer): LabImage {
   const n = image.width * image.height;
   const out = {

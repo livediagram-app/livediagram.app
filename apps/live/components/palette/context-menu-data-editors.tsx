@@ -1,3 +1,4 @@
+import { Button } from '@livediagram/ui';
 import { type ReactNode } from 'react';
 import {
   CHECKLIST_MAX_ITEMS,
@@ -15,11 +16,51 @@ import {
   type LineSeries,
   type PieSlice,
 } from '@livediagram/document';
-import { hexish } from '@/components/palette/palette-controls';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
+import { standardGroup } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 import { MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
+
+// A data row's colour (a pie slice, a legend row): its chip, shaped like the chart's own, opening
+// the one colour picker (docs/specs/004-interface-design/colour-picker.md): the strong standard
+// colours by hex, Custom colours and +.
+function DataColour({
+  label,
+  value,
+  shown,
+  shape,
+  onPick,
+}: {
+  label: string;
+  // The row's own colour, if it has one; `shown` falls back to the chart's palette.
+  value: string | undefined;
+  shown: string;
+  shape: string;
+  onPick: (color: string) => void;
+}) {
+  const yours = useDocumentColours();
+  return (
+    <ColourSwatchButton
+      label={label}
+      value={value ?? null}
+      swatch={shown}
+      standard={[standardGroup('strong', 'light', 'hex')]}
+      yours={yours}
+      className="h-5 w-5"
+      onPick={onPick}
+    >
+      <span
+        aria-hidden
+        className={`h-4 w-4 border border-slate-300 dark:border-slate-600 ${shape}`}
+        style={{ backgroundColor: shown }}
+      />
+    </ColourSwatchButton>
+  );
+}
 
 // Pie-chart data editor (docs/specs/009-elements/pie-chart.md): one row per slice — a colour swatch
 // (recolourable), a label, and a value — plus add / remove. Local draft while
@@ -41,38 +82,27 @@ export function PieDataEditor({
   const colorAt = (i: number, s: PieSlice) => s.color ?? palette[i % palette.length]!;
   const patch = (i: number, p: Partial<PieSlice>) =>
     setRows((r) => r.map((s, j) => (j === i ? { ...s, ...p } : s)));
-  // Compact bordered field for the slice rows. The line editor lives in its own
-  // (roomier) dialog now, so this is no longer shared.
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
         {rows.map((s, i) => (
           <div key={i} className="flex items-center gap-1">
-            <label
-              className="relative h-4 w-4 shrink-0 cursor-pointer rounded-[3px] border border-slate-300 dark:border-slate-600"
-              style={{ backgroundColor: colorAt(i, s) }}
-              aria-label="Slice colour"
-            >
-              <input
-                type="color"
-                value={hexish(colorAt(i, s))}
-                onChange={(e) =>
-                  onChange(rows.map((r, j) => (j === i ? { ...r, color: e.target.value } : r)))
-                }
-                className="absolute h-0 w-0 opacity-0"
-              />
-            </label>
+            <DataColour
+              label="Slice colour"
+              value={s.color}
+              shown={colorAt(i, s)}
+              shape="rounded-[3px]"
+              onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
+            />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={s.label}
               placeholder="Label"
               onChange={(e) => patch(i, { label: e.target.value })}
               onBlur={() => onChange(rows)}
             />
             <input
-              className={`${cellInput} w-12 text-right tabular-nums`}
+              className={`${MENU_CELL_INPUT} w-12 text-right tabular-nums`}
               type="number"
               min={0}
               value={s.value}
@@ -85,7 +115,7 @@ export function PieDataEditor({
               aria-label="Remove slice"
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
               ×
             </button>
@@ -119,32 +149,23 @@ export function LegendDataEditor({
 }) {
   const [rows, setRows] = useFollowingDraft<LegendItem[]>(items);
   const colorAt = (i: number, item: LegendItem) => item.color ?? palette[i % palette.length]!;
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
         {rows.map((item, i) => (
           <div key={i} className="flex items-center gap-1">
-            <label
+            <DataColour
+              label="Legend colour"
+              value={item.color}
+              shown={colorAt(i, item)}
               // Round, matching the swatch on the card rather than the pie
               // editor's square chip: the editor should look like the thing
               // it edits.
-              className="relative h-4 w-4 shrink-0 cursor-pointer rounded-full border border-slate-300 dark:border-slate-600"
-              style={{ backgroundColor: colorAt(i, item) }}
-              aria-label="Legend colour"
-            >
-              <input
-                type="color"
-                value={hexish(colorAt(i, item))}
-                onChange={(e) =>
-                  onChange(rows.map((r, j) => (j === i ? { ...r, color: e.target.value } : r)))
-                }
-                className="absolute h-0 w-0 opacity-0"
-              />
-            </label>
+              shape="rounded-full"
+              onPick={(color) => onChange(rows.map((r, j) => (j === i ? { ...r, color } : r)))}
+            />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={item.label}
               placeholder="Label"
               onChange={(e) =>
@@ -157,7 +178,7 @@ export function LegendDataEditor({
               aria-label="Remove legend row"
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
               ×
             </button>
@@ -216,6 +237,21 @@ export function LineDataSummary({
   );
 }
 
+// A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is the sheet's, edited
+// there, so the Data category says so and offers Unlink, which keeps the last read as an ordinary chart's data.
+export function LinkedChartData({ onUnlink }: { onUnlink: () => void }) {
+  return (
+    <div className="px-2 py-1.5">
+      <p className="text-[11px] leading-snug text-slate-600 dark:text-slate-300">
+        Drawn live from a Sheet&apos;s cells. Change the cells to change the chart.
+      </p>
+      <Button variant="secondary" size="xs" className="mt-1.5 w-full" onClick={onUnlink}>
+        Unlink From Sheet
+      </Button>
+    </div>
+  );
+}
+
 // Checklist rows editor (docs/specs/009-elements/checklist.md): one row per item — a done toggle, the row
 // text, and remove — plus add. Same draft-while-typing / commit-on-blur
 // contract as PieDataEditor (one undo step per blur / structural change).
@@ -230,15 +266,13 @@ export function EntityFieldsEditor({
   onChange: (fields: EntityField[]) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<EntityField[]>(fields);
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
         {rows.map((f, i) => (
           <div key={i} className="flex items-center gap-1">
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={f.name}
               placeholder="name"
               aria-label={`Field ${i + 1} name`}
@@ -249,7 +283,7 @@ export function EntityFieldsEditor({
               onBlur={() => onChange(rows)}
             />
             <input
-              className={`${cellInput} w-[5.5rem]`}
+              className={`${MENU_CELL_INPUT} w-[5.5rem]`}
               value={f.type ?? ''}
               placeholder="type"
               aria-label={`Field ${i + 1} type`}
@@ -267,7 +301,7 @@ export function EntityFieldsEditor({
               type="button"
               aria-label="Remove field"
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
             >
               ×
             </button>
@@ -278,7 +312,7 @@ export function EntityFieldsEditor({
         type="button"
         disabled={rows.length >= ENTITY_MAX_FIELDS}
         onClick={() => onChange([...rows, { name: '' }])}
-        className="mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15"
+        className={MENU_ADD_ROW_BUTTON}
       >
         Add field
       </button>
@@ -298,8 +332,6 @@ export function ChecklistRowsEditor({
   onToggle?: (index: number) => void;
 }) {
   const [rows, setRows] = useFollowingDraft<ChecklistItem[]>(items);
-  const cellInput =
-    'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
   return (
     <div className="px-2 py-1.5">
       <div className="flex flex-col gap-1">
@@ -317,7 +349,7 @@ export function ChecklistRowsEditor({
               className="h-3.5 w-3.5 shrink-0 cursor-pointer accent-brand-500"
             />
             <input
-              className={`${cellInput} flex-1`}
+              className={`${MENU_CELL_INPUT} flex-1`}
               value={item.text}
               placeholder="Task"
               maxLength={CHECKLIST_MAX_TEXT}
@@ -331,7 +363,7 @@ export function ChecklistRowsEditor({
               aria-label="Remove row"
               disabled={rows.length <= 1}
               onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-rose-50 enabled:hover:text-rose-600 disabled:opacity-30 dark:enabled:hover:bg-rose-500/15"
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition enabled:cursor-pointer enabled:hover:bg-slate-100 enabled:hover:text-slate-700 disabled:opacity-30 dark:enabled:hover:bg-slate-800"
             >
               ×
             </button>
@@ -342,7 +374,7 @@ export function ChecklistRowsEditor({
         type="button"
         disabled={rows.length >= CHECKLIST_MAX_ITEMS}
         onClick={() => onChange([...rows, { text: '', done: false }])}
-        className="mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15"
+        className={MENU_ADD_ROW_BUTTON}
       >
         + Add row
       </button>

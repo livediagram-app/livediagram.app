@@ -24,7 +24,6 @@ vi.mock('./TourStage', () => ({
 vi.mock('./tour-dom', () => ({
   findTour: () => null,
   clickTour: () => false,
-  expandPanelIfCollapsed: () => {},
   waitForSelector: async () => null,
   waitForTour: async () => null,
 }));

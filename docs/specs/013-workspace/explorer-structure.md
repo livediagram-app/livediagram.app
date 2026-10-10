@@ -172,9 +172,9 @@ Below the `sm` breakpoint the sidebar is hidden and the pane header's menu butto
 the same groups, rows, rules and keyboard model. Picking a view, or New team, closes the drawer; so do its Close button
 and the backdrop.
 
-## The floating Explorer panel
+## The editor's Explorer
 
-The editor's floating Explorer panel ([Folders: floating panel](folders.md#floating-explorer-panel-editor--new)) shows
+The editor's Explorer, the popover under the menu button ([Folders: the editor's Explorer](folders.md#the-editors-explorer-editor--new)), shows
 the same three groups, built from the same rows, layout rules and keyboard model, at the panel's width. Under its
 Current Document card it holds one `nav` named "Explorer" with Overview, Spaces and More, in place of the tabs it had.
 
@@ -203,7 +203,7 @@ What differs is what a row does in an editor, where leaving the document is a bi
 A document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)) is the reader's own: it counts
 wherever the reader's own documents count (Space `mine`, owner "You"), the same as a document in My documents. Every
 row and card of one, wherever it is listed (folders, This browser, Recent and Favourites, Search results, the
-floating panel, the Trash), carries the **Local only** pill
+editor's Explorer, the Trash), carries the **Local only** pill
 ([Offline Mode: Local only pill](../006-document/offline-mode.md#local-only-pill)).
 
 The editor header names such a document with the matching **Local only** badge. Home's "Jump back in" carries the

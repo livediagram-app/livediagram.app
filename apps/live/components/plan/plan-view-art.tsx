@@ -47,6 +47,14 @@ const VIEW_ART: Record<PlanVisualisation, React.ReactNode> = {
       <rect x="15.1" y="9.5" width="3" height="3" rx="0.5" fill="currentColor" />
     </>
   ),
+  // A filter bar over a list of cards, a magnifier at its end.
+  search: (
+    <>
+      <rect x="2.5" y="3" width="11" height="3.5" rx="1.75" />
+      <circle cx="17" cy="4.75" r="2.25" />
+      <path d="M18.6 6.4l1.4 1.4M2.5 11h17M2.5 15h12M2.5 19h15" />
+    </>
+  ),
 };
 
 export function PlanViewArt({ view, size = 18 }: { view: PlanVisualisation; size?: number }) {

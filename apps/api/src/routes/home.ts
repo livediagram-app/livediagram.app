@@ -20,8 +20,7 @@ import { parseTimeZone } from '../home/local-day';
 import { json, missingAuth, notFound, rateLimited } from '../responses';
 import { userScope } from '../timeline';
 import type { RouteContext } from './context';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { DAY_MS } from '@livediagram/items';
 
 function rejected(reason: HomeRejection): Response {
   console.warn(`home: rejected reason=${reason}`);

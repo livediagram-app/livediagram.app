@@ -109,7 +109,10 @@ that let `viewport` through.
   but a dot vote ([Session tools (timer + voting)](session-tools.md)) is a delta, so every replayed dot counted twice. The
   room now sends a `{ kind: 'cursor', epoch, seq }` frame on `hello` and to the
   sender of each ordered op, and the client folds it into its cursor (ignoring
-  a different epoch, which the `sync` / `catchup` exchange reconciles).
+  a different epoch, which the `sync` / `catchup` exchange reconciles). An op
+  frame may carry a `ref` (a positive integer the client picks); the room echoes
+  it on that op's `cursor` frame, which is how a save knows the room has
+  sequenced the deltas it sent before writing ([Collaboration race hardening](collab-race-hardening.md) phase 6).
 - **A whole-`tab` op keeps the receiver's dots.** It carries the sender's votes
   map as of their autosave, without dots still in flight, so the receiver keeps
   its own map unless the round itself changed (`mergeRemoteTab`).
@@ -198,8 +201,10 @@ verified end-to-end and turned on properly, not carried as dormant code.
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
   merge on a tab PUT (`mergeRoomLedger`, driven by `X-Room-Cursor`), the
   view-role comment relay (`relayElementDelta`) and share-link broadcasts.
-- `apps/live` — `tab-broadcast-ops.ts` (emit) + the room `onOp` handler (apply);
-  `lib/api/room.ts` (auto-reconnect, seq/epoch tracking, the outbox);
+- `apps/live` — `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
+  ledger deltas sequenced before its PUT, its element ops after) + the room
+  `onOp` handler (apply); `lib/api/room.ts` (auto-reconnect, seq/epoch
+  tracking, the outbox, `sequence` and its `ref`);
   `useRoomConnection` (`onResync` → `useRoomResync`, an in-place re-fetch, +
   telemetry).
 

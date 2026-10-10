@@ -1,10 +1,11 @@
 'use client';
 
 // The Plan card element's body (docs/specs/026-plan/plan-board.md "The Plan card"): one item's card
-// face at the element's size. A click in Plan mode, or a double-click in any mode, opens the item;
+// face at the element's size. A double-click or double-tap, in any mode, opens the item;
 // a card whose item is not in this document's store says so and offers to go.
 import type { ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { usePlan } from './PlanContext';
 import { PlanCardFace } from './PlanCardFace';
 import { planOwnColours, planPalette } from './plan-palette';
@@ -24,6 +25,15 @@ export function PlanCardView({
   const palette = element.fillColor ? { ...themed, card: themed.surface } : themed;
   const itemId = element.planCard?.itemId ?? '';
   const item = plan?.items.get(itemId);
+  // A card on the canvas opens on a double-click or double-tap only, in every mode, so a single press selects it
+  // and a drag moves it (docs/specs/026-plan/plan-board.md "The Plan card"). Two presses counted, not `dblclick`,
+  // which is unreliable on touch; a press that travelled is a move and counts for nothing.
+  const press = usePressWithoutDrag(
+    () => {
+      if (item) plan?.openItem(item.id);
+    },
+    { requireDouble: true },
+  );
   if (!item) {
     const loading = !plan || plan.status === 'loading' || !itemId;
     return (
@@ -55,7 +65,6 @@ export function PlanCardView({
       </div>
     );
   }
-  const open = () => plan?.openItem(item.id);
   return (
     <div
       className="absolute inset-0"
@@ -63,20 +72,13 @@ export function PlanCardView({
       role="button"
       tabIndex={-1}
       aria-label={itemAccessibleName(item, plan?.types)}
-      onClick={(e) => {
-        if (!plan?.planInput) return;
-        e.stopPropagation();
-        open();
-      }}
-      onDoubleClick={(e) => {
-        e.stopPropagation();
-        open();
-      }}
+      {...press}
     >
       <PlanCardFace
         item={item}
         palette={palette}
         fields={DEFAULT_CARD_FIELDS}
+        size={element.planCard?.size}
         presence={plan?.presence.get(item.id)}
       />
     </div>

@@ -15,6 +15,8 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
+import type { ImportedPlanItems } from '@/lib/import-tab';
+import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import {
   normalizeFolderOrder,
   tabFolderName,
@@ -24,7 +26,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { apiLinkTab } from '@/lib/api-client';
-import { newTabSeed } from '@/lib/new-tab-seed';
+import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintElementIds, useTabImport } from './useTabImport';
@@ -75,6 +77,8 @@ type TabActionsDeps = {
   refreshDocumentList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
+  // A JSON tab export's Plan items, added after its tab lands (usePlanTabImport).
+  importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
 
 export function useTabActions(deps: TabActionsDeps) {
@@ -107,7 +111,13 @@ export function useTabActions(deps: TabActionsDeps) {
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    const tab: Tab = { ...createTab(`Tab ${tabs.length + 1}`), ...seed };
+    // From Plan the tab opens in Plan with no Quick Start (newTabOpening).
+    const opening = newTabOpening(deps.editorMode);
+    const tab: Tab = {
+      ...createTab(`Tab ${tabs.length + 1}`),
+      ...seed,
+      ...('opensIn' in opening ? { opensIn: opening.opensIn } : {}),
+    };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);
     track('Tab', 'Created');
@@ -117,8 +127,8 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
     // New tabs jump straight into the lighter template picker (just the
     // template grid). The welcome flow is first-run only, the user
-    // already has an identity + theme by this point.
-    setTemplatePickerMode('templates');
+    // already has an identity + theme by this point. From Plan, Plan's board picker is the start instead.
+    if (opening.quickStart) setTemplatePickerMode('templates');
   };
 
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
@@ -139,6 +149,7 @@ export function useTabActions(deps: TabActionsDeps) {
     requestFit,
     // Declared below; called only once an import runs, after this render has defined it.
     importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
+    importPlanItems: deps.importPlanItems,
   });
   // Board scenes from other tools (docs/specs/020-import-export/board-scene.md): replace the
   // active tab, or open each board as a new whiteboard tab.
@@ -212,7 +223,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // tab. The lazy fetch resolves in well under a second; asking the
     // user to retry beats silently duplicating nothing.
     if (!isTabLoaded(id)) {
-      toast.error('That tab is still loading — try again in a moment.');
+      toast.error('That tab is still loading. Try again in a moment.');
       return;
     }
     const copy: Tab = {

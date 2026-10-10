@@ -9,6 +9,7 @@
 // that board has rows); a drop on the canvas leaves a Plan card there.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { isDragTravel } from '@/lib/press-gestures';
+import type { Item } from '@livediagram/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 
 export type PlanDropSlot = {
@@ -31,6 +32,9 @@ export type PlanDragState = {
   outside: boolean;
   // Another board under the pointer: its element id, and whether it shows this item.
   target: { boardId: string; accepts: boolean } | null;
+  // Why the slot under the pointer refuses the card: its type leaves the column's status out
+  // (docs/specs/026-plan/item-types.md "An item type"). The slot then sits at the column's foot, drawn red.
+  refused?: string;
   // Over the Trash button (docs/specs/026-plan/items.md "Trash"): letting go trashes the card.
   overTrash?: boolean;
 };
@@ -82,7 +86,8 @@ export function samePlanDragTarget(a: PlanDragState | null, b: PlanDragState): b
     a.slot?.beforeId === b.slot?.beforeId &&
     (a.slot === null) === (b.slot === null) &&
     a.target?.boardId === b.target?.boardId &&
-    a.target?.accepts === b.target?.accepts
+    a.target?.accepts === b.target?.accepts &&
+    a.refused === b.refused
   );
 }
 
@@ -130,6 +135,8 @@ export function usePlanCardDrag(opts: {
   // A drop on a board that does not show the item: nothing moves; the reason is announced.
   onRefused: (message: string) => void;
   onDragging: (itemId: string | null) => void;
+  // The dragged card (its type and status), so a column whose status its type leaves out can refuse it.
+  item?: (itemId: string) => Pick<Item, 'type' | 'fields'> | undefined;
   // A card let go over the Trash.
   onTrash?: (itemId: string) => void;
 }) {
@@ -182,11 +189,19 @@ export function usePlanCardDrag(opts: {
       const otherSlot =
         other && accepts ? dropSlotAt(other.el, e.clientX, e.clientY, p.itemId) : null;
       if (dragRef.current?.target && dragRef.current.target.boardId !== other?.id) leaveTarget();
-      if (other && otherSlot) {
+      // The slot under the pointer, and whether the card's type refuses its status.
+      const rawSlot = outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId);
+      const dragged = optsRef.current.item?.(p.itemId);
+      const slotTarget = planBoardTarget(other ? other.id : optsRef.current.boardId);
+      const refused =
+        dragged && rawSlot && slotTarget ? slotTarget.refuseAt(dragged, rawSlot) : null;
+      const slot = rawSlot && refused ? { ...rawSlot, beforeId: null } : rawSlot;
+      if (other && slot) {
         planBoardTarget(other.id)?.hover({
           itemId: p.itemId,
-          slot: otherSlot,
+          slot,
           height: p.rect.height,
+          ...(refused ? { refused } : {}),
         });
       } else if (other) planBoardTarget(other.id)?.hover(null);
       const next: PlanDragState = {
@@ -197,9 +212,10 @@ export function usePlanCardDrag(opts: {
         offsetY: p.startY - p.rect.top,
         width: p.rect.width,
         height: p.rect.height,
-        slot: outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId),
+        slot,
         outside,
         target: other ? { boardId: other.id, accepts } : null,
+        ...(refused ? { refused } : {}),
         ...(outside && trashAt(e.clientX, e.clientY) ? { overTrash: true } : {}),
       };
       pointer.set({ clientX: e.clientX, clientY: e.clientY });
@@ -233,6 +249,7 @@ export function usePlanCardDrag(opts: {
       const target = d?.target ? planBoardTarget(d.target.boardId) : undefined;
       if (!d) optsRef.current.onClick(p.itemId);
       else if (d.overTrash && optsRef.current.onTrash) optsRef.current.onTrash(d.itemId);
+      else if (d.refused) optsRef.current.onRefused(d.refused);
       else if (d.target && target) {
         if (!d.target.accepts) optsRef.current.onRefused(target.refusal());
         else if (d.slot) target.drop(d.itemId, d.slot);
@@ -274,5 +291,6 @@ export function usePlanCardDrag(opts: {
     [enabled],
   );
 
-  return { drag, pointer, onCardPointerDown };
+  // `cancelPress` drops a press before it becomes a drag or a click (a long-press opened the card's menu).
+  return { drag, pointer, onCardPointerDown, cancelPress: end };
 }

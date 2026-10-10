@@ -92,10 +92,16 @@ async function tourTheChrome(page: Page): Promise<void> {
   await expect(square).toHaveCount(1);
   await page.waitForTimeout(400);
 
-  await toggle(page, 'Canvas tool');
+  await toggle(page, 'Selection mode');
   await toggle(page, 'Palette category');
   await toggle(page, 'Fit to screen');
+  // The Explorer popover, and the Document menu on its Current Document card.
+  const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
+  await explorer.click();
+  await page.waitForTimeout(400);
   await openAndClose(page, () => page.getByRole('button', { name: 'Document menu' }).click());
+  await explorer.click();
+  await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
   await openAndClose(page, () => square.click({ button: 'right' }));
   await openAndClose(page, () =>

@@ -49,7 +49,7 @@ describe('ItemSlideView', () => {
     );
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Ship the checkout');
     expect(screen.getByText('#7')).toBeTruthy();
-    expect(screen.getByText('In progress')).toBeTruthy();
+    expect(screen.getByText('In Progress')).toBeTruthy();
     expect(screen.getByText('High priority')).toBeTruthy();
     expect(screen.getByText('3 points')).toBeTruthy();
     expect(screen.getByText('payments')).toBeTruthy();

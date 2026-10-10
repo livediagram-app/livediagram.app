@@ -40,6 +40,7 @@ export function parseVerbArgs(verb: Verb, words: readonly string[]): unknown {
         flagOf(f.key).slice(2),
         {
           type: f.kind === 'boolean' ? ('boolean' as const) : ('string' as const),
+          ...(f.kind === 'list' ? { multiple: true } : {}),
           ...(short ? { short } : {}),
         },
       ];

@@ -12,6 +12,7 @@ import {
 } from '@/components/canvas/selection-popover-icons';
 import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
+import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Bounds = { x: number; y: number; width: number; height: number };
 
@@ -63,18 +64,17 @@ type SelectionPopoverProps = {
   // Small caption above (or below) the toolbar naming what's selected
   // ("Selected Square", "Selected Element").
   title?: string;
-  // Tighter gap between the popover and the element edge. Set
-  // by the view-role caller because the plus duplicate button
-  // (which sits in this gap for editor sessions) doesn't render
-  // when read-only, so the toolbar can sit closer to the element
-  // without overlapping anything.
+  // Tighter gap between the popover and the element edge, set whenever
+  // the "+" quick-connect button (which sits in this gap) doesn't render:
+  // read-only, or a kind that shows none (a Plan board or card, an
+  // annotation), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
 };
 
 // Default gap: leave room for the plus duplicate button between
 // the popover and the element edge. Bumped to 48 px so the plus
 // has clear breathing room (at 36 px the popover crowded it and
-// felt visually cramped). `compact` callers (view-role) drop to
+// felt visually cramped). `compact` callers (no "+" showing) drop to
 // 16 px since there's no plus button to clear.
 const GAP_DEFAULT = 48;
 const GAP_COMPACT = 16;
@@ -298,7 +298,7 @@ export function SelectionPopover({
               className={
                 locked
                   ? 'flex h-8 w-8 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
-                  : 'flex h-8 w-8 items-center justify-center rounded-md text-rose-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
+                  : 'flex h-8 w-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
               }
             >
               <TrashIcon />
@@ -311,7 +311,7 @@ export function SelectionPopover({
 }
 
 function Divider() {
-  return <div aria-hidden className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
+  return <div aria-hidden className={TOOLBAR_DIVIDER} />;
 }
 
 function PopoverButton({

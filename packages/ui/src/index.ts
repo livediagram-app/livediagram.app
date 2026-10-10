@@ -20,24 +20,37 @@ export {
   type TextAreaProps,
   type TextInputProps,
 } from './TextInput';
+export {
+  DATE_YEAR_MIN,
+  DateInput,
+  dateCommit,
+  isWholeDay,
+  openDatePicker,
+  type DateCommit,
+  type DateInputProps,
+} from './DateInput';
 export { Select, type SelectProps, type SelectVariant, type SelectSize } from './Select';
 export { Tooltip, type TooltipProps } from './Tooltip';
+export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { SheetBuildAnimation } from './SheetBuildAnimation';
+export { LoadingSweep } from './LoadingSweep';
 export { EmptyState } from './EmptyState';
 export { BreadcrumbTrail, type BreadcrumbItem } from './Breadcrumb';
 export { JsonLd } from './JsonLd';
 export { PageViewTracker } from './PageViewTracker';
 export { PageViewBoot } from './PageViewBoot';
+export { WebVitalsBoot, WebVitalsTracker } from './WebVitalsTracker';
 export { POPOVER_VIEWPORT_MARGIN, clampIntoRange } from './popover';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
 export { useEscape } from './useEscape';
-export { useFocusTrap } from './useFocusTrap';
+export { useFocusTrap, type FocusTrapInitial } from './useFocusTrap';
 export { CARD_GRID, CARD_PREVIEW, CARD_SHELL } from './cardGrid';
 export {
   ACTIVE_SEGMENT,
@@ -92,5 +105,13 @@ export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';
 export { DialogCloseButton } from './dialog/DialogCloseButton';
 export { Portal } from './Portal';
-export { useSwipeDownDismiss } from './useSwipeDownDismiss';
+export {
+  useSheetDrag,
+  sheetRelease,
+  SHEET_DISMISS_PX,
+  SHEET_SNAP_PX,
+  SHEET_FULL_HEIGHT,
+  type SheetDrag,
+} from './useSheetDrag';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
+export * from './browser-repair';

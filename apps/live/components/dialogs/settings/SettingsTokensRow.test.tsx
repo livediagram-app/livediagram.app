@@ -2,8 +2,8 @@
 // The API Tokens category's manager (docs/specs/015-api/public-api-and-tokens.md#36-management--the-settings-dialogs-api-tokens-category):
 // a guest gets the reason plus a Sign In link; a signed-in user creates a
 // token, sees its secret once, and revokes from the list after confirming.
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const auth = vi.hoisted(() => ({ signedIn: true }));
 vi.mock('@/hooks/persistence/useClerkApiBootstrap', () => ({
@@ -22,6 +22,8 @@ const api = vi.hoisted(() => ({
   apiListTokens: vi.fn(),
   apiCreateToken: vi.fn(),
   apiRevokeToken: vi.fn(),
+  apiListWorkbenchPairings: vi.fn(),
+  apiUnpairWorkbench: vi.fn(),
 }));
 vi.mock('@/lib/api-client', () => api);
 
@@ -40,6 +42,10 @@ const TOKEN = {
   readOnly: false,
 };
 
+beforeEach(() => {
+  api.apiListWorkbenchPairings.mockResolvedValue([]);
+});
+
 afterEach(() => {
   cleanup();
   auth.signedIn = true;
@@ -56,6 +62,7 @@ describe('SettingsTokensRow', () => {
     );
     expect(screen.queryByRole('button', { name: 'Create Token' })).toBeNull();
     expect(api.apiListTokens).not.toHaveBeenCalled();
+    expect(api.apiListWorkbenchPairings).not.toHaveBeenCalled();
   });
 
   it('opens on the create form when there are no tokens, with nothing competing', async () => {
@@ -106,5 +113,35 @@ describe('SettingsTokensRow', () => {
     expect(api.apiRevokeToken).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole('button', { name: 'Revoke' }));
     await waitFor(() => expect(api.apiRevokeToken).toHaveBeenCalledWith('user_1', 'tok1'));
+  });
+
+  it('shows a token’s paired workbenches under its card and unpairs one after confirming', async () => {
+    api.apiListTokens.mockResolvedValue([TOKEN, { ...TOKEN, id: 'tok2', name: 'Laptop' }]);
+    api.apiListWorkbenchPairings.mockResolvedValue([
+      {
+        id: 'p1',
+        tokenId: 'tok1',
+        origin: 'https://127.0.0.1:5175',
+        name: 'Acme Editor',
+        pairedAt: Date.now(),
+      },
+    ]);
+    api.apiUnpairWorkbench.mockResolvedValue(undefined);
+    render(<SettingsTokensRow row={ROW} />);
+    const list = await screen.findByRole('list', { name: 'Paired workbenches' });
+    expect(within(list).getByText('Acme Editor')).toBeTruthy();
+    // One list for the account, grouped in the client: the other token's card shows none.
+    expect(screen.getAllByRole('list', { name: 'Paired workbenches' })).toHaveLength(1);
+    expect(api.apiListWorkbenchPairings).toHaveBeenCalledTimes(1);
+    expect(api.apiListWorkbenchPairings).toHaveBeenCalledWith('user_1');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Unpair Acme Editor at https://127.0.0.1:5175' }),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Unpair' }));
+    await waitFor(() => expect(api.apiUnpairWorkbench).toHaveBeenCalledWith('user_1', 'p1'));
+    await waitFor(() =>
+      expect(screen.queryByRole('list', { name: 'Paired workbenches' })).toBeNull(),
+    );
   });
 });

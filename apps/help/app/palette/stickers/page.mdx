@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { StickersCatalogue } from '@/components/illustrations/palette-catalogues';
+import { StickersSheet } from '@/components/illustrations/palette-categories';
 
 export const metadata = helpMetadata({
   title: 'Stickers',
@@ -18,9 +18,9 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("stickers")}
 >
 
-The **Stickers** category holds around 190 colour emoji and 32 word badges you can drop straight onto the canvas. They are the informal half of a canvas: a thumbs up on somebody's idea, a **BLOCKED** badge on the step that is stuck, an arrow pointing at the thing everyone should be looking at, or a few flowers in the corner because a workshop should not look like a spreadsheet.
+The **Stickers** category, in the **Decorate** band of the palette's category picker, holds around 190 colour emoji and 32 word badges you can drop straight onto the canvas. It is in the palette in Diagram and Illustrate mode. They are the informal half of a canvas: a thumbs up on somebody's idea, a **BLOCKED** badge on the step that is stuck, an arrow pointing at the thing everyone should be looking at, or a few flowers in the corner because a workshop should not look like a spreadsheet.
 
-Every sticker lands the way a real one would: on a **die-cut white plate** with a soft shadow, so it reads as something stuck on top of the canvas rather than drawn into it. It arrives straight; tilt it yourself from the Rotation menu if you want the scrapbook look.
+Every sticker lands the way a real one would: on a **die-cut white plate** with a soft shadow, so it reads as something stuck on top of the canvas rather than drawn into it. It arrives straight; tilt it yourself from the **Rotation** section of its right-click menu if you want the scrapbook look.
 
 ## A sticker is not an icon
 
@@ -34,29 +34,31 @@ Stickers and [Icons](/help/palette/icons/) look like near neighbours in the pale
 
 The category opens on a grid of group tiles, each showing one of the stickers inside it. Click a group to see everything it holds, and use the breadcrumb at the top to come back.
 
-- **Badges** — the word pills, coloured by what they mean: APPROVED, DONE, SHIPPED, BLOCKED, REJECTED, URGENT, AT RISK, WIP, ON HOLD, IN REVIEW, NEEDS REVIEW, P0, P1, OWNER?, DISCUSS, OPEN QUESTION, NEW, IDEA, MUST HAVE, MVP, NICE TO HAVE, QUICK WIN, TO DO, DRAFT, PARKED, LATER, OUT OF SCOPE, and more.
-- **Reactions** — responding to somebody else's work: thumbs up and down, clapping, raised hands, a heart, fire, 💯, eyes.
-- **Feelings** — the face set, from delighted to confused to completely done in.
-- **Status** — check, cross, warning, red / amber / green dots, blocked, under construction, new, coming soon, trends up and down.
-- **Direction** — arrows in every direction, pointing hands, map pins, a compass, play, and a chequered flag for the finish.
-- **Celebrate** — party popper, confetti, trophy, medals, cake, gift, crown, rocket.
-- **Decorate** — sparkles, rainbow, sun, snowflake, flowers, hearts in every colour, gems.
-- **Meeting** — timers, calendar, speech and thought bubbles, megaphone, microphone, ballot box, brain, coffee.
-- **Work** — bug, wrench, gear, key, folder, package, laptop, money bag, target.
-- **People** — a person, a group, someone raising a hand, a worker, a detective.
-- **Fun** — robot, alien, unicorn, cat, pizza, dice, a game controller.
+- **Badges**: the word pills, coloured by what they mean: APPROVED, DONE, SHIPPED, BLOCKED, REJECTED, URGENT, AT RISK, WIP, ON HOLD, IN REVIEW, NEEDS REVIEW, P0, P1, OWNER?, DISCUSS, OPEN QUESTION, NEW, IDEA, MUST HAVE, MVP, NICE TO HAVE, QUICK WIN, TO DO, DRAFT, PARKED, LATER, OUT OF SCOPE, and more.
+- **Reactions**: responding to somebody else's work: thumbs up and down, clapping, raised hands, a heart, fire, 💯, eyes.
+- **Feelings**: the face set, from delighted to confused to completely done in.
+- **Status**: check, cross, warning, red / amber / green dots, blocked, under construction, new, coming soon, trends up and down.
+- **Direction**: arrows in every direction, pointing hands, map pins, a compass, play, and a chequered flag for the finish.
+- **Celebrate**: party popper, confetti, trophy, medals, cake, gift, crown, rocket.
+- **Decorate**: sparkles, rainbow, sun, snowflake, flowers, hearts in every colour, gems.
+- **Meeting**: timers, calendar, speech and thought bubbles, megaphone, microphone, ballot box, brain, coffee.
+- **Work**: bug, wrench, gear, key, folder, package, laptop, money bag, target.
+- **People**: a person, a group, someone raising a hand, a worker, a detective.
+- **Fun**: robot, alien, unicorn, cat, pizza, dice, a game controller.
 
 <Figure caption="Every sticker is drawn as the sticker it is: a die-cut plate with a shadow, or a coloured word badge. What you click is what lands.">
-  <StickersCatalogue />
+  <StickersSheet />
 </Figure>
 
 ## Finding one
 
 Search by what you mean, not by the emoji's official name. The catalogue matches on synonyms, so "celebrate" finds the party popper, "wip" finds both the WIP badge and the roadworks, and "thanks" finds the folded hands. A badge also answers to the word printed on it. Search always runs across **every** group, so you never have to guess where something was filed.
 
+Stickers turn up in the editor's other searches too: the [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) can add one to the canvas, and so can the palette strip's [Search](/help/palette/toolbar-layout/#search).
+
 ## Placing one
 
-<Step n={1}>Open the palette and choose **Stickers** from the category dropdown.</Step>
+<Step n={1}>Open the palette and choose **Stickers** from the category picker.</Step>
 
 <Step n={2}>Pick a group, or type in the search box to look across all eleven at once.</Step>
 
@@ -69,17 +71,19 @@ Search by what you mean, not by the emoji's official name. The catalogue matches
   as its own element, so you can move it away again without touching what is underneath.
 </Step>
 
-A sticker behaves like any other element once it is on the canvas: move it, resize it, rotate it, put it on a layer, and it exports with the rest of the canvas. What it will not do is take text or take your theme's colours, by design.
+A sticker behaves like any other element once it is on the canvas: move it, resize it, rotate it, put it on a layer, and it exports with the rest of the canvas. What it will not do is take text or take your theme's colours, by design, so its right-click menu has no Colours, Border, Presets or Text controls. Delete it like anything else, or press **Undo** straight after placing it.
 
 <Tip>
-  Stickers work especially well with a [Reaction](/help/collaboration/) round in a workshop: drop a
-  handful of thumbs and hearts near the ideas that landed, then move on. Because a sticker is just
-  an element, everything you place is still there when you come back to the canvas.
+  Stickers work especially well for a quick reaction round in a workshop: drop a handful of thumbs
+  and hearts near the ideas that landed, then move on. Because a sticker is just an element,
+  everything you place is still there when you come back to the canvas. For a burst of confetti that
+  everyone sees and then fades, use a [Reaction Pad](/help/palette/behaviour/reaction-pads/)
+  instead.
 </Tip>
 
 <Note>
   Emoji used to live as a category inside the Icons tab, and anything you placed back then stays
-  exactly as it was — a plain tinted glyph, not a die-cut sticker. New ones come from here.
+  exactly as it was: a plain tinted glyph, not a die-cut sticker. New ones come from here.
 </Note>
 
 </ArticleLayout>

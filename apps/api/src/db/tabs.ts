@@ -19,6 +19,7 @@ import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
 import { collabIndexStatements } from './collab-index';
+import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
 import {
   imageRefAddStatements,
   imageRefPruneTabStatement,
@@ -70,6 +71,27 @@ export async function tabIdsWithComments(env: Env, documentId: string): Promise<
     .bind(documentId)
     .all<{ tab_id: string }>();
   return results.map((r) => r.tab_id);
+}
+
+// A page of the document's tabs that hold a Plan board, in tab order, bodies included: the plan route
+// (docs/specs/026-plan/plan-agents.md "Cost") never parses a tab without a board.
+export async function tabBodiesWithBoards(
+  env: Env,
+  documentId: string,
+  offset: number,
+  limit: number,
+): Promise<TabDTO[]> {
+  const { results } = await env.DB.prepare(
+    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+       FROM tabs t
+       JOIN document_tabs dt ON dt.tab_id = t.id
+      WHERE dt.document_id = ? AND instr(t.data, '"plan-board"') > 0
+      ORDER BY dt.order_index, t.id
+      LIMIT ? OFFSET ?`,
+  )
+    .bind(documentId, limit, offset)
+    .all<TabRow>();
+  return results.map(rowToTab);
 }
 
 // A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
@@ -240,6 +262,10 @@ export function tabWriteStatements(
     // Placement grants (docs/specs/009-elements/images.md, "Placement grants"), after the
     // document_tabs upsert above, which they read.
     ...imageGrantPlacementStatements(env, id, imageRefIds(tab.elements), now),
+    // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
+    // document_tabs upserts, which the rows' FK and the settling triggers (migration 0079) read. A write whose
+    // references are unchanged touches no row, so the triggers cost it nothing.
+    ...sheetRefReplaceStatements(env, id, sheetRefIds(tab.elements)),
   ];
 }
 
@@ -350,6 +376,8 @@ export async function seedTabs(
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
     stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements)));
     stmts.push(...imageGrantPlacementStatements(env, tab.id, imageRefIds(tab.elements), now));
+    // A seed's sheets come after its tabs (routes/documents.ts), so they find these references on create.
+    stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
   }
   await env.DB.batch(stmts);
 }
@@ -394,6 +422,9 @@ export async function deleteTabRow(env: Env, documentId: string, tabId: string):
       env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId),
     ]);
   }
+  // The tab's references are gone (by the FK cascade, or by the unlink the reference join reads), with the link
+  // the triggers would find the document by, so the document's sheets settle here.
+  await env.DB.batch(sheetSettleStatements(env, documentId, Date.now()));
 }
 
 // Link an existing tab into another document (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
@@ -561,4 +592,19 @@ export async function swapTabData(
     .bind(now, documentId)
     .run();
   return true;
+}
+
+// Does the document link this tab? A workbench ticket naming a tab the document lacks is refused
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
+export async function documentLinksTab(
+  env: Env,
+  documentId: string,
+  tabId: string,
+): Promise<boolean> {
+  const row = await env.DB.prepare(
+    'SELECT 1 AS present FROM document_tabs WHERE document_id = ? AND tab_id = ?',
+  )
+    .bind(documentId, tabId)
+    .first<{ present: number }>();
+  return row !== null;
 }

@@ -97,7 +97,8 @@ describe('fresh boards and All Cards', () => {
     const p = projectBoard(presetSetup('all-cards'), map([a, b, c]), undefined, undefined, names);
     expect(p.total).toBe(2);
     expect(p.lanes.map((l) => l.label)).toEqual(['To do', 'In progress', 'Done']);
-    expect(statusLabel('in-review~ab12')).toBe('In review');
+    expect(statusLabel('in-review~ab12')).toBe('In Review');
+    expect(statusLabel('ready-for-qa')).toBe('Ready for Qa');
   });
 });
 
@@ -151,6 +152,23 @@ describe('add types', () => {
   });
 });
 
+describe('add types after a type is deleted', () => {
+  it('fall back to every type when none the board names is left, never an empty Add Card', async () => {
+    const { boardAddTypes, boardTakesType } = await import('./board');
+    const types = [{ id: 'project' }, { id: 'task' }, { id: 'note' }];
+    // The board took only `customer-call` new cards; that type has since been deleted.
+    const stale = { addTypes: ['customer-call'] };
+    expect(boardAddTypes(stale, types).map((t) => t.id)).toEqual(['project', 'task', 'note']);
+    expect(boardTakesType(stale, types, 'task')).toBe(true);
+    // One named type left: only it, and the deleted id is ignored.
+    const partial = { addTypes: ['customer-call', 'note'] };
+    expect(boardAddTypes(partial, types).map((t) => t.id)).toEqual(['note']);
+    expect(boardTakesType(partial, types, 'note')).toBe(true);
+    expect(boardTakesType(partial, types, 'task')).toBe(false);
+    expect(boardTakesType({}, types, 'project')).toBe(true);
+  });
+});
+
 describe('board widths', () => {
   it('fit every column side by side', async () => {
     const { planBoardWidthFor, PLAN_COLUMN_MIN_PX } = await import('./board');
@@ -167,5 +185,21 @@ describe('flags', () => {
     expect(isFlagged({ ...(base as object), fields: { flagged: true } } as never)).toBe(true);
     expect(isFlagged({ ...(base as object), fields: { flagged: 'yes' } } as never)).toBe(false);
     expect(isFlagged(base)).toBe(false);
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Card types a board shows": its last type turned off, a board takes none.
+describe('a board taking no card types', () => {
+  it('shows and takes none, and reads back as none', async () => {
+    const { boardAddTypes, boardTakesType, normaliseBoardSetup } = await import('./board');
+    const types = [{ id: 'project' }, { id: 'task' }];
+    expect(boardAddTypes({ addTypes: [] }, types)).toEqual([]);
+    expect(boardTakesType({ addTypes: [] }, types, 'task')).toBe(false);
+    const read = normaliseBoardSetup({
+      title: 'B',
+      columns: [{ id: 'c', status: 'todo' }],
+      addTypes: [],
+    });
+    expect(read?.addTypes).toEqual([]);
   });
 });

@@ -8,6 +8,7 @@ import type {
   IconPosition,
   Tab,
   FrameHandle,
+  LaidOutPage,
 } from '@livediagram/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
@@ -44,7 +45,7 @@ export type EditorDragDeps = {
   // on an element applies the format instead of dragging. The drag
   // dispatcher checks this and routes appropriately.
   formatSourceId: string | null;
-  applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
+  applyFormatFromSource: (targetId: string) => void;
   // The persistent Format canvas tool is active. A click on an element
   // picks it as the paint source (first click) or paints the armed
   // source's style onto it and stays armed (subsequent clicks) — instead
@@ -77,9 +78,10 @@ export type EditorDragDeps = {
     position: IconPosition,
   ) => void;
   // A Plan card was dragged and released over a Plan board's column (docs/specs/026-plan/plan-board.md
-  // "Working on a board"): its item files there and the card leaves the canvas. Omitted when edits
-  // are blocked.
-  onPlanCardDroppedOnBoard?: (card: Element, status: string) => void;
+  // "Working on a board"): its item files there and the card leaves the canvas, unless the board (`boardId`, its
+  // element id) does not show the card's type or the type leaves the status out. 'refused' sends the card back to
+  // where the drag started, with no undo step. Omitted when edits are blocked.
+  onPlanCardDroppedOnBoard?: (card: Element, status: string, boardId?: string) => 'refused' | void;
   // An annotation marker was pressed + released without moving (a click,
   // not a drag): open its note editor (docs/specs/009-elements/annotations.md). Distinguished from a drag
   // by the same DRAG_ENGAGE_PX travel test the icon-fold uses. Omitted when
@@ -104,6 +106,9 @@ export type EditorDragDeps = {
   // Illustrate mode's page lines (illustratePageSnapBoxes): what a move or resize snaps to
   // besides other elements. Null outside the mode.
   pageSnapBoxes?: Element[] | null;
+  // Illustrate mode's laid-out pages: an arrow's end joins nothing on another page than its other
+  // end's (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"). Null outside it.
+  illustratePages?: readonly LaidOutPage[] | null;
   // Set to true while a 2-finger pinch is active. The move handler
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.

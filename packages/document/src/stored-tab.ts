@@ -7,6 +7,7 @@ import { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 import { migrateRetiredScheme } from './retired-schemes';
 import { migrateStoredElements } from './stored-elements';
 import type { Element, Tab } from './index';
+import { isRecord } from './is-record';
 
 export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
@@ -18,9 +19,6 @@ export function migrateStoredTab<
   const elements = upgradeLegacyLinks(migrateStoredElements(schemed.elements));
   return elements === schemed.elements ? schemed : { ...schemed, elements };
 }
-
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  v !== null && typeof v === 'object' && !Array.isArray(v);
 
 /**
  * The same migrations for a tab that arrives from outside (an api write, a realtime peer, a file):

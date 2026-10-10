@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { installClientErrorTracking } from '@livediagram/telemetry-client';
-import { setApiErrorReporter } from '@/lib/api-client';
+import { setApiErrorReporter, setApiWarningReporter } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
 // Error telemetry boot (docs/specs/017-telemetry/telemetry.md 'Error' category): mounts once from the
@@ -26,6 +26,7 @@ export function ErrorTelemetryBoot() {
   useEffect(() => {
     installClientErrorTracking(track);
     setApiErrorReporter((type) => track('Error', 'Api', type));
+    setApiWarningReporter((type) => track('Error', 'Warning', type));
   }, []);
   return null;
 }

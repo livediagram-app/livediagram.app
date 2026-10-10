@@ -138,7 +138,7 @@ existing `ExplorerPane` dispatch.
 ```
 
 **Day rail.** A dot and a connecting line down the left, one group per
-calendar day (UTC), newest first. Today's dot is brand-500 with a soft
+calendar day in the reader's local timezone (`dateKey`), newest first. Today's dot is brand-500 with a soft
 ring and its label carries a **Today** pill. Days in the future (a share
 link expiring, a token expiring) sit above Today with a violet-tinted
 dot and rail.
@@ -452,13 +452,12 @@ the mode buttons in §2.2.
   day-group into view and pulses it with a fading box-shadow — box-shadow
   only, never a transform, because transforming the group promotes it to its
   own compositing layer and tearing that layer down at animation end makes
-  the cards visibly blink. **Calendar** moves the grid to that day's month;
-  **week** moves it to the week containing it.
+  the cards visibly blink. **Calendar** moves the grid to that day's month.
 
   The mode split is not a nicety: the scroll target and the pulse are both
   rendered by the day groups, and only list mode renders those, so a
   scroll-and-pulse-only implementation left this control — offered in the
-  header in all three modes — doing nothing at all in two of them.
+  header in both modes — doing nothing at all in one of them.
 
 - **Show more** appends the next page when the read returns a cursor.
   Page size 50, capped server-side at 200.
@@ -750,7 +749,7 @@ the Explorer's own handlers (`useTimelineEntityMenus`):
 | Document the Explorer can't resolve    | Open Document                                                                                            |
 
 Plus **Remove from Timeline** on all of them (§2.9), and the destructive
-verbs last, red, under their own separator, the way the document menu
+verbs last, under their own separator (never red), the way the document menu
 keeps Delete. The first version gave these cards only the remove verb,
 on the argument that a ⋯ holding a single "Open" that duplicated the
 card's own click was a control that exists to look consistent. Half

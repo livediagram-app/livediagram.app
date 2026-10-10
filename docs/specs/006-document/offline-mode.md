@@ -101,6 +101,12 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
   shown in the badge's visibility legend on hover and focus and given to
   assistive technology as the badge's description. It stays a status, not a
   link: the legend explains it in place.
+- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus): **Who Can See This**, "From
+  just you to everyone, as you share it.", then the audiences as a ladder joined by a rail: **Private** (a lock),
+  **Shared** (a link), **Team** (people), **Public** (a globe), each a round tile in its tone over its name and
+  its sentence; the document's own state tinted in its tone and marked **Current** with a check. **Local only**
+  (its browser-window icon, amber) stands apart under a divider, the deliberate opt-out. For the eye only: the
+  badge carries the current state's words for assistive technology.
 - **Explorer.** Offline documents appear in Recent (and the other lists)
   alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.
@@ -124,8 +130,8 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 Every row and card of an offline document carries a **Local only** pill,
 wherever the document is listed: the list and card views (folders, Search results,
 This browser, Recent, Favourites), Home's Jump back in, the folder previews' tiles excepted (they
-are pictures, not rows), the search panel's results, the floating Explorer
-panel's rows and its Current Document card, and the Trash.
+are pictures, not rows), the search panel's results, the editor's Explorer
+rows and its Current Document card, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
   "Local only", in an amber tone whose text meets 4.5:1 on its fill in light and
@@ -138,8 +144,8 @@ panel's rows and its Current Document card, and the Trash.
   article (new tab, the editor's help-link telemetry), with its own focus ring.
   Where the row is itself a single control (a search result, the panel's
   Current Document row), the pill is a plain label inside it, carrying the same
-  description: a link cannot sit inside a button. In a tree (the floating
-  Explorer panel), the pill is a link out of the tab order, since the tree owns
+  description: a link cannot sit inside a button. In a tree (the editor's
+  Explorer), the pill is a link out of the tab order, since the tree owns
   the one tab stop, and the row itself carries the description. The Trash row's
   pill is a link like any other.
 - **It replaces the "Offline" visibility badge** in the Explorer's lists: an

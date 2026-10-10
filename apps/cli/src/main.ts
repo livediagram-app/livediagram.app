@@ -15,11 +15,14 @@ import {
   type LoginInput,
 } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
+import { linkInit, linkLs, linksFor, linkStatus, type LinkInitInput } from './commands/link';
 import { pullDocument, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
 import { pushFile, type PushInput } from './commands/push';
+import { syncLinks, type SyncInput } from './commands/sync';
 import { waitFor, type WaitInput } from './commands/wait';
 import { watch, type WatchInput } from './commands/watch';
+import { pairWorkbench, type PairInput } from './commands/workbench-pair';
 import { loadCapabilities } from './config/capabilities';
 import { withTelemetry, type ConfigFile } from './config/config-file';
 import { configDir } from './config/paths';
@@ -37,11 +40,15 @@ import { EXIT, exitCodeForStatus, type ExitCode } from './output/exit-codes';
 import { failureOf } from './output/failure-of';
 import { render } from './output/print';
 import { inputReader } from './input';
+import type { LinkFile } from './link/link-file';
 import { fileReadCopies } from './sync/read-copies';
 import { reportApiFailure, sendCliUsed, setTelemetry, type TelemetrySink } from './telemetry';
 import { transport } from './transport';
 
 type Input = Record<string, unknown>;
+
+// The verbs that act on the repository links at or below the working directory.
+const LINKED_VERBS = ['link.status', 'link.ls', 'sync'];
 
 // The verbs that read no profile, no credential and no api.
 function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise<unknown> | null {
@@ -79,6 +86,7 @@ async function runOnline(
   log: DebugLog,
   reporting: (sink: TelemetrySink) => void,
   json: boolean,
+  links: readonly LinkFile[],
 ) {
   const caps = await loadCapabilities(io, profile, log);
   const sink: TelemetrySink = { io, apiBase: caps.apiBase, log };
@@ -128,7 +136,13 @@ async function runOnline(
       hint: UPGRADE_HINT,
     });
   }
-  const api = http.forToken(credential.token);
+  // A stored credential is read again if the api refuses it mid-command; an env token cannot change.
+  const api = http.forCredential(
+    credential.token,
+    credential.source === 'env'
+      ? null
+      : async () => (await resolveCredential(io, profile.name))?.token ?? null,
+  );
   if (verb.id === 'auth.status') return status(io, profile, api, credential.source);
   if (verb.id === 'auth.logout') return logout(io, profile, api, credential.source);
   if (verb.id === 'api')
@@ -154,6 +168,11 @@ async function runOnline(
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
   if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
+  if (verb.id === 'link.init') return linkInit(io, ctx, input as LinkInitInput);
+  if (verb.id === 'link.status') return linkStatus(io, ctx, links, Boolean(input.all));
+  if (verb.id === 'link.ls') return linkLs(io, ctx, links, input.limit as number);
+  if (verb.id === 'sync') return syncLinks(io, ctx, caps.apiBase, links, input as SyncInput);
+  if (verb.id === 'workbench.pair') return pairWorkbench(io, api, input as PairInput, json, log);
   return verb.run!(ctx, input);
 }
 
@@ -212,6 +231,10 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
       const profile = resolveProfile(globals, io, config);
       host = profile.host;
       log(`profile ${profile.name} host ${profile.host} source ${profile.source}`);
+      // A link's host is checked against the profile's before any request (repository-link blueprint RL5).
+      const links = LINKED_VERBS.includes(verb.id)
+        ? await linksFor(io, Boolean(input.all), profile, config, verb.id.replace('.', ' '))
+        : [];
       pending = runOnline(
         io,
         verb,
@@ -222,6 +245,7 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
           reported.current = { sink, config, host: profile.host };
         },
         globals.mode.json,
+        links,
       );
     }
     const value = await pending;
@@ -230,7 +254,12 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
     log(`exit ${code}`);
     const reporting = reported.current;
     if (code === EXIT.done && reporting && !verb.id.startsWith('telemetry.'))
-      await sendCliUsed(verb.id, reporting.sink, reporting.config, reporting.host);
+      await sendCliUsed(
+        verb.telemetryType?.(input) ?? verb.id,
+        reporting.sink,
+        reporting.config,
+        reporting.host,
+      );
     return code;
   } catch (err) {
     const reporting = reported.current;

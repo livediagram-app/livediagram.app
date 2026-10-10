@@ -22,6 +22,8 @@ export function dropPlanCardAt(type: string, clientX: number, clientY: number): 
   if (!target.acceptsType(type)) return { outcome: 'refused', message: target.refusal() };
   const slot = dropSlotAt(hit.el, clientX, clientY, '');
   if (!slot) return { outcome: 'missed', message: PLAN_CARD_MISSED };
+  // A new card is made in whatever column it lands in, even one whose status its type leaves out: left-out statuses
+  // only stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
   target.addCard(type, slot);
   return { outcome: 'added' };
 }
@@ -73,18 +75,33 @@ export function planCardDragOver(clientX: number, clientY: number): boolean {
     clearHover();
     return false;
   }
+  return planCardHoverAt(preview.planType ?? 'task', clientX, clientY);
+}
+
+// A card of `type` held over a screen point (dragged, or pressed and not yet placed): the board under
+// the point opens the gap where it would land. True while it does.
+export function planCardHoverAt(type: string, clientX: number, clientY: number): boolean {
   const hit = otherPlanBoardAt(clientX, clientY, '');
   const target = hit ? planBoardTarget(hit.id) : undefined;
-  const slot =
-    hit && target?.acceptsType(preview.planType ?? 'task')
-      ? dropSlotAt(hit.el, clientX, clientY, '')
-      : null;
+  const slot = hit && target ? dropSlotAt(hit.el, clientX, clientY, '') : null;
   if (hovered && hovered !== hit?.id) clearHover();
   if (!hit || !target || !slot) {
     if (hit && target) target.hover(null);
     return false;
   }
   hovered = hit.id;
+  // A type the board does not show: a red zone at the column's foot saying why, where nothing will land. (A
+  // column whose status the type leaves out still takes a new card: only moves are refused.)
+  const refused = !target.acceptsType(type) ? target.refusal() : null;
+  if (refused) {
+    target.hover({
+      itemId: '',
+      slot: { ...slot, beforeId: null },
+      height: PLAN_PALETTE_GAP_PX,
+      refused,
+    });
+    return false;
+  }
   target.hover({ itemId: '', slot, height: PLAN_PALETTE_GAP_PX });
   return true;
 }

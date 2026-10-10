@@ -5,7 +5,7 @@
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
-import { lucideStar } from '@livediagram/icons/lucide';
+import { lucideStar, lucideStickyNote } from '@livediagram/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
@@ -49,20 +49,24 @@ export function CanvasCluster({ className }: { className: string }) {
           <ThemeBrushIcon size={12} />
         </span>
       </span>
+      {/* Each piece of the readout centres its cap band, not its line box, as the window's
+          other labels do (docs/specs/004-interface-design/optical-alignment.md). */}
       <span className={`${CARD} gap-2.5 px-2.5 text-[9px] font-medium`}>
-        <span>−</span>
-        100%
-        <span>+</span>
+        <span className="text-optical-line">−</span>
+        <span className="text-optical-line">100%</span>
+        <span className="text-optical-line">+</span>
       </span>
     </div>
   );
 }
 
 // The tab bar's right-hand controls, labelled as the editor labels them on a wide window:
-// Search, Settings, and the appearance toggle on its default, System.
+// Search, Settings, and the appearance toggle on its default, System. Shown by the window's width
+// (the window/ container in hero-editor-window.tsx), not the viewport's: in a narrower window the
+// tabs ran into it.
 export function TabBarToolbelt() {
   return (
-    <div className="ml-auto hidden items-center gap-3 pr-1 text-[9px] font-medium text-slate-500 sm:flex dark:text-slate-400">
+    <div className="ml-auto hidden items-center gap-3 pr-1 text-[9px] font-medium text-slate-500 @min-[620px]/window:flex dark:text-slate-400">
       <span className="flex items-center gap-1">
         <SearchIcon size={9} />
         Search
@@ -91,7 +95,7 @@ export function ToolbarMenuButton({ mode }: { mode: HeroMode }) {
       <span className={CELL}>
         <MenuIcon size={11} />
       </span>
-      <span className="flex h-full items-center gap-1 border-l border-slate-100 bg-brand-50 px-2 text-[9px] font-medium text-brand-700 dark:border-slate-800 dark:bg-brand-500/15 dark:text-brand-200">
+      <span className="optical-edges flex h-full items-center gap-1 border-l border-slate-100 bg-brand-50 px-2 text-[9px] font-medium text-brand-700 dark:border-slate-800 dark:bg-brand-500/15 dark:text-brand-200">
         <Icon size={10} />
         <span className="text-optical-line">{label}</span>
         <ChevronDownIcon size={7} />
@@ -100,7 +104,10 @@ export function ToolbarMenuButton({ mode }: { mode: HeroMode }) {
   );
 }
 
-// The strip shows the mode's first tiles; a phone fewer.
+// The strip shows the mode's first tiles; a narrow window fewer. Measured against the window's
+// canvas (a container query, @container in hero-editor-window.tsx), not the viewport: a landing
+// beat's window is narrower than the hero's at the same screen width, and the full strip there ran
+// into the menu button beside it.
 const NARROW_TILES = 4;
 
 function StripDivider() {
@@ -140,9 +147,12 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
             <StripDivider />
             <span className="flex h-6 items-center gap-1 px-1.5 text-[9px] font-medium">
               <Glyph size={10} units={24}>
-                <Prims prims={lucideStar} />
+                {/* Plan has no Popular: its strip opens on Cards. */}
+                <Prims prims={mode === 'plan' ? lucideStickyNote : lucideStar} />
               </Glyph>
-              <span className="hidden sm:text-optical-line">Popular</span>
+              <span className="hidden sm:text-optical-line">
+                {mode === 'plan' ? 'Cards' : 'Popular'}
+              </span>
               <ChevronDownIcon size={7} />
             </span>
           </>
@@ -152,7 +162,7 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
           <span
             key={t.key}
             className={`h-6 w-6 items-center justify-center rounded ${
-              i < NARROW_TILES ? 'flex' : 'hidden sm:flex'
+              i < NARROW_TILES ? 'flex' : 'hidden @[600px]:flex'
             } ${t.active ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300' : ''}`}
           >
             {t.glyph}

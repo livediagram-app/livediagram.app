@@ -50,6 +50,18 @@ describe('useEditorViewport scrolling a new element into view', () => {
     expect(view.result.current.viewport.get().offset).not.toEqual(before);
   });
 
+  it('leaves an added board or Sheet to its Focus glide', () => {
+    const { selection, near, view } = setup();
+    const before = view.result.current.viewport.get().offset;
+    const sheet = createShape('plan-sheet', 3000, 3000);
+    act(() => {
+      selection.setSelectedId(sheet.id);
+      view.rerender({ tab: tabOf([near, sheet]) });
+    });
+    act(() => vi.advanceTimersByTime(800));
+    expect(view.result.current.viewport.get().offset).toEqual(before);
+  });
+
   it('leaves the view alone for an added element that is not selected', () => {
     const { near, view } = setup();
     const before = view.result.current.viewport.get().offset;
@@ -79,5 +91,65 @@ describe('useEditorViewport view', () => {
     expect(result.current.viewport.get()).toEqual({ zoom: 2, offset: { x: 30, y: -10 } });
     expect(result.current.zoomRef.current).toBe(2);
     expect(result.current.viewportOffsetRef.current).toEqual({ x: 30, y: -10 });
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Focus": glide to fit an element; pressed again, out to the whole tab.
+describe('useEditorViewport focus', () => {
+  function sized() {
+    const s = setup();
+    const main = s.view.result.current.canvasMainRef.current!;
+    Object.defineProperty(main, 'offsetWidth', { value: 400 });
+    Object.defineProperty(main, 'offsetHeight', { value: 800 });
+    return s;
+  }
+
+  it('glides to fit an element, then out to the whole tab', () => {
+    const { view } = sized();
+    const far = createShape('square', 3000, 3000);
+    act(() => view.rerender({ tab: tabOf([createShape('square', 10, 10), far]) }));
+    const box = { x: far.x, y: far.y, w: far.width, h: far.height };
+    act(() => view.result.current.focusOn(box, 1.5));
+    // Part way there, still moving.
+    act(() => vi.advanceTimersByTime(100));
+    const mid = view.result.current.viewport.get();
+    act(() => vi.advanceTimersByTime(800));
+    const fitted = view.result.current.viewport.get();
+    expect(fitted.zoom).toBeCloseTo(1.5);
+    expect(fitted.offset).not.toEqual(mid.offset);
+    // Already fitted: out to everything.
+    act(() => view.result.current.focusOn(box, 1.5));
+    act(() => vi.advanceTimersByTime(800));
+    expect(view.result.current.viewport.get().zoom).toBeLessThan(fitted.zoom);
+  });
+
+  it('stops gliding when anything else moves the view, and when it unmounts', () => {
+    const { view } = sized();
+    const far = createShape('square', 3000, 3000);
+    act(() => view.rerender({ tab: tabOf([createShape('square', 10, 10), far]) }));
+    const box = { x: far.x, y: far.y, w: far.width, h: far.height };
+    act(() => view.result.current.focusOn(box, 1.5));
+    act(() => vi.advanceTimersByTime(100));
+    // A wheel or pinch of the person's own.
+    act(() => view.result.current.viewport.setOffset({ x: 7, y: 9 }));
+    act(() => vi.advanceTimersByTime(800));
+    expect(view.result.current.viewport.get().offset).toEqual({ x: 7, y: 9 });
+    act(() => view.result.current.focusOn(box, 1.5));
+    act(() => vi.advanceTimersByTime(100));
+    const at = view.result.current.viewport.get();
+    view.unmount();
+    act(() => vi.advanceTimersByTime(800));
+    expect(view.result.current.viewport.get()).toEqual(at);
+  });
+
+  it('jumps at once under reduced motion, and ignores an empty box', () => {
+    const { view } = sized();
+    document.documentElement.classList.add('reduce-motion');
+    act(() => view.result.current.focusOn({ x: 0, y: 0, w: 100, h: 100 }, 1));
+    expect(view.result.current.viewport.get().zoom).toBeCloseTo(1);
+    const before = view.result.current.viewport.get();
+    act(() => view.result.current.focusOn({ x: 0, y: 0, w: 0, h: 0 }));
+    expect(view.result.current.viewport.get()).toEqual(before);
+    document.documentElement.classList.remove('reduce-motion');
   });
 });

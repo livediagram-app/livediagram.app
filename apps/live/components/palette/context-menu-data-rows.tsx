@@ -5,8 +5,10 @@
 // context-menu-rows.tsx (which re-exports everything here) so that file
 // keeps the generic look-and-feel rows.
 
+import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { type ReactNode } from 'react';
 import {
+  animationLabel,
   clampPercent,
   PIE_ANIMS,
   PROGRESS_ANIMS,
@@ -29,9 +31,14 @@ export function NoMarkerGlyph() {
     </Glyph>
   );
 }
-import { SizeButton } from '@/components/palette/palette-controls';
-import { MENU_ICON_PX, ProgressAnimKindGlyph } from '@/components/palette/context-menu-icons';
-import { SpeedTiles, TileLabel, withNone } from '@/components/palette/context-menu-tiles';
+import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
+import {
+  PieAnimPreview,
+  ProgressAnimPreview,
+  RatingAnimPreview,
+} from '@/components/palette/animation-previews-existing';
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { SpeedTiles, withNone } from '@/components/palette/context-menu-tiles';
 import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
 import { lucideChartColumn, lucideChartPie, lucideStar } from '@livediagram/icons/lucide';
 
@@ -172,9 +179,15 @@ function AnimTiles<T extends string>({
       ) : null}
       <div className={`grid grid-cols-4 gap-1 px-2 ${header ? 'pb-1.5' : 'py-1.5'}`}>
         {withNone(anims).map((v) => (
-          <SizeButton key={v ?? 'none'} active={anim === v} onClick={() => onSet(v)}>
-            <TileLabel glyph={glyphFor(v)} label={v ?? 'None'} />
-          </SizeButton>
+          <AnimationPreviewTile
+            key={v ?? 'none'}
+            active={anim === v}
+            label={v ? animationLabel(v) : 'None'}
+            frame={v ? 0.3 : 0}
+            onClick={() => onSet(v)}
+          >
+            {glyphFor(v)}
+          </AnimationPreviewTile>
         ))}
       </div>
       {anim ? (
@@ -194,46 +207,21 @@ function AnimTiles<T extends string>({
 
 export function RatingAnimTiles(props: AnimTilesProps<RatingAnim>) {
   return (
-    <AnimTiles
-      {...props}
-      anims={RATING_ANIMS}
-      glyphFor={(v) => <StarGlyph filled={!!v} size={16} />}
-    />
+    <AnimTiles {...props} anims={RATING_ANIMS} glyphFor={(v) => <RatingAnimPreview anim={v} />} />
   );
 }
 
-// A small pie glyph for the Data category + its animation tiles.
-function PieGlyph({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-      <circle cx="12" cy="12" r="9" fill="#0ea5e9" />
-      <path d="M12 12 L12 3 A9 9 0 0 1 20.5 15 Z" fill="#f59e0b" />
-      <path d="M12 12 L20.5 15 A9 9 0 0 1 7 20.2 Z" fill="#22c55e" />
-    </svg>
-  );
-}
 // Monochrome pie outline — the "Data" category glyph. The other category
-// glyphs are all single-colour (currentColor), so the colourful PieGlyph (used
-// for the animation tiles) would stand out; this matches them.
+// glyphs are all single-colour (currentColor); this matches them.
 export const DataMenuGlyph = lucideGlyph(lucideChartPie, MENU_ICON_PX);
 
 // Bars on axes: the "Chart" (display options) category glyph.
 export const ChartMenuGlyph = lucideGlyph(lucideChartColumn, MENU_ICON_PX);
 
-// Pie / line chart data editors live in their own module; re-exported here
-// so the context-menu row imports stay a single source.
-export { LineDataSummary, PieDataEditor } from './context-menu-data-editors';
-
 // Pie slice animation tiles (docs/specs/009-elements/pie-chart.md): None + the chart animations, then Speed
 // + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
 export function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
-  return (
-    <AnimTiles
-      {...props}
-      anims={PIE_ANIMS}
-      glyphFor={(v) => (v ? <PieGlyph size={16} /> : <NoMarkerGlyph />)}
-    />
-  );
+  return <AnimTiles {...props} anims={PIE_ANIMS} glyphFor={(v) => <PieAnimPreview anim={v} />} />;
 }
 
 // A labelled 0–100 range slider with a right-aligned `{pct}%` readout. Shared
@@ -249,23 +237,14 @@ export function PercentSliderRow({
   onPct: (pct: number) => void;
 }) {
   return (
-    <div className="px-3 py-1.5">
-      <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">{label}</p>
-      <div className="mt-1 flex items-center gap-2">
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={pct}
-          onChange={(e) => onPct(Number(e.target.value))}
-          aria-label={label}
-          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
-        />
-        <span className="w-10 text-right text-xs font-medium text-slate-700 dark:text-slate-200">
-          {pct}%
-        </span>
-      </div>
-    </div>
+    <MenuSliderRow
+      label={label}
+      min={0}
+      max={100}
+      value={pct}
+      display={`${pct}%`}
+      onChange={onPct}
+    />
   );
 }
 
@@ -283,7 +262,7 @@ export function ProgressAnimTiles(props: AnimTilesProps<ProgressAnim>) {
       {...props}
       anims={PROGRESS_ANIMS}
       header={false}
-      glyphFor={(v) => <ProgressAnimKindGlyph kind={v} />}
+      glyphFor={(v) => <ProgressAnimPreview anim={v} />}
     />
   );
 }

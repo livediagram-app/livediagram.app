@@ -41,6 +41,18 @@ CI runs the same five steps on every push, plus `pnpm staging:check`. Failing an
 
 Adding or upgrading a dependency that ships to a browser or a worker can fail `pnpm build` with a named licences error. `LicenceTextMissing` means the package ships no licence file: add its upstream text to `packages/licences/texts/`, list it in `TEXT_SOURCES` with a pinned URL and checksum, and add an `OVERRIDES` entry for that exact version. `UnreviewedBinaryAsset` means a new `.wasm` or font: add an `EMBEDDED_WORKS` entry naming what is compiled into it. `LicenceNotAllowed` is a decision, not a fix: raise it. See [Third-party licences](../specs/002-project-scope/third-party-licences.md).
 
+### Security alerts and `pnpm.overrides`
+
+A Dependabot alert is fixed by upgrading the direct dependency that pulls the vulnerable package in. An entry in the root `package.json` `pnpm.overrides` is for when no upstream release fixes it; `package.json` holds no comments, so each such entry is listed here with its alert:
+
+| Override                                 | Alert                                                | Why no upstream fix                                                                                                                                                                      |
+| ---------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sharp` `^0.35.5`                        | GHSA-wq5f-xc86-pv6w (librsvg in sharp `< 0.35.5`)    | `@huggingface/transformers` 3.8.1, the last 3.x, asks for `^0.34.1`; 4.x is ruled out by the 25 MiB asset limit ([Deployment](../specs/016-platform/deployment.md))                      |
+| `onnxruntime-node>global-agent` `^4.1.3` | GHSA-hp3w-g68c-fv3c (sprintf-js, no patched release) | transformers 3.8.1 pins `onnxruntime-node` 1.21.0, whose `global-agent` 3 pulls `roarr` 2 and `sprintf-js`; `global-agent` 4 has neither and keeps the `bootstrap` its postinstall calls |
+| `@tensorflow/tfjs>argparse` `^2.0.1`     | GHSA-hp3w-g68c-fv3c (sprintf-js, no patched release) | `@tensorflow/tfjs` 4.22.0, the latest, declares `argparse` 1 but never requires it; `argparse` 2 has no dependencies                                                                     |
+
+Drop an entry once an upstream release makes it redundant.
+
 ### Merging to `main` deploys
 
 A merge to `main` that passes CI **deploys automatically to staging** —

@@ -243,13 +243,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-illustration',
     title: 'Blank Illustration',
-    description: 'An empty page for an infographic or an article, sized for print or social.',
+    description: 'An empty page for an infographic, an article, a slide or a logo.',
     extra: true,
   },
   {
     kind: 'blank-plan',
     title: 'Blank Plan',
-    description: 'One empty board: name its first column and build it the way your team works.',
+    description: 'An empty Plan tab: pick the board that fits the work, or build your own.',
     extra: true,
   },
   {
@@ -446,7 +446,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'slide-deck',
     title: 'Slide deck',
     description:
-      'A six-slide pitch (title, problem, solution, traction, team, the ask) on Slide (16:9) pages, with speaker notes.',
+      'A six-slide pitch (title, problem, solution, traction, team, the ask) on 16:9 slide pages, with speaker notes.',
     extra: true,
   },
   {

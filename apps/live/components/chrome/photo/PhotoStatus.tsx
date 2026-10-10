@@ -187,8 +187,8 @@ export function PhotoStatus({
       {foundNothing ? (
         <Pill tone="warn" testId="photo-found-nothing">
           No stickies found in this photo. Fill the frame with the wall, shoot straight on, and give
-          it good light — then try another photo. You can still drag a box around a note to add it
-          by hand.
+          it good light, then try another photo. You can still drag a box around a note to add it by
+          hand.
         </Pill>
       ) : null}
     </div>

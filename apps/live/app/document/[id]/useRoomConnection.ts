@@ -6,7 +6,8 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import type { QaNote, Tab } from '@livediagram/document';
+import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
+import type { EditorMode, QaNote, Tab } from '@livediagram/document';
 import {
   parseArticleCaret,
   type AgentPresence,
@@ -14,6 +15,8 @@ import {
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
+  type SheetPresenceOp,
+  type SheetsRoomOp,
   type FacilitatorReason,
   type LivePoll,
 } from '@livediagram/api-schema';
@@ -31,6 +34,7 @@ import {
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
+import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
 import { shareLinkOpEffect } from './share-link-ops';
@@ -63,6 +67,9 @@ export function useRoomConnection(opts: {
   // False keeps the room closed whatever else holds: a Community viewer never joins the author's room
   // (docs/specs/025-community/community.md "Viewing a post's document"). Defaults to true.
   enabled?: boolean;
+  // A workbench session (docs/specs/013-workspace/blueprints/workbench-embeds.md): told when the room
+  // ends it (close 4006), or when an access change does (4005, WB31), instead of reloading.
+  onWorkbenchEnded?: () => void;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -85,6 +92,10 @@ export function useRoomConnection(opts: {
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).
   applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
+  // for a tab still waiting on its first fetch is left to that fetch.
+  loadedTabIdsRef: MutableRefObject<Set<string>>;
+  markTabLoaded: (id: string) => void;
   setLivePresence: Dispatch<SetStateAction<Participant[]>>;
   setLiveAgents: Dispatch<SetStateAction<AgentPresence[]>>;
   setRemoteSelections: Dispatch<SetStateAction<Map<string, RemoteSelection>>>;
@@ -145,6 +156,10 @@ export function useRoomConnection(opts: {
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
+  // A peer switched a tab's editor mode (docs/specs/007-editor/editor-modes.md "Where the mode
+  // lives"): already applied with the op; told so the editor can say who switched. `name` is the
+  // peer's presence name, null when the room has not given one.
+  receivePeerModeSwitch?: (name: string | null, tabId: string, mode: EditorMode) => void;
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
@@ -157,6 +172,10 @@ export function useRoomConnection(opts: {
     from: string,
     op: { tabId: string; itemId: string | null; state?: 'drag' | 'view' },
   ) => void;
+  // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). System-only.
+  receiveSheets: (op: SheetsRoomOp) => void;
+  // A peer's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"). Presence.
+  receiveSheetPresence: (from: string, op: SheetPresenceOp) => void;
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
@@ -166,6 +185,7 @@ export function useRoomConnection(opts: {
     documentId,
     documentServerStored,
     enabled = true,
+    onWorkbenchEnded,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -177,6 +197,8 @@ export function useRoomConnection(opts: {
     sessionShareCodeRef,
     roomRef,
     applyRemoteTabs,
+    loadedTabIdsRef,
+    markTabLoaded,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
@@ -203,6 +225,9 @@ export function useRoomConnection(opts: {
     receiveItems,
     receiveItemTypes,
     receivePlanPresence,
+    receiveSheets,
+    receiveSheetPresence,
+    receivePeerModeSwitch,
     onRoomJoined,
   } = opts;
 
@@ -234,6 +259,8 @@ export function useRoomConnection(opts: {
   }, [picture]);
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
+  // Each peer's presence name, to say who switched a tab's mode.
+  const nameByPresenceRef = useRef<Map<string, string>>(new Map());
   // The facilitator token is read on demand by the room, always as it is now.
   const roomReadFacilitatorToken = useEffectEvent(() => readFacilitatorToken());
 
@@ -256,6 +283,7 @@ export function useRoomConnection(opts: {
       // Each peer's server-verified role, read when their drag preview arrives: only an editor's is
       // drawn (docs/specs/008-canvas/drag-preview.md).
       roleByPresenceRef.current = new Map(participants.map((p) => [p.id, p.role] as const));
+      nameByPresenceRef.current = new Map(participants.map((p) => [p.id, p.name] as const));
       setLivePresence(
         participants.map((p) => ({
           id: p.id,
@@ -337,6 +365,7 @@ export function useRoomConnection(opts: {
         }
         return next;
       });
+      syncRemoteBesideTabs(participants, selfId);
       setRemoteSelections((prev) => pruneMapToPresent(prev, present));
       setRemoteCursors((prev) => pruneMapToPresent(prev, present));
       // A peer who disconnects takes their character with them (docs/specs/008-canvas/avatar-mode.md),
@@ -379,10 +408,20 @@ export function useRoomConnection(opts: {
         // change is known to be the peer's and is never saved or broadcast
         // back as if it were ours (docs/specs/012-collaboration/collab-race-hardening.md).
         if (op.kind === 'document-meta') setDocumentName(op.name);
+        // A tab not fetched yet is a placeholder: an element added to it would make it look edited, so
+        // its fetch would be thrown away and the next save would write the placeholder over the real
+        // tab. Its fetch brings the element. A whole tab from a peer is its content: loaded.
+        if (op.kind === 'el' && !loadedTabIdsRef.current.has(op.tabId)) return;
+        if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
         applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
         foldRemoteOpIntoBaseline(saveBaseline, op);
+        const switched = peerModeSwitchOf(op);
+        if (switched) {
+          const name = nameByPresenceRef.current.get(from) ?? null;
+          receivePeerModeSwitch?.(name, switched.tabId, switched.mode);
+        }
         // In the same batch as the tabs update, so the render that shows the op also counts it.
         countAppliedOp();
       } else if (op.kind === 'select') {
@@ -460,6 +499,8 @@ export function useRoomConnection(opts: {
           next.set(from, op.tabId);
           return next;
         });
+        // Their other pane, side by side (docs/specs/007-editor/split-view.md "Presence").
+        setRemoteBesideTab(from, op.besideTabId);
       } else if (op.kind === 'poll-start') {
         // Live poll (docs/specs/012-collaboration/live-poll.md). Purely ephemeral: it lands in the poll
         // hook's memory and never touches tabs or autosave, so there is
@@ -491,6 +532,11 @@ export function useRoomConnection(opts: {
         if (from === 'system') receiveChangeset(op);
       } else if (op.kind === 'plan-presence') {
         receivePlanPresence(from, op);
+      } else if (op.kind === 'sheet-presence') {
+        receiveSheetPresence(from, op);
+      } else if (op.kind === 'sheets') {
+        // Sheet writes (docs/specs/029-sheets/sheet-store.md). System-only, as items.
+        if (from === 'system') receiveSheets(op);
       } else if (op.kind === 'items') {
         // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.
@@ -517,6 +563,11 @@ export function useRoomConnection(opts: {
   );
 
   const roomDocumentTrashed = useEffectEvent(() => receiveDocumentTrashed());
+  // A workbench frame cannot reload into another access path: an access change ends its session.
+  const roomAccessChanged = useEffectEvent(() =>
+    onWorkbenchEnded ? onWorkbenchEnded() : window.location.reload(),
+  );
+  const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -579,7 +630,8 @@ export function useRoomConnection(opts: {
       onSelectionReleased: (msg) => roomSelectionReleased(msg),
       onDocumentTrashed: () => roomDocumentTrashed(),
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
-      onAccessChanged: () => window.location.reload(),
+      onAccessChanged: () => roomAccessChanged(),
+      onWorkbenchEnded: () => roomWorkbenchEnded(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };
@@ -617,6 +669,8 @@ export function useRoomConnection(opts: {
           // it). A share-link visitor's id just won't match, and their
           // role comes from the code.
           ownerId: self.id,
+          // Each reconnect needs its own ticket: the upgrade spends the one it admits.
+          mintTicket: () => apiCreateRoomTicket(self.id, documentId, shareCode),
         },
         roomReadFacilitatorToken,
       );

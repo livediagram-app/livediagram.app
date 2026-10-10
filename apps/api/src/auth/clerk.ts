@@ -1,4 +1,4 @@
-import { bearerTokenOf } from '@livediagram/api-schema';
+import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { Env } from '../types';
 
@@ -79,6 +79,9 @@ export async function getClerkIdentity(env: Env, request: Request): Promise<Cler
 
   const token = bearerTokenOf(request.headers.get('Authorization'));
   if (!token) return null;
+  // An API token or a workbench session is never a Clerk session token: the token paths resolve it,
+  // and verifying it would only fail and log a rejection on every token request.
+  if (isApiTokenFormat(token) || isWorkbenchSessionFormat(token)) return null;
 
   try {
     // jose enforces the JWKS signature (rejecting alg:none / unsigned)

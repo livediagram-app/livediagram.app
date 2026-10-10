@@ -56,7 +56,6 @@ export function TourPopover({
   ariaPrefix = 'Tour',
   copy: copyOverrides,
   welcomeArt,
-  layoutPicker,
   onBack,
   onNext,
   onSkip,
@@ -81,9 +80,6 @@ export function TourPopover({
   copy?: Partial<TourCardCopy>;
   // The welcome card's illustration; the welcome tour's own by default.
   welcomeArt?: ReactNode;
-  // The welcome card's panel-layout choice (TourLayoutPicker), shown under
-  // the copy so it is answered whether the tour is taken or declined.
-  layoutPicker?: ReactNode;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -100,7 +96,7 @@ export function TourPopover({
   } | null>(null);
   // Position transitions are enabled one frame AFTER the first placement,
   // so the initial park-offscreen → placed jump doesn't animate as a fly-in
-  // from the corner (the PaletteTabBar height-animation gate pattern).
+  // from the corner (a first-paint animation gate).
   const [animatePos, setAnimatePos] = useState(false);
 
   useLayoutEffect(() => {
@@ -196,7 +192,6 @@ export function TourPopover({
             </span>
             <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
             <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
-            {card === 'welcome' && layoutPicker ? <div className="mt-2">{layoutPicker}</div> : null}
             {card === 'welcome' ? (
               <div className="mt-2 flex items-center justify-end gap-2">
                 {/* Declining is a first-class, same-weight choice — the offer

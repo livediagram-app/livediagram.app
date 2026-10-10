@@ -19,25 +19,35 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('data-elements').filter((a) => a.slug !== 'timeline-rail')}
 >
 
-A timeline rail is a horizontal line with evenly spaced, labelled points along it, the natural shape for a roadmap, a release schedule, a process, or any sequence of milestones. It keeps the points evenly spaced for you, so the rail always looks deliberate.
+A timeline rail is a horizontal line with evenly spaced points along it, each labelled above. It is the natural shape for a roadmap, a release schedule, a process, or any sequence of milestones. It keeps the points evenly spaced for you, so the rail always looks deliberate.
 
-<Figure caption="A timeline rail with four evenly spaced, labelled milestones.">
+<Figure caption="A timeline rail with four evenly spaced milestones, each labelled above its point.">
   <TimelineRailScene />
 </Figure>
 
 ## Adding one
 
-<Step n={1}>Open the floating palette and switch to the **Build** category.</Step>
+<Step n={1}>
+  Open the **Build** category on the palette strip (in Illustrate, **Timeline** is also in
+  **Popular**).
+</Step>
 <Step n={2}>
-  Click **Add timeline rail**. It drops in with a few sample points already spaced along it.
+  Pick **Timeline**, then tap the canvas to drop it, or drag to draw it at a size. It lands with
+  three points.
 </Step>
 <Step n={3}>
-  Label each point by editing its text, and set how many points the rail has from its context menu.
+  To label a point, select the rail, then click the label above the point and type. Enter or
+  clicking away keeps it, as one undoable step.
 </Step>
 
 ## Adjusting the points
 
-Right-click the rail to open its menu and use the **Points** stepper to add or remove points; the rail re-spaces them evenly each time. Like every data element it is an ordinary canvas element, so it moves, resizes, groups, and recolours with the active [theme](/help/canvas/themes/).
+There are two ways to change how many points the rail has:
+
+- **Add one** from the rail's **+** button, the same one other elements use to start an arrow: on a rail it adds a point at the right-hand end.
+- **Set the count precisely**: right-click the rail, open **Tools**, then **Timeline**, and use the **Points** stepper. It goes from 2 to 12 points, and it is the only way to remove one.
+
+The points always stay evenly spaced, and the rail widens by one step for each point you add, so it stays neat as it grows. Like every data element it is an ordinary canvas element, so it moves, resizes, rotates, locks, and recolours with the active [theme](/help/canvas/themes/); its stroke (accent) colour tints the points.
 
 <Tip>
   Pair a timeline rail with [sticky notes](/help/palette/tools/sticky-notes/) above each point to

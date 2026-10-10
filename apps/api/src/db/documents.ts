@@ -9,6 +9,7 @@ import {
   type TabItemElement,
 } from '@livediagram/items';
 import { copyItemsStatements, listItems } from './items';
+import { copySheetsStatements } from './sheets';
 import { remapTabLinks, type Element } from '@livediagram/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
@@ -16,10 +17,13 @@ import { getParticipant } from './participants';
 import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements, collabIndexStatements } from './collab-index';
 import { redactTabDataForCommunity } from '../community-redact';
+import { redactTabDataAuthors } from '../comments';
 import { imageGrantCopyStatements } from './image-grants';
 import { imageRefAddStatements } from './image-refs';
+import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
 import { firstTabCountSql, isEmptyCount } from './tabs';
+import { PUBLIC_POST } from './community';
 import type { RecordedIntent } from '@livediagram/api-schema';
 import { readRecordedIntent, type RecordedIntentRow } from '../document-intent-row';
 
@@ -34,7 +38,7 @@ type DocumentRow = {
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;
-  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the built-in types.
+  // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
   item_types: string | null;
   saved_at: number;
   created_at: number;
@@ -112,9 +116,13 @@ const SHARE_CODE_EXPR =
 // `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
 // The document's Community post state, for the owner's header badge and the Explorer's Public badge
-// (docs/specs/025-community/community.md). community_posts.document_id is UNIQUE, so this is one index lookup a row.
-const COMMUNITY_STATE_EXPR =
-  '(SELECT state FROM community_posts WHERE community_posts.document_id = documents.id) AS community_state';
+// (docs/specs/025-community/community.md). 'listed' only while the post is public by the rule every public read
+// uses (PUBLIC_POST): a listed post whose document moved into a team library, changed owner or took a password reads
+// as no post, so its badge falls back to Team, Shared or Private. community_posts.document_id is UNIQUE and d is
+// the same row by its primary key: two index lookups a row.
+const COMMUNITY_STATE_EXPR = `(SELECT CASE WHEN cp.state <> 'listed' THEN cp.state WHEN ${PUBLIC_POST} THEN 'listed' END
+  FROM community_posts cp JOIN documents d ON d.id = cp.document_id
+  WHERE cp.document_id = documents.id) AS community_state`;
 const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
@@ -309,8 +317,8 @@ export async function setDocumentPresentation(
 }
 
 // Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
-// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null restores the
-// built-in types.
+// the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
+// default types.
 export async function setDocumentItemTypes(
   env: Env,
   id: string,
@@ -472,6 +480,9 @@ export async function copyDocument(
   // A copy through a Community post's link (docs/specs/025-community/community.md) carries the document
   // without its comments or the people on its actions, and so none of their index rows.
   redactForCommunity = false,
+  // A copy by anyone but the source's owner: its comments keep only the copier's own author ids, as
+  // the tab read serves them (redactCommentAuthorIds). An author id is a guest's credential.
+  redactAuthorsFor: string | null = null,
 ): Promise<DocumentDTO | null> {
   const source = await getDocument(env, sourceId);
   if (!source) return null;
@@ -521,7 +532,11 @@ export async function copyDocument(
     // A Community copy is redacted, and its index rebuilt from the redacted elements (the source's rows
     // would name the people redaction removed).
     const redacted = redactForCommunity ? redactTabDataForCommunity(remapped) : null;
-    const data = redacted ? redacted.data : remapped;
+    const data = redacted
+      ? redacted.data
+      : redactAuthorsFor !== null
+        ? redactTabDataAuthors(remapped, redactAuthorsFor)
+        : remapped;
     return [
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       env.DB.prepare(
@@ -542,6 +557,8 @@ export async function copyDocument(
       ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
       // Placement grants (docs/specs/009-elements/images.md): the copy may serve what its source could.
       ...imageGrantCopyStatements(env, sourceId, newId, imageRefIdsFromData(data), now),
+      // The copy's Sheets reference the copied sheets, which keep their ids (sheet-refs.ts).
+      sheetRefCopyStatement(env, row.id, freshTabId),
     ];
   });
   // The items go in the same batch as the tabs (two statements that copy nothing from a store without
@@ -553,7 +570,9 @@ export async function copyDocument(
     await copiedItemIds(env, sourceId, rows, onlyTabId),
     redactForCommunity,
   );
-  await env.DB.batch([...inserts, ...itemCopies]);
+  // The sheets of the copied tabs, each under its tab's new id (docs/specs/029-sheets/sheet-store.md "Copies").
+  const sheetCopies = copySheetsStatements(env, sourceId, newId, tabIdMap, now);
+  await env.DB.batch([...inserts, ...itemCopies, ...sheetCopies]);
   return await getDocument(env, newId);
 }
 

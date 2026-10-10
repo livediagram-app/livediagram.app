@@ -9,7 +9,7 @@ import {
 import { getParticipant, setParticipantPicture, upsertParticipant } from '../db';
 import { badRequest, forbidden, json, notFound, signInRequired } from '../responses';
 import type { ParticipantDTO } from '../types';
-import { requireOwner, type RouteContext } from './context';
+import { requireOwner, type RouteContext, readBody } from './context';
 
 // GET stays open — participant ids are already broadcast through
 // the WS room and embedded in comment authors, so anyone in a
@@ -52,7 +52,9 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
     if (owner !== id) return forbidden();
-    const body = (await request.json()) as Partial<ParticipantDTO>;
+    const read = await readBody(ctx);
+    if (read instanceof Response) return read;
+    const body = read as Partial<ParticipantDTO>;
     if (!body.name || !body.color) return badRequest('missing name/color');
     // Cap the presence identity: it's broadcast to every peer in the room.
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {

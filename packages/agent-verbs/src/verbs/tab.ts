@@ -91,7 +91,7 @@ export const tabView = defineVerb({
       .enum(TAB_VIEW_NAMES)
       .default('outline')
       .describe(`One of ${TAB_VIEW_NAMES.join(', ')}`),
-    ref: z.string().optional().describe('show: the element, by ref'),
+    ref: z.string().optional().describe('show: the element by ref, or selected'),
     text: z.string().optional().describe('find: the text to look for'),
     budget: z.coerce
       .number()

@@ -182,8 +182,8 @@ test.describe('explorer sidebar', () => {
   });
 });
 
-// The editor's floating Explorer panel builds the same groups
-// (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel).
+// The editor's Explorer popover, opened from the menu button, builds the same groups
+// (docs/specs/013-workspace/explorer-structure.md#the-editors-explorer).
 test.describe('editor Explorer panel', () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
@@ -210,6 +210,7 @@ test.describe('editor Explorer panel', () => {
     await make(id, 'Open one');
     await make(crypto.randomUUID(), 'Another');
     await page.goto(`/document/${id}`);
+    await page.getByRole('button', { name: 'Explorer', exact: true }).click();
     const panel = page.getByRole('navigation', { name: 'Explorer' });
     await expect(panel.getByRole('treeitem', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
     await expect(panel.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);

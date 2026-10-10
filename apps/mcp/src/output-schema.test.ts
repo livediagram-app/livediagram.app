@@ -1,5 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
+import { ITEM_TYPES } from '@livediagram/items';
+import {
+  applySheetWrite,
+  emptySheet,
+  NOBODY,
+  sheetFromJson,
+  sheetToJson,
+  Workbook,
+  writeRows,
+  type SheetJson,
+  type SheetWrite,
+} from '@livediagram/sheets';
 // The resvg WASM renderer cannot load in plain node (see tools.test.ts). The
 // stub keeps the structured result, which is what this suite checks.
 vi.mock('./image-result', () => ({
@@ -18,7 +30,52 @@ import * as outputs from '@livediagram/agent-verbs/mcp';
 // again after listTools, and the strict parse below catches the one drift
 // neither SDK side does, a result field the schema never declared.
 
-const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [] };
+// A tab holding the Sprint board PLAN describes, for change_board.
+const BOARD_ELEMENT = {
+  id: 'b1',
+  type: 'shape',
+  shape: 'plan-board',
+  x: 0,
+  y: 0,
+  width: 800,
+  height: 500,
+  planBoard: {
+    title: 'Sprint',
+    columns: [
+      { id: 'todo', status: 'todo~a', name: 'To Do' },
+      { id: 'done', status: 'done~a', name: 'Done' },
+    ],
+    swimlaneBy: 'none',
+    cardFields: ['key'],
+    voting: { on: false },
+    hideWriting: false,
+  },
+};
+// A filled sheet, framed by a Sheet element on the tab, for the sheet tools.
+function filledSheet(): SheetJson {
+  const blank = emptySheet({ id: 'sheet_costs1', tabId: 't1', title: 'Costs' });
+  const rows = [
+    ['Item', 'Cost'],
+    ['Rent', 1200],
+    ['Total', '=SUM(B2:B2)'],
+  ];
+  const made = writeRows(new Workbook({ sheets: [blank], locale: 'en-GB' }), blank.id, 'A1', rows);
+  if (!made.ok) throw new Error(made.error);
+  const sheet = applySheetWrite(blank, made.write, { now: 0, by: NOBODY }).sheet;
+  return sheetToJson({ ...sheet, layout: { ...sheet.layout, frozenRows: 1, merges: [] } });
+}
+const SHEET = filledSheet();
+const SHEET_ELEMENT = {
+  id: 'sh1',
+  type: 'shape',
+  shape: 'plan-sheet',
+  x: 900,
+  y: 0,
+  width: 960,
+  height: 560,
+  planSheet: { sheetId: SHEET.id },
+};
+const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [BOARD_ELEMENT, SHEET_ELEMENT] };
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
 const CHANGESET = {
   dryRun: false,
@@ -41,6 +98,41 @@ const ITEM = {
   updatedBy: { id: 'p', name: 'P', color: '#000000' },
 };
 const LIVE_DOC = { id: 'd1', name: 'Roadmap', tabs: [{ id: 't1', name: 'Tab 1' }] };
+const BUG = {
+  ...ITEM_TYPES[1],
+  id: 'bug',
+  label: 'Bug',
+  custom: [
+    {
+      id: 'f-severity',
+      label: 'Severity',
+      kind: 'choice',
+      options: ['S1', 'S2'],
+      linkType: undefined,
+    },
+  ],
+};
+const PLAN = {
+  boards: [
+    {
+      tabId: 't1',
+      tabName: 'Tab 1',
+      elementId: 'b1',
+      title: 'Sprint',
+      kind: 'board',
+      types: ['task'],
+      columns: [
+        { status: 'todo~a', name: 'To Do', wipLimit: 3 },
+        { status: 'done~a', name: 'Done' },
+      ],
+    },
+  ],
+  statuses: [
+    { status: 'todo~a', name: 'To Do' },
+    { status: 'done~a', name: 'Done' },
+  ],
+  types: [...ITEM_TYPES, BUG],
+};
 
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
@@ -56,12 +148,23 @@ async function api(request: Request): Promise<Response> {
     return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/sheets'))
+    return request.method === 'POST'
+      ? json({ sheet: { ...SHEET, id: ((await request.json()) as { id: string }).id, cells: [] } })
+      : json({ sheets: [SHEET] });
+  if (path.endsWith('/writes')) {
+    const { write } = (await request.json()) as { write: SheetWrite };
+    const applied = applySheetWrite(sheetFromJson(SHEET), write, { now: 0, by: NOBODY }).applied;
+    return json({ applied, rev: 2, cells: [] });
+  }
   if (path === '/trash') {
     return json({
       trash: [{ id: 'd2', name: 'Old', teamId: null, trashedAt: 1, purgeAt: 2, reason: 'empty' }],
     });
   }
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [ITEM], rev: 1 });
+  if (path.endsWith('/plan')) return json(PLAN);
+  if (path.endsWith('/item-types')) return json({ itemTypes: null });
   if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
@@ -124,11 +227,58 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
       documentId: 'd1',
       changes: [
         { op: 'add', title: 'New' },
-        { op: 'move', item: '#12', status: 'done' },
+        { op: 'move', item: '#12', status: 'Done' },
         { op: 'set', item: '12', fields: { priority: 'high' } },
         { op: 'delete', item: 'item123' },
       ],
     },
+  },
+  {
+    tool: 'add_board',
+    output: 'addBoardOutput',
+    args: { documentId: 'd1', columns: ['Ideas', 'Done'], types: ['Task'] },
+  },
+  {
+    tool: 'change_board',
+    output: 'changeBoardOutput',
+    args: {
+      documentId: 'd1',
+      board: 'Sprint',
+      columns: ['To Do', 'Review', 'Done'],
+      types: ['Bug'],
+    },
+  },
+  {
+    tool: 'change_card_types',
+    output: 'changeCardTypesOutput',
+    args: {
+      documentId: 'd1',
+      changes: [
+        { op: 'add', name: 'Risk', custom: [{ name: 'Impact', kind: 'number' }] },
+        { op: 'delete', type: 'Bug' },
+      ],
+    },
+  },
+  { tool: 'list_sheets', output: 'listSheetsOutput', args: { documentId: 'd1' } },
+  { tool: 'read_sheet', output: 'readSheetOutput', args: { documentId: 'd1', sheet: 'Costs' } },
+  {
+    tool: 'change_sheet',
+    output: 'changeSheetOutput',
+    args: {
+      documentId: 'd1',
+      sheet: 'Costs',
+      changes: [
+        { op: 'set', at: 'C1', rows: [['Yearly'], ['=B2*12']] },
+        { op: 'format', range: 'A1:C1', format: { bold: true } },
+        { op: 'insert_rows', at: 2 },
+        { op: 'freeze', rows: 1 },
+      ],
+    },
+  },
+  {
+    tool: 'add_sheet',
+    output: 'addSheetOutput',
+    args: { documentId: 'd1', title: 'Costs', csv: 'a,b\n1,2' },
   },
 ];
 

@@ -141,12 +141,6 @@ export function removeComment(elements: Element[], commentId: string): Element[]
   });
 }
 
-// Find a comment by id across all elements and return it (with its
-// author id), or null. Used to authorise delete-own before mutating.
-export function findComment(elements: Element[], commentId: string): Comment | null {
-  return findCommentHost(elements, commentId)?.comment ?? null;
-}
-
 // The comment and the element whose thread holds it.
 export function findCommentHost(
   elements: Element[],
@@ -177,6 +171,23 @@ export function redactCommentAuthorIds(elements: Element[], viewerId: string | n
     );
     return { ...el, commentThread: { ...thread, comments } } as Element;
   });
+}
+
+// A stored tab's data (JSON) with its comments' author ids redacted for `viewerId`, as
+// redactCommentAuthorIds: a copy made by someone other than the owner carries no one else's ids.
+// Data with no author id at all is returned as it is, without a parse.
+export function redactTabDataAuthors(data: string, viewerId: string): string {
+  if (!data.includes('"authorId"') && !data.includes('"tokenId"')) return data;
+  try {
+    const parsed = JSON.parse(data) as { elements?: unknown };
+    if (!Array.isArray(parsed.elements)) return data;
+    return JSON.stringify({
+      ...parsed,
+      elements: redactCommentAuthorIds(parsed.elements as Element[], viewerId),
+    });
+  } catch {
+    return data;
+  }
 }
 
 // docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in

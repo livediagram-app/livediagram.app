@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { ApiTokensList } from '@/components/illustrations/account-settings';
 
 export const metadata = helpMetadata({
   title: 'API Tokens',
@@ -17,7 +18,7 @@ export const metadata = helpMetadata({
 
 An API token lets your own scripts and integrations talk to the livediagram API as you, outside the editor. A token carries your account's **full read and write access**, so treat it like a password.
 
-To connect an AI tool like Claude rather than write your own script, see [Connect an AI tool (MCP)](/help/account-and-data/connect-ai-mcp/) — it creates and uses one of these tokens for you.
+To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the livediagram CLI](/help/developers/cli/) when you sign in with `livediagram auth login`.
 
 ## You need an account
 
@@ -25,15 +26,15 @@ API tokens are a **signed-in-only** feature. The canvas, sharing, and real-time 
 
 ## Creating a token
 
-Open **Settings** (the gear at the end of the bottom bar, in the editor or the Explorer) and choose **Account**, then **API Tokens** beneath it. You can also get there from **Manage API Tokens** in the AI Tools category.
+Open **Settings** (the gear at the end of the bottom bar, in the editor or the Explorer) and choose **Account**, then **API Tokens** beneath it. You can also get there from **Manage API Tokens** in the AI Tools category, where that category is shown.
 
-The first time, the form to create one is already open; after that, choose **New**. Name it (or pick one of the suggestions, like "CI Bot" or "Claude"), and choose **Create Token**. The form shows the date the token will expire before you create it. The meter at the top shows how many of your ten slots are in use.
+The first time, the form to create one is already open; after that, choose **New** beside the **API Tokens** title. Name it under **What Is It For?** (up to 60 characters, or pick a suggestion: Claude, Cursor, CI Bot or Local Script), and choose **Create Token**. The form shows the date the token will expire before you create it. The meter at the top shows how many of your ten slots are in use.
 
 The token's secret is shown **once**, right after you create it. Copy it then with the copy button at the end of the field, because for your security it is never displayed again, here or anywhere else. Choose **Done** when you have it. If you lose the secret, revoke the token and create a new one.
 
 ## What a token can do, and for how long
 
-- **Access:** a token has your account's full read + write access to documents and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created in Settings are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you tick that option on the consent screen, and such tokens show a **Read-only** badge in the list here.
+- **Access:** a token has your account's full read + write access to documents and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created in Settings are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you switch on **Read-only access** on the approval page, and such tokens show a **Read-only** badge in the list here.
 - **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
 - **Limit:** you can have up to **10** live tokens at once. Revoke one (or let it expire) to free a slot.
 
@@ -53,7 +54,16 @@ For what you can call and how, see the [Developers](/help/developers/api-overvie
 
 ## Viewing and revoking tokens
 
-Every live token is listed in the same **API Tokens** category, newest first, with when it was created and when it was last used (a green dot means in the last day). A bar under each one shows how much of its six months has passed, turning amber when it expires within two weeks. Choose **Revoke** on one to revoke it; you are asked to confirm first. Revocation is immediate: the next request that token makes is rejected. Deleting your account also removes all of your tokens, along with the rest of your data.
+Every live token is listed in the same **API Tokens** category, newest first, with when it was created and when it was last used (a green dot means in the last day). A bar under each one shows how much of its six months has passed, with **Active**, or **Expires soon** in amber once it has under two weeks left. To revoke one, choose the bin at the end of its card (its tooltip says **Revoke**) and confirm.
+
+<Figure
+  caption="Each token shows its dates, a Read-only badge when it has one, and a bar for how much of its six months has passed."
+  width="narrow"
+>
+  <ApiTokensList />
+</Figure>
+
+Revocation is immediate: the next request that token makes is rejected. A week before a token expires, an email reminds you (where the deployment sends email), and that is the only reminder for it. Deleting your account also removes all of your tokens, along with the rest of your data.
 
 <Tip>
   Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create

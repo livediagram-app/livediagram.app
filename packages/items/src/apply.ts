@@ -13,6 +13,7 @@ import type {
 } from './item';
 import { itemStatus, itemVotes } from './item';
 import { compareRank, rankBetween } from './rank';
+import { ITEM_VOTERS_MAX, ITEM_VOTES_PER_PERSON_MAX } from './limits';
 
 export interface WriteContext {
   now: number;
@@ -54,9 +55,12 @@ export function rankForPlace(items: Iterable<Item>, place: ItemPlace, exceptId?:
   }
   const prev = column[index - 1]?.rank ?? null;
   const next = column[index]?.rank ?? null;
-  // Equal neighbours (a concurrent insert) leave no gap; go after the pair.
-  if (prev !== null && next !== null && compareRank(prev, next) >= 0)
-    return rankBetween(prev, null);
+  // Equal neighbours (a concurrent insert) leave no gap: go after the run of equal ranks, before
+  // the first card past it, never to the column's end.
+  if (prev !== null && next !== null && compareRank(prev, next) >= 0) {
+    const past = column.slice(index).find((i) => compareRank(i.rank, prev) > 0);
+    return rankBetween(prev, past?.rank ?? null);
+  }
   return rankBetween(prev, next);
 }
 
@@ -121,12 +125,19 @@ export function applyMove(
   };
 }
 
-// A person's votes never drop below zero; a zero count is dropped.
-export function applyVote(item: Item, personId: string, delta: 1 | -1, ctx: WriteContext): Item {
+// A session vote's tally added to a card's votes (docs/specs/026-plan/items.md "Tally"): each voter's dots added to
+// what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX.
+export function applyTally(
+  item: Item,
+  tally: Readonly<Record<string, number>>,
+  ctx: WriteContext,
+): Item {
   const votes = itemVotes(item);
-  const next = Math.max(0, (votes[personId] ?? 0) + delta);
-  if (next === 0) delete votes[personId];
-  else votes[personId] = next;
+  for (const [personId, n] of Object.entries(tally)) {
+    if (!(n > 0)) continue;
+    if (!(personId in votes) && Object.keys(votes).length >= ITEM_VOTERS_MAX) continue;
+    votes[personId] = Math.min(ITEM_VOTES_PER_PERSON_MAX, (votes[personId] ?? 0) + Math.floor(n));
+  }
   return {
     ...item,
     fields: { ...item.fields, votes },

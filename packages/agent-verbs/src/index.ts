@@ -4,7 +4,9 @@ export {
   fetchTeamLibraries,
   listAllDocuments,
   matchDocuments,
+  readLibraries,
   type FoundDocument,
+  type Libraries,
   type TeamLibrary,
 } from './find-documents';
 export {
@@ -62,3 +64,52 @@ export {
 export { graphLint, graphOfSource } from './verbs/graph';
 export { tabListOf } from './verbs/tab';
 export { EXPORT_FORMATS } from './verbs/local';
+export { documentListText, documentRows, type ListedDocument } from './verbs/document';
+export { MIRROR_LEVELS, STATUS_ORDER, SYNC_WATCH_TYPE, type StatusRow } from './verbs/link';
+export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
+export {
+  addBoard,
+  apiRefusalOf,
+  changeBoard,
+  resolveBoard,
+  type ChangeBoardInput,
+  type ChangeBoardResult,
+  applyItemChanges,
+  bringBoardCardTypes,
+  changeCardTypes,
+  FIELD_HINT,
+  NO_BOARD_HINT,
+  planListing,
+  planPath,
+  readPlanState,
+  type AddBoardInput,
+  type AddBoardResult,
+  type CardTypeChangesResult,
+  type ItemChange,
+  type ItemChangesResult,
+  type PlanListing,
+  type PlanState,
+} from './plan';
+export {
+  addSheet,
+  applySheetChanges,
+  buildSheetChange,
+  changeSheet,
+  formatPatchOf,
+  listSheets,
+  readSheet,
+  readSheets,
+  resolveSheet,
+  SHEET_READ_CHARS_MAX,
+  SHEET_REFUSAL_WORDS,
+  sheetsPath,
+  type AddSheetInput,
+  type AddSheetResult,
+  type ListedSheet,
+  type ReadCell,
+  type SheetChange,
+  type SheetChangesResult,
+  type SheetFormatInput,
+  type SheetRead,
+  type SheetRefusal,
+} from './sheets';

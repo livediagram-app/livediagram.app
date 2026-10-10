@@ -33,7 +33,9 @@ export const SHARE_LINKS_COPIED = chart(
   'Copied',
   'Share Links Copied',
   'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
-  { typeIn: (t) => t !== 'TeamInviteLink' },
+  {
+    typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
+  },
 );
 
 export const SHARE_SETTINGS = chart(
@@ -132,6 +134,14 @@ export const EMBEDS_VIEWED = chart(
   'Embeds Viewed',
   'A document opened inside another site through its embed.',
   { types: ['Embed'] },
+);
+
+export const WORKBENCH_SESSIONS = chart(
+  'Session',
+  'Opened',
+  'Workbench Sessions',
+  'A document opened inside a developer tool’s frame, signed in.',
+  { types: ['Workbench'] },
 );
 
 export const TIMERS_RESUMED = chart(
@@ -483,6 +493,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     SHARE_SETTINGS,
     SHARE_LINKS_REMOVED,
     EMBEDS_VIEWED,
+    WORKBENCH_SESSIONS,
     LIVE_IMAGE_TABS,
   ],
   headline: [COLLABORATORS_JOINED, VIEWERS_JOINED],

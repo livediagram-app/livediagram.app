@@ -2,6 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, renderHook } from '@testing-library/react';
 import { useEditorKeyboardShortcuts } from './useEditorKeyboardShortcuts';
+import { modalClosed, modalOpened } from '@/lib/modal-guard';
 import type { EditorKeyboardShortcutsDeps } from './editor-shortcut-keys';
 
 // The listener itself, in a DOM: Delete AND Backspace delete the selection
@@ -324,5 +325,115 @@ describe('inside a menu', () => {
     expect(spies.deleteSelected).not.toHaveBeenCalled();
     expect(spies.onShortcutUsed).not.toHaveBeenCalled();
     menu.remove();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Maximised board": a board covering the canvas leaves nothing on it to change
+// from the keyboard.
+describe('a covered canvas', () => {
+  it('nudges, deletes, selects all, duplicates and picks no tool', () => {
+    const onNudgeSelection = vi.fn();
+    const onSelectAll = vi.fn();
+    const onDuplicate = vi.fn();
+    const { bag, spies } = deps({
+      canvasCovered: () => true,
+      onNudgeSelection,
+      onSelectAll,
+      onDuplicate,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    for (const key of ['ArrowLeft', 'ArrowDown', 'Delete', 'Backspace', 'r', 'v']) press(key);
+    press('a', { metaKey: true });
+    press('d', { metaKey: true });
+    expect(onNudgeSelection).not.toHaveBeenCalled();
+    expect(onSelectAll).not.toHaveBeenCalled();
+    expect(onDuplicate).not.toHaveBeenCalled();
+    expect(spies.deleteSelected).not.toHaveBeenCalled();
+    expect(spies.setCanvasTool).not.toHaveBeenCalled();
+  });
+
+  it('still undoes, redoes, searches, toggles zen and switches mode, and keeps the browser off canvas chords', () => {
+    const spies = {
+      undo: vi.fn(),
+      redo: vi.fn(),
+      onOpenSearch: vi.fn(),
+      onToggleZen: vi.fn(),
+      onCycleEditorMode: vi.fn(),
+      onDuplicate: vi.fn(),
+      onSelectAll: vi.fn(),
+      copySelection: vi.fn(),
+    };
+    const { bag } = deps({ canvasCovered: () => true, ...spies });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('z', { metaKey: true });
+    press('z', { metaKey: true, shiftKey: true });
+    press('y', { ctrlKey: true });
+    press('k', { metaKey: true });
+    press('z');
+    press('D', { shiftKey: true });
+    expect(spies.undo).toHaveBeenCalledTimes(1);
+    expect(spies.redo).toHaveBeenCalledTimes(2);
+    expect(spies.onOpenSearch).toHaveBeenCalledTimes(1);
+    expect(spies.onToggleZen).toHaveBeenCalledTimes(1);
+    expect(spies.onCycleEditorMode).toHaveBeenCalledTimes(1);
+    // Duplicate and select-all are prevented (no bookmark, no page select) and do nothing.
+    expect(press('d', { metaKey: true }).defaultPrevented).toBe(true);
+    expect(press('a', { metaKey: true }).defaultPrevented).toBe(true);
+    expect(spies.onDuplicate).not.toHaveBeenCalled();
+    expect(spies.onSelectAll).not.toHaveBeenCalled();
+    // Copy is left to the browser (text on the board), never the canvas's element copy.
+    expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);
+    expect(spies.copySelection).not.toHaveBeenCalled();
+  });
+
+  it('leaves Cmd+C to the browser while text on the page is highlighted', () => {
+    const copySelection = vi.fn();
+    const { bag } = deps({ canvasCovered: () => false, copySelection });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    const p = document.createElement('p');
+    p.textContent = 'https://livediagram.app/s/abc';
+    document.body.appendChild(p);
+    window.getSelection()!.selectAllChildren(p);
+    expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);
+    expect(copySelection).not.toHaveBeenCalled();
+    window.getSelection()!.removeAllRanges();
+    expect(press('c', { metaKey: true }).defaultPrevented).toBe(true);
+    expect(copySelection).toHaveBeenCalledOnce();
+    p.remove();
+  });
+
+  it('acts again once nothing covers it', () => {
+    const onNudgeSelection = vi.fn();
+    const { bag } = deps({ canvasCovered: () => false, onNudgeSelection });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('ArrowLeft');
+    expect(onNudgeSelection).toHaveBeenCalled();
+  });
+});
+
+// Space taps a label edit on the selected shape, unless a dialog is open over the canvas: then Space is
+// the dialog's (pressing its toggle), never an edit on the shape behind it.
+describe('Space tap', () => {
+  const tap = () => {
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { code: 'Space', key: ' ', bubbles: true }),
+    );
+    document.dispatchEvent(new KeyboardEvent('keyup', { code: 'Space', key: ' ', bubbles: true }));
+  };
+
+  it('edits the selected shape, but not while a dialog is open', () => {
+    const onBeginEditSelected = vi.fn();
+    const { bag } = deps({ onBeginEditSelected });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    tap();
+    expect(onBeginEditSelected).toHaveBeenCalledWith('a');
+    onBeginEditSelected.mockClear();
+    modalOpened();
+    try {
+      tap();
+    } finally {
+      modalClosed();
+    }
+    expect(onBeginEditSelected).not.toHaveBeenCalled();
   });
 });

@@ -17,23 +17,31 @@ const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
-  'plan-cards': 352,
+  // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
+  'plan-cards': 704,
+  // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
+  'card-types': 544,
+  // NewCardPanel's `w-72`.
+  'plan-new-card': 288,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
 // Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
 export type DockPanel =
-  'explorer' | 'layers' | 'collaborate' | 'slides' | 'card-types' | 'plan-trash' | 'plan-cards';
+  | 'explorer'
+  | 'layers'
+  | 'collaborate'
+  | 'slides'
+  | 'card-types'
+  | 'plan-trash'
+  | 'plan-cards'
+  | 'plan-new-card';
 
 export type { DockAnchor };
 
-// The panel-open counts (docs/specs/017-telemetry/telemetry.md) for panels that ALSO open on desktop by
-// un-minimising a floating card (EditorCanvasHost's toggles emit there). As
-// a popover the same panel opens here instead, and a click takes one path or
-// the other (the cluster button calls either its popover toggle or its
-// expand, never both), so each surface counts its own opens and none counts
-// twice. Only on the open transition: re-opening the panel already showing
-// is not a new open.
+// The panel-open counts (docs/specs/017-telemetry/telemetry.md) for panels that open as a popover over
+// their cluster button. Only on the open transition: re-opening the panel already showing is not a
+// new open.
 function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');

@@ -1,6 +1,7 @@
 # Vote integrity
 
-A live poll answer, a Q&A upvote and a Plan card vote each count one person once. This spec says who "one person"
+A live poll answer and a Q&A upvote each count one person once (a dot on a Plan card is a session vote's dot,
+keyed and budgeted as any dot is: [Session tools](session-tools.md) "Voting on Plan cards"). This spec says who "one person"
 is on each path, and what stops one browser from posing as many people or changing somebody else's answer.
 
 ## What it protects against
@@ -51,10 +52,10 @@ nobody's tally.
 A refused answer logs `[live-poll] answer refused` with the reason (`claimed`, `session_key`, `network_cap`,
 `answers_cap`), never the key or the proof.
 
-## Q&A upvotes and Plan card votes (REST)
+## Q&A upvotes (REST)
 
-The voter is the authenticated caller ([Q&A board](qa-board.md), [Items](../026-plan/items.md)). A verified account
-votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`, or a Plan vote of `+1`) is admitted
+The voter is the authenticated caller ([Q&A board](qa-board.md)). A verified account
+votes freely. A guest's vote that **adds** a vote (`{ type: 'vote', on: true }`) is admitted
 only if the guest has already voted in this document from this network, or the network has fewer than
 `GUEST_VOTERS_PER_NETWORK` guest voters in it. Withdrawing is never refused.
 

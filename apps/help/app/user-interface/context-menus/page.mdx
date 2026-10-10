@@ -5,7 +5,7 @@ import { ElementContextMenu } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Context Menus',
   description:
-    'Right-click almost anything in the editor for a menu of the actions that apply to it: elements, the canvas, and tabs.',
+    'Right-click (or long-press) an element, empty canvas or a tab for a menu scoped to it: element styling, the tab menu, and paste.',
   path: '/help/user-interface/context-menus/',
 });
 
@@ -16,20 +16,47 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-A **context menu** is the menu you get by right-clicking (or long-pressing on touch). Each one is scoped to whatever you clicked, so it only ever offers actions that make sense there.
+A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
 
-<Figure caption="Right-clicking an element opens a menu of just its actions: cut, copy, duplicate, style, link, and delete.">
+<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, text, and collaboration.">
   <ElementContextMenu />
 </Figure>
 
-## Where you will find them
+## On an element
 
-- **On an element** — the full set of element actions: style, layer order, group, lock, link, comment, duplicate, and delete, the same things the [toolbar](/help/user-interface/toolbar/) offers, one right-click away.
-- **On the canvas** — canvas-level actions when you click empty space: paste, select all, change the background, and quick access to adding elements.
-- **On a tab** — tab management from the [tab bar](/help/user-interface/tab-bar/): rename, duplicate, move into a folder, lock, and delete the tab.
+The element menu is where an element is **styled and described**. It is built from collapsible sections, and which ones appear depends on what you clicked. For a shape:
 
-On a desktop pointer, the style controls in the element menu **preview on hover**: rest the pointer on a colour, border, shape, rotation, marker, alignment, or size tile and the selection shows the change live; it only sticks when you click, and moving away reverts it. Comparing looks costs nothing.
+- **Layer**: **Bring to Front**, **Send to Back**, moving it to another [layer](/help/canvas/layers/), and its opacity.
+- **Size**, **Shape** (change the kind of shape) and **Rotation**.
+- **Style**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text and background, with **Reset to theme**) and **Border**.
+- **Text**: font, size, alignment and markers.
+- **Collaborate**: **Add Comment** and **Assign Action**. **Resources**: a link and a note.
 
-Context menus keep the common actions a click away without you hunting through panels, and they close as soon as you pick something or click elsewhere.
+An arrow's menu has **Line** (straight, curved or angled, pattern and thickness) and **Pointer** (its arrowheads) instead of the shape sections, and images, tables, icons and data elements each add a section of their own.
+
+The everyday verbs live elsewhere: **Duplicate**, layer order, **Lock** and **Delete** are on the [selection toolbar](/help/user-interface/toolbar/), and cut, copy and paste are on the keyboard (see [Copy and Paste](/help/tips-and-tricks/copy-and-paste/)). Right-click a multi-selection and you get the same kind of menu for the whole group.
+
+On a desktop pointer, the style controls **preview on hover**: rest the pointer on a colour, border, preset, shape, rotation, marker, alignment, or size tile and the selection shows the change live; it only sticks when you click, and moving away reverts it. Comparing looks costs nothing.
+
+## On empty canvas
+
+Right-click empty canvas and you get the **tab menu** (below) with **Paste** leading it, since a right-click on empty space is usually "paste what I copied". Pasted elements land just offset from where they were copied, selected and ready to drag into place.
+
+## On a tab
+
+Right-click a tab in the [tab bar](/help/user-interface/tab-bar/), or use its **⋯** button, for the tab menu:
+
+- A row of quick actions: **Rename**, **Duplicate**, **Paste**, **Lock tab** (or **Unlock tab**), and **Delete**, which asks you to confirm and is unavailable while the tab is locked.
+- **Organise**: **Add to Folder** (a [tab folder](/help/tabs/tab-folders/)) and **Add to Document** (copy it into another document).
+- **Content**: **Import**, **Export** and **Clear**.
+- **Mode**: the tab's [editor mode](/help/canvas/editor-modes/#one-mode-for-everyone), the same for everyone; choosing one switches the tab.
+- **Cleanup**: auto layout and **Auto-align**. See [Layout Cleanup](/help/tools/layout-cleanup/).
+- **Collaborate**: start a timer, a vote or a poll. See [Session Tools](/help/collaboration/session-tools/).
+
+A tab's theme and canvas background are not in this menu: they are behind the **Theme & canvas** paintbrush in the bottom-right corner. See [Themes](/help/canvas/themes/).
+
+View-only visitors get no element or tab menu, since everything in them changes the document.
+
+Context menus close as soon as you pick an action or click elsewhere, and `Escape` closes them too.
 
 </ArticleLayout>

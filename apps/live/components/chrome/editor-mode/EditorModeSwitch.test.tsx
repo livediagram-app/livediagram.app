@@ -4,6 +4,7 @@
 // chip, the same for everyone, reading the editor's resolved mode from EditorModeProvider;
 // nothing where no switch is offered.
 
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -184,20 +185,10 @@ describe('EditorModeSwitch chip', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
-  it('opens downward, from the left edge unless asked for the right', () => {
+  it('opens downward, from the left edge', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    expect(screen.getByRole('menu').className).toMatch(/top-full .*left-0/);
-    cleanup();
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <EditorModeSwitch align="right" />
-      </EditorModeProvider>,
-    );
-    fireEvent.click(chip());
-    expect(screen.getByRole('menu').className).toMatch(/top-full .*right-0/);
+    expect(screen.getByRole('menu').className).toMatch(/left-0 top-full/);
   });
 });
 
@@ -211,24 +202,6 @@ describe('EditorModeSwitch slot', () => {
     expect(widths.size).toBe(1);
   });
 
-  // The Floating layout's Palette header: the mode's name beside its icon, one width for both.
-  it('names the mode when labelled, at one fixed width', () => {
-    const labelled = (mode: EditorMode) =>
-      render(
-        <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
-          <EditorModeSwitch labelled />
-        </EditorModeProvider>,
-      );
-    const diagram = labelled('diagram');
-    expect(chip().textContent).toBe('Diagram');
-    const width = slot(diagram.container)!.className;
-    cleanup();
-    const draw = labelled('draw');
-    expect(chip().textContent).toBe('Draw');
-    expect(slot(draw.container)!.className).toBe(width);
-    expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
-  });
-
   it('renders nothing outside an editor', () => {
     const { container } = render(<EditorModeSwitch />);
     expect(container.innerHTML).toBe('');
@@ -237,14 +210,19 @@ describe('EditorModeSwitch slot', () => {
 
 // The switch reads the editor's own resolution (useEditorMode), as EditorView provides it.
 describe('EditorModeSwitch in the editor', () => {
-  // The mode store caches per tab id, so every test works on a tab of its own.
   let seq = 0;
   const freshTab = (over: Partial<Tab> = {}): Tab => {
     seq += 1;
     return { id: `sw${seq}`, name: 'Tab', elements: [], ...over };
   };
-  function Host({ tab, canEdit = true }: { tab: Tab; canEdit?: boolean }) {
-    const editorMode = useEditorMode(tab, { canEdit });
+  // The tab held as the editor holds it: a switch commits onto it and re-renders.
+  function Host({ tab: initial, canEdit = true }: { tab: Tab; canEdit?: boolean }) {
+    const [tabs, setTabs] = useState([initial]);
+    const editorMode = useEditorMode(tabs[0], {
+      canEdit,
+      commitTabs: (map) => setTabs((ts) => map(ts)),
+      toastInfo: () => {},
+    });
     return (
       <EditorModeProvider value={editorMode}>
         <EditorModeSwitch />
@@ -252,7 +230,7 @@ describe('EditorModeSwitch in the editor', () => {
     );
   }
 
-  it('shows the tab in its opening mode, and switches from the menu', () => {
+  it("shows the tab's mode, and switches the tab from the menu", () => {
     render(<Host tab={freshTab({ opensIn: 'draw' })} />);
     expect(chip().getAttribute('aria-label')).toBe('Editor mode: Draw');
     fireEvent.click(chip());

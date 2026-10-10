@@ -25,6 +25,8 @@ type PortalMenuBase = {
   placement?: PortalMenuPlacement;
   onClose: () => void;
   children: ReactNode;
+  // A wider menu for rows that carry a line under their name (the Sheet's function menus): 20rem, not 14.
+  wide?: boolean;
 };
 
 // A command menu (the default) or, when it holds a control, a control menu
@@ -57,6 +59,7 @@ function CommandPortalMenu({
   children,
   label,
   initialFocus,
+  wide,
 }: PortalMenuBase & { label?: string; initialFocus?: MenuInitialFocus }) {
   const { attach, element, tree, surfaceProps } = useMenu({
     onClose,
@@ -72,6 +75,7 @@ function CommandPortalMenu({
       attach={attach}
       tree={tree}
       surfaceProps={surfaceProps}
+      wide={wide}
     >
       {children}
     </PortalMenuFrame>
@@ -84,6 +88,7 @@ function ControlPortalMenu({
   onClose,
   children,
   label,
+  wide,
 }: PortalMenuBase & { label: string }) {
   const { attach, element, tree, surfaceProps } = useControlMenu({
     onClose,
@@ -98,6 +103,7 @@ function ControlPortalMenu({
       attach={attach}
       tree={tree}
       surfaceProps={surfaceProps}
+      wide={wide}
     >
       {children}
     </PortalMenuFrame>
@@ -110,6 +116,7 @@ function PortalMenuFrame({
   attach,
   tree,
   surfaceProps,
+  wide = false,
   children,
 }: {
   at: { left: number; top: number } | null;
@@ -117,6 +124,7 @@ function PortalMenuFrame({
   attach: (el: HTMLElement | null) => void;
   tree: MenuTree;
   surfaceProps: object;
+  wide?: boolean | undefined;
   children: ReactNode;
 }) {
   if (!at) return null;
@@ -126,7 +134,7 @@ function PortalMenuFrame({
         <div
           ref={attach}
           {...surfaceProps}
-          className="fixed z-[var(--z-popover)] flex w-56 animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40"
+          className={`fixed z-[var(--z-popover)] flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
           style={{ left: at.left, top: at.top, transform: PLACEMENT_TRANSFORM[placement] }}
         >
           {children}
@@ -223,7 +231,6 @@ export function MenuActionRow({
   onClick,
   onPointerEnter,
   onPointerLeave,
-  danger = false,
   disabled = false,
   plain = false,
 }: {
@@ -238,11 +245,8 @@ export function MenuActionRow({
   // Sentence-case, 13px, full-contrast: the reading size for a menu
   // that IS the list (the document actions menu), where the uppercase
   // label rhythm of a category header is too quiet to scan eight verbs
-  // by. A danger row is red at rest here, not only on hover.
+  // by. A Delete or Trash row looks like every other row (never red).
   plain?: boolean;
-  // Destructive verbs (Remove) tint on hover so the row reads before it is
-  // clicked, matching the trash affordances elsewhere.
-  danger?: boolean;
   // A verb that exists but can't run right now (Paste with an empty
   // clipboard). It STAYS in the menu, greyed: hiding it would change the
   // menu's shape based on state the user can't see, and they'd learn the
@@ -271,16 +275,10 @@ export function MenuActionRow({
         onClick={onClick}
         onPointerEnter={onPointerEnter}
         onPointerLeave={onPointerLeave}
-        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${
-          danger
-            ? 'text-rose-600 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-500/15'
-            : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'
-        }`}
+        className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'}`}
       >
         <span
-          className={`flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4 ${
-            danger ? 'text-rose-500 dark:text-rose-300' : 'text-slate-400 dark:text-slate-400'
-          }`}
+          className={`flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4 ${'text-slate-400 dark:text-slate-400'}`}
         >
           {icon}
         </span>
@@ -295,11 +293,7 @@ export function MenuActionRow({
       onClick={onClick}
       onPointerEnter={onPointerEnter}
       onPointerLeave={onPointerLeave}
-      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${
-        danger
-          ? 'text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-950/40 dark:hover:text-rose-300'
-          : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'
-      }`}
+      className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${'text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'}`}
     >
       <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>
       {label}
@@ -356,15 +350,25 @@ export function MenuGroupSeparator() {
 // elements" style buttons. One definition so the (long) outlined-button
 // styling can't drift across the context menu, style presets, and tab menu.
 // The caller supplies its own surrounding padding wrapper.
-export function MenuActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+export function MenuActionButton({
+  label,
+  icon,
+  onClick,
+}: {
+  label: string;
+  // Drawn before the label.
+  icon?: ReactNode;
+  onClick: () => void;
+}) {
   const { itemProps } = useMenuItemProps();
   return (
     <button
       type="button"
       {...itemProps}
       onClick={onClick}
-      className="inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
+      className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
     >
+      {icon}
       {label}
     </button>
   );

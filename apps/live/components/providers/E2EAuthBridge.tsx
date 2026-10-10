@@ -8,6 +8,7 @@
 // it as the session. Without one the page is a settled guest.
 
 import { useEffect } from 'react';
+import { readLocalStorageSafe, safeJson } from '@/lib/local-storage-safe';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 
 export const E2E_SESSION_KEY = 'livediagram:e2e:session';
@@ -15,12 +16,8 @@ export const E2E_SESSION_KEY = 'livediagram:e2e:session';
 type E2ESession = { token: string; userId: string; email: string; firstName: string };
 
 function readSession(): E2ESession | null {
-  try {
-    const raw = localStorage.getItem(E2E_SESSION_KEY);
-    return raw ? (JSON.parse(raw) as E2ESession) : null;
-  } catch {
-    return null;
-  }
+  const raw = readLocalStorageSafe(E2E_SESSION_KEY);
+  return raw ? (safeJson(raw) as E2ESession | null) : null;
 }
 
 export function E2EAuthBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {

@@ -6,6 +6,7 @@ import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
+import type { SheetsRoomOp } from './sheets';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -125,6 +126,9 @@ export const PRESENCE_OP_KINDS = [
   // the card someone is dragging or reading, so peers ring it in their colour. Ephemeral, never
   // logged, from any session (a viewer reads items too).
   'plan-presence',
+  // Someone's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"): outlined in their colour.
+  // Ephemeral, never logged, from any session (a viewer selects too).
+  'sheet-presence',
 ] as const;
 
 // Room op kinds that DO change the document: they get a monotonic `seq` within
@@ -186,6 +190,9 @@ export const SYSTEM_OP_KINDS = [
   'changeset',
   'items',
   'item-types',
+  // `sheets` (docs/specs/029-sheets/sheet-store.md "Live for everyone"): sheet writes the api made. Sheets change
+  // only through the api, so a forged one would show people cells nobody wrote.
+  'sheets',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -314,7 +321,14 @@ export type ServerMessage =
   | CursorMessage
   | FormatMessage;
 
-export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number };
+// `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
+// sequenced (docs/specs/012-collaboration/collab-race-hardening.md phase 6). Absent on hello.
+export type CursorMessage = { kind: 'cursor'; epoch: string; seq: number; ref?: number };
+
+// A `ref` the room echoes: a positive safe integer, nothing else.
+export function isRoomOpRef(ref: unknown): ref is number {
+  return typeof ref === 'number' && Number.isSafeInteger(ref) && ref > 0;
+}
 
 // The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
@@ -329,7 +343,8 @@ export type ClientMessage =
   // the room checks it against the one it issued and, if it still matches,
   // hands the baton to this new socket. Absent on every ordinary hello.
   | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
-  | { kind: 'op'; op: unknown }
+  // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
+  | { kind: 'op'; op: unknown; ref?: number }
   // Ask the room to move the baton (docs/specs/012-collaboration/facilitator.md). The room decides; the client
   // learns the answer from the `facilitator` frame like everybody else.
   | ({ kind: 'facilitator' } & FacilitatorAction)
@@ -358,7 +373,9 @@ export type RoomOp =
   // The sender just switched to (or initially focused) a tab. Drives
   // the per-tab avatar dots in the TabBar so collaborators can see at
   // a glance which tab each peer is working on.
-  | { kind: 'tab-focus'; tabId: string }
+  // `besideTabId`: the tab in the sender's other pane while they work side by side
+  // (docs/specs/007-editor/split-view.md "Presence"); absent or null with no split.
+  | { kind: 'tab-focus'; tabId: string; besideTabId?: string | null }
   // A single tab's content changed. The post-refactor replacement for
   // the heavyweight `tabs` op below — sender ships only the one tab
   // they edited. Receivers merge by id. Kept as a fallback for bulk
@@ -482,8 +499,10 @@ export type RoomOp =
       // already throttled to ~30 Hz. Receivers parse it field by field.
       look?: {
         width: 'fine' | 'medium' | 'bold';
-        colour:
-          'presence' | 'red' | 'orange' | 'yellow' | 'green' | 'cyan' | 'blue' | 'violet' | 'white';
+        // 'presence', a standard colour's name ('red', 'grey'...) or a custom '#rrggbb'
+        // (docs/specs/004-interface-design/colour-picker.md); older clients sent
+        // 'cyan' and 'white', which receivers read as 'teal' and 'ink'.
+        colour: string;
         trail: 'quick' | 'normal' | 'long';
         effect: 'beam' | 'glow' | 'comet' | 'spark';
       };
@@ -518,6 +537,14 @@ export type RoomOp =
   // The card the sender is dragging or reading on a Plan board (docs/specs/026-plan/plan-board.md), or
   // none (itemId null). Presence: relayed as is, never stored.
   | { kind: 'plan-presence'; tabId: string; itemId: string | null; state?: 'drag' | 'view' }
+  // The sender's selection on a sheet (docs/specs/029-sheets/sheet.md "Collaboration"), by ids, or none.
+  | {
+      kind: 'sheet-presence';
+      tabId: string;
+      sheetId: string;
+      ranges: { r1: string; c1: string; r2: string; c2: string }[] | null;
+      editing: boolean;
+    }
   // The sender's VIEWPORT (docs/specs/012-collaboration/follow-me-viewport.md): where they are looking, so anyone who
   // has chosen to follow them can mirror it. Ephemeral presence exactly like
   // cursor / laser / avatar: throttled, never logged, never ordered (no
@@ -593,6 +620,9 @@ export type RoomOp =
   | ItemsRoomOp
   // A document's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
   | ItemTypesRoomOp
+  // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
+  // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
+  | SheetsRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
@@ -604,7 +634,7 @@ export type RoomOp =
 // stays at the worker boundary.
 export type RoomOutgoing =
   | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
-  | { kind: 'op'; op: RoomOp }
+  | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
   | { kind: 'identity'; participant: ParticipantPresence }
   | ({ kind: 'facilitator' } & FacilitatorAction);
@@ -637,3 +667,7 @@ export type RoomIncoming =
 // member leaving their team. Beside 4003 (a share link changed) and 4004 (the
 // document was trashed). The editor reloads into the ordinary access path.
 export const ACCESS_CHANGED_CLOSE = 4005;
+
+// The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
+// the page turns read-only and does not reconnect.
+export const WORKBENCH_ENDED_CLOSE = 4006;

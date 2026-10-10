@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 // One line of plain text, edited in place on the canvas: a page's masthead
 // (docs/specs/009-elements/page-element.md), and every secondary line of the web components (docs/specs/009-elements/web-components-and-no-groups.md) — a
@@ -27,6 +27,7 @@ export function InlineTextLine({
   className = '',
   style,
   ariaLabel,
+  animated,
 }: {
   value: string;
   placeholder: string;
@@ -37,9 +38,14 @@ export function InlineTextLine({
   className?: string;
   style?: CSSProperties;
   ariaLabel: string;
+  // The line's words split for a Text animation (docs/specs/028-animation/element-animations.md),
+  // drawn over the line while it is not being edited; the editable line stays beneath, unseen,
+  // to take the click that edits it.
+  animated?: { node: ReactNode; className: string; style: CSSProperties };
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [editing, setEditing] = useState(false);
+  const showAnimated = animated !== undefined && !editing && value.length > 0;
 
   // The DOM is the truth while editing, so the value is only written in when
   // NOT editing. Without the guard, every keystroke would re-render the same
@@ -91,7 +97,7 @@ export function InlineTextLine({
             ref.current?.blur();
           }
         }}
-        className={`${editable ? 'pointer-events-auto cursor-text' : 'pointer-events-none'} w-full truncate rounded-sm outline-none focus:bg-brand-50/60 focus:text-slate-900 ${className}`}
+        className={`${editable ? 'pointer-events-auto cursor-text' : 'pointer-events-none'} w-full truncate rounded-sm outline-none focus:bg-brand-50/60 focus:text-slate-900 ${className} ${showAnimated ? 'opacity-0' : ''}`}
         style={{
           ...style,
           // Selection chrome scales with the canvas everywhere else; a focus
@@ -99,6 +105,16 @@ export function InlineTextLine({
           outlineWidth: 1 / zoom,
         }}
       />
+      {animated && showAnimated ? (
+        <div
+          key={animated.className}
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 truncate ${className} ${animated.className}`}
+          style={{ ...style, ...animated.style }}
+        >
+          {animated.node}
+        </div>
+      ) : null}
       {value.length === 0 && !editing ? (
         // A placeholder rather than a collapsed line, so an unwritten element
         // has the same shape as a written one.

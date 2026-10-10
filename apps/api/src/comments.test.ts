@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Comment, Element, ShapeElement } from '@livediagram/document';
 import {
-  findComment,
+  findCommentHost,
   hasNewComments,
   redactCommentAuthorIds,
+  redactTabDataAuthors,
   removeComment,
   rewriteCommentAuthors,
 } from './comments';
@@ -143,14 +144,14 @@ describe('rewriteCommentAuthors', () => {
   });
 });
 
-describe('findComment', () => {
+describe('findCommentHost', () => {
   it('finds a comment by id across elements', () => {
     const els = [mkShape('a', [mkComment('c1', 'A', '#fff')]), mkShape('b', [])];
-    expect(findComment(els, 'c1')?.id).toBe('c1');
+    expect(findCommentHost(els, 'c1')).toMatchObject({ comment: { id: 'c1' }, elementId: 'a' });
   });
 
   it('returns null when the id is absent', () => {
-    expect(findComment([mkShape('a', [mkComment('c1', 'A', '#fff')])], 'missing')).toBeNull();
+    expect(findCommentHost([mkShape('a', [mkComment('c1', 'A', '#fff')])], 'missing')).toBeNull();
   });
 });
 
@@ -191,6 +192,32 @@ describe('redactCommentAuthorIds', () => {
     const els = [mkShape('a', [mkComment('c1', 'Owner', '#000', 't', 'owner-9')])];
     const [out] = redactCommentAuthorIds(els, 'someone-else') as [ShapeElement];
     expect(out.commentThread!.comments[0]!.authorId).toBeUndefined();
+  });
+});
+
+describe('redactTabDataAuthors', () => {
+  it("blanks other people's author ids in a stored tab's data, keeping the rest", () => {
+    const els = [
+      mkShape('a', [
+        mkComment('c1', 'Me', '#fff', 't', 'viewer-1'),
+        mkComment('c2', 'Owner', '#000', 't', 'owner-9'),
+      ]),
+    ];
+    const data = JSON.stringify({ elements: els, theme: 'x' });
+    const out = JSON.parse(redactTabDataAuthors(data, 'viewer-1')) as {
+      elements: ShapeElement[];
+      theme: string;
+    };
+    expect(out.theme).toBe('x');
+    expect(out.elements[0]!.commentThread!.comments[0]!.authorId).toBe('viewer-1');
+    expect(out.elements[0]!.commentThread!.comments[1]!.authorId).toBeUndefined();
+    expect(JSON.stringify(out)).not.toContain('owner-9');
+  });
+
+  it('returns data with no author ids, or that will not parse, as it is', () => {
+    const plain = JSON.stringify({ elements: [mkShape('a', [])] });
+    expect(redactTabDataAuthors(plain, 'v')).toBe(plain);
+    expect(redactTabDataAuthors('{"authorId"', 'v')).toBe('{"authorId"');
   });
 });
 

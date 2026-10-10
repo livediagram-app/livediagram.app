@@ -9,14 +9,13 @@
 // The pen's bands are the CTA band's own colour showing through (brand-600 in dark).
 const BAND_STROKE = 'dark:stroke-brand-600';
 
-export function StartDrawingArt() {
+export function StartDrawingArt({
+  className = 'mx-auto mb-8 h-28 w-full max-w-md sm:h-32',
+}: {
+  className?: string;
+}) {
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 360 130"
-      className="mx-auto mb-8 h-28 w-full max-w-md text-white sm:h-32"
-      fill="none"
-    >
+    <svg aria-hidden viewBox="0 0 360 130" className={`text-white ${className}`} fill="none">
       <defs>
         <marker id="cta-arrowhead" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
           <path d="M0 0 L6 3 L0 6 Z" fill="currentColor" />

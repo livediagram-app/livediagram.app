@@ -562,12 +562,20 @@ document"**; everything else stays put.
   restarting it.
 - **Progress:** the label sits under the animation with a slim indeterminate
   bar below it. After 10 seconds in the editor's load the screen adds
-  "This is taking longer than usual." with a Refresh button.
+  "This is taking longer than usual." with a Refresh button. Past that, the
+  load's watchdog takes over: one self-healing reload, then the load-error
+  screen with its recovery card ([Load recovery](load-recovery.md)).
 - **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
   and bar are still.
 - `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
+- **The family:** a loading Sheet shows its sibling `SheetBuildAnimation`
+  ([Sheet](../029-sheets/sheet.md#the-sheet-element), "Loading"), the same
+  cursor, timing and colours typing data into a small table, with the same
+  label and bar. The two share `build-animation-kit` (the ease, the cursor,
+  the loop's phase) and the bar is the shared `LoadingSweep`, so they stay
+  alike.
 
 Skip and the `?blank=1` bypass honour the URL placement context (the `?folder` /
 `?team` pre-seed): the blank document files where the Settings step's

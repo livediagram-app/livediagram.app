@@ -12,10 +12,15 @@ import { BoardWidgetArt, PlanBoardTileArt, PlanCardTileArt } from '@/components/
 import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { PLAN_VIEW_TILES } from './palette-plan-view-tiles';
+import { PLAN_SHEET_TILES } from './palette-plan-sheet-tiles';
 
 const GLYPH_PX = 18;
+// The one larger tile step (docs/specs/004-interface-design/iconography.md): a Plan card tile is a picture of a card with its type's glyph on the face, drawn bigger to
+// fill its tile and keep that glyph legible; 26 still fits the Rows layout's 28px chip.
+export const CARD_TILE_GLYPH_PX = 26;
 
-// The boards the palette offers, in the order they are reached for, with what each is for.
+// The boards the palette offers, in the order they are reached for, with what each is for. One list for the palette's
+// Boards and Start Planning; All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
 export const PLAN_BOARD_TILES: {
   preset: PlanBoardPresetId;
   caption: string;
@@ -29,12 +34,19 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'kanban',
     caption: 'Kanban',
-    description: 'A Kanban Board: Backlog to Done, with WIP limits on the busy columns.',
+    description:
+      'A Kanban Board of Tasks and Actions: Backlog to Done, with WIP limits on the busy columns.',
+  },
+  {
+    preset: 'todo',
+    caption: 'To-do List',
+    description: 'Actions to tick off, from To Do to Done.',
   },
   {
     preset: 'sprint',
     caption: 'Sprint',
-    description: 'A Sprint Board of Tasks, a row per person and estimates on every card.',
+    description:
+      'A Sprint Board of Stories, Tasks and Bugs, a row per person and estimates on every card.',
   },
   {
     preset: 'retro',
@@ -49,7 +61,7 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'bug-triage',
     caption: 'Bug Triage',
-    description: 'Tasks labelled bug, from New to Fixed, a row per priority.',
+    description: 'Bugs from New to Fixed, a row per priority.',
   },
   {
     preset: 'weekly',
@@ -57,14 +69,14 @@ export const PLAN_BOARD_TILES: {
     description: 'A column a day, Monday to Friday.',
   },
   {
-    preset: 'all-cards',
-    caption: 'All Cards',
-    description: 'Every card in the document, a row per status: nothing lost between boards.',
-  },
-  {
     preset: 'archive',
     caption: 'Archive',
     description: 'Every archived card, out of the way of the other boards, ready to restore.',
+  },
+  {
+    preset: 'all-cards',
+    caption: 'All Cards',
+    description: 'Every card in the document, a row per status: nothing lost between boards.',
   },
 ];
 
@@ -93,6 +105,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
   })),
   // Metrics and visualisations (docs/specs/026-plan/plan-views.md): plan views placed on the canvas.
   ...PLAN_VIEW_TILES,
+  ...PLAN_SHEET_TILES,
 ];
 
 // A card tile for an item type (docs/specs/026-plan/item-types.md "Where types show"): the built-in
@@ -106,6 +119,6 @@ export function planCardTile(t: ItemTypeDef): PaletteTileDef {
     description: `A new ${t.label}, dragged into a column on a board.`,
     noTint: true,
     action: { type: 'shape', kind: 'plan-card', plan: t.id },
-    icon: <PlanCardTileArt size={GLYPH_PX} color={t.color} />,
+    icon: <PlanCardTileArt size={CARD_TILE_GLYPH_PX} color={t.color} glyph={t.glyph} />,
   };
 }

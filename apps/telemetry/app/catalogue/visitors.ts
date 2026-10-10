@@ -243,6 +243,40 @@ export const PLAN_TOUR: MetricStack = {
   headline: PLAN_TOURS_STARTED,
 };
 
+// Show Me in the card type editor (docs/specs/026-plan/item-types.md "Editing a type"): never offered, so it starts
+// only when pressed.
+export const CARD_TYPE_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Card Type Tours Started',
+  'Show Me pressed in the card type editor.',
+  { types: ['CardTypeTour'] },
+);
+
+export const CARD_TYPE_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Card Type Tours Completed',
+  'The card type tour run to its end.',
+  { types: ['CardTypeTourCompleted'] },
+);
+
+export const CARD_TYPE_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Card Type Tours Skipped',
+  'The card type tour closed before its end.',
+  { types: ['CardTypeTourSkipped'], rising: 'neutral' },
+);
+
+export const CARD_TYPE_TOUR: MetricStack = {
+  stack: true,
+  title: 'Card Type Tour',
+  blurb: "The card type editor's Show Me: started, finished or skipped.",
+  members: [CARD_TYPE_TOURS_STARTED, CARD_TYPE_TOURS_COMPLETED, CARD_TYPE_TOURS_SKIPPED],
+  headline: CARD_TYPE_TOURS_STARTED,
+};
+
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.
 export const POWER_USER_OFFER_ACCEPTED = chart(
   'UI',

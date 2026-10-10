@@ -29,7 +29,7 @@ export type PowerUserOfferDeps = {
 };
 
 const OFFER_COPY = {
-  message: 'Power user mode: fewer labels, the toolbar layout and a few faster defaults.',
+  message: 'Power user mode: fewer labels and a few faster defaults.',
   confirmLabel: 'Try power user mode',
   declineLabel: 'No thanks',
 };

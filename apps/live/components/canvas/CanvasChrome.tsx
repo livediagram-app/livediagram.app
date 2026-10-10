@@ -1,3 +1,4 @@
+import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { ES_LANES } from '@livediagram/document';
@@ -28,10 +29,9 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
-import { CardTypesClusterButton } from '@/components/canvas/CardTypesClusterButton';
-import { TrashClusterButton } from '@/components/canvas/TrashClusterButton';
-import { CardFinderClusterButton } from '@/components/canvas/CardFinderClusterButton';
+import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
+import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -61,11 +61,11 @@ import { panelEnabled } from '@/lib/user-preferences';
 import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
 type ChromeExtras = {
-  isPaintMode: boolean;
   // The canvas <main>'s measured size (the Map's current-view window reads it; see Minimap.tsx).
   mainSize: { width: number; height: number };
   // True when every element has scrolled out of view: show the nudge above
@@ -84,8 +84,6 @@ type ChromeExtras = {
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  paletteBottomY: number;
-  setPaletteBottomY: Dispatch<SetStateAction<number>>;
   activeDockPanel: DockPanel | null;
   setActiveDockPanel: Dispatch<SetStateAction<DockPanel | null>>;
   activeDockAnchor: DockAnchor | null;
@@ -195,10 +193,9 @@ const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
   'bottom-right': 'right-4 flex-col-reverse items-end',
 };
 
-// The floating chrome layer of the canvas: empty-state prompt, template
-// picker, multi-select toolbar, mode banners, Explorer, the
-// Comments / Editor / Context panels, the palette, and
-// the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
+// The chrome layer of the canvas: empty-state prompt, template picker,
+// multi-select toolbar, mode banners, the menu button and Explorer, the
+// corner panels, the palette strip, and the zoom / undo cluster. Extracted from Canvas.tsx verbatim; consumes
 // Canvas's props plus the computed ChromeExtras.
 
 export function CanvasChrome(props: CanvasChromeProps) {
@@ -217,9 +214,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleZoomIn,
     handleZoomOut,
     marquee,
-    toolbarLayout,
-    layersMinimized,
-    onToggleLayersMinimized,
     commentRows,
     actionRows,
     onOpenCanvasTheme,
@@ -311,10 +305,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     penPoints,
     snapGuides,
     snapTargets,
+    whiteboard: props.editorMode === 'draw',
   });
 
-  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md) in force: always, on a phone.
-  const toolbarActive = toolbarLayout === true;
   // Draw mode trades the palette, the strip and the theme controls for its
   // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
   const whiteboard = props.editorMode === 'draw';
@@ -325,20 +318,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
   });
   // The strip only renders for an editor (not read-only) with the chrome up,
   // and never on a whiteboard.
-  const stripShown = toolbarActive && !readOnly && !chromeHidden && !whiteboard;
+  const stripShown = !readOnly && !chromeHidden && !whiteboard;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
   // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
-  // The Toolbar layout's only: the Floating layout shows Draw's tools in the Palette panel.
-  const dockShown =
-    toolbarActive && whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
+  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
   const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
   // the left of the strip's row, the strip beside it (no room for a corner card
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && !readOnly && !whiteboard;
-  const explorerMenuButton = (
+  const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
@@ -351,24 +342,24 @@ export function CanvasChrome(props: CanvasChromeProps) {
     () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
     [elements],
   );
-  // Floating panel elements + their wiring live in useCanvasChromePanels.
+  // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
+  usePublishCardTypesTaken(elements);
+  // Panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
-    toolbarExplorerEl,
-    toolbarClusterEls,
+    explorerEl,
+    layersEl,
     collaborateEl,
     slidesPopoverEl,
     cardTypesPopoverEl,
     trashPopoverEl,
+    newCardPopoverEl,
     cardFinderPopoverEl,
-    clusterPopovers,
     paletteTint,
   } = useCanvasChromePanels({
     props,
     chromeHidden,
     isMobile,
-    dockingActive,
-    toolbarActive,
     panelWiringFor,
     panelsOn,
   });
@@ -497,6 +488,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
         pendingDraw={pendingDraw}
         stamp={stamp}
         whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
+        mirrorPages={
+          props.illustratePages
+            ? mirroredLogoPages(props.illustratePages.pages, props.illustratePages.logo)
+            : null
+        }
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />
@@ -504,33 +500,27 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome
-        {...props}
-        toolbarLayout={toolbarActive}
-        dockOnTop={dockOnTop}
-        hasPlanBoard={hasPlanBoard}
-      />
+      <TopCenterChrome {...props} dockOnTop={dockOnTop} hasPlanBoard={hasPlanBoard} />
 
-      {/* Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the menu button stands where the
-          Explorer would float and opens it as a popover (zen hides it, the
-          welcome flow doesn't, same as the Explorer), and the strip replaces
-          the Palette for edit sessions. */}
-      {toolbarActive && !zenMode ? (
+      {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
+          (zen hides it, the welcome flow doesn't), and Layers opens as a popover over its cluster
+          button. */}
+      {!zenMode ? (
         <>
           {menuInStrip ? null : explorerMenuButton}
-          {toolbarExplorerEl}
-          {toolbarClusterEls}
+          {explorerEl}
+          {layersEl}
         </>
       ) : null}
-      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5), in every layout: it
-          positions against the canvas, so it renders outside the corner
-          layer, as Toolbar's cluster popovers do. */}
+      {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
+          against the canvas, so it renders outside the corner layer, as Layers does. */}
       {zenMode ? null : collaborateEl}
       {zenMode ? null : slidesPopoverEl}
       {zenMode ? null : cardTypesPopoverEl}
       {zenMode ? null : trashPopoverEl}
+      {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
-      {toolbarActive && !readOnly && !whiteboard ? (
+      {!readOnly && !whiteboard ? (
         <ToolbarPalette
           key={props.esBoard ? 'es-board' : 'standard'}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
@@ -545,6 +535,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           pendingDraw={pendingDraw}
           esBoard={props.esBoard}
           esBoardControls={props.esBoardControls}
+          logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           onAddPage={props.illustratePages?.edit?.addPage}
@@ -558,22 +549,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
         <WhiteboardDock model={props.whiteboardDock} ink={props.whiteboardInk ?? '#1c1917'} />
       ) : null}
 
-      {/* Floating panels (docs/specs/007-editor/panel-docking.md). In the desktop docking layout they
-          are distributed into per-corner stack containers (with a free
-          layer + snap guides) by `dockedLayer`; in zen they render inline. Each element carries its own visibility gate, so the
-          welcome-flow / read-only / zen suppression is unchanged.
-          Explorer stays visible during the welcome flow; only zen hides
-          it. */}
+      {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
+          containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
+          Each element carries its own visibility gate, so the welcome-flow / read-only / zen
+          suppression is unchanged. */}
       {dockingActive ? (
         dockedLayer
       ) : (
         <>
-          {panelEls.explorer}
           {panelEls.collaborate}
           {panelEls.ai}
-          {panelEls.palette}
           {panelEls.minimap}
-          {panelEls.layers}
           {panelEls.poll}
           {panelEls.vote}
           {panelEls.avatar}
@@ -588,9 +574,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
           strip, the Layers button, the Collaborate button (only while the tab
           has a thread or an action), the Theme & Canvas paintbrush, then the
-          Zoom controls. Layers minimises into its button in desktop Floating
-          and opens as a popover above it everywhere else (clusterPopovers, docs/specs/007-editor/live-app.md); Collaborate is a popover
-          in every layout. */}
+          Zoom controls. Layers and Collaborate open as popovers above their buttons
+          (docs/specs/007-editor/live-app.md). */}
       <div
         // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
@@ -611,13 +596,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* The Trash (docs/specs/026-plan/items.md "Trash"): Plan mode, left of Undo. */}
-            {!zenMode && !readOnly && props.editorMode === 'plan' ? (
-              <TrashClusterButton
-                popoverOpen={activeDockPanel === 'plan-trash'}
-                onTogglePopover={(button) => handleDockButtonClick('plan-trash', button, true)}
-              />
-            ) : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. */}
             {!zenMode && !readOnly ? (
               <UndoRedoClusterStrip
@@ -636,31 +614,39 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
               />
             ) : null}
-            {/* Cards (docs/specs/026-plan/items.md "Finding a card"): in Plan mode, before Card Types. */}
+            {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan
+                mode, one strip where Layers would be. */}
             {!zenMode && props.editorMode === 'plan' ? (
-              <CardFinderClusterButton
-                popoverOpen={activeDockPanel === 'plan-cards'}
-                onTogglePopover={(button) => handleDockButtonClick('plan-cards', button, true)}
-              />
-            ) : null}
-            {/* Card Types (docs/specs/026-plan/item-types.md): in Plan mode, where Layers would be. */}
-            {!zenMode && props.editorMode === 'plan' ? (
-              <CardTypesClusterButton
-                buttonRef={cardTypesButtonRef}
-                popoverOpen={activeDockPanel === 'card-types'}
-                onTogglePopover={(button) => handleDockButtonClick('card-types', button, true)}
+              <PlanCardsClusterStrip
+                finderOpen={activeDockPanel === 'plan-cards'}
+                onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}
+                typesOpen={activeDockPanel === 'card-types'}
+                onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
+                typesButtonRef={cardTypesButtonRef}
+                // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
+                newCard={
+                  !readOnly
+                    ? {
+                        open: activeDockPanel === 'plan-new-card',
+                        onToggle: (button) => handleDockButtonClick('plan-new-card', button, true),
+                      }
+                    : undefined
+                }
+                trash={
+                  !readOnly && !isMobile
+                    ? {
+                        open: activeDockPanel === 'plan-trash',
+                        onToggle: (button) => handleDockButtonClick('plan-trash', button, true),
+                      }
+                    : undefined
+                }
               />
             ) : null}
             {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
-            {!zenMode && !readOnly && panelsOn.layers && (clusterPopovers || layersMinimized) ? (
+            {!zenMode && !readOnly && panelsOn.layers ? (
               <LayersClusterButton
-                popoverOpen={clusterPopovers && activeDockPanel === 'layers'}
-                onExpand={onToggleLayersMinimized}
-                onTogglePopover={
-                  !clusterPopovers
-                    ? undefined
-                    : (button) => handleDockButtonClick('layers', button, true)
-                }
+                popoverOpen={activeDockPanel === 'layers'}
+                onTogglePopover={(button) => handleDockButtonClick('layers', button, true)}
               />
             ) : null}
             {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
@@ -676,11 +662,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of
-                the Layers dock opens the CanvasThemeDialog — the same modal
-                the canvas right-click menu reaches, one click from the
-                chrome. All viewports, mobile included — the canvas menu's
-                long-press entry isn't discoverable there (read-only
-                sessions pass no handler). */}
+                the Layers dock opens the CanvasThemeDialog. It is the one
+                entry point: the canvas and tab menus no longer carry the
+                theme and canvas controls. All viewports, mobile included
+                (read-only sessions pass no handler). */}
             {!zenMode && onOpenCanvasTheme && !whiteboard ? (
               <div
                 data-tour-id="canvas-theme"
@@ -688,7 +673,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   e.preventDefault();
                   e.stopPropagation();
                 }}
-                className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+                className={CLUSTER_STRIP}
               >
                 <HoverCard
                   title="Theme & canvas"

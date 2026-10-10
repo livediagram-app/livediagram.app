@@ -1,0 +1,95 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { LinkedCardGroup } from './LinkedCards';
+
+afterEach(cleanup);
+
+const PERSON = { id: 'p', name: 'Sam Lee', color: '#2563eb' };
+const item = (id: string, key: number, type: string, fields: Item['fields'] = {}): Item => ({
+  id,
+  type,
+  key,
+  rank: 'i',
+  fields: { title: `Card ${key}`, ...fields },
+  rev: 1,
+  createdAt: 0,
+  updatedAt: 0,
+  createdBy: PERSON,
+  updatedBy: PERSON,
+});
+const STATUS_NAMES = new Map([
+  ['doing', 'In Progress'],
+  ['review', 'Review'],
+]);
+
+// docs/specs/026-plan/item-types.md "Card fields": a section per Card field linking here.
+describe('LinkedCardGroup', () => {
+  const group = (cards: Item[]) => ({
+    fieldId: 'f-owner',
+    label: 'Owner',
+    fromTypes: ['task'],
+    cards,
+  });
+
+  it('lists the cards linking here as the field, opens one, and makes a new one linked', () => {
+    const onOpen = vi.fn();
+    const onAdd = vi.fn();
+    render(
+      <LinkedCardGroup
+        group={group([item('o1', 4, 'task', { status: 'doing' })])}
+        types={ITEM_TYPES}
+        statusNames={STATUS_NAMES}
+        canAdd
+        onOpen={onOpen}
+        onAdd={onAdd}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: /Linked as Owner/ }).textContent).toContain('1');
+    fireEvent.click(screen.getByRole('button', { name: 'Open #4 Card 4, In Progress' }));
+    expect(onOpen).toHaveBeenCalledWith('o1');
+    fireEvent.click(screen.getByRole('button', { name: 'New Task' }));
+    expect(onAdd).toHaveBeenCalledWith('task');
+  });
+
+  it('lists a Project’s cards as Linked as Parent, each with its status and Archived', () => {
+    render(
+      <LinkedCardGroup
+        group={{
+          fieldId: 'parent',
+          label: 'Parent',
+          fromTypes: ['task'],
+          cards: [
+            item('c2', 2, 'task', { status: 'doing', assignee: PERSON }),
+            item('c3', 3, 'task', { status: 'review', archived: true }),
+          ],
+        }}
+        types={ITEM_TYPES}
+        statusNames={STATUS_NAMES}
+        canAdd
+        onOpen={vi.fn()}
+        onAdd={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('heading', { name: /Linked as Parent/ }).textContent).toContain('2');
+    expect(within(screen.getByRole('list')).getByText('In Progress')).toBeTruthy();
+    expect(within(screen.getByRole('list')).getByText('Review')).toBeTruthy();
+    expect(screen.getByText('Archived')).toBeTruthy();
+  });
+
+  it('says so when nothing links here yet, and offers no New to a viewer', () => {
+    render(
+      <LinkedCardGroup
+        group={group([])}
+        types={ITEM_TYPES}
+        statusNames={STATUS_NAMES}
+        canAdd={false}
+        onOpen={vi.fn()}
+        onAdd={vi.fn()}
+      />,
+    );
+    expect(screen.getByText('No cards link here as Owner yet.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'New Task' })).toBeNull();
+  });
+});

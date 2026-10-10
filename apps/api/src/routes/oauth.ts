@@ -8,7 +8,7 @@
 //
 // Gated exactly like /api/tokens: a guest (X-Owner-Id only) or a no-auth
 // self-host has no verified Clerk identity, so nothing can be minted.
-import { badRequest, forbidden, json, notFound } from '../responses';
+import { badRequest, conflict, forbidden, json, notFound } from '../responses';
 import { type RouteContext } from './context';
 import { mintApiToken } from '../db';
 import { MAX_NAME_LEN } from '../limits';
@@ -36,7 +36,7 @@ export async function handleOauthExchange(ctx: RouteContext): Promise<Response> 
   // Same mint as the user-facing route, so the cap (docs/specs/015-api/public-api-and-tokens.md §3.6), the expiry
   // and the hash-only storage cannot differ between the two ways in.
   const minted = await mintApiToken(env, { ownerId: owner, name, readOnly });
-  if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });
+  if (!minted) return conflict('token_limit_reached');
   // The plaintext is returned ONCE; the MCP hands it to the client and never
   // stores it server-side (only the hash is persisted).
   return json(

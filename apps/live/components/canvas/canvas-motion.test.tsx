@@ -49,11 +49,13 @@ function Board({
   tabId,
   ids,
   still = false,
+  loaded = true,
   seen,
 }: {
   tabId: string;
   ids: string[];
   still?: boolean;
+  loaded?: boolean;
   seen: Map<string, string>;
 }) {
   const probes = ids.map((id) =>
@@ -61,7 +63,7 @@ function Board({
   );
   return createElement(CanvasStillProvider, {
     still,
-    children: createElement(CanvasArrivalProvider, { tabId, children: probes }),
+    children: createElement(CanvasArrivalProvider, { tabId, loaded, children: probes }),
   });
 }
 
@@ -93,6 +95,17 @@ describe('the board a tab opens with', () => {
     rerender(createElement(Board, { tabId: 't2', ids: ['c', 'd'], seen }));
     expect(seen.get('c')).toBe('');
     expect(seen.get('d')).toBe('');
+  });
+
+  it('shows a never-opened tab at once when its content lands after the placeholder', () => {
+    const seen = new Map<string, string>();
+    const { rerender } = render(createElement(Board, { tabId: 't1', ids: ['a'], seen }));
+    rerender(createElement(Board, { tabId: 't2', ids: [], loaded: false, seen }));
+    rerender(createElement(Board, { tabId: 't2', ids: ['c', 'd'], seen }));
+    expect(seen.get('c')).toBe('');
+    expect(seen.get('d')).toBe('');
+    rerender(createElement(Board, { tabId: 't2', ids: ['c', 'd', 'e'], seen }));
+    expect(seen.get('e')).toBe('animate-element-pop-in');
   });
 
   it('arms no timer for an element added to a still canvas', () => {

@@ -39,13 +39,21 @@ export const TOKENS_REVOKED: Metric = {
   blurb: 'API tokens revoked, whether created by hand or by an AI tool.',
 };
 
+export const WORKBENCHES_PAIRED: Metric = {
+  category: 'Token',
+  action: 'Linked',
+  type: 'Workbench',
+  title: 'Workbenches Paired',
+  blurb: 'A token’s owner allowed a developer tool to open their documents.',
+};
+
 export const API_TOKEN_ACTIVITY: MetricStack = {
   rising: 'neutral',
   stack: true,
   title: 'API Token Activity',
   blurb:
-    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, and revoked.',
-  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, TOKENS_REVOKED],
+    'Every token event: created by hand, by an AI tool connecting over MCP, by the CLI signing in, paired with a workbench, and revoked.',
+  members: [TOKENS_CREATED, AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED, TOKENS_REVOKED],
 };
 
 // MCP tool calls, one chart per tool the MCP server registers (apps/mcp
@@ -82,6 +90,33 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Reading a document’s Plan items: cards, tasks and their fields.',
   ),
   mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
+  mcpTool(
+    'AddBoard',
+    'Add Board',
+    'Putting a Plan board on a tab, from a preset or columns by name.',
+  ),
+  mcpTool(
+    'ChangeBoard',
+    'Change Board',
+    'Changing a Plan board’s title, columns or the card types it shows.',
+  ),
+  mcpTool(
+    'ChangeCardTypes',
+    'Change Card Types',
+    'Adding, editing or deleting a document’s card types.',
+  ),
+  mcpTool('ListSheets', 'List Sheets', 'Listing a document’s sheets.'),
+  mcpTool(
+    'ReadSheet',
+    'Read Sheet',
+    'Reading a sheet’s cells by A1, with their worked-out values.',
+  ),
+  mcpTool(
+    'ChangeSheet',
+    'Change Sheet',
+    'Setting, clearing or formatting cells, or changing a sheet’s rows and columns.',
+  ),
+  mcpTool('AddSheet', 'Add Sheet', 'Putting a new Sheet on a tab, blank or from rows or CSV.'),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

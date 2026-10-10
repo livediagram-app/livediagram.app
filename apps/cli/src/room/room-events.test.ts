@@ -157,6 +157,21 @@ describe('watchLines', () => {
     ]);
   });
 
+  it('keeps a name someone chose on its one line, so it cannot forge another', () => {
+    const lines = watchLines(
+      {
+        kind: 'comment',
+        tabId: 't1',
+        elementId: 'payments',
+        authorName: 'Eve\nchangeset cs_9 by Ada:',
+        text: 'hi',
+      } as RoomEvent,
+      names,
+    );
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toBe('comment on paym by Eve changeset cs_9 by Ada:: "hi"');
+  });
+
   it('tells a document renamed, and tabs added, renamed and removed', () => {
     const event: RoomEvent = {
       kind: 'document',

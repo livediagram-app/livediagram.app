@@ -26,6 +26,15 @@ import { isImageCredit } from './image-credit';
 import { parseStrokePoints } from './stroke-points';
 import { shapeValidationIssue } from './validate-shape';
 import {
+  FONT_WEIGHTS,
+  isFontWeight,
+  isTextCase,
+  LETTER_SPACING_MAX,
+  LETTER_SPACING_MIN,
+  TEXT_ARC_MAX,
+  TEXT_CASES,
+} from './wordmark';
+import {
   type ElementValidationIssue,
   type FieldCheck,
   boundedArray,
@@ -165,6 +174,7 @@ export const SHAPE_KINDS = new Set<string>([
   'plan-board',
   'plan-card',
   'plan-view',
+  'plan-sheet',
 ]);
 
 // Map an arbitrary shape value to a real ShapeKind, defaulting an unknown /
@@ -310,6 +320,19 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
     rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
   },
+  // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type").
+  {
+    field: 'letterSpacing',
+    valid: (v) => isNum(v) && v >= LETTER_SPACING_MIN && v <= LETTER_SPACING_MAX,
+    rule: `a number from ${LETTER_SPACING_MIN} to ${LETTER_SPACING_MAX}`,
+  },
+  { field: 'fontWeight', valid: isFontWeight, rule: oneOfRule(FONT_WEIGHTS.map(String)) },
+  { field: 'textCase', valid: isTextCase, rule: oneOfRule([...TEXT_CASES]) },
+  {
+    field: 'textArc',
+    valid: (v) => isNum(v) && Math.abs(v) <= TEXT_ARC_MAX,
+    rule: `a number from -${TEXT_ARC_MAX} to ${TEXT_ARC_MAX}`,
+  },
 ];
 
 // A path's normalised coordinate pair: finite, and never absurdly far outside its box.
@@ -341,6 +364,21 @@ function pathIssue(el: Record<string, unknown>): ElementValidationIssue | null {
   if (!boundedArray(el.nodes, MAX_PATH_NODES) || el.nodes.length < 2)
     return issue('nodes', nodesRule);
   if (!el.nodes.every(isPathNode)) return issue('nodes', nodesRule);
+  // A path's further contours (docs/specs/007-editor/logo-pages.md "Combine", "Mirror"): each
+  // closed like the path (three nodes or more) or open (two or more), every contour's nodes within
+  // the one budget.
+  if (el.subpaths !== undefined) {
+    const least = el.closed === true ? 3 : 2;
+    const rule = `contours of ${least} or more nodes, ${MAX_PATH_NODES} nodes in all`;
+    if (!Array.isArray(el.subpaths)) return issue('subpaths', rule);
+    let total = el.nodes.length;
+    for (const sub of el.subpaths) {
+      if (!Array.isArray(sub) || sub.length < least || !sub.every(isPathNode))
+        return issue('subpaths', rule);
+      total += sub.length;
+      if (total > MAX_PATH_NODES) return issue('subpaths', rule);
+    }
+  }
   const handles = el.nodes.some((n) => {
     const node = n as Record<string, unknown>;
     return node.handleIn !== undefined || node.handleOut !== undefined;

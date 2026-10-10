@@ -61,7 +61,7 @@ Built in the behaviour elements' current direction ([Participant responses](part
 
 ## Editing
 
-Rows are added / renamed / re-timed / reordered / removed from an **Items**
+Rows are added / renamed / re-timed / reordered / removed from a **Segments**
 section in the element's context menu, mirroring the checklist's row editor
 ([Checklist](../009-elements/checklist.md)) and the record's field editor ([The entity](../009-elements/entity.md)) rather than inventing a
 third row-editing idiom.

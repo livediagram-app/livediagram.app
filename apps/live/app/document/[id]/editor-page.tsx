@@ -9,20 +9,21 @@ import { requestDriveFlush } from '@/lib/drive/tab-election';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { Explorer } from '@/components/panels/Explorer';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
+// Static, unlike the other status cards: it must render offline (docs/specs/007-editor/load-recovery.md
+// "Offline"); its recovery tools are the lazy part.
+import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
+import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
   ssr: false,
 });
-const ApiErrorPage = dynamic(
-  () => import('@/components/chrome/ApiErrorPage').then((m) => m.ApiErrorPage),
-  { ssr: false },
-);
+
 const DocumentTrashedCard = dynamic(
   () => import('@/components/chrome/DocumentTrashedCard').then((m) => m.DocumentTrashedCard),
   { ssr: false },
@@ -32,19 +33,19 @@ const SharePasswordGate = dynamic(
   { ssr: false },
 );
 
-const LOAD_ERROR_MESSAGE =
-  'We couldn’t load this document: the server didn’t respond. Check your connection and try again.';
-
-// `embed` mounts the read-only embed view (docs/specs/013-workspace/embeds.md): same state, same
-// EditorView, with the chrome / identity / edit gates flipped by the
-// flag. The /live/embed route passes it; the /document route doesn't.
-export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
-  const state = useEditorState({ embed });
+// `surface` says where the editor runs (editor-surface.ts): the app (/document), the read-only embed
+// view (/embed, docs/specs/013-workspace/embeds.md), or a workbench's frame (/embed/workbench,
+// docs/specs/013-workspace/workbench-embeds.md). Same state, same EditorView, with the chrome /
+// identity / edit gates flipped by it.
+export default function LivePage({ surface = 'app' }: { surface?: EditorSurface } = {}) {
+  const state = useEditorState({ surface });
+  const { embedMode, workbenchMode, appChrome } = surfaceFlags(surface);
   // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): one emit per rendered embed iframe
-  // document. Fires once on mount; the /document route never sets `embed`.
+  // document, and one per workbench frame that mounts the editor. Fires once on mount.
   useEffect(() => {
-    if (embed) track('Session', 'Opened', 'Embed');
-  }, [embed]);
+    if (surface === 'embed') track('Session', 'Opened', 'Embed');
+    if (surface === 'workbench') track('Session', 'Opened', 'Workbench');
+  }, [surface]);
   // Prefetch the async icon-catalogue chunk (~60 kB of glyph data kept out of
   // the first-load JS, see lib/icon-registry.ts) as soon as the editor
   // mounts, so it downloads in parallel with the document fetch / hydration.
@@ -129,13 +130,14 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   // load, the room, or a refused save. Ahead of every other status because it
   // can arrive mid-session, over an editor that loaded fine.
   if (state.documentTrashed.trashed) {
+    // A workbench cannot restore: Restore is an ownership power outside its session.
     const card = (
       <DocumentTrashedCard
-        restorable={state.documentTrashed.restorable}
+        restorable={workbenchMode ? null : state.documentTrashed.restorable}
         onRestore={state.documentTrashed.restore}
       />
     );
-    return embed ? (
+    return !appChrome ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
       <StatusShell title="Document deleted" explorer={fullExplorer}>
@@ -149,11 +151,14 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
     const card = (
-      <ApiErrorPage onRetry={() => window.location.reload()} message={LOAD_ERROR_MESSAGE} />
+      <LoadErrorCard
+        embed={!appChrome}
+        ownerId={state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null)}
+      />
     );
-    // Embed frames get the bare retry card: an app header + Explorer
+    // Embed and workbench frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
-    return embed ? (
+    return !appChrome ? (
       <EmbedShell>{card}</EmbedShell>
     ) : (
       <StatusShell title="Couldn’t load document" explorer={fullExplorer}>
@@ -163,9 +168,9 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   }
 
   if (documentNotFound) {
-    // The create-new escape opens the full app in a new tab from an embed
+    // The create-new escape opens the full app in a new tab from a frame
     // (rather than navigating the host page's iframe), in place otherwise.
-    return embed ? (
+    return !appChrome ? (
       <EmbedShell>
         <NotFound
           onCreateNew={() => window.open(`${window.location.origin}/new`, '_blank', 'noopener')}
@@ -185,7 +190,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
   // embed the gate renders headerless inside the iframe (docs/specs/013-workspace/embeds.md).
   if (sharePasswordGate) {
     return (
-      <StatusShell title="Password required" showHeader={!embed}>
+      <StatusShell title="Password required" showHeader={!embedMode}>
         <SharePasswordGate
           invalid={sharePasswordGate.invalid}
           ownerName={documentOwnerName}
@@ -213,6 +218,7 @@ export default function LivePage({ embed = false }: { embed?: boolean } = {}) {
           themes referenced by this document's tabs. */}
       <CustomThemeProvider
         ownerId={state.selfParticipant?.id ?? null}
+        readOnly={workbenchMode}
         onThemeDeleted={state.resetTabsUsingTheme}
       >
         {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}

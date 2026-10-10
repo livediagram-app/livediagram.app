@@ -1,9 +1,8 @@
 // Account-and-data category illustrations (docs/specs/018-help/help-app.md): the per-browser guest
-// identity, signing in and migrating guest work, exporting diagrams, and
-// deleting data. Composed only from the shared primitives so the house style
+// identity, signing in and migrating guest work, and deleting a document. Composed only from the shared primitives so the house style
 // holds.
 
-import { Scene, Shape, Arrow, Dialog, Button, Menu, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Panel, Button, Menu, Label, TextBar } from './primitives';
 
 /** A browser window holding a per-browser guest id that owns the documents it
  *  created, with no sign-in required. */
@@ -36,7 +35,7 @@ export function GuestIdentity() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={118} y={41} size={9} tone="muted">
+      <Label x={118} y={41} size={10} tone="muted">
         livediagram.app/new
       </Label>
       {/* The stored guest id */}
@@ -49,14 +48,14 @@ export function GuestIdentity() {
         className="fill-brand-50 stroke-brand-300"
         strokeWidth={2}
       />
-      <Label x={82} y={84} size={9} weight={700} tone="muted">
+      <Label x={82} y={84} size={10} weight={700} tone="muted">
         GUEST ID
       </Label>
       <Label x={82} y={98} size={11} weight={600} tone="accent">
-        livediagram:self-id
+        livediagram:v2:self-id
       </Label>
       {/* The documents it owns */}
-      <Label x={70} y={128} size={9} weight={700} tone="muted">
+      <Label x={70} y={128} size={10} weight={700} tone="muted">
         OWNS
       </Label>
       <Shape x={70} y={138} w={64} h={40} kind="rect" label="A" />
@@ -83,57 +82,59 @@ export function GuestIdentity() {
   );
 }
 
-/** The sign-in card: email-code and Google options on the custom sign-in UI. */
+/** The sign-in card as /sign-in draws it: the brand and subtitle, Continue
+ *  with Google (only where Google sign-in is enabled), an "or" divider, then
+ *  the email field and Continue with email. */
 export function SignInCard() {
   return (
-    <Scene w={420} h={240} bg="plain">
-      <Dialog
-        x={108}
-        y={20}
-        w={204}
-        h={204}
-        title="Sign in"
-        scrim={false}
-        sceneW={420}
-        sceneH={240}
-      >
-        <Label x={124} y={72} size={9} weight={700} tone="muted">
-          EMAIL
+    <Scene w={420} h={250} bg="plain">
+      <Panel x={98} y={14} w={224} h={222}>
+        <Label x={210} y={38} anchor="middle" size={14} weight={700} tone="strong">
+          livediagram
         </Label>
+        <Label x={210} y={56} anchor="middle" size={10} tone="muted">
+          Sign in to keep your documents
+        </Label>
+        <Label x={210} y={69} anchor="middle" size={10} tone="muted">
+          and work across multiple devices.
+        </Label>
+        {/* Google button (Google sign-in enabled) */}
         <rect
-          x={124}
-          y={80}
-          width={172}
-          height={26}
+          x={114}
+          y={84}
+          width={192}
+          height={28}
           rx={7}
           className="fill-white stroke-slate-300"
           strokeWidth={1.5}
         />
-        <Label x={134} y={94} size={10} tone="muted">
-          you@example.com
-        </Label>
-        <Button x={124} y={116} w={172} label="Continue with email" variant="primary" />
-        {/* divider */}
-        <line x1={124} y1={160} x2={170} y2={160} className="stroke-slate-200" strokeWidth={1.5} />
-        <Label x={210} y={161} anchor="middle" size={9} tone="muted">
-          or
-        </Label>
-        <line x1={250} y1={160} x2={296} y2={160} className="stroke-slate-200" strokeWidth={1.5} />
-        {/* Google button */}
-        <rect
-          x={124}
-          y={174}
-          width={172}
-          height={26}
-          rx={7}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.5}
-        />
-        <circle cx={140} cy={187} r={6} className="fill-none stroke-brand-400" strokeWidth={2} />
-        <Label x={216} y={188} anchor="middle" size={10} weight={600} tone="body">
+        <circle cx={132} cy={98} r={6} className="fill-none stroke-brand-400" strokeWidth={2} />
+        <Label x={216} y={99} anchor="middle" size={11} weight={600} tone="body">
           Continue with Google
         </Label>
-      </Dialog>
+        {/* divider */}
+        <line x1={114} y1={128} x2={196} y2={128} className="stroke-slate-200" strokeWidth={1.5} />
+        <Label x={210} y={129} anchor="middle" size={10} tone="muted">
+          or
+        </Label>
+        <line x1={224} y1={128} x2={306} y2={128} className="stroke-slate-200" strokeWidth={1.5} />
+        <Label x={114} y={150} size={10} weight={600} tone="body">
+          Email
+        </Label>
+        <rect
+          x={114}
+          y={158}
+          width={192}
+          height={26}
+          rx={7}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1.5}
+        />
+        <Label x={124} y={172} size={10} tone="muted">
+          you@example.com
+        </Label>
+        <Button x={114} y={194} w={192} h={28} label="Continue with email" variant="primary" />
+      </Panel>
     </Scene>
   );
 }
@@ -153,7 +154,7 @@ export function MigrateOnSignUp() {
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      <Label x={44} y={80} size={9} weight={700} tone="muted">
+      <Label x={44} y={80} size={10} weight={700} tone="muted">
         GUEST ID
       </Label>
       <Shape x={44} y={92} w={50} h={32} kind="rect" />
@@ -179,7 +180,7 @@ export function MigrateOnSignUp() {
         d="M252 72 a10 10 0 0 1 10 -10 H382 a10 10 0 0 1 10 10 V84 H252 Z"
         className="fill-brand-500"
       />
-      <Label x={264} y={73} size={9} weight={700} tone="onAccent">
+      <Label x={264} y={73} size={10} weight={700} tone="onAccent">
         YOUR ACCOUNT
       </Label>
       <Shape x={268} y={96} w={50} h={32} kind="rect" />
@@ -190,77 +191,56 @@ export function MigrateOnSignUp() {
   );
 }
 
-/** The export menu: PNG, SVG, and PDF image formats plus a live embed option. */
-export function ExportMenu() {
-  return (
-    <Scene w={420} h={230}>
-      {/* A diagram behind the menu */}
-      <Shape x={36} y={58} w={84} h={48} kind="rect" label="Start" />
-      <Shape x={36} y={138} w={84} h={44} kind="rect" accent label="Done" />
-      <Arrow from={[78, 106]} to={[78, 138]} />
-      {/* The export menu */}
-      <Label x={208} y={42} size={10} weight={700} tone="muted">
-        EXPORT
-      </Label>
-      <Menu
-        x={196}
-        y={50}
-        w={188}
-        items={['PNG image', 'SVG vector', 'PDF document', 'Embed live view']}
-        active={0}
-        rowH={32}
-      />
-    </Scene>
-  );
-}
-
-/** A delete-confirmation dialog for a single document, warning the linked
- *  content goes with it. */
+/** The delete confirmation as a popover beside a document's Delete action:
+ *  the question, the share-links line, and a Delete button that is the soft
+ *  amber caution rather than red, because the document waits in the Trash. */
 export function DeleteDialog() {
   return (
     <Scene w={420} h={220} bg="plain">
-      <Dialog
-        x={86}
-        y={28}
-        w={248}
-        h={164}
-        title="Delete document?"
-        scrim={false}
-        sceneW={420}
-        sceneH={220}
-      >
-        {/* warning glyph */}
-        <g transform="translate(110 84)">
-          <path
-            d="M0 -10 L11 9 H-11 Z"
-            className="fill-rose-100 stroke-rose-400"
-            strokeWidth={2}
-            strokeLinejoin="round"
-          />
-          <Label
-            x={0}
-            y={2}
-            anchor="middle"
-            size={11}
-            weight={700}
-            className="fill-rose-500 dark:fill-rose-400"
-          >
-            !
-          </Label>
-        </g>
-        <Label x={132} y={80} size={11} weight={600} tone="strong">
-          “System overview”
-        </Label>
-        <TextBar x={132} y={92} w={170} />
-        <Label x={102} y={116} size={9} tone="muted">
-          Its share links stop working. It can be
-        </Label>
-        <Label x={102} y={130} size={9} tone="muted">
-          restored from Settings › Trash for 30 days.
-        </Label>
-        <Button x={102} y={154} w={92} label="Cancel" variant="default" />
-        <Button x={206} y={154} w={112} label="Delete" variant="primary" />
-      </Dialog>
+      {/* The document's action menu, Delete highlighted */}
+      <Menu
+        x={28}
+        y={36}
+        w={150}
+        items={['Rename', 'Duplicate', 'Change Folder', 'Delete']}
+        active={3}
+        rowH={30}
+      />
+      {/* The confirm popover, its arrow pointing at Delete */}
+      <path
+        d="M196 135 L190 141 L196 147"
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+      />
+      <rect
+        x={196}
+        y={96}
+        width={200}
+        height={98}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={210} y={118} size={11} weight={600} tone="strong">
+        Delete &ldquo;System overview&rdquo;?
+      </Label>
+      <Label x={210} y={136} size={10} tone="muted">
+        Its share links stop working.
+      </Label>
+      <Button x={256} y={156} w={62} h={24} label="Cancel" />
+      <rect
+        x={324}
+        y={156}
+        width={60}
+        height={24}
+        rx={7}
+        className="fill-amber-100 stroke-amber-400"
+        strokeWidth={1.5}
+      />
+      <Label x={354} y={169} anchor="middle" size={11} weight={600} tone="strong">
+        Delete
+      </Label>
     </Scene>
   );
 }

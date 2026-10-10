@@ -2,7 +2,14 @@
 // the authenticated blob-URL fetch for rendering.
 import type { ImageSummary } from '@livediagram/api-schema';
 import { dedupeInFlight } from '../dedupe';
-import { API_BASE, apiDelete, apiHeaders, expectOk, apiFetch } from './core';
+import {
+  API_BASE,
+  apiDelete,
+  apiHeaders,
+  expectOk,
+  apiFetch,
+  getWorkbenchConfinement,
+} from './core';
 
 // Listing the owner's gallery. Returns null when the server reports
 // 503 (R2 not provisioned on this deployment), letting the picker
@@ -137,7 +144,9 @@ async function fetchImage(
   opts: { documentId?: string; shareCode?: string | null },
 ): Promise<Response | null> {
   const params = new URLSearchParams();
-  if (opts.documentId) params.set('d', opts.documentId);
+  // A workbench session reads images by its own document's path only (no owner shortcut).
+  const documentId = getWorkbenchConfinement()?.documentId ?? opts.documentId;
+  if (documentId) params.set('d', documentId);
   const url = `${API_BASE}/images/${encodeURIComponent(imageId)}${
     params.toString() ? `?${params.toString()}` : ''
   }`;

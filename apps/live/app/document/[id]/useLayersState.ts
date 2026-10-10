@@ -46,6 +46,9 @@ export function useLayersState(opts: {
   // Surfaces the "adding is paused" notice when the active layer goes
   // hidden / locked — the block itself is silent by design.
   toastInfo: (message: string) => void;
+  // Elements inert for another reason than their layer: those on a locked page
+  // (docs/specs/007-editor/illustrate-pages.md "Locking a page").
+  extraInertIds?: ReadonlySet<string>;
 }) {
   const {
     activeId,
@@ -80,11 +83,14 @@ export function useLayersState(opts: {
   );
   // Hidden ∪ locked: the ids every selection surface (click, marquee,
   // select-all, keyboard traversal) treats as not-there.
+  // Plus what a locked page holds.
+  const extraInertIds = opts.extraInertIds;
   const layerInertIds = useMemo(() => {
-    if (layerHiddenIds.size === 0) return layerLockedIds;
-    if (layerLockedIds.size === 0) return layerHiddenIds;
-    return new Set([...layerHiddenIds, ...layerLockedIds]);
-  }, [layerHiddenIds, layerLockedIds]);
+    const extra = extraInertIds?.size ? extraInertIds : null;
+    if (layerHiddenIds.size === 0 && !extra) return layerLockedIds;
+    if (layerLockedIds.size === 0 && !extra) return layerHiddenIds;
+    return new Set([...layerHiddenIds, ...layerLockedIds, ...(extra ?? [])]);
+  }, [layerHiddenIds, layerLockedIds, extraInertIds]);
 
   const layerCounts = useMemo(
     () => layerElementCounts({ elements: activeTab.elements, layers: activeTab.layers }),

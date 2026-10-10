@@ -187,3 +187,20 @@ describe('pressing placed nodes while drawing (docs/specs/023-draw-mode/path-too
     });
   });
 });
+
+describe('openPathEnds and paths of several lines', () => {
+  it('offers no ends on a merged mirrored line: it is not edited point by point', () => {
+    const line = createPath([corner(0, 0), corner(100, 10)], false);
+    const compound: PathElement = {
+      ...line,
+      subpaths: [
+        [
+          { nx: 0, ny: 0, mode: 'corner' },
+          { nx: 1, ny: 1, mode: 'corner' },
+        ],
+      ],
+    };
+    expect(openPathEnds([compound], new Set())).toEqual([]);
+    expect(openPathEnds([line], new Set())).toHaveLength(2);
+  });
+});

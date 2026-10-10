@@ -1,18 +1,18 @@
 'use client';
 
 // "Add a page" (docs/specs/007-editor/illustrate-pages.md "Page kinds"): the + after the last page
-// opens this small popover offering the two kinds of page, each a card with a miniature of it and a
+// opens this small popover offering the four kinds of page, each a card with a miniature of it and a
 // line under its name. Arrow keys move between them, Enter or a press chooses, Escape or an outside
 // press closes. On a phone it is a bottom sheet.
-import { useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { PageKind } from '@livediagram/document';
 import { useClickOutside, useEscape, Portal } from '@livediagram/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
-import { PAGE_KINDS, PageKindCard } from './page-kind-cards';
+import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
 
-const WIDTH = 332;
+const WIDTH = 420;
 const GAP = 10;
 
 export function AddPagePopover({
@@ -50,20 +50,11 @@ export function AddPagePopover({
     onClose(false);
     onAdd(kind);
   };
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
-    if (!keys.includes(e.key)) return;
-    e.preventDefault();
-    const at = cards.current.findIndex((c) => c === document.activeElement);
-    const step = e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 1;
-    cards.current[(at + step + PAGE_KINDS.length) % PAGE_KINDS.length]?.focus();
-  };
-
   const body = (
     <div
       role="group"
-      aria-label="Add a page"
-      onKeyDown={onKeyDown}
+      aria-label="Add a Page"
+      onKeyDown={(e) => moveBetweenKindCards(e, cards.current)}
       className={mobile ? 'flex flex-col gap-2 px-4 pb-3' : 'flex flex-col gap-2 p-3'}
     >
       <p className="px-0.5 text-xs font-semibold text-slate-500 dark:text-slate-400">Add a Page</p>
@@ -87,7 +78,7 @@ export function AddPagePopover({
       <BottomSheet
         ref={box}
         role="dialog"
-        aria-label="Add a page"
+        aria-label="Add a Page"
         onClose={() => onClose(false)}
         zClassName="z-[var(--z-overlay)]"
         onPointerDown={(e) => e.stopPropagation()}
@@ -101,7 +92,7 @@ export function AddPagePopover({
       <div
         ref={box}
         role="dialog"
-        aria-label="Add a page"
+        aria-label="Add a Page"
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] animate-fade-in rounded-xl border border-slate-200 bg-white shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
         style={{ left: pos?.left ?? -9999, top: pos?.top ?? -9999, width: WIDTH }}

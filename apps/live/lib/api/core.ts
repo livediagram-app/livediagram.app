@@ -24,11 +24,20 @@ import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-sa
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
 import { API_BASE } from './base';
+import { confinementRefusal, noteWorkbenchResponse } from './workbench-confinement';
+// A workbench session's confinement (workbench-confinement.ts), part of this module's surface.
+export {
+  getWorkbenchConfinement,
+  setWorkbenchConfinement,
+  subscribeWorkbenchSessionRefused,
+  WorkbenchConfinedError,
+} from './workbench-confinement';
 // Every non-2xx the expectOk* helpers throw, and every fetch that rejects in
 // apiFetch, is reported through here (docs/specs/017-telemetry/telemetry.md 'Error').
 import {
   markReported,
   reportApiError,
+  reportApiWarning,
   reportNetworkError,
   reportNoSessionToken,
 } from './error-report';
@@ -82,6 +91,9 @@ export function wsUrl(path: string): string {
 // failure still throws to the caller before any signal is raised.
 export async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
   const method = (init?.method ?? 'GET').toUpperCase();
+  // A workbench session's request outside its allow-list is refused unsent, and is no network error.
+  const refusal = confinementRefusal(input, init);
+  if (refusal) throw refusal;
   let res: Response;
   try {
     res = await fetch(input, init);
@@ -91,6 +103,7 @@ export async function apiFetch(input: string, init?: RequestInit): Promise<Respo
     throw err;
   }
   if (method !== 'GET' && res.ok && !isTimelinePath(input)) notifyApiWrite();
+  void noteWorkbenchResponse(init, res);
   // The server release signal rides every response: the document format number and the live build
   // id (docs/specs/016-platform/new-version-prompt.md, docs/specs/016-platform/stale-builds.md).
   noteServerDocumentFormat(res.headers?.get(DOCUMENT_FORMAT_HEADER));
@@ -302,11 +315,32 @@ export function identityHeaders(ownerId: string, token: string | null): Record<s
   return sig ? { 'X-Owner-Id': ownerId, 'X-Owner-Sig': sig } : { 'X-Owner-Id': ownerId };
 }
 
+// How long one token request may take (docs/specs/007-editor/load-recovery.md "The load always ends").
+// A session that never hands out a token used to hold every request, and so the document load, open
+// forever; giving up answers null, which a signed-in caller turns into SessionTokenUnavailableError.
+export const SESSION_TOKEN_TIMEOUT_MS = 10_000;
+
+function withTokenTimeout(p: Promise<string | null>): Promise<string | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<null>((resolve) => {
+    timer = setTimeout(() => {
+      console.warn(`[api] session token timed out after ${SESSION_TOKEN_TIMEOUT_MS} ms`);
+      reportApiWarning('SessionToken.TimedOut');
+      resolve(null);
+    }, SESSION_TOKEN_TIMEOUT_MS);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(timer));
+}
+
 // Clerk's getToken() can resolve null for a moment on a live session, so a
-// null gets one fresh attempt that bypasses Clerk's token cache.
+// null gets one fresh attempt that bypasses Clerk's token cache. Each attempt
+// is bounded by SESSION_TOKEN_TIMEOUT_MS.
 async function resolveToken(): Promise<string | null> {
-  if (!currentTokenProvider) return null;
-  return (await currentTokenProvider()) ?? (await currentTokenProvider({ skipCache: true }));
+  const provider = currentTokenProvider;
+  if (!provider) return null;
+  return (
+    (await withTokenTimeout(provider())) ?? (await withTokenTimeout(provider({ skipCache: true })))
+  );
 }
 
 export async function apiHeaders(

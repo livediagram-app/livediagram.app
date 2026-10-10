@@ -75,13 +75,20 @@ export function useNudgeSelection(deps: NudgeDeps): (dx: number, dy: number) => 
   return (pressDx, pressDy) => {
     if (deps.isReadOnly) return;
     const { selectedId, multiSelectedIds } = deps.readSelection();
-    const ids =
+    const picked =
       multiSelectedIds.size > 0
         ? multiSelectedIds
         : selectedId !== null
           ? new Set([selectedId])
           : null;
-    if (!ids || ids.size === 0) return;
+    if (!picked || picked.size === 0) return;
+    // A locked element stays where it is (docs/specs/008-canvas/canvas-and-palette.md "Locking"): selectable, never moved,
+    // whether it is selected alone or swept up by Select All.
+    const locked = new Set(
+      deps.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
+    );
+    const ids = locked.size > 0 ? new Set([...picked].filter((id) => !locked.has(id))) : picked;
+    if (ids.size === 0) return;
     const { dx, dy } = laneAwareStep({ ...deps, selectedId }, ids, pressDx, pressDy);
     // Open a coalescing burst on the first press: checkpoint so undo
     // returns to the pre-nudge state, then only tick until idle.

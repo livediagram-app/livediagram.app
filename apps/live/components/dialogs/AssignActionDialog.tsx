@@ -214,7 +214,7 @@ export function AssignActionDialog({
               id="assign-action-title"
               className="text-lg font-semibold text-slate-900 dark:text-slate-50"
             >
-              {editing ? 'Edit action' : 'Assign an action'}
+              {editing ? 'Edit Action' : 'Assign an Action'}
             </h2>
             <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
               <HelpArticleLink article="assignedActions" variant="icon" />
@@ -231,7 +231,7 @@ export function AssignActionDialog({
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             {editing
               ? 'Change what needs doing, or hand it to someone else.'
-              : 'Attach a piece of work to this element — for yourself, or a teammate.'}
+              : 'Attach a piece of work to this element, for yourself or a teammate.'}
           </p>
         </div>
 
@@ -297,8 +297,8 @@ export function AssignActionDialog({
                 // Informational, not a warning: access arrives with the
                 // invite acceptance, no owner action needed.
                 <>
-                  {assignee?.name} hasn&apos;t accepted the team invite yet — they&apos;ll get
-                  access to this document when they join.
+                  {assignee?.name} hasn&apos;t accepted the team invite yet; they&apos;ll get access
+                  to this document when they join.
                 </>
               ) : (
                 <>
@@ -333,7 +333,7 @@ export function AssignActionDialog({
           {onDelete && editing ? (
             <Button
               type="button"
-              variant={confirmingDelete ? 'danger' : 'secondary'}
+              variant={confirmingDelete ? 'primary' : 'secondary'}
               onClick={() => (confirmingDelete ? onDelete() : setConfirmingDelete(true))}
               className="mr-auto"
             >

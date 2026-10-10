@@ -50,3 +50,14 @@ describe('createPngRenderer', () => {
     expect(other.wasm).not.toHaveBeenCalled();
   });
 });
+
+describe('a bound on the longer side', () => {
+  const big = `<svg xmlns="http://www.w3.org/2000/svg" width="8000" height="2000"><rect width="8000" height="2000" fill="#fff"/></svg>`;
+
+  it('draws a drawing past it smaller, keeping its proportions, and one inside it as it is', async () => {
+    const renderer = createPngRenderer(loaders());
+    expect(await renderer.renderPng(big, 1, 2048)).toMatchObject({ width: 2048, height: 512 });
+    expect(await renderer.renderPng(big, 0.5, 2048)).toMatchObject({ width: 2048, height: 512 });
+    expect(await renderer.renderPng(svg('x'), 2, 2048)).toMatchObject({ width: 400, height: 160 });
+  });
+});

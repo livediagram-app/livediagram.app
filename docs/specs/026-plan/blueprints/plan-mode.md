@@ -29,12 +29,20 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
   `PlanCardsIcon`). Tile sections of the same ids.
 - Tiles (`palette-plan-tiles.tsx`, spread into `PALETTE_TILES`), a `shape` action whose creation-time choice
   `plan` is the preset or the item type (threaded like `estimateScale` through the tile grid, drag payload, search,
-  draw intent and drop): `plan:board-<preset>` for the 7 presets, `plan:card-<type>` (caption "<Type> card") for the
+  draw intent and drop): `plan:board-<preset>` for the 10 presets (`PLAN_BOARD_TILES` order, All Cards last, asserted by a test), `plan:card-<type>` (caption "<Type> card") for the
   8 item types, in `plan-cards`; boards in `plan-boards`.
 - `PLAN` layout: `plan-cards`, `plan-boards`, landing on `plan-cards`; no Popular. The Cards body is
   `PalettePlanCardsTab` (the document's types, then Edit Cards); the Toolbar strip draws the same tiles and ends
   with `EditCardsStripButton`. Both call `openCardTypes()` (`hooks/plan/card-types-opener.ts`), which
   `useCardTypesOpener` in `CanvasChrome` registers against the Card Types cluster button. Draw's shape dock excludes both categories.
+- Card tiles no board takes: `cardTypesTakenOnTab(setups)` (`packages/items/src/board-card-types.ts`) reads the
+  open tab's board set-ups (`normaliseBoardSetup`) to `{ kind: 'none' }` (no board), `{ kind: 'all' }` (a
+  non-Archive board naming no Card Types) or `{ kind: 'some', types }` (the union of the non-Archive boards'
+  `addTypes`); `cardTileRefusal(taken, type, label)` gives the reason or null. `CanvasChrome` publishes it for the
+  active tab into the `card-types-taken` module store (`hooks/plan/card-types-taken.ts`, set only when it
+  changes); `PaletteTile` reads it (`usePlanCardTileDisabled`) for `plan-card` tiles, and any tile can carry a
+  static `disabled: { reason }` in its def. `IconButton`'s `disabledReason` keeps the button focusable with
+  `aria-disabled`, dims it, drops press and drag, and names the reason in its hover card.
 - A palette card drag: `PaletteIconButton` publishes `planType` on the drag preview; `usePaletteDrop.onDragOver`
   calls `planCardDragOver(x, y)` (`plan-card-drop.ts`), which has the board under the pointer `hover` a gap of
   `PLAN_PALETTE_GAP_PX` (56) at the slot, cleared on leaving, on drop and when the preview clears;
@@ -51,7 +59,8 @@ Derived from [Plan templates](../plan-templates.md).
 
 - Builders are element-only and make no items: a template comes with no cards.
 - `plan-template-catalogue.ts` (pure data): `PLAN_TEMPLATE_KINDS`; `PLAN_TEMPLATE_TABS:
-Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`;
+Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`, the Gantt's
+  `types` set to the board's `addTypes` when it charts a board of dated cards; every board names its `addTypes`;
   `BoardSpec = { preset, setup?, width, height, title }`; `RailItem` is a `sticky` (text), `timer` (minutes, a
   `session-button`), `picker` (label) or `temperature` (label). Hand-off columns name the same status and name
   on each board that shares them.
@@ -70,6 +79,15 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
   overrides, inserted after the active tab, each `markTabLoaded`), the MCP's `create_document` and the api's
   `compileSeededTabs` (the followers after the compiled tab, fresh ids). A replace fills its one tab with the
   first.
+- Card types on every path ([Item types](../item-types.md#the-type-catalogue)), each through
+  `catalogueWithBoardTypes(stored, elements, hasCards)`: `/new` passes `itemTypes: catalogueWithBoardTypes(null,
+elements)` to the create (cloud and Offline Mode), so a template's document has exactly its types; Quick Start
+  calls `bring(elements)` (`usePresetCardTypes`) for every tab it makes before `commitTabs`, so the open-tab effect
+  then finds nothing to change; `compileSeededTabs` returns the template tabs' `templateElements` and the create
+  route applies them to the catalogue the body gave (or null) with `hasCards` from its seed items; the MCP's
+  `create_document` sends `itemTypes` likewise; `add_board` and the MCP's template `add_tab` call
+  `bringBoardCardTypes(api, documentId, elements, known?)` (agent-verbs), which PUTs only when the catalogue
+  changes. Each logs `[item-types] brought` with whether the types were chosen.
 - Statuses: `usePlanStatuses(tabs, activeId, enabled)` returns the `names` and `phases` maps from
   `documentStatusSignatures(tabs, activeId)`: each tab's board set-ups are cached in a `WeakMap` by its
   elements array, each set-up list gets a numeric id, and the two JSON signatures are cached by the joined ids
@@ -86,6 +104,7 @@ cy)` lays the board at the origin, then metrics (`PLAN_METRIC_SIZE`, 20px gaps, 
 | ------------------------------ | --------------------------------------------------------------------------------------------- |
 | Mode catalogue order, cycle    | `editor-mode.test.ts`                                                                         |
 | Plan palette layout            | `palette-layouts.test.ts`                                                                     |
+| Card tiles no board takes      | `board-card-types.test.ts`, `PaletteTile.disabled.test.tsx`                                   |
 | Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts`                                              |
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |
 | Hand-offs, tab layout          | `template-builders-plan.test.ts`                                                              |

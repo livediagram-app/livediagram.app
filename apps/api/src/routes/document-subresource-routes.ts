@@ -16,7 +16,7 @@ import {
   linkTabToDocument,
   tabLinkedToOwnedDocument,
 } from '../db';
-import { forbidden, json, noContent, notFound } from '../responses';
+import { conflict, forbidden, json, noContent, notFound } from '../responses';
 import { recordVisitorOpened } from '../timeline';
 import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
 import { recordDocumentOpen } from '../home/record-open';
@@ -30,7 +30,9 @@ import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleItemRoutes } from './item-routes';
+import { handleSheetRoutes } from './sheet-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
+import { handlePlanRoute } from './plan-route';
 import {
   deniedOnTab,
   gateEdit,
@@ -121,7 +123,7 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
           : communityVisit
             ? redactTabForCommunity(tab)
             : { ...tab, elements: redactCommentAuthorIds(tab.elements, owner) };
-      if (view) return answerTabView(ctx, view, existing, safe);
+      if (view) return answerTabView(ctx, view, existing, safe, owner);
       // docs/specs/013-workspace/timeline.md §4.3: somebody arrived through a SHARE LINK and opened this.
       // The tab read is the honest signal for "opened" — the document GET is hit
       // by link previews and polls, whereas fetching tab content means a person
@@ -168,6 +170,12 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
       // end its own link, and the document's structure isn't the visitor's.
       const grant = await gateGrant(ctx, id, existing.ownerId, existing.teamId);
       if (grant?.tabScope !== null) return forbidden();
+      // A tab this document does not have deletes nothing: said, not answered as done.
+      if (!existing.tabs.some((t) => t.id === tabId)) return notFound();
+      // An agent or the CLI (a token) may not delete the last tab (docs/specs/015-api/mcp-server.md
+      // §4.17). The editor is let through: its saves and deletes race, so adding a tab and deleting
+      // the other in one save can reach here first.
+      if (ctx.token && existing.tabs.length <= 1) return conflict('last_tab');
       await deleteTabRow(env, id, tabId);
       // The links scoped to it die with it (docs/specs/013-workspace/tab-scoped-share-links.md), and their
       // holders leave the editor as on a revoke.
@@ -192,9 +200,15 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // The item store (docs/specs/026-plan/items.md).
   const items = await handleItemRoutes(ctx);
   if (items) return items;
+  // The sheet store (docs/specs/029-sheets/sheet-store.md).
+  const sheets = await handleSheetRoutes(ctx);
+  if (sheets) return sheets;
   // The document's type catalogue (docs/specs/026-plan/item-types.md).
   const itemTypes = await handleItemTypeRoutes(ctx);
   if (itemTypes) return itemTypes;
+  // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
+  const plan = await handlePlanRoute(ctx);
+  if (plan) return plan;
 
   // /api/documents/<id>/tabs/<tabId>/link — owner only.
   //   POST — add an existing tab to this document (docs/specs/006-document/tab-document-many-to-many.md).

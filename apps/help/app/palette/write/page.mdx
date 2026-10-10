@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { WriteRows } from '@/components/illustrations/palette-categories';
 
 export const metadata = helpMetadata({
   title: 'Write Elements',
@@ -17,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('write')}
 >
 
-The **Write** category (under **Common** in the palette's category picker) holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+The **Write** category (in the **Common** band of the palette's category picker) holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
 
 They differ mostly in **how much you have to say**. A Page holds paragraphs, a Sticky note holds a thought, a Text label holds a line, and an Annotation holds a remark you have to hover to read. The Page sits first because it is the largest writing surface on the canvas.
 
@@ -27,6 +28,15 @@ They differ mostly in **how much you have to say**. A Page holds paragraphs, a S
 - A **Text** element is a free-standing label with no box around it: just words on the canvas. `T` drops one. Use it for titles, column headings, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text and Fonts](/help/canvas/text-and-fonts/).
 - A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. It is what retros, brainstorms and dot votes are made of, and it is what an [idea box](/help/palette/collaborate/idea-boxes/) scatters into. See [Sticky Notes](/help/palette/tools/sticky-notes/).
 - An **Annotation** is a small marker you drop on the canvas that holds a note. Hover it to read, click to edit. It is the one that keeps its text _out_ of the way: the remark lives inside the marker instead of taking up canvas. See [Annotations](/help/canvas/annotations/).
+
+## In other editor modes
+
+The four are Diagram mode's set. Each editor mode keeps its palette to what suits it:
+
+- In [Illustrate](/help/canvas/illustrate/) mode, Write holds just Text and Note: the page is the canvas there, so there is no Page element, and no Annotation.
+- In [Plan](/help/canvas/plan-mode/) mode there is no Write category; a **Content** category offers the sticky note, text, image and page to sit beside your boards.
+
+Any of the four is still a search away in another mode, and works there once placed.
 
 <Note>
   Looking for the coloured workshop stickies? The Event Storming notation has [its own palette
@@ -39,7 +49,7 @@ Three of the four are surfaces you compose on; the annotation is not. That is th
 
 A Page, a Text label and a Sticky note all put their words **on the canvas**, where everyone reads them without doing anything. An Annotation puts a **marker** on the canvas and hides its words until somebody hovers it. So the question is whether the text is part of what the diagram says, or a side remark about it.
 
-If the diagram is incomplete without the words, use one of the three surfaces. If the words are commentary — a caveat, a reminder, a "we should revisit this" — an annotation says exactly that by being small.
+If the diagram is incomplete without the words, use one of the three surfaces. If the words are commentary (a caveat, a reminder, a "we should revisit this"), an annotation says exactly that by being small.
 
 <Note>
   There is a fourth way to attach words, and it is not in this category: any element can carry a
@@ -51,9 +61,15 @@ If the diagram is incomplete without the words, use one of the three surfaces. I
 
 Most catalogue categories show a grid of pictures, because the picture is the explanation. These four are all rectangles with text in them, so at tile size they look nearly alike. Write renders as rows with a one-line description each, because "a paper-shaped page for prose" against "a marker that holds a note" is what you are actually choosing between, and no icon says that.
 
+<Figure caption="The Write category: Page, Text, Note and Annotation as rows, each with the line that tells them apart.">
+  <WriteRows />
+</Figure>
+
+The [palette strip](/help/palette/toolbar-layout/) itself has no room for rows, so the same four show there as tiles, with a divider between the two text surfaces (Page, Text) and the two notes (Note, Annotation); **More** opens them as rows.
+
 ## Working with them
 
-Each behaves like any other element once placed: select, restyle, lock and move it freely, and each can carry a [link](/help/canvas/links/) like anything else on the canvas. The one exception is [rotation](/help/canvas/rotation/), which the three surfaces allow and the annotation marker deliberately does not — a tilted note marker reads as a mistake rather than a choice.
+Each behaves like any other element once placed: select, restyle, lock and move it freely, and each can carry a [link](/help/canvas/links/) like anything else on the canvas. The one exception is [rotation](/help/canvas/rotation/), which the three surfaces allow and the annotation marker deliberately does not: a tilted note marker reads as a mistake rather than a choice.
 
 Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
 

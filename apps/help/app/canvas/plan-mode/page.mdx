@@ -1,129 +1,153 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { PlanBoardScene, PlanClusterScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
-  title: 'Plan mode',
+  title: 'Plan Mode',
   description:
     'Switch a tab into Plan mode to run work on boards: Kanban, sprints, bug triage, retros and roadmaps, with cards you drag from column to column, live for everyone.',
   path: '/help/canvas/plan-mode/',
 });
 
 <ArticleLayout
-  title="Plan mode"
+  title="Plan Mode"
   description="Boards of items: drag cards through columns, together."
   categoryTitle="Canvas"
   categorySlug="canvas"
 >
 
-**Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item**, a task, a bug, a note or an idea, stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
+**Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item** (a task, a bug, a note or an idea) stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
 
-Plan mode gives a tab over to boards. Its palette holds **Cards**, **Boards**, **Widgets**, **Metrics** and **Visualisations**, then **Content** (sticky notes, text, images and pages) and **Tools** (Temperature, Estimate, Idea Box, Picker, Timer and Stopwatch), it starts on the **Hand** tool (cards take the pointer themselves; pick **Select** to move or resize a board), and Layers, the Eraser and Format stay with the other modes.
+Plan is one of the four [editor modes](/help/canvas/editor-modes/), beside Diagram, Draw and Illustrate, and it is on for everyone: there is nothing to turn on in Settings.
 
-## Switching modes
+## What Plan Mode Changes
 
-- Press the mode switch and choose **Plan**, or press **Shift+D** until you reach it. The switch sits in the **Palette** panel's title row, or beside the menu button with the Toolbar layout. On a phone, open the tab menu, choose **Opens in**, then **Plan**.
-- Your mode is yours: someone else on the tab can be in Diagram mode while you are in Plan mode. They see the cards move as you move them.
-- To have a tab open in Plan mode for everyone, open the tab menu, choose **Opens in**, then **Plan**.
-- **Switch modes whenever you like.** Your boards and cards stay where they are. In Diagram or Draw mode a board is an element like any other: you can move it, resize it and draw around it, and it still updates as cards change. Its cards only take clicks and drags in Plan mode, so switch back to work them.
+- **The palette** holds **Cards**, **Boards**, **Widgets**, **Metrics** and **Visualisations** under the **Boards & Cards** heading, **Sheet** under **Spreadsheets**, then, under **Common**, **Content** (sticky notes, text, images and pages) and **Tools** (Temperature, Estimate, Idea Box, Picker, Timer and Stopwatch). It opens on **Cards**. Shapes, icons and the other drawing categories stay with the other modes.
+- **Tools:** Plan starts on the **Hand** tool, because cards take the pointer themselves and a drag on the empty canvas pans. Pick **Select** to move or resize a board. The Eraser and Format Painter are left out.
+- **The bottom-right corner** gains, where Layers sits in the other modes, a set of buttons side by side: the **Trash** (not on a phone), **Cards**, which finds any card in the document, and **Card Types**. The Layers panel and the Quick Style panel are hidden in Plan; a board's look comes from the tab's theme, and its colours are still in its right-click menu.
+- **Everything else works as in Diagram mode:** selection, arrows, text, sticky notes, snapping, undo and shortcuts, so notes and arrows around a board behave as they always do.
 
-## Starting a board
+<Figure caption="In Plan mode the bottom-right corner holds Undo and Redo, then the Trash, Cards and Card Types.">
+  <PlanClusterScene />
+</Figure>
 
-An empty Plan tab shows **Start with a Board** in the middle: pick a board type and it is placed, empty, ready to build.
+## Switching Modes
 
-- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates. Each sets up a way of working across several tabs, with no cards, so you start straight on your own work (see [Plan templates](#plan-templates) below).
-- **On any tab:** in Plan mode, open the palette's **Boards** category (under **Plan**) and press a board (Kanban, Sprint, Retro, Roadmap, Bug triage, Week or a blank board), then click the canvas, or drag it out to the size you want.
+- Press the mode switch and choose **Plan**, or press **Shift+D** until you reach it. The switch sits beside the menu button at the top left.
+- **On a phone** there is no mode switch: open the tab menu, choose **Mode**, then **Plan**.
+- **Your mode is yours:** someone else on the tab can be in Diagram mode while you are in Plan mode. They see the cards move as you move them.
+- **One mode for everyone:** the mode belongs to the tab, so when someone who can edit switches it, everyone on the tab moves to Plan together, and **Undo** switches it back.
+- **Switch modes whenever you like.** Your boards and cards stay where they are. In the other modes a board is an element like any other: you can select it, move it, resize it and draw around it, and it still updates as cards change. Its cards only take clicks and drags in Plan mode; elsewhere, double-click a card to open it.
+- **View-only visitors** have no mode switch: they see the tab in the mode it opens in, can open cards to read them, and cannot drag, add or change anything.
 
-## Plan templates
+## Starting a Board
 
-Every Plan template but **Blank Plan** makes several tabs, each with its board set up for the job (columns, rows, card fields and widgets), charts of your cards and, where a session is run, a how-to note, a timer and other tools beside it.
+An empty Plan tab shows **Start Planning** in the middle: pick a board type on **Boards**, or a sheet on **Spreadsheets**: **Empty Sheet**, **Card Table** (your cards of a type, when you have cards), **Budget** or **Tracker**. See [Boards](/help/canvas/plan-mode/boards/) and [Sheets](/help/canvas/plan-mode/sheets/).
 
-| Template             | Tabs                                                                                                      |
-| -------------------- | --------------------------------------------------------------------------------------------------------- |
-| **Project Planner**  | **Roadmap** (projects on Now, Next, Later with a Gantt chart), **Backlog**, **Sprint**, **Daily Standup** |
-| **Kanban Board**     | **Board** (with WIP limits), **Requests**, **Flow** (charts of where the work stands)                     |
-| **Bug Tracker**      | **Triage** (a row per priority), **Fixing**, **Health**                                                   |
-| **Team Retro**       | **Retro** (notes hidden until you reveal them, then a vote), **Actions**, **Archive**                     |
-| **Weekly Planner**   | **This Week**, **Inbox**, **Calendar**                                                                    |
-| **Content Calendar** | **Ideas** (voted on), **Production**, **Calendar**                                                        |
-| **Hiring Pipeline**  | **Roles** (with a Gantt chart), **Pipeline** (a row per role), **Onboarding**                             |
-| **OKRs**             | **Objectives** (with a Gantt chart), **Key Results** (on track, at risk or off track)                     |
-| **Product Launch**   | **Timeline**, **Checklist** (a row per workstream), **Launch Day** (go or no-go)                          |
-| **Feedback Board**   | **Feedback** (voted on), **Delivery**                                                                     |
+- **A new document:** in the New Document wizard, pick **Blank Plan** on the **Popular** shelf, or choose **Plan** beside the search box to see the Plan templates. **Blank Plan** is one empty Plan tab, with no board, that opens on **Start Planning**; every other Plan template sets up a way of working across several tabs, with no cards, so you start straight on your own work (see [Plan Templates](#plan-templates) below).
+- **On any tab:** in Plan mode, open the palette's **Boards** category and press a board (Kanban, To-do List, Sprint, Retro, Roadmap, Bug Triage, Week, All Cards, Archive or a blank board), then click the canvas, or drag it out to the size you want. Each board takes the card types its work is made of (a Sprint board takes Stories, Tasks and Bugs; a Bug Triage board, Bugs). The first board in a new document gives it just those card types (a **Blank** board, the five everyday ones); boards after it bring any your document doesn't have yet.
+
+## Plan Templates
+
+Every Plan template but **Blank Plan** makes several tabs, each with its board set up for the job (columns, rows, card fields and widgets), charts of your cards and, where a session is run, a how-to note, a timer and other tools beside it. Every tab opens in Plan mode.
+
+| Template             | Tabs                                                                                                      | Card types                       |
+| -------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **Project Planner**  | **Roadmap** (projects on Now, Next, Later with a Gantt chart), **Backlog**, **Sprint**, **Daily Standup** | Project, Story, Task, Bug        |
+| **Kanban Board**     | **Board** (with WIP limits), **Requests**, **Flow** (charts of where the work stands)                     | Task, Request                    |
+| **Bug Tracker**      | **Triage** (a row per priority), **Fixing**, **Health**                                                   | Bug                              |
+| **Team Retro**       | **Retro** (notes hidden until you reveal them, then a vote), **Actions**, **Archive**                     | Note, Idea, Action               |
+| **Weekly Planner**   | **This Week**, **Inbox**, **Calendar**                                                                    | Task, Action, Note               |
+| **Content Calendar** | **Ideas** (voted on), **Production**, **Calendar**                                                        | Content, Task                    |
+| **Hiring Pipeline**  | **Roles** (with a Gantt chart), **Pipeline** (a row per role), **Onboarding** (a row per new starter)     | Role, Candidate, Onboarding Task |
+| **OKRs**             | **Objectives** (with a Gantt chart), **Key Results** (on track, at risk or off track)                     | Objective, Key Result            |
+| **Product Launch**   | **Timeline**, **Checklist** (a row per workstream), **Launch Day** (go or no-go)                          | Project, Task, Launch Check      |
+| **Feedback Board**   | **Feedback** (voted on), **Delivery**                                                                     | Request, Task                    |
 
 - **Cards move between tabs.** Boards on different tabs share some columns: move a task to **This Sprint** on the Project Planner's **Backlog** and it is on the **Sprint** board too. A card's **Status** in its panel lists the columns of every tab, so you can send it anywhere.
+- **Each board takes only its own kinds of card, and the document has only those.** A template brings just the card types its boards need, with the fields the work needs: a **Candidate** names its **Role** (so the Pipeline has a row per role), a **Key Result** has a **Baseline**, **Target** and **Current**, a **Request** says who it is **Requested By**. They are your document's [card types](/help/canvas/plan-mode/card-types/), to change like any other; **Add Default Types** there adds Project, Task, Note, Idea and Action if you want them too.
 - **Charts read every card**, whichever tab its board is on.
 - Picking a template from **Quick Start** on an empty tab fills that tab and adds the rest straight after it.
 
-## Working on a board
+## Working on a Board
 
-- **Add a card:** every column ends in **+ Add card**. It opens **Add a Card**: press a type (**Project**, **Task**, **Note**, **Idea**, **Action**, or any your document adds) to add a card of it, then give it a title in its panel.
+<Figure caption="A Kanban board in Plan mode: widgets in the header, a column over its WIP limit, and a card being dragged into the gap it opens.">
+  <PlanBoardScene />
+</Figure>
+
+- **Add a card:** every column ends in **+ Add card**. It opens **Add a Card**: press a type (**Project**, **Task**, **Note**, **Idea**, **Action**, or any your document adds) to add a card of it. The new card opens straight away with its title selected, so just type to name it. A card you place from the palette opens the same way. See [Cards](/help/canvas/plan-mode/cards/).
 - **From the palette:** drag a card from the **Cards** category into a column. While you drag, the column opens a gap where it will land. Cards from the palette always go onto a board, never loose on the canvas. Or press a card in the palette, then click the column it belongs in; the hint at the top says so, or reminds you to add a board first.
-- **Right-click a card** to **Open**, **Duplicate** or **Trash** it, **Move to** another column, **Archive** it, or **Add to Slides** to present it full screen from the [Slide Deck](/help/selection-modes/slide-deck/).
-- **Present a whole board:** right-click the board, open **Board** and choose **Add to Slides**. The slide frames the live board, so it shows the cards as they stand when you present.
-- **Trash a card:** drag it onto the **Trash** button beside Undo (it grows as you drag). Open the Trash to restore a card or delete it for good (it asks first); **Empty Trash** deletes them all.
-- **Archive a card** to take it off your boards without deleting it. An **Archive** board (in the palette's Boards) shows every archived card, and an **All Cards** board shows every other card, a row per status, so nothing gets lost between boards; drag one back onto another board, or choose **Restore**, to bring it back.
-- **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type or parent), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
-- **Open an item:** click a card. Its panel opens over the canvas: the title and the card's tabs on the left, and **Details** (status, assignee, priority and the rest) on the right, with who made it and who changed it last. The **description** is rich text: bold, italic, underline, headings, lists and links, from the toolbar over it or the usual shortcuts. Every change saves as you make it. On a phone the panel rises from the bottom, with Details as its first tab. A card type's tabs are set in [Card Types](/help/canvas/plan-mode/card-types/).
+- **Move a card:** drag it to another column, or up and down its column. On a board with rows (by assignee, priority, type, project or any field), dropping it in a row also sets that field: drop it in Sam's row to give it to Sam.
+- **Open a card:** click it. Its panel opens over the canvas, with the title and the card's tabs on the left and **Details** (status, assignee, priority and the rest) on the right. Every change saves as you make it. On a phone the panel rises from the bottom, with Details as its first tab.
+- **Colour code a project:** a Project has a **Colour** in its Details: pick any colour, or **None**. It never replaces the Project colour on the card; it shows as a small dot beside it, before the project's name on its cards' **Parent**, in a board's rows by parent, and on the [Gantt Chart](#metrics-and-visualisations), where the project's bar takes its colour. Any other card type can add Colour in [Card Types](/help/canvas/plan-mode/card-types/).
+- **Right-click a card** to **Open** or **Duplicate** it, **Add to Slides**, **Move to** another column, **Flag** it, **Archive** it, or move it to the **Trash**.
+- **Trash a card:** drag it onto the **Trash** button beside **Cards** (it opens out as you drag), choose **Trash** from its menu, or press **Delete** with it focused. Open the Trash to restore a card or delete it for good.
+- **Find any card:** the **Cards** button in the bottom-right corner lists every card in the document, with a search, and a **Not on a Board** view for cards no board shows.
 - **Assign a card:** pick yourself or a teammate as its **Assignee**. Until it is done, the card shows up on that person's [Activity](/help/explorer/activity/) page in the Explorer, under **Assigned to You**, so they can find it without knowing which document it is in. They need to be able to open the document, so assign cards on a team document or one shared with them.
 - **Take a card off the board:** drag it out onto the canvas to leave a **Plan card** there, for example beside the part of a diagram it is about. The item stays on the board as well. Drag a Plan card onto a board to file it in the column you drop it in. Drag a card from one board onto another to move it there.
-- **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your item changes in the same order as your canvas edits: a moved card goes back, a deleted item comes back with its number.
+- **Present a whole board:** right-click the board, open **Board** and choose **Add to Slides** beside the title. The slide frames the live board, so it shows the cards as they stand when you present. See [Slide Deck](/help/selection-modes/slide-deck/).
+- **Undo:** **Ctrl+Z** (**Cmd+Z** on a Mac) undoes your item changes in the same order as your canvas edits: a moved card goes back, a trashed card comes back. Votes and comments are not undone.
 
-In Diagram and Draw modes a board is an element like any other: pressing it selects and moves the whole board. Double-click a card to open its item.
+### On a Phone or Tablet
 
-### With the keyboard
+A finger on a card picks the card up; a finger on a board's empty space (between cards, or a column's background) pans the canvas. A board's columns don't scroll under a finger, so make a busy board taller, or scroll it with a mouse or trackpad.
+
+### With the Keyboard
 
 Tab to a card, then:
 
 - **Arrow keys** move between cards.
-- **Enter** opens the item.
+- **Enter** opens the card.
 - **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
 - **N** opens **Add a Card** for the card's column.
 - **Delete** moves the card to the Trash, where you can restore it.
 
-Screen readers hear every move ("#12 moved to In progress, position 2 of 4").
+Screen readers hear every move ("#12 moved to In Progress, position 2 of 4").
 
-## Setting up a board
+## Setting Up a Board
 
-**A column** is set up from the column itself: hover its head and press the cog at the far right (on a touch screen it is always there). You can rename it, give it a colour, set a **WIP limit** (its count turns amber when it holds more than that), mark it **Counts as Done** (its cards show a progress bar in the header), move it left or right, add a column after it, or remove it. Removing a column with cards asks where they should go.
+**A column** is set up from the column itself: hover its head and press the cog at the far right (on a touch screen it is always there). You can rename it, give it a colour, set a **WIP Limit** (its count turns amber when it holds more than that), choose its **Width**, mark it **Counts as Done**, move it left or right, add a column after it, or remove it. Removing a column with cards asks where they should go.
 
 **The board** is set up from its own menu: right-click the board (or select it and press **⋯**):
 
-- **Board:** its **Title**, and its **Swimlanes**: none, or one per assignee, card type, priority, project or status, or **By a Field**: any field your card types have, your own included.
-- **Cards:** the **Card Size** (**Minimal** shows the title alone, **Compact** the title over a line of number, priority, due date, votes and assignee, **Detailed** everything, down to a description excerpt and checklist progress), and which fields each card face shows, a tile each to press on or off. Tiles the chosen size can't show are dimmed.
+- **Board:** its **Title**, its **Swimlanes** (none, or one per assignee, card type, priority, project or status, or any field your card types have, your own included) and **Add to Slides**.
+- **Cards:** its **Card Types**, the types the board shows and takes (a card of a type you turn off is hidden there, not deleted), the **Card Size** (**Minimal**, **Compact** or **Detailed**) and which fields each card face shows, a tile each to press on or off. Tiles the chosen size can't show are dimmed.
 
-Every board shows every card whose status is one of its columns. A **Team Retro** board comes with voting and hidden writing on: everyone else's cards show face down until someone presses **Reveal** in the header, so people write without reading each other.
+Every board shows every card whose status is one of its columns, of the card types it shows. Items whose status matches none of the board's columns are counted in the header ("3 not on this board"); open the count to move them to a column. A **Retro** board comes with voting and hidden writing on: everyone else's cards show face down until someone presses **Reveal** in the header, so people write without reading each other. More in [Boards](/help/canvas/plan-mode/boards/).
 
-Items whose status matches none of the board's columns are counted in the header ("3 not on this board"); open the count to move them to a column.
+## Widgets in the Header
 
-## Widgets in the header
-
-A board's header holds **widgets**: small read-outs and controls such as **Completion**, **Filter**, **People**, **Card Types**, **WIP Alerts**, **Due Soon**, **Points**, **Priorities**, **Unassigned**, **Top Voted** and **Stale Cards**. Each board type starts with the ones that suit it (Points on a sprint, Priorities on a bug triage, Top Voted on a retro). Find them all in the palette's **Widgets** category:
+A board's header holds **widgets**: small read-outs and controls such as **Completion**, **Filter**, **People**, **Card Types**, **WIP Alerts**, **Due Soon**, **Points**, **Priorities**, **Unassigned**, **Top Voted** and **Stale Cards**. Each board type starts with a few that suit it (Points on a sprint, Unassigned on a bug triage, Top Voted on a retro), and Completion only where the board has a done column. Find them all in the palette's **Widgets** category:
 
 - **Drag a widget** into a board's header. A bar shows where it will go.
-- **Tap a widget** to add it to the end of the selected board's header.
+- **Tap a widget** to add it to the end of the selected board's header (or the tab's only board).
 - **Reorder** widgets by dragging them left or right along the header, or focus one and press **Alt+←** or **Alt+→**.
 - **Remove** a widget with its **×** (select the board first to show it), or focus it and press **Delete**.
 
 A board holds each widget once; adding one it already has makes it flash.
 
-**Widgets narrow the board**: press a person in People, a type in Card Types, a priority, Unassigned, or the overdue count in Due Soon to see only those cards, and press it again to see everything. While the board is narrowed, Item Count reads "3 of 14 · Show all". Top Voted opens the leading card, and a Completion widget on a board without a done column offers **Set Done Column**.
+**Widgets narrow the board**: press a person in People, a type in Card Types, a priority, Unassigned, or the overdue count in Due Soon to see only those cards, and press it again to see everything. The narrowing is yours alone and isn't saved. While the board is narrowed, Item Count reads "3 of 14 · Show all". Top Voted opens the leading card, and a Completion widget on a board without a done column offers **Set Done Column**.
 
 ## Metrics and Visualisations
 
-**Metrics** are the read-out widgets, free on the canvas: place **Completion**, **Due Soon**, **People** or any other beside your boards, and each counts every card in the document, whatever board it is on. Archived cards and the Trash are left out.
+**Metrics** are the read-out widgets, free on the canvas: place **Completion**, **Due Soon**, **People** or any other beside your boards, and each counts every card in the document, whatever board it is on. Archived cards and the Trash are left out. A metric only reads: pressing a person or a type in it narrows nothing.
 
-**Visualisations** chart every card:
+**Visualisations** chart the cards. Each one charts every card type it can to start with; pick which under **View**, **Card Types** in its right-click menu (only card types with the fields it reads are listed, a **Due** field for the **Due Calendar**, say). Metrics take a **Card Types** pick the same way.
 
-- **Project Gantt Chart**: a row per Project card, a bar from its **Start** to its **Due** date, filled to the share of its cards done, with a line for today. A project with only a due date is a diamond; press **Add a start date** to open it and set one.
-- **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows.
-- **Workload by Person**: a bar per person, split Not Started, In Progress and Done.
-- **Status Breakdown**: a donut of the cards by status.
+- **Gantt Chart**: a row per card of the card types it shows (**Project** to start with; pick others, your own included, under **View**, **Card Types** in its right-click menu: only card types with both a **Start** and a **Due** field are listed, so add both to a type to put it on the chart), a bar from its **Start** to its **Due** date in the card's **Colour** (or its type's colour), filled to the share of its cards done, with a line for today. A card with only a due date is a diamond. Drag either end of a bar (or a diamond) sideways to change that date, or drag the middle of a bar to move both dates together; the days show as you drag. A card with no dates can be drawn straight onto its row: click for a week, or drag across the days. Pick **Month**, **Quarter** or **Year** in its header to see more or less time, step with the arrows, scroll sideways or drag the timeline to move along it, and press **Today** to come back to now. The view is yours alone; others keep their own.
+- **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows, and **Today** comes back.
+- **Cards by Field**: a bar per person to start with, split Not Started, In Progress and Done. Pick another field under **View**, **Group By**: a priority, a type, a state, labels or any field of your own.
 - **Priority by Status**: how many cards of each priority are not started, in progress and done.
+- **Card Search**: the cards matching filters you add along its top, such as **Card Type: Project**, **State: Done** or **Assignee: No assignee**. **Add Filter** offers only the fields the remaining cards have, and only the values some of them hold (with how many), so a filter never leaves you with nothing. The filters are saved with it, so everyone sees the same search; press a filter's cross to take it off.
 
-A card counts as done when its status is a board's done column. In Plan mode, press a row or entry to open its card; in other modes, double-click it. Resize a visualisation like any element.
+A card counts as done when its status is a board's done column. In Plan mode, press a row or entry to open its card; in other modes, double-click it. Resize a visualisation like any element. Exported images show a metric or visualisation as a labelled box rather than the live chart.
 
 ## Together
 
 Everyone with the document open sees cards move, appear and change as they happen. A card someone is dragging or has open shows their colour and name. Voting and hiding writing are in the board itself, so a retro needs no other tools: write, reveal, vote, then turn the top votes into actions.
+
+A tab with Plan boards or cards can't be added to another document with the tab menu's **Add to Document**, because its cards belong to this document's items.
+
+New to Plan? The [Plan Tour](/help/canvas/plan-mode/plan-tour/) walks you through a board in about a minute.
 
 </ArticleLayout>

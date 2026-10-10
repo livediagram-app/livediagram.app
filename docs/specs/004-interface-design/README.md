@@ -5,6 +5,7 @@ Follow the references below only as needed; never upfront.
 - ./design-principles.md - before designing any screen: the principles every interface decision answers to
 - ./appearance.md - when touching light / dark / system: one origin-wide setting, the no-flash boot script, the header toggle
 - ./color-scheme.md - when working on Theme: Brand color and visual design tokens
+- ./destructive-actions.md - when styling a delete, trash or remove control: never red, styled as its neighbours
 - ./fonts.md - when working on Fonts: Eleven Google Fonts, pickable per element + as a per-tab default
 - ./canvas-accessibility.md - when working on Canvas accessibility baseline: Baseline canvas a11y: Tab/Shift+Tab element traversal (selection as focus), aria-labels on element views, SR-only polite live region for selection/delete/undo
 - ./layout-stability.md - when any chrome changes state (a status label, a button label, a badge, a count, a notice, a loading state): zero layout shift, reserve the longest variant, badges overlay, optimistic states, how to test it
@@ -20,3 +21,6 @@ Follow the references below only as needed; never upfront.
 - ./counts.md - when a label shows how many of something: a count is a badge (CountBadge, or AccentBar's count on the canvas), never a number in brackets
 - ./touch-targets.md - when adding a small control: the 44px tap area on touch screens, `touch-target` / `touch-target-y`, and which shared controls carry it
 - ./scrollbars.md - when anything scrolls: the themed scrollbar is the default everywhere, one slim variant, and the thumb contrast rule
+- ./date-fields.md - when adding, styling or saving a date or time input: it fits its column on phones and iPads, saves only a whole date (`DateInput`), a dropdown opens the picker, and how a card's date reads
+- ./search-and-filters.md - when a search can also be narrowed by filters: one field, the filters as chips inside it (FilterSearchBox), never a filter row under the box
+- ./colour-picker.md - when adding or changing anything that chooses a colour: the one picker, its standard colours (strong and soft), Custom Colours, the custom colour editor, keyboard and skins; read before building anything colour-related, never a new picker

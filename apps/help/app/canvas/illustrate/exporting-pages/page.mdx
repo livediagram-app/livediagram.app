@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { ExportPagePickerScene } from '@/components/illustrations/illustrate';
 
 export const metadata = helpMetadata({
   title: 'Exporting and Presenting Pages',
@@ -29,6 +30,12 @@ Pick a format and choose **All pages** or **One page** above the preview:
 - **PDF** starts on **All pages**: one PDF with every page in order, each at its own size and orientation. Paper sizes come out at print size: an A4 page is a true A4 page. With **One page** you get a one-page PDF of the page you pick.
 - **PNG** and **SVG** start on **One page**, the first by default, and you get that page's image. With **All pages** you get a **.zip** holding one image per page, numbered in page order (`01 Page 1 - A4 - Portrait.png`, ...).
 
+A line under the choice says what the download will be ("3 pages, one PDF.", "A .zip of 3 PNG files, one per page.").
+
+<Figure caption="The Export tab dialog in Illustrate mode: All pages or One page, the page the preview shows, and what the download will be.">
+  <ExportPagePickerScene />
+</Figure>
+
 The file is named after the document and tab, plus the page's label when you export one page. With All pages, the page list picks which page the preview shows.
 
 Each page exports **exactly its sheet**: its size, its background and pattern, and what is on it, cut off at its edges just as the canvas shows it. The space around the pages is never included. The plain paper exports white, and the preview shows the page you picked.
@@ -41,7 +48,7 @@ In Illustrate mode, **Import** takes **JSON** only: a livediagram tab, pages and
 
 ## Turning Pages Into Slides
 
-Pages are often presented, so its deck is one press away: in the bottom-right corner, where the Layers button sits in the other modes, the **Slides** button opens the Slide Deck panel just above it.
+Pages are often presented, so their deck is one press away: in the bottom-right corner, where the Layers button sits in the other modes, the **Slides** button opens the Slide Deck panel just above it.
 
 In Illustrate mode the panel adds slides **a page at a time**: pick a page from the list and press **Add as slide**. A page slide is the page itself:
 

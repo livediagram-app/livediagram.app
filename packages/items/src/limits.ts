@@ -4,7 +4,7 @@
 export const ITEMS_MAX = 2000;
 export const ITEM_FIELDS_BYTES = 16_384;
 export const ITEM_FIELDS_MAX = 64;
-export const ITEM_TITLE_MAX = 200;
+export const ITEM_TITLE_MAX = 500;
 export const ITEM_DESCRIPTION_MAX = 10_000;
 export const ITEM_LABELS_MAX = 12;
 export const ITEM_LABEL_MAX = 32;
@@ -18,6 +18,8 @@ export const ITEM_BULK_MAX = 200;
 export const ITEM_VOTERS_MAX = 500;
 export const ITEM_VOTES_PER_PERSON_MAX = 99;
 export const ITEM_WRITE_RETRIES = 3;
+// The highest key a create may name (a restore, sync or copy keeps its keys); past it the next key is given.
+export const ITEM_KEY_MAX = 1_000_000;
 // A card's comment thread (docs/specs/026-plan/items.md "Comments"), outside ITEM_FIELDS_BYTES.
 export const ITEM_COMMENTS_MAX = 200;
 export const ITEM_COMMENTS_BYTES = 131_072;
@@ -30,5 +32,4 @@ export const ITEM_TYPE_PATTERN = /^[a-z][a-z0-9-]{0,31}$/;
 export const PLAN_COLUMNS_MAX = 12;
 export const PLAN_COLUMN_NAME_MAX = 40;
 export const PLAN_WIP_MAX = 99;
-export const PLAN_VOTE_BUDGET_MAX = 99;
 export const PLAN_TITLE_MAX = 80;

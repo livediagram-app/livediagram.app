@@ -9,6 +9,7 @@
 // (Workers / jsdom), so wrapping still works headless.
 
 import type { Item, ItemTypeDef } from '@livediagram/items';
+import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import {
   hasShapeSilhouette,
@@ -48,6 +49,8 @@ export {
   xmlEscape,
 } from './svg-render-primitives';
 import { svgRichWrappedLabel, svgWrappedLabel } from './svg-render-labels';
+import { svgWordmarkLabel } from './svg-render-wordmark';
+import { hasWordmarkType } from './wordmark';
 
 export {
   EXPORT_DEFAULT_FONT,
@@ -203,6 +206,10 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       el.textColor ?? '#1e293b',
     )}</g>`;
   }
+  if (el.type === 'shape' && el.shape === 'plan-sheet') {
+    const model = el.planSheet?.sheetId ? opts.sheets?.get(el.planSheet.sheetId) : undefined;
+    return `<g${opAttr}${rotAttr}${shadowAttr}>${svgPlanSheet(el, model, surface)}</g>`;
+  }
   if (
     el.type === 'shape' &&
     (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view')
@@ -339,35 +346,38 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   const labelStr =
     !label || selfLabelled(el)
       ? ''
-      : label.runs
-        ? svgRichWrappedLabel(
-            label.runs,
-            label.x,
-            label.y,
-            label.anchor,
-            label.maxWidth,
-            label.valign,
-            label.fontFamily,
-          )
-        : svgWrappedLabel(
-            // Wrapped in the face it paints in, or a wide face breaks at the
-            // wrong words and runs out of its element.
-            wrapLabel(
-              label.text,
+      : el.type === 'text' && hasWordmarkType(el)
+        ? // Tracking, weight, case and arc (docs/specs/007-editor/logo-pages.md "Wordmark type").
+          svgWordmarkLabel(el, label)
+        : label.runs
+          ? svgRichWrappedLabel(
+              label.runs,
+              label.x,
+              label.y,
+              label.anchor,
               label.maxWidth,
-              labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
-              !(el.type === 'shape' && el.shape === 'icon'),
-            ),
-            label.x,
-            label.y,
-            label.anchor,
-            label.color,
-            label.size,
-            label.bold,
-            label.italic,
-            label.valign,
-            label.fontFamily,
-          );
+              label.valign,
+              label.fontFamily,
+            )
+          : svgWrappedLabel(
+              // Wrapped in the face it paints in, or a wide face breaks at the
+              // wrong words and runs out of its element.
+              wrapLabel(
+                label.text,
+                label.maxWidth,
+                labelMeasure(label.size, label.bold, label.italic, label.fontFamily),
+                !(el.type === 'shape' && el.shape === 'icon'),
+              ),
+              label.x,
+              label.y,
+              label.anchor,
+              label.color,
+              label.size,
+              label.bold,
+              label.italic,
+              label.valign,
+              label.fontFamily,
+            );
   // An upright lane title turns about its frame's corner (docs/specs/009-elements/lane.md).
   const turned =
     labelStr && label?.turnAbout
@@ -422,6 +432,8 @@ export function boxedNeedsSvgRaster(
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
   if (el.type === 'table' || el.type === 'freehand' || el.type === 'path') return true;
+  // Wordmark type (tracking, weight, case, an arc) is drawn by the SVG alone.
+  if (el.type === 'text' && hasWordmarkType(el)) return true;
   if (el.type === 'shape' && (hasShapeSilhouette(el.shape) || el.shape === 'stadium')) return true;
   // Anything whose BODY this module draws and the canvas drawers cannot: a
   // chart's plot, a progress value, a card's face, a lane's gutter, a
@@ -461,6 +473,9 @@ export function renderElementsToSvg(
     items?: ReadonlyMap<string, Item>;
     // The document's item types (docs/specs/026-plan/item-types.md).
     itemTypes?: readonly ItemTypeDef[];
+    // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
+    // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
+    sheets?: ReadonlyMap<string, SheetRenderModel>;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -513,6 +528,7 @@ export function renderElementsToSvg(
             chartPalette,
             items: opts.items,
             itemTypes: opts.itemTypes,
+            sheets: opts.sheets,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

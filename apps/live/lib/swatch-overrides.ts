@@ -46,7 +46,7 @@ export function applySwatchOverrides(
 }
 
 // Where overrides live (docs/specs/008-canvas/quick-style-panel.md "Custom swatches"): per user, synced,
-// keyed by theme, in the preferences blob beside `customSwatches`. An entry
+// keyed by theme, in the preferences blob. An entry
 // says "in theme t, these slots are these colours". Newest-edited first. Short
 // keys (t / s / f / x), because the whole blob shares the api's 4 KB cap.
 export type ThemeSwatchOverrides = {

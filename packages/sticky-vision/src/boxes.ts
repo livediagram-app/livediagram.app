@@ -1,5 +1,5 @@
 import { erodePaperMask, labelComponents, type Component } from './components';
-import { splitOversized, SPLIT_CALIBRATION } from './split';
+import { splitOversized } from './split';
 import { cutAtNotches } from './chords';
 import { cutAtSeam, type Luminance } from './seam';
 import { cutNarrowRun, isNarrowNote } from './narrow';
@@ -537,24 +537,3 @@ export function silhouetteOf(box: Box, noteSize: number): 'square' | 'wide' | 's
   if (Math.max(box.w, box.h) <= noteSize * 0.8) return 'small';
   return 'square';
 }
-
-export const BOX_CALIBRATION = {
-  ...SPLIT_CALIBRATION,
-  SIZE_SAMPLE_MIN_FILL,
-  SIZE_SAMPLE_MAX_ASPECT,
-  MIN_SIZE_SAMPLE,
-  MIN_AREA_FRACTION,
-  MERGE_GAP_FRACTION,
-  MERGE_MIN_FILL,
-  MERGE_REACH_FRACTION,
-  MERGE_REACH_MIN_FILL,
-  WHOLE_NOTE_SIDE,
-  RESCUE_ERODE_FRACTION,
-  RESCUE_ROUNDS,
-  MAX_PAPER_ASPECT,
-  MAX_PAPER_SIZE_RATIO,
-  MIN_PAPER_SIZE_RATIO,
-  CUT_PIECE_SIZE_RATIO,
-  MIN_SOLID_FILL,
-  MIN_PAPER_FILL,
-} as const;

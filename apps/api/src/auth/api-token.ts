@@ -5,7 +5,7 @@
 // no low-entropy value to time-attack, unlike a password). Tokens authenticate
 // signed-in (Clerk) accounts only; see docs/specs/015-api/public-api-and-tokens.md.
 
-import { API_TOKEN_PREFIX, bytesToBase64Url, sha256Hex } from '@livediagram/api-schema';
+import { API_TOKEN_PREFIX, randomBase64Url, sha256Hex } from '@livediagram/api-schema';
 
 const TOKEN_PREFIX = API_TOKEN_PREFIX;
 const TOKEN_RANDOM_BYTES = 32; // 256 bits
@@ -14,9 +14,7 @@ const TOKEN_RANDOM_BYTES = 32; // 256 bits
 // scanning and disambiguates a token from a Clerk JWT in the same
 // `Authorization: Bearer` header.
 export function generateApiToken(): string {
-  const bytes = new Uint8Array(TOKEN_RANDOM_BYTES);
-  crypto.getRandomValues(bytes);
-  return TOKEN_PREFIX + bytesToBase64Url(bytes);
+  return TOKEN_PREFIX + randomBase64Url(TOKEN_RANDOM_BYTES);
 }
 
 // SHA-256 hex of the token — what we store and look up by.

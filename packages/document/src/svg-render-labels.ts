@@ -49,6 +49,22 @@ export type ExportLabel = {
   turnAbout?: { x: number; y: number };
 };
 
+// Wordmark type on a wrapped label (docs/specs/007-editor/logo-pages.md "Wordmark type"): tracking
+// in em (written in px, which every renderer reads) and the weight a non-bold run paints in.
+// `basePx` is the size the tracking's em is measured against: the label's own size, as the canvas
+// measures it on the label's wrapper (a run of another size inherits the same spacing).
+export type WordmarkAttrs = { letterSpacing?: number; weight?: number; basePx?: number };
+
+function trackingAttr(attrs: WordmarkAttrs | undefined, size: number): string {
+  return attrs?.letterSpacing
+    ? ` letter-spacing="${r2(attrs.letterSpacing * (attrs.basePx ?? size))}"`
+    : '';
+}
+
+function weightOf(bold: boolean, attrs: WordmarkAttrs | undefined): number {
+  return attrs?.weight ?? (bold ? 600 : 400);
+}
+
 export function svgLabel(
   text: string,
   x: number,
@@ -96,6 +112,7 @@ export function svgWrappedLabel(
   italic: boolean,
   valign: 'top' | 'middle' | 'bottom' = 'middle',
   fontFamily?: string,
+  wordmark?: WordmarkAttrs,
 ): string {
   const lineH = fontSize * LABEL_LINE_HEIGHT;
   const firstY = blockFirstY(y, lines.length, lineH, valign);
@@ -109,7 +126,8 @@ export function svgWrappedLabel(
     .join('');
   return (
     `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)} font-size="${fontSize}"` +
-    ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
+    ` font-weight="${weightOf(bold, wordmark)}"${italic ? ' font-style="italic"' : ''}` +
+    `${trackingAttr(wordmark, fontSize)}` +
     ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${tspans}</text>`
   );
 }
@@ -124,6 +142,8 @@ export function wrapExportRuns(
   runs: ExportRun[],
   maxWidth: number,
   fontFamily?: string,
+  // Tracking added after every glyph, in px (wordmark type); absent is none.
+  trackingPx = 0,
 ): ExportRun[][] {
   const lines: ExportRun[][] = [];
   let cur: ExportRun[] = [];
@@ -134,7 +154,8 @@ export function wrapExportRuns(
     curW = 0;
   };
   for (const run of runs) {
-    const measure = labelMeasure(run.size, run.bold, run.italic, fontFamily);
+    const plain = labelMeasure(run.size, run.bold, run.italic, fontFamily);
+    const measure = trackingPx ? (s: string) => plain(s) + trackingPx * [...s].length : plain;
     const spaceW = Math.max(measure(' '), run.size * 0.25);
     run.text.split('\n').forEach((para, pi) => {
       if (pi > 0) pushLine();
@@ -173,9 +194,14 @@ export function svgRichWrappedLabel(
   maxWidth: number,
   valign: 'top' | 'middle' | 'bottom' = 'middle',
   fontFamily?: string,
+  wordmark?: WordmarkAttrs,
 ): string {
-  const lines = wrapExportRuns(runs, maxWidth, fontFamily);
-  const lineH = LABEL_LINE_HEIGHT * Math.max(...runs.map((r) => r.size));
+  const maxSize = Math.max(...runs.map((r) => r.size));
+  const trackingPx = wordmark?.letterSpacing
+    ? wordmark.letterSpacing * (wordmark.basePx ?? maxSize)
+    : 0;
+  const lines = wrapExportRuns(runs, maxWidth, fontFamily, trackingPx);
+  const lineH = LABEL_LINE_HEIGHT * maxSize;
   const firstY = blockFirstY(y, lines.length, lineH, valign);
   const body = lines
     .map((line, i) => {
@@ -183,7 +209,7 @@ export function svgRichWrappedLabel(
         .map(
           (run) =>
             `<tspan fill="${xmlEscape(run.color)}" font-size="${run.size}"` +
-            ` font-weight="${run.bold ? 600 : 400}"${run.italic ? ' font-style="italic"' : ''}>` +
+            ` font-weight="${run.bold ? 600 : weightOf(false, wordmark)}"${run.italic ? ' font-style="italic"' : ''}>` +
             `${xmlEscape(run.text)}</tspan>`,
         )
         .join('');
@@ -192,6 +218,7 @@ export function svgRichWrappedLabel(
     .join('');
   return (
     `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)}` +
+    `${trackingAttr(wordmark, maxSize)}` +
     ` text-anchor="${anchor}" dominant-baseline="central">${body}</text>`
   );
 }

@@ -13,6 +13,7 @@ import {
 import type { SVGProps } from 'react';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 
 // Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so
 // the window dots stay round, the nav icons keep their stroke weight,
@@ -143,30 +144,13 @@ export function FreehandSvg({
   // like everything else, identically in every browser, and the outline's numbers never depend on
   // where the box is. The stroke being drawn (whiteboard/LiveInk.tsx) is this same svg in the same
   // layer, so its settled ink stays still as it grows and release changes no pixel.
-  if (isPenStroke(element)) {
-    const { viewBox, d: outline } = penStrokeSvg(element);
-    return (
-      <svg className={FREEHAND_SVG_CLASS} viewBox={viewBox} preserveAspectRatio="none" aria-hidden>
-        <path d={outline} fill={stroke} stroke="none" />
-        {hitPenWidth !== undefined ? (
-          // Only the drawn line picks the stroke (docs/specs/023-draw-mode/draw-mode.md "Selecting"):
-          // the outline, grown by the margin either side, catches pointers.
-          <StrokeHitPath
-            penWidth={hitPenWidth}
-            trim={element.penWidth ?? 0}
-            d={outline}
-            fill="transparent"
-            strokeLinejoin="round"
-            style={{ pointerEvents: 'all' }}
-          />
-        ) : null}
-      </svg>
-    );
-  }
+  const pen = isPenStroke(element);
   // Every other stroke keeps a 100-unit viewBox and its non-scaling preset.
   const vbW = 100;
   const vbH = 100;
-  const vbPoints = freehandCanvasPoints({ ...element, x: 0, y: 0, width: vbW, height: vbH });
+  const vbPoints = pen
+    ? []
+    : freehandCanvasPoints({ ...element, x: 0, y: 0, width: vbW, height: vbH });
   // Polygon-tool paths (docs/specs/008-canvas/polygon-tool.md) keep their deliberate corners:
   // straight M/L segments instead of the Catmull-Rom smoothing the
   // sampled pencil strokes want.
@@ -177,7 +161,6 @@ export function FreehandSvg({
         ? vbPoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') +
           (element.closed ? ' Z' : '')
         : catmullRomToBezierPath(vbPoints, element.closed);
-  const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
   // A recorded pen width (a whiteboard pen, docs/specs/023-draw-mode/draw-mode.md) wins over the preset.
   const widthPx =
     element.penWidth ?? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE];
@@ -186,39 +169,92 @@ export function FreehandSvg({
   // border-preset widths and dash styles don't apply. Kept in sync
   // with svgFreehandShape (the headless twin) by the spec.
   const isHighlighter = element.pen === 'highlighter';
-  return (
-    <svg
-      className={FREEHAND_SVG_CLASS}
-      viewBox={`0 0 ${vbW} ${vbH}`}
-      preserveAspectRatio="none"
-      aria-hidden
-    >
-      {d ? (
-        <path
-          d={d}
-          // Closed paths get the fill; open strokes leave fill at
-          // none so the bounding box doesn't read as a closed shape.
-          fill={element.closed && !isHighlighter ? fill : 'none'}
-          stroke={stroke}
-          strokeWidth={isHighlighter ? (element.penWidth ?? 14) : widthPx}
-          strokeOpacity={isHighlighter ? 0.45 : undefined}
-          style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
-          vectorEffect="non-scaling-stroke"
-        />
-      ) : null}
-      {d && hitPenWidth !== undefined ? (
-        <StrokeHitPath
-          penWidth={hitPenWidth}
-          d={d}
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ pointerEvents: 'stroke' }}
-        />
-      ) : null}
-    </svg>
+  const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
+  // A Drawing animation (docs/specs/028-animation/element-animations.md) works from the stroke's
+  // centre line: the drawn path itself for a stroked line, the raw points for pen ink.
+  const anim = useDrawingAnimation(
+    element,
+    pen ? () => penCentreLine(element) : d,
+    isHighlighter ? (element.penWidth ?? 14) : widthPx,
+    stroke,
   );
+  if (pen) {
+    const { viewBox, d: outline } = penStrokeSvg(element);
+    return (
+      <>
+        <svg
+          className={FREEHAND_SVG_CLASS}
+          viewBox={viewBox}
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          {anim.defs}
+          <path d={outline} fill={stroke} stroke="none" {...anim.mainProps} />
+          {hitPenWidth !== undefined ? (
+            // Only the drawn line picks the stroke (docs/specs/023-draw-mode/draw-mode.md "Selecting"):
+            // the outline, grown by the margin either side, catches pointers.
+            <StrokeHitPath
+              penWidth={hitPenWidth}
+              trim={element.penWidth ?? 0}
+              d={outline}
+              fill="transparent"
+              strokeLinejoin="round"
+              style={{ pointerEvents: 'all' }}
+            />
+          ) : null}
+        </svg>
+        {anim.overlay}
+      </>
+    );
+  }
+  return (
+    <>
+      <svg
+        className={FREEHAND_SVG_CLASS}
+        viewBox={`0 0 ${vbW} ${vbH}`}
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        {anim.defs}
+        {d ? (
+          <path
+            {...anim.mainProps}
+            d={d}
+            // Closed paths get the fill; open strokes leave fill at
+            // none so the bounding box doesn't read as a closed shape.
+            fill={element.closed && !isHighlighter ? fill : 'none'}
+            stroke={stroke}
+            strokeWidth={isHighlighter ? (element.penWidth ?? 14) : widthPx}
+            strokeOpacity={isHighlighter ? 0.45 : undefined}
+            style={
+              isHighlighter
+                ? { ...anim.mainProps.style, mixBlendMode: 'multiply' }
+                : anim.mainProps.style
+            }
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
+            vectorEffect="non-scaling-stroke"
+          />
+        ) : null}
+        {d && hitPenWidth !== undefined ? (
+          <StrokeHitPath
+            penWidth={hitPenWidth}
+            d={d}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ pointerEvents: 'stroke' }}
+          />
+        ) : null}
+      </svg>
+      {anim.overlay}
+    </>
+  );
+}
+
+// A pen stroke's centre line in the canvas coordinates its svg draws in (penStrokeSvg).
+function penCentreLine(element: FreehandElement): string {
+  const pts = freehandCanvasPoints(element);
+  return pts.length < 2 ? '' : catmullRomToBezierPath(pts, element.closed);
 }

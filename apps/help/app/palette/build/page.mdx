@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { BuildRows } from '@/components/illustrations/palette-build-chairs';
 
 export const metadata = helpMetadata({
   title: 'Build Elements',
@@ -24,14 +25,20 @@ What the five have in common is that **each one holds other work**. A frame gath
 ## What the category contains
 
 - A **Mind node** is a node that knows its parent. **Tab** adds a child to its right, **Enter** a sibling below, each one connected, selected, and ready to type into, so a whole branch is built from the keyboard. See [Mind Maps](/help/palette/mind-maps/).
-- A **Lane** is a titled horizontal band for swimlane diagrams. Dragging the lane carries everything sitting in it, so a row of steps moves as one. See [Lanes](/help/palette/lanes/).
-- A **Frame** is a labelled box that groups a section of the canvas. It draws behind its contents and carries them when you move it, and it is what exports treat as a section backdrop. `F` draws one. See [Frames](/help/palette/build/frames/).
-- A **Timeline** is a track for sequencing events, with evenly spaced points you add to from the end. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
-- A **Table** is an editable grid of cells you can style, link, and fill row by row. See [Tables](/help/palette/tools/tables/).
+- A **Table** is an editable grid of cells you can style, link, and fill row by row; double-click a cell to type. See [Tables](/help/palette/tools/tables/).
+- A **Lane** is a titled horizontal band for swimlane diagrams, its title down its left edge. Dragging the lane carries everything sitting in it, so a row of steps moves as one. See [Lanes](/help/palette/lanes/).
+- A **Frame** is a labelled box that groups a section of the canvas. It draws behind its contents and carries them when you move it, and a slide with one frame on it is framed by it. Press `F` to add one. See [Frames](/help/palette/build/frames/).
+- A **Timeline** is a track for sequencing events, with points above the line; add more from the button at its right end. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
+
+Build is in the palette in Diagram and Draw mode. In Illustrate mode it holds only the Table and the Timeline, since mind maps, lanes and frames organise a diagram rather than a page, and Plan mode has no Build category.
 
 ## Why they are rows, not tiles
 
-Most catalogue categories show a grid of pictures, because the picture is the explanation. These five are all containers, and at tile size all containers are a rectangle. So Build renders as rows with a one-line description each: "Tab adds a child, Enter a sibling" against "a titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+Most catalogue categories show a grid of pictures, because the picture is the explanation. These five are all containers, and at tile size all containers are a rectangle. So Build renders as rows with a one-line description each: "Tab adds a child, Enter a sibling" against "A titled band that carries its steps" is what you are actually choosing between, and no icon says that.
+
+<Figure caption="Build lists its five elements as rows, each with a line on what it does.">
+  <BuildRows />
+</Figure>
 
 <Note>
   These five used to live in four different places, filed by what they look like rather than what
@@ -43,7 +50,7 @@ Most catalogue categories show a grid of pictures, because the picture is the ex
 
 Each behaves like any other element once placed: select, restyle, lock, and move it freely, and each can carry a [link](/help/canvas/links/), a note, or a [comment](/help/collaboration/comments/) like anything else on the canvas.
 
-Because they hold other work, two habits pay off. Put the container down **first** and fill it afterwards, so the things inside are captured by it as you go. And when you move one, check what came with it: a frame and a lane deliberately carry their contents, which is usually what you want and occasionally a surprise.
+Because they hold other work, two habits pay off. Put the container down **first** and fill it afterwards, so the things inside are captured by it as you go. And when you move one, check what came with it: a frame and a lane carry everything whose centre sits inside them, and a mind node carries its whole branch, which is usually what you want and occasionally a surprise. Resizing a frame or a lane never moves its contents.
 
 <Tip>
   Reach for Build at the start of a canvas and the rest goes faster: lay out the lanes or frames you

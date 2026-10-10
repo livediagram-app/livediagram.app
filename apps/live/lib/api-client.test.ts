@@ -21,7 +21,7 @@ import {
   setSessionSharePassword,
   setTokenProvider,
 } from './api-client';
-import { apiHeaders } from './api/core';
+import { apiHeaders, setWorkbenchConfinement } from './api/core';
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -486,6 +486,27 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(body.tabs[0]).toMatchObject({ id: 't1', name: 'Tab' });
     expect(out).toEqual({ id: 'd1' });
   });
+
+  // docs/specs/026-plan/item-types.md "The type catalogue": a copy's catalogue, or a Plan template's brought
+  // types, ride the create; the built-ins (none given) send nothing.
+  it('sends the type catalogue when one is given', async () => {
+    const fetchSpy = vi.fn().mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ document: { id: 'd1' } }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    vi.stubGlobal('fetch', fetchSpy);
+    const itemTypes = { version: 1, types: [] };
+    await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [], itemTypes });
+    await apiCreateDocument('owner', { id: 'd2', name: 'N', tabs: [], itemTypes: null });
+    const bodies = fetchSpy.mock.calls.map(
+      ([, init]) => JSON.parse((init as RequestInit).body as string) as Record<string, unknown>,
+    );
+    expect(bodies[0]!.itemTypes).toEqual(itemTypes);
+    expect(bodies[1]).not.toHaveProperty('itemTypes');
+  });
 });
 
 describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
@@ -786,5 +807,20 @@ describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md 
     const spy = stub404();
     await apiFetchImageBlobUrl('owner', 'img1');
     expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1$/);
+  });
+
+  // Under a workbench session the api reads an image only by its document path
+  // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Route effects under a session").
+  it("always names the session's document under a workbench session", async () => {
+    const spy = stub404();
+    setWorkbenchConfinement({ documentId: 'doc-wb', ownerId: 'owner' });
+    try {
+      await apiFetchImageBlobUrl('owner', 'img1');
+      await apiFetchImageBlobUrl('owner', 'img1', { documentId: 'other' });
+    } finally {
+      setWorkbenchConfinement(null);
+    }
+    expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
+    expect(String(spy.mock.calls[1]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
   });
 });

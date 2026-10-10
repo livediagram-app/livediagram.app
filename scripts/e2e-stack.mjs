@@ -128,7 +128,13 @@ const DRIVE_E2E_VARS = {
 //                    e2e-smoke.md): a key made at boot, its JWKS on /e2e/jwks.json for the api
 //                    worker to verify against, and /e2e/token?sub=<id> minting a session token
 //                    for any test account. Test-only: nothing outside this stack trusts the key.
-const CLERK_JWKS = process.env.E2E_CLERK_JWKS === '1';
+//   E2E_WORKBENCH=1  the workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md,
+//                    "Testing"): the stack acts as Clerk as under E2E_CLERK_JWKS, for the signed-in
+//                    pairing page and the api calls the CLI makes, and the api builds its workbench
+//                    and pairing URLs on this live origin (APP_BASE_URL). The live build must carry
+//                    NEXT_PUBLIC_E2E_AUTH=1, as under E2E_DRIVE.
+const WORKBENCH = process.env.E2E_WORKBENCH === '1';
+const CLERK_JWKS = process.env.E2E_CLERK_JWKS === '1' || WORKBENCH;
 //   E2E_GUEST_SIG_ENFORCE  guest signature enforcement, as production runs once armed
 //                    (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest signatures").
 //                    On unless set to 0: every spec seeds through signed guests. `=1` also selects
@@ -636,6 +642,7 @@ async function main() {
       ...(CLERK_JWKS
         ? ['--var', `CLERK_JWKS_URL:http://127.0.0.1:${LIVE_PORT}/e2e/jwks.json`]
         : []),
+      ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${LIVE_PORT}`] : []),
     ],
     {
       cwd: ROOT,

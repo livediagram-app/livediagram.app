@@ -12,6 +12,7 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
 import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
+import { explorerPathFor } from '@/app/explorer/routes';
 
 const SearchPanel = dynamic(
   () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
@@ -85,6 +86,12 @@ export function EditorSearchPanel() {
       }}
       onSelectShared={(id, shareCode) => {
         openDocument(id, shareCode);
+      }}
+      onSelectFolder={(id) => {
+        // A personal folder opens on the Explorer page, as picking it there does.
+        window.location.assign(
+          `${window.location.origin}${explorerPathFor({ kind: 'folder', id })}`,
+        );
       }}
       onSelectTeam={(id) => {
         window.location.assign(

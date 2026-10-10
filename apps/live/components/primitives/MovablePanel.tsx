@@ -21,16 +21,15 @@ import { cornerInsetStyle } from './movable-panel-scale';
 
 export type { MovablePanelDockProps };
 
-// Floating, draggable panel pinned over the canvas. The header row is the
-// drag handle; a minimize button collapses the panel into a dock button
-// (which the caller renders elsewhere — see Canvas's bottom dock).
+// A draggable panel pinned over the canvas, docked in a corner
+// (docs/specs/007-editor/panel-docking.md), or a popover off a button. The header row is the drag
+// handle; a collapsible panel's header button folds it to a banner.
 //
 // Width is fixed at construction time (via the `width` Tailwind utility)
 // and the body grows with its content. No user-driven resize — keeping
 // the panels uniformly-sized makes the chrome easier to reason about.
 export function MovablePanel({
   title,
-  elevated,
   position,
   defaultCorner,
   width = 'w-56',
@@ -40,9 +39,6 @@ export function MovablePanel({
   helpArticle,
   onReset,
   onMoveTo,
-  onMinimize,
-  stackBelowY,
-  onSize,
   collapsible = false,
   defaultCollapsed = false,
   popoverOpen,
@@ -60,6 +56,7 @@ export function MovablePanel({
   onDockDrag,
   onDockDragEnd,
   dataTourId,
+  layoutChrome = false,
   children,
 }: MovablePanelProps) {
   const minimalChrome = useMinimalChrome();
@@ -96,17 +93,14 @@ export function MovablePanel({
     onDockDragEnd,
   });
 
-  // Panel geometry measurement (the body max-height cap + the onSize
-  // publish) — see useMovablePanelMeasure.
+  // Panel geometry measurement (the body max-height cap): see useMovablePanelMeasure.
   const bodyMaxH = useMovablePanelMeasure({
     ref,
     headerRef,
     position,
-    stackBelowY,
     defaultCorner,
     docked,
     dockedCorner,
-    onSize,
   });
 
   // A popover off a button (the Toolbar layout's Explorer, the cluster
@@ -132,19 +126,6 @@ export function MovablePanel({
     '[data-dock-button],[data-tour-popover],[data-menu-surface],[role="dialog"]',
   );
 
-  // When stackBelowY is provided and we're still at the default
-  // corner, use it as a dynamic top (above the panel sitting at
-  // its bottom + a 16px gap). Falls back to the static top-[15rem]
-  // class when stackBelowY isn't wired (legacy callers, or no
-  // measurement yet on first paint).
-  const useDynamicStack =
-    position === null && defaultCorner === 'top-right-stacked' && stackBelowY !== undefined;
-  // Mobile drops the inter-panel gap to 4px because the palette
-  // banner-collapses to a one-line strip there: keeping the old
-  // desktop 16px gap left a visible empty band between the two
-  // panels. Desktop stays at 16 (gap-4) so the stacked panels keep
-  // breathing room.
-  const stackGapPx = typeof window !== 'undefined' && isMobileViewportSync() ? 4 : 16;
   // Clamp a persisted free position back into the live viewport: a
   // panel dropped at x≈2200 on an external monitor renders fully
   // clipped inside the overflow-hidden main on a laptop — invisible,
@@ -164,24 +145,20 @@ export function MovablePanel({
         const clamped = clampFree(position);
         return { left: px(clamped.x), top: px(clamped.y) };
       })()
-    : useDynamicStack
-      ? { top: stackBelowY + stackGapPx }
-      : cornerInsetStyle(defaultCorner, scale);
+    : cornerInsetStyle(defaultCorner, scale);
   const cornerClass = position
     ? ''
-    : useDynamicStack
-      ? 'inset-x-3 sm:left-auto sm:right-4'
-      : defaultCorner === 'top-right'
-        ? 'inset-x-3 top-3 sm:inset-x-auto sm:right-4 sm:top-4'
-        : defaultCorner === 'top-right-stacked'
-          ? 'inset-x-3 top-[15rem] sm:inset-x-auto sm:right-4'
-          : defaultCorner === 'top-banner'
-            ? 'inset-x-3 top-3'
-            : defaultCorner === 'bottom-left'
-              ? 'bottom-4 left-4'
-              : defaultCorner === 'bottom-right'
-                ? 'bottom-4 right-4'
-                : 'left-4 top-4';
+    : defaultCorner === 'top-right'
+      ? 'inset-x-3 top-3 sm:inset-x-auto sm:right-4 sm:top-4'
+      : defaultCorner === 'top-right-stacked'
+        ? 'inset-x-3 top-[15rem] sm:inset-x-auto sm:right-4'
+        : defaultCorner === 'top-banner'
+          ? 'inset-x-3 top-3'
+          : defaultCorner === 'bottom-left'
+            ? 'bottom-4 left-4'
+            : defaultCorner === 'bottom-right'
+              ? 'bottom-4 right-4'
+              : 'left-4 top-4';
 
   // Docked rest (docs/specs/007-editor/panel-docking.md): the panel sits in a corner stack container
   // and lets that flex column own its position + reflow — no absolute
@@ -298,6 +275,7 @@ export function MovablePanel({
       ref={ref}
       data-floating-panel=""
       data-tour-id={dataTourId}
+      data-layout-chrome={layoutChrome ? '' : undefined}
       // Marks the panel as opacity-controlled: globals.css applies the
       // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to
       // opaque on hover / focus. The popover branch above carries it too.
@@ -317,7 +295,7 @@ export function MovablePanel({
       // canvas surface); the header re-asserts cursor-grab since that's
       // the only part you can drag. When docked at rest the panel is a
       // static flex child of its corner stack (no absolute / corner class).
-      className={`pointer-events-auto ${positionClass} ${elevated ? 'z-[calc(var(--z-panel)+1)]' : 'z-[var(--z-panel)]'} flex cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
+      className={`pointer-events-auto ${positionClass} z-[var(--z-panel)] flex cursor-default ${width} flex-col rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40 ${finalCornerClass}`}
     >
       <MovablePanelHeader
         headerRef={headerRef}
@@ -332,7 +310,6 @@ export function MovablePanel({
         collapsible={collapsible}
         effectiveCollapsed={collapsed}
         onToggleCollapsed={() => setCollapsed((v) => !v)}
-        onMinimize={onMinimize}
       />
       {/* Body. Children can use flex utilities to lay themselves out
           inside the panel's intrinsic width. Each panel handles its

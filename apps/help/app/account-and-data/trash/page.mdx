@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { TrashView } from '@/components/illustrations/account-settings';
 
 export const metadata = helpMetadata({
   title: 'Trash',
@@ -21,23 +22,27 @@ This works the same whether you are signed in or working as a guest.
 
 ## Opening the Trash
 
-Choose **Trash** at the bottom of the Explorer sidebar, or open **Settings**, go to **Account**, and choose **Open Trash**. The Trash lists everything you can restore, grouped:
+Choose **Trash**, the last row of the **More** group at the bottom of the Explorer sidebar, or open **Settings**, go to **Account**, and choose **Open Trash**. Both work for guests too, and on deployments without accounts. The Trash lists everything you can restore, grouped:
 
 - **Your documents**: the ones you deleted from your own space.
 - **One group per team** you belong to: team documents go to that team's Trash, and any member of the team can restore them or delete them for good, just as any member can delete them.
 - **This browser only**: [offline documents](/help/privacy-and-security/offline-mode/) live only in this browser, so their Trash does too.
 
-Each document shows when it was deleted and how many days it has left.
+Each document shows when it was deleted and how many days it has left. One that is past its 30 days but not yet removed reads "Removed at the next clean-up": removal runs once a day, so a document can stay for up to a day longer.
+
+<Figure caption="The Trash groups what you can restore. Each row has Restore and Delete permanently; each group has Empty Trash.">
+  <TrashView />
+</Figure>
 
 ## Restoring a document
 
-Choose **Restore**. The document goes back to the folder it was in, or to the root of **My documents** (or of its team) if that folder has been deleted since. Its share links work again, and anyone you shared it with can open it as before.
+Choose **Restore**; it needs no confirmation, because it destroys nothing. The document goes back to the folder it was in, or to the root of **My documents** (or of its team) if that folder has been deleted since. Its share links work again, and anyone you shared it with can open it as before.
 
-If you open a link to a deleted document that you are allowed to restore, you can restore it from there too.
+If you open a deleted document by its address and it is in your own Trash, the card that says it was deleted offers **Restore** too, with the days it has left.
 
 ## Deleting for good
 
-Choose **Delete permanently** to remove one document now, or **Empty Trash** to remove everything in one group. Both ask you to confirm, and neither can be undone.
+Choose **Delete permanently** to remove one document now, or **Empty Trash** to remove everything in one group (only that group: emptying a team's Trash empties it for the whole team). Both ask you to confirm, and neither can be undone.
 
 A tab that is also in another document is never lost when a document is deleted for good: it stays in the other document, exactly where it was.
 
@@ -52,12 +57,13 @@ A document with nothing on any of its tabs, left unchanged for **30 days**, move
 Restore it like any other and it comes back as it was, with another 30 days before it could be moved again. Team documents go to the team's Trash, where any member can restore them. [Offline documents](/help/privacy-and-security/offline-mode/) are never moved.
 
 <Tip>
-  Taking a document offline is a move, not a delete, so it never goes to the Trash. Deleting your
-  account removes everything straight away, the Trash included.
+  Taking a document offline is a move, not a delete, so it never goes to the Trash. [Deleting your
+  account](/help/account-and-data/deleting-your-data/#deleting-your-account) removes your own
+  documents straight away, the Trash included.
 </Tip>
 
 ## For scripts and AI tools
 
-Deleting a document through the [API](/help/account-and-data/api-tokens/) or an [AI tool](/help/account-and-data/connect-ai-mcp/) also moves it to the Trash. An AI tool can list your Trash and restore a document from it, but it can never delete one for good; a script using the API can, when it asks for a permanent delete.
+Deleting a document through the [API](/help/account-and-data/api-tokens/) or an [AI tool](/help/account-and-data/connect-ai-mcp/) also moves it to the Trash. An AI tool can list your Trash and restore a document from it, but it can never delete one for good; a script using the API can, when it asks for a permanent delete (see [Working with Documents](/help/developers/working-with-documents/#delete-and-restore)).
 
 </ArticleLayout>

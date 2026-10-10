@@ -29,8 +29,7 @@ export function SettingsRowShell({
   onIllustrationChoose,
   illustrationDisabled,
   // A short info line between the card and the footnote, for a row whose
-  // options are limited right now (the desktop-only panel layouts on a
-  // phone). Not part of the description, which says what the setting IS.
+  // options are limited right now (a desktop-only row on a phone). Not part of the description, which says what the setting IS.
   notice,
   // A control that is its own interactive element (a slider, a segmented
   // choice) sits BESIDE the label; a whole-row switch wraps the lot, and
@@ -96,22 +95,25 @@ export function SettingsRowShell({
           <span>{notice}</span>
         </p>
       ) : null}
-      <p
-        id={`${row.key}-description`}
-        className="mt-1.5 px-3.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400"
-      >
-        {descriptionContent ?? row.description}
-        {row.helpArticle ? (
-          <>
-            {' '}
-            <HelpArticleLink article={row.helpArticle} variant="text" />
-          </>
-        ) : null}
-        {/* Settings now lists every preference, including the ones whose
+      {/* A row with nothing to say under it (a pair sharing one footnote) leaves the space out. */}
+      {!descriptionContent && !row.description && !row.helpArticle && !row.alsoIn ? null : (
+        <p
+          id={`${row.key}-description`}
+          className="mt-1.5 px-3.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400"
+        >
+          {descriptionContent ?? row.description}
+          {row.helpArticle ? (
+            <>
+              {' '}
+              <HelpArticleLink article={row.helpArticle} variant="text" />
+            </>
+          ) : null}
+          {/* Settings now lists every preference, including the ones whose
             day-to-day home is a panel's own gear. Saying so keeps the two
             from reading as rival controls for the same thing. */}
-        {row.alsoIn ? <span className="block text-slate-400">Also in {row.alsoIn}.</span> : null}
-      </p>
+          {row.alsoIn ? <span className="block text-slate-400">Also in {row.alsoIn}.</span> : null}
+        </p>
+      )}
     </div>
   );
 }

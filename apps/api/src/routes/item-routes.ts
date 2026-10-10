@@ -1,5 +1,5 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
-// contracts"): list, create, bulk create, patch (POST), move, vote and delete under
+// contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), a vote's tally (item-tally-route.ts), move and delete under
 // /api/documents/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
 // same doors. Every write applies the pure functions of @livediagram/items, lands guarded by the item's rev
 // (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
@@ -7,135 +7,59 @@
 // "Comments").
 
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
-import { itemForRoom, itemForViewer, readRestoredThread } from '@livediagram/document';
+import { itemForViewer, readRestoredThread } from '@livediagram/document';
 import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
+  ITEM_KEY_MAX,
   ITEM_STATUS_MAX,
   ITEM_WRITE_RETRIES,
   isSwimlaneSettable,
   applyMove,
   applyPatch,
-  applyVote,
   fieldsWithinBounds,
   isValidItemId,
   isValidItemType,
-  itemIdsShownOnTab,
-  itemPersonId,
+  typesOf,
+  withDefaultStatuses,
   makeItem,
   newItemId,
-  validateClear,
   validateFields,
   validateVotes,
   type Item,
   type ItemCreate,
   type ItemMove,
-  type ItemPatch,
   type ItemPerson,
   type ItemPlace,
   type ItemRejection,
-  type TabItemElement,
 } from '@livediagram/items';
 import {
   deleteItemRow,
-  getDocument,
   getItemStoreHead,
   getItemsRev,
-  getParticipant,
-  getTab,
   insertItems,
   itemKeyTaken,
   listItems,
   readItem,
   updateItemAtRev,
 } from '../db';
-import { badRequest, forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
-import { relayItems } from '../room-client';
-import { refuseGuestVoteOverCap } from '../vote-integrity';
+import { badRequest, conflict, forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
-  deniedOnTab,
-  gateEdit,
-  gateGrant,
-  gateParticipate,
-  gateRead,
-  missingDocument,
-  readBody,
-  requireOwner,
-  type RouteContext,
-} from './context';
-
-type Level = 'read' | 'participate' | 'edit';
-
-export type ItemCaller = {
-  documentId: string;
-  owner: string;
-  // The document, for the gates a comment delete checks (item-comment-routes.ts); absent on a new document's
-  // seed, which writes no comments.
-  doc?: NonNullable<Awaited<ReturnType<typeof getDocument>>>;
-  // The item ids the caller may touch, when their grant is confined to one tab.
-  scope: Set<string> | null;
-  // The store as read to work out that scope, so a list does not read it twice.
-  items?: Item[];
-};
-
-const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
-
-function rejected(error: ItemRejection, field?: string): Response {
-  console.info('[items] items.rejected', { error, field });
-  return json({ error, ...(field ? { field } : {}) }, { status: 400 });
-}
-
-const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
-const itemBusy = () => {
-  console.warn('[items] items.write.busy');
-  return json(
-    { error: 'item_busy', message: 'the item kept changing; try again' },
-    { status: 409 },
-  );
-};
-
-// The caller and their reach: the whole document, or (a tab-scoped grant) the items one tab shows.
-export async function itemCaller(
-  ctx: RouteContext,
-  documentId: string,
-  level: Level,
-): Promise<ItemCaller | Response> {
-  const owner = requireOwner(ctx);
-  if (owner instanceof Response) return owner;
-  const doc = await getDocument(ctx.env, documentId);
-  if (!doc) return missingDocument(ctx, documentId);
-  const gate = GATES[level];
-  if (await gate(ctx, documentId, doc.ownerId, doc.teamId))
-    return { documentId, owner, doc, scope: null };
-  const tabId = ctx.url.searchParams.get('tabId');
-  if (!tabId) {
-    // A whole-document grant that falls short of the level (a view link writing) is refused
-    // outright; a grant confined to one tab must name it.
-    const grant = await gateGrant(ctx, documentId, doc.ownerId, doc.teamId);
-    return grant && grant.tabScope === null ? forbidden() : deniedOnTab(ctx, doc);
-  }
-  if (!(await gate(ctx, documentId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
-  const tab = await getTab(ctx.env, documentId, tabId);
-  if (!tab) return notFound();
-  const items = await listItems(ctx.env, documentId);
-  return {
-    documentId,
-    owner,
-    doc,
-    scope: itemIdsShownOnTab(tab.elements as unknown as TabItemElement[], items),
-    items,
-  };
-}
-
-async function writer(ctx: RouteContext, owner: string): Promise<ItemPerson> {
-  const p = await getParticipant(ctx.env, owner);
-  return {
-    id: await itemPersonId(owner),
-    name: p?.name ?? 'Someone',
-    color: p?.color ?? '#94a3b8',
-  };
-}
+  excludedStatus,
+  forCaller,
+  itemBusy,
+  itemCaller,
+  itemNotFound,
+  readPatch,
+  rejected,
+  relay,
+  writer,
+  type ItemCaller,
+} from './item-route-kit';
+import { patches } from './item-patches-route';
+import { tally } from './item-tally-route';
+import { readBody, type RouteContext } from './context';
 
 function readPlace(raw: unknown): ItemPlace | ItemRejection {
   if (raw === undefined) return {};
@@ -183,27 +107,6 @@ function readCreate(raw: unknown, owner: string): ItemCreate | ItemRejection {
   };
 }
 
-function relay(
-  ctx: RouteContext,
-  documentId: string,
-  upserts: Item[],
-  removed: string[],
-  rev: number,
-) {
-  ctx.waitUntil?.(
-    relayItems(ctx.env, documentId, {
-      kind: 'items',
-      upserts: upserts.map(itemForRoom),
-      removed,
-      rev,
-    }),
-  );
-}
-
-// What a caller is answered with: their own comment author ids, nobody else's.
-const forCaller = (caller: ItemCaller, items: Item[]) =>
-  items.map((i) => itemForViewer(i, caller.owner));
-
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
 async function list(ctx: RouteContext, documentId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'read');
@@ -217,7 +120,8 @@ async function list(ctx: RouteContext, documentId: string): Promise<Response> {
   return json(body);
 }
 
-// Creates `creates` in one batch; keys from the store's next key (or a free restored key).
+// Creates `creates` in one batch. A named key (a restore, an offline sync, a copy) is kept while it is free, below
+// the store's next key or above it; every other create takes the next key not already in use.
 async function createMany(
   ctx: RouteContext,
   caller: ItemCaller,
@@ -235,26 +139,30 @@ async function createMany(
     const existing = await listItems(ctx.env, caller.documentId);
     const ids = new Set(existing.map((i) => i.id));
     const pool = [...existing];
+    const keys = new Set(existing.map((i) => i.key));
     const made: Item[] = [];
     let nextKey = head.nextKey;
     const now = Date.now();
     for (const create of creates) {
-      if (create.id && ids.has(create.id)) return json({ error: 'item_exists' }, { status: 409 });
+      if (create.id && ids.has(create.id)) return conflict('item_exists');
       const id =
         create.id ?? newItemId(() => crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32);
       ids.add(id);
       let key: number;
       if (
         create.key !== undefined &&
-        create.key < head.nextKey &&
-        !pool.some((i) => i.key === create.key) &&
+        create.key <= ITEM_KEY_MAX &&
+        !keys.has(create.key) &&
         !(await itemKeyTaken(ctx.env, caller.documentId, create.key))
       ) {
         key = create.key;
       } else {
+        // A key named earlier in this batch may sit at or above the next key.
+        while (keys.has(nextKey)) nextKey += 1;
         key = nextKey;
         nextKey += 1;
       }
+      keys.add(key);
       const item = makeItem(create, { id, key, now, by, items: pool });
       pool.push(item);
       made.push(item);
@@ -279,8 +187,11 @@ async function create(ctx: RouteContext, documentId: string): Promise<Response> 
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readCreate(body, caller.owner);
-  if (typeof input === 'string') return rejected(input);
+  const read = readCreate(body, caller.owner);
+  if (typeof read === 'string') return rejected(read);
+  // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
+  // the document is already read for the caller, so this costs no query.
+  const input = withDefaultStatuses([read], typesOf(caller.doc?.itemTypes))[0]!;
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
   relay(ctx, documentId, made.items, [], made.rev);
@@ -319,6 +230,8 @@ export async function writeItem(
   caller: ItemCaller,
   itemId: string,
   change: (item: Item, by: ItemPerson) => Item | Response,
+  // An undo or redo (the body's `undo: true`): a card type's left-out statuses do not refuse it.
+  opts: { undo?: boolean } = {},
 ): Promise<Response> {
   if (caller.scope && !caller.scope.has(itemId)) return itemNotFound();
   const by = await writer(ctx, caller.owner);
@@ -327,6 +240,8 @@ export async function writeItem(
     if (!item) return itemNotFound();
     const next = change(item, by);
     if (next instanceof Response) return next;
+    if (excludedStatus(caller, next, item, opts.undo === true))
+      return rejected('status_excluded', 'status');
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
     const rev = await updateItemAtRev(ctx.env, caller.documentId, next, item.rev);
@@ -340,23 +255,6 @@ export async function writeItem(
   return itemBusy();
 }
 
-function readPatch(body: Record<string, unknown>): ItemPatch | ItemRejection {
-  const patch: ItemPatch = {};
-  if (body.set !== undefined) {
-    const set = validateFields(body.set, 'patch');
-    if (!set.ok) return set.error;
-    patch.set = set.fields;
-  }
-  const clear = validateClear(body.clear);
-  if (!clear.ok) return clear.error;
-  if (clear.keys.length) patch.clear = clear.keys;
-  if (body.type !== undefined) {
-    if (!isValidItemType(body.type)) return 'type_invalid';
-    patch.type = body.type;
-  }
-  return patch;
-}
-
 async function patch(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'edit');
   if (caller instanceof Response) return caller;
@@ -364,8 +262,12 @@ async function patch(ctx: RouteContext, documentId: string, itemId: string): Pro
   if (body instanceof Response) return body;
   const input = readPatch(body);
   if (typeof input === 'string') return rejected(input);
-  return writeItem(ctx, caller, itemId, (item, by) =>
-    applyPatch(item, input, { now: Date.now(), by }),
+  return writeItem(
+    ctx,
+    caller,
+    itemId,
+    (item, by) => applyPatch(item, input, { now: Date.now(), by }),
+    { undo: body.undo === true },
   );
 }
 
@@ -393,26 +295,12 @@ async function move(ctx: RouteContext, documentId: string, itemId: string): Prom
   if (typeof input === 'string') return rejected(input);
   // The neighbours are read before the change runs (the change itself is synchronous).
   const items = await listItems(ctx.env, documentId);
-  return writeItem(ctx, caller, itemId, (item, by) =>
-    applyMove(item, input, items, { now: Date.now(), by }),
-  );
-}
-
-async function vote(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'participate');
-  if (caller instanceof Response) return caller;
-  const body = await readBody(ctx);
-  if (body instanceof Response) return body;
-  if (body.delta !== 1 && body.delta !== -1) return badRequest('delta must be 1 or -1');
-  const delta = body.delta;
-  // A guest's +1 counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);
-  // taking a vote back never does.
-  if (delta === 1) {
-    const refused = await refuseGuestVoteOverCap(ctx, documentId, caller.owner);
-    if (refused) return refused;
-  }
-  return writeItem(ctx, caller, itemId, (item, by) =>
-    applyVote(item, by.id, delta, { now: Date.now(), by }),
+  return writeItem(
+    ctx,
+    caller,
+    itemId,
+    (item, by) => applyMove(item, input, items, { now: Date.now(), by }),
+    { undo: body.undo === true },
   );
 }
 
@@ -440,6 +328,10 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
   }
   if (segments.length === 5 && segments[4] === 'bulk')
     return method === 'POST' ? bulk(ctx, documentId) : methodNotAllowed();
+  if (segments.length === 5 && segments[4] === 'patches')
+    return method === 'POST' ? patches(ctx, documentId) : methodNotAllowed();
+  if (segments.length === 5 && segments[4] === 'tally')
+    return method === 'POST' ? tally(ctx, documentId) : methodNotAllowed();
   const itemId = segments[4]!;
   if (segments.length === 5) {
     // A field patch is a POST: the api's CORS (responses.ts) admits GET, POST, PUT and DELETE.
@@ -448,9 +340,11 @@ export async function handleItemRoutes(ctx: RouteContext): Promise<Response | nu
     return methodNotAllowed();
   }
   if (segments[5] === 'comments') return handleItemCommentRoutes(ctx, documentId, itemId);
-  if (segments.length === 6 && (segments[5] === 'move' || segments[5] === 'vote')) {
+  // A card is voted on through the tab's session vote, its tally added at the end (`/items/tally`); the old
+  // per-card vote route is gone (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards").
+  if (segments.length === 6 && segments[5] === 'move') {
     if (method !== 'POST') return methodNotAllowed();
-    return segments[5] === 'move' ? move(ctx, documentId, itemId) : vote(ctx, documentId, itemId);
+    return move(ctx, documentId, itemId);
   }
   return null;
 }

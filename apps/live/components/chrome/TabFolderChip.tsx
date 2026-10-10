@@ -167,7 +167,7 @@ export function TabFolderChip({
           onClick={toggle}
           onDoubleClick={readOnly ? undefined : () => setEditing(true)}
           aria-expanded={open}
-          aria-label={`${name} — ${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'}`}
+          aria-label={`${name}, ${tabs.length} ${tabs.length === 1 ? 'tab' : 'tabs'}`}
           className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-500 transition hover:bg-slate-200/70 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/60 dark:hover:text-slate-100"
         >
           <FolderGlyph open={open} />

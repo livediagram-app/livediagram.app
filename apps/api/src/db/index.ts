@@ -31,6 +31,7 @@ export * from './telemetry';
 export * from './timeline';
 export * from './collab-index';
 export * from './items';
+export * from './sheets';
 export * from './ws-tickets';
 export * from './trash';
 export * from './empty-document-sweep';

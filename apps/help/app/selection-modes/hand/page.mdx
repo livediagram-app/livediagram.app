@@ -18,19 +18,29 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("hand")}
 >
 
-The Hand mode lets you move your view of the canvas without touching the elements on it. Choose it from the mode picker at the top of the floating palette, or press **`H`**.
+The Hand mode lets you move your view of the canvas without touching the elements on it. Choose it from the tool picker at the start of the palette strip, or press **`H`**.
 
 ## Panning the canvas
 
-Grab the surface and drag to move your view in any direction. This is the quickest way to navigate a large canvas when the part you want is off-screen.
+Grab the surface and drag to move your view in any direction. This is the quickest way to navigate a large canvas when the part you want is off-screen. Zooming works as usual, with a pinch or the [zoom controls](/help/user-interface/zoom-controls/).
 
-<Figure caption="Hand mode is lit in the mode picker, and a grabbing-hand cursor pans the canvas.">
+<Figure caption="The palette's tool picker set to Hand, and a grabbing-hand cursor panning the canvas.">
   <HandMode />
 </Figure>
 
 ## Why a dedicated mode
 
-You can also pan while in Select mode by other means, but those rely on holding an extra key or button. The Hand mode makes panning the only thing a drag does, so there is no risk of accidentally moving an element while you are getting around the canvas.
+You can pan from any tool without switching: drag with the middle mouse button, hold `Space` and drag, or scroll with two fingers on a trackpad (see [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/)). Those all rely on an extra key, button or gesture. The Hand mode makes panning the only thing a plain drag does, so there is no risk of moving an element while you are getting around the canvas.
+
+## Where Hand is the starting tool
+
+- **On a phone**, the editor opens on Hand, so a one-finger drag moves the canvas rather than drawing a marquee.
+- **In [Plan mode](/help/canvas/plan-mode/)**, you start on Hand, because a board's cards handle clicks and drags themselves.
+- **An [embedded](/help/collaboration/sharing/embeds/) diagram** always opens on Hand.
+
+Press `V` or pick **Select** when you want to edit again.
+
+Hand is available everywhere: to view-only visitors (press `H`), and in [Draw mode](/help/canvas/draw-mode/), where `H` works even though the palette shows Draw's own tools.
 
 <Tip>
   Hand mode is handy when you are presenting or reviewing a busy canvas and want to scroll freely

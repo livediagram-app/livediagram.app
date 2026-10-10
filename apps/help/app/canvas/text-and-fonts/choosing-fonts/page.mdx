@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { FontPicker } from '@/components/illustrations/canvas';
+import { ElementFontMenu, LookAndFeelFont } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Choosing Fonts',
@@ -21,7 +21,7 @@ export const metadata = helpMetadata({
 
 livediagram gives you a curated set of eleven typefaces so a diagram can read as crisp, friendly, formal, or hand-drawn without becoming a font free-for-all. You can apply a font to one element or set it as the default for a whole tab, and the two levels work together so you only set what you actually want to override.
 
-## The eleven fonts
+## The Eleven Fonts
 
 The set spans a deliberate spread of voices:
 
@@ -37,21 +37,37 @@ The set spans a deliberate spread of voices:
 - **Caveat**: a handwriting face for a sketched, informal feel.
 - **Permanent Marker**: a marker-pen face for loud, hand-drawn emphasis.
 
-## Setting a font on one element
+Both pickers show each name in its own typeface, so you can see the voice before you choose it.
 
-To change a single element's typeface, open its inline text-editing controls and pick a font from the menu. Choosing a font sets it on that element alone; choosing the "Tab default" option clears the override so the element follows the tab again. Arrows are the exception: their text controls in the right-click menu cover styling, size, and colour, but offer no font picker.
+## Setting a Font on One Element
 
-<Figure caption="The font menu on a selected element, with one typeface highlighted to apply to that element alone.">
-  <FontPicker />
+Right-click the element (or press the **More** button on its toolbar, which is the way in on a touch screen), open **Text**, and expand **Font**. Click a tile to set that typeface on the element alone; with a mouse, hovering a tile previews it on the canvas first. The **Text** section only appears once the element has a label, so type something first. Select several elements and the same section sets the font on all of them at once.
+
+<Figure caption="The element menu's Text section, with the Font tiles open and one typeface chosen for this element alone.">
+  <ElementFontMenu />
 </Figure>
 
-## Setting a tab default
+Arrows are the exception: an arrow's **Caption** section covers bold, italic, underline, strikethrough, size and colour, but offers no font picker, so an arrow's caption follows the tab's font.
 
-To set the typeface for everything on a tab at once, open **Tab Look & Feel** from the paintbrush button in the bottom-right corner and switch to its **Font** tab. This sets the default for every text element on the tab that has not chosen its own font. The same tab lets you set a default text size for new elements, which is copied onto each element as you add it, so changing the default later never resizes the shapes already on your canvas. A fresh canvas starts at a compact small size by default.
+## Setting a Tab Default
 
-## How the levels combine
+To set the typeface for everything on a tab at once, click the paintbrush button in the bottom-right corner of the editor to open the **Tab Look & Feel** dialog, and switch to its **Font** tab. (Running **Open theme** from the [command palette](/help/search-panel/the-search-panel/command-palette/) opens the same dialog.)
 
-Any piece of text resolves its font in order: an element's own font wins first, then the tab's default, then livediagram's built-in fallback. Arrows follow the same rules: there is no font picker for them, so they normally use the tab default, but a font applied another way (for example with the [format painter](/help/selection-modes/format-painter/)) sticks to the arrow like any other override. This means you can set one tab-wide typeface and only override the few labels you want to stand out.
+<Figure caption="The Font tab of the Tab Look & Feel dialog: the tab font, the default size for new elements, and Apply to all elements.">
+  <LookAndFeelFont />
+</Figure>
+
+- **Tab font** sets the default for every text element on the tab that has not chosen its own font. **Default** clears it, back to livediagram's built-in face.
+- **Default size for new elements** (**Scale**, **Small**, **Medium** or **Large**) is copied onto each element as you add it, so changing it later never resizes the shapes already on your canvas. A new document starts at Small, and a tab you add takes the font and size of the tab you added it from.
+- **Apply to all elements** pushes the tab's font and size onto everything already on the tab, clearing each element's own font so they all follow the tab again. It is the way to undo per-element font choices in one go.
+
+Every change applies live, and undo covers it like any other edit.
+
+## How the Levels Combine
+
+Any piece of text resolves its font in order: an element's own font wins first, then the tab's default, then livediagram's built-in face. (Notes on an [event storming board](/help/canvas/event-storming-boards/) are the one twist: they are written in a marker face unless you give them a font of your own.) Arrows follow the same rules: there is no font picker for them, so they normally use the tab default, but a font applied another way (for example with the [format painter](/help/selection-modes/format-painter/)) sticks to the arrow like any other override. This means you can set one tab-wide typeface and only override the few labels you want to stand out.
+
+Fonts travel with your work: exports to PNG, SVG and PDF carry the faces you used.
 
 <Tip>
   Text stays visible in a fallback face while a font loads, so your diagram is always readable, even

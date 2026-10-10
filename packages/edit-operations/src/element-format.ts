@@ -104,9 +104,9 @@ export const SHAPE_COMMON_FIELDS = [
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
   entity: ['entityFields'],
-  'pie-chart': ['pieSlices', 'chartLegend', 'chartPalette'],
-  'bar-chart': ['pieSlices', 'chartLegend', 'chartPalette'],
-  'line-chart': ['lineCategories', 'lineSeries', 'chartLegend', 'chartPalette'],
+  'pie-chart': ['pieSlices', 'chartLegend', 'chartPalette', 'chartSource'],
+  'bar-chart': ['pieSlices', 'chartLegend', 'chartPalette', 'chartSource'],
+  'line-chart': ['lineCategories', 'lineSeries', 'chartLegend', 'chartPalette', 'chartSource'],
   checklist: ['checklistItems'],
   lane: ['headerFill', 'headerSize', 'titleOrientation'],
   frame: ['headerFill', 'headerSize'],
@@ -135,6 +135,8 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'plan-card': ['planCard'],
   // docs/specs/026-plan/plan-views.md: which view of the cards it shows.
   'plan-view': ['planView'],
+  // docs/specs/029-sheets/sheet.md: the sheet it frames; cells change through the sheet verbs.
+  'plan-sheet': ['planSheet'],
 };
 
 function storedFieldsOf(kind: string, el: Element): readonly string[] {

@@ -30,6 +30,7 @@ import {
   type BendPlan,
   type DistributionGuide,
   type Element,
+  type LaidOutPage,
 } from '@livediagram/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { repinnedArrow } from './arrow-repin';
@@ -54,6 +55,8 @@ export type ArrowDragMoveArgs = {
   elements: Element[];
   // The alignment-guides preference (docs/specs/008-canvas/snap-override.md). Off means no guide lines.
   guidesOn: boolean;
+  // Illustrate mode's pages: an endpoint joins nothing on another page (resolveArrowEndpointDrag).
+  pages?: readonly LaidOutPage[] | null;
   tick: (mapper: (els: Element[]) => Element[]) => void;
   scheduleGuides: (align: AlignmentGuide[], dist?: DistributionGuide[]) => void;
   scheduleSnapTargets: (targets: SnapTarget[]) => void;
@@ -206,6 +209,7 @@ export function applyArrowDragMove(args: ArrowDragMoveArgs): void {
     end: drag.end,
     noSnap,
     guidesOn,
+    pages: args.pages,
   });
   scheduleSnapTargets(snapTargets);
   scheduleGuides(guides);

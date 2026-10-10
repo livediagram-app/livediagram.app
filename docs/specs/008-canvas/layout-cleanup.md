@@ -6,6 +6,17 @@ tidiers. They are complementary, not duplicates: one snaps current positions, th
 other recomputes them from the graph. Both are editor-only (they mutate) and run a
 single undoable operation.
 
+## Locked elements stay put
+
+Neither tidier moves or resizes a **locked element** or anything on a **locked layer**
+([Layers](../006-document/layers.md)): a lock means "protected from moves and resizes",
+and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects those ids
+(`lockedElementIds`) and hands them to both passes. Auto-align leaves them unsnapped.
+Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
+not edges and it is never placed, and a locked arrow keeps its anchors; the unlocked part
+of the graph is laid out around it as if it were not there, so the new block can land
+over a locked element (unlock it first to have it laid out with the rest).
+
 ## Auto-align (grid snap)
 
 `autoAlignElements` (`apps/live/lib/auto-align.ts`). A **structure-blind grid

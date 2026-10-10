@@ -28,9 +28,16 @@ import { buildBeforeAfter, buildFeatureMatrix, buildProsCons } from './page-layo
 import { buildAnnouncement, buildDidYouKnow, buildSaveTheDate } from './page-layouts-social';
 import { buildCycle, buildFunnel, buildPictogram, buildRanking } from './page-layouts-figures';
 
+import type { LogoLayoutId } from './logo-layouts';
+import type { SlideLayoutId } from './slide-layouts';
+
 export type { LayoutBox } from './page-layout-kit';
 
+// Every layout's id: the infographic layouts', the slide layouts' (SlideLayoutId) and the logo
+// layouts' (LogoLayoutId).
 export type PageLayoutId =
+  | SlideLayoutId
+  | LogoLayoutId
   | 'title'
   | 'big-number'
   | 'key-stats'
@@ -428,21 +435,21 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'title',
     category: 'covers',
-    label: 'Title page',
+    label: 'Title Page',
     description: 'A big title, a subtitle, an image and a footer line',
     build: (b) => titlePage(kit(b)),
   },
   {
     id: 'big-number',
     category: 'data',
-    label: 'Big number',
+    label: 'Big Number',
     description: 'One huge figure, its caption and a short paragraph',
     build: (b) => bigNumber(kit(b)),
   },
   {
     id: 'key-stats',
     category: 'data',
-    label: 'Key stats',
+    label: 'Key Stats',
     description: 'Two rows of three figures and a takeaway',
     build: (b) => keyStats(kit(b)),
   },
@@ -470,14 +477,14 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'chart-story',
     category: 'data',
-    label: 'Chart story',
+    label: 'Chart Story',
     description: 'A bar chart, a progress ring and three takeaways',
     build: (b) => chartStory(kit(b)),
   },
   {
     id: 'top-tips',
     category: 'people',
-    label: 'Top tips',
+    label: 'Top Tips',
     description: 'Five tips, each an icon beside a line',
     build: (b) => topTips(kit(b)),
   },
@@ -498,7 +505,7 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'facts-grid',
     category: 'data',
-    label: 'Facts grid',
+    label: 'Facts Grid',
     description: 'Six cards, each an icon, a figure and a caption',
     build: buildFactsGrid,
   },
@@ -519,7 +526,7 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'section-divider',
     category: 'covers',
-    label: 'Section divider',
+    label: 'Section Divider',
     description: 'A big section number, a title and a line on what follows',
     build: buildSectionDivider,
   },
@@ -533,14 +540,14 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'survey-results',
     category: 'data',
-    label: 'Survey results',
+    label: 'Survey Results',
     description: 'A pie chart of the answers and three headline figures',
     build: buildSurveyResults,
   },
   {
     id: 'progress-report',
     category: 'data',
-    label: 'Progress report',
+    label: 'Progress Report',
     description: 'Four goals, each with a progress bar',
     build: buildProgressReport,
   },
@@ -561,7 +568,7 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'questions',
     category: 'people',
-    label: 'Questions and answers',
+    label: 'Questions and Answers',
     description: 'Four questions and their answers',
     build: buildQuestions,
   },
@@ -575,21 +582,21 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'pros-cons',
     category: 'compare',
-    label: 'Pros and cons',
+    label: 'Pros and Cons',
     description: 'Four pros and four cons side by side, and a verdict',
     build: buildProsCons,
   },
   {
     id: 'before-after',
     category: 'compare',
-    label: 'Before and after',
+    label: 'Before and After',
     description: 'Two panels, an image and three points each, and the change in one figure',
     build: buildBeforeAfter,
   },
   {
     id: 'feature-matrix',
     category: 'compare',
-    label: 'Feature matrix',
+    label: 'Feature Matrix',
     description: 'Three options against five features, ticks and dashes, one recommended',
     build: buildFeatureMatrix,
   },
@@ -603,14 +610,14 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
   {
     id: 'did-you-know',
     category: 'social',
-    label: 'Did you know?',
+    label: 'Did You Know?',
     description: 'One surprising fact, set large under an icon, with its source',
     build: buildDidYouKnow,
   },
   {
     id: 'save-the-date',
     category: 'social',
-    label: 'Save the date',
+    label: 'Save the Date',
     description: 'The date in a calendar tile, the event and where',
     build: buildSaveTheDate,
   },
@@ -643,7 +650,3 @@ export const PAGE_LAYOUTS: readonly PageLayout[] = [
     build: buildFunnel,
   },
 ];
-
-export function pageLayoutById(id: PageLayoutId): PageLayout {
-  return PAGE_LAYOUTS.find((l) => l.id === id)!;
-}

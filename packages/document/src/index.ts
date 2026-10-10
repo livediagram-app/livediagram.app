@@ -70,6 +70,7 @@ export type {
   LinkCardElement,
   VideoElement,
   PlanCardRef,
+  PlanSheetRef,
   PlanViewRef,
 } from './element-types';
 
@@ -283,9 +284,9 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
-  // The editor mode a general tab OPENS in (docs/specs/007-editor/editor-modes.md "Where the mode
-  // lives"): a person who has not switched on this tab sees it in this mode. Absent = 'diagram'
-  // (read via `opensInOf`); switching never changes it.
+  // The tab's editor mode, the same for everyone on it and the mode it opens in
+  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
+  // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
   opensIn?: EditorMode;
   // Illustrate mode's pages (docs/specs/007-editor/editor-modes.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
@@ -302,6 +303,10 @@ export type Tab = {
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
   esLanesSettled?: boolean;
+  // The colours someone picked with + in a colour picker on this tab, newest first, lower-case
+  // `#rrggbb` (docs/specs/004-interface-design/colour-picker.md "Custom colours"). Read via
+  // `customColoursOf`; every picker in the document offers them as Custom Colours.
+  customColours?: string[];
   elements: Element[];
   backgroundPattern?: BackgroundPattern;
   backgroundColor?: string;
@@ -369,12 +374,26 @@ export type Tab = {
 
 // --- Type guards -----------------------------------------------------------
 
-export { takesTypedLabel } from './element-types';
+export {
+  isPlanSheetRef,
+  newPlanSheetId,
+  PLAN_SHEET_ID_PATTERN,
+  takesTypedLabel,
+} from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
 export * from './illustrate-page';
+export * from './illustrate-page-fit';
+export * from './page-lock';
+export * from './page-of';
+export * from './logo-page';
+export * from './element-mirror';
+export * from './element-symmetry';
+export * from './logo-guide-snap';
+export * from './wordmark';
 export * from './illustrate-page-content';
 export * from './illustrate-paginate';
+export * from './editor-mode-switch';
 export * from './article-flow';
 export * from './article-flow-ops';
 export * from './article-pages';
@@ -435,6 +454,7 @@ export function elementSupportsText(element: Element): boolean {
 
 // --- Re-exported resource modules -----------------------------------------
 export * from './animation';
+export * from './animation-membership';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
 export * from './mind-flow';
@@ -457,6 +477,8 @@ export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
+// Which elements can be rotated (an annotation marker cannot).
+export * from './rotation';
 export * from './shape-marker';
 // Selection modes a Mode Button can switch to (docs/specs/009-elements/mode-button.md).
 export * from './selection-mode';
@@ -471,7 +493,15 @@ export * from './item-comments';
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';
+export * from './export-tab-plan';
+export * from './plan-board-layout';
 export * from './comment-mentions';
+// The shared plain-object guard for untrusted JSON.
+export * from './is-record';
+// The shared FNV-1a string hash for deterministic picks.
+export * from './string-hash';
+// The shared count-with-noun wording.
+export * from './plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
@@ -479,6 +509,7 @@ export * from './entity-geometry';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
+export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
@@ -522,6 +553,8 @@ export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';
 export * from './pen-colours';
+export * from './standard-colours';
+export * from './custom-colours';
 export * from './stock-colours';
 export * from './snap-colours';
 export * from './path-geometry';
@@ -532,6 +565,7 @@ export * from './table';
 // Runtime structural validation for Element + Tab (the trust-boundary guard
 // the API uses to vet incoming tabs / documents). See validate.ts.
 export * from './validate';
+export * from './savable';
 
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
@@ -555,6 +589,7 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
@@ -579,6 +614,9 @@ export * from './anchor-layouts';
 export * from './shape-outline';
 export * from './svg-path-outline';
 export * from './shape-hit';
+// The band a shape's label sits in (docs/specs/008-canvas/canvas-and-palette.md "Shape primitives").
+export * from './label-body';
+export * from './shape-area';
 export * from './indicator-placement';
 export * from './anchor-choice';
 export * from './geometry';

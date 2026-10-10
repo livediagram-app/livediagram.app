@@ -8,6 +8,7 @@
 // context menu / toolbar / header calls), so behaviour + telemetry can't
 // drift between entry points.
 
+import type { CombineOp } from './combine/combine';
 import {
   AUTO_LAYOUT_CHOICES,
   AUTO_LAYOUT_STYLE_IDS,
@@ -37,6 +38,14 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
+  // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
+  // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
+  singleRotates: boolean;
+  // True when the selection is combinable shapes on one logo page
+  // (docs/specs/007-editor/logo-pages.md "Combine"). Gates the four Combine commands.
+  canCombine?: boolean;
+  // True when the selection has an element on a logo page to reflect (Mirror Copy).
+  canMirrorCopy?: boolean;
   // True when the single selection is a plain shape (markers are shape-only).
   singleIsShape: boolean;
   // True when the single selection already carries a looping animation
@@ -51,6 +60,9 @@ export type CommandContext = {
   // Offline document (docs/specs/006-document/offline-mode.md): nothing on the server to share, so the Share
   // command is withheld even though the session counts as the owner's.
   isOffline: boolean;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
+  // no ownership powers, so neither Share nor Delete document.
+  workbench?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
   canvasTool: string;
@@ -83,6 +95,8 @@ export type CommandHandlers = {
   bringToFront: () => void;
   sendToBack: () => void;
   rotate: (deg: number) => void;
+  combine: (op: CombineOp) => void;
+  mirrorCopy: () => void;
   clearAnimation: () => void;
   setMarker: (marker: ShapeMarker | null) => void;
   addComment: () => void;
@@ -303,12 +317,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'rename document diagram title name relabel',
     run: h.renameDocument,
   });
-  out.push({
-    id: 'delete-document',
-    name: 'Delete document',
-    keywords: 'delete document diagram remove trash destroy',
-    run: h.deleteDocument,
-  });
+  if (!ctx.workbench) {
+    out.push({
+      id: 'delete-document',
+      name: 'Delete document',
+      keywords: 'delete document diagram remove trash destroy',
+      run: h.deleteDocument,
+    });
+  }
   out.push({
     id: 'open-theme',
     name: 'Open theme',
@@ -321,7 +337,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'canvas background pattern grid options style backdrop',
     run: h.openCanvasOptions,
   });
-  if (ctx.isOwner && !ctx.isOffline) {
+  if (ctx.isOwner && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
       name: 'Share document',

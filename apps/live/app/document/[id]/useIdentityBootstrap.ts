@@ -1,6 +1,7 @@
 import type { ItemTypeCatalogue } from '@livediagram/items';
 import {
   useLayoutEffect,
+  useRef,
   type Dispatch,
   type MutableRefObject,
   type SetStateAction,
@@ -31,8 +32,26 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
+import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
+import { track } from '@/lib/telemetry';
+import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
+import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
+import type { WorkbenchSession } from '@/components/providers/workbench-session-context';
+import { loadWorkbenchDocument } from './workbench-bootstrap';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
+
+// Every function of `fns`, doing nothing once `live` says its run was superseded.
+function guardRun<T extends object>(fns: T, live: () => boolean): T {
+  return new Proxy(fns, {
+    get: (target, name) => {
+      const fn: unknown = Reflect.get(target, name);
+      return typeof fn === 'function'
+        ? (...args: unknown[]) => (live() ? fn(...args) : undefined)
+        : fn;
+    },
+  });
+}
 
 // One-shot identity + document hydration (Clerk gate -> guest id ->
 // participant -> document/share/password resolution -> tab seeding),
@@ -49,6 +68,9 @@ export function useIdentityBootstrap(opts: {
   clerkDisplayName: string | null | undefined;
   // The read-only embed view (docs/specs/013-workspace/embeds.md): its reads are not opens.
   embed: boolean;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md): the session
+  // names the document and the person; see workbench-bootstrap.ts.
+  workbench: WorkbenchSession | null;
   activeId: string;
   selfParticipant: Participant;
   refreshDocumentList: (ownerId: string) => void;
@@ -105,11 +127,9 @@ export function useIdentityBootstrap(opts: {
     clerkUserId,
     clerkDisplayName,
     embed,
+    workbench,
     activeId,
     selfParticipant,
-    refreshDocumentList,
-    refreshSharedList,
-    resetTabs,
     refs,
     set,
   } = opts;
@@ -120,67 +140,10 @@ export function useIdentityBootstrap(opts: {
     loadedTabIdsRef,
     noteChangesetSeen,
   } = refs;
-  const {
-    setActiveId,
-    setDocumentId,
-    setDocumentName,
-    setDocumentPresentation,
-    setDocumentItemTypes,
-    setDocumentNotFound,
-    setLoadError,
-    setDocumentTrashed,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
-    setDocumentOwnerName,
-    setDocumentShareable,
-    setDocumentShareCode,
-    setDocumentTeamId,
-    setDocumentServerStored,
-    setHydrated,
-    setIsOwner,
-    setLoadedExistingDocument,
-    setLoadedTabIds,
-    setLoadingDocument,
-    setNameConfirmed,
-    setSelfParticipant,
-    setSessionRole,
-    setSessionShareCode,
-    setSessionCommunity,
-    setSessionTabScope,
-    setSharedDocuments,
-    setShareLinks,
-    setSharePasswordSet,
-    setSharePasswordGate,
-    setTemplatePickerMode,
-  } = set;
-
-  // The tab-seeding + owner-field body both arrival branches share —
-  // see seed-fetched-document.ts.
-  const seedFetchedDocument = makeSeedFetchedDocument({
-    activeId,
-    // An embed's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
-    recordOpen: !embed,
-    resetTabs,
-    lastSavedTabsRef,
-    lastSavedNameRef,
-    loadedTabIdsRef,
-    noteChangesetSeen,
-    setActiveId,
-    setDocumentName,
-    setDocumentPresentation,
-    setDocumentItemTypes,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
-    setDocumentOwnerName,
-    setDocumentShareable,
-    setDocumentShareCode,
-    setDocumentTeamId,
-    setLoadedExistingDocument,
-    setLoadedTabIds,
-  });
 
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
+  const runRef = useRef(0);
   const bootstrap = useEffectEvent(() => {
     if (hydrated) return;
     // Wait for Clerk to determine the auth state before bootstrapping.
@@ -189,11 +152,146 @@ export function useIdentityBootstrap(opts: {
     // subsequent document load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
     if (!authLoaded) return;
+    // A later run (auth settling twice: Clerk answering after the guest timeout, then a guest migration) supersedes
+    // this one: a superseded run's writes are dropped, so a stale guest-identity load never overwrites the newer one.
+    const generation = ++runRef.current;
+    const live = () => runRef.current === generation;
+    const resetTabs = guardRun({ resetTabs: opts.resetTabs }, live).resetTabs;
+    const { refreshDocumentList, refreshSharedList } = guardRun(
+      { refreshDocumentList: opts.refreshDocumentList, refreshSharedList: opts.refreshSharedList },
+      live,
+    );
+    const {
+      setActiveId,
+      setDocumentId,
+      setDocumentName,
+      setDocumentPresentation,
+      setDocumentItemTypes,
+      setDocumentNotFound,
+      setLoadError,
+      setDocumentTrashed,
+      setDocumentOwnerColor,
+      setDocumentOwnerId,
+      setDocumentOwnerName,
+      setDocumentShareable,
+      setDocumentShareCode,
+      setDocumentTeamId,
+      setDocumentServerStored,
+      setHydrated,
+      setIsOwner,
+      setLoadedExistingDocument,
+      setLoadedTabIds,
+      setLoadingDocument,
+      setNameConfirmed,
+      setSelfParticipant,
+      setSessionRole,
+      setSessionShareCode,
+      setSessionCommunity,
+      setSessionTabScope,
+      setSharedDocuments,
+      setShareLinks,
+      setSharePasswordSet,
+      setSharePasswordGate,
+      setTemplatePickerMode,
+    } = guardRun(set, live);
+
+    // The tab-seeding + owner-field body both arrival branches share —
+    // see seed-fetched-document.ts.
+    const seedOnce = makeSeedFetchedDocument({
+      activeId,
+      // An embed's or a workbench's read is not an open (docs/specs/013-workspace/explorer-home.md "Opens").
+      recordOpen: !embed && workbench === null,
+      resetTabs,
+      lastSavedTabsRef,
+      lastSavedNameRef,
+      loadedTabIdsRef,
+      noteChangesetSeen,
+      setActiveId,
+      setDocumentName,
+      setDocumentPresentation,
+      setDocumentItemTypes,
+      setDocumentOwnerColor,
+      setDocumentOwnerId,
+      setDocumentOwnerName,
+      setDocumentShareable,
+      setDocumentShareCode,
+      setDocumentTeamId,
+      setLoadedExistingDocument,
+      setLoadedTabIds,
+    });
+    // The seed writes refs too (the saved tabs, the loaded ids): a superseded run never starts one.
+    const seedFetchedDocument: typeof seedOnce = async (...args) => {
+      if (live()) await seedOnce(...args);
+    };
     // Daily-active-returns signal (docs/specs/017-telemetry/telemetry.md): once auth has settled we
     // know whether this open is a guest or a signed-in user. Fire-and-
     // forget, gated to once per browser per UTC day inside the helper,
     // so it's safe to run on every editor mount.
     trackDailyReturn(!!clerkUserId);
+    // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
+    // the load-error screen (after one self-healing reload per tab), and a load that lands after it
+    // replaces that screen with the editor.
+    const armWatchdog = () =>
+      armLoadWatchdog(
+        () => {
+          setLoadError(true);
+          setLoadingDocument(false);
+        },
+        { warn: (type) => track('Error', 'Warning', type) },
+      );
+    // How long the document took to open (docs/specs/017-telemetry/timing-telemetry.md): from when it
+    // was asked for to the first frame painted after the load reached `done`. A password retry is not
+    // timed (its wait is a person typing), and a load that failed, never got there, or was superseded
+    // by a later run records nothing.
+    const run = (watchdog: ReturnType<typeof armLoadWatchdog>, load: () => Promise<void>) =>
+      void (async () => {
+        const timing =
+          passwordRetry === 0
+            ? startEditorTiming('DocumentLoad', { from: documentLoadOrigin() })
+            : null;
+        try {
+          await load();
+          if (live() && getLoadProgress().step === 'done') timing?.endAfterPaint();
+          else timing?.cancel();
+        } catch (err) {
+          timing?.cancel();
+          // Anything the load throws outside its handled branches ends on the load-error screen, never
+          // on the opening screen forever.
+          console.error('[load] the document load threw', err);
+          track('Error', 'Client', errorTypeToken('DocumentLoad', errorNameToken(err)));
+          setLoadError(true);
+          setLoadingDocument(false);
+        } finally {
+          watchdog.finish();
+          if (live()) noteDocumentLoadEnded();
+        }
+      })();
+    if (workbench) {
+      const watchdog = armWatchdog();
+      run(watchdog, async () => {
+        await loadWorkbenchDocument({
+          workbench,
+          seed: seedFetchedDocument,
+          lastPersistedSelfRef,
+          set: {
+            setSelfParticipant,
+            setDocumentId,
+            setDocumentTrashed,
+            setLoadError,
+            setDocumentNotFound,
+            setDocumentServerStored,
+            setIsOwner,
+            setSessionRole,
+            setNameConfirmed,
+            setHydrated,
+            setLoadingDocument,
+          },
+        });
+        setLoadStep('done');
+        if (watchdog.finish()) setLoadError(false);
+      });
+      return;
+    }
     // The post-mount hydration is async (the API is HTTP) so we run it
     // inside an IIFE. UI stays at the placeholder during the fetch;
     // the welcome modal is gated on `hydrated` so it doesn't flash the
@@ -230,7 +328,8 @@ export function useIdentityBootstrap(opts: {
       window.location.assign(`${window.location.origin}/new`);
       return;
     }
-    void (async () => {
+    const watchdog = armWatchdog();
+    const load = async () => {
       const id = initialId;
       const shareCodeParam = initialShareCode;
 
@@ -251,6 +350,7 @@ export function useIdentityBootstrap(opts: {
         // migrate can prove possession. Falls back to a local unsigned id
         // offline. See docs/specs/014-identity/auth-and-guest-access.md + lib/guest-identity.ts.
         const selfId = clerkUserId ?? (await ensureSignedGuestIdentity()).id;
+        setLoadStep('participant');
         const storedSelf = await apiLoadSelf(selfId).catch(() => null);
         // Signed-in users always use their Clerk-known name on the
         // participant record. For a brand-new participant (no storedSelf)
@@ -316,6 +416,7 @@ export function useIdentityBootstrap(opts: {
         // their visit into shared_with — without it the server can't
         // identify the visitor and the "Shared with you" list stays
         // empty forever.
+        setLoadStep('share');
         let resolution;
         try {
           resolution = await apiLoadShared(shareCodeParam, self.id);
@@ -388,6 +489,7 @@ export function useIdentityBootstrap(opts: {
           // Scope first: seeding makes the scoped tab active, and the active-tab
           // guard refuses any other (docs/specs/013-workspace/tab-scoped-share-links.md).
           setSessionTabScope(scopeTabId);
+          setLoadStep('first-tab');
           await seedFetchedDocument(self.id, fetched, codeForVisitor, scopeTabId);
           // A share link always opens a server document: it has a room.
           setDocumentServerStored(true);
@@ -450,6 +552,7 @@ export function useIdentityBootstrap(opts: {
           // here counted every refresh and return visit.
         }
       } else if (id) {
+        setLoadStep('document');
         let fetched;
         try {
           fetched = await apiLoadDocument(self.id, id);
@@ -485,6 +588,7 @@ export function useIdentityBootstrap(opts: {
         // Tab seeding + name + owner fields (shared with the visitor
         // branch above) — see seed-fetched-document.ts. The owner's
         // eager first-tab fetch presents no share code.
+        setLoadStep('first-tab');
         await seedFetchedDocument(self.id, fetched, null, null);
         // An offline document (docs/specs/006-document/offline-mode.md) is yours by construction — its
         // ownerId is the local sentinel, never a participant id, so
@@ -527,7 +631,11 @@ export function useIdentityBootstrap(opts: {
       // manual fetch needed here.
       setHydrated(true);
       setLoadingDocument(false);
-    })();
+      // A load that outlived its watchdog replaces the load-error screen it put up.
+      setLoadStep('done');
+      if (watchdog.finish()) setLoadError(false);
+    };
+    run(watchdog, load);
   });
   useLayoutEffect(() => {
     bootstrap();

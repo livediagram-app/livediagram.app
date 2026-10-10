@@ -27,6 +27,7 @@ import { useTableStructure } from '@/components/canvas/useTableStructure';
 import { useTableEditing } from '@/components/canvas/useTableEditing';
 import { useTableCellInput } from '@/components/canvas/useTableCellInput';
 import { useTableAxisResize } from '@/components/canvas/useTableAxisResize';
+import { useTableAnimation } from '@/components/canvas/useTableAnimation';
 import { useTableCellSelection } from '@/components/canvas/useTableCellSelection';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
@@ -211,6 +212,16 @@ export function TableView({
 
   const stroke = element.strokeColor ?? defaultStrokeColor(element, surface);
   const textColor = element.textColor ?? defaultTextColor(element, surface);
+  // Table and Text animations (docs/specs/028-animation/element-animations.md); the words stand
+  // still while a cell is being edited.
+  const tableAnim = useTableAnimation(element, textColor, editing !== null);
+  // The grid is keyed by the Table animation, so switching cascades restarts it (they share a
+  // keyframe name). The key holds while a cell is being edited: a remount would drop the cell
+  // editor's draft (it commits on blur, which an unmount never fires), say when a collaborator or
+  // an undo changes the animation mid-edit. The restart waits for the edit to end.
+  const liveGridKey = tableAnim.gridClass ?? 'still';
+  const [gridKey, setGridKey] = useState(liveGridKey);
+  if (editing === null && gridKey !== liveGridKey) setGridKey(liveGridKey);
   // Grid line width + pattern from the Border accordion (default thin
   // solid). 'none' (0px) hides the grid lines entirely.
   const borderW = BORDER_STROKE_PX[element.strokeWidth ?? 'thin'];
@@ -310,6 +321,9 @@ export function TableView({
   // Shared per-render bundle for TableCellView — see TableCellCtx.
   const cellCtx: TableCellCtx = {
     element,
+    animated: !!tableAnim.gridClass,
+    textAnim: tableAnim.textAnim,
+    textStarts: tableAnim.textStarts,
     rows,
     cols,
     showControls,
@@ -357,8 +371,10 @@ export function TableView({
         aria-label={`Table, ${rows} rows by ${cols} columns`}
         aria-rowcount={rows}
         aria-colcount={cols}
-        className="absolute inset-0 grid overflow-hidden"
+        key={gridKey}
+        className={`absolute inset-0 grid overflow-hidden ${tableAnim.gridClass ?? ''}`}
         style={{
+          ...tableAnim.gridStyle,
           gridTemplateColumns: colTemplate,
           gridTemplateRows: rowTemplate,
           border: gridBorder,

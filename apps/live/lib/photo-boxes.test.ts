@@ -92,4 +92,23 @@ describe('boxesFromLabel', () => {
   it('refuses a file that is not a label', () => {
     expect(() => boxesFromLabel({ photo: 'wall' } as never, 'wall.jpg', frame)).toThrow(/label/i);
   });
+
+  it('refuses a note of an unknown kind or with a box that is not on the photo', () => {
+    const withNote = (note: Record<string, unknown>) =>
+      ({
+        ...label,
+        notes: [{ x: 0.1, y: 0.1, w: 0.1, h: 0.1, kind: 'command', ...note }],
+      }) as never;
+    for (const bad of [
+      { kind: 'bogus' },
+      { x: undefined },
+      { w: 2 },
+      { h: Number.NaN },
+      { text: 5 },
+    ]) {
+      expect(() => boxesFromLabel(withNote(bad), 'wall.jpg', frame), JSON.stringify(bad)).toThrow(
+        /not a saved label/,
+      );
+    }
+  });
 });

@@ -5,6 +5,7 @@
 // no handlers, no setters, nothing here mutates state.
 
 import { useCallback, useMemo } from 'react';
+import { useLocalBesideTab, useRemoteBesideTabs } from '@/lib/split-presence';
 import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
@@ -107,6 +108,9 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   const ownPicture = useDeferredAuth().user?.pictureUrl ?? null;
   // Agents fold in after (docs/specs/024-agents/agent-presence.md "In the editor"): their status lines on their
   // owners' rows, or rows of their own; a personal document's stack shows while one is present.
+  // Side by side (docs/specs/007-editor/split-view.md "Presence"): the tab in each person's other pane.
+  const remoteBesideTabs = useRemoteBesideTabs();
+  const selfBesideTabId = useLocalBesideTab();
   const shownSelf = ownPicture ? { ...selfParticipant, picture: ownPicture } : selfParticipant;
   const participantsByTab = foldAgentPresence({
     participantsByTab: buildParticipantsByTab({
@@ -117,6 +121,8 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
       selfParticipant: shownSelf,
       tabs,
       remoteTabFocus,
+      remoteBesideTabs,
+      selfBesideTabId,
       livePresence,
       livePresenceById,
       lastSeen: presenceClock.lastSeen,

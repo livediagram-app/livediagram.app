@@ -77,6 +77,24 @@ export function boxesFromLabel(
   if (typeof label?.photo !== 'string' || !Array.isArray(label.notes)) {
     throw new Error('That file is not a saved label.');
   }
+  // A label file is untrusted: every note needs a known kind and a box inside the photo (fractions from
+  // 0 to 1), or the file is refused whole. An unknown kind made Add throw; a missing number made NaN notes.
+  const unit = (v: unknown) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
+  for (const note of label.notes as unknown[]) {
+    const n = note as Record<string, unknown> | null;
+    if (
+      !n ||
+      typeof n.kind !== 'string' ||
+      !SIZE_OF.has(n.kind) ||
+      !unit(n.x) ||
+      !unit(n.y) ||
+      !unit(n.w) ||
+      !unit(n.h) ||
+      (n.text !== undefined && typeof n.text !== 'string')
+    ) {
+      throw new Error('That file is not a saved label.');
+    }
+  }
   const stem = photoName.replace(/\.[^.]+$/, '');
   if (label.photo !== stem) {
     throw new Error(`That label is for "${label.photo}", and this photo is "${stem}".`);

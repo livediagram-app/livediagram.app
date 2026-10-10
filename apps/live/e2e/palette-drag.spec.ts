@@ -1,21 +1,12 @@
 import type { Page } from '@playwright/test';
 import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
 
-// Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Toolbar layout's strip
+// Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Palette strip
 // (docs/specs/007-editor/toolbar-layout.md): a tile in a category's More popover drags onto the canvas
 // like the tile it stands for, whatever its catalogue: a shape from Shapes' full body, a line icon and
 // a sticker found by searching their own catalogue's body.
 
 const CANVAS = '[data-canvas-a11y-root]';
-
-async function openToolbarBoard(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const key = 'livediagram:user-preferences:v1';
-    const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
-    localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout: 'toolbar' }));
-  });
-  await openStartBlank(page);
-}
 
 // The strip on a category, then its More popover open, searched when the body has a search field.
 async function openMore(page: Page, category: string, query?: string): Promise<void> {
@@ -49,7 +40,7 @@ test.describe('Toolbar strip drag', () => {
       page,
       pageErrors,
     }) => {
-      await openToolbarBoard(page);
+      await openStartBlank(page);
       await openMore(page, category, query);
       await expect(placed(page, placedAs)).toHaveCount(0);
       await dragTileOntoCanvas(page, tile, { x: 300, y: 500 });

@@ -147,6 +147,32 @@ describe("the first page's own choice of kind", () => {
     expect(articlesOf(art).f!.blocks.length).toBeGreaterThan(0);
     expect(withPageKindChosen(art, 'p1', 'article', 'g')).toBeNull();
   });
+  it('gives an article chosen on a page in a slide size the A4 an article can have', () => {
+    const wide = [{ ...only[0]!, orientation: 'landscape', size: 'slide' }] as IllustratePage[];
+    const art = withPageKindChosen({ elements: [], pages: wide }, 'p1', 'article', 'f')!;
+    expect(art.pages[0]!.size).toBeUndefined();
+    const square = [{ ...only[0]!, size: 'square' }] as IllustratePage[];
+    expect(
+      withPageKindChosen({ elements: [], pages: square }, 'p1', 'article', 'f')!.pages[0]!.size,
+    ).toBe('square');
+  });
+  it('turns the page into a 16:9 landscape slide, keeping its name and background', () => {
+    const named = [
+      { ...only[0]!, name: 'Intro', background: { fill: { kind: 'solid', color: '#0f172a' } } },
+    ] as IllustratePage[];
+    const slide = withPageKindChosen({ elements: [], pages: named }, 'p1', 'slide', 'f')!;
+    expect(slide.pages).toEqual([
+      {
+        id: 'p1',
+        orientation: 'landscape',
+        size: 'slide',
+        kind: 'slide',
+        name: 'Intro',
+        background: { fill: { kind: 'solid', color: '#0f172a' } },
+      },
+    ]);
+    expect(withPageKindChosen(slide, 'p1', 'slide', 'g')).toBeNull();
+  });
 });
 
 describe('a duplicated article keeps its margin notes to itself', () => {

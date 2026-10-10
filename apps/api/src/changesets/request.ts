@@ -13,7 +13,7 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livediagram/edit-operations';
-import { ELEMENT_FINGERPRINT_LENGTH, type GraphInput } from '@livediagram/document';
+import { isRecord, ELEMENT_FINGERPRINT_LENGTH, type GraphInput } from '@livediagram/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
@@ -213,8 +213,4 @@ function withoutControls(text: string): string {
 
 function isRevision(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

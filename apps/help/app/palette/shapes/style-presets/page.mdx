@@ -1,42 +1,59 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { StylePresets } from '@/components/illustrations/palette-shapes-arrows';
+import { StylePresetsGrid } from '@/components/illustrations/shapes';
 
 export const metadata = helpMetadata({
   title: 'Style Presets',
   description:
-    'Restyle a shape or arrow in one click with theme-derived colour, border, and animated line presets.',
+    'Restyle a shape or arrow in one click with theme-derived colour, border and animated line presets, on one element or a whole selection.',
   path: '/help/palette/shapes/style-presets/',
 });
 
 <ArticleLayout title="Style Presets" description="Create variety and emphasis on key elements in one click, without dialling each field by hand." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Shapes", slug: "shapes" }} subArticles={getSubArticles("shapes").filter((a) => a.slug !== "style-presets")}>
 
-Sometimes you want a shape to stand out, or a set of arrows to look consistent, without fiddling with fill, border, weight, and pattern one control at a time. Style presets give you a **Presets** section in the selected-element context menu with ready-made looks you can apply in a single click. Presets is the first accordion inside the element's **Style** menu, alongside Colours and Border, and presets always track your active theme so they stay on-brand.
+Sometimes you want a shape to stand out, or a set of arrows to look consistent, without fiddling with fill, border, weight and pattern one control at a time. Style presets are ready-made looks you apply in a single click. Right-click an element and open its **Style** row: **Presets** is the first section in it, above Colours and Border.
 
 ## Shape presets
 
-Right-click a single shape, open the **Style** menu, and expand **Presets** to find a grid of ready-made looks, plus a reset. Each preset is a complete look: it sets the shape's fill, border, and text colour together with a matching border treatment (weight and pattern), so one click restyles the whole shape. Presets deliberately leave the corner radius alone, so a rounded card stays rounded and a sharp box stays sharp whichever look you pick.
+Right-click a shape, open **Style** and expand **Presets** to find a grid of ready-made looks, plus **Reset to default**. Each preset is a complete look: it sets the shape's fill, border and text colour together with a matching border weight and pattern, so one click restyles the whole shape. Presets deliberately leave the corner radius alone, so a rounded card stays rounded and a sharp box stays sharp whichever look you pick.
 
-The grid offers twenty theme-derived looks on a single-colour theme, ordered in four runs from quiet to loud. First your theme's own colours: the on-theme default, then soft, tinted, solid, and bold variants of its accent (on multicolour themes you also get a card per branch hue). Then the greys: ghost, paper, muted, slate, and inked. Then the line treatments: a hairline, an outline, dotted, dash-dot, and a heavy frame. Last the semantic set that stays the same whatever the theme: info, success, warning, danger, and a violet highlight. Text colour is auto-contrasted on filled variants so labels stay readable. **Reset to default** clears the shape's colour and border overrides, returning it to its theme default in one click.
+The grid offers twenty looks on a single-colour theme, four across, in four runs from quiet to loud:
 
-<Figure caption="One-click style presets restyle a shape without dialling each field by hand.">
-  <StylePresets />
+- **Your theme's own colours:** the theme's default look, then Soft, Tinted, Solid and Bold versions of its accent. A multicolour theme adds a look for each of its branch colours.
+- **Greys:** Ghost, Paper, Muted, Slate and Inked, the same under every theme.
+- **Line treatments:** Hairline, Outline, Dotted, Dash-Dot and a heavy Frame.
+- **Status:** Info, Success, Warning, Danger and a violet Highlight, the same under every theme.
+
+Text colour is chosen for contrast on the filled looks, so labels stay readable. **Reset to default** clears the shape's colour and border changes, returning it to its theme default in one click.
+
+<Figure caption="The Presets grid in a shape's Style row: twenty looks in four runs, then Reset to default.">
+  <StylePresetsGrid />
 </Figure>
 
 ## Arrow presets
 
-Right-click a single arrow and the **Presets** category offers twelve one-click arrow styles, ordered from plain lines to dashed patterns to animated flows. Each combines a line pattern (solid / dashed / dotted), a thickness, and an optional flow animation, so you get looks like a fine dashed arrow, a bold line, a travelling-dot arrow, or a racing signal pulse. **Reset to default** clears the arrow's pattern, thickness, and animation overrides.
+Right-click an arrow and its **Presets** offer twelve one-click styles, ordered from plain lines to patterns to animated flows: Fine, Plain and Bold; Fine Dash, Dashed, Bold Dash and Dotted; then Flow, Dash Flow, Dot Flow, Signal and Pulse. Each combines a line pattern, a thickness and an optional flow animation. **Reset to default** clears the arrow's pattern, thickness and animation changes. See [Arrow Styles](/help/palette/arrows/arrow-styles/) for the controls behind them.
+
+## Other elements
+
+A few other elements have a **Presets** grid of their own in the same place:
+
+- **Sticky notes:** twelve paper colours, each paired with a readable ink. These don't follow the theme, because a note's colour is your own shorthand.
+- **Tables:** eight complete looks that set the cells, grid lines, header band and header text together.
+- **Charts:** a set of colour palettes for the slices, bars and lines.
+- **Code blocks:** colour schemes for the code.
 
 ## Good to know
 
-- The Presets category appears only when a single element is selected, and only the matching set shows: shape presets for a shape, arrow presets for an arrow.
-- Each preset applies as one undo step, so you can revert a look in a single press.
-- Because colour presets are theme-derived, switching the tab's theme refreshes the available colours to match.
+- **Hover to preview.** With a mouse, hovering a preset shows it live on the canvas; it only sticks when you click. Moving away puts the element back. On a touch screen, a tap applies it.
+- **Works on a selection.** Select several shapes, or several arrows, and right-click: the preset applies to all of them at once. When the selection holds both shapes and arrows, you get a **Shape Presets** and an **Arrow Presets** section side by side.
+- **One undo step.** Each preset applies as a single step, so one **Undo** reverts it, however many elements it changed.
+- **Presets follow the theme.** A shape on a theme-derived look (Bold, say) stays bound to it: switch the tab's [theme](/help/canvas/themes/) and it becomes the new theme's Bold. Editing any of its colours by hand ends the binding.
 
 <Tip>
-  Use a bold or inked colour preset to draw the eye to the one shape that matters, then leave the
-  rest on the theme default for contrast.
+  Use a bold or inked preset to draw the eye to the one shape that matters, then leave the rest on
+  the theme default for contrast.
 </Tip>
 
 </ArticleLayout>

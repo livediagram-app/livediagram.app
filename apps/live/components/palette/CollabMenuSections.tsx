@@ -35,10 +35,12 @@ import {
   type EstimateScale,
   type ShapeElement,
 } from '@livediagram/document';
+import { DateInput } from '@livediagram/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+import { MENU_ADD_ROW_BUTTON, MENU_CELL_INPUT } from './menu-editor-classes';
 
 // Each collaboration kind contributes exactly ONE section to the Tools group —
 // an agenda has Segments and nothing else, a chair has Chair and nothing else.
@@ -52,13 +54,9 @@ import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
 
 const fieldClass =
   'w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
-const cellInput =
-  'min-w-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[11px] text-slate-700 outline-none focus:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
 const labelClass = 'text-[10px] font-medium text-slate-500 dark:text-slate-400';
-const addButtonClass =
-  'mt-1.5 inline-flex w-full items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition enabled:cursor-pointer enabled:hover:border-brand-300 enabled:hover:bg-brand-50 disabled:opacity-40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60 dark:enabled:hover:bg-brand-500/15';
 const removeButtonClass =
-  'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/15';
+  'flex h-5 w-5 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
 
@@ -142,7 +140,7 @@ export function AgendaMenuSection({
           {rows.map((item, i) => (
             <div key={i} className="flex items-center gap-1">
               <input
-                className={`${cellInput} flex-1`}
+                className={`${MENU_CELL_INPUT} flex-1`}
                 value={item.label}
                 placeholder="Segment"
                 aria-label={`Segment ${i + 1} name`}
@@ -153,7 +151,7 @@ export function AgendaMenuSection({
                 onBlur={() => onSetItems(rows)}
               />
               <input
-                className={`${cellInput} w-[3.25rem]`}
+                className={`${MENU_CELL_INPUT} w-[3.25rem]`}
                 type="number"
                 min={AGENDA_MIN_MINUTES}
                 max={AGENDA_MAX_MINUTES}
@@ -195,7 +193,7 @@ export function AgendaMenuSection({
           type="button"
           disabled={rows.length >= AGENDA_MAX_ITEMS}
           onClick={() => onSetItems([...rows, { label: '', minutes: AGENDA_DEFAULT_MINUTES }])}
-          className={addButtonClass}
+          className={MENU_ADD_ROW_BUTTON}
         >
           Add segment
         </button>
@@ -263,14 +261,15 @@ export function DecisionMenuSection({
           <label className={labelClass} htmlFor="lvd-decision-date">
             Date
           </label>
-          <input
+          <DateInput
             id="lvd-decision-date"
-            type="date"
+            unstyled
             className={`${fieldClass} mt-1`}
-            value={target?.decisionDate ?? ''}
-            // Empty clears the field entirely: an undated card shows nothing
-            // rather than "no date" (docs/specs/012-collaboration/decision-record.md).
-            onChange={(e) => onSetDate(e.target.value || undefined)}
+            value={target?.decisionDate}
+            // Saves only a whole date (docs/specs/004-interface-design/date-fields.md); an emptied
+            // field clears it entirely: an undated card shows nothing rather than "no date"
+            // (docs/specs/012-collaboration/decision-record.md).
+            onCommit={onSetDate}
           />
         </div>
         <div>
@@ -279,7 +278,7 @@ export function DecisionMenuSection({
             {rows.map((driver, i) => (
               <div key={i} className="flex items-center gap-1">
                 <input
-                  className={`${cellInput} flex-1`}
+                  className={`${MENU_CELL_INPUT} flex-1`}
                   value={driver}
                   placeholder="Why"
                   aria-label={`Driver ${i + 1}`}
@@ -302,7 +301,7 @@ export function DecisionMenuSection({
             type="button"
             disabled={rows.length >= DECISION_MAX_DRIVERS}
             onClick={() => onSetDrivers([...rows, ''])}
-            className={addButtonClass}
+            className={MENU_ADD_ROW_BUTTON}
           >
             Add driver
           </button>

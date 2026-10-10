@@ -3,7 +3,7 @@
 // arrow styles, draggable curve / elbow handles, and arrow-to-arrow snapping.
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, SelectionBox, Cursor, Menu, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Cursor, Label, TextBar } from './primitives';
 
 /** A gallery of the shape kinds the Shapes tab offers, in a tidy grid. */
 export function ShapeGallery() {
@@ -35,30 +35,6 @@ export function ShapeGallery() {
           </g>
         );
       })}
-    </Scene>
-  );
-}
-
-/** A selected square being morphed into a cylinder in place, via the
- *  right-click menu's shape-kind picker. */
-export function ShapeMorph() {
-  return (
-    <Scene w={420} h={240}>
-      <Shape x={40} y={138} w={104} h={60} kind="rect" accent label="Store" />
-      <SelectionBox x={40} y={138} w={104} h={60} />
-      <Arrow from={[152, 168]} to={[244, 168]} kind="curved" tone="muted" dashed />
-      <Shape x={252} y={134} w={104} h={68} kind="cylinder" accent label="Store" />
-      <Menu
-        x={135}
-        y={26}
-        w={150}
-        items={['Square', 'Cylinder', 'Diamond', 'Hexagon']}
-        active={1}
-        rowH={24}
-      />
-      <Label x={145} y={18} size={8} weight={700} tone="muted">
-        SHAPE
-      </Label>
     </Scene>
   );
 }
@@ -96,68 +72,6 @@ export function ShapeMarkers() {
       <Label x={284} y={86} size={10} weight={500} tone="strong">
         Done
       </Label>
-    </Scene>
-  );
-}
-
-/** A row of one-click colour and border presets, applied to a shape. */
-export function StylePresets() {
-  const colours = ['fill-brand-500', 'fill-emerald-500', 'fill-violet-500', 'fill-amber-500'];
-  return (
-    <Scene w={420} h={220}>
-      <Label x={210} y={22} anchor="middle" size={8} weight={700} tone="muted">
-        PRESETS
-      </Label>
-      {/* Colour swatch row */}
-      {colours.map((cls, i) => {
-        const sx = 60 + i * 78;
-        const sel = i === 1;
-        return (
-          <g key={i}>
-            <rect
-              x={sx}
-              y={40}
-              width={56}
-              height={36}
-              rx={8}
-              className={`${cls} ${sel ? 'stroke-brand-600' : 'stroke-slate-200'}`}
-              strokeWidth={sel ? 3 : 1.5}
-            />
-          </g>
-        );
-      })}
-      {/* Border swatch row */}
-      {['solid', 'dashed', 'dotted', 'thick'].map((kind, i) => {
-        const sx = 60 + i * 78;
-        const dash = kind === 'dashed' ? '6 4' : kind === 'dotted' ? '1 5' : undefined;
-        return (
-          <rect
-            key={i}
-            x={sx}
-            y={90}
-            width={56}
-            height={36}
-            rx={8}
-            className="fill-white stroke-brand-500"
-            strokeWidth={kind === 'thick' ? 4 : 2}
-            strokeDasharray={dash}
-            strokeLinecap="round"
-          />
-        );
-      })}
-      {/* The shape the chosen preset lands on */}
-      <Arrow from={[210, 132]} to={[210, 158]} tone="muted" />
-      <Shape
-        x={152}
-        y={162}
-        w={116}
-        h={48}
-        kind="rect"
-        fill="fill-emerald-500"
-        stroke="stroke-emerald-600"
-        label="Styled"
-        labelTone="onAccent"
-      />
     </Scene>
   );
 }

@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { MyDocumentsTree } from '@/components/illustrations/explorer';
+import { MoveToFolderScene } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Folders',
@@ -12,7 +13,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Folders" description="Group your documents into a tree of folders so a growing library stays easy to navigate." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
 
-Folders are how you organise a growing library in the Explorer. Every document lives in exactly one folder, or in none, and folders can nest inside other folders, so you can shape your work into whatever tree fits how you think.
+Folders are how you organise a growing library in the Explorer. Every document lives in exactly one folder, or in none (at the root of its space), and folders can nest inside other folders, so you can shape your work into whatever tree fits how you think. A team has folders of its own too ([Team spaces](/help/explorer/team-spaces/)), which work the same way.
 
 <Figure caption="My documents: nested folders holding documents, and the documents at its root.">
   <MyDocumentsTree />
@@ -20,23 +21,32 @@ Folders are how you organise a growing library in the Explorer. Every document l
 
 ## Creating a folder
 
-Use the **Create** button at the top right of any Explorer section:
+Open **My documents** or a folder in the Explorer and use the **Create** button at the top right:
 
-- **New Folder** adds a folder at the current level.
-- Inside a folder, the same button reads **New Subfolder**, so you can nest as deep as you need.
+- **New Folder** adds a folder at the top level of My documents.
+- Inside a folder, the same entry reads **New Subfolder**, so you can nest as deep as you need. A folder's own menu offers **New Subfolder** too, including from the sidebar.
 
-A new folder starts named "New folder" and ready to rename. Your folder tree shows under **My documents** in the sidebar, so every folder is one click away.
+A new folder starts named "New folder" with its name ready to type over: type a name and press `Enter`. Your folder tree shows under **My documents** in the sidebar, so every folder is one click away.
 
 ## Putting documents in folders
 
-- **Move an existing document.** Open a document row's menu and choose **Move to folder…**. The picker is the same browser as the new-document **Save in** step: pick **My documents** or a team first, then click into the folder you want. When the document already sits in a folder, the picker opens right there, that folder selected, with the back button leading up. A **New Folder** tile at the bottom creates one on the spot, and it follows your selection: with a folder selected it reads New Subfolder and creates inside that folder, with the space itself selected it creates at the top level. Press **Move here**, or double-click the destination to move in one go.
-- **Create straight into a folder.** Open the folder first, then **Create → New document**, and the new document lands inside it.
+- **Move an existing document.** Open a document's menu (its **⋯** button or a right-click) and choose **Change Folder**. The picker is the same browser as the New Document wizard's **Location** step: pick **My documents** or a team first, then click into the folder you want. When the document already sits in a folder, the picker opens right there, that folder selected, with the back button leading up. A **New Folder** entry at the bottom creates one on the spot, and it follows your selection: with a folder selected it reads **New Subfolder** and creates inside that folder, with the space itself selected it creates at the top level. Press **Move here**, or double-click the destination to move in one go.
+- **Drag in the editor.** In the editor's [Explorer panel](/help/explorer/explorer-panel/), drag one of your documents onto a folder to file it, or onto **My documents** to put it back at the root.
+- **Create straight into a folder.** Open the folder first, then **Create**, **New document**, and the new document lands inside it.
+
+<Figure caption="Change Folder: pick a destination in the same browser as the New Document wizard, then press Move here.">
+  <MoveToFolderScene />
+</Figure>
 
 ## Renaming and deleting
 
-In the [card view](/help/explorer/list-and-card-views/) a folder shows a small mosaic of what's inside it — the document snapshots it holds, then its subfolders — so you can tell two similarly-named folders apart by sight rather than by reading. An empty folder keeps the plain folder glyph.
+Each folder has a menu (its **⋯** button, a right-click, or **Shift+F10** in the sidebar) with **Rename**, **New Subfolder**, **Change Folder** (to move the folder and everything in it), **Use as default for** (see [Default folders](/help/explorer/folders/default-folders/)) and **Delete**.
 
-Each folder row has a menu to **rename**, add a **subfolder**, **move**, choose what it is the [default folder](/help/explorer/folders/default-folders/) for, or **delete** it. Deleting a folder doesn't delete your documents: the documents and subfolders directly inside it move up into the folder it sat in, or to the root of [My documents](/help/explorer/personal-space/) for a top-level folder. A subfolder keeps everything inside it, so a whole branch moves up one level intact.
+Deleting a folder asks you to confirm first, and it doesn't delete your documents: the documents and subfolders directly inside it move up into the folder it sat in, or to the root of [My documents](/help/explorer/personal-space/) for a top-level folder. A subfolder keeps everything inside it, so a whole branch moves up one level intact.
+
+## Telling folders apart
+
+In the [card view](/help/explorer/list-and-card-views/) a folder shows a small mosaic of what's inside it (the document snapshots it holds, then its subfolders), so you can tell two similarly named folders apart by sight rather than by reading. An empty folder keeps the plain folder glyph. A folder that is one of your default folders also carries a small mark after its name.
 
 <Note>
   A document that isn't filed in any folder sits at the root of{' '}

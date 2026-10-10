@@ -35,7 +35,9 @@ const silent: AddressLog = () => {};
 
 export type DocumentUrl = { id: string } | { shareCode: string };
 
-const FULL_ID_LENGTH = 36;
+// A full document id: a UUID. Matched by shape, not length alone, so a 36-character name still
+// resolves by name.
+const FULL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // A pasted livediagram URL: `/document/<id>` or a share link `/document/shared?s=<code>`; null when the input
 // is not a URL. A URL on another origin than the host is a usage error (CLI21).
@@ -108,7 +110,7 @@ export async function resolveDocument(
     );
     return { id: shared.document.id, name: shared.document.name, shareCode: url.shareCode };
   }
-  const id = url?.id ?? (input.length === FULL_ID_LENGTH ? input : null);
+  const id = url?.id ?? (FULL_ID.test(input) ? input : null);
   if (id) {
     log(`address document ${url ? 'url' : 'exact'} 1 matches`);
     const { document } = await api.json<{ document: { id: string; name: string } }>(

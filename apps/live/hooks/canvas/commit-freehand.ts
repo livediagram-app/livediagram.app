@@ -88,7 +88,10 @@ export function makeCommitFreehand({
     const disarm = () => {
       if (!whiteboardPen) setPendingDraw(null);
     };
-    if (editsBlocked || rawPoints.length < 2) {
+    // A whiteboard pen's tap is a dot: one point is a stroke (docs/specs/023-draw-mode/draw-mode.md
+    // "Pens"). Every other pen needs a line.
+    const fewestPoints = whiteboardPen ? 1 : 2;
+    if (editsBlocked || rawPoints.length < fewestPoints) {
       disarm();
       return;
     }
@@ -96,7 +99,7 @@ export function makeCommitFreehand({
     // A whiteboard stroke keeps its raw samples; anything else is simplified here
     // (lib/pen-smoothing).
     const simplified = whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom);
-    if (simplified.length < 2) {
+    if (simplified.length < fewestPoints) {
       disarm();
       return;
     }
@@ -124,18 +127,25 @@ export function makeCommitFreehand({
     }
 
     if (whiteboardPen) {
-      commit((els) => [...els, whiteboardStroke(simplified, whiteboardPen, ink)]);
+      const stroke = whiteboardStroke(simplified, whiteboardPen, ink);
+      commit((els) => [...els, stroke]);
+      // A marker picked up for one stroke goes back down and its stroke is selected, as the
+      // pencil's is.
+      if (whiteboardPen.once) {
+        setPendingDraw(null);
+        setSelectedId(stroke.id);
+      }
       return;
     }
 
     // Shape-recognition mode: try classifying the simplified
     // polyline before falling back to FreehandElement. Threshold
     // 0.40 leans hard toward "convert it". The bar is low on
-    // purpose: turning recognition on is an explicit opt-in (the
-    // pencil banner toggle, persisted as a user preference per
-    // docs/specs/007-editor/user-preferences.md), so the user has already stated they want strokes
-    // classified. False positives are one Cmd+Z away and the
-    // toggle is one click off; false negatives (a wobbly square
+    // purpose: recognition only runs for a stroke drawn with the
+    // Shape Pen (docs/specs/008-canvas/two-pens.md), so picking that pen
+    // already says the user wants strokes classified. False
+    // positives are one Cmd+Z away and Freehand is one pick
+    // away; false negatives (a wobbly square
     // that stayed a sketch when the user wanted a rectangle) are
     // the more frustrating outcome, so erring toward conversion
     // is correct. Previous values: 0.72 (too strict), 0.55 (still

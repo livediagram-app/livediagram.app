@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
+import { CARD_TILE_GLYPH_PX } from './palette-plan-tiles';
 import {
   PALETTE_TILES,
   TILE_GLYPH_PX,
@@ -132,6 +133,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   build: 5,
   write: 4,
   draw: 6,
+  // The Pen alone: the layout adds the Pencil and each person's markers (palette-layouts, PaletteLogoTab).
+  logo: 1,
   devices: 7,
   icons: 0,
   stickers: 0,
@@ -149,13 +152,14 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'event-storming': 8,
   // Plan mode's Boards and Cards (docs/specs/026-plan/plan-mode.md "The palette"): nine boards, one
   // card per item type.
-  'plan-boards': 9,
+  'plan-boards': 10,
   'plan-cards': 5,
   // A board header's widgets (docs/specs/026-plan/board-widgets.md): one tile per widget kind.
-  'plan-widgets': 15,
+  'plan-widgets': 14,
   // Plan views (docs/specs/026-plan/plan-views.md): ten metrics, five visualisations.
   'plan-metrics': 10,
   'plan-visualisations': 5,
+  'plan-sheets': 1,
   // Borrowed tiles, listed by the Plan layout (palette-layouts.ts), so no tile of their own.
   'plan-content': 0,
   'plan-tools': 0,
@@ -285,8 +289,11 @@ describe('palette tile glyph size', () => {
     (t) => [t.id, renderToStaticMarkup(<>{t.icon}</>)] as const,
   ).filter(([, svg]) => svg.includes('lvd-glyph'));
 
-  it.each(glyphTiles)('%s renders at the tile step', (_id, svg) => {
-    expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(TILE_GLYPH_PX);
+  // Plan card tiles are the one larger step: a card picture with its type's glyph on the face.
+  it.each(glyphTiles)('%s renders at the tile step', (id, svg) => {
+    expect(Number(/width="([\d.]+)"/.exec(svg)![1])).toBe(
+      id.startsWith('plan:card-') ? CARD_TILE_GLYPH_PX : TILE_GLYPH_PX,
+    );
   });
 });
 

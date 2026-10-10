@@ -19,6 +19,10 @@ import {
   UnderlineIcon,
 } from '@/components/palette/palette-icons';
 import type { RunBoolKey } from '@livediagram/document';
+import {
+  TOOLBAR_CONTROL_REST,
+  TOOLBAR_DIVIDER as TOOLBAR_DIVIDER_CLASS,
+} from '@/components/chrome/toolbar-surface';
 
 // `extra` exists for one caller: the note toolbar wraps its buttons
 // (flex-wrap), so its buttons take `shrink-0` to keep their square. The label
@@ -27,15 +31,13 @@ export function toolbarButtonClass(active: boolean, extra = ''): string {
   return `flex h-8 w-8 ${extra ? extra + ' ' : ''}items-center justify-center rounded-md transition ${
     active
       ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+      : TOOLBAR_CONTROL_REST
   }`;
 }
 
 // The same spacer the element toolbar's Divider uses, so every toolbar in the
 // editor reads alike.
-export const TOOLBAR_DIVIDER = (
-  <span className="mx-0.5 h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700" aria-hidden />
-);
+export const TOOLBAR_DIVIDER = <span className={TOOLBAR_DIVIDER_CLASS} aria-hidden />;
 
 export type RunToggle = {
   key: RunBoolKey;

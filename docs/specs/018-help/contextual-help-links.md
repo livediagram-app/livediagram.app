@@ -117,7 +117,6 @@ Grouped by priority; each links the keyed article.
 - Themes pane empty state -> `custom-themes`
 - Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
-- Settings - panel layout -> `toolbar-layout`
 - Settings - telemetry -> `what-we-collect`
 
 **Onboarding / empty states**
@@ -151,7 +150,7 @@ A click sends the same `UI·Opened·<article id>` as an editor help link.
 
 ## Panel headers carry their article
 
-Every floating panel that a help article explains renders a `?` in its header
+Every panel that a help article explains renders a `?` in its header
 chrome, beside reset / minimise, from a `helpArticle` prop on `MovablePanel`
 (forwarded by `ModePanel`, so a tool panel opts in with one word).
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, type Item } from '@livediagram/items';
+import { CARD_SIZES, PLAN_BOARD_EMPTY_HEIGHT_PX, presetSetup, type Item } from '@livediagram/items';
+import { PLAN_CARD_SIZES } from './validate-shape';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { elementKindLabel } from './element-kind-label';
 import { isPlanShape, isSelfDrawingShape } from './data-shapes';
@@ -28,7 +29,11 @@ const item = (id: string, fields: Item['fields'], extra: Partial<Item> = {}): It
 describe('plan shapes', () => {
   it('are made with their default size and seed', () => {
     const board = createShape('plan-board', 0, 0);
-    expect(board).toMatchObject({ width: 1120, height: 640, planBoard: presetSetup('blank') });
+    expect(board).toMatchObject({
+      width: 1120,
+      height: PLAN_BOARD_EMPTY_HEIGHT_PX,
+      planBoard: presetSetup('blank'),
+    });
     const card = createShape('plan-card', 0, 0);
     expect(card).toMatchObject({ width: 240, height: 120, planCard: { itemId: '' } });
     expect(SHAPE_DEFAULT_SIZE['plan-card']).toEqual({ width: 240, height: 120 });
@@ -64,6 +69,16 @@ describe('plan shapes', () => {
       field: 'planCard',
     });
     expect(elementValidationIssue({ ...card, planCard: 'x' })).toMatchObject({ field: 'planCard' });
+    // Its own Card Size: one of the board's three, or none (Detailed).
+    expect(PLAN_CARD_SIZES).toEqual([...CARD_SIZES]);
+    for (const size of CARD_SIZES) {
+      expect(
+        elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size } }),
+      ).toBeNull();
+    }
+    expect(
+      elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size: 'huge' } }),
+    ).toMatchObject({ field: 'planCard' });
   });
 });
 
@@ -71,7 +86,8 @@ describe('plan shapes in exports', () => {
   const board = {
     ...createShape('plan-board', 0, 0),
     id: 'b',
-    planBoard: presetSetup('kanban'),
+    // A Kanban board taking Notes too, so a Note shows beside the Tasks.
+    planBoard: { ...presetSetup('kanban'), addTypes: ['task', 'action', 'note'] },
   } as BoxedElement;
   const card = {
     ...createShape('plan-card', 1200, 0),
@@ -98,8 +114,8 @@ describe('plan shapes in exports', () => {
 
   it('draws columns and escaped card faces from the items', () => {
     const svg = svgBoxed(board, { items });
-    expect(svg).toContain('To do');
-    expect(svg).toContain('In progress');
+    expect(svg).toContain('To Do');
+    expect(svg).toContain('In Progress');
     expect(svg).toContain('Fix &lt;login&gt;');
     expect(svg).toContain('#7 · Task');
     expect(svg).toContain('#8 · Note');
@@ -177,7 +193,7 @@ describe('plan shapes in exports', () => {
 describe('plan view shape', () => {
   it('is made with a view, named, self-drawing and self-painting', () => {
     const view = createShape('plan-view', 0, 0);
-    expect(view).toMatchObject({ width: 720, height: 400, planView: { view: 'status-mix' } });
+    expect(view).toMatchObject({ width: 720, height: 400, planView: { view: 'workload' } });
     expect(elementKindLabel(view)).toBe('Plan View');
     expect(isPlanShape('plan-view')).toBe(true);
     expect(isSelfDrawingShape('plan-view')).toBe(true);
@@ -196,12 +212,23 @@ describe('plan view shape', () => {
     });
   });
 
+  it('validates a Gantt chart’s swimlanes and names width', () => {
+    const view = createShape('plan-view', 0, 0);
+    const gantt = (extra: Record<string, unknown>) =>
+      elementValidationIssue({ ...view, planView: { view: 'gantt', ...extra } });
+    expect(gantt({ swimlaneBy: 'assignee', namesWidth: 260 })).toBeNull();
+    expect(gantt({ swimlaneBy: 'field', swimlaneField: 'c-size' })).toBeNull();
+    expect(gantt({ swimlaneBy: 'colour' })).toMatchObject({ field: 'planView' });
+    expect(gantt({ namesWidth: 20 })).toMatchObject({ field: 'planView' });
+    expect(gantt({ namesWidth: '300' })).toMatchObject({ field: 'planView' });
+  });
+
   it('exports as a labelled box', () => {
     const gantt = {
       ...createShape('plan-view', 0, 0),
       planView: { view: 'gantt' },
     } as BoxedElement;
-    expect(svgBoxed(gantt)).toContain('Project Gantt Chart');
+    expect(svgBoxed(gantt)).toContain('Gantt Chart');
     const widget = {
       ...createShape('plan-view', 0, 0),
       planView: { view: 'metric:count' },

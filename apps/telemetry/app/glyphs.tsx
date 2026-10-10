@@ -13,6 +13,7 @@
 import {
   lucideSlidersHorizontal,
   lucideSquareDashed,
+  lucideTimer,
   lucideUndo2,
 } from '@livediagram/icons/lucide';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
@@ -168,13 +169,6 @@ export function SearchGlyph() {
     <Glyph size={14} units={14}>
       <circle cx="6" cy="6" r="4" />
       <path d="M9 9 L12.5 12.5" />
-    </Glyph>
-  );
-}
-export function ListGlyph() {
-  return (
-    <Glyph size={14} units={14}>
-      <path d="M2 4 L12 4 M2 7 L12 7 M2 10 L12 10" />
     </Glyph>
   );
 }
@@ -535,6 +529,9 @@ export function DotGlyph() {
     </Glyph>
   );
 }
+
+// The Timings tab: a stopwatch.
+export const TimerGlyph = lucideGlyph(lucideTimer, 16);
 
 export function AlertGlyph() {
   return (

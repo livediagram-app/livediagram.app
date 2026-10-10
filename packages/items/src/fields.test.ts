@@ -7,7 +7,7 @@ import {
   validateFields,
   validateVotes,
 } from './fields';
-import { ITEM_FIELDS_MAX } from './limits';
+import { ITEM_FIELDS_MAX, ITEM_TITLE_MAX } from './limits';
 
 describe('validateFields', () => {
   it('requires a title on create, trims it', () => {
@@ -29,7 +29,7 @@ describe('validateFields', () => {
 
   it('rejects each bad kind with a named rejection', () => {
     const bad: [Record<string, unknown>, string][] = [
-      [{ title: 'x'.repeat(201) }, 'title_too_long'],
+      [{ title: 'x'.repeat(ITEM_TITLE_MAX + 1) }, 'title_too_long'],
       [{ title: 3 }, 'field_value_invalid'],
       [{ description: 4 }, 'field_value_invalid'],
       [{ status: '' }, 'field_value_invalid'],
@@ -44,7 +44,6 @@ describe('validateFields', () => {
       [{ due: 'tomorrow' }, 'field_value_invalid'],
       [{ checklist: [{ text: 'a' }] }, 'field_value_invalid'],
       [{ checklist: 'a' }, 'field_value_invalid'],
-      [{ parent: 'x' }, 'field_value_invalid'],
       [{ votes: {} }, 'votes_read_only'],
       [{ 'bad key': 1 }, 'field_key_invalid'],
       [{ custom: { nested: 1 } }, 'field_value_invalid'],

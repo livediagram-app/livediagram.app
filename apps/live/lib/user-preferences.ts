@@ -24,6 +24,7 @@ import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { getWorkbenchConfinement } from './api/workbench-confinement';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
 
 export type UserPreferences = {
@@ -84,11 +85,6 @@ export type UserPreferences = {
   // popover can hide them. Missing / undefined / true === shown (the
   // default); an explicit false hides them.
   aiSuggestedPrompts?: boolean;
-  // Panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the
-  // default) or 'toolbar' (the Palette as a top strip, no Explorer panel).
-  // Read it through `resolvePanelLayout`, which maps a retired or unknown
-  // value to the default.
-  panelLayout?: PanelLayout;
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
   // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /
@@ -125,6 +121,14 @@ export type UserPreferences = {
   // unaffected; only the visual hint is suppressed). Missing /
   // undefined === guides on, the default.
   alignmentGuides?: boolean;
+  // Construction guides on a logo page (docs/specs/007-editor/logo-pages.md "Construction guides"):
+  // its centre lines, keylines, safe area and grid, and snapping to its keylines. Missing /
+  // undefined === on, the default; `false` hides them (and the keyline snaps with them).
+  logoGuides?: boolean;
+  // Which construction guides a logo page hides (docs/specs/007-editor/logo-pages.md), and how
+  // strongly the rest show. Read through lib/logo-guide-prefs.ts; absent is every part, Medium.
+  logoGuidesHidden?: string[];
+  logoGuideStrength?: 'faint' | 'medium' | 'strong';
   // Reduce motion (accessibility, docs/specs/007-editor/user-preferences.md). When `true`, the editor adds
   // `.reduce-motion` to <html> so the CSS in globals.css collapses every
   // decorative animation + transition to ~instant. Independent of the OS
@@ -198,12 +202,9 @@ export type UserPreferences = {
   // Ids only, so the list stays small; the whole preferences blob has a
   // 4 KB server-side cap, which `toggleRecentExcluded` below budgets for.
   // Missing / undefined === nothing excluded.
-  // Colours you have used that were not already on the theme's palette
-  // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it
-  // here, so the next element can be given the SAME colour with one click
-  // instead of being matched by eye. Right-clicking one removes it again.
-  // Newest first, capped, and synced like every other preference so a
-  // palette you have built follows you between devices.
+  // DEAD as of docs/specs/004-interface-design/colour-picker.md: Custom colours are the colours
+  // picked with + in the document, kept with its tabs, not a per-user list. Nothing reads or writes this any
+  // more; it stays in the type because it is already stored for existing users.
   customSwatches?: string[];
   // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md "Custom
   // swatches"): per theme, which of a row's six slots you replaced with a
@@ -229,9 +230,8 @@ export type UserPreferences = {
   // lib/whiteboard-dock-prefs, which parses them. Missing === the default pins, no history.
   whiteboardPinnedShapes?: WhiteboardShapeKey[];
   whiteboardShapePicks?: ShapePicks;
-  // The markers' Your colours (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): up to
-  // eight custom #rrggbb, newest first. Read and written through lib/pen-colour-memory, which parses
-  // them. Missing === none yet.
+  // DEAD as of docs/specs/004-interface-design/colour-picker.md, like `customSwatches`: the markers'
+  // Custom colours are the document's. Kept in the type because it is already stored.
   whiteboardYourColours?: string[];
   // Where a whiteboard's dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
   // Read through lib/whiteboard-dock-prefs. Missing (or anything but 'bottom') === the top.
@@ -252,11 +252,6 @@ export type UserPreferences = {
 // hide by hand and leaves plenty of room for the other flags.
 export const RECENT_EXCLUDED_LIMIT = 60;
 
-// Is this document hidden from Recent?
-export function isRecentExcluded(prefs: UserPreferences, documentId: string): boolean {
-  return prefs.recentExcludedIds?.includes(documentId) === true;
-}
-
 // Flip a document's Recent exclusion, returning the NEXT id list. Newest
 // exclusions are kept at the front so the cap drops the oldest choice
 // rather than the one just made.
@@ -272,32 +267,6 @@ export function toggleRecentExcluded(prefs: UserPreferences, documentId: string)
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
 export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
-
-// The panel layouts (docs/specs/007-editor/toolbar-layout.md), in the order Settings offers them.
-export const PANEL_LAYOUTS = ['floating', 'toolbar'] as const;
-export type PanelLayout = (typeof PANEL_LAYOUTS)[number];
-
-// The layout in force. `panelLayout` wins when it is one we know; anything
-// else (unset, the retired 'minimal', or a value from a newer client) reads
-// as the default rather than as a crash.
-//
-// Pass `mobile` for the layout a phone actually shows: Floating is desktop
-// only, so there it (and so the unset default) becomes Toolbar (docs/specs/007-editor/toolbar-layout.md).
-// The stored value is untouched, so the same user still gets Floating back
-// on a desktop.
-export function resolvePanelLayout(
-  prefs: UserPreferences,
-  { mobile = false }: { mobile?: boolean } = {},
-): PanelLayout {
-  const v = prefs.panelLayout;
-  const stored =
-    v && (PANEL_LAYOUTS as readonly string[]).includes(v) ? (v as PanelLayout) : 'floating';
-  return mobile ? 'toolbar' : stored;
-}
-
-export function withPanelLayout(prefs: UserPreferences, layout: PanelLayout): UserPreferences {
-  return { ...prefs, panelLayout: layout };
-}
 
 // The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
 // default, so only an explicit `false` turns the on-move rebind off. The
@@ -351,7 +320,9 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
-  if (ownerId) {
+  // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
+  // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame.
+  if (ownerId && !getWorkbenchConfinement()) {
     // Cast to the wider Record shape the api-client expects.
     // UserPreferences is the typed surface in this app; the wire
     // is intentionally opaque so adding a flag doesn't need an

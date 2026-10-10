@@ -42,8 +42,6 @@ import { CountBadge } from '@livediagram/ui';
 
 const PEOPLE_SHOWN = 5;
 const TYPES_SHOWN = 3;
-// The most votes drawn as pips; a bigger budget is a number.
-const VOTE_PIPS_MAX = 10;
 const DONE_GREEN = PHASE_COLOURS.done;
 const SOON_AMBER = '#d97706';
 
@@ -61,7 +59,6 @@ export type WidgetContext = {
   onQuick: (q: QuickFilter) => void;
   // The viewer's person id, when they can be "mine".
   canFilterMine: string | null;
-  votesLeft: number | null;
   trayOpen: boolean;
   onToggleTray: () => void;
   now: Date;
@@ -485,39 +482,6 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
                 to: dayKey(today + DUE_SOON_DAYS),
               })
             : null}
-        </span>
-      );
-    }
-    case 'votes': {
-      if (ctx.votesLeft === null) return null;
-      const budget = setup.voting.budget;
-      const pips = budget !== undefined && budget <= VOTE_PIPS_MAX;
-      return (
-        <span
-          className={WIDGET_PILL}
-          style={pill}
-          role="img"
-          aria-label={`${ctx.votesLeft} votes left${budget ? ` of ${budget}` : ''}`}
-        >
-          <Lead kind="votes" color={palette.focus} />
-          {pips ? (
-            // A pip per vote of the budget, filled while it is still to spend.
-            <span aria-hidden className="flex items-center gap-[3px]">
-              {Array.from({ length: budget }, (_, i) => (
-                <span
-                  key={i}
-                  className="h-2 w-2 rounded-full border"
-                  style={{
-                    borderColor: palette.focus,
-                    backgroundColor: i < (ctx.votesLeft ?? 0) ? palette.focus : 'transparent',
-                  }}
-                />
-              ))}
-            </span>
-          ) : (
-            <Figure palette={palette}>{ctx.votesLeft}</Figure>
-          )}
-          <span aria-hidden>left</span>
         </span>
       );
     }

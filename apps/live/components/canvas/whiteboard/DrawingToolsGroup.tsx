@@ -85,7 +85,6 @@ export function DrawingToolsGroup({
       <DockButton
         itemKey="path"
         label="Path tool"
-        caption="Path"
         shortcut={WHITEBOARD_TOOL_KEYS.path}
         icon={<ShapePenIcon size={DOCK_ICON_PX} />}
         pressed={tool === 'path'}

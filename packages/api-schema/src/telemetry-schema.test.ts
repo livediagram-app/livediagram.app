@@ -54,14 +54,17 @@ describe('isValidTelemetryEvent', () => {
       // hard-code a stale list, this catches it.
       // `Page` is the one category with a required, path-shaped type
       // (docs/specs/017-telemetry/page-view-telemetry.md), so it's checked with a page view instead; `Cta` takes
-      // only a source from its closed table (docs/specs/019-marketing/landing-funnel.md).
+      // only a source from its closed table (docs/specs/019-marketing/landing-funnel.md); `Timing` only a
+      // metric and bucket (docs/specs/017-telemetry/timing-telemetry.md).
       for (const category of TELEMETRY_CATEGORIES) {
         const event =
           category === 'Page'
             ? { category, action: 'View', type: '/' }
             : category === 'Cta'
               ? { category, action: 'Opened', type: 'Home.Hero' }
-              : { category, action: 'Added' };
+              : category === 'Timing'
+                ? { category, action: 'Measured', type: 'Save.Under500ms' }
+                : { category, action: 'Added' };
         expect(isValidTelemetryEvent(event)).toBe(true);
       }
     });

@@ -11,13 +11,11 @@ export interface TabItemElement {
   planCard?: { itemId?: unknown };
 }
 
-export function itemIdsShownOnTab(
-  elements: readonly TabItemElement[],
-  items: Iterable<Item>,
-): Set<string> {
+// `elements` takes any element list: a weak TabItemElement[] would refuse a typed document element union.
+export function itemIdsShownOnTab(elements: readonly object[], items: Iterable<Item>): Set<string> {
   const ids = new Set<string>();
   let board = false;
-  for (const el of elements) {
+  for (const el of elements as readonly TabItemElement[]) {
     if (el.shape === 'plan-card' && typeof el.planCard?.itemId === 'string')
       ids.add(el.planCard.itemId);
     if (el.shape === 'plan-board' && normaliseBoardSetup(el.planBoard)) board = true;

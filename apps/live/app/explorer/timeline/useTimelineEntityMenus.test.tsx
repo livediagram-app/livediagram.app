@@ -85,7 +85,7 @@ describe('useTimelineEntityMenus', () => {
     const live = m(event({ sourceId: 'tok1', snapshot: { tokenName: 'CI' } }));
     expect(labels(live)).toEqual(['Open API Tokens', 'Revoke Token']);
     expect(live?.subject).toBe('CI');
-    expect(live?.items[1]?.danger).toBe(true);
+    expect(live?.items[1]?.destructive).toBe(true);
     const gone = m(event({ sourceId: 'tok-old', eventType: 'token_revoked' }));
     expect(labels(gone)).toEqual(['Open API Tokens']);
   });

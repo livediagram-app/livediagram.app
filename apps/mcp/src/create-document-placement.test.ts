@@ -101,6 +101,20 @@ describe('create_document intent', () => {
     expect(tabs.every((t) => t.opensIn === 'plan')).toBe(true);
   });
 
+  // docs/specs/026-plan/item-types.md "The type catalogue": a template's boards choose a new document's card types.
+  it('makes a Plan template’s document with exactly the card types its boards take', async () => {
+    const { run, posted } = harness(undefined);
+    await run([{ name: 'Plan', template: 'project-planner' }]);
+    const itemTypes = posted[0]!.itemTypes as { types: { id: string }[] };
+    expect(itemTypes.types.map((t) => t.id)).toEqual(['project', 'story', 'task', 'bug']);
+  });
+
+  it('sends no catalogue for a document with no Plan board', async () => {
+    const { run, posted } = harness(undefined);
+    await run([elements, { name: 'Retro', template: 'start-stop-continue' }]);
+    expect(posted[0]).not.toHaveProperty('itemTypes');
+  });
+
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
     await run([elements, { name: 'Board', template: 'kanban' }]);

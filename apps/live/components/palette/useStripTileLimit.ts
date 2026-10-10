@@ -15,6 +15,7 @@
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
 import { fitStripTiles } from './toolbar-strip-tiles';
+import { editorViewportOf } from '@/lib/editor-viewport';
 
 const PHONE_GUTTERS_PX = 24;
 const MENU_GAP_PX = 8;
@@ -66,15 +67,18 @@ export function useStripTileLimit(
         (parseFloat(railStyle.marginLeft) || 0) +
         (parseFloat(railStyle.marginRight) || 0);
       const chrome = cardWidth - railShare;
-      const vw = window.innerWidth;
+      // The room is the editor's: the window, or its pane in a side by side split
+      // (docs/specs/007-editor/split-view.md), measured from the pane's own left edge.
+      const view = editorViewportOf(card);
+      const vw = view.width;
       let available = vw - PHONE_GUTTERS_PX;
       if (isMobile) {
         // Beside the menu card: from where the strip starts to the right gutter.
         if (leadingRef?.current)
-          available = vw - PHONE_GUTTERS_PX / 2 - card.getBoundingClientRect().left;
+          available = vw - PHONE_GUTTERS_PX / 2 - (card.getBoundingClientRect().left - view.left);
       } else {
         const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]');
-        const clear = menu ? menu.getBoundingClientRect().right + MENU_GAP_PX : 0;
+        const clear = menu ? menu.getBoundingClientRect().right - view.left + MENU_GAP_PX : 0;
         available = vw - 2 * clear;
       }
       setMeasured(fitStripTiles({ available, chrome, pitch }));
@@ -82,6 +86,9 @@ export function useStripTileLimit(
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(card);
+    // A pane resizes without the window (the split's divider): refit as it does.
+    const pane = editorViewportOf(card).element;
+    if (pane) observer.observe(pane);
     window.addEventListener('resize', measure);
     return () => {
       observer.disconnect();

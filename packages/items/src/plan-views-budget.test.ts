@@ -3,7 +3,7 @@ import {
   calendarModel,
   priorityMatrixModel,
   statusMixModel,
-  workloadModel,
+  breakdownModel,
 } from './plan-view-charts';
 import { ganttModel } from './plan-view-gantt';
 import { SAM, item } from './test-items';
@@ -31,7 +31,7 @@ describe('plan view budgets', () => {
     const start = performance.now();
     ganttModel(many, phases, new Date(2026, 9, 5));
     calendarModel(many, phases, 2026, 9);
-    workloadModel(many, phases);
+    breakdownModel(many, phases, { by: 'assignee' });
     statusMixModel(many);
     priorityMatrixModel(many, phases);
     // 13ms locally for all five, setup included; the budget leaves room for a slow CI runner.

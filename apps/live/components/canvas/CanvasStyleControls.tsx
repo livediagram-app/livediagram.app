@@ -20,6 +20,7 @@ import {
 } from '@/components/palette/palette-controls';
 import { ShowMoreButton } from '@/components/primitives/ShowMoreButton';
 import { HoverCard } from '@livediagram/ui';
+import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 
 // Static vs animated split (docs/specs/008-canvas/canvas-and-palette.md): the two render as separate, labelled
 // sections so the catalogue reads clearly. Computed once from the single
@@ -50,6 +51,9 @@ function PatternGrid({
     </div>
   );
 }
+
+// The pattern is ink on the canvas: lines and dots, so the strong tone only.
+const PATTERN_TONES = ['strong'] as const;
 
 export function CanvasStyleControls({
   backgroundPattern,
@@ -131,7 +135,12 @@ export function CanvasStyleControls({
           <ColorSwatch label="Canvas" value={backgroundColor} onChange={onSetBackgroundColor} />
         </HoverCard>
         <HoverCard title="Pattern colour" description="The colour of the grid dots or ruled lines.">
-          <ColorSwatch label="Pattern" value={patternColor} onChange={onSetPatternColor} />
+          <ColorSwatch
+            label="Pattern"
+            value={patternColor}
+            onChange={onSetPatternColor}
+            tones={PATTERN_TONES}
+          />
         </HoverCard>
       </div>
       <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
@@ -148,7 +157,7 @@ export function CanvasStyleControls({
           step={0.05}
           value={backgroundOpacity}
           onChange={(e) => onSetBackgroundOpacity(parseFloat(e.target.value))}
-          className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+          className={RANGE_SLIDER}
         />
       </div>
       <div className="mt-3 flex flex-col gap-1">
@@ -165,7 +174,7 @@ export function CanvasStyleControls({
           step={0.1}
           value={backgroundPatternScale}
           onChange={(e) => onSetBackgroundPatternScale(parseFloat(e.target.value))}
-          className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+          className={RANGE_SLIDER}
         />
       </div>
       {/* Motion speed (docs/specs/008-canvas/canvas-and-palette.md) — only meaningful for an ANIMATED pattern,
@@ -186,7 +195,7 @@ export function CanvasStyleControls({
             step={0.25}
             value={backgroundAnimationSpeed}
             onChange={(e) => onSetBackgroundAnimationSpeed(parseFloat(e.target.value))}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-500 dark:bg-slate-700"
+            className={RANGE_SLIDER}
           />
         </div>
       ) : null}

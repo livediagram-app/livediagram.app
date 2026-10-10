@@ -124,6 +124,34 @@ describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.
   });
 });
 
+describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', () => {
+  it('stores a known metric and bucket, and drops anything else under Timing', async () => {
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: {
+        events: [
+          { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
+          { category: 'Timing', action: 'Measured', type: 'Lcp.Community.Over10000ms' },
+          // A raw number, a bucket from another scale, an unknown metric, another action.
+          { category: 'Timing', action: 'Measured', type: 'DocumentLoad.812' },
+          { category: 'Timing', action: 'Measured', type: 'Save.Under200ms' },
+          { category: 'Timing', action: 'Measured', type: 'Secret.Under100ms' },
+          { category: 'Timing', action: 'Used', type: 'Save.Under100ms' },
+        ],
+      },
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    await handleEvents(ctx);
+    expect(db.insertTelemetryEvents).toHaveBeenCalledWith(
+      expect.anything(),
+      [
+        { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
+        { category: 'Timing', action: 'Measured', type: 'Lcp.Community.Over10000ms' },
+      ],
+      expect.any(Number),
+    );
+  });
+});
+
 describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.md)', () => {
   it('drops the pairs the worker counts itself, keeping the rest of the batch', async () => {
     // Session·SignedUp / SignedIn and Document·Joined moved server-side; an

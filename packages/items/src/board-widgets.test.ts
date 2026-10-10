@@ -16,13 +16,13 @@ describe('board widgets', () => {
     expect(readBoardWidgets(['filter', 'nope', 'count', 'filter', 3])).toEqual(['filter', 'count']);
     expect(readBoardWidgets('count')).toBeUndefined();
     expect(isBoardWidgetKind('due')).toBe(true);
-    expect(BOARD_WIDGET_KINDS).toHaveLength(15);
+    expect(BOARD_WIDGET_KINDS).toHaveLength(14);
   });
 
-  it('shows the default set on a board that names none, with Votes Left when it votes', () => {
-    expect(widgetsOf({ voting: { on: false } })).toEqual([...DEFAULT_BOARD_WIDGETS]);
-    expect(widgetsOf({ voting: { on: true } })).toEqual([...DEFAULT_BOARD_WIDGETS, 'votes']);
-    expect(widgetsOf({ widgets: [], voting: { on: true } })).toEqual([]);
+  it('shows the default set on a board that names none, and reads a stored Votes Left past', () => {
+    expect(widgetsOf({})).toEqual([...DEFAULT_BOARD_WIDGETS]);
+    expect(widgetsOf({ widgets: [] })).toEqual([]);
+    expect(readBoardWidgets(['votes', 'count'])).toEqual(['count']);
   });
 
   it('places a new widget at a place, and moves one the board has', () => {
@@ -63,7 +63,7 @@ describe('board widgets', () => {
 describe('card sizes', () => {
   it('draw only the fields their size can', async () => {
     const { cardFieldsAt } = await import('./board');
-    expect(cardFieldsAt('minimal', ['key', 'due'])).toEqual([]);
+    expect(cardFieldsAt('minimal', ['key', 'labels', 'due'])).toEqual(['key', 'due']);
     expect(cardFieldsAt('compact', ['key', 'labels', 'due'])).toEqual(['key', 'due']);
     expect(cardFieldsAt(undefined, ['labels', 'description'])).toEqual(['labels', 'description']);
   });
@@ -73,9 +73,11 @@ describe('preset widgets', () => {
   it('give each board type widgets that suit it', async () => {
     const { presetSetup } = await import('./presets');
     expect(presetSetup('sprint').widgets).toContain('points');
-    expect(presetSetup('bug-triage').widgets).toContain('priorities');
-    expect(presetSetup('retro').widgets).toContain('top-voted');
-    expect(presetSetup('blank').widgets).toEqual(['count', 'progress', 'people', 'filter', 'mine']);
+    expect(presetSetup('bug-triage').widgets).toContain('unassigned');
+    expect(presetSetup('retro').widgets).toEqual(['top-voted']);
+    // No columns, so no done column: nothing to measure yet (docs/specs/026-plan/board-widgets.md "Defaults").
+    expect(presetSetup('blank').widgets).toEqual([]);
+    expect(presetSetup('roadmap').widgets).not.toContain('progress');
   });
 
   it('narrow to the unassigned and to a priority', async () => {

@@ -1,6 +1,5 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { EditorMode, Tab } from '@livediagram/document';
-import { releaseOpening } from '@/lib/editor-mode-store';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
@@ -61,6 +60,8 @@ export function useTemplateFlow(opts: {
   requestFit: () => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
   markTabLoaded: (id: string) => void;
+  // Adds the card types the template's boards bring, every tab's (usePresetCardTypes' bring).
+  bringCardTypes: (elements: Tab['elements']) => void;
 }) {
   const {
     activeId,
@@ -76,6 +77,7 @@ export function useTemplateFlow(opts: {
     setTemplatePickerMode,
     requestFit,
     markTabLoaded,
+    bringCardTypes,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -201,6 +203,9 @@ export function useTemplateFlow(opts: {
         elements: theme ? recolourElementsForTheme(raw, theme) : raw,
       };
     });
+    // A Plan template's boards bring their card types, every tab's (docs/specs/026-plan/plan-templates.md "Card
+    // types a template uses"), before the tabs land.
+    bringCardTypes([...elements, ...followers.flatMap((f) => f.elements)]);
     commitTabs((ts) => {
       const active = ts.find((t) => t.id === activeId);
       if (!active) return ts;
@@ -220,9 +225,6 @@ export function useTemplateFlow(opts: {
       return insertTabsAfter(next, activeId, templateFollowerTabs(landed, followers, withMode));
     });
     for (const f of followers) markTabLoaded(f.id);
-    // ...and decides it afresh for its maker too: the mode pinned when the empty tab opened is
-    // released, so the canvas follows the template's.
-    if (opensIn) releaseOpening(activeId);
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can

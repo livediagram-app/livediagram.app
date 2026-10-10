@@ -33,6 +33,15 @@ describe('planBoardPatch', () => {
     expect(planBoardPatch(compact, base)).toEqual({ clear: ['cardSize'] });
   });
 
+  // docs/specs/026-plan/plan-board.md "Fill Tab": the setting travels as a set-up field like any other.
+  it('sets and clears Fill Tab', () => {
+    const filled = { ...base, fillTab: true };
+    expect(planBoardPatch(base, filled)).toEqual({ set: { fillTab: true } });
+    expect(applyPlanBoardPatch(base, { set: { fillTab: true } }).fillTab).toBe(true);
+    expect(planBoardPatch(filled, base)).toEqual({ clear: ['fillTab'] });
+    expect(applyPlanBoardPatch(filled, { clear: ['fillTab'] }).fillTab).toBeUndefined();
+  });
+
   it('carries an added column whole, a removed one by id, and the order when they move', () => {
     const added = { id: 'new', status: 'new~x', name: 'New' };
     const after = {
@@ -70,7 +79,7 @@ describe('applyPlanBoardPatch', () => {
     expect(onA.columns.map((c) => c.name)).toEqual([
       'Backlog',
       'Ready',
-      'In progress',
+      'In Progress',
       'Checking',
       'Done',
     ]);

@@ -17,7 +17,8 @@ import { useRef, type ReactNode } from 'react';
 import { MenuIcon, useClickOutside, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 
-function OpenExternalIcon() {
+// The external-link glyph, shared with the workbench chrome.
+export function OpenExternalIcon() {
   return (
     <Glyph size={12} units={12}>
       <path d="M5 2H2.5A.5.5 0 0 0 2 2.5v7a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5V7" />

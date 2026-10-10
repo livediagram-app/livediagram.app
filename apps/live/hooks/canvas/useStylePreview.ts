@@ -25,7 +25,8 @@
 // the direct setters in useElementStyle use).
 
 import { useRef, type MutableRefObject } from 'react';
-import { isBoxed } from '@livediagram/document';
+import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@livediagram/document';
+import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
   ArrowFlow,
   ArrowThickness,
@@ -36,7 +37,6 @@ import type {
   CodeThemeId,
   Element,
   TablePreset,
-  ElementAnimation,
   IconAnimation,
   IconPosition,
   ElementShadow,
@@ -77,6 +77,8 @@ import {
   applyHeaderFillToEl,
   applyTextColorToEl,
   applyTextSizeToEl,
+  applyWordmarkToEl,
+  type WordmarkPatch,
 } from '@/lib/style-presets';
 import type { ShapeColorPreset } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
@@ -296,6 +298,11 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyTextAlignToEl(el, x, y), 'TextAlign'),
     previewTextSize: (v: TextSize) => previewStyle((el) => applyTextSizeToEl(el, v)),
     commitTextSize: (v: TextSize) => commitStyle((el) => applyTextSizeToEl(el, v), 'TextSize'),
+    // Wordmark type (docs/specs/007-editor/logo-pages.md): tracking, weight, case and arc, the
+    // telemetry type naming the field a commit changed.
+    previewWordmark: (patch: WordmarkPatch) => previewStyle((el) => applyWordmarkToEl(el, patch)),
+    commitWordmark: (patch: WordmarkPatch) =>
+      commitStyle((el) => applyWordmarkToEl(el, patch), wordmarkTelemetryType(patch)),
     // Label font + box padding — same hover-preview / click-commit flow as the
     // text-size tiles above, for the element menu's Text flyout.
     previewFont: (v: string | null) => previewStyle((el) => applyFontToEl(el, v)),
@@ -312,10 +319,12 @@ export function useStylePreview(deps: {
     // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is
     // the "None" tile. Reuses the snapshot/revert/commit machinery above, so a
     // hovered-then-clicked animation undoes to the true pre-hover value.
-    previewAnimation: (v: ElementAnimation | null) =>
-      previewStyle((el) => (isBoxed(el) ? { ...el, animation: v ?? undefined } : el)),
-    commitAnimation: (v: ElementAnimation | null) =>
-      commitStyle((el) => (isBoxed(el) ? { ...el, animation: v ?? undefined } : el), 'Animation'),
+    // Each animation set's category (docs/specs/028-animation/element-animations.md) writes only the
+    // members of its set; the telemetry type names the set.
+    previewSetAnimation: (set: AnimationSetId, v: string | null) =>
+      previewStyle((el) => withSetAnimation(el, set, v)),
+    commitSetAnimation: (set: AnimationSetId, v: string | null) =>
+      commitStyle((el) => withSetAnimation(el, set, v), ANIMATION_SET_TELEMETRY_TYPE[set]),
     previewArrowFlow: (v: ArrowFlow | null) =>
       previewStyle((el) => (el.type === 'arrow' ? { ...el, flow: v ?? undefined } : el)),
     commitArrowFlow: (v: ArrowFlow | null) =>
@@ -336,4 +345,16 @@ export function useStylePreview(deps: {
         'IconAnimation',
       ),
   };
+}
+
+const WORDMARK_EVENT: Record<keyof WordmarkPatch, string> = {
+  letterSpacing: 'TextTracking',
+  fontWeight: 'TextWeight',
+  textCase: 'TextCase',
+  textArc: 'TextArc',
+};
+
+function wordmarkTelemetryType(patch: WordmarkPatch): string {
+  // A patch names one field: the one its control changed.
+  return WORDMARK_EVENT[Object.keys(patch)[0] as keyof WordmarkPatch];
 }

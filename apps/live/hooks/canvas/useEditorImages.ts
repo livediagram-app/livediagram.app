@@ -51,6 +51,9 @@ type EditorImagesDeps = {
   // throwaway per-partition guest — uploads would land in an un-owned
   // gallery nobody can manage. Everything else in the embed stays editable.
   embedMode: boolean;
+  // The editor in a workbench uploads but never reads the person's gallery
+  // (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table): no recent-images fetch.
+  galleryHidden?: boolean;
   // Viewport centre in canvas coordinates — where freshly placed
   // images land.
   getViewportCenter: () => { x: number; y: number };
@@ -72,7 +75,7 @@ type EditorImagesDeps = {
 
 export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
-  const { documentId, ownerId, sessionShareCode } = deps;
+  const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
     forElementId: string | null;
@@ -94,9 +97,9 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // set on mount and stable for the session).
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!documentId || isReadOnly || embedMode) return;
+    if (!documentId || isReadOnly || embedMode || galleryHidden) return;
     loadRecentImages();
-  }, [documentId, isReadOnly, embedMode]);
+  }, [documentId, isReadOnly, embedMode, galleryHidden]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a

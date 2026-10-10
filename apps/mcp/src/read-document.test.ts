@@ -64,13 +64,14 @@ describe('readDocument', () => {
     expect(result.content).toEqual([
       {
         type: 'text',
-        text: `${OUTLINE}\n{"id":"d1","name":"Roadmap","tab":{"id":"t1","name":"Plan","rev":41},"url":"https://livediagram.app/document/d1"}`,
+        text: `${OUTLINE}\n{"id":"d1","name":"Roadmap","tab":{"id":"t1","name":"Plan","rev":41},"tabs":[{"id":"t1","name":"Plan"},{"id":"t2","name":"Risks"}],"url":"https://livediagram.app/document/d1"}`,
       },
     ]);
     expect(result.structuredContent).toEqual({
       id: 'd1',
       name: 'Roadmap',
       tab: { id: 't1', name: 'Plan', rev: 41, view: 'outline', text: OUTLINE },
+      tabs: LIVE_DOC.tabs,
       url: 'https://livediagram.app/document/d1',
     });
     expect(
@@ -122,6 +123,7 @@ describe('readDocument', () => {
       id: 'd1',
       name: 'Roadmap',
       tab: { id: 't1', name: 'Plan', rev: 41, elements: TAB.elements },
+      tabs: LIVE_DOC.tabs,
       url: 'https://livediagram.app/document/d1',
     });
     expect(requests.some((r) => r.searchParams.has('view'))).toBe(false);
@@ -133,11 +135,16 @@ describe('readDocument', () => {
     expect(withImage.content.map((c) => c.type)).toEqual(['text', 'image']);
   });
 
-  it('names an unknown tab as the api does, and a document without tabs', async () => {
+  it('refuses an unknown tab, naming the tabs there are, and a document without tabs', async () => {
     quiet();
     const { env } = api();
     const named = await readDocument(env, 'tok', { documentId: 'd1', tabId: 'elsewhere' });
-    expect(named.structuredContent).toMatchObject({ tab: { id: 'elsewhere', name: '' } });
+    expect(named).toEqual({
+      content: [
+        { type: 'text', text: 'No tab "elsewhere" in this document. Tabs: Plan (t1), Risks (t2).' },
+      ],
+      isError: true,
+    });
     const empty = api({ doc: { ...LIVE_DOC, tabs: [] } });
     expect(await readDocument(empty.env, 'tok', { documentId: 'd1' })).toEqual({
       content: [{ type: 'text', text: 'That document has no tabs.' }],

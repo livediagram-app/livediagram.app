@@ -96,32 +96,6 @@ export function FolderSolidIcon({ open = false, size = 13 }: IconProps & { open?
 // The line folder: the panel tree's folders, and every menu's Change Folder / folder chip.
 export const FolderOutlineIcon = lucideGlyph(lucideFolder, 12);
 
-const FOLDER_16 =
-  'M2 4.5A1.5 1.5 0 0 1 3.5 3h2.9a1 1 0 0 1 .77.37l.86 1.06a1 1 0 0 0 .78.37h3.69A1.5 1.5 0 0 1 14 6.3v5.2a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 11.5v-7z';
-
-// Folder with a lightning mark for the "Dynamic" parent of the synthetic
-// folders (Unsorted / Generated / Offline): live views over your documents,
-// not folders-table rows.
-export function DynamicFolderIcon({ size = 13 }: IconProps) {
-  return (
-    <G16 size={size}>
-      <path d={FOLDER_16} />
-      <path d="M8.7 6.7 7.1 9.1h1.8L7.3 11.4" />
-    </G16>
-  );
-}
-
-// Dashed folder outline for the synthetic Unsorted folder: folder-shaped so
-// it still reads as a place documents live, dashed so it reads as a dynamic
-// view rather than a real folders-table row.
-export function UnsortedIcon({ size = 13 }: IconProps) {
-  return (
-    <G16 size={size}>
-      <path d={FOLDER_16} strokeDasharray="2.2 1.8" />
-    </G16>
-  );
-}
-
 // Sparkle for the synthetic "Generated" folder (AI / MCP-created documents): the one shared sparkle.
 export function SparkleIcon({ size = 13 }: IconProps) {
   return <SharedSparkleIcon size={size} />;
@@ -134,21 +108,6 @@ export function DocumentIcon({ size = 13 }: IconProps) {
     <G16 size={size}>
       <rect x="2" y="2" width="12" height="12" rx="2" />
       <path d="M5 6h6M5 9h4" />
-    </G16>
-  );
-}
-
-// The Timeline section (docs/specs/013-workspace/timeline.md): a vertical rail with event dots
-// hanging off it: the shape of the feed itself, and deliberately not
-// another clock (Recent already owns that glyph, and the two sections
-// now sit next to each other in Quick find).
-export function TimelineIcon({ size = 13 }: IconProps) {
-  return (
-    <G16 size={size}>
-      <path d="M4 2v12" />
-      <circle cx="4" cy="4.5" r="1.3" fill="currentColor" stroke="none" />
-      <circle cx="4" cy="9" r="1.3" fill="currentColor" stroke="none" />
-      <path d="M7 4.5h6M7 9h4" />
     </G16>
   );
 }

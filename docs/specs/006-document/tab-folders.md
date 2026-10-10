@@ -2,7 +2,7 @@
 
 ## Why
 
-A document's tabs are a flat, ordered list along the tab bar. Once a document grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named, collapsible **folder**, e.g. put three tabs under "Organisation" and two under "Plans", and collapse a folder down to its name when they're not using it.
+A document's tabs are a flat, ordered list along the tab bar. Once a document grows past a handful of tabs that list gets unwieldy. Users want to group related tabs into a named **folder**, e.g. put three tabs under "Organisation" and two under "Plans", that takes one chip of space on the bar when they're not using it.
 
 This is the editor's tab bar only. It is unrelated to [Folders](../013-workspace/folders.md), which nests **documents** in the Explorer.
 
@@ -38,7 +38,7 @@ A drag both reorders AND sets membership: the dropped tab **adopts the drop targ
 
 Folder membership changes two ways:
 
-**1. Drag and drop.** Dropping a tab onto a folder's pills (or onto the folder chip, which targets the run's first member, so it works on a collapsed folder too) **joins** that folder; dropping it among loose tabs makes it **loose**; dropping it among a different folder's pills **moves** it there. The tab simply adopts the drop target's folder. `reorderTabs` performs the membership change in the same commit as the reorder.
+**1. Drag and drop.** Dropping a tab onto a folder's pills (or onto the folder chip, which targets the run's first member, so it works while the members are tucked away too) **joins** that folder; dropping it among loose tabs makes it **loose**; dropping it among a different folder's pills **moves** it there. The tab simply adopts the drop target's folder. `reorderTabs` performs the membership change in the same commit as the reorder.
 
 **Drop position is deterministic + shown.** While dragging, the tab bar reads the pointer's position within the hovered pill: the left half means "land **before** this tab", the right half means "land **after**", and a vertical **insertion caret** renders in that exact gap so the user can see where the tab will go before releasing. `reorderTabs` takes a `placeBefore` flag (set from that side) and recomputes the target index _after_ removing the source, so the result matches the caret regardless of drag direction. (Dropping onto a folder chip omits the flag and joins at the run's head, as above.) Before this, the only cue was a highlight ring around the whole target and the landing side flipped with drag direction, so the drop was hard to predict.
 
@@ -52,10 +52,9 @@ Folder membership changes two ways:
 
 `TabBar` maps over `groupTabsIntoRuns(tabs)` instead of the flat list:
 
-- **Loose** entries render the tab pill: a softly-rounded chip (rounded-lg — deliberately not a full pill) with **neutral slate text** so the name reads on the bar whatever the tab's theme, and the theme accent kept on the label's leading **opening-mode icon** (the Diagram or Draw glyph of the tab's Opens in, [Editor modes](../007-editor/editor-modes.md)). The **active** tab is a raised card — a bar-contrasting surface (white / slate-800) with an accent ring + shadow and accent-coloured text — so it can never blend into the bar; inactive tabs are soft tinted chips. The bar itself sits on a slate-50 surface so the active card pops.
+- **Loose** entries render the tab pill: a softly-rounded chip (rounded-lg — deliberately not a full pill) with **neutral slate text** so the name reads on the bar whatever the tab's theme, and the theme accent kept on the label's leading **opening-mode icon** (the glyph of the tab's mode, [Editor modes](../007-editor/editor-modes.md)). The **active** tab is a raised card — a bar-contrasting surface (white / slate-800) with an accent ring + shadow and accent-coloured text — so it can never blend into the bar; inactive tabs are soft tinted chips. The bar itself sits on a slate-50 surface so the active card pops.
 - **Folder** entries render as a **container**, clearly distinct from the tab pills inside it: a **dashed** rounded boundary over a tinted inset surface, carrying a **folder glyph** (closed when the fan is tucked away, open while it shows — no separate chevron), the folder **name** (small caps, no tooltip), and the member count as a small rounded **badge**. Members **fan UPWARD**: clicking the chip opens a transient popover above the bar listing the members vertically — the same pills loose tabs use (selection, presence, drag-reorder, context menu) — instead of expanding sideways, so a big folder costs one chip of horizontal space. Only the folder's **active member** (when the active tab lives in the folder) renders inline beside the chip; picking a member from the fan switches to it (it becomes the inline pill) and closes the fan. The fan closes on outside press, Escape, or any tab switch; the old persisted per-folder collapse state is gone (the fan is transient), and the chip surfaces the **presence** of its hidden members (the inline pill shows its own stack).
-- Clicking the chip toggles collapse. Double-clicking renames (rewrites every member). Collapse/expand state is **UI-only**: per browser via `localStorage` key `tabfolder:<documentId>:<folderName>`, never persisted to D1 and never broadcast.
-- If the active tab is inside a collapsed folder, the chip force-expands so the user can always see where they are. Conversely, navigating the active tab **out** of an expanded folder **auto-collapses** it, so a folder only stays open while you're working inside it; re-entering force-expands it again.
+- Clicking the chip toggles the fan. Double-clicking renames (rewrites every member). Nothing about the fan is stored or broadcast.
 
 ## Persistence & realtime
 
@@ -88,7 +87,7 @@ Two further rules, both learned from the untyped version:
 
 ## Edge cases
 
-- **Active tab in a collapsed folder** → chip force-expands.
+- **Active tab in a folder** → it renders inline beside the chip, so the user can always see where they are.
 - **One-tab folder** → valid; renders as a chip.
 - **Empty/whitespace name** → treated as loose everywhere (client normalize, create handler rejects, server trims to NULL).
 - **Name uniqueness within a document** → same name is the same folder (members merge into one run on normalize).

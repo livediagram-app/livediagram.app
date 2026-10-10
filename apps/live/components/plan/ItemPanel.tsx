@@ -5,8 +5,7 @@
 // panel beside it holds the fields in no tab, then who made the item and who last changed it. On a phone
 // it is one column and Details becomes the first tab. Every field saves as it changes. It follows the
 // item wherever someone moves it, and closes if someone deletes it.
-import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   BUILT_IN_FIELD_IDS,
   detailFieldsOf,
@@ -14,6 +13,7 @@ import {
   isArchived,
   isFlagged,
   itemTitle,
+  ITEM_TITLE_MAX,
   tabsOf,
   typeIn,
   type Item,
@@ -21,18 +21,19 @@ import {
   type ItemPatch,
   type ItemPerson,
   type ItemTypeDef,
+  type LinkedGroup,
 } from '@livediagram/items';
-import { DialogCloseButton, relativeSince, Select } from '@livediagram/ui';
+import { DialogCloseButton } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
-import { ItemChildCards } from './ItemChildCards';
+import { LinkedCardGroup } from './LinkedCards';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
+import { ItemKeyTag, ItemTypePill } from './ItemPanelHeaderParts';
 import type { ItemOpenVia } from './item-trail';
 import { FLAG_COLOUR } from './item-flag';
-import { ACCENT_TEXT, accentVars } from './plan-palette';
 import type { ItemCommentsContext } from './ItemComments';
 import {
   ItemFieldEditor,
@@ -41,9 +42,11 @@ import {
   labelsItsControl,
   type ItemFieldContext,
 } from './ItemFieldEditor';
+import { ItemDetailsRow, ItemMeta, ItemPanelSection, ItemTypeBand } from './ItemPanelLayout';
 
 // The phone's extra first tab, holding what the Details panel holds on a wide screen.
 const DETAILS_TAB = 'details';
+const NO_GROUPS: readonly LinkedGroup[] = [];
 
 const TAB_CLASS =
   'relative shrink-0 whitespace-nowrap px-1 pb-2 pt-1 text-[13px] font-medium transition aria-selected:text-brand-700 dark:aria-selected:text-brand-300';
@@ -54,13 +57,12 @@ type ItemPanelProps = {
   types: readonly ItemTypeDef[];
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
-  // The projects an item can sit under (its Parent).
-  projects: readonly Item[];
   people: readonly ItemPerson[];
   // Every label the document's items carry (the labels field's suggestions).
   labels: readonly string[];
   canEdit: boolean;
-  onSave: (field: string, value: ItemFieldValue | undefined) => void;
+  // Whether the save landed (false: refused), so a field can go back to what is saved.
+  onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;
   // Several fields in one write (the description and its formatting).
   onPatch: (patch: ItemPatch) => void;
   onType: (type: string) => void;
@@ -72,16 +74,39 @@ type ItemPanelProps = {
   // Archive the item, or restore an archived one (docs/specs/026-plan/items.md "Archive").
   onArchive: () => void;
   onClose: () => void;
+  // Edit Card Type in the ⋯ menu: closes the panel and opens the card's type in the type editor.
+  onEditType?: (() => void) | undefined;
   // The card's comments (docs/specs/026-plan/items.md "Comments").
   comments?: ItemCommentsContext;
   // The cards opened before this one from inside the panel, ending on it (docs/specs/026-plan/plan-board.md
   // "Breadcrumb").
   trail: readonly Item[];
-  // The cards that name this one as their Parent ("Child Cards").
-  childCards: readonly Item[];
+  // The cards linking here through a Card field, a group per field (docs/specs/026-plan/item-types.md "Card fields").
+  linkedGroups?: readonly LinkedGroup[];
+  // Make a new card of `typeId` already linked here through the group's field.
+  onAddLinked?: (group: LinkedGroup, typeId: string) => void;
   // Each status's column name, for a child row's status.
   statusNames: ReadonlyMap<string, string>;
+  // The card was just made by this person (openNewItem): its title is selected so typing names it.
+  fresh?: boolean;
 };
+
+// On a desktop, the title takes focus as a card opens (each card: the content is keyed by it): the caret at its
+// end, or the whole title selected on a card just made, so typing replaces "New task". A frame later than the
+// Dialog's focus trap, which first lands on the panel itself.
+function useTitleFocus(id: string, on: boolean, select: boolean): void {
+  useEffect(() => {
+    if (!on) return;
+    const frame = requestAnimationFrame(() => {
+      const field = document.getElementById(id);
+      if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)) return;
+      field.focus({ preventScroll: true });
+      if (select) field.select();
+      else field.setSelectionRange(field.value.length, field.value.length);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [id, on, select]);
+}
 
 // The panel: the Dialog stays mounted while the panel moves from card to card (a parent, a child, a crumb), so
 // it opens once rather than sliding in again; the content is keyed by the card, so each starts on its first
@@ -95,6 +120,10 @@ export function ItemPanel(props: ItemPanelProps) {
       ariaLabel={`Item #${item.key}`}
       size="3xl"
       phoneSheet
+      // The trap lands on the panel itself, never its first control (the type picker, which nobody opens a card
+      // to change); on a desktop the title then takes focus (useTitleFocus), on a phone it stays on the panel so
+      // no keyboard rises (docs/specs/026-plan/plan-board.md "Open an item").
+      initialFocus="container"
       className="h-[min(46rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden max-sm:h-[85dvh]"
     >
       <ItemPanelContent key={item.id} {...props} />
@@ -106,7 +135,6 @@ function ItemPanelContent({
   item,
   types,
   statuses,
-  projects,
   people,
   labels,
   canEdit,
@@ -119,12 +147,16 @@ function ItemPanelContent({
   onFlag,
   onArchive,
   onClose,
+  onEditType,
   comments,
   trail,
-  childCards,
+  linkedGroups = NO_GROUPS,
+  fresh = false,
+  onAddLinked,
   statusNames,
 }: ItemPanelProps) {
   const mobile = useIsMobileViewport();
+  useTitleFocus(fieldId(item, 'title'), !mobile && canEdit, fresh);
   // When the panel opened: the meta line says how long ago the last change was from here.
   const [now] = useState(() => Date.now());
   const type = typeIn(types, item.type);
@@ -153,7 +185,6 @@ function ItemPanelContent({
     item,
     type,
     statuses,
-    projects,
     people,
     labels,
     canEdit,
@@ -163,18 +194,23 @@ function ItemPanelContent({
     ...(comments ? { comments } : {}),
   };
 
-  // Child Cards sit on the type's first tab, before Comments; a Project shows them even with none.
+  // The Linked as sections sit on the type's first tab, before Comments, even with no cards in them.
   const firstTabId = tabs[0]?.id;
-  const showsChildren = childCards.length > 0 || item.type === 'project';
+  const showsChildren = linkedGroups.length > 0;
   const childSection = (
-    <ItemChildCards
-      key="child-cards"
-      item={item}
-      childCards={childCards}
-      types={types}
-      statusNames={statusNames}
-      onOpen={(id) => onOpenItem(id, 'ChildCard')}
-    />
+    <div key="child-cards">
+      {linkedGroups.map((g) => (
+        <LinkedCardGroup
+          key={g.fieldId}
+          group={g}
+          types={types}
+          statusNames={statusNames}
+          canAdd={canEdit && !!onAddLinked}
+          onOpen={(id) => onOpenItem(id, 'ChildCard')}
+          onAdd={(typeId) => onAddLinked?.(g, typeId)}
+        />
+      ))}
+    </div>
   );
 
   // The breadcrumb leads the header on a wide screen; on a phone it takes a row of its own above it, so neither
@@ -195,29 +231,11 @@ function ItemPanelContent({
     ) : null;
 
   const header = (
-    <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-2.5 dark:border-slate-700 sm:px-5">
+    <div className="flex min-h-12 items-center gap-2 px-4 py-2 sm:px-6">
       {mobile ? null : crumbs}
-      <span className={`shrink-0 ${ACCENT_TEXT}`} style={accentVars(type.color)}>
-        <PlanTypeGlyph glyph={type.glyph} size={16} />
-      </span>
-      <Select
-        aria-label="Item type"
-        variant="ghost"
-        selectClassName="text-[13px] font-semibold"
-        disabled={!canEdit}
-        value={item.type}
-        onChange={(e) => onType(e.target.value)}
-      >
-        {!types.some((t) => t.id === item.type) ? (
-          <option value={item.type}>{type.label}</option>
-        ) : null}
-        {types.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.label}
-          </option>
-        ))}
-      </Select>
-      <span className="text-[13px] text-slate-500 dark:text-slate-400">#{item.key}</span>
+      {/* The current card: its type picker and number, the trail's end (not a link). */}
+      <ItemTypePill type={type} value={item.type} types={types} canEdit={canEdit} onType={onType} />
+      <ItemKeyTag itemKey={item.key} />
       {isFlagged(item) ? (
         <span
           className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold"
@@ -228,60 +246,43 @@ function ItemPanelContent({
         </span>
       ) : null}
       <span className="flex-1" />
-      <HelpArticleLink article="planCards" variant="labelled" />
-      {canEdit ? (
-        <ItemPanelMenu
-          itemKey={item.key}
-          archived={isArchived(item)}
-          flagged={isFlagged(item)}
-          onDuplicate={onDuplicate}
-          onFlag={onFlag}
-          onArchive={onArchive}
-          onTrash={onTrash}
-        />
-      ) : null}
+      <ItemPanelMenu
+        itemKey={item.key}
+        canEdit={canEdit}
+        archived={isArchived(item)}
+        flagged={isFlagged(item)}
+        onDuplicate={onDuplicate}
+        onFlag={onFlag}
+        onArchive={onArchive}
+        onTrash={onTrash}
+        onEditType={onEditType}
+      />
       <DialogCloseButton compact onClick={onClose} />
     </div>
   );
 
-  const meta = (
-    <div className="mt-4 border-t border-slate-200 pt-3 text-[11px] leading-relaxed text-slate-500 dark:border-slate-700 dark:text-slate-400">
-      <div>Made by {item.createdBy.name}</div>
-      <div>
-        Changed by {item.updatedBy.name}, {relativeSince(item.updatedAt, now)}
-      </div>
-    </div>
-  );
+  const meta = <ItemMeta item={item} now={now} />;
 
   // A Details row: label beside its control on a wide screen, above it in the phone's tab.
   const detailRow = (f: string) => (
-    <div
+    <ItemDetailsRow
       key={f}
-      className="grid grid-cols-[6.5rem_1fr] items-start gap-2 py-2.5 max-sm:grid-cols-1 max-sm:gap-1.5"
+      label={fieldLabel(type, f)}
+      htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
     >
-      <label
-        htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
-        className="pt-1.5 text-[12px] font-medium text-slate-500 dark:text-slate-400 max-sm:pt-0"
-      >
-        {fieldLabel(type, f)}
-      </label>
-      <div className="min-w-0">
-        <ItemFieldEditor f={f} ctx={ctx} />
-      </div>
-    </div>
+      <ItemFieldEditor f={f} ctx={ctx} />
+    </ItemDetailsRow>
   );
 
   // A main-column field: its name over its editor.
   const mainField = (f: string) => (
-    <section key={f} className="mb-7">
-      <label
-        htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
-        className="mb-1.5 block text-[12px] font-semibold text-slate-700 dark:text-slate-200"
-      >
-        {fieldLabel(type, f)}
-      </label>
+    <ItemPanelSection
+      key={f}
+      heading={fieldLabel(type, f)}
+      htmlFor={labelsItsControl(type, f) ? fieldId(item, f) : undefined}
+    >
       <ItemFieldEditor f={f} ctx={ctx} />
-    </section>
+    </ItemPanelSection>
   );
 
   const tabPanel = current ? (
@@ -309,25 +310,31 @@ function ItemPanelContent({
 
   return (
     <>
+      <ItemTypeBand colour={type.color} />
       {mobile ? trailRow : null}
       {header}
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-y-auto px-4 pb-6 pt-4 sm:px-6">
+        <div className="min-w-0 flex-1 overflow-y-auto px-4 pb-8 pt-2 sm:px-8">
           <DebouncedText
             id={fieldId(item, 'title')}
             label="Title"
             value={itemTitle(item)}
+            maxLength={ITEM_TITLE_MAX}
+            // Enter saves the title and closes the card.
+            onEnter={onClose}
+            // A long title wraps to three lines, then scrolls; a short one keeps to one (plan-board.md "Look").
+            wrapLines={3}
             required
             placeholder="Title"
             disabled={!canEdit}
             onSave={(v) => onSave('title', v)}
-            className="-mx-2 mb-3 w-[calc(100%+1rem)] rounded-md border border-transparent bg-transparent px-2 py-1 text-[20px] font-semibold leading-snug text-slate-900 outline-none transition hover:border-slate-200 focus:border-brand-400 focus:bg-white dark:text-slate-50 dark:hover:border-slate-700 dark:focus:bg-slate-950"
+            className="-mx-2 mb-5 w-[calc(100%+1rem)] rounded-lg border border-transparent bg-transparent px-2 py-1 text-[22px] font-semibold leading-snug tracking-tight text-slate-900 outline-none transition hover:bg-slate-50 focus:border-brand-400 focus:bg-white focus:ring-2 focus:ring-brand-500/20 dark:text-slate-50 dark:hover:bg-slate-800/50 dark:focus:bg-slate-950"
           />
           {shownTabs.length > 1 ? (
             <div
               role="tablist"
               aria-label="Item sections"
-              className="mb-4 flex gap-4 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
+              className="mb-6 flex gap-5 overflow-x-auto overflow-y-hidden border-b border-slate-200 dark:border-slate-700"
               onKeyDown={(e) => {
                 if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
                 e.preventDefault();
@@ -371,9 +378,9 @@ function ItemPanelContent({
         {mobile ? null : (
           <aside
             aria-label={detailsLabelOf(type)}
-            className="w-80 shrink-0 overflow-y-auto border-l border-slate-200 bg-slate-50/70 px-4 py-4 dark:border-slate-700 dark:bg-slate-950/40"
+            className="m-3 ml-0 w-80 shrink-0 overflow-y-auto rounded-xl bg-slate-50 px-4 py-4 ring-1 ring-slate-200/70 dark:bg-slate-800/40 dark:ring-slate-700/60"
           >
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               {detailsLabelOf(type)}
             </h3>
             {details.map(detailRow)}
@@ -385,7 +392,7 @@ function ItemPanelContent({
   );
 }
 
-// A first tab's fields with the Child Cards section placed before Comments (or last when it has none).
+// A first tab's fields with the Linked as sections placed before Comments (or last when it has none).
 function tabFieldsWithChildren(
   fields: readonly string[],
   mainField: (f: string) => ReactNode,

@@ -6,6 +6,7 @@ import { eventStormingKindOf } from './event-storming';
 // surface that wants to name the kind of element a user has selected.
 const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   'speech-bubble': 'Speech Bubble',
+  'plan-sheet': 'Sheet',
   icon: 'Icon',
   'progress-bar': 'Progress Bar',
   'progress-ring': 'Progress Ring',

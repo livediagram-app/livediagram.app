@@ -181,7 +181,7 @@ choice is document-wide, applying to every share link's image.
 The thumbnail shows on **every** Explorer surface that lists a document:
 the full-page `/explorer` rows (Recent / My documents / folders / Search results /
 This browser), the team library page, the "Shared with me" list, and the
-floating in-editor Explorer panel. A single shared `DocumentThumbnail`
+in-editor Explorer. A single shared `DocumentThumbnail`
 component (`components/panels/DocumentThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the document's) plus, for a shared row,
 its share code — so the authed fetch authorises the same way the document
@@ -215,14 +215,14 @@ separator**, unless the row is the document already open in this editor
 row doesn't offer a no-op); then **one full-width row per verb, icon on
 the left** (Rename, Duplicate, Change Folder, Favourite,
 History, Hide from Recent, Open Team, Take Offline / Sync); then
-**Delete last, under a separator, red at rest**. It was an icon-over-
+**Delete last, under a separator** (styled as every other row: a delete is never red). It was an icon-over-
 label tile grid, two columns and then three: eight verbs in a grid read
 in two directions with labels wrapping under their icons, and a list of
 verbs scans down in one. The rows are `MenuActionRow` in its `plain`
 (sentence-case, 13px) form rather than the uppercase category-header
 form the note menu uses, because here the rows are the whole menu. A
 shared-with-you document's menu (Open, Dismiss) is the same shape.
-**The floating Explorer panel's rows use this same menu** (both the
+**The editor's Explorer rows use this same menu** (both the
 personal rows and a team library's rows). The panel used to carry its
 own toolbar-and-accordion menu with a Share section; sharing is the
 editor header's job, and a menu that looked like no other in the app was

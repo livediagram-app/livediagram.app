@@ -5,34 +5,52 @@ import { PanelLayout } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Panel Layout',
   description:
-    'The editor is built from floating panels around the canvas. Here is what they are and how they sit on screen.',
+    'Where each panel and control sits around the livediagram canvas, how to drag a corner panel to another corner, and what changes on a phone.',
   path: '/help/user-interface/panel-layout/',
 });
 
 <ArticleLayout
   title="Panel Layout"
-  description="The floating panels that frame the canvas, and how they are arranged."
+  description="The toolbar, panels and fixed controls that frame the canvas, and how to arrange them."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-Everything around the canvas is a **panel**: a small, self-contained piece of the interface that floats over the canvas rather than taking a fixed slot in a rigid layout. The canvas itself fills the screen, and the panels sit on top of it at the edges, so what is on it always has room to breathe.
+Everything around the canvas is a toolbar, a **panel** or a fixed control. The canvas itself fills the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid layout, so what is on the canvas always has room to breathe. The layout is the same on a computer, a tablet and a phone.
 
-You will meet a handful of them: the [palette](/help/palette/) for adding things, the [tab bar](/help/user-interface/tab-bar/) for moving between boards, the [toolbar](/help/user-interface/toolbar/) that appears when something is selected, the [zoom controls](/help/user-interface/zoom-controls/), and the [quick controls](/help/user-interface/quick-controls/) in the corner. Each is covered in its own guide.
-
-<Figure caption="The canvas fills the screen, with the floating panels tucked around its edges: palette top-right, quick controls and tab bar at the bottom, zoom in the corner.">
+<Figure caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, a Vote panel docked top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls.">
   <PanelLayout />
 </Figure>
 
-Panels stay out of the way: they appear when they are useful and tuck back when they are not, and several can be dragged to a spot that suits you. The point is a calm workspace where the canvas is the star and the controls are within reach without crowding it.
+## What sits where
+
+- **Top-left**: the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your documents and folders) under it. On a computer the [editor mode](/help/canvas/editor-modes/) switch sits beside it.
+- **Top centre**: the [palette strip](/help/palette/toolbar-layout/), for picking a selection mode and adding things to the canvas. In [Draw mode](/help/canvas/draw-mode/) its dock takes the strip's place.
+- **Top-right**: the AI, Poll and Vote panels and the tool panels, when they are in use, below the strip when it reaches that far.
+- **Bottom-left**: the [Map](/help/user-interface/minimap/), once a tab has a few elements.
+- **Bottom-right**: a fixed cluster of buttons: Undo and Redo, **Layers**, **Collaborate** (while the tab has a comment or an action), the **Theme & canvas** paintbrush, and the [zoom controls](/help/user-interface/zoom-controls/). Layers and Collaborate open as popovers over their buttons, and close when you press the button again.
+- **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick controls](/help/user-interface/quick-controls/) (Search, Settings, appearance) at its right-hand end.
+- **Next to a selection**: the [toolbar](/help/user-interface/toolbar/), and the [Quick Style panel](/help/canvas/quick-style-panel/) for a shape or arrow.
+
+The tool panels (Laser, Spotlight, Eraser, Format, Avatar and Slide Deck) appear while their [selection mode](/help/selection-modes/) is in use.
 
 ## Put panels in the corner you want
 
-Every floating panel can be dragged by its header to any corner of the screen — the Palette, Explorer, Collaborate, Layers, AI, Map, and the Poll and Vote panels that appear while a [session tool](/help/collaboration/session-tools/) is running. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays free-floating right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden. Your arrangement is remembered per device, so a reload restores it, and the reset button in a panel's header sends it back to its default corner.
+The corner panels can be dragged by their header to any corner of the screen: the AI Assistant and Map panels, the tool panels, and the Poll and Vote panels that appear while a [session tool](/help/collaboration/session-tools/) is running. Snap guides appear in the four corners while you drag, and the nearest one highlights to show where the panel will land; drop it away from every corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
+
+Your arrangement is remembered on this device, so a reload restores it. Once a panel has moved from its default spot, a **Reset position** button in its header sends it back. Each panel can also be collapsed from its header to a slim banner.
+
+The palette strip, the menu button, the bottom-right buttons and the bottom bar stay where they are.
+
+## On a phone
+
+On a phone the menu button sits in a card of its own at the left of the strip, without the mode switch, and the strip's tiles swipe sideways. Tap a panel's header to collapse or expand it. See [Toolbar Layout](/help/palette/toolbar-layout/#on-a-phone).
+
+[Panel Opacity](/help/palette/panel-opacity/) fades every panel so the canvas shows through, and **UI Scale** under **Appearance** makes them bigger or smaller.
 
 <Tip>
-  Want even less on screen? Most panels can be hidden for a distraction-free view, see [Zen
-  mode](/help/tools/zen-mode/).
+  Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides every panel and leaves
+  just the canvas and the zoom controls.
 </Tip>
 
 </ArticleLayout>

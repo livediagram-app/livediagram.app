@@ -9,39 +9,47 @@ import {
 export const metadata = helpMetadata({
   title: 'Toolbar Layout',
   description:
-    'Put the palette in one strip across the top of the canvas, with a menu button for the Explorer. The rest of the panels float as usual.',
+    'The palette is one strip across the top of the canvas, with a menu button for the Explorer and a search for every element. The other panels dock in the corners.',
   path: '/help/palette/toolbar-layout/',
 });
 
 <ArticleLayout
   title="Toolbar Layout"
-  description="Put the palette in one strip across the top of the canvas, and open the Explorer from a menu button."
+  description="The palette in one strip across the top of the canvas, and the Explorer behind a menu button."
   categoryTitle="Palette"
   categorySlug="palette"
   subArticles={getSubArticles("toolbar-layout")}
 >
 
-Toolbar is one of the two choices in the **Panel Layout** setting (Floating and Toolbar). You will find it in [Settings](/help/user-interface/settings/), under **Panels**, where a small picture of each layout shows how they differ before you switch. Floating is the default on a computer.
+The editor lays its tools out the same way on every device, a computer, a tablet or a phone: the palette is one strip across the top of the canvas, and the Explorer opens from a menu button in the top-left corner.
 
 ## What it does
 
-The palette becomes a single strip across the top of the canvas. From left to right it holds:
+The palette is a single strip pinned to the top centre of the canvas. From left to right it holds:
 
-- **Selection mode**: Select, Hand, Eraser, Laser and the rest, the same choices as the palette's own picker.
+- **Selection mode**: Select, Hand, Eraser, Laser and the rest.
 - **Category**: which set of tiles the strip shows, such as Popular, Shapes or Icons.
-- **Twelve tiles** from that category. Click one to add it, or drag it onto the canvas, exactly as from the palette. Each tile shows its keyboard shortcut in the corner.
+- **Up to twelve tiles** from that category (fewer on a narrow window). Click one to add it, or drag it onto the canvas. Each tile shows its keyboard shortcut in the corner.
 - **More** (the **⋯** button), when the category has more than the strip can hold.
-- **Search** (the magnifier, or press `S`), last on the strip, to find any element, icon or sticker by name.
+- **Search** (the magnifier, or press **S**), last on the strip, to find any element, icon or sticker by name.
 
-There is no floating Explorer panel. The **menu button** in the top-left corner opens the Explorer under it, and clicking it again closes it. **Layers** and **Collaborate** open just above their buttons in the bottom row, and close when you click the button again. Every other panel (the AI assistant, the Map, polls, votes and the tool panels) floats and docks in its corner exactly as it does in the Floating layout.
+In the top-left corner, in a card of their own, sit the **menu button** and the **editor mode switch** (Diagram, Draw, Illustrate or Plan; **Shift+D** moves to the next mode). The menu button opens the [Explorer](/help/explorer/explorer-panel/) as a popover under it, and clicking it again closes it.
 
-<Figure caption="The Toolbar layout: the menu button top-left, the strip across the top, and the usual bottom row.">
+**Layers** and **Collaborate** open just above their buttons in the bottom row, and close when you click the button again. Every other panel (the AI assistant, the Map, polls, votes and the tool panels) docks in a corner of the canvas, and you can drag it to another (see [Panel Layout](/help/user-interface/panel-layout/)). Undo and Redo stay in the bottom-right corner.
+
+<Figure caption="The editor: the menu button and mode switch top-left, the strip across the top, and the usual bottom row.">
   <ToolbarLayoutOverview />
 </Figure>
 
+Only one of the strip's menus is open at a time: opening the selection mode, category, More or Search closes whichever other was open, and a click anywhere outside closes it.
+
 ## More
 
-**More** opens the whole category under the button: its search box and every tile. Adding a tile from it closes it again, so the canvas is clear to draw on.
+**More** opens the whole category under the button: its search box, its groups and every tile. Adding a tile from it closes it again, so the canvas is clear to draw on, and switching category closes it too. Icons, Stickers, Tech and Collaborate always have a More, since their search and groups only live there.
+
+<Figure caption="More hangs from its button with the whole category: its search box and every tile.">
+  <ToolbarMorePopover />
+</Figure>
 
 ## Search
 
@@ -49,20 +57,27 @@ There is no floating Explorer panel. The **menu button** in the top-left corner 
 
 Each editor mode keeps its palette to the tools that suit it, so a Diagram has no charts and an Illustrate page has no pens. Search still finds those: they wait below, under **Not in Diagram Mode** (or whichever mode you are in), closed until you open it. Every element works in every mode. That includes Draw mode's **Marker 1, 2 and 3**, in the colours and widths you gave them there: pick one and draw, and press Escape to put it down.
 
-Search is not on an Event Storming board, where the notation is the palette, and Draw mode shows its own dock instead of the strip.
+Search is not on an Event Storming board, where the notation is the palette, and Draw mode shows its own dock instead of the strip. Wherever the strip's Search isn't shown, **S** keeps its old meaning and picks the Select tool.
 
 ## The order of the tiles
 
-Each category keeps its own order on the strip: adding something never moves it. Thin dividers split a category into groups of related tiles, such as the desktop and the mobile devices, or the charts and the meters.
+Each category keeps its own order on the strip: adding something never moves it. Thin dividers split a category into groups of related tiles, such as the desktop and the mobile devices, or the charts and the meters. The strip opens on the mode's [Popular](/help/palette/popular/) each time a document loads.
+
+## What else the strip shows
+
+- **Plan mode** adds an **Edit Cards** button to the strip, and **Illustrate** an **Add page** button (a **+**).
+- **On an Event Storming board** the strip shows the notation's tiles instead of the two pickers, led by **Add from photo** where it is available.
+- **Viewers** who can't edit have no strip, since there is nothing to add; the menu button still shows.
+- **Zen mode** hides the strip and the menu button with the rest of the editor's chrome.
 
 ## On a phone
 
-Toolbar works on a phone too. The strip is narrower there:
+On a phone the strip is narrower:
 
-- The **menu button** sits at the left end of the strip rather than in the corner, on its own: to change editor mode on a phone, open the tab menu (the **…** on the tab) and choose **Opens in**.
-- The **category** shows its icon only, which leaves room for more tiles. How many tiles fit depends on how wide your screen is; **More** has the rest, and opens across the width of the screen.
+- The **menu button** sits in a card of its own at the left of the strip, without the mode switch: to change editor mode on a phone, open the tab menu (the **…** on the tab) and choose **Mode**.
+- The **category** shows its icon only, which leaves room for more tiles. Swipe the tiles sideways to see the rest of the category; **More** opens across the width of the screen.
 - **Layers** and **Collaborate** open above their buttons in the bottom row, as on a computer. Pinch to zoom; the **Fit** button is there too.
 
-A phone always uses Toolbar. Floating is for computers, so if you pick it, a phone still shows Toolbar (and your computer still shows Floating).
+A phone held sideways counts as a phone too.
 
 </ArticleLayout>

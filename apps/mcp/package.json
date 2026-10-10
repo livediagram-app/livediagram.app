@@ -23,6 +23,7 @@
     "@livediagram/icons": "workspace:*",
     "@livediagram/items": "workspace:*",
     "@livediagram/render-png": "workspace:*",
+    "@livediagram/sheets": "workspace:*",
     "@livediagram/templates": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.31.0",
     "@resvg/resvg-wasm": "^2.6.2",

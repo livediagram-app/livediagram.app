@@ -3,7 +3,9 @@ import { isPlanViewId } from '@livediagram/items';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   CATALOGUE_CATEGORIES,
+  COVERED_PALETTE_CATEGORY,
   PALETTE_LAYOUTS,
+  coveredPaletteCategories,
   paletteCategoriesFor,
   paletteCategoryOffered,
   paletteLandingCategory,
@@ -145,6 +147,7 @@ describe('palette layouts', () => {
       'plan-widgets',
       'plan-metrics',
       'plan-visualisations',
+      'plan-sheets',
       'plan-content',
       'plan-tools',
     ]);
@@ -168,13 +171,14 @@ describe('palette layouts', () => {
       expect(ids(mode)).not.toContain('plan-cards');
       expect(ids(mode)).not.toContain('plan-widgets');
       expect(ids(mode)).not.toContain('plan-visualisations');
+      expect(ids(mode)).not.toContain('plan-sheets');
     }
   });
 
   it('offers a board per preset and a card per item type', () => {
     const boards = tileIds('plan', 'plan-boards');
     const cards = tileIds('plan', 'plan-cards');
-    expect(boards).toHaveLength(9);
+    expect(boards).toHaveLength(10);
     expect(boards.every((id) => id.startsWith('plan:board-'))).toBe(true);
     expect(cards).toHaveLength(5);
     expect(cards.every((id) => id.startsWith('plan:card-'))).toBe(true);
@@ -188,13 +192,38 @@ describe('palette layouts', () => {
     expect(charts.tiles!.map((t) => t.caption)).toEqual([
       'Gantt Chart',
       'Due Calendar',
-      'Workload',
-      'Status Breakdown',
+      'Cards by Field',
       'Priority Matrix',
+      'Card Search',
     ]);
     for (const t of [...widgets.tiles!, ...charts.tiles!]) {
       expect(t.action).toMatchObject({ type: 'shape', kind: 'plan-view' });
       expect(isPlanViewId((t.action as { plan?: string }).plan)).toBe(true);
     }
+  });
+
+  it('offers Logo in Illustrate only while the tab has a logo page (logo-pages.md)', () => {
+    expect(ids('illustrate')).not.toContain('logo');
+    const withLogo = paletteCategoriesFor('illustrate', { logoPages: true });
+    const logo = withLogo.find((c) => c.id === 'logo')!;
+    expect(logo.tiles!.map((t) => t.id)).toEqual([
+      'logo:pen',
+      'tools:pencil',
+      'tools:text',
+      'shapes:square',
+      'shapes:circle',
+      'shapes:diamond',
+    ]);
+    expect(paletteCategoriesFor('diagram', { logoPages: true }).map((c) => c.id)).not.toContain(
+      'logo',
+    );
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Maximised board": a board covering the canvas leaves the palette only Cards.
+describe('coveredPaletteCategories', () => {
+  it('is Plan’s Cards alone', () => {
+    expect(coveredPaletteCategories().map((c) => c.id)).toEqual([COVERED_PALETTE_CATEGORY]);
+    expect(COVERED_PALETTE_CATEGORY).toBe('plan-cards');
   });
 });

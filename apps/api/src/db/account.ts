@@ -104,6 +104,15 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM custom_themes WHERE owner_id = ?').bind(ownerId).run();
   // shape_libraries (docs/specs/013-workspace/shape-libraries.md): this owner's libraries go too.
   await env.DB.prepare('DELETE FROM shape_libraries WHERE owner_id = ?').bind(ownerId).run();
+  // Workbench rows (docs/specs/013-workspace/workbench-embeds.md), before the tokens they were minted from.
+  await env.DB.batch(
+    [
+      'workbench_sessions',
+      'workbench_tickets',
+      'workbench_pairings',
+      'workbench_pairing_requests',
+    ].map((table) => env.DB.prepare(`DELETE FROM ${table} WHERE owner_id = ?`).bind(ownerId)),
+  );
   // api_tokens (docs/specs/015-api/public-api-and-tokens.md): no API credential outlives the account.
   await env.DB.prepare('DELETE FROM api_tokens WHERE owner_id = ?').bind(ownerId).run();
   // email_lifecycle (docs/specs/014-identity/transactional-email.md): drop the onboarding-email row so the address
@@ -217,8 +226,10 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   const sharedInsertRes = await env.DB.prepare(
-    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen)
-     SELECT ?, document_id, role, last_seen
+    // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
+    // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
+    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id)
+     SELECT ?, document_id, role, last_seen, tab_id
      FROM shared_with
      WHERE owner_id = ?`,
   )

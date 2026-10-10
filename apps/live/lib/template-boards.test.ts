@@ -31,9 +31,15 @@ const inside = (inner: Element, outer: Element) => {
 };
 
 // The Plan templates (docs/specs/026-plan/plan-mode.md "Templates"): one Plan board each, the set-up
-// its use wants, and seed items that land in the board's columns.
+// its use wants, and seed items that land in the board's columns. Blank Plan is the exception
+// (docs/specs/026-plan/plan-templates.md "Blank Plan"): an empty tab, so Plan offers Start Planning.
 describe('plan templates', () => {
-  const kinds = [...PLAN_TEMPLATE_KINDS];
+  const kinds = PLAN_TEMPLATE_KINDS.filter((kind) => kind !== 'blank-plan');
+
+  it('makes Blank Plan an empty tab, opening in Plan', () => {
+    expect(buildTemplate('blank-plan', 0, 0)).toEqual([]);
+    expect(templateEditorMode('blank-plan')).toBe('plan');
+  });
 
   it('each make one Plan board with a valid set-up, opening in Plan', () => {
     for (const kind of kinds) {
@@ -52,7 +58,7 @@ describe('plan templates', () => {
       planBoard: PlanBoardSetup;
     };
     expect(board.planBoard.hideWriting).toBe(true);
-    expect(board.planBoard.voting).toEqual({ on: true, budget: 5 });
+    expect('voting' in board.planBoard).toBe(false);
     expect(retro.some((el) => el.type === 'sticky')).toBe(true);
   });
 });

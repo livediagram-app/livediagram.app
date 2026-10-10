@@ -4,15 +4,15 @@ Status: shipped
 
 ## What
 
-One of the two panel layouts, next to **Floating** (the desktop default,
-[Canvas and palette](../008-canvas/canvas-and-palette.md)). It is the only layout on a phone (see "On a phone"). The Palette becomes a single horizontal strip pinned
-to the top centre of the canvas, the way Excalidraw's tool bar works:
+The editor's one panel layout, on every device (see "One layout" for the retired Floating
+layout). The Palette is a single horizontal strip pinned to the top centre of the canvas, the way
+Excalidraw's tool bar works:
 
 ```
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────┐
  │        │ [↖ ▾] │ [Shapes ▾] │ □ ◇ ○ → ─ ✎ A ▤ … │ [⋯ ▾] │
  ▼        └──────────────────────────────────────────────────────┘
- Explorer            (Undo/Redo, Layers, zoom: the Floating bottom row)
+ Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
 ```
 
 - **Top left, before the strip: the menu button and the editor mode
@@ -21,15 +21,14 @@ to the top centre of the canvas, the way Excalidraw's tool bar works:
   On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Avatar / Isometric / Zen, [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
-  as a compact icon trigger. It opens the same banded tile grid the Palette's
-  header opens.
+  as a compact icon trigger, opening the banded tile grid.
 - **Then the category picker.** The same banded category grid ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)),
   as a compact trigger showing the current category's glyph and name. It
   sits directly before the tiles it chooses, so it reads as their label.
 - **Then the current category's first twelve tiles** (fewer on a narrow window, see "Decided in review"), icon-only, each with its
   hover card, shortcut letter, drag-to-place, theme tint and pressed state. They
-  are the same tiles as the Palette's (`palette-tile-defs`, arranged by the mode's palette layout, [Editor modes](editor-modes.md#the-palette-per-mode)),
-  rendered by the same `PaletteTile`, so one change reaches both layouts.
+  are the Palette's tiles (`palette-tile-defs`, arranged by the mode's palette layout, [Editor modes](editor-modes.md#the-palette-per-mode)),
+  rendered by the shared `PaletteTile`, so the strip and its popovers stay alike.
 - **Right: More (⋯ ▾)**, when the category has more than the strip shows.
 - **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
   "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
@@ -47,7 +46,7 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
   screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
   strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes
-  it. **S** opens it too, wherever it is shown (with the strip in this layout, an editor, not an
+  it. **S** opens it too, wherever the strip is shown (an editor, not an
   event-storming board, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
   alias of Select. The field's clear button (×, once there is text) clears the query and returns to
   the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
@@ -119,8 +118,7 @@ A strip shows one category at a time, so finding an element means knowing which 
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
 Stickers, Technology and Collaborate do not. More opens the current
 category's full Palette body in a popover hanging from the More button's own
-right edge: search, group browser, everything. It
-is the exact node the floating Palette renders, not a copy. The popover is
+right edge: search, group browser, everything. The popover is
 wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
 from it closes it, so the canvas is clear to draw on; switching category
 closes it too, since it was showing the old one. Opening it focuses the body's
@@ -129,8 +127,9 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Icons, Stickers, Technology and Collaborate, whose bodies carry
-more than tiles (search, group browsing). It sits outside the
+Icons, Stickers, Technology, Behaviour and My shapes, whose bodies carry
+more than tiles (search, group browsing, the person's libraries; My shapes has no strip tiles
+of its own, so More is its only way in). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
 For Icons / Stickers / Technology the strip's twelve are the first twelve of the
@@ -179,11 +178,10 @@ popover hanging under it, and closed again. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
-buttons** ([Live app](live-app.md)): they are not corner panels here. Every
-other panel (AI, the minimap, Poll, Vote and the tool panels) behaves exactly
-as in **Floating**, docking in its corner. Layers and Collaborate render outside
-the corner layer in this layout, since a popover positions against the
-canvas and a corner stack would move it.
+buttons** ([Live app](live-app.md)): they are not corner panels. Every
+other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corner
+([Panel docking](panel-docking.md)). Layers and Collaborate render outside
+the corner layer, since a popover positions against the canvas and a corner stack would move it.
 
 ## One menu at a time
 
@@ -195,36 +193,33 @@ Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
 Collaborate popovers ([Live app](live-app.md)). The strip's dropdown menus are kept
 on screen sideways as well as vertically, whatever the trigger's position.
 
-## The setting
+## One layout
 
-`panelLayout?: 'floating' | 'toolbar'` ([User preferences](user-preferences.md)), shown in
-Settings → Panels as a two-way **Panel Layout** choice. The editor tour's welcome card ([Interactive editor tour ("Show me around")](editor-tour.md))
-offers the same choice, drawn with the same pictures, so a new user picks a
-layout on their first document.
+There is no layout choice. An earlier version offered a second layout, **Floating**, as the
+desktop default: the Palette as a draggable corner panel, the Explorer as a corner panel, Layers
+minimising into its cluster button, and Draw mode's tools inside the Palette panel. It was retired
+because every new feature had to be built and kept working twice, and the strip had become the
+better layout. Its parts went with it:
 
-- Missing → Floating on desktop, Toolbar on a phone.
-- A stored value the editor no longer knows (a legacy `'minimal'`) resolves
-  exactly like a missing one; so does the retired `minimalPanels` flag, which
-  is not part of the preferences and is ignored.
-- Telemetry: `UI`/`Changed` with the layout picked in the type,
-  `PanelLayoutFloating` / `PanelLayoutToolbar` (a
-  choice row, [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), whether picked from the radios or the pictures.
+- The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
+  (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
+- Settings has no Panel Layout row, and the editor tour's welcome card no layout picker
+  ([Interactive editor tour ("Show me around")](editor-tour.md)).
+- The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
+  that names them is ignored ([Panel docking](panel-docking.md)).
+- Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
+  types, so the history still reads ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## On a phone
 
-**A phone always uses Toolbar** (`resolvePanelLayout(prefs, { mobile: true })`).
 A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one held sideways:
-844 × 390 was laid out as a desktop, its floating panels covering the 286px canvas).
+844 × 390 was laid out as a desktop, its panels covering the 286px canvas).
 `PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
-button always was, so the Explorer fits a landscape phone. It gets the same chrome as a desktop in Toolbar ([Live app](live-app.md)):
+button always was, so the Explorer fits a landscape phone. It gets the same chrome as a desktop ([Live app](live-app.md)):
 panels in their corners, Layers and Collaborate as popovers over
-their bottom-row buttons. Floating is desktop only: a user who never chose, or
-chose Floating, gets the strip on a phone and Floating back on a desktop,
-since the stored value is untouched. The Settings row greys Floating
-out and rings Toolbar ([User preferences](user-preferences.md)); the tour's welcome card shows no
-layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md)). What changes to fit the width:
+their bottom-row buttons. What changes to fit the width:
 
 - **The menu button gets its own card, left of the strip,** without the mode switch: the tab
   menu's Opens in switches mode on a phone ([The mode switch](editor-modes.md#the-mode-switch)).
@@ -252,20 +247,29 @@ layout picker there ([Interactive editor tour ("Show me around")](editor-tour.md
 - Read-only visitors have no strip, so their menu button stays top-left.
 - The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
-## The setting's pictures
-
-The Panel Layout row draws both layouts side by side, the current one
-ringed, so the difference is visible before switching ([User preferences](user-preferences.md)).
-
 ## Layout details
 
 - The strip sits at `top-3`, centred, at `z-toolbar`. The top-centre stack
-  (follow-me pill, mode banners, timer, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
+  (follow-me pill, timer, vote, [Canvas and palette](../008-canvas/canvas-and-palette.md)) moves
   down to clear it.
-- Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the Palette's header; the strip
-  hides both its pickers the same way and shows the notation's tiles, led by
-  the board's **Add from photo** (an icon button with a hover card, the
-  floating palette's board row) where the deployment offers photo import.
+- **Messages hang from the strip, as its tray.** The messages that tell you what the next press does (the
+  mode banners: a tile in hand, "Select the board column you want this card to appear in"; the Format tool and
+  the format painter) and the modifier hint (Shift, Alt) attach to the strip's bottom edge instead of floating
+  under it as pills:
+  - One shared look, the **palette tray**: the strip's own surface (white, hairline border, dark in dark mode),
+    no top border, so it joins the strip's bottom edge with no gap; its bottom corners round as the strip's do,
+    and a soft shadow falls below it.
+  - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
+    menu button).
+  - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
+    its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries.
+  - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
+  - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
+  - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
+    top-centre pills they are elsewhere.
+- Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
+  the board's **Add from photo** (an icon button with a hover card) where the deployment offers
+  photo import.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
@@ -284,11 +288,14 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   pop in a 10ms beat apart (a cascade, settling within 250ms), and the outgoing ones shrink away on a layer over
   the top. Only a real switch animates; the first set is simply there.
   Reduced motion collapses it to instant (`ToolbarStripRail`).
+- **The rail is always as wide as its tiles.** Its width follows the tiles as laid out, whenever they change
+  (a category switch, a tile added or gone, such as a card type), never a tile caught mid-slide: no empty gap
+  after the last tile once they settle.
 
 ## Look
 
-- **Sharp at 1x.** Every tile glyph, in the strip and in the floating
-  Palette, sits on a whole pixel. Three causes were found and removed:
+- **Sharp at 1x.** Every tile glyph, on the strip and in its popovers,
+  sits on a whole pixel. Three causes were found and removed:
   - The Palette's tile grid split its body into three fractional columns
     (76.67px), so every glyph straddled a pixel. It uses fixed, even 76px
     columns spread edge to edge instead.
@@ -298,7 +305,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
     card matching the canvas's parity so centring stays whole).
   - Thirteen-pixel glyphs (the Behaviour and mode icons) centred on a half
     pixel in an even tile. They are 14px.
-    Separately, the floating panels were permanently promoted to their own
+    Separately, the corner panels were permanently promoted to their own
     compositing layer (a fix for isometric flicker), which costs sub-pixel text
     anti-aliasing on a 1x display. The promotion is now gated on an isometric
     scene being on the page. Tile captions went from 9px to 10px.
@@ -311,7 +318,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 ## Decided in review
 
-- **The strip opens on the mode's Popular every time**, like the floating Palette
+- **The strip opens on the mode's Popular every time**
   ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across documents.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Popular short). Below that, the strip shows as many as fit, **measured**
@@ -329,7 +336,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   a docked panel (the Laser panel, say) sat under the strip's right end and
   could not be reached. A whiteboard's dock at the top gets the same
   treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
-  in every layout, its corners starting 76px down.
+  its corners starting 76px down.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
   cluster's 44px, each with a 44px-tall tap area ([Touch targets](../004-interface-design/touch-targets.md)).
@@ -341,7 +348,7 @@ ringed, so the difference is visible before switching ([User preferences](user-p
   switch.
 - **The menu button opens the Explorer**, not a menu of its own (an earlier
   cut had New / Recent / Search / Settings entries).
-- **The other panels follow Floating**: they dock in their corners. Layers
+- **The other panels dock in their corners** ([Panel docking](panel-docking.md)). Layers
   and Collaborate are the exception, popovers over their bottom-row
   buttons.
 
@@ -349,4 +356,4 @@ ringed, so the difference is visible before switching ([User preferences](user-p
 
 The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
 Palette Settings) explains the strip, More, the menu button and how it
-fits a phone, with two figures. The Panel Layout settings row links to it.
+fits a phone, with three figures.

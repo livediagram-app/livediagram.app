@@ -11,6 +11,7 @@ import {
   ChecklistRowsEditor,
   EntityFieldsEditor,
   LegendDataEditor,
+  LinkedChartData,
   PieDataEditor,
 } from './context-menu-data-editors';
 
@@ -75,5 +76,15 @@ describe.each(cases)('$name', (c) => {
     fireEvent.change(c.input(), { target: { value: 'typed' } });
     rerender(editor(c.changed));
     expect(c.input().value).toBe((c.valueOf as (rows: unknown[]) => string)(c.changed));
+  });
+});
+
+describe('a chart drawn from a sheet', () => {
+  it('says where its data comes from and unlinks', () => {
+    const onUnlink = vi.fn();
+    render(<LinkedChartData onUnlink={onUnlink} />);
+    expect(screen.getByText(/Drawn live from a Sheet/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Unlink From Sheet' }));
+    expect(onUnlink).toHaveBeenCalledOnce();
   });
 });

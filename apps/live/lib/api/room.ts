@@ -9,6 +9,7 @@ import {
   ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
   isMutationOpKind,
+  WORKBENCH_ENDED_CLOSE,
   type AgentPresence,
   type ParticipantPresence,
   type FacilitatorReason,
@@ -20,6 +21,7 @@ import { opForTheWire } from '@livediagram/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { getGuestSelfSig } from '../local-identity';
+import { startEditorTiming } from '../timing';
 import { getSessionSharePassword, wsUrl } from './core';
 
 export type RoomHandlers = {
@@ -48,6 +50,9 @@ export type RoomHandlers = {
   // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the
   // ordinary access path (a password prompt, a refusal page, or the editor again).
   onAccessChanged?: () => void;
+  // A workbench session's pairing or token ended (docs/specs/013-workspace/workbench-embeds.md): the
+  // room closed it with WORKBENCH_ENDED_CLOSE; the connector stops and the page turns read-only.
+  onWorkbenchEnded?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
   // REST, which names a trashed document (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
@@ -69,6 +74,14 @@ type RoomAuthOptions = {
   // apiCreateRoomTicket. The only leg that can admit a team member —
   // the worker doesn't trust a bare `o` for team membership.
   ticket?: string | null;
+};
+
+// connectRoom's options: the auth legs, and how to mint a fresh ticket for a reconnect.
+type RoomConnectOptions = RoomAuthOptions & {
+  // A ticket is spent by the upgrade it admits (ws-tickets.ts deletes it), so a reconnect that sent
+  // the first one again was refused, and a team member or signed-in owner lost the room for the rest
+  // of the session. Called before each reconnect of a session that used a ticket.
+  mintTicket?: () => Promise<string | null>;
 };
 
 // Build the room WebSocket auth query string. Browsers can't set custom
@@ -120,6 +133,10 @@ export function isOutboxOp(msg: RoomOutgoing): boolean {
   const kind = (msg.op as { kind?: unknown }).kind;
   return kind === 'poll-answer' || isMutationOpKind(kind);
 }
+// How long a save waits for the room to say it sequenced a delta (docs/specs/012-collaboration/collab-race-hardening.md
+// phase 6). A healthy room answers in one socket round trip, tens of milliseconds; past this the save
+// goes ahead unconfirmed rather than hold the person's work back. Safe range: 500 ms to 10 s.
+export const ROOM_SEQUENCE_ACK_TIMEOUT_MS = 2_000;
 const RECONNECT_BASE_MS = 500;
 const RECONNECT_MAX_MS = 15_000;
 
@@ -137,7 +154,7 @@ export function connectRoom(
   // room keeps it only for an account session.
   initialParticipant: RoomSelf,
   handlers: RoomHandlers,
-  options: RoomAuthOptions = {},
+  options: RoomConnectOptions = {},
   // Read at every (re)connect rather than captured once: the baton can be
   // taken while this socket is open, and the token we present has to be the
   // one we hold NOW (docs/specs/012-collaboration/facilitator.md).
@@ -146,6 +163,7 @@ export function connectRoom(
   send: (msg: RoomOutgoing) => void;
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
+  sequence: (op: RoomOp) => Promise<boolean>;
   updateSelf: (participant: RoomSelf) => void;
 } {
   // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
@@ -153,11 +171,16 @@ export function connectRoom(
   // Auth identifiers ride on the query string (see roomQueryString). The
   // share password is read from the same session state apiHeaders uses, so
   // the editor doesn't have to thread it through; owners never have it set.
-  const qs = roomQueryString(
-    { ...options, ownerSig: options.ownerId ? getGuestSelfSig() : null },
-    getSessionSharePassword(),
-  );
-  const url = wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
+  let ticket = options.ticket ?? null;
+  // A session admitted by a ticket keeps minting one per reconnect, even after a mint that failed.
+  const usesTicket = ticket !== null && !!options.mintTicket;
+  const urlNow = () => {
+    const qs = roomQueryString(
+      { ...options, ticket, ownerSig: options.ownerId ? getGuestSelfSig() : null },
+      getSessionSharePassword(),
+    );
+    return wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
+  };
 
   let ws: WebSocket;
   let closed = false; // the caller called close() — never reconnect after that
@@ -173,6 +196,29 @@ export function connectRoom(
   // See OUTBOX_MAX. Flushed, in order, once a (re)opened socket has said
   // hello and asked for what it missed.
   let outbox: RoomOutgoing[] = [];
+  // Ops waiting for the room to say it sequenced them, by the `ref` each was sent with. A socket that
+  // drops answers them all false: the room may never have read them.
+  let lastRef = 0;
+  const awaitingRef = new Map<number, (sequenced: boolean) => void>();
+  const settleAll = (sequenced: boolean) => {
+    const waiting = [...awaitingRef.values()];
+    awaitingRef.clear();
+    for (const settle of waiting) settle(sequenced);
+  };
+
+  // How long the room takes to come alive, and to come back after a drop
+  // (docs/specs/017-telemetry/timing-telemetry.md): to the first roster frame, retries and back-off
+  // included. A connection that is closed or never lands records nothing.
+  let connectTiming: ReturnType<typeof startEditorTiming> | null = startEditorTiming('RoomConnect');
+  let reconnectTiming: ReturnType<typeof startEditorTiming> | null = null;
+  const settleTimings = (live: boolean) => {
+    for (const timing of [connectTiming, reconnectTiming]) {
+      if (live) timing?.end();
+      else timing?.cancel();
+    }
+    connectTiming = null;
+    reconnectTiming = null;
+  };
 
   const applyOp = (from: string, op: RoomOp, seq?: number, epoch?: string) => {
     if (typeof seq === 'number') lastSeq = seq;
@@ -181,7 +227,7 @@ export function connectRoom(
   };
 
   const open = () => {
-    ws = new WebSocket(url);
+    ws = new WebSocket(urlNow());
     // This socket, as opposed to `opened` (any session so far).
     let socketOpened = false;
     ws.addEventListener('open', () => {
@@ -211,6 +257,7 @@ export function connectRoom(
       try {
         const msg = JSON.parse(e.data) as RoomIncoming;
         if (msg.kind === 'presence') {
+          settleTimings(true);
           const frame = splitPresenceFrame(msg);
           handlers.onPresence(frame.participants, frame.agents);
         } else if (msg.kind === 'facilitator') handlers.onFacilitator?.(msg);
@@ -228,6 +275,7 @@ export function connectRoom(
             lastEpoch = msg.epoch;
             if (msg.seq > lastSeq) lastSeq = msg.seq;
           }
+          if (msg.ref !== undefined) awaitingRef.get(msg.ref)?.(true);
         } else if (msg.kind === 'catchup') {
           if (msg.resync) {
             // Adopt the room's cursor first so we don't loop on the same
@@ -246,36 +294,92 @@ export function connectRoom(
       }
     });
     ws.addEventListener('close', (event: CloseEvent) => {
+      settleAll(false);
       handlers.onClose?.();
-      if (closed) return;
+      if (closed) {
+        settleTimings(false);
+        return;
+      }
       if (event?.code === DOCUMENT_TRASHED_CLOSE) {
         closed = true;
+        settleTimings(false);
         handlers.onDocumentTrashed?.();
         return;
       }
       if (event?.code === ACCESS_CHANGED_CLOSE) {
         closed = true;
+        settleTimings(false);
         handlers.onAccessChanged?.();
         return;
       }
+      if (event?.code === WORKBENCH_ENDED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        handlers.onWorkbenchEnded?.();
+        return;
+      }
       if (!socketOpened) handlers.onRefused?.();
-      if (attempts >= MAX_RECONNECT_ATTEMPTS) return;
+      // A live session dropped by itself: time the outage until the roster is back.
+      if (socketOpened && connectTiming === null)
+        reconnectTiming ??= startEditorTiming('RoomReconnect');
+      if (attempts >= MAX_RECONNECT_ATTEMPTS) {
+        settleTimings(false);
+        return;
+      }
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
       attempts++;
-      reconnectTimer = setTimeout(open, delay);
+      reconnectTimer = setTimeout(() => void reopen(), delay);
     });
+  };
+  // A reconnect: with a fresh ticket when the session rode one (a spent ticket is refused).
+  const reopen = async () => {
+    reconnectTimer = null;
+    if (usesTicket) {
+      ticket = await options.mintTicket!();
+      if (closed) return;
+    }
+    open();
   };
   open();
 
+  const send = (raw: RoomOutgoing) => {
+    // No comment author id leaves this browser: it is its author's owner
+    // id, a guest's credential, and the room hands every op to every socket
+    // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
+    const msg: RoomOutgoing =
+      raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
+    if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+    else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
+  };
+
   return {
-    send: (raw) => {
-      // No comment author id leaves this browser: it is its author's owner
-      // id, a guest's credential, and the room hands every op to every socket
-      // (docs/specs/012-collaboration/collab-race-hardening.md). One choke point for every send path.
-      const msg: RoomOutgoing =
-        raw.kind === 'op' ? { ...raw, op: opForTheWire(raw.op) as RoomOp } : raw;
-      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
-      else if (!closed && isOutboxOp(msg) && outbox.length < OUTBOX_MAX) outbox.push(msg);
+    send,
+    // Send one op and learn whether the room sequenced it (docs/specs/012-collaboration/collab-race-hardening.md
+    // phase 6): true once the room's `cursor` frame echoes the op's `ref`; false when the socket is down
+    // (the op waits in the outbox, unconfirmed), drops, or the room stays silent past the timeout.
+    sequence: (op) => {
+      if (closed) return Promise.resolve(false);
+      if (ws.readyState !== WebSocket.OPEN) {
+        send({ kind: 'op', op });
+        return Promise.resolve(false);
+      }
+      const ref = ++lastRef;
+      return new Promise<boolean>((resolve) => {
+        const timer = setTimeout(() => {
+          awaitingRef.delete(ref);
+          console.warn('[room] op not confirmed in time', {
+            kind: op.kind,
+            timeoutMs: ROOM_SEQUENCE_ACK_TIMEOUT_MS,
+          });
+          resolve(false);
+        }, ROOM_SEQUENCE_ACK_TIMEOUT_MS);
+        awaitingRef.set(ref, (sequenced) => {
+          clearTimeout(timer);
+          awaitingRef.delete(ref);
+          resolve(sequenced);
+        });
+        send({ kind: 'op', op, ref });
+      });
     },
     // Where this client stands in the room's ordered stream, for a save to
     // tell the api what it has seen (docs/specs/012-collaboration/collab-race-hardening.md phase 3). Null while the socket
@@ -295,7 +399,9 @@ export function connectRoom(
     },
     close: () => {
       closed = true;
+      settleTimings(false);
       outbox = [];
+      settleAll(false);
       if (reconnectTimer !== null) clearTimeout(reconnectTimer);
       ws.close();
     },

@@ -22,7 +22,7 @@ Scope, by file:
 | Term             | Identifier                 | Meaning                                                                 |
 | ---------------- | -------------------------- | ----------------------------------------------------------------------- |
 | Custom colour    | `isCustomPenColour`        | An exact `#rrggbb`, the same on both boards                             |
-| Stock colour     | `PenColourName`            | One of the seven named, adaptive colours                                |
+| Stock colour     | `PenColourName`            | Ink or one of the eight hued, adaptive colours                          |
 | Ink              | `'ink'` (a `SnapTarget`)   | No colour stored: the board's own ink                                   |
 | Neutral          | `PEN_NEUTRAL_CHROMA`       | OKLCH chroma below it: snaps to Ink                                     |
 | Snap target      | `SnapTarget`               | `PenColourName \| 'ink'`: what a custom colour becomes                  |

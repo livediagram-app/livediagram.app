@@ -8,6 +8,7 @@ import { PhotoStatus } from './photo/PhotoStatus';
 import { TruthExport } from './photo/TruthExport';
 import { UNREAD_TIP_SHARE, UnreadTip } from './photo/UnreadTip';
 import { ZoomControls } from './photo/ZoomControls';
+import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type { ModelDownload as Download } from '@/lib/reading/download-progress';
 import type { ProcessorReason, ReaderBackend } from '@/lib/reading/reader-protocol';
 import type { ReaderFallback } from '@/lib/reading/types';
@@ -95,6 +96,9 @@ export function PhotoReviewOverlay({
   // Leave this review for a better photo of the same wall (the unread tip).
   onRetake?: () => void;
 }) {
+  // A modal: the editor's shortcut and paste listeners go quiet behind it, so Delete removes a box here and
+  // never a note on the board too.
+  useModalGuard(true);
   // The photograph is up before the detector has said anything, so everything
   // derived from a detection has to hold for "not yet". The 1×1 stand-in size
   // is never used to place a box (there are none until detection lands); it

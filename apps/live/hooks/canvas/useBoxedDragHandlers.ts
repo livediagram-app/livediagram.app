@@ -1,6 +1,7 @@
 import type { Dispatch, PointerEvent as ReactPointerEvent, RefObject, SetStateAction } from 'react';
 import {
   containerContents,
+  withSheetCharts,
   anchorOutward,
   anchorPosition,
   isBoxed,
@@ -33,23 +34,18 @@ export function useBoxedDragHandlers({
   const beginDrag = (elementId: string, mode: DragMode, e: ReactPointerEvent) => {
     const d = depsRef.current;
     // Arrow click-to-connect (docs/specs/008-canvas/canvas-and-palette.md): same "armed source, next click
-    // is the action" shape as format-paint below. Draws a
+    // is the action" shape as the Format tool below. Draws a
     // pinned connector to the clicked shape instead of selecting it.
     if (d.connectSourceId !== null && mode === 'move') {
       d.connectArrowTo(elementId);
       return;
     }
     // Persistent Format tool: first click arms the source, each later
-    // click paints onto the target and KEEPS the source armed so the
-    // user can format many elements in a row. Checked before the
-    // single-shot painter branch below so it owns both phases.
+    // click paints onto the target and (in Keep painting) KEEPS the
+    // source armed so the user can format many elements in a row.
     if (d.formatToolActive && mode === 'move') {
       if (d.formatSourceId === null) d.setFormatSourceId(elementId);
-      else d.applyFormatFromSource(elementId, { keepSource: true });
-      return;
-    }
-    if (d.formatSourceId !== null && mode === 'move') {
-      d.applyFormatFromSource(elementId);
+      else d.applyFormatFromSource(elementId);
       return;
     }
     if (d.editingId === elementId) return;
@@ -76,8 +72,15 @@ export function useBoxedDragHandlers({
     // (members reposition + resize proportionally around the corner opposite
     // the drag handle). A bare single-element drag falls through to the
     // singleton set.
+    // A locked member stays put (docs/specs/008-canvas/canvas-and-palette.md "Locking"): the rest of the
+    // selection moves without it, and so does a frame or lane without a locked element it holds.
+    const lockedIds = new Set(
+      d.activeTab.elements.filter((el) => el.locked === true).map((el) => el.id),
+    );
+    const unlocked = (set: ReadonlySet<string>) =>
+      lockedIds.size === 0 ? set : new Set([...set].filter((id) => !lockedIds.has(id)));
     const baseIds = multiSelectedIds.has(elementId)
-      ? multiSelectedIds
+      ? unlocked(multiSelectedIds)
       : new Set<string>([elementId]);
 
     // Frames and lanes (docs/specs/008-canvas/canvas-and-palette.md): MOVING one carries what it holds by
@@ -87,10 +90,19 @@ export function useBoxedDragHandlers({
     // resize re-sizes the section outline and leaves its contents put.
     //
     // A mind node (docs/specs/009-elements/mind-node.md "Moving a branch") carries its whole subtree
-    // the same way: a branch is one idea, and its points follow its heading.
+    // the same way: a branch is one idea, and its points follow its heading. A Sheet carries the charts drawn
+    // from it that sit on it.
     const ids =
       mode === 'move'
-        ? withMindSubtrees(d.activeTab.elements, containerContents(d.activeTab.elements, baseIds))
+        ? unlocked(
+            withSheetCharts(
+              d.activeTab.elements,
+              withMindSubtrees(
+                d.activeTab.elements,
+                containerContents(d.activeTab.elements, baseIds),
+              ),
+            ),
+          )
         : baseIds;
 
     const startBounds = new Map<string, ShapeBounds>();

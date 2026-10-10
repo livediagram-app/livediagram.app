@@ -163,7 +163,8 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Eleven tools. The search/view capability is two tools (find, then read); create,
+Twenty tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)) and four for sheets
+([§4.9c](#49c-the-sheet-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
 share, rename, and delete complete the CRUD verbs, with list_trash and
@@ -546,16 +547,49 @@ and every team Trash they have joined.
   A 404 (not in the Trash, or not the user's) becomes a model-correctable error
   pointing at `list_trash`.
 
-### 4.9b `list_items` and `change_items`
+### 4.9b The Plan tools
 
-The items Plan boards show ([Items](../026-plan/items.md), [Plan mode](../026-plan/plan-mode.md#agents)):
+The cards Plan boards show, the boards and the card types ([Plan for agents](../026-plan/plan-agents.md),
+[Items](../026-plan/items.md)). Everything is named as the board shows it (a column by name, a card type by name,
+custom fields by name, a person by name, an item by number `#12`); the server resolves the ids and refuses an
+unknown name with the ones there are.
 
-- **`list_items`** (read): a document's items, by number, narrowed by `type` and `status`. Titles and fields are
-  people's writing, read as data.
+- **`list_items`** (read): the document's boards with their columns and the cards in each, the items with their
+  column names, and the card types with their fields; narrowed by card type or column, by name. A document with no
+  board answers a hint saying how to get one.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
-  `{ item }`. Items are named by number (`#12`) or id prefix, as the CLI's `item` verbs name them
-  (`resolveItemRef`). A refusal answers what was applied before it. Each change reaches open boards at once.
+  `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
+- **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset.
+- **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
+- **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
+  changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
+
+### 4.9c The sheet tools
+
+The spreadsheets Sheet elements show ([Sheet store](../029-sheets/sheet-store.md#agents)). A sheet is named by its
+title (case aside) or id, cells by A1, rows by number and columns by letter, never the ids of rows and columns; the
+server (`apps/mcp/src/sheet-tools.ts` over `packages/agent-verbs/src/sheets/`) resolves them and refuses an unknown
+sheet with the sheets there are. Values are worked out by the editor's engine (`@livediagram/sheets`), with the
+document's Plan cards when a formula reads them.
+
+- **`list_sheets`** (read): the document's sheets (or one tab's), each with its title, tab, the rows and columns in
+  use and that range in A1, and the id of the Sheet element framing it (null when none does).
+- **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value, display }`,
+  plus the frozen rows and columns, merges and filter. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
+  of the range and answers at most `SHEET_READ_CHARS_MAX` (100,000) characters of cells; past either it stops,
+  sets `truncated` and says in `note` where to read on.
+- **`change_sheet`** (destructive, as it clears and deletes): up to 50 changes in order, each built against the
+  sheet as the ones before it left it: `set` `{ at, rows }`, `clear` `{ range, what }`, `format` `{ range, format }`
+  (bold, italic, underline, strikethrough, colours, font size, alignment, wrap, number format, decimals,
+  currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
+  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }` and `freeze` `{ rows, cols }`. Each
+  is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
+  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`); a refusal
+  answers what was applied before it.
+- **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
+  uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)
+  framing it placed beside what the tab holds, as `add_board` places a board, in one changeset.
 
 ### 4.10 Prompts (discoverability)
 
@@ -612,10 +646,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name                  | Where                          | Absent means                                                                                                                                                            |
-| --------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own                                            |
-| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) |
+| Name                  | Where                          | Absent means                                                                                                                                                                     |
+| --------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livediagram.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
+| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))          |
 
 `INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
 **service binding**, which carries no `CF-Connecting-IP` — so the api's
@@ -639,14 +673,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the eleven tools, and each is a preset in
+Three behaviours cover the twenty tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                 |
-| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`       |
-| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document` |
-| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`                                  |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                           |
+| --------------- | -------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`                    |
+| **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet` |
+| **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`                                       |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -726,23 +760,34 @@ prose, and serialised as the first text block, for clients that only read
 render a preview (`read_document`, `create_document`, `add_tab`,
 `update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
 An error result (`isError: true`, a model-correctable message) carries text only
-and no `structuredContent`; MCP exempts errors from the output schema.
+and no `structuredContent`; MCP exempts errors from the output schema. Every mistake the caller can fix is
+such a result, never a thrown protocol error: the `registerTool` wrapper answers an api 4xx in words (by its
+code or status: a document in the Trash, a view-only grant, an id that names nothing) and a named input error
+(a tab id the document lacks names its tabs); only a 5xx or a network failure throws. A deleted tab's refusal
+says why by its status (no such tab, view only, the last tab).
 
-| Tool               | Result object                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------- |
-| `find_documents`   | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                         |
-| `read_document`    | `id`, `name`, `tab { id, name, elements[] }`, `url`                                                       |
-| `list_templates`   | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }` |
-| `create_document`  | `id`, `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                     |
-| `add_tab`          | `documentId`, `tabId`, `name`, `url`                                                                      |
-| `update_document`  | `id`, `tabId`, `url`                                                                                      |
-| `share_document`   | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                   |
-| `rename_document`  | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab            |
-| `delete_document`  | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`            |
-| `list_trash`       | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                         |
-| `restore_document` | `restored`, `id`, `name` (null when the api omits it), `url`                                              |
-| `list_items`       | `count`, `items[]` of `{ ref, id, type, status, title, fields }`, `url`                                   |
-| `change_items`     | `applied[]` (one line per change), `url`                                                                  |
+| Tool                | Result object                                                                                                                                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `find_documents`    | `count`, `documents[]` of `{ id, name, updatedAt, library, url }`                                                                                                                                                       |
+| `read_document`     | `id`, `name`, `tab { id, name, rev, ... }`, `tabs[]` of `{ id, name }` (every tab, in order), `url`                                                                                                                     |
+| `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                                                                               |
+| `create_document`   | `id` and `documentId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                                                                                       |
+| `add_tab`           | `documentId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                                                                                |
+| `update_document`   | `id` and `documentId` (the same), `tabId`, `url`                                                                                                                                                                        |
+| `share_document`    | `url`, `role`, `expiresAt` (ms epoch, or null for never), `documentUrl`                                                                                                                                                 |
+| `rename_document`   | `renamed` (`document` or `tab`), `name`, then `id` + `url` for a document or `tabId` for a tab                                                                                                                          |
+| `delete_document`   | `deleted` (`document` or `tab`), `documentId`, then `trashed` + `restorableForDays` or `tabId`                                                                                                                          |
+| `list_trash`        | `trash[]` of `{ id, name, library, reason, deletedAt, purgeAt }` (ISO timestamps)                                                                                                                                       |
+| `restore_document`  | `restored`, `id`, `name` (null when the api omits it), `url`                                                                                                                                                            |
+| `list_items`        | `boards[]` of `{ title, tab, tabId, kind, takes, columns[] { name, status, wipLimit?, cards[] } }`, `notOnBoard[]`, `count`, `items[]` of `{ ref, id, type, status, column, title, fields }`, `types[]`, `hint?`, `url` |
+| `change_items`      | `applied[]` (one line per change, naming the column), `url`                                                                                                                                                             |
+| `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
+| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
+| `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
+| `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                     |
+| `read_sheet`        | `sheetId`, `title`, `tabId`, `range`, `rows`, `cols`, `cells[]` of `{ at, input, value, display }`, `truncated`, `note?`, `frozen { rows, cols }`, `merges[]`, `filter`, `url`                                          |
+| `change_sheet`      | `sheetId`, `title`, `applied[]` (one line per change), `rev`, `url`                                                                                                                                                     |
+| `add_sheet`         | `tabId`, `sheetId`, `elementId`, `title`, `filled`, `truncated`, `changesetId`, `rev`, `url`                                                                                                                            |
 
 **The schema and the result can't drift.** Each tool is a verb in the shared catalogue
 (`packages/agent-verbs/src/verbs/mcp-tools.ts`, [CLI](cli.md#one-catalogue-for-the-cli-and-the-mcp)) holding its

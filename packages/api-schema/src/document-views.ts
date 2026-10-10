@@ -184,6 +184,9 @@ export type ShowView = {
   omitted: string[];
 };
 
+// `show` with `ref=selected`: each element as ShowView holds it, in tab order (VW67).
+export type ShowSelectedView = { header: ViewHeader; selected: Omit<ShowView, 'header'>[] };
+
 export const FIND_FIELDS = [
   'label',
   'note',

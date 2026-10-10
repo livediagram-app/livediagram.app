@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { EmbeddedDocument } from '@/components/illustrations/collaboration';
+import { ShareEmbedMenu } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Embeds',
@@ -20,31 +21,40 @@ An embed places a live copy of a document inside another page, like a wiki, a do
 
 ## What an embed shows
 
-The embed is built from a share link, and it **honours that link's role**: a **view** link embeds a read-only canvas, while an **edit** link embeds an editable one, so readers of the host page can change the document right there. Pick the link to match: hand out a view-link embed when the page is for an audience, and an edit-link embed when it is for collaborators.
+The embed is built from a share link, and it **honours that link's role**: a **Viewer** pass embeds a read-only canvas, while an **Editor** pass embeds an editable one, so readers of the host page can change the document right there. Pick the pass to match: a Viewer pass when the page is for an audience, an Editor pass when it is for collaborators.
 
 Inside the frame, the embed:
 
 - shows the canvas with pan, zoom, and pinch,
-- hides the header, tabs, and every floating panel, leaving a clean view,
-- defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click,
-- keeps a small **Open in livediagram** badge in the corner that opens the full share view in a new tab,
-- shows a compact tab switcher when the document has more than one tab.
+- hides the header, tab bar, palette and every floating panel, leaving a clean view with just the zoom controls in the bottom-right corner,
+- defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click, and right-click menus work,
+- keeps a small **Open in livediagram** badge in the bottom-left corner that opens the full share view in a new tab,
+- shows a compact tab switcher beside the badge when the document has more than one tab: it shows the current tab's name and opens a list of the tabs,
+- skips the "what's your name" prompt: readers join under a random guest name.
 
-One editing feature stays off inside the frame: image uploads are unavailable in an embed, so adding pictures still happens in the full editor.
+One editing feature stays off inside the frame: image uploads are unavailable in an embed, so adding pictures still happens in the full editor. An embed also draws no [element indicators](/help/canvas/element-indicators/) (the small link, note, action and comment icons on elements): they are editor chrome, so the picture stays clean.
 
 Because the embed joins the same realtime room as any viewer, it **live-updates**: when the document changes, the embedded view follows along.
 
 ## Adding an embed to a page
 
-<Step n={1}>Open the **Share** dialog and create or pick a share link for the document.</Step>
-<Step n={2}>Open the **Embed** menu next to that link's URL and choose **Copy iframe** for a ready-made `<iframe>` snippet, or **Copy embed URL** for the bare URL.</Step>
+<Step n={1}>Open the **Share** dialog and create or pick a pass for the document.</Step>
+<Step n={2}>Open the pass's **Embed** menu, under its link, and choose **Copy iframe** for a ready-made `<iframe>` snippet, or **Copy embed URL** for the bare URL.</Step>
 <Step n={3}>Paste it into your page, wiki, or doc: the iframe snippet drops in directly, while the embed URL suits tools that turn a pasted link into an embed themselves.</Step>
 
-The snippet comes with a sensible default size and a hairline border, which you can adjust in the markup. If the document has a [share password](/help/collaboration/sharing/share-passwords/), readers are prompted for it inside the embed frame, and the dialog notes this when you copy.
+<Figure caption="Each pass's Embed menu copies either the bare embed URL or a ready-made iframe snippet.">
+  <ShareEmbedMenu />
+</Figure>
+
+The snippet is 800 by 500 pixels with a hairline border and rounded corners, which you can adjust in the markup. If the document has a [share password](/help/collaboration/sharing/share-passwords/), readers are prompted for it inside the embed frame (the **Password Protection** switch notes that embeds are included). A link scoped to [one tab](/help/collaboration/sharing/one-tab/) embeds that tab only.
+
+## When an embed stops working
+
+An embed lives exactly as long as its share link. If you revoke the link, or it [expires](/help/collaboration/sharing/share-link-expiry/), the frame shows a small not-found message instead of the document. Create a new pass and paste its snippet to bring it back.
 
 ## Privacy and self-hosting
 
-An embed only exposes what the share link exposes: a view link's embed is a read-only view, and only an edit link's embed can change the document. Embeds also work on self-hosted instances with no external services: the snippet builds its URL from your own origin, so a self-hosted document produces a self-hosted embed.
+An embed only exposes what the share link exposes: a Viewer pass's embed is a read-only view, and only an Editor pass's embed can change the document. Anyone who can read the host page's source can also see the embed URL, so treat an editable embed like handing out the edit link itself. Embeds also work on self-hosted instances with no external services: the snippet builds its URL from your own origin, so a self-hosted document produces a self-hosted embed.
 
 <Tip>
   Embedding several documents across a wiki is a tidy way to keep architecture and flow diagrams

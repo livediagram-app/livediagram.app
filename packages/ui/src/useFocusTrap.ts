@@ -34,7 +34,16 @@ const FOCUSABLE = [
 const coarsePointer = () =>
   typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
 
-export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true): void {
+// Where focus lands on open: the first control ('first'), or the container itself ('container') for a panel
+// whose first control is not where anyone starts (the Plan card panel's type picker); Tab then enters the
+// controls from the top.
+export type FocusTrapInitial = 'first' | 'container';
+
+export function useFocusTrap(
+  ref: RefObject<HTMLElement | null>,
+  active = true,
+  initial: FocusTrapInitial = 'first',
+): void {
   useEffect(() => {
     if (!active) return;
     const node = ref.current;
@@ -43,16 +52,20 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
 
     // Visible, focusable descendants in DOM order. `offsetParent === null`
     // filters elements hidden via display:none (e.g. a collapsed accordion).
+    // `tabIndex >= 0` drops a control taken out of the Tab order (`tabindex="-1"` on a button or a
+    // link, which the selectors above still match): it is never an end of the loop.
     const focusables = () =>
       Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (el) => el.offsetParent !== null,
+        (el) => el.offsetParent !== null && el.tabIndex >= 0,
       );
 
     // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.
     // On a touch screen the container takes it instead: focusing the first control there highlights it and can
     // raise the on-screen keyboard for a field nobody tapped (docs/specs/007-editor/live-app.md).
     if (!node.contains(document.activeElement)) {
-      (coarsePointer() ? node : (focusables()[0] ?? node)).focus({ preventScroll: true });
+      (coarsePointer() || initial === 'container' ? node : (focusables()[0] ?? node)).focus({
+        preventScroll: true,
+      });
     }
 
     const onKey = (e: KeyboardEvent) => {
@@ -67,7 +80,8 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
       const last = items[items.length - 1]!;
       const active = document.activeElement;
       if (e.shiftKey) {
-        if (active === first || !node.contains(active)) {
+        // From the container itself, Shift+Tab would leave the modal: wrap to the last control.
+        if (active === first || active === node || !node.contains(active)) {
           e.preventDefault();
           last.focus({ preventScroll: true });
         }
@@ -90,5 +104,5 @@ export function useFocusTrap(ref: RefObject<HTMLElement | null>, active = true):
         previouslyFocused.focus?.({ preventScroll: true });
       }
     };
-  }, [ref, active]);
+  }, [ref, active, initial]);
 }

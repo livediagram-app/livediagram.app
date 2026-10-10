@@ -3,6 +3,7 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
+import { fnv1aString } from '@livediagram/document';
 import { randomPick } from './random';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
@@ -155,12 +156,8 @@ export function randomColor(): string {
 // colour, every render and every device — FNV-1a over the key, mapped
 // onto the curated palette above.
 export function colorForKey(key: string): string {
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < key.length; i++) {
-    hash ^= key.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return PARTICIPANT_COLORS[Math.abs(hash) % PARTICIPANT_COLORS.length]!;
+  // `| 0` reads the hash as signed, the way colours have always been picked, so no key changes colour.
+  return PARTICIPANT_COLORS[Math.abs(fnv1aString(key) | 0) % PARTICIPANT_COLORS.length]!;
 }
 
 // Pick a colour from the palette that isn't in `taken`. When the

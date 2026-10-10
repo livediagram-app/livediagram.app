@@ -27,6 +27,9 @@ import { RichTextEditor } from '@/components/canvas/RichTextEditor';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
+import type { TextAnimView } from './useTextAnimation';
+import { wordmarkTextStyle } from './label-style';
+import { WordmarkArcLabel } from './WordmarkArcLabel';
 
 export function renderLabel(
   element: BoxedElement,
@@ -59,6 +62,9 @@ export function renderLabel(
   // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
   // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
   hug?: TextHugLabel,
+  // The label's Text animation (docs/specs/028-animation/element-animations.md "Text"), undefined
+  // when it has none or is being edited; useTextAnimation builds it.
+  textAnim?: TextAnimView,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
@@ -78,13 +84,15 @@ export function renderLabel(
   // same flag, or the note would change case on double-click.
   const caps = isEventStormingNote(element);
 
+  const wordmark = wordmarkTextStyle(element);
   const textStyle = {
     bold: element.textBold,
     italic: element.textItalic,
     underline: element.textUnderline,
     strikethrough: element.textStrikethrough,
     fontFamily,
-    uppercase: caps,
+    ...wordmark,
+    uppercase: caps || wordmark.uppercase,
   };
 
   const richText = (element as { richText?: TextRun[] }).richText;
@@ -146,6 +154,21 @@ export function renderLabel(
     );
   }
 
+  // Arched wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): one line along an
+  // arc, drawn as an SVG face. Editing shows it flat (above); the arc returns on commit.
+  if (element.type === 'text' && element.textArc) {
+    if (!label) return null;
+    return (
+      <WordmarkArcLabel
+        element={element}
+        text={label}
+        padding={padding}
+        fontFamily={fontFamily}
+        style={textStyle}
+      />
+    );
+  }
+
   // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): once a label carries non-trivial
   // runs, render them as styled spans regardless of size (the `scale`
   // auto-fit opt-out). Empty / single override-free runs fall through to
@@ -163,6 +186,7 @@ export function renderLabel(
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}
+        wordmark={wordmark}
         animClass={labelAnimClass}
       />
     );
@@ -179,6 +203,7 @@ export function renderLabel(
         alignY={alignY}
         padding={padding}
         style={textStyle}
+        textAnim={textAnim}
       />
     );
   }
@@ -196,6 +221,7 @@ export function renderLabel(
         // <text> fill — withhold it here so the glyphs don't vanish; glow /
         // pulse / trace ride the SVG drop-shadow fine.
         animClass={labelAnimClass === 'lvd-anim-text-gradient' ? undefined : labelAnimClass}
+        textAnim={textAnim}
       />
     );
   }
@@ -209,6 +235,7 @@ export function renderLabel(
       padding={textPadding}
       style={textStyle}
       animClass={labelAnimClass}
+      textAnim={textAnim}
     />
   );
 }

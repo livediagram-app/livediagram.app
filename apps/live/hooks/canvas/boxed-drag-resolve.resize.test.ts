@@ -26,7 +26,7 @@ function resize(
   mode: DragMode,
   dx: number,
   dy: number,
-  { shiftHeld = true, dragAspectLocked = false } = {},
+  { shiftHeld = true, dragAspectLocked = false, noSnap = false } = {},
 ) {
   const out = resolveBoxedResize({
     elements,
@@ -38,6 +38,7 @@ function resize(
     shiftHeld,
     dragAspectLocked,
     guidesOn: true,
+    noSnap,
   });
   if (!out) throw new Error('resize did not resolve');
   return out;
@@ -178,5 +179,21 @@ describe('resizedElement', () => {
     expect(resizedElement({ ...hello, rotation: 30 }, bounds, hug)).toMatchObject(bounds);
     const square = box('s', 0, 0, 43, 22) as never;
     expect(resizedElement(square, bounds, hug)).toMatchObject(bounds);
+  });
+});
+
+// docs/specs/008-canvas/snap-override.md: Cmd/Ctrl turns the resize snap and its guides off too.
+describe('resolveBoxedResize with Cmd/Ctrl held', () => {
+  it('follows the pointer exactly, with no snap and no guides', () => {
+    const elements = [box('a', 0, 0, 100, 50), box('wall', 300, 400, 80, 80)];
+    const out = resize(elements, ['a'], 'resize-se', 197, 20, { shiftHeld: false, noSnap: true });
+    expect(out.boundsById.get('a')).toEqual({ x: 0, y: 0, width: 297, height: 70 });
+    expect(out.guides).toEqual([]);
+  });
+
+  it('snaps the same drag when the key is up', () => {
+    const elements = [box('a', 0, 0, 100, 50), box('wall', 300, 400, 80, 80)];
+    const out = resize(elements, ['a'], 'resize-se', 197, 20, { shiftHeld: false });
+    expect(out.boundsById.get('a')!.width).toBe(300);
   });
 });

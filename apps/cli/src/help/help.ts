@@ -23,8 +23,16 @@ const GROUPED_ROWS = [
     after: 'graph',
     summary: 'one document to a file and back; export --all',
   },
+  {
+    words: ['sync'],
+    after: 'link',
+    summary: "mirror a link's documents into the repository",
+  },
 ] as const;
 export const NAMED_ONLY = [
+  'board',
+  'sheet',
+  'type',
   'template',
   'icon',
   'schema',

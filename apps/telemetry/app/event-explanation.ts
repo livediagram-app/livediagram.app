@@ -1,8 +1,9 @@
-import { ctaSurfaceOf, isCtaSource } from '@livediagram/api-schema';
+import { ctaSurfaceOf, isCtaSource, parseTimingType } from '@livediagram/api-schema';
 import { SURFACE_LABELS, ctaSourceLabel } from './cta-funnel';
 import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import { articleTitle, CANVAS_CONTROLS, eventLabel, typeLabel } from './event-vocab';
+import { timingSentence } from './timing-explanation';
 
 // The plain-language sentence under every metric (docs/specs/017-telemetry/telemetry.md): what someone did
 // to make the event, for a reader who has never seen the code. Looked up in
@@ -29,6 +30,11 @@ function pattern(category: string, action: string, type: string): string | null 
   switch (`${category}|${action}`) {
     case 'Cli|Used':
       return cliCommandSentence(type);
+    // Timings (docs/specs/017-telemetry/timing-telemetry.md): which moment, and the bucket it fell in.
+    case 'Timing|Measured': {
+      const parsed = parseTimingType(type);
+      return parsed ? timingSentence(parsed) : null;
+    }
     case 'Page|View':
       return `Someone viewed the page ${type}, by loading it or following a link to it within the site.`;
     // The landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page button it was.

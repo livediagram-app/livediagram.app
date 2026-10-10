@@ -6,7 +6,7 @@ import { PrivacySection } from '@/components/PrivacySection';
 import { PromiseCanvas } from '@/components/PromiseCanvas';
 import { StartDrawingCta } from '@/components/StartDrawingCta';
 import { StoryBeat } from '@/components/StoryBeat';
-import { LANDING_BEATS } from '@/lib/landing-beats';
+import { LANDING_SECTIONS } from '@/lib/landing-content';
 // Lazy-load TemplateGallery: the `'use client'` gallery (search state +
 // forty-odd preview SVGs) sits under the hero's tall illustration, so the
 // first paint never needs it. The static-export HTML still inlines its
@@ -22,8 +22,8 @@ const CommunityShowcase = dynamic(() =>
 );
 
 // The page tells one story (docs/specs/019-marketing/marketing-site.md): what it is, one click to a real
-// diagram, its promises (built with your values in mind), then five beats that each cover a few feature categories and link
-// into all of them.
+// diagram, its promises (built with your values in mind), then a beat per core feature, each
+// linking into its own category page.
 export default function LandingPage() {
   return (
     <>
@@ -33,8 +33,8 @@ export default function LandingPage() {
         <TemplateGallery />
         <CommunityShowcase />
         <PromiseCanvas />
-        {LANDING_BEATS.map((beat, index) => (
-          <StoryBeat key={beat.id} beat={beat} index={index} />
+        {LANDING_SECTIONS.map((section, index) => (
+          <StoryBeat key={section.id} section={section} index={index} />
         ))}
         <PrivacySection />
         <StartDrawingCta surface="Home" />

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { articleBlocksAsRuns, withArticlesAsPages } from './article-to-page';
 import type { ArticleBlock } from './article-flow';
 import type { IllustratePage } from './illustrate-page';
-import type { ShapeElement } from './index';
+import type { Element, ShapeElement } from './index';
 
 const blocks: ArticleBlock[] = [
   { id: 't', type: 'paragraph', style: 'title', runs: [{ text: 'Plan' }] },
@@ -50,6 +50,59 @@ describe('articles turned into Page elements', () => {
     expect((out.pages as IllustratePage[]).every((p) => p.kind === 'infographic' && !p.flow)).toBe(
       true,
     );
+  });
+
+  // docs/specs/007-editor/article-pages.md "Leaving Illustrate": a lock holds an article as it is.
+  it('keeps an article with a locked page as an article, its pages and margin notes untouched', () => {
+    const pages: IllustratePage[] = [
+      { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' },
+      { id: 'b', orientation: 'portrait', kind: 'article', flow: 'g', locked: true },
+      { id: 'c', orientation: 'portrait', kind: 'article', flow: 'g' },
+    ];
+    const held = {
+      blocks: [{ id: 'n', type: 'paragraph', runs: [{ text: 'Noted', note: 'm2' }] }],
+    };
+    const marker = (id: string) =>
+      ({
+        id,
+        type: 'annotation',
+        x: 0,
+        y: 0,
+        width: 32,
+        height: 32,
+        articleNote: 'comment',
+      }) as unknown as Element;
+    const tab = {
+      elements: [marker('m1'), marker('m2')],
+      pages,
+      articles: {
+        f: { blocks: [{ id: 'p', type: 'paragraph', runs: [{ text: 'Mine', note: 'm1' }] }] },
+        g: held,
+      },
+    };
+    const out = withArticlesAsPages(tab, new Map());
+    const made = (out.elements as ShapeElement[]).filter((e) => e.shape === 'page');
+    expect(made).toHaveLength(1);
+    expect(made[0]!.label).toBe('Mine');
+    expect(Object.keys(out.articles as object)).toEqual(['g']);
+    expect((out.articles as Record<string, unknown>).g).toBe(held);
+    const kinds = (out.pages as IllustratePage[]).map((p) => [p.id, p.kind, p.flow]);
+    expect(kinds).toEqual([
+      ['a', 'infographic', undefined],
+      ['b', 'article', 'g'],
+      ['c', 'article', 'g'],
+    ]);
+    const notes = out.elements.filter((e) => (e as { type: string }).type === 'annotation');
+    expect(notes.find((e) => e.id === 'm1')).not.toHaveProperty('articleNote');
+    expect(notes.find((e) => e.id === 'm2')).toHaveProperty('articleNote', 'comment');
+  });
+
+  it('leaves a tab whose every article is locked alone', () => {
+    const pages: IllustratePage[] = [
+      { id: 'a', orientation: 'portrait', kind: 'article', flow: 'f', locked: true },
+    ];
+    const tab = { elements: [], pages, articles: { f: { blocks } } };
+    expect(withArticlesAsPages(tab, new Map())).toBe(tab);
   });
 
   it('leaves a tab without articles alone', () => {

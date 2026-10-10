@@ -1,3 +1,4 @@
+import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import type { ParticipantPresence } from '@livediagram/api-schema';
@@ -938,6 +939,37 @@ describe('DocumentRoom tab-focus presence echo', () => {
     const aRow = presenceFrames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
     expect(aRow?.tabId).toBe('tab-2');
   });
+
+  // Side by side (docs/specs/007-editor/split-view.md "Presence"): the tab in the other pane rides the
+  // same op, is remembered the same way, and clears when the split closes.
+  it('remembers and clears the tab beside, clamped like tabId', () => {
+    const { room } = newRoom();
+    const a = makeSocket();
+    room.acceptSession(asWs(a), 'edit');
+    sendFrame(room, a, { kind: 'hello', participant: { id: 'p-a', name: 'A', color: '#abc' } });
+    sendFrame(room, a, {
+      kind: 'op',
+      op: { kind: 'tab-focus', tabId: 'tab-1', besideTabId: 'tab-3' },
+    });
+    expect(storedPresence(a)?.besideTabId).toBe('tab-3');
+
+    const b = makeSocket();
+    room.acceptSession(asWs(b), 'edit');
+    sendFrame(room, b, { kind: 'hello', participant: { id: 'p-b', name: 'B', color: '#def' } });
+    const aId = storedPresence(a)?.id;
+    const frames = b.sent.map((m) => JSON.parse(m)).filter((m) => m.kind === 'presence');
+    const aRow = frames.at(-1)!.participants.find((p: { id: string }) => p.id === aId);
+    expect(aRow?.besideTabId).toBe('tab-3');
+
+    sendFrame(room, a, { kind: 'op', op: { kind: 'tab-focus', tabId: 'tab-1' } });
+    expect(storedPresence(a)?.besideTabId).toBeUndefined();
+
+    sendFrame(room, a, {
+      kind: 'op',
+      op: { kind: 'tab-focus', tabId: 'tab-1', besideTabId: 'x'.repeat(5000) },
+    });
+    expect((storedPresence(a)?.besideTabId ?? '').length).toBeLessThanOrEqual(MAX_TAB_ID_LEN);
+  });
 });
 
 describe('DocumentRoom hibernation survival', () => {
@@ -1052,6 +1084,26 @@ describe('DocumentRoom op ordering + reconnect catch-up (docs/specs/012-collabor
     room.acceptSession(asWs(late), 'view');
     sendFrame(room, late, { kind: 'hello', participant: { id: 'l', name: 'L', color: '#333' } });
     expect(cursors(late)).toEqual([{ kind: 'cursor', epoch: room.epoch, seq: 1 }]);
+  });
+
+  // A save waits for its ledger deltas to be sequenced before it writes
+  // (docs/specs/012-collaboration/collab-race-hardening.md phase 6): the sender names each op with a
+  // `ref`, and the cursor frame answering that op carries it back. Only a positive safe integer.
+  it("echoes the op's ref on the sender's cursor frame, and nothing else", () => {
+    const { room } = newRoom();
+    const { editor, peer } = editorAndPeer(room);
+    const remove = (id: string) => ({ kind: 'el', tabId: 't', op: { kind: 'remove', id } });
+    sendFrame(room, editor, { kind: 'op', op: remove('a'), ref: 7 });
+    for (const ref of [0, -1, 1.5, '8', Number.MAX_SAFE_INTEGER + 2]) {
+      sendFrame(room, editor, { kind: 'op', op: remove('b'), ref });
+    }
+    const cursors = editor.sent.map((s) => JSON.parse(s)).filter((m) => m.kind === 'cursor');
+    expect(cursors).toEqual([
+      { kind: 'cursor', epoch: room.epoch, seq: 1, ref: 7 },
+      ...[2, 3, 4, 5, 6].map((seq) => ({ kind: 'cursor', epoch: room.epoch, seq })),
+    ]);
+    // The ref is the sender's alone: peers get the op without it.
+    expect(peer.sent.map((s) => JSON.parse(s)).filter((m) => 'ref' in m)).toEqual([]);
   });
 
   it('never stamps a seq on an ephemeral presence op', () => {
@@ -2156,6 +2208,27 @@ describe('DocumentRoom tab-scoped sessions', () => {
       expect(untagged.closed).toBeUndefined();
     });
 
+    it("closes only one workbench pairing's sockets, with 4006", async () => {
+      const PAIRING = '3f1c9a2e-7b4d-4c8e-9a1f-2b3c4d5e6f70';
+      const { room, state } = newRoom();
+      const frame = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const other = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const person = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, frame, presence('p-f', 'edit'), null);
+      scopedSession(state, other, presence('p-o', 'edit'), null);
+      scopedSession(state, person, presence('p-p', 'edit'), null);
+      Object.assign(frame.attachment as object, { personTag: TAG, workbenchPairing: PAIRING });
+      Object.assign(other.attachment as object, {
+        personTag: TAG,
+        workbenchPairing: '00000000-0000-4000-8000-000000000000',
+      });
+      Object.assign(person.attachment as object, { personTag: TAG });
+      await closeSessions(room, { match: 'workbench', pairingId: PAIRING });
+      expect(frame.closed).toEqual([4006, 'workbench-ended']);
+      expect(other.closed).toBeUndefined();
+      expect(person.closed).toBeUndefined();
+    });
+
     it('400s a match it does not know, closing nobody', async () => {
       const { room, state } = newRoom();
       const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
@@ -2174,6 +2247,15 @@ describe('DocumentRoom tab-scoped sessions', () => {
       () => {};
     room.acceptSession(asWs(ws), 'view', false, 't2', 'CODE2345');
     expect(ws.attachment).toMatchObject({ tabScope: 't2', shareCode: 'CODE2345' });
+  });
+
+  it('pins a workbench pairing on the session at admission', () => {
+    const { room } = newRoom();
+    const ws = makeSocket();
+    (room as unknown as { state: { acceptWebSocket: () => void } }).state.acceptWebSocket =
+      () => {};
+    room.acceptSession(asWs(ws), 'edit', true, null, null, true, 'a'.repeat(64), null, 'pair-1');
+    expect(ws.attachment).toMatchObject({ workbenchPairing: 'pair-1' });
   });
 });
 

@@ -102,11 +102,7 @@ export function ThemesPane() {
                   </IconBtn>
                 </HoverCard>
                 <HoverCard title="Delete" description="Remove this theme.">
-                  <IconBtn
-                    label="Delete theme"
-                    danger
-                    onClick={() => void confirmDelete(t.id, t.name)}
-                  >
+                  <IconBtn label="Delete theme" onClick={() => void confirmDelete(t.id, t.name)}>
                     <TrashIcon />
                   </IconBtn>
                 </HoverCard>
@@ -140,12 +136,10 @@ export function ThemesPane() {
 function IconBtn({
   label,
   onClick,
-  danger,
   children,
 }: {
   label: string;
   onClick: () => void;
-  danger?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -153,12 +147,7 @@ function IconBtn({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={
-        'flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition dark:border-slate-700 dark:text-slate-300 ' +
-        (danger
-          ? 'hover:border-rose-300 hover:text-rose-600'
-          : 'hover:border-brand-300 hover:text-brand-700')
-      }
+      className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 text-slate-500 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300"
     >
       {children}
     </button>

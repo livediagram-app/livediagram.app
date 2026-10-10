@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { EntityPair } from '@/components/illustrations/palette-structure-elements';
 
 export const metadata = helpMetadata({
   title: 'Entities',
@@ -17,28 +18,39 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("entities")}
 >
 
-An **Entity** is a title bar over a list of fields, each a name with an optional type. It is the box at the heart of a UML class diagram and an entity-relationship diagram alike, and it lives in the palette's **Components** category.
+An **Entity** is a title bar over a list of fields, each a name with an optional type. It is the box at the heart of a UML class diagram and an entity-relationship diagram alike.
+
+## Finding it
+
+In Diagram mode, **Entity** is one of the tiles in the palette's **Popular** category, the one the palette opens on. It belongs to the Components category, which only Illustrate mode's palette offers, and Illustrate leaves it out; in any mode you can also add it by name from the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/).
 
 ## Adding one and filling it in
 
 <Step n={1}>
-  Add an **Entity** from the Components category. It arrives with two example fields.
+  Add an **Entity**. It arrives titled "Entity" with two example fields, `id` and `name`, both typed
+  `string`.
 </Step>
 
-<Step n={2}>Double-click its title to rename it — the title is an ordinary element label.</Step>
+<Step n={2}>Double-click its title to rename it: the title is an ordinary element label.</Step>
 
 <Step n={3}>
-  Right-click the entity and open **Fields** to edit the rows: a name, an optional type, a remove
-  button, and **Add field**.
+  Right-click the entity and open **Tools**, then **Fields**, to edit the rows: each has a name, an
+  optional type and a **×** to remove it, with **Add field** at the foot.
 </Step>
 
-The type column is optional. Leave it blank for a rough sketch or an attribute list where the type does not matter, and the row simply shows the name.
+An entity holds up to 40 fields, each name and type up to 80 characters. The type column is optional. Leave it blank for a rough sketch or an attribute list where the type does not matter, and the row simply shows the name.
+
+<Figure caption="Two entities joined by a pinned arrow with a hollow triangle head, the UML mark for inheritance.">
+  <EntityPair />
+</Figure>
 
 ## Modelling with them
 
 - **Class diagrams.** Put attributes and methods in the same list; a method reads naturally as `render(): void` in the name column.
 - **Data models.** One entity per table, one row per column, with the type beside it.
-- **Relationships** are ordinary arrows. Pin one to each entity and it stays attached as you move them; the arrow styles include the hollow triangle and hollow diamond heads UML uses for inheritance and aggregation.
+- **Relationships** are ordinary [arrows](/help/palette/arrows/). Pin one to each entity and it stays attached as you move them; the arrowhead styles include the hollow triangle (inheritance) and the filled and hollow diamonds (composition and aggregation) UML uses.
+
+The title bar grows with the title's text size, so a larger title never collides with the divider under it.
 
 <Tip>
   Entities are ordinary elements underneath, so a theme recolours them, the format painter copies

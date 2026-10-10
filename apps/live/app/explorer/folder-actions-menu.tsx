@@ -117,7 +117,6 @@ export function FolderActionsMenu({
           {verbs ? <MenuGroupSeparator /> : null}
           <MenuActionRow
             plain
-            danger
             icon={<TrashIcon size={12} />}
             label="Delete"
             onClick={then(onDelete)}

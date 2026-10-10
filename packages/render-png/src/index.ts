@@ -29,21 +29,32 @@ function ensureWasm(load: PngLoaders['wasm']): Promise<void> {
 }
 
 export function createPngRenderer(loaders: PngLoaders): {
-  renderPng(svg: string, scale?: number): Promise<RenderedPng>;
+  /** `maxSide` bounds the picture's longer side in px (an inline preview in a memory-capped Worker): a
+   *  bigger drawing is drawn smaller rather than allocating a pixel buffer the Worker cannot hold. */
+  renderPng(svg: string, scale?: number, maxSide?: number): Promise<RenderedPng>;
 } {
   let font: Promise<Uint8Array> | null = null;
   return {
-    async renderPng(svg, scale = 1) {
+    async renderPng(svg, scale = 1, maxSide) {
       await ensureWasm(loaders.wasm);
       font ??= loaders.font().then((bytes) => new Uint8Array(bytes));
-      const resvg = new Resvg(svg, {
+      const options = {
         font: {
           fontBuffers: [await font],
           loadSystemFonts: false,
           defaultFontFamily: PNG_FONT_FAMILY,
         },
-        ...(scale === 1 ? {} : { fitTo: { mode: 'zoom' as const, value: scale } }),
-      });
+      };
+      const at = (zoom: number) =>
+        new Resvg(svg, zoom === 1 ? options : { ...options, fitTo: { mode: 'zoom', value: zoom } });
+      let resvg = at(scale);
+      // The SVG's own size (resvg's width / height, before any zoom) is known once parsed; drawn past the
+      // bound, it is parsed again at the zoom that fits.
+      const side = Math.max(resvg.width, resvg.height);
+      if (maxSide !== undefined && side * scale > maxSide) {
+        resvg.free();
+        resvg = at(maxSide / side);
+      }
       const image = resvg.render();
       const result = { png: image.asPng(), width: image.width, height: image.height };
       image.free();

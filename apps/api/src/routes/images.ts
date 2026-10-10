@@ -17,6 +17,7 @@ import { ACCEPTED_IMAGE_TYPES, type AcceptedImageType, sniffImageType } from '..
 import { stripJpegMetadata } from '../image-strip';
 import {
   badRequest,
+  conflict,
   CORS_HEADERS,
   forbidden,
   imagesUnavailable,
@@ -232,10 +233,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
       console.info('[images] cap refused a racing upload', { owner });
       const totals = await imageTotalsByOwner(env, owner);
       // Room again already (an image was deleted meanwhile): let the client retry.
-      return (
-        galleryFull(caps, totals, storedBytes.byteLength) ??
-        json({ error: 'upload_conflict' }, { status: 409 })
-      );
+      return galleryFull(caps, totals, storedBytes.byteLength) ?? conflict('upload_conflict');
     }
     // docs/specs/013-workspace/timeline.md §4.5: only a genuinely NEW upload. The dedupe branches
     // above return early, so pasting the same screenshot twice is one
@@ -267,10 +265,13 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     const meta = await getImage(env, imageId);
     if (!meta) return notFound();
     const callerOwner = resolveOwner();
-    let allowed = callerOwner === meta.ownerId;
+    // A workbench session (docs/specs/013-workspace/workbench-embeds.md) never takes the owner shortcut and
+    // reads through its own document only, so it cannot walk its owner's gallery by id.
+    const workbench = ctx.workbench ?? null;
+    let allowed = !workbench && callerOwner === meta.ownerId;
     if (!allowed) {
       const d = url.searchParams.get('d');
-      if (d) {
+      if (d && (!workbench || d === workbench.documentId)) {
         // Reader must be able to read document `d` (owner OR
         // a valid share code that resolves to it), AND that
         // document must place this image AND may serve it: the

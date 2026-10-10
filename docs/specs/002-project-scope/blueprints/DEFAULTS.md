@@ -15,7 +15,7 @@ One row per default applied where a spec is silent or qualitative.
 | D9  | third-party-licences | Opening the page from the editor           | A new tab, as the neighbouring GitHub row does, so an open document stays put                                                    |
 | D10 | third-party-licences | What "permissive and weak-copyleft" admits | The sixteen ids in `LICENCE_ALLOWLIST`: today's shipped licences plus common permissive peers                                    |
 | D11 | third-party-licences | Parallel or sequential analysis            | Sequential: deterministic logs, bounded memory beside turbo's own parallel builds                                                |
-| D12 | third-party-licences | Footer placement                           | In the footer nav after Privacy, among the legal links                                                                           |
+| D12 | third-party-licences | Footer placement                           | In the footer's Legal column, last                                                                                               |
 | D13 | third-party-licences | Sitemap weight                             | Priority 0.2, monthly: a transparency page, not a destination                                                                    |
 | D14 | third-party-licences | The HTML budget                            | 1.5x the page as first measured (173.5 KB for 54 works), rounded to 260,000 bytes: dozens more entries fit, inlined texts do not |
 | D15 | third-party-licences | The page's header calls to action          | The shared header without a landing-funnel surface: a transparency page is not a funnel step, so its CTAs carry no `via`         |

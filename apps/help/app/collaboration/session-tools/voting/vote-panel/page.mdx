@@ -19,17 +19,19 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-panel')}
 >
 
-A **Vote** panel appears at the top right, under the Palette, for as long as a [vote](/help/collaboration/session-tools/voting/) is running.
+A **Vote** panel appears at the top right for as long as a [vote](/help/collaboration/session-tools/voting/) is running. Like the other corner panels you can drag it anywhere or dock it in another corner.
 
 ## While voting is open
 
-It shows how far the room has got: dots cast against dots available, how many people have finished, and a row per voter with their remaining dots as hollow pips.
+It shows how far the room has got: how many people have finished ("2 of 5 finished"), dots cast against dots available with a progress bar, and a row per voter with their spent dots as filled pips and the rest hollow, ending in how many they have left.
 
 <Figure caption="Filled pips are dots spent; a part-filled row is somebody still deciding.">
   <VotePanelProgress />
 </Figure>
 
 The tally pills on the canvas tell you what is winning; this tells you whether anyone is still deciding, which is the thing that decides when to press **End vote**.
+
+The buttons at the bottom follow the vote along: **End vote** while it is open, then **Show results** or **Clear** once it has ended, then **Clear vote** after the reveal. They are only there for whoever started the vote (or the [facilitator](/help/collaboration/facilitator/)); everyone else sees "Only the person who started this vote, or the facilitator, can end it." in their place.
 
 ## Why the rows have no names
 

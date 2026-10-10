@@ -13,7 +13,6 @@ import { TourHost } from './TourHost';
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 vi.mock('./TourPopover', () => ({ TourPopover: () => null }));
-vi.mock('./TourLayoutPicker', () => ({ TourLayoutPicker: () => null }));
 vi.mock('./tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async () => null,

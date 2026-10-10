@@ -23,6 +23,9 @@ export type PaletteLayoutEntry = {
   tiles?: readonly string[];
   // Offered only on an event-storming board.
   boardOnly?: true;
+  // Offered only while the tab has a logo page (docs/specs/007-editor/logo-pages.md "The Logo
+  // palette").
+  logoOnly?: true;
 };
 
 export type PaletteLayout = {
@@ -121,6 +124,20 @@ const ILLUSTRATE: PaletteLayout = {
         'components:callout',
       ],
     },
+    // First of Common, while the tab has a logo page; each person's markers join these
+    // (useLogoMarkerTiles).
+    {
+      id: 'logo',
+      tiles: [
+        'logo:pen',
+        'tools:pencil',
+        'tools:text',
+        'shapes:square',
+        'shapes:circle',
+        'shapes:diamond',
+      ],
+      logoOnly: true,
+    },
     { id: 'shapes' },
     { id: 'my-shapes' },
     // The page is the canvas here, so no Page element; and no Annotation, a diagram's marker.
@@ -150,6 +167,7 @@ const PLAN: PaletteLayout = {
     { id: 'plan-widgets' },
     { id: 'plan-metrics' },
     { id: 'plan-visualisations' },
+    { id: 'plan-sheets' },
     { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
     {
       id: 'plan-tools',
@@ -197,14 +215,24 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
 }
 
 /** The categories a mode's palette offers, in order, with their tiles. A board-only category is
- *  left out unless the tab is an event-storming board. */
+ *  left out unless the tab is an event-storming board; a logo-only one unless it has a logo page. */
 export function paletteCategoriesFor(
   mode: EditorMode,
-  { esBoard = false }: { esBoard?: boolean } = {},
+  { esBoard = false, logoPages = false }: { esBoard?: boolean; logoPages?: boolean } = {},
 ): ResolvedPaletteCategory[] {
   return paletteLayoutFor(mode)
-    .categories.filter((e) => esBoard || !e.boardOnly)
+    .categories.filter((e) => (esBoard || !e.boardOnly) && (logoPages || !e.logoOnly))
     .map(resolve);
+}
+
+/**
+ * The palette while a Plan board covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md
+ * "Maximised board"): only Plan's Cards, whatever the mode, since a card is the one thing that lands on the board.
+ * The category the person had stays chosen underneath and comes back when the board is restored.
+ */
+export const COVERED_PALETTE_CATEGORY = 'plan-cards';
+export function coveredPaletteCategories(): ResolvedPaletteCategory[] {
+  return paletteCategoriesFor('plan').filter((c) => c.id === COVERED_PALETTE_CATEGORY);
 }
 
 /** Whether a mode's palette offers category `id` (on an ordinary tab). */

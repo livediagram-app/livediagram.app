@@ -21,7 +21,7 @@ import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
-import { CATEGORY_BANDS } from './PaletteTabBar';
+import { CATEGORY_BANDS } from './palette-category-bands';
 import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { PaletteTile } from './PaletteTileGrid';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -36,7 +36,7 @@ import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
 import { paletteLandingCategory } from './palette-layouts';
-import type { CommandPaletteProps } from './CommandPalette.types';
+import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
@@ -48,11 +48,11 @@ import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from
 // tiles, and a More popover holding the category's full Palette body for
 // everything that doesn't fit; Search, at the far right, finds any element.
 //
-// Same tiles, same handlers, same category bodies as the floating Palette:
-// usePaletteCatalogue builds them for both, so this file is only layout.
+// The tiles, handlers and category bodies come from
+// usePaletteCatalogue, so this file is only layout.
 
 type Props = Pick<
-  CommandPaletteProps,
+  PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
   | 'onExitAvatarMode'
@@ -61,6 +61,7 @@ type Props = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
+  | 'logoPages'
   | 'themeTint'
 > &
   PaletteAddHandlers & {
@@ -143,11 +144,11 @@ export function ToolbarPalette(props: Props) {
         search.setOpen(false);
       },
     });
-  // Same landing rule as the floating Palette (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
+  // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
   // mode's Popular, or the notation on an event-storming board.
   const defaultId = paletteLandingCategory(editorMode, !!esBoard);
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
-  // host keys this component on `esBoard`, as the Palette keys PaletteTabBar.
+  // host keys this component on `esBoard`, so a board change re-lands the category.
   const [categoryId, setCategoryId] = useState(defaultId);
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
@@ -317,6 +318,12 @@ export function ToolbarPalette(props: Props) {
               <div
                 ref={cardRef}
                 data-tour-id="palette"
+                // Chrome, not canvas: a paste, a drop or a drag ghost over the strip treats it like
+                // any panel (lib/canvas-pointer.ts, PaletteDragGhost, usePaletteDrop).
+                data-floating-panel=""
+                // Slides across with the rest of the chrome when a split moves the editor
+                // (docs/specs/007-editor/split-view.md).
+                data-split-chrome=""
                 // Beside the menu card only the rail gives way (and scrolls): the
                 // selection mode, the category picker and More keep their size.
                 className={
@@ -325,8 +332,8 @@ export function ToolbarPalette(props: Props) {
               >
                 {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
                 notation is the palette there. */}
-                {/* ...and lead with the board's own control instead, as the floating palette's
-                Event Storming category does. */}
+                {/* ...and lead with the board's own control instead, as the Event Storming
+                category's body does. */}
                 {esBoard && props.esBoardControls?.onImportPhoto ? (
                   <>
                     <EsPhotoStripButton controls={props.esBoardControls} />
@@ -470,7 +477,7 @@ export function ToolbarPalette(props: Props) {
             </CardWidth>
           </StripRow>
           {moreOpen && category ? (
-            // The category's full Palette body, the exact node the floating Palette renders.
+            // The category's full Palette body (usePaletteCatalogue).
             <StripPopover
               right={more.right}
               isMobile={isMobile}

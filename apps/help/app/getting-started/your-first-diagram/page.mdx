@@ -14,48 +14,58 @@ export const metadata = helpMetadata({
 
 The quickest way to learn livediagram is to build something. This walkthrough takes you from a blank canvas to a small connected diagram. You do not need to sign in, the [canvas always works as a guest](/help/getting-started/guest-vs-account/).
 
-<Figure caption="Every document starts from the new-document welcome flow: pick Blank or a ready-made template.">
-  <NewDocumentWelcome />
-</Figure>
-
 ## Create a new diagram
 
 <Step n={1}>
-  Open [a new diagram](/new). This is livediagram's entry point: the welcome flow where you can
-  start from a blank canvas or pick a [template](/help/canvas/templates/) and a
-  [theme](/help/canvas/themes/).
+  Open [a new diagram](/new). This is livediagram's entry point: the **New Document** wizard, in two
+  steps, **Template** and **Location**.
 </Step>
 
 <Step n={2}>
-  Choose **Blank** to follow along from scratch, or pick a template if you would rather start from a
-  ready-made layout. On your very first diagram the editor offers **Show me around**, the [welcome
-  tour](/help/getting-started/welcome-tour/) of the essentials; take it or dismiss it, and rerun it
-  any time from Settings → Editor. Either way you land on the editor ready to go.
+  On the **Template** step, pick what to start from. **Popular** opens first, led by **Blank
+  Diagram**; search the [templates](/help/canvas/templates/), or narrow them with the mode filter
+  (**Everything**, Diagram, Draw, Illustrate, Plan). Clicking a card picks it and moves you on.
+  Choose **Blank Diagram** to follow along from scratch.
 </Step>
-
-<Tip>
-  In a hurry? **Start Blank** skips the welcome flow entirely and drops you straight onto an empty
-  canvas: press **Skip** on the first step, choose **Blank Diagram** from Start Blank in the
-  livediagram site header, or open [/new?blank=1](/new?blank=1) directly.
-</Tip>
 
 <Step n={3}>
-  Give the document a name. Click the title in the header at the top of the editor and type.
-  Renaming is instant and saved for you. Names cap at **60 characters** — typing simply stops there,
-  which is plenty for a title and short enough to stay readable in a tab bar or a list row.
+  On the **Location** step, give the document a name (it starts as an "Untitled" name for the
+  template you chose), pick where it is saved (**livediagram**, your account, or **Local Browser**,
+  this device only) and which folder it goes in. Press **Create** and the editor opens on your new
+  document.
 </Step>
+
+<Figure caption="The New Document wizard: pick a template on the first step, then name it and choose where it lives.">
+  <NewDocumentWelcome />
+</Figure>
+
+On your very first document the editor offers **Show me around**, the [welcome
+tour](/help/getting-started/welcome-tour/) of the essentials. Take it or dismiss it; you can rerun it
+any time from **Settings**, under **Accessibility**.
+
+<Tip>
+  In a hurry? **Skip** on the Template step creates a Blank Diagram straight away, with no Location
+  step. **Start Blank** in the livediagram site header (on a computer) does the same from any page
+  of the site, or open [/new?blank=1](/new?blank=1) directly. The wizard's **X** (or Escape) backs
+  out without creating anything, and **Open Existing Document** jumps to your library instead.
+</Tip>
+
+You can rename the document later: click its title in the header at the top of the editor and
+type. Renaming is instant and saved for you. Names cap at **60 characters**: typing simply stops
+there, which is plenty for a title and short enough to stay readable in a tab bar or a list row.
 
 ## Add your first shapes
 
 <Step n={1}>
-  Find the **Palette** panel (the floating panel labelled `PALETTE`, in the top-right of the canvas
-  by default). It opens on **Popular**, a grid of the tiles most people reach for, with Square,
-  Circle and Diamond among them. Everything else is one press away in the category picker.
+  Find the **Palette**, the strip across the top of the canvas. It opens on **Popular**, the tiles
+  most people reach for, with Square, Circle and Diamond among them. Everything else is one press
+  away in its category dropdown.
 </Step>
 
 <Step n={2}>
-  **Tap a shape tile** to drop it onto the canvas at its default size, or **drag on the canvas** to
-  draw it at the size you want. Try a Square or a Stadium (the pill shape) to start.
+  **Click a shape tile**, then **click the canvas** where you want it: it drops there at its default
+  size. Or, after picking the tile, **drag on the canvas** to draw it at the size you want, or drag
+  the tile itself straight onto the canvas. Try a Square to start.
 </Step>
 
 <Step n={3}>
@@ -65,8 +75,8 @@ The quickest way to learn livediagram is to build something. This walkthrough ta
 </Step>
 
 <Step n={4}>
-  Drop a second shape nearby the same way. If a shape is selected when you add the next one, the new
-  shape inherits its size, handy for chaining similarly-sized nodes.
+  Drop a second shape nearby the same way. If a shape is selected when you click to drop the next
+  one, the new shape inherits its size, handy for chaining similarly-sized nodes.
 </Step>
 
 For the full set of shapes, devices, and icons you can drop, see the [Palette](/help/palette/) guides.
@@ -78,36 +88,39 @@ For the full set of shapes, devices, and icons you can drop, see the [Palette](/
 ## Connect them with arrows
 
 <Step n={1}>
-  Hover a shape and look for the quick-connect **+** affordances around it. Drag from one to another
-  shape to draw an arrow that stays pinned to both.
+  Select a shape and look for the quick-connect **+** buttons around it. Click one to open its
+  options, then drag **Arrow** onto another shape to draw an arrow that stays pinned to both. (On a
+  phone, tap **Arrow**, then tap the target.) **Duplicate** in the same options makes a connected
+  copy of the shape beside it in one go.
 </Step>
 
 <Step n={2}>
-  Prefer to draw freely? Pick the **Arrow** tool from the Palette's **Draw** category and drag
-  between two points.
+  Prefer to draw freely? Pick **Add arrow** from the Palette (it is in Popular, and in the **Draw**
+  category), or press `A`, and drag between two points.
 </Step>
 
 <Step n={3}>
-  Select an arrow and right-click it to change its style: straight, curved, or angled, plus line
-  thickness, dashes, and arrowhead shape. Double-click an arrow to give it a label.
+  Right-click an arrow (long-press on touch) to change its style: **Straight**, **Curved** or
+  **Angled** in the **Line** section, with its thickness and pattern, and the arrowheads under
+  **Pointer**. Double-click an arrow to give it a label.
 </Step>
 
 ## Keep going
 
 You now have a connected diagram. From here you can:
 
-<Figure caption="A few shapes joined by arrows, with the Palette docked top-right: the editor at a glance.">
+<Figure caption="A few shapes joined by arrows, with the Palette strip across the top: the editor at a glance.">
   <CanvasOverview />
 </Figure>
 
-- **Move and multi-select.** Drag to reposition; drag on empty canvas to marquee-select several elements at once.
+- **Move and multi-select.** Drag to reposition; drag on empty canvas to marquee-select several elements at once, or Shift-click to add one at a time.
 - **Recolour everything** with a [theme](/help/canvas/themes/).
 - **Share it live.** Hand a colleague a link and they join the same canvas. See [Sharing your document](/help/getting-started/sharing-your-document/).
 
 <Tip>
   Made a mistake? [Undo](/help/canvas/undo/) and [Redo](/help/canvas/redo/) sit in the controls in
-  the bottom-right corner, and the common keyboard shortcuts are in [Keyboard
-  essentials](/help/getting-started/keyboard-essentials/).
+  the bottom-right corner (or press `Cmd/Ctrl+Z`), and the common keyboard shortcuts are in
+  [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
 </Tip>
 
 </ArticleLayout>

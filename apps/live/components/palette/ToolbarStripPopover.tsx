@@ -94,6 +94,8 @@ export function StripPopover({
     <div
       ref={ref}
       {...{ [dataAttr]: '' }}
+      // Chrome, not canvas, like the strip it hangs from.
+      data-floating-panel=""
       // A menu, so it stays at design size while the strip is scaled
       // (docs/specs/007-editor/ui-scale.md): the counter-zoom brings it back to 1, so `right`
       // (screen px) and the classes' width and height cap apply as written.

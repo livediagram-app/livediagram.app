@@ -4,6 +4,7 @@
 // says a newer build is live, so no old chunk name is ever requested; a chunk that fails anyway
 // (the signal not heard yet) is recovered by a full page load of its destination. Every full load
 // waits for unsaved editor work first, and falls back to the client transition when it cannot.
+import { getOnline } from './online-status';
 import { APP_RECOVERY_FLAG } from './reload-guard';
 import { reloadWhenSaved } from './reload-when-saved';
 import { runningStaleBuild } from './server-release';
@@ -115,6 +116,7 @@ export function recoverInBrowser(error: unknown, deps: NavigationDeps): Promise<
     hasUnsavedChanges: deps.hasUnsavedChanges,
     load: (url) => deps.load(url, false),
     track: deps.track,
+    online: getOnline,
   });
 }
 

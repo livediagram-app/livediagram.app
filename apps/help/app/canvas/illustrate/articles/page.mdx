@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { ArticleToolbarScene } from '@/components/illustrations/illustrate';
 
 export const metadata = helpMetadata({
   title: 'Writing Articles',
@@ -20,8 +21,8 @@ An **article** is a page to write on, in [Illustrate Mode](/help/canvas/illustra
 ## Starting an Article
 
 - **On a new tab**: the first page of a tab in Illustrate mode asks **What Is This Page For?** while it is still empty. Choose **Article** and the caret lands in the title. Choose **Infographic**, or start putting things on it, and it stays an infographic page.
-- **After other pages**: press the **+** after the last page (or the **+** at the end of the toolbar strip, in the Toolbar layout) and choose **Article**.
-- **From a template**: the **Article** template (under Projects, and in Popular) starts with a short project brief you can write over.
+- **After other pages**: press the **+** after the last page (or the **+** at the end of the palette strip) and choose **Article**.
+- **From a template**: the **Article** template (under **Projects**, and in **Popular**) starts a tab in Illustrate mode with a short project brief you can write over.
 
 A page keeps its kind once you start: an article page cannot become an infographic page, or the other way round.
 
@@ -39,13 +40,17 @@ Click anywhere on the page to put the caret there and type. The writing sits ins
 
 While you write, a toolbar sits at the top of the page, inside it: hover any article page and it shows there too.
 
-- **Style**: Text, Title, Subtitle, Heading 1 to 3, Quote or Code.
+<Figure caption="An article page with its formatting toolbar along the top, and commented words tinted with their marker in the margin.">
+  <ArticleToolbarScene />
+</Figure>
+
+- **Style**: Text, Title, Subtitle, Heading 1 to 3, Quote or Code. **⌘⌥1**, **⌘⌥2** and **⌘⌥3** make a line a heading, **⌘⌥0** plain text again.
 - **Bold**, **Italic** and **Underline** (⌘B, ⌘I, ⌘U).
 - **Colour**: text colour and highlight, from the article's colours.
 - **Link** (⌘K): add, edit or remove a link on the selected words.
-- **Lists**: bulleted, numbered or to-do, and indenting.
-- **Alignment**: left, centre, right or justified.
-- **More formatting**: strikethrough, inline code, superscript, subscript, clear formatting, and the article's style.
+- **Lists**: bulleted (⌘⇧8), numbered (⌘⇧7) or to-do (⌘⇧9), and indenting.
+- **Alignment**: left (⌘⇧L), centre (⌘⇧E), right (⌘⇧R) or justified.
+- **More Formatting**: strikethrough, inline code, superscript, subscript, clear formatting, and the article's style.
 - **Insert**: a picture, a table, a chart, a divider, a page break, a quote, a code block or a callout.
 - **Comment** and **Assign Action**, with words selected (see below).
 
@@ -59,7 +64,7 @@ All the pages of an article share its size, orientation and background: change t
 
 Anything you add from the palette, the toolbar's **Insert** or the `/` menu sits in the writing, and the text makes room for it.
 
-- **A picture, chart, table or sticky note** sits on its own line by default. Select it and the bar underneath chooses how it sits: **In line** (on its own line, aligned left, centre or right), **Wrap left** or **Wrap right** (the text runs down beside it), or **Float** (in front of the text, anywhere on the page).
+- **A picture, chart, table or sticky note** sits on its own line by default. Select it and the bar underneath chooses how it sits: **In Line** (on its own line, aligned left, centre or right), **Wrap Left** or **Wrap Right** (the text runs down beside it), or **Float** (in front of the text, anywhere on the page).
 - **Drag it to move it**: a blue line with a ring at each end shows where it will land between paragraphs; let go and it moves there. Or drag the grip at the left of its bar.
 - **A drawing**: drop a shape on the writing and it starts a drawing area, a space between the paragraphs to draw and connect shapes in with every tool. Drag its edges or corner to make it bigger or smaller. Whatever pokes past its edge is cut off, on screen and in exports.
 - When the writing above them changes, they move with the text, onto another page if they need to.
@@ -86,11 +91,12 @@ Hover any choice to preview it on the page; press it to keep it. With the **Line
 ## Exporting, Presenting and Leaving
 
 - Article pages export, print and present like any page: the writing, the pictures and drawings in it, and page numbers if they are on. See [Exporting and Presenting Pages](/help/canvas/illustrate/exporting-pages/).
-- **Leaving Illustrate mode**: Diagram and Draw modes do not show article pages. Switching a tab with articles to either asks first: **Turn Into Pages** makes every article page a **Page** element on the canvas, holding that page's writing (one step, so **Undo** brings the articles back); **Keep as Articles** switches and leaves them for when you come back to Illustrate.
+- **Leaving Illustrate mode**: Diagram, Draw and Plan modes do not show article pages. Switching a tab with articles to any of them asks first, in **Turn Articles Into Pages?**: **Turn Into Pages** makes every article page a **Page** element on the canvas, holding that page's writing (one step, so **Undo** brings the articles back); **Keep as Articles** switches and leaves them for when you come back to Illustrate; **Cancel** stays.
 
 ## Good to Know
 
 - Collaborators see each other's writing as it is typed, and can write in the same article.
 - People who can only view a tab can read the articles but not edit them.
+- On Windows and Linux, read **Ctrl** for **⌘** and **Alt** for **⌥** in the shortcuts above.
 
 </ArticleLayout>

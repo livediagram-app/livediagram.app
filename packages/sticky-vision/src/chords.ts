@@ -120,11 +120,3 @@ export function cutAtNotches(box: Box, mask: PaperMask, noteSize: number, depth 
     ),
   );
 }
-
-export const CHORD_CALIBRATION = {
-  NOTCH_MIN_DEPTH,
-  CHORD_MAX_LENGTH,
-  PIECE_MIN_SIDE,
-  PIECE_MIN_AREA,
-  CHORD_MAX_DEPTH,
-} as const;

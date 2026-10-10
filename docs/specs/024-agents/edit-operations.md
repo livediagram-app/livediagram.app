@@ -152,6 +152,7 @@ nothing was applied
 | `changeset_conflict` | A target changed since the base                            | Each element as read and as now  |
 | `elements_held`      | A target is selected by a person                           | Each element and who holds it    |
 | `invalid_result`     | The result fails validation                                | The element, field and rule      |
+| `not_expressible`    | A strict source's tab would hold residue (`422`)           | Each element and field           |
 | `too_large`          | Over `CHANGESET_MAX_OPERATIONS` or the tab cap             | The cap                          |
 
 ## Where the engine lives

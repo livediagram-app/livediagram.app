@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SharePassword } from '@/components/illustrations/collaboration';
+import { SharePasswordSwitch, SharePasswordGate } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Share Passwords',
@@ -16,29 +16,48 @@ A share password is an optional password on a document. When it is set, anyone o
 
 ## How it works
 
-The password belongs to the **document**, not to a single link. One password covers every share link you create for that document. Once a visitor enters it correctly, it stays in effect for their whole session, so their reads, edits, images, and realtime all stay authorised.
+The password belongs to the **document**, not to a single link. One password covers every share link you create for that document, [embeds](/help/collaboration/sharing/embeds/) included. Once a visitor enters it correctly, it stays in effect for their whole visit, so their reads, edits, images, and realtime all stay authorised.
 
-As the owner you always bypass the password. The prompt only ever appears for people coming in through a share link.
+As the owner you always bypass the password. So do members of the [team](/help/collaboration/teams/) whose library holds the document, since they don't come in through a link. The prompt only ever appears for people coming in through a share link.
 
 ## Setting a password
 
 <Step n={1}>Open the **Share** dialog on your document.</Step>
 <Step n={2}>Switch on **Password Protection** beneath the list of passes.</Step>
 <Step n={3}>
-  Type a password and choose **Save**. To turn it off again, choose **Remove** or switch it off.
+  Type a password in the field that appears and choose **Save** (or press **Enter**). The field
+  shows what you type, so you can check it.
 </Step>
 
-Once saved, the row shows **Password Set** with **Replace** and **Remove**. livediagram keeps only a scrambled form of the password, so nobody can read it back afterwards, you included: note it down before you save, and use **Replace** to choose a new one if you lose it. Anyone you have already shared with will be re-prompted on their next action once you set or change it.
+Once saved, the row shows **Password Set** with **Replace** and **Remove**, and every pass gains a small **Password** tag. livediagram keeps only a scrambled form of the password, so nobody can read it back afterwards, you included: note it down before you save, and use **Replace** to choose a new one if you lose it.
 
-<Figure caption="The Share dialog gains a password row beneath the links, gating every link behind one secret.">
-  <SharePassword />
+<Figure caption="With a password saved, the switch shows Password Set with Replace and Remove, and every pass carries a Password tag.">
+  <SharePasswordSwitch />
 </Figure>
+
+## Changing or removing it
+
+- **Replace** brings back an empty field. Type the new password and choose **Save**, or **Cancel** (or **Esc**) to keep the old one.
+- **Remove**, or switching **Password Protection** off, takes the password away at once. Every link then opens without one again.
+
+Setting or replacing a password sends everyone currently in the document through a share link back to the prompt straight away, so they need the new password to carry on. Removing it disconnects nobody.
 
 ## What visitors see
 
-When someone opens a protected share link, they get a full-screen password card with a single input instead of the canvas. Entering the right password opens the document; a wrong one shows an error and lets them try again.
+When someone opens a protected share link, they get a full-screen card headed **This document is password-protected**, with a single password box and an **Open document** button, instead of the canvas. A wrong password shows "That password didn't match. Try again." and lets them try again. Guesses are rate-limited per network, so a password can't be found by trying thousands of them.
+
+<Figure caption="A visitor on a protected link sees the password card instead of the canvas.">
+  <SharePasswordGate />
+</Figure>
+
+The browser remembers a password that worked, for that link, so a visitor isn't asked again next time. They are asked again only if you change or remove the password, or they clear their browser's site data.
 
 Embedded documents behave the same way: the password prompt appears inside the embed frame. Because browsers keep each site's storage separate, a visitor enters the password once per site where the document is embedded.
+
+## What a password turns off
+
+- **Live images.** An image tag can't supply a password, so the **Live image** menu disappears from every pass while a password is set. See [Live Image](/help/collaboration/sharing/live-image/).
+- **The Community.** A public document can't ask its visitors for a password, so a document can't be in the [Community](/help/collaboration/sharing/community/) and have a password at the same time. While it is listed, **Password Protection** is switched off and locked, with a note saying why.
 
 <Tip>
   Pair a password with a [share link expiry](/help/collaboration/sharing/share-link-expiry/) for a

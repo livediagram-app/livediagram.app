@@ -9,11 +9,8 @@ export {
   emptyImportImageReport,
   importImagePlaceholderCount,
   importImageReportTotal,
-  type ImportImageReportCopy,
 } from './report';
 export {
-  IMPORT_IMAGE_FAILURES,
-  type DisplayHint,
   type ImportImageFailure,
   type ImportImageOutcome,
   type ImportImageProgress,

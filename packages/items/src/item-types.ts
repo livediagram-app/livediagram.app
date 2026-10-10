@@ -2,6 +2,8 @@
 // names the fields its item panel offers; any item may still carry others.
 // `glyph` is an id from the Plan glyph set (glyphs.ts). A document may replace this
 // catalogue with its own (type-catalogue.ts, docs/specs/026-plan/item-types.md).
+import type { CardField, CardSize } from './board';
+import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
 
 export type ItemFieldId =
@@ -10,13 +12,14 @@ export type ItemFieldId =
   | 'status'
   | 'assignee'
   | 'priority'
+  // The item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside its type colour, a Project's bar.
+  | 'color'
   | 'labels'
   | 'estimate'
   // When the work begins (docs/specs/026-plan/items.md "Fields"): a Project's bar on the Gantt chart.
   | 'start'
   | 'due'
   | 'checklist'
-  | 'parent'
   | 'votes'
   // A comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, written only by the
   // comment writes.
@@ -36,6 +39,8 @@ export const CUSTOM_FIELD_KINDS = [
   'checkbox',
   'link',
   'choice',
+  // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
+  'card',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
 
@@ -45,6 +50,8 @@ export interface CustomFieldDef {
   kind: CustomFieldKind;
   // Choice's options, in order.
   options?: readonly string[];
+  // A Card field's target card type id: its value is the id of one card of that type.
+  linkType?: string;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
 }
@@ -71,11 +78,33 @@ export interface ItemTypeDef {
   detailsLabel?: string;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
+  // Statuses this type does not use (docs/specs/026-plan/item-types.md "An item type"): a card of it never moves
+  // into one. An exclusion list, so a status added later is open to every type.
+  excludedStatuses?: readonly string[];
+  // The Default State (docs/specs/026-plan/item-types.md "An item type"): the status a card of this type is made in
+  // when nothing else gives it one (a board's column always does). Absent: none.
+  defaultStatus?: string;
+  // What its cards show at each card size (docs/specs/026-plan/item-types.md "Card display"); a size left out takes
+  // the type's default (typeCardDisplay).
+  display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
 }
+
+// Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom
+// id without `f-`, so every card made while Parent was a built-in field keeps its value.
+export const PARENT_FIELD_ID = 'parent';
+export const PARENT_FIELD: CustomFieldDef = {
+  id: PARENT_FIELD_ID,
+  label: 'Parent',
+  kind: 'card',
+  linkType: 'project',
+};
+// Parent's own grouping, as boards, views and saved searches stored it before (legacy-parent.ts reads it as the
+// Parent field): still accepted, never written.
+export const LEGACY_PARENT_GROUPING = 'parent';
 
 // Parent right under Status and Assignee: what a piece of work belongs to is read with who has it.
 // No Start: only a Project, a bar on the Gantt chart, starts by default.
-const WORK: readonly ItemFieldId[] = [
+const WORK: readonly string[] = [
   'title',
   'description',
   'status',
@@ -95,7 +124,17 @@ const BUILT_IN_TYPES = [
     newTitle: 'New project',
     glyph: 'project',
     color: '#18181b',
-    fields: ['title', 'description', 'status', 'assignee', 'priority', 'start', 'due', 'labels'],
+    fields: [
+      'title',
+      'description',
+      'status',
+      'assignee',
+      'priority',
+      'color',
+      'start',
+      'due',
+      'labels',
+    ],
   },
   {
     id: 'task',
@@ -104,6 +143,7 @@ const BUILT_IN_TYPES = [
     glyph: 'task',
     color: '#71717a',
     fields: WORK,
+    custom: [PARENT_FIELD],
   },
   {
     id: 'note',
@@ -131,10 +171,10 @@ const BUILT_IN_TYPES = [
   },
 ] as const satisfies readonly ItemTypeDef[];
 
-// Every built-in type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
+// Every default type offers comments, last (docs/specs/026-plan/items.md "Comments"). The mapped type keeps
 // the tuple, so each type stays addressable by position and its id literal.
 type WithComments<T extends readonly ItemTypeDef[]> = {
-  readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly ItemFieldId[] };
+  readonly [K in keyof T]: Omit<T[K], 'fields'> & { fields: readonly string[] };
 };
 export const ITEM_TYPES = BUILT_IN_TYPES.map((t) => ({
   ...t,

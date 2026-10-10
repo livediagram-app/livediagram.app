@@ -41,28 +41,23 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-The panel sits **on the left edge of the canvas, vertically centred**, in every layout: one gap
-(12 px) in from the canvas's left. The left is out of the way of the Palette, which lives on the
-right.
+The panel sits **on the left edge of the canvas, vertically centred**: one gap
+(12 px) in from the canvas's left, out of the way of the strip across the top.
 
-Each layout keeps its dress. In the Floating layout the panel wears the Palette's panel dress: the
-same surface, border, radius and shadow, the Palette's width (when a Palette is on screen), and a
-header with its title ("Quick style") and a help link. It is not draggable and has no collapse
-button of its own; it leaves when the selection does. In the Toolbar layout it is
-**compact** (no header, 210 px wide): the colour swatches draw a little smaller (20 px) but each
-still sits in a **24 × 24 px target** (WCAG 2.2, 2.5.8 target size), eight to a row with the
-targets touching. **The width is fixed, never the content's**, so the panel never resizes as its
-rows change, nor when the editor mode changes: every colour row lays out on the same eight columns
-(the theme's seven and Ink in Diagram mode, Ink and the seven stock colours in Draw mode, a
-Background row's seven in the first seven), a row of swatches never wraps and is never clipped (the
-width counts the swatches, their gaps, the padding and the border exactly). In the Floating layout
-with no Palette on screen it is 242 px, room for eight swatches 4 px apart. (Each width is its targets, their gaps, 8 px of padding a side, or 10 px in
-Floating, and a 1 px border a side.) The panel-opacity preference
-([User preferences](../007-editor/user-preferences.md)) fades it in every layout.
+It is **compact** (no header, 258 px wide), not draggable and with no collapse button of its own;
+it leaves when the selection does. The colour swatches are the colour picker's one swatch
+([Colour picker](../004-interface-design/colour-picker.md)): a 20 px chip in a **24 × 24 px target**
+(WCAG 2.2, 2.5.8 target size), ten to a row with the targets touching. **The width is fixed, never
+the content's**, so the panel never resizes as its rows change, nor when the editor mode changes:
+every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours** in
+Diagram mode, Ink, the eight hued stock colours and More colours in Draw mode, a Background row's
+seven and More colours), a row of swatches never wraps and is never clipped (the
+width counts the targets, their gaps, 8 px of padding a side and a 1 px border a side, exactly). The panel-opacity preference
+([User preferences](../007-editor/user-preferences.md)) fades it.
 
 ### Collisions
 
-Never over the Palette or the other floating chrome (panels, popovers, the Toolbar strip and
+Never over the other chrome (panels, popovers, the Toolbar strip and
 its More popover, the bottom-right cluster). The placement tries fixed candidate spots in order and
 takes the first that overlaps none of them:
 
@@ -194,6 +189,11 @@ The seven colours are **theme-relative**:
   theme change, keep a bound colour the same way. The binding is dropped the moment the colour is set
   any other way (the context menu's pickers, a preset, reset to theme), because the slot no longer
   describes it.
+- **Then More colours**, every colour row's last target: a swatch button opening the full colour
+  picker ([Colour picker](../004-interface-design/colour-picker.md#quick-style)) with the row's own
+  colours as its Theme Palette, the standard colours (strong on Stroke and Text colour, by name; soft
+  on Background), the document's Custom colours and **+**. A pick there styles the selection like any
+  hand-picked colour: it binds no slot.
 - Every swatch is named by a colour word ("Theme default", "Green", "Deep orange"), never a hex, for
   its tooltip and its accessible name.
 
@@ -203,8 +203,10 @@ A theme's six colours are a good start and never the whole story: a brand colour
 a team already uses, the exact blue of last quarter's deck. Any of the six can be replaced with a
 colour of your own.
 
-- **Right-click a swatch** (slots 1 to 6, in any colour row) to open a small popover: a colour picker
-  with a hex field, and **Clear override**. Picking a colour saves it **into that swatch**,
+- **Right-click a swatch** (slots 1 to 6, in any colour row) to open a small popover: the custom
+  colour editor ([Colour picker](../004-interface-design/colour-picker.md#picking-a-colour-of-your-own))
+  and **Clear override**. **Use** (or Enter in its hex field) saves the colour **into that swatch** and
+  closes the popover,
   replacing that slot's theme colour; the swatch is then used like any other. The popover styles
   nothing by itself: choosing the swatch (a left click) is what applies it, so editing the palette
   and styling the selection stay two separate acts.
@@ -227,8 +229,8 @@ colour of your own.
 ### Where overrides live
 
 An override is **yours, synced, and keyed by theme**: it means "in this theme, this slot is this
-colour". It is kept in the synced user preferences ([User preferences](../007-editor/user-preferences.md)),
-beside `customSwatches`, and travels the same way: to your account when signed in, to your guest
+colour". It is kept in the synced user preferences ([User preferences](../007-editor/user-preferences.md))
+and travels the same way as every synced preference: to your account when signed in, to your guest
 identity otherwise, and into this browser's cache either way.
 
 - **Keyed by theme, because the slots are.** Each theme derives its own six colours, so "slot 4" is
@@ -236,7 +238,7 @@ identity otherwise, and into this browser's cache either way.
   in, and switching theme shows that theme's own slots with whatever overrides you set for it,
   and none from other themes.
 - **Per user, not per document.** A palette you build is a working habit that follows you between
-  documents and devices, like `customSwatches`. Colours a document should share with everyone who
+  documents and devices. Colours a document should share with everyone who
   opens it are what [custom themes](../011-theme/custom-themes.md) are for: one mechanism for
   shared colours, not two. Keeping overrides per document and per user would fragment them further,
   so the same person would rebuild the same palette in every document.
@@ -272,7 +274,7 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the seven hued
+- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
   colours and the tab's custom colours, as Marker colour offers them
   ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
   Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
@@ -326,7 +328,7 @@ element of the same kind you draw.
   silently restyle content the user did not draw.
 - **Per document, on this device.** Memory is kept in the browser (`localStorage`), keyed by document. It
   is not synced, not in the document, and not part of [User preferences](../007-editor/user-preferences.md):
-  it is a working habit for one document's notation, like the panel layout is a habit for one screen.
+  it is a working habit for one document's notation, like the panel placements are a habit for one screen.
 
 ## Clear styles
 
@@ -348,11 +350,15 @@ the selection. Clear styles is the first action, because every restyle needs a w
 
 WCAG 2.2 AA.
 
-- Each row is a **radio group** named by its section title; each option is a radio with its own
-  accessible name. The arrow keys move between options and choose, per the radio-group pattern;
-  Tab moves between rows.
+- A row of glyph options (width, style, alignment, corners) is a **radio group** named by its
+  section title; each option is a radio with its own accessible name. The arrow keys move between
+  options and choose, per the radio-group pattern; Tab moves between rows.
+- A **colour row** follows the colour picker's keyboard
+  ([Colour picker](../004-interface-design/colour-picker.md#keyboard)): a group named by its section
+  title, each swatch a toggle button (`aria-pressed`), one Tab stop, the arrow keys move focus
+  (wrapping, More colours included) without choosing, and Enter or Space picks.
 - Every icon-only option has an accessible name and a **Tooltip** that repeats it (the name after a
-  1 s hover, at once on keyboard focus, see
+  500 ms hover, at once on keyboard focus, see
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)).
 - Focus is always visible. Every option is a target of at least 24 × 24 px, including the
   compact swatches whose colour draws smaller inside it.
@@ -395,7 +401,6 @@ counted as Custom Swatches in the dashboard's Look & Feel stack.
 - **Phones.** See above.
 - **Styling other non-shape elements** (stickies, tables). They have their own looks and their own menus.
 - **A shape's label colour.** It stays in the context menu's Colours category (see Text colour above).
-- **Custom colours in the panel.** The OS picker, pipette and custom swatches stay in the context menu.
 
 ## Help
 

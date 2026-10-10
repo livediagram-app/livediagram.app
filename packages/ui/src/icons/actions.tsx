@@ -2,16 +2,19 @@ import type { IconPrim } from '@livediagram/icons';
 import {
   lucideArrowDown,
   lucideArrowUp,
+  lucideColumns2,
   lucideCopy,
   lucideCopyPlus,
   lucideIndentDecrease,
   lucideIndentIncrease,
+  lucideLayoutGrid,
   lucideLock,
   lucideLockOpen,
   lucidePaintRoller,
   lucidePencil,
   lucidePlus,
   lucideRefreshCw,
+  lucideScan,
   lucideTrash2,
   lucideX,
 } from '@livediagram/icons/lucide';
@@ -27,6 +30,8 @@ import { Prims } from './Prims';
 export const TrashIcon = lucideGlyph(lucideTrash2, 16);
 // Duplicate an element (a copy with a plus), distinct from copying a value.
 export const DuplicateIcon = lucideGlyph(lucideCopyPlus, 16);
+// One page split into several (an Illustrate page's Split Into Pages).
+export const SplitPagesIcon = lucideGlyph(lucideLayoutGrid, 16);
 // Copy a value or a theme.
 export const CopyIcon = lucideGlyph(lucideCopy, 14);
 export const PencilIcon = lucideGlyph(lucidePencil, 14);
@@ -44,6 +49,10 @@ export const IndentIcon = lucideGlyph(lucideIndentIncrease, 14);
 export const OutdentIcon = lucideGlyph(lucideIndentDecrease, 14);
 export const ArrowUpIcon = lucideGlyph(lucideArrowUp, 14);
 export const ArrowDownIcon = lucideGlyph(lucideArrowDown, 14);
+// Two panes side by side: open a tab beside the one you are on (docs/specs/007-editor/split-view.md).
+export const SideBySideIcon = lucideGlyph(lucideColumns2, 16);
+// Corner brackets: fit the view to its content.
+export const FitViewIcon = lucideGlyph(lucideScan, 14);
 
 // Padlock, closed by default; `closed={false}` swings the shackle open.
 export function LockIcon({ closed = true, size = 16, ...rest }: IconProps & { closed?: boolean }) {

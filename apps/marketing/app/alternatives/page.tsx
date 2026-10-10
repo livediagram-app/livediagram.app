@@ -1,17 +1,23 @@
-import { ctaHref } from '@livediagram/api-schema';
-import { CtaLink } from '@/components/CtaLink';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
+import { AlternativeCard } from '@/components/compare/AlternativeCard';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { PageHero } from '@/components/PageHero';
+import { TryItCard } from '@/components/TryItCard';
 import { ALTERNATIVES, ALTERNATIVES_LAST_UPDATED } from '@/lib/alternatives';
 import { JsonLd, pageMetadata, SITE_URL } from '@livediagram/ui';
 
 // Hub page for the comparison set (see docs/specs/019-marketing/comparison-pages.md): a
 // crawlable parent that links to every /alternatives/<slug> page.
+// Every competitor by name, read from the data so a new comparison updates the hub's descriptions too.
+const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format(
+  ALTERNATIVES.map((alt) => alt.name),
+);
+
 export const metadata = pageMetadata({
   title: 'How livediagram compares · alternatives',
-  description:
-    'How livediagram stacks up against Miro, XMind, Excalidraw, draw.io, and Google Slides for diagrams. Honest, side-by-side comparisons.',
+  description: `How livediagram stacks up against ${COMPETITORS}. Honest, side-by-side comparisons.`,
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });
@@ -28,8 +34,7 @@ const ITEM_LIST_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   name: 'How livediagram compares',
-  description:
-    'Side-by-side comparisons of livediagram against Miro, XMind, Excalidraw, draw.io, and Google Slides.',
+  description: `Side-by-side comparisons of livediagram against ${COMPETITORS}.`,
   itemListOrder: 'https://schema.org/ItemListOrderAscending',
   numberOfItems: ALTERNATIVES.length,
   itemListElement: ALTERNATIVES.map((alt, i) => ({
@@ -44,43 +49,25 @@ export default function AlternativesIndexPage() {
   return (
     <>
       <JsonLd data={ITEM_LIST_JSON_LD} />
-      <BreadcrumbJsonLd name="Alternatives" path="/alternatives" />
+      <BreadcrumbJsonLd name="Product Comparison" path="/alternatives" />
       <Header surface="Compare" />
-      <main className="mx-auto max-w-3xl px-6 py-16 sm:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
-          How livediagram compares
-        </h1>
-        <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-          Thinking about another tool? Here&rsquo;s an honest, side-by-side look at how livediagram
-          compares, including where each one is the better pick.
-        </p>
-        <ul className="mt-10 space-y-3">
+      <Breadcrumb items={[{ label: 'Product Comparison' }]} />
+      <main className="pb-20 sm:pb-24">
+        <PageHero
+          eyebrow="Product Comparison"
+          title="How livediagram compares"
+          lede="Thinking about another tool? Here is an honest, side-by-side look at how livediagram compares, including where each one is the better pick."
+        />
+        <div className="mx-auto mt-14 grid max-w-6xl gap-5 px-6 sm:grid-cols-2 lg:grid-cols-3">
           {ALTERNATIVES.map((alt) => (
-            <li key={alt.slug}>
-              <a
-                href={`/alternatives/${alt.slug}`}
-                className="flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-white p-4 transition hover:border-brand-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-500/60"
-              >
-                <span>
-                  <span className="block font-semibold text-slate-900 dark:text-slate-100">
-                    {alt.h1}
-                  </span>
-                  <span className="mt-0.5 block text-sm text-slate-500 dark:text-slate-400">
-                    livediagram vs {alt.name}
-                  </span>
-                </span>
-                <span aria-hidden className="text-brand-500 dark:text-brand-300">
-                  →
-                </span>
-              </a>
-            </li>
+            <AlternativeCard key={alt.slug} alt={alt} />
           ))}
-        </ul>
-        <div className="mt-12 rounded-lg border border-slate-200 bg-slate-50 p-6 text-center dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-slate-700 dark:text-slate-200">Or just try it, no sign-up required.</p>
-          <CtaLink href={ctaHref('/new', 'Compare.Card')} size="sm" className="mt-3">
-            Start drawing
-          </CtaLink>
+          <TryItCard
+            title="Or just try it"
+            body="No sign-up, nothing to install, free forever. The fastest comparison is your own."
+            source="Compare.Card"
+            art
+          />
         </div>
       </main>
       <Footer />

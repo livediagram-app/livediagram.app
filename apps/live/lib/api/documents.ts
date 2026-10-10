@@ -8,6 +8,7 @@ import {
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
+  type SheetCreateRequest,
 } from '@livediagram/api-schema';
 import type {
   LiveDoc,
@@ -174,6 +175,8 @@ export async function apiCreateDocument(
     markUsed?: boolean;
     // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync.
     items?: ItemCreate[];
+    // Sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), whole.
+    sheets?: SheetCreateRequest[];
     // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
     itemTypes?: ItemTypeCatalogue | null;
   },
@@ -201,6 +204,8 @@ export async function apiCreateDocument(
       ...(d.presentation ? { presentation: d.presentation } : {}),
       ...(d.markUsed === false ? { markUsed: false } : {}),
       ...(d.items && d.items.length ? { items: d.items } : {}),
+      // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
+      ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
     }),
   });
   const { document: liveDoc } = await expectOk<DocumentResponse>(res, 'create document');
@@ -336,9 +341,9 @@ export async function apiCreateRoomTicket(
   shareCode: string | null = null,
 ): Promise<string | null> {
   // Retried with a short backoff: a team member whose mint fails has NO
-  // fallback (the legacy query params are personal/share-code only and
-  // the connector has no reconnect loop), so one transient blip would
-  // otherwise cost the whole page session its realtime.
+  // fallback (the legacy query params are personal/share-code only), and the
+  // connector mints a fresh one for every reconnect, so one transient blip
+  // would otherwise cost the session its realtime.
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 500 * attempt));
     try {

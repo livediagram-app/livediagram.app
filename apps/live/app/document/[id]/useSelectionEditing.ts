@@ -6,6 +6,7 @@ import {
   isBoxed,
   opensInlineLabelEditor,
   normalizeRuns,
+  trimLabel,
   truncateName,
   type Element,
   type TableElement,
@@ -21,16 +22,19 @@ import { debugLog } from '@/lib/debug-log';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
-// Selection-editing handlers, lifted out of editor-page.tsx: enter
-// format painter, begin / commit / cancel inline label
-// edits (incl. the first-label -> document/tab auto-rename), type-to-edit,
-// single-select (with format-paint interception), and
+// Selection-editing handlers, lifted out of editor-page.tsx: begin /
+// commit / cancel inline label edits (incl. the first-label ->
+// document/tab auto-rename), type-to-edit, single-select (with the
+// Format tool's arm-then-paint interception), and
 // shift-click multi-select toggling. applyFormatFromSource comes from
 // useElementHelpers and is passed in.
 export function useSelectionEditing(opts: {
   // Read when an edit runs (docs/specs/008-canvas/blueprints/selection-store.md).
   readSelection: () => Selection;
   isReadOnly: boolean;
+  // The active tab is locked: every save is refused, so no label editor opens to take typing it would
+  // throw away.
+  tabLocked?: boolean;
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): never selectable.
   layerInertIds: Set<string>;
   // Smart layer naming (docs/specs/006-document/layers.md): called with every committed label so a
@@ -54,7 +58,7 @@ export function useSelectionEditing(opts: {
   // history frame made Cmd+Z look like a no-op (it undid only the
   // invisible rename) and needed two undos for one action.
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
-  applyFormatFromSource: (targetId: string, opts?: { keepSource?: boolean }) => void;
+  applyFormatFromSource: (targetId: string) => void;
   // True when ANOTHER participant currently has this element selected
   // (concurrent-selection lock, docs/specs/007-editor/live-app.md). Blocks select / edit so two
   // people don't fight over the same element. Advisory + presence-only.
@@ -105,15 +109,9 @@ export function useSelectionEditing(opts: {
     setContextMenu,
   } = set;
 
-  const beginFormatPainter = () => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
-    setFormatSourceId(selectedId);
-  };
-
   const beginEdit = (elementId: string) => {
-    // Viewers may select to inspect, but never enter text-edit mode.
-    if (isReadOnly) return;
+    // Viewers may select to inspect, but never enter text-edit mode; nor anyone on a locked tab.
+    if (isReadOnly || opts.tabLocked) return;
     // Another participant has it selected — don't let two people edit it.
     if (lockedByOther(elementId)) return;
     if (formatSourceId !== null) return;
@@ -152,7 +150,10 @@ export function useSelectionEditing(opts: {
     commit((els) => els.map((el) => (el.id === elementId ? { ...el, headerSize } : el)));
   };
 
-  const commitLabel = (elementId: string, label: string, runs?: TextRun[]) => {
+  const commitLabel = (elementId: string, typed: string, typedRuns?: TextRun[]) => {
+    // Saved without whitespace at either end (docs/specs/008-canvas/canvas-and-palette.md "Rich text
+    // labels"): a dangling newline or space serves no purpose, and the display drops a trailing one.
+    const { label, runs } = trimLabel(typed, typedRuns);
     // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): keep `richText` only when it carries
     // real overrides, otherwise strip it so a plain label round-trips as
     // plain JSON. `label` stays the plain-text mirror either way.
@@ -236,7 +237,7 @@ export function useSelectionEditing(opts: {
   const cancelEdit = () => setEditingId(null);
 
   const typeIntoSelected = (elementId: string, char: string): boolean => {
-    if (isReadOnly) return false;
+    if (isReadOnly || opts.tabLocked) return false;
     if (lockedByOther(elementId)) return false;
     const el = activeTab.elements.find((e) => e.id === elementId);
     if (!el) return false;
@@ -283,15 +284,7 @@ export function useSelectionEditing(opts: {
     // Format tool simply couldn't arm from or paint onto an arrow.
     if (formatToolActive) {
       if (formatSourceId === null) setFormatSourceId(id);
-      else applyFormatFromSource(id, { keepSource: true });
-      return;
-    }
-    if (formatSourceId !== null) {
-      // Format-paint mode: apply the source's formatting to the
-      // clicked target instead of selecting it. applyFormatFromSource
-      // clears formatSourceId itself; it handles boxed→boxed and
-      // arrow→arrow, no-ops cross-kind.
-      applyFormatFromSource(id);
+      else applyFormatFromSource(id);
       return;
     }
     setSelectedId(id);
@@ -326,7 +319,6 @@ export function useSelectionEditing(opts: {
   };
 
   return {
-    beginFormatPainter,
     beginEdit,
     commitLabel,
     commitTable,

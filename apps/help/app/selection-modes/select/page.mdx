@@ -2,11 +2,12 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { SelectMode } from '@/components/illustrations/palette-modes';
+import { ToolPicker } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Select',
   description:
-    'The default pointer mode in livediagram, used to select, move, resize, and edit elements on the canvas.',
+    'The default pointer mode in livediagram: select, move, resize and edit elements, and the palette tool picker every other mode is chosen from.',
   path: '/help/selection-modes/select/',
 });
 
@@ -18,27 +19,57 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("select")}
 >
 
-Select is the default mode for working on the canvas, and the one you spend most of your time in. You can switch to it from the mode picker at the top of the floating palette, or press **`V`**.
+Select is the ordinary pointer: the tool for picking elements, moving them, resizing them and editing their text. It is where you spend most of your time on a desktop, and every other tool hands you back here when you are done. Choose it from the tool picker at the start of the palette strip, or press **`V`**.
+
+## The tool picker
+
+The palette strip starts with two dropdowns: the tool picker first, showing the tool you are holding, then the category picker. Open the tool picker and the tools are laid out as tiles in three bands:
+
+- **Edit**: **Select**, **Hand**, **Eraser** and **Format**, the tools that work on the canvas.
+- **Present**: **Laser**, **Spotlight**, **Avatar** and **Slide Deck**, the tools you use in front of an audience.
+- **Preview**: **Isometric**, and **Zen**, which hides the editor's chrome rather than changing tool.
+
+The current tool is tinted, and a tool with a keyboard shortcut shows its letter in the tile's corner. Every tool after Hand, apart from Zen, needs something on the canvas to act on, so those tiles are greyed out on an empty tab.
+
+<Figure caption="The tool picker opened from the palette: three bands of tiles, with Select as the current tool.">
+  <ToolPicker />
+</Figure>
+
+You can also switch tool from the [search panel](/help/search-panel/the-search-panel/command-palette/): type the tool's name, such as "Hand tool" or "Spotlight".
 
 ## What you can do
 
 In Select mode the pointer interacts directly with your elements:
 
-- **Click** an element to select it, and click it again to deselect it.
+- **Click** an element to select it. Click an empty patch of canvas, or press `Esc`, to clear the selection.
 - **Shift-click** to add elements to the selection, or take them out again.
-- **Drag a marquee** across empty canvas to select many elements at once.
-- **Drag** an element to move it.
+- **Drag a marquee** from empty canvas to select many elements at once. Only elements that sit entirely inside the box are picked up. See [Multi-select](/help/canvas/selecting-and-grouping/multi-select/).
+- **Drag** an element to move it, or press the arrow keys to nudge the selection by 1 pixel (10 with `Shift`).
 - **Drag its handles** to resize.
-- **Double-click** to edit a label.
+- **Double-click** an element to edit its label. With one element selected you can also just start typing: the first key opens the label and replaces what was there.
 
-<Figure caption="Select is lit in the mode picker, with a shape selected and its resize handles showing.">
+<Figure caption="The palette's tool picker set to Select, with a shape selected and its resize handles showing.">
   <SelectMode />
 </Figure>
 
+You can still pan while holding Select: drag with the middle mouse button, hold `Space` and drag, or scroll with two fingers on a trackpad. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+
+## When Select is not the starting tool
+
+Select is the starting tool on a desktop. A few places start you somewhere else, because a drag there should move the view rather than an element:
+
+- **On a phone**, the editor opens on [Hand](/help/selection-modes/hand/), so a one-finger drag pans the canvas.
+- **In Plan mode**, you start on Hand too, because a board's cards take clicks themselves. See [Plan Mode](/help/canvas/plan-mode/).
+- **An embedded diagram** always opens on Hand.
+
+In [Draw mode](/help/canvas/draw-mode/) the palette holds Draw's own tools instead of the tool picker. `V` still picks Draw's Select tool and `H` still picks Hand.
+
 ## Returning here
 
-Select is your home base. After you finish with any other tool (Hand, Eraser, the Format Painter, and so on), come back to Select to carry on editing. Choosing a different tool changes what a click or drag does, so returning to Select restores normal selection and editing behaviour.
+Select is your home base. Choosing a different tool changes what a click or drag does, so coming back to Select restores normal selection and editing. `Esc` takes you straight back from [Format](/help/selection-modes/format-painter/), [Avatar](/help/selection-modes/avatar-mode/) and [Isometric](/help/selection-modes/isometric-mode/) (Avatar and Isometric return to Hand on a phone).
 
-<Tip>Press `V` from anywhere to jump straight back to Select without opening the mode picker.</Tip>
+View-only visitors have no palette, but they can still press `V` to select an element and read it. They cannot move or edit it.
+
+<Tip>Press `V` from anywhere to jump straight back to Select without opening the tool picker.</Tip>
 
 </ArticleLayout>

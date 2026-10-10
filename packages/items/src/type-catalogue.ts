@@ -2,24 +2,34 @@
 // (null) means the built-in catalogue, read from code; once changed, the whole catalogue is stored
 // with the document. Validation here is the api's and the editor's both, so a catalogue the editor
 // saves is one the api keeps.
+import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import {
   CUSTOM_FIELD_KINDS,
   FALLBACK_ITEM_TYPE,
   ITEM_TYPES,
+  PARENT_FIELD,
+  PARENT_FIELD_ID,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
   type ItemTypeDef,
   type ItemTypeTab,
 } from './item-types';
-import { ITEM_TYPE_PATTERN } from './limits';
+import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
 import { cutSlug, slugText, uniqueSlug } from './slug';
+import { statusNamed } from './status-names';
 import { HEX_COLOUR, isObj } from './validate';
 
 export const ITEM_TYPES_MAX = 32;
 export const ITEM_TYPE_FIELDS_MAX = 24;
 export const ITEM_TYPE_CUSTOM_MAX = 12;
+
+// How many custom fields count against ITEM_TYPE_CUSTOM_MAX: Parent never does, as it was a built-in field, so a
+// stored type already at the cap still reads (and saves) once it gains the Parent Card field.
+export function customFieldCount(custom: readonly unknown[]): number {
+  return custom.filter((c) => !isObj(c) || c['id'] !== PARENT_FIELD_ID).length;
+}
 export const ITEM_TYPE_LABEL_MAX = 32;
 export const CUSTOM_FIELD_LABEL_MAX = 32;
 export const CUSTOM_CHOICE_OPTIONS_MAX = 20;
@@ -30,10 +40,12 @@ export const ITEM_TYPE_CATALOGUE_VERSION = 1;
 export const ITEM_TYPE_TABS_MAX = 6;
 export const ITEM_TYPE_TAB_LABEL_MAX = 24;
 export const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
+// The most statuses a type can leave out (a board holds far fewer columns than this).
+export const ITEM_TYPE_EXCLUDED_STATUSES_MAX = 64;
 // The one tab a type without its own shows.
 export const OVERVIEW_TAB_ID = 't-overview';
 
-// The colours a type is given from: the built-in types' five (Project, Task, Note, Idea, Action), then
+// The colours a type is given from: the default types' five (Project, Task, Note, Idea, Action), then
 // seven more.
 export const PLAN_TYPE_COLOURS = [
   '#18181b',
@@ -56,8 +68,8 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'description',
   'status',
   'assignee',
-  'parent',
   'priority',
+  'color',
   'labels',
   'estimate',
   'start',
@@ -70,7 +82,20 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
 // Every type offers these, first, and they cannot be removed.
 export const REQUIRED_TYPE_FIELDS: readonly ItemFieldId[] = ['title', 'status'];
 
-export const CUSTOM_FIELD_ID_PATTERN = /^f-[a-z0-9-]{1,30}$/;
+// What a particular type always offers besides (docs/specs/026-plan/item-types.md "An item type"): a Project
+// is drawn on the Gantt chart from its Start and Due, so it always has both. They can move, never come off.
+export const TYPE_REQUIRED_FIELDS: Readonly<Record<string, readonly ItemFieldId[]>> = {
+  project: ['start', 'due'],
+};
+
+// Every field a type can never lose: Title and Status, then the type's own.
+export function requiredFieldsOf(typeId: string | undefined): readonly string[] {
+  const own = typeId ? TYPE_REQUIRED_FIELDS[typeId] : undefined;
+  return own ? [...REQUIRED_TYPE_FIELDS, ...own] : REQUIRED_TYPE_FIELDS;
+}
+
+// A custom field's id: `f-` and a slug, or the reserved `parent` (PARENT_FIELD, a Card field).
+export const CUSTOM_FIELD_ID_PATTERN = /^(?:f-[a-z0-9-]{1,30}|parent)$/;
 
 // What is stored: the catalogue whole, with a version for later shapes.
 export interface ItemTypeCatalogue {
@@ -80,7 +105,7 @@ export interface ItemTypeCatalogue {
 
 const BUILT_IN_FIELDS = new Set<string>(BUILT_IN_FIELD_IDS);
 
-// The types a document's stored catalogue holds, or the built-ins when it holds none.
+// The types a document's stored catalogue holds, or the default types when it holds none.
 export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly ItemTypeDef[] {
   return stored?.types ?? ITEM_TYPES;
 }
@@ -88,18 +113,6 @@ export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly 
 // A type by id within a catalogue; an unknown id (deleted, or an agent's) draws as "Item".
 export function typeIn(types: readonly ItemTypeDef[], id: string): ItemTypeDef {
   return types.find((t) => t.id === id) ?? FALLBACK_ITEM_TYPE;
-}
-
-// Matches "bug", "Bug", "bugs", "customer call" to a type, for quick add's leading `name:`.
-export function typeByNameIn(types: readonly ItemTypeDef[], name: string): ItemTypeDef | undefined {
-  const n = name.trim().toLowerCase();
-  return types.find(
-    (t) =>
-      t.id === n ||
-      `${t.id}s` === n ||
-      t.label.toLowerCase() === n ||
-      `${t.label.toLowerCase()}s` === n,
-  );
 }
 
 export function customFieldOf(type: ItemTypeDef, fieldId: string): CustomFieldDef | undefined {
@@ -241,6 +254,12 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
       return `${at}.options`;
     field.options = options;
   }
+  if (kind === 'card') {
+    // The type it links to; one the catalogue lacks is kept (the type may come back), never refused.
+    const linkType = input['linkType'];
+    if (typeof linkType !== 'string' || !ITEM_TYPE_PATTERN.test(linkType)) return `${at}.linkType`;
+    field.linkType = linkType;
+  }
   if (input['onCard'] === true) field.onCard = true;
   return field;
 }
@@ -257,7 +276,8 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   const glyph = input['glyph'];
   if (!isPlanGlyphId(glyph)) return `${at}.glyph`;
   const customIn = input['custom'] ?? [];
-  if (!Array.isArray(customIn) || customIn.length > ITEM_TYPE_CUSTOM_MAX) return `${at}.custom`;
+  if (!Array.isArray(customIn) || customFieldCount(customIn) > ITEM_TYPE_CUSTOM_MAX)
+    return `${at}.custom`;
   const custom: CustomFieldDef[] = [];
   for (const [i, c] of customIn.entries()) {
     const field = readCustom(c, `${at}.custom[${i}]`);
@@ -267,6 +287,9 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   }
   const fieldsIn = input['fields'];
   if (!Array.isArray(fieldsIn)) return `${at}.fields`;
+  // Parent was a built-in field: a type stored then, naming it without defining it, gets the Parent Card field.
+  if (fieldsIn.includes(PARENT_FIELD_ID) && !custom.some((f) => f.id === PARENT_FIELD_ID))
+    custom.push(PARENT_FIELD);
   const known = new Set<string>([...BUILT_IN_FIELD_IDS, ...custom.map((f) => f.id)]);
   const fields: string[] = [...REQUIRED_TYPE_FIELDS];
   for (const f of fieldsIn) {
@@ -274,6 +297,9 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!fields.includes(f)) fields.push(f);
   }
   if (fields.length > ITEM_TYPE_FIELDS_MAX) return `${at}.fields`;
+  // A stored type that lost one of its own required fields (saved before they were) gets it back, last. After the
+  // cap: putting them back may take a full type past it, and must never make a stored catalogue unreadable.
+  for (const f of TYPE_REQUIRED_FIELDS[id] ?? []) if (!fields.includes(f)) fields.push(f);
   let tabs: ItemTypeTab[] | undefined;
   if (input['tabs'] !== undefined) {
     const read = readTabs(input['tabs'], fields, at);
@@ -286,6 +312,21 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
     if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
   }
+  let excludedStatuses: string[] | undefined;
+  if (input['excludedStatuses'] !== undefined) {
+    const read = readExcludedStatuses(input['excludedStatuses']);
+    if (!read) return `${at}.excludedStatuses`;
+    if (read.length) excludedStatuses = read;
+  }
+  let defaultStatus: string | undefined;
+  if (input['defaultStatus'] !== undefined) {
+    const d = input['defaultStatus'];
+    if (typeof d !== 'string' || !d.trim() || d.length > ITEM_STATUS_MAX)
+      return `${at}.defaultStatus`;
+    defaultStatus = d;
+  }
+  const display = readCardDisplay(input['display'], id);
+  if (display === null) return `${at}.display`;
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -300,7 +341,104 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
     ...(detailsLabel ? { detailsLabel } : {}),
+    ...(excludedStatuses ? { excludedStatuses } : {}),
+    ...(defaultStatus ? { defaultStatus } : {}),
+    ...(display ? { display } : {}),
   };
+}
+
+// A type's left-out statuses as stored: status ids (trimmed, de-duplicated, in order), at most
+// ITEM_TYPE_EXCLUDED_STATUSES_MAX. An id no board names any more is kept, so the status keeps its exclusion if it
+// comes back. Null for anything else.
+function readExcludedStatuses(input: unknown): string[] | null {
+  if (!Array.isArray(input) || input.length > ITEM_TYPE_EXCLUDED_STATUSES_MAX) return null;
+  const out: string[] = [];
+  for (const s of input) {
+    if (typeof s !== 'string' || !s.trim() || s.length > ITEM_STATUS_MAX) return null;
+    if (!out.includes(s)) out.push(s);
+  }
+  return out;
+}
+
+// Whether a card of `type` may be in `status` (docs/specs/026-plan/item-types.md "An item type"). No status (an
+// unplaced card) is always allowed.
+export function typeAllowsStatus(
+  type: Pick<ItemTypeDef, 'excludedStatuses'> | undefined,
+  status: string | null | undefined,
+): boolean {
+  if (!status || !type?.excludedStatuses) return true;
+  return !type.excludedStatuses.includes(status);
+}
+
+// A type's Default State, or undefined: none set, or one the type has turned off (ignored, as if absent).
+export function defaultStatusOf(
+  type: Pick<ItemTypeDef, 'defaultStatus' | 'excludedStatuses'> | undefined,
+): string | undefined {
+  const d = type?.defaultStatus;
+  return d && typeAllowsStatus(type, d) ? d : undefined;
+}
+
+// A built-in or brought type's Default State, by name (docs/specs/026-plan/item-types.md "An item type"): a
+// document's state ids are its own, so the name is matched to the document's state of that name. By type id, so it
+// holds for such a type stored in a document's catalogue too. A brought type's is the first column of the board it
+// is made for (docs/specs/026-plan/plan-templates.md "The brought types").
+export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = {
+  project: 'Backlog',
+  task: 'To Do',
+  action: 'To Do',
+  note: 'To Do',
+  idea: 'Ideas',
+  bug: 'New',
+  story: 'Backlog',
+  request: 'New',
+  content: 'Ideas',
+  role: 'Opening Soon',
+  candidate: 'Applied',
+  'onboarding-task': 'Before Day One',
+  objective: 'Draft',
+  'key-result': 'Not Started',
+  'launch-check': 'Not Checked',
+};
+
+// The built-in default's state in this document (`statusNames`: status id to name), or undefined: not a built-in
+// type, no state of that name, or one the type turns off.
+export function readyMadeDefaultStatus(
+  type: Pick<ItemTypeDef, 'id' | 'excludedStatuses'>,
+  statusNames: Iterable<readonly [string, string]>,
+): string | undefined {
+  const name = READY_MADE_DEFAULT_STATE_NAMES[type.id];
+  const hit = name ? statusNamed(name, statusNames) : undefined;
+  return hit && typeAllowsStatus(type, hit.status) ? hit.status : undefined;
+}
+
+// The state a card of this type is made in outside a board, as the editor resolves it: its own Default State,
+// else its built-in one, else undefined.
+export function resolvedDefaultStatus(
+  type: Pick<ItemTypeDef, 'id' | 'defaultStatus' | 'excludedStatuses'>,
+  statusNames: Iterable<readonly [string, string]>,
+): string | undefined {
+  return defaultStatusOf(type) ?? readyMadeDefaultStatus(type, statusNames);
+}
+
+// Creates with no status of their own given their type's Default State (an API or MCP create); a create that
+// names a status, or whose type has none, is left as it is.
+export function withDefaultStatuses<
+  C extends {
+    type: string;
+    place?: { status?: string } | undefined;
+    fields?: Readonly<Record<string, unknown>>;
+  },
+>(creates: readonly C[], types: readonly ItemTypeDef[]): C[] {
+  return creates.map((c) => {
+    if (c.place?.status !== undefined || typeof c.fields?.['status'] === 'string') return c;
+    const status = defaultStatusOf(types.find((t) => t.id === c.type));
+    return status ? { ...c, place: { ...c.place, status } } : c;
+  });
+}
+
+// The refusal for a card moved into a status its type leaves out.
+export function statusRefusal(typeLabel: string, statusName: string): string {
+  return `${typeLabel} cards can't be ${statusName}`;
 }
 
 // The api's and the editor's check of a whole catalogue: its shape, ids, counts and lengths. Title
@@ -327,7 +465,7 @@ export function validateItemTypeCatalogue(input: unknown): Result {
 }
 
 // A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else the
-// built-ins, so a damaged value never stops a document opening.
+// default types, so a damaged value never stops a document opening.
 export function readItemTypeCatalogue(input: unknown): ItemTypeCatalogue | null {
   if (input === null || input === undefined) return null;
   const parsed = typeof input === 'string' ? safeParse(input) : input;
@@ -343,7 +481,7 @@ function safeParse(text: string): unknown {
   }
 }
 
-// The catalogue a first change starts from: the built-ins, as a stored catalogue.
-export function builtInCatalogue(): ItemTypeCatalogue {
+// The catalogue a first change starts from: the default types, as a stored catalogue.
+export function defaultCatalogue(): ItemTypeCatalogue {
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: ITEM_TYPES };
 }

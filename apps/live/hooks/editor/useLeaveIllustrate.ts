@@ -1,11 +1,13 @@
 // Leaving Illustrate on a tab with articles (docs/specs/007-editor/article-pages.md "Leaving
 // Illustrate"): Diagram and Draw draw no pages and no writing, so an editor's switch away asks
-// first. Convert turns every article into Page elements (one edit, measured from the writing as
-// laid out now) and switches; Keep switches with the articles left as they are, for Illustrate;
+// first. Convert turns every article into Page elements (measured from the writing as laid out
+// now) in the same tab edit as the switch; Keep switches with the articles left as they are, for Illustrate;
 // Cancel stays. A tab with content but no articles asks a lighter question, a confirmation beside
 // the mode switch (docs/specs/007-editor/editor-modes.md "Leaving Illustrate"): its pages do not
 // show in Diagram or Draw, so what is on them may not look the same; Switch or Cancel. A visitor, a
-// locked tab or an empty tab switches straight away.
+// locked tab or an empty tab switches straight away. An article with a locked page is held as it is
+// (docs/specs/007-editor/illustrate-pages.md "Locking a page"): Convert leaves it an article, and a
+// tab whose articles are all held asks only the lighter question.
 import { useCallback, useState } from 'react';
 import {
   articlesOf,
@@ -16,6 +18,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { articleLocked } from '@/lib/article/article-lock';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -32,12 +35,12 @@ export type LeaveIllustrate = {
 };
 
 export function useLeaveIllustrate<
-  M extends { mode: EditorMode; setMode: (m: EditorMode) => void },
+  M extends { mode: EditorMode; setMode: (m: EditorMode, alsoChange?: (t: Tab) => Tab) => void },
 >(
   editorMode: M,
-  deps: { tab: Tab | undefined; canEdit: boolean; commitTabs: (map: (ts: Tab[]) => Tab[]) => void },
+  deps: { tab: Tab | undefined; canEdit: boolean },
 ): { editorMode: M; leave: LeaveIllustrate } {
-  const { tab, canEdit, commitTabs } = deps;
+  const { tab, canEdit } = deps;
   const [pending, setPending] = useState<EditorMode | null>(null);
   const [confirming, setConfirming] = useState<EditorMode | null>(null);
   const { mode, setMode: rawSet } = editorMode;
@@ -45,8 +48,9 @@ export function useLeaveIllustrate<
     (next: EditorMode) => {
       const leaving =
         mode === 'illustrate' && next !== 'illustrate' && canEdit && !!tab && tab.locked !== true;
-      if (leaving && Object.keys(articlesOf(tab)).length > 0) setPending(next);
-      else if (leaving && tab.elements.length > 0) setConfirming(next);
+      const flows = leaving ? Object.keys(articlesOf(tab)) : [];
+      if (leaving && flows.some((flow) => !articleLocked(tab, flow))) setPending(next);
+      else if (leaving && (tab.elements.length > 0 || flows.length > 0)) setConfirming(next);
       else rawSet(next);
     },
     [mode, rawSet, canEdit, tab],
@@ -56,6 +60,8 @@ export function useLeaveIllustrate<
     const splits = new Map<string, string[][]>();
     const typed = new Map<string, ArticleBlock[]>();
     for (const flow of Object.keys(articlesOf(tab))) {
+      // A held article stays as it is: its writing is neither taken nor turned.
+      if (articleLocked(tab, flow)) continue;
       const handle = articleHandleOf(flow);
       if (!handle) continue;
       // What is being typed goes into the pages too, in the same edit (one undo step).
@@ -63,24 +69,22 @@ export function useLeaveIllustrate<
       splits.set(flow, handle.blocksByPage());
     }
     track('Tab', 'Changed', 'ArticlesToPages');
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== tab.id) return t;
-        let next = t;
-        for (const [flow, blocks] of typed) {
-          const doc = articlesOf(next)[flow];
-          if (doc)
-            next = withArticleFlow(
-              next,
-              flow,
-              doc.style ? { blocks, style: doc.style } : { blocks },
-            );
-        }
-        return withArticlesAsPages(next, splits);
-      }),
-    );
-    debugLog('[article] articles turned into pages', { tabId: tab.id, articles: splits.size });
-    rawSet(pending);
+    // The articles turned into pages and the switch are one tab edit: one undo puts the tab back in
+    // Illustrate with its articles (docs/specs/007-editor/editor-modes.md "Where the mode lives").
+    rawSet(pending, (t) => {
+      let next = t;
+      for (const [flow, blocks] of typed) {
+        const doc = articleLocked(next, flow) ? undefined : articlesOf(next)[flow];
+        if (doc)
+          next = withArticleFlow(next, flow, doc.style ? { blocks, style: doc.style } : { blocks });
+      }
+      return withArticlesAsPages(next, splits);
+    });
+    debugLog('[article] articles turned into pages', {
+      tabId: tab.id,
+      articles: splits.size,
+      held: Object.keys(articlesOf(tab)).filter((flow) => articleLocked(tab, flow)).length,
+    });
     setPending(null);
   };
   const keep = () => {

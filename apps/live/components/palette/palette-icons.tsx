@@ -1,12 +1,12 @@
-// Local glyph set for CommandPalette's accordions, toolbar rows and
-// button tiles. Lifted out of CommandPalette.tsx (which was up over
+// Local glyph set for the palette's accordions, toolbar rows and
+// button tiles. Lifted out of the old CommandPalette.tsx (which was up over
 // 2600 lines) so the panel file reads as panel logic and these stay
 // as pure-render presentational components. Same pattern as
 // background-pattern-icons.tsx, which already pulled the canvas
 // pattern glyphs out for the same reason.
 //
 // All icons are internal to the live editor's palette: no consumer
-// outside CommandPalette.tsx imports them today, but the exports
+// outside the palette imports them today, but the exports
 // make this file self-contained and testable in isolation. Adding a
 // new palette glyph belongs here unless it's shared across panels
 // (in which case it goes into a sibling icon module).

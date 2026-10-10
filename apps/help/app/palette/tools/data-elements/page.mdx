@@ -2,35 +2,45 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { DataElementsOverview } from '@/components/illustrations/palette-data';
+import { PaletteRows } from '@/components/illustrations/palette-rows';
 
 export const metadata = helpMetadata({
   title: 'Data and Chart Elements',
   description:
-    'Show numbers visually with progress bars, donut rings, star ratings, pie charts, and timeline rails.',
+    'Show numbers visually with pie, bar and line charts, legends, progress bars, donut rings, star ratings, and timeline rails.',
   path: '/help/palette/tools/data-elements/',
 });
 
 <ArticleLayout title="Data and Chart Elements" description="Turn plain numbers into something you can read at a glance, right on the canvas." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Tools", slug: "tools" }} subArticles={getSubArticles("data-elements")}>
 
-Most diagrams are shapes and arrows, but sometimes you want to show a value: how far along a project is, how good something scored, how a total splits up, or where milestones fall on a line. livediagram has a small family of data elements for exactly that. They live in the **Data** category of the floating palette and behave like any other shape once they land, so you can move, resize, recolour, group, and theme them as usual.
+Most diagrams are shapes and arrows, but sometimes you want to show a value: how far along a project is, how good something scored, how a total splits up, or where milestones fall on a line. livediagram has a small family of data elements for exactly that. They behave like any other element once they land, so you can move, resize, recolour, lock, and theme them as usual.
 
 <Figure caption="The data elements at a glance: a progress bar and ring, a star rating, a pie chart, and a timeline rail.">
   <DataElementsOverview />
 </Figure>
 
+## Where to find them
+
+The charts and meters live in the palette's **Data** category, which [Illustrate](/help/canvas/illustrate/) offers (under **Dynamic** in the category picker). Diagram mode has no Data category: open the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`), type the element's name, such as "pie" or "rating", and pick it under **Add to canvas**. The **Timeline** rail is the exception: it sits in the **Build** category, in both modes.
+
+<Figure caption="The Data category in Illustrate: each chart and meter as a row, with a line on what it is for.">
+  <PaletteRows category="Data" />
+</Figure>
+
 ## What you can add
 
-- **Progress bars and rings** show a single 0 to 100 percentage as a filling bar or a donut ring, with optional fill, pulse, or stripe animations. See [Progress Bars and Rings](/help/palette/tools/data-elements/progress-elements/).
-- **Rating** shows a one to five score as a row of stars, in an amber accent, with star-specific entrance and idle animations. See [Rating](/help/palette/tools/data-elements/rating/).
 - **Pie chart** splits a total into slices you edit as label and value rows, drawn in your theme's colours. See [Pie Chart](/help/palette/tools/data-elements/pie-chart/).
-- **Bar and line charts** plot one or more series across categories, from an editable grid or a CSV import. See [Bar and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/).
-- **Timeline rail** is a horizontal line with evenly spaced, labelled points, handy for roadmaps and process steps. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
+- **Bar and line charts**: a bar chart compares one value per category, and a line chart plots one or more series across categories, from an editable grid or a CSV import. See [Bar and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/).
+- **Legend** is a key of coloured rows that says what each colour means. See [Legend](/help/palette/tools/data-elements/legend/).
+- **Progress** and **Donut** show a single 0 to 100 percentage as a filling bar or a ring, with optional fill, pulse, or stripe animations. See [Progress Bars and Rings](/help/palette/tools/data-elements/progress-elements/).
+- **Rating** shows a one to five score as a row of stars, in an amber accent, with star-specific animations. See [Rating](/help/palette/tools/data-elements/rating/).
+- **Timeline** is a horizontal rail of evenly spaced, labelled points, handy for roadmaps and process steps. See [Timeline Rail](/help/palette/tools/data-elements/timeline-rail/).
 
 ## How they work
 
-Each data element is added from the palette's **Data** category and drops onto the canvas with sensible sample values, so you always start from something that looks finished. From there you tune it in the element's context menu: right-click (or long-press) to open it and you'll find a category dedicated to that element's data, whether that's a percentage slider, a star picker, editable value rows, or a points stepper.
+Pick a tile, then tap the canvas to drop the element with sensible sample values, or drag to draw it at a size, so you always start from something that looks finished. From there you tune it in the element's context menu: right-click (or long-press on a touch screen), open **Tools**, and you'll find a section for that element's data, whether that's a percentage slider, a star picker, editable value rows, or a points stepper.
 
-Because they are ordinary canvas elements underneath, everything you already know carries over. Their accent colour tracks the active theme, so a chart or rating reads as part of the diagram out of the box, and animations freeze when you export so a still image looks right.
+Because they are ordinary canvas elements underneath, everything you already know carries over. Their colours track the active theme, so a chart or rating reads as part of the diagram out of the box, and animations respect your system's reduce-motion setting and freeze when you export, so a still image looks right.
 
 <Tip>
   Mix data elements with regular shapes and arrows to annotate a system map: drop a progress ring

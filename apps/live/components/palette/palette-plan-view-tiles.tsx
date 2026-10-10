@@ -3,7 +3,7 @@
 // the view catalogue, so a new view is a tile with no edit here. Spread into PALETTE_TILES via PLAN_TILES.
 import {
   METRIC_KINDS,
-  PLAN_VISUALISATIONS,
+  PLAN_PALETTE_VISUALISATIONS,
   PLAN_VISUALISATION_LABELS,
   type MetricKind,
   type PlanVisualisation,
@@ -26,13 +26,18 @@ const VISUALISATION_INFO: Record<PlanVisualisation, { caption: string; descripti
     description: 'This month as a calendar, each day listing the cards due then.',
   },
   workload: {
-    caption: 'Workload',
+    caption: 'Cards by Field',
     description:
-      'A bar per person of the cards they have, split by not started, in progress and done.',
+      'A bar per person, priority, type, state or any field, split by not started, in progress and done.',
   },
   'status-mix': {
     caption: 'Status Breakdown',
     description: 'A donut of every card by status, with each status’s count.',
+  },
+  search: {
+    caption: 'Card Search',
+    description:
+      'The cards matching filters you pick, such as a card type, a state or no assignee, narrowing as you go.',
   },
   'priority-matrix': {
     caption: 'Priority Matrix',
@@ -66,7 +71,8 @@ export const PLAN_VIEW_TILES: PaletteTileDef[] = [
     action: { type: 'shape', kind: 'plan-view', plan: `metric:${w}` },
     icon: <BoardWidgetArt kind={w} size={GLYPH_PX} />,
   })),
-  ...PLAN_VISUALISATIONS.map((v): PaletteTileDef => ({
+  // Status Breakdown is retired: no new one is placed (docs/specs/026-plan/plan-views.md "Visualisations").
+  ...PLAN_PALETTE_VISUALISATIONS.map((v): PaletteTileDef => ({
     id: `plan:view-${v}`,
     section: 'plan-visualisations',
     label: `Add ${PLAN_VISUALISATION_LABELS[v]}`,

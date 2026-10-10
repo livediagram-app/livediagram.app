@@ -1,7 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { SpotlightMode } from '@/components/illustrations/palette-modes';
+import { SpotlightPanelScene, SpotlightTool } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Spotlight',
@@ -18,26 +18,32 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("spotlight")}
 >
 
-The Spotlight mode dims the canvas except a soft circle of light that follows your cursor, so a viewer's attention lands on one spot at a time. Choose it from the mode picker at the top of the floating palette.
+The Spotlight mode dims the canvas except a soft circle of light that follows your cursor, so a viewer's attention lands on one spot at a time. Choose it from the tool picker at the start of the palette strip. It has no keyboard shortcut.
 
 ## How it works
 
 As you move the cursor, the circle of light moves with it while everything outside stays dimmed. **Left-click grows the circle and right-click shrinks it**, so you can match the beam to a single shape or open it up over a whole cluster. This is useful when you are talking through the canvas and want to focus the room on one area before moving on to the next.
 
-<Figure caption="Spotlight is lit in the mode picker, dimming the canvas except a bright circle around the cursor.">
-  <SpotlightMode />
+The canvas cannot be edited while the light is on: clicks size the light rather than selecting anything, and picking Spotlight clears whatever you had selected. You can still pan by dragging with the middle mouse button, holding `Space` and dragging, scrolling with two fingers on a trackpad, or with the [zoom controls](/help/user-interface/zoom-controls/). Pick **Select** (or press `V`) to go back to editing.
+
+<Figure caption="The palette's tool picker set to Spotlight, dimming the canvas except a bright circle around the cursor.">
+  <SpotlightTool />
 </Figure>
 
 ## Setting up the light
 
-While the mode is active a **Spotlight** panel sits under the palette, over a live preview of the shroud:
+While the mode is active a **Spotlight** panel sits at the top right, over a live preview of the shroud:
 
-- **Size** — Small, Medium, or Large. Clicking the canvas still grows and shrinks the light freely; the row reads **Custom** once you have nudged it off a preset.
-- **Dim** — how dark everything outside the light goes: Soft, Normal, Dark, or **Blackout**, which is the one to reach for on a projector.
-- **Edge** — **Soft** for a feathered rim that reads as lighting, or **Crisp** for a defined pool of light.
-- **Shape** — a **Circle**, or **Wide**: a broad ellipse for lighting a swimlane or a table row without dragging the rows around it into the dark.
+- **Size**: **Small**, **Medium** or **Large**. Clicking the canvas still grows and shrinks the light freely; the row reads **Custom** once you have nudged it off a preset.
+- **Dim**: how dark everything outside the light goes: **Soft**, **Normal**, **Dark**, or **Blackout**, which is the one to reach for on a projector.
+- **Edge**: **Soft** for a feathered rim that reads as lighting, or **Crisp** for a defined pool of light.
+- **Shape**: a **Circle**, or **Wide**: a broad ellipse for lighting a swimlane or a table row without dragging the rows around it into the dark.
 
-Your settings are remembered on this device. Remember that the shroud is yours alone — everyone else keeps seeing the whole canvas.
+<Figure caption="The Spotlight panel with a Wide shape on Blackout, lighting one row of a board.">
+  <SpotlightPanelScene />
+</Figure>
+
+Your settings are remembered on this device. The shroud is yours alone: everyone else keeps seeing the whole canvas, so on a call, share your screen for others to see the light.
 
 ## The spotlight inside a presentation
 
@@ -47,7 +53,9 @@ With the spotlight lit, a click sizes the beam instead of advancing the slide, s
 
 ## Availability
 
-Spotlight is **desktop only**, and is disabled on an empty canvas. Add an element on a desktop browser and the mode becomes available.
+- **Desktop only.** Spotlight relies on a hovering pointer and on left and right clicks, so it is not offered on a phone-sized screen. If the window shrinks to phone width while it is on, you are put back on Select.
+- **Not on an empty canvas.** Add an element and it becomes available.
+- **View-only visitors** can use it too: with no palette, they type "Spotlight" into the [search panel](/help/search-panel/the-search-panel/command-palette/).
 
 <Tip>
   Spotlight works well alongside the Laser Pointer when presenting: dim the rest of the canvas, then

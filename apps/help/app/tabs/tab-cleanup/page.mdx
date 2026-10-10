@@ -1,11 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { CleanupBeforeAfter } from '@/components/illustrations/tabs';
+import { CleanupMenu } from '@/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Cleaning Up a Tab',
   description:
-    'The Cleanup section of the tab menu tidies a tab in one click: snap elements to a grid, or auto-lay-out the whole canvas from its arrows.',
+    'The Cleanup section of the tab menu tidies a tab in one click: snap elements to a grid, or auto-lay-out the whole canvas from its arrows as a flowchart, tree or mindmap.',
   path: '/help/tabs/tab-cleanup/',
 });
 
@@ -16,16 +17,23 @@ export const metadata = helpMetadata({
   categorySlug="tabs"
 >
 
-A canvas that grew organically can end up slightly misaligned or tangled. The **Cleanup** section of the tab ellipsis menu tidies the active tab in a single click, so you do not have to nudge elements into place by hand.
+A canvas that grew organically can end up slightly misaligned or tangled. The **Cleanup** section of the tab menu tidies the active tab in a single click, so you do not have to nudge elements into place by hand.
 
 ## Two ways to tidy
 
-Expand the **Cleanup** section in the tab menu to find two tidiers:
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab or an empty spot on the canvas) and expand **Cleanup**. It lists one tidier per row:
 
-- **Auto-align** snaps the current positions onto a tidy grid, straightening rows and columns while keeping your overall arrangement. Reach for it when the layout is basically right but a little ragged.
-- **Auto Layout** recomputes positions from the arrow graph, laying the diagram out from scratch based on how its elements connect, either in its smart default arrangement or in a style you pick from the same section: flowchart (down or right), tree, or mindmap. Reach for it when you want the structure rebuilt rather than nudged.
+- **Auto Layout** recomputes positions from the arrows, laying the diagram out from scratch based on how its elements connect, in the arrangement that best fits its current rough flow. Reach for it when you want the structure rebuilt rather than nudged.
+- **Auto-align** snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your overall arrangement. Reach for it when the layout is basically right but a little ragged.
+- **Flowchart ↓**, **Flowchart →**, **Tree** and **Mindmap** run Auto Layout in that particular style: a flowchart running down or to the right, a tree with parents centred over their children, or a mindmap radiating from a central topic.
 
-Both act on the whole tab at once, and like any edit they can be undone if the result is not what you wanted.
+With a mouse, hovering a row previews the result on the canvas behind the menu, and moving off it puts everything back, so you can compare styles before you commit. On touch a tap applies it straight away.
+
+<Figure caption="The Cleanup section of the tab menu: Auto Layout and Auto-align, then one row per layout style.">
+  <CleanupMenu />
+</Figure>
+
+Every row acts on the whole tab at once, and each is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted. The same tidiers are in the [command palette](/help/search-panel/the-search-panel/command-palette/) as **Auto Layout (tidy up)**, **Auto-align to grid** and one Auto Layout entry per style.
 
 <Figure caption="Cleanup takes a scattered, misaligned canvas and snaps it into tidy rows and columns in one click.">
   <CleanupBeforeAfter />
@@ -34,6 +42,8 @@ Both act on the whole tab at once, and like any edit they can be undone if the r
 ## More on layout
 
 Cleanup is the same toolset as the [Layout Cleanup](/help/tools/layout-cleanup/) feature, surfaced right on the tab menu so it is one click away while you work. See that guide for the details of how [Auto-Align](/help/tools/layout-cleanup/auto-align/) and [Auto Layout](/help/tools/layout-cleanup/auto-layout/) decide where things go.
+
+A [locked tab](/help/tabs/locking-tabs/) can't be tidied until you unlock it, and the tab menu isn't offered on a view-only share link.
 
 <Tip>
   Try **Auto-align** first, it is the gentler of the two and keeps your layout recognisable. Fall

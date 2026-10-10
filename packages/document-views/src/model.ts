@@ -15,7 +15,12 @@ import { buildViewTree, type ViewTree } from './tree';
 import { partitionVisible, pinnedIds } from './visibility';
 
 // What the caller knows beyond the tab: its revision, and the document's tab ids in order (VW4).
-export type ViewContext = { rev?: number; tabIds?: readonly string[] };
+// `selected`: the owner's live selection for `show selected`; null or absent when it was not read (VW68).
+export type ViewContext = {
+  rev?: number;
+  tabIds?: readonly string[];
+  selected?: readonly string[] | null;
+};
 
 export type ViewModel = {
   tab: Tab;

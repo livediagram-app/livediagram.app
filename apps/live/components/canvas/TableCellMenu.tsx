@@ -116,14 +116,12 @@ export function TableCellMenu({
           onSet={(size) => applyStyle({ textSize: size })}
         />
       </MenuAccordionSection>
-      {/* The SAME colour palette every other element gets (docs/specs/008-canvas/canvas-and-palette.md Colours):
-          theme presets, the colours you have used, transparent, the pipette
-          and the OS picker. It used to be two bare `<input type="color">`
-          chips, so colouring a cell meant matching a colour off the wheel
-          that every other surface offered in one click. */}
+      {/* The SAME colour picker every other element gets (docs/specs/004-interface-design/colour-picker.md):
+          the theme's colours, the standard colours and Custom colours. */}
       <MenuAccordionSection title="Colours" icon={<PaletteMenuIcon />} {...section('colours')}>
         <ColourRow
           label="Background"
+          tone="soft"
           icon={<FillColourIcon />}
           value={sc?.bg ?? 'transparent'}
           open={openColour === 'bg'}
@@ -131,9 +129,6 @@ export function TableCellMenu({
           onChange={(bg) => applyStyle({ bg })}
           onPreview={(bg) => onPreviewStyle?.({ bg })}
           onPreviewEnd={() => onPreviewStyle?.(null)}
-          // Remembering the colour is ColourRow's job (it calls onAddCustom
-          // after every commit), so this only has to end the preview and
-          // write the cell.
           onCommit={(bg) => {
             onPreviewStyle?.(null);
             applyStyle({ bg });

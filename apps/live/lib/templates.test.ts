@@ -182,7 +182,9 @@ describe('TEMPLATES catalogue', () => {
         kind === 'blank' ||
         kind === 'whiteboard' ||
         kind === 'article' ||
-        kind === 'blank-illustration';
+        kind === 'blank-illustration' ||
+        // An empty Plan tab, which opens on Start Planning.
+        kind === 'blank-plan';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
@@ -258,7 +260,7 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('opens the slide deck in Illustrate on six Slide (16:9) pages, keeping its layers', () => {
+  it('opens the slide deck in Illustrate on six 16:9 slide pages, keeping its layers', () => {
     // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
     const o = templateCanvasOverrides('slide-deck');
     expect(o).toMatchObject({
@@ -269,7 +271,7 @@ describe('templateCanvasOverrides', () => {
     expect(o.pages).toHaveLength(6);
     expect(
       o.pages!.every(
-        (p) => p.size === 'wide' && p.orientation === 'landscape' && p.kind === 'infographic',
+        (p) => p.size === 'slide' && p.orientation === 'landscape' && p.kind === 'slide',
       ),
     ).toBe(true);
     expect(o.pages!.map((p) => p.id)).toEqual([
@@ -282,7 +284,7 @@ describe('templateCanvasOverrides', () => {
     ]);
   });
 
-  it('opens the logo exploration on Square pages, and timelines get ruled lines', () => {
+  it('opens the logo exploration on Logo pages, and timelines get ruled lines', () => {
     const o = templateCanvasOverrides('logo-design');
     expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'illustrate' });
     // Six lockup artboards, then the palette.
@@ -295,7 +297,9 @@ describe('templateCanvasOverrides', () => {
       'One Colour',
       'Palette',
     ]);
-    expect(o.pages!.every((p) => p.size === 'square' && p.kind === 'infographic')).toBe(true);
+    // Each lockup on the logo artboard; the palette on a Square infographic page.
+    expect(o.pages!.slice(0, 6).every((p) => p.size === 'logo' && p.kind === 'logo')).toBe(true);
+    expect(o.pages![6]).toMatchObject({ size: 'square', kind: 'infographic' });
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,
@@ -417,7 +421,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Frames: the footer (deck name + page number) of the five content slides; the slides
     // themselves are Illustrate pages. Content: the title slide's nine pieces, each other
     // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 53 },
+    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
     // Frames: six panel cards, their number chips and the how-to.
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Spine + the three-entry status legend stay put; each of the six

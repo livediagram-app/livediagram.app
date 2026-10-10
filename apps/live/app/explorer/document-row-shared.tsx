@@ -158,7 +158,6 @@ export function DocumentActionsMenu({
         ) : null}
         <MenuActionRow
           plain
-          danger
           icon={<DismissSharedIcon />}
           label="Dismiss"
           onClick={then(() => onDismiss?.())}

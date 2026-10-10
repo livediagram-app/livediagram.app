@@ -5,6 +5,7 @@ import {
   drawIntentCursor,
   isHeldPenIntent,
   isPathIntent,
+  isPlanCardIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -151,7 +152,7 @@ describe('drawBannerMessage', () => {
     // (docs/specs/008-canvas/two-pens.md), so the banner is where that gets said. Distinct from plain
     // freehand on both viewports, or the two pens would read identically.
     expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, false)).toBe(
-      'Draw a rough shape — it snaps to the real one',
+      'Draw a rough shape; it snaps to the real one',
     );
     expect(drawBannerMessage({ type: 'freehand', variant: 'shape-pen' }, true)).toBe(
       'Draw a shape',
@@ -174,7 +175,7 @@ describe('drawBannerMessage', () => {
 
   it('describes the polygon click-to-place gesture, shortened on mobile', () => {
     expect(drawBannerMessage({ type: 'polygon' }, false)).toBe(
-      'Click to place points — click the start to close, double-click to finish',
+      'Click to place points, click the start to close, double-click to finish',
     );
     expect(drawBannerMessage({ type: 'polygon' }, true)).toBe('Tap to place points');
   });
@@ -294,5 +295,14 @@ describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('has its own cursor and screen-reader copy', () => {
     expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
     expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
+  });
+});
+
+describe('a pressed Plan card (docs/specs/026-plan/plan-mode.md "The palette")', () => {
+  it('is told apart from every other shape in hand', () => {
+    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-card', plan: 'task' })).toBe(true);
+    expect(isPlanCardIntent({ type: 'shape', kind: 'plan-board' })).toBe(false);
+    expect(isPlanCardIntent({ type: 'text' })).toBe(false);
+    expect(isPlanCardIntent(null)).toBe(false);
   });
 });

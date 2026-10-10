@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { PlanItemTwoBoardsScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
   title: 'Items',
@@ -15,32 +16,49 @@ export const metadata = helpMetadata({
   categorySlug="canvas/plan-mode"
 >
 
-An **item** is one piece of work or one thought: a task, a bug, a retro note, an idea. Items belong to the document and are stored apart from its tabs; a [Plan board](/help/canvas/plan-mode/) and a Plan card only show them. That is why the same item can appear on two boards, and why moving a card moves it everywhere.
+An **item** is one piece of work or one thought: a task, a bug, a retro note, an idea. Items belong to the document and are stored apart from its tabs; a [Plan board](/help/canvas/plan-mode/boards/) and a Plan card only show them. That is why the same item can appear on two boards, and why moving a card moves it everywhere.
 
-## What an item has
+<Figure caption="One item, two boards: a board shows every card whose status is one of its columns (of the types it shows), so #12 sits on both.">
+  <PlanItemTwoBoardsScene />
+</Figure>
+
+## What an Item Has
 
 - **A number**, such as **#12**: given once when the item is made and never reused, so you can say "#12" in a meeting.
-- **A type**: **Project**, **Task**, **Note**, **Idea** or **Action**, or one your document adds ([Card types](/help/canvas/plan-mode/card-types/)). Each has its own colour stripe and glyph, and offers the fields that suit it. A bug is a Task labelled `bug`. Change the type at the top of the item panel.
-- **Fields**: title, description, status, assignee, priority, labels, estimate, start date, due date, checklist, parent (an epic) and votes, as the type offers them. The **status** is what places an item in a board's column.
-- Who made it and who last changed it, shown at the foot of the item panel.
+- **A type**: **Project**, **Task**, **Note**, **Idea** or **Action**, or one your document adds ([Card Types](/help/canvas/plan-mode/card-types/)). Each has its own colour and glyph, and offers the fields that suit it. A bug is a Task labelled `bug`. Change the type at the top of the card panel.
+- **Fields**: title, description, status, assignee, priority, labels, estimate, start date, due date, checklist, votes and comments, as the type offers them, plus any custom fields (a Task's **Parent**, the project it sits under, is one). The **status** is what places an item in a board's column.
+- **Flagged** and **Archived**: marks set from the card's menu ([Cards](/help/canvas/plan-mode/cards/)).
+- Who made it and who last changed it, shown at the foot of the card panel's **Details**.
 
-## Always up to date
+## Always Up to Date
 
-Every change reaches everyone with the document open at once, whichever tab or board they are looking at. Two people changing different fields of one item never undo each other's work.
+Every change reaches everyone with the document open at once, whichever tab or board they are looking at. Two people changing different fields of one item never undo each other's work; if two people change the same field, the later change wins.
 
-## Offline, copies and exports
+**Undo** takes back your own item changes in the order you made them, mixed in with your canvas edits. Votes and comments are outside Undo.
+
+## Who Can Do What
+
+- Anyone who can open the document can read its items. Someone on a link to a single tab sees only the items that tab shows.
+- People who can edit add, change, move and delete items.
+- People who can comment (including on a view link) can vote and comment on cards.
+
+## Offline, Copies and Exports
 
 - An [offline document](/help/privacy-and-security/offline-mode/) keeps its items in your browser with everything else. **Sync Document** takes them to your account; **Take Offline** brings them back down.
 - **Duplicate** copies the items with the document, numbers and all.
 - The `.livediagram` file in Google Drive carries the items, and a document imported from it gets them back.
+- A copy taken from the Community leaves cards' comments out.
 - Exported images and PDFs draw boards and cards as they are.
+- Deleting the document for good deletes its items with it.
 
 ## Limits
 
-A document holds up to 2,000 items, and each item's fields up to 16 KB.
+- A document holds up to 2,000 items, and each item's fields up to 16 KB.
+- A title is up to 200 characters, a description up to 10,000, an estimate 0 to 999.
+- An item holds up to 12 labels and 50 checklist steps, and a card up to 200 comments.
 
-## Scripts and AI tools
+## Scripts and AI Tools
 
-Items have their own API, so your scripts and AI tools connected over MCP can list, add, change, move and delete items, as you, with an [API token](/help/developers/). An agent's change shows on everyone's boards the moment it is made.
+Items have their own API, so your scripts and AI tools can list, add, change, move and delete them as you: through the [livediagram API](/help/developers/) with an API token, the command-line tool, or an AI tool [connected over MCP](/help/account-and-data/connect-ai-mcp/). Items are named by their number (`#12`), and columns, card types and fields by their names, as your boards show them. AI tools can also add boards and change card types. An agent's change shows on everyone's boards the moment it is made.
 
 </ArticleLayout>

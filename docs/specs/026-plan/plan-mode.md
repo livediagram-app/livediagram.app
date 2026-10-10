@@ -19,7 +19,7 @@ item store.
 
 ## Offering the mode
 
-- Plan is the fourth mode, after Illustrate: the mode switch, **Opens in**, **Shift+D** and the template picker's
+- Plan is the fourth mode, after Illustrate: the mode switch, the tab menu's **Mode**, **Shift+D** and the template picker's
   mode filter list it in that order.
 - It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
   Its Settings › Experimental switch went when it graduated.
@@ -65,14 +65,31 @@ Plan must cost nothing to a document that does not use it:
 
 ## Starting a board
 
-- A Plan tab with no board shows, in the middle of the canvas, **Start with a Board**: a tile per board type, Blank
-  first and the Archive board left out, each a small picture of the board (its columns, its rows, cards in the
+- An empty Plan tab (nothing on its canvas at all) shows, in the middle of the canvas, **Start Planning**, with two tabs:
+  **Boards** (open first) and **Spreadsheets**: a tile per sheet type, each a small drawn table over its name and line, placing a Sheet in the
+  middle of the view: **Empty Sheet** ("Set it up next: a layout, your cards or a blank grid.", Setup Sheet from the
+  start), **Card Table** ("Your cards of a type as rows, linked both ways. Pick which next.", only while the document
+  has cards; Setup Sheet opens on its Cards step, Plan Cards chosen, to filter by Card Type), **Budget** ("Items,
+  categories and amounts, with a total.") and **Tracker** ("Tasks, owners, a status and due dates."), these two
+  opening Setup Sheet on Style with their start chosen and Freeze Header Row on, so **Create Sheet** makes them.
+  Back reaches Start From as ever; a sheet later cleared starts Setup Sheet from the beginning. Boards holds a tile per board type, in the
+  palette's order (Blank first, All Cards always last) and the Archive board left out (switching tabs cascades the
+  tiles in, the shared cascade within the motion budget; the picker's first paint does not animate), each a small picture of the board (its columns, its rows, cards in the
   colours of the types it takes) over its name and its full description, in the tab's light or dark look, as a new
   infographic page offers its layouts. Choosing one places that board,
-  empty, in the middle of the view. It is gone once the tab has a board, and never shown to someone who may only
+  empty, in the middle of the view. It is gone once the tab has anything on it (a board, or a
+  shape, a note or a view drawn first: the palette's Boards still add one), and never shown to someone who may only
   view. It keeps clear of the toolbar above and the bottom-right buttons below, scrolling inside itself when the
   tiles run taller than the room; on a phone it shows two tiles a row with shorter pictures.
-- Plan mode has no empty-canvas Quick Start banner: the board picker is its start.
+- Every list of board types (the palette's Boards, Start Planning) is one list (`PLAN_BOARD_TILES`), and **All
+  Cards is always its last option**: a new board type goes before it (and before Archive, which sits just ahead of
+  All Cards in the palette).
+- Plan mode has no empty-canvas Quick Start banner: the board picker is its start. Its foot holds a quiet
+  **Open Quick Start** button (the sparkle icon) that opens the regular Quick Start for this tab, for a diagram
+  template or another kind of tab instead.
+- **A new tab from Plan stays Plan**: adding a tab (the tab bar's **+**) while in Plan mode opens it in Plan
+  (`opensIn` Plan, for everyone), straight to **Start Planning**, with no Quick Start
+  ([Editor modes](../007-editor/editor-modes.md)). In any other mode a new tab opens as before.
 
 ## Switching modes keeps the tab
 
@@ -100,28 +117,42 @@ Plan must cost nothing to a document that does not use it:
 
 ## The palette
 
-The Plan layout offers seven categories and opens on **Cards**. The card-backed five, **Cards**, **Boards**,
-**Widgets**, **Metrics** and **Visualisations**, sit under the **Plan** heading of the category picker, first; then
-**Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
-([Item types](item-types.md)); the Toolbar layout's strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
+The Plan layout offers eight categories and opens on **Cards**. **Cards**, **Boards**, **Widgets**, **Metrics** and
+**Visualisations** sit under the **Boards & Cards** heading of the category picker, first; then **Sheet** under
+**Spreadsheets** ([Sheet](../029-sheets/sheet.md)); then **Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
+([Item types](item-types.md)); the Toolbar strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
 drawing or decorating categories (Shapes, Icons, Stickers and the rest stay with the other modes); the few other
 elements a team plans beside its boards come in Content and Tools:
 
 | Category       | Holds                                                                                                                                    |
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Cards          | One per [item type](item-types.md) of the document, in its order: Project card, Task card... and any added                               |
-| Boards         | Kanban, Sprint, Retro, Roadmap, Bug triage, Week, All Cards, Archive, Blank, each with its own picture                                   |
+| Boards         | Board (Blank), Kanban, To-do List, Sprint, Retro, Roadmap, Bug triage, Week, Archive, All Cards (always last), each with its own picture |
 | Widgets        | One per [board widget](board-widgets.md) kind, placed in a board's header, never on the canvas                                           |
 | Metrics        | The read-out widgets free on the canvas, over every card ([Plan views](plan-views.md#metrics))                                           |
-| Visualisations | Project Gantt Chart, Due Calendar, Workload by Person, Status Breakdown, Priority by Status ([Plan views](plan-views.md#visualisations)) |
+| Visualisations | Gantt Chart, Due Calendar, Cards by Field, Priority by Status, Card Search ([Plan views](plan-views.md#visualisations))                  |
+| Sheet          | Sheet: a spreadsheet tab of cells and formulas ([Sheet](../029-sheets/sheet.md))                                                         |
 | Content        | Sticky Note, Text, Image, Page                                                                                                           |
 | Tools          | Temperature, Estimate, Idea Box, Picker, Timer, Stopwatch                                                                                |
 
-- A **board tile** places a Plan board with that preset's set-up, empty: its columns have statuses of their own
-  ([Plan board](plan-board.md#the-board-set-up)).
+- A **board tile** places a Plan board with that preset's set-up: a column takes the status the tab already has of
+  its name, and any other column a status of its own, so it starts empty
+  ([Plan board](plan-board.md#the-board-set-up), "One name, one status").
+- **Each preset takes the card types its work is made of**: Kanban takes Tasks and Actions; To-do List,
+  Actions; Sprint, Stories, Tasks and Bugs; Retro, Notes and Ideas; Roadmap, Projects; Bug Triage, Bugs; Week,
+  Tasks, Actions and Notes. Blank asks in Setup Board; Archive and All Cards show cards by what they are.
+- **A preset brings its card types**, all of them [ready-made types](plan-templates.md#ready-made-card-types)
+  (Bug: red, the bug glyph; Story: violet, the story glyph); a Blank board brings the five default types. In a
+  document whose card types are not chosen yet and that has no cards, the first board chooses them: a Kanban
+  board's document has Task and Action only ([Item types](item-types.md#the-type-catalogue)). Otherwise placing
+  the board adds each type it brings that the document lacks (by id), as one change. Only a board
+  that appears while the document is open adds them (placed by this person, a template or a collaborator); the
+  boards a document opens with never do, so a type someone deleted stays deleted. A template's tabs bring theirs
+  as they are made, on every path ([Plan templates](plan-templates.md#card-types-a-template-uses)), and an agent's
+  `add_board` brings its preset's.
 - A **card tile** never puts anything on the canvas. Dragged and dropped (or pressed, then placed) into a board's
   column, it makes a new item of that type there (titled "New task", "New bug"...), at the drop point between
-  cards and in the row it lands in (taking the row's field, its type kept); it is not opened, a click opens it.
+  cards and in the row it lands in (taking the row's field, its type kept); it opens at once in its panel, its title selected to be named ([Open an item](plan-board.md)).
   While it is dragged, the column under the pointer opens a dashed gap where it would land (the gap a card from
   another board opens), and no ghost is drawn on the canvas. Over no
   column, or over a board that does not show the type, nothing is made and the reason is said ("Drop a card into a
@@ -129,6 +160,17 @@ elements a team plans beside its boards come in Content and Tools:
   board's card off it.
 - **Pressed**, a card tile's hint at the top of the canvas says where it goes: **Select the board column you want
   this card to appear in**, or, on a tab with no board, **Add a board first in order to use cards**.
+  While it is in hand, the column under the pointer opens the same dashed gap a dragged card does, and a press
+  puts the card exactly there (no snapping to nearby edges, no drag to size).
+- Over a board that does not show the card's type (held or dragged), the column under the pointer shows a **red
+  dashed zone** at its foot saying why ("This board takes Task, Note and Action cards"), instead of the gap; a
+  press or drop there makes nothing and says the same.
+- **A card tile no board on the tab would take is greyed out and does nothing**: no press, no drag. That is every
+  card tile on a tab with no board ("Add a board first in order to use cards"), and a type no board on the tab
+  shows ("No board on this tab takes Bug cards"), its hover card saying which. A board takes a type when its
+  **Card Types** show it (all types when it names none); an **Archive** board takes none. The tile stays
+  focusable (`aria-disabled`), so the reason is reachable from the keyboard. The tiles follow the open tab's
+  boards as they are added, removed or their Card Types change.
 - Content and Tools hold the same tiles as their home categories (Write, Media, Behaviours), placing
   the same elements.
 - Draw mode's shape dock leaves the Plan categories out: they frame items, not ink.
@@ -137,7 +179,8 @@ elements a team plans beside its boards come in Content and Tools:
 
 Templates that open in Plan mode set up a way of working across several tabs, with **no cards**:
 [Plan templates](plan-templates.md) holds the catalogue, how a template's tabs are made and how their boards
-hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Diagram's: one empty board.
+hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Diagram's: an empty Plan tab, no board, so it opens on **Start
+with a Board**.
 
 ## Collaboration
 
@@ -150,8 +193,9 @@ hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Di
   person holding nothing stays silent. A holder who leaves or drops takes the ring with them, since rings are
   drawn only for people in the presence list.
 - Two people may work on one tab in different modes; someone in Diagram mode sees the boards move as items change.
-- Facilitation on a board (voting, a vote budget, hide writing and reveal) lives in the board's set-up, so a retro
-  needs no separate session tool.
+- Facilitation on a board (hide writing and reveal) lives in the board's set-up, and voting is the tab's session
+  vote on the cards, so a retro needs nothing
+  beyond the board and the tab's Vote.
 
 ## Agents
 
@@ -160,14 +204,13 @@ hand cards to each other. Blank Plan is the mode's blank, as Blank Diagram is Di
   id prefix.
 - A document made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_document`) gets the
   same tabs and boards, with no cards, as one made in the editor ([Plan templates](plan-templates.md)).
-- A text `board` view of a tab's Plan boards for agents is a later step; `list_items` reads the same items.
+- How agents read the plan, name columns, card types and fields, and change card types: [Plan for agents](plan-agents.md).
 
 ## Telemetry
 
 - Switching to Plan, Opens in Plan and the template filter fire the existing mode events with `ModePlan`,
   `OpensInPlan` and `TemplateModePlan`.
-- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel),
-  `Voted` (`Up` / `Down`), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
+- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
   and `Revealed` (`Board`), never content. A board placed from the palette counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The header's Start Blank menu offers Blank Plan, with its own funnel slot (`HeaderPlan`).
 

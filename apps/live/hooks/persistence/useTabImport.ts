@@ -6,13 +6,22 @@
 // draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
 // become new tabs).
 
-import { remapElementRefs, type Element, type Tab } from '@livediagram/document';
+import {
+  copiedSheetId,
+  freshCopyFields,
+  relinkCopiedCharts,
+  remapElementRefs,
+  savableElements,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { getTheme } from '@/lib/themes';
-import type { ImportOutcome } from '@/lib/import-tab';
+import type { ImportedPlanItems, ImportOutcome } from '@/lib/import-tab';
+import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
@@ -23,11 +32,19 @@ import { debugLog } from '@/lib/debug-log';
 // same way.
 export const remintElementIds = (elements: Element[]): Element[] => {
   const idMap = new Map<string, string>();
-  const next = elements.map((el) => {
+  const sheetIds = new Map<string, string>();
+  const minted = elements.map((el) => {
     const id = crypto.randomUUID();
     idMap.set(el.id, id);
-    return { ...el, id };
+    // A Sheet's copy frames a new sheet made from the original's (freshCopyFields).
+    const sheet = el.type === 'shape' && el.shape === 'plan-sheet' ? freshCopyFields(el) : {};
+    const copy = { ...el, id, ...sheet } as Element;
+    const pair = copiedSheetId(el, copy as { planSheet?: { sheetId: string } });
+    if (pair) sheetIds.set(pair[0], pair[1]);
+    return copy;
   });
+  // A chart on the tab reads the tab's copy of its Sheet (docs/specs/029-sheets/sheet.md "Charts").
+  const next = relinkCopiedCharts(minted, sheetIds);
   // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
   // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
   // nodes named parents on the SOURCE tab and paired portals lost their
@@ -66,7 +83,17 @@ type TabImportDeps = {
   requestFit: () => void;
   // Replaces the active tab with a board scene (useBoardSceneImport): the Excalidraw format's commit.
   importScene: (scene: BoardScene, onProgress?: ImportProgressListener) => Promise<ImportOutcome>;
+  // Adds a JSON export's Plan items to the document (usePlanTabImport, docs/specs/026-plan/items.md).
+  importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
+
+// The import report's line when the store refused a file's cards.
+export function planCardsFailure(failed: number): { title: string; message: string } {
+  return {
+    title: 'Plan Cards',
+    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this document. The tab was imported without them.`,
+  };
+}
 
 export function useTabImport({
   tabs,
@@ -82,14 +109,20 @@ export function useTabImport({
   setImportError,
   requestFit,
   importScene,
+  importPlanItems,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
   // elements + theme/background, keeping the tab's own id and name.
   // Goes through `commitTabs` so the whole replace is a single undo
   // step (the warning in the Import dialog promises this). Selection /
   // edit state is cleared so nothing dangles over the new content.
-  const replaceActiveTabContent = (imported: Tab) => {
+  const replaceActiveTabContent = (raw: Tab) => {
     setImportError(null);
+    // Only what the api will save lands (docs/specs/020-import-export/board-import.md "What lands"): an
+    // element the validator refuses would make every later save of this tab fail.
+    const { elements, dropped } = savableElements(raw.elements);
+    if (dropped > 0) debugLog('[import] dropped unsavable elements', { dropped });
+    const imported = { ...raw, elements };
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
     setSelectedId(null);
     setEditingId(null);
@@ -232,6 +265,11 @@ export function useTabImport({
     if (!result.ok) return { status: 'error', error: result.error };
     replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
     track('Tab', 'Imported', 'JSON');
+    // The tab's boards and cards draw from the document's items: the file's come in after the tab.
+    const landed = result.plan ? await importPlanItems(result.plan) : null;
+    if (landed && landed.failed > 0) {
+      return { status: 'done', failures: [planCardsFailure(landed.failed)] };
+    }
     return { status: 'done' };
   };
 

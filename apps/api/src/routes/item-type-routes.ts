@@ -1,5 +1,5 @@
 // A document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"): PUT
-// /api/documents/:id/item-types stores the whole catalogue (or null, the built-in types) for anyone
+// /api/documents/:id/item-types stores the whole catalogue (or null, the default types) for anyone
 // who may edit the whole document, validated by @livediagram/items, and relays it to the room as an
 // ordered `item-types` op. Reading it is the document's GET (`itemTypes`).
 

@@ -1,5 +1,4 @@
-// The item panel's card trail and a parent's child cards (docs/specs/026-plan/plan-board.md "Open an item":
-// Breadcrumb, Child Cards). Pure, so the slice, the host and the header read one set of rules.
+// The item panel's card trail (docs/specs/026-plan/plan-board.md "Open an item": Breadcrumb). Pure, so the slice, the host and the header read one set of rules.
 import { isTrashed, type Item } from '@livediagram/items';
 
 // How a card was opened from inside the item panel: each steps the trail rather than starting a new one, and
@@ -42,12 +41,4 @@ export function visibleTrail<T>(
 ): { folded: number; crumbs: readonly T[] } {
   const folded = Math.max(0, earlier.length - shown);
   return { folded, crumbs: earlier.slice(folded) };
-}
-
-// The cards that name `parentId` as their Parent, in key order; trashed ones left out.
-export function childrenOf(items: ReadonlyMap<string, Item>, parentId: string): Item[] {
-  const out: Item[] = [];
-  for (const item of items.values())
-    if (item.fields['parent'] === parentId && !isTrashed(item)) out.push(item);
-  return out.sort((a, b) => a.key - b.key);
 }

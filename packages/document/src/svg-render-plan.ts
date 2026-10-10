@@ -14,8 +14,6 @@ import {
   itemVoteTotal,
   isFlagged,
   isPriority,
-  normaliseBoardSetup,
-  projectBoard,
   planViewMetric,
   PLAN_VISUALISATION_LABELS,
   type PlanVisualisation,
@@ -27,16 +25,12 @@ import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
 import { initialsOf } from './names';
+import { PLAN_BOARD_PAD, planBoardLayout } from './plan-board-layout';
 
 type Shape = BoxedElement & { type: 'shape' };
 
 const FONT = 'system-ui, sans-serif';
-const HEADER_H = 52;
-const PAD = 12;
-const GAP = 12;
-const COL_HEAD_H = 34;
-const CARD_H = 64;
-const CARD_GAP = 8;
+const PAD = PLAN_BOARD_PAD;
 
 type Palette = PlanPalette;
 
@@ -134,12 +128,12 @@ export function svgPlanBoard(
   types: readonly ItemTypeDef[] = ITEM_TYPES,
 ): string {
   const p = planPalette(surface, ownColours(el));
-  const setup = normaliseBoardSetup(el.planBoard);
   const parts = [
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="12" fill="${p.surface}" stroke="${p.border}" stroke-width="1.5"/>`,
   ];
-  if (!setup) return inFont(parts.join(''));
-  const projection = projectBoard(setup, items ?? new Map(), undefined, types);
+  const layout = planBoardLayout(el, items, types);
+  if (!layout) return inFont(parts.join(''));
+  const { setup, projection } = layout;
   parts.push(
     text(el.x + PAD + 4, el.y + 32, 18, p.text, fit(setup.title, el.width / 2, 18), {
       weight: 700,
@@ -152,12 +146,9 @@ export function svgPlanBoard(
       }),
     );
   }
-  const n = projection.columns.length;
-  const colW = (el.width - PAD * 2 - GAP * (n - 1)) / n;
-  const top = el.y + HEADER_H;
-  const colH = el.height - HEADER_H - PAD;
-  projection.columns.forEach((col, i) => {
-    const cx = el.x + PAD + i * (colW + GAP);
+  const showComments = setup.cardFields.includes('comments');
+  for (const col of layout.columns) {
+    const { x: cx, y: top, width: colW, height: colH } = col;
     parts.push(
       `<rect x="${r2(cx)}" y="${r2(top)}" width="${r2(colW)}" height="${r2(colH)}" rx="10" fill="${p.column}"/>`,
     );
@@ -175,25 +166,12 @@ export function svgPlanBoard(
         anchor: 'end',
       }),
     );
-    let y = top + COL_HEAD_H;
-    const cards = col.lanes.flatMap((l) => l.items);
-    for (const item of cards) {
-      if (y + CARD_H > top + colH - 6) break;
+    for (const card of col.cards) {
       parts.push(
-        svgCardFace(
-          item,
-          cx + 8,
-          y,
-          colW - 16,
-          CARD_H,
-          p,
-          types,
-          setup.cardFields.includes('comments'),
-        ),
+        svgCardFace(card.item, card.x, card.y, card.width, card.height, p, types, showComments),
       );
-      y += CARD_H + CARD_GAP;
     }
-  });
+  }
   return inFont(parts.join(''));
 }
 

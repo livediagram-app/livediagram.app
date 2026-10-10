@@ -5,21 +5,23 @@ import { MobileEditor, TouchGestures } from '@/components/illustrations/devices'
 export const metadata = helpMetadata({
   title: 'Mobile',
   description:
-    'livediagram on a phone is a touch-friendly editor: pinch to zoom, drag to pan, long-press for menus, and the palette as one strip across the top.',
+    'livediagram on a phone is a touch-friendly editor: pinch to zoom, drag to pan, long-press for menus, and the palette as one strip across the top. What differs from a computer, and why.',
   path: '/help/supported-devices/mobile/',
 });
 
 <ArticleLayout title="Mobile" description="On a phone the editor is built for touch, with a palette strip across the top and finger gestures in place of a mouse and keyboard." categoryTitle="Supported Devices" categorySlug="supported-devices">
 
-livediagram works on a phone right in your browser, with no app to install. The editor automatically switches to a touch-friendly layout on small screens so the canvas stays the star and everything is reachable with a thumb. It is great for viewing a diagram, making quick edits, and joining a live session on the go.
+livediagram works on a phone right in your browser, with no app to install. The editor automatically switches to a touch-friendly layout on a phone-sized screen (narrower than 640 pixels, or a touch screen shorter than 500 pixels, so a phone held sideways counts too) so the canvas stays the star and everything is reachable with a thumb. It is great for viewing a diagram, making quick edits, and joining a live session on the go.
 
 ## A layout built for touch
 
-On a small screen the editor always uses the [Toolbar layout](/help/palette/toolbar-layout/): the palette becomes one strip across the top, with a menu button at its left end for the Explorer, and **More** for everything that doesn't fit. **Layers** and **Collaborate** open as pop-overs above their buttons in the bottom row, and the other panels sit in the corners of the screen.
+On a phone the editor keeps the same [layout](/help/palette/toolbar-layout/) as on a computer, fitted to the width. Along the top, a small card holds the menu button (for the Explorer; a phone has no mode switch, see [Editor Modes](/help/canvas/editor-modes/#on-a-phone)), and beside it the palette's strip: the selection mode, the category, its tiles, **More** for everything that doesn't fit, and **Search** at the end. **Layers** and **Collaborate** open as pop-overs above their buttons in the bottom-right corner, and the tabs and quick controls run along the bottom.
 
-The editor also opens zoomed out a little so you land on a useful overview of the whole canvas, and when you add a new element it slides into view automatically.
+A few panels are simplified to fit: they stay where they are rather than being dragged around (tap a panel's header to collapse or expand it), the [Map](/help/user-interface/minimap/) is hidden, and the zoom controls give way to a single **Fit** button, since you pinch to zoom.
 
-<Figure caption="On a phone the palette becomes one strip across the top, with the menu button at its left end, and the canvas is zoomed to fit, keeping it front and centre.">
+The editor opens zoomed out a little (to 60%) so you land on a useful overview of the canvas, and when you add a new element it slides into view automatically.
+
+<Figure caption="On a phone the palette becomes one strip across the top, beside the menu button, with the tabs along the bottom.">
   <MobileEditor />
 </Figure>
 
@@ -28,12 +30,14 @@ The editor also opens zoomed out a little so you land on a useful overview of th
 Your fingers do the work a mouse would on a computer:
 
 - **Pinch** with two fingers to zoom in and out.
-- **Drag** to move around the canvas.
+- **Drag** empty canvas to move around: a phone starts on the **Hand** tool.
 - **Tap** to select, and **drag** an element to move it.
-- **Press and hold** an element (a long press) to open its menu, the touch version of a right-click.
+- **Press and hold** an element for half a second (a long press) to open its menu, the touch version of a right-click. On a phone menus open as a sheet from the bottom of the screen; drag it down to close it.
 - **Press and hold** a button that shows only an icon to see its name. Letting go does not press it.
 
-Buttons and drag handles have a little extra invisible padding on touch, so they are easier to hit accurately with a fingertip.
+To select several elements, switch the selection mode to **Select**: then dragging across empty canvas draws a selection box.
+
+Drag handles (an arrow's ends, for instance) have a little extra invisible padding on touch, so they are easier to hit accurately with a fingertip.
 
 <Figure caption="Your fingers do the work a mouse would: pinch to zoom, drag to pan, tap to select, and press and hold for the menu.">
   <TouchGestures />
@@ -41,11 +45,12 @@ Buttons and drag handles have a little extra invisible padding on touch, so they
 
 ## What works differently on a phone
 
-A phone has no mouse pointer or physical keyboard, so a few things made for those are not available on a small screen:
+A phone has a small screen, no mouse pointer and usually no keyboard, so a few things are not available or work differently:
 
-- **Keyboard shortcuts** are off, since there are no keys to press. Use the palette and the on-screen controls instead, which do everything the shortcuts do.
-- **Shortcuts that need a held key**, like Shift to keep proportions while resizing or to add to a selection, are not available without a keyboard.
-- **Spotlight** (the presenting highlight) and **dragging a box to multi-select** rely on a hovering, clicking mouse, so they are reserved for larger screens.
+- **Spotlight** and the **Slide Deck** (the presenting tools) are reserved for larger screens.
+- **The Map** and **UI Scale** are desktop only.
+- **Keyboard shortcuts** need a keyboard: with none, use the palette and the on-screen controls, which do everything the shortcuts do. Pair a keyboard and they work as on a computer, as do held-key moves like Shift to keep proportions.
+- **Hover previews** (styles previewing as you rest on them) need a hovering pointer, so on touch a tap simply applies the change.
 
 <Tip>
   For a long or detailed editing session, a [tablet](/help/supported-devices/tablet/) with more room

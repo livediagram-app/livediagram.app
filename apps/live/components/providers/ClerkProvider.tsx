@@ -18,7 +18,7 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { clerkEnabled, clerkPublishableKey, e2eAuthEnabled } from '@/lib/clerk-config';
-import { DEFERRED_AUTH_DEFAULT, DeferredAuthContext } from './deferred-auth';
+import { DEFERRED_AUTH_DEFAULT, DEFERRED_AUTH_PENDING, DeferredAuthContext } from './deferred-auth';
 
 // Test builds only (see e2eAuthEnabled): never part of a real bundle.
 const LazyE2EAuthBridge = e2eAuthEnabled
@@ -40,11 +40,18 @@ const LazyClerkBridge = dynamic(() => import('./ClerkBridge').then((m) => m.Cler
 // (the reported MCP-OAuth sign-in "client-side exception").
 const STATIC_CLERK_ROUTES = ['/sign-in', '/get-started', '/sso-callback'];
 
+// The workbench page (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a
+// workbench") is signed in by its workbench session, never by Clerk or the e2e bridge: both stand down
+// there and the state holds DEFERRED_AUTH_PENDING, so nothing above the page reads as a settled guest,
+// Clerk configured or not. WorkbenchAuthBridge publishes the session to the editor beneath.
+export const WORKBENCH_ROUTE = '/embed/workbench';
+
 export function ClerkProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState(DEFERRED_AUTH_DEFAULT);
   const pathname = usePathname();
   const staticClerkRoute = STATIC_CLERK_ROUTES.some((r) => pathname?.startsWith(r));
-  const configured = clerkEnabled && !!clerkPublishableKey && !staticClerkRoute;
+  const workbenchRoute = pathname?.startsWith(WORKBENCH_ROUTE) === true;
+  const configured = clerkEnabled && !!clerkPublishableKey && !staticClerkRoute && !workbenchRoute;
   // While the bridge stands down, nothing publishes, so the last state it
   // published would outlive it. Signing in by email code returns to the app
   // with a SOFT navigation (router.push), keeping this provider mounted: the
@@ -56,10 +63,12 @@ export function ClerkProvider({ children }: { children: ReactNode }) {
     setAuthState(DEFERRED_AUTH_DEFAULT);
   }
   return (
-    <DeferredAuthContext.Provider value={authState}>
+    <DeferredAuthContext.Provider value={workbenchRoute ? DEFERRED_AUTH_PENDING : authState}>
       {children}
       {configured ? <LazyClerkBridge onState={setAuthState} /> : null}
-      {LazyE2EAuthBridge && !staticClerkRoute ? <LazyE2EAuthBridge onState={setAuthState} /> : null}
+      {LazyE2EAuthBridge && !staticClerkRoute && !workbenchRoute ? (
+        <LazyE2EAuthBridge onState={setAuthState} />
+      ) : null}
     </DeferredAuthContext.Provider>
   );
 }

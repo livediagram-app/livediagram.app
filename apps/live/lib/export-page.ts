@@ -22,6 +22,9 @@ export type PageExportFrame = {
   surface: CanvasSurface;
   // The page's background as SVG markup in canvas coordinates (defs included).
   backgroundSvg: string;
+  // True when the page has no paper at all: a logo page on plain paper exported see-through
+  // (docs/specs/007-editor/logo-pages.md "Export").
+  transparent: boolean;
   // Whether an element reaches onto the page (the rest are left out); an arrow by its resolved
   // ends, against the tab's elements.
   reaches: (el: Element, elements: readonly Element[]) => boolean;
@@ -57,6 +60,7 @@ export function pageExportFrame(
     paper = EXPORT_PAPER,
     idPrefix = 'lvd-page',
     ruling,
+    transparentPaper = false,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -67,6 +71,8 @@ export function pageExportFrame(
     // An article page's Lines, on its writing's baselines inside its margins
     // (docs/specs/007-editor/article-pages.md "Article style").
     ruling?: { pitch: number; inset: number; top: number };
+    // A logo page's plain paper is left out (a logo goes over other things); a fill is kept.
+    transparentPaper?: boolean;
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -75,6 +81,7 @@ export function pageExportFrame(
   const rect = (paint: string) =>
     `<rect x="${r2(r.x)}" y="${r2(r.y)}" width="${r2(r.width)}" height="${r2(r.height)}" fill="${paint}"/>`;
   const parts: string[] = [];
+  const transparent = transparentPaper && page.kind === 'logo' && !fill;
   if (fill?.kind === 'gradient') {
     const l = gradientLine(fill, r);
     parts.push(
@@ -83,7 +90,7 @@ export function pageExportFrame(
         `</linearGradient></defs>`,
       rect(`url(#${id}-fill)`),
     );
-  } else {
+  } else if (!transparent) {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }
   if (pattern && ruling && pattern === 'lines') {
@@ -107,6 +114,7 @@ export function pageExportFrame(
     bounds: { x: r.x, y: r.y, w: r.width, h: r.height },
     surface: pageSurface(page) ?? 'light',
     backgroundSvg: parts.join(''),
+    transparent,
     reaches: (el, elements) => {
       const overlaps = (x: number, y: number, rr: number, b: number) =>
         x <= r.x + r.width && rr >= r.x && y <= r.y + r.height && b >= r.y;

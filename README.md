@@ -6,7 +6,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 
 ```
 apps/        marketing site + editor + telemetry dashboard + help centre + community + api + mcp server + router + cli
-packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, items and the Plan board projection, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection, telemetry client, test fakes, configs
+packages/    shared document model, wire-format types, UI primitives, icon + template catalogues + template previews, help-article registry, the Explorer filter lens, items and the Plan board projection, the Sheet engine, the api client and agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection, telemetry client, test fakes, configs
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
 marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
@@ -33,7 +33,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
 - **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
 - **Router** stitches the six under one hostname.
-- **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with; it runs from source for now ([CLI](docs/specs/015-api/cli.md)).
+- **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 

@@ -1,4 +1,5 @@
 import type { ItemTypeCatalogue } from '@livediagram/items';
+import { getOnline } from '@/lib/online-status';
 import { useEffect, useState } from 'react';
 
 import { UNTITLED_DOCUMENT_NAME } from '@livediagram/templates';
@@ -35,7 +36,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
   // the parser cannot read costs the deck rather than the document.
   const [documentPresentation, setDocumentPresentation] = useState<string | null>(null);
-  // The document's type catalogue (docs/specs/026-plan/item-types.md), null for the built-in types:
+  // The document's type catalogue (docs/specs/026-plan/item-types.md), null for the default types:
   // seeded on load, then set by a save here or the room's `item-types` op. See useItemTypes.
   const [documentItemTypes, setDocumentItemTypes] = useState<ItemTypeCatalogue | null>(null);
   // Reflect the document name in the browser tab so users with many
@@ -73,14 +74,19 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     return () => window.clearTimeout(id);
   }, [importError]);
 
-  // Surface a toast when an autosave fails (network / 5xx). The header
-  // pill already shows the 'error' status, but a failed save risks lost
-  // work — the kind of critical update that warrants the louder bottom-
-  // centre toast too. Fires on the transition into 'error'; the toast
-  // layer dedupes a streak of retries while one is still on screen.
+  // Surface a toast when an autosave fails (network / 5xx). Nothing else
+  // shows the 'error' status, and a failed save risks lost work, so it
+  // gets the bottom-centre toast. Fires on the transition into 'error';
+  // the toast layer dedupes a streak of retries while one is still on screen.
   useEffect(() => {
     if (saveStatus === 'error') {
-      toast.error('Couldn’t save your changes. Check your connection.');
+      // Offline, the cause is known and so is the way out (docs/specs/007-editor/load-recovery.md
+      // "Offline"): the changes are only in this tab until the connection is back.
+      toast.error(
+        getOnline()
+          ? 'Couldn’t save your changes. Check your connection.'
+          : 'You’re offline. Your changes will save when you reconnect. Keep this tab open.',
+      );
     }
     // The network is fine here: the server couldn't tie the save to the
     // signed-in account. Blaming the connection sent people checking a cable.

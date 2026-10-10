@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { presetSummaryLines } from './power-user-preset-rows';
 import { setPowerUserMode } from '@/lib/power-user-mode';
-import { withPanelLayout } from '@/lib/user-preferences';
 
 // The "Set By Power User Mode" readout (docs/specs/007-editor/power-user-mode.md#in-settings).
 
 const ALL = new Set([
-  'panelLayout',
   'alignmentGuides',
   'autoRebindArrows',
   'tourSeen',
@@ -19,7 +17,6 @@ describe('presetSummaryLines', () => {
     const prefs = setPowerUserMode({}, true).prefs;
     const lines = presetSummaryLines(prefs, ALL);
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
-      ['Panel Layout', 'Toolbar', 'Panels'],
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Show Welcome Tour', 'Off', 'Accessibility'],
@@ -30,14 +27,14 @@ describe('presetSummaryLines', () => {
   });
 
   it('marks a setting changed since switching on, as switch-off would', () => {
-    const prefs = withPanelLayout(setPowerUserMode({}, true).prefs, 'floating');
-    const layout = presetSummaryLines(prefs, ALL).find((l) => l.rowKey === 'panelLayout')!;
-    expect(layout.value).toBe('Floating');
-    expect(layout.changed).toBe(true);
+    const prefs = { ...setPowerUserMode({}, true).prefs, alignmentGuides: false };
+    const guides = presetSummaryLines(prefs, ALL).find((l) => l.rowKey === 'alignmentGuides')!;
+    expect(guides.value).toBe('Off');
+    expect(guides.changed).toBe(true);
   });
 
   it('makes no promise about switching off without a baseline to restore from', () => {
-    const lines = presetSummaryLines({ powerUserMode: true, panelLayout: 'toolbar' }, ALL);
+    const lines = presetSummaryLines({ powerUserMode: true, alignmentGuides: true }, ALL);
     expect(lines.every((l) => l.restorable === false)).toBe(true);
     expect(
       presetSummaryLines(setPowerUserMode({}, true).prefs, ALL).every((l) => l.restorable),

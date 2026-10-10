@@ -11,6 +11,9 @@
 
 import {
   INK_PEN_COLOUR,
+  isPenColourName,
+  penColourHex,
+  type PenColourName,
   encodeStrokePoints,
   freehandNormalisedPoints,
   ARROW_THICKNESS_PX,
@@ -32,12 +35,18 @@ import {
   type Padding,
   type ShapeKind,
   isChartShape,
+  supportsRotation,
   type ChartPaletteId,
   type CodeThemeId,
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  clampLetterSpacing,
+  clampTextArc,
+  type FontWeight,
+  type TextCase,
+  type TextElement,
 } from '@livediagram/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from './tech-icons';
@@ -133,27 +142,30 @@ export function applyFillColorToEl(el: Element, color: string): Element {
 }
 
 // A colour row's choice on an element that stores stock colours by name (docs/specs/007-editor/
-// editor-modes.md "One look"): Ink is stored as its name, any other colour replaces the name.
-const lineColour = (color: string): { strokeColor?: string; penColour?: typeof INK_PEN_COLOUR } =>
-  color === INK_PEN_COLOUR
-    ? { strokeColor: undefined, penColour: INK_PEN_COLOUR }
+// editor-modes.md "One look"): a standard colour (Ink, Grey, Red ...) is stored as its name and
+// drawn in its version for the canvas; any other colour replaces the name.
+const lineColour = (color: string): { strokeColor?: string; penColour?: PenColourName } =>
+  isPenColourName(color)
+    ? { strokeColor: undefined, penColour: color }
     : { strokeColor: color, penColour: undefined };
-const textColour = (
-  color: string,
-): { textColor?: string; penTextColour?: typeof INK_PEN_COLOUR } =>
-  color === INK_PEN_COLOUR
-    ? { textColor: undefined, penTextColour: INK_PEN_COLOUR }
+const textColour = (color: string): { textColor?: string; penTextColour?: PenColourName } =>
+  isPenColourName(color)
+    ? { textColor: undefined, penTextColour: color }
     : { textColor: color, penTextColour: undefined };
+// Where an element stores no name (a table, a note's border), a standard colour lands as its
+// light-paper hex; Ink, the canvas's own drawing colour, leaves it as it is.
+const asHex = (color: string): string | null =>
+  color === INK_PEN_COLOUR ? null : isPenColourName(color) ? penColourHex(color, 'light') : color;
 
 export function applyStrokeColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape')
     return { ...el, ...lineColour(color), colorPreset: undefined, strokeSwatch: undefined };
   if (el.type === 'freehand') return { ...el, ...lineColour(color) };
   if (el.type === 'arrow') return { ...el, ...lineColour(color), strokeSwatch: undefined };
-  // The rest store no name, so Ink (offered only where it can be stored) leaves them as they are.
-  if (color === INK_PEN_COLOUR) return el;
-  if (el.type === 'table') return { ...el, strokeColor: color, tablePreset: undefined };
-  if (el.type === 'sticky') return { ...el, strokeColor: color };
+  const hex = asHex(color);
+  if (hex === null) return el;
+  if (el.type === 'table') return { ...el, strokeColor: hex, tablePreset: undefined };
+  if (el.type === 'sticky') return { ...el, strokeColor: hex };
   return el;
 }
 
@@ -161,11 +173,11 @@ export function applyTextColorToEl(el: Element, color: string): Element {
   if (el.type === 'shape') return { ...el, ...textColour(color), colorPreset: undefined };
   // A hand-picked colour is no longer the quick-swatch slot it came from.
   if (el.type === 'text') return { ...el, ...textColour(color), textSwatch: undefined };
-  if (el.type === 'table' && color !== INK_PEN_COLOUR)
-    return { ...el, textColor: color, tablePreset: undefined };
   if (el.type === 'sticky' || el.type === 'arrow') return { ...el, ...textColour(color) };
-  if (color === INK_PEN_COLOUR) return el;
-  if (isBoxed(el)) return { ...el, textColor: color };
+  const hex = asHex(color);
+  if (hex === null) return el;
+  if (el.type === 'table') return { ...el, textColor: hex, tablePreset: undefined };
+  if (isBoxed(el)) return { ...el, textColor: hex };
   return el;
 }
 
@@ -229,7 +241,7 @@ export function applyShadowToEl(el: Element, shadow: ElementShadow | null): Elem
 // Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is
 // stored as undefined (upright). Boxed elements only.
 export function applyRotationToEl(el: Element, deg: number): Element {
-  if (!isBoxed(el)) return el;
+  if (!supportsRotation(el)) return el;
   const next = ((Math.round(deg) % 360) + 360) % 360;
   return { ...el, rotation: next === 0 ? undefined : next };
 }
@@ -324,4 +336,36 @@ export function applyArrowPresetToEl(
     flow: p.flow,
     flowSpeed: p.flow ? (el.flowSpeed ?? DEFAULT_ANIMATION_SPEED) : el.flowSpeed,
   };
+}
+
+// Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): a patch of tracking,
+// weight, case and arc for text elements; `null` clears a field. Choosing a weight clears bold
+// (the weight wins while set, and the Bold button clears it back).
+export type WordmarkPatch = {
+  letterSpacing?: number | null;
+  fontWeight?: FontWeight | null;
+  textCase?: TextCase | null;
+  textArc?: number | null;
+};
+
+export function applyWordmarkToEl(el: Element, patch: WordmarkPatch): Element {
+  if (el.type !== 'text') return el;
+  const next: TextElement = { ...el };
+  const set = <K extends keyof WordmarkPatch>(key: K, value: TextElement[K] | undefined) => {
+    if (value === undefined) delete next[key];
+    else next[key] = value;
+  };
+  if ('letterSpacing' in patch)
+    set(
+      'letterSpacing',
+      patch.letterSpacing == null ? undefined : clampLetterSpacing(patch.letterSpacing),
+    );
+  if ('textArc' in patch)
+    set('textArc', patch.textArc == null ? undefined : clampTextArc(patch.textArc));
+  if ('textCase' in patch) set('textCase', patch.textCase ?? undefined);
+  if ('fontWeight' in patch) {
+    set('fontWeight', patch.fontWeight ?? undefined);
+    if (patch.fontWeight != null) delete next.textBold;
+  }
+  return next;
 }

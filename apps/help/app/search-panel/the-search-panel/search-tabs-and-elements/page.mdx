@@ -6,7 +6,7 @@ import { SearchTabsAndElements } from '@/components/illustrations/search-panel';
 export const metadata = helpMetadata({
   title: 'Finding Tabs and Elements',
   description:
-    'Inside a document, search also covers its tabs and every element on them, including text inside table cells.',
+    'Inside a document, search also covers its tabs and every labelled element on them, including text inside table cells, on every tab.',
   path: '/help/search-panel/the-search-panel/search-tabs-and-elements/',
 });
 
@@ -21,27 +21,37 @@ export const metadata = helpMetadata({
   )}
 >
 
-When you open the [search panel](/help/search-panel/the-search-panel/) from inside a document, its scope grows to include that document's own contents: its [tabs](/help/tabs/using-tabs/) and the elements on them. This is what turns search into a within-document jump tool, not just a way to open a different document.
+When you open the [search panel](/help/search-panel/the-search-panel/) from inside a document, its scope grows to include that document's own contents: its [tabs](/help/tabs/using-tabs/) and the elements on them. This is what turns search into a within-document jump tool, not just a way to open a different document. It works in view-only documents too, since it only moves you around.
 
 ## Tabs
 
-The **Tabs** group matches the document's tabs by name, and marks the one you are currently on so you can tell a jump from a no-op. Picking a tab switches to it. On a document with many tabs (or [tab folders](/help/tabs/tab-folders/)) this is quicker than scanning the tab bar.
+The **Tabs** group matches the document's tabs by name, and marks the one you are on with **current** so you can tell a jump from a no-op. Picking a tab switches to it. On a document with many tabs (or [tab folders](/help/tabs/tab-folders/)) this is quicker than scanning the tab bar.
 
 ## Elements
 
-The **Elements** group matches elements by their label and, when you pick one, switches to its tab and selects it, so you land exactly on the thing you were looking for. Element ids are unique across the whole document, so a match points at one specific element wherever it lives.
+The **Elements** group matches elements by their label: the text on a shape, a sticky note, a text box, and so on. Each result shows which tab it is on ("on Payments"), and picking one switches to that tab and selects the element, so you land exactly on the thing you were looking for.
+
+Search covers **every tab**, not only the ones you have visited. Tabs load lazily as you open them, so when you open search the editor fetches the rest of the document's tabs in the background; on a large document, matches from those tabs can join the list a moment later.
 
 ### Text inside tables
 
 Tables do not have a single label, their text lives in the cells. So a table matches through its **cells**: the first cell whose text matches your query becomes the result's label, and picking it takes you to that table. That means you can find a value tucked inside a table without remembering which table, or which tab, it is on.
 
-<Figure caption="In-document scope: tabs and elements, including text matched inside a table cell.">
+<Figure caption="In-document scope: tabs and elements, each element tagged with the tab it is on, including text matched inside a table cell.">
   <SearchTabsAndElements />
 </Figure>
 
+## What it does not search
+
+- **Unlabelled elements:** an element with no text (a bare shape, an arrow with no label, a drawing) has nothing to match, so it never appears.
+- **Comments, notes and links** on elements, and the names of people in the document.
+- **Other documents' contents:** element text is only searched in the document you have open. From anywhere, other documents are found by name.
+
+The Elements group lists up to 12 matches across the whole document. If the one you want is missing, type more of its label.
+
 <Tip>
-  This scope only appears inside a document. From the Explorer or the dashboard, search covers your
-  documents, folders, and teams instead, see [Finding Documents and
+  This scope only appears inside a document. From the Explorer page, search covers your documents,
+  folders, and teams instead, see [Finding Documents and
   Folders](/help/search-panel/the-search-panel/search-documents/).
 </Tip>
 

@@ -14,6 +14,7 @@ import {
   arrowLabelPass,
   svgArrow,
   svgBoxed,
+  type CanvasSurface,
   type Deck,
   type Tab,
 } from '@livediagram/document';
@@ -92,13 +93,15 @@ export function useSlideThumbnails(
       const page = slide.pageId
         ? layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId)
         : undefined;
+      // A page's surface sets its ink, as the export draws it: light ink on a dark page.
+      let surface: CanvasSurface = 'light';
       if (page) {
-        parts.push(
-          pageExportFrame(page, {
-            idPrefix: `lvd-slide-${slide.id}`,
-            ruling: pageRulingOf(tab, page),
-          }).backgroundSvg,
-        );
+        const frame = pageExportFrame(page, {
+          idPrefix: `lvd-slide-${slide.id}`,
+          ruling: pageRulingOf(tab, page),
+        });
+        surface = frame.surface;
+        parts.push(frame.backgroundSvg);
         // An article page's writing, as lines of text.
         const bars = pageWritingBars(page);
         if (bars.length) parts.push(articleOpsToSvg(bars));
@@ -109,6 +112,7 @@ export function useSlideThumbnails(
             svgBoxed(el, {
               ...art,
               tabFont: tab.font,
+              surface,
               ...(items ? { items } : {}),
               ...(itemTypes ? { itemTypes } : {}),
             }),
@@ -129,7 +133,7 @@ export function useSlideThumbnails(
             svgArrow(
               el,
               tab.elements,
-              'light',
+              surface,
               tab.font,
               labels,
               `lvd-slide-${slide.id}-ko-`,

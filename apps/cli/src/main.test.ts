@@ -327,6 +327,53 @@ const storedAs = (token: string, tokenId: string) =>
   });
 
 describe('auth', () => {
+  // A newer `auth login` revokes the token a long command started with: the command reads the store again and goes on.
+  it('fails as signed out when the store was emptied while the command ran', async () => {
+    const io = fakeIo({
+      routes: [
+        capabilities,
+        (_request, url) => {
+          if (url.pathname !== '/api/tokens/current') return undefined;
+          io.fileMap.delete(CREDENTIALS);
+          return Response.json({ error: 'invalid_token' }, { status: 401 });
+        },
+      ],
+      files: { [CREDENTIALS]: storedAs('lvd_old_0000000000000000000000', 't0') },
+    });
+
+    const { code } = await cli(['auth', 'status'], io);
+
+    expect(code).toBe(4);
+    expect(
+      io.requests.filter((r) => new URL(r.url).pathname === '/api/tokens/current'),
+    ).toHaveLength(1);
+  });
+
+  it('reads the stored credential again when the api refuses the one it started with', async () => {
+    const rotated = 'lvd_rotated_000000000000000000000';
+    const io = fakeIo({
+      routes: [capabilities, (request, url) => rotating(request, url)],
+      files: { [CREDENTIALS]: storedAs('lvd_old_0000000000000000000000', 't0') },
+    });
+    const rotating: Route = (request, url) => {
+      if (url.pathname !== '/api/tokens/current') return undefined;
+      if (request.headers.get('Authorization') === `Bearer ${rotated}`)
+        return Response.json(current);
+      // The first answer is a refusal, and meanwhile another login has stored a new token.
+      io.fileMap.set(CREDENTIALS, { data: storedAs(rotated, 't2'), mode: 0o600 });
+      return Response.json({ error: 'invalid_token' }, { status: 401 });
+    };
+
+    const { code, out } = await cli(['auth', 'status'], io);
+
+    expect(code).toBe(0);
+    expect(out).toContain('account  Ada');
+    expect(io.requests.map((r) => r.headers.get('Authorization')).slice(-2)).toEqual([
+      'Bearer lvd_old_0000000000000000000000',
+      `Bearer ${rotated}`,
+    ]);
+  });
+
   it('logs in with a token from stdin, checks it, stores it, and revokes the one it replaces', async () => {
     const io = fakeIo({
       routes: [capabilities, tokens],

@@ -11,6 +11,7 @@ import {
   type VideoElement,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { bodySetClass } from '@/lib/animation-classes';
 import { useFrameBlocked } from '@/components/canvas/use-frame-blocked';
 
 // Inner content of a video element (docs/specs/009-elements/youtube-video.md): a YouTube poster frame with a
@@ -33,6 +34,9 @@ export function VideoView({ element }: { element: VideoElement }) {
   const url = element.link?.kind === 'url' ? element.link.url : undefined;
   const target = embedTargetFor(url);
   const [playing, setPlaying] = useState(false);
+  // A Media animation (docs/specs/028-animation/element-animations.md) on the frame, which moves the
+  // player or poster inside it; the video keeps playing under it.
+  const media = bodySetClass(element, 'media') ?? '';
   // Whether the player is taking pointer events. Off by default so dragging
   // the element always works; the user turns it on to seek or change volume.
   const [controls, setControls] = useState(false);
@@ -54,7 +58,9 @@ export function VideoView({ element }: { element: VideoElement }) {
 
   if (playing) {
     return (
-      <div className="group relative h-full w-full overflow-hidden rounded-[inherit] bg-black">
+      <div
+        className={`group relative h-full w-full overflow-hidden rounded-[inherit] bg-black ${media}`}
+      >
         <iframe
           onLoad={frame.onLoad}
           src={target.embedUrl}
@@ -121,7 +127,9 @@ export function VideoView({ element }: { element: VideoElement }) {
     // full-size click target here swallowed pointerdown so a drag never
     // started, then swallowed the release so one that did start never ended.
     // Only the play badge below opts back in.
-    <div className="group relative h-full w-full overflow-hidden rounded-[inherit] bg-slate-900">
+    <div
+      className={`group relative h-full w-full overflow-hidden rounded-[inherit] bg-slate-900 ${media}`}
+    >
       {/* Poster from the static image host. `hqdefault` exists for every
           video, unlike maxresdefault, which 404s on older uploads. */}
       <img
@@ -376,12 +384,12 @@ function EmptyState({
           <span className="text-[11px] font-medium text-slate-200">
             {/* "Add a Website link" reads like a typo; a website has an
                 address, not a link. */}
+            Double-click to{' '}
             {provider === 'website'
-              ? 'Add a web address'
+              ? 'add a web address'
               : named
-                ? `Add a ${named} link`
-                : 'Add a link'}{' '}
-            — double-click
+                ? `add a ${named} link`
+                : 'add a link'}
           </span>
           <span className="text-[10px] leading-snug text-slate-400">
             {provider

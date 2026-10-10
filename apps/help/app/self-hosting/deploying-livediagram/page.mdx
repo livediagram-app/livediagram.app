@@ -21,14 +21,16 @@ The product is split into focused apps, each deployed as a named Cloudflare Work
 - **live** is the diagram editor itself, served at clean routes such as `/new` and `/explorer`.
 - **telemetry** is the public, read-only analytics dashboard at `/telemetry`.
 - **community** is the Community, the public gallery of documents people share, at `/community`.
+- **help** is the help centre you are reading now, at `/help`.
 - **api** is the Worker that holds the REST and WebSocket layer, backed by the D1 database and the per-document Durable Object.
 - **router** sits in front and forwards each request to the right app by URL path. It holds no business logic, only routing.
+- **mcp** (optional) is the MCP server that lets people connect AI tools to their documents. It has its own hostname (`mcp.livediagram.app` on the hosted service), needs sign-in configured, and talks to the api Worker directly.
 
-There is also a **help** app (the site you are reading now), which is another static app served under its own path. The router is what makes all of these appear under one domain.
+The router is what makes the first six appear under one domain.
 
 ## How a request is routed
 
-The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, `/community` to the Community, the editor's known route segments to the live app, and everything else to marketing. Because the router has service bindings to the other apps, those apps must exist before the router can be deployed.
+The router Worker inspects the path and forwards accordingly: `/api/*` to the api Worker, `/telemetry` to the dashboard, `/help` to the help centre, `/community` to the Community, the editor's routes (`/document`, `/explorer`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed` and the like) to the live app, and everything else to marketing. Because the router has service bindings to the six path-routed apps, they must exist before the router can be deployed.
 
 <Figure caption="The router forwards each request to an app by matching the URL path.">
   <RequestRouting />
@@ -38,14 +40,14 @@ The router Worker inspects the path and forwards accordingly: `/api/*` to the ap
 
 Deployments run through **GitHub Actions to Cloudflare Workers**. In broad strokes:
 
-1. Continuous integration runs lint, format, typecheck, test, and build on every push.
+1. Continuous integration runs lint, format, typecheck, test, and build on every pull request and push.
 2. A separate, manually triggered deploy workflow builds everything, then deploys the apps.
-3. The marketing, live, telemetry, help, community, and api Workers deploy in parallel; the router deploys last because its bindings depend on the others already existing.
+3. The marketing, telemetry, help, community, and api Workers deploy in parallel. The live editor follows the api, so a new editor never calls an api that lacks its routes, and the optional mcp Worker follows the api too. The router deploys last because its bindings depend on the six path-routed apps already existing.
 4. Database migrations are applied to D1 as part of the api deploy, before the new Worker code goes live.
 
-Deploying needs a Cloudflare API token and account id, supplied as repository secrets, never committed to source.
+Deploying needs a Cloudflare API token and account id, supplied as repository secrets (`CF_API_TOKEN` and `CF_ACCOUNT_ID`), never committed to source. You can also deploy each Worker by hand with `wrangler deploy` in the same order. The repository also has a staging workflow that the hosted service uses for rehearsals; a fork can delete it.
 
-<Figure caption="GitHub Actions deploys the six apps in parallel, then the router last because its bindings depend on them.">
+<Figure caption="GitHub Actions deploys five apps in parallel, then live and the optional mcp after the api, and the router last.">
   <DeployFlow />
 </Figure>
 

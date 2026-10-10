@@ -26,7 +26,7 @@ import {
 } from './shape-geometry';
 import type { ShapeKind } from './shape-kind';
 import { boxFit } from './svg-shape-fit';
-import { PATH_ARC_SEGMENTS, svgPathSubpaths } from './svg-path-outline';
+import { PATH_ARC_SEGMENTS, PATH_CURVE_SEGMENTS, svgPathSubpaths } from './svg-path-outline';
 import { insidePolygon, segmentDistance } from './whiteboard-stroke';
 
 export type HitLine = { readonly points: readonly Point[]; readonly closed: boolean };
@@ -50,9 +50,9 @@ const CSS_OUTLINE_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
 ]);
 const DRAWN_KINDS: ReadonlySet<ShapeKind> = new Set(SHAPE_GEOMETRY_KINDS);
 // The corner a CSS-drawn box gets with no radius of its own (element-variant.ts).
-const CSS_DEFAULT_RADIUS_PX = 8;
+export const CSS_DEFAULT_RADIUS_PX = 8;
 // The parts that take the element's fill (shape-geometry.ts roles).
-const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>([
+export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>([
   'main',
   'outline',
   'head',
@@ -85,6 +85,8 @@ export function roundedRectRing(
   h: number,
   rxIn: number,
   ryIn: number,
+  // Points per quarter turn of a corner.
+  quarter = PATH_ARC_SEGMENTS / 2,
 ): Point[] {
   const rx = Math.max(0, Math.min(rxIn, w / 2));
   const ry = Math.max(0, Math.min(ryIn, h / 2));
@@ -96,7 +98,6 @@ export function roundedRectRing(
       { x, y: y + h },
     ];
   }
-  const quarter = PATH_ARC_SEGMENTS / 2;
   const corners: [number, number, number][] = [
     [x + w - rx, y + ry, -Math.PI / 2],
     [x + w - rx, y + h - ry, 0],
@@ -111,19 +112,29 @@ export function roundedRectRing(
   );
 }
 
-function ellipse(cx: number, cy: number, rx: number, ry: number): Point[] {
-  const n = PATH_ARC_SEGMENTS * 2;
+/** An ellipse as a closed ring of `n` points. */
+export function ellipseRing(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  n = PATH_ARC_SEGMENTS * 2,
+): Point[] {
   return Array.from({ length: n }, (_, i) => {
     const a = (2 * Math.PI * i) / n;
     return { x: cx + rx * Math.cos(a), y: cy + ry * Math.sin(a) };
   });
 }
 
-// A table part's lines in its own viewBox units.
-function partLines(part: ShapePart): HitLine[] {
+// The points a whole turn of an arc, and a cubic curve, are drawn with.
+export type OutlineSegments = { turn: number; curve: number };
+const HIT_SEGMENTS: OutlineSegments = { turn: PATH_ARC_SEGMENTS * 2, curve: PATH_CURVE_SEGMENTS };
+
+/** A table part's lines in its own viewBox units, its curves drawn with `seg` points. */
+export function partLines(part: ShapePart, seg: OutlineSegments = HIT_SEGMENTS): HitLine[] {
   switch (part.tag) {
     case 'path':
-      return svgPathSubpaths(part.d) ?? [];
+      return svgPathSubpaths(part.d, seg.curve, seg.turn / 2) ?? [];
     case 'polygon':
       return [
         {
@@ -148,13 +159,14 @@ function partLines(part: ShapePart): HitLine[] {
             part.height,
             part.rx ?? 0,
             part.ry ?? part.rx ?? 0,
+            seg.turn / 4,
           ),
         },
       ];
     case 'ellipse':
-      return [{ closed: true, points: ellipse(part.cx, part.cy, part.rx, part.ry) }];
+      return [{ closed: true, points: ellipseRing(part.cx, part.cy, part.rx, part.ry, seg.turn) }];
     case 'circle':
-      return [{ closed: true, points: ellipse(part.cx, part.cy, part.r, part.r) }];
+      return [{ closed: true, points: ellipseRing(part.cx, part.cy, part.r, part.r, seg.turn) }];
   }
 }
 
@@ -185,7 +197,7 @@ function cssOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'h
   const h = Math.max(0, el.height - 2 * inset);
   let ring: Point[];
   if (el.shape === 'circle') {
-    ring = ellipse(el.width / 2, el.height / 2, w / 2, h / 2);
+    ring = ellipseRing(el.width / 2, el.height / 2, w / 2, h / 2);
   } else {
     // CSS clamps a radius to half the box; the border's centre line runs inside it.
     const outer =

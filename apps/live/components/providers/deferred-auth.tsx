@@ -63,6 +63,14 @@ export const DEFERRED_AUTH_DEFAULT: DeferredAuthState = {
   deleteAccount: null,
 };
 
+// Auth held unsettled, whatever the deployment: what the workbench page's surroundings read
+// (docs/specs/013-workspace/blueprints/workbench-embeds.md "The editor in a workbench"), so nothing
+// above the editor ever reads as a settled guest; the editor itself reads WorkbenchAuthBridge's state.
+export const DEFERRED_AUTH_PENDING: DeferredAuthState = {
+  ...DEFERRED_AUTH_DEFAULT,
+  authLoaded: false,
+};
+
 export const DeferredAuthContext = createContext<DeferredAuthState>(DEFERRED_AUTH_DEFAULT);
 
 export function useDeferredAuth(): DeferredAuthState {

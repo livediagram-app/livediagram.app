@@ -2,9 +2,10 @@
 
 // The zone bar (docs/specs/007-editor/article-pages.md "Zones"): under a zone's bottom edge while
 // the zone, or elements all in it, are selected, or under a floating object on an article page.
-// Led by a grip that drags the zone to a new place in the writing; then how it sits (In line, Wrap
-// left, Wrap right, or Float in front of the text), where an inline one sits across the text, and
-// Delete (the zone and its elements). Drawn in canvas space at one screen size, so it rides the
+// Led by a grip that drags the zone to a new place in the writing (or, focused, steps it a block
+// up or down with the arrow keys); then how it sits (In Line, Wrap Left, Wrap Right, or Float in
+// front of the text), where an inline one sits across the text, and Delete (the zone and its
+// elements). Drawn in canvas space at one screen size, so it rides the
 // zone through a pan or a zoom. A drawing's grips (ZoneResizeGrips) size it by pointer or keys.
 import type { ReactNode } from 'react';
 import {
@@ -46,6 +47,7 @@ export function ZoneBar({
   onAlign,
   onRemove,
   onMoveStart,
+  onMoveStep,
 }: {
   fit: ZoneFit;
   align: ArticleZoneAlign;
@@ -59,6 +61,8 @@ export function ZoneBar({
   onRemove?: () => void;
   // A press on the grip (a zone in the writing): the zone is dragged through it (useZoneDrag).
   onMoveStart?: (e: React.PointerEvent<HTMLElement>) => void;
+  // The grip focused and an arrow key pressed: the zone one block up (-1) or down (1).
+  onMoveStep?: (by: -1 | 1) => void;
 }) {
   return (
     <div
@@ -82,15 +86,23 @@ export function ZoneBar({
     >
       {onMoveStart ? (
         <>
-          <Tooltip label="Drag to move">
+          <Tooltip label="Drag to Move">
             <button
               type="button"
-              aria-label="Drag to move"
+              aria-label="Drag to Move"
+              aria-keyshortcuts={onMoveStep ? 'ArrowUp ArrowDown' : undefined}
               data-zone-grip=""
               onPointerDown={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 onMoveStart(e);
+              }}
+              onKeyDown={(e) => {
+                const by = zoneGripStep(e.key);
+                if (!by || !onMoveStep) return;
+                e.preventDefault();
+                e.stopPropagation();
+                onMoveStep(by);
               }}
               className="flex h-7 w-6 cursor-grab touch-none items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 active:cursor-grabbing dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
@@ -100,13 +112,13 @@ export function ZoneBar({
           <Sep />
         </>
       ) : null}
-      <Choice label="In line" pressed={fit === 'inline'} onPress={() => onFit('inline')}>
+      <Choice label="In Line" pressed={fit === 'inline'} onPress={() => onFit('inline')}>
         <Inline />
       </Choice>
-      <Choice label="Wrap left" pressed={fit === 'left'} onPress={() => onFit('left')}>
+      <Choice label="Wrap Left" pressed={fit === 'left'} onPress={() => onFit('left')}>
         <WrapLeft />
       </Choice>
-      <Choice label="Wrap right" pressed={fit === 'right'} onPress={() => onFit('right')}>
+      <Choice label="Wrap Right" pressed={fit === 'right'} onPress={() => onFit('right')}>
         <WrapRight />
       </Choice>
       <Choice label="Float" pressed={fit === 'float'} onPress={() => onFit('float')}>
@@ -115,17 +127,17 @@ export function ZoneBar({
       {fit === 'inline' ? (
         <>
           <Sep />
-          <Choice label="Align left" pressed={align === 'left'} onPress={() => onAlign('left')}>
+          <Choice label="Align Left" pressed={align === 'left'} onPress={() => onAlign('left')}>
             <AlignLeft />
           </Choice>
           <Choice
-            label="Align centre"
+            label="Align Centre"
             pressed={align === 'center'}
             onPress={() => onAlign('center')}
           >
             <AlignCenter />
           </Choice>
-          <Choice label="Align right" pressed={align === 'right'} onPress={() => onAlign('right')}>
+          <Choice label="Align Right" pressed={align === 'right'} onPress={() => onAlign('right')}>
             <AlignRight />
           </Choice>
         </>
@@ -133,13 +145,20 @@ export function ZoneBar({
       {onRemove ? (
         <>
           <Sep />
-          <Choice label={drawing ? 'Delete drawing' : 'Delete'} danger onPress={onRemove}>
+          <Choice label={drawing ? 'Delete Drawing' : 'Delete'} onPress={onRemove}>
             <TrashIcon className="h-4 w-4" />
           </Choice>
         </>
       ) : null}
     </div>
   );
+}
+
+/** The zone step an arrow key on the grip asks for: up a block, down a block, or none. */
+export function zoneGripStep(key: string): -1 | 1 | null {
+  if (key === 'ArrowUp' || key === 'ArrowLeft') return -1;
+  if (key === 'ArrowDown' || key === 'ArrowRight') return 1;
+  return null;
 }
 
 function Sep() {
@@ -149,13 +168,11 @@ function Sep() {
 function Choice({
   label,
   pressed,
-  danger,
   onPress,
   children,
 }: {
   label: string;
   pressed?: boolean;
-  danger?: boolean;
   onPress: () => void;
   children: ReactNode;
 }) {
@@ -164,14 +181,12 @@ function Choice({
       <button
         type="button"
         aria-label={label}
-        aria-pressed={danger ? undefined : pressed}
+        aria-pressed={pressed}
         onClick={onPress}
         className={`flex h-7 w-7 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
-          danger
-            ? 'text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
-            : pressed
-              ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
-              : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+          pressed
+            ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
         }`}
       >
         {children}

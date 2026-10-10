@@ -40,7 +40,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
     heading: 'Tools',
     rows: [
       { keys: ['V'], label: 'Select tool  (or 1)' },
-      { keys: ['S'], label: 'Search elements  (Toolbar layout; else Select)' },
+      { keys: ['S'], label: 'Search elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand tool' },
       { keys: ['K'], label: 'Laser pointer' },
       { keys: ['E'], label: 'Eraser (click / drag to delete)' },
@@ -49,7 +49,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['I'], label: 'Isometric view' },
       { keys: ['⇧', 'drag'], label: 'Rotate isometric camera' },
       { keys: ['Z'], label: 'Zen mode (focus)' },
-      { keys: ['⇧', 'D'], label: 'Next editor mode (Diagram / Draw)' },
+      { keys: ['⇧', 'D'], label: 'Next editor mode (Diagram, Draw, Illustrate, Plan)' },
     ],
   },
   {

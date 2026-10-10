@@ -7,7 +7,6 @@
 import type { ReactNode } from 'react';
 import {
   WHITEBOARD_BACKGROUNDS,
-  WHITEBOARD_INK,
   penColourCss,
   whiteboardBackgroundOf,
   type Appearance,
@@ -54,10 +53,7 @@ export function PenFlyoutBody({ pen, model }: { pen: WhiteboardPen; model: White
         <ColourPicker
           value={pen.colour}
           board={appearance}
-          ink={WHITEBOARD_INK[appearance]}
-          yours={model.colourMemory.yours}
           onPick={(colour) => model.updatePen(pen.id, { colour })}
-          onRemove={model.colourMemory.forget}
         />
       ) : null}
       <FlyoutRow label="Width" heading>

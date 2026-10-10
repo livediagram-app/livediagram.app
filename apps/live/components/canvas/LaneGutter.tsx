@@ -28,8 +28,6 @@ import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 // Re-exported so this module stays the one import a lane view needs.
 export {
   isLaneBand,
-  LANE_BAND_PX,
-  LANE_GUTTER_PX,
   laneEdgeOfElement,
   laneGutterEdge,
   laneSizeOfElement,

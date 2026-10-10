@@ -57,14 +57,3 @@ export function waitForSelector(selector: string, timeoutMs = 3000): Promise<HTM
 export function waitForTour(tourId: string, timeoutMs = 3000): Promise<HTMLElement | null> {
   return waitForSelector(tourSelector(tourId), timeoutMs);
 }
-
-// Expand a collapsed MovablePanel by clicking its header's expand button
-// (aria-label "Expand <title>"). No-op when the panel is already expanded
-// (the button then reads "Collapse <title>").
-export function expandPanelIfCollapsed(tourId: string, title: string) {
-  const panel = findTour(tourId);
-  const expand = panel?.querySelector<HTMLElement>(
-    `button[aria-label="Expand ${title.toLowerCase()}"]`,
-  );
-  expand?.click();
-}

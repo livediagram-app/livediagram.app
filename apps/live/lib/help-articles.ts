@@ -35,7 +35,6 @@ export const HELP_ARTICLES = {
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
-  quickStylePanel: 'canvas/quick-style-panel',
   quickAddOnHover: 'palette/quick-add-on-hover',
   isometricMode: 'selection-modes/isometric-mode',
   // One key per tool panel, so every mode's panel can point at the article
@@ -74,6 +73,7 @@ export const HELP_ARTICLES = {
   planCardTypes: 'canvas/plan-mode/card-types',
   planBoards: 'canvas/plan-mode/boards',
   planCards: 'canvas/plan-mode/cards',
+  planSheets: 'canvas/plan-mode/sheets',
   planTour: 'canvas/plan-mode/plan-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -97,7 +97,6 @@ export const HELP_ARTICLES = {
   dataElements: 'palette/tools/data-elements',
   palette: 'palette',
   // Settings
-  toolbarLayout: 'palette/toolbar-layout',
   powerUserMode: 'user-interface/power-user-mode',
   welcomeTour: 'getting-started/welcome-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
@@ -106,8 +105,11 @@ export const HELP_ARTICLES = {
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
+  logoPages: 'canvas/illustrate/logo-pages',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
+  // Load recovery (docs/specs/007-editor/load-recovery.md).
+  documentNotLoading: 'troubleshooting/document-not-loading',
 } as const;
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
@@ -130,6 +132,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planCards: {
     title: 'Learn about cards',
     description: 'Open a card, fill it in, and archive, trash or present it.',
+  },
+  planSheets: {
+    title: 'Learn about sheets',
+    description: 'Cells, formulas, charts, setup and settings.',
   },
   planTour: {
     title: 'Learn about the Plan Tour',
@@ -165,11 +171,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   panelOpacity: {
     title: 'Learn about panel opacity',
-    description: 'Make the floating panels translucent so the canvas shows through.',
-  },
-  quickStylePanel: {
-    title: 'Learn about the quick style panel',
-    description: 'One-click colours and lines, and how the next shape remembers them.',
+    description: 'Make the panels translucent so the canvas shows through.',
   },
   quickAddOnHover: {
     title: 'Learn about quick-add on hover',
@@ -348,10 +350,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Palette',
     description: 'Tips and tricks to help you get the most out of the Palette.',
   },
-  toolbarLayout: {
-    title: 'Learn about the toolbar layout',
-    description: 'The palette as one strip across the top of the canvas.',
-  },
   powerUserMode: {
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
@@ -380,6 +378,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Draw mode',
     description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
+  logoPages: {
+    title: 'Learn about logo pages',
+    description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
+  },
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the document, where they are, and following them.',
@@ -391,6 +393,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   guestVsAccount: {
     title: 'Learn about guest vs account',
     description: 'What changes when you sign in, and what stays the same.',
+  },
+  documentNotLoading: {
+    title: 'Learn about loading problems',
+    description: 'Steps to try when a document will not open.',
   },
 };
 

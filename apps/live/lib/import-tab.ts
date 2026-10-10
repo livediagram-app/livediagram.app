@@ -33,7 +33,9 @@ export type ImportOutcome =
 // when we bump the schema we add a `migrate(version, tab)` branch in
 // parseImportedTab that walks old shapes forward.
 
+import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
 import {
+  isItemLike,
   isValidElement,
   migrateIncomingElements,
   type Tab,
@@ -43,7 +45,11 @@ import {
 import type { ImportImageReport } from './import-images';
 import type { BoardSceneReport } from './board-scene/report';
 
-type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
+// The Plan items a tab export carries (docs/specs/026-plan/items.md "Copies and exports"), and its stored type
+// catalogue (null: the default types).
+export type ImportedPlanItems = { items: Item[]; itemTypes: ItemTypeCatalogue | null };
+
+type ImportResult = { ok: true; tab: Tab; plan?: ImportedPlanItems } | { ok: false; error: string };
 
 // Parse text from a chosen `.json` file. Returns a discriminated
 // union — callers branch on `.ok` and surface the error string to
@@ -90,7 +96,14 @@ export function parseImportedTab(text: string): ImportResult {
   // threw in the id re-mint (leaving the Import dialog stuck on busy), the
   // others landed on the canvas as junk.
   const elements = migrateIncomingElements(tab.elements).filter(isValidElement);
-  return { ok: true, tab: { ...tab, elements } };
+  // Items that do not look like items are left behind, as the document envelope does; the store validates the rest.
+  const items = Array.isArray(env.items) ? env.items.filter(isItemLike) : [];
+  if (items.length === 0) return { ok: true, tab: { ...tab, elements } };
+  return {
+    ok: true,
+    tab: { ...tab, elements },
+    plan: { items, itemTypes: readItemTypeCatalogue(env.itemTypes) },
+  };
 }
 
 // Open the browser's file picker and resolve with the chosen file's name

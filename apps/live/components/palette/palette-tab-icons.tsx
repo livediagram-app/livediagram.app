@@ -1,7 +1,7 @@
-import { lucideSparkles } from '@livediagram/icons/lucide';
+import { lucidePenTool, lucideSparkles } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
-// CommandPalette's tab definitions so the palette file reads as wiring
+// the palette's category definitions so the palette file reads as wiring
 // rather than ~180 lines of inline SVG. Each is the universal symbol
 // for its category, readable at tab size.
 
@@ -10,6 +10,15 @@ export function PopularTabIcon() {
   return (
     <Glyph size={18} units={24}>
       <Prims prims={lucideSparkles} />
+    </Glyph>
+  );
+}
+
+// Logo (docs/specs/007-editor/logo-pages.md "The Logo palette"): a pen nib, what a mark is drawn with.
+export function LogoTabIcon() {
+  return (
+    <Glyph size={18} units={24}>
+      <Prims prims={lucidePenTool} />
     </Glyph>
   );
 }

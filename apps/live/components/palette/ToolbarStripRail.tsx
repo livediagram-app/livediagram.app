@@ -65,7 +65,7 @@ export function ToolbarStripRail({
   const railRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<number | null>(null);
   // Off for the first measured frame, so the strip doesn't animate itself
-  // open on page load (the same gate PaletteTabBar uses for its height).
+  // open on page load (the same gate the category picker uses).
   const [animate, setAnimate] = useState(false);
   // Tiles pop in only once the category has CHANGED: the first set is just
   // there, like the rest of the chrome. Derived during render (React's
@@ -146,7 +146,10 @@ export function ToolbarStripRail({
     if (railRef.current) railRef.current.scrollLeft = 0;
     const el = contentRef.current;
     if (!el) return;
-    const measure = () => setWidth(el.scrollWidth);
+    // Its layout width, not scrollWidth: scrollWidth counts transformed overflow, so a measure taken while
+    // tiles slide to new slots (fewer card types, a reorder) caught them mid-slide and the rail kept that
+    // wider width, with a gap after the last tile, once they settled (nothing resizes when a slide ends).
+    const measure = () => setWidth(el.offsetWidth);
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);

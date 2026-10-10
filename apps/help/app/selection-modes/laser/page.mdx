@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LaserMode } from '@/components/illustrations/palette-modes';
+import { LaserPanelScene } from '@/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Laser Pointer',
@@ -18,24 +19,33 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("laser")}
 >
 
-The Laser Pointer mode gives you a temporary laser trail for drawing attention while presenting or walking a group through the canvas. Choose it from the mode picker at the top of the floating palette, or press **`K`**.
+The Laser Pointer mode gives you a temporary laser trail for drawing attention while presenting or walking a group through the canvas. Choose **Laser** from the tool picker at the start of the palette strip, or press **`K`**.
 
 ## How it works
 
-Move the cursor to leave a glowing trail that fades on its own. It is purely for emphasis: it draws nothing permanent and changes none of your elements, so you can gesture freely without altering the canvas.
+Move the cursor to leave a glowing trail that fades on its own, after about a second at the default setting. It is purely for emphasis: it draws nothing permanent and changes none of your elements, so you can gesture freely without altering the canvas.
 
-<Figure caption="The Laser Pointer is lit in the mode picker, leaving a glowing trail that fades behind the cursor.">
+On a shared document everyone else sees your trail live, in your colour, and your cursor is hidden for the duration so they see only the laser dot.
+
+- **With a mouse or trackpad**, just move: the trail follows the pointer. A click-drag pans the canvas, like the Hand tool, and the trail keeps drawing while you pan.
+- **On a touchscreen**, drag a finger to draw the trail. To move around, switch to [Hand](/help/selection-modes/hand/) for a moment.
+
+<Figure caption="The palette's tool picker set to Laser, leaving a glowing trail that fades behind the cursor.">
   <LaserMode />
 </Figure>
 
 ## Setting up your pen
 
-While the mode is active a **Laser** panel sits under the palette, with four settings over a live preview of the stroke:
+While the mode is active a **Laser** panel sits at the top right, with four settings over a live preview of the stroke:
 
-- **Width** — Fine, Medium, or Bold.
-- **Colour** — your own participant colour (the default) or one of eight presets, for when your colour doesn't read against the canvas you are presenting.
-- **Trail** — how long the line lingers: Quick, Normal, or Long. Long turns the pointer into something you can draw a shape with.
-- **Effect** — **Beam** (a clean line), **Glow** (a soft halo that survives a projector), **Comet** (tapers away behind the tip), or **Spark** (a dotted trail).
+- **Width**: **Fine**, **Medium** or **Bold**.
+- **Colour**: **Your colour** (your participant colour, the default), one of the ten standard colours (each adjusted to read on a light or a dark canvas), or **+** for a colour of your own, for when your colour doesn't read against the canvas you are presenting.
+- **Trail**: how long the line lingers: **Quick**, **Normal** or **Long**. Long turns the pointer into something you can draw a shape with.
+- **Effect**: **Beam** (a clean line), **Glow** (a soft halo that survives a projector), **Comet** (tapers away behind the tip), or **Spark** (a dotted trail).
+
+<Figure caption="The Laser panel set to a Glow effect, with the same beam on the canvas beside it.">
+  <LaserPanelScene />
+</Figure>
 
 Everyone in the room sees your pen, not their own default, and the settings are remembered on this device for next time.
 
@@ -45,13 +55,17 @@ The laser is not only an editor tool. While you are running a [slide deck](/help
 
 While the laser is armed, clicking draws rather than advancing the slide. The keys and the buttons in the presenter's controls still move the deck. Leaving the presentation gives your tool back the way you found it.
 
-## When it is unavailable
+## Who can use it
 
-The Laser Pointer is disabled on an empty canvas. Add an element and the mode becomes available again.
+- **View-only visitors** can use the laser too, with `K`, since it changes nothing.
+- **On an empty canvas** it is greyed out in the picker. Add an element and it becomes available again.
+- **In [Draw mode](/help/canvas/draw-mode/)** the palette shows Draw's own tools and `K` is not a shortcut there.
+- During a vote with [**Hide cursors**](/help/collaboration/session-tools/voting/vote-privacy/) on, other people's laser trails are hidden along with their cursors.
 
 <Tip>
   The Laser Pointer pairs well with live collaboration, letting everyone watching see exactly what
-  you are pointing at.
+  you are pointing at. To pull people's view along with yours as well, see [Follow
+  Along](/help/canvas/follow-along/).
 </Tip>
 
 </ArticleLayout>

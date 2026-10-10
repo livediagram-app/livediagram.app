@@ -1,0 +1,37 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { SheetFunctionList } from '@/components/SheetFunctionList';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Sheet Functions',
+  description:
+    'Every function a livediagram Sheet formula can use: maths, statistics, logic, lookup, text, dates, arrays, finance and Plan card functions, each with its arguments and an example.',
+  path: '/help/canvas/plan-mode/sheet-functions/',
+});
+
+<ArticleLayout
+  title="Sheet Functions"
+  description="Every function you can use in a Sheet formula, with what it takes and an example."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+A [Sheet](/help/canvas/plan-mode/sheets/) formula starts with `=` and can use any of the functions below. They work as they do in Google Sheets and Excel: the same names, the same arguments, the same results. Arguments in `[brackets]` are optional, and `…` means you can give as many as you like.
+
+Typing a function's name in a cell lists the matching functions; inside its brackets a hint shows its arguments, with the one you are on in bold.
+
+## How Formulas Read
+
+- A range is two corners with a colon: `A1:B10`. A whole column is `A:A`, a whole row `3:3`.
+- `$` keeps a reference fixed when it is copied or filled: `$A$1` never moves, `A$1` keeps its row, `$A1` its column. **F4** cycles them while you write.
+- Another sheet on the tab is named before an `!`, in quotes when its name has spaces: `='Q3 Budget'!B4`.
+- A function that returns several values (`SORT`, `FILTER`, `UNIQUE`, `SEQUENCE`) spills into the cells below and to the right. If something is in the way, it shows `#SPILL!`.
+- Errors tell you what went wrong: `#DIV/0!` divides by zero, `#N/A` found nothing, `#NAME?` is a function name it doesn't know, `#REF!` points at a cell that was deleted, `#VALUE!` got the wrong kind of value. Hover the cell to see why.
+
+## Plan Card Functions
+
+The **Plan cards** functions read the document's cards, so a sheet can count and add up the work on your boards and stay current as cards move. `=CARDCOUNT("State", "Done")` counts the cards in Done; `=CARDSUM("Estimate", "State", "In Progress")` adds up the estimates of the cards in progress. Fields and values are named as your boards show them.
+
+<SheetFunctionList />
+
+</ArticleLayout>

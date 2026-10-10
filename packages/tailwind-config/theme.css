@@ -55,9 +55,12 @@
   --animate-empty-float: empty-float 3.6s ease-in-out infinite;
   --animate-empty-ring: empty-ring 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
 
-  /* The shared Dialog shell's entrances (@livediagram/ui, used by the editor and the Community): a centred
-   * panel lifts 16px into place; a phone sheet rises its full height from the bottom edge, so it reads as
-   * arriving from off-screen. Dialogs are the long motion token (motion.md). */
+  /* The shared Dialog shell's entrances (@livediagram/ui, used by the editor and the Community): the dim
+   * behind fades in (fade-in, micro) while a centred panel settles into place, fading up from 97% scale and
+   * 6px low (dialog-in); a phone sheet rises its full height from the bottom edge, so it reads as arriving
+   * from off-screen. Dialogs are the long motion token (motion.md). fly-up-in is the bolder 16px lift the
+   * banners, search and template picker keep. */
+  --animate-dialog-in: dialog-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -70,6 +73,17 @@
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+/* No opacity `to`, like fade-in: the panel lands on its own resting opacity. */
+@keyframes dialog-in {
+  from {
+    transform: translateY(6px) scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -356,6 +370,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* A dialog only fades in: no rise, no scale. */
+  .animate-dialog-in {
+    animation-name: fade-in;
+  }
+
   .animate-empty-float,
   .animate-empty-ring {
     animation: none;
@@ -449,6 +468,33 @@
   button:not(:disabled),
   [role='button']:not([aria-disabled='true']) {
     cursor: pointer;
+  }
+}
+
+/*
+ * Date and time fields keep to their box, in every app (docs/specs/004-interface-design/date-fields.md).
+ * iOS and iPadOS Safari draw a native date input as a centred pill with an intrinsic minimum width
+ * wider than a phone's field column, so `w-full` lost to it and the field ran off the panel. Dropping
+ * the minimum lets it shrink like any input; on touch WebKit alone, dropping the native appearance lets
+ * the field's own border and padding draw it, with the value left-aligned and an empty field kept at
+ * one line's height (WebKit collapses an empty value to nothing). Desktop browsers keep their picker
+ * icon. In the base layer, so a field's own utilities still win.
+ */
+@layer base {
+  input:where([type='date'], [type='datetime-local'], [type='time'], [type='month']) {
+    min-width: 0;
+    max-width: 100%;
+  }
+  @supports (-webkit-touch-callout: none) {
+    input:where([type='date'], [type='datetime-local'], [type='time'], [type='month']) {
+      -webkit-appearance: none;
+      appearance: none;
+      display: block;
+    }
+    input::-webkit-date-and-time-value {
+      text-align: left;
+      min-height: 1.5em;
+    }
   }
 }
 

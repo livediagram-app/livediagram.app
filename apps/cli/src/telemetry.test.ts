@@ -46,6 +46,16 @@ describe('the usage count', () => {
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
   });
 
+  it('never fails a command whose cache cannot be written (CLI41)', async () => {
+    const { events, route } = host();
+    const io = fakeIo({ env: on(), routes: [capabilities, route] });
+    io.files.write = async () => {
+      throw new Error('EROFS');
+    };
+    expect(await run(['document', 'ls'], io)).toBe(0);
+    expect(events).toEqual([{ category: 'Cli', action: 'Used', type: 'DocumentLs' }]);
+  });
+
   it('counts nothing for help, a usage error, a refusal or a command with no host', async () => {
     const { events, route } = host((url) =>
       url.pathname === '/api/documents/x'
@@ -145,5 +155,33 @@ describe('withTelemetry', () => {
       'telemetry = false\n[profiles.x]\ntelemetry = true\n',
     );
     expect(withTelemetry('', true)).toBe('telemetry = true\n');
+  });
+});
+
+describe('the usage count of the repository link', () => {
+  it('counts link init, link status, link ls and sync, and sync --watch as SyncWatch', async () => {
+    const { linkHost, hostDoc } = await import('./testing/link-host');
+    const { events, route } = host();
+    const library = linkHost(
+      [hostDoc('d-home', 'Home', { folderId: 'f1' })],
+      [{ id: 'f1', name: 'Games', parentId: null, teamId: null }],
+    );
+    const io = fakeIo({ env: on(), routes: [route, library.route] });
+    expect(await run(['link', 'init', '--folder', 'f1'], io)).toBe(0);
+    expect(await run(['link', 'status'], io)).toBe(0);
+    expect(await run(['link', 'ls'], io)).toBe(0);
+    expect(await run(['sync'], io)).toBe(0);
+    const watching = run(['sync', '--watch'], io);
+    for (let i = 0; i < 100 && io.sockets.length === 0; i++)
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    io.interrupt();
+    expect(await watching).toBe(0);
+    expect(events.map((e) => (e as { type: string }).type)).toEqual([
+      'LinkInit',
+      'LinkStatus',
+      'LinkLs',
+      'Sync',
+      'SyncWatch',
+    ]);
   });
 });

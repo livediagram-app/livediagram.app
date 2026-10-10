@@ -6,7 +6,7 @@
 // these tables directly.
 
 import type { Selection } from '@/lib/selection-store';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { WhiteboardShapeId } from '@/lib/whiteboard-tool';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
@@ -22,6 +22,10 @@ export type EditorKeyboardShortcutsDeps = {
   // Called once per key the editor acted on: the power user mode offer counts
   // them (docs/specs/007-editor/power-user-mode.md).
   onShortcutUsed?: () => void;
+  // A Plan board or view covers the canvas (maximised, or filling its tab: docs/specs/026-plan/plan-board.md): the
+  // canvas's own shortcuts stand down (no nudge, delete, select-all, paste, duplicate or tool key), as its pointer
+  // input does. Read when a key is pressed.
+  canvasCovered?: () => boolean;
   // Modal-interaction state. Escape clears whichever is active.
   formatSourceId: string | null;
   setFormatSourceId: (v: string | null) => void;
@@ -242,6 +246,13 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
 // editor-page listens for paste directly so it can route images from the
 // system clipboard to image-upload, falling back to the in-app element
 // clipboard when no system content is present.
+// Whether text outside any input is highlighted on the page (inputs handle their own copy before this).
+function hasPageTextSelection(): boolean {
+  if (typeof window === 'undefined') return false;
+  const sel = window.getSelection();
+  return !!sel && !sel.isCollapsed && sel.toString().trim() !== '';
+}
+
 export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDeps): boolean {
   const key = e.key;
   const lower = key.toLowerCase();
@@ -288,6 +299,9 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
     return true;
   }
   if (lower === 'c') {
+    // Text selected on the page (a comment, a share link, a panel) is the browser's to copy: the
+    // canvas copy would copy nothing, or the selected elements instead of what was highlighted.
+    if (hasPageTextSelection()) return false;
     e.preventDefault();
     live.copySelection();
     return true;
@@ -378,3 +392,35 @@ export const WHITEBOARD_TOOL_KEYS = {
   arrow: 'A',
   shapes: 'S',
 } as const;
+
+// What a key does while a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it
+// moves"): `run` leaves the canvas alone (undo, redo, search, zen, the mode switch, Escape) and is handled as usual;
+// `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
+// is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
+// board's text included), never reaching the canvas.
+export type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
+export function coveredKeyRole(
+  e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
+): CoveredKeyRole {
+  const lower = e.key.toLowerCase();
+  if (e.metaKey || e.ctrlKey) {
+    if (lower === 'z' || lower === 'y' || lower === 'k' || e.key === '.') return 'run';
+    if (
+      lower === 'd' ||
+      lower === 'a' ||
+      (lower === 'l' && e.shiftKey) ||
+      e.key === '=' ||
+      e.key === '+' ||
+      e.key === '-' ||
+      e.key === '0' ||
+      (e.shiftKey &&
+        (e.code === 'BracketRight' || e.code === 'BracketLeft' || '[]{}'.includes(e.key)))
+    )
+      return 'swallow';
+    return 'ignore';
+  }
+  if (e.key === 'Escape') return 'run';
+  if (lower === 'z' && !e.shiftKey && !e.altKey) return 'run';
+  if (lower === 'd' && e.shiftKey && !e.altKey) return 'run';
+  return 'ignore';
+}

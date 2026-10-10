@@ -1,6 +1,7 @@
 // The board tree (docs/specs/020-import-export/whiteboard-import.md "The format"): nodes with a
 // type, an optional payload and id, and named traits of ordered children.
 import { base64ToBytes } from './values';
+import { isRecord } from '@livediagram/document';
 
 export type WbNode = {
   id?: string;
@@ -15,9 +16,6 @@ export type WbNode = {
 export type TreeIndex = { nodes: Map<string, WbNode>; seq: number };
 
 export const createIndex = (): TreeIndex => ({ nodes: new Map(), seq: 0 });
-
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** A node from its JSON shape, indexed; null when the shape is not a node. */
 export function buildNode(raw: unknown, index: TreeIndex): WbNode | null {

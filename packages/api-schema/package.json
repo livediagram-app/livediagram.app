@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "@livediagram/document": "workspace:*",
-    "@livediagram/items": "workspace:*"
+    "@livediagram/items": "workspace:*",
+    "@livediagram/sheets": "workspace:*"
   },
   "devDependencies": {
     "@livediagram/eslint-config": "workspace:*",

@@ -16,7 +16,7 @@ export function shouldSweepPlanTabs(planNeeded: boolean, tabCount: number): bool
 export function usePlanTabSweep(
   planNeeded: boolean,
   tabCount: number,
-  loadAllTabs: () => Promise<void>,
+  loadAllTabs: () => Promise<unknown>,
 ): void {
   const swept = useRef(false);
   const sweep = shouldSweepPlanTabs(planNeeded, tabCount);

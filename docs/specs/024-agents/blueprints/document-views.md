@@ -38,9 +38,10 @@ Scope, by file:
 | `packages/document-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
 | `packages/document-views/src/edges.ts`                                  | `edgesOf`: outgoing arrows per source, own-line arrows, end rendering                                                       |
 | `packages/document-views/src/header.ts`                                 | `countElements`, `viewHeader`, `headerLine`                                                                                 |
-| `packages/document-views/src/model.ts`                                  | `buildViewModel(tab, context)`, the one model every tab view reads; `headerFactsOf`, `tabRefsFor`                           |
+| `packages/document-views/src/model.ts`                                  | `buildViewModel(tab, context)` (`ViewContext.selected` too), the model every view reads; `headerFactsOf`, `tabRefsFor`      |
 | `packages/document-views/src/{outline,graph,layout,comments}.ts`        | One view each                                                                                                               |
 | `packages/document-views/src/{show,find,diff,overview}.ts`              | One view each                                                                                                               |
+| `packages/document-views/src/show-selected.ts` (new, + test)            | `showSelectedView(model, elements, options)`: `show` for `ref=selected` (VW65 to VW68)                                      |
 | `packages/document-views/src/budget.ts`                                 | `estimateTokens`, `fitLines`, `fitOf`, `ViewFit`, `ViewResult` (the outline's ladder, `fitOutline`, is in `outline.ts`)     |
 | `packages/document-views/src/elision.ts`                                | `buildElision`, `elisionLine`, `elisionCommand`, in the reading door's own syntax                                           |
 | `packages/document-views/src/render-view.ts`                            | `renderView(request, tab, context)`: resolves `ref` and `only`, then dispatches; the api and the CLI call it                |
@@ -49,7 +50,8 @@ Scope, by file:
 | `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
 | `apps/api/package.json`                                                 | Depends on `@livediagram/document-views`                                                                                    |
 | `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
-| `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView`, `answerOverview`, the `Agent·Viewed` event                                               |
+| `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
+| `apps/api/src/room-client.ts`                                           | `readRoomSelections(env, documentId, tabId, personTag, reader)`: the warning names its reader                               |
 | `apps/api/src/routes/document-subresource-routes.ts`                    | The tab GET hands a `view` query to `answerTabView` after its gate and redaction                                            |
 | `apps/api/src/routes/documents.ts`                                      | The document GET hands `view=overview` to `answerOverview` after its gate and redaction                                     |
 | `apps/api/src/db/tabs.ts`                                               | `tabBodiesInOrder(env, documentId, offset, limit)`                                                                          |
@@ -385,7 +387,7 @@ is the full view's estimate and the step it took (a ladder state, or `lines-drop
 | `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
 | `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
 | `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
-| `show`     | `showView` (`ref` required)             | api, CLI offline         | One element in full                                                                     |
+| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
 | `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
 | `lint`     | `@livediagram/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
 | `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
@@ -448,6 +450,19 @@ person id, listed in `PERSON_ID_FIELDS` (`commentThread.comments[].authorId`, th
 `responses[].participantId`, `qaNotes[].voters`). A test walks every element type's fields so a new person-id
 field fails until it is listed; `omitted:` names only the ones the element holds. The edges list both directions with arrow refs, in array order. `code` prints as a
 JSON string.
+
+**`show selected`**: `ref` equal to `SELECTED_REF` (`selected`) is always the selector, never a ref, as the
+reserved words of edit operations are (EO10); an element whose id is `selected` is found with `find` (`VW65`).
+`renderView` reads `context.selected`, the owner's selected ids:
+
+1. `undefined` or `null` (the room was not read, or a pulled file's tab offline, `VW68`): `target_not_found` with
+   the message "the selection could not be read".
+2. Otherwise the ids that name a printed element of the tab, each once, in `tab.elements` order (`VW66`); ids of
+   another tab, a hidden layer or a deleted element are dropped. None left: `target_not_found`, "nothing is selected".
+3. Both refusals carry `input: 'selected'`, `candidates: []`, `stale: false`, as edit operations word them (EO16).
+4. `showSelectedView(model, elements, options)` prints one header, then each element's `show` lines in order, a blank
+   line between two elements; `fitLines` fits them like any line view: whole lines in order, then the elision line
+   (`VW67`). Its JSON is `ShowSelectedView`.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
 cells, entity field names and types, checklist item text, code and comment text, and a printed arrow's label, each
@@ -582,6 +597,8 @@ type CommentsView = {
   }[];
   elision: Elision;
 };
+// `show` with `ref=selected`: each element as ShowView holds it, in tab order (VW67).
+type ShowSelectedView = { header: ViewHeader; selected: Omit<ShowView, 'header'>[] };
 type ShowView = {
   header: ViewHeader;
   ref: string;
@@ -658,6 +675,11 @@ The tab door renders after `gateRead`, `getTab` and `redactCommentAuthorIds`, wi
 `redactDocumentForScope`, reading in-scope tab bodies through `tabBodiesInOrder` in batches of `OVERVIEW_TAB_BATCH`,
 summarising each batch (`headerFactsOf`) and dropping it before the next (`VW47`); a tab-scoped visitor's one tab is
 read alone. A view read records no visitor open and no Home open: those signal a person at the canvas.
+
+For `show` with `ref=selected` only, the tab door reads the owner's selection before it renders, as the changeset
+submit reads it ([Agent changesets](agent-changesets.md)): `readRoomSelections(env, documentId, tabId,
+personTagFor(documentId, owner))` with the tab GET's owner, the `mine` selections' `elementIds` flattened into
+`context.selected`, `null` when the room could not be read. No other view asks the room.
 
 Every answered view sends one anonymous event, `reportServerEvent(env, 'Agent', 'Viewed', <type>)`, off the
 response path through `ctx.waitUntil`, with the type the view in title case (`Overview`, `Outline`, `Graph`,
@@ -744,6 +766,9 @@ the tab and its `rev`.
 | E27 | One bare stroke, or strokes split by a shape  | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
 | E28 | Event-storming note with the `actor` notation | Kind word `es:actor`                                                                             |
 | E29 | CLI cache holds no tab at `--since`           | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
+| E30 | `show selected`, nothing selected on the tab  | 404 `target_not_found`, "nothing is selected"                                                    |
+| E31 | `show selected` when the room cannot be read  | 404 `target_not_found`, "the selection could not be read"                                        |
+| E32 | `show selected` on a pulled file, offline     | As E31: a file has no live selection (`VW68`)                                                    |
 
 ## Security and trust
 
@@ -784,6 +809,8 @@ the tab and its `rev`.
 | `[views] ref refused <not-found or ambiguous> stale=<bool> candidates=<n>` | api, a ref that did not resolve     |
 | `[views] slow <view> ms=<n> elements=<n>`                                  | api, warn                           |
 | `[views] overview doc=<id> tabs=<n> batches=<n> ms=<n>`                    | api, overview                       |
+| `[views] selection doc=<id> tab=<id> read=<bool> count=<n>`                | api, `show selected`                |
+| `[views] selections-unreachable documentId=<id> tabId=<id>`                | api, warn: the room did not answer  |
 | `[mcp] read_document <view or json> image=<bool> budget=<n>`               | mcp, per call                       |
 
 No log line carries a label, note, comment, query text or ref input. Telemetry: `Agent·Viewed·<View>` per answered
@@ -821,6 +848,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R24 `read_document` reads a view; JSON and the PNG only on request   | `apps/mcp/src/read-document.test.ts`, `output-schema.test.ts` (text block layout, no image by default)                          |
 | R25 Unknown kinds print `?`, counted, never dropped                  | `outline.test.ts`, `fixtures-goldens.test.ts` (the edge-case tab)                                                               |
 | R26 One `Agent·Viewed` event per answered view                       | `document-views-route.test.ts`; `packages/api-schema/src/telemetry-schema.test.ts`; `apps/telemetry` catalogue suite            |
+| R27 `show selected`: the owner's selection, tab order, refusals      | `packages/document-views/src/show-selected.test.ts`, `document-views-route.test.ts`, `room-client.test.ts`                      |
 | OpenAPI parity                                                       | `apps/api/src/openapi/*.test.ts`                                                                                                |
 
 Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
@@ -869,6 +897,7 @@ out of Prettier (`.prettierignore`).
 | `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                 | narrower only   |
 | `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                             | 1 to 20         |
 | `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livediagram/api-schema`     | 64 to 1,024     |
+| `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                        | fixed           |
 | `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`); in `@livediagram/api-schema`            | 50 to 1,000     |
 | `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livediagram/api-schema` | 200,000 and up  |
 | `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                              | 1 to 16         |

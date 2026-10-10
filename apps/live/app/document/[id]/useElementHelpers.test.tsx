@@ -2,8 +2,11 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element, StickyElement, Tab } from '@livediagram/document';
+import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@/lib/format-config';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { useElementHelpers } from './useElementHelpers';
+
+vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // A row of three 200x200 notes with 72 gaps.
 const note = (id: string, x: number): StickyElement =>
@@ -111,5 +114,46 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
       insertion: SLOT,
     });
     expect(commitTabs).not.toHaveBeenCalled();
+  });
+});
+
+// The Format tool is the only painter (docs/specs/008-canvas/format-panel.md): its
+// Mode alone decides whether the brush stays loaded after a paint.
+describe('applyFormatFromSource', () => {
+  function paintHarness(mode: FormatMode) {
+    const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW } as Tab;
+    const commit = vi.fn();
+    const setFormatSourceId = vi.fn();
+    const { result } = renderHook(() =>
+      useElementHelpers({
+        readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
+        activeId: 't1',
+        activeTab: tab,
+        editsBlocked: false,
+        formatSourceId: 'a',
+        formatConfig: { ...DEFAULT_FORMAT_CONFIG, mode },
+        getViewportCenter: () => ({ x: 0, y: 0 }),
+        commit,
+        commitTabs: vi.fn(),
+        setSelectedId: vi.fn(),
+        setEditingId: vi.fn(),
+        setFormatSourceId,
+      }),
+    );
+    return { paint: result.current.applyFormatFromSource, commit, setFormatSourceId };
+  }
+
+  it('keeps the brush loaded in Keep painting', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('keep');
+    paint('b');
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+  });
+
+  it('empties the brush after one paint in Paint once', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once');
+    paint('b');
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(setFormatSourceId).toHaveBeenCalledWith(null);
   });
 });

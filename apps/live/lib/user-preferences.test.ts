@@ -11,10 +11,10 @@ vi.mock('./api-client', () => ({
 }));
 
 import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { setWorkbenchConfinement } from './api/workbench-confinement';
 import {
   autoRebindArrowsEnabled,
   fetchUserPreferences,
-  isRecentExcluded,
   RECENT_EXCLUDED_LIMIT,
   toggleRecentExcluded,
   PREFERENCES_CHANGED_EVENT,
@@ -223,6 +223,21 @@ describe('writeUserPreferences (server sync)', () => {
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
+  // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/blueprints/
+  // workbench-embeds.md, I9): the local write and the event stay.
+  it('keeps the write local under a workbench session', () => {
+    const { storage, events } = mockBrowser();
+    setWorkbenchConfinement({ documentId: 'doc-1', ownerId: 'user_1' });
+    try {
+      writeUserPreferences({ showMinimap: false }, 'user_1');
+    } finally {
+      setWorkbenchConfinement(null);
+    }
+    expect(mockedPut).not.toHaveBeenCalled();
+    expect(JSON.parse(storage.getItem(STORAGE_KEY) ?? '{}')).toEqual({ showMinimap: false });
+    expect(events).toEqual([PREFERENCES_CHANGED_EVENT]);
+  });
+
   it('still writes to localStorage when the PUT path runs (cache first, sync second)', () => {
     const { storage } = mockBrowser();
     writeUserPreferences({ showMinimap: false }, 'owner-1');
@@ -302,15 +317,6 @@ describe('writeUserPreferences quota / failure handling', () => {
 
 // Exclude from Recent (docs/specs/013-workspace/hide-from-recent.md).
 describe('recent exclusions', () => {
-  it('treats a missing list as nothing excluded', () => {
-    expect(isRecentExcluded({}, 'd1')).toBe(false);
-    expect(isRecentExcluded({ recentExcludedIds: [] }, 'd1')).toBe(false);
-  });
-
-  it('reports an excluded document', () => {
-    expect(isRecentExcluded({ recentExcludedIds: ['d1', 'd2'] }, 'd2')).toBe(true);
-  });
-
   it('toggles on, then back off', () => {
     const on = toggleRecentExcluded({}, 'd1');
     expect(on).toEqual(['d1']);

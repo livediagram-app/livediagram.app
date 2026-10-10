@@ -22,8 +22,8 @@ import {
   bringElementsToFrontLayer,
   isBoxed,
   sendElementsToBackLayer,
+  type AnimationSetId,
   type AnimationSpeed,
-  type ElementAnimation,
   type IconAnimation,
   type IconSize,
   type Element,
@@ -32,6 +32,11 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import {
+  withSetAnimationRepeat,
+  withSetAnimationSpeed,
+  withoutAnimations,
+} from '@/lib/animation-set-writes';
 import { useArrowStyleSetters } from './useArrowStyleSetters';
 import { useDataShapeSetters } from './useDataShapeSetters';
 import { useShapeStyleSetters } from './useShapeStyleSetters';
@@ -145,6 +150,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    unlinkChartSelected,
     setLineDataSelected,
   } = useDataShapeSetters({
     currentSelectionIds,
@@ -294,17 +300,12 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   const setTableZebraSelected = () => toggleTableFlag('zebra', 'TableZebra');
   const setTableHeaderColumnSelected = () => toggleTableFlag('headerColumn', 'TableHeaderColumn');
 
-  // Animated elements (docs/specs/008-canvas/canvas-and-palette.md). A looping animation on the selected boxed
-  // element(s); `null` clears it. Arrows take a separate `flow` (marching
-  // dashes / travelling dot).
-  const setAnimationSelected = (value: ElementAnimation | null) => {
+  // Clear animation (docs/specs/028-animation/element-animations.md "Shared behaviour"): the body and
+  // the Text animation together. Picking one goes through the per-set setters below.
+  const clearAnimationsSelected = () => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && isBoxed(el) ? { ...el, animation: value ?? undefined } : el,
-      ),
-    );
+    commit((els) => els.map((el) => (ids.has(el.id) ? withoutAnimations(el) : el)));
     track('Element', 'Changed', 'Animation');
   };
   // Per-icon glyph animation (docs/specs/008-canvas/canvas-and-palette.md), gated to icon shapes — its own set
@@ -326,12 +327,11 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // Loop speed (slow / normal / fast), mirroring setAnimationSpeedSelected.
   const setIconAnimationSpeedSelected = (value: AnimationSpeed) =>
     setIconFieldSelected({ iconAnimationSpeed: value });
-  const setAnimationSpeedSelected = (value: AnimationSpeed) => {
+  // Speed and Repeat for one animation set's category: only that set's members change.
+  const setSetAnimationSpeedSelected = (set: AnimationSetId, value: AnimationSpeed) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
-    commit((els) =>
-      els.map((el) => (ids.has(el.id) && isBoxed(el) ? { ...el, animationSpeed: value } : el)),
-    );
+    commit((els) => els.map((el) => (ids.has(el.id) ? withSetAnimationSpeed(el, set, value) : el)));
     track('Element', 'Changed', 'AnimationSpeed');
   };
   const setFlowSpeedSelected = (value: AnimationSpeed) =>
@@ -339,13 +339,11 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
   // Repeat toggles (docs/specs/008-canvas/canvas-and-palette.md): true (the default) loops the animation, false
   // plays it once and holds. Stored as `undefined` when true so the common
   // case adds no field to the element.
-  const setAnimationRepeatSelected = (value: boolean) => {
+  const setSetAnimationRepeatSelected = (set: AnimationSetId, value: boolean) => {
     const ids = currentSelectionIds();
     if (ids.size === 0) return;
     commit((els) =>
-      els.map((el) =>
-        ids.has(el.id) && isBoxed(el) ? { ...el, animationRepeat: value ? undefined : false } : el,
-      ),
+      els.map((el) => (ids.has(el.id) ? withSetAnimationRepeat(el, set, value) : el)),
     );
     track('Element', 'Changed', 'AnimationRepeat');
   };
@@ -431,12 +429,13 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    unlinkChartSelected,
     setLineDataSelected,
     applyShapeColorPresetSelected,
     resetShapeStyleSelected,
     applyArrowPresetSelected,
     resetArrowStyleSelected,
-    setAnimationSelected,
+    clearAnimationsSelected,
     setArrowFlowSelected,
     setIconAnimationSelected,
     setIconAnimationSpeedSelected,
@@ -444,9 +443,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
     setProgressAnimRepeatSelected,
-    setAnimationSpeedSelected,
+    setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
-    setAnimationRepeatSelected,
+    setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     resetColorsSelected,

@@ -85,7 +85,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
   'AI|Toggled|AiSuggestedPromptsOn':
-    "Someone turned on Suggested Prompts, the starter questions the AI Assistant offers before you've typed anything.",
+    "Someone turned on Suggested Prompts, the row of one-click starter prompts under the AI Assistant's mode buttons.",
   'AI|Used|Ask':
     'Someone asked the AI Assistant a question about the active tab and got an answer.',
   'AI|Used|Clean':
@@ -261,6 +261,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Icon': 'Someone placed or repositioned an inline icon on a selected element.',
   'Element|Changed|IconAnimation':
     'Someone gave a selected icon shape a looping animation, or turned it off.',
+  'Element|Changed|TextAnimation':
+    'Someone gave the words of a selected element a text animation, such as typewriter, or turned it off.',
+  'Element|Changed|StickyAnimation':
+    'Someone gave a selected sticky note an animation, such as flutter, or turned it off.',
+  'Element|Changed|DrawingAnimation':
+    'Someone gave a selected drawing or path an animation, such as draw, or turned it off.',
+  'Element|Changed|MediaAnimation':
+    'Someone gave a selected image or video an animation, such as Ken Burns, or turned it off.',
+  'Element|Changed|TableAnimation':
+    'Someone gave a selected table an animation, such as rows cascading in, or turned it off.',
   'Element|Changed|IconSize': "Someone changed a selected Technology icon's tile size.",
   'Element|Changed|Idea-box':
     'Someone added an idea to an Idea Box element, revealed its cards, or cleared it for the next round.',
@@ -350,6 +360,64 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|TextFormat':
     "Someone applied rich-text formatting, such as bold, a colour, a list, a heading, or a link, to part of an element's label.",
   'Element|Changed|TextSize': "Someone changed a selected element's text size.",
+  'Tab|Changed|LogoPageAdded': 'Someone added a logo page to an Illustrate tab.',
+  'Tab|Changed|PageKindLogo': "Someone chose Logo for a new Illustrate tab's first page.",
+  'Element|Changed|ShapesUnited': 'Someone united shapes on a logo page into one.',
+  'Element|Changed|StrokesTidiedUp':
+    'Someone tidied up hand-drawn lines on a logo page, making them straight.',
+  'Element|Changed|ShapesSubtracted':
+    'Someone subtracted shapes from the bottom one on a logo page.',
+  'Element|Changed|ShapesIntersected': 'Someone kept only where shapes overlap on a logo page.',
+  'Element|Changed|ShapesExcluded':
+    'Someone combined shapes on a logo page, leaving out where they overlap.',
+  'Element|Changed|MirrorCopy':
+    "Someone reflected the selection across a logo page's centre line (Mirror Copy).",
+  'Element|Changed|TextTracking':
+    'Someone changed the spacing between letters of a text on a logo page.',
+  'Element|Changed|TextWeight': 'Someone set the weight of a text on a logo page.',
+  'Element|Changed|TextCase':
+    'Someone set a text on a logo page in capitals, lower case or as typed.',
+  'Element|Changed|TextArc': 'Someone bent a text on a logo page along an arc.',
+  'Element|Created|MirrorTwin':
+    'Someone drew on a logo page with Mirror on, so it got a reflected twin.',
+  'UI|Toggled|LogoGuidesOn': "Someone showed a logo page's construction guides.",
+  'UI|Toggled|LogoGuidesOff': "Someone hid a logo page's construction guides.",
+  'UI|Toggled|LogoMirrorOn': 'Someone turned on Mirror While Drawing on a logo page.',
+  'UI|Toggled|LogoMirrorOff': 'Someone turned off Mirror While Drawing on a logo page.',
+  'UI|Changed|LogoMirrorAxisVertical':
+    'Someone set a logo page to mirror across its vertical centre line.',
+  'UI|Changed|LogoMirrorAxisHorizontal':
+    'Someone set a logo page to mirror across its horizontal centre line.',
+  'UI|Changed|LogoMirrorAxisBoth':
+    'Someone set a logo page to mirror across both centre lines (four ways).',
+  'UI|Changed|LogoMirrorAxisRadial':
+    'Someone set a logo page to mirror radially, turning each drawing round the centre.',
+  'UI|Changed|LogoMirrorMergeOn':
+    "Someone turned on Merge Into One for a logo page's mirror, joining each drawing and its copies.",
+  'UI|Changed|LogoMirrorMergeOff':
+    "Someone turned off Merge Into One for a logo page's mirror, keeping each copy its own element.",
+  'UI|Changed|LogoMirrorCopies3': "Someone set a logo page's radial mirror to 3 copies.",
+  'UI|Changed|LogoMirrorCopies4': "Someone set a logo page's radial mirror to 4 copies.",
+  'UI|Changed|LogoMirrorCopies5': "Someone set a logo page's radial mirror to 5 copies.",
+  'UI|Changed|LogoMirrorCopies6': "Someone set a logo page's radial mirror to 6 copies.",
+  'UI|Changed|LogoMirrorCopies8': "Someone set a logo page's radial mirror to 8 copies.",
+  'Document|Exported|LogoKit':
+    'Someone downloaded a logo kit: an SVG, PNGs and a favicon of a logo page.',
+  'UI|Toggled|LogoGuideCentreLinesOn': "Someone showed the logo guides' centre lines.",
+  'UI|Toggled|LogoGuideCentreLinesOff': "Someone hid the logo guides' centre lines.",
+  'UI|Toggled|LogoGuideDiagonalsOn': "Someone showed the logo guides' diagonals.",
+  'UI|Toggled|LogoGuideDiagonalsOff': "Someone hid the logo guides' diagonals.",
+  'UI|Toggled|LogoGuideSafeAreaOn': "Someone showed the logo guides' safe area.",
+  'UI|Toggled|LogoGuideSafeAreaOff': "Someone hid the logo guides' safe area.",
+  'UI|Toggled|LogoGuideCirclesOn': "Someone showed the logo guides' circles.",
+  'UI|Toggled|LogoGuideCirclesOff': "Someone hid the logo guides' circles.",
+  'UI|Toggled|LogoGuideSquareOn': "Someone showed the logo guides' square.",
+  'UI|Toggled|LogoGuideSquareOff': "Someone hid the logo guides' square.",
+  'UI|Toggled|LogoGuideGridOn': "Someone showed the logo guides' grid.",
+  'UI|Toggled|LogoGuideGridOff': "Someone hid the logo guides' grid.",
+  'UI|Changed|LogoGuideStrengthFaint': 'Someone set logo guides to Faint.',
+  'UI|Changed|LogoGuideStrengthMedium': 'Someone set logo guides to Medium.',
+  'UI|Changed|LogoGuideStrengthStrong': 'Someone set logo guides to Strong.',
   'Element|Changed|TimelineRail': "Someone changed a Timeline Rail element's number of points.",
   'Element|Copied|': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted|': 'An element was removed from the canvas.',
@@ -417,6 +485,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A part of the editor or help centre crashed with an error nothing in the code caught. No longer recorded in this bare form; a crash like this now also records which page it happened on and what kind of error it was.',
   'Error|Client|UnhandledRejection':
     'A background task failed and nothing in the code handled the failure. No longer recorded in this bare form; a failure like this now also records which page it happened on and what kind of error it was.',
+  'Error|Warning|DocumentLoad.Slow':
+    'A document took more than 10 seconds to load, so the opening screen offered Refresh.',
+  'Error|Warning|DocumentLoad.AutoReload':
+    'A document load hit its 30-second limit and the page reloaded itself once to try a fresh start.',
+  'Error|Warning|DocumentLoad.Late':
+    'A document finished loading after its 30-second limit had already shown the error screen; the editor replaced it.',
+  'Error|Warning|OfflineStore.Unavailable':
+    "The browser's local database did not open in time, so the load carried on without checking for Offline Mode documents.",
+  'Error|Warning|SessionToken.TimedOut':
+    "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
   'Error|Warning|AiQuota.BrowserReader':
     "Someone imported sticky notes from a photo of a wall, and livediagram's free hosted quota for reading the handwriting had run out, so it fell back to the slower job of reading it in the visitor's own browser.",
   'Facilitator|Changed|Granted':
@@ -461,7 +539,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
   'Layer|Deleted|': 'A layer (and everything on it) was deleted.',
   'Layer|Moved|': 'A selection was moved onto another layer.',
-  'Layer|Opened|Panel': 'Someone expanded the Layers panel.',
+  'Layer|Opened|Panel': 'Someone opened the Layers panel.',
   'Layer|Removed|MergedDown': 'A layer was merged into the one below it.',
   'Layer|Removed|MergedUp': 'A layer was merged into the one above it.',
   'Layer|Renamed|Adopted': "A layer auto-named itself from an element's label (smart naming).",
@@ -544,6 +622,35 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A returning guest (not signed in) reopened the app on a later day, counted once per day.',
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
+  'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
+  'Sheet|Opened|Settings':
+    "Someone opened a Sheet's settings cog (title, data, view, cell sizes, freeze and totals).",
+  'Sheet|Created|Blank': 'Someone set up a new Sheet from Setup Sheet as a blank grid.',
+  'Sheet|Created|Budget': 'Someone set up a new Sheet from the Budget layout.',
+  'Sheet|Created|Tracker': 'Someone set up a new Sheet from the Tracker layout.',
+  'Sheet|Created|Timesheet': 'Someone set up a new Sheet from the Timesheet layout.',
+  'Sheet|Created|Contacts': 'Someone set up a new Sheet from the Contacts layout.',
+  'Sheet|Created|Cards': 'Someone set up a new Sheet with their Plan cards as rows.',
+  'Sheet|Created|Csv':
+    'Someone chose Import CSV in Setup Sheet (Imported · Csv counts the file actually read; the picker can be cancelled).',
+  'Sheet|Created|Chart':
+    "Someone made a chart from a Sheet's cells (a bar, line or pie chart, live from the range).",
+  'Sheet|Imported|Csv':
+    'Someone filled a Sheet from a CSV file: Import CSV, or a CSV file dropped on the canvas in Plan mode.',
+  'Sheet|Exported|Csv': "Someone downloaded a Sheet's cells as a CSV file.",
+  'Sheet|Deleted|Confirmed':
+    'Someone deleted a Sheet whose cells nothing else used, and confirmed deleting the cells with it.',
+  'Sheet|Deleted|Cancelled':
+    'Someone started deleting a Sheet whose cells nothing else used, then cancelled, keeping both.',
+  'Plan|Toggled|SheetFillTabOn':
+    'Someone set a Sheet to fill its tab for everyone, deleting the rest of that canvas (undo brings it back).',
+  'Plan|Toggled|SheetFillTabOff': 'Someone put a Sheet that filled its tab back on the canvas.',
+  'Plan|Toggled|SheetMaximised': 'Someone maximised a Sheet to fill the canvas.',
+  'Plan|Toggled|BoardFocused':
+    "Someone pressed a board's Focus, gliding the view to fit it (or out to the whole tab when already fitted).",
+  'Plan|Toggled|SheetFocused':
+    "Someone pressed a Sheet's Focus, gliding the view to fit it (or out to the whole tab when already fitted).",
+  'Plan|Toggled|SheetRestored': 'Someone put a maximised Sheet back in its place on the canvas.',
   'Search|Opened|': 'The global search panel was opened.',
   'Search|Searched|':
     'A query was typed into search. Counted once per session, not on every keystroke.',
@@ -552,6 +659,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone permanently deleted their account and its data, after typing their email address to confirm.',
   'Session|Opened|Embed':
     'A read-only embedded copy of a document was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
+  'Session|Opened|Workbench': 'A document opened inside a developer tool’s frame, signed in.',
   'Session|SignedIn|': 'A visitor just signed in to their account.',
   'Session|SignedOut|': 'A visitor just signed out.',
   'Session|SignedUp|': 'A visitor just created an account.',
@@ -561,14 +669,16 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Changed|OpensInDiagram':
-    'Someone set a tab to open in Diagram mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInDraw':
-    'Someone set a tab to open in Draw mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Draw mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|PageAdded': 'Someone added an infographic page to an Illustrate tab.',
   'Tab|Changed|ArticleAdded': 'Someone added a new article to an Illustrate tab.',
+  'Tab|Changed|SlidePageAdded': 'Someone added a slide page to an Illustrate tab.',
   'Tab|Changed|PageKindInfographic':
     "Someone chose Infographic for a new Illustrate tab's first page.",
   'Tab|Changed|PageKindArticle': "Someone chose Article for a new Illustrate tab's first page.",
+  'Tab|Changed|PageKindSlide': "Someone chose Slide for a new Illustrate tab's first page.",
   'Tab|Changed|ArticlesToPages':
     "Someone left Illustrate mode and turned a tab's articles into Page elements.",
   'Tab|Changed|ArticleLookClean': 'Someone gave an article the Clean look.',
@@ -620,16 +730,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
   'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
+  'Tab|Changed|PageLocked':
+    'Someone locked an Illustrate page, so it and what is on it stay as they are.',
+  'Tab|Changed|PageUnlocked': 'Someone unlocked an Illustrate page.',
   'Tab|Changed|PageRenamed': 'Someone renamed an Illustrate page.',
   'Tab|Changed|PageDuplicated': 'Someone duplicated an Illustrate page with its content.',
   'Tab|Changed|PageMoved': 'Someone moved an Illustrate page left or right in its row.',
   'Tab|Changed|PagesLaidOut':
-    "A tab's content was laid out into Illustrate pages as it entered Illustrate mode.",
+    'Someone split a Fit to Content Illustrate page into one page per group of its content.',
+  'Tab|Changed|PageFitToContent':
+    "A tab's board was put onto an Illustrate page made around it, nothing moved, as it entered Illustrate mode.",
   'Tab|Changed|PageLayout': 'Someone put a ready-made layout onto an Illustrate page.',
   'Tab|Changed|OpensInIllustrate':
-    'Someone set a tab to open in Illustrate mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
-    'Someone set a tab to open in Plan mode for everyone, from the tab menu.',
+    "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -669,6 +784,14 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone took a tab out of its tab folder, making it a loose tab again, whether by dragging it out or from the tab's menu.",
   'Tab|Renamed|': 'A tab was renamed.',
   'Tab|Reordered|': 'Someone dragged a tab to a new position.',
+  'Tab|Opened|SideBySideDrag':
+    'Someone dragged a tab to the right edge of the screen to open it beside the tab they were editing.',
+  'Tab|Opened|SideBySideMenu': "Someone opened a tab side by side from the tab's menu.",
+  'Tab|Selected|SideBySideClick':
+    'Someone clicked into the other side by side pane, moving the editor (its toolbars and panels) there.',
+  'Tab|Selected|SideBySideHover':
+    'Someone rested the pointer on the other side by side pane, and the editor followed it there.',
+  'Tab|Closed|SideBySide': 'Someone closed the side by side pane, going back to one tab.',
   'Tab|Revealed|Vote': "Someone revealed a dot vote's results to everyone in the room.",
   'Tab|Started|CountdownTimer': 'Someone started a countdown timer on a tab.',
   'Tab|Started|Poll': 'Someone started a live poll on a tab.',
@@ -743,6 +866,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
     'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
+  'Token|Linked|Workbench': 'A token’s owner allowed a developer tool to open their documents.',
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite':
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
@@ -789,13 +913,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|PanelLayout':
     "Someone changed the editor's panel layout, in Settings > Editor. An earlier version of this event, before it recorded which layout was chosen. No longer recorded.",
   'UI|Changed|PanelLayoutFloating':
-    "Someone switched the editor's panel layout to Floating, in Settings > Editor.",
+    "Someone switched the editor's panel layout to Floating, in Settings > Editor. No longer recorded: Toolbar became the only layout.",
   'UI|Changed|PanelLayoutMinimal':
     "Someone switched the editor's panel layout to Minimal, in Settings > Editor. No longer recorded: the Minimal layout was removed.",
   'UI|Changed|PanelLayoutToolbar':
-    "Someone switched the editor's panel layout to Toolbar, in Settings > Editor.",
+    "Someone switched the editor's panel layout to Toolbar, in Settings > Editor. No longer recorded: Toolbar became the only layout.",
   'UI|Changed|PanelOpacity':
-    'Someone adjusted how see-through the floating panels are, on the Panel Opacity slider in Settings > Editor.',
+    'Someone adjusted how see-through the panels are, on the Panel Opacity slider in Settings > Editor.',
   'UI|Changed|UiScale':
     'Someone made the panels, the toolbar and the bottom-right buttons bigger or smaller together, on the UI Scale slider in Settings > Appearance.',
   'UI|Changed|UiScalePanels':
@@ -824,6 +948,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone put their whiteboard dock at the top of the canvas, in Settings > Editor.',
   'UI|Closed|EmptyPageLayouts':
     'Someone hid the Start From a Layout card on an empty infographic page.',
+  'UI|Closed|EmptyPageLayoutsBlank':
+    'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
   'UI|Closed|NewDocument':
     'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
@@ -835,6 +961,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
+  'UI|Cleared|BrowserRepair':
+    "Someone used Repair This Browser on a failed document load: livediagram's settings and caches in that browser were cleared and the page reloaded.",
+  'UI|Cleared|BrowserRepair.Help':
+    "Someone used Repair This Browser from the help centre's Repair page, clearing livediagram's settings and caches in that browser.",
+  'UI|Copied|Diagnostics':
+    'Someone copied the diagnostics report from a failed document load, to send to support.',
+  'UI|Copied|Diagnostics.Help':
+    "Someone copied the browser diagnostics report from the help centre's Repair page.",
   'UI|Copied|EmbedCode':
     "Someone copied an embed URL or an iframe snippet from the Share dialog's Embed menu.",
   'UI|Copied|LiveImage':
@@ -847,12 +981,16 @@ export const EXACT: Readonly<Record<string, string>> = {
     'This exact combination is never actually sent: declining the welcome tour on its very first card is recorded as the tour offer closing, not as an ended tour.',
   'UI|Ended|TourSkipped':
     'Someone skipped out of the welcome tour after it had already started (not on the very first card).',
+  'UI|Ended|CardTypeTourCompleted':
+    "Someone reached the end of the card type editor's Show Me tour.",
+  'UI|Ended|CardTypeTourSkipped':
+    "Someone left the card type editor's Show Me tour before its end.",
   'UI|Ended|PlanTourCompleted':
     "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PlanTourSkipped':
     'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights.',
   'UI|Moved|PanelDock':
-    'Someone dragged a floating panel, such as the Palette or the Explorer, to a different corner of the screen, or let it go free.',
+    'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
   'UI|Moved|Slide':
     'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':
@@ -966,6 +1104,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
   'UI|Started|Tour':
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
+  'UI|Started|CardTypeTour':
+    'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|PlanTour':
     "Someone clicked past the Plan tour's first card, beginning its walkthrough on an example board.",
   'UI|Toggled|ActivityRevertPreviewOff':
@@ -1145,7 +1285,10 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Timing|Measured':
+    'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
+  'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
   'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
   'Draw|Selected':
     'Someone picked up one of the pens or the Path tool on a whiteboard, or a shape from its search.',
@@ -1182,6 +1325,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
   'Document|Created': 'A brand-new document was created.',
   'Document|Deleted': 'A document was deleted.',
+  'Document|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
   'Document|Duplicated': 'A document was duplicated into a new one.',
   'Document|Joined':
     'Someone came into a document through a share link. Counted once per person per document, not on every revisit.',
@@ -1321,6 +1465,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Removed': 'Someone took a tab out of its tab folder, making it a loose tab again.',
   'Tab|Renamed': 'A tab was renamed.',
   'Tab|Reordered': 'Someone dragged a tab to a new position.',
+  'Tab|Opened': 'Someone opened a tab beside the one they were editing (side by side).',
+  'Tab|Selected':
+    'Someone moved the editor to the other side by side pane, by a click or by resting the pointer there.',
+  'Tab|Closed': 'Someone closed the side by side pane.',
   'Tab|Revealed':
     "Someone revealed a tab's hidden results to everyone in the room, such as a dot vote's.",
   'Tab|Started': 'Someone started a live activity on a tab, such as a poll or a timer.',
@@ -1375,14 +1523,27 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Moved':
     'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
+  'Plan|Removed': 'Someone took a filter off a Card Search view.',
   'Plan|Toggled':
-    'Someone flagged a card for attention, or took its flag off (the value says which).',
+    'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',
+  'Sheet|Changed':
+    'Someone changed a Sheet (a spreadsheet tab on a Plan tab): the value says what kind of change (a cell, a formula, formatting, rows, a sort, a paste, ...), never what was typed.',
+  'Sheet|Opened': 'Someone opened a panel on a Sheet (the value says which: Find or Settings).',
+  'Sheet|Created':
+    'Someone set up a new Sheet (the value says how it started) or made a chart from its cells (Chart).',
+  'Sheet|Imported': 'Someone filled a Sheet from a file (the value says which kind: Csv).',
+  'Sheet|Exported':
+    "Someone downloaded a Sheet's cells as a file (the value says which kind: Csv).",
+  'Sheet|Deleted':
+    'Someone was asked before deleting a Sheet with its cells (the value says Confirmed or Cancelled).',
+  'Sheet|Used':
+    'Someone saved a Sheet formula using a function for the first time in that formula (the value is the function name, from the fixed list).',
+  'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',
   'Plan|Opened':
     'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',
-  'Plan|Voted': 'Someone voted for a card on a voting Plan board (Up), or took a vote back (Down).',
   'Plan|Deleted': 'Someone deleted an item (its type is the value).',
   'Plan|Changed':
-    "Someone changed a Plan board's set-up: the value names the part (columns, WIP limits, rows, scope, card fields, voting or hide writing).",
+    "Someone changed a Plan board's set-up, a card type, a project's colour or a timeline view: the value names the part (columns, WIP limits, rows, scope, card fields, voting, hide writing, or a timeline's dates, scale, rows or types).",
   'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Cleared':
     'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
@@ -1391,10 +1552,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone brought a deleted document back from the Trash, putting it back where it was.',
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
+  'Token|Linked': 'A token’s owner allowed a developer tool to open their documents.',
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
     "Someone changed a setting or a control's value somewhere in the editor: a tool panel's option (Avatar, Eraser, Laser, Spotlight, Format Painter), a Settings dialog row, or a palette/toolbar choice.",
+  'UI|Cleared':
+    "Someone cleared livediagram's saved settings and caches in their browser (Repair This Browser); the value says where from.",
   'UI|Closed':
     'Someone closed or dismissed a banner, card, or presentation somewhere in the editor.',
   'UI|Copied':

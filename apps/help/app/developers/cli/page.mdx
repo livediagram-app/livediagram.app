@@ -1,0 +1,227 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CliDeviceSignIn, CliConsent } from '@/components/illustrations/cli';
+
+export const metadata = helpMetadata({
+  title: 'The livediagram CLI',
+  description:
+    'Install the livediagram command line from npm, sign in through the browser, a device code or an API token, and read, build, edit and export documents from a terminal or a coding agent.',
+  path: '/help/developers/cli/',
+});
+
+<ArticleLayout
+  title="The livediagram CLI"
+  description="Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+`livediagram` is a command line for the livediagram API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+
+It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
+
+## Install
+
+The CLI is the npm package `@livediagram/cli` and needs **Node 22 or later**. Run it without installing:
+
+```bash
+npx @livediagram/cli --help
+```
+
+or install it, which gives you the `livediagram` command:
+
+```bash
+npm install -g @livediagram/cli
+livediagram --version
+```
+
+The examples below use the installed `livediagram`; with `npx`, put `npx @livediagram/cli` in its place.
+
+## Sign In
+
+You need a livediagram account: the CLI acts as you, through an API token, and never as a guest. There are three ways to give it one. Whichever you use, the CLI checks the token with the API before keeping it.
+
+### In the Browser
+
+```bash
+livediagram auth login
+```
+
+The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect livediagram CLI**. Leave **Read-only access** off to let the CLI change documents, or switch it on so it can find and view documents but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
+
+<Figure
+  caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
+  width="narrow"
+>
+  <CliConsent />
+</Figure>
+
+The terminal waits up to ten minutes for you. If the browser cannot reach it (on a remote machine, say), use a device code instead.
+
+### On a Machine Without a Browser
+
+```bash
+livediagram auth login --device
+```
+
+The terminal prints a page address, `https://livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`, plus a link with the code already filled in. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see the same **Connect livediagram CLI** card with its **Read-only access** switch; choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+
+<Figure caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
+  <CliDeviceSignIn />
+</Figure>
+
+A code lasts **ten minutes**. If the page says it couldn't find the code, check it and try again; if it has expired, run the command again for a new one. Choosing **Cancel** on the page stops the terminal waiting. Only enter a code that a terminal you are using is showing you.
+
+### With an API Token
+
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, under **Account**, then **API Tokens**, and either set it for the commands you run:
+
+```bash
+export LIVEDIAGRAM_TOKEN=lvd_your_token_here
+```
+
+or store it for this machine, reading it from stdin:
+
+```bash
+printf %s "$TOKEN" | livediagram auth login --with-token
+```
+
+`LIVEDIAGRAM_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
+
+## Check or Sign Out
+
+```bash
+livediagram auth status    # host, account, token name, role, expiry, and where it came from
+livediagram auth logout    # revoke the stored token and forget it
+```
+
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token with livediagram, so it stops working everywhere at once. It will not revoke a token from `LIVEDIAGRAM_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **API Tokens**.
+
+The browser and device sign-ins create an ordinary API token named **livediagram CLI**. It appears in **API Tokens** beside any others (with a **Read-only** badge if you chose that), lasts six months, and counts towards your ten. Signing in again on the same machine replaces it and revokes the old one.
+
+## Where Your Token Is Kept
+
+A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livediagram/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
+
+## Find and Read Documents
+
+Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
+
+```bash
+livediagram document ls auth                  # documents whose name contains "auth"
+livediagram tab ls "Auth flow"                # the document's tabs
+livediagram tab view "Auth flow"              # the first tab, as an outline
+livediagram tab view "Auth flow" --tab Flow --view graph
+livediagram tab lint "Auth flow"              # what is wrong with how it is drawn
+livediagram tab render "Auth flow" --png auth.png
+```
+
+`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a document, you can give its **name**, the start of its **id**, or a pasted **livediagram link**; a share link acts through that link. A name that matches more than one document is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+
+`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+
+## Change a Diagram
+
+```bash
+livediagram document create "Shop" -f arch.json            # from a graph, Mermaid or elements file
+livediagram document create "Retro" --template start-stop-continue
+livediagram element set "Auth flow" n3 label="Sign in" shape=stadium
+livediagram edit "Auth flow" -f ops.txt                     # many edit operations at once
+livediagram changeset revert "Auth flow" cs_8k2m4q7d1x
+```
+
+Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livediagram guide edit` explains how edit operations read.
+
+`document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days; the CLI has no permanent delete.
+
+## Comments, Items and Waiting
+
+```bash
+livediagram comment ls "Shop"
+livediagram comment add "Shop" api "Should this be idempotent?"
+livediagram item ls "Shop"                       # Plan boards and their items, by number such as #12
+livediagram item add "Shop" "Fix login" --status "In Progress" --type Bug
+livediagram board add "Shop" --columns "Ideas,Doing,Shipped"
+livediagram sheet get "Shop" Costs A1:D20          # a sheet's cells by A1, formulas worked out
+livediagram sheet set "Shop" Costs B2 1200 =B2*12
+livediagram type ls "Shop"                       # card types and their fields
+livediagram wait "Shop" --for comment --timeout 600
+livediagram watch "Shop"                         # stream changes until you stop it
+```
+
+`wait` blocks until someone comments or the document changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
+
+## Files, Exports and Pictures
+
+```bash
+livediagram pull "Shop" --to docs --svg            # docs/shop.livediagram.json, plus an SVG per tab
+livediagram push docs/shop.livediagram.json        # send back each tab whose elements changed
+livediagram export --all --to backup --format json,svg,md
+livediagram graph lint flow.mmd                    # check a graph or Mermaid file before writing it
+livediagram graph render flow.mmd --png flow.png
+```
+
+To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+
+`pull` writes the document in the format the editor imports. `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel, and nothing on livediagram is deleted by a push. `export --all` writes every document you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+
+## Help, Guides and the Agent Skill
+
+```bash
+livediagram --help                 # the resources and four starting commands
+livediagram tab --help             # a resource's verbs
+livediagram tab view --help        # usage, flags and examples
+livediagram guide                  # how-tos: build, edit, views, comments, collaborate, workbench
+livediagram skill install --to ~/.claude/skills
+```
+
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `livediagram api GET /documents` calls any API path with your sign-in, as an escape hatch.
+
+## Output and Exit Codes
+
+The CLI never prompts: it is safe in pipes, scripts and CI. **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
+
+| Exit code | Meaning                                                    |
+| --------- | ---------------------------------------------------------- |
+| `0`       | Done                                                       |
+| `1`       | Refused: the input was understood but not accepted         |
+| `2`       | Usage: the command line does not parse                     |
+| `3`       | Not found, or ambiguous: a document, tab or element        |
+| `4`       | Not signed in, or not allowed (a read-only token's writes) |
+| `5`       | Conflict: the tab changed since you read it; read, retry   |
+| `6`       | Rate limited                                               |
+| `7`       | Network or server failure                                  |
+
+Every error names what was wrong and suggests one command that fixes it. Set `LIVEDIAGRAM_DEBUG=1` to see what the CLI is doing, on stderr.
+
+## Self-Hosted Instances
+
+The CLI talks to `https://livediagram.app` unless you point it elsewhere. For one command, add `--host https://diagrams.example.com`; for a shell, set `LIVEDIAGRAM_HOST`. To keep several, name them as profiles in `~/.config/livediagram/config.toml` and choose one with `--profile` or `LIVEDIAGRAM_PROFILE`:
+
+```toml
+default_profile = "work"
+
+[profiles.work]
+host = "https://diagrams.example.com"
+```
+
+Each profile keeps its own sign-in, and a self-hosted profile never contacts livediagram.app. `LIVEDIAGRAM_TOKEN` goes to whichever host is active, so set `LIVEDIAGRAM_HOST` beside it. A [self-hosted](/help/self-hosting/self-hosting-overview/) instance without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+
+## Errors and Rate Limits
+
+The CLI is subject to the same limits as any API client, per token: on the hosted service, **300 writes** and **120 reads a minute**. Over that, a command exits with `6` and asks you to wait a minute and retry. A read-only token's writes exit with `4`. [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) has the full list and the status codes behind these exit codes.
+
+## Usage Counts
+
+The CLI counts which commands succeed, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first run says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+
+## Keep It Safe
+
+<Note>
+  A full-access token can change and share everything you can. Give an agent a **Read-only access**
+  token when it only needs to read, keep `LIVEDIAGRAM_TOKEN` out of source control and logs, and
+  revoke a token from **API Tokens** (or with `livediagram auth logout`) the moment you no longer
+  need it or think it may have leaked.
+</Note>
+
+</ArticleLayout>

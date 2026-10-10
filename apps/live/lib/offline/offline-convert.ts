@@ -25,6 +25,7 @@ import {
   offlinePutRecord,
   type OfflineDocumentRecord,
 } from './offline-store';
+import { fetchAllSheets, sheetAsCreate } from '../api/sheets';
 
 // Offline → Cloud ("Save to your account"). Creates the cloud copy first, then
 // removes the local one, so a network failure leaves the offline document
@@ -56,6 +57,8 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
         items: storeAsCreates(rec.items ?? []),
         // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").
         itemTypes: rec.itemTypes ?? null,
+        // The sheet store, whole (docs/specs/029-sheets/sheet-store.md "Offline documents").
+        ...(rec.sheets?.length ? { sheets: rec.sheets.map(sheetAsCreate) } : {}),
       },
       { conversion: 'sync' },
     );
@@ -113,6 +116,8 @@ export async function takeCloudOffline(
   // The item store too, all or nothing, for the same reason: the server copy is deleted below
   // (docs/specs/026-plan/items.md "Offline documents"). A failed fetch throws and aborts.
   const itemStore = await fetchItems({ ownerId, documentId, shareCode, tabId: null });
+  // And the sheet store, all or nothing (docs/specs/029-sheets/sheet-store.md "Offline documents").
+  const sheets = await fetchAllSheets({ ownerId, documentId, shareCode, tabId: null });
   // Embed referenced R2 images as data URIs BEFORE the server delete below:
   // once the document row is gone, its images count as unused and the api's
   // 30-day retention reaper would delete the bytes the offline document still
@@ -148,6 +153,7 @@ export async function takeCloudOffline(
     ...(itemStore.items.length
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }
       : {}),
+    ...(sheets.length ? { sheets } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

@@ -10,28 +10,29 @@ import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@/lib/stickers';
 import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import type { CanvasTool, CommandPaletteProps } from './CommandPalette.types';
+import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import { paletteCategoriesFor } from './palette-layouts';
+import { useLogoMarkerTiles } from './PaletteLogoTab';
+import { coveredPaletteCategories, paletteCategoriesFor } from './palette-layouts';
+import { useBoardCovering } from '@/hooks/plan/plan-cover-store';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
 // three searchable catalogues' state, and the canvas-tool picker's options.
-// Lifted out of CommandPalette so the floating Palette and the Toolbar
-// layout's top strip (docs/specs/007-editor/toolbar-layout.md) are two renderings of one palette rather
-// than two palettes that drift.
+// The strip (docs/specs/007-editor/toolbar-layout.md), its More popover and its Search all read
+// from this one catalogue, so they never drift apart.
 //
 // `onTileUsed` is the host's hook into "a tile was used": the strip closes
 // its More popover. Every add-handler calls it, so a tile behaves the same
 // from any category and any surface.
 type Deps = Pick<
-  CommandPaletteProps,
+  PaletteProps,
   | 'canvasTool'
   | 'onSetCanvasTool'
   | 'onExitAvatarMode'
@@ -40,6 +41,7 @@ type Deps = Pick<
   | 'pendingDraw'
   | 'esBoard'
   | 'esBoardControls'
+  | 'logoPages'
   | 'onTileUsed'
 > &
   PaletteAddHandlers;
@@ -73,11 +75,14 @@ export function usePaletteCatalogue({
   onBeginFreehand,
   onBeginHighlighter,
   onBeginMarker,
+  onCancelDraw,
   onBeginShapePen,
   onBeginPolygon,
+  onBeginPath,
   pendingDraw,
   esBoard,
   esBoardControls,
+  logoPages,
   onTileUsed,
 }: Deps) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
@@ -137,9 +142,11 @@ export function usePaletteCatalogue({
     armed(() => onAddArrow(ends))();
   const beginFreehand = armed(onBeginFreehand);
   const beginHighlighter = armed(onBeginHighlighter);
-  const beginMarker = (penId: WhiteboardPenId) => armed(() => onBeginMarker(penId))();
+  const beginMarker = (penId: WhiteboardPenId, once?: boolean) =>
+    armed(() => (once ? onBeginMarker(penId, true) : onBeginMarker(penId)))();
   const beginShapePen = armed(onBeginShapePen);
   const beginPolygon = armed(onBeginPolygon);
+  const beginPath = armed(onBeginPath);
   const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
@@ -171,6 +178,7 @@ export function usePaletteCatalogue({
       beginMarker,
       beginShapePen,
       beginPolygon,
+      beginPath,
       addArrow,
       addSticky,
       addTable,
@@ -182,6 +190,7 @@ export function usePaletteCatalogue({
       addComponent,
       addIcon,
       addTechIcon,
+      cancelDraw: onCancelDraw,
       hasImage: !!onAddImage,
     },
     () => {
@@ -218,16 +227,24 @@ export function usePaletteCatalogue({
   const techResults = searchTechIcons(techQuery, 'all');
 
   // Ordered by BAND (docs/specs/010-palette/palette-top-level-categories.md): Common, then Decorate, then Dynamic
-  // (the headings PaletteTabBar's CATEGORY_BANDS actually renders).
+  // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
   // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
   // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  const categories = paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
-    (c) => hasLibraryShapes || c.id !== 'my-shapes',
-  );
+  // A board covering the canvas (maximised or filling its tab), not a view: cards land only on a board.
+  const boardCovering = useBoardCovering();
+  // Logo only while the tab has a logo page (docs/specs/007-editor/logo-pages.md), its markers
+  // added as tiles in this person's colours and widths (logoMarkerTiles).
+  const markers = useLogoMarkerTiles(!!logoPages);
+  // While a Plan board covers the canvas, only Cards (coveredPaletteCategories); a maximised view keeps the palette.
+  const categories = boardCovering
+    ? coveredPaletteCategories()
+    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
+        .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
+        .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,

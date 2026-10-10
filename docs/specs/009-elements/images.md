@@ -40,7 +40,7 @@ type ImageElement = {
 
 `ImageElement` is treated as a boxed element by `isBoxed()`, so move / resize / lock / link / format-painter all work without per-kind branches. `supportsColours()` returns false: images don't carry fill / stroke / text colour fields.
 
-Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio) so the user doesn't accidentally squash the picture. Holding Shift during a corner drag breaks the lock, matching the existing aspect-lock toggle convention.
+Resizing aspect-locks by default (the image's `naturalWidth:naturalHeight` ratio) so the user doesn't accidentally squash the picture. Shift does not break the lock: it only constrains a resize whose lock is off, matching the existing aspect-lock toggle convention. To stretch an image freely, turn its aspect lock off.
 
 ## Storage
 

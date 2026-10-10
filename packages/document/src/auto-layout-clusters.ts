@@ -82,17 +82,27 @@ export function sweepEdgelessNodes(elements: Element[], exempt?: Set<string>): E
 
 // Keep only real, non-colliding clusters: members must name known nodes, a
 // node belongs to its first cluster, and a cluster whose id collides with a
-// node id is dropped (its frame could not be referenced unambiguously).
+// node id is dropped (its frame could not be referenced unambiguously). A
+// cluster id given twice (two `subgraph S` blocks, which Mermaid accepts) is one
+// cluster holding both blocks' members: two frames under one id would collide.
 function sanitizeClusters(graph: DiagramGraph): GraphCluster[] {
   const nodeIds = new Set(graph.nodes.map((n) => n.id));
   const claimed = new Set<string>();
   const out: GraphCluster[] = [];
+  const byId = new Map<string, GraphCluster>();
   for (const c of graph.clusters ?? []) {
     if (nodeIds.has(c.id)) continue;
     const members = c.members.filter((m) => nodeIds.has(m) && !claimed.has(m));
     if (members.length === 0) continue;
     for (const m of members) claimed.add(m);
-    out.push({ ...c, members });
+    const first = byId.get(c.id);
+    if (first) {
+      first.members = [...first.members, ...members];
+      continue;
+    }
+    const kept = { ...c, members };
+    byId.set(c.id, kept);
+    out.push(kept);
   }
   return out;
 }

@@ -1,19 +1,15 @@
 'use client';
 
-// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts"): the layouts by
+// The page panel's Layouts (docs/specs/007-editor/illustrate-pages.md "Layouts", "Slide layouts"):
+// the page's catalogue (a slide page's slide layouts, else the infographic ones) by
 // category, as /new browses templates: the categories first (each a card fronted by its first
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
 // back. Onto an empty page a press places it at once; onto
 // a page with content the grid asks first, inline, naming how much would go. Hovering a tile
 // previews it on the page (InfographicLayoutPreview); the pending one stays previewed while asked.
 import { useState } from 'react';
-import type { LaidOutPage } from '@livediagram/document';
-import {
-  PAGE_LAYOUT_CATEGORIES,
-  PAGE_LAYOUTS,
-  type PageLayoutCategoryId,
-  type PageLayoutId,
-} from '@livediagram/templates';
+import { pageKindOf, type LaidOutPage } from '@livediagram/document';
+import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
 import { ChevronLeftIcon } from '@livediagram/ui';
 import { CountBadge } from '@livediagram/ui';
 import { Button } from '@livediagram/ui';
@@ -26,11 +22,16 @@ type LayoutBrowserProps = {
   onApply: (layout: PageLayoutId) => void;
   // Shows a layout on the page while its tile is hovered or focused; null takes it away.
   onPreview: (layout: PageLayoutId | null) => void;
+  // Four across (the wide in-page card, so a category's layouts need no scrolling), else two.
+  wide?: boolean;
 };
+
+// A layout tile's art width in the wide card's four columns.
+const WIDE_THUMB_W = 104;
 
 export function LayoutsSection(props: LayoutBrowserProps) {
   return (
-    <PanelSection title="Start from a layout">
+    <PanelSection title="Start From a Layout">
       <LayoutBrowser {...props} />
     </PanelSection>
   );
@@ -38,16 +39,24 @@ export function LayoutsSection(props: LayoutBrowserProps) {
 
 /** The layouts by category, then one category's layouts: the panel's Layouts section, and the
  *  card an empty infographic page shows inside itself (EmptyPageLayouts). */
-export function LayoutBrowser({ page, contentCount, onApply, onPreview }: LayoutBrowserProps) {
+export function LayoutBrowser({
+  page,
+  contentCount,
+  onApply,
+  onPreview,
+  wide = false,
+}: LayoutBrowserProps) {
+  const cols = wide ? 'grid-cols-4' : 'grid-cols-2';
   const [pending, setPending] = useState<PageLayoutId | null>(null);
   // The category open, or null for the overview of categories.
-  const [category, setCategory] = useState<PageLayoutCategoryId | null>(null);
-  const openCategory = PAGE_LAYOUT_CATEGORIES.find((c) => c.id === category);
+  const [category, setCategory] = useState<string | null>(null);
+  const { categories, layouts } = layoutCatalogueFor(pageKindOf(page));
+  const openCategory = categories.find((c) => c.id === category);
   const pick = (id: PageLayoutId) => {
     if (contentCount === 0) onApply(id);
     else setPending(id);
   };
-  const pendingLabel = PAGE_LAYOUTS.find((l) => l.id === pending)?.label;
+  const pendingLabel = layouts.find((l) => l.id === pending)?.label;
   return (
     <>
       {pending ? (
@@ -105,32 +114,38 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
             {openCategory.label}
           </button>
           <div
-            className="grid grid-cols-3 gap-1.5"
+            className={`grid ${cols} gap-2`}
             onPointerLeave={() => onPreview(pending)}
             onBlur={() => onPreview(pending)}
           >
-            {PAGE_LAYOUTS.filter((l) => l.category === openCategory.id).map((l) => (
-              <button
-                key={l.id}
-                type="button"
-                onClick={() => pick(l.id)}
-                onPointerEnter={() => onPreview(l.id)}
-                onFocus={() => onPreview(l.id)}
-                aria-pressed={pending === l.id}
-                className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
-                  pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
-                }`}
-              >
-                <LayoutThumb layout={l.id} page={page} />
-                {l.label}
-              </button>
-            ))}
+            {layouts
+              .filter((l) => l.category === openCategory.id)
+              .map((l) => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => pick(l.id)}
+                  onPointerEnter={() => onPreview(l.id)}
+                  onFocus={() => onPreview(l.id)}
+                  aria-pressed={pending === l.id}
+                  className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
+                    pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
+                  }`}
+                >
+                  <LayoutThumb
+                    layout={l.id}
+                    page={page}
+                    {...(wide ? { width: WIDE_THUMB_W } : {})}
+                  />
+                  {l.label}
+                </button>
+              ))}
           </div>
         </>
       ) : (
-        <div className="grid grid-cols-2 gap-2">
-          {PAGE_LAYOUT_CATEGORIES.map((c) => {
-            const members = PAGE_LAYOUTS.filter((l) => l.category === c.id);
+        <div className={`grid ${cols} gap-2`}>
+          {categories.map((c) => {
+            const members = layouts.filter((l) => l.category === c.id);
             return (
               <button
                 key={c.id}
@@ -142,18 +157,18 @@ export function LayoutBrowser({ page, contentCount, onApply, onPreview }: Layout
                     in a clipped box of fixed height, so they never spill out of the card. */}
                 <span
                   aria-hidden
-                  className="relative flex h-20 w-full items-center justify-center overflow-hidden"
+                  className="relative flex h-28 w-full items-center justify-center overflow-hidden"
                 >
                   {members.slice(0, 2).map((l, i) => (
                     <span
                       key={l.id}
                       className="absolute flex"
                       style={{
-                        transform: `translateX(${i === 0 ? -10 : 10}px) rotate(${i === 0 ? -5 : 5}deg)`,
+                        transform: `translateX(${i === 0 ? -14 : 14}px) rotate(${i === 0 ? -5 : 5}deg)`,
                         zIndex: i === 0 ? 1 : 0,
                       }}
                     >
-                      <LayoutThumb layout={l.id} page={page} width={44} />
+                      <LayoutThumb layout={l.id} page={page} width={64} />
                     </span>
                   ))}
                 </span>

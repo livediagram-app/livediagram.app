@@ -120,7 +120,9 @@ export function useTextStyleSetters({
     const ids = currentSelectionIds();
     commitHugging(ids, (els) =>
       els.map((el) =>
-        ids.has(el.id) && (isBoxed(el) || el.type === 'arrow') ? { ...el, [field]: next } : el,
+        ids.has(el.id) && (isBoxed(el) || el.type === 'arrow')
+          ? withTextStyle(el, field, next)
+          : el,
       ),
     );
     // Telemetry type is the style name (Bold / Italic / Underline /
@@ -134,4 +136,17 @@ export function useTextStyleSetters({
     setLaneUprightTitleSelected,
     toggleTextStyleSelected,
   };
+}
+
+// One inline label style flipped. Bold clears a text's wordmark weight
+// (docs/specs/007-editor/logo-pages.md "Wordmark type"), so the Bold button always shows its result.
+export function withTextStyle<T extends Element>(
+  el: T,
+  field: 'textBold' | 'textItalic' | 'textUnderline' | 'textStrikethrough',
+  next: boolean,
+): T {
+  const out = { ...el, [field]: next };
+  if (field === 'textBold' && out.type === 'text')
+    delete (out as { fontWeight?: number }).fontWeight;
+  return out;
 }

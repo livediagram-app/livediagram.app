@@ -10,6 +10,7 @@ import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { isTabOutOfScope } from '@/lib/tab-scope';
 import { track } from '@/lib/telemetry';
+import { startEditorTiming } from '@/lib/timing';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // Lazy per-tab content load (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx.
@@ -151,6 +152,9 @@ export function usePerTabLoad(opts: {
         next.delete(targetId);
         return next;
       });
+    // How long the switch took (docs/specs/017-telemetry/timing-telemetry.md): the fetch to the first
+    // frame with the content in place. Only the loads that count Tab·Loaded; a failure records nothing.
+    const timing = startEditorTiming('TabLoad');
     apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode)
       .then((loaded) => {
         if (cancelled) return;
@@ -182,6 +186,7 @@ export function usePerTabLoad(opts: {
         // emit: it's a background sweep, not a user viewing a tab.
         track('Tab', 'Loaded');
         adoptLoadedTab(loaded);
+        timing.endAfterPaint();
         // Either way the load is now committed — local state has been
         // consulted. Keep the id in the loaded-set so subsequent
         // tab switches don't refetch.
@@ -208,6 +213,7 @@ export function usePerTabLoad(opts: {
       });
     return () => {
       cancelled = true;
+      timing.cancel();
       // StrictMode double-invoke + cleanup-before-promise-resolve
       // used to lock the tab in "loaded but empty" state forever:
       // the first run added the id and was cancelled before the
@@ -238,59 +244,74 @@ export function usePerTabLoad(opts: {
   // id back out of the loaded-set so the normal visit-time load (with
   // its error overlay) retries; search shouldn't surface blocking
   // errors for tabs the user isn't even looking at.
-  const loadAllTabs = useCallback(async () => {
-    if (!hydrated || !documentId) return;
-    const loadedTabIds = loadedTabIdsRef.current;
-    // A failed sweep fetch is silent for a tab nobody is looking at. But if
-    // the user switched to it while the sweep was in flight, the visit-time
-    // effect saw the id already claimed and did nothing, and won't run again
-    // on its own: the tab sat on its loader with no error and no Retry. So
-    // for the ACTIVE tab, raise the same error overlay the visit path does.
-    const failed = (targetId: string) => {
-      loadedTabIds.delete(targetId);
-      if (targetId !== activeIdRef.current) return;
-      setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
-    };
-    const pending = tabsRef.current
-      .map((t) => t.id)
-      .filter((id) => !loadedTabIds.has(id) && !isTabOutOfScope(id, sessionTabScope));
-    if (pending.length === 0) return;
-    pending.forEach((id) => loadedTabIds.add(id));
-    await Promise.all(
-      pending.map(async (targetId) => {
-        try {
-          const loaded = await apiLoadTabRevisioned(selfId, documentId, targetId, sessionShareCode);
-          if (!loaded) {
-            // A 404 is anomalous here for the same reason as the visit-time
-            // path above: the tab id came from the document summary, so a
-            // missing row is a transient / auth edge, NOT proof the tab is
-            // empty. Marking it loaded would arm the autosave to overwrite
-            // the real row with an empty body (X-Allow-Empty). Drop the
-            // optimistic id so the normal visit-time load (with its error
-            // overlay) retries when the user actually opens the tab.
+  // `only` narrows the sweep to the given tabs: the side by side pane (docs/specs/007-editor/split-view.md)
+  // fetches the one tab it shows, with the same merge rules.
+  const loadAllTabs = useCallback(
+    async (only?: readonly string[]): Promise<string[]> => {
+      if (!hydrated || !documentId) return [];
+      const loadedTabIds = loadedTabIdsRef.current;
+      // A failed sweep fetch is silent for a tab nobody is looking at. But if
+      // the user switched to it while the sweep was in flight, the visit-time
+      // effect saw the id already claimed and did nothing, and won't run again
+      // on its own: the tab sat on its loader with no error and no Retry. So
+      // for the ACTIVE tab, raise the same error overlay the visit path does.
+      // The tabs that did not load, for a caller that shows one (the side by side pane).
+      const failures: string[] = [];
+      const failed = (targetId: string) => {
+        failures.push(targetId);
+        loadedTabIds.delete(targetId);
+        if (targetId !== activeIdRef.current) return;
+        setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
+      };
+      const pending = tabsRef.current
+        .map((t) => t.id)
+        .filter((id) => !only || only.includes(id))
+        .filter((id) => !loadedTabIds.has(id) && !isTabOutOfScope(id, sessionTabScope));
+      if (pending.length === 0) return failures;
+      pending.forEach((id) => loadedTabIds.add(id));
+      await Promise.all(
+        pending.map(async (targetId) => {
+          try {
+            const loaded = await apiLoadTabRevisioned(
+              selfId,
+              documentId,
+              targetId,
+              sessionShareCode,
+            );
+            if (!loaded) {
+              // A 404 is anomalous here for the same reason as the visit-time
+              // path above: the tab id came from the document summary, so a
+              // missing row is a transient / auth edge, NOT proof the tab is
+              // empty. Marking it loaded would arm the autosave to overwrite
+              // the real row with an empty body (X-Allow-Empty). Drop the
+              // optimistic id so the normal visit-time load (with its error
+              // overlay) retries when the user actually opens the tab.
+              failed(targetId);
+              return;
+            }
+            adoptLoadedTab(loaded);
+            setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
+          } catch {
             failed(targetId);
-            return;
           }
-          adoptLoadedTab(loaded);
-          setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
-        } catch {
-          failed(targetId);
-        }
-      }),
-    );
-  }, [
-    hydrated,
-    documentId,
-    selfId,
-    sessionShareCode,
-    sessionTabScope,
-    adoptLoadedTab,
-    loadedTabIdsRef,
-    setLoadedTabIds,
-    setTabLoadErrors,
-    tabsRef,
-    activeIdRef,
-  ]);
+        }),
+      );
+      return failures;
+    },
+    [
+      hydrated,
+      documentId,
+      selfId,
+      sessionShareCode,
+      sessionTabScope,
+      adoptLoadedTab,
+      loadedTabIdsRef,
+      setLoadedTabIds,
+      setTabLoadErrors,
+      tabsRef,
+      activeIdRef,
+    ],
+  );
 
   return { loadAllTabs };
 }

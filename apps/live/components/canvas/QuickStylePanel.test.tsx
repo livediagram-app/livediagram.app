@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { QuickRadioRow } from './quick-style-rows';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { QuickStylePanel, panelFrame } from './QuickStylePanel';
+import { QUICK_ROW_TARGETS } from './quick-style-metrics';
 import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 
 // The panel is desktop only; jsdom has no viewport to measure.
@@ -86,7 +87,7 @@ describe('QuickRadioRow', () => {
   });
 });
 
-describe('QuickRadioRow: custom swatches and density', () => {
+describe('QuickRadioRow: custom swatches', () => {
   const swatches = [
     { value: 0, name: 'Theme default', content: null, swatch: '#dcfce7' },
     {
@@ -97,7 +98,7 @@ describe('QuickRadioRow: custom swatches and density', () => {
       overridden: true,
     },
   ];
-  const renderSwatches = (density: 'compact' | 'roomy' = 'compact') => {
+  const renderSwatches = () => {
     const onOptionContext = vi.fn();
     render(
       <QuickRadioRow
@@ -107,7 +108,6 @@ describe('QuickRadioRow: custom swatches and density', () => {
         value={null}
         onChoose={vi.fn()}
         onOptionContext={onOptionContext}
-        density={density}
         testId="row"
       />,
     );
@@ -116,7 +116,7 @@ describe('QuickRadioRow: custom swatches and density', () => {
 
   it('opens the swatch menu on right-click, Shift+F10 and the context-menu key', () => {
     const onOptionContext = renderSwatches();
-    const custom = screen.getByRole('radio', { name: 'Custom orange, in place of Green' });
+    const custom = screen.getByRole('button', { name: 'Custom orange, in place of Green' });
     fireEvent.contextMenu(custom);
     fireEvent.keyDown(custom, { key: 'F10', shiftKey: true });
     fireEvent.keyDown(custom, { key: 'ContextMenu' });
@@ -126,16 +126,16 @@ describe('QuickRadioRow: custom swatches and density', () => {
 
   it('marks an overridden swatch, and only that one', () => {
     renderSwatches();
-    const custom = screen.getByRole('radio', { name: 'Custom orange, in place of Green' });
+    const custom = screen.getByRole('button', { name: 'Custom orange, in place of Green' });
     expect(custom.querySelector('[data-swatch-marker]')).not.toBeNull();
     expect(
-      screen.getByRole('radio', { name: 'Theme default' }).querySelector('[data-swatch-marker]'),
+      screen.getByRole('button', { name: 'Theme default' }).querySelector('[data-swatch-marker]'),
     ).toBeNull();
   });
 
-  it('keeps every swatch a 24 px target, drawing a smaller chip when compact', () => {
-    renderSwatches('compact');
-    const button = screen.getByRole('radio', { name: 'Theme default' });
+  it('keeps every swatch a 24 px target, drawing a smaller chip inside it', () => {
+    renderSwatches();
+    const button = screen.getByRole('button', { name: 'Theme default' });
     expect(button.className).toContain('h-6 w-6');
     expect(button.firstElementChild!.className).toContain('h-5 w-5');
   });
@@ -172,13 +172,17 @@ describe('SwatchOverridePopover', () => {
     expect(onSave).toHaveBeenCalledWith('#ff5500');
   });
 
-  it('refuses a colour it cannot read, and says how to write one', () => {
-    const { onSave } = setup(false);
+  it('is the one custom colour editor: it refuses a colour it cannot read, and Use saves and closes', () => {
+    const { onSave, onClose } = setup(false);
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Saturation and brightness');
     const hex = screen.getByLabelText('Hex');
     fireEvent.change(hex, { target: { value: 'orange' } });
     fireEvent.keyDown(hex, { key: 'Enter' });
     expect(onSave).not.toHaveBeenCalled();
-    expect(screen.getByText('Enter a colour like #1a2b3c')).toBeTruthy();
+    fireEvent.change(hex, { target: { value: '#123456' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Use' }));
+    expect(onSave).toHaveBeenCalledWith('#123456');
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('offers Clear override only for an overridden swatch', () => {
@@ -223,11 +227,12 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
+    setColour: vi.fn(),
   };
   const renderPanel = (minimal: boolean) =>
     render(
       <MinimalChromeProvider value={minimal}>
-        <QuickStylePanel quickStyle={quickStyle} hidden={false} layout="floating" />
+        <QuickStylePanel quickStyle={quickStyle} hidden={false} />
       </MinimalChromeProvider>,
     );
 
@@ -238,15 +243,10 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
     expect(screen.getByText('Actions')).toBeTruthy();
   });
 
-  it('drops the docked header, which would be empty, and keeps its name', () => {
-    renderPanel(true);
+  it('has no header, and keeps its name', () => {
+    renderPanel(false);
     expect(screen.queryByLabelText('Learn about the quick style panel')).toBeNull();
     expect(screen.getByLabelText('Quick style')).toBeTruthy();
-  });
-
-  it('shows the header with its help link otherwise', () => {
-    renderPanel(false);
-    expect(screen.getByLabelText('Learn about the quick style panel')).toBeTruthy();
   });
 });
 
@@ -272,18 +272,19 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
+    setColour: vi.fn(),
   });
   const second = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, PALETTE);
 
   it('styles the pen in hand, with nothing selected, and offers no Clear styles', () => {
     const quickStyle = api(second);
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     expect(screen.getByText('Marker 2')).toBeTruthy();
-    const colour = screen.getByRole('radiogroup', { name: 'Marker colour' });
-    expect(within(colour).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
+    const colour = screen.getByRole('group', { name: 'Marker colour' });
+    expect(within(colour).getByRole('button', { name: 'Blue' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
-    fireEvent.click(within(colour).getByRole('radio', { name: 'Red' }));
+    fireEvent.click(within(colour).getByRole('button', { name: 'Red' }));
     expect(quickStyle.setPenColour).toHaveBeenCalledWith('red');
     const width = screen.getByRole('radiogroup', { name: 'Marker width' });
     fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
@@ -306,18 +307,19 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
         sections: { boardStroke: board, boardText: { ...board, value: null } },
       },
     };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
-    const stroke = screen.getByRole('radiogroup', { name: 'Stroke' });
-    expect(within(stroke).getAllByRole('radio')).toHaveLength(8);
-    expect(within(stroke).getByRole('radio', { name: 'Blue' }).getAttribute('aria-checked')).toBe(
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
+    const stroke = screen.getByRole('group', { name: 'Stroke' });
+    // The nine stock colours and More colours (docs/specs/004-interface-design/colour-picker.md).
+    expect(within(stroke).getAllByRole('button')).toHaveLength(10);
+    expect(within(stroke).getByRole('button', { name: 'Blue' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
-    fireEvent.click(within(stroke).getByRole('radio', { name: 'Teal' }));
+    fireEvent.click(within(stroke).getByRole('button', { name: 'Teal' }));
     expect(quickStyle.setBoardStroke).toHaveBeenCalledWith('teal');
-    const custom = screen.getByRole('radiogroup', { name: 'Custom text colours' });
-    fireEvent.click(within(custom).getByRole('radio', { name: 'Custom #868e96' }));
+    const custom = screen.getByRole('group', { name: 'Custom text colours' });
+    fireEvent.click(within(custom).getByRole('button', { name: '#868e96' }));
     expect(quickStyle.setBoardTextColour).toHaveBeenCalledWith('#868e96');
-    expect(screen.getByRole('radiogroup', { name: 'Custom stroke colours' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Custom stroke colours' })).toBeTruthy();
   });
 
   it('offers Corners as four quick choices, marking the shared one', () => {
@@ -326,7 +328,7 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       ...api(undefined, ['q1']),
       view: { targetIds: ['q1'], sections: { corners: { value: 'md' as const } } },
     };
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     const row = screen.getByRole('radiogroup', { name: 'Corners' });
     expect(
       within(row)
@@ -341,38 +343,46 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   });
 
   it('drops the pen name in power user mode', () => {
-    render(<QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" powerUser />);
+    render(<QuickStylePanel quickStyle={api(second)} hidden={false} powerUser />);
     expect(screen.queryByText('Marker 2')).toBeNull();
     expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
   });
 
-  it('offers the eight stock colours, and Custom colours only when the tab uses some', () => {
+  it('offers the nine stock colours and More colours, and Custom colours only when the tab uses some', () => {
     // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only.
-    const { unmount } = render(
-      <QuickStylePanel quickStyle={api(second)} hidden={false} layout="toolbar" />,
-    );
-    const colour = screen.getByRole('radiogroup', { name: 'Marker colour' });
+    const { unmount } = render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
+    const colour = screen.getByRole('group', { name: 'Marker colour' });
     expect(
       within(colour)
-        .getAllByRole('radio')
+        .getAllByRole('button')
         .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['Ink', 'Blue', 'Red', 'Orange', 'Green', 'Teal', 'Violet', 'Pink']);
-    expect(screen.queryByRole('radiogroup', { name: 'Custom colours' })).toBeNull();
-    expect(screen.queryByRole('button', { name: /more colours/i })).toBeNull();
+    ).toEqual([
+      'Ink',
+      'Red',
+      'Orange',
+      'Yellow',
+      'Green',
+      'Teal',
+      'Blue',
+      'Violet',
+      'Pink',
+      'More colours, marker colour',
+    ]);
+    expect(screen.queryByRole('group', { name: 'Custom colours' })).toBeNull();
     unmount();
     const withCustom = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, {
       ...PALETTE,
       custom: ['#ff6b00', '#00a39b'],
     });
     const quickStyle = api(withCustom);
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
-    const custom = screen.getByRole('radiogroup', { name: 'Custom colours' });
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
+    const custom = screen.getByRole('group', { name: 'Custom colours' });
     expect(
       within(custom)
-        .getAllByRole('radio')
+        .getAllByRole('button')
         .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['Custom #ff6b00', 'Custom #00a39b']);
-    fireEvent.click(within(custom).getByRole('radio', { name: 'Custom #00a39b' }));
+    ).toEqual(['#ff6b00', '#00a39b']);
+    fireEvent.click(within(custom).getByRole('button', { name: '#00a39b' }));
     expect(quickStyle.setPenColour).toHaveBeenCalledWith('#00a39b');
   });
 
@@ -381,11 +391,10 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       <QuickStylePanel
         quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[0]!, PALETTE))}
         hidden={false}
-        layout="toolbar"
       />,
     );
     expect(
-      within(screen.getByRole('radiogroup', { name: 'Marker colour' })).getAllByRole('radio'),
+      within(screen.getByRole('group', { name: 'Marker colour' })).getAllByRole('button'),
     ).toHaveLength(1);
   });
 
@@ -395,15 +404,14 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
         <QuickStylePanel
           quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
           hidden={false}
-          layout="toolbar"
         />,
       );
       const width = screen.getByTestId('quick-style-panel').style.width;
       unmount();
       return width;
     };
-    expect(widthOf(0)).toBe('210px');
-    expect(widthOf(1)).toBe('210px');
+    expect(widthOf(0)).toBe('258px');
+    expect(widthOf(1)).toBe('258px');
   });
 
   it('keeps Marker width at the same height for every pen', () => {
@@ -412,7 +420,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
         <QuickStylePanel
           quickStyle={api(heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[i]!, PALETTE))}
           hidden={false}
-          layout="toolbar"
         />,
       );
       const width = container.querySelector('[data-testid="quick-style-marker-width"]')!;
@@ -428,19 +435,16 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
 // docs/specs/008-canvas/quick-style-panel.md "Where it sits": a swatch row never wraps and is never
 // clipped, so the width counts the targets, their gaps, the padding and the border exactly.
 describe('panelFrame', () => {
-  it('is one width in every mode: eight targets, compact or Floating, or the Palette’s', () => {
-    // Eight touching 24 px targets (the theme's seven and Ink, or the pens' eight), 8 px
-    // padding and a 1 px border each side, so switching mode never resizes the panel.
-    expect(panelFrame(false, false).width).toBe(8 * 24 + 2 * 8 + 2 * 1);
-    // Floating spreads eight with 4 px gaps inside 10 px padding.
-    expect(panelFrame(true, false).width).toBe(8 * 24 + 7 * 4 + 2 * 10 + 2 * 1);
-    // With a Palette on screen the Palette's width is the panel's.
-    expect(panelFrame(true, true).width).toBeUndefined();
+  it('is one width in every mode: ten touching targets', () => {
+    // Ten touching 24 px targets (the stock colours, Ink and eight, then More colours, the widest
+    // row; the theme's seven, Ink and More colours leave the last empty), 8 px padding and a 1 px
+    // border each side, so switching mode never resizes the panel.
+    expect(QUICK_ROW_TARGETS).toBe(10);
+    expect(panelFrame().width).toBe(10 * 24 + 2 * 8 + 2 * 1);
   });
 
   it('pads the compact panel by the padding the width counts', () => {
-    expect(panelFrame(false, false).padding).toBe(8);
-    expect(panelFrame(true, false).padding).toBeUndefined();
+    expect(panelFrame().padding).toBe(8);
   });
 });
 
@@ -478,37 +482,58 @@ describe('QuickStylePanel: the Ink swatch', () => {
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
+    setColour: vi.fn(),
   });
 
-  it('ends the Stroke and Text colour rows with Ink, never Background', () => {
-    render(<QuickStylePanel quickStyle={api()} hidden={false} layout="toolbar" />);
-    const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
-    expect(stroke).toHaveLength(8);
+  it('ends the Stroke and Text colour rows with Ink, never Background, then More colours', () => {
+    render(<QuickStylePanel quickStyle={api()} hidden={false} />);
+    const stroke = within(screen.getByRole('group', { name: 'Stroke' })).getAllByRole('button');
+    expect(stroke).toHaveLength(9);
     expect(stroke[7]!.getAttribute('aria-label')).toBe('Ink');
-    expect(stroke[7]!.getAttribute('aria-checked')).toBe('true');
-    const text = within(screen.getByRole('radiogroup', { name: 'Text colour' })).getAllByRole(
-      'radio',
-    );
+    expect(stroke[7]!.getAttribute('aria-pressed')).toBe('true');
+    expect(stroke[8]!.getAttribute('aria-label')).toBe('More colours, stroke');
+    const text = within(screen.getByRole('group', { name: 'Text colour' })).getAllByRole('button');
     expect(text[7]!.getAttribute('aria-label')).toBe('Ink');
-    const fill = within(screen.getByRole('radiogroup', { name: 'Background' })).getAllByRole(
-      'radio',
+    const fill = within(screen.getByRole('group', { name: 'Background' })).getAllByRole('button');
+    expect(fill).toHaveLength(8);
+  });
+
+  // docs/specs/004-interface-design/colour-picker.md "Keyboard" and "Skins".
+  it('moves focus along a colour row without choosing, and More colours opens the full picker', () => {
+    const quickStyle = api();
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
+    const stroke = within(screen.getByRole('group', { name: 'Stroke' })).getAllByRole('button');
+    stroke[7]!.focus();
+    fireEvent.keyDown(stroke[7]!, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(stroke[8]);
+    fireEvent.keyDown(stroke[8]!, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(stroke[0]);
+    expect(quickStyle.setStroke).not.toHaveBeenCalled();
+    fireEvent.click(stroke[8]!);
+    const picker = screen.getByRole('dialog', { name: 'More colours, stroke' });
+    fireEvent.click(within(picker).getByRole('button', { name: 'Teal' }));
+    expect(quickStyle.setColour).toHaveBeenCalledWith('stroke', 'teal');
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Background' })).getAllByRole('button')[7]!,
     );
-    expect(fill).toHaveLength(7);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Teal' }));
+    expect(quickStyle.setColour).toHaveBeenLastCalledWith(
+      'fill',
+      expect.stringMatching(/^#[0-9a-f]{6}$/),
+    );
   });
 
   it('chooses Ink by name', () => {
     const quickStyle = api();
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
-    const text = within(screen.getByRole('radiogroup', { name: 'Text colour' })).getAllByRole(
-      'radio',
-    );
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
+    const text = within(screen.getByRole('group', { name: 'Text colour' })).getAllByRole('button');
     fireEvent.click(text[7]!);
     expect(quickStyle.setTextColour).toHaveBeenCalledWith('ink');
   });
 
   it('opens no custom-colour popover on Ink', () => {
-    render(<QuickStylePanel quickStyle={api()} hidden={false} layout="toolbar" />);
-    const stroke = within(screen.getByRole('radiogroup', { name: 'Stroke' })).getAllByRole('radio');
+    render(<QuickStylePanel quickStyle={api()} hidden={false} />);
+    const stroke = within(screen.getByRole('group', { name: 'Stroke' })).getAllByRole('button');
     fireEvent.contextMenu(stroke[7]!);
     expect(screen.queryByRole('dialog')).toBeNull();
   });
@@ -535,17 +560,18 @@ describe('QuickStylePanel: the Highlighter rows', () => {
     clearStyles: vi.fn(),
     setSwatchOverride: vi.fn(),
     clearSwatchOverride: vi.fn(),
+    setColour: vi.fn(),
   });
 
   it('sets the armed Highlighter\u2019s next stroke, captioned with its name', () => {
     const quickStyle = api(toolHighlighterStyle('#fde047', 14));
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} layout="toolbar" />);
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
     expect(screen.getByText('Highlighter')).toBeTruthy();
-    const colour = screen.getByRole('radiogroup', { name: 'Highlighter colour' });
-    expect(within(colour).getByRole('radio', { name: 'Yellow' }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    fireEvent.click(within(colour).getByRole('radio', { name: 'Pink' }));
+    const colour = screen.getByRole('group', { name: 'Highlighter colour' });
+    expect(
+      within(colour).getByRole('button', { name: 'Yellow' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+    fireEvent.click(within(colour).getByRole('button', { name: 'Pink' }));
     expect(quickStyle.setHighlighterColour).toHaveBeenCalledWith('#f9a8d4');
     const width = screen.getByRole('radiogroup', { name: 'Highlighter width' });
     expect(within(width).getByRole('radio', { name: 'Medium' }).getAttribute('aria-checked')).toBe(

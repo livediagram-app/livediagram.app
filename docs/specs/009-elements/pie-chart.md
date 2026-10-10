@@ -14,7 +14,8 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   ("Proportions of a whole", "A trend over time") rather than a caption tile:
   the picture names the chart, not the job it does.
 - A **Data** context-menu category edits the chart. Pie / bar edit inline: one
-  row per datum — a recolourable swatch, a **label**, and a **value** — plus
+  row per datum — a recolourable swatch (opening the
+  [colour picker](../004-interface-design/colour-picker.md) in a popover), a **label**, and a **value** — plus
   add / remove. The line chart's 2-D grid is too wide for the narrow menu, so
   the category instead **summarises the series** (a colour dot + name) and an
   **Edit data** button opens a **modal** (`LineDataDialog`): a row per category,
@@ -89,6 +90,12 @@ groups all three (they're all in `isSelfDrawingShape` too).
 Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a dedicated
 `ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
 context-menu category. New chart kinds reuse it under the same Data palette category.
+
+## Charts drawn from a sheet
+
+A chart may carry `chartSource` (a sheet and a range of it): its data is then read live from that Sheet's cells and
+the element's own data is the last read ([Sheet charts](../029-sheets/sheet.md#charts)). Its Data menu offers
+**Unlink From Sheet** in place of the data editor.
 
 ## Chart palettes
 

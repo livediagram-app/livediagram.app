@@ -5,7 +5,7 @@ import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { dockModel as model, renderDock } from './dock-test-utils';
 import { PenWidthIcon } from './PenWidthIcon';
 import { WhiteboardDock } from './WhiteboardDock';
-import { besidePanel, offDock } from './WhiteboardFlyout';
+import { offDock } from './WhiteboardFlyout';
 
 const itemsOf = (group: string) =>
   [
@@ -164,8 +164,10 @@ describe('WhiteboardDock drawing tools', () => {
       model('pen', { prefs: { ...DEFAULT_WHITEBOARD_PREFS, activePenId: 'second' } }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Marker 2, blue, medium' }));
-    // The colour picker (docs/specs/023-draw-mode/draw-mode.md "The colour picker"): the eight stock colours.
-    expect(screen.getByTestId('stock-colours').querySelectorAll('button')).toHaveLength(8);
+    // The colour picker (docs/specs/004-interface-design/colour-picker.md): the ten standard colours.
+    expect(
+      within(screen.getByRole('group', { name: 'Standard Colours' })).getAllByRole('button'),
+    ).toHaveLength(10);
     fireEvent.click(screen.getByRole('button', { name: 'Violet' }));
     expect(m.updatePen).toHaveBeenCalledWith('second', { colour: 'violet' });
     fireEvent.click(screen.getByRole('button', { name: 'Fine' }));
@@ -437,78 +439,6 @@ describe('WhiteboardDock position log', () => {
   });
 });
 
-// docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows": the Floating layout's form.
-describe('WhiteboardDock in the Palette panel', () => {
-  const renderPanel = () =>
-    render(<WhiteboardDock variant="panel" model={model()} ink="#1c1917" />);
-
-  it('lays the same three groups out as the panel body, with no dock placement', () => {
-    renderPanel();
-    expect(screen.getAllByRole('toolbar').map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Drawing tools',
-      'Shapes',
-      'Settings',
-    ]);
-    const body = document.querySelector<HTMLElement>('[data-whiteboard-dock]')!;
-    expect(body.dataset.dockVariant).toBe('panel');
-    expect(body.dataset.dockPosition).toBeUndefined();
-    expect(body.className).not.toContain('absolute');
-    // Sections wrap to the panel's width rather than sitting in pills of their own.
-    // The palette's own three-column tile grid, each tile captioned.
-    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
-    expect(drawing.className).toContain('grid-cols-3');
-    expect(within(drawing).getByRole('button', { name: /^Marker 1/ }).textContent).toBe('Marker 1');
-  });
-
-  it('captions each tile without its key letter (the key is in the tooltip)', () => {
-    renderPanel();
-    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
-    expect(within(drawing).getByRole('button', { name: 'Path tool' }).textContent).toBe('Path');
-    expect(within(drawing).getByRole('button', { name: 'Select' }).textContent).toBe('Select');
-  });
-
-  it('walks a tile grid by rows with ArrowUp and ArrowDown', () => {
-    renderPanel();
-    const drawing = screen.getByRole('toolbar', { name: 'Drawing tools' });
-    const select = within(drawing).getByRole('button', { name: 'Select' });
-    act(() => select.focus());
-    // Select, Marker 1, Marker 2 / Marker 3, ...: three columns.
-    fireEvent.keyDown(select, { key: 'ArrowDown' });
-    expect(document.activeElement?.getAttribute('aria-label')).toMatch(/^Marker 3/);
-    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(select);
-  });
-
-  it('draws no separators, and the cog as the footer row', () => {
-    renderPanel();
-    expect(document.querySelectorAll('.bg-slate-200.w-px')).toHaveLength(0);
-    const footer = screen.getByRole('toolbar', { name: 'Settings' });
-    expect(footer.className).toContain('border-t');
-    expect(within(footer).getByRole('button', { name: 'Settings' }).textContent).toBe('Settings');
-  });
-
-  it('opens a flyout beside the panel, out of its scroll clip', () => {
-    renderPanel();
-    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    const flyout = document.getElementById('whiteboard-flyout-settings')!;
-    expect(flyout.dataset.side).toBe('beside');
-    expect(flyout.className).toContain('fixed');
-    // Portalled to the body, not inside the panel.
-    expect(document.querySelector('[data-whiteboard-dock]')!.contains(flyout)).toBe(false);
-    // Its tip faces the panel.
-    expect(flyout.querySelector('[data-flyout-tip]')?.getAttribute('data-flyout-tip')).toMatch(
-      /^(left|right)$/,
-    );
-  });
-
-  it('shows the Shapes menu items on the panel, with no Shapes menu', () => {
-    renderPanel();
-    const shapes = screen.getByRole('toolbar', { name: 'Shapes' });
-    expect(within(shapes).queryByRole('button', { name: 'Shapes' })).toBeNull();
-    expect(shapes.querySelectorAll('[data-dock-item^="menu:"]').length).toBeGreaterThan(0);
-  });
-});
-
 describe('offDock', () => {
   const flyout = { offsetWidth: 200, offsetHeight: 120 };
   const dockBox = { top: 12, bottom: 58 };
@@ -530,44 +460,5 @@ describe('offDock', () => {
     const at = offDock(dockBox, { left: 10, width: 36 }, flyout, true, { width: 1280 });
     expect(at.left).toBe(12);
     expect(at.tipLeft).toBe(28 - 12);
-  });
-});
-
-describe('besidePanel', () => {
-  const viewport = { width: 1280, height: 800 };
-  const flyout = { offsetWidth: 280, offsetHeight: 200 };
-
-  it('opens on the side with more room, level with the opener', () => {
-    // A panel at the right: the flyout opens to its left.
-    expect(besidePanel({ left: 1000, right: 1260 }, { top: 120 }, flyout, viewport)).toMatchObject({
-      left: 1000 - 22 - 280,
-      top: 120,
-      side: 'left',
-    });
-    // A panel at the left: to its right.
-    expect(besidePanel({ left: 20, right: 280 }, { top: 120 }, flyout, viewport)).toMatchObject({
-      left: 280 + 22,
-      top: 120,
-      side: 'right',
-    });
-  });
-
-  it('puts the tip level with the opener, clear of the corners', () => {
-    const at = (top: number, height = 36) =>
-      besidePanel({ left: 1000, right: 1260 }, { top, height }, flyout, viewport).tipTop;
-    expect(at(120)).toBe(18);
-    // The card is pushed up from the bottom edge: the tip still finds the opener, within the card.
-    expect(at(700)).toBe(700 + 18 - (800 - 12 - 200));
-    expect(at(790)).toBe(200 - 14);
-  });
-
-  it('keeps the flyout inside the viewport', () => {
-    expect(besidePanel({ left: 1000, right: 1260 }, { top: 700 }, flyout, viewport).top).toBe(
-      800 - 12 - 200,
-    );
-    expect(besidePanel({ left: 100, right: 1200 }, { top: 0 }, flyout, viewport)).toMatchObject({
-      left: 12,
-      top: 12,
-    });
   });
 });

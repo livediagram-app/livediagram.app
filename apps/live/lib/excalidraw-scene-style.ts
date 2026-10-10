@@ -96,7 +96,14 @@ export function sceneTextOf(el: ExcalidrawElement, notes: SceneNotes): SceneText
   const read = readColour(el.strokeColor);
   if (read.kind === 'unreadable') notes.add(EXCALIDRAW_NOTE.unreadableColour);
   const text: SceneText = {
-    text: typeof el.originalText === 'string' ? el.originalText : (el.text ?? ''),
+    // A file is untrusted: a `text` that is not a string (a number, an object) reads as none, never as
+    // a value the landing steps would call string methods on.
+    text:
+      typeof el.originalText === 'string'
+        ? el.originalText
+        : typeof el.text === 'string'
+          ? el.text
+          : '',
     fontPx: Math.max(1, finite(el.fontSize, EXCALIDRAW_DEFAULT_FONT_SIZE)),
     family: fontFamilyOf(el.fontFamily),
     colour: read.kind === 'colour' ? withFactor(read.colour, opacityFactor(el.opacity)) : 'ink',

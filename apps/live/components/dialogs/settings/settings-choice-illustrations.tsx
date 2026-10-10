@@ -1,14 +1,5 @@
 import type { ReactNode } from 'react';
-import {
-  GAP,
-  H,
-  PANEL,
-  REM_PER_UNIT,
-  StateFrame,
-  W,
-  Window,
-  pickable,
-} from './settings-illustration-kit';
+import { GAP, H, REM_PER_UNIT, StateFrame, W, pickable } from './settings-illustration-kit';
 
 // One small drawing per OPTION of a pick-one setting, side by side, the one
 // in force ringed. The toggle drawings (settings-illustrations.tsx) show a
@@ -18,7 +9,7 @@ import {
 // Traced off the real editor at 1280x800 like the toggle drawings: a drawing
 // that doesn't match the app is worse than none.
 
-export type ChoiceIllustrationId = 'panelLayout' | 'appearance';
+export type ChoiceIllustrationId = 'appearance';
 
 type ChoiceDrawing = {
   // In the order the row offers its options. Keyed by option id so the ring
@@ -28,31 +19,6 @@ type ChoiceDrawing = {
   // Keep every state at full strength (see StateFrame's `fade`).
   fullColour?: boolean;
 };
-
-// --- Panel layout (docs/specs/007-editor/toolbar-layout.md) --------------------------------------
-
-const FloatingArt = (
-  <Window>
-    <rect x="5" y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
-    <rect x={W - 31} y="14" width="26" height="34" rx="2.5" className={PANEL} strokeWidth="1" />
-  </Window>
-);
-
-// The strip across the top centre, the menu button in the top-left corner,
-// and the Floating layout's Layers button kept in the bottom row.
-const ToolbarArt = (
-  <Window>
-    <rect x="5" y="14" width="9" height="9" rx="2" className={PANEL} strokeWidth="1" />
-    <rect x={W / 2 - 25} y="14" width="50" height="9" rx="2.5" className={PANEL} strokeWidth="1" />
-    <path
-      d={`M${W / 2 - 17} 16.5v4M${W / 2 - 9} 16.5v4M${W / 2 - 1} 16.5v4M${W / 2 + 7} 16.5v4M${W / 2 + 15} 16.5v4`}
-      className="stroke-brand-500/60"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-    />
-    <rect x={W - 14} y={H - 21} width="9" height="8" rx="2" className={PANEL} strokeWidth="1" />
-  </Window>
-);
 
 // --- Appearance (docs/specs/007-editor/live-app.md) --------------------------------------------------
 
@@ -109,14 +75,6 @@ const SystemArt = (
 );
 
 export const CHOICE_ILLUSTRATIONS: Record<ChoiceIllustrationId, ChoiceDrawing> = {
-  panelLayout: {
-    states: [
-      { id: 'floating', caption: 'Floating', art: FloatingArt },
-      { id: 'toolbar', caption: 'Toolbar', art: ToolbarArt },
-    ],
-    label:
-      'The two panel layouts: Floating, with the Explorer and Palette panels over the canvas, and Toolbar, with the Palette as a strip across the top and a menu button in the top-left.',
-  },
   appearance: {
     states: [
       { id: 'light', caption: 'Light', art: <ModeWindow dark={false} /> },

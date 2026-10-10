@@ -15,10 +15,8 @@
 
 import { useEffect, useState } from 'react';
 import {
-  laserColour,
   laserLifetimeMs,
   laserStrokeWidth,
-  LASER_COLOURS,
   LASER_EFFECTS,
   LASER_TRAILS,
   LASER_WIDTHS,
@@ -26,9 +24,11 @@ import {
 } from '@/lib/laser-config';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
+import { LaserColourRow } from '@/components/panels/LaserColourRow';
+import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 
-type Row = 'width' | 'colour' | 'trail' | 'effect';
+type Row = 'width' | 'trail' | 'effect';
 
 // The preview: a looping sweep drawn by the REAL overlay, so what you see here
 // is what the canvas draws — including the fade, which a static swatch of a
@@ -63,11 +63,14 @@ function PenPreview({ config, colour }: { config: LaserConfig; colour: string })
 
   return (
     <div className="relative mb-1 h-14 overflow-hidden rounded-lg bg-slate-900/95 dark:bg-slate-950">
-      <LaserOverlay
-        key={sweptAt}
-        zoom={1}
-        trails={[{ participantId: 'preview', color: colour, points, config }]}
-      />
+      {/* The preview's box is dark, so a standard colour draws in its dark-canvas version. */}
+      <CanvasSurfaceProvider surface="dark">
+        <LaserOverlay
+          key={sweptAt}
+          zoom={1}
+          trails={[{ participantId: 'preview', color: colour, points, config }]}
+        />
+      </CanvasSurfaceProvider>
     </div>
   );
 }
@@ -86,8 +89,6 @@ export function LaserPanel({
 } & ModePanelProps) {
   const [openRow, setOpenRow] = useState<Row | null>(null);
   const toggle = (row: Row) => setOpenRow((r) => (r === row ? null : row));
-  const swatchFor = (id: LaserConfig['colour']) =>
-    laserColour({ ...config, colour: id }, selfColour);
 
   return (
     <ModePanel helpArticle="laser" title="Laser" {...placement}>
@@ -102,14 +103,11 @@ export function LaserPanel({
             onToggle={() => toggle('width')}
             onPick={(id) => onChange('width', id)}
           />
-          <ToolOptionRow
-            label="Colour"
-            options={LASER_COLOURS}
-            value={config.colour}
-            open={openRow === 'colour'}
-            onToggle={() => toggle('colour')}
-            onPick={(id) => onChange('colour', id)}
-            swatchFor={swatchFor}
+          <LaserColourRow
+            config={config}
+            selfColour={selfColour}
+            onOpen={() => setOpenRow(null)}
+            onPick={(colour) => onChange('colour', colour)}
           />
           <ToolOptionRow
             label="Trail"
@@ -129,7 +127,7 @@ export function LaserPanel({
           />
         </div>
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
-          Everyone in the room sees your pen, and it is remembered on this device —{' '}
+          Everyone in the room sees your pen, and it is remembered on this device:{' '}
           {laserStrokeWidth(config)}px, fading over {(laserLifetimeMs(config) / 1000).toFixed(1)}s.
         </p>
       </div>

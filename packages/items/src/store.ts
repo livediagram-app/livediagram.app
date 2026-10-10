@@ -8,7 +8,7 @@ import { itemStatus, itemVotes } from './item';
 import {
   applyMove,
   applyPatch,
-  applyVote,
+  applyTally,
   byRank,
   inversePatch,
   makeItem,
@@ -21,12 +21,21 @@ export type ItemStoreState = { items: Item[]; rev: number; nextKey: number };
 
 export const EMPTY_ITEM_STORE: ItemStoreState = { items: [], rev: 0, nextKey: 1 };
 
+// `undo`: the write is an undo or redo, putting back a change already made, so a card type's left-out statuses do
+// not refuse it (docs/specs/026-plan/item-types.md "An item type"). Sent to the api as `undo: true` in the body.
 export type ItemWrite =
   | { kind: 'create'; creates: ItemCreate[] }
-  | { kind: 'patch'; id: string; patch: ItemPatch }
-  | { kind: 'move'; id: string; move: ItemMove }
-  | { kind: 'vote'; id: string; delta: 1 | -1 }
+  | { kind: 'patch'; id: string; patch: ItemPatch; undo?: true }
+  // Many items changed as one write (a card type's or a removed column's cards to the Trash).
+  | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
+  | { kind: 'move'; id: string; move: ItemMove; undo?: true }
+  // A session vote's tally added to cards' votes when the vote ends (not undoable).
+  | { kind: 'tally'; tallies: ItemTally[] }
   | { kind: 'delete'; id: string };
+
+export type ItemPatchOf = { id: string; patch: ItemPatch };
+// One card's tally: each voter's (pseudonymous person id) dots.
+export type ItemTally = { id: string; votes: Record<string, number> };
 
 export type ItemWriteError = 'item_not_found' | 'item_exists' | 'items_full';
 
@@ -74,6 +83,38 @@ export function applyItemWrite(
       removed: [],
     };
   }
+  if (write.kind === 'tally') {
+    const byId = new Map(state.items.map((i) => [i.id, i]));
+    const changed: string[] = [];
+    for (const { id, votes } of write.tallies) {
+      const item = byId.get(id);
+      // A card gone meanwhile is skipped: the rest of the tally still lands.
+      if (!item) continue;
+      byId.set(id, applyTally(item, votes, base));
+      changed.push(id);
+    }
+    return {
+      ok: true,
+      state: { ...state, items: state.items.map((i) => byId.get(i.id)!), rev: state.rev + 1 },
+      upserts: [...new Set(changed)].map((id) => byId.get(id)!),
+      removed: [],
+    };
+  }
+  if (write.kind === 'patches') {
+    const byId = new Map(state.items.map((i) => [i.id, i]));
+    for (const { id, patch } of write.patches) {
+      const item = byId.get(id);
+      if (!item) return { ok: false, error: 'item_not_found' };
+      byId.set(id, applyPatch(item, patch, base));
+    }
+    return {
+      ok: true,
+      state: { ...state, items: state.items.map((i) => byId.get(i.id)!), rev: state.rev + 1 },
+      // An item patched twice is sent once, as it ends.
+      upserts: [...new Set(write.patches.map((p) => p.id))].map((id) => byId.get(id)!),
+      removed: [],
+    };
+  }
   const item = state.items.find((i) => i.id === write.id);
   if (!item) return { ok: false, error: 'item_not_found' };
   if (write.kind === 'delete') {
@@ -87,9 +128,7 @@ export function applyItemWrite(
   const next =
     write.kind === 'patch'
       ? applyPatch(item, write.patch, base)
-      : write.kind === 'move'
-        ? applyMove(item, write.move, state.items, base)
-        : applyVote(item, ctx.by.id, write.delta, base);
+      : applyMove(item, write.move, state.items, base);
   return {
     ok: true,
     state: { ...state, items: replaced(state.items, next), rev: state.rev + 1 },
@@ -120,12 +159,48 @@ export function mergeItemChanges(
   };
 }
 
+// The items a write touches: after a refused or failed write, their optimistic copies are wrong.
+export function itemIdsOfWrite(write: ItemWrite): string[] {
+  if (write.kind === 'create') return write.creates.flatMap((c) => (c.id ? [c.id] : []));
+  if (write.kind === 'patches') return write.patches.map((p) => p.id);
+  if (write.kind === 'tally') return write.tallies.map((t) => t.id);
+  return [write.id];
+}
+
+// A fresh read folded over the store: anything newer that arrived while the read was in flight is kept, except
+// the copies of `unconfirmed` items (a refused write's optimistic rev outranks the server's, yet is wrong).
+export function refetchedItemStore(
+  prev: ItemStoreState,
+  fetched: ItemStoreState,
+  unconfirmed: ReadonlySet<string>,
+): ItemStoreState {
+  const fetchedIds = new Set(fetched.items.map((f) => f.id));
+  return mergeItemChanges(
+    fetched,
+    prev.items.filter((i) => fetchedIds.has(i.id) && !unconfirmed.has(i.id)),
+    [],
+    fetched.rev,
+  );
+}
+
 // The writes that undo `write`, made against `before` and answered with `made` (a create's items as
-// made, so its redo restores the same ids and keys). Null: not undoable (a vote is taken back by
-// voting minus, docs/specs/026-plan/items.md "Undo").
+// made, so its redo restores the same ids and keys). Null: not undoable (a vote's tally, docs/specs/026-plan/items.md
+// "Undo").
 export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): ItemWrite[] | null {
-  if (write.kind === 'vote') return null;
+  if (write.kind === 'tally') return null;
   if (write.kind === 'create') return write.creates.map((c) => ({ kind: 'delete', id: c.id! }));
+  if (write.kind === 'patches') {
+    // Each item's old values, last patch first, as one write.
+    const byId = new Map(before.items.map((i) => [i.id, i]));
+    const undo: ItemPatchOf[] = [];
+    for (const { id, patch } of write.patches) {
+      const item = byId.get(id);
+      if (!item) return null;
+      undo.unshift({ id, patch: inversePatch(item, patch) });
+      byId.set(id, applyPatch(item, patch, { now: item.updatedAt, by: item.updatedBy }));
+    }
+    return [{ kind: 'patches', patches: undo }];
+  }
   const item = before.items.find((i) => i.id === write.id);
   if (!item) return null;
   if (write.kind === 'delete') {
@@ -144,7 +219,21 @@ export function inverseItemWrites(before: ItemStoreState, write: ItemWrite): Ite
   if (lane.set) move.set = lane.set;
   if (lane.clear) move.clear = lane.clear;
   if (lane.type) move.type = lane.type;
+  // A card that had no status (dropped on a board from the canvas, made by an agent) loses the one the move gave
+  // it: a move always keeps a status, so a patch clears it.
+  if (itemStatus(item) === undefined && write.move.status !== undefined)
+    return [
+      { kind: 'move', id: item.id, move },
+      { kind: 'patch', id: item.id, patch: { clear: ['status'] } },
+    ];
   return [{ kind: 'move', id: item.id, move }];
+}
+
+// A write marked as an undo or redo (`undo` above): a patch or a move; any other write is returned as it is.
+export function asUndoWrite(write: ItemWrite): ItemWrite {
+  return write.kind === 'patch' || write.kind === 'patches' || write.kind === 'move'
+    ? { ...write, undo: true }
+    : write;
 }
 
 // A create made replayable: every create carries the id it was given, so redo makes the same item.

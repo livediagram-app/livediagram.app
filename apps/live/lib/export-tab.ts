@@ -88,6 +88,9 @@ export type ImageExportOpts = {
   // frame becomes exactly its sheet, painted with its background; isometric and the tab's own
   // backdrop do not apply.
   page?: LaidOutPage;
+  // A logo page's plain paper left see-through (docs/specs/007-editor/logo-pages.md "Export"):
+  // PNG and SVG pass it, PDF never does.
+  transparentPaper?: boolean;
   // The document's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
@@ -182,13 +185,25 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 // PNG / PDF helpers — shared canvas rendering
 // ---------------------------------------------------------------------
 
+// The largest canvas side every browser draws (Safari and Firefox stop at 16384 px; Chrome 32767).
+export const MAX_EXPORT_CANVAS_SIDE = 16384;
+
+/** The scale an image export draws at: `wanted`, lowered so neither side of a `w` x `h` drawing
+ *  passes MAX_EXPORT_CANVAS_SIDE. */
+export function exportScale(wanted: number, w: number, h: number): number {
+  const longest = Math.max(w, h, 1);
+  return Math.min(wanted, MAX_EXPORT_CANVAS_SIDE / longest);
+}
+
 export async function renderTabToCanvas(
   tab: Tab,
   opts: { scale?: number } & ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
-  const scale = opts.scale ?? 2; // default 2× for crisp output
   const frame = opts.page
-    ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
+    ? pageExportFrame(opts.page, {
+        ruling: pageRulingOf(tab, opts.page),
+        transparentPaper: opts.transparentPaper,
+      })
     : null;
   // An article page's writing (docs/specs/007-editor/article-pages.md "Everywhere a page goes").
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
@@ -220,6 +235,9 @@ export async function renderTabToCanvas(
   // element / arrow drawer stays in plain canvas coordinates.
   const iso = opts.isometric && !frame ? isoCanvasMatrix() : null;
   const draw = iso ? isoProjectBounds(bounds, iso) : bounds;
+  // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
+  // Content page reaches 19200 px, docs/specs/007-editor/illustrate-pages.md "Sizes").
+  const scale = exportScale(opts.scale ?? 2, draw.w + pad * 2, draw.h + pad * 2);
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
   const canvas = document.createElement('canvas');
@@ -237,7 +255,7 @@ export async function renderTabToCanvas(
   // elements rather than pale ones.
   const surface = frame ? frame.surface : canvasSurface(bgColor);
   ctx.fillStyle = frame ? EXPORT_PAPER : bgColor;
-  ctx.fillRect(0, 0, w / scale, h / scale);
+  if (!frame?.transparent) ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (frame) {
     const { x, y, w: fw, h: fh } = frame.bounds;
@@ -467,7 +485,10 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page
-    ? pageExportFrame(opts.page, { ruling: pageRulingOf(tab, opts.page) })
+    ? pageExportFrame(opts.page, {
+        ruling: pageRulingOf(tab, opts.page),
+        transparentPaper: opts.transparentPaper,
+      })
     : null;
   const writing = opts.page ? pageWriting(tab, opts.page) : null;
   const clips = exportZoneClips(tab, opts.page);
@@ -607,21 +628,5 @@ export async function exportTabAsPng(tab: Tab, opts: ImageExportOpts = {}): Prom
   });
 }
 
-// ---------------------------------------------------------------------
-// Download helper — trigger a browser save dialog for the produced
-// blob. Lives here so call sites don't repeat the same anchor-element
-// dance every time.
-// ---------------------------------------------------------------------
-
-export function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  // Give the browser a tick to start the download before revoking
-  // the URL — revoking too early aborts the save in some browsers.
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
+// The download helper lives on its own (the Sheet's CSV uses it without the export code).
+export { downloadBlob } from './download-blob';

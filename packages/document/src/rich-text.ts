@@ -380,6 +380,21 @@ export function trimRuns(runs: TextRun[]): TextRun[] {
   return normalizeRuns(sliceRuns(runs, start, end));
 }
 
+/**
+ * A label as saved (docs/specs/008-canvas/canvas-and-palette.md "Rich text labels"): without
+ * whitespace at either end, newlines and spaces alike; blank lines and spaces inside stay. The runs,
+ * when given, are sliced to the same text, keeping every surviving character's formatting, so they
+ * stay equal to the label.
+ */
+export function trimLabel(label: string, runs?: TextRun[]): { label: string; runs?: TextRun[] } {
+  const start = label.length - label.trimStart().length;
+  const end = label.trimEnd().length;
+  if (start >= end) return { label: '', ...(runs ? { runs: [] } : {}) };
+  const trimmed = label.slice(start, end);
+  if (!runs) return { label: trimmed };
+  return { label: trimmed, runs: normalizeRuns(sliceRuns(runs, start, end)) };
+}
+
 // --- Headings (line-level attribute) ---------------------------------------
 
 /**

@@ -16,6 +16,7 @@ import {
   DOCUMENT_ACTIONS,
   TRASH,
   PLAN_BOARDS,
+  SHEETS,
   DISCUSSION,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -25,6 +26,7 @@ import {
   EXCEPTIONS,
   EXPORT_AND_IMPORT,
   HELP_CENTRE,
+  LOAD_RECOVERY,
   LAYERS_FEATURE,
   LIVE_TOGETHER,
   LOOK_AND_FEEL,
@@ -46,6 +48,7 @@ import {
   SIGN_IN_PROMPTS,
   STOPWATCHES,
   TAB_ACTIONS,
+  SIDE_BY_SIDE,
   TABLES,
   TEAM_ACTIVITY,
   TIMELINE_AND_ACTIVITY,
@@ -53,6 +56,7 @@ import {
   VOTING,
   WELCOME_TOUR,
   PLAN_TOUR,
+  CARD_TYPE_TOUR,
   POWER_USER_OFFER,
   NEW_VERSION_PROMPT,
 } from './metric-catalogue';
@@ -87,6 +91,7 @@ export const GROUPS: MetricGroup[] = [
       SIGN_IN_PROMPTS,
       WELCOME_TOUR,
       PLAN_TOUR,
+      CARD_TYPE_TOUR,
       POWER_USER_OFFER,
       NEW_VERSION_PROMPT,
     ],
@@ -97,7 +102,9 @@ export const GROUPS: MetricGroup[] = [
       DOCUMENT_ACTIONS,
       TRASH,
       PLAN_BOARDS,
+      SHEETS,
       TAB_ACTIONS,
+      SIDE_BY_SIDE,
       ELEMENTS_ADDED,
       ELEMENT_EDITING,
       TABLES,
@@ -158,7 +165,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Health & support',
-    metrics: [EXCEPTIONS, HELP_CENTRE],
+    metrics: [EXCEPTIONS, LOAD_RECOVERY, HELP_CENTRE],
   },
   {
     // Written server-side by the api worker: nothing about a send reaches a

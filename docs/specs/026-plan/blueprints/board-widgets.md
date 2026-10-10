@@ -68,7 +68,8 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
   A tap on one it has returns `already`, said as "<Label> is already on this board".
 - New kinds and their stats (`widget-stats.ts`): `points` (`boardPoints`), `priorities` (`priorityCounts`),
   `unassigned` (`unassignedCount`), `top-voted` (`topVoted`), `stale` (`staleCount`, `STALE_DAYS` 14). Presets
-  carry their own `widgets` (presets.ts); Blank keeps the default set.
+  carry their own `widgets` (presets.ts), Blank included, per board-widgets.md "Defaults"; a guard test keeps
+  Completion off any preset or template board without `doneColumnId` and WIP Alerts off any without a `wipLimit`.
 - Counts render through `CountBadge` from `@livediagram/ui` at `size="md"` (an 18 px pill with
   `text-optical-centre`) painted with the board's `background`/`color`, shared with column heads.
 
@@ -80,23 +81,23 @@ apps/live/components/palette/palette-plan-tiles.tsx   a tile per kind, section `
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                    |
-| ------------------------------------ | ----------------------------------------------------------- |
-| Dropped off any header               | Nothing placed; toast "Drop a widget into a board’s header" |
-| Tapped with no board to choose       | Toast "Select a board to add the widget to"                 |
-| A viewer who may not edit            | Zone has no ×, no drag, no keys; drops are refused          |
-| Kind the board already has           | Moves to the drop place (tap: to the end)                   |
-| Completion with no done column       | "No done column"                                            |
-| Votes Left on a board without voting | Renders nothing                                             |
-| Items of a type the catalogue lost   | Counted under the type they read as (`typeIn`)              |
-| More widgets than fit                | The zone scrolls sideways                                   |
+| Case                               | Handling                                                    |
+| ---------------------------------- | ----------------------------------------------------------- |
+| Dropped off any header             | Nothing placed; toast "Drop a widget into a board’s header" |
+| Tapped with no board to choose     | Toast "Select a board to add the widget to"                 |
+| A viewer who may not edit          | Zone has no ×, no drag, no keys; drops are refused          |
+| Kind the board already has         | Moves to the drop place (tap: to the end)                   |
+| Completion with no done column     | "No done column"                                            |
+| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)              |
+| More widgets than fit              | The zone scrolls sideways                                   |
 
 ## Presentation and UX
 
 - Pill: `h-7 rounded-md border px-2 text-[12px] font-medium`, border `palette.border`, text `palette.muted`,
   figures `palette.text`; WIP over: `palette.warning` on `palette.warningBg`.
 - Drop / reorder bar: 2 × 24 px, `palette.focus`. A zone under a palette drag: 1.5 px dashed `palette.focus`.
-- Empty zone copy for an editor: "Drag Widgets here from the palette".
+- Empty zone copy for an editor, only while the board is selected (`BoardWidgetZone` `selected`): "Drag Widgets
+  here from the palette" and its **+**; unselected, the empty zone draws nothing but the palette drag's drop bar.
 - × : 16 px disc at the wrapper's top right, shown only while the board is selected (`selected`, from `PlanBoardHeader`), on any pointer; otherwise `display: none`, so it is out of the tab order too (Delete still removes a focused widget).
 
 ## Accessibility

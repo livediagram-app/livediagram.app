@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { StickyNotes } from '@/components/illustrations/palette-tools';
+import { PaletteRows } from '@/components/illustrations/palette-rows';
 
 export const metadata = helpMetadata({
   title: 'Sticky Notes',
@@ -27,16 +28,38 @@ A sticky note is a small coloured card for a short piece of text: an idea, a que
 
 ## Adding one
 
-<Step n={1}>Open the floating palette and switch to the **Write** category.</Step>
-<Step n={2}>Click **Add sticky note**, then type your text.</Step>
+<Step n={1}>
+  Open the **Write** category on the palette strip, or press `N` to skip the palette.
+</Step>
+<Step n={2}>
+  Pick **Note**, then tap the canvas to drop a 200 &times; 200 note, or drag to draw it at the size
+  you want.
+</Step>
+<Step n={3}>Double-click the note to type.</Step>
+
+<Figure caption="The Write category with Note armed: the sticky note's row, with its N key on the right.">
+  <PaletteRows category="Write" active="Note" />
+</Figure>
+
+The note is also in **Popular** in Diagram mode, and in Plan mode's **Content** category.
+
+## Writing on a note
+
+A note holds several lines of text and wraps it as you type. While you are editing, **Enter** starts a new line, **Escape** cancels the edit, and clicking away commits it. Text that outgrows the note is clipped rather than spilling out, so resize the note to show the rest.
+
+## Colours
+
+A sticky note keeps its own colour whatever the [theme](/help/canvas/themes/): it lands in the classic amber of a paper note, and changing the tab's theme never recolours it, because a note's colour is usually your own shorthand (ideas in yellow, risks in pink) rather than part of the diagram's palette.
+
+To recolour one, right-click it and open **Style**. Its **Presets** are a pad of twelve note colours, each with a readable ink for its paper: **Classic**, **Lemon**, **Peach**, **Rose**, **Lilac**, **Sky**, **Mint**, **Teal**, **Slate**, **Paper**, **Charcoal** and **Ink**. **Colours** sets the paper and text by hand if none of them fits.
 
 ## Working with them
 
-Stickies move, resize, and recolour like everything else, and their colour follows the active [theme](/help/canvas/themes/). Scatter a wall of them for a brainstorm, then drag related ones together, or pull them into a [frame](/help/palette/build/frames/) to organise the result.
+Stickies move, resize, lock and layer like everything else. Scatter a wall of them for a brainstorm, select several at once to restyle or move them together, or pull them into a [frame](/help/palette/build/frames/) so the cluster travels as one.
 
 <Tip>
   Sticky notes pair naturally with [dot voting](/help/collaboration/session-tools/voting/) in a live
-  session, capture ideas on stickies, then vote on them together.
+  session: capture ideas on stickies, then vote on them together.
 </Tip>
 
 </ArticleLayout>

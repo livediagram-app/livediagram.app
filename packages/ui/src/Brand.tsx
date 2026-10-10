@@ -43,7 +43,9 @@ export function Brand({
           transition: 'color var(--transition-duration-micro) ease-out',
         }}
       />
-      <span className={wordmarkClassName}>
+      {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
+          contrast audits skip it by this mark. */}
+      <span className={wordmarkClassName} data-logotype="">
         live
         <span className={accentColor ? '' : 'text-brand-500 dark:text-sky-400'} style={accentStyle}>
           diagram

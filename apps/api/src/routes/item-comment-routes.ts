@@ -6,24 +6,14 @@
 
 import { applyItemComment, itemThread, type ItemCommentChange } from '@livediagram/document';
 import type { Item, ItemPerson } from '@livediagram/items';
-import { badRequest, forbidden, json, methodNotAllowed, noContent } from '../responses';
+import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { recordCommentResolved } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';
-import { gateEdit, type RouteContext } from './context';
-import { itemCaller, writeItem, type ItemCaller } from './item-routes';
+import { gateEdit, readBody, type RouteContext } from './context';
+import { itemCaller, type ItemCaller } from './item-route-kit';
+import { writeItem } from './item-routes';
 
 type Verb = 'resolve' | 'reopen';
-
-async function readBody(ctx: RouteContext): Promise<Record<string, unknown> | Response> {
-  try {
-    const body: unknown = await ctx.request.json();
-    return typeof body === 'object' && body !== null && !Array.isArray(body)
-      ? (body as Record<string, unknown>)
-      : badRequest('expected a JSON object');
-  } catch {
-    return badRequest('invalid json');
-  }
-}
 
 // One comment change against the item as stored, or the refusal: a full thread, a missing comment, or (a
 // resolve that changes nothing) an empty answer with nothing written.

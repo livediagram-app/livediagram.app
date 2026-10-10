@@ -106,6 +106,9 @@ export type PaletteTileSection =
   // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
   | 'plan-metrics'
   | 'plan-visualisations'
+  // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
+  | 'logo'
+  | 'plan-sheets'
   | 'tools'
   | 'data'
   // 'collaborate' is GONE (docs/specs/010-palette/palette-top-level-categories.md). The collaboration family (docs/specs/012-collaboration/estimate-card.md to
@@ -151,6 +154,8 @@ type PaletteTileAction =
   | { type: 'video'; provider?: EmbedProvider }
   | { type: 'sticker'; stickerId: string }
   | { type: 'polygon' }
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
+  | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
@@ -176,7 +181,14 @@ type PaletteTileAction =
   // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
   // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are
   // the person's own, read when the Search opens.
-  | { type: 'marker'; penId: WhiteboardPenId; colour: PenColour | null; width: number };
+  | {
+      type: 'marker';
+      penId: WhiteboardPenId;
+      colour: PenColour | null;
+      width: number;
+      // Picked up for one stroke (a logo page's palette), as the pencil is.
+      once?: true;
+    };
 
 // Themed sub-groups within the Tools section (docs/specs/008-canvas/canvas-and-palette.md "Sub-categories"):
 // the Tools tab renders one labelled grid per group instead of a flat
@@ -251,6 +263,9 @@ export type PaletteTileDef = {
   // Tile only renders when the editor supplies onAddImage (image uploads
   // available) — the Image / Avatar / Hero / Header tiles.
   needsImage?: boolean;
+  // Greyed out with its reason (no press, no drag, the reason in its hover card). A card tile no board on the tab
+  // takes gets one at render (usePlanCardTileDisabled, docs/specs/026-plan/plan-mode.md "The palette").
+  disabled?: { reason: string };
   // Ends a group of related tiles in its category: a fixed divider follows it on the Toolbar
   // strip, between it and the next tile shown (docs/specs/007-editor/toolbar-layout.md "Fixed
   // dividers"). Never more than two per category.
@@ -446,7 +461,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     section: 'build',
     label: 'Add mind node',
     description:
-      'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below — each connected and ready to type into.',
+      'A mind-map node. With one selected, Tab adds a child to its right and Enter adds a sibling below, each connected and ready to type into.',
     action: { type: 'shape', kind: 'mind-node' },
     icon: (
       <Glyph size={18} units={24}>
@@ -493,6 +508,19 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <Prims prims={lucideType} />
       </Glyph>
     ),
+  },
+  // The Path tool as a logo page's Pen (docs/specs/007-editor/logo-pages.md "The Logo palette"):
+  // the same tool Draw mode's dock holds, in the Logo category only.
+  {
+    id: 'logo:pen',
+    blurb: 'Click for corners, drag for curves',
+    section: 'logo',
+    caption: 'Pen',
+    label: 'Pen',
+    description:
+      'Draw a precise path: click to place corners, drag to pull out curves, and close it on its first point.',
+    action: { type: 'path' },
+    icon: <ShapePenIcon size={TILE_GLYPH_PX} />,
   },
   {
     id: 'tools:pencil',
@@ -832,7 +860,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     toolGroup: 'behaviour',
     label: 'Add stopwatch button',
     description:
-      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set — a stopwatch has no length.',
+      'A button that starts a stopwatch for everyone in the room, counting up from zero. Pressing it again pauses, and again continues. Nothing to set: a stopwatch has no length.',
     filled: true,
     action: { type: 'shape', kind: 'session-button', session: 'stopwatch' },
     icon: <StopwatchIcon size={TILE_GLYPH_PX} />,
@@ -875,7 +903,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add reveal zone',
     caption: 'Reveal',
     description:
-      'A cover over part of the canvas. Click it to uncover it just for you, or reveal it for everyone from the menu.',
+      'A cover over part of the canvas. Double-click it to uncover it just for you, or reveal it for everyone from the menu.',
     filled: true,
     action: { type: 'shape', kind: 'reveal' },
     icon: <RevealIcon size={TILE_GLYPH_PX} />,
@@ -986,7 +1014,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     label: 'Add picker',
     caption: 'Picker',
     description:
-      'Press it to choose at random — one of the people in the room, or one of the options you write on it.',
+      'Press it to choose at random: one of the people in the room, or one of the options you write on it.',
     filled: true,
     action: { type: 'shape', kind: 'picker' },
     icon: <PickerIcon size={TILE_GLYPH_PX} />,
@@ -1065,7 +1093,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     tileGroup: 'record',
     label: 'Add action panel',
     description:
-      'A card that carries one assigned action: what needs doing, who owns it, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
+      'A card that carries a list of assigned actions: what needs doing, who owns each, and whether it is done. Set it up from the card, and join it to what it is about with an arrow.',
     filled: true,
     action: { type: 'shape', kind: 'action-card' },
     icon: (

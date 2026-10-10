@@ -21,7 +21,7 @@ a text element): the text here is the page's own, one continuous piece of writin
 | **block**         | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break or a zone.                |
 | **run**           | A stretch of a block's text with the same formatting (`ArticleRun`).                                                                            |
 | **zone**          | A block that holds canvas elements instead of text: an **object zone** hugs one object; a **drawing zone** is an area to draw and connect in.   |
-| **wrap**          | How a zone sits in the writing: **In line** (on its own line), **Wrap left** or **Wrap right** (the text runs down beside it).                  |
+| **wrap**          | How a zone sits in the writing: **In Line** (on its own line), **Wrap Left** or **Wrap Right** (the text runs down beside it).                  |
 | **article style** | The article's look (`ArticleFlow.style`): fonts, accent, text size, spacing, heading rules, margins, page numbers.                              |
 | **look**          | A named article style to start from (Clean, Classic, Report, Notebook, Bold).                                                                   |
 | **page toolbar**  | The formatting bar at the top of the page being written on.                                                                                     |
@@ -87,7 +87,8 @@ livediagram file that holds tabs ([Document](../006-document/document.md)). The 
   level restarts that level's count; any other block ends the run. Level 0 counts 1, 2, 3;
   level 1 a, b, c; level 2 i, ii, iii; then repeat. Bullets by level: •, ◦, ▪.
 - A **done to-do** is struck through and muted. Pressing its box toggles it, for anyone who may
-  edit (one edit).
+  edit (one edit); so does ⌘Enter with the caret in it (every selected to-do: ticked, or unticked
+  when all already are).
 - **Empty blocks** show a faint placeholder to someone writing: the title "Title", a heading
   "Heading 1", a list "List", an empty article's first paragraph after the title "Start
   writing, or press / for blocks".
@@ -96,7 +97,7 @@ livediagram file that holds tabs ([Document](../006-document/document.md)). The 
 
 Bold, italic, underline, strikethrough, inline code, superscript, subscript, a **link** (an
 http, https or mailto address), a **text colour** and a **highlight** (each a hex colour from the
-article's swatches), and a line break inside a block (Shift+Enter). Code blocks keep plain text.
+[colour picker](../004-interface-design/colour-picker.md)), and a line break inside a block (Shift+Enter). Code blocks keep plain text.
 
 ## Writing
 
@@ -124,8 +125,8 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   closing mark is typed. Backspace right after a conversion puts the characters back.
 - **Keyboard**: ⌘B, ⌘I, ⌘U, ⌘⇧X (strikethrough), ⌘E (inline code), ⌘K (link), ⌘⌥0 (body),
   ⌘⌥1 to ⌘⌥3 (headings), ⌘⇧7 (numbered), ⌘⇧8 (bullets), ⌘⇧9 (to-do), ⌘⇧L / E / R / J (align left,
-  centre, right, justify), ⌘\ (clear formatting), ⌘Z / ⌘⇧Z (undo, redo), ⌘A (all the
-  article's writing), Escape (leave the writing; the caret goes, nothing is selected).
+  centre, right, justify), ⌘\ (clear formatting), ⌘Enter (tick or untick the to-do at the
+  caret), ⌘Z / ⌘⇧Z (undo, redo), ⌘A (all the article's writing), Escape (leave the writing; the caret goes, nothing is selected).
 - **Paste**: from a web page or another editor, its headings, lists, quotes, code, links and
   bold / italic / underline / strike are kept, everything else dropped; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
@@ -139,7 +140,8 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   it closes when the caret leaves the `/`. Entries: **Text**, **Title**, **Subtitle**, **Heading
   1 to 3**, **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code**,
   **Divider**, **Page break**, **Image**, **Table**, **Bar chart**, **Pie chart**, **Line chart**,
-  **Drawing**, **Callout**, **Sticky note**, **Icon**.
+  **Drawing**, **Callout**, **Sticky note**. (An icon comes in from the palette, where one is
+  chosen: dropped or placed on the writing it lands as an object zone.)
 - **Commits**: typing is written to the tab when the writing pauses for **600** ms
   (`ARTICLE_IDLE_COMMIT_MS`), when the caret leaves the writing, before any edit that is not typing
   (a toolbar change, an insert, a zone move) and before an undo. Each commit is one undo step and
@@ -156,13 +158,13 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
   the card, the card shrinks to fit it (to 55%) rather than cover the writing; it never leaves the page: a page
   narrower on screen than the card narrows it (its controls scroll), and it goes from view with
   the page's top. Held at one screen size at any zoom. It never takes focus from the writing.
-- **When**: for someone who may edit, on the page of the article being worked on, from the moment
+- **When**: for someone who may edit, never for an article with a locked page, on the page of the article being worked on, from the moment
   its writing takes the caret until a press lands off that article's pages (a press on its paper,
   on its toolbar, menus or zone bar, its label row and cog, its page panel, or an element on it
   keeps it); else on the article page
   under the pointer (a moment's grace after the pointer leaves, so it can cross to the card). A
   control used while hovering acts on the article's own selection and puts the caret back in it.
-- **Look**: the Toolbar layout's card exactly (`toolbar-surface.ts`): the same surface, 36 px
+- **Look**: the Toolbar strip's card exactly (`toolbar-surface.ts`): the same surface, 36 px
   controls, hairline dividers, and the Style menu's trigger in the brand tint of the palette's
   pickers, so it reads as the same product as the panels around it.
 - **Controls**, left to right, each with a tooltip naming it and its shortcut, pressed state shown
@@ -172,14 +174,14 @@ article's swatches), and a line break inside a block (Shift+Enter). Code blocks 
     Bullets, Numbers, To-do for a list) and is only as wide as the name shown, the menu keeping
     the full names;
   - **Bold**, **Italic**, **Underline**;
-  - **Colour** (a menu: **Text** then **Highlight**, each led by its clearing choice, **Default
-    colour** / **No highlight**; text offers the article's **Accent** and nine fixed colours chosen
-    to read on paper (Gray, Red, Orange, Amber, Green, Teal, Blue, Purple, Pink); highlight nine
-    pale tints (Yellow, Orange, Red, Green, Teal, Blue, Purple, Pink, Gray));
+  - **Colour** (a menu holding two colour pickers,
+    [Colour picker](../004-interface-design/colour-picker.md): **Text**, led by **Default colour**
+    and the article's **Accent**, then the strong standard colours for paper; **Highlight**, led by
+    **No highlight**, then the soft standard colours; each with Custom colours and **+**);
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
-  - **More formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
+  - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
   - **Insert** (a menu: Image, Table, Chart, then Divider, Page break, Quote, Code; a drawing
     starts from a shape dropped on the page or the slash menu's **Drawing**, a callout from the
@@ -221,9 +223,9 @@ laid out with it, holding ordinary canvas elements that move with it.
   edge (wider or narrower, up to the text width, a wrapped zone two thirds of it) and its
   bottom-right corner (both); it grows to keep its elements inside it with 24 px to spare, and never
   shrinks past them.
-- **Wrap**: **In line** (default; on its own line between blocks, aligned left, centre (default)
-  or right), **Wrap left** (at the left of the text, the text running down its right) or **Wrap
-  right**. A wrapped zone is at most two thirds of the text width; it keeps 14 px clear of the
+- **Wrap**: **In Line** (default; on its own line between blocks, aligned left, centre (default)
+  or right), **Wrap Left** (at the left of the text, the text running down its right) or **Wrap
+  Right**. A wrapped zone is at most two thirds of the text width; it keeps 14 px clear of the
   text beside it.
 - **Elements belong to a zone** while their centre (an arrow: the midpoint of its ends) is inside
   it, and **move with it** whenever the writing moves it (typing above it, a page break, a new
@@ -239,12 +241,14 @@ laid out with it, holding ordinary canvas elements that move with it.
   element dragged into a drawing zone joins it; one whose centre stays inside but pokes out grows
   the zone.
 - **The zone bar**: a small bar under a zone's bottom edge while the zone or one of its elements
-  is selected: a **grip** (tooltip **Drag to move**), then **In line**, **Wrap left**, **Wrap
-  right**, **Float**, then (In line) **Align left / centre / right**, then **Delete** (the zone and
-  its elements). **Float** lets the zone go: its block leaves the writing and its elements stay
+  is selected: a **grip** (tooltip **Drag to Move**), then **In Line**, **Wrap Left**, **Wrap
+  Right**, **Float**, then (In Line) **Align Left**, **Align Centre**, **Align Right**, then
+  **Delete** (**Delete Drawing** for a drawing zone: the zone and its elements). The grip is a
+  focus stop: with it focused, the arrow keys step the zone a block up (Up / Left) or down
+  (Down / Right) in the writing, its elements with it, one edit each. **Float** lets the zone go: its block leaves the writing and its elements stay
   where they are, in front of the text, as loose elements. A floating object (loose boxes on an
   article page, in no zone) shows the same bar with **Float** pressed and no grip or Delete;
-  choosing **In line**, **Wrap left** or **Wrap right** puts it back into the writing at the block
+  choosing **In Line**, **Wrap Left** or **Wrap Right** puts it back into the writing at the block
   boundary nearest it.
 - **Moving a zone**: dragging the grip carries a dashed ghost of the zone with the pointer, the
   zone itself dimmed in place, and a **drop caret** (a brand line across the column, a ring at each
@@ -275,7 +279,7 @@ a comment or an action does on an element it does here (threads, mentions, resol
 due dates, Activity, email), because it lives on an element: a **margin note**.
 
 - **Putting one on**: with text selected, the page toolbar's **Comment** (⌘⌥M) or **Assign
-  action** button. The text is tinted (amber for a comment, sky blue for an action, translucent so
+  Action** button. The text is tinted (amber for a comment, sky blue for an action, translucent so
   it reads on a dark page) and underlined; a marker (an annotation, `articleNote`, 32 px) appears
   in the page's right margin, centred in the margin and level with the text's first line; the
   comment thread opens on it, or the Assign Action dialog. One edit.
@@ -298,7 +302,7 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 ## Leaving Illustrate
 
 Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
-Illustrate (the mode switch or Shift+D; not Opens in) is asked first, in a dialog **Turn Articles
+Illustrate (the mode switch, Shift+D or the tab menu's Mode) is asked first, in a dialog **Turn Articles
 Into Pages?**:
 
 - **Turn Into Pages** (the default button): every article page becomes a **Page** element
@@ -311,14 +315,21 @@ Into Pages?**:
 - **Keep as Articles**: the switch, the articles left as they are for Illustrate.
 - **Cancel**: no switch.
 
+**A lock holds an article as it is** ([Illustrate pages](illustrate-pages.md) "Locking a page"):
+an article with any page locked is never turned. **Turn Into Pages** turns the other articles and
+leaves it an article, its pages, writing and margin notes untouched, for when the tab is back in
+Illustrate; and it is not asked of at all when every article on the tab has a locked page: the
+switch asks only the lighter confirmation a tab with content but no articles asks
+([Editor modes](editor-modes.md) "Leaving Illustrate").
+
 A visitor, a locked tab, or a tab with no articles switches straight away.
 
 ## Article style
 
 Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
-**Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in accent,
-Margins and Page numbers; **Text** holds Fonts, then Text size, Line spacing, Paragraph spacing and
-Lines under text (under **Size and Spacing**). Every change is one edit, previewed on the page while
+**Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
+Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
+Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.
 
 - **Looks** (a row of cards, each drawn as a miniature page in that look):
@@ -331,16 +342,17 @@ a choice is hovered.
 - **Fonts**: **Headings** and **Body**, each a font from the font catalogue
   ([Fonts](../004-interface-design/fonts.md)).
 - **Accent**: the colour of headings (when accented), links, quote bars, bullets, rules and to-do
-  boxes: **Theme** (the tab theme's accent, the default) or one of eight presets.
-- **Headings in accent**: on or off (off: headings in ink).
-- **Text size**: Small (14 px), Normal (16 px, default), Large (18 px); headings scale with it.
-- **Line spacing**: Single (1.3), 1.5 (default 1.5), Double (2.0).
-- **Paragraph spacing**: None, Normal (default, 0.75 of a line), Wide (1.5 lines).
-- **Lines under text**: **None** (default), **Under the title**, **Under headings** (the title and
-  every heading), a hairline in the accent under the block's last line.
+  boxes: **Theme** (the tab theme's accent, the default) or any colour from the colour picker (the strong
+  standard colours, Custom colours, **+**), previewed on hover or focus.
+- **Headings in the Accent**: on or off (off: headings in ink).
+- **Text Size**: Small (14 px), Normal (16 px, default), Large (18 px); headings scale with it.
+- **Line Spacing**: Single (1.3), 1.5 (default 1.5), Double (2.0).
+- **Paragraph Spacing**: None, Normal (default, 0.75 of a line), Wide (1.5 lines).
+- **Lines Under Text**: **None** (default), **Title** (under the title), **Headings** (under the
+  title and every heading), a hairline in the accent under the block's last line.
 - **Margins**: Narrow (48 px), Normal (96 px, default), Wide (144 px); the top margin is never
   less than 72 px, room for the page toolbar.
-- **Page numbers**: on or off (default).
+- **Page Numbers**: on or off (default).
 - **Ruled lines**: the page's **Lines** pattern on an article page is drawn on the text's own
   baselines, at the body line height, inside the margins: lined paper the writing sits on.
 
@@ -377,7 +389,11 @@ ink").
 - **Diagram and Draw modes** show the tab's elements as always; the writing belongs to the pages
   and shows only in Illustrate mode (its zones' elements stay on the canvas where they are).
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
-  toolbar, no zone bar.
+  toolbar, no zone bar. **A locked page** makes its whole article read the same way for everyone
+  ([Illustrate pages](illustrate-pages.md) "Locking a page"), from any of its pages: no caret, no
+  page toolbar (hovered or worked on), no zone bar, nothing taken into its writing (an element
+  dropped on one of its unlocked pages stays a loose element), and its page count and zones held as
+  they are.
 
 ## Collaboration
 
@@ -393,7 +409,9 @@ ink").
   writer, and none go out while a hide-cursors vote is open. Collaborators' carets never appear in
   an export or thumbnail.
 - Only the writer of a change writes its consequences (zone moves, pages added or removed), so
-  two people's views never fight over them.
+  two people's views never fight over them. The writer is whoever changed the article within the
+  last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it. Having the
+  caret in it is not writing: two people in one article never both add a page for one overflow.
 
 ## Telemetry
 
@@ -403,7 +421,8 @@ ink").
 - `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
   a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
   `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,
-  `ArticleQuote`, `ArticleCode`; and `ArticleComment`, `ArticleAction` for a margin note.
+  `ArticleQuote`, `ArticleCode`; and `ArticleComment`, `ArticleAction` for a margin note. Each is
+  counted once the insert went in, never for one refused (no caret, a lock).
 - `Element · Changed · ArticleFormat` (a mark from the toolbar), `ArticleBlockStyle` (style menu,
   lists), `ArticleLink`, `ArticlePaste` (Markdown pasted as blocks), `ArticleZoneWrap`,
   `ArticleZoneFloat`, `ArticleZoneResized`, `ArticleZoneMoved`, `ArticleZoneRemoved`.

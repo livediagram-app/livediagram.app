@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@livediagram/items';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { fieldsFromPairs, itemAdd, itemLs, itemMove, itemRm, itemSet } from './item';
@@ -23,6 +23,35 @@ const ITEMS = [
   item(1, 'itembbb111', { title: 'Fix login', status: 'doing', priority: 'high' }, 'bug'),
 ];
 const path = `/documents/${DOC_A}/items`;
+const BUG = {
+  ...ITEM_TYPES[1],
+  id: 'bug',
+  label: 'Bug',
+  custom: [{ id: 'f-severity', label: 'Severity', kind: 'text' }],
+};
+const PLAN = {
+  boards: [
+    {
+      tabId: 't1',
+      tabName: 'Board',
+      elementId: 'b1',
+      title: 'Sprint',
+      kind: 'board',
+      types: null,
+      columns: [
+        { status: 'todo', name: 'To Do' },
+        { status: 'doing', name: 'Doing' },
+        { status: 'done', name: 'Done' },
+      ],
+    },
+  ],
+  statuses: [
+    { status: 'todo', name: 'To Do' },
+    { status: 'doing', name: 'Doing' },
+    { status: 'done', name: 'Done' },
+  ],
+  types: [...ITEM_TYPES, BUG],
+};
 
 function api(extra: Record<string, unknown> = {}) {
   const seen: { method: string; path: string; body: unknown }[] = [];
@@ -39,6 +68,7 @@ function api(extra: Record<string, unknown> = {}) {
     ...tabsOfA,
     [path]: (r: Request) =>
       r.method === 'GET' ? Response.json({ items: ITEMS, rev: 4 }) : echo(r),
+    [`/documents/${DOC_A}/plan`]: PLAN,
     [`${path}/itembbb111`]: echo,
     [`${path}/itembbb111/move`]: echo,
     ...extra,
@@ -50,12 +80,19 @@ describe('item ls', () => {
   it('lists by number, narrowed by type and status', async () => {
     const { ctx } = api();
     const all = await itemLs.run!(ctx, { doc: DOC_A, type: undefined, status: undefined });
-    expect(itemLs.text!(all)).toEqual(['#1  bug   doing  "Fix login"', '#2  task  todo   "Docs"']);
+    expect(itemLs.text!(all)).toEqual([
+      'Sprint: To Do 1 · Doing 1 · Done 0',
+      '#1  bug   Doing  "Fix login"',
+      '#2  task  To Do  "Docs"',
+    ]);
     const bugs = await itemLs.run!(ctx, { doc: DOC_A, type: 'bug', status: undefined });
     expect(itemLs.quiet!(bugs)).toEqual(['#1']);
     expect(
       (await itemLs.run!(ctx, { doc: DOC_A, type: undefined, status: 'todo' })).items,
     ).toHaveLength(1);
+    expect(
+      (await itemLs.run!(ctx, { doc: DOC_A, type: 'Bug', status: 'to do' })).items,
+    ).toHaveLength(0);
   });
 });
 
@@ -67,7 +104,7 @@ describe('item writes', () => {
       itemAdd.input.parse({
         doc: DOC_A,
         title: 'New',
-        status: 'todo',
+        status: 'To Do',
         fields: ['priority=high', 'labels=ux, api', 'estimate=3'],
       }),
     );
@@ -90,15 +127,15 @@ describe('item writes', () => {
         doc: DOC_A,
         item: '#1',
         fields: ['priority=urgent'],
-        clear: ['due'],
-        type: 'story',
+        clear: ['Due Date'],
+        type: 'Bug',
       }),
     );
     expect(seen[0]).toMatchObject({
       path: `${path}/itembbb111`,
-      body: { set: { priority: 'urgent' }, clear: ['due'], type: 'story' },
+      body: { set: { priority: 'urgent' }, clear: ['due'], type: 'bug' },
     });
-    await itemMove.run!(ctx, { doc: DOC_A, item: '1', status: 'todo', before: '#2' });
+    await itemMove.run!(ctx, { doc: DOC_A, item: '1', status: 'to-do', before: '#2' });
     expect(seen[1]).toMatchObject({
       path: `${path}/itembbb111/move`,
       body: { status: 'todo', before: 'itemaaa222' },
@@ -147,7 +184,8 @@ describe('item output and refusals', () => {
     const { ctx } = api();
     const refusal = await itemRm.run!(ctx, { doc: DOC_A, item: 'item' }).catch((e: unknown) => e);
     expect(refusal).toBeInstanceOf(VerbRefusal);
-    expect((refusal as VerbRefusal).code).toBe('ambiguous');
+    expect((refusal as VerbRefusal).code).toBe('item_unknown');
+    expect((refusal as VerbRefusal).message).toMatch(/more than one item/);
   });
 
   it("names the api's refusal, and passes any other failure on", async () => {
@@ -157,11 +195,14 @@ describe('item output and refusals', () => {
       }).ctx;
     const refusal = await itemSet.run!(
       refusing(400),
-      itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['a=b'] }),
+      itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['priority=high'] }),
     ).catch((e: unknown) => e);
     expect(refusal).toBeInstanceOf(VerbRefusal);
     await expect(
-      itemSet.run!(refusing(500), itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['a=b'] })),
+      itemSet.run!(
+        refusing(500),
+        itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['priority=high'] }),
+      ),
     ).rejects.not.toBeInstanceOf(VerbRefusal);
     await expect(itemRm.run!(refusing(500), { doc: DOC_A, item: '#1' })).rejects.toThrow();
   });
@@ -174,7 +215,10 @@ describe('item edges', () => {
     });
     const out = await itemLs.run!(ctx, { doc: DOC_A, type: undefined, status: undefined });
     expect(out.items[0]!.status).toBeNull();
-    expect(itemLs.text!(out)).toEqual(['#5  task  -  "Loose"']);
+    expect(itemLs.text!(out)).toEqual([
+      'Sprint: To Do 0 · Doing 0 · Done 0',
+      '#5  task  -  "Loose"',
+    ]);
   });
 
   it('calls a refusal with no code invalid', async () => {
@@ -183,8 +227,87 @@ describe('item edges', () => {
     });
     const refusal = await itemSet.run!(
       ctx,
-      itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['a=b'] }),
+      itemSet.input.parse({ doc: DOC_A, item: '#1', fields: ['priority=high'] }),
     ).catch((e: unknown) => e);
-    expect((refusal as VerbRefusal).code).toBe('invalid');
+    expect((refusal as VerbRefusal).code).toBe('http_400');
+  });
+
+  it('says plainly when the card type does not use the status', async () => {
+    const { ctx } = api({
+      [`${path}/itembbb111/move`]: () =>
+        Response.json({ error: 'status_excluded', field: 'status' }, { status: 400 }),
+    });
+    const refusal = await itemMove.run!(ctx, {
+      doc: DOC_A,
+      item: '#1',
+      status: 'done',
+      before: undefined,
+    }).catch((e: unknown) => e);
+    expect((refusal as VerbRefusal).code).toBe('status_excluded');
+    expect((refusal as VerbRefusal).message).toMatch(/card type does not use that column/);
+  });
+});
+
+describe('item names (docs/specs/026-plan/plan-agents.md)', () => {
+  it('refuses a column, type or field the document lacks, listing what is there', async () => {
+    const { ctx, seen } = api();
+    const column = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ doc: DOC_A, title: 'x', status: 'Review' }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(column).toMatchObject({ code: 'status_unknown' });
+    expect((column as VerbRefusal).message).toContain('Columns: To Do, Doing, Done');
+    const type = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ doc: DOC_A, title: 'x', type: 'Epic' }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(type).toMatchObject({ code: 'type_unknown' });
+    const field = await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({ doc: DOC_A, title: 'x', type: 'bug', fields: ['Effort=3'] }),
+    ).catch((e: unknown) => e as VerbRefusal);
+    expect(field).toMatchObject({ code: 'field_unknown' });
+    expect(seen).toEqual([]);
+  });
+
+  it('sets a custom field and an assignee by name', async () => {
+    const { ctx, seen } = api();
+    await itemAdd.run!(
+      ctx,
+      itemAdd.input.parse({
+        doc: DOC_A,
+        title: 'Crash',
+        type: 'Bug',
+        fields: ['severity=S2', 'assignee=Sam'],
+      }),
+    );
+    expect(seen[0]!.body).toMatchObject({
+      type: 'bug',
+      fields: { 'f-severity': 'S2', assignee: { id: 'n-sam', name: 'Sam' }, title: 'Crash' },
+    });
+  });
+});
+
+describe('item edges after names', () => {
+  it('prints a write whose item has no status, the no-board hint, and a refused delete', async () => {
+    const { ctx } = api({
+      [path]: (r: Request) =>
+        r.method === 'GET'
+          ? Response.json({ items: ITEMS, rev: 4 })
+          : Response.json({ item: item(7, 'itemfff777', { title: 'Loose' }), rev: 5 }),
+    });
+    const out = await itemAdd.run!(ctx, itemAdd.input.parse({ doc: DOC_A, title: 'Loose' }));
+    expect(out.item.status).toBeNull();
+    const bare = api({
+      [`/documents/${DOC_A}/plan`]: { boards: [], statuses: [], types: ITEM_TYPES },
+    }).ctx;
+    const ls = await itemLs.run!(bare, { doc: DOC_A, type: undefined, status: undefined });
+    expect(itemLs.text!(ls)[0]).toContain('no Plan board yet');
+    const refusing = api({
+      [`${path}/itembbb111`]: () => Response.json({ error: 'forbidden' }, { status: 403 }),
+    }).ctx;
+    await expect(itemRm.run!(refusing, { doc: DOC_A, item: '#1' })).rejects.toMatchObject({
+      code: 'forbidden',
+    });
   });
 });

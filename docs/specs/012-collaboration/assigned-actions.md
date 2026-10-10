@@ -271,16 +271,14 @@ which crowded the same corner:
   `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
 - **It lives behind a button in the bottom-right cluster.** A
   **Collaborate** button (speech-bubble glyph) sits **right after the Layers
-  button**, in every layout ([Layers](../006-document/layers.md) is the model). It shows the tab's
+  button** ([Layers](../006-document/layers.md) is the model). It shows the tab's
   **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
   zero). Pressing it opens the panel as a **popover hanging above it**
-  (`computeDockAnchor(..., 'above')`) in **every** layout, desktop Floating
-  included; a second press or a press outside closes it, and it shares the
+  (`computeDockAnchor(..., 'above')`); a second press or a press outside closes it, and it shares the
   dock's one-open-at-a-time slot with Layers, Activity and the Explorer.
-  Floating does not dock it in a corner the way it docks Layers: a panel
-  this tall, docked bottom-right, ran up under the Palette on a short window,
-  and a popover never meets another corner. It renders outside the corner
-  layer for the same reason Toolbar's cluster popovers do.
+  It is never docked in a corner: a panel this tall, docked bottom-right, would run up a short
+  window, and a popover never meets another corner. It renders outside the corner
+  layer, as Layers does.
 - **The button shows only when it is relevant: the active tab has at least
   one comment thread OR one action**, open or resolved. Nothing to
   collaborate on, no button and no panel. Unlike Layers it is there for a

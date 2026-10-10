@@ -18,7 +18,9 @@ import {
   ownColours,
   isSelfDrawingShape,
   isUprightTitle,
+  labelBodyInset,
   uprightTitleStrip,
+  voteKeyOf,
   type ShapeMarker,
   type TextSize,
 } from '@livediagram/document';
@@ -48,12 +50,16 @@ import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
+import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
+import { AnimationLayer } from '@/components/canvas/AnimationLayer';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
+import { clearingInset } from '@/components/canvas/InsetContent';
 import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
+import { isPanThrough } from '@/hooks/canvas/pan-through';
 
 // Wrapped in React.memo at the export below: with id-bearing
 // callbacks the parent passes a single stable function per kind
@@ -159,11 +165,11 @@ function BoxedElementViewImpl({
   // cursor so two people don't fight over the same element. Distinct
   // from `isLocked` above, which is the persisted user-set padlock.
   const remotelyLocked = remoteSelectors.length > 0;
-  // Clockwise rotation about the element centre. `isRotated` gates the
-  // resize handles off while rotated: the resize math runs in canvas-
-  // axis space, so dragging a corner of a spun box would make it
-  // "swim". Setting it back to 0° (the Rotation menu / search palette's
-  // reset) restores resize.
+  // Clockwise rotation about the element centre. The resize handles stay
+  // while rotated, turned with the box: resolveBoxedResize projects the drag
+  // into the element's own frame and anchors the opposite side, it just
+  // skips the axis-aligned snap. `isRotated` drives the wrapper transform and
+  // the zone clip below.
   const rotation = element.rotation ?? 0;
   const isRotated = rotation % 360 !== 0;
   // In an article's drawing zone: cut off at the zone's edge (a turned element is left whole).
@@ -269,17 +275,19 @@ function BoxedElementViewImpl({
   const variant = describeVariant(element, ringed, isMultiSelected, remoteBorderColor, surface);
   // A whiteboard pen stroke and a path are picked by their drawn line, not their box
   // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
-  // once selected, the box drags either as any element.
-  const lineHit =
-    ((element.type === 'freehand' &&
+  // once selected, the box drags either as any element, and the line still catches pointers
+  // outside the box, so a press on its outer half never falls to the board.
+  const selected = isSelected || isMultiSelected;
+  const hitLine =
+    (element.type === 'freehand' &&
       element.penWidth !== undefined &&
       element.pen !== 'highlighter') ||
-      element.type === 'path') &&
-    !isSelected &&
-    !isMultiSelected;
+    (element.type === 'path' && !isEditing);
   // A whiteboard shape likewise, by its drawn outline (ShapeHitOutline, below).
   const onWhiteboard = useCanvasPicksByOutline();
-  const shapeHit = outlineHit(element, { onWhiteboard, selected: isSelected || isMultiSelected });
+  const shapeHit = outlineHit(element, { onWhiteboard, selected });
+  // Not yet selected, only the drawn line picks it: the rest of its box lets pointers through.
+  const passThrough = (hitLine && !selected) || shapeHit === 'outline';
 
   // The element's drawn corner, which its border overlay and its indicators both follow.
   const shapeKind = element.type === 'shape' ? element.shape : undefined;
@@ -304,7 +312,7 @@ function BoxedElementViewImpl({
   // Which surface each looping animation rides (wrapper box vs text
   // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
   // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
-  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle } =
+  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle, layer, layerAnim } =
     useBoxedElementAnimation(element, textColor);
 
   // An icon element's caption is confined to its own band — the complement
@@ -338,6 +346,9 @@ function BoxedElementViewImpl({
     cornerPx,
   );
 
+  // The Text animation on the label's words (docs/specs/028-animation/element-animations.md).
+  const textAnim = useLabelTextAnimation(element, label, textColor, isEditing);
+
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -361,6 +372,7 @@ function BoxedElementViewImpl({
     !!inlineIcon || !!marker,
     labelAnimClass,
     textHug.label,
+    textAnim,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -392,6 +404,8 @@ function BoxedElementViewImpl({
       // z-fight (flicker) while the camera orbits.
       data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
       onPointerDown={(e) => {
+        // A finger on a board's empty space pans the canvas instead (hooks/canvas/pan-through.ts).
+        if (isPanThrough(e)) return;
         longPress.onPointerDown(e);
         handleShapeDown(e);
       }}
@@ -469,9 +483,9 @@ function BoxedElementViewImpl({
         // selection handles live in the grips layer, SelectionChromeLayer.)
         ...(editLook.raise ? { zIndex: 10 } : {}),
         ...(clipPath ? { clipPath } : {}),
-        // Only the drawn line picks a pen stroke not yet selected (its hit
-        // line, in FreehandSvg); the rest of its box lets pointers through.
-        ...(lineHit || shapeHit ? { pointerEvents: 'none' as const } : {}),
+        // Only the drawn line picks an element not yet selected (its hit
+        // line, in FreehandSvg / ShapeHitOutline); the rest of its box lets pointers through.
+        ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
       <ShapeContentRouter
@@ -562,7 +576,7 @@ function BoxedElementViewImpl({
       {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
       <ElementFaceRouter
-        lineHit={lineHit}
+        hitLine={hitLine}
         element={element}
         isEditing={isEditing}
         isSelected={isSelected}
@@ -598,7 +612,8 @@ function BoxedElementViewImpl({
         onToggleReveal={onToggleReveal}
         label={label}
         labelNode={labelNode}
-        contentInset={indicators.layout?.inset}
+        // Clear of the indicators and on the label body (a cylinder's, under its lid).
+        contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
         textColor={textColor}
         textSize={textSize}
         alignX={alignX}
@@ -611,10 +626,24 @@ function BoxedElementViewImpl({
         labelFrame={labelFrame}
       />
 
-      {shapeHit ? (
+      {shapeHit && element.type === 'shape' ? (
         <ShapeHitOutline
           element={element}
           borderPx={typeof variant.style.borderWidth === 'number' ? variant.style.borderWidth : 0}
+        />
+      ) : null}
+
+      {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
+      {layer && layerAnim ? (
+        <AnimationLayer
+          animation={layerAnim}
+          width={element.width}
+          height={element.height}
+          radius={
+            shapeKind === 'circle' || shapeKind === 'stadium'
+              ? Math.min(element.width, element.height) / 2
+              : cornerPx
+          }
         />
       ) : null}
 
@@ -670,7 +699,8 @@ function BoxedElementViewImpl({
       {/* Dot-vote tally pill + winner ring (docs/specs/012-collaboration/session-tools.md) — see
           ElementVoteOverlay. */}
       <ElementVoteOverlay
-        element={element}
+        voteKey={voteKeyOf(element)}
+        name={element.label ?? 'this element'}
         vote={vote}
         selfId={selfId}
         voteMax={voteMax}

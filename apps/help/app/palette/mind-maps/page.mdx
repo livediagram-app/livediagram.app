@@ -1,11 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { MindMapFlows, MindMapGrowth } from '@/components/illustrations/mind-maps';
 
 export const metadata = helpMetadata({
   title: 'Mind Maps',
   description:
-    'Build a mind map from the keyboard: Tab adds a child, Enter adds a sibling, and the map stays tidy as it grows.',
+    'Build a mind map from the keyboard: Tab adds a child, Enter adds a sibling, and the map stays tidy as it grows. Pick a flow, tidy it, or edit it as an outline.',
   path: '/help/palette/mind-maps/',
 });
 
@@ -17,7 +18,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("mind-maps")}
 >
 
-A **Mind node** is a labelled node that knows its parent. It lives in the palette's **Build** category, and the whole point of it is the keyboard: you can build an entire branch while you are still talking.
+A **Mind node** is a labelled node that knows its parent. It lives in the palette's **Build** category in Diagram mode, and the whole point of it is the keyboard: you can build an entire branch while you are still talking.
 
 ## The two keys
 
@@ -33,31 +34,50 @@ A **Mind node** is a labelled node that knows its parent. It lives in the palett
 </Step>
 
 <Step n={4}>
-  Press **Escape** when you are done. What you typed is kept; a node you left empty is removed, so a
-  Tab pressed one time too many costs nothing.
+  Press **Escape** when you are done. What you typed is kept; a new node you left empty is removed
+  and its parent selected, so a Tab pressed one time too many costs nothing.
 </Step>
+
+<Figure caption="Tab added Budget under Venue, connected and ready to type into; Enter would add the next node beside it.">
+  <MindMapGrowth />
+</Figure>
 
 You never have to stop typing to reach for the palette, and you never have to draw the connectors: each new node arrives joined to its parent. Type as fast as you like: keys pressed before the next node is on screen are held for it, so a burst of several nodes lands exactly as typed.
 
 <Tip>
   The keys work from **inside** the label editor as well as from a selected node. Typing a name and
   pressing Tab commits what you typed and starts the next node in one keystroke, which is what makes
-  a whole branch flow.
+  a whole branch flow. On any other element, Tab still moves the selection to the next element.
 </Tip>
+
+## With the mouse or on a touch screen
+
+Select a mind node and **Add child** and **Add sibling** are on its toolbar. They are also the first options on the quick-add **+** on each side of the node, each naming its shortcut. On a phone or tablet, where there is no Tab key, these are how you grow a map.
 
 ## Where nodes land
 
 A map you build from the keyboard stays **tidy**: each parent sits centred on its children, and siblings stack neatly with no gaps or overlaps. As you add nodes, the map makes room for them, and the view scrolls to keep the node you are typing in on screen.
 
-Once you drag a node yourself, the map is yours: new nodes are placed where they fit and nothing you arranged moves. To tidy it again, open the node's menu and choose **Mind Map → Tidy Map**.
+Once you drag a node yourself, the map is yours: new nodes are placed where they fit and nothing you arranged moves. To tidy it again, right-click a node and choose **Tidy Map** in its **Mind Map** section. A message at the foot of the screen says **Map tidied**, or **Map already tidy** when there was nothing to move.
 
 ## Flows
 
-**Mind Map** in a node's menu picks the shape the whole map takes: **Tree** (branches to the right), **Balanced** (both ways off the centre), **Downward** (like an org chart) or **Bubble** (fanned around the centre). Picking one re-arranges the map straight away.
+The **Mind Map** section of a node's right-click menu picks the shape the whole map takes:
+
+- **Tree**: branches to the right, siblings stacked down. The default.
+- **Balanced**: branches both ways off the root, the classic hand-drawn mind map.
+- **Downward**: branches below, siblings spread across, like an org chart.
+- **Bubble**: branches fanned around the parent.
+
+Picking one re-arranges the whole map straight away, around the root, which stays put. It is one step, so **Undo** puts the old arrangement back. Tab and Enter mean the same thing in every flow; the flow only decides where the new node lands.
+
+<Figure caption="The Mind Map section of a root's menu: the four flows, then Tidy Map and Edit Outline.">
+  <MindMapFlows />
+</Figure>
 
 ## Edit Outline
 
-Press **Edit Outline** on the badge at the top-right of a map's root (the node it starts from), or find it under **Mind Map** in the root's menu. The whole map opens as a list, one row per node, so you can reorder, nest and rename branches as fast as you can type, or paste a list in from your notes. **Save** applies it all as one step, so **Undo** puts the map back exactly as it was.
+To rethink a whole map at once, open it as a list. Hover over the map's **root** (the node it starts from) and press **Edit Outline** among the small icons along its top (they hide while the root is selected; see [Element Indicators](/help/canvas/element-indicators/)), or find **Edit Outline** in the root's **Mind Map** section, under Tidy Map. The whole map opens as a list, one row per node, so you can reorder, nest and rename branches as fast as you can type, or paste a list in from your notes. **Save** applies it all as one step, so **Undo** puts the map back exactly as it was.
 
 See [Edit a Mind Map as an Outline](/help/palette/mind-maps/edit-outline/) for the keys, pasting a list in and what Save keeps.
 
@@ -65,23 +85,18 @@ See [Edit a Mind Map as an Outline](/help/palette/mind-maps/edit-outline/) for t
 
 A new node looks like the others at its level: siblings match each other, and the first node of a new level takes after its parent. The connector matches the ones already in the map. So a map drawn with bold roots, tinted branches and dashed lines keeps growing that way.
 
-A mind node can be made round: give a square node a full corner radius.
+A mind node can be made round: right-click it, open **Style**, then **Border**, and set its corner radius to **Full**. A square node with a full radius is a circle, which is how the bubble map template draws its bubbles.
 
 ## Moving and deleting
 
-Dragging a node takes its whole branch with it.
+Dragging a node takes its whole branch with it. Resizing a node resizes only that node.
 
-Deleting a node leaves its children in place, promoted to roots. It does not cascade, because deleting one node and silently losing nine is the kind of thing you only notice after the undo stack has moved on.
-
-<Note>
-  If you would rather use the mouse, select a mind node: **Add child** and **Add sibling** are on
-  its toolbar, and on the **+** next to it, each with its shortcut. A root's toolbar also has **Edit
-  Outline**.
-</Note>
+Deleting a node leaves its children in place, promoted to roots of their own. It does not cascade, because deleting one node and silently losing nine is the kind of thing you only notice after the undo stack has moved on.
 
 <Note>
-  Every mind map template is made of mind nodes, so you can grow a template with Tab and Enter
-  straight away.
+  Every mind map [template](/help/canvas/templates/) (Mind map, Tree mind map and Bubble map) is
+  made of mind nodes, so you can grow a template with Tab and Enter straight away, and the new nodes
+  match the template's look.
 </Note>
 
 </ArticleLayout>

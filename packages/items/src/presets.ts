@@ -1,11 +1,14 @@
 // Board presets: the set-ups a palette board tile or a template starts from
 // (docs/specs/026-plan/plan-mode.md "The palette", "Templates").
 
+import { statusNamed } from './status-names';
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
+// All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
 export const PLAN_BOARD_PRESET_IDS = [
   'blank',
   'kanban',
+  'todo',
   'sprint',
   'bug-triage',
   'retro',
@@ -35,6 +38,8 @@ const WORK_FIELDS: CardField[] = [
   'comments',
 ];
 
+// Each preset's widgets are few, and only ones true on it from the start (docs/specs/026-plan/board-widgets.md
+// "Defaults"): Completion only with a done column, WIP Alerts only with WIP limits.
 export const PLAN_BOARD_PRESETS: Readonly<
   Record<PlanBoardPresetId, { label: string; setup: PlanBoardSetup }>
 > = {
@@ -46,8 +51,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       columns: [],
       swimlaneBy: 'none',
       cardFields: WORK_FIELDS,
-      voting: { on: false },
-      widgets: ['count', 'progress', 'people', 'filter', 'mine'],
+      widgets: [],
       hideWriting: false,
     },
   },
@@ -57,17 +61,32 @@ export const PLAN_BOARD_PRESETS: Readonly<
       title: 'Kanban',
       columns: [
         statusColumn('backlog', 'Backlog'),
-        statusColumn('todo', 'To do'),
-        statusColumn('doing', 'In progress', { wipLimit: 3 }),
+        statusColumn('todo', 'To Do'),
+        statusColumn('doing', 'In Progress', { wipLimit: 3 }),
         statusColumn('review', 'Review', { wipLimit: 2 }),
         statusColumn('done', 'Done'),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'none',
       cardFields: WORK_FIELDS,
-      voting: { on: false },
-      widgets: ['count', 'progress', 'wip', 'stale', 'unplaced', 'filter', 'mine'],
-      addTypes: ['task', 'action', 'note'],
+      widgets: ['progress', 'wip', 'filter'],
+      addTypes: ['task', 'action'],
+      hideWriting: false,
+    },
+  },
+  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Compact
+  // cards (a dense list of short items) showing who has each and when it is due.
+  todo: {
+    label: 'To-do List',
+    setup: {
+      title: 'To-do list',
+      columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done')],
+      doneColumnId: 'done',
+      swimlaneBy: 'none',
+      cardFields: ['assignee', 'due', 'checklist'],
+      cardSize: 'compact',
+      widgets: ['progress', 'due'],
+      addTypes: ['action'],
       hideWriting: false,
     },
   },
@@ -76,17 +95,16 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Sprint',
       columns: [
-        statusColumn('sprint-backlog', 'Sprint backlog'),
-        statusColumn('doing', 'In progress'),
-        statusColumn('review', 'In review'),
+        statusColumn('sprint-backlog', 'Sprint Backlog'),
+        statusColumn('doing', 'In Progress'),
+        statusColumn('review', 'In Review'),
         statusColumn('done', 'Done'),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'assignee',
       cardFields: ['key', 'type', 'priority', 'labels', 'estimate', 'checklist'],
-      voting: { on: false },
-      widgets: ['points', 'progress', 'people', 'unassigned', 'filter', 'mine'],
-      addTypes: ['task', 'action'],
+      widgets: ['points', 'progress', 'filter'],
+      addTypes: ['story', 'task', 'bug'],
       hideWriting: false,
     },
   },
@@ -99,14 +117,13 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('confirmed', 'Confirmed'),
         statusColumn('fixing', 'Fixing', { wipLimit: 4 }),
         statusColumn('fixed', 'Fixed'),
-        statusColumn('wont-fix', "Won't fix"),
+        statusColumn('wont-fix', 'Won’t Fix'),
       ],
       doneColumnId: 'fixed',
       swimlaneBy: 'priority',
       cardFields: ['key', 'assignee', 'labels', 'due'],
-      voting: { on: false },
-      widgets: ['count', 'priorities', 'unassigned', 'stale', 'filter'],
-      addTypes: ['task'],
+      widgets: ['count', 'unassigned', 'filter'],
+      addTypes: ['bug'],
       hideWriting: false,
     },
   },
@@ -115,14 +132,13 @@ export const PLAN_BOARD_PRESETS: Readonly<
     setup: {
       title: 'Retro',
       columns: [
-        statusColumn('went-well', 'Went well', { color: '#16a34a' }),
-        statusColumn('to-improve', 'To improve', { color: '#dc2626' }),
+        statusColumn('went-well', 'Went Well', { color: '#16a34a' }),
+        statusColumn('to-improve', 'To Improve', { color: '#dc2626' }),
         statusColumn('ideas', 'Ideas', { color: '#0d9488' }),
       ],
       swimlaneBy: 'none',
       cardFields: ['assignee', 'votes'],
-      voting: { on: true, budget: 5 },
-      widgets: ['votes', 'top-voted', 'types', 'people'],
+      widgets: ['top-voted'],
       // Notes and ideas only: the actions a retro agrees are tracked on a board of their own
       // (docs/specs/026-plan/plan-templates.md "Team Retro").
       addTypes: ['note', 'idea'],
@@ -140,8 +156,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       ],
       swimlaneBy: 'none',
       cardFields: ['key', 'assignee', 'labels', 'start', 'due'],
-      voting: { on: false },
-      widgets: ['count', 'progress', 'due', 'people', 'filter'],
+      widgets: ['count', 'due', 'filter'],
       addTypes: ['project'],
       hideWriting: false,
     },
@@ -159,8 +174,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       ],
       swimlaneBy: 'none',
       cardFields: ['type', 'due', 'checklist'],
-      voting: { on: false },
-      widgets: ['due', 'count', 'people', 'mine', 'filter'],
+      widgets: ['count', 'due', 'filter'],
       addTypes: ['task', 'action', 'note'],
       hideWriting: false,
     },
@@ -175,8 +189,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       cardFields: ['key', 'type', 'assignee', 'priority', 'due'],
       cardSize: 'compact',
       allCards: true,
-      widgets: ['count', 'types', 'priorities', 'unassigned', 'filter'],
-      voting: { on: false },
+      widgets: ['count', 'types', 'filter'],
       hideWriting: false,
     },
   },
@@ -190,8 +203,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
       cardFields: ['key', 'type', 'assignee', 'labels'],
       cardSize: 'compact',
       archive: true,
-      widgets: ['count', 'types', 'filter'],
-      voting: { on: false },
+      widgets: ['count', 'filter'],
       hideWriting: false,
     },
   },
@@ -211,15 +223,29 @@ export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
   return presetSetup(isPlanBoardPresetId(id) ? id : 'blank');
 }
 
-// A board placed on the canvas starts empty (docs/specs/026-plan/plan-mode.md "The palette"): its columns
-// get statuses of their own (`todo~k3f9`), so no card the document already has lands on it. An Archive
-// or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
-export function freshBoardSetup(id: unknown, random: () => number = Math.random): PlanBoardSetup {
+// A board placed on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): a column whose name a status the
+// document already has (`existing`: status id to name) takes that status, so one name is always one status and the
+// cards in it show here too; any other column gets a status of its own (`todo~k3f9`), so it starts empty. An
+// Archive or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
+export function freshBoardSetup(
+  id: unknown,
+  random: () => number = Math.random,
+  existing: Iterable<readonly [string, string]> = [],
+): PlanBoardSetup {
   const setup = presetSetupOrBlank(id);
   if (setup.archive || setup.allCards) return setup;
+  const names = [...existing];
   const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
+  const used = new Set<string>();
   return {
     ...setup,
-    columns: setup.columns.map((c) => ({ ...c, status: `${c.status}~${suffix}` })),
+    columns: setup.columns.map((c) => {
+      const named = statusNamed(c.name, names);
+      if (named && !used.has(named.status)) {
+        used.add(named.status);
+        return { ...c, status: named.status };
+      }
+      return { ...c, status: `${c.status}~${suffix}` };
+    }),
   };
 }

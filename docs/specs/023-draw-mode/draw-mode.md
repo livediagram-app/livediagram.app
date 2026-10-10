@@ -53,51 +53,20 @@ pen widths, dock spacing) are named constants, tuned in place.
 - **Import:** a Microsoft Whiteboard import makes each board its own new
   document with one tab that opens in Draw mode, named and dated after the board, and Excalidraw pasted onto a whiteboard lands as its own
   marks (see [Imported and pasted content](#imported-and-pasted-content)).
-- **Any tab:** the mode switch (the Palette's title row, or beside the Toolbar layout's menu button) turns any general
+- **Any tab:** the mode switch (beside the menu button) turns any general
   tab into a whiteboard and back ([Editor modes](../007-editor/editor-modes.md)).
 
 ## What a whiteboard shows
 
-A whiteboard trades the palette for Draw's own tools, in the place the
-palette holds in the layout in force:
+A whiteboard trades the palette for Draw's own tools: one **floating dock**, centred across the
+**top** of the canvas by default (see [Where the dock sits](#where-the-dock-sits)), like Microsoft
+Whiteboard's. It is the strip's twin: the **same height** as the Diagram strip (its buttons the
+strip's tile size) and drawn at the **toolbar UI scale** ([UI scale](../007-editor/ui-scale.md)), so
+switching modes never changes the size of the bar at the top. Its flyouts are not scaled: they open
+at their design size, like every menu opened from a scaled surface. Every flyout has a **tip**
+pointing at the button that opened it, on the edge facing the dock, over its button.
 
-- **Floating layout: the Palette panel.** The same floating **Palette**
-  panel stays, where it was, with its title row (the editor mode switch,
-  help, minimise) and its drag, docking and collapse. Its body swaps the
-  palette's pickers and catalogue for Draw's groups, **in the palette's own
-  look**, so the panel reads the same in both modes:
-  - **Drawing tools** and **Shapes** are sections with the palette's small
-    capitals headings, each a **three-column grid of tiles**: the glyph over
-    a short caption (Select; Marker 1, 2, 3; Text; Path; Eraser; each shape
-    by name), the tool in hand
-    tinted as the palette tints its chosen tile. No separators; keys show in
-    the tooltips, not on the tiles.
-  - **Settings** is the panel's **footer**: one full-width row, the cog and
-    "Settings", set off by a rule, as the palette's Reorder / Edit row is.
-  - **No Shapes menu:** the Shapes section shows the pinned shapes followed
-    by the items the dock's Shapes menu holds (its Recent and Most used
-    shapes), each a tile that arms its shape. Pinning stays the dock's (a
-    pinned tile's menu still offers Unpin).
-  - A flyout (a pen's settings, the eraser, a shape slot's menu, Settings)
-    opens **beside the panel**, on the side with room, level with its tile,
-    so the panel never moves. The dock position setting does not apply.
-- **Toolbar layout: the dock.** One **floating dock**, centred across the
-  **top** of the canvas by default (see
-  [Where the dock sits](#where-the-dock-sits)), like Microsoft Whiteboard's.
-  It is the strip's twin: the **same height** as the Diagram strip (its
-  buttons the strip's tile size) and drawn at the **toolbar UI scale**
-  ([UI scale](../007-editor/ui-scale.md)), so switching modes never changes
-  the size of the bar at the top. Its flyouts are not scaled: they open at
-  their design size, like every menu opened from a scaled surface.
-
-The groups, their buttons, flyouts, keys and behaviour below are the same
-in both; "the dock" below means either form unless it says otherwise. Every flyout has a
-**tip** pointing at the button that opened it: on the dock, on the edge facing
-the dock, over its button; beside the panel, on the edge facing the panel,
-level with its tile.
-
-- **Hidden in Draw mode:** the palette's catalogue (the floating
-  Palette shows Draw's groups instead) and the Toolbar layout's strip, the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
+- **Hidden in Draw mode:** the Toolbar strip (the dock replaces it), the format painter, the Highlighter tile with the palette's catalogue (a whiteboard's pens are its markers), the Theme &
   canvas brush and the theme-mode banner, the tool panels (the eraser's
   settings live in the dock's flyout instead) and the empty-canvas banner (the dock is the hint). The header,
   tab bar, Explorer (its menu button keeps its corner on a phone),
@@ -107,8 +76,9 @@ level with its tile.
   it is how a shape, line or text box gets another colour or width once
   drawn, since the pens colour only their own strokes. In Draw mode its
   **Stroke** and **Text colour** rows offer the **stock colours**, the same
-  choices as Marker colour: **Ink** first, then the seven hued colours (each
-  stored by name, drawn in its version for the canvas), then the tab's custom
+  choices as Marker colour: **Ink** first, then the eight hued colours in the
+  standard order, Red to Pink (each stored by name, drawn in its version for the
+  canvas), then **More colours**, then the tab's custom
   colours section when there is one. Ink is stored by name like the others; a
   line with no colour of its own wears its theme default, so no choice is
   marked for it. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
@@ -117,9 +87,10 @@ level with its tile.
   A restyle on a whiteboard never feeds the style memory Diagram mode uses; the
   board's own memory remembers a stock colour by name.
   Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
-  Bold). The quick style panel is **quick choices only**: no colour picker in
-  it. **Marker colour** is the same **eight stock colours** as the marker's
-  picker, adaptive like them. Below them, **a second section of custom
+  Bold). The quick style panel is **quick choices first**: **Marker colour** is
+  Ink and the eight hued stock colours, adaptive like the marker's picker, then
+  **More colours**, which opens the full colour picker
+  ([Colour picker](../004-interface-design/colour-picker.md#quick-style)). Below them, **a second section of custom
   colours appears only when custom colours are used on this whiteboard
   tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
   arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
@@ -180,7 +151,9 @@ level with its tile.
        of its kind, drawn with a drag or dropped with a click) and closes the
        flyout; **Escape** closes it without picking.
 - **No Undo or Redo in the dock:** the bottom-right cluster and the keyboard
-  already carry them in every mode, so the dock does not repeat them.
+  already carry them in every mode, so the dock does not repeat them. The
+  cluster is chrome, never canvas: a press on it with a pen held (or any other
+  tool armed) inks nothing, so Undo takes back the last stroke.
 - **The sticky note is a shape here, not a drawing tool.** It has no button
   in the drawing tools bar; it is one of the shapes: found in the Shapes
   flyout's search ("sticky", "note", "post-it"), shown in its slots once
@@ -211,11 +184,8 @@ level with its tile.
 
 ## Where the dock sits
 
-The Toolbar layout's dock only; the Floating layout's Draw tools live in
-the Palette panel, wherever the user put it.
-
 - **Top by default**, centred across the top of the canvas, where the
-  Toolbar layout's strip sits in Diagram mode
+  Toolbar strip sits in Diagram mode
   ([Toolbar layout](../007-editor/toolbar-layout.md)), so a whiteboard's tools
   are where the rest of the product keeps them.
 - **Bottom by choice**: Settings, **Editor › Draw** (the sub-category for
@@ -236,9 +206,9 @@ the Palette panel, wherever the user put it.
     the same clearance on both sides;
   - its flyouts and the "Seven shapes are pinned" hint open **below** it;
   - the top-centre banners (follow-me, mode banners, timer, vote) sit
-    **beneath** it, as they sit beneath the Toolbar layout's strip;
+    **beneath** it, as they sit beneath the Toolbar strip;
   - panels docked in a top corner move **below** it when it would reach
-    into them, as they do for the Toolbar layout's strip.
+    into them, as they do for the Toolbar strip.
 - **At the bottom:** its flyouts and hint open **above** it, and it is lifted
   above the bottom-right controls (history, layers, zoom) until the window is
   wide enough for both on one line.
@@ -362,9 +332,10 @@ Explorer Home's Jump back in.
 - **Picking a marker, and its colour:** a press on a marker picks it up; a
   press on the marker already in hand opens its **colour picker** (a flyout
   on the board side of it, like the others). For Marker 1 it holds the width only.
-- **The colour picker** (Markers 2 and 3), top to bottom:
-  - **Eight stock colours** in one row: **Ink, Blue, Red, Orange, Green,
-    Teal, Violet, Pink**, the same eight as the quick style panel's.
+- **The colour picker** (Markers 2 and 3) is the one colour picker
+  ([Colour picker](../004-interface-design/colour-picker.md)), top to bottom:
+  - **Ten stock colours** in one row, the strong standard colours: **Ink, Grey,
+    Red, Orange, Yellow, Green, Teal, Blue, Violet, Pink**.
     **Ink comes first: it is the default colour**, and Markers 2 and 3 can
     take it too (the same ink at another width, say), not only Marker 1.
   - **Every stock colour adapts to the board.** It is stored by name, not as
@@ -373,14 +344,15 @@ Explorer Home's Jump back in.
     against its board (WCAG 1.4.11 with room to spare). So none is ever too
     close to either board, and two people in different appearances both see
     every stroke clearly.
-  - **Your colours:** up to **eight** custom colours, most recently used
-    first, kept in the user's synced preferences; using a custom colour puts
-    it at the front, so picking it again is one press. A custom colour is one
-    exact hex value on both boards.
-    **Removing one:** a right-click (a long-press on touch, Shift+F10 or the
-    context-menu key on a focused swatch) on a custom colour opens a small
-    menu with **Remove**, which takes it out of Your colours. Strokes already
-    drawn in it keep it, and a marker set to it keeps it until changed.
+  - **Yellow is the lightest hue**, so on the dark board it is a golden
+    yellow, far over the others' contrast (12:1, `YELLOW_DARK_CONTRAST`):
+    at their 6:1 it would read as mustard. On the light board no yellow is
+    both light and readable, so it is a deep gold there, like the others at
+    6:1.
+  - **Custom Colours:** the colours picked with + in this document, up to
+    twelve, newest first, the marker's own custom colour in force first among
+    them ([Custom colours](../004-interface-design/colour-picker.md#custom-colours)).
+    A custom colour is one exact hex value on both boards.
   - **+** at the end of that row opens the custom picker in place: a
     saturation and brightness square, a hue slider, a hex field and, where
     the browser has one, an **eyedropper**; **Use** applies it. When the
@@ -391,8 +363,8 @@ Explorer Home's Jump back in.
     until needed, so it never shifts the picker.
   - **Width:** Fine, Medium, Bold.
   - Each swatch has its name as its tooltip and accessible name ("Blue",
-    "Custom #ff6b00"); arrow keys move through a row, Enter picks, Escape
-    closes.
+    "#ff6b00"); arrow keys move focus through every swatch and +
+    (wrapping), Enter picks, Escape closes.
 - Markers 2 and 3 start as **Blue** and **Red**. **Existing strokes
   stay as drawn**: a stroke keeps the exact colour it was drawn in; only
   strokes drawn after this record a named colour.
@@ -447,6 +419,10 @@ Explorer Home's Jump back in.
   (Strokes are not drawn with a non-scaling stroke: browsers disagree about
   whether that undoes a zoomed canvas, which made a finished stroke thinner
   than the one being drawn in Safari.)
+- **A tap is a dot.** A press lifted where it went down leaves a round dot
+  of the pen's colour, as wide as the pen's line, centred where it touched:
+  a one-point stroke, drawn like any other, never read as a shape. The pen
+  stays in hand, so taps in a row leave a row of dots.
 - **No guides for pens.** A pen draws freely: no alignment guides while it
   is drawn, and no snapping of the first point to a neighbour. Guides and
   snapping stay for shapes and lines from the Shapes flyout.
@@ -502,16 +478,29 @@ Explorer Home's Jump back in.
 - **A pen stroke is picked by its drawn line**, not its box: a click within
   6 screen px of the line (either side, at any zoom) selects it, and a click
   elsewhere in its box passes through to whatever is beneath, or the board.
-  Once selected, its box drags and resizes it as any element's.
+  Once selected, its box drags and resizes it as any element's, and its line
+  still catches pointers outside the box, so a press on the line's outer half
+  stays on the stroke.
 - **A shape is picked by its drawn outline too** (rectangle, ellipse,
   diamond, cylinder, a recognised triangle or star, and every other shape
   kind): a click within 6 screen px of the outline selects it, and a click in
   its empty inside passes through to whatever is beneath, or the board. A
-  shape with a **visible fill** is also picked anywhere on its fill. Lines and
+  shape with a **visible fill** is also picked anywhere on its fill. Once
+  selected, its box catches pointers too and its outline still does, outside
+  the box as well: a double-click on a selected shape's line, either half of
+  it, opens its label, never deselecting and reselecting it. Lines and
   arrows are picked by their line, and paths by their line or fill
   ([Path tool](path-tool.md)). **Notes and text boxes** keep their whole box:
   they are filled or hold text. So does a kind that paints its own face (a
   chart, a panel, an icon, a web component).
+- **A double-click anywhere inside a shape writes in it**, selected or not,
+  though a single click there passes through: on the bare board, a
+  double-click inside the topmost outline-picked shape there (by its drawn
+  outline, following its rotation) opens that shape's label editor, unless
+  the shape is locked, on a hidden or locked layer, or has no label to edit.
+  Beside every shape, a double-click makes a text box as on any canvas. (A
+  selected shape's first click puts it down, so its second reaches the board:
+  the same rule edits it.)
 - The **outline is the one drawn**, not the box: an ellipse by its curve, a
   diamond by its four edges, a cylinder by its body and rim, following the
   shape's rotation.
@@ -568,8 +557,8 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
 - **Adaptive colours:** colour comes across the way the pens store it. A
   near-black line is the board's **ink** (no colour of its own), so it shows
   dark on the light board and light on the dark one, whatever board it was
-  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Green,
-  Teal, Violet, Pink) lands by its name and is drawn in the version for each
+  drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Yellow,
+  Green, Teal, Violet, Pink) lands by its name and is drawn in the version for each
   viewer's board. Anything else keeps its exact hex, a custom colour, and shows
   in the quick style panel's custom colours.
 - **Named colours on every mark:** a stock colour is stored by name on a
@@ -725,8 +714,8 @@ pattern behind it, never the colour of what is already there.
   belongs to the app it sits in, not a literal green chalkboard.
 - **Ink** is the drawing colour, the same on every theme: `#1c1917` on a
   light canvas, `#e2e8f0` on a dark one (`PEN_INK`), at least 4.5:1 against
-  either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like the
-  seven hued stock colours.
+  either Default canvas (WCAG 2.2 AA). It is stored by name (`ink`) like Grey and the
+  eight hued stock colours.
 - **Marker 1** draws in Ink, and so does any pen stroke or text box with no
   colour of its own, in both modes. Markers 2 and 3 keep the colour they drew
   with.
@@ -766,11 +755,10 @@ light and dark boards like everything drawn with the stock colours.
   - A **neutral** colour (chroma under 0.05: black, grey, white, slate)
     becomes **Ink**, the board's own.
   - Any other colour becomes the stock colour **nearest in hue** (Blue, Red,
-    Orange, Green, Teal, Violet, Pink); a tie goes to the earlier in the
+    Orange, Yellow, Green, Teal, Violet, Pink); a tie goes to the earlier in the
     picker's order. Lightness and chroma are not compared: each stock colour
     takes its lightness from the board it is shown on. So a magenta lands on
-    Pink, a brown on Orange, a yellow on whichever of Orange and Green is
-    nearer in hue.
+    Pink, a brown on Orange, a yellow on Yellow.
 - **Never touched:** elements already in a stock colour or the ink,
   highlighter strokes (their recipe owns their colour), fills (a whiteboard
   has no stock fills), text on a fill (a filled shape's label, a sticky
@@ -822,7 +810,7 @@ box selected, typing a character still edits it rather than switching tool;
 any other selection (a shape just drawn, a line, a stroke) leaves the key to
 the dock, so R then O draws a rectangle and then an ellipse.
 View-role visitors get V and Escape only. Each dock button and Shapes option
-with a key shows it small in its bottom-right corner, as the Toolbar layout's strip does (a tool bar is
+with a key shows it small in its bottom-right corner, as the Toolbar strip does (a tool bar is
 where people learn the keys), and carries it in `aria-keyshortcuts`.
 
 ## Accessibility

@@ -1,7 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { ShareLinks, EmbeddedDocument } from '@/components/illustrations/collaboration';
+import { EmbeddedDocument } from '@/components/illustrations/collaboration';
+import { SharePassesDialog } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Sharing and Embeds',
@@ -12,24 +13,36 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Sharing and Embeds" description="Share links for live collaboration, optional passwords and expiry, and embeds." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("sharing")}>
 
-Sharing turns a document into something other people can open. A share link lets anyone with the URL join your document in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the document in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account.
+Sharing turns a document into something other people can open. A share link lets anyone with the URL join your document in real time, with live cursors and edits flowing between everyone. You can protect a link with a password, give it an expiry date, or embed the document in another page. None of this needs the other person to sign in: a share link can be handed to a guest who edits without an account, and you can create links as a guest too.
+
+## Opening the Share dialog
+
+Press **Share** at the top right of the editor. It turns solid blue once the document has a live link, so you can tell at a glance that it is shared. You can also reach it from the [command palette](/help/tips-and-tricks/command-palette/) (search "Share document") or from a document's menu in the Explorer.
+
+Only the document's owner manages its links. Someone who opened your document through a link doesn't see **Share**; they get a **Copy** button instead, which makes their own copy.
 
 ## Share links
 
-Open the **Share** dialog on a document to create a link. The dialog draws every link as a **pass**, a ticket that lets whoever holds it in, and the line under its title always tells you who can get in right now: only you, or anyone holding one of your passes.
+The dialog draws every link as a **pass**, a ticket that lets whoever holds it in. The line under the title always tells you who can get in right now: **Private** while only you can open it, **Shared** once any pass is live, and **Public** while it is in the [Community](/help/collaboration/sharing/community/).
 
-Pick what the pass lets people do, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on its coloured stub:
+Under **Issue a pass**, pick what the pass lets people do, then press **Create Pass**. The link is created and copied in one go, ready to paste. Each pass carries a role, printed on its coloured stub:
 
 - An **Editor** pass lets the visitor change the document with you, live.
-- A **Viewer** pass lets them watch and pan and zoom, but not edit.
+- A **Viewer** pass lets them watch, pan and zoom, but not change the drawing. They can still leave [comments](/help/collaboration/comments/) and answer live [polls](/help/collaboration/session-tools/polls/).
 
-A document can have several links at once, so you can hand out an edit link to your team and a view link to everyone else. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen.
+<Figure caption="The Share dialog: choose Editor or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+  <SharePassesDialog />
+</Figure>
+
+A document can have several links at once, so you can hand out an edit link to your team and a view link to everyone else. Newest passes sit at the top. Whoever opens a link joins the same realtime room, so cursors and changes appear as they happen, and the document lands in their [Shared with me](/help/explorer/shared-with-you/) list for next time.
+
+Each pass shows its link with a copy button inside it, how long it is **Valid**, and which tabs it **Opens** (on a document with more than one tab). Below that sit its **Embed** and **Live image** menus, and the bin to revoke it.
 
 A link opens every tab unless you [scope it to one tab](/help/collaboration/sharing/one-tab/). The person you send a one-tab link to sees that tab, and the rest of the document never reaches their browser.
 
-<Figure caption="The Share dialog shows an edit pass and a view pass, each with its role on the stub and a copy button in its link.">
-  <ShareLinks />
-</Figure>
+## Your name when sharing
+
+As a guest, the **Sharing as** field at the bottom of the dialog is the name other people see on your cursor and your comments. Type a new one, or press the shuffle button for another random name. It is saved when you create a pass or close the dialog. Signed in, your account name is used and the field is hidden. See [Guest Identity](/help/account-and-data/guest-identity/).
 
 ## Controlling access
 
@@ -38,24 +51,25 @@ Two self-serve controls let you bound who gets in and for how long:
 - A [share password](/help/collaboration/sharing/share-passwords/) makes every link prompt for a password before it opens. The document's owner always bypasses it.
 - A [share link expiry](/help/collaboration/sharing/share-link-expiry/) gives a link a lifetime (a week, a month, or six months). When it runs out the link stops working, but stays in your dialog so you can extend or delete it.
 
-These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it.
+These are independent: you can use either, both, or neither. They are layered on top of the link role, not a replacement for it. [Share Link Security](/help/privacy-and-security/share-link-security/) explains what a link does and does not protect.
 
 ## Embedding a document
 
-An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a document inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a **view** link embeds a read-only canvas with pan and zoom, while an **edit** link embeds a fully editable one. Either way it hides the editor chrome and updates as the document is edited. Each pass in the Share dialog has an **Embed** menu offering **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
+An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a document inside another page, like a wiki, a doc, or Notion. The embed honours the link's role: a Viewer pass embeds a read-only canvas with pan and zoom, while an Editor pass embeds an editable one. Either way it hides the editor chrome and updates as the document is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
 <Figure caption="A document embedded in another page, alongside the iframe snippet that places it.">
   <EmbeddedDocument />
 </Figure>
 
+Where an `<iframe>` isn't allowed, like a GitHub README, use a [live image](/help/collaboration/sharing/live-image/) from the pass's **Live image** menu instead.
+
 ## Sharing with everyone
 
 Proud of a document? [Share it to the Community](/help/collaboration/sharing/community/), the public gallery where anyone can find it, view it read-only and make their own copy. Looking for a starting point instead? [Find documents in the Community](/help/collaboration/sharing/finding-community-documents/) by searching their words and tags. The **Community** section at the bottom of the Share dialog publishes it, edits its listing and takes it down again.
 
-<Tip>
-  Need to stop sharing entirely? Use the bin (**Revoke link**) on each pass in the Share dialog.
-  Anyone currently viewing through it loses access, and the URL stops resolving.
-</Tip>
+## Stopping sharing
+
+To stop a link working, press the bin (**Revoke link**) on its pass and confirm with **Revoke**. Anyone viewing through it is sent out of the document straight away, and the URL stops resolving. A revoked link can't be brought back: create a new pass if you change your mind, which gives a new URL.
 
 <Note>
   An [offline document](/help/privacy-and-security/offline-mode/) lives only in your browser, so

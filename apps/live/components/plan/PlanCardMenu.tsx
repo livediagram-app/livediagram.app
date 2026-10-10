@@ -6,7 +6,7 @@
 // may only view gets Open alone. Built on the shared ContextMenu, so it opens at the click, re-clamps to
 // the window as it grows, is a bottom sheet on a phone and keeps the long-press grace, like the element menu.
 import type { SyntheticEvent } from 'react';
-import { DuplicateIcon, PencilIcon, TrashIcon } from '@livediagram/ui';
+import { DuplicateIcon, PencilIcon, TrashIcon, PlanCardsIcon } from '@livediagram/ui';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
@@ -16,6 +16,7 @@ import { duplicateItem } from './duplicate-item';
 import { toggleFlag } from './item-flag';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { track } from '@/lib/telemetry';
+import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanContextValue } from './PlanContext';
 
 // A portal's events still bubble up the React tree to the board and canvas.
@@ -31,6 +32,7 @@ export function PlanCardMenu({
   onMove,
   onTrash,
   onAddSlide,
+  onEditType,
   archived = false,
   onArchive,
   flagged = false,
@@ -51,6 +53,8 @@ export function PlanCardMenu({
   onTrash: () => void;
   // The card as a slide of the deck; absent where there is no deck.
   onAddSlide?: () => void;
+  // Opens the card's type in the type editor (docs/specs/026-plan/plan-board.md "Card menu").
+  onEditType?: () => void;
   // Archive (or, for an archived card, Restore): kept, but off every board but an Archive board.
   archived?: boolean;
   onArchive: () => void;
@@ -94,6 +98,14 @@ export function PlanCardMenu({
                 onClick={act(onAddSlide)}
               />
             ) : null}
+            {onEditType ? (
+              <MenuActionRow
+                plain
+                label="Edit Card Type"
+                icon={<PlanCardsIcon size={16} />}
+                onClick={act(onEditType)}
+              />
+            ) : null}
             {columns.length > 0 ? (
               <>
                 <MenuGroupSeparator />
@@ -128,7 +140,7 @@ export function PlanCardMenu({
               icon={<PlanBoardTileArt preset="archive" size={16} />}
               onClick={act(onArchive)}
             />
-            <MenuActionRow plain label="Trash" icon={<TrashIcon />} danger onClick={act(onTrash)} />
+            <MenuActionRow plain label="Trash" icon={<TrashIcon />} onClick={act(onTrash)} />
           </>
         ) : null}
       </ContextMenu>
@@ -158,10 +170,16 @@ export function PlanCardMenuHost({
       at={menu.at}
       title={itemTitle(item) || 'Card'}
       canEdit={canEdit}
+      // The other columns, but none whose status the card's type leaves out (docs/specs/026-plan/item-types.md).
       columns={setup.columns
-        .filter((c) => c.status !== status)
+        .filter(
+          (c) =>
+            c.status !== status &&
+            typeStatusRefusal(plan.types, item.type, c.status, () => c.name) === null,
+        )
         .map((c) => ({ status: c.status, name: c.name, ...(c.color ? { color: c.color } : {}) }))}
       onOpen={() => plan.openItem(item.id)}
+      onEditType={() => plan.editType(item.type)}
       {...(plan.addItemSlide
         ? {
             onAddSlide: () => {

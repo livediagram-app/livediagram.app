@@ -54,6 +54,32 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 17.5h.01" />
     </Glyph>
   ),
+  // A terminal prompt in a window: the article is about the command line.
+  cli: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" />
+      <path d="M6.5 9.5l3 2.5-3 2.5" />
+      <path d="M12 15h5" />
+    </Glyph>
+  ),
+  // A branch splitting from a trunk: the article is about diagrams living in a git repository.
+  repositories: (
+    <Glyph>
+      <circle cx="6" cy="5" r="2" />
+      <circle cx="6" cy="19" r="2" />
+      <circle cx="18" cy="8" r="2" />
+      <path d="M6 7v10" />
+      <path d="M18 10c0 4-6 3-12 7" />
+    </Glyph>
+  ),
+  // A window with a smaller pane framed inside it: a diagram open inside another tool.
+  workbenches: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="2" />
+      <path d="M2.5 8h19" />
+      <rect x="10" y="11" width="8.5" height="6" rx="1" />
+    </Glyph>
+  ),
   // ---- Account and data ----
   // A ticket with the secret punched into it. The key belongs to
   // `authentication`, which is the article about using one.
@@ -307,6 +333,15 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
       <path d="M14 3v6h6" />
       <path d="M9.5 13l5 5M14.5 13l-5 5" />
+    </Glyph>
+  ),
+  // A browser window with a circular arrow: the page put back to a fresh start.
+  'repair-this-browser': (
+    <Glyph>
+      <path d="M4 4h16a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" />
+      <path d="M3 8h18" />
+      <path d="M15.5 14a3.5 3.5 0 1 1-1-2.45" />
+      <path d="M15.5 10.5v2h-2" />
     </Glyph>
   ),
   'cannot-sign-in': (

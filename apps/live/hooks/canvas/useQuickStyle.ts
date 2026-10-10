@@ -17,7 +17,7 @@ import type {
   ThemeDefinition,
 } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
-import { canvasSurface, isPenColourName, PEN_INK } from '@livediagram/document';
+import { canvasSurface, PEN_INK } from '@livediagram/document';
 import {
   applyBoardStroke,
   applyBoardTextColour,
@@ -43,7 +43,6 @@ import {
 } from '@/lib/quick-style-highlighter';
 import { highlighterWidthPx, type HighlighterWidthId } from '@/lib/highlighter-config';
 import type { WhiteboardPen, WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import type { PenColourMemoryApi } from './usePenColourMemory';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { resolveTabBackdrop } from '@/lib/themes';
 import {
@@ -65,6 +64,7 @@ import {
   type QuickWidth,
 } from '@/lib/quick-style';
 import { styleKindOf, type StyleKindKey } from '@/lib/style-memory';
+import { applyFillColorToEl, applyStrokeColorToEl, applyTextColorToEl } from '@/lib/style-presets';
 import type { StyleMemoryApi } from './useStyleMemory';
 import type { SwatchOverridesApi } from './useSwatchOverrides';
 
@@ -89,6 +89,9 @@ export type QuickStyleApi = {
   // highlights, else the armed tile's next stroke.
   setHighlighterColour: (colour: string) => void;
   setHighlighterWidth: (width: HighlighterWidthId) => void;
+  // A row's More colours (docs/specs/004-interface-design/colour-picker.md "Skins"): any colour
+  // from the full picker, a standard one by name on a line or text.
+  setColour: (role: QuickSwatchRole, colour: string) => void;
   clearStyles: () => void;
   // Custom swatches (docs/specs/008-canvas/quick-style-panel.md): edit the palette, style nothing.
   setSwatchOverride: (role: QuickSwatchRole, slot: QuickSwatchSlot, hex: string) => void;
@@ -111,8 +114,6 @@ export type QuickStyleDeps = {
   pen?: {
     held: WhiteboardPen | null;
     update: (id: WhiteboardPenId, patch: { colour?: PenColour | null; width?: number }) => void;
-    // Your colours: a custom colour used from the panel moves to their front.
-    colours?: Pick<PenColourMemoryApi, 'remember'>;
   };
   // The highlighter's settings for the next stroke (useShapeDrawing), which the Highlighter rows
   // show and set while its tile is armed with nothing selected.
@@ -222,11 +223,6 @@ export function useQuickStyle(
     };
   }, [baseView, highlighter]);
 
-  // A custom colour used from the panel moves to the front of Your colours, as a marker's does.
-  const rememberCustom = (colour: PenColourChoice) => {
-    if (colour !== INK_CHOICE && !isPenColourName(colour)) deps.pen?.colours?.remember(colour);
-  };
-
   // Map the view's targets through `apply`, as one commit, then remember it.
   const run = (apply: (el: Element) => Element, telemetryType: string) => {
     if (!view || editsBlocked) return;
@@ -269,10 +265,6 @@ export function useQuickStyle(
     const ids = new Set(subject.ids);
     commit((els) => els.map((el) => (ids.has(el.id) ? applyPenStyle(el, patch) : el)));
     track('Element', 'Changed', telemetryType);
-    // A custom colour used here moves to the front of Your colours.
-    if (patch.colour !== undefined) {
-      deps.pen?.colours?.remember(patch.colour === INK_CHOICE ? null : patch.colour);
-    }
   };
 
   const runHighlighter = (patch: { colour?: string; width?: HighlighterWidthId }) => {
@@ -298,6 +290,16 @@ export function useQuickStyle(
   return {
     view,
     setHighlighterColour: (colour) => runHighlighter({ colour }),
+    setColour: (role, colour) =>
+      run(
+        (el) =>
+          role === 'stroke'
+            ? applyStrokeColorToEl(el, colour)
+            : role === 'fill'
+              ? applyFillColorToEl(el, colour)
+              : applyTextColorToEl(el, colour),
+        role === 'stroke' ? 'QuickStroke' : role === 'fill' ? 'QuickBackground' : 'QuickTextColour',
+      ),
     setHighlighterWidth: (width) => runHighlighter({ width }),
     setPenColour: (colour) => runPen({ colour }, 'QuickStroke'),
     setPenWidth: (width) => runPen({ width }, 'QuickStrokeWidth'),
@@ -311,14 +313,9 @@ export function useQuickStyle(
     setTextAlign: (align) => run((el) => applyQuickTextAlign(el, align), 'QuickTextAlign'),
     setIconAlign: (align) => run((el) => applyQuickIconAlign(el, align), 'QuickIconAlign'),
     setCorners: (corners) => run((el) => applyQuickCorners(el, corners), 'QuickCorners'),
-    setBoardStroke: (colour) => {
-      run((el) => applyBoardStroke(el, colour), 'QuickStroke');
-      rememberCustom(colour);
-    },
-    setBoardTextColour: (colour) => {
-      run((el) => applyBoardTextColour(el, colour), 'QuickTextColour');
-      rememberCustom(colour);
-    },
+    setBoardStroke: (colour) => run((el) => applyBoardStroke(el, colour), 'QuickStroke'),
+    setBoardTextColour: (colour) =>
+      run((el) => applyBoardTextColour(el, colour), 'QuickTextColour'),
     clearStyles: () => {
       if (!view) return;
       if (phantom) {

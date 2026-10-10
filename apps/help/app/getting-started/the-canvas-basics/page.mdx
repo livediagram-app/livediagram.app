@@ -5,22 +5,22 @@ import { PanAndZoom } from '@/components/illustrations/canvas';
 export const metadata = helpMetadata({
   title: 'Canvas Basics',
   description:
-    'Learn to find your way around the livediagram canvas: panning, zooming, the Select and Hand tools, and the floating panels.',
+    'Learn to find your way around the livediagram canvas: panning, zooming, the Select and Hand tools, and the panels around it.',
   path: '/help/getting-started/the-canvas-basics/',
 });
 
 <ArticleLayout title="Canvas Basics" description="Panning, zooming, and finding your way around the surface where you build everything." categoryTitle="Getting Started" categorySlug="getting-started">
 
-The [canvas](/help/canvas/the-canvas/) is the surface where you build diagrams. It fills most of the editor, with floating panels on top for adding elements and navigating your library. This article covers moving around it so the rest of livediagram feels natural.
+The [canvas](/help/canvas/the-canvas/) is the surface where you build diagrams. It fills most of the editor, with the palette and a few panels on top for adding elements and navigating your library. This article covers moving around it so the rest of livediagram feels natural.
 
 ## Moving around
 
 You will pan and zoom constantly. There are a few ways to do each:
 
 - **Pan** by holding the **Space** bar and dragging, by **middle-click dragging** from any tool, or by switching to the **Hand** tool (shortcut `H`) and dragging on empty canvas. On a trackpad, a two-finger drag pans too.
-- **Zoom** with the zoom buttons in the bottom-right of the canvas, or pinch-zoom on a trackpad or touch screen. The pattern background tiles endlessly as you move, so you never run out of canvas.
+- **Zoom** with the zoom buttons in the bottom-right of the canvas, `Ctrl`/`Cmd` + scroll, `Ctrl`/`Cmd` + `+` and `-`, or pinch-zoom on a trackpad or touch screen. `Shift+1` zooms to fit everything on the tab. The pattern background tiles endlessly as you move, so you never run out of canvas.
 
-The Hand tool is the default on touch devices; on desktop the default is the Select tool.
+On a phone-sized screen the Hand tool is the default, so a drag moves the view; on a larger screen the default is the Select tool. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/) and [Zoom Controls](/help/user-interface/zoom-controls/).
 
 <Figure caption="Pan with a grabbing hand and zoom from the controls in the bottom-right of the canvas.">
   <PanAndZoom />
@@ -28,26 +28,28 @@ The Hand tool is the default on touch devices; on desktop the default is the Sel
 
 ## Select versus Hand
 
-The Palette's first row holds the canvas tools. The two you will use most:
+The selection-mode dropdown at the top of the Palette holds the canvas tools (see [Selection Modes](/help/selection-modes/)). The two you will use most:
 
 - **Select** (shortcut `V`) is for working with elements: click to select (click again to deselect), shift-click to add to the selection, and drag on empty canvas to draw a marquee that selects everything inside it.
 - **Hand** (shortcut `H`) is for moving the view: drag on empty canvas to scroll around without touching any elements.
 
 Middle-click panning works from any tool, so you rarely need to leave Select just to move the view a little.
 
-## The floating panels
+## Around the canvas
 
-A few panels float over the canvas, and each can be dragged by its header and collapsed to a banner:
+A few things sit over the canvas (see [Panel Layout](/help/user-interface/panel-layout/)):
 
-- **Palette** (top-right by default) adds shapes, arrows, icons, and tools. See the [Palette](/help/palette/) guides.
-- **Explorer** (top-left by default) is your library of documents and folders. See [Explorer](/help/explorer/explorer-page/).
-- **Right-click menus** carry per-element formatting and tab settings like [themes](/help/canvas/themes/) and canvas background.
+- **Palette**, the strip across the top, adds shapes, arrows, icons, and tools. See the [Palette](/help/palette/) guides.
+- **Explorer**, behind the menu button in the top-left corner, is your library of documents and folders. See [Explorer](/help/explorer/explorer-page/).
+- **Corner panels**, such as the Map and the AI Assistant, can be dragged by their header to another corner and collapsed to a banner.
 
-On a phone, the palette becomes a strip across the top with a menu button for the Explorer (the [Toolbar layout](/help/palette/toolbar-layout/)), so the canvas stays readable.
+Around them sit the fixed controls: the **tab bar** along the bottom, with Search, Settings and the light/dark switch at its right-hand end, and a cluster in the bottom-right corner with Undo and Redo, Layers, the **Theme & canvas** paintbrush and the zoom controls. **Right-click menus** carry per-element formatting, and the tab menu carries tab-wide tools.
+
+On a phone the layout is the same: the menu button sits in its own card left of the strip, the strip's tiles swipe sideways, and tapping a panel's header collapses it, so the canvas stays readable.
 
 ## Light and dark
 
-The editor has its own light/dark UI toggle on the right edge of the tab bar (a sun/moon icon). This recolours the editor's interface around your canvas. It is separate from a diagram's [theme](/help/canvas/themes/), which recolours the canvas content itself.
+The editor has its own appearance switch at the right-hand end of the bottom bar: click it to step through **Light**, **Dark** and **System** (which follows your device). This recolours the editor's interface around your canvas. It is separate from a diagram's [theme](/help/canvas/themes/), which recolours the canvas content itself and is set from the **Theme & canvas** paintbrush. See [Dark Mode](/help/tools/dark-mode/).
 
 <Tip>
   Lost on a big canvas? Zoom out with the bottom-right controls to get your bearings, then zoom back

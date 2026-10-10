@@ -39,7 +39,7 @@ export function createNavigationIntents() {
 }
 
 export type ChunkRecovery =
-  'reloading' | 'gave-up' | 'unsaved' | 'not-a-chunk-error' | 'already-recovering';
+  'reloading' | 'gave-up' | 'unsaved' | 'not-a-chunk-error' | 'already-recovering' | 'offline';
 
 export type ChunkRecoveryDeps = {
   storage: Storage;
@@ -50,6 +50,8 @@ export type ChunkRecoveryDeps = {
   /** A full page load of a URL. */
   load: (url: string) => void;
   track: (category: 'Error', action: 'Client', type: string) => void;
+  /** False when the browser says it is offline; defaults to online. */
+  online?: () => boolean;
 };
 
 // The same failure is often reported twice (a boundary, then the window): recover once.
@@ -62,6 +64,14 @@ export async function recoverFromChunkError(
   if (!isChunkLoadError(error)) return 'not-a-chunk-error';
   const err = error as Error;
   if (handled.has(err)) return 'already-recovering';
+  // Offline, a chunk that cannot be fetched is the connection, not an earlier build: a reload would
+  // only swap in the browser's own error page and spend the reload guard
+  // (docs/specs/007-editor/load-recovery.md "Offline"). Not marked handled, so the same failure
+  // reported again once back online still recovers.
+  if (deps.online && !deps.online()) {
+    console.warn('[stale-chunks] a chunk failed to load while offline; not reloading');
+    return 'offline';
+  }
   handled.add(err);
   const destination = deps.destination();
   // The one reload guard shared with the pre-boot guard (reload-guard.ts).

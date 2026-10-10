@@ -1,5 +1,6 @@
 // Scenes for the Toolbar Layout article (docs/specs/007-editor/toolbar-layout.md): the strip across the top
-// of the canvas, and More opening a category's full palette under itself.
+// of the canvas, and More opening a category's full palette under itself. `Strip` and `MenuCard`
+// are exported so other scenes draw the editor's top row the same way.
 // Composed only from the shared primitives, like every other help scene.
 import type { ReactNode } from 'react';
 import { Label, Panel, Scene, Tile } from './primitives';
@@ -71,15 +72,25 @@ function Ellipsis({ x, y }: { x: number; y: number }) {
   );
 }
 
-// The strip itself, top-left corner at (x, y). Shared by both scenes.
-function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?: boolean }) {
+/** The palette strip, top-left corner at (x, y), 304 wide and 32 tall. */
+export function Strip({
+  x,
+  y,
+  moreActive = false,
+  category = 'Shapes',
+}: {
+  x: number;
+  y: number;
+  moreActive?: boolean;
+  category?: string;
+}) {
   const tiles = ['square', 'circle', 'diamond', 'text', 'arrow'] as const;
   return (
     <g>
       <rect
         x={x}
         y={y}
-        width={274}
+        width={304}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
@@ -93,7 +104,7 @@ function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?
       <path d={`M${x + 43} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
       <Pill x={x + 47} y={y + 4} w={72}>
         <Label x={x + 55} y={y + 17} size={10} weight={600} className="fill-brand-700">
-          Shapes
+          {category}
         </Label>
       </Pill>
       <path d={`M${x + 124} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
@@ -106,49 +117,88 @@ function Strip({ x, y, moreActive = false }: { x: number; y: number; moreActive?
       <Pill x={x + 232} y={y + 4} w={38} active={moreActive}>
         <Ellipsis x={x + 238} y={y + 16} />
       </Pill>
-    </g>
-  );
-}
-
-/** The whole layout: the menu button top-left, the strip across the top, and
- *  the Floating layout's bottom row kept as it was. */
-export function ToolbarLayoutOverview() {
-  return (
-    <Scene w={420} h={200}>
-      <rect
-        x={16}
-        y={16}
-        width={30}
-        height={30}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+      {/* Search, last on the strip behind its own divider. */}
+      <path d={`M${x + 275} ${y + 8}v16`} className="stroke-slate-200" strokeWidth={1} />
+      <circle
+        cx={x + 287}
+        cy={y + 15}
+        r={5}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.6}
       />
       <path
-        d="M24 25h14M24 31h14M24 37h14"
+        d={`M${x + 291} ${y + 19} l4 4`}
         className="stroke-slate-500"
         strokeWidth={1.6}
         strokeLinecap="round"
       />
-      <Strip x={79} y={16} />
-      <Label x={31} y={62} size={10} anchor="middle" tone="muted">
-        Explorer
+    </g>
+  );
+}
+
+/** The top-left card, its top-left corner at (x, y): the menu button (☰) and, unless `menuOnly`
+ *  (a phone), the editor mode switch beside it. 62 wide (34 menu-only) and 32 tall. */
+export function MenuCard({ x, y, menuOnly = false }: { x: number; y: number; menuOnly?: boolean }) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={menuOnly ? 34 : 62}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <path
+        d={`M${x + 8} ${y + 10}h14M${x + 8} ${y + 16}h14M${x + 8} ${y + 22}h14`}
+        className="stroke-slate-500"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+      />
+      {!menuOnly && (
+        <Pill x={x + 28} y={y + 4} w={30}>
+          <rect
+            x={x + 33}
+            y={y + 11}
+            width={10}
+            height={10}
+            rx={2}
+            className="fill-none stroke-brand-600"
+          />
+        </Pill>
+      )}
+    </g>
+  );
+}
+
+/** The editor's top row and bottom row: the menu button and the editor mode switch top-left,
+ *  the strip across the top (ending in Search), and Layers beside the zoom bottom-right. */
+export function ToolbarLayoutOverview() {
+  return (
+    <Scene w={420} h={200}>
+      <MenuCard x={8} y={16} />
+      <Strip x={78} y={16} />
+      <Label x={39} y={62} size={10} anchor="middle" tone="muted">
+        Explorer, mode
       </Label>
-      <Label x={100} y={62} size={10} anchor="middle" tone="muted">
+      <Label x={99} y={78} size={10} anchor="middle" tone="muted">
         Selection mode
       </Label>
-      {/* Alternate rows: side by side, "Selection mode" and "Category" ran
-          into each other. */}
-      <Label x={162} y={78} size={10} anchor="middle" tone="muted">
+      {/* Alternate rows: side by side, neighbouring labels ran into each other. */}
+      <Label x={162} y={62} size={10} anchor="middle" tone="muted">
         Category
       </Label>
-      <Label x={259} y={62} size={10} anchor="middle" tone="muted">
-        First ten tiles
+      <Label x={258} y={78} size={10} anchor="middle" tone="muted">
+        Up to twelve tiles
       </Label>
-      <Label x={330} y={78} size={10} anchor="middle" tone="accent" weight={700}>
+      <Label x={329} y={62} size={10} anchor="middle" tone="accent" weight={700}>
         More
       </Label>
-      {/* The bottom row, unchanged from Floating: Layers, then zoom. */}
+      <Label x={366} y={78} size={10} anchor="middle" tone="muted">
+        Search
+      </Label>
+      {/* The bottom row: Layers, then zoom. */}
       <Tile x={290} y={158} size={26}>
         <path
           d="M-6 -1 L0 -4 L6 -1 L0 2 Z M-6 3 L0 6 L6 3"
@@ -179,8 +229,8 @@ export function ToolbarMorePopover() {
   const grid = ['square', 'circle', 'diamond', 'text', 'arrow', 'square'] as const;
   return (
     <Scene w={420} h={220}>
-      <Strip x={79} y={16} moreActive />
-      {/* Right edge under the More button's right edge (79 + 232 + 38). */}
+      <Strip x={78} y={16} moreActive />
+      {/* Right edge under the More button's right edge (78 + 232 + 38). */}
       <Panel x={185} y={58} w={164} h={148} title="SHAPES">
         <rect
           x={195}

@@ -4,7 +4,7 @@ import { LANDING_SECTION_IDS } from '@/lib/landing-content';
 import { CATEGORY_ICONS } from './category-icons';
 
 describe('CATEGORY_ICONS', () => {
-  // A chip with no icon would fall out of line with its neighbours, and
+  // A beat with no icon would fall out of line with its neighbours, and
   // nothing at runtime would notice.
   it('draws exactly one icon per feature category', () => {
     expect(Object.keys(CATEGORY_ICONS).sort()).toEqual([...LANDING_SECTION_IDS].sort());
@@ -16,7 +16,7 @@ describe('CATEGORY_ICONS', () => {
   });
 
   it('renders decorative and in the text colour', () => {
-    const Icon = CATEGORY_ICONS.simple!;
+    const Icon = CATEGORY_ICONS.diagrams!;
     const markup = renderToStaticMarkup(<Icon />);
     expect(markup).toContain('aria-hidden="true"');
     expect(markup).toContain('stroke="currentColor"');

@@ -72,6 +72,10 @@ export function contentSummaryOf(el: Element): string | null {
       const view = (el as { planView?: { view?: unknown } }).planView?.view;
       return `view=${typeof view === 'string' ? view : 'none'}`;
     }
+    case 'plan-sheet': {
+      const sheet = (el as { planSheet?: { sheetId?: unknown } }).planSheet;
+      return `sheet=${typeof sheet?.sheetId === 'string' && sheet.sheetId ? sheet.sheetId : 'none'}`;
+    }
     default:
       return null;
   }

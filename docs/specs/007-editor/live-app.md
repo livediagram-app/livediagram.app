@@ -34,7 +34,7 @@ Three regions stacked vertically, filling the viewport:
 ├────────────────────────────────────────────────────┤
 │                                                    │
 │   Canvas area — viewport with zoom + pan + the     │
-│   floating Palette, Explorer, Context,     │
+│   Palette strip, corner panels, popovers   │
 │   and selection chrome on top.                     │
 │                                                    │
 ├────────────────────────────────────────────────────┤
@@ -43,7 +43,7 @@ Three regions stacked vertically, filling the viewport:
 ```
 
 - **Header:** brand wordmark, document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header — not from the editor header itself.)
-- **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, floating palettes, plus the context panels.
+- **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface — shapes, arrows, marquee, multi-select, the Palette strip, plus the context panels.
 - **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename, drag to reorder. Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds **Search**, **Settings**, and the appearance toggle. In the editor each shows a text label beside its icon from `sm` up ("Search", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
 ## Role pill
@@ -171,7 +171,7 @@ Non-destructive everyday actions (delete an element, clear a comment, undo a str
 - The change cascades (removes child rows, breaks cross-references, invalidates share links).
 - The change is invisible to other participants in the same room.
 
-The modal supports `danger` (rose-tinted confirm button) and `neutral` variants; default is `danger` because the current call sites are all destructive. Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
+Its confirm button is the brand primary button for every action, a delete included ([Destructive actions](../004-interface-design/destructive-actions.md): never red or yellow). Esc cancels, Enter confirms, backdrop click cancels, focus lands on the confirm button so keyboard-only users get the same muscle memory as `window.confirm`.
 
 ## Toasts
 
@@ -186,16 +186,16 @@ They ARE used for actions that finish off-surface from the gesture: clicking "Ad
 
 ## Mobile chrome
 
-The editor's floating panels (Palette, Explorer, Editor/Context, Activity) were designed for desktop where they overlap a wide canvas comfortably. On a phone-sized viewport they crowd each other and the canvas. The first responsive pass tightens the chrome so a mobile visitor can at least read the canvas and tap through:
+On a phone-sized viewport the editor's chrome would crowd the canvas. It tightens so a mobile visitor can read the canvas and tap through:
 
-- **A phone always uses the Toolbar layout** ([Toolbar layout](toolbar-layout.md)). A phone is below `sm:`, or a touch screen under 500px tall (landscape; `PHONE_MEDIA_QUERY`, the `phone:` variant). There the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop in Toolbar: session panels ([Session tools (timer + voting)](../012-collaboration/session-tools.md), [Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)) and tool panels dock in their corners, reachable by view-only participants too (a view-only participant answers polls and watches vote results). (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike. On desktop **Floating** is the default: panels sit at their own corners and collapse to a banner via the header +/- button (see [Canvas and palette](../008-canvas/canvas-and-palette.md) "Collapse to banner").
+- **A phone has the same layout as a desktop** ([Toolbar layout](toolbar-layout.md)), fitted to its width. A phone is below `sm:`, or a touch screen under 500px tall (landscape; `PHONE_MEDIA_QUERY`, the `phone:` variant). There the Palette is the strip across the top, the Explorer opens from the strip's menu button, and every other panel behaves as on a desktop: session panels ([Session tools (timer + voting)](../012-collaboration/session-tools.md), [Live poll (ephemeral pulse-check)](../012-collaboration/live-poll.md)) and tool panels dock in their corners, reachable by view-only participants too (a view-only participant answers polls and watches vote results). (Per-element + tab formatting lives in the right-click context menus, so there is no Editor panel. The desktop-only [Quick style panel](../008-canvas/quick-style-panel.md) offers the few most-used choices beside a selection; it is not that panel, and the menus stay the complete home of every setting.) The `/explorer/` page and the AuthControls menu item are alternate routes to the library, open to guests and signed-in users alike.
 
-  **Layers and Collaborate are buttons in the bottom-right cluster**, beside Undo and Redo, in both layouts (Collaborate right after Layers, only while the tab has a comment thread or an action, and a popover in every layout including Floating, [Assigned actions](../012-collaboration/assigned-actions.md) §5). Only desktop **Floating** docks Layers as a corner panel that minimises into its button. In Toolbar (and so on every phone) the button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). The popovers share one open-at-a-time slot with the Explorer popover, so opening one closes the others. **A phone's zoom controls drop − and +** (`pinchOnly`): the cluster carries Undo, Redo and Layers, and pinch zooms. Fit stays.
+  **Layers and Collaborate are buttons in the bottom-right cluster**, beside Undo and Redo (Collaborate right after Layers, only while the tab has a comment thread or an action, [Assigned actions](../012-collaboration/assigned-actions.md) §5). Each button opens its panel as a **popover hanging above it** (`computeDockAnchor(..., 'above')`: from the button's left edge, kept on the canvas, arrow on the popover's bottom edge pointing at the button), and a second press closes it, as does a press anywhere outside it such as the canvas (`dismissOnOutside`; its own portalled menus and confirms count as inside). The popovers share one open-at-a-time slot with the Explorer popover, so opening one closes the others. **A phone's zoom controls drop − and +** (`pinchOnly`): the cluster carries Undo, Redo and Layers, and pinch zooms. Fit stays.
 
 - **EditorHeader** drops the `livediagram` wordmark on mobile via the Brand component's new `wordmarkClassName` prop (set to `hidden sm:inline`). The mark stays for orientation. The header's reserved width shrinks accordingly so the document title centres correctly.
 - **TabBar** hides the leading `Tabs` label below `sm` and drops the right-hand cluster's text labels to icons only. Tabs themselves, the +-add, Search, Settings and the dark-mode toggle stay. (There is no shortcuts button to hide: the shortcut reference lives in Settings' Keyboard category, [User preferences](user-preferences.md).)
 
-These don't change desktop layout. The Toolbar layout is what resolves the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
+These don't change desktop layout. The strip and the popovers are what resolve the old "panels overlap when all four open" case on a phone: the Palette is one strip and the Explorer, Layers and Collaborate are one-at-a-time popovers. The mobile picker ([Dedicated route for new-document creation](new-document-route.md) responsive section) covers the template / identity surface the same way.
 
 The root layout (`apps/live/app/layout.tsx`) exports a `viewport` config that pins the page at `initialScale: 1` with `maximumScale: 1` + `userScalable: false`, so mobile browsers don't auto-zoom on top of the editor's own canvas zoom. The two paths this blocks: pinch-zoom on the whole page, and iOS Safari's automatic focus-zoom when a focused input's effective font-size is under 16px (every TabBar / Explorer / Palette field is well under). Without this, focusing a text input on iOS zooms the page in and leaves the chrome misaligned with the canvas-transform coordinate space the cursor / selection-ring math expects. The canvas zoom (pinch on the canvas surface, or the bottom-right zoom buttons) is the only zoom the editor wants users to drive.
 
@@ -209,8 +209,10 @@ shared `ContextMenu`; and the tab menu, from a tab's `⋯` or a long-press on th
 `TabPortalMenu`) opens as a sheet (`BottomSheet`) docked to the bottom edge instead of a
 card hung off the long-press point, which covered the element it was about and ran under the tab
 bar. Full width (up to 32rem), at most 60% of the screen tall with its own scroll, clear of the
-home indicator, rising in (`animate-sheet-up`). A grab handle across its top drags it down:
-released past 80px, or flicked, it closes (`useSwipeDownDismiss`); otherwise it springs back.
+home indicator, rising in (`animate-sheet-up`). A grab handle across its top moves it, the sheet
+following the finger: dragged up past 48px (or flicked up) it fills the screen below the top bar, its handle
+still across its top; dragged down from there past 48px it returns to its own height; dragged down from its
+own height past 80px (or flicked down) it closes; anything less springs back (`useSheetDrag`).
 Outside taps and Escape close it as before. A section's flyout opens in place inside it.
 
 **A dialog closes from the backdrop only on a press that starts there.** Clicking the dim
@@ -222,7 +224,7 @@ away what was being edited (`Dialog`).
 the thing being edited sits behind it (Edit Outline), opens on a phone as a sheet docked to the
 bottom edge instead of filling the screen: full width, rounded at the top, at most 85% of the
 screen tall with its own scroll, clear of the home indicator, rising in (`animate-sheet-up`), with
-the same grab handle that drags it down to close it (`useSwipeDownDismiss`). It stays a modal
+the same grab handle, which fills the screen, returns or closes it as a menu's sheet does (`useSheetDrag`). It stays a modal
 dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
 desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
 

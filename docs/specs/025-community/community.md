@@ -45,12 +45,14 @@ A post shows every tab of the document. A document that is empty (its first tab 
   give away. A post its document's current owner did not make (it came with the document from a team library) is not
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
   document at once give the second **This document is already in the Community.**
-- **In the editor**: while the post is listed, the visibility badge in the editor header reads **Public** (it wins over
+- **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
   Private, Shared and Team; only Local only beats it), and the Share dialog's status line says the document is public.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
   is public.
-- **In the Explorer**: while the post is listed, the document's visibility badge on every list row and card (Recent,
-  Home, folders, a team library) reads **Public** with the same precedence and the same hover card as the editor's. The
+- **In the Explorer**: while the post is public, the document's visibility badge on every list row and card (Recent,
+  Home, folders) reads **Public** with the same precedence and the same hover card as the editor's. A post that is not
+  public (its document in a team library, owned by someone else, or behind a share password) gives no badge: a
+  team-library document reads **Team**, or **Shared** with share links. The
   document lists carry only whether the post is listed, never a hidden post's state, so a team member learns nothing
   the public gallery does not already say.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image

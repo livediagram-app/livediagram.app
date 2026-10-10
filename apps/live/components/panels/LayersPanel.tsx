@@ -15,11 +15,11 @@ import {
   PlusIcon,
   TrashIcon,
 } from '@/components/panels/layers-panel-icons';
-import type {
-  MovablePanelPlacementProps,
-  MovablePanelPopoverProps,
-} from '@/components/primitives/MovablePanel.types';
+import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
 import { HoverCard } from '@livediagram/ui';
+
+// The popover never moves, so its MovablePanel's move handler has nothing to do.
+const NO_MOVE = () => {};
 
 // The Layers panel (docs/specs/006-document/layers.md): one row per layer, TOP layer first (the
 // panel mirrors the paint stack like every design tool). Row = eye
@@ -38,15 +38,8 @@ export function LayersPanel({
   activeLayerId,
   counts,
   elements,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
-  onMinimize,
   popoverOpen,
   popoverAnchor,
-  asPopover,
-  dismissOnOutside,
   onPopoverClose,
   onSelectLayer,
   onAddLayer,
@@ -72,7 +65,6 @@ export function LayersPanel({
   elements: Element[];
   // The tab default face (docs/specs/004-interface-design/fonts.md), so a preview matches the canvas.
   tabFont?: string;
-  onMinimize: () => void;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;
@@ -99,8 +91,7 @@ export function LayersPanel({
   // optional, so a document with many layers reads as a compact list.
   showPreview: boolean;
   showCount: boolean;
-} & MovablePanelPlacementProps &
-  MovablePanelPopoverProps) {
+} & Pick<MovablePanelPopoverProps, 'popoverOpen' | 'popoverAnchor' | 'onPopoverClose'>) {
   // Inline rename: which layer id is being edited. The draft text lives
   // inside InlineRenameInput, so a re-render of this panel mid-rename
   // cannot reach in and reset what has been typed.
@@ -204,17 +195,15 @@ export function LayersPanel({
     <MovablePanel
       helpArticle="layers"
       title="Layers"
-      position={position}
+      // A popover over its bottom-right cluster button (docs/specs/006-document/layers.md): never placed or dragged.
+      position={null}
       defaultCorner="bottom-right"
       width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      {...dock}
-      onMinimize={onMinimize}
-      onReset={onReset}
+      onMoveTo={NO_MOVE}
       popoverOpen={popoverOpen}
       popoverAnchor={popoverAnchor}
-      asPopover={asPopover}
-      dismissOnOutside={dismissOnOutside}
+      asPopover
+      dismissOnOutside
       onPopoverClose={onPopoverClose}
     >
       <div className="px-2 pb-2">
@@ -313,7 +302,7 @@ export function LayersPanel({
                   if (activeCount === 0) onRemoveLayer(activeLayerId);
                   else setConfirmAnchor(e.currentTarget);
                 }}
-                className="flex items-center justify-center rounded-md border border-red-200 bg-white px-2 py-1 text-red-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300 disabled:hover:bg-white dark:border-red-500/40 dark:bg-slate-900 dark:text-red-400 dark:hover:bg-red-500/10 dark:disabled:border-slate-700 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
+                className="flex items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
               >
                 <TrashIcon />
               </button>

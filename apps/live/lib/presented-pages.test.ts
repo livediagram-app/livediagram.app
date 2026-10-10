@@ -23,6 +23,8 @@ describe('presentedPages', () => {
     const view = presentedPages(null, tab, 'b')!;
     expect(view.pages.map((p) => p.id)).toEqual(['b']);
     expect(view.edit).toBeUndefined();
+    // The surround is blacked out round the presented sheet.
+    expect(view.letterbox).toBe(true);
   });
 
   it('outside Illustrate, presents an article page with its writing, read only', () => {

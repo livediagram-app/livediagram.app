@@ -1,10 +1,10 @@
 // Troubleshooting-category illustrations (docs/specs/018-help/help-app.md): the concrete states a stuck
-// editor shows (a loading canvas, a sign-in error, a dropped live connection, a
-// rendering glitch, the autosave indicator). Composed
+// editor shows (a loading canvas, a sign-in error, a rendering glitch, a save
+// that could not reach the server). Composed
 // only from the shared primitives so the house style holds.
 
 import { useId } from 'react';
-import { Scene, Shape, Panel, Button, Label, TextBar, Avatar } from './primitives';
+import { Scene, Shape, Panel, Button, Label } from './primitives';
 
 /** A blank canvas stuck mid-load: a brand spinner ring over the dot grid with a
  *  reload button, the surface you see when a document will not open. */
@@ -27,62 +27,65 @@ export function StuckCanvas() {
   );
 }
 
-/** The sign-in card in an error state: a wrong email code, an inline error, and
- *  a resend-code affordance. */
+/** The sign-in code step in an error state: the error above the form, the
+ *  six code boxes, Verify, and the Resend code / Back row. */
 export function SignInError() {
+  const digits = ['1', '2', '4', '9', '0', '7'];
   return (
-    <Scene w={420} h={240} bg="plain">
-      <Panel x={108} y={26} w={204} h={188}>
-        <Label x={210} y={50} anchor="middle" size={13} weight={700} tone="strong">
-          Sign in
+    <Scene w={420} h={250} bg="plain">
+      <Panel x={98} y={10} w={224} h={230}>
+        <Label x={210} y={32} anchor="middle" size={14} weight={700} tone="strong">
+          livediagram
         </Label>
-        <Label x={124} y={76} size={10} weight={600} tone="muted">
-          EMAIL CODE
-        </Label>
-        {/* Code field in an error (rose) state */}
+        {/* The error, above the form */}
         <rect
-          x={124}
-          y={84}
-          width={172}
-          height={30}
-          rx={7}
-          className="fill-white stroke-rose-400"
-          strokeWidth={2}
+          x={114}
+          y={46}
+          width={192}
+          height={24}
+          rx={6}
+          className="fill-rose-50 stroke-rose-300"
+          strokeWidth={1.5}
         />
-        <Label x={136} y={100} size={13} weight={600} tone="strong">
-          1 2 4 _ _ _
+        <Label
+          x={210}
+          y={59}
+          anchor="middle"
+          size={10}
+          weight={600}
+          className="fill-rose-600 dark:fill-rose-300"
+        >
+          Incorrect code
         </Label>
-        <Label x={124} y={128} size={10} weight={500} className="fill-rose-500">
-          That code is not right. Try again.
+        <Label x={210} y={86} anchor="middle" size={10} tone="muted">
+          We sent a verification code to
         </Label>
-        <Button x={124} y={144} w={172} label="Continue" variant="primary" />
-        <Label x={210} y={188} anchor="middle" size={10} weight={600} tone="accent">
+        <Label x={210} y={100} anchor="middle" size={10} weight={600} tone="body">
+          you@example.com
+        </Label>
+        {digits.map((d, i) => (
+          <g key={i}>
+            <rect
+              x={120 + i * 31}
+              y={112}
+              width={25}
+              height={30}
+              rx={6}
+              className="fill-white stroke-slate-300"
+              strokeWidth={1.5}
+            />
+            <Label x={132.5 + i * 31} y={128} anchor="middle" size={12} weight={600} tone="strong">
+              {d}
+            </Label>
+          </g>
+        ))}
+        <Button x={114} y={156} w={192} h={28} label="Verify" variant="primary" />
+        <Label x={160} y={210} anchor="middle" size={10} weight={600} tone="accent">
           Resend code
         </Label>
-      </Panel>
-    </Scene>
-  );
-}
-
-/** A dropped live connection: a presence row where collaborators show as
- *  reconnecting, with an amber connection indicator. */
-export function ConnectionState() {
-  return (
-    <Scene w={420} h={200}>
-      <Panel x={70} y={40} w={280} h={120} title="LIVE">
-        {/* Connection indicator: amber dot + reconnecting label */}
-        <circle cx={88} cy={78} r={6} className="fill-amber-400" />
-        <Label x={102} y={79} size={10} weight={600} tone="strong">
-          Reconnecting…
+        <Label x={262} y={210} anchor="middle" size={10} weight={600} tone="muted">
+          Back
         </Label>
-        {/* Faded collaborator avatars (presence not syncing) */}
-        <g opacity={0.45}>
-          <Avatar cx={290} cy={78} r={12} initial="A" colour="emerald" />
-          <Avatar cx={314} cy={78} r={12} initial="B" colour="violet" />
-        </g>
-        <line x1={86} y1={104} x2={334} y2={104} className="stroke-slate-200" strokeWidth={1.5} />
-        <TextBar x={86} y={120} w={210} />
-        <TextBar x={86} y={134} w={150} tone="faint" />
       </Panel>
     </Scene>
   );
@@ -186,26 +189,34 @@ export function RenderGlitch() {
   );
 }
 
-/** The autosave indicator in its settled state: a check with an "All changes
- *  saved" label, the reassurance that work reached the server. */
-export function SavedState() {
+/** A save that did not reach the server: the canvas carries on, and the
+ *  bottom-centre toast says so. Autosave keeps retrying. */
+export function SaveFailedToast() {
   return (
-    <Scene w={420} h={140}>
-      <Panel x={108} y={48} w={204} h={44}>
-        <g transform="translate(132 70)">
-          <circle r={11} className="fill-emerald-500" />
-          <path
-            d="M-5 0 L-1 4 L5 -4"
-            className="fill-none stroke-white"
-            strokeWidth={2.2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </g>
-        <Label x={154} y={71} size={12} weight={600} tone="strong">
-          All changes saved
-        </Label>
-      </Panel>
+    <Scene w={420} h={200}>
+      <Shape x={60} y={34} w={96} h={48} kind="rect" label="Plan" />
+      <Shape x={250} y={34} w={96} h={48} kind="rect" accent label="Build" />
+      <rect
+        x={30}
+        y={138}
+        width={360}
+        height={34}
+        rx={9}
+        className="fill-rose-50 stroke-rose-300"
+        strokeWidth={1.5}
+      />
+      <g transform="translate(50 155)">
+        <circle r={8} className="fill-rose-500" />
+        <path
+          d="M0 -4 V1 M0 4 V4.5"
+          className="stroke-white"
+          strokeWidth={2}
+          strokeLinecap="round"
+        />
+      </g>
+      <Label x={66} y={156} size={11} weight={600} className="fill-rose-700 dark:fill-rose-300">
+        Couldn&rsquo;t save your changes. Check your connection.
+      </Label>
     </Scene>
   );
 }

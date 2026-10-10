@@ -95,7 +95,7 @@ export function EraserPanel({
         <p className="px-1 pt-1.5 text-[10px] leading-snug text-slate-400">
           {config.target === 'anything'
             ? 'Locked elements and locked layers are never erased. One sweep is one undo.'
-            : `Erasing ${config.target === 'drawings' ? 'drawings' : 'arrows'} only — everything else is safe from the brush.`}
+            : `Erasing ${config.target === 'drawings' ? 'drawings' : 'arrows'} only; everything else is safe from the brush.`}
         </p>
       </div>
     </ModePanel>

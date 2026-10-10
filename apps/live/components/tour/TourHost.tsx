@@ -11,13 +11,11 @@ import {
   TOUR_RELAUNCH_EVENT,
 } from '@/lib/tour-pending';
 import { track } from '@/lib/telemetry';
-import { resolvePanelLayout } from '@/lib/user-preferences';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
-import { TourLayoutPicker } from './TourLayoutPicker';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -36,19 +34,12 @@ export function TourHost() {
   // theme dock button), an event-storming board drops the palette-header
   // dropdowns it doesn't render (docs/specs/021-event-storming/event-storming.md).
   const esBoard = ctx.esBoard === true;
-  // The Toolbar layout (docs/specs/007-editor/toolbar-layout.md) moves the Explorer behind a menu button,
-  // and is the only layout on a phone.
-  const toolbar = resolvePanelLayout(ctx.userPreferences ?? {}, { mobile: isMobile }) === 'toolbar';
-  const steps = useMemo(
-    () => tourStepsFor({ mobile: isMobile, esBoard, toolbar }),
-    [isMobile, esBoard, toolbar],
-  );
+  const steps = useMemo(() => tourStepsFor({ mobile: isMobile, esBoard }), [isMobile, esBoard]);
   // Whether this mount still owes the /new handoff an offer: read from storage on the first offer
   // check, and resolved once offered or found already seen. Only the offer effect reads it and it
   // never turns back on, so it is a ref rather than state.
   const offerPendingRef = useRef<boolean | null>(null);
   const apiRef = useLatest<TourApi>({
-    toolbar,
     openElementContextMenu: async () => {
       // Reuse the first boxed element (template diagrams come populated);
       // add a theme-coloured square at the viewport centre when empty.
@@ -119,7 +110,7 @@ export function TourHost() {
   // offer is resolved, so a reload mid-offer or mid-tour re-offers instead
   // of silently swallowing the tour), then wait for the editor to be
   // usable before offering (the small delay lets the fit-to-screen pass
-  // and panel layout settle). The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md)
+  // and the chrome settle). The `tourSeen` preference (synced, docs/specs/007-editor/user-preferences.md)
   // makes the offer once-ever for the user, however it was dismissed;
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
@@ -175,5 +166,5 @@ export function TourHost() {
     else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
   };
 
-  return <TourStage engine={engine} layoutPicker={<TourLayoutPicker />} />;
+  return <TourStage engine={engine} />;
 }

@@ -8,6 +8,7 @@ import {
   PageViewBoot,
   PUBLIC_VIEWPORT,
   SITE_URL,
+  WebVitalsBoot,
 } from '@livediagram/ui';
 
 // The public transparency dashboard (docs/specs/017-telemetry/telemetry.md). Indexable: it's part of
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
         <script dangerouslySetInnerHTML={{ __html: APPEARANCE_BOOT_SCRIPT }} />
         <PageViewBoot />
+        <WebVitalsBoot />
         {children}
       </body>
     </html>

@@ -11,12 +11,12 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Map"
-  description="A zoomed-out overview of the whole canvas in the corner, with a box marking where you are — tap or drag to navigate."
+  description="A zoomed-out overview of the whole canvas in the corner, with a box marking where you are: tap or drag to navigate."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out wireframe of every shape and connector, with a coloured rectangle marking the part of the canvas you're currently looking at — so you always know where you are and what's off-screen.
+When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out wireframe of every shape and connector, with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
 
 <Figure caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
   <Minimap />
@@ -25,17 +25,22 @@ When the canvas grows past one screenful, the **Map** in the bottom-left corner 
 ## Navigating with it
 
 - **Tap** anywhere on the Map to re-centre the canvas on that spot.
-- **Drag** across it to pan continuously — the view box follows your finger.
+- **Drag** across it to pan continuously: the view box follows your pointer.
 - **Scroll** on the Map to zoom the canvas in or out, centred where you scroll.
 
 The view box updates live as you pan and zoom by any means, so the Map doubles as a constant "you are here" indicator. The shapes use their real outlines (a circle reads as a circle), and arrows show as connecting lines, so the overview is a faithful miniature rather than a grid of blocks.
 
 ## When it shows, and turning it off
 
-The Map appears once a tab has a **few elements** to map, and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge.
+The Map appears once a tab has **four or more elements** to map (or any [Illustrate](/help/canvas/illustrate/) pages), and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge, and it steps aside in [Zen mode](/help/tools/zen-mode/).
 
-- To hide it, switch off **Enable Map** in [Settings](/help/user-interface/settings/), under **Panels › Map**.
-- To bring it back, switch **Enable Map** on again in the same place. Its size and the shading outside your view live there too.
+Like the other corner panels, it can be collapsed from its header or dragged to another corner (see [Panel Layout](/help/user-interface/panel-layout/)).
+
+Its settings live in [Settings](/help/user-interface/settings/), under **Panels › Map**:
+
+- **Enable Map**: switch it off to hide the Map, and on again to bring it back.
+- **Dim Outside the View**: shades the part of the Map outside what you are looking at, so the view box stands out. On by default.
+- **Map Size**: **Short**, **Medium** (the default) or **Tall**.
 
 <Tip>
   On a big canvas, scroll on the Map to zoom straight into a far corner, instead of panning all the

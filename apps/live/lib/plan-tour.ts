@@ -2,10 +2,17 @@ import { SHAPE_DEFAULT_SIZE, createShape, type ShapeElement } from '@livediagram
 import {
   freshBoardSetup,
   newItemId,
+  planBoardHeightFor,
   planBoardWidthFor,
   type ItemCreate,
   type PlanBoardSetup,
 } from '@livediagram/items';
+import {
+  readLocalStorageSafe,
+  removeLocalStorageSafe,
+  safeJson,
+  writeLocalStorageSafe,
+} from './local-storage-safe';
 
 // The Plan tour's pure parts (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md): its relaunch
 // signal, the example board and cards it shows Plan working on, and the leftover record that lets a
@@ -31,12 +38,14 @@ export function exampleBoard(
   const planBoard = { ...freshBoardSetup('kanban', random), title: EXAMPLE_BOARD_TITLE };
   const base = createShape('plan-board', 0, 0);
   const width = Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard));
+  const height = planBoardHeightFor(planBoard);
   return {
     ...base,
     planBoard,
     width,
+    height,
     x: centre.x - width / 2,
-    y: centre.y - base.height / 2,
+    y: centre.y - height / 2,
   };
 }
 
@@ -89,23 +98,16 @@ function isContent(value: unknown): value is PlanTourContent {
 // The leftover record: what a tour cut short (a reload, a closed window) left behind. Malformed or
 // unreadable reads as none.
 export function readLeftover(): PlanTourContent | null {
-  try {
-    const raw = localStorage.getItem(PLAN_TOUR_CONTENT_KEY);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    if (isContent(parsed)) return parsed;
-    localStorage.removeItem(PLAN_TOUR_CONTENT_KEY);
-    return null;
-  } catch {
-    return null;
-  }
+  const raw = readLocalStorageSafe(PLAN_TOUR_CONTENT_KEY);
+  if (!raw) return null;
+  const parsed = safeJson(raw);
+  if (isContent(parsed)) return parsed;
+  removeLocalStorageSafe(PLAN_TOUR_CONTENT_KEY);
+  return null;
 }
 
+// Storage unavailable: the in-memory record still tidies up a tour that ends normally.
 export function writeLeftover(content: PlanTourContent | null): void {
-  try {
-    if (content) localStorage.setItem(PLAN_TOUR_CONTENT_KEY, JSON.stringify(content));
-    else localStorage.removeItem(PLAN_TOUR_CONTENT_KEY);
-  } catch {
-    // Storage unavailable: the in-memory record still tidies up a tour that ends normally.
-  }
+  if (content) writeLocalStorageSafe(PLAN_TOUR_CONTENT_KEY, JSON.stringify(content));
+  else removeLocalStorageSafe(PLAN_TOUR_CONTENT_KEY);
 }

@@ -234,7 +234,7 @@ describe('board set-up in the ledger', () => {
     expect(names(mergeLedgerIntoTab(saved, ledger, 1))).toEqual([
       'Backlog',
       'Ready',
-      'In progress',
+      'In Progress',
       'Checking',
       'Done',
     ]);
@@ -253,8 +253,8 @@ describe('board set-up in the ledger', () => {
     const merged = mergeLedgerIntoTab(boardTab(), ledger, 0);
     const pb = (merged.elements[0] as ShapeElement).planBoard!;
     expect(pb.columns.map((c) => c.name)).toEqual([
-      'To do',
-      'In progress',
+      'To Do',
+      'In Progress',
       'Review',
       'Done',
       'Newer',
@@ -265,5 +265,24 @@ describe('board set-up in the ledger', () => {
 
   it('refuses a malformed board frame', () => {
     expect(recordInLedger(undefined, board({ set: { columns: [] } }), 1)).toBeNull();
+  });
+});
+
+// docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": a dot on a card rides the ledger by its key.
+describe('a dot on a Plan card', () => {
+  it('records under the card’s vote key', () => {
+    const op = {
+      kind: 'vote',
+      tabId: 't1',
+      elementId: 'item:i1',
+      voter: 'a',
+      delta: 1,
+      round: 'r1',
+    };
+    expect(recordInLedger(undefined, op, 4)).toEqual({
+      round: 'r1',
+      votes: { 'item:i1': ['a'] },
+      seq: 4,
+    });
   });
 });

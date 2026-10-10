@@ -91,7 +91,7 @@ Changing a link's scope broadcasts a system op `share-rescoped { code }`. Sessio
 
 ## Owner experience (Share dialog)
 
-- The composer's fine print gains an **Opens** row, a select under **Valid** ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the document has more than one tab.
+- The composer's fine print gains an **Opens** row, a select above **Valid** ("Tabs this link opens"): "All tabs" (default), then each tab by name, in bar order. It only shows when the document has more than one tab.
 - Each active pass shows its scope beside **Opens** as a select ("All tabs" / a tab name); a single-tab document leaves the term off, since every pass opens every tab. Changing it rescopes the link at once. A single-tab document shows no scope control; its links are All tabs.
 - A scoped link's **Live image** has no tab picker: it always renders the link's tab.
 - A scoped link's Embed shows its tab, because the embed resolves through the same code.

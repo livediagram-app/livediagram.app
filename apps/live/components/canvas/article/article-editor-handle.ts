@@ -204,8 +204,9 @@ export function createArticleHandle({
         if (n.attrs.id === id && n.type === articleSchema.nodes.zone) from = pos;
       });
       const node = from >= 0 ? doc.nodeAt(from) : null;
-      const found = boundaryNear(near, id);
-      if (!node || !found) return null;
+      const found =
+        'by' in near ? { pos: zoneStepTarget(doc, from, near.by) } : boundaryNear(near, id);
+      if (!node || !found || found.pos === null) return null;
       // Dropped where it already is: nothing moves.
       if (found.pos === from || found.pos === from + node.nodeSize) return null;
       const tr = view.state.tr.delete(from, from + node.nodeSize);
@@ -290,4 +291,26 @@ export function createArticleHandle({
       }
     },
   };
+}
+
+/**
+ * Where a zone at `from` lands when stepped one block up (`by` -1, before the block above it) or
+ * down (1, after the block below it): a position in the writing, or null at either end. The
+ * keyboard's way to move a zone (the zone bar's grip, arrow keys), as a drag moves it by a point.
+ */
+export function zoneStepTarget(doc: PMNode, from: number, by: -1 | 1): number | null {
+  if (from < 0) return null;
+  let index = -1;
+  let pos = 0;
+  const starts: number[] = [];
+  doc.forEach((n, p, i) => {
+    starts.push(p);
+    if (p === from) index = i;
+    pos = p + n.nodeSize;
+  });
+  starts.push(pos);
+  if (index < 0) return null;
+  const target = by < 0 ? index - 1 : index + 2;
+  if (target < 0 || target >= starts.length) return null;
+  return starts[target]!;
 }

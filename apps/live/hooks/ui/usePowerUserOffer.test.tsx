@@ -89,7 +89,7 @@ describe('usePowerUserOffer', () => {
     const { offers, prefs } = setup();
     offers[0]!.onConfirm();
     expect(prefs().powerUserMode).toBe(true);
-    expect(prefs().panelLayout).toBe('toolbar');
+    expect(prefs().minimalChrome).toBe(true);
     expect(prefs().powerUserOfferShown).toBe(true);
     expect(track).toHaveBeenCalledWith('UI', 'Used', 'PowerUserOffer');
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'PowerUserModeOn');

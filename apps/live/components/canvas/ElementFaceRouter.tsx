@@ -118,12 +118,12 @@ type ElementFaceRouterProps = Pick<
   iconCaptionBand: string | null;
   // An upright lane title's turned frame (upright-title.ts), or null.
   labelFrame: CSSProperties | null;
-  // A pen stroke not yet selected: only its drawn line picks it.
-  lineHit: boolean;
+  // A pen stroke or a path is picked by its drawn line (selected, its box catches pointers too).
+  hitLine: boolean;
 };
 
 export function ElementFaceRouter({
-  lineHit,
+  hitLine,
   element,
   isEditing,
   isSelected,
@@ -408,7 +408,7 @@ export function ElementFaceRouter({
         <>
           <FreehandSvg
             element={element}
-            hitPenWidth={lineHit ? (element.penWidth ?? 0) : undefined}
+            hitPenWidth={hitLine ? (element.penWidth ?? 0) : undefined}
             fill={element.fillColor ?? defaultFillColor(element, surface)}
             stroke={
               remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
@@ -429,7 +429,7 @@ export function ElementFaceRouter({
         <PathSvg
           element={element}
           hitPenWidth={
-            lineHit ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
+            hitLine ? BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE] : undefined
           }
           fill={element.fillColor ?? defaultFillColor(element, surface)}
           stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}

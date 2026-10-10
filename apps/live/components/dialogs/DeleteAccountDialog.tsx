@@ -139,7 +139,7 @@ export function DeleteAccountDialog({
               id="delete-account-title"
               className="text-lg font-semibold text-slate-900 dark:text-slate-100"
             >
-              Delete account
+              Delete Account
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               This permanently removes your documents (including any in the Trash), folders, and
@@ -183,12 +183,12 @@ export function DeleteAccountDialog({
               Cancel
             </Button>
             <Button
-              variant="danger"
+              variant="primary"
               onClick={handleDelete}
               disabled={!emailsMatch || phase === 'submitting'}
               className="shadow-sm"
             >
-              {phase === 'submitting' ? 'Deleting…' : 'Delete account'}
+              {phase === 'submitting' ? 'Deleting…' : 'Delete Account'}
             </Button>
           </DialogFooter>
         </div>

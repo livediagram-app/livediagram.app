@@ -37,8 +37,13 @@ import {
 } from '@livediagram/document';
 import { debugLog } from '@/lib/debug-log';
 import { useArticleIntake } from './useArticleIntake';
-import { articleHandleOf, markZoneReleased } from '@/lib/article/article-editor-store';
+import {
+  articleHandleOf,
+  markZoneReleased,
+  type ZoneMoveTo,
+} from '@/lib/article/article-editor-store';
 import { articleTextWidth } from '@/lib/article/article-flow-geometry';
+import { articleLocked } from '@/lib/article/article-lock';
 import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/article/ArticleEditor';
 
@@ -69,8 +74,9 @@ export type ArticlesView = {
   addNote: (flow: string, kind: ArticleNoteKind) => void;
   // A margin note's thread, or its action, opened (a click on its text).
   openNote: (id: string, kind: ArticleNoteKind) => void;
-  // A zone dragged to the block boundary nearest a canvas point, its elements with it.
-  moveZone: (flow: string, zoneId: string, near: { x: number; y: number }) => void;
+  // A zone dragged to the block boundary nearest a canvas point, or stepped a block up or down
+  // (the grip's arrow keys), its elements with it.
+  moveZone: (flow: string, zoneId: string, near: ZoneMoveTo) => void;
   // An article's style changed (the Style tab): a look, or one field.
   setStyle: (flow: string, change: ArticleStyleChange) => void;
   // A style shown on an article while a Style tab choice is hovered.
@@ -122,6 +128,14 @@ export type ZoneAction =
 // A new drawing's height before anything is drawn in it.
 const NEW_DRAWING_HEIGHT = 240;
 
+// Whether an edit of an article is refused: no rights, the tab locked, or any page of the article
+// locked (docs/specs/007-editor/illustrate-pages.md "Locking a page": the lock holds the writing,
+// its page count and its zones as they are). Every entry point into an article's writing asks this,
+// so a toolbar hovered over a locked page, or a drop beside it, changes nothing.
+export function articleEditRefused(canEdit: boolean, tab: Tab, flow: string): boolean {
+  return !canEdit || tab.locked === true || articleLocked(tab, flow);
+}
+
 export function useArticles(deps: {
   activeTab: Tab;
   on: boolean;
@@ -165,10 +179,13 @@ export function useArticles(deps: {
   const onCommit = useCallback(
     (flow: string, blocks: ArticleBlock[]) => {
       const d = latest.current;
-      if (!d.canEdit || d.activeTab.locked === true) return false;
+      if (articleEditRefused(d.canEdit, d.activeTab, flow)) {
+        debugLog('[article] writing refused (locked)', { tabId, flow });
+        return false;
+      }
       d.commitTabs((ts) =>
         ts.map((t) => {
-          if (t.id !== tabId || t.locked === true) return t;
+          if (t.id !== tabId || articleEditRefused(true, t, flow)) return t;
           const doc = articlesOf(t)[flow];
           // An article deleted meanwhile takes no writing.
           if (!doc) return t;
@@ -184,10 +201,12 @@ export function useArticles(deps: {
   const onLayout = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
-      if (!layout.local || !d.canEdit || d.activeTab.locked === true) return;
+      if (!layout.local || articleEditRefused(d.canEdit, d.activeTab, layout.flow)) return;
       d.tickTabs((ts) => {
         const out = ts.map((t) => {
-          if (t.id !== tabId || t.locked === true || !articlesOf(t)[layout.flow]) return t;
+          if (t.id !== tabId || !articlesOf(t)[layout.flow]) return t;
+          // A locked page holds the article as it is: no page added or dropped, no zone moved.
+          if (articleEditRefused(true, t, layout.flow)) return t;
           const paged = withArticlePageCount(t, layout.flow, layout.pagesNeeded);
           const settled = withNotesSettled(
             withZonesSettled(paged, layout.flow, layout.zones),
@@ -224,8 +243,7 @@ export function useArticles(deps: {
     (flow: string, what: ArticleInsert) => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      if (!handle || !d.canEdit || d.activeTab.locked === true) return;
-      track('Element', 'Added', INSERT_EVENT[what]);
+      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow)) return;
       if (what === 'drawing') {
         const res = handle.insertZone(
           {
@@ -239,6 +257,8 @@ export function useArticles(deps: {
         d.commitTabs((ts) =>
           ts.map((t) => (t.id === tabId ? withZoneLanded(t, flow, res).tab : t)),
         );
+        // Counted once it went in, never for an insert that found no caret.
+        track('Element', 'Added', INSERT_EVENT[what]);
         return;
       }
       const at = handle.caretCanvasPoint();
@@ -246,6 +266,7 @@ export function useArticles(deps: {
       // Just under the caret's line, so the object lands after the block being written in.
       handle.flush();
       d.placeAt(PLACE_INTENT[what], at.x, at.y + 30);
+      track('Element', 'Added', INSERT_EVENT[what]);
     },
     [tabId],
   );
@@ -253,7 +274,7 @@ export function useArticles(deps: {
   const zoneAction = useCallback(
     (flow: string, zoneId: string, action: ZoneAction) => {
       const d = latest.current;
-      if (!d.canEdit || d.activeTab.locked === true) return;
+      if (articleEditRefused(d.canEdit, d.activeTab, flow)) return;
       const apply = (t: Tab): Tab => {
         if ('remove' in action) return withZoneRemoved(t, flow, zoneId);
         if ('float' in action) return withZoneReleased(t, flow, zoneId);
@@ -279,7 +300,7 @@ export function useArticles(deps: {
     (flow: string, ids: readonly string[], wrap: ArticleZoneWrap) => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      if (!handle || !d.canEdit || d.activeTab.locked === true || ids.length === 0) return;
+      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow) || ids.length === 0) return;
       const all = d.activeTab.elements;
       const els = all.filter((e) => ids.includes(e.id));
       const width = textWidth(d.activeTab, flow);
@@ -312,7 +333,7 @@ export function useArticles(deps: {
     (flow: string, kind: ArticleNoteKind) => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      if (!handle || !d.canEdit || d.activeTab.locked === true) return;
+      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow)) return;
       const id = crypto.randomUUID();
       const res = handle.markNote(id, kind);
       if (!res) return;
@@ -346,10 +367,10 @@ export function useArticles(deps: {
   );
 
   const moveZone = useCallback(
-    (flow: string, zoneId: string, near: { x: number; y: number }) => {
+    (flow: string, zoneId: string, near: ZoneMoveTo) => {
       const d = latest.current;
       const handle = articleHandleOf(flow);
-      if (!handle || !d.canEdit || d.activeTab.locked === true) return;
+      if (!handle || articleEditRefused(d.canEdit, d.activeTab, flow)) return;
       const res = handle.moveZone(zoneId, near);
       if (!res) return;
       track('Element', 'Changed', 'ArticleZoneMoved');
@@ -365,7 +386,7 @@ export function useArticles(deps: {
   const setStyle = useCallback(
     (flow: string, change: ArticleStyleChange) => {
       const d = latest.current;
-      if (!d.canEdit || d.activeTab.locked === true) return;
+      if (articleEditRefused(d.canEdit, d.activeTab, flow)) return;
       setStylePreview(null);
       // The look or value already chosen is no edit: no undo step.
       if (withArticleStyleChanged(d.activeTab, flow, change) === d.activeTab) return;

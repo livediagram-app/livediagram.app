@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { DAY_MS } from '@livediagram/items';
 import {
-  DAY_MS,
   expiryFrom,
   lifetimeElapsed,
   relativeTime,

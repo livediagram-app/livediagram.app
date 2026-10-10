@@ -33,6 +33,10 @@ The editor is real:
   with `@name #label !priority ~points`, an item panel, voting and hide-writing for retros, presence on cards, one undo
   timeline with the canvas, ten Plan templates (boards set up for their use, with no cards), and item verbs for the CLI and MCP
   ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
+- **Sheets** ([Sheet](../029-sheets/sheet.md)): a Plan-mode spreadsheet tab on the canvas, kept in its own D1 store:
+  cells, 157 functions (reading other sheets on the tab and Plan cards), number formats, borders, merges,
+  freeze, sort, filter, find and replace, copy and paste with Google Sheets and Excel, CSV in and out, live for
+  everyone with one undo timeline, maximised like a board, and sheet tools for the CLI and MCP.
 - **Snap colours**: on a whiteboard, one option converts every custom colour into the board's stock colours, so an imported or hand-coloured board adapts to light and dark like everything drawn in stock colours ([Draw mode](../023-draw-mode/draw-mode.md#snap-colours)).
 - **Packed pen strokes**: every freehand stroke is stored as one compact binary block of points and pressures, so a board of thousands of strokes fits its tab; an editor left open across a format change asks calmly to be reloaded. See [Stroke points](../006-document/stroke-points.md) and [New version prompt](../016-platform/new-version-prompt.md).
 - **Corners that scale down**: a corner preset is drawn at most a quarter of a shape's shorter side, so a small rounded square stays a rounded square ([Corner radius](../008-canvas/corner-radius.md)).
@@ -66,7 +70,13 @@ The editor is real:
   edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
   presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
   document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Built and run from source; publishing to npm is ahead.
+  tools are verbs of the same catalogue. Published on npm as `@livediagram/cli`, with provenance.
+- **Repository links** ([Repository link](../027-repositories/repository-link.md)): `livediagram.toml` binds a
+  directory to a folder or documents; `livediagram sync` writes an `INDEX.md` agents find with a search, plus a
+  snapshot and a text outline per document at the `files` level, and `sync --watch` keeps them in step live.
+- **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
+  person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
+  frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
@@ -94,8 +104,8 @@ The editor is real:
 
 ## Next
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built, the CLI's publishing to npm,
-  its update check and its help centre article next.
+- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
+- **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
 - **Access levels** ([Share roles](../013-workspace/share-roles.md)): Viewer, Participant and Editor for share links and API tokens, with ownership as separate powers, replacing view/edit and the read-only flag.
 
 ## Later

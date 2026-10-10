@@ -85,6 +85,25 @@ export function FormatIcon({ kind }: { kind: Format }) {
           </text>
         </svg>
       );
+    case 'logo-kit':
+      // A square artboard with a mark on it, and the .zip it comes in.
+      return (
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="26"
+            height="26"
+            rx="4"
+            fill="rgb(236 254 255)"
+            stroke="rgb(34 211 238)"
+            strokeWidth="1.25"
+          />
+          <circle cx="14" cy="12" r="5.5" fill="rgb(6 182 212)" />
+          <circle cx="14" cy="12" r="2.2" fill="rgb(236 254 255)" />
+          <rect x="8" y="20" width="12" height="2.5" rx="1.25" fill="rgb(14 116 144)" />
+        </svg>
+      );
     case 'pdf':
       return (
         <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>

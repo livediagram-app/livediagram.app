@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TeamSpace } from '@/components/illustrations/explorer';
+import { TeamSpacesSidebar } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Team Spaces',
@@ -16,26 +16,30 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-Each team you belong to is a space of its own in the Explorer sidebar: a top-level folder under **Spaces**, right after your own [My documents](/help/explorer/personal-space/). Expand a team to walk its shared folders, and keep your pending invites one click away. For the full picture of how teams, roles, and invites work, see the [Teams guide](/help/collaboration/teams/).
+Each team you belong to is a space of its own in the Explorer sidebar: a top-level row under **Spaces**, right after your own [My documents](/help/explorer/personal-space/). Expand a team to walk its shared folders, and keep your pending invites one click away. For the full picture of how teams, roles, and invites work, see the [Teams guide](/help/collaboration/teams/).
+
+<Figure caption="The Spaces group when signed in: My documents, each team with its member count and shared folders, Invites, and New team.">
+  <TeamSpacesSidebar />
+</Figure>
 
 ## Your teams
 
-Each team you are a member of appears as a row, with a badge showing the member count once a team has more than one person. Click a team to open its page; expand it to walk its shared folder tree without leaving the sidebar, and click a folder to jump straight to it on the team page. Team-shared documents live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-documents/), separate from My documents.
+Each team you are a member of appears as a row with the team glyph, and a badge showing the member count once the team has more than one person. Click a team to open its page; expand it with the arrow to walk its shared folder tree without leaving the sidebar, and click a folder to open the team page with that folder already showing. A team with no folders yet has no arrow.
 
-<Figure caption="A team space shows its members, the shared folders everyone can manage, and any pending invite.">
-  <TeamSpace />
-</Figure>
+Team-shared documents live in [a folder tree every member can manage](/help/collaboration/teams/team-shared-documents/), separate from My documents. The team page holds that library, the member list, a **⋯** menu to leave the team (admins can also edit or delete it there), and the team's own activity feed, which includes what happened before you joined. Admins invite people from the team page, by email or with **Invite by link**.
+
+The editor's Explorer panel (behind the menu button) lists your teams too, so you can reach team documents without leaving a board.
 
 ## Invites
 
-While an invitation is waiting for you, an **Invites** row appears under your teams, with a badge counting them. Open it to accept or decline. Invites also reach you on **Home** and by email.
+While an invitation is waiting for you, an **Invites** row appears under your teams, with a badge counting them. Open it to see one card per invite, naming the team, its organisation and how many members it has, then **Accept** it (which takes you to the team page) or **Decline** it. The row goes away once nothing is waiting. You also hear about an invite by email, and it shows on [All activity](/help/explorer/timeline/#all-activity).
 
-## New team
+## New Team
 
-**New team**, the last row of Spaces, creates a team: give it a name (and an organisation, if you like), then invite people by email. They show up here as soon as they accept.
+**New team**, the last row of Spaces, opens the **New Team** dialog: give the team a **Team name** and, if you like, an **Organisation**, then choose **Create team**. You land on the new team's page as its admin, ready to invite people; they show up in the member list as soon as they accept.
 
 ## Signed-in only
 
-Teams need an account, so team rows and New team appear only when you are signed in. Guests see a **Sign in to access Teams** card in their place. On deployments configured without authentication, neither appears, since teams cannot exist without it.
+Teams need an account, so team rows, Invites and New team appear only when you are signed in. Guests see a **Sign in to access Teams** card in their place ("Free, and your guest documents come with you"). On deployments configured without authentication, neither appears, since teams cannot exist without it.
 
 </ArticleLayout>

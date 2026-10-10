@@ -148,7 +148,7 @@ export function PortalFace({
     >
       <button
         type="button"
-        aria-label={`${label} — go to ${targetName ?? 'the linked portal'}`}
+        aria-label={`${label}: go to ${targetName ?? 'the linked portal'}`}
         // A click travels; a drag just moves the portal. See usePressWithoutDrag.
         {...press}
         // `relative` is load-bearing, not decoration: the hover filter and the

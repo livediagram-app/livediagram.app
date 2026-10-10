@@ -10,22 +10,19 @@ import type { HelpArticleKey } from '@/lib/help-articles';
 //
 // These five are the panels that exist only while their tool does (docs/specs/008-canvas/laser-panel.md for
 // the Laser, docs/specs/008-canvas/avatar-mode.md for Avatar, and the same shape for the rest). They are
-// deliberately identical outside their bodies — same corner, same width as the
-// Palette they stack under, same collapse behaviour — because the top-right
+// deliberately identical outside their bodies — same corner, same width, same
+// collapse behaviour — because the top-right
 // column has to read as one edge rather than five panels that each drifted a
 // little.
 //
 // All five wrote that out by hand: the same props in the same order,
 // differing only in `title`. This is the second half of the job
 // MovablePanelPlacementProps started; that type stopped nine panels
-// re-declaring the placement props, and these five went on re-declaring
-// `stackBelowY` and re-typing the forwarding block underneath.
+// re-declaring the placement props, and these five went on re-typing the
+// forwarding block underneath.
 
 /** Everything a mode panel forwards to its MovablePanel. */
-export type ModePanelProps = MovablePanelPlacementProps &
-  MovablePanelPopoverProps & {
-    stackBelowY?: number;
-  };
+export type ModePanelProps = MovablePanelPlacementProps & MovablePanelPopoverProps;
 
 /** Extras a mode panel may put in its header: a settings gear, a help link. */
 type ModePanelExtras = {
@@ -41,7 +38,6 @@ export function ModePanel({
   onMoveTo,
   onReset,
   dock,
-  stackBelowY,
   headerActions,
   helpArticle,
   popoverOpen,
@@ -62,7 +58,6 @@ export function ModePanel({
       onReset={onReset}
       headerActions={headerActions}
       helpArticle={helpArticle}
-      stackBelowY={stackBelowY}
       {...dock}
       // As a popover over a cluster button (the Slide Deck in Illustrate mode).
       popoverOpen={popoverOpen}

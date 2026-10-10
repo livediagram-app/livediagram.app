@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, type RefObject } from 'react';
 import {
   continuedPath,
+  isCompoundPath,
   defaultFillColor,
   defaultStrokeColor,
   resolveStockColours,
@@ -16,7 +17,7 @@ import {
 import type { PendingDraw } from '@/lib/draw-mode';
 import { rubberBand } from '@/lib/path-draw';
 import { sharedNodeType, toWorld } from '@/lib/path-edit';
-import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
@@ -24,6 +25,7 @@ import { usePathEditGesture } from './usePathEditGesture';
 import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
 import { debugLog } from '@/lib/debug-log';
+import { useToast } from '@/hooks/ui/useToast';
 import { boardShape } from '@/lib/whiteboard-tool';
 
 // A press on a toolbar floating over the canvas (the selection toolbar, the edit toolbar) is a
@@ -58,6 +60,7 @@ export function usePathTool({
   onDeselect,
   onBeginEdit,
   onCancelDraw,
+  snapPoint,
 }: {
   pendingDraw: PendingDraw | null;
   canvasTool: CanvasTool;
@@ -82,8 +85,11 @@ export function usePathTool({
   onBeginEdit: (id: string) => void;
   // Puts a held tool down: opening a path's edit mode puts the Path tool down first.
   onCancelDraw: () => void;
+  // Where a click places a node instead (usePathDrawGesture).
+  snapPoint?: (p: { x: number; y: number }) => { x: number; y: number } | null;
 }) {
   const surface = useCanvasSurface();
+  const toast = useToast();
   const draw = usePathDrawGesture({
     pendingDraw,
     elements,
@@ -93,6 +99,7 @@ export function usePathTool({
     activeTabId,
     onCommitPath,
     onStartPath: onDeselect,
+    snapPoint,
   });
   const openEdit = (id: string) => {
     if (pendingDraw) onCancelDraw();
@@ -102,7 +109,9 @@ export function usePathTool({
   // Edit mode: the path being edited, while Select is in hand and it can be edited at all.
   const pathOf = (id: string | null): PathElement | null => {
     const el = id ? elements.find((e) => e.id === id) : undefined;
-    return el?.type === 'path' && el.locked !== true && !inertIds?.has(el.id) ? el : null;
+    return el?.type === 'path' && el.locked !== true && !inertIds?.has(el.id) && !isCompoundPath(el)
+      ? el
+      : null;
   };
   const editable = canvasTool === 'select' && pendingDraw === null;
   const edited = pathOf(editingId);
@@ -110,14 +119,19 @@ export function usePathTool({
   // A tool picked, the path locked, out of reach or deleted (by a peer too): edit mode leaves.
   const stale =
     editingId !== null && elements.some((e) => e.id === editingId && e.type === 'path') && !editing;
+  // Edit mode asked of a combined shape, which has no points to edit one by one.
+  const askedCompound =
+    stale && elements.some((e) => e.id === editingId && e.type === 'path' && isCompoundPath(e));
   const lastEditedRef = useRef<string | null>(null);
   useEffect(() => {
     const vanished = !editing && editingId !== null && editingId === lastEditedRef.current;
     lastEditedRef.current = editing?.id ?? null;
     if (!stale && !vanished) return;
     debugLog(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
+    // A combined shape's points are not edited one by one (docs/specs/007-editor/logo-pages.md).
+    if (askedCompound) toast.info('Combined shapes edit as a whole.');
     onLeaveEdit();
-  }, [stale, editing, editingId, onLeaveEdit]);
+  }, [stale, editing, editingId, onLeaveEdit, askedCompound, toast]);
   const edit = usePathEditGesture({
     element: editing,
     selectedPathId: editingId === null ? (pathOf(soleSelectedPathId)?.id ?? null) : null,

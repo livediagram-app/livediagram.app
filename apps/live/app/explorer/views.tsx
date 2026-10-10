@@ -17,6 +17,7 @@ import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { HoverCard } from '@livediagram/ui';
+import { LIST_CARD } from '@/components/primitives/surface-classes';
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -119,7 +120,7 @@ export function ListView(props: ExplorerViewProps) {
     showOwner = false,
   } = props;
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div className={LIST_CARD}>
       <div
         className={
           'grid grid-cols-[1fr_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400 ' +
@@ -191,7 +192,7 @@ export function SharedList({
     return <EmptyPane selected={{ kind: 'shared' }} />;
   }
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+    <div className={LIST_CARD}>
       <div className="grid grid-cols-[1fr_60px_140px_40px] items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400 sm:grid-cols-[1fr_110px_60px_140px_40px]">
         <span>Name</span>
         <span className="hidden sm:block">Owner</span>
@@ -230,7 +231,7 @@ export function SharedList({
                 type="button"
                 onClick={() => onDismiss(s.id)}
                 aria-label={DISMISS_SHARED.ariaLabel(s.name)}
-                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-rose-50 hover:text-rose-700 dark:hover:bg-rose-500/15 dark:hover:text-rose-300"
+                className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-600 dark:hover:text-slate-200"
               >
                 <DismissSharedIcon />
               </button>
@@ -260,9 +261,5 @@ export function SkeletonRows({ count = 6, framed = true }: { count?: number; fra
     </ul>
   );
   if (!framed) return rows;
-  return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-      {rows}
-    </div>
-  );
+  return <div className={LIST_CARD}>{rows}</div>;
 }

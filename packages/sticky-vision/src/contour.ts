@@ -2,8 +2,8 @@
 //
 // Two notes lapped over each other are one blob to the colour mask, but not to
 // its outline: where one note's edge meets the other's, the outline turns
-// INWARDS, a notch no single rectangle has. Tracing the border, simplifying it
-// and measuring how far it falls inside its convex hull finds those notches,
+// INWARDS, a notch no single rectangle has. Tracing the border and
+// measuring how far it falls inside its convex hull finds those notches,
 // and a cut between two of them is the seam between two notes.
 //
 // Pure over a binary mask (one byte per pixel, 0 or 1), iterative throughout:
@@ -125,59 +125,6 @@ function distanceToLine(p: Point, a: Point, b: Point): number {
   const len = Math.hypot(dx, dy);
   if (len === 0) return Math.hypot(p.x - a.x, p.y - a.y);
   return Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx) / len;
-}
-
-// Ramer–Douglas–Peucker on an open run of points, keeping the ends.
-function rdp(points: Point[], epsilon: number): Point[] {
-  if (points.length < 3) return points;
-  const keep = new Uint8Array(points.length);
-  keep[0] = 1;
-  keep[points.length - 1] = 1;
-  const stack: [number, number][] = [[0, points.length - 1]];
-  while (stack.length > 0) {
-    const [from, to] = stack.pop()!;
-    let worst = -1;
-    let worstAt = -1;
-    for (let i = from + 1; i < to; i += 1) {
-      const d = distanceToLine(points[i]!, points[from]!, points[to]!);
-      if (d > worst) {
-        worst = d;
-        worstAt = i;
-      }
-    }
-    if (worst > epsilon) {
-      keep[worstAt] = 1;
-      stack.push([from, worstAt], [worstAt, to]);
-    }
-  }
-  return points.filter((_, i) => keep[i] === 1);
-}
-
-// A closed outline simplified to the vertices that matter: split at the start
-// and at the point farthest from it, and simplify each half. A traced
-// rectangle comes back as its four corners.
-export function simplifyClosed(contour: Point[], epsilon: number): Point[] {
-  if (contour.length < 4) return contour;
-  const origin = contour[0]!;
-  let far = 0;
-  let farDist = -1;
-  contour.forEach((p, i) => {
-    const d = Math.hypot(p.x - origin.x, p.y - origin.y);
-    if (d > farDist) {
-      farDist = d;
-      far = i;
-    }
-  });
-  const first = rdp(contour.slice(0, far + 1), epsilon);
-  const second = rdp([...contour.slice(far), origin], epsilon);
-  const poly = [...first, ...second.slice(1, -1)];
-  // The start point survives the split whatever it is; drop it when it sits
-  // on the straight line between its neighbours.
-  if (poly.length > 3) {
-    const prev = poly[poly.length - 1]!;
-    if (distanceToLine(poly[0]!, prev, poly[1]!) <= epsilon) poly.shift();
-  }
-  return poly;
 }
 
 function cross(o: Point, a: Point, b: Point): number {

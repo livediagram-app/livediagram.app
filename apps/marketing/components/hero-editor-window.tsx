@@ -37,9 +37,11 @@ export function EditorWindow({
   document: liveDoc,
   viewBox = LANDSCAPE_VIEWBOX,
   playing,
+  veil,
   shared,
   mode,
   overlay,
+  canvasClassName = 'h-[460px] sm:h-[360px]',
 }: {
   title: string;
   tabs: TabDef[];
@@ -47,15 +49,22 @@ export function EditorWindow({
   // The diagram's viewBox: the wide landscape one, or a phone's portrait one for a portrait layout.
   viewBox?: string;
   playing: boolean;
+  // The veil's animation, when the stage's own (lift in, close at the end; lift once on leaving)
+  // does not fit: a landing beat's first play starts clear (hero-fade-end), and a resting scene
+  // has none (opacity-0).
+  veil?: string;
   shared: boolean;
   // The editor mode the window is in (docs/specs/007-editor/editor-modes.md): its palette and the
   // glyph on its tab.
   mode: HeroMode;
   // Drawn over the canvas, above the diagram (the Build yours button).
   overlay?: ReactNode;
+  // The canvas's size: the hero's fixed heights, or an aspect ratio where the window's width
+  // varies with its column (a landing beat), so the scene keeps its proportions.
+  canvasClassName?: string;
 }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
+    <div className="@container/window rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
       <div className="relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
         {/* The fade. While playing it lifts from light grey over the first
             beat and drops back to it over the last second, timed to the 22s cycle,
@@ -67,7 +76,7 @@ export function EditorWindow({
           key={playing ? 'play' : 'idle'}
           aria-hidden
           className={`pointer-events-none absolute inset-0 z-20 bg-slate-200 dark:bg-slate-950 ${
-            playing ? 'hero-fade' : 'hero-fade-out'
+            veil ?? (playing ? 'hero-fade' : 'hero-fade-out')
           }`}
         />
         {/* Editor header strip (static chrome) */}
@@ -105,7 +114,7 @@ export function EditorWindow({
         </div>
 
         {/* Canvas surface. */}
-        <div className={`relative h-[460px] sm:h-[360px] ${CANVAS}`}>
+        <div className={`@container relative ${canvasClassName} ${CANVAS}`}>
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
           <ToolbarMenuButton mode={mode} />

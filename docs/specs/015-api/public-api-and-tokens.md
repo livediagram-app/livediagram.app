@@ -247,6 +247,12 @@ out top to bottom:
   has passed, tinted by status (Active / Expires soon inside 14 days /
   Expired), labelled with the time left. A **Revoke** control per card opens
   a confirmation popover with the revoke warning first.
+- **Paired workbenches.** Under a card's lifetime bar, the workbenches the token
+  is paired with ([Workbench embeds](../013-workspace/workbench-embeds.md#pairing)),
+  read once per account (`GET /api/workbench/pairings`) and grouped by token: each row
+  the workbench's name ("Unnamed workbench" when it sent none), its origin in
+  monospace, "Paired <relative time>", and an **Unpair** text button that asks
+  first in the same popover as Revoke. A token with no pairings shows nothing extra.
 - **First run.** With no tokens, the composer is already open and is the
   whole category: no New button, no meter, no Cancel, and no empty-list
   card, so the one thing on screen is the form. It does not take focus on

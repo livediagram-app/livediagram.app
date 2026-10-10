@@ -89,6 +89,41 @@ describe('document-wide statuses', () => {
     on.rerender({ t: [...tabs] });
     expect(on.result.current.names).toBe(first.names);
     expect(on.result.current.phases).toBe(first.phases);
+    expect(on.result.current.types).toBe(first.types);
+  });
+
+  it('gives each status the card types its boards show: their union, or every type', () => {
+    const typed = (columns: string[], addTypes?: string[]) =>
+      ({
+        ...createShape('plan-board', 0, 0),
+        planBoard: {
+          ...presetSetup('blank'),
+          columns: columns.map((status) => ({ id: status, status, name: status })),
+          ...(addTypes ? { addTypes } : {}),
+        },
+      }) as Element;
+    const typedTabs: Tab[] = [
+      {
+        id: 't',
+        name: 'Typed',
+        elements: [
+          typed(['todo', 'doing'], ['bug']),
+          typed(['todo'], ['task']),
+          typed(['doing']),
+          { ...typed(['shelf']), planBoard: presetSetup('all-cards') } as Element,
+        ],
+      },
+    ];
+    const { result } = renderHook(() => usePlanStatuses(typedTabs, 't', true));
+    const types = result.current.types;
+    expect(types.get('todo')).toEqual(new Set(['bug', 'task']));
+    expect(types.get('doing')).toBe('all');
+    // An All Cards board names no status.
+    expect([...types.keys()]).toEqual(['todo', 'doing']);
+    // Once Bug is deleted from the catalogue, the board that named only Bug shows every type again.
+    const later = renderHook(() => usePlanStatuses(typedTabs, 't', true, ['task', 'note']));
+    expect(later.result.current.types.get('todo')).toBe('all');
+    expect(later.result.current.types.get('doing')).toBe('all');
   });
 
   it('reuses the signatures while every tab’s boards are the same, and keeps the cache bounded', () => {
@@ -102,5 +137,72 @@ describe('document-wide statuses', () => {
     for (let i = 0; i <= STATUS_SIGNATURE_CACHE_MAX; i++)
       documentStatusSignatures([{ ...tabs[0]!, elements: [] }, ...tabs.slice(1)], 'a');
     expect(documentStatusSignatures(tabs, 'a')).not.toBe(a);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Editing a type": the boards the type editor's States groups by.
+describe('statusBoardsOfSetups', () => {
+  it('names each board with columns by its title, in board order, skipping All Cards and Archive', async () => {
+    const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = { ...presetSetup('kanban'), title: 'Team Board' };
+    const out = statusBoardsOfSetups([
+      kanban,
+      presetSetup('all-cards'),
+      presetSetup('archive'),
+      { ...kanban, columns: [] },
+    ]);
+    expect(out).toHaveLength(1);
+    expect(out[0]!.title).toBe('Team Board');
+    expect(out[0]!.statuses).toEqual(kanban.columns.map((c) => c.status));
+    expect(out[0]!.colours).toBeUndefined();
+  });
+
+  // docs/specs/026-plan/plan-board.md "The column picker": a status's swatch is its first board's column colour.
+  it('gives a status named like an object key no colour of its own', async () => {
+    const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = presetSetup('kanban');
+    const out = statusBoardsOfSetups([
+      { ...kanban, columns: [{ id: 'x', status: 'constructor', name: 'Constructor' }] },
+    ]);
+    expect(out[0]!.colours).toBeUndefined();
+  });
+
+  it('round-trips the colours through the signature as a Map', async () => {
+    const { usePlanStatuses } = await import('./usePlanStatusNames');
+    const { renderHook } = await import('@testing-library/react');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = presetSetup('kanban');
+    const [first, ...rest] = kanban.columns;
+    const tab = {
+      id: 't',
+      name: 'T',
+      elements: [
+        {
+          id: 'b',
+          type: 'shape',
+          shape: 'plan-board',
+          x: 0,
+          y: 0,
+          width: 10,
+          height: 10,
+          planBoard: { ...kanban, columns: [{ ...first!, color: '#2563eb' }, ...rest] },
+        },
+      ],
+    };
+    const { result } = renderHook(() => usePlanStatuses([tab] as never, 't', true));
+    expect(result.current.boards[0]!.colours?.get(first!.status)).toBe('#2563eb');
+  });
+
+  it('carries the colours its columns have, and only those', async () => {
+    const { statusBoardsOfSetups } = await import('./usePlanStatusNames');
+    const { presetSetup } = await import('@livediagram/items');
+    const kanban = presetSetup('kanban');
+    const [first, ...rest] = kanban.columns;
+    const out = statusBoardsOfSetups([
+      { ...kanban, columns: [{ ...first!, color: '#2563eb' }, ...rest] },
+    ]);
+    expect(out[0]!.colours).toEqual(new Map([[first!.status, '#2563eb']]));
   });
 });

@@ -1,6 +1,7 @@
 // Illustrate mode's pages (docs/specs/007-editor/illustrate-pages.md): the active tab's pages
 // laid out in their row, the edits to them (illustrate-page-edits) and framing one in the view. It
 // also centres the view on the first page whenever the mode or the tab changes.
+import type { LogoToolsView } from './useLogoTools';
 import {
   useCallback,
   useEffect,
@@ -18,12 +19,13 @@ import {
   illustratePageFitBox,
   illustratePagesOf,
   layOutIllustratePages,
-  withContentPaginated,
+  withContentOnAPage,
   type EditorMode,
   type LaidOutPage,
   type Tab,
 } from '@livediagram/document';
 import { computeFitBelow, computeReadingFrame } from '@/lib/viewport';
+import { topStripInset } from '@/lib/top-strip-inset';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { getTheme } from '@/lib/themes';
@@ -63,23 +65,24 @@ export type IllustratePagesView = {
   // under it (the clip leaves the page out) so the preview never mixes with it.
   layoutPreview: { pageId: string; layout: PageLayoutId } | null;
   setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
+  // A logo page's own tools, each person's (docs/specs/007-editor/logo-pages.md): composed in by
+  // the editor.
+  logo?: LogoToolsView;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: IllustratePageEdits;
+  // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
+  // where the deck cannot be changed.
+  deck?: PageDeckControls;
+  // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
+  letterbox?: boolean;
 };
 
-// The Toolbar layout's strip lies over the canvas's top edge; the page centres below it.
-const TOP_STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
-
-/** How far a top strip laid over the canvas reaches down into it, in screen px. */
-function topStripInset(canvas: HTMLElement): number {
-  const strip = document.querySelector<HTMLElement>(TOP_STRIP_SELECTOR);
-  // Stood aside (a phone's page toolbar in its place): its room is the page's.
-  if (!strip || getComputedStyle(strip).visibility === 'hidden') return 0;
-  const c = canvas.getBoundingClientRect();
-  const s = strip.getBoundingClientRect();
-  const overlaps = s.bottom > c.top && s.top < c.top + c.height / 2;
-  return overlaps ? s.bottom - c.top : 0;
-}
+export type PageDeckControls = {
+  // The deck's slide of this page (on this tab), if it has one.
+  slideOf: (pageId: string) => { id: string; hidden: boolean } | undefined;
+  add: (pageId: string) => void;
+  toggleHidden: (slideId: string) => void;
+};
 
 export function useIllustratePages(deps: {
   activeTab: Tab;
@@ -94,6 +97,9 @@ export function useIllustratePages(deps: {
   getViewport: () => ViewPose;
   clearSelection: () => void;
   toastInfo: (message: string) => void;
+  // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
+  // open) another; set whether or not this tab is in Illustrate mode.
+  framePageRef?: RefObject<((pageId: string) => void) | null>;
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
 }): IllustratePagesView | null {
@@ -101,8 +107,8 @@ export function useIllustratePages(deps: {
   const on = hasPageLook(mode);
   const tabId = activeTab.id;
 
-  // Frames a page (the first by default) below a top strip, seen whole, whatever its kind. The fit
-  // box holds either orientation, so turning a page needs no refit. `read` frames an article page
+  // Frames a page (the first by default) below a top strip, seen whole, whatever its kind: the page
+  // itself, so turning or resizing one frames it again (illustrate-page-edits). `read` frames an article page
   // to be written on a phone instead: its text column across the screen.
   // A page framed on request (its navigator, its label, a page just added, an article page taking
   // the caret on a phone) glides there; the frame on entering the mode lands at once. A glide under
@@ -137,31 +143,30 @@ export function useIllustratePages(deps: {
   const centre = useEffectEvent(() =>
     frame(layOutIllustratePages(illustratePagesOf(activeTab))[0]),
   );
-  // Entering the mode with content off the first page and no pages yet lays the content out into
-  // pages (withContentPaginated, docs/specs/007-editor/illustrate-pages.md "Into pages"): one
-  // edit, so one undo puts it back, said in a toast. Then the view frames the first page.
-  const paginate = useEffectEvent(() => {
+  // Entering the mode with a board that does not fit its first page puts it onto a page made
+  // around it, where it is (withContentOnAPage, docs/specs/007-editor/illustrate-pages.md "Into
+  // pages"): no element moves, resizes or scales. One edit, so one undo takes the page away, said
+  // in a toast. Then the view frames the first page.
+  const putOnAPage = useEffectEvent(() => {
     if (!canEdit || activeTab.locked === true) return;
-    const laid = withContentPaginated(activeTab);
-    if (!laid) return;
-    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentPaginated(t) ?? t) : t)));
-    const n = laid.pages.length;
-    deps.toastInfo(
-      n === 1
-        ? 'Laid out onto a page. Undo puts it back.'
-        : `Laid out into ${n} pages. Undo puts it back.`,
-    );
-    track('Tab', 'Changed', 'PagesLaidOut');
-    debugLog('[illustrate-page] content laid out into pages', { tabId, pages: n });
+    const placed = withContentOnAPage(activeTab);
+    if (!placed) return;
+    commitTabs((ts) => ts.map((t) => (t.id === tabId ? (withContentOnAPage(t) ?? t) : t)));
+    deps.toastInfo('Put onto a page that fits it. Undo takes the page away.');
+    track('Tab', 'Changed', 'PageFitToContent');
+    debugLog('[illustrate-page] content put onto a page', {
+      tabId,
+      size: placed.pages[0]?.size ?? 'a4',
+    });
   });
   useEffect(() => {
     if (!on || !tabLoaded) return;
     const raf = requestAnimationFrame(() => centre());
     return () => cancelAnimationFrame(raf);
   }, [on, tabLoaded, tabId]);
-  // Its own effect so an editor role that resolves after the tab has loaded still lays out.
+  // Its own effect so an editor role that resolves after the tab has loaded still gets the page.
   useEffect(() => {
-    if (on && tabLoaded && canEdit) paginate();
+    if (on && tabLoaded && canEdit) putOnAPage();
   }, [on, tabLoaded, tabId, canEdit]);
 
   // The pages laid out once per change to the stored pages, so everything drawn from them (the
@@ -182,8 +187,8 @@ export function useIllustratePages(deps: {
   });
   const mayEdit = useCallback(() => canEditNow.current, []);
   const [layoutPreview, setLayoutPreview] = useState<IllustratePagesView['layoutPreview']>(null);
-  // A page just added or duplicated: framed once it lands in the row (a frame later, as its
-  // sheet mounts).
+  // A page just added or duplicated, or the one before a deleted page: framed once it is in the
+  // row (a frame later, as its sheet mounts or the row closes up).
   const [goTo, setGoTo] = useState<string | null>(null);
   const goToLanded = useEffectEvent(() => {
     const page = layOutIllustratePages(illustratePagesOf(activeTab)).find((p) => p.id === goTo);
@@ -197,6 +202,15 @@ export function useIllustratePages(deps: {
     const raf = requestAnimationFrame(() => goToLanded());
     return () => cancelAnimationFrame(raf);
   }, [landed]);
+
+  const { framePageRef } = deps;
+  useEffect(() => {
+    if (!framePageRef) return;
+    framePageRef.current = setGoTo;
+    return () => {
+      framePageRef.current = null;
+    };
+  }, [framePageRef]);
 
   if (!on) return null;
   const focusPage = (pageId: string) =>
@@ -245,10 +259,11 @@ export function useIllustratePages(deps: {
       current,
       elements: activeTab.elements,
       commitTabs,
-      onCreated: setGoTo,
+      onGoTo: setGoTo,
       onArticleCreated: deps.onArticleCreated,
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
+      toastInfo: deps.toastInfo,
     }),
   };
 }

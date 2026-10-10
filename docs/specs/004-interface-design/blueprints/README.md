@@ -10,5 +10,6 @@ Follow the references below only as needed; never upfront.
 - ./iconography.md - when implementing or changing the icon primitive, weight tokens, Lucide vendoring, icon weight, or icon guards
 - ./menus.md - when implementing or changing useMenu, useMenuButton, useControlMenu, the menu row primitives' roles, or the menu focus ring
 - ./within-reach.md - when implementing or changing the shared most used + recent allocation (`withinReach`)
+- ./colour-picker.md - when implementing or changing ColourPicker, its skins, the standard colours or Custom colours
 - ./DEFAULTS.md - when an interface-design blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an interface-design blueprint covers

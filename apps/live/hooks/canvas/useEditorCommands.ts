@@ -12,9 +12,9 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed } from '@livediagram/document';
+import { isBoxed, supportsRotation } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import type { CanvasTool } from '@/components/palette/CommandPalette.types';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import {
@@ -36,6 +36,8 @@ const INERT_HANDLERS: CommandHandlers = {
   bringToFront: noop,
   sendToBack: noop,
   rotate: noop,
+  combine: noop,
+  mirrorCopy: noop,
   clearAnimation: noop,
   setMarker: noop,
   addComment: noop,
@@ -91,7 +93,7 @@ export function useEditorCommands(open: boolean): {
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
-    setAnimationSelected,
+    clearAnimationsSelected,
     setArrowFlowSelected,
     setMarkerSelected,
     openComments,
@@ -122,6 +124,10 @@ export function useEditorCommands(open: boolean): {
     openTemplatePicker,
     canvasTool,
     setCanvasTool,
+    workbenchMode,
+    canCombine,
+    combineSelected,
+    illustratePages,
   } = ctx;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
@@ -139,11 +145,15 @@ export function useEditorCommands(open: boolean): {
     !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
   const singleIsBoxed = single ? isBoxed(single) : false;
   const singleIsShape = single?.type === 'shape';
+  const singleRotates = single ? supportsRotation(single) : false;
+  const combinable = isMulti && canCombine();
+  const mirrorable = selectionCount > 0 && !!illustratePages?.logo?.canMirrorCopy();
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
   const hasAnimation = single
     ? single.type === 'arrow'
       ? !!single.flow
-      : isBoxed(single) && !!single.animation
+      : isBoxed(single) &&
+        (!!single.animation || !!(single as { textAnimation?: string }).textAnimation)
     : false;
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
@@ -157,11 +167,15 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
+      singleRotates,
+      canCombine: combinable,
+      canMirrorCopy: mirrorable,
       singleIsShape,
       hasAnimation,
       marker,
       isOwner,
       isOffline,
+      workbench: workbenchMode,
       canvasTool,
       // Same emptiness test the palette's tool dropdown uses to disable the
       // content-dependent tools, so search can never offer a tool the palette
@@ -179,11 +193,15 @@ export function useEditorCommands(open: boolean): {
       zenMode,
       selectionCount,
       singleIsBoxed,
+      singleRotates,
+      combinable,
+      mirrorable,
       singleIsShape,
       hasAnimation,
       marker,
       isOwner,
       isOffline,
+      workbenchMode,
       canvasTool,
       canvasEmpty,
       isMobile,
@@ -203,8 +221,10 @@ export function useEditorCommands(open: boolean): {
     bringToFront: bringSelectedToFront,
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
+    combine: (op) => void combineSelected(op),
+    mirrorCopy: () => illustratePages?.logo?.mirrorCopy(),
     clearAnimation: () =>
-      single?.type === 'arrow' ? setArrowFlowSelected(null) : setAnimationSelected(null),
+      single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
     setMarker: setMarkerSelected,
     addComment: () => {
       if (selectedId) openComments(selectedId);

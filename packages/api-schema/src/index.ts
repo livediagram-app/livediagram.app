@@ -445,6 +445,10 @@ export type ParticipantPresence = {
   // default existing peers to the first tab until they happened to move.
   // Undefined until the participant's first tab-focus op lands.
   tabId?: string;
+  // The tab in their other pane while they work side by side (docs/specs/007-editor/split-view.md
+  // "Presence"), remembered from the same tab-focus ops so a late joiner sees it too. Undefined with
+  // no split.
+  besideTabId?: string;
   // The id this participant WRITES INTO THE DOCUMENT for anything recorded
   // per person — today the `responses` on a done check / estimate card /
   // temperature check (docs/specs/012-collaboration/participant-responses.md).
@@ -491,11 +495,11 @@ export type ImageSummary = {
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
-export { sha256Hex } from './sha256';
+export { pkceChallenge, sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
-export { base64ToBytes, bytesToBase64, bytesToBase64Url } from './bytes';
+export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
 
 // Image magic-number sniffing and the server-side image embedder both
 // workers render tabs with (see ./image-sniff.ts, ./embed-images.ts).
@@ -590,7 +594,9 @@ export * from './poll';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
+export * from './sheets';
 export * from './telemetry-schema';
+export * from './timing-telemetry';
 export * from './server-emitted-events';
 export * from './error-telemetry';
 export * from './timeline';
@@ -657,3 +663,6 @@ export * from './community-query';
 export * from './document-paths';
 export * from './http-errors';
 export * from './oauth-clients';
+// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
+export * from './workbench';
+export * from './workbench-messages';

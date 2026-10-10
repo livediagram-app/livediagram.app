@@ -77,6 +77,24 @@ export const EDITOR_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
+      'LogoGuidesOn',
+      'LogoGuidesOff',
+      'Logo Guides',
+      "A logo page's construction guides.",
+    ),
+    changed('LogoGuideStrength', 'Logo Guide Strength', 'Logo guides set Faint, Medium or Strong.'),
+    {
+      category: 'UI',
+      action: 'Toggled',
+      typeIn: (type) =>
+        /^LogoGuide(CentreLines|Diagonals|SafeArea|Circles|Square|Grid)(On|Off)$/.test(type ?? ''),
+      title: 'Logo Guide Parts',
+      blurb:
+        'One of the logo guides (centre lines, diagonals, safe area, circles, square, grid) shown or hidden.',
+      rising: 'neutral',
+    },
+    toggle(
+      'UI',
       'PowerUserModeOn',
       'PowerUserModeOff',
       'Power User Mode',
@@ -101,7 +119,7 @@ export const APPEARANCE_SETTINGS = settingsStack('Appearance Settings', 'How the
     blurb: 'Light, Dark or System picked, from the header toggle or Settings.',
     rising: 'neutral',
   },
-  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome.'),
+  changed('PanelLayout', 'Panel Layout', 'Floating or Toolbar chrome. No longer recorded.'),
   toggle('UI', 'MinimapOn', 'MinimapOff', 'Show Minimap', 'The minimap in the corner.'),
   changed('PanelOpacity', 'Panel Opacity', 'The panels\u2019 transparency slider.', true),
   changed('UiScale', 'UI Scale', 'The panels, toolbar and corner buttons\u2019 size slider.', true),

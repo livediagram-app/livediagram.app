@@ -110,7 +110,9 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 | `pop-in`                    | 360ms  | `micro` | Cluster bars, zoom menu, strip tiles, cards  |
 | `pop-out`                   | 220ms  | `micro` | Presence avatars, strip tiles                |
 | `fade-in`                   | 260ms  | `micro` | Moved to the shared theme                    |
-| `fly-up-in`                 | 420ms  | `long`  | Dialogs, banners, search, template picker    |
+| `fly-up-in`                 | 420ms  | `long`  | Banners, search, template picker             |
+| `dialog-in` (new)           |        | `long`  | The shared Dialog shell's centred panel      |
+| `fade-in` on the backdrop   |        | `micro` | The shared Dialog shell's dim                |
 | `sheet-up`                  | 340ms  | `long`  | Poll prompt sheet                            |
 | `slide-row-in` / `-out`     | 220ms  | `micro` | Explorer rows, back bar, placement list (D4) |
 | `slide-in-left`             | 240ms  | `short` | Mobile Explorer drawer                       |
@@ -146,7 +148,7 @@ Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-
 - **`apps/live`**
   - `micro`: `RecentDocumentsCard`, `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
-  - `short`: `PaletteTabBar`, `ToolbarStripRail`, `AccordionSection`,
+  - `short`: `ToolbarStripRail`, `AccordionSection`,
     `MovablePanel` rows, `AnimatedHeightBox`, the `PortalMenu` body and chevron, the
     `template-picker-wizard` progress bar, the `PollPanel` and `VotePanel` bars, and `NoteBox`.
   - `long`: `TourPopover`, `TourHost`, `PresentationHud`.
@@ -178,7 +180,6 @@ Canvas and content durations above the ceiling move into their stylesheets, unch
   adds the class instead of writing the transition inline. Like the old inline value, it stays on
   the row.
 - The `HeroIllustration` card dim (500ms) becomes `.hero-card-dim` in `hero-animations.css`.
-- The `ShowcaseStagger` scene dim (500ms) becomes `.scene` in `ShowcaseStagger.module.css`.
 
 ### `canvas-motion.css`
 

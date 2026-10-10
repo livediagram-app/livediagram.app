@@ -160,6 +160,11 @@ export type Env = {
   // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
   // (a self-host) allows every read.
   HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
+  // Workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md), keyed on the
+  // token id: WORKBENCH_TICKETS_PER_MINUTE a minute. Absent binding (a self-host) allows every mint.
+  WORKBENCH_TICKET_RATE_LIMITER?: {
+    limit: (input: { key: string }) => Promise<{ success: boolean }>;
+  };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent

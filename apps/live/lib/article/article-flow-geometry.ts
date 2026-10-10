@@ -69,15 +69,6 @@ export function pagePlaceOf(
   return { index, x: local.x - index * frame.stride + frame.margin, y: local.y + frame.top };
 }
 
-/** The canvas point of a place on one of the article's pages. */
-export function canvasPointOf(
-  pages: readonly LaidOutPage[],
-  place: { page: string; x: number; y: number },
-): { x: number; y: number } | null {
-  const page = pages.find((p) => p.id === place.page);
-  return page ? { x: page.rect.x + place.x, y: page.rect.y + place.y } : null;
-}
-
 /** The text width before an article is laid out (no pages of its own yet), canvas px: about an A4
  *  page's column at Normal margins. */
 export const ARTICLE_FALLBACK_TEXT_WIDTH = 600;

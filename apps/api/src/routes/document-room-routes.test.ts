@@ -255,6 +255,38 @@ describe('WebSocket upgrade — trust headers', () => {
 });
 
 describe('POST room-ticket', () => {
+  // docs/specs/013-workspace/workbench-embeds.md: a workbench session joins as the person, at most at its level.
+  it('mints for a workbench session as the owner, capped and carrying its pairing', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'user_1', teamId: null });
+    gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
+    const res = await handleDocumentRoomRoutes(
+      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', {
+        owner: 'user_1',
+        verifiedUserId: 'user_1',
+        workbench: {
+          sessionId: 's',
+          ownerId: 'user_1',
+          tokenId: 'tok1',
+          pairingId: 'pair-1',
+          documentId: 'd1',
+          tabId: null,
+          origin: 'https://w.example',
+          level: 'view',
+          expiresAt: 1,
+        },
+      }),
+    );
+    expect(res!.status).toBe(200);
+    expect(db.createWsTicket).toHaveBeenCalledWith(expect.anything(), 'd1', {
+      role: 'view',
+      tabScope: null,
+      shareCode: null,
+      account: true,
+      personTag: await personTagFor('d1', 'user_1'),
+      workbenchPairing: 'pair-1',
+    });
+  });
+
   it('mints an edit ticket when the caller holds edit', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-1', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: null });
@@ -268,6 +300,7 @@ describe('POST room-ticket', () => {
       shareCode: null,
       account: false,
       personTag: null,
+      workbenchPairing: null,
     });
   });
 
@@ -284,6 +317,7 @@ describe('POST room-ticket', () => {
       shareCode: 'C',
       account: false,
       personTag: null,
+      workbenchPairing: null,
     });
   });
 
@@ -410,6 +444,7 @@ describe('WebSocket upgrade: tab scope', () => {
       shareCode: 'CODE1234',
       account: false,
       personTag: null,
+      workbenchPairing: null,
     });
   });
 });
@@ -532,6 +567,38 @@ describe('person tag', () => {
       }),
     );
     expect(spoofed.seen[0]!.headers.get('X-Verified-Person')).toBe('');
+  });
+
+  it('stamps X-Verified-Workbench-Pairing from the ticket, and empty on every other leg', async () => {
+    db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
+    db.consumeWsTicket.mockResolvedValue({
+      role: 'edit',
+      tabScope: null,
+      shareCode: null,
+      account: true,
+      personTag: 'tag1',
+      workbenchPairing: 'pair-1',
+    });
+    const ticketed = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?t=T', {
+        owner: null,
+        headers: { Upgrade: 'websocket' },
+        env: ticketed.env,
+      }),
+    );
+    expect(ticketed.seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('pair-1');
+
+    db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'edit' });
+    const spoofed = roomEnv();
+    await handleDocumentRoomRoutes(
+      makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
+        owner: null,
+        headers: { Upgrade: 'websocket', 'X-Verified-Workbench-Pairing': 'forged' },
+        env: spoofed.env,
+      }),
+    );
+    expect(spoofed.seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('');
   });
 
   // docs/specs/012-collaboration/vote-integrity.md: what caps one network's poll answers. The worker derives it

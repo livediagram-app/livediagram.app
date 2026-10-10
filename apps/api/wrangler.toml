@@ -240,6 +240,15 @@ type = "ratelimit"
 namespace_id = "1009"
 simple = { limit = 30, period = 60 }
 
+# Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
+# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
+# Separate namespace. Absent binding → allow (self-host).
+[[unsafe.bindings]]
+name = "WORKBENCH_TICKET_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1010"
+simple = { limit = 30, period = 60 }
+
 # The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
 # endpoint, and WHICH provider is inferred from which key is set — a key is
 # provider-specific, so its name says whose it is (see src/ai-provider.ts):
@@ -379,9 +388,8 @@ name = "livediagram-api-staging"
 # for production (see the top of this file). Staging's events land in its own D1,
 # on STAGING's /telemetry dashboard, never in production's published numbers.
 [env.staging.vars]
-# Links in staging email point back at staging (docs/specs/014-identity/transactional-email.md). Without this a
-# welcome email sent from a staging test lands someone on production.
-APP_BASE_URL = "https://staging.livediagram.app"
+# APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
+# back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "livediagram staging <hello@livediagram.app>"
 
 # Lock the AI endpoint to the staging origin so the OpenAI key behind it
@@ -474,6 +482,12 @@ simple = { limit = 60, period = 60 }
 name = "COMMUNITY_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1009"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "WORKBENCH_TICKET_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1010"
 simple = { limit = 30, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's

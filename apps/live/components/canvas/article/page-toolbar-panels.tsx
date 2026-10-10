@@ -29,7 +29,10 @@ import {
 import { lucideGlyph } from '@livediagram/ui';
 import type { ArticleAlign, ArticleListKind, ArticleParagraphStyle } from '@livediagram/document';
 import type { ArticleSelectionState } from '@/lib/article/article-commands';
-import { MenuRow, SwatchGrid } from './page-toolbar-menus';
+import { MenuRow } from './page-toolbar-menus';
+import { ColourPicker } from '@/components/colour/ColourPicker';
+import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 const I = (glyph: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(glyph, 16);
 const PanelIcons = {
@@ -126,7 +129,7 @@ export function StylePanel({
   onStyle: (style: ArticleParagraphStyle | 'code') => void;
 }) {
   return (
-    <div role="menu" aria-label="Text style" className="flex flex-col">
+    <div role="menu" aria-label="Text Style" className="flex flex-col">
       {STYLE_OPTIONS.map((s) => (
         <MenuRow
           key={s.id}
@@ -194,9 +197,9 @@ export function ListPanel({
 }
 
 const ALIGN_OPTIONS: { id: ArticleAlign; label: string; keys: string }[] = [
-  { id: 'left', label: 'Align left', keys: 'Mod-Shift-l' },
-  { id: 'center', label: 'Align centre', keys: 'Mod-Shift-e' },
-  { id: 'right', label: 'Align right', keys: 'Mod-Shift-r' },
+  { id: 'left', label: 'Align Left', keys: 'Mod-Shift-l' },
+  { id: 'center', label: 'Align Centre', keys: 'Mod-Shift-e' },
+  { id: 'right', label: 'Align Right', keys: 'Mod-Shift-r' },
   { id: 'justify', label: 'Justify', keys: 'Mod-Shift-j' },
 ];
 
@@ -261,7 +264,17 @@ export function AlignPanel({
   );
 }
 
-/** Text colour and highlight in one place. */
+// The colour pickers' own ids for the article's choices that are not a colour of their own.
+const DEFAULT_COLOUR = 'default';
+const ACCENT = 'accent';
+const NO_HIGHLIGHT = 'none';
+
+/**
+ * Text colour and highlight in one place: two of the one colour picker
+ * (docs/specs/004-interface-design/colour-picker.md). Text leads with Default and the article's
+ * Accent before the strong standard colours; Highlight leads with No highlight before the soft
+ * ones. Colours are for light paper, the page an article is written on.
+ */
 export function ColourPanel({
   selection,
   accent,
@@ -273,20 +286,32 @@ export function ColourPanel({
   onColor: (color: string | null) => void;
   onHighlight: (color: string | null) => void;
 }) {
+  const yours = useDocumentColours();
+  const color = selection.color;
+  const textValue =
+    color === null ? DEFAULT_COLOUR : color.toLowerCase() === accent.toLowerCase() ? ACCENT : color;
   return (
-    <div className="flex flex-col">
-      <p className="px-2 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
-        Text
-      </p>
-      <SwatchGrid kind="text" accent={accent} current={selection.color} onPick={onColor} />
-      <p className="px-2 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-400">
-        Highlight
-      </p>
-      <SwatchGrid
-        kind="highlight"
-        accent={accent}
-        current={selection.highlight}
-        onPick={onHighlight}
+    <div className="flex flex-col gap-3 p-1.5">
+      <ColourPicker
+        label="Text colour"
+        value={textValue}
+        leading={[
+          noColour(DEFAULT_COLOUR, 'Default colour'),
+          { id: ACCENT, colour: accent, label: 'Accent' },
+        ]}
+        standard={[standardGroup('strong', 'light', 'hex')]}
+        yours={yours}
+        onPick={(id) => onColor(id === DEFAULT_COLOUR ? null : id === ACCENT ? accent : id)}
+      />
+      <ColourPicker
+        label="Highlight"
+        value={selection.highlight ?? NO_HIGHLIGHT}
+        leading={[noColour(NO_HIGHLIGHT, 'No highlight')]}
+        standard={[
+          { heading: 'Highlights', options: standardGroup('soft', 'light', 'hex').options },
+        ]}
+        yours={yours}
+        onPick={(id) => onHighlight(id === NO_HIGHLIGHT ? null : id)}
       />
     </div>
   );
@@ -303,7 +328,7 @@ export function MorePanel({
   onAction: (action: MoreAction) => void;
 }) {
   return (
-    <div role="menu" aria-label="More formatting" className="flex flex-col">
+    <div role="menu" aria-label="More Formatting" className="flex flex-col">
       <Row
         label="Strikethrough"
         icon={<PanelIcons.strike />}

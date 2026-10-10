@@ -23,18 +23,23 @@ A decision record keeps what was decided, why, when, and whether it still stands
 
 ## What is on the card
 
-- The element's **label** is the decision itself ("Use D1 for durable storage").
-- A **status** chip: Proposed, Accepted, Rejected or Superseded.
-- A **date**, and the **drivers** that led to it.
+- The element's **label** is the decision itself ("Use D1 for durable storage"). A new card reads "We will …"; double-click to write yours. A long statement is clamped to three lines.
+- A **status** badge in the top-right corner: Proposed, Accepted, Rejected or Superseded, each with its own colour and glyph. A new card starts as Proposed.
+- The **drivers** that led to it, listed under "Because".
+- A **date**, as a pill at the foot. An undated card simply shows no date.
 
-<Figure caption="The statement is the label, with the status chip, the drivers and the date around it.">
+<Figure caption="The statement is the label, with the status badge, the drivers under Because and the date pill around it.">
   <DecisionRecordCard />
 </Figure>
 
-All three are set from the element's menu, under Decision.
+The status colours the badge, a soft glow and the driver markers, never the card's own fill, so the card keeps the tab theme like everything else.
+
+## Setting it
+
+Right-click the card and open **Tools**, then **Decision**. There you pick the **Status**, set the **Date** (clear it to remove it), and add drivers with **Add driver** (up to 20, each up to 200 characters). Every change is an ordinary edit, so it undoes like one.
 
 ## Superseding one
 
-To show that one decision replaced another, draw an [arrow](/help/palette/arrows/) between the two cards.
+To show that one decision replaced another, mark the old one **Superseded** and draw an [arrow](/help/palette/arrows/) from the new card to it. The arrow is the link: there is no separate "replaced by" field.
 
 </ArticleLayout>

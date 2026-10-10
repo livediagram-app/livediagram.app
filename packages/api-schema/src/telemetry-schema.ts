@@ -17,6 +17,7 @@
 
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
+import { isTimingType } from './timing-telemetry';
 
 export const TELEMETRY_CATEGORIES = [
   'Document',
@@ -167,10 +168,18 @@ export const TELEMETRY_CATEGORIES = [
   // deleted, and board set-up changed or revealed. `type` is the item type, the set-up part or the
   // gesture ('Board', 'Keyboard', 'Card'), never item content.
   'Plan',
+  // Sheets (docs/specs/029-sheets/sheet.md "Telemetry"): a change by kind, CSV in and out, Find opened, and a
+  // function's first use by name (names from the closed function list only, never content).
+  'Sheet',
   // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the editor
   // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
   // the Community app. Never a title, tag or id.
   'Community',
+  // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
+  // (a document opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
+  // 'Measured', `type` the metric and the bucket its value fell in ('DocumentLoad.Under1000ms'), checked
+  // against the closed list in timing-telemetry.ts. Never a raw number, never an id.
+  'Timing',
 ] as const;
 export type TelemetryCategory = (typeof TELEMETRY_CATEGORIES)[number];
 
@@ -271,6 +280,9 @@ export const TELEMETRY_ACTIONS = [
   'Liked',
   'Unliked',
   'Reported',
+  // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
+  // 'Timing' category.
+  'Measured',
 ] as const;
 export type TelemetryAction = (typeof TELEMETRY_ACTIONS)[number];
 
@@ -306,6 +318,8 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   if (e.category === 'Cta') {
     return (e.action === 'Opened' || e.action === 'Created') && isCtaSource(e.type);
   }
+  // A timing is only ever a known metric with one of its own buckets (docs/specs/017-telemetry/timing-telemetry.md).
+  if (e.category === 'Timing') return e.action === 'Measured' && isTimingType(e.type);
   if (e.type === undefined || e.type === null) return true;
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }
@@ -430,6 +444,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'PlanBoard',
     'PlanCard',
     'PlanView',
+    'PlanSheet',
     'ModeButton',
     'Portal',
     'SessionButton',
@@ -481,6 +496,30 @@ export const PALETTE_TELEMETRY_TYPES = {
 // Every palette token, flattened — the set an emitter can be checked against.
 export const ALL_PALETTE_TELEMETRY_TYPES: readonly string[] =
   Object.values(PALETTE_TELEMETRY_TYPES).flat();
+
+// The kinds of Sheet change `Sheet · Changed` names (docs/specs/029-sheets/sheet.md "Telemetry"): one per change,
+// never content. Closed, so the dashboard charts each.
+export const SHEET_CHANGE_KINDS = [
+  'Cell',
+  'Formula',
+  'Format',
+  'Rows',
+  'Columns',
+  'Merge',
+  'Freeze',
+  'Sort',
+  'Filter',
+  'Replace',
+  'Fill',
+  'Paste',
+  'Title',
+  'Clear',
+  'Shift',
+  'Settings',
+  'Setup',
+  'Name',
+] as const;
+export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
 
 export type TelemetrySummary = {
   enabled: boolean;

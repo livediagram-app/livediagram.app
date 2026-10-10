@@ -207,5 +207,6 @@ describe('stores across systems and logins', () => {
     expect(await run(['auth', 'login', '--with-token'], routed)).toBe(0);
     expect(routed.err()).toContain('the previous token could not be revoked');
     expect(kept.get('default')).toBe(NEW);
-  });
+    // It loads the whole CLI from cold (about 2.8 s alone), which overran the 5 s default under a parallel run.
+  }, 20_000);
 });

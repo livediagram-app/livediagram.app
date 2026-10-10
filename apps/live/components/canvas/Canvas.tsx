@@ -64,6 +64,7 @@ import { SpotlightOverlay } from '@/components/canvas/SpotlightOverlay';
 import { EraserBrushRing } from '@/components/canvas/EraserBrushRing';
 import { DEFAULT_ERASER_CONFIG, eraserRadius } from '@/lib/eraser-config';
 import { WHITEBOARD_ERASER_RADIUS_PX } from '@/lib/whiteboard-tool';
+import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
@@ -91,6 +92,7 @@ import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { PathDraftLayer } from '@/components/canvas/path/PathDraftLayer';
+import { LogoCanvasOverlays } from '@/components/canvas/LogoCanvasOverlays';
 import { PathEditLayer } from '@/components/canvas/path/PathEditLayer';
 import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
@@ -131,7 +133,6 @@ function CanvasView(props: CanvasProps) {
     canvasTool,
     onCanvasPointerMove,
     editingId,
-    formatSourceId,
     pendingDraw,
     onCommitDraw,
     onCommitFreehand,
@@ -159,11 +160,10 @@ function CanvasView(props: CanvasProps) {
     viewportZoom,
   );
 
-  // Paint mode covers BOTH painter entry points: a single-shot armed source
-  // (toolbar) and the persistent Format canvas tool — the tool must read as
-  // paint mode from its first click (copy cursor, handles/label-drag/dblclick
-  // suppressed on boxed elements AND arrows), not only once a source is armed.
-  const isPaintMode = formatSourceId !== null || canvasTool === 'format';
+  // Paint mode is the Format canvas tool: it reads as paint mode from its
+  // first click (copy cursor, handles/label-drag/dblclick suppressed on boxed
+  // elements AND arrows), not only once a source is armed.
+  const isPaintMode = canvasTool === 'format';
   // Nudge above the Fit button when everything on the canvas has scrolled out of view.
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
@@ -180,14 +180,6 @@ function CanvasView(props: CanvasProps) {
 
   // Pan tracking. viewportOffset is owned by the page (so element placement
   // can reason about the visible viewport); we just read/write through props.
-  // Palette's bottom-Y (offsetTop + offsetHeight in offsetParent
-  // coords). The Comments + AI panels use this to stack below the
-  // Palette as it changes height; MovablePanel publishes it via onSize.
-  // The bottom-Y (vs height alone) makes the alignment robust to the
-  // Palette's own top-utility class, so the stacked panel lands at
-  // paletteBottomY + 16 regardless of whether the palette pins to
-  // top-2 (mobile) or top-4 (desktop).
-  const [paletteBottomY, setPaletteBottomY] = useState<number>(0);
   // Which quick-connect ring (if any) is open. Self-contained state + reset /
   // outside-close effects live in useQuickRing.
   // The selection lives in the store (docs/specs/008-canvas/blueprints/selection-store.md): the canvas
@@ -541,6 +533,7 @@ function CanvasView(props: CanvasProps) {
       onCommitFreehand,
       stampAt,
       showStamp,
+      whiteboard: props.editorMode === 'draw',
     });
 
   // Polygon click-to-place gesture (docs/specs/008-canvas/polygon-tool.md), composed IN FRONT of the
@@ -572,6 +565,8 @@ function CanvasView(props: CanvasProps) {
     onDeselect,
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
+    // A logo page's shown guides take a click near them (docs/specs/007-editor/logo-pages.md).
+    snapPoint: (p) => props.illustratePages?.logo?.snapPoint?.(p, viewportZoom) ?? null,
   });
   // In Illustrate mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
@@ -604,7 +599,18 @@ function CanvasView(props: CanvasProps) {
     onEraseStart: props.onEraseStart,
     onCanvasContextMenu,
     onDeselect,
-    onCanvasDoubleClick,
+    // On a whiteboard a double-click inside a shape edits it (lib/whiteboard-edit-target).
+    onCanvasDoubleClick: (x, y) =>
+      routeBoardDoubleClick(
+        {
+          whiteboard: props.editorMode === 'draw',
+          elements,
+          layers: tabLayers,
+          inertIds: props.layerInertIds,
+        },
+        { x, y },
+        { edit: props.onBeginEdit, board: onCanvasDoubleClick },
+      ),
   });
 
   // Auto-focus the canvas surface on mount so clipboard paste works
@@ -709,6 +715,8 @@ function CanvasView(props: CanvasProps) {
       ) : null}
       <div
         ref={wrapperRef}
+        // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
+        data-canvas-content=""
         onPointerDown={surface.onWrapperPointerDown}
         onDoubleClick={(e) => {
           // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
@@ -780,6 +788,9 @@ function CanvasView(props: CanvasProps) {
         {/* Illustrate mode's A4 pages, under every element (IllustratePages). */}
         {props.illustratePages ? (
           <IllustratePages
+            // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
+            // tab's own: page ids repeat across tabs.
+            key={props.activeTabId}
             view={props.illustratePages}
             zoom={viewportZoom}
             // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
@@ -798,7 +809,10 @@ function CanvasView(props: CanvasProps) {
           />
         ) : null}
         <CanvasStillProvider still={props.editorMode === 'draw'}>
-          <CanvasArrivalProvider tabId={props.activeTabId ?? ''}>
+          <CanvasArrivalProvider
+            tabId={props.activeTabId ?? ''}
+            loaded={props.activeTabLoaded ?? true}
+          >
             {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
             <CanvasZoomProvider zoom={viewportZoom}>
@@ -853,6 +867,19 @@ function CanvasView(props: CanvasProps) {
         ) : null}
         {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
         {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+        {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
+        {props.illustratePages ? (
+          <LogoCanvasOverlays
+            view={props.illustratePages}
+            bare={props.zenMode === true || canvasTool === 'isometric'}
+            pendingDraw={pendingDraw}
+            penStroke={penStroke}
+            pathDraft={pathTool.draftView}
+            ink={props.whiteboardInk ?? 'currentColor'}
+            wrapperRef={wrapperRef}
+            zoom={viewportZoom}
+          />
+        ) : null}
         {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
         {/* Avatar mode (docs/specs/008-canvas/avatar-mode.md): the walking characters, INSIDE the
             transformed wrapper so they pan / zoom with the canvas, and after
@@ -979,7 +1006,6 @@ function CanvasView(props: CanvasProps) {
               onRedo: pathTool.history.redo,
             }
           : null)}
-        isPaintMode={isPaintMode}
         mainSize={mainSize}
         avatarConfig={avatarLook.config}
         onChangeAvatarField={avatarLook.setField}
@@ -1020,12 +1046,13 @@ function CanvasView(props: CanvasProps) {
         drawDrag={drawDrag}
         drawHover={drawHover}
         stamp={stamp}
-        penPoints={penPoints}
+        // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
+        penPoints={
+          penPoints ?? (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
+        }
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         wrapperRef={wrapperRef}
-        paletteBottomY={paletteBottomY}
-        setPaletteBottomY={setPaletteBottomY}
         activeDockPanel={activeDockPanel}
         setActiveDockPanel={setActiveDockPanel}
         activeDockAnchor={activeDockAnchor}

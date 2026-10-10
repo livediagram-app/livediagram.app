@@ -15,10 +15,6 @@ import { splitAtNecks } from './necks';
 // is where the line goes.
 const SPLIT_RATIO = 1.8;
 
-// …and below this an over-long axis is one note, not two. The gap between the
-// two is the dead band: see `splitOversized`.
-const SPLIT_KEEP_RATIO = 1.4;
-
 // A blob no thicker than this (in notes) is a BAND — a row or a column of
 // notes lapped over each other — and a band gets cut even when it is not
 // solid, because a row that sags across a wall leaves half its bounding box
@@ -112,11 +108,10 @@ function splitAxis(
   seams: PaperMask | undefined,
   depth: number,
 ): Box[] {
-  // An axis is cut on its length against the NOTE, with a dead band so the
-  // two failure modes cannot trade places. Under `SPLIT_KEEP_RATIO` an
+  // An axis is cut on its length against the NOTE. Under `SPLIT_RATIO` an
   // over-long axis is one note photographed nearer than its neighbours, or
   // the notation's own wide silhouette (1.67 of its height), and is left
-  // alone. Over `SPLIT_RATIO` it is as many notes as it is long — the
+  // alone. Over it, it is as many notes as it is long — the
   // operator's own rule: a box four times the area of a note is not a note.
   //
   // The cut lands on the SEAM between two notes when the paper shows one, and
@@ -261,13 +256,3 @@ function tightenTo(cell: Box, mask: PaperMask): Box | null {
     pixels,
   };
 }
-
-export const SPLIT_CALIBRATION = {
-  SPLIT_RATIO,
-  SPLIT_KEEP_RATIO,
-  SPLIT_BAND_THICKNESS,
-  CUT_SNAP_FRACTION,
-  VALLEY_MAX_FILL,
-  NECK_MIN_AREA,
-  NECK_MAX_PIECE,
-} as const;

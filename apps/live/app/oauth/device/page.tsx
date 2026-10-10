@@ -7,7 +7,6 @@
 // the CLI's own README documents it.
 import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { apiExchangeOauthToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
@@ -19,7 +18,7 @@ import {
 } from '@/lib/mcp-device-session';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
-import { OauthShell } from '../oauth-shell';
+import { OAUTH_PRIMARY, OauthShell } from '../oauth-shell';
 
 type Step =
   | { kind: 'enter' }
@@ -29,7 +28,6 @@ type Step =
   | { kind: 'done' }
   | { kind: 'cancelled' };
 
-const PRIMARY = `rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`;
 const SECONDARY =
   'rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800';
 const HEADING = 'text-lg font-semibold text-slate-900 dark:text-slate-100';
@@ -82,7 +80,7 @@ function Device() {
         <div className="mt-5 flex items-center gap-2">
           <a
             href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
-            className={`inline-flex ${PRIMARY}`}
+            className={`inline-flex ${OAUTH_PRIMARY}`}
           >
             Sign in
           </a>
@@ -144,7 +142,11 @@ function Device() {
           <h1 className={HEADING}>We couldn’t find that code yet</h1>
           <p className={BODY}>Check it and try again. Codes last 10 minutes.</p>
           <div className="mt-5">
-            <button type="button" onClick={() => setStep({ kind: 'enter' })} className={PRIMARY}>
+            <button
+              type="button"
+              onClick={() => setStep({ kind: 'enter' })}
+              className={OAUTH_PRIMARY}
+            >
               Try again
             </button>
           </div>
@@ -169,8 +171,8 @@ function Device() {
             <span className="min-w-0 text-slate-600 dark:text-slate-300">
               <span className="font-medium text-slate-800 dark:text-slate-100">
                 Read-only access
-              </span>{' '}
-              — let it find and view your documents, but not create, edit, delete, or share them.
+              </span>
+              : let it find and view your documents, but not create, edit, delete, or share them.
               Leave off for full read + write.
             </span>
             <span className="mt-0.5 shrink-0">
@@ -187,7 +189,7 @@ function Device() {
               type="button"
               onClick={() => void approve(userCode, clientName)}
               disabled={working}
-              className={PRIMARY}
+              className={OAUTH_PRIMARY}
             >
               {working ? 'Connecting…' : 'Connect'}
             </button>
@@ -230,7 +232,7 @@ function Device() {
               Only enter a code shown by a terminal you are using.
             </p>
             <div>
-              <button type="submit" className={PRIMARY}>
+              <button type="submit" className={OAUTH_PRIMARY}>
                 Continue
               </button>
             </div>

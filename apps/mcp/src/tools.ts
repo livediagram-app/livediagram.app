@@ -24,6 +24,7 @@ import {
   resolveTemplate,
   templateCatalogue,
   templateFamilyOf,
+  templateTabs,
   validTemplateKinds,
   type TemplateKind,
 } from '@livediagram/templates';
@@ -37,7 +38,8 @@ import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from './env';
-import { fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { bringBoardCardTypes, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
   deepLink,
   errorResult,
@@ -58,7 +60,8 @@ import {
   submitChangeset,
 } from './changeset-client';
 import { registerTool } from './tool-annotations';
-import { registerItemTools } from './item-tools';
+import { registerPlanTools } from './plan-tools';
+import { registerSheetTools } from './sheet-tools';
 import {
   mcpAddTab,
   mcpCreateDocument,
@@ -75,7 +78,9 @@ import {
 
 export function registerTools(server: McpServer, env: Env): void {
   // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
-  registerItemTools(server, env);
+  registerPlanTools(server, env);
+  // Sheets, by title and A1 (docs/specs/029-sheets/sheet-store.md "Agents").
+  registerSheetTools(server, env);
   registerTool(server, env, mcpFindDocuments, async (args, extra) => {
     const token = requireToken(extra as Extra);
     // Personal + team shared libraries (docs/specs/013-workspace/team-shared-documents.md): a document filed into a
@@ -85,7 +90,7 @@ export function registerTools(server: McpServer, env: Env): void {
       fetchTeamLibraries(clientFor(env, token)),
     ]);
     const matched = matchDocuments(liveDocs, teamLibraries, args.query, args.limit ?? 20).map(
-      (d) => ({ ...d, url: deepLink(d.id) }),
+      (d) => ({ ...d, url: deepLink(env, d.id) }),
     );
     return textResult({ count: matched.length, documents: matched });
   });
@@ -109,6 +114,9 @@ export function registerTools(server: McpServer, env: Env): void {
     const tabs: Tab[] = [];
     // The template the first tab is made from, for the creation intent.
     let firstTemplate: TemplateKind | null = null;
+    // Every template tab's elements: their Plan boards bring their card types
+    // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
+    const templateElements: Tab['elements'] = [];
     for (const t of inputTabs) {
       const tabId = crypto.randomUUID();
       // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
@@ -124,14 +132,14 @@ export function registerTools(server: McpServer, env: Env): void {
         if (tabs.length === 0) firstTemplate = kind;
         // A template of several tabs adds them all, the first named as given
         // (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").
-        tabs.push(
-          ...buildTemplateTabs(
-            { id: tabId, name: t.name },
-            kind,
-            () => crypto.randomUUID(),
-            args.theme,
-          ),
+        const made = buildTemplateTabs(
+          { id: tabId, name: t.name },
+          kind,
+          () => crypto.randomUUID(),
+          args.theme,
         );
+        tabs.push(...made);
+        for (const m of made) templateElements.push(...m.elements);
         continue;
       }
       // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
@@ -163,6 +171,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // The creation intent (docs/specs/013-workspace/default-folders.md): with no folder named, the
     // server files the document in the user's default folder for it, when they have one.
     const intent = creationIntentOf(tabs[0], templateFamilyOf(firstTemplate));
+    const itemTypes = catalogueWithBoardTypes(null, templateElements);
     const { document: created } = await apiJson<{ document?: LiveDoc }>(env, token, '/documents', {
       method: 'POST',
       // markUsed only when the model gave one: absent, the making counts (the api's default).
@@ -172,6 +181,7 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs,
         source: 'mcp',
         intent,
+        ...(itemTypes ? { itemTypes } : {}),
         ...(args.markUsed !== undefined ? { markUsed: args.markUsed } : {}),
       }),
     });
@@ -180,11 +190,12 @@ export function registerTools(server: McpServer, env: Env): void {
     return imageResult(
       {
         id,
+        documentId: id,
         name: args.name,
         tabCount: tabs.length,
         tabIds,
         folder: await createdFolderLabel(env, token, created),
-        url: deepLink(id),
+        url: deepLink(env, id),
         lint,
       },
       tabs[0]!,
@@ -245,16 +256,20 @@ export function registerTools(server: McpServer, env: Env): void {
       token,
       `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
+    // A Plan template's boards bring their card types (docs/specs/026-plan/plan-agents.md "Adding a board").
+    if (args.template)
+      await bringBoardCardTypes(clientFor(env, token), args.documentId, tab.elements);
     return imageResult(
       {
         documentId: args.documentId,
         tabId,
         name: tab.name,
-        url: deepLink(args.documentId),
+        url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
         text: answer.text,
         lint: lintLineOf(answer.lint),
+        ...templateNote(args.template),
       },
       tab,
       { env, token },
@@ -306,8 +321,9 @@ export function registerTools(server: McpServer, env: Env): void {
     return imageResult(
       {
         id: args.documentId,
+        documentId: args.documentId,
         tabId,
-        url: deepLink(args.documentId),
+        url: deepLink(env, args.documentId),
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
         text: answer.text,
@@ -332,10 +348,10 @@ export function registerTools(server: McpServer, env: Env): void {
       { method: 'POST', body: JSON.stringify({ role, expiry: args.expiry ?? 'never' }) },
     );
     return textResult({
-      url: shareUrl(link.code),
+      url: shareUrl(env, link.code),
       role: link.role,
       expiresAt: link.expiresAt,
-      documentUrl: deepLink(args.documentId),
+      documentUrl: deepLink(env, args.documentId),
     });
   });
 
@@ -362,7 +378,7 @@ export function registerTools(server: McpServer, env: Env): void {
       renamed: 'document',
       id: liveDoc.id,
       name: liveDoc.name,
-      url: deepLink(liveDoc.id),
+      url: deepLink(env, liveDoc.id),
     });
   });
 
@@ -381,12 +397,7 @@ export function registerTools(server: McpServer, env: Env): void {
       // a 4xx (bad id, last tab) is model-correctable and not reported.
       if (res.status >= 500) reportApiFailure(env, `Http${res.status}`);
       return errorResult(
-        `Could not delete (${res.status}). ` +
-          (args.tabId
-            ? 'A document must keep at least one tab — you cannot delete the last one.'
-            : res.status === 410
-              ? 'It is already in the Trash (see list_trash).'
-              : 'Check the document id and that you own it.'),
+        `Could not delete (${res.status}). ${deleteRefusal(res.status, Boolean(args.tabId))}`,
       );
     }
     return textResult(
@@ -430,7 +441,7 @@ export function registerTools(server: McpServer, env: Env): void {
         restored: 'document',
         id: liveDoc?.id ?? args.documentId,
         name: liveDoc?.name ?? null,
-        url: deepLink(liveDoc?.id ?? args.documentId),
+        url: deepLink(env, liveDoc?.id ?? args.documentId),
       });
     } catch (err) {
       // Not in the Trash, or not the user's to restore: model-correctable.
@@ -442,4 +453,32 @@ export function registerTools(server: McpServer, env: Env): void {
       throw err;
     }
   });
+}
+
+// Why a delete was refused, by what was deleted and the status.
+export function deleteRefusal(status: number, tab: boolean): string {
+  if (status === 410) return 'It is already in the Trash (see list_trash).';
+  if (status === 403) return 'You may view this document but not change it.';
+  if (status === 404)
+    return tab
+      ? 'No such tab in this document: read_document lists its tabs.'
+      : 'No such document, or it is not yours: find_documents lists them.';
+  if (tab && status === 409)
+    return 'A document must keep at least one tab: you cannot delete the last one.';
+  return tab
+    ? `The api refused it (${status}): check the document and tab ids.`
+    : 'Check the document id and that you own it.';
+}
+
+// add_tab takes a template's first tab only (docs/specs/015-api/mcp-server.md §4.5): said in the answer when the
+// template has more, so the caller knows where the rest are.
+export function templateNote(template: string | undefined): { note?: string } {
+  const kind = template ? resolveTemplate(template) : null;
+  const tabs = kind ? templateTabs(kind) : [];
+  if (tabs.length < 2) return {};
+  return {
+    note:
+      `The ${template} template has ${tabs.length} tabs; add_tab added its first. ` +
+      'create_document with this template makes all of them.',
+  };
 }

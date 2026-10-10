@@ -17,18 +17,20 @@
 // silently no-op'd.
 
 import { useEffect } from 'react';
-import { isInMenuSurface } from '@livediagram/ui';
+import { isInMenuSurface, isPressableControl } from '@livediagram/ui';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { isMobileViewportSync } from '@/lib/responsive';
 import {
   EDIT_KEYS,
   runModShortcut,
+  coveredKeyRole,
   VIEW_TOOL_KEYS,
   WHITEBOARD_EDIT_KEYS,
   WHITEBOARD_VIEW_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@/lib/typing-target';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -140,11 +142,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const target = e.target as Element | null;
       // <select> included: a letter press there is the browser's
       // type-ahead, not a canvas shortcut.
-      const inText =
-        target instanceof HTMLInputElement ||
-        target instanceof HTMLTextAreaElement ||
-        target instanceof HTMLSelectElement ||
-        (target instanceof HTMLElement && target.isContentEditable);
+      const inText = isTypingTarget(target);
       // Any text input gets a wide berth, except for read-only
       // checks: even Delete / Backspace bail BEFORE preventDefault
       // when read-only so the browser's default behaviour for
@@ -152,6 +150,26 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const mod = e.metaKey || e.ctrlKey;
       const key = e.key;
       const lower = key.toLowerCase();
+
+      // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
+      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
+      // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
+      if (live.canvasCovered?.()) {
+        if (inText) return;
+        const role = coveredKeyRole(e);
+        if (role === 'swallow') e.preventDefault();
+        if (role !== 'run') return;
+        if (mod) {
+          runModShortcut(e, live);
+          return;
+        }
+        if (key !== 'Escape') {
+          e.preventDefault();
+          if (lower === 'z') live.onToggleZen();
+          else live.onCycleEditorMode?.();
+          return;
+        }
+      }
 
       // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
       // Tab adds a child, Enter a sibling, both off the selected mind node.
@@ -410,6 +428,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
     // A focused menu row is pressed by Space, not tapped into a label edit.
     const isTypingTarget = (t: EventTarget | null) =>
       isInMenuSurface(t) ||
+      // A keyboard-focused button or box: Space presses it (isPressableControl), never edits a label.
+      isPressableControl(t) ||
       t instanceof HTMLInputElement ||
       t instanceof HTMLTextAreaElement ||
       (t instanceof HTMLElement && t.isContentEditable);
@@ -438,6 +458,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (live.isReadOnly) return;
       if (live.editingId !== null) return;
       if (isTypingTarget(e.target)) return;
+      // A dialog over the canvas owns Space: never a label edit on the shape behind it.
+      if (anyModalOpen()) return;
       // Only act on single-element selections: multi-select Space
       // has no well-defined "which element gets the label edit"
       // answer, so leave the pan modifier as the only behaviour

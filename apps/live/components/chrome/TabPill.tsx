@@ -4,6 +4,8 @@ import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
+import { SideBySideIcon } from '@livediagram/ui';
+import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { TabModeIcon } from './editor-mode/TabModeIcon';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
@@ -50,6 +52,12 @@ export type TabPillCtx = {
 };
 
 export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
+  // The tab showing in the other pane (docs/specs/007-editor/split-view.md) says so on its pill.
+  const split = useSplitViewContext();
+  const beside =
+    !!split?.pair &&
+    tab.id !== split.activeId &&
+    (split.pair.leftId === tab.id || split.pair.rightId === tab.id);
   const {
     activeId,
     editingId,
@@ -136,7 +144,7 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
               ? 'px-2.5'
               : 'pl-2.5 pr-1'
             : 'bg-slate-200/50 px-2.5 text-slate-600 hover:bg-slate-200 hover:text-slate-900 dark:bg-slate-800/70 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-      }`}
+      }${beside && !isActive ? ' outline-1 -outline-offset-1 outline-brand-400/70 outline-dashed' : ''}`}
     >
       {/* Insertion caret: a vertical bar in the gap on the side the tab
           will land. pointer-events-none so it never intercepts the drag. */}
@@ -172,6 +180,12 @@ export function TabPill({ tab, ctx }: { tab: Tab; ctx: TabPillCtx }) {
           {/* Trimmed to its cap band so the name centres on its letters; the button's height is
               pinned because the trimmed name no longer props it open. */}
           <span className="text-optical-centre">{tab.name}</span>
+          {beside ? (
+            <span className="flex items-center text-brand-500 dark:text-brand-300">
+              <SideBySideIcon size={12} />
+              <span className="sr-only">, open side by side</span>
+            </span>
+          ) : null}
         </button>
       )}
       <TabPresenceStack

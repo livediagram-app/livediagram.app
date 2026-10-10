@@ -47,7 +47,7 @@ type TechIconDef = {
   id: string; // e.g. 'aws-s3', 'azure-functions', 'k8s'
   label: string; // 'S3', 'Azure Functions', 'Kubernetes'
   short?: string; // short palette caption where `label` would truncate ('VM')
-  provider: TechProvider; // 'aws' | 'azure' | 'generic'
+  provider: TechProvider; // 'aws' | 'azure' | 'cloudflare' | 'firebase' | 'generic'
   keywords: string; // extra search terms
   color: string; // tile fill — the service / brand colour
   glyph: string; // inner SVG markup (0..24 box) drawn white on the tile
@@ -76,7 +76,7 @@ type TechIconDef = {
   Technology picker shows a brief "Loading icons…" note.
 - The mark is a **brand-coloured rounded tile + a white line-art glyph** — the
   AWS resource-icon visual language, applied uniformly across AWS / Azure /
-  generic for a cohesive palette, using each service's **official brand /
+  Cloudflare / Firebase / generic for a cohesive palette, using each service's **official brand /
   category colour**. It is authored in-repo as compact SVG, not the verbatim
   vendor asset packs — keeps the bundle small, renders crisply at icon size, and
   sidesteps redistributing proprietary SVGs from a public MIT repo (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md),
@@ -86,24 +86,28 @@ type TechIconDef = {
   signpost beside CloudFront's globe; Workers is braces around a bolt), which
   `tech-icon-catalog.test.ts` enforces. Glyph markup never sets its own stroke width.
 
-### Coverage (curated common set, ~40)
+### Coverage (curated common set, 70 across five providers)
 
 - **AWS:** S3, EC2, Lambda, RDS, DynamoDB, API Gateway, CloudFront, Route 53,
   VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM, Lake Formation (data lakes) and MSK, the last two
   added for diagrams imported from draw.io ([draw.io import](../020-import-export/drawio-import.md)).
-- **Azure:** Virtual Machines, Blob Storage, App Service, Functions, SQL
+- **Azure:** Virtual Machine, Blob Storage, App Service, Functions, SQL
   Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key
   Vault, Monitor.
+- **Cloudflare:** Workers, Pages, R2, D1, KV, Durable Objects, Queues, Zero
+  Trust, CDN, DNS, WAF, Workers AI, Images, Stream.
+- **Firebase:** Firestore, Realtime Database, Authentication, Cloud Functions,
+  Hosting, Cloud Storage, Cloud Messaging.
 - **Generic infra:** Kubernetes, Docker, PostgreSQL, MySQL, Redis, MongoDB,
-  Kafka, Nginx, RabbitMQ, Elasticsearch, GraphQL.
+  Kafka, Nginx, RabbitMQ, Elasticsearch, GraphQL, GitHub, GitLab, Node.js,
+  React, Vercel, Supabase, Terraform, Cassandra, Prometheus.
 
 The set is intentionally the services people reach for first; it expands by
 adding `TechIconDef` entries.
 
 ## Palette — the Technology tab
 
-A new tab in `PaletteTabBar` (`CommandPalette.tsx`), alongside Shapes / Tools /
-Devices / Icons. It mirrors the Icons tab: a search box over a grid of
+A palette category, alongside Shapes / Devices / Icons. It mirrors the Icons tab: a search box over a grid of
 **provider** category tiles you drill into (AWS / Azure / Cloudflare / Firebase
 / Generic), with a breadcrumb back — see [Browsing the palette by category](palette-category-browse.md), which replaced the provider
 filter dropdown this originally shipped with. Clicking a tile adds the icon at

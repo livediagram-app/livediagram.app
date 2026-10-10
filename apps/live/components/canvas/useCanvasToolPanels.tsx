@@ -25,7 +25,6 @@ import type { CanvasChromeProps } from './CanvasChrome';
 export function useCanvasToolPanels({
   props,
   chromeHidden,
-  stackBelowY,
   panelWiringFor,
   slidesPopover,
 }: {
@@ -33,9 +32,6 @@ export function useCanvasToolPanels({
   // The Slide Deck as a popover over its cluster button (Illustrate mode), while open.
   slidesPopover?: { anchor: DockAnchor | undefined; onClose: () => void } | null;
   chromeHidden: boolean;
-  // undefined once corner docking owns stacking; otherwise the measured
-  // offset that keeps these panels clear of the palette above them.
-  stackBelowY: number | undefined;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
 }): {
   avatarEl: ReactNode;
@@ -124,7 +120,6 @@ export function useCanvasToolPanels({
         onBurst={onAvatarBurst}
         shirt={selfParticipant?.color}
         position={avatarWiring.position}
-        stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveAvatarPanel?.(x, y)}
         onReset={avatarWiring.onReset}
         dock={avatarWiring.dock}
@@ -141,7 +136,6 @@ export function useCanvasToolPanels({
         onChange={(field, value) => onChangeLaserField?.(field, value)}
         selfColour={selfParticipant?.color ?? '#0ea5e9'}
         position={laserWiring.position}
-        stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveLaserPanel?.(x, y)}
         onReset={laserWiring.onReset}
         dock={laserWiring.dock}
@@ -158,7 +152,6 @@ export function useCanvasToolPanels({
         radius={spotlightRadius ?? 170}
         onSetRadius={(r) => onSetSpotlightRadius?.(r)}
         position={spotlightWiring.position}
-        stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveSpotlightPanel?.(x, y)}
         onReset={spotlightWiring.onReset}
         dock={spotlightWiring.dock}
@@ -173,7 +166,6 @@ export function useCanvasToolPanels({
         config={eraserConfig}
         onChange={(field, value) => onChangeEraserField?.(field, value)}
         position={eraserWiring.position}
-        stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveEraserPanel?.(x, y)}
         onReset={eraserWiring.onReset}
         dock={eraserWiring.dock}
@@ -190,7 +182,6 @@ export function useCanvasToolPanels({
         onSetMode={(mode) => onSetFormatMode?.(mode)}
         source={formatBrushSource ?? null}
         position={formatWiring.position}
-        stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveFormatPanel?.(x, y)}
         onReset={formatWiring.onReset}
         dock={formatWiring.dock}
@@ -213,7 +204,6 @@ export function useCanvasToolPanels({
           label: pageLabel(p, p.index, Math.max(2, props.illustratePages!.pages.length)),
         }))}
         position={slideDeckWiring.position}
-        stackBelowY={stackBelowY}
         onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
         onReset={slideDeckWiring.onReset}
         dock={slidesPopover ? undefined : slideDeckWiring.dock}

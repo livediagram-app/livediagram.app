@@ -15,6 +15,7 @@ import { InfoNote } from '@/components/primitives/InfoNote';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/lib/trash-groups';
 import type { TrashController } from '@/hooks/persistence/useTrash';
+import { LIST_CARD } from '@/components/primitives/surface-classes';
 
 type Confirming =
   | { kind: 'purge'; id: string; name: string; group: TrashGroup; anchor: HTMLElement }
@@ -45,11 +46,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
         />
       ) : (
         groups.map((group) => (
-          <section
-            key={group.key}
-            aria-labelledby={`trash-${group.key}`}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
-          >
+          <section key={group.key} aria-labelledby={`trash-${group.key}`} className={LIST_CARD}>
             <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-700/60">
               <div className="min-w-0">
                 <h2
@@ -67,7 +64,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
               <button
                 type="button"
                 onClick={(e) => setConfirming({ kind: 'empty', group, anchor: e.currentTarget })}
-                className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                className="shrink-0 rounded-md px-2.5 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 Empty Trash
               </button>
@@ -111,7 +108,7 @@ export function TrashPane({ trash }: { trash: TrashController }) {
                           anchor: e.currentTarget,
                         })
                       }
-                      className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400"
+                      className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     >
                       Delete permanently
                     </button>

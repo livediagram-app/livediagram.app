@@ -8,15 +8,8 @@ import { expect, expectNoPageErrors, test, openStartBlank, pageOwnerHeaders } fr
 const CANVAS = '[data-canvas-a11y-root]';
 type El = Record<string, unknown> & { id: string; type: string; shape?: string };
 
-async function openBoard(page: Page, layout?: 'floating' | 'toolbar'): Promise<void> {
+async function openBoard(page: Page): Promise<void> {
   await page.emulateMedia({ colorScheme: 'dark' });
-  if (layout) {
-    await page.addInitScript((panelLayout) => {
-      const key = 'livediagram:user-preferences:v1';
-      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}');
-      localStorage.setItem(key, JSON.stringify({ ...prefs, panelLayout }));
-    }, layout);
-  }
   await openStartBlank(page);
 }
 
@@ -59,15 +52,16 @@ async function drawArrow(page: Page, from: { x: number; y: number }, to: { x: nu
 }
 
 const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
-const choose = (page: Page, row: string, option: string) =>
-  panel(page)
-    .getByRole('radiogroup', { name: row, exact: true })
-    .getByRole('radio', { name: option, exact: true })
-    .click();
+// A row of glyph buttons is a radio group; a colour row is a group of toggle buttons
+// (docs/specs/004-interface-design/colour-picker.md).
+const row = (page: Page, name: string) =>
+  panel(page).locator(
+    `[role="radiogroup"][aria-label="${name}"], [role="group"][aria-label="${name}"]`,
+  );
+const choose = (page: Page, name: string, option: string) =>
+  row(page, name).getByLabel(option, { exact: true }).click();
 
 const shapesOf = (els: El[], kind: string) => els.filter((e) => e.shape === kind);
-
-const PALETTE = '[data-tour-id="palette"][data-floating-panel]';
 
 test.describe('quick style panel', () => {
   test('one click on Flowing makes the selected arrow dashed and animated', async ({
@@ -92,38 +86,20 @@ test.describe('quick style panel', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('Floating: on the left edge in the Palette’s dress, away from a right-hand Palette', async ({
+  test('narrow, ten 24 px swatch targets wide, a theme row nine (its seven, Ink and More colours)', async ({
     page,
     pageErrors,
   }) => {
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await openBoard(page, 'floating');
-    await drawShape(page, 'o', { x: 700, y: 300 });
-    await expect(panel(page)).toBeVisible();
-    await expect(panel(page).getByText('Quick style', { exact: true })).toBeVisible();
-    await expect(async () => {
-      const canvas = (await page.locator(CANVAS).boundingBox())!;
-      const p = (await page.locator(PALETTE).boundingBox())!;
-      const q = (await panel(page).boundingBox())!;
-      expect(q.x).toBeLessThan(canvas.x + canvas.width / 2);
-      expect(Math.abs(q.width - p.width)).toBeLessThan(1);
-    }).toPass();
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('Toolbar: narrow, eight 24 px swatch targets a row (the theme’s seven and Ink)', async ({
-    page,
-    pageErrors,
-  }) => {
-    await openBoard(page, 'toolbar');
+    await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
-    expect((await panel(page).boundingBox())!.width).toBeCloseTo(210, 0);
+    expect((await panel(page).boundingBox())!.width).toBeCloseTo(258, 0);
     const swatches = panel(page)
-      .getByRole('radiogroup', { name: 'Stroke', exact: true })
-      .getByRole('radio');
-    await expect(swatches).toHaveCount(8);
-    await expect(swatches.last()).toHaveAccessibleName('Ink');
+      .getByRole('group', { name: 'Stroke', exact: true })
+      .getByRole('button');
+    await expect(swatches).toHaveCount(9);
+    await expect(swatches.nth(7)).toHaveAccessibleName('Ink');
+    await expect(swatches.last()).toHaveAccessibleName('More colours, stroke');
     for (const box of await Promise.all((await swatches.all()).map((s) => s.boundingBox()))) {
       expect(box!.width).toBeGreaterThanOrEqual(24);
       expect(box!.height).toBeGreaterThanOrEqual(24);
@@ -137,14 +113,14 @@ test.describe('quick style panel', () => {
   }) => {
     await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 300 });
-    const stroke = panel(page).getByRole('radiogroup', { name: 'Stroke' });
-    await stroke.getByRole('radio', { name: 'Green' }).click({ button: 'right' });
+    const stroke = panel(page).getByRole('group', { name: 'Stroke', exact: true });
+    await stroke.getByRole('button', { name: 'Green' }).click({ button: 'right' });
     const dialog = page.getByRole('dialog', { name: 'Custom colour for Green, Stroke' });
     await expect(dialog).toBeVisible();
+    // The one custom colour editor: Enter in its hex field uses the colour and closes.
     await dialog.getByLabel('Hex').fill('#ff5500');
     await dialog.getByLabel('Hex').press('Enter');
-    await dialog.getByRole('button', { name: 'Done' }).click();
-    const custom = stroke.getByRole('radio', { name: 'Custom orange, in place of Green' });
+    const custom = stroke.getByRole('button', { name: 'Custom orange, in place of Green' });
     await expect(custom).toBeFocused();
     await expect(custom.locator('[data-swatch-marker]')).toHaveCount(1);
     // Kept per user and per theme, in the synced preferences.
@@ -162,13 +138,13 @@ test.describe('quick style panel', () => {
     await custom.focus();
     await page.keyboard.press('Shift+F10');
     await page.getByRole('dialog').getByRole('button', { name: 'Clear override' }).click();
-    await expect(stroke.getByRole('radio', { name: 'Green' })).toBeVisible();
+    await expect(stroke.getByRole('button', { name: 'Green' })).toBeVisible();
     await expect(stroke.locator('[data-swatch-marker]')).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 
-  test('Toolbar: sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
-    await openBoard(page, 'toolbar');
+  test('sits on the left edge, vertically centred', async ({ page, pageErrors }) => {
+    await openBoard(page);
     await drawShape(page, 'o', { x: 500, y: 400 });
     await expect(panel(page)).toBeVisible();
     await expect(panel(page).getByText('Quick style', { exact: true })).toHaveCount(0);
@@ -189,9 +165,10 @@ test.describe('quick style panel', () => {
     await drawShape(page, 'o', { x: 500, y: 300 });
     await expect(panel(page)).toBeVisible();
     await choose(page, 'Stroke', 'Green');
-    await expect(
-      panel(page).getByRole('radiogroup', { name: 'Stroke' }).getByRole('radio', { name: 'Green' }),
-    ).toHaveAttribute('aria-checked', 'true');
+    await expect(row(page, 'Stroke').getByRole('button', { name: 'Green' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
 
     await drawShape(page, 'o', { x: 500, y: 600 });
     await drawShape(page, 'r', { x: 300, y: 600 });

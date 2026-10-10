@@ -14,24 +14,7 @@ import {
 } from '@livediagram/document';
 import type { CSSProperties } from 'react';
 
-export type SolidPreset = { id: string; label: string; color: string | null };
 export type GradientPreset = { id: string; label: string; from: string; to: string };
-
-// Light to dark. Paper is the page's own default (no fill stored).
-export const PAGE_SOLID_PRESETS: readonly SolidPreset[] = [
-  { id: 'paper', label: 'Paper', color: null },
-  { id: 'cream', label: 'Cream', color: '#fbf7ef' },
-  { id: 'mist', label: 'Mist', color: '#f1f5f9' },
-  { id: 'sky', label: 'Sky', color: '#e0f2fe' },
-  { id: 'mint', label: 'Mint', color: '#dcfce7' },
-  { id: 'lavender', label: 'Lavender', color: '#ede9fe' },
-  { id: 'blush', label: 'Blush', color: '#fce7f3' },
-  { id: 'sunshine', label: 'Sunshine', color: '#fef9c3' },
-  { id: 'ink', label: 'Ink', color: '#1e293b' },
-  { id: 'midnight', label: 'Midnight', color: '#0f172a' },
-  { id: 'forest', label: 'Forest', color: '#14532d' },
-  { id: 'plum', label: 'Plum', color: '#3b0764' },
-];
 
 export const PAGE_GRADIENT_PRESETS: readonly GradientPreset[] = [
   { id: 'sunrise', label: 'Sunrise', from: '#fde68a', to: '#fca5a5' },
@@ -228,4 +211,40 @@ export function themeBackgroundPresets(
     },
   );
   return out;
+}
+
+/** The Background section's categories (docs/specs/007-editor/illustrate-pages.md "Backgrounds"). */
+export type BackgroundCategory = 'theme' | 'solid' | 'gradient';
+
+/** The category a page's fill belongs to: a theme preset's Theme, any other gradient's Gradient,
+ *  else Solid (the paper and every solid colour). */
+export function backgroundCategoryOf(
+  fill: PageFill | undefined,
+  themePresets: readonly ThemeBackgroundPreset[],
+): BackgroundCategory {
+  if (fill && themePresets.some((t) => sameFill(fill, t.fill))) return 'theme';
+  return fill?.kind === 'gradient' ? 'gradient' : 'solid';
+}
+
+/** Whether the fill is a gradient no preset (of the catalogue or the theme) names: a custom one. */
+export function isCustomGradient(
+  fill: PageFill | undefined,
+  themePresets: readonly ThemeBackgroundPreset[],
+): boolean {
+  return (
+    fill?.kind === 'gradient' &&
+    !PAGE_GRADIENT_PRESETS.some((g) => sameFill(fill, gradientFill(g))) &&
+    !themePresets.some((t) => sameFill(fill, t.fill))
+  );
+}
+
+// The custom gradient on the plain paper: Sky to Lavender.
+const CUSTOM_GRADIENT_START = { from: '#e0f2fe', to: '#ede9fe' };
+
+/** Where a new custom gradient starts: the page's current gradient, else its solid colour to a
+ *  deepened version of it, else Sky to Lavender, at the presets' angle. */
+export function customGradientSeed(fill: PageFill | undefined): PageFill {
+  if (fill?.kind === 'gradient') return fill;
+  if (fill?.kind === 'solid') return gradientFill({ from: fill.color, to: shade(fill.color, 0.3) });
+  return gradientFill(CUSTOM_GRADIENT_START);
 }

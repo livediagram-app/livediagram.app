@@ -3,15 +3,63 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { itemVoteKey } from '@livediagram/document';
+import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
+import type { CardVote } from './CardVoteContext';
+import { useLongPress } from '@/hooks/ui/useLongPress';
 import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
-import { ITEM_TYPES, itemAccessibleName, type Item, type LaneHead } from '@livediagram/items';
+import {
+  ITEM_TYPES,
+  itemAccessibleName,
+  itemTitle,
+  type Item,
+  type LaneHead,
+} from '@livediagram/items';
 import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
+import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
+
+const REFUSED_COLOUR = '#dc2626';
+
+// The gap a held card would land in, dashed in the board's focus colour; or, for a palette card of a type the board
+// does not show (`refused`), a red dashed zone saying why (docs/specs/026-plan/plan-mode.md "The palette").
+export function DropGap({
+  height,
+  palette,
+  refused,
+}: {
+  height: number;
+  palette: PlanPalette;
+  refused?: string | undefined;
+}) {
+  if (!refused)
+    return (
+      <div
+        className="rounded-lg border-2 border-dashed"
+        style={{ height, borderColor: palette.focus }}
+        aria-hidden
+      />
+    );
+  return (
+    <div
+      role="status"
+      className="flex items-center justify-center rounded-lg border-2 border-dashed px-2 text-center text-[12px] font-medium leading-snug"
+      style={{
+        minHeight: height,
+        borderColor: REFUSED_COLOUR,
+        color: REFUSED_COLOUR,
+        backgroundColor: `color-mix(in srgb, ${REFUSED_COLOUR} 8%, transparent)`,
+      }}
+    >
+      {refused}
+    </div>
+  );
+}
 
 // A row of the board: with swimlanes, a labelled, collapsible band over its cells.
 export function LaneRow({
@@ -44,6 +92,7 @@ export function LaneRow({
       >
         <span aria-hidden>{shut ? '▸' : '▾'}</span>
         {lane.person ? <PersonDisc person={lane.person} /> : null}
+        {lane.colour ? <ColourDot colour={lane.colour} /> : null}
         <span style={{ color: palette.text }}>{lane.label}</span>
       </button>
       {children}
@@ -61,13 +110,14 @@ export function PlanBoardCard({
   setupFields,
   cardSize,
   faceDown,
-  voting,
   presence,
   interactive,
   onPress,
   onOpen,
   onKey,
   onMenu,
+  onLongPress,
+  cardVote,
 }: {
   item: Item;
   palette: PlanPalette;
@@ -77,7 +127,6 @@ export function PlanBoardCard({
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
   faceDown: boolean;
-  voting: Parameters<typeof PlanCardFace>[0]['voting'];
   presence: Parameters<typeof PlanCardFace>[0]['presence'];
   interactive: boolean;
   onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
@@ -85,29 +134,35 @@ export function PlanBoardCard({
   onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
   // A right-click (or the context-menu key) on the card, at a screen point.
   onMenu: (item: Item, at: { x: number; y: number }) => void;
+  // A finger held on the card (touch has no right-click): its menu, at the finger. Absent, a hold does nothing.
+  onLongPress?: (item: Item, at: { x: number; y: number }) => void;
+  // The tab's session vote, when this board's cards take dots in it (docs/specs/012-collaboration/session-tools.md
+  // "Voting on Plan cards"): the card carries the vote's stepper, unless it is face down.
+  cardVote?: CardVote | null;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
+  const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
   return (
     <>
       {placeholderBefore !== undefined ? (
-        <div
-          className="rounded-lg border-2 border-dashed"
-          style={{ height: placeholderBefore, borderColor: palette.focus }}
-          aria-hidden
-        />
+        <DropGap height={placeholderBefore} palette={palette} />
       ) : null}
       <div
         role="listitem"
         tabIndex={0}
         data-plan-card={item.id}
         aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item, types)}
-        className="rounded-lg outline-none transition-opacity focus-visible:ring-2"
+        // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls).
+        className="relative touch-none rounded-lg outline-none transition-opacity focus-visible:ring-2"
         style={{
           opacity: lifted ? 0.35 : 1,
           cursor: interactive ? 'grab' : undefined,
           ['--tw-ring-color' as string]: palette.focus,
         }}
-        onPointerDown={(e) => onPress(item.id, e)}
+        onPointerDown={(e) => {
+          if (onLongPress && !faceDown) hold.onPointerDown(e);
+          onPress(item.id, e);
+        }}
         onDoubleClick={(e) => {
           e.stopPropagation();
           onOpen();
@@ -134,8 +189,21 @@ export function PlanBoardCard({
           faceDown={faceDown}
           muted={done}
           presence={presence}
-          voting={faceDown ? undefined : voting}
         />
+        {cardVote ? (
+          <ElementVoteOverlay
+            voteKey={itemVoteKey(item.id)}
+            name={faceDown ? 'this card' : itemTitle(item) || 'this card'}
+            vote={cardVote.vote}
+            selfId={cardVote.selfId}
+            voteMax={cardVote.voteMax}
+            votableInVote={!faceDown}
+            voteReviewActive={cardVote.reviewActive}
+            isVoteFocus={cardVote.focusKey === itemVoteKey(item.id)}
+            onCastVote={cardVote.onCast}
+            onRetractVote={cardVote.onRetract}
+          />
+        ) : null}
       </div>
     </>
   );

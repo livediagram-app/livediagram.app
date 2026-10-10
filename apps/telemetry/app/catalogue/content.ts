@@ -1,10 +1,11 @@
 // What gets made: documents, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { PALETTE_TELEMETRY_TYPES } from '@livediagram/api-schema';
+import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@livediagram/api-schema';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
+import { LOGO_TOOL_TYPES } from '../logo-types';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -359,6 +360,43 @@ export const TAB_ACTIONS: MetricStack = {
   ],
 };
 
+// Side by side tabs (docs/specs/007-editor/split-view.md): a tab opened beside the one being
+// edited (by dragging its pill to the right edge, or from the tab menu), the editor moved between
+// the panes, and
+// the split closed.
+export const SIDE_BY_SIDE_OPENED: Metric = {
+  category: 'Tab',
+  action: 'Opened',
+  typeIn: (type) => type === 'SideBySideDrag' || type === 'SideBySideMenu',
+  title: 'Opened Side by Side',
+  blurb: 'A tab opened beside the one being edited: dragged to the right edge, or from its menu.',
+};
+
+export const SIDE_BY_SIDE_FOCUSED: Metric = {
+  category: 'Tab',
+  action: 'Selected',
+  typeIn: (type) => type === 'SideBySideClick' || type === 'SideBySideHover',
+  title: 'Side by Side Switches',
+  blurb:
+    'The editor moved to the other pane: a click there, or the pointer resting there. Ranked by which.',
+};
+
+export const SIDE_BY_SIDE_CLOSED: Metric = {
+  rising: 'neutral',
+  category: 'Tab',
+  action: 'Closed',
+  type: 'SideBySide',
+  title: 'Side by Side Closed',
+};
+
+export const SIDE_BY_SIDE: MetricStack = {
+  stack: true,
+  title: 'Side by Side',
+  blurb: 'Two tabs on screen at once: how often a split is opened, worked across and closed.',
+  headline: SIDE_BY_SIDE_OPENED,
+  members: [SIDE_BY_SIDE_OPENED, SIDE_BY_SIDE_FOCUSED, SIDE_BY_SIDE_CLOSED],
+};
+
 // Elements added, one chart per palette tab (Palette tab ranks inside each),
 // plus every kind the catalogue doesn't list, so together they cover every
 // Element·Added exactly once and the stack's total is every element added.
@@ -439,8 +477,9 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts).
-  { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') },
+  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts),
+  // as are a logo page's tools (Logo Tools Used).
+  { typeIn: (t) => !/^Article[A-Z]/.test(t ?? '') && !LOGO_TOOL_TYPES.includes(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(
@@ -708,18 +747,19 @@ export const PLAN_ITEMS_RESTORED = chart(
   { rising: 'neutral' },
 );
 
+export const PLAN_REMOVED = chart(
+  'Plan',
+  'Removed',
+  'Filters Removed',
+  'A filter taken off a Card Search view.',
+  { rising: 'neutral' },
+);
+
 export const PLAN_ITEMS_OPENED = chart(
   'Plan',
   'Opened',
   'Items Opened',
   'An item opened in the item panel, from a board or a Plan card.',
-);
-
-export const PLAN_VOTES = chart(
-  'Plan',
-  'Voted',
-  'Votes Cast',
-  'A vote added (Up) or taken back (Down) on a voting board.',
 );
 
 export const PLAN_ITEMS_DELETED = chart(
@@ -735,6 +775,49 @@ export const PLAN_FLAGS = chart(
   'Toggled',
   'Cards Flagged',
   'A card flagged for attention, or its flag taken off, from its menu or the item panel.',
+  { types: ['FlagOn', 'FlagOff'] },
+);
+
+export const PLAN_MAXIMISED = chart(
+  'Plan',
+  'Toggled',
+  'Boards Maximised',
+  'A board or a view maximised to fill the screen from its header, or restored to the canvas.',
+  {
+    types: [
+      'BoardMaximised',
+      'ViewMaximised',
+      'SheetMaximised',
+      'BoardRestored',
+      'ViewRestored',
+      'SheetRestored',
+    ],
+    rising: 'neutral',
+  },
+);
+
+export const PLAN_FOCUSED = chart(
+  'Plan',
+  'Toggled',
+  'Boards and Sheets Focused',
+  "A board's or a Sheet's Focus pressed in its header: the view glides to fit it (or, pressed again, the whole tab).",
+  { types: ['BoardFocused', 'SheetFocused'], rising: 'neutral' },
+);
+
+export const PLAN_FILL_TAB = chart(
+  'Plan',
+  'Toggled',
+  'Boards and Sheets Filling a Tab',
+  'A board or Sheet set to fill its tab for everyone (the rest of its canvas deleted), or put back on the canvas.',
+  { types: ['FillTabOn', 'FillTabOff', 'SheetFillTabOn', 'SheetFillTabOff'], rising: 'neutral' },
+);
+
+export const PLAN_CARD_TYPES_DUPLICATED = chart(
+  'Plan',
+  'Duplicated',
+  'Card Types Duplicated',
+  'A new card type made by duplicating an existing one in the Card Types panel.',
+  { rising: 'neutral' },
 );
 
 export const PLAN_SETUP_CHANGED = chart(
@@ -751,6 +834,77 @@ export const PLAN_REVEALED = chart(
   'Reveal pressed on a board hiding writing, turning every card face up.',
 );
 
+export const SHEET_CHANGES = chart(
+  'Sheet',
+  'Changed',
+  'Sheet Changes',
+  'A change to a Sheet: a cell or formula saved, formatting, rows or columns, a sort, filter, paste or fill. One per change, never what was typed.',
+  { types: [...SHEET_CHANGE_KINDS] },
+);
+
+export const SHEET_FUNCTIONS = chart(
+  'Sheet',
+  'Used',
+  'Sheet Functions Used',
+  'A function used in a Sheet formula for the first time in that formula, by name.',
+);
+
+export const SHEET_FIND = chart(
+  'Sheet',
+  'Opened',
+  'Sheet Panels Opened',
+  "Find, or a Sheet's settings cog, opened on a Sheet.",
+  { types: ['Find', 'Settings'] },
+);
+
+export const SHEET_CREATED = chart(
+  'Sheet',
+  'Created',
+  'Sheets Set Up and Charts Made',
+  'A Sheet set up from Setup Sheet (by how it started), or a chart made from its cells.',
+  { types: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv', 'Chart'] },
+);
+
+export const SHEET_CSV_IMPORTED = chart(
+  'Sheet',
+  'Imported',
+  'Sheets From CSV',
+  'A Sheet filled from a CSV file: Import CSV, or a CSV dropped on the canvas in Plan mode.',
+  { types: ['Csv'] },
+);
+
+export const SHEET_DELETED = chart(
+  'Sheet',
+  'Deleted',
+  'Sheets Deleted With Their Element',
+  'Deleting a Sheet element whose sheet nothing else used asked first: Confirmed deleted the sheet too, Cancelled kept both.',
+  { types: ['Confirmed', 'Cancelled'] },
+);
+
+export const SHEET_CSV_EXPORTED = chart(
+  'Sheet',
+  'Exported',
+  'Sheets Downloaded as CSV',
+  "A Sheet's cells downloaded as a CSV file.",
+  { types: ['Csv'] },
+);
+
+export const SHEETS: MetricStack = {
+  stack: true,
+  title: 'Sheets',
+  blurb:
+    'Work in Sheets, the spreadsheet tabs on Plan tabs: setup, changes, functions, charts, panels and CSV.',
+  members: [
+    SHEET_CREATED,
+    SHEET_CHANGES,
+    SHEET_FUNCTIONS,
+    SHEET_FIND,
+    SHEET_CSV_IMPORTED,
+    SHEET_CSV_EXPORTED,
+    SHEET_DELETED,
+  ],
+};
+
 export const PLAN_BOARDS: MetricStack = {
   stack: true,
   title: 'Plan boards',
@@ -759,11 +913,15 @@ export const PLAN_BOARDS: MetricStack = {
     PLAN_ITEMS_ADDED,
     PLAN_ITEMS_MOVED,
     PLAN_ITEMS_OPENED,
-    PLAN_VOTES,
     PLAN_ITEMS_DELETED,
     PLAN_ITEMS_RESTORED,
+    PLAN_REMOVED,
     PLAN_FLAGS,
+    PLAN_MAXIMISED,
+    PLAN_FOCUSED,
+    PLAN_FILL_TAB,
     PLAN_SETUP_CHANGED,
+    PLAN_CARD_TYPES_DUPLICATED,
     PLAN_REVEALED,
   ],
 };

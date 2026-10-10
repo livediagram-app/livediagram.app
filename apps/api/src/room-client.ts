@@ -13,7 +13,7 @@ import {
   type RoomOp,
 } from '@livediagram/api-schema';
 import type { AgentPresenceWrite } from './room-agent-presence';
-import type { ItemsRoomOp, ItemTypesRoomOp } from '@livediagram/api-schema';
+import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@livediagram/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a document's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -282,12 +282,13 @@ export type RoomSelection = { elementIds: string[]; name: string; color: string;
 
 // Every selection on the tab (docs/specs/024-agents/agent-changesets.md "Held elements"). Null
 // when the room cannot answer within ROOM_SELECTIONS_TIMEOUT_MS: then nothing counts as held, and
-// the warning says so.
+// the warning, under the reader's own fingerprint, says so.
 export async function readRoomSelections(
   env: Env,
   documentId: string,
   tabId: string,
   personTag: string | null,
+  reader: 'changeset' | 'views' = 'changeset',
 ): Promise<RoomSelection[] | null> {
   const query = `tab=${encodeURIComponent(tabId)}&person=${encodeURIComponent(personTag ?? '')}`;
   try {
@@ -303,7 +304,7 @@ export async function readRoomSelections(
     if (!Array.isArray(body.selections)) throw new Error('no selections');
     return body.selections as RoomSelection[];
   } catch (err) {
-    console.warn('[changeset] selections-unreachable', { documentId, tabId, error: String(err) });
+    console.warn(`[${reader}] selections-unreachable`, { documentId, tabId, error: String(err) });
     return null;
   }
 }
@@ -435,4 +436,9 @@ export async function relayItemTypes(
 // broadcasts: the D1 write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, documentId: string, op: ItemsRoomOp): Promise<void> {
   await broadcastOp(env, documentId, op, 'items', true);
+}
+
+// A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.
+export async function relaySheets(env: Env, documentId: string, op: SheetsRoomOp): Promise<void> {
+  await broadcastOp(env, documentId, op, 'sheets', true);
 }

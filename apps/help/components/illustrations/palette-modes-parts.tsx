@@ -11,7 +11,7 @@
 // Palette-specific by design: ./primitives holds the house style every
 // illustration category shares.
 
-import { Label, Panel, Tile } from './primitives';
+import { Label } from './primitives';
 
 // --- Mode glyphs ------------------------------------------------------------
 //
@@ -157,61 +157,6 @@ export function IsometricGlyph({ on = false }: { on?: boolean }) {
       <path d="M0 -7 L7 -3 L0 1 L-7 -3 Z" />
       <path d="M-7 -3 V4 L0 8 V1 M7 -3 V4 L0 8" />
     </g>
-  );
-}
-
-// In the picker's own order (canvas-tool-options.tsx): the Edit band, then
-// Present, then Preview. Every tile the editor shows is here, so a mode
-// article's picker is the picker the reader has in front of them.
-export const MODES = [
-  { key: 'select', label: 'Select', Glyph: SelectGlyph },
-  { key: 'hand', label: 'Hand', Glyph: HandGlyph },
-  { key: 'eraser', label: 'Eraser', Glyph: EraserGlyph },
-  { key: 'painter', label: 'Painter', Glyph: PainterGlyph },
-  { key: 'laser', label: 'Laser', Glyph: LaserGlyph },
-  { key: 'spotlight', label: 'Spot', Glyph: SpotlightGlyph },
-  { key: 'avatar', label: 'Walk', Glyph: AvatarGlyph },
-  { key: 'slide-deck', label: 'Deck', Glyph: SlideDeckGlyph },
-  { key: 'isometric', label: 'Iso', Glyph: IsometricGlyph },
-  { key: 'zen', label: 'Zen', Glyph: ZenGlyph },
-] as const;
-
-export type ModeKey = (typeof MODES)[number]['key'];
-
-// --- Shared mode-row --------------------------------------------------------
-
-/** The palette's tool-picker row: a horizontal strip of mode tiles with the
- *  active one brand-filled. Reused at the top of every mode scene so each
- *  article shows the same picker with its own tool lit. `x`/`y` place the row;
- *  `active` lights the matching tile. */
-export function ModeRow({
-  x = 24,
-  y = 20,
-  active,
-  title = true,
-}: {
-  x?: number;
-  y?: number;
-  active: ModeKey;
-  title?: boolean;
-}) {
-  const gap = 34;
-  const tilesW = MODES.length * gap - (gap - 26);
-  const panelW = tilesW + 28;
-  const labelGap = title ? 26 : 0;
-  return (
-    <Panel x={x} y={y} w={panelW} h={43 + labelGap} title={title ? 'PALETTE' : undefined}>
-      {MODES.map((m, i) => {
-        const on = m.key === active;
-        const tx = x + 14 + i * gap;
-        const ty = y + labelGap + 7;
-        return (
-          <Tile key={m.key} x={tx} y={ty} active={on}>
-            <m.Glyph on={on} />
-          </Tile>
-        );
-      })}
-    </Panel>
   );
 }
 

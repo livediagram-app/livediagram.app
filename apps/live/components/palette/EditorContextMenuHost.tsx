@@ -4,7 +4,13 @@ import { useCallback } from 'react';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
-import { DEFAULT_MIND_FLOW, isMindNode, mindFlowOf, resolveLayerId } from '@livediagram/document';
+import {
+  DEFAULT_MIND_FLOW,
+  isMindNode,
+  logoPageAt,
+  mindFlowOf,
+  resolveLayerId,
+} from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
@@ -106,6 +112,7 @@ export function EditorContextMenuHost() {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    unlinkChartSelected,
     setLineDataOpenForId,
     setCodeEditOpenForId,
     setCodeWrapSelected,
@@ -141,10 +148,10 @@ export function EditorContextMenuHost() {
     previewArrowPreset,
     clearStylePreview,
     resetArrowStyleSelected,
-    commitAnimation,
+    commitSetAnimation,
     commitArrowFlow,
     commitIconAnimation,
-    previewAnimation,
+    previewSetAnimation,
     previewArrowFlow,
     previewIconAnimation,
     setIconAnimationSpeedSelected,
@@ -152,15 +159,20 @@ export function EditorContextMenuHost() {
     setProgressAnimSelected,
     setProgressAnimSpeedSelected,
     setProgressAnimRepeatSelected,
-    setAnimationSpeedSelected,
+    setSetAnimationSpeedSelected,
     setFlowSpeedSelected,
-    setAnimationRepeatSelected,
+    setSetAnimationRepeatSelected,
     setIconAnimationRepeatSelected,
     setFlowRepeatSelected,
     resetColorsSelected,
     toggleTextStyleSelected,
     commitTextSize,
     previewTextSize,
+    commitWordmark,
+    previewWordmark,
+    illustratePages,
+    canCombine,
+    combineSelected,
     commitFont,
     previewFont,
     commitPadding,
@@ -226,6 +238,16 @@ export function EditorContextMenuHost() {
   );
   const selectionLayerId = ctxLayerIds.size === 1 ? [...ctxLayerIds][0]! : null;
 
+  // Wordmark type is offered for a text element whose centre is on a logo page
+  // (docs/specs/007-editor/logo-pages.md "Wordmark type").
+  const wordmarkOffered =
+    !!illustratePages &&
+    ctxSelectedEl?.type === 'text' &&
+    !!logoPageAt(illustratePages.pages, {
+      x: ctxSelectedEl.x + ctxSelectedEl.width / 2,
+      y: ctxSelectedEl.y + ctxSelectedEl.height / 2,
+    });
+
   return (
     <EditorContextMenu
       // Remount when the menu changes target: a right-click on a DIFFERENT
@@ -262,7 +284,8 @@ export function EditorContextMenuHost() {
       // "bring to front" means "over the note it overlaps".
       onCutElement={() => {
         copySelection();
-        deleteSelected();
+        // A Cut keeps the sheets of its Sheets for the paste: it never asks (sheet-store.md "Deleting a sheet").
+        deleteSelected({ cut: true });
       }}
       onCopyElement={copySelection}
       onDuplicateElement={duplicateSelected}
@@ -327,6 +350,7 @@ export function EditorContextMenuHost() {
       onSetPieAnimRepeat={setPieAnimRepeatSelected}
       onSetChartLegend={setChartLegendSelected}
       onSetChartLegendPosition={setChartLegendPositionSelected}
+      onUnlinkChart={unlinkChartSelected}
       onEditLineData={setLineDataOpenForId}
       onEditCodeBlock={setCodeEditOpenForId}
       onSetCodeWrap={setCodeWrapSelected}
@@ -376,10 +400,10 @@ export function EditorContextMenuHost() {
       onApplyChartPalette={commitChartPalette}
       onPreviewChartPalette={previewChartPalette}
       onResetArrowStyle={resetArrowStyleSelected}
-      onSetAnimation={commitAnimation}
+      onSetSetAnimation={commitSetAnimation}
       onSetArrowFlow={commitArrowFlow}
       onSetIconAnimation={commitIconAnimation}
-      onPreviewAnimation={previewAnimation}
+      onPreviewSetAnimation={previewSetAnimation}
       onPreviewArrowFlow={previewArrowFlow}
       onPreviewIconAnimation={previewIconAnimation}
       onAnimationPreviewEnd={clearStylePreview}
@@ -388,9 +412,9 @@ export function EditorContextMenuHost() {
       onSetProgressAnim={setProgressAnimSelected}
       onSetProgressAnimSpeed={setProgressAnimSpeedSelected}
       onSetProgressAnimRepeat={setProgressAnimRepeatSelected}
-      onSetAnimationSpeed={setAnimationSpeedSelected}
+      onSetSetAnimationSpeed={setSetAnimationSpeedSelected}
       onSetFlowSpeed={setFlowSpeedSelected}
-      onSetAnimationRepeat={setAnimationRepeatSelected}
+      onSetSetAnimationRepeat={setSetAnimationRepeatSelected}
       onSetIconAnimationRepeat={setIconAnimationRepeatSelected}
       onSetFlowRepeat={setFlowRepeatSelected}
       onResetColors={resetColorsSelected}
@@ -400,6 +424,13 @@ export function EditorContextMenuHost() {
       onToggleTextStrikethrough={() => toggleTextStyleSelected('textStrikethrough')}
       onSetTextSize={commitTextSize}
       onPreviewTextSize={previewTextSize}
+      wordmarkOffered={wordmarkOffered}
+      onCombine={canCombine() ? (op) => void combineSelected(op) : undefined}
+      onMirrorCopy={
+        illustratePages?.logo?.canMirrorCopy() ? illustratePages.logo.mirrorCopy : undefined
+      }
+      onSetWordmark={commitWordmark}
+      onPreviewWordmark={previewWordmark}
       onSetFont={commitFont}
       onPreviewFont={previewFont}
       onSetPadding={commitPadding}

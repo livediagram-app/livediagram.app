@@ -1,6 +1,6 @@
 # Progress elements
 
-Two canvas elements for showing a 0–100 percentage: a **horizontal progress bar** and a **donut progress ring**. They're added from the floating palette's **Data** category (captions "Progress" and "Donut", [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)) and behave like any other shape (move, resize, colour, copy, format-paint, theme).
+Two canvas elements for showing a 0–100 percentage: a **horizontal progress bar** and a **donut progress ring**. They're added from the palette's **Data** category (captions "Progress" and "Donut", [Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)) and behave like any other shape (move, resize, colour, copy, format-paint, theme).
 
 ## Model
 
@@ -31,6 +31,6 @@ Colours map to the existing controls: the **fill colour** is the track, the **st
 A **Progress** section inside the menu's **Tools** flyout (only for progress shapes; they are excluded from the **Shape** morph grid, which would drop the `progress` field) offers:
 
 - a **Percentage** slider (0–100, mirrors the Opacity row), and
-- **Fill animation** tiles: None / Fill / Pulse / Stripes (`ProgressAnimKindGlyph`); once an animation is picked, a **Speed** row (Slowest / Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
+- **Fill animation** tiles: None / Fill / Pulse / Stripes (live miniatures of a progress bar, `ProgressAnimPreview`); once an animation is picked, a **Speed** row (Slowest / Slow / Normal / Fast) and a **Repeat** toggle appear beneath it.
 
 Setters `setProgressSelected` / `setProgressAnimSelected` / `setProgressAnimSpeedSelected` / `setProgressAnimRepeatSelected` (`useDataShapeSetters`, exposed through `useElementStyle`) apply to every selected progress shape; changes emit `track('Element', 'Changed', 'Progress' | 'ProgressAnim')`.

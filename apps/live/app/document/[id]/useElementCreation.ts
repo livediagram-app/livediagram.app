@@ -1,4 +1,10 @@
-import { freshBoardSetup, isPlanViewId, planBoardWidthFor, planViewSize } from '@livediagram/items';
+import {
+  freshBoardSetup,
+  isPlanViewId,
+  planBoardHeightFor,
+  planBoardWidthFor,
+  planViewSize,
+} from '@livediagram/items';
 import { SHAPE_DEFAULT_SIZE } from '@livediagram/document';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
@@ -13,6 +19,7 @@ import {
   createText,
   type BoxedElement,
   type Element,
+  type LaidOutPage,
   defaultSessionConfig,
   REACTION_PAD_LABEL,
   type EstimateScale,
@@ -30,6 +37,7 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
+import { isPlacedSheetStart, placeNewSheet } from '@/lib/sheet-seeds';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -39,12 +47,14 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
 // addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
 // so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
-// A board placed from the palette: its preset, empty, at least as wide as its columns need.
+// A board placed from the palette: its preset, empty, at least as wide as its columns need, and taller while it
+// has no columns yet (planBoardHeightFor).
 function planBoardPlacement(preset: string | undefined) {
   const planBoard = freshBoardSetup(preset);
   return {
     planBoard,
     width: Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard)),
+    height: planBoardHeightFor(planBoard),
   };
 }
 
@@ -88,6 +98,9 @@ export function useElementCreation(opts: {
   // A palette card never lands on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): it goes
   // into the board column at the point, or nowhere.
   onPlanCardPlace?: (itemType: string | undefined, canvasX: number, canvasY: number) => void;
+  // Illustrate mode's laid-out pages: a click-to-connect arrow never joins two pages
+  // (docs/specs/007-editor/illustrate-pages.md "Arrows stay on one page"). Null outside it.
+  pages?: readonly LaidOutPage[] | null;
 }) {
   const {
     editsBlocked,
@@ -103,6 +116,7 @@ export function useElementCreation(opts: {
     beginDraw,
     styleNewElement,
     onPlanCardPlace,
+    pages,
   } = opts;
 
   // Telemetry for these arming handlers fires on commit (see
@@ -307,6 +321,7 @@ export function useElementCreation(opts: {
     beginDraw,
     commitTabs,
     styleNewElement,
+    pages,
   });
 
   // Drag-from-palette drop (docs/specs/008-canvas/canvas-and-palette.md): place the dragged kind centred on the
@@ -425,6 +440,14 @@ export function useElementCreation(opts: {
               // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
               ...(kind === 'plan-board' ? planBoardPlacement(art?.choice) : {}),
               ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
+              // A Sheet names a new sheet (docs/specs/029-sheets/sheet.md "Placing a sheet").
+              ...(kind === 'plan-sheet'
+                ? {
+                    planSheet: placeNewSheet(
+                      isPlacedSheetStart(art?.choice) ? { start: art.choice } : {},
+                    ),
+                  }
+                : {}),
             },
       // Shapes and icons open for typing too; takesTypedLabel filters out the
       // kinds whose face isn't text (stickers, session buttons, ...).

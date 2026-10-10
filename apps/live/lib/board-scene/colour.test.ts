@@ -47,10 +47,13 @@ describe('resolveSceneColour', () => {
     // Pastels are washes, never stock line colours.
     ['#a5d8ff', { kind: 'hex', hex: '#a5d8ff' }],
     ['#ffdf6b', { kind: 'hex', hex: '#ffdf6b' }],
+    // A yellow as light as a pastel, yet not stock Yellow's own version, keeps its hex.
+    ['#fdca05', { kind: 'hex', hex: '#fdca05' }],
   ])('%s resolves as %o', (hex, expected) => {
     expect(resolve({ hex })).toEqual(expected);
   });
 
+  // Stock Yellow's dark-board version is lighter than the band a line colour is read in.
   it('matches every stock colour’s own versions to itself', () => {
     for (const name of PEN_COLOUR_NAMES) {
       for (const board of ['light', 'dark'] as const) {
@@ -97,7 +100,7 @@ describe('the import rule beside the snap rule', () => {
     ['#0c8599', 'hex', 'teal'],
     ['#099268', 'hex', 'green'],
     ['#a5d8ff', 'hex', 'blue'],
-    ['#ffdf6b', 'hex', 'orange'],
+    ['#ffdf6b', 'hex', 'yellow'],
   ])('%s: import %s, snap %s', (hex, imported, snapped) => {
     expect(importOf(hex)).toBe(imported);
     expect(nearestPenColour(hex)).toBe(snapped);

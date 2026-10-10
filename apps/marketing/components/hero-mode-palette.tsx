@@ -1,22 +1,30 @@
 // What the hero's Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
 // "The palette per mode"): the mode's glyph and name for its switch, then Diagram's and
-// Illustrate's Popular tiles, and Draw's own drawing tools in place of the palette. At the mock's
+// Illustrate's Popular tiles, Draw's own drawing tools in place of the palette, and Plan's card types and boards. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
 
-import { lucideChartColumn, lucideChartPie, lucideMessageSquare } from '@livediagram/icons/lucide';
+import {
+  lucideChartColumn,
+  lucideChartPie,
+  lucideListTodo,
+  lucideMessageSquare,
+  lucideSquareKanban,
+  lucideVote,
+} from '@livediagram/icons/lucide';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
 import { EDITOR_MODE_ICONS, Glyph, MarkerIcon, Prims, type IconProps } from '@livediagram/ui';
 import type { ComponentType, ReactNode } from 'react';
 import { Shape } from './hero-illustration-glyphs';
 
-export type HeroMode = 'diagram' | 'draw' | 'illustrate';
+export type HeroMode = 'diagram' | 'draw' | 'illustrate' | 'plan';
 
 // Each mode's name and its glyph, the editor's own (EDITOR_MODE_ICONS).
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
   diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
   draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
   illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
+  plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
 };
 
 type Tile = { key: string; glyph: ReactNode; active?: boolean };
@@ -107,8 +115,31 @@ const ILLUSTRATE_TILES: Tile[] = [
   { key: 'stat', glyph: <Shape kind="pill" /> },
 ];
 
+// A card type's tile: a card with its type's colour stripe.
+function CardTile({ colour }: { colour: string }) {
+  return (
+    <Glyph size={14}>
+      <rect x="2" y="4" width="12" height="8" rx="1.5" />
+      <path d="M3.25 4.75v6.5" stroke={colour} strokeWidth="2" />
+    </Glyph>
+  );
+}
+
+// Plan's Cards category (docs/specs/026-plan/plan-mode.md "The palette"): one tile per card type, then the
+// boards. Plan has no Popular; its strip opens on Cards.
+const PLAN_TILES: Tile[] = [
+  { key: 'task', glyph: <CardTile colour="#0ea5e9" />, active: true },
+  { key: 'bug', glyph: <CardTile colour="#ef4444" /> },
+  { key: 'idea', glyph: <CardTile colour="#f59e0b" /> },
+  { key: 'project', glyph: <CardTile colour="#8b5cf6" /> },
+  { key: 'kanban', glyph: <Lucide prims={lucideSquareKanban} /> },
+  { key: 'list', glyph: <Lucide prims={lucideListTodo} /> },
+  { key: 'votes', glyph: <Lucide prims={lucideVote} /> },
+];
+
 export const MODE_TILES: Record<HeroMode, Tile[]> = {
   diagram: DIAGRAM_TILES,
   draw: DRAW_TILES,
   illustrate: ILLUSTRATE_TILES,
+  plan: PLAN_TILES,
 };

@@ -17,13 +17,15 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   ALL_CTA_SOURCES,
+  ALL_TIMING_TYPES,
   COMMUNITY_CATEGORIES,
   COMMUNITY_REPORT_REASONS,
   PLACEMENT_DEFAULT_KEYS,
+  SHEET_CHANGE_KINDS,
   pascalToken,
   placementDefaultTelemetryType,
 } from '@livediagram/api-schema';
-import { countedVerbs } from '@livediagram/agent-verbs';
+import { countedVerbs, SYNC_WATCH_TYPE } from '@livediagram/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from './event-vocab';
 
@@ -59,8 +61,8 @@ const DRIVE_OPEN_WITH_TYPES = tokensAfter(
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
-// The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
-const CLI_VERBS = countedVerbs().map((v) => pascalToken(v.id));
+// The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types, and `sync --watch`'s own.
+const CLI_VERBS = [...countedVerbs().map((v) => pascalToken(v.id)), SYNC_WATCH_TYPE];
 
 // Each tool the MCP server registers, from its verb (packages/agent-verbs mcp-tools.ts), as pascalToken(name).
 const MCP_TOOLS = MCP_TOOL_VERBS.map((v) => pascalToken(v.mcp.tool));
@@ -164,7 +166,9 @@ const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
 const PLAN_SETUP_PARTS = [
   'Title',
+  'BoardSetUp',
   'ColumnAdded',
+  'ColumnAddedExisting',
   'ColumnRenamed',
   'ColumnReordered',
   'ColumnRemoved',
@@ -176,6 +180,7 @@ const PLAN_SETUP_PARTS = [
   'Scope',
   'CardFields',
   'CardSize',
+  'PlanCardSize',
   'AddTypes',
   'Widgets',
   'Voting',
@@ -283,6 +288,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: ELEMENT_WHY,
   },
   'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
+  // article from the page toolbar's Insert or the slash menu.
+  'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
+    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+  },
+  'apps/live/components/canvas/article/ArticleEditor.tsx Element·Added': {
+    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+  },
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
@@ -323,6 +336,29 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: PLAN_TYPE_WHY,
   },
   'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
+  // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
+  'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
+    values: [
+      'BoardMaximised',
+      'ViewMaximised',
+      'SheetMaximised',
+      'BoardRestored',
+      'ViewRestored',
+      'SheetRestored',
+    ],
+  },
+  // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
+  'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
+    values: [...SHEET_CHANGE_KINDS],
+  },
+  // A Sheet set up from Setup Sheet names how it started (SheetSetup.tsx TELEMETRY).
+  'apps/live/components/sheets/SheetSetup.tsx Sheet·Created': {
+    values: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv'],
+  },
+  'apps/live/components/sheets/useSheetActions.ts Sheet·Used': {
+    values: ['SUM', 'AVERAGE', 'IF', 'VLOOKUP', 'CARDCOUNT'],
+    open: "a function's name, from the Sheet's closed function list (packages/sheets FUNCTION_NAMES)",
+  },
   // An item opened: `Item` from a board or a list, or how the item panel moved to it (item-trail.ts ItemOpenVia).
   'apps/live/hooks/plan/usePlanSlice.ts Plan·Opened': {
     values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],
@@ -386,6 +422,26 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: SLUGS,
     open: SLUG_WHY,
   },
+  // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
+  // the load named by its error.
+  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
+    values: [
+      'DocumentLoad.TimedOut.Identity',
+      'DocumentLoad.TimedOut.Participant',
+      'DocumentLoad.TimedOut.Document',
+      'DocumentLoad.TimedOut.Share',
+      'DocumentLoad.TimedOut.FirstTab',
+      'DocumentLoad.AutoReload',
+      'DocumentLoad.Late',
+    ],
+  },
+  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
+    values: ['DocumentLoad.TypeError', 'DocumentLoad.Error'],
+    open: 'DocumentLoad.<ErrorName>',
+  },
+  'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
+    values: ['OfflineStore.Unavailable', 'SessionToken.TimedOut'],
+  },
   'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Api': {
     values: API_ERRORS,
     open: API_ERROR_WHY,
@@ -412,6 +468,24 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  'apps/live/hooks/editor/useLogoTools.ts UI·Toggled': {
+    values: [
+      'LogoGuidesOn',
+      'LogoGuidesOff',
+      'LogoMirrorOn',
+      'LogoMirrorOff',
+      ...['CentreLines', 'Diagonals', 'SafeArea', 'Circles', 'Square', 'Grid'].flatMap((p) => [
+        `LogoGuide${p}On`,
+        `LogoGuide${p}Off`,
+      ]),
+    ],
+  },
+  'apps/live/hooks/editor/useLogoTools.ts UI·Changed': {
+    values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
+  },
+  'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
+    values: ['TextTracking', 'TextWeight', 'TextCase', 'TextArc'],
+  },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
@@ -429,4 +503,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
   'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
+  // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web
+  // Vitals go through the one reportTiming, so this one site sends every metric in every bucket.
+  'packages/telemetry-client/src/timing.ts Timing·Measured': { values: ALL_TIMING_TYPES },
 };

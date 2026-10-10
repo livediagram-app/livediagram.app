@@ -88,3 +88,51 @@ describe('useCanvasPinchZoom view', () => {
     expect(viewport.get().offset).toEqual({ x: -20, y: -20 });
   });
 });
+
+// An element that scrolls sideways itself (the Gantt timeline) keeps a sideways or Shift wheel.
+describe('useCanvasPinchZoom and a sideways scroller', () => {
+  it('leaves a sideways or Shift wheel to it, and still pans on a vertical one', () => {
+    setup();
+    const timeline = document.createElement('div');
+    timeline.setAttribute('data-own-wheel-x', '');
+    canvas.append(timeline);
+    const on = (init: WheelEventInit) =>
+      act(() => {
+        timeline.dispatchEvent(
+          new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init }),
+        );
+      });
+    on({ deltaX: 30, deltaY: 0 });
+    on({ deltaY: 30, shiftKey: true });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
+    on({ deltaX: 0, deltaY: 30 });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: 0, y: -30 });
+  });
+});
+
+// A Sheet's grid or a board's body scrolls itself: a plain wheel there is theirs, but a Ctrl or Cmd wheel still zooms
+// the canvas.
+describe('useCanvasPinchZoom over an element that scrolls', () => {
+  it('leaves a plain wheel to it and zooms on a Ctrl or Cmd wheel', () => {
+    setup();
+    const grid = document.createElement('div');
+    grid.style.overflowY = 'auto';
+    Object.defineProperty(grid, 'scrollHeight', { value: 900 });
+    Object.defineProperty(grid, 'clientHeight', { value: 300 });
+    canvas.append(grid);
+    const on = (init: WheelEventInit) =>
+      act(() => {
+        grid.dispatchEvent(new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init }));
+      });
+    on({ deltaY: 30 });
+    act(() => vi.advanceTimersByTime(20));
+    expect(viewport.get().offset).toEqual({ x: 0, y: 0 });
+    on({ deltaY: -40, ctrlKey: true });
+    expect(viewport.get().zoom).toBeGreaterThan(1);
+    const z = viewport.get().zoom;
+    on({ deltaY: -40, metaKey: true });
+    expect(viewport.get().zoom).toBeGreaterThan(z);
+  });
+});

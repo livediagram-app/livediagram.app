@@ -1,11 +1,12 @@
 import { usePlan } from '@/components/plan/PlanContext';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
 import { FormatIcon } from './export-format-icons';
 import { TextExportPanel } from './TextExportPanel';
 import { ImageExportPanel } from './ImageExportPanel';
+import { LogoKitPanel } from './LogoKitPanel';
 import {
   isLayerVisible,
   tabLayers,
@@ -14,6 +15,7 @@ import {
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
+  type TabPlanData,
 } from '@livediagram/document';
 import {
   downloadBlob,
@@ -46,6 +48,7 @@ const EXPORT_LABEL: Record<Format, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
+  'logo-kit': 'LogoKit',
 };
 
 // An Illustrate tab's pages exported (docs/specs/007-editor/illustrate-pages.md "Telemetry"): one
@@ -95,7 +98,16 @@ type ExportTabDialogProps = {
   pages?: LaidOutPage[];
 };
 
-export type Format = 'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file';
+export type Format =
+  | 'markdown'
+  | 'mermaid'
+  | 'excalidraw'
+  | 'pdf'
+  | 'png'
+  | 'svg'
+  | 'file'
+  // A logo page's kit (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one.
+  | 'logo-kit';
 
 // The four text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -143,17 +155,28 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
   },
+  {
+    kind: 'logo-kit',
+    title: 'Logo Kit',
+    description: 'An SVG, PNGs from 16 to 1024 px and a favicon.ico, in one .zip.',
+  },
 ];
 
 // Per-text-format panel config: the blurb, the download button label + file
 // extension + mime, and how to serialise the tab to the editable text.
 const TEXT_PANELS: Record<
   TextFormat,
-  { blurb: string; downloadLabel: string; ext: string; mime: string; getText: (tab: Tab) => string }
+  {
+    blurb: string;
+    downloadLabel: string;
+    ext: string;
+    mime: string;
+    getText: (tab: Tab, plan?: TabPlanData) => string;
+  }
 > = {
   file: {
     blurb:
-      "This tab as a livediagram JSON export. Edit it here to copy a variant — your edits don't change the tab.",
+      "This tab as a livediagram JSON export. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .json',
     ext: 'livediagram-tab.json',
     mime: 'application/json',
@@ -161,15 +184,15 @@ const TEXT_PANELS: Record<
   },
   mermaid: {
     blurb:
-      "This tab as a Mermaid flowchart. Edit it here to copy a variant — your edits don't change the tab.",
+      "This tab as a Mermaid flowchart. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .mmd',
     ext: 'mmd',
     mime: 'text/plain',
-    getText: mermaidFromTab,
+    getText: (tab) => mermaidFromTab(tab),
   },
   markdown: {
     blurb:
-      "This tab as a Markdown outline. Edit it here to copy a variant — your edits don't change the tab.",
+      "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .md',
     ext: 'md',
     mime: 'text/markdown',
@@ -201,6 +224,22 @@ export function ExportTabDialog({
 }: ExportTabDialogProps) {
   // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
   const plan = usePlan();
+  // Keyed on the items and types alone: the context value also changes with presence and the open item.
+  const planItems = plan?.items;
+  const planTypes = plan?.types;
+  const planCatalogue = plan?.itemTypes.catalogue ?? null;
+  const planOpts = useMemo(
+    () => (planItems ? { items: planItems, itemTypes: planTypes } : {}),
+    [planItems, planTypes],
+  );
+  // The text formats' view of the same (docs/specs/026-plan/items.md "Copies and exports").
+  const planData = useMemo<TabPlanData | undefined>(
+    () =>
+      planItems && planTypes
+        ? { items: planItems, types: planTypes, catalogue: planCatalogue }
+        : undefined,
+    [planItems, planTypes, planCatalogue],
+  );
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
@@ -219,12 +258,15 @@ export function ExportTabDialog({
   // All pages or One page, per format: each starts where DEFAULT_PAGE_SCOPE puts it.
   const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
   const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
+  // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
+  const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? ILLUSTRATE_FORMATS.map((kind) => {
+    ? [...ILLUSTRATE_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: ILLUSTRATE_CARD_COPY[kind] ?? card.description };
       })
-    : CARDS;
+    : // Off Illustrate there are no pages, so no logo page: never the Logo Kit.
+      CARDS.filter((c) => c.kind !== 'logo-kit');
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -261,13 +303,29 @@ export function ExportTabDialog({
     };
   }, [active, tab, imageContext]);
 
+  // The open text format's text, built once per format, tab and item change rather than on every render: a JSON
+  // export with a full item store is up to 2,000 cards. The panel reads it only as its starting text.
+  const activeText = useMemo(
+    () => (active && isTextFormat(active) ? TEXT_PANELS[active].getText(tab, planData) : ''),
+    [active, tab, planData],
+  );
+
+  // A page's PNG and SVG leave a logo page's plain paper see-through (exportPages), so their
+  // preview does too, over a checkerboard; a PDF page always has its paper.
+  const seeThrough = !!page && (active === 'png' || active === 'svg');
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
-      renderTabToSvg(tab, { ...opts, images: previewImages, page }),
-    [tab, previewImages, page],
+      renderTabToSvg(tab, {
+        ...opts,
+        images: previewImages,
+        page,
+        ...(seeThrough ? { transparentPaper: true } : {}),
+        ...planOpts,
+      }),
+    [tab, previewImages, page, seeThrough, planOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -291,7 +349,7 @@ export function ExportTabDialog({
         ...opts,
         images,
         page,
-        ...(plan ? { items: plan.items, itemTypes: plan.types } : {}),
+        ...planOpts,
       };
       if (pages && page) {
         const pageScope = scopeOf(format);
@@ -335,9 +393,11 @@ export function ExportTabDialog({
 
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
-    ? isTextFormat(active!)
-      ? `Copy this tab as ${activeCard.title}, or download a file.`
-      : `Set the image options for ${activeCard.title}, then download.`
+    ? active === 'logo-kit'
+      ? 'Download a logo page as an SVG, PNGs and a favicon.'
+      : isTextFormat(active!)
+        ? `Copy this tab as ${activeCard.title}, or download a file.`
+        : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -360,7 +420,7 @@ export function ExportTabDialog({
         {active && isTextFormat(active) ? (
           <TextExportPanel
             formatTitle={CARDS.find((c) => c.kind === active)?.title ?? ''}
-            initialText={TEXT_PANELS[active].getText(tab)}
+            initialText={activeText}
             blurb={TEXT_PANELS[active].blurb}
             downloadLabel={TEXT_PANELS[active].downloadLabel}
             onDownload={(text) => {
@@ -369,6 +429,17 @@ export function ExportTabDialog({
               track('Document', 'Exported', EXPORT_LABEL[active]);
             }}
             onCopied={() => track('Document', 'Exported', EXPORT_LABEL[active])}
+            onBack={() => setActive(null)}
+          />
+        ) : active === 'logo-kit' && pages ? (
+          <LogoKitPanel
+            tab={tab}
+            pages={pages}
+            documentName={documentName}
+            images={previewImages}
+            imagesReady={previewReady}
+            imageContext={imageContext}
+            onDone={onClose}
             onBack={() => setActive(null)}
           />
         ) : active ? (
@@ -389,8 +460,11 @@ export function ExportTabDialog({
             pageExport={!!pages}
             busy={busy}
             error={error}
+            checkerboard={seeThrough && page?.kind === 'logo'}
+            // Illustrate mode has no Layers, so no "Hidden layers" option: hidden layers stay
+            // out, as they stay off its canvas.
             hasHiddenLayers={
-              offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+              !pages && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
             previewReady={previewReady}

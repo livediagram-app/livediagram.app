@@ -1,20 +1,18 @@
 // `pull <doc> [--to <dir>] [--svg]` (docs/specs/015-api/blueprints/cli.md "Pull and push", CLI27): the document and
 // every tab with its revision, written as a pull file, each tab kept as a read copy; `--svg` adds a drawing per tab.
 
-import { documentOf, readPlainTab, tabPath, type VerbContext } from '@livediagram/agent-verbs';
+import { resolveDocument, tabPath, type VerbContext } from '@livediagram/agent-verbs';
 import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livediagram/document';
 import type { CliIo } from '../io';
-import { CliError } from '../output/cli-error';
-import { EXIT } from '../output/exit-codes';
 import {
   fileSlug,
   idSlug,
   parsePullFile,
   PULL_FILE_SUFFIX,
   pullFileText,
-  tabHashes,
   type PullFile,
 } from '../sync/pull-file';
+import { readDocumentSnapshot } from './snapshot';
 
 export type PullInput = { doc: string; to?: string; svg?: boolean };
 
@@ -37,22 +35,9 @@ export async function pullDocument(
   ctx: VerbContext,
   input: PullInput,
 ): Promise<{ paths: string[] }> {
-  const document = await documentOf(ctx, input.doc);
-  const ordered = [...document.tabs].sort((a, b) => a.orderIndex - b.orderIndex);
-  const tabs: PullFile['document']['tabs'] = [];
-  const pulled: PullFile['livediagramSync']['tabs'] = {};
-  for (const summary of ordered) {
-    const copy = await readPlainTab(ctx, document.id, summary.id);
-    if (!copy)
-      throw new CliError({
-        exit: EXIT.failure,
-        code: 'no_revision',
-        message: `the host named no revision for tab ${JSON.stringify(summary.name)}`,
-      });
-    await ctx.copies?.record(document.id, summary.id, copy);
-    tabs.push({ ...copy.tab, ...(summary.folder ? { folder: summary.folder } : {}) });
-    pulled[summary.id] = { rev: copy.rev, ...(await tabHashes(copy.tab)) };
-  }
+  const resolved = await resolveDocument(ctx.api, input.doc, ctx.host, ctx.log);
+  if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
+  const { document, tabs, pulled } = await readDocumentSnapshot(ctx, resolved.id);
   const dir = input.to ?? io.cwd;
   await io.files.mkdir(dir);
   const { path, slug } = await pullPath(io, dir, document);
@@ -60,7 +45,7 @@ export async function pullDocument(
     kind: DOCUMENT_ENVELOPE_KIND,
     schemaVersion: DOCUMENT_SCHEMA_VERSION,
     exportedAt: ctx.now(),
-    document: { id: document.id, name: document.name, presentation: document.presentation, tabs },
+    document: { ...document, tabs },
     livediagramSync: { host: ctx.host, pulledAt: ctx.now(), tabs: pulled },
   };
   await io.files.write(path, pullFileText(file));

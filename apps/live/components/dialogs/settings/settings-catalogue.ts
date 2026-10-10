@@ -5,10 +5,7 @@ import {
   autoRebindArrowsEnabled,
   showProfilePictureEnabled,
   panelEnabled,
-  resolvePanelLayout,
-  withPanelLayout,
   type MapSize,
-  type PanelLayout,
   type PanelSwitch,
   type UserPreferences,
 } from '@/lib/user-preferences';
@@ -37,6 +34,14 @@ import {
   type WhiteboardDockPosition,
 } from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from './settings-illustrations';
+import {
+  LOGO_GUIDE_PARTS,
+  readLogoGuideParts,
+  readLogoGuideStrength,
+  withLogoGuidePart,
+  type LogoGuidePart,
+  type LogoGuideStrength,
+} from '@/lib/logo-guide-prefs';
 import type { PlacementDefaultKey } from '@livediagram/api-schema';
 import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entries';
 import {
@@ -44,6 +49,26 @@ import {
   CLOUD_SYNC_SECTION,
   type CloudSyncProviderId,
 } from '@/lib/cloud-sync/providers';
+
+// One logo guide's row (docs/specs/007-editor/logo-pages.md "Construction guides"): shown or
+// hidden, in Settings > Editor > Illustrate as in the logo page's panel.
+function logoGuidePartRow(
+  part: LogoGuidePart,
+  row: Pick<SettingsToggleRowSpec, 'kind' | 'event'>,
+): SettingsToggleRowSpec {
+  const label = LOGO_GUIDE_PARTS.find((p) => p.id === part)!.label;
+  return {
+    ...row,
+    key: `logoGuide-${part}`,
+    keywords: `logo guides ${label.toLowerCase()} construction`,
+    label: `Logo ${label}`,
+    description: `Shows the ${label.toLowerCase()} among a logo page's construction guides.`,
+    helpArticle: 'logoPages',
+    alsoIn: "a logo page's panel",
+    read: (p) => readLogoGuideParts(p).has(part),
+    write: (p, v) => withLogoGuidePart(p, part, v),
+  };
+}
 
 // The Settings dialog as DATA: the categories, and per category the rows
 // (docs/specs/007-editor/user-preferences.md). The dialog used to spell every row out as JSX inside one
@@ -86,6 +111,8 @@ export type SettingsRowContext = {
   preferences?: UserPreferences;
   // Cloud Sync providers the deployment offers (docs/specs/022-drive-mirror/drive-mirror.md).
   cloudProviders?: readonly CloudSyncProviderId[];
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+  workbench?: boolean;
 };
 
 type RowBase = {
@@ -140,13 +167,8 @@ export type SettingsToggleRowSpec = RowBase & {
 
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
-  // `desktopOnly` options are shown but can't be picked on a phone-sized
-  // viewport, with a note saying so (the panel layouts: a phone is always
-  // docked, docs/specs/007-editor/toolbar-layout.md).
-  options: { id: string; label: string; desktopOnly?: boolean }[];
-  // `mobile` asks for the value a phone shows, which can differ when the
-  // stored one is desktop only (Floating shows as Toolbar there).
-  read: (prefs: UserPreferences, view?: { mobile?: boolean }) => string;
+  options: { id: string; label: string }[];
+  read: (prefs: UserPreferences) => string;
   write: (prefs: UserPreferences, next: string) => UserPreferences;
   // Choices fire one 'Changed' event naming the setting, not the value ,
   // matching what the Map popover already emits.
@@ -412,7 +434,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: the Toolbar layout, alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -464,7 +486,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
         label: 'Dock Position',
         description:
-          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the Toolbar layout keeps its tools; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
+          "Where Draw mode's dock of pens, shapes and tools sits. Top keeps it where the palette strip sits; Bottom puts it closer to hand when drawing on a tablet. Only Draw mode has a dock, so Diagram mode is unchanged.",
         helpArticle: 'drawMode',
         options: [
           { id: 'top', label: 'Top' },
@@ -474,6 +496,70 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
         event: { category: 'UI', changed: 'WhiteboardDockPosition' },
       },
+    ],
+  },
+  {
+    // Illustrate mode's own settings (docs/specs/007-editor/logo-pages.md "Construction guides").
+    id: 'illustrate',
+    label: 'Illustrate',
+    parent: 'editor',
+    rows: [
+      {
+        kind: 'toggle',
+        key: 'logoGuides',
+        keywords: 'logo guides construction grid keylines safe area centre lines snap artboard',
+        label: 'Logo Guides',
+        description:
+          "Shows a logo page's construction guides: centre lines, keyline circles and square, the safe area and a grid. The keylines snap while they show. A page you switch them on or off for keeps its own choice.",
+        helpArticle: 'logoPages',
+        alsoIn: "a logo page's panel",
+        read: (p) => p.logoGuides !== false,
+        write: (p, v) => ({ ...p, logoGuides: v }),
+        event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
+      },
+      {
+        kind: 'choice',
+        key: 'logoGuideStrength',
+        keywords: 'logo guides strength opacity faint strong contrast',
+        label: 'Logo Guide Strength',
+        description: "How strongly a logo page's construction guides show over the artwork.",
+        helpArticle: 'logoPages',
+        alsoIn: "a logo page's panel",
+        options: [
+          { id: 'faint', label: 'Faint' },
+          { id: 'medium', label: 'Medium' },
+          { id: 'strong', label: 'Strong' },
+        ],
+        read: readLogoGuideStrength,
+        write: (p, v) => ({ ...p, logoGuideStrength: v as LogoGuideStrength }),
+        event: { category: 'UI', changed: 'LogoGuideStrength' },
+      },
+      // One row per guide (docs/specs/007-editor/logo-pages.md "Construction guides"); each event
+      // written out, so the telemetry dashboard reads its tokens.
+      logoGuidePartRow('centre', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideCentreLinesOn', off: 'LogoGuideCentreLinesOff' },
+      }),
+      logoGuidePartRow('diagonals', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideDiagonalsOn', off: 'LogoGuideDiagonalsOff' },
+      }),
+      logoGuidePartRow('safe', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideSafeAreaOn', off: 'LogoGuideSafeAreaOff' },
+      }),
+      logoGuidePartRow('circles', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideCirclesOn', off: 'LogoGuideCirclesOff' },
+      }),
+      logoGuidePartRow('square', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideSquareOn', off: 'LogoGuideSquareOff' },
+      }),
+      logoGuidePartRow('grid', {
+        kind: 'toggle',
+        event: { category: 'UI', on: 'LogoGuideGridOn', off: 'LogoGuideGridOff' },
+      }),
     ],
   },
   {
@@ -509,13 +595,13 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       uiScalePartRow('panels', {
         label: 'Panel Scale',
         keywords: 'panels explorer palette layers popover size bigger smaller zoom',
-        description: 'Every panel, floating or opened from a button, and the Quick Style panel.',
+        description: 'Every panel, docked or opened from a button, and the Quick Style panel.',
         changed: 'UiScalePanels',
       }),
       uiScalePartRow('toolbar', {
         label: 'Toolbar Scale',
         keywords: 'toolbar strip top bar menu button size bigger smaller zoom',
-        description: 'The Toolbar layout’s strip and its menu button.',
+        description: 'The toolbar strip and its menu button.',
         changed: 'UiScaleToolbar',
       }),
       uiScalePartRow('cornerButtons', {
@@ -530,8 +616,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     // The shortcuts master switch first, then every binding it gates. This
     // replaced the Keyboard Shortcuts window and its tab-bar button: the
-    // list and the switch that turns it off belong on one screen, and the
-    // `?` key now opens Settings here.
+    // list and the switch that turns it off belong on one screen. No key
+    // opens it: reach it through Settings.
     id: 'keyboard',
     label: 'Keyboard',
     rows: [
@@ -558,30 +644,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     label: 'Panels',
     rows: [
       {
-        // Two layouts, one choice (docs/specs/007-editor/toolbar-layout.md).
-        kind: 'choice',
-        key: 'panelLayout',
-        keywords: 'compact hide panels layout tidy toolbar strip top bar excalidraw floating',
-        label: 'Panel Layout',
-        description:
-          'Floating shows the Explorer, Palette and other panels over the canvas. Toolbar keeps the floating panels but puts the Palette in one strip across the top of the canvas, and opens the Explorer from a button in the top-left. On a phone, Floating becomes Toolbar.',
-        helpArticle: 'toolbarLayout',
-        illustration: 'panelLayout',
-        options: [
-          { id: 'floating', label: 'Floating', desktopOnly: true },
-          { id: 'toolbar', label: 'Toolbar' },
-        ],
-        read: (p, view) => resolvePanelLayout(p, view),
-        write: (p, v) => withPanelLayout(p, v as PanelLayout),
-        event: { category: 'UI', changed: 'PanelLayout' },
-      },
-      {
         kind: 'slider',
         key: 'panelOpacity',
         keywords: 'transparency translucent fade see through alpha',
         label: 'Panel Opacity',
         description:
-          'Fades every panel, in every layout, so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
+          'Fades every panel and the toolbar so the canvas shows through behind it; a panel snaps back to fully opaque while hovered or focused. Buttons stay opaque.',
         helpArticle: 'panelOpacity',
         min: 0.3,
         max: 1,
@@ -637,7 +705,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'highlight hover layer preview',
         label: 'Preview Layer on Hover',
         description:
-          'Highlights a layer’s elements on the canvas while you hover its row, so you can find what a layer holds without selecting it.',
+          'Shows only that layer on the canvas while you rest on its row, so you can see what a layer holds without selecting it.',
         read: (p) => p.layerHoverPreview !== false,
         write: (p, v) => ({ ...p, layerHoverPreview: v }),
         event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
@@ -799,8 +867,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'starter questions prompts suggestions ai',
         section: 'Assistant',
         label: 'Suggested Prompts',
-        description:
-          'Offers a few starter questions in the AI panel when you have not typed anything yet.',
+        description: 'Shows a row of one-click starter prompts under the AI panel’s mode buttons.',
         read: (p) => p.aiSuggestedPrompts !== false,
         write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
         event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
@@ -1090,13 +1157,30 @@ export function visibleCategories(
   ctx: SettingsRowContext,
 ): SettingsCategorySpec[] {
   return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
+    .filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
     .map((c) => ({
       ...c,
       rows: c.rows.filter(
-        (r) => (!r.available || r.available(ctx)) && parentSwitchOn(c, r, ctx.preferences),
+        (r) =>
+          (!r.available || r.available(ctx)) &&
+          parentSwitchOn(c, r, ctx.preferences) &&
+          // The workbench sets the frame's scheme (WB15), so the frame offers no choice of its own.
+          !(ctx.workbench && r.kind === 'appearance'),
       ),
     }))
     .filter((c) => c.rows.length > 0);
+}
+
+// What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
+// Surface table): the account and everything beyond the one document. A category nested under one
+// goes with it, so nothing is left without its parent.
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+
+function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
+  return (
+    WORKBENCH_HIDDEN_CATEGORIES.has(category.id) ||
+    (category.parent !== undefined && WORKBENCH_HIDDEN_CATEGORIES.has(category.parent))
+  );
 }
 
 // A row nested under a switch (`parent`) is offered only while that switch is
@@ -1120,20 +1204,9 @@ export function settingsCategoryPath(category: SettingsCategorySpec): string {
   return parent ? `${parent.label} › ${category.label}` : category.label;
 }
 
-// A choice row by key, for a surface outside Settings that offers the same
-// choice (the welcome tour's layout picker, docs/specs/007-editor/editor-tour.md) and must read, write
-// and report it exactly as the row does.
-export function choiceRow(key: string): SettingsChoiceRowSpec {
-  for (const c of SETTINGS_CATEGORIES) {
-    const row = c.rows.find((r) => r.key === key);
-    if (row?.kind === 'choice') return row;
-  }
-  throw new Error(`No settings choice row "${key}"`);
-}
-
 // A choice row's telemetry type carries the option picked, as a toggle's
-// carries its new state (docs/specs/017-telemetry/telemetry.md): 'PanelLayout' + 'toolbar' →
-// 'PanelLayoutToolbar', so the dashboard shows which way people moved, not
+// carries its new state (docs/specs/017-telemetry/telemetry.md): 'ElementIndicators' + 'top' →
+// 'ElementIndicatorsTop', so the dashboard shows which way people moved, not
 // just that they touched the setting. Option ids are catalogue constants,
 // never user content.
 export function choiceTelemetryType(changed: string, optionId: string): string {

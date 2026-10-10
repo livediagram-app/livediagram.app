@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  convexityDefects,
-  largestRegion,
-  simplifyClosed,
-  traceOuterContour,
-  type Point,
-} from './contour';
+import { convexityDefects, largestRegion, traceOuterContour, type Point } from './contour';
 
 // Outlines of a blob of paper: the tools that find the NOTCHES where two
 // notes lapped over each other meet. Every shape here is drawn by the test.
@@ -64,17 +58,6 @@ describe('largestRegion', () => {
     expect(kept[2 * c.width + 2]).toBe(0);
     expect(kept[3 * c.width + 10]).toBe(1);
     expect(kept.reduce((a, v) => a + v, 0)).toBe(36);
-  });
-});
-
-describe('simplifyClosed', () => {
-  it('reduces a traced rectangle to its four corners', () => {
-    const c = canvas(30, 20);
-    c.fill(2, 2, 20, 12);
-    const poly = simplifyClosed(traceOuterContour(c.bin, c.width, c.height), 1);
-    expect(poly).toHaveLength(4);
-    const corners = new Set(poly.map((p) => `${p.x},${p.y}`));
-    expect(corners).toEqual(new Set(['2,2', '21,2', '21,13', '2,13']));
   });
 });
 

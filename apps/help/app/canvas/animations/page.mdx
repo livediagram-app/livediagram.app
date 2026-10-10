@@ -6,60 +6,123 @@ import { ElementAnimation } from '@/components/illustrations/element-properties'
 export const metadata = helpMetadata({
   title: 'Animating Elements',
   description:
-    'Add a looping animation to a shape, send flow along an arrow, or animate an icon to convey motion, signal status, and draw the eye during a presentation.',
+    'Animate shapes, text, sticky notes, drawings, images and tables in ways that suit each one, send flow along an arrow, or animate an icon to show motion, signal status, and draw the eye during a presentation.',
   path: '/help/canvas/animations/',
 });
 
-<ArticleLayout title="Animating Elements" description="Loop a subtle animation on a shape, flow along an arrow, or motion on an icon to show direction, status, and focus." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
+<ArticleLayout title="Animating Elements" description="Each kind of element has animations made for it: words that type themselves in, shapes that pulse, notes that flutter, drawings that draw on, photos that pan, and tables that cascade in." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
 
-A looping animation can convey flow, signal status, or draw the room's eye during a presentation. livediagram offers three flavours, each from the **Animation** category of the right-click menu, and each option shows an illustrated tile so you can see the motion before you apply it. On a desktop you can also **hover a tile to preview the motion live on your selection** — it plays right on the element so you can compare options, and a click locks it in (move off the tiles and it reverts).
+An animation can convey flow, signal status, reveal content, or draw the room's eye during a presentation. Each kind of element animates in ways that suit what it is, so the right-click menu's **Animation** row offers only the animations that fit what you've selected, grouped by kind: **Shape**, **Text**, **Sticky**, **Drawing**, **Media**, **Table**, **Icon**, **Chart**, and **Arrow**.
+
+A labelled shape shows two sections under **Animation**, **Shape** for the box and **Text** for its words, so the box can pulse while its label types itself in. Select several different kinds of element together and you get one section per kind, each applying only to the elements it fits. When only one kind applies, such as a single text element, its animations show directly under **Animation**.
+
+Every option shows a tiny live preview of the real animation, paused on a telling moment; hover a tile and it plays. On a desktop you can also **hover a tile to preview the motion live on your selection**: it plays right on the element so you can compare options, and a click locks it in (move off the tiles and it reverts). **None** takes an animation off again.
 
 <Figure caption="A shape with a pulse animation beside an arrow with flowing dashes.">
   <ElementAnimation />
 </Figure>
 
-## Animating a shape
+## Shape
 
-Right-click a boxed element (a shape, sticky, label, or image) and pick an **Animation**:
+For shapes, annotations, and link cards:
 
-- **Pulse** sends an attention ring expanding out from the element.
-- **Blink** gently breathes its opacity, the classic "status LED" when paired with a small coloured circle.
-- **Glow** wraps it in a soft halo.
-- **Trace** runs a light around its outline.
-- **Gradient** drifts a moving gradient across its fill.
-- **Heartbeat** double-pumps its size in a lub-dub rhythm, and **Breathe** swells it slowly and gently — both stay in place, ideal for emphasis without distraction.
-- **Shimmer** catches the light with a quick occasional glint, and **Highlight** periodically brightens the fill in a luminous "look here" swell.
-- **Bounce** bobs it up and down, and **Wobble** tilts it side to side.
-- **Shake** jitters it quickly side to side, and **Jelly** squashes and stretches it.
-- **Float** drifts it in a slow circle, and **Swing** rocks it like a pendulum from its top edge.
+- **Pulse** sends a ring the shape of the outline out from the element.
+- **Blink** gently breathes its opacity, the classic "status light" when paired with a small coloured circle.
+- **Glow** wraps it in a soft halo that follows its outline.
+- **Trace** runs a light with a fading tail around its outline.
+- **Gradient** drifts a soft band of colour across its fill.
+- **Heartbeat** double-pumps its size in a lub-dub rhythm, and **Breathe** swells it slowly and gently; both stay in place, ideal for emphasis without distraction.
+- **Shimmer** catches the light with a quick glint, and **Highlight** brightens the fill in a luminous "look here" swell.
+- **Bounce** crouches, hops, and lands with a squash, and **Wobble** tilts side to side and settles.
+- **Shake** jitters it side to side, and **Jelly** squashes and stretches it.
+- **Float** drifts it in a slow loop, and **Swing** rocks it like a pendulum from its top edge.
 
-## Flowing arrows
+Every effect follows the element's real outline, so a diamond pulses as a diamond, and the attention animations pause between beats so they read as deliberate rather than frantic. How far a shape travels scales with its size, so a tiny status light and a large box both look right.
 
-Select an arrow and pick a **flow** to show direction along its path: **Dashes** march along the line, **Dots** and **Beads** travel it, **Pulse** breathes its opacity, **Grow** breathes its thickness, and **Glow** pulses a soft halo. There's also **Draw** (the line repeatedly draws itself on from start to end), **Comet** (a glowing dot trails a fading tail along the path), **Rainbow** (the colour cycles through the spectrum), **Strobe** (a hard on/off blink), and **Wind** (fast speed-line dashes). For quieter emphasis, **Heartbeat** double-pumps the line's thickness, **Breathe** swells it slowly, **Shimmer** glints occasionally, and **Signal** sends a single discrete packet along the path, one message at a time. Flow is ideal for data and process diagrams where you want to show which way things move.
+## Text
 
-## Animating an icon
+For the words of a text element, and for the label of a shape, sticky note, or table:
+
+- **Typewriter** types the words in letter by letter behind a blinking caret.
+- **Words** brings each word in, rising into place.
+- **Cascade** drops the letters in from above, one after another.
+- **Focus** sharpens the words from a blur.
+- **Scramble** resolves random characters into the real words, left to right.
+- **Highlighter** sweeps a marker stroke behind the words, and **Underline** draws a line beneath them.
+- **Wave** ripples the letters up and down, **Shine** sweeps a band of colour across them, **Flicker** makes a few letters stutter like a neon sign, and **Rainbow** flows colour through them.
+- **Glow**, **Bounce**, and **Float** move the words as a whole.
+
+The ones that bring words in (Typewriter, Words, Cascade, Focus, Scramble, Highlighter, and Underline) play, hold so the words can be read, clear, and start again. Very long labels animate word by word, or all at once, so they stay smooth.
+
+## Sticky
+
+- **Flutter** lifts the note's bottom edge as if in a breeze, and **Sway** swings it gently from a pin at its top.
+- **Peel** curls up its bottom corner, and **Lift** raises it off the board as its shadow grows.
+- **Wiggle** gives it a quick "look at me" wiggle.
+- **Drop** drops the note onto the board, and **Slap** slaps it down.
+- **Pulse**, **Glow**, and **Highlight** work as they do on shapes.
+
+## Drawing
+
+For pen strokes, freehand lines, and paths:
+
+- **Draw** draws the line on from its start to its end.
+- **Trace** runs a bright light with a tail along the line, and **Shimmer** glints along it now and then.
+- **Dash** turns the line into marching dashes.
+- **Boil** makes the line jitter like hand-drawn animation.
+- **Ink** swells the line like a pen pressing, and **Glow** gives it a soft halo.
+
+## Media
+
+For images and videos:
+
+- **Ken Burns** slowly pans and zooms across the picture, **Zoom** pushes in and back out, and **Pan** drifts from side to side.
+- **Tilt** turns the picture gently, as if it were held in the hand.
+- **Develop** brings the picture up from washed out to full colour, like an instant photo, and **Focus** sharpens it from a blur.
+- **Wipe** wipes it in from the left, and **Iris** opens it from a circle at its centre.
+- **Sheen** sweeps a band of light across it.
+
+The motion stays inside the frame and its crop, and a video keeps playing underneath.
+
+## Table
+
+- **Rows** cascades the rows in from the top, **Columns** from the left, and **Cells** pops the cells in along a diagonal.
+- **Scan** sweeps a highlight down the rows, and **Sweep** across the columns.
+- **Header** glints across the header row.
+- **Pulse** and **Glow** work as they do on shapes.
+
+However many rows a table has, its cascade takes the same time.
+
+## Flowing Arrows
+
+Right-click an arrow and pick a **flow** from the **Arrow** section under **Animation** to show direction along its path: **Dashes** march along the line, **Dots** and **Beads** travel it, **Pulse** breathes its opacity, **Grow** breathes its thickness, and **Glow** pulses a soft halo. There's also **Draw** (the line repeatedly draws itself on from start to end), **Comet** (a glowing dot trails a fading tail along the path), **Rainbow** (the colour cycles through the spectrum), **Strobe** (a hard on/off blink), and **Wind** (fast speed-line dashes). For quieter emphasis, **Heartbeat** double-pumps the line's thickness, **Breathe** swells it slowly, **Shimmer** glints occasionally, and **Signal** sends a single discrete packet along the path, one message at a time. Flow is ideal for data and process diagrams where you want to show which way things move.
+
+## Animating an Icon
 
 Any [icon](/help/palette/icons/) can loop a glyph animation chosen from its menu: **Spin, Beat, Pulse, Glow, Ping, Breathe, Shimmer, Bounce, Wiggle, Flash, Tada, Flip, Jump, Swing,** or **Float**. A spinning gear or a beating heart adds life without a separate element; Glow, Ping, Breathe, and Shimmer emphasise an icon in place without moving it.
 
+Four icons are drawn to move, so they arrive already animated: the Spinner and the Gear spin, the Heartbeat beats, and the Signal pings. Change or clear their animation from the menu like any other.
+
 ## Speed
 
-Once you've picked any animation, a **Speed** row appears with **Slowest, Slow, Normal,** and **Fast**. It scales the timing while keeping each animation's character. New animations start at **Slow**, the calm default; step up to Normal or Fast for more urgency, or down to Slowest for the gentlest loop.
+Once you've picked any animation, a **Speed** row appears in its section with **Slowest, Slow, Normal,** and **Fast**. It scales the timing while keeping each animation's character. New animations start at **Slow**, the calm default; step up to Normal or Fast for more urgency, or down to Slowest for the gentlest loop.
 
 ## Repeat
 
-Below Speed sits a **Repeat** switch, on by default. Leave it on and the animation loops for as long as the document is open; turn it off and the animation plays a single cycle and then rests, a one-time flourish rather than a loop. It's available on every animation: shapes, arrows, and icons alike.
+Below Speed sits a **Repeat** switch, on by default. Leave it on and the animation loops for as long as the document is open; turn it off and the animation plays a single cycle and then rests, a one-time flourish rather than a loop. An animation that brings something in, such as Typewriter or Drop, plays once and stays revealed. Text animations start with Repeat off, so words play once and stay put; turn it on to loop them. Each section has its own Speed and Repeat, so a shape and its words can move at different paces.
 
-## How animations behave
+## How Animations Behave
 
 - **Subtle by design.** They loop quietly so a diagram stays readable rather than busy.
 - **Shared with collaborators.** Everyone in a live session sees the same loop; nothing is broadcast frame by frame.
-- **Reduced-motion safe.** If your system asks for reduced motion, animations freeze to a tidy still frame.
+- **Reduced-motion safe.** If your system asks for reduced motion, animations freeze to a tidy still frame, with everything fully shown.
 - **Frozen on export.** PNG and SVG [exports](/help/account-and-data/exporting-diagrams/) capture a static frame.
-- **Copied by the format painter.** Animation is a cosmetic property, so the [format painter](/help/selection-modes/format-painter/) carries it to other elements.
+- **Copied by the format painter.** Animation is a cosmetic property, so the [format painter](/help/selection-modes/format-painter/) carries it to other elements of the same kind, and a Text animation to anything with words.
 
 <Tip>
-  Select several elements first and the Animation control applies to every matching one at once, so
-  you can set a whole flow of arrows moving in a single action.
+  Select several elements first and each section applies to every element it fits at once, so you
+  can set a whole flow of arrows moving in a single action. With shapes and arrows selected
+  together, **Animation** shows **Shape**, **Text**, and **Arrow** side by side.
 </Tip>
 
 </ArticleLayout>

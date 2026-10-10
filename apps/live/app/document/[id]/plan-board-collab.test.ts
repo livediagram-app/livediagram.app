@@ -43,8 +43,8 @@ const receive = (tabs: Tab[], ops: RoomOp[]) => ops.reduce(applyRoomOpToTabs, ta
 describe('two peers setting up one board', () => {
   const base = tabWith(presetSetup('kanban'));
   const col = (name: string) => setupOf([base]).columns.find((c) => c.name === name)!;
-  const todo = col('To do');
-  const doing = col('In progress');
+  const todo = col('To Do');
+  const doing = col('In Progress');
   const review = col('Review');
 
   it('keep both renames of different columns, and agree', () => {
@@ -108,6 +108,6 @@ describe("an agent's changeset", () => {
       tabId: 't',
       elementOps: [{ kind: 'update', element: board(next) }],
     } as RoomOp);
-    expect(setupOf(tabs).columns.map((c) => c.name)).toContain('From agent');
+    expect(setupOf(tabs).columns.map((c) => c.name)).toContain('From Agent');
   });
 });

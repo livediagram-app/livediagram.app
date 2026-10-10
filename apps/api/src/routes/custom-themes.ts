@@ -12,7 +12,7 @@ import {
 } from '../db';
 import type { CustomThemeDefinition } from '../types';
 import { badRequest, forbidden, json, noContent, notFound, payloadTooLarge } from '../responses';
-import { requireOwner, type RouteContext } from './context';
+import { requireOwner, type RouteContext, readBody } from './context';
 import { MAX_NAME_LEN, MAX_THEME_DEF_BYTES, byteLength } from '../limits';
 import { recordThemeDeleted, recordThemeSaved } from '../timeline';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
@@ -55,7 +55,9 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
       return json({ themes });
     }
     if (request.method === 'POST') {
-      const body = (await request.json()) as {
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as {
         id?: string;
         name?: string;
         definition?: CustomThemeDefinition;
@@ -85,7 +87,9 @@ export async function handleCustomThemes(ctx: RouteContext): Promise<Response> {
     if (!existing) return notFound();
     if (existing.ownerId !== owner) return forbidden();
     if (request.method === 'PUT') {
-      const body = (await request.json()) as {
+      const read = await readBody(ctx);
+      if (read instanceof Response) return read;
+      const body = read as {
         name?: string;
         definition?: CustomThemeDefinition;
       };

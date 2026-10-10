@@ -1,7 +1,7 @@
 // The Boards and Cards tiles' glyphs (docs/specs/026-plan/plan-mode.md "The palette"): a board drawn
-// as a picture of its kind, and a card drawn with its item type's colour stripe, at the tile size.
+// as a picture of its kind, and a card drawn with its item type's colour stripe and glyph, at the tile size.
 import { Glyph } from '@livediagram/ui';
-import type { BoardWidgetKind, CardSize } from '@livediagram/items';
+import { planGlyphPath, type BoardWidgetKind, type CardSize } from '@livediagram/items';
 import { accentVars } from './plan-palette';
 
 // One picture per board preset, so the Boards category reads at a glance (docs/specs/026-plan/
@@ -36,6 +36,18 @@ const BOARD_ART: Record<string, React.ReactNode> = {
       <rect x="9.25" y="5.5" width="3.5" height="2.5" rx="0.6" />
       <rect x="9.25" y="9.5" width="3.5" height="2.5" rx="0.6" />
       <rect x="15.5" y="5.5" width="3.5" height="2.5" rx="0.6" />
+    </>
+  ),
+  // A checklist: two rows ticked, one still to do.
+  todo: (
+    <>
+      <rect x="1.5" y="3" width="19" height="16" rx="2" />
+      <rect x="4" y="6" width="3" height="3" rx="0.6" />
+      <path d="M4.6 7.5l.9.9 1.5-1.7M9.5 7.5h7" />
+      <rect x="4" y="10.5" width="3" height="3" rx="0.6" />
+      <path d="M4.6 12l.9.9 1.5-1.7M9.5 12h5" />
+      <rect x="4" y="15" width="3" height="3" rx="0.6" />
+      <path d="M9.5 16.5h6" />
     </>
   ),
   // Columns crossed by swimlane rows, a dot per person.
@@ -102,21 +114,37 @@ export function PlanBoardTileArt({ size, preset }: { size: number; preset: strin
   );
 }
 
-export function PlanCardTileArt({ size, color }: { size: number; color: string }) {
+// The card's face carries its type's glyph (16-unit grid), scaled into the space right of the stripe; strokes
+// are non-scaling, so it keeps the palette's line weight.
+const CARD_GLYPH_UNITS = 10;
+const CARD_GLYPH_SCALE = CARD_GLYPH_UNITS / 16;
+
+export function PlanCardTileArt({
+  size,
+  color,
+  glyph,
+}: {
+  size: number;
+  color: string;
+  glyph: string | undefined;
+}) {
   return (
     <Glyph size={size} units={22}>
-      <rect x="3" y="5" width="16" height="12" rx="2" />
+      <rect x="1.5" y="3.5" width="19" height="15" rx="2" />
       <rect
-        x="3"
-        y="5"
+        x="1.5"
+        y="3.5"
         width="3"
-        height="12"
+        height="15"
         rx="1.2"
         stroke="none"
         className="fill-[var(--accent)] dark:fill-[var(--accent-lift)]"
         style={accentVars(color)}
       />
-      <path d="M9 9H16M9 13H14" />
+      <path
+        d={planGlyphPath(glyph)}
+        transform={`translate(${12.5 - CARD_GLYPH_UNITS / 2} ${11 - CARD_GLYPH_UNITS / 2}) scale(${CARD_GLYPH_SCALE})`}
+      />
     </Glyph>
   );
 }
@@ -197,7 +225,6 @@ const WIDGET_ART: Record<BoardWidgetKind, React.ReactNode> = {
       <path d="M11 6.75V11l3 2" />
     </>
   ),
-  votes: <path d="M11 4.5 17.5 13h-4v5h-5v-5h-4z" />,
   // A stack of points rising.
   points: <path d="M3 18h16M5 18v-4M9.5 18V10M14 18v-6M18.5 18V5" />,
   // Three flags, tallest first.
@@ -236,6 +263,27 @@ export function InfoArt({ size = 14 }: { size?: number }) {
     <Glyph size={size} units={22}>
       <circle cx="11" cy="11" r="8" />
       <path d="M11 10v5.5M11 7v.25" />
+    </Glyph>
+  );
+}
+
+// Fill Tab's two tiles (docs/specs/026-plan/plan-board.md "Fill Tab"): a small board on a dashed canvas, or the board
+// filling the whole frame.
+export function FillTabArt({ fill }: { fill: boolean }) {
+  return (
+    <Glyph size={18} units={22}>
+      {fill ? (
+        <>
+          <rect x="2.5" y="3.5" width="17" height="15" rx="2" />
+          <path d="M7.5 3.5v15M12.5 3.5v15" />
+        </>
+      ) : (
+        <>
+          <rect x="2.5" y="3.5" width="17" height="15" rx="2" strokeDasharray="2.4 2" />
+          <rect x="6" y="7.5" width="9" height="7" rx="1.2" />
+          <path d="M9 7.5v7M12 7.5v7" />
+        </>
+      )}
     </Glyph>
   );
 }

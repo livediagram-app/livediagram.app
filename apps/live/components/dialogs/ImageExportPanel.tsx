@@ -5,6 +5,11 @@ import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
 
+// A checkerboard under a preview, so see-through paper reads as see-through (a logo page's PNG and
+// SVG, docs/specs/007-editor/logo-pages.md "Export").
+export const PREVIEW_CHECKER =
+  'repeating-conic-gradient(rgb(226 232 240) 0% 25%, white 0% 50%) 50% / 16px 16px';
+
 // The options-and-download second screen for an image export format
 // (PNG / SVG / PDF). The isometric + background-pattern toggles used to sit
 // permanently on the main export grid; they only affect image formats, so
@@ -22,6 +27,7 @@ export function ImageExportPanel({
   onBack,
   pageExport = false,
   pagePicker,
+  checkerboard = false,
 }: {
   // The picked format's display name, e.g. 'PNG'.
   label: string;
@@ -45,6 +51,8 @@ export function ImageExportPanel({
   pageExport?: boolean;
   // The page choice (ExportPagePicker), under the back bar and above the preview.
   pagePicker?: ReactNode;
+  // The preview sits on a checkerboard: its paper is see-through.
+  checkerboard?: boolean;
 }) {
   // Isometric export (docs/specs/008-canvas/isometric-view.md / 48): tilt the rendered image into the editor's
   // isometric projection. Off by default — the standard export is flat top-down.
@@ -76,7 +84,9 @@ export function ImageExportPanel({
       <div className="mb-4 flex h-48 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
         {previewSvg ? (
           <div
+            data-testid="export-preview"
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
+            style={checkerboard ? { background: PREVIEW_CHECKER } : undefined}
             dangerouslySetInnerHTML={{ __html: previewSvg }}
           />
         ) : (

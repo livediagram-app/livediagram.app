@@ -7,17 +7,32 @@ import { duplicateItem } from './duplicate-item';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
 // docs/specs/026-plan/plan-board.md "Open an item": the panel's ⋯ menu holds Duplicate, Archive (or
-// Restore) and Delete; Help carries a label.
+// Restore) and Trash for an editor, then Help for everyone; the type editor's Help carries a label.
 afterEach(cleanup);
 
-function open(archived = false) {
+function open(archived = false, canEdit = true) {
   const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onTrash: vi.fn() };
-  render(<ItemPanelMenu itemKey={7} archived={archived} flagged={archived} {...fns} />);
+  render(
+    <ItemPanelMenu itemKey={7} canEdit={canEdit} archived={archived} flagged={archived} {...fns} />,
+  );
   fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
   return fns;
 }
 
 describe('ItemPanelMenu', () => {
+  it('ends in Trash for an editor (after Help), and offers a viewer Help alone', () => {
+    const openArticle = vi.spyOn(window, 'open').mockImplementation(() => null);
+    open(false, false);
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Help']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Help' }));
+    expect(openArticle).toHaveBeenCalledOnce();
+    cleanup();
+    open();
+    const labels = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(labels.slice(-2)).toEqual(['Help', 'Trash']);
+    openArticle.mockRestore();
+  });
+
   it('runs each verb and closes', () => {
     const fns = open();
     fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicate' }));
@@ -35,6 +50,26 @@ describe('ItemPanelMenu', () => {
     open(true);
     expect(screen.getByRole('menuitem', { name: 'Restore' })).toBeTruthy();
     expect(screen.getByRole('menuitem', { name: 'Remove Flag' })).toBeTruthy();
+  });
+
+  it('opens the card’s type from Edit Card Type, for an editor', () => {
+    const onEditType = vi.fn();
+    render(
+      <ItemPanelMenu
+        itemKey={7}
+        canEdit
+        archived={false}
+        flagged={false}
+        onDuplicate={vi.fn()}
+        onFlag={vi.fn()}
+        onArchive={vi.fn()}
+        onTrash={vi.fn()}
+        onEditType={onEditType}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Card Type' }));
+    expect(onEditType).toHaveBeenCalledOnce();
   });
 
   it('flags the card', () => {

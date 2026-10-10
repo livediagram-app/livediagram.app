@@ -77,6 +77,24 @@ export function reportApiError(status: number, action: string, code: string | nu
   report(apiErrorType(status, action, code));
 }
 
+// Warnings (`Error·Warning`): a degradation the load was carried through rather than stopped by, such
+// as a session token or the offline store giving up (docs/specs/007-editor/load-recovery.md). Same
+// wiring and per-type cap as the error reports; the boot registers where they go.
+let apiWarningReporter: ((type: string) => void) | null = null;
+
+export function setApiWarningReporter(fn: ((type: string) => void) | null): void {
+  apiWarningReporter = fn;
+}
+
+export function reportApiWarning(type: string): void {
+  try {
+    if (!apiWarningReporter || !allowReport(type)) return;
+    apiWarningReporter(type);
+  } catch {
+    // Telemetry can never throw into the caller.
+  }
+}
+
 export function reportNoSessionToken(): void {
   report('Auth.NoSessionToken');
 }

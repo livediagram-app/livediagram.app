@@ -66,7 +66,7 @@ with a cross-browser bonus: a guest who clears localStorage but
 keeps the same browser session still recovers their preferences.
 
 **Panel corner layout is the deliberate exception.** Which corner
-each floating panel docks into ([Panel corner docking](panel-docking.md)) is a
+each corner panel docks into ([Panel corner docking](panel-docking.md)) is a
 per-device ergonomic choice (screen size, handedness, monitor), so it
 lives in its own **device-local** `localStorage` store
 (`livediagram:panel-layout:v1`) and is **not** part of this synced
@@ -144,23 +144,14 @@ type UserPreferences = {
   // space, so it can hide them. Undefined / true === shown.
   aiSuggestedPrompts?: boolean;
 
-  // The panel layout (docs/specs/007-editor/toolbar-layout.md): 'floating' (the desktop
-  // default, corner panels, docs/specs/008-canvas/canvas-and-palette.md) or 'toolbar' (the
-  // Palette as one strip across the top of the canvas, no Explorer panel).
-  // Missing → Floating on desktop. A phone always uses Toolbar whatever
-  // this says. A stored value outside the union (a legacy 'minimal')
-  // resolves like a missing one, and the retired `minimalPanels` flag
-  // some stored blobs still carry is ignored.
-  panelLayout?: 'floating' | 'toolbar';
-
   // Opacity (0..1) of EVERY panel at rest, so the canvas shows through
   // them; they snap back to fully opaque while hovered or focused so they
   // stay readable in use. Applied via the `--lvd-panel-opacity` custom
   // property (usePanelOpacity), read by every surface tagged
-  // `data-panel-translucent`: MovablePanel in both its floating and its
+  // `data-panel-translucent`: MovablePanel in both its docked and its
   // popover branch (so the Explorer, Layers and Collaborate
-  // popovers follow it too), the Map, the Quick style panel in every
-  // layout and the Toolbar layout's strip. Buttons are not panels: the
+  // popovers follow it too), the Map, the Quick style panel and the
+  // Toolbar strip. Buttons are not panels: the
   // bottom-right cluster buttons and the zoom controls stay opaque.
   // Defaults to 1 (fully opaque).
   panelOpacity?: number;
@@ -241,11 +232,8 @@ type UserPreferences = {
   // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
-  // Colours you have used that the active theme did not already offer
-  // (docs/specs/008-canvas/canvas-and-palette.md Colours). Picking one off the OS picker or the pipette adds it;
-  // right-clicking a swatch removes it. Newest first, capped at 12, synced
-  // like every other preference so a palette you have built follows you
-  // between devices.
+  // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
+  // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
   // The quick style panel's custom swatches (../008-canvas/quick-style-panel.md
   // "Custom swatches"): per theme, newest-edited first, which of a row's six
@@ -266,9 +254,8 @@ type UserPreferences = {
   // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
   whiteboardPinnedShapes?: string[];
   whiteboardShapePicks?: Record<string, [number, number]>;
-  // The whiteboard markers' Your colours (../023-draw-mode/draw-mode.md "The
-  // colour picker"): up to eight custom #rrggbb, most recently used first; Remove
-  // takes one out. Junk is dropped on read (lib/pen-colour-memory).
+  // DEAD, like `customSwatches`: the markers' Custom colours are the document's
+  // (../004-interface-design/colour-picker.md). Kept because it is already stored.
   whiteboardYourColours?: string[];
   // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
   // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
@@ -343,10 +330,8 @@ Missing key === undefined === default behaviour. Concretely:
 - `aiAssistanceEnabled` undefined → AI panel hidden (the default).
   Setting it to `true` shows the panel; the toggle only appears in
   Settings when the api worker advertises AI capability.
-- `panelLayout` undefined (or a legacy `'minimal'`) → Floating on desktop
-  (the default), Toolbar on a phone. `'toolbar'` switches desktop to the
-  [Toolbar layout](toolbar-layout.md); a phone is always Toolbar. Emits `UI`/`Changed`/
-  `PanelLayoutFloating` or `PanelLayoutToolbar`.
+- `panelLayout` and `minimalPanels`, which older blobs still carry, are
+  ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
   default). Only `'bottom'` moves it to the bottom.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
@@ -369,7 +354,7 @@ Missing key === undefined === default behaviour. Concretely:
 - `panelOpacity` undefined / 1 → every panel fully opaque (the
   default). A value below 1 makes every panel translucent at rest
   (snapping back to opaque on hover / focus) via the
-  `--lvd-panel-opacity` custom property, in every layout: floating,
+  `--lvd-panel-opacity` custom property, on every surface: docked,
   popover (the Explorer and cluster popovers), the Map, Quick style
   and the Toolbar strip. Buttons stay opaque. Emits
   `UI`/`Changed`/`PanelOpacity` on release ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
@@ -554,7 +539,7 @@ and the dialog stays as the one complete, browsable index of them.
   Minimal chrome while the mode is on; with the sub-category **Draw**: dock
   position, Top or Bottom), **Appearance** (theme, UI scale with a slider per part), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
-  collapsible groups), **Panels** (panel layout, panel opacity; with the
+  collapsible groups), **Panels** (panel opacity; with the
   sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
   **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
@@ -666,8 +651,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   Pick-one settings whose options LOOK different draw **one picture per
   option** instead, side by side with no arrow, the one in force ringed
-  (`settings-choice-illustrations.tsx`): **Panel Layout** (Floating /
-  Toolbar, [Toolbar layout](toolbar-layout.md)) and **Theme** (Light / Dark / System, the
+  (`settings-choice-illustrations.tsx`): **Theme** (Light / Dark / System, the
   last drawn half light and half dark). Theme's pictures are drawn in their
   own fixed colours and are never dimmed, since their colour is the point: a
   dimmed light editor reads grey on a dark dialog. A test holds every
@@ -680,12 +664,6 @@ and the dialog stays as the one complete, browsable index of them.
   on a phone) take no click and show no pointer. It is a pointer
   convenience: the radios and the switch stay the keyboard and screen-reader
   control, so the SVG keeps `role="img"` and its states aren't focusable.
-
-  A choice option can be **desktop only** (`desktopOnly` in the catalogue).
-  On a phone-sized viewport it stays visible but can't be picked, and a note
-  under the row says why. Panel Layout's Floating is desktop only: a phone
-  shows Toolbar instead ([Toolbar layout](toolbar-layout.md)), which is therefore the phone default,
-  and the row rings Toolbar there (`read(prefs, { mobile })`).
 
   A whole row can be desktop only too (`desktopOnly` on the row, holding the
   note to show). On a phone-sized viewport the row stays visible, greyed,

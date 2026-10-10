@@ -110,11 +110,7 @@ async function placeDock(page: Page, position: 'top' | 'bottom') {
   await page.addInitScript(
     ([key, whiteboardDockPosition]) => {
       const prefs = JSON.parse(localStorage.getItem(key as string) ?? '{}');
-      // The dock is the Toolbar layout's (docs/specs/023-draw-mode/draw-mode.md).
-      localStorage.setItem(
-        key as string,
-        JSON.stringify({ ...prefs, panelLayout: 'toolbar', whiteboardDockPosition }),
-      );
+      localStorage.setItem(key as string, JSON.stringify({ ...prefs, whiteboardDockPosition }));
     },
     [PREFS_KEY, position] as const,
   );

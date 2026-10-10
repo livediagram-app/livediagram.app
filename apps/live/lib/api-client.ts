@@ -29,7 +29,7 @@ export type {
 // catch it to branch on `err.status` / `err.code` (the api worker's
 // snake_case error token), so it belongs in the public surface.
 export { ApiError, SessionTokenUnavailableError } from './api/core';
-export { reportSaveFailure, setApiErrorReporter } from './api/error-report';
+export { reportSaveFailure, setApiErrorReporter, setApiWarningReporter } from './api/error-report';
 export {
   API_BASE,
   DOCUMENT_LIST_LOAD_SAFETY_MS,
@@ -66,3 +66,5 @@ export * from './api/unfurl';
 export * from './api/trash';
 export * from './api/drive';
 export * from './api/community';
+// Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
+export * from './api/workbench';

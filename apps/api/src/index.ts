@@ -27,7 +27,7 @@ import {
   isClerkIdShape,
   TIMELINE_RETENTION_MS,
 } from '@livediagram/api-schema';
-import { isApiTokenFormat } from '@livediagram/api-schema';
+import { isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
 import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
@@ -57,7 +57,7 @@ import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
 import { handleShapeLibraries } from './routes/shape-libraries';
 import { handleUnfurl } from './routes/unfurl';
-import type { RouteContext } from './routes/context';
+import type { RouteContext, WorkbenchContext } from './routes/context';
 import { handleDocuments } from './routes/documents';
 import { handleEvents } from './routes/events';
 import { handleFolders } from './routes/folders';
@@ -77,8 +77,13 @@ import { handleShared } from './routes/shared';
 import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
 import { handleDrive } from './routes/drive';
+import { handleWorkbench } from './routes/workbench';
+import { resolveWorkbenchSession } from './auth/workbench-session';
+import { workbenchRefusal } from './auth/workbench-confinement';
+import { sweepWorkbench } from './db/workbench';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
+import { runSheetExpiry } from './sheet-sweep';
 
 export { DocumentRoom };
 
@@ -178,15 +183,43 @@ async function routeApiRequest(
       }
     }
   }
+  // Workbench session (docs/specs/013-workspace/workbench-embeds.md): a `Bearer lvw_…` is a person's editor
+  // on one document, minted from their token's ticket. Consulted only when neither a Clerk JWT nor a token
+  // resolved. A session-shaped bearer that does not resolve is refused, never read as a guest. A resolved one
+  // is confined at once (auth/workbench-confinement.ts): another document reads as absent, any route outside
+  // the allow-list is refused, and a view session writes nothing.
+  let workbench: WorkbenchContext | null = null;
+  if (!clerkUserId && !tokenAuth) {
+    const bearer = bearerTokenOf(request.headers.get('Authorization'));
+    if (bearer && isWorkbenchSessionFormat(bearer)) {
+      const resolved = await resolveWorkbenchSession(env, bearer, Date.now());
+      if (!resolved.ok) {
+        console.warn('[workbench] bearer-refused', {
+          reason: resolved.reason,
+          sessionPrefix: resolved.sessionPrefix,
+        });
+        return json(
+          { error: 'invalid_session' },
+          { status: 401, headers: { 'WWW-Authenticate': 'Bearer error="invalid_token"' } },
+        );
+      }
+      workbench = resolved.workbench;
+      const refusal = workbenchRefusal(workbench, request.method, segments, request.headers);
+      if (refusal) return refusal;
+    }
+  }
   // An empty guest header is no identity at all: as '' it would be one shared,
   // writable owner namespace (and one shared rate-limit bucket) for everyone.
   const resolveOwner = (): string | null =>
-    clerkUserId ?? tokenAuth?.ownerId ?? (request.headers.get('X-Owner-Id') || null);
+    clerkUserId ??
+    tokenAuth?.ownerId ??
+    workbench?.ownerId ??
+    (request.headers.get('X-Owner-Id') || null);
   // Server-verified Clerk account id from either credential (session JWT
   // or API token). Feeds the team-membership content gates + teams-surface
   // reads (see RouteContext.verifiedUserId); administration surfaces keep
   // reading `clerkUserId` directly.
-  const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? null;
+  const verifiedUserId = clerkUserId ?? tokenAuth?.ownerId ?? workbench?.ownerId ?? null;
 
   // A Clerk account id presented as the GUEST header is always a replay of
   // a harvested id, never a real client (see auth/guest-rest.ts): the guest
@@ -199,6 +232,7 @@ async function routeApiRequest(
   if (
     !clerkUserId &&
     !tokenAuth &&
+    !workbench &&
     (OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') || segments[1] === 'share')
   ) {
     const headerOwner = request.headers.get('X-Owner-Id');
@@ -217,6 +251,7 @@ async function routeApiRequest(
   if (
     !clerkUserId &&
     !tokenAuth &&
+    !workbench &&
     OWNER_SCOPED_SEGMENTS.has(segments[1] ?? '') &&
     guestSignatureEnforced(env, Date.now())
   ) {
@@ -255,7 +290,14 @@ async function routeApiRequest(
   // A token revoking itself escalates nothing, so any token may (docs/specs/015-api/blueprints/cli.md).
   const isSelfRevoke =
     request.method === 'DELETE' && segments[1] === 'tokens' && segments[2] === 'current';
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke) {
+  // Opening and pairing a workbench write nothing a read-only token could misuse: its ticket is minted view-only, so
+  // a view token gives a read-only frame (docs/specs/013-workspace/workbench-embeds.md).
+  const isWorkbenchAsk =
+    request.method === 'POST' &&
+    segments.length === 3 &&
+    segments[1] === 'workbench' &&
+    (segments[2] === 'tickets' || segments[2] === 'pairing-requests');
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isWorkbenchAsk) {
     return forbidden('read_only_token');
   }
   // One read is a credential, not content: the share-link list carries every
@@ -313,12 +355,15 @@ async function routeApiRequest(
     // on the network whatever X-Owner-Id it carries: a caller-chosen header
     // would otherwise buy a fresh mint bucket per request
     // (docs/specs/014-identity/auth-and-guest-access.md "Server-minted").
+    // A workbench session's writes key on the session (WB10), apart from its owner's own app use.
     const isGuestIdMint = segments[1] === 'guest-id';
     const key = isGuestIdMint
       ? `guest-id:${clientRateKey(request)}`
       : tokenAuth
         ? `token:${tokenAuth.tokenId}`
-        : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
+        : workbench
+          ? `workbench:${workbench.sessionId}`
+          : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
     if (await isWriteRateLimited(env, key)) {
       return isGuestIdMint ? rateLimitedRetryAfter(GUEST_ID_RETRY_AFTER_SECONDS) : rateLimited();
     }
@@ -355,6 +400,7 @@ async function routeApiRequest(
     clerkEmail,
     resolveOwner,
     token: tokenAuth ? { id: tokenAuth.tokenId, readOnly: tokenAuth.readOnly } : null,
+    workbench,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
   try {
@@ -426,6 +472,8 @@ async function routeApiRequest(
         return await handleParticipants(ctx);
       case 'drive':
         return await handleDrive(ctx);
+      case 'workbench':
+        return await handleWorkbench(ctx);
     }
   } catch (err) {
     // Log the real error server-side, but don't echo its message to the
@@ -515,6 +563,10 @@ const worker = {
         now - CHANGESET_RETENTION_MS,
         deleteOldChangesets,
       );
+      // docs/specs/029-sheets/sheet-store.md "Deleting a sheet": delete sheets unreferenced for 30 days.
+      ctx.waitUntil(
+        runSheetExpiry(env).catch((err) => console.error('[sheets] sheets.expired failed', err)),
+      );
       // docs/specs/014-identity/transactional-email.md: send any due onboarding emails (welcome catch-up + week 1 / 2).
       // No-op when RESEND_API_KEY is unset.
       ctx.waitUntil(runLifecycleSweep(env));
@@ -547,6 +599,13 @@ const worker = {
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
       // then reap unused images. runImageRetention logs its own outcome.
       ctx.waitUntil(runImageRetention(env, now));
+      // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
+      // sessions past their grace, pairings of tokens no longer live.
+      ctx.waitUntil(
+        sweepWorkbench(env, now)
+          .then((count) => console.log(`workbench sweep: deleted ${count} rows`))
+          .catch((err) => console.error('workbench sweep failed', err)),
+      );
     }
   },
 } satisfies ExportedHandler<Env>;

@@ -17,6 +17,12 @@ import { LANDING_RULES, type LandContext } from './context';
 import type { SceneInk, ScenePoint, ScenePolyline, SceneStroke } from './scene';
 import { arrowWidthPx, borderStrokeOf, markerWidthPx } from './width';
 
+// A pen's width as the validator takes it (1 to 100 px, validate.ts FREEHAND_FIELD_CHECKS): a scaled-up
+// highlighter (an MS Whiteboard group at scale 5) would otherwise land at 150 and make the tab unsaveable.
+const PEN_WIDTH_MIN_PX = 1;
+const PEN_WIDTH_MAX_PX = 100;
+const clampPenWidth = (px: number) => Math.min(PEN_WIDTH_MAX_PX, Math.max(PEN_WIDTH_MIN_PX, px));
+
 // Ends within this many px coincide (the Excalidraw importer's closure test).
 export const CLOSED_END_EPSILON_PX = 1;
 // How far a curved line's handles reach: a sixth of the chord between a node's neighbours
@@ -67,7 +73,7 @@ export function landInk(item: SceneInk, id: string, ctx: LandContext): FreehandE
       ...packed,
       closed: false,
       pen: 'highlighter',
-      penWidth: stroke.widthPx > 0 ? stroke.widthPx : markerWidthPx(stroke.widthPx),
+      penWidth: clampPenWidth(stroke.widthPx > 0 ? stroke.widthPx : markerWidthPx(stroke.widthPx)),
       ...(strokeColor ? { strokeColor } : {}),
       ...common,
     };
@@ -127,7 +133,9 @@ export function landPath(item: ScenePolyline, id: string, ctx: LandContext): Pat
   const closed = item.closed === true;
   let pts: ScenePoint[] = limitPoints(item.points, MAX_PATH_NODES);
   if (pts.length < item.points.length) ctx.degrade(LANDING_RULES.longStroke);
-  if (closed && endsMeet(pts, CLOSED_END_EPSILON_PX)) pts = pts.slice(0, -1);
+  // The repeated end goes only while three corners stay: a closed [A, B, A] would be a two-node closed
+  // path, which the validator refuses.
+  if (closed && pts.length > 3 && endsMeet(pts, CLOSED_END_EPSILON_PX)) pts = pts.slice(0, -1);
   const anchors: PathAnchor[] = item.curved
     ? curveAnchors(pts, closed)
     : pts.map((p) => ({ x: p.x, y: p.y, mode: 'corner' }));

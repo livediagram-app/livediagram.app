@@ -81,7 +81,8 @@ across; it is dropped with the copy that held it.
 At `/explorer/favourites`. It has **no sidebar row**
 ([Explorer structure](explorer-structure.md)); the route keeps working for links
 and bookmarks. It behaves like the synthetic folders (a computed list, not a real
-folder you can move things into).
+folder you can move things into), so like Recent its header offers no
+**New folder**: a folder made there would not appear there.
 
 - **Sorted most-recently-updated first**, exactly like Recent and every folder,
   so there's nothing new to learn. Deliberately _not_ sort-by-date-favourited:

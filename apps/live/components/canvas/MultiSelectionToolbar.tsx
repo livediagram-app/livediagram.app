@@ -7,15 +7,12 @@ import {
   HoverCard,
   Glyph,
 } from '@livediagram/ui';
+import type { CombineOp } from '@/lib/combine/combine';
+import { CombineMenuButton } from '@/components/canvas/CombineMenu';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
+import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useMinimalChrome, usePowerUser } from '@/components/providers/minimal-chrome';
-
-// Shared styling for the toolbar's plain icon buttons (More / Duplicate /
-// Export). Lock (active brand fill) and Delete (rose / disabled) compose
-// their own variants, so they're not on this.
-const TOOLBAR_BTN =
-  'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white';
 
 type MultiSelectionToolbarProps = {
   // True if at least one member of the multi-selection is locked. The
@@ -29,6 +26,9 @@ type MultiSelectionToolbarProps = {
   // per-kind buckets.
   selectedElements: Element[];
   onDuplicate: () => void;
+  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): shown only while the selection can be
+  // combined.
+  onCombine?: (op: CombineOp) => void;
   onDelete: () => void;
   onToggleLock: () => void;
   // Narrows the selection to one kind (Filter Selection menu). Omitted for
@@ -49,6 +49,7 @@ export function MultiSelectionToolbar({
   allLocked,
   selectedElements,
   onDuplicate,
+  onCombine,
   onDelete,
   onToggleLock,
   onFilter,
@@ -103,6 +104,7 @@ export function MultiSelectionToolbar({
           <DuplicateIcon size={14} />
         </button>
       </HoverCard>
+      {onCombine ? <CombineMenuButton onCombine={onCombine} /> : null}
       {/* Duplicate copies the selection; everything after acts ON it
           (export, then lock / delete) — the divider marks that
           boundary, same as the one after More above. */}
@@ -131,11 +133,7 @@ export function MultiSelectionToolbar({
           onClick={onToggleLock}
           aria-label={anyLocked ? 'Unlock selected elements' : 'Lock selected elements'}
           aria-pressed={anyLocked}
-          className={
-            anyLocked
-              ? 'flex h-7 w-7 items-center justify-center rounded-md bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-              : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
-          }
+          className={anyLocked ? TOOLBAR_BTN_ON : TOOLBAR_BTN}
         >
           <LockIcon closed={anyLocked} size={14} />
         </button>
@@ -155,7 +153,7 @@ export function MultiSelectionToolbar({
             className={
               allLocked
                 ? 'flex h-7 w-7 items-center justify-center rounded-md text-slate-300 dark:text-slate-400'
-                : 'flex h-7 w-7 items-center justify-center rounded-md text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 dark:text-slate-300 dark:hover:bg-rose-500/15 dark:hover:text-rose-300'
+                : TOOLBAR_BTN
             }
           >
             <TrashIcon size={14} />

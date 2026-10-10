@@ -9,6 +9,7 @@ import { GROUPS as EXCEPTIONS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
 import { GROUPS as COMMUNITY } from './CommunityView';
 import { GROUPS as DASHBOARD } from './DashboardView';
+import { GROUPS as TIMINGS } from './TimingsView';
 import {
   CUSTOM_THEME_METRICS,
   CUSTOM_THEME_TYPES,
@@ -62,8 +63,6 @@ const KNOWN = EMITS.filter(
 const DYNAMIC_EMITTERS: Record<string, string> = {
   'apps/live/components/dialogs/settings/SettingsCategoryPane.tsx':
     'emits each Settings catalogue row; the rows themselves are scanned',
-  'apps/live/components/tour/TourLayoutPicker.tsx':
-    "the welcome tour's panel-layout choice, re-emitting the Settings catalogue's panelLayout row (scanned there)",
   'apps/api/src/routes/events.ts': 'the ingest endpoint, writing validated client events',
   'apps/api/src/server-telemetry.ts':
     'reportServerEvent, the api worker helper; its callers are scanned as emitters',
@@ -91,6 +90,7 @@ const ALL: MetricGroup[] = [
   ...EXCEPTIONS,
   ...HELP,
   ...COMMUNITY,
+  ...TIMINGS,
 ];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
 // waiting to be added back can't rot while it is out of view.

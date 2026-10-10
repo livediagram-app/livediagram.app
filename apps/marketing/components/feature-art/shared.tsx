@@ -1,10 +1,9 @@
-// Shared primitives for the landing-page feature illustrations,
-// split out of FeatureArt.tsx. Color constants + the Frame surface
-// every art scene sits in. Scenes live in ./canvas, ./foundations,
-// ./features, ./versatility; FeatureArt.tsx re-exports them all.
+// Shared primitives for the feature-card illustrations: the Frame surface every
+// scene sits in and the few colours the SVG attributes restate. The scenes live in
+// one file per subject beside this one; FeatureArt.tsx re-exports them all.
 //
-// Motion is pure CSS (fa-* classes + keyframes in globals.css) so it
-// survives the static export and degrades under prefers-reduced-motion.
+// Motion is pure CSS (fa-* classes + keyframes in app/feature-art-animations.css) so
+// it survives the static export and settles under prefers-reduced-motion.
 
 import type { ReactNode } from 'react';
 
@@ -12,14 +11,6 @@ import type { ReactNode } from 'react';
 // utility: fill-(--art-ink-fill), stroke-(--art-ink-stroke), fill-(--art-ink-text),
 // stroke-(--art-arrow) and so on, the Default scheme's light or dark half with the
 // appearance. These restate the light half for the SVG attributes underneath.
-export const INK_FILL = '#f0f9ff';
-export const INK_STROKE = '#0ea5e9';
-export const INK_TEXT = '#075985';
-export const ARROW_STROKE = '#334155';
-// The chrome accent (brand-600) a panel glyph is drawn in; dark lifts it to
-// dark:stroke-brand-300. BLUE_FILL is the tint the light/dark mock paints its shapes.
-export const BLUE_FILL = '#dbeafe';
-export const BLUE_STROKE = '#0284c7';
 export const PINK = '#ec4899';
 export const SKY = '#0ea5e9';
 

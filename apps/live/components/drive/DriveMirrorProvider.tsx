@@ -450,7 +450,6 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
       title: 'Disconnect Google Drive?',
       message: 'Your files stay in Drive; livediagram stops updating them.',
       confirmLabel: 'Disconnect',
-      variant: 'neutral',
     });
     if (!ok) return;
     await apiDisconnectDrive(clerkUserId);

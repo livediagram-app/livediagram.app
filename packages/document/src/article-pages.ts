@@ -17,6 +17,9 @@ import {
   MAX_ILLUSTRATE_PAGES,
   nextIllustratePageId,
   PAGE_NAME_MAX,
+  newLogoPage,
+  newSlidePage,
+  pageSizesFor,
   withIllustratePages,
   type IllustratePage,
   type PageKind,
@@ -150,6 +153,7 @@ export function withArticleDuplicated<T extends PagesTab>(
       ...p,
       id,
       flow: newFlow,
+      locked: undefined,
       ...(p.name ? { name: `${p.name} copy`.slice(0, PAGE_NAME_MAX) } : {}),
     };
   });
@@ -255,8 +259,9 @@ export function offersPageKindChoice(
   return pages.length === 1 && pages[0]!.id === pageId && !pages[0]!.kind && contentCount === 0;
 }
 
-/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), or an article
- *  (the page becomes its first page, its writing a new Title and paragraph). Null when the page no
+/** The tab with its first page's kind chosen: an infographic page (kept, now chosen), an article
+ *  (the page becomes its first page, its writing a new Title and paragraph),, a slide (the page
+ *  turned into a 16:9 landscape slide) or a logo page (the 1024 artboard). Null when the page no
  *  longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
@@ -268,8 +273,35 @@ export function withPageKindChosen<T extends PagesTab>(
   const page = pages.find((p) => p.id === pageId);
   if (!page || pages.length !== 1 || page.kind) return null;
   if (kind === 'infographic') return withIllustratePages(tab, [{ ...page, kind: 'infographic' }]);
+  if (kind === 'slide') {
+    const { name } = page;
+    return withIllustratePages(tab, [
+      {
+        ...newSlidePage(page.id),
+        ...(page.background ? { background: page.background } : {}),
+        ...(name ? { name } : {}),
+      },
+    ]);
+  }
+  if (kind === 'logo') {
+    // The artboard keeps the page's name and fill; a logo page takes no pattern.
+    const { name } = page;
+    const fill = page.background?.fill;
+    return withIllustratePages(tab, [
+      {
+        ...newLogoPage(page.id),
+        ...(fill ? { background: { fill } } : {}),
+        ...(name ? { name } : {}),
+      },
+    ]);
+  }
+  // An article takes only the paper and screen sizes: a page in any other (the 16:9 slide the
+  // unchosen page could be set to) becomes A4.
+  const { size, fit: _sides, ...rest } = page;
+  void _sides;
+  const keepSize = size && pageSizesFor('article').includes(size) ? { size } : {};
   return withArticleFlow(
-    withIllustratePages(tab, [{ ...page, kind: 'article', flow }]),
+    withIllustratePages(tab, [{ ...rest, ...keepSize, kind: 'article', flow }]),
     flow,
     newArticleFlow(),
   );

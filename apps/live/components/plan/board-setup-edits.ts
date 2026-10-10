@@ -3,36 +3,27 @@
 // caller writes it as one element edit, undone like any other) and leaves the input untouched.
 import {
   PLAN_COLUMNS_MAX,
+  statusTitleCase,
   type CardField,
+  type CustomCardField,
   type ColumnWidth,
   type PlanBoardSetup,
   type PlanColumn,
   type SwimlaneBy,
 } from '@livediagram/items';
 
-export const COLUMN_COLOURS = [
-  '#2563eb',
-  '#16a34a',
-  '#d97706',
-  '#dc2626',
-  '#7c3aed',
-  '#0d9488',
-  '#db2777',
-  '#64748b',
-] as const;
-
 export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
-  none: 'No Swimlanes',
-  assignee: 'By Assignee',
-  type: 'By Card Type',
-  priority: 'By Priority',
-  parent: 'By Project',
-  status: 'By Status',
+  none: 'None',
+  assignee: 'Assignee',
+  type: 'Type',
+  priority: 'Priority',
+  status: 'Status',
   // The tile reads the field's own name (PlanBoardMenuSection); this names the setting.
   field: 'By a Field',
 };
 
-export const CARD_FIELD_LABELS: Record<CardField, string> = {
+// The built-in card fields' names; a custom field (Parent among them) is named by its type.
+export const CARD_FIELD_LABELS: Record<Exclude<CardField, CustomCardField>, string> = {
   key: 'Number',
   type: 'Type',
   assignee: 'Assignee',
@@ -45,7 +36,6 @@ export const CARD_FIELD_LABELS: Record<CardField, string> = {
   checklist: 'Checklist',
   comments: 'Comments',
   description: 'Description',
-  parent: 'Project',
 };
 
 export const COLUMN_NAME_MAX = 40;
@@ -73,8 +63,11 @@ const withColumn = (
   columns: setup.columns.map((c) => (c.id === id ? change(c) : c)),
 });
 
+// A column's name as saved: Title Case (docs/specs/026-plan/plan-board.md "Column names"), within the limit.
+export const columnName = (name: string) => statusTitleCase(name).slice(0, COLUMN_NAME_MAX);
+
 export function renameColumn(setup: PlanBoardSetup, id: string, name: string): PlanBoardSetup {
-  const trimmed = name.trim().slice(0, COLUMN_NAME_MAX);
+  const trimmed = columnName(name);
   return trimmed ? withColumn(setup, id, (c) => ({ ...c, name: trimmed })) : setup;
 }
 
@@ -139,7 +132,7 @@ export function addColumnAfter(
     name,
     setup.columns.map((c) => c.status.split('~')[0]!),
   )}~${suffix}`;
-  const column: PlanColumn = { id: status, status, name };
+  const column: PlanColumn = { id: status, status, name: columnName(name) || 'New Column' };
   const at = afterId ? setup.columns.findIndex((c) => c.id === afterId) + 1 : setup.columns.length;
   const columns = [...setup.columns];
   columns.splice(at <= 0 ? columns.length : at, 0, column);
@@ -169,9 +162,12 @@ export function setColumnWidth(
   };
 }
 
-// A board's first column, named as typed (a board with no columns asks for one).
-export function addFirstColumn(setup: PlanBoardSetup, name: string): PlanBoardSetup | null {
-  const trimmed = name.trim().slice(0, COLUMN_NAME_MAX);
-  if (!trimmed) return null;
-  return addColumnAfter(setup, null, trimmed)?.setup ?? null;
+// A column switched to another status of the name it was renamed to (columnRename's reuse).
+export function reuseColumnStatus(
+  setup: PlanBoardSetup,
+  id: string,
+  status: string,
+  name: string,
+): PlanBoardSetup {
+  return withColumn(setup, id, (c) => ({ ...c, status, name: columnName(name) || c.name }));
 }

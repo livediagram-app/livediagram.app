@@ -1,3 +1,4 @@
+import type { CombineOp } from '@/lib/combine/combine';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
@@ -35,7 +36,7 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
-import type { CanvasTool } from '@/components/palette/CommandPalette';
+import type { CanvasTool } from '@/components/palette/palette.types';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
@@ -289,6 +290,10 @@ export type CanvasProps = {
     target?: EventTarget | null,
   ) => void;
   onDuplicateMultiSelected: () => void;
+  // Combine (docs/specs/007-editor/logo-pages.md "Combine"): offered while the multi-selection
+  // is combinable shapes on one logo page.
+  canCombine?: () => boolean;
+  onCombine?: (op: CombineOp) => void;
   onDeleteMultiSelected: () => void;
   onToggleLockMultiSelected: () => void;
   // Narrows the multi-selection to just `ids` (Filter Selection menu).
@@ -301,8 +306,6 @@ export type CanvasProps = {
   // seeded first character isn't replaced by the next keystroke.
   editCursorAtEnd?: boolean;
   formatSourceId: string | null;
-  palettePosition: { x: number; y: number } | null;
-  explorerPosition: { x: number; y: number } | null;
   canUndo: boolean;
   canRedo: boolean;
   onAddShape: (kind: ShapeKind) => void;
@@ -367,9 +370,12 @@ export type CanvasProps = {
   // click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from the palette tiles.
   onBeginHighlighter: () => void;
   // One of Draw mode's markers, picked up from the Toolbar strip's Search in another mode.
-  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId) => void;
+  // `once`: picked up for one stroke (a logo page's palette), else held until put down.
+  onBeginMarker: (penId: import('@/lib/whiteboard-prefs').WhiteboardPenId, once?: boolean) => void;
   onBeginShapePen: () => void;
   onBeginPolygon: () => void;
+  // The Path tool (docs/specs/023-draw-mode/path-tool.md), a logo page's Pen in the palette.
+  onBeginPath: () => void;
   // Draw-to-size mode. Picking any palette element except the annotation
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
@@ -427,21 +433,11 @@ export type CanvasProps = {
     endX: number,
     endY: number,
   ) => import('@livediagram/document').ArrowElement;
-  // Toolbar layout (docs/specs/007-editor/toolbar-layout.md): the Palette as a top strip and a menu button
-  // in place of the Explorer. Always on below `sm`, where Floating is not offered.
-  toolbarLayout?: boolean;
-  // Lifted user preferences + a write-through setter, forwarded to the
-  // Palette settings popover (docs/specs/007-editor/user-preferences.md). Holds the canvas-behaviour
-  // toggles (auto-attach arrows, alignment guides) that the popover edits.
+  // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
-  onChangeSettings: (next: UserPreferences) => void;
   onCancelDraw: () => void;
   onUndo: () => void;
   onRedo: () => void;
-  onMovePalette: (x: number, y: number) => void;
-  onResetPalette: () => void;
-  onMoveExplorer: (x: number, y: number) => void;
-  onResetExplorer: () => void;
   documentList: DocumentListItem[];
   // Lightweight id + name of this document's tabs, so a link badge's
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
@@ -452,13 +448,16 @@ export type CanvasProps = {
   // read-only / embed mounts that never travel can omit them.
   portalTabs?: import('@livediagram/document').Tab[];
   activeTabId?: string;
+  // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
+  // the board once it lands, not as additions. Omitted, the tab is loaded.
+  activeTabLoaded?: boolean;
   folders: Folder[];
   // Shared-with-you list. Empty by default so legacy callers can
   // omit it.
   sharedDocuments?: SharedWithItem[];
   onDismissShared?: (documentId: string) => void;
   // Teams the signed-in user belongs to + their swept libraries
-  // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the floating Explorer panel for its Teams
+  // (docs/specs/013-workspace/team-shared-documents.md), forwarded to the Explorer popover for its Teams
   // accordion, team rows in Recent, and the current team document.
   // Empty by default so guest / legacy callers can omit them.
   teams?: { id: string; name: string }[];
@@ -471,19 +470,13 @@ export type CanvasProps = {
   onResetMap: () => void;
   // Layers panel (docs/specs/006-document/layers.md). `layers` is the NORMALISED stack (bottom ->
   // top, never empty) the panel renders; `tabLayers` above stays the raw
-  // field for the render-order helpers. Minimised by default into a
-  // bottom-right dock button.
+  // field for the render-order helpers. A popover over its bottom-right
+  // cluster button.
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
-  layersPanelPosition: { x: number; y: number } | null;
-  layersMinimized: boolean;
-  onMoveLayersPanel: (x: number, y: number) => void;
-  onResetLayersPanel: () => void;
-  onToggleLayersMinimized: () => void;
   // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running,
-  // so `poll` null means it isn't rendered at all — there is no minimised
-  // state to keep, unlike Layers.
+  // so `poll` null means it isn't rendered at all.
   pollPanel: {
     poll: import('@livediagram/api-schema').LivePoll;
     answers: Map<string, string | null>;
@@ -679,11 +672,8 @@ export type CanvasProps = {
   onBeginArrowLabelDrag: (arrowId: string, e: ReactPointerEvent) => void;
   onBeginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;
   onShiftSelect: (id: string) => void;
-  onBeginFormatPainter: () => void;
-  onCancelFormatPainter: () => void;
-  // Wrap up the persistent Format canvas tool (the palette tool, not the
-  // single-shot painter): drops back to the Select tool. Drives the
-  // format-tool mode banner's "Done" button.
+  // Wrap up the Format canvas tool (the palette tool): drops back to the
+  // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
   onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
@@ -754,7 +744,7 @@ export type CanvasProps = {
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
   // "Auto align" cleanup pass on the current tab's elements. See
-  // CommandPalette's Cleanup accordion + lib/auto-align.ts.
+  // the palette's Cleanup accordion + lib/auto-align.ts.
   // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off
@@ -849,4 +839,7 @@ export type CanvasProps = {
   // button, the zoom-dock exit button, and the Z shortcut.
   zenMode?: boolean;
   onToggleZen?: () => void;
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table)
+  // has no Explorer: neither the floating panel nor the Toolbar layout's menu button.
+  explorerHidden?: boolean;
 };

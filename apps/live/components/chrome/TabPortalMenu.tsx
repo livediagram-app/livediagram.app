@@ -27,13 +27,20 @@ import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
-import { OpensInMenuSection, type OpensInChoice } from './OpensInMenuSection';
+import { TabModeMenuSection, type TabModeChoice } from './TabModeMenuSection';
 import {
   AddTabToDocumentDialog,
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
-import { DuplicateIcon, MenuTreeContext, useControlMenu, Portal } from '@livediagram/ui';
+import {
+  DuplicateIcon,
+  MenuTreeContext,
+  SideBySideIcon,
+  useControlMenu,
+  Portal,
+} from '@livediagram/ui';
+import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and
@@ -52,7 +59,7 @@ export function PortalMenu({
   onCopyTo,
   onToggleLock,
   locked,
-  opensIn,
+  modeChoice,
   planTab = false,
   selfId,
   voteSelfId,
@@ -83,8 +90,8 @@ export function PortalMenu({
   onCopyTo: (targetDocumentId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // The Opens in choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
-  opensIn?: OpensInChoice;
+  // The tab's Mode choice (docs/specs/007-editor/editor-modes.md), absent where it is not offered.
+  modeChoice?: TabModeChoice;
   // A Plan tab: Add to Document is off, its cards belong to this document's items.
   planTab?: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
@@ -261,6 +268,17 @@ export function PortalMenu({
   // Escape closes it too — via the shared hook, which registers the same
   // document-level bubble listener this effect used to open-code.
 
+  // Open this (the active) tab side by side, or close the split when one is showing; absent where a
+  // split can't open (a phone, a lone tab, no editor around the menu).
+  const split = useSplitViewContext();
+  const sideBySide = !split?.available
+    ? null
+    : split.pair
+      ? { closing: true, run: split.close }
+      : split.canOpen(split.activeId)
+        ? { closing: false, run: () => split.open(split.activeId, 'Menu') }
+        : null;
+
   // Modal pickers replace the anchored box entirely (see the `view` note
   // above); dismissing them dismisses the menu.
   if (view === 'copyTo') {
@@ -324,6 +342,24 @@ export function PortalMenu({
                 disabled={!canvas.canPaste}
               />
             ) : null}
+            {/* Side by side (docs/specs/007-editor/split-view.md): the menu's way to what dragging the
+              pill to the right does, for a keyboard or a trackpad that would rather not drag. */}
+            {sideBySide ? (
+              <MenuToolButton
+                icon={<SideBySideIcon />}
+                label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
+                description={
+                  sideBySide.closing
+                    ? 'Go back to one tab: this one, across the whole window.'
+                    : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
+                }
+                onClick={() => {
+                  sideBySide.run();
+                  onClose();
+                }}
+                active={sideBySide.closing}
+              />
+            ) : null}
             {/* Lock and Delete sit together at the right edge, apart from
               the everyday verbs: both change what the tab will let you
               do next rather than doing something to it. The confirm
@@ -345,7 +381,6 @@ export function PortalMenu({
                     : "Delete this tab. Its content can't be recovered."
                 }
                 onClick={() => setConfirmingDelete(true)}
-                danger
                 disabled={!canDelete || locked}
               />
             </div>
@@ -410,13 +445,12 @@ export function PortalMenu({
               <MenuTile
                 icon={<ClearIcon />}
                 label="Clear"
-                danger
                 onClick={onClearContent}
                 disabled={!canClearContent}
               />
             </MenuTileGrid>
           </MenuAccordionSection>
-          {opensIn ? <OpensInMenuSection choice={opensIn} {...sectionProps('opens-in')} /> : null}
+          {modeChoice ? <TabModeMenuSection choice={modeChoice} {...sectionProps('mode')} /> : null}
           {/* ── Look & Feel / Font / Cleanup band — see
             TabCanvasMenuSections. Rendered whenever canvas actions are
             available, which is both entry points (canvas right-click AND

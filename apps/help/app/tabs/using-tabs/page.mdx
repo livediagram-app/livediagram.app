@@ -1,11 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TabBarOverview, RenamingTab } from '@/components/illustrations/tabs';
+import { TabBarOverview, RenamingTab, TabMenu } from '@/components/illustrations/tabs';
 
 export const metadata = helpMetadata({
   title: 'Tabs',
   description:
-    'A document in livediagram holds many tabs, each its own independent canvas. Add, name, reorder, and switch between them along the tab bar.',
+    'A document in livediagram holds many tabs, each its own independent canvas. Add, name, reorder, delete and switch between them along the tab bar, and find every tab action in the tab menu.',
   path: '/help/tabs/using-tabs/',
 });
 
@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="tabs"
 >
 
-A document is not a single canvas. It is a collection of **tabs**, each with its own canvas, elements, layout, theme, and background. New documents start with one empty tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the canvas area above it.
+A document is not a single canvas. It is a collection of **tabs**, each with its own canvas, elements, layout, theme, and background. A new document usually starts with one tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the canvas area above it.
 
 ## What a tab is
 
@@ -26,40 +26,85 @@ Each tab is a self-contained canvas inside the document. A tab carries its own e
 - One tab per system, team, or phase of a project.
 - A scratch tab for ideas you are not ready to file yet.
 
-Tabs are ordered, and you can drag them to reorder them in the bar. The `+` button adds a new empty tab and switches to it.
+Each tab also has its own [mode](/help/canvas/editor-modes/) (Diagram, Draw, Illustrate or Plan), the same for everyone on it. The small icon at the start of a tab's name shows it.
 
-<Figure caption="The tab bar runs along the bottom of the editor: pill-shaped tabs, the active one highlighted, with a plus button to add another.">
+<Figure caption="The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.">
   <TabBarOverview />
 </Figure>
+
+## Adding a tab
+
+Press the **+** button at the end of the tab bar, or run **Create new tab** from the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`). The new tab:
+
+- is named `Tab 2`, `Tab 3` and so on, after the number of tabs in the document;
+- takes the theme, background and font of the tab you were on, so it matches the work around it;
+- opens in Diagram mode;
+- opens the **Quick Start** picker, so you can start it from a template. Close the picker to keep it blank.
+
+**Duplicate** in the tab menu makes a copy instead: it is named after the original with "copy" on the end, sits right after it, and is a separate tab with its own elements from then on.
 
 ## Naming and reordering tabs
 
 Tabs start with default names like `Tab 1` and `Tab 2`, and you can rename any of them:
 
-- **Double-click** a tab label to edit it inline. Enter commits, Escape cancels.
-- The same rename action lives in each tab's right-click or ellipsis menu.
-- **Auto-rename on first edit:** while a tab still has its default name, editing the label of its first element renames the tab to match. This only happens once, so later edits leave a renamed tab alone. A long label is tidied on the way across: runs of spaces and line breaks collapse to one, and anything over **60 characters** is cut at the last whole word with an ellipsis, so a paragraph typed into a sticky can't turn into an unreadable tab.
+- **Double-click** the active tab's name to edit it inline. Enter or clicking away saves, Escape cancels, and an empty name keeps the old one.
+- **Rename** in the tab menu (and **Rename tab** in the command palette) opens the same editor.
+- **Auto-rename on first edit:** while a tab still has its default name, editing the label of its first element renames the tab to match. This only happens once, so later edits leave a renamed tab alone.
 
-Drag a tab to a new position to reorder it. Reordering only moves the tab in the list, it never touches the content on any tab.
+Tab names are capped at **60 characters**. Runs of spaces and line breaks collapse to one, and anything longer is cut at the last whole word with an ellipsis, so a paragraph typed into a sticky can't turn into an unreadable tab.
 
-<Figure caption="Double-click a tab label to edit it inline, then press Enter to commit or Escape to cancel.">
+Drag a tab left or right to reorder it. A blue bar shows where it will land: drop on the left half of a tab to land before it, the right half to land after it. Reordering only moves the tab in the list, it never touches the content on any tab.
+
+Drag a tab up off the bar to the **right edge** of the screen instead, and it opens beside the tab you're on: see [Side by Side Tabs](/help/tabs/side-by-side/).
+
+<Figure caption="Double-click the active tab's name to edit it inline, then press Enter to save or Escape to cancel.">
   <RenamingTab />
 </Figure>
+
+## The tab menu
+
+Click the **⋯** button on the active tab, or right-click any tab (which switches to it first), to open its menu. Right-clicking an empty spot on the canvas opens the same menu. On a phone it opens as a sheet from the bottom of the screen.
+
+Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Lock tab** and **Delete**. Below them, collapsible sections hold the rest:
+
+- **Organise**: **Add to Folder** and **Add to Document**.
+- **Content**: **Import**, **Export**, and **Clear**, which removes every element from the tab after a confirmation (undo brings them back).
+- **Mode**: the tab's mode, for everyone; choosing one switches the tab.
+- **Cleanup**: Auto Layout and Auto-align.
+- **Collaborate**: the [session tools](/help/collaboration/session-tools/) (timer, vote and poll).
+
+<Figure caption="The tab menu: quick actions along the top, then the Organise, Content, Mode, Cleanup and Collaborate sections.">
+  <TabMenu />
+</Figure>
+
+## Deleting a tab
+
+Choose **Delete** in the tab menu and confirm. The confirmation warns that the tab's content can't be recovered, so export or duplicate anything you might want back. A few things to know:
+
+- A document always keeps at least one tab, so Delete is greyed out on the last one.
+- A [locked tab](/help/tabs/locking-tabs/) can't be deleted until you unlock it.
+- Links on other tabs that pointed at the deleted tab are removed with it.
+- If the tab is also in [another document](/help/tabs/add-to-document/), it is only removed from this one.
+
+## View-only access
+
+On a view-only share link you can still click between tabs, but the **+** button, the tab menu, renaming and drag-to-reorder are all hidden.
 
 ## More with tabs
 
 Each tab also carries its own menu of actions, covered in their own guides:
 
-- **[Tab Folders](/help/tabs/tab-folders/)** group related tabs under a named, collapsible chip so a long tab bar stays readable.
+- **[Tab Folders](/help/tabs/tab-folders/)** group related tabs under one named chip so a long tab bar stays readable.
+- **[Side by Side Tabs](/help/tabs/side-by-side/)** puts two tabs on screen at once, each live, with the toolbars following you between them.
 - **[Linking Across Tabs](/help/tabs/linking-tabs/)** turns any element into a jump point to another tab.
 - **[Add a Tab to Another Document](/help/tabs/add-to-document/)** shares a tab into a different document: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
 - **[Importing](/help/tabs/import-tabs/)** and **[Exporting](/help/tabs/export-tabs/)** move a tab's contents in and out as a file.
+- **[Locking a Tab](/help/tabs/locking-tabs/)** makes a whole canvas read-only.
 - **[Cleaning Up a Tab](/help/tabs/tab-cleanup/)** tidies a tab's layout in one click.
 
 <Tip>
-  Tabs can be reused across documents behind the scenes, so a shared reference tab such as a
-  glossary can live in more than one document at once. Editing it in one place updates it
-  everywhere.
+  A shared reference tab such as a glossary can live in more than one document at once with [Add to
+  Document](/help/tabs/add-to-document/). Editing it in one place updates it everywhere.
 </Tip>
 
 </ArticleLayout>

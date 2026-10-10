@@ -1,16 +1,17 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { FollowingScene } from '@/components/illustrations/canvas-links-notes';
 
 export const metadata = helpMetadata({
-  title: 'Following someone',
+  title: 'Following Someone',
   description:
     "Pin your view to a collaborator's: their pan, zoom and tab, until you move the canvas yourself.",
   path: '/help/canvas/follow-along/',
 });
 
 <ArticleLayout
-  title="Following someone"
+  title="Following Someone"
   description="Pin your view to somebody else's until you take the canvas back."
   categoryTitle="Canvas"
   categorySlug="canvas"
@@ -29,7 +30,11 @@ Your canvas immediately matches theirs:
 - their **zoom**, exactly,
 - their **tab**, so "look at this" works when the this is on tab 3.
 
-A pill appears at the top reading **Following** followed by their name, and their avatar gains a ring.
+A pill appears at the top of the canvas reading **Following** followed by their name, and their avatar gains a ring. The pill shows on every screen size and in Zen mode, so you always know why your view is moving.
+
+<Figure caption="Following Sam: the pill at the top of the canvas with its Stop, and Sam's avatar ringed in the presence stack.">
+  <FollowingScene />
+</Figure>
 
 ## Stopping
 
@@ -41,14 +46,14 @@ Three ways, and you'll mostly use the first:
 
 A follow also ends by itself if the person you're following leaves, with a line to explain why your view suddenly stopped moving.
 
-## Good to know
+## Good to Know
 
-- **Anyone can follow anyone**, including on a view-only link — it changes nothing on the canvas. Being in the room is the only permission involved, so nobody has to accept a request.
+- **Anyone can follow anyone**, including on a view-only link: it changes nothing on the canvas. Being in the room is the only permission involved, so nobody has to accept a request.
 - **The zoom is matched exactly, not fitted.** On a smaller screen you see the same zoom level and therefore less of the canvas, centred on the same spot. Matching the zoom rather than the content means "see how small this is" still means something.
 - **You can't follow somebody who is following you.** Two mirrors pointed at each other go nowhere, so it's refused with a note.
-- Following someone who is themselves following a third person just works: you get the view they're getting.
+- Following Someone who is themselves following a third person just works: you get the view they're getting.
 
-## Which to reach for
+## Which to Reach For
 
 | You want to                                 | Use                    |
 | ------------------------------------------- | ---------------------- |
@@ -57,5 +62,7 @@ A follow also ends by itself if the person you're following leaves, with a line 
 | Focus attention on one area                 | Spotlight              |
 | Walk the canvas as a character              | Avatar mode            |
 | Talk through it in a fixed running order    | A slide deck           |
+
+See [Laser](/help/selection-modes/laser/), [Spotlight](/help/selection-modes/spotlight/), [Avatar mode](/help/selection-modes/avatar-mode/) and [Presenting](/help/selection-modes/slide-deck/presenting/).
 
 </ArticleLayout>

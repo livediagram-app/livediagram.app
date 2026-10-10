@@ -1,6 +1,6 @@
 import type { ImageBuffer } from './colour';
 import { modeOf, otsu } from './histogram';
-import { BLOWN_OUT, hueOf, measure, wallLabOf, type Surface } from './surface';
+import { hueOf, measure, wallLabOf, type Surface } from './surface';
 
 // Measuring the wall a photograph was taken of, so the paper on it can be told
 // apart from it (docs/specs/021-event-storming/event-storming.md Phase 8).
@@ -275,16 +275,3 @@ export function localFloorsOf(
     },
   };
 }
-
-export const FLOOR_CALIBRATION = {
-  VALUE_FLOOR,
-  SATURATION_FLOOR,
-  WALL_SATURATION_MARGIN,
-  MIN_PAPER_SATURATION,
-  WALL_VALUE_RATIO,
-  FLOOR_TILES_LONG_SIDE,
-  FLOOR_SAMPLE_STRIDE,
-  BLOWN_OUT,
-  TILE_BIMODAL_STRENGTH,
-  TILE_WALL_TOLERANCE,
-} as const;

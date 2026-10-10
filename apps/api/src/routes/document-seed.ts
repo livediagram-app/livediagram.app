@@ -9,16 +9,17 @@ import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
 import { buildTemplateTabs, isTemplateKind, templateFamilyOf } from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
+import { isRecord } from '@livediagram/document';
 
 const SOURCES = ['graph', 'mermaid', 'template'] as const;
 
 type Refusal = { status: number; body: Record<string, unknown> };
 
+// `templateElements`: the elements of every tab a template made, whose Plan boards bring their card types
+// (docs/specs/026-plan/plan-templates.md "Card types a template uses").
 export type CompiledSeed =
-  { tabs: unknown[]; intent: CreationIntent | null } | { refusal: Refusal };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
+  | { tabs: unknown[]; intent: CreationIntent | null; templateElements: Tab['elements'] }
+  | { refusal: Refusal };
 
 // The source a seeded tab names, when it names exactly one and no elements.
 function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
@@ -31,6 +32,7 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
 export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {
   const out: unknown[] = [];
   let first: { tab: Tab; template: string | null } | null = null;
+  const templateElements: Tab['elements'] = [];
   for (const [index, raw] of tabs.entries()) {
     const body = isRecord(raw) && typeof raw.id === 'string' ? sourceOf(raw) : null;
     if (!isRecord(raw) || !body) {
@@ -63,6 +65,7 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
     // A template of several tabs (docs/specs/026-plan/plan-templates.md "How a template with tabs is
     // made"): the replace filled this tab with its first; the rest follow it, each with a fresh id.
     if (typeof template === 'string' && isTemplateKind(template)) {
+      templateElements.push(...compiled.tab.elements);
       const [, ...followers] = buildTemplateTabs(
         { id: tabId, name: compiled.tab.name },
         template,
@@ -70,11 +73,16 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
         typeof raw.theme === 'string' ? raw.theme : undefined,
       );
       out.push(...followers);
+      for (const f of followers) templateElements.push(...f.elements);
     }
     if (index === 0)
       first = { tab: compiled.tab, template: typeof template === 'string' ? template : null };
   }
   const family =
     first?.template && isTemplateKind(first.template) ? templateFamilyOf(first.template) : null;
-  return { tabs: out, intent: first ? creationIntentOf(first.tab, family) : null };
+  return {
+    tabs: out,
+    intent: first ? creationIntentOf(first.tab, family) : null,
+    templateElements,
+  };
 }

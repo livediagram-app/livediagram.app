@@ -182,6 +182,44 @@ describe('handleImages', () => {
     expect(res.status).toBe(404);
     expect(db.documentServesImage).toHaveBeenCalledWith(expect.anything(), 'd1', 'i1', 't2');
   });
+
+  // docs/specs/013-workspace/workbench-embeds.md: a workbench session reads images through its own document
+  // only, never by owning them, so it cannot walk its owner's gallery by id.
+  describe('under a workbench session', () => {
+    const session = (path: string) =>
+      makeTestRouteContext('GET', path, {
+        owner: 'owner-1',
+        env: { IMAGES: imagesBinding() } as unknown as Env,
+        workbench: { documentId: 'd1', ownerId: 'owner-1' } as never,
+      });
+
+    it('skips the owner shortcut: no document, no bytes', async () => {
+      db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+      const res = await handleImages(session('/api/images/i1'));
+      expect(res.status).toBe(404);
+    });
+
+    it('refuses any document but the session own', async () => {
+      db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+      const res = await handleImages(session('/api/images/i1?d=d2'));
+      expect(res.status).toBe(404);
+      expect(db.getDocument).not.toHaveBeenCalled();
+    });
+
+    it('serves an image its own document serves', async () => {
+      db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
+      db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-1' });
+      canReadDocument.mockResolvedValue(true);
+      db.documentServesImage.mockResolvedValue(true);
+      const ctx = session('/api/images/i1?d=d1');
+      (ctx.env.IMAGES as unknown as ReturnType<typeof imagesBinding>).get.mockResolvedValue({
+        body: 'bytes',
+        httpMetadata: { contentType: 'image/png' },
+      });
+      const res = await handleImages(ctx);
+      expect(res.status).toBe(200);
+    });
+  });
 });
 
 // docs/specs/009-elements/images.md "Size cap": the cap is enforced by the insert itself, so

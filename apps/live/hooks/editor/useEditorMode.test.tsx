@@ -1,132 +1,92 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { releaseOpening } from '@/lib/editor-mode-store';
-import { useEditorMode, usePinTabOpening } from './useEditorMode';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Element, Tab } from '@livediagram/document';
+import { useEditorMode } from './useEditorMode';
 
 const events: unknown[][] = [];
-const stored: (string | null)[] = [];
+// What the tab's mode was when each event left: the event fires BEFORE the mode applies.
+const modeAtEvent: (string | undefined)[] = [];
+let tabs: Tab[] = [];
 vi.mock('@/lib/telemetry', () => ({
   track: (...args: unknown[]) => {
     events.push(args);
-    // What the mode store held when the event left: the event fires BEFORE the mode applies.
-    stored.push(localStorage.getItem('livediagram:v2:editor-mode:' + 'tab-a'));
+    modeAtEvent.push(tabs[0]?.opensIn);
   },
 }));
 
-let seq = 0;
-const tabId = () => `tab-${++seq}`;
+const sticky = (id: string, x: number) =>
+  ({ id, type: 'sticky', x, y: 0, width: 150, height: 92 }) as unknown as Element;
+
+function setup(tab: Tab, canEdit = true) {
+  tabs = [tab];
+  const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
+    tabs = map(tabs);
+  });
+  const toastInfo = vi.fn();
+  const hook = renderHook(() => useEditorMode(tabs[0], { canEdit, commitTabs, toastInfo }));
+  return { hook, commitTabs, toastInfo, tab: () => tabs[0]! };
+}
 
 // docs/specs/007-editor/editor-modes.md "Where the mode lives" and "Telemetry".
 describe('useEditorMode', () => {
   beforeEach(() => {
-    localStorage.clear();
     events.length = 0;
-    stored.length = 0;
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-  });
-  afterEach(() => {
-    vi.restoreAllMocks();
+    modeAtEvent.length = 0;
   });
 
-  it('opens a tab in its opening mode, switchable by an editor', () => {
-    const tab = { id: tabId(), opensIn: 'draw' as const };
-    const { result } = renderHook(() => useEditorMode(tab, { canEdit: true }));
-    expect(result.current.mode).toBe('draw');
-    expect(result.current.canSwitch).toBe(true);
-    expect(result.current.canEdit).toBe(true);
+  it("reads the tab's own mode, switchable by an editor", () => {
+    const { hook } = setup({ id: 't', name: 'T', opensIn: 'draw', elements: [] });
+    expect(hook.result.current).toMatchObject({ mode: 'draw', canSwitch: true, canEdit: true });
   });
 
-  it('switches, remembers the choice for that tab and shares it with every caller', () => {
-    const tab = { id: tabId() };
-    const a = renderHook(() => useEditorMode(tab, { canEdit: true }));
-    const b = renderHook(() => useEditorMode(tab, { canEdit: true }));
-    act(() => a.result.current.setMode('draw'));
-    expect(a.result.current.mode).toBe('draw');
-    expect(b.result.current.mode).toBe('draw');
-    expect(localStorage.getItem(`livediagram:v2:editor-mode:${tab.id}`)).toBe('draw');
-    const other = renderHook(() => useEditorMode({ id: tabId() }, { canEdit: true }));
-    expect(other.result.current.mode).toBe('diagram');
+  it('switches by setting the tab’s mode, one tab edit, reported before it applies', () => {
+    const h = setup({ id: 't', name: 'T', elements: [] });
+    act(() => h.hook.result.current.setMode('draw'));
+    expect(h.tab().opensIn).toBe('draw');
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    expect(events).toEqual([['Editor', 'Changed', 'ModeDraw']]);
+    expect(modeAtEvent).toEqual([undefined]);
+    h.hook.rerender();
+    expect(h.hook.result.current.mode).toBe('draw');
   });
 
-  it('reports the switch before the mode applies', () => {
-    const tab = { id: 'tab-a' };
-    const { result } = renderHook(() => useEditorMode(tab, { canEdit: true }));
-    act(() => result.current.setMode('draw'));
-    act(() => result.current.setMode('diagram'));
-    expect(events).toEqual([
-      ['Editor', 'Changed', 'ModeDraw'],
-      ['Editor', 'Changed', 'ModeDiagram'],
-    ]);
-    expect(stored).toEqual([null, 'draw']);
+  it('puts a board that does not fit onto a page in the same edit as entering Illustrate', () => {
+    const h = setup({ id: 't', name: 'T', elements: [sticky('a', -1500), sticky('b', 1500)] });
+    act(() => h.hook.result.current.setMode('illustrate'));
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    expect(h.tab()).toMatchObject({ opensIn: 'illustrate', pages: [{ size: 'fit' }] });
+    expect(h.toastInfo).toHaveBeenCalledWith(
+      'Put onto a page that fits it. Undo switches back to Diagram.',
+    );
+    expect(events).toContainEqual(['Tab', 'Changed', 'PageFitToContent']);
+  });
+
+  it('applies what leaving a mode brings in the same edit', () => {
+    const h = setup({ id: 't', name: 'T', opensIn: 'illustrate', elements: [] });
+    act(() => h.hook.result.current.setMode('diagram', (t) => ({ ...t, name: 'Converted' })));
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    expect(h.tab()).toMatchObject({ opensIn: 'diagram', name: 'Converted' });
   });
 
   it('does nothing when asked for the mode already in use', () => {
-    const tab = { id: tabId() };
-    const { result } = renderHook(() => useEditorMode(tab, { canEdit: true }));
-    act(() => result.current.setMode('diagram'));
-    expect(events).toEqual([]);
-    expect(localStorage.length).toBe(0);
-  });
-
-  it('gives a view-role visitor the opening mode and refuses a switch', () => {
-    const tab = { id: tabId(), opensIn: 'draw' as const };
-    localStorage.setItem(`livediagram:v2:editor-mode:${tab.id}`, 'diagram');
-    const { result } = renderHook(() => useEditorMode(tab, { canEdit: false }));
-    expect(result.current).toMatchObject({ mode: 'draw', canSwitch: false, canEdit: false });
-    act(() => result.current.setMode('diagram'));
-    expect(result.current.mode).toBe('draw');
+    const h = setup({ id: 't', name: 'T', opensIn: 'draw', elements: [] });
+    act(() => h.hook.result.current.setMode('draw'));
+    expect(h.commitTabs).not.toHaveBeenCalled();
     expect(events).toEqual([]);
   });
 
-  it('keeps an event-storming board in Diagram mode and refuses a switch', () => {
-    const tab = { id: tabId(), kind: 'event-storming' as const };
-    const { result } = renderHook(() => useEditorMode(tab, { canEdit: true }));
-    expect(result.current).toMatchObject({ mode: 'diagram', canSwitch: false });
-    act(() => result.current.setMode('draw'));
-    expect(result.current.mode).toBe('diagram');
-    expect(events).toEqual([]);
-  });
-
-  it('follows the active tab: each tab has its own mode', () => {
-    const first = { id: tabId() };
-    const second = { id: tabId(), opensIn: 'draw' as const };
-    const { result, rerender } = renderHook(({ tab }) => useEditorMode(tab, { canEdit: true }), {
-      initialProps: { tab: first },
-    });
-    act(() => result.current.setMode('draw'));
-    rerender({ tab: second });
-    expect(result.current.mode).toBe('draw');
-    act(() => result.current.setMode('diagram'));
-    rerender({ tab: first });
-    expect(result.current.mode).toBe('draw');
-  });
-
-  // docs/specs/007-editor/editor-modes.md "Opens in": nobody's current mode moves.
-  it('keeps the mode a loaded tab opened in when its opening mode changes', () => {
-    const id = tabId();
-    const { result, rerender } = renderHook(
-      ({ tab, loaded }) => {
-        usePinTabOpening(tab, loaded);
-        return useEditorMode(tab, { canEdit: true });
-      },
-      {
-        initialProps: {
-          tab: { id } as { id: string; opensIn?: 'draw' | 'diagram' },
-          loaded: false,
-        },
-      },
-    );
-    // Still loading: the real tab arrives opening in Draw, and the page follows it.
-    rerender({ tab: { id, opensIn: 'draw' }, loaded: true });
-    expect(result.current.mode).toBe('draw');
-    rerender({ tab: { id, opensIn: 'diagram' }, loaded: true });
-    expect(result.current.mode).toBe('draw');
-    // A template deciding afresh releases the pin: the new opening mode applies.
-    act(() => releaseOpening(id));
-    expect(result.current.mode).toBe('diagram');
-    // ...and is pinned again at once.
-    rerender({ tab: { id, opensIn: 'draw' }, loaded: true });
-    expect(result.current.mode).toBe('diagram');
+  it('refuses a switch from a visitor, on a locked tab, or on an event-storming board', () => {
+    const visitor = setup({ id: 't', name: 'T', opensIn: 'illustrate', elements: [] }, false);
+    expect(visitor.hook.result.current).toMatchObject({ mode: 'illustrate', canSwitch: false });
+    act(() => visitor.hook.result.current.setMode('draw'));
+    expect(visitor.commitTabs).not.toHaveBeenCalled();
+    const locked = setup({ id: 't', name: 'T', locked: true, elements: [] });
+    act(() => locked.hook.result.current.setMode('draw'));
+    expect(locked.commitTabs).not.toHaveBeenCalled();
+    const es = setup({ id: 't', name: 'T', kind: 'event-storming', elements: [] });
+    expect(es.hook.result.current.mode).toBe('diagram');
+    act(() => es.hook.result.current.setMode('draw'));
+    expect(es.commitTabs).not.toHaveBeenCalled();
   });
 });

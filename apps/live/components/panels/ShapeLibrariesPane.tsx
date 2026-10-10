@@ -12,6 +12,7 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import { LibraryItemThumbnail } from '@/components/primitives/LibraryItemThumbnail';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { pluralGrouped } from '@livediagram/document';
 
 // The Explorer's Shape libraries page (docs/specs/013-workspace/shape-libraries.md "Managing
 // libraries: the Explorer"): the owner's libraries, newest first, each a card to rename, delete, or
@@ -21,8 +22,6 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 /** How many thumbnails a closed card shows (spec: "the first eight"). */
 export const SHAPE_LIBRARY_CARD_PREVIEWS = 8;
 
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 const titleOf = (item: ShapeLibraryItem, index: number) =>
   item.title.trim() || `Shape ${index + 1}`;
 
@@ -30,8 +29,6 @@ const ShapesBadge = lucideGlyph(lucideShapes, 28);
 
 const BUTTON =
   'rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:text-slate-300';
-const DANGER =
-  'rounded-md border border-slate-200 px-2 py-1 text-xs font-medium text-slate-600 transition hover:border-rose-300 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-700 dark:text-slate-300';
 
 export function ShapeLibrariesPane() {
   const { libraries, status, reload } = useShapeLibraries();
@@ -92,7 +89,6 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
       title: 'Delete this shape library?',
       message: 'Its shapes leave My shapes; documents that use them keep them.',
       confirmLabel: 'Delete',
-      variant: 'danger',
     });
     if (ok) await deleteLibrary(library.id);
   };
@@ -117,7 +113,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
           {library.name}
         </h3>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {plural(library.items.length, 'shape', 'shapes')}
+          {pluralGrouped(library.items.length, 'shape', 'shapes')}
         </span>
       </div>
       {library.items.length > 0 ? (
@@ -145,7 +141,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
           type="button"
           aria-label={`Delete ${library.name}`}
           onClick={() => void remove()}
-          className={DANGER}
+          className={BUTTON}
         >
           Delete
         </button>
@@ -181,7 +177,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
                 type="button"
                 aria-label={`Delete ${titleOf(item, i)}`}
                 onClick={() => void deleteItem(library.id, item.id)}
-                className={DANGER}
+                className={BUTTON}
               >
                 Delete
               </button>

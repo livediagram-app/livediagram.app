@@ -1,4 +1,11 @@
-import { isPlanViewId, normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import {
+  READY_MADE_CARD_TYPES,
+  PLAN_BOARD_PRESET_IDS,
+  isPlanViewId,
+  normaliseBoardSetup,
+  presetSetup,
+  type PlanBoardSetup,
+} from '@livediagram/items';
 import type { Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
@@ -19,8 +26,9 @@ const COLUMN_MIN_PX = 220;
 const GAP_PX = 12;
 const SIDE_PADDING_PX = 12;
 
+// Every tab with something on it: Blank Plan's one tab is empty by design (its own test below).
 const everyTab = () =>
-  PLAN_TEMPLATE_KINDS.flatMap((kind) =>
+  PLAN_TEMPLATE_KINDS.filter((kind) => kind !== 'blank-plan').flatMap((kind) =>
     PLAN_TEMPLATE_TABS[kind].map((spec) => ({ kind, spec, label: `${kind} › ${spec.name}` })),
   );
 
@@ -129,18 +137,79 @@ describe('plan templates', () => {
     const setup = boardSetup(retro!.board!);
     expect(setup.columns.map((c) => c.name)).toEqual(['Went Well', 'To Improve', 'Ideas']);
     expect(setup.addTypes).toEqual(['note', 'idea']);
-    expect(setup.voting).toEqual({ on: true, budget: 5 });
     expect(setup.hideWriting).toBe(true);
     expect(boardSetup(actions!.board!).addTypes).toEqual(['action']);
     expect(boardSetup(archive!.board!).archive).toBe(true);
   });
 
-  it('puts a Gantt under every board of Project cards', () => {
+  it('puts a Gantt of the board’s cards under every board of dated cards', () => {
+    const dated = new Set(['project', 'role', 'objective']);
     for (const { spec, label } of everyTab()) {
       if (!spec.board) continue;
-      const projectsOnly = boardSetup(spec.board).addTypes?.join() === 'project';
-      expect(spec.charts?.includes('gantt') ?? false, label).toBe(projectsOnly);
+      const types = boardSetup(spec.board).addTypes ?? [];
+      const ofDated = types.length === 1 && dated.has(types[0]!);
+      expect(spec.charts?.includes('gantt') ?? false, label).toBe(ofDated);
+      if (!ofDated) continue;
+      const gantt = buildPlanTab(spec, 0, 0).find(
+        (el) => el.type === 'shape' && el.shape === 'plan-view' && el.planView?.view === 'gantt',
+      );
+      const shown = gantt?.type === 'shape' ? gantt.planView?.types : undefined;
+      // A Gantt with no types draws Projects, its own default.
+      expect(shown ?? ['project'], label).toEqual(types);
     }
+  });
+
+  it('names the card types of every board, each built in or brought', () => {
+    const known = new Set(READY_MADE_CARD_TYPES.map((t) => t.id));
+    for (const { spec, label } of everyTab()) {
+      if (!spec.board) continue;
+      const setup = boardSetup(spec.board);
+      if (setup.archive) continue;
+      expect(setup.addTypes?.length, label).toBeGreaterThan(0);
+      for (const t of setup.addTypes!) expect(known.has(t), `${label} ${t}`).toBe(true);
+    }
+  });
+
+  it('lays rows by a field only every type the board takes has', () => {
+    const types = READY_MADE_CARD_TYPES;
+    for (const { spec, label } of everyTab()) {
+      if (!spec.board) continue;
+      const setup = boardSetup(spec.board);
+      if (setup.swimlaneBy !== 'field') continue;
+      for (const id of setup.addTypes ?? [])
+        expect(types.find((t) => t.id === id)!.fields, `${label} ${id}`).toContain(
+          setup.swimlaneField,
+        );
+    }
+  });
+
+  it('carries every card handed off onto the board it lands on', () => {
+    const takes = (kind: (typeof PLAN_TEMPLATE_KINDS)[number], tab: string) =>
+      boardSetup(PLAN_TEMPLATE_TABS[kind].find((t) => t.name === tab)!.board!).addTypes ?? [];
+    const handOffs: [(typeof PLAN_TEMPLATE_KINDS)[number], string, string][] = [
+      ['project-planner', 'Backlog', 'Sprint'],
+      ['project-planner', 'Sprint', 'Daily Standup'],
+      ['project-planner', 'Daily Standup', 'Sprint'],
+      ['kanban', 'Requests', 'Board'],
+      ['bug-triage', 'Triage', 'Fixing'],
+      ['content-calendar', 'Ideas', 'Production'],
+      ['feedback-board', 'Feedback', 'Delivery'],
+    ];
+    for (const [kind, from, to] of handOffs)
+      for (const t of takes(kind, from))
+        expect(takes(kind, to), `${kind} ${from}›${to}`).toContain(t);
+  });
+
+  it('gives each template the card types its work is made of', () => {
+    const takes = (kind: (typeof PLAN_TEMPLATE_KINDS)[number]) =>
+      PLAN_TEMPLATE_TABS[kind].flatMap((t) => (t.board ? [boardSetup(t.board).addTypes] : []));
+    expect(takes('hiring-pipeline')).toEqual([['role'], ['candidate'], ['onboarding-task']]);
+    expect(takes('okrs')).toEqual([['objective'], ['key-result']]);
+    expect(takes('bug-triage')).toEqual([['bug'], ['bug']]);
+    expect(takes('kanban')).toEqual([['task', 'request'], ['request']]);
+    expect(takes('feedback-board')).toEqual([['request'], ['request', 'task']]);
+    expect(takes('content-calendar')).toEqual([['content'], ['content', 'task']]);
+    expect(takes('product-launch')).toEqual([['project'], ['task'], ['launch-check']]);
   });
 
   it('lays a tab out without overlaps, every view a real one, centred on the point', () => {
@@ -160,6 +229,11 @@ describe('plan templates', () => {
       expect(Math.abs((minX + maxX) / 2 - 100), label).toBeLessThanOrEqual(1);
       expect(Math.abs((minY + maxY) / 2 + 50), label).toBeLessThanOrEqual(1);
     }
+  });
+
+  it('leaves Blank Plan’s one tab empty, so the tab shows Start Planning', () => {
+    expect(PLAN_TEMPLATE_TABS['blank-plan']).toHaveLength(1);
+    expect(buildPlanTab(PLAN_TEMPLATE_TABS['blank-plan'][0]!, 100, -50)).toEqual([]);
   });
 
   it('gives a dashboard tab views only, and every other tab exactly one board', () => {
@@ -195,7 +269,14 @@ describe('plan templates', () => {
       'sticky',
       'temperature',
       'session-button',
+      'session-button',
     ]);
+    // The retro votes with the tab's session vote (docs/specs/012-collaboration/session-tools.md "Voting on Plan
+    // cards"): a Vote button, 5 dots each.
+    const vote = buildPlanTab(retro, 0, 0).filter(
+      (el) => el.type === 'shape' && el.shape === 'session-button',
+    )[1];
+    expect(vote && 'session' in vote ? vote.session : null).toEqual({ tool: 'vote', dots: 5 });
   });
 
   it('names the tabs of a template with several, and leaves a one-tab template’s name to the caller', () => {
@@ -214,5 +295,39 @@ describe('plan templates', () => {
     expect(boardSetup(spec).columns).toHaveLength(6);
     expect(isPlanTemplateKind('okrs')).toBe(true);
     expect(isPlanTemplateKind('daily-standup')).toBe(false);
+  });
+});
+
+// A board's default widgets read true from the start (docs/specs/026-plan/board-widgets.md "Defaults").
+describe('default widgets', () => {
+  const setups = [
+    ...PLAN_BOARD_PRESET_IDS.map((id) => ({ label: `preset ${id}`, setup: presetSetup(id) })),
+    ...everyTab().flatMap(({ spec, label }) =>
+      spec.board ? [{ label, setup: boardSetup(spec.board) }] : [],
+    ),
+  ];
+
+  it('put Completion only on a board with a done column', () => {
+    for (const { label, setup } of setups)
+      if (setup.widgets?.includes('progress')) expect(setup.doneColumnId, label).toBeTruthy();
+  });
+
+  it('put WIP Alerts only on a board with a WIP limit', () => {
+    for (const { label, setup } of setups)
+      if (setup.widgets?.includes('wip'))
+        expect(
+          setup.columns.some((c) => c.wipLimit),
+          label,
+        ).toBe(true);
+  });
+
+  it('never repeat the rows or default Only Mine, and stay few', () => {
+    for (const { label, setup } of setups) {
+      const widgets = setup.widgets ?? [];
+      if (setup.swimlaneBy === 'assignee') expect(widgets, label).not.toContain('people');
+      if (setup.swimlaneBy === 'priority') expect(widgets, label).not.toContain('priorities');
+      expect(widgets, label).not.toContain('mine');
+      expect(widgets.length, label).toBeLessThanOrEqual(3);
+    }
   });
 });

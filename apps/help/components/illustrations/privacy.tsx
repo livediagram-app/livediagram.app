@@ -1,9 +1,10 @@
 // Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where documents live on
-// Cloudflare, who can read them, the anonymous-telemetry opt-out, share-link
-// controls (password + expiry), and the open-source / public-code motif.
+// Cloudflare, who can read them, the anonymous-telemetry opt-out, and the
+// open-source / public-code motif. (Share-link security reuses the Share
+// dialog scenes in sharing.tsx.)
 // Composed only from the shared primitives so the house style holds.
 
-import { Scene, Shape, Arrow, Panel, Dialog, Button, Label, TextBar } from './primitives';
+import { Scene, Shape, Arrow, Panel, Dialog, Label, TextBar } from './primitives';
 
 /** A small shield motif with a tick, the recurring "protected" mark. */
 function Shield({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
@@ -51,12 +52,12 @@ export function DocumentStorage() {
         strokeWidth={2}
         strokeDasharray="6 5"
       />
-      <Label x={334} y={44} anchor="middle" size={8} weight={700} tone="muted">
+      <Label x={334} y={44} anchor="middle" size={10} weight={700} tone="muted">
         CLOUDFLARE
       </Label>
       <Shape x={284} y={54} w={100} h={30} kind="cylinder" label="D1" labelTone="strong" />
       <Shape x={284} y={94} w={100} h={30} kind="rect" label="Room" labelTone="strong" />
-      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images" labelTone="strong" />
+      <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images (R2)" labelTone="strong" />
       <Arrow from={[228, 110]} to={[284, 75]} kind="curved" tone="muted" />
       <Arrow from={[228, 124]} to={[284, 109]} tone="muted" />
       <Arrow from={[228, 134]} to={[284, 149]} kind="curved" tone="muted" />
@@ -118,140 +119,62 @@ export function AccessControl() {
   );
 }
 
-/** The Settings panel with the anonymous-telemetry row and its opt-out switch
- *  turned off. */
+/** The Settings dialog open on its Privacy category, with Send Anonymous Usage
+ *  Events switched off. */
 export function TelemetryToggle() {
+  const cats = ['Editor', 'Appearance', 'Panels', 'Account', 'Privacy'];
   return (
-    <Scene w={420} h={210} bg="plain">
+    <Scene w={420} h={220} bg="plain">
       <Dialog
-        x={70}
-        y={26}
-        w={280}
-        h={158}
+        x={30}
+        y={18}
+        w={360}
+        h={184}
         title="Settings"
         sceneW={420}
-        sceneH={210}
+        sceneH={220}
         scrim={false}
       >
-        <Label x={86} y={76} size={8} weight={700} tone="muted">
-          PRIVACY
-        </Label>
+        {/* Category list, Privacy selected */}
+        {cats.map((c, i) => {
+          const y = 66 + i * 26;
+          const active = c === 'Privacy';
+          return (
+            <g key={c}>
+              {active ? (
+                <rect x={40} y={y - 11} width={104} height={22} rx={6} className="fill-brand-50" />
+              ) : null}
+              <Label
+                x={52}
+                y={y}
+                size={11}
+                weight={active ? 700 : 500}
+                tone={active ? 'accent' : 'body'}
+              >
+                {c}
+              </Label>
+            </g>
+          );
+        })}
+        <line x1={154} y1={54} x2={154} y2={192} className="stroke-slate-200" strokeWidth={1.5} />
 
-        {/* Telemetry row */}
-        <Label x={86} y={102} size={10} weight={600} tone="strong">
-          Anonymous telemetry
+        {/* The one Privacy row */}
+        <Label x={170} y={72} size={11} weight={600} tone="strong">
+          Send Anonymous Usage Events
         </Label>
-        <TextBar x={86} y={116} w={150} tone="faint" />
-
-        {/* Toggle switch, off */}
-        <g transform="translate(286 92)">
+        <g transform="translate(336 60)">
           <rect
-            width={44}
-            height={24}
-            rx={12}
+            width={40}
+            height={22}
+            rx={11}
             className="fill-slate-200 stroke-slate-300"
             strokeWidth={1.5}
           />
-          <circle cx={12} cy={12} r={9} className="fill-white stroke-slate-300" strokeWidth={1.5} />
+          <circle cx={11} cy={11} r={8} className="fill-white stroke-slate-300" strokeWidth={1.5} />
         </g>
-        <Label x={308} y={130} anchor="middle" size={10} weight={600} tone="muted">
-          Off
-        </Label>
-
-        <Button x={250} y={150} w={84} label="Done" variant="primary" />
-      </Dialog>
-    </Scene>
-  );
-}
-
-/** The Share dialog hardened with both controls at once: a password on the
- *  document and an expiry on the link. */
-export function ShareLinkControls() {
-  const dx = 56;
-  const dy = 18;
-  const dw = 308;
-  const dh = 204;
-  return (
-    <Scene w={420} h={240} bg="plain">
-      <Dialog x={dx} y={dy} w={dw} h={dh} title="Share" sceneW={420} sceneH={240} scrim={false}>
-        {/* Share link row with an expiry pill */}
-        <rect
-          x={dx + 16}
-          y={dy + 48}
-          width={44}
-          height={26}
-          rx={7}
-          className="fill-brand-500 stroke-brand-600"
-          strokeWidth={1.5}
-        />
-        <Label x={dx + 30} y={dy + 61} anchor="middle" size={10} weight={600} tone="onAccent">
-          Edit
-        </Label>
-        <rect
-          x={dx + 68}
-          y={dy + 48}
-          width={140}
-          height={26}
-          rx={7}
-          className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={dx + 78} y={dy + 61} size={10} tone="muted">
-          livediagram.app/d/…
-        </Label>
-        {/* Expiry pill on the link */}
-        <rect
-          x={dx + 216}
-          y={dy + 48}
-          width={76}
-          height={26}
-          rx={7}
-          className="fill-white stroke-brand-500"
-          strokeWidth={2}
-        />
-        <Label x={dx + 254} y={dy + 61} anchor="middle" size={10} weight={600} tone="accent">
-          1 Month
-        </Label>
-
-        {/* Password section */}
-        <line
-          x1={dx}
-          y1={dy + 92}
-          x2={dx + dw}
-          y2={dy + 92}
-          className="stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={dx + 16} y={dy + 108} size={8} weight={700} tone="muted">
-          PASSWORD
-        </Label>
-        <rect
-          x={dx + 16}
-          y={dy + 120}
-          width={dw - 110}
-          height={26}
-          rx={7}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.5}
-        />
-        <Label x={dx + 28} y={dy + 134} size={11} tone="body">
-          spring-otter-42
-        </Label>
-        <Button x={dx + dw - 80} y={dy + 120} w={64} h={26} label="Save" variant="primary" />
-
-        {/* Inactive links note */}
-        <line
-          x1={dx}
-          y1={dy + 162}
-          x2={dx + dw}
-          y2={dy + 162}
-          className="stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={dx + 16} y={dy + 178} size={8} weight={700} tone="muted">
-          INACTIVE SHARE LINKS
-        </Label>
-        <TextBar x={dx + 16} y={dy + 190} w={120} tone="faint" />
+        <TextBar x={170} y={98} w={196} tone="faint" />
+        <TextBar x={170} y={110} w={176} tone="faint" />
+        <TextBar x={170} y={122} w={120} tone="faint" />
       </Dialog>
     </Scene>
   );

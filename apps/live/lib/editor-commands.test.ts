@@ -11,6 +11,8 @@ function handlers(): CommandHandlers {
     bringToFront: vi.fn(),
     sendToBack: vi.fn(),
     rotate: vi.fn(),
+    combine: vi.fn(),
+    mirrorCopy: vi.fn(),
     clearAnimation: vi.fn(),
     setMarker: vi.fn(),
     addComment: vi.fn(),
@@ -46,6 +48,7 @@ const base: CommandContext = {
   zenMode: false,
   selectionCount: 0,
   singleIsBoxed: false,
+  singleRotates: false,
   singleIsShape: false,
   hasAnimation: false,
   marker: null,
@@ -93,6 +96,19 @@ describe('buildEditorCommands — document/tab commands', () => {
   });
 });
 
+// The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+describe('buildEditorCommands — in a workbench', () => {
+  it('offers neither Share nor Delete document, and keeps the rest', () => {
+    const inWorkbench = ids({ ...base, isOwner: true, workbench: true });
+    expect(inWorkbench).not.toContain('share');
+    expect(inWorkbench).not.toContain('delete-document');
+    expect(inWorkbench).toContain('rename-document');
+    expect(ids({ ...base, isOwner: true })).toEqual(
+      expect.arrayContaining(['share', 'delete-document']),
+    );
+  });
+});
+
 describe('buildEditorCommands — selection commands', () => {
   it('offers delete/duplicate/lock/reorder for any selection (incl. multi)', () => {
     const out = ids({ ...base, selectionCount: 3 });
@@ -110,7 +126,7 @@ describe('buildEditorCommands — selection commands', () => {
   });
 
   it('offers rotate/note/comment for a single boxed element', () => {
-    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
+    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true });
     expect(out).toEqual(
       expect.arrayContaining([
         'rotate-90',
@@ -121,6 +137,14 @@ describe('buildEditorCommands — selection commands', () => {
         'comment',
       ]),
     );
+  });
+
+  // docs/specs/009-elements/blueprints/annotations.md [QD8]: an annotation marker never rotates.
+  it('offers note and comment but no Rotate for an annotation marker', () => {
+    const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
+    expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
+    expect(out).not.toContain('rotate-90');
+    expect(out).not.toContain('rotate-0');
   });
 
   it('does not offer boxed-only commands for a single arrow (not boxed)', () => {
@@ -165,7 +189,10 @@ describe('buildEditorCommands — markers (shape only)', () => {
 describe('buildEditorCommands — dispatch', () => {
   it('runs the matching handler, including the rotation angle', () => {
     const h = handlers();
-    const cmds = buildEditorCommands({ ...base, selectionCount: 1, singleIsBoxed: true }, h);
+    const cmds = buildEditorCommands(
+      { ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: true },
+      h,
+    );
     cmds.find((c) => c.id === 'rotate-180')!.run();
     expect(h.rotate).toHaveBeenCalledWith(180);
 
@@ -398,5 +425,24 @@ describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)'
   // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
   it('never offers the highlighter as a tool', () => {
     expect(ids(base)).not.toContain('tool:highlighter');
+  });
+});
+
+// docs/specs/007-editor/logo-pages.md "Combine": the four operations, only while combinable.
+describe('combine commands', () => {
+  it('are offered only for a combinable selection, each running its operation', () => {
+    const h = handlers();
+    const none = buildEditorCommands({ ...base, selectionCount: 2 }, h);
+    expect(none.some((c) => c.id.startsWith('combine-'))).toBe(false);
+    const cmds = buildEditorCommands({ ...base, selectionCount: 2, canCombine: true }, h);
+    const combine = cmds.filter((c) => c.id.startsWith('combine-'));
+    expect(combine.map((c) => c.name)).toEqual([
+      'Unite Shapes',
+      'Subtract Shapes',
+      'Intersect Shapes',
+      'Exclude Shapes',
+    ]);
+    combine[1]!.run();
+    expect(h.combine).toHaveBeenCalledWith('subtract');
   });
 });

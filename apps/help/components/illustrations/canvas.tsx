@@ -11,123 +11,38 @@ import {
   Panel,
   Dialog,
   Tabs,
-  Tile,
   Label,
   TextBar,
-  Button,
-  Menu,
 } from './primitives';
+import { MenuCard, Strip } from './toolbar-layout';
 
-/** A compact palette panel reused by several canvas scenes. */
-function MiniPalette({ x, y }: { x: number; y: number }) {
-  return (
-    <Panel x={x} y={y} w={104} h={112} title="PALETTE">
-      <Tile x={x + 10} y={y + 36} active>
-        <rect
-          x={-7}
-          y={-7}
-          width={14}
-          height={14}
-          rx={2}
-          className="stroke-white"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-      <Tile x={x + 42} y={y + 36}>
-        <circle r={7} className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 74} y={y + 36}>
-        <path
-          d="M0 -8 L8 0 L0 8 L-8 0 Z"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-      <Tile x={x + 10} y={y + 70}>
-        <path d="M-8 -6 h16 v12 h-16 Z" className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 42} y={y + 70}>
-        <ellipse rx={8} ry={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
-      </Tile>
-      <Tile x={x + 74} y={y + 70}>
-        <path
-          d="M-7 -7 h14 l-3 14 h-8 Z"
-          className="stroke-brand-500"
-          strokeWidth={2}
-          fill="none"
-        />
-      </Tile>
-    </Panel>
-  );
-}
-
-/** The canvas with the floating palette docked top-right and a small flow on
+/** The canvas with the menu button and the palette strip across the top and a small flow on
  *  it: the editor at a glance. */
 export function CanvasOverview() {
   return (
     <Scene w={420} h={240}>
+      <MenuCard x={8} y={16} />
+      <Strip x={78} y={16} />
       <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
       <Shape x={172} y={92} w={84} h={48} kind="diamond" />
       <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
       <Arrow from={[124, 116]} to={[172, 116]} />
       <Arrow from={[214, 140]} to={[214, 172]} />
-      <Panel x={288} y={20} w={112} h={132} title="PALETTE">
-        <Tabs x={296} y={50} items={['Shapes', 'Tools']} active={0} tabW={48} h={20} />
-        <Tile x={298} y={80} active>
-          <rect
-            x={-7}
-            y={-7}
-            width={14}
-            height={14}
-            rx={2}
-            className="stroke-white"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={330} y={80}>
-          <circle r={7} className="stroke-brand-500" strokeWidth={2} fill="none" />
-        </Tile>
-        <Tile x={362} y={80}>
-          <path
-            d="M0 -8 L8 0 L0 8 L-8 0 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={298} y={112}>
-          <path
-            d="M-8 -6 h16 v12 h-16 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={330} y={112}>
-          <path d="M-7 7 L7 -7" className="stroke-brand-500" strokeWidth={2} />
-        </Tile>
-        <Tile x={362} y={112}>
-          <path d="M-7 0 h14 M0 -7 v14" className="stroke-brand-500" strokeWidth={2} />
-        </Tile>
-      </Panel>
       <Cursor x={150} y={150} name="You" />
     </Scene>
   );
 }
 
-/** Dropping a shape from the palette onto the canvas (a curved drag trail to a
- *  freshly placed, still-selected shape). */
+/** Dropping a shape from the palette strip onto the canvas (a curved drag trail from the
+ *  square tile to a freshly placed, still-selected shape). */
 export function AddingElements() {
   return (
-    <Scene w={420} h={220}>
-      <MiniPalette x={20} y={28} />
-      <Arrow from={[128, 80]} to={[238, 110]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={92} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={92} w={96} h={56} />
-      <Cursor x={300} y={120} colour="brand" />
+    <Scene w={420} h={200}>
+      <Strip x={58} y={16} />
+      <Arrow from={[198, 52]} to={[250, 104]} kind="curved" tone="muted" dashed />
+      <Shape x={250} y={104} w={96} h={56} kind="rect" />
+      <SelectionBox x={250} y={104} w={96} h={56} />
+      <Cursor x={300} y={132} colour="brand" />
     </Scene>
   );
 }
@@ -164,58 +79,6 @@ export function PanAndZoom() {
           strokeLinejoin="round"
         />
       </g>
-    </Scene>
-  );
-}
-
-/** The Tab Appearance dialog set to the canvas-background controls: a grid of
- *  background swatches with one selected. */
-export function CanvasBackground() {
-  const swatches = [
-    'fill-white',
-    'fill-slate-100',
-    'fill-brand-50',
-    'fill-amber-50',
-    'fill-emerald-50',
-    'fill-rose-50',
-  ];
-  return (
-    <Scene w={420} h={240} bg="plain">
-      <Dialog
-        x={96}
-        y={20}
-        w={228}
-        h={200}
-        title="Tab Appearance"
-        sceneW={420}
-        sceneH={240}
-        scrim={false}
-      >
-        <Label x={112} y={56} size={8} weight={700} tone="muted">
-          BACKGROUND
-        </Label>
-        {swatches.map((cls, i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          const sx = 112 + col * 68;
-          const sy = 68 + row * 56;
-          const sel = i === 2;
-          return (
-            <g key={i}>
-              <rect
-                x={sx}
-                y={sy}
-                width={56}
-                height={42}
-                rx={7}
-                className={`${cls} ${sel ? 'stroke-brand-500' : 'stroke-slate-200'}`}
-                strokeWidth={sel ? 2.5 : 1.5}
-              />
-            </g>
-          );
-        })}
-        <Button x={244} y={184} w={64} label="Done" variant="primary" />
-      </Dialog>
     </Scene>
   );
 }
@@ -311,7 +174,16 @@ export function ThemePicker() {
 export function MulticolourTheme() {
   return (
     <Scene w={420} h={220}>
-      <Shape x={172} y={92} w={76} h={40} accent label="Root" />
+      <Shape
+        x={172}
+        y={92}
+        w={76}
+        h={40}
+        fill="fill-slate-100"
+        stroke="stroke-slate-400"
+        label="Root"
+        labelTone="strong"
+      />
       <Shape
         x={40}
         y={28}
@@ -356,137 +228,6 @@ export function MulticolourTheme() {
       <Arrow from={[172, 120]} to={[110, 170]} tone="muted" />
       <Arrow from={[248, 104]} to={[310, 50]} tone="muted" />
       <Arrow from={[248, 120]} to={[310, 170]} tone="muted" />
-    </Scene>
-  );
-}
-
-/** The custom-theme builder: colour wells for fill, border, text, background. */
-export function CustomTheme() {
-  const wells: [string, string][] = [
-    ['Fill', 'fill-brand-500'],
-    ['Border', 'fill-brand-700'],
-    ['Text', 'fill-slate-800'],
-    ['Canvas', 'fill-brand-50'],
-  ];
-  return (
-    <Scene w={420} h={220} bg="plain">
-      <Dialog
-        x={96}
-        y={16}
-        w={228}
-        h={188}
-        title="Custom Theme"
-        sceneW={420}
-        sceneH={220}
-        scrim={false}
-      >
-        {wells.map(([name, cls], i) => {
-          const wy = 60 + i * 28;
-          return (
-            <g key={i}>
-              <Label x={112} y={wy + 9} size={10} tone="body">
-                {name}
-              </Label>
-              <rect
-                x={250}
-                y={wy}
-                width={56}
-                height={18}
-                rx={5}
-                className={`${cls} stroke-slate-300`}
-                strokeWidth={1}
-              />
-            </g>
-          );
-        })}
-        <Button x={206} y={170} w={100} label="Save theme" variant="primary" />
-      </Dialog>
-    </Scene>
-  );
-}
-
-/** Starting from a template: a grid of ready-made diagram thumbnails. */
-export function Templates() {
-  return (
-    <Scene w={420} h={236} bg="plain">
-      <Dialog
-        x={56}
-        y={16}
-        w={308}
-        h={204}
-        title="Templates"
-        sceneW={420}
-        sceneH={236}
-        scrim={false}
-      >
-        {[0, 1, 2, 3, 4, 5].map((i) => {
-          const col = i % 3;
-          const row = Math.floor(i / 3);
-          const sx = 74 + col * 96;
-          const sy = 64 + row * 76;
-          return (
-            <g key={i}>
-              <rect
-                x={sx}
-                y={sy}
-                width={84}
-                height={62}
-                rx={8}
-                className="fill-white stroke-slate-200"
-                strokeWidth={1.5}
-              />
-              <rect
-                x={sx + 12}
-                y={sy + 14}
-                width={24}
-                height={16}
-                rx={3}
-                className="fill-brand-200"
-              />
-              <rect
-                x={sx + 48}
-                y={sy + 14}
-                width={24}
-                height={16}
-                rx={3}
-                className="fill-brand-400"
-              />
-              <line
-                x1={sx + 36}
-                y1={sy + 22}
-                x2={sx + 48}
-                y2={sy + 22}
-                className="stroke-slate-300"
-                strokeWidth={2}
-              />
-              <rect
-                x={sx + 24}
-                y={sy + 40}
-                width={36}
-                height={12}
-                rx={3}
-                className="fill-brand-300"
-              />
-            </g>
-          );
-        })}
-      </Dialog>
-    </Scene>
-  );
-}
-
-/** A selected shape with an open font dropdown, one typeface highlighted. */
-export function FontPicker() {
-  const fonts = ['Inter', 'Roboto', 'Poppins', 'Nunito', 'Lora', 'Caveat'];
-  return (
-    <Scene w={420} h={230}>
-      <Shape x={40} y={84} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
-      <SelectionBox x={40} y={84} w={120} h={56} />
-      <Menu x={196} y={44} w={150} items={fonts} active={2} rowH={24} />
-      <Label x={206} y={36} size={8} weight={700} tone="muted">
-        FONT
-      </Label>
-      <Arrow from={[160, 96]} to={[196, 80]} kind="curved" tone="muted" dashed />
     </Scene>
   );
 }
@@ -546,40 +287,6 @@ export function LinkCard() {
       </Label>
       <TextBar x={148} y={114} w={120} />
       <TextBar x={148} y={124} w={86} tone="faint" />
-    </Scene>
-  );
-}
-
-/** An annotation marker with its hover note. */
-export function Annotation() {
-  return (
-    <Scene w={420} h={190}>
-      <Shape x={70} y={80} w={96} h={52} kind="rect" label="Server" />
-      <g transform="translate(158 72)">
-        <circle r={11} className="fill-amber-400 stroke-white" strokeWidth={2.5} />
-        <Label
-          x={0}
-          y={1}
-          anchor="middle"
-          size={13}
-          weight={700}
-          className="fill-white dark:fill-slate-950"
-        >
-          i
-        </Label>
-      </g>
-      <g transform="translate(196 50)">
-        <rect
-          width={168}
-          height={56}
-          rx={9}
-          className="fill-white stroke-amber-300"
-          strokeWidth={2}
-        />
-        <path d="M-8 18 l10 -6 l0 12 Z" className="fill-white stroke-amber-300" strokeWidth={2} />
-        <TextBar x={14} y={18} w={132} />
-        <TextBar x={14} y={32} w={104} tone="faint" />
-      </g>
     </Scene>
   );
 }

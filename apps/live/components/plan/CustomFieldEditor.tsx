@@ -5,10 +5,14 @@
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
 import { Select, TextInput } from '@livediagram/ui';
-import type { CustomFieldDef, ItemFieldValue } from '@livediagram/items';
+import {
+  ITEM_UNKNOWN_STRING_MAX,
+  type CustomFieldDef,
+  type ItemFieldValue,
+} from '@livediagram/items';
 import { DateField, DebouncedText } from './item-field-editors';
 
-type Save = (value: ItemFieldValue | undefined) => void;
+type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
 const LINK = /^https:\/\/\S+$/i;
 
@@ -34,6 +38,7 @@ export function CustomFieldEditor({
           id={id}
           multiline={field.kind === 'longtext'}
           value={text}
+          maxLength={ITEM_UNKNOWN_STRING_MAX}
           placeholder={`Add ${field.label.toLowerCase()}`}
           disabled={disabled}
           onSave={onSave}
@@ -110,5 +115,8 @@ export function CustomFieldEditor({
         </Select>
       );
     }
+    // A Card field is drawn by LinkedCardField (ItemFieldEditor), never here.
+    case 'card':
+      return null;
   }
 }

@@ -55,7 +55,7 @@ In scope:
   ([Save locations](../006-document/save-locations.md), "It opens where its selection is"); the "Move here" button
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
-  /explorer page, the floating Explorer panel, and the team library —
+  /explorer page, the editor's Explorer, and the team library —
   and every document-move surface offers every space (My documents + each
   team, [Team shared documents](team-shared-documents.md)), so a document is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
@@ -270,10 +270,10 @@ Mode sync files the document at the root of My documents on a refused folder, sa
 Folders show up in two places, and the two surfaces use different
 layouts because they're solving different problems.
 
-### Floating Explorer panel (editor + `/new`)
+### The editor's Explorer (editor + `/new`)
 
-This is the docked side-panel on the editor and the new-document
-flow. Space is tight; the user is mid-task; "find this thing fast"
+This is the Explorer the editor's menu button opens as a popover
+([Toolbar layout](../007-editor/toolbar-layout.md)), a stand-alone corner panel on the status screens. Space is tight; the user is mid-task; "find this thing fast"
 beats "browse my whole library." The panel header carries a single
 **⋯** button, left of the help `?`, whose click-open menu of full-width
 icon-left rows holds the document's and the app's verbs in three bands
@@ -282,7 +282,7 @@ split by separators:
 1. **New Document**, **Open Explorer** (the full-page Explorer's Recent
    list, `/explorer/recent`).
 
-The floating panel does not carry the import entry: its header holds only
+The panel does not carry the import entry: its header holds only
 **⋯** and **?**, and a row of source icons would crowd it. Importing boards
 from other tools lives on the full-page Explorer (below). 2. **Share** (owners only, the header Share button's gate) and
 **Export** (the active tab, as the tab menu's Export). 3. **Search**, **GitHub** (the open-source repo, new tab), **Licences** (the
@@ -299,7 +299,7 @@ link.
 
 - A "Current Document" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
-  same rows ([Explorer structure: the floating Explorer panel](explorer-structure.md#the-floating-explorer-panel)).
+  same rows ([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)).
   In the panel, My documents, each folder and each team expand to show
   their folders, then their documents, as rows; expansion is local state
   (not persisted) and starts collapsed so the panel stays compact.
@@ -310,7 +310,7 @@ link.
   document rows play the same slide-out when deleted. What differs is
   data, not markup: team folders take no drag-and-drop, and Show in
   Explorer opens the team page.
-- **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the floating Explorer panel and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
+- **Right-clicking anywhere on a folder or document row** opens that row's ellipsis menu (suppressing the browser's default context menu), anchored to the row's ellipsis button: the same menu the `⋯` click opens. Applies in both the editor's Explorer and the full-page `/explorer`, including the page's sidebar folder tree (a no-op while a row is being renamed). Every row and card shares one `useRowMenu` hook and one `EllipsisTriggerButton`, so the trigger always reports `aria-expanded` and, on the panel's hover-revealed rows, stays visible while its menu is open.
 - Folder-row ellipsis menu: Rename, New subfolder, Change Folder, Use as default for (the [default folder](default-folders.md#use-as-default-for) submenu), Delete.
 - Deleting a document moves it to the [Trash](trash.md) for 30 days. A document restored after its folder was deleted lands in that folder's parent (the folder delete moved it there, [Deleting a folder](#deleting-a-folder)).
   Rename is inline (same pattern as the document-row rename). Delete
@@ -392,7 +392,8 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   the source's name in the app's tooltip, takes keyboard focus with a visible
   ring, and opens that source's import. It sits wherever the section offers
   New document, so imported documents land where new ones do (in the focused
-  folder, inside a folder section). It is as tall as Help; below the `sm`
+  folder, inside a folder section), except Home, which carries none; and on
+  [Shape libraries](shape-libraries.md), where draw.io libraries are imported. It is as tall as Help; below the `sm`
   breakpoint the "Import from" label hides first, leaving the icons.
 - **Create:** a single floating action button at the bottom-right
   opens a popover with "New document" and "New folder" (or "New

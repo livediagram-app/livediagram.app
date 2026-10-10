@@ -1,6 +1,6 @@
 # Canvas + Theme dialog
 
-A focused modal for changing the active tab's **canvas style** and **theme**, reached from the canvas right-click menu. The same controls still live in the floating palette's Current Tab accordions ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a second, larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
+A focused modal for changing the active tab's **canvas style** and **theme**, reached from the paintbrush dock button. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
 
 ## Why
 
@@ -9,7 +9,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 ## Behaviour
 
 - The dialog is one modal (`CanvasThemeDialog`) with three tabs. The tab / canvas context menu no longer carries a **Look & Feel** category (Change Theme / Change Canvas) or a **Font** category: those controls live here, and the paintbrush dock button is the one entry point. A menu that opened a dialog was a detour the button already skips.
-- A **paintbrush dock button** ("Theme & Canvas") sits in the bottom-right chrome cluster, to the right of the collapsed Layers dock, and opens the same dialog on the **Theme** tab — a one-click, always-visible entry beside right-click. It shows on **every viewport, mobile included** (it was originally desktop-only on the theory that the canvas menu covers mobile, but that entry is invisible until you know the long-press gesture — the dock button is the discoverable path). It stays hidden in zen mode and in read-only / embed views.
+- A **paintbrush dock button** ("Theme & Canvas") sits in the bottom-right chrome cluster, to the right of the collapsed Layers dock, and opens the same dialog on the **Theme** tab, a one-click, always-visible entry. It shows on **every viewport, mobile included** (it was originally desktop-only on the theory that the canvas menu covered mobile, back when that menu still offered the dialog). It stays hidden in zen mode and in read-only / embed views.
 - The dialog is titled **Tab Look & Feel** ("Appearance" now names the VIEWER's own chrome, [Live app](../007-editor/live-app.md)) and has three tabs, **Theme**, **Canvas** and **Font** (Theme leads the strip: the broader, more-used control; Font is last, the finest-grained), switchable from a tab strip below its header. The header is a title row with the **help icon beside the close button** on the right, where the other editor dialogs keep their window controls. Opening on one tab does not prevent switching to the others.
 - Every control applies **live** to the active tab (same setters as the accordions), so the canvas updates behind the dialog as the user clicks. There is no Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses it; nothing is rolled back.
 - The dialog is only reachable when the tab is editable. It is not offered on read-only / embed views (the right-click menu itself is suppressed there).
@@ -29,7 +29,7 @@ the other two tabs.
 The canvas-style controls, identical to the palette's **Canvas** accordion (and sharing the exact component, `CanvasStyleControls`, so the two can never drift):
 
 - **Pattern** — the pattern grid. The dialog has room to show **all** patterns at once (a 7-wide grid, no "Show more" toggle); the narrow palette accordion keeps the 4-wide grid with the toggle. ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
-- **Colours** — Canvas colour + Pattern colour swatches.
+- **Colours** — Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
 - **Opacity** — the pattern-opacity slider with its percentage readout.
 - **Size** — the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
 - **Speed** — a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.

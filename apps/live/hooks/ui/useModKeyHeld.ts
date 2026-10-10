@@ -6,7 +6,7 @@ import { createHeldKeyStore, useHeldKey } from './held-key-store';
 // Cmd or Ctrl". The store machinery is shared (see held-key-store);
 // what follows is only this key's policy.
 //
-// Used by the CommandPalette's IconButton to surface the per-element
+// Used by the palette's IconButton to surface the per-element
 // shortcut letter as a corner badge whenever the modifier is down,
 // turning the palette into a self-documenting cheat sheet without
 // adding any persistent chrome.

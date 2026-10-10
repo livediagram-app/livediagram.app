@@ -12,6 +12,7 @@ import {
   unpaintedShapeInk,
   type RGB,
 } from './colors';
+import { clamp } from './geometry-primitives';
 import type { ThemeDefinition } from './themes';
 
 export const QUICK_SWATCH_SLOTS = [1, 2, 3, 4, 5, 6] as const;
@@ -213,6 +214,14 @@ export function hueName(hex: string): string {
   return HUE_NAMES.find(([upTo]) => h < upTo)?.[1] ?? 'Red';
 }
 
+/**
+ * Colour words for a row of colours, none repeated: each its hue word ("Blue"), a repeat "Light" or
+ * "Deep" against the first, a third numbered. The element menu's Theme group names its swatches so.
+ */
+export function colourWords(hexes: readonly string[]): string[] {
+  return disambiguate(hexes.map((color) => ({ color, name: hueName(color) }))).map((c) => c.name);
+}
+
 // Two swatches must never share a name: a repeat becomes "Deep" or "Light"
 // against the first, and a third of the same word is numbered.
 function disambiguate(six: { color: string; name: string }[]): { color: string; name: string }[] {
@@ -233,10 +242,6 @@ function disambiguate(six: { color: string; name: string }[]): { color: string; 
 function lightnessOf(hex: string): number {
   const rgb = hexToRgb(hex);
   return rgb ? rgbToHsl(rgb).l : 0;
-}
-
-function clamp(v: number, lo: number, hi: number): number {
-  return Math.min(hi, Math.max(lo, v));
 }
 
 function mix(a: string, b: string, amountOfA: number): string {

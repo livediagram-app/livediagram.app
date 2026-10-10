@@ -10,6 +10,7 @@
 import { useEffect } from 'react';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@/lib/typing-target';
 
 export type AvatarHeldKeys = { up: boolean; down: boolean; left: boolean; right: boolean };
 
@@ -26,11 +27,6 @@ const ARROW_KEYS: Record<string, keyof AvatarHeldKeys> = {
   ArrowLeft: 'left',
   ArrowRight: 'right',
 };
-
-const isTypingTarget = (t: EventTarget | null) =>
-  t instanceof HTMLInputElement ||
-  t instanceof HTMLTextAreaElement ||
-  (t instanceof HTMLElement && t.isContentEditable);
 
 export function useAvatarKeys({
   active,
@@ -56,7 +52,7 @@ export function useAvatarKeys({
     if (!active) return;
     const onKeyDown = (e: KeyboardEvent) => {
       // A panel input (search, rename) or an open modal owns the keyboard.
-      if (isTypingTarget(e.target) || anyModalOpen()) return;
+      if (isTypingTarget(e.target, { select: false }) || anyModalOpen()) return;
       const dir = ARROW_KEYS[e.key];
       if (dir) {
         e.preventDefault();

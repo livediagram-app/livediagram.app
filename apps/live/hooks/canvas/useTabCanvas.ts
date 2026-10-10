@@ -58,7 +58,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
     // `commit` snapshots the pre-align state, so undo restores it.
-    commit((els) => cleanupElements(els, 'align'));
+    commit((els) => cleanupElements(els, 'align', activeTab.layers));
     track('Tab', 'Aligned');
   };
 
@@ -77,7 +77,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     // inside the updater from the elements it is given: a commit taken while a
     // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
     // so `current` is the true pre-hover state and undo returns there.
-    commit((current) => cleanupElements(current, choice));
+    commit((current) => cleanupElements(current, choice, activeTab.layers));
     track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
   };
 

@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
+import { IllustratePagesScene, PagePanelScene } from '@/components/illustrations/illustrate';
 
 export const metadata = helpMetadata({
   title: 'Illustrate Mode',
@@ -17,40 +18,59 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('illustrate')}
 >
 
-**Illustrate mode** is a way of working on a tab, made for building finished visuals: a poster, a one-pager, a set of social posts or a short deck. Instead of an endless canvas you work on **pages**, sheets laid out in a row, each one a picture you build up and then export or present. It is one of four modes, beside **Diagram**, **Draw** and **Plan**, and like them it never changes what is on the tab: the same elements are there in every mode.
+**Illustrate mode** is a way of working on a tab, made for building finished visuals: a poster, a one-pager, a set of social posts or a short deck. Instead of an endless canvas you work on **pages**, sheets laid out in a row, each one a picture you build up and then export or present. It is one of four modes, beside **Diagram**, **Draw** and **Plan**, and like them it never changes what is on the tab: the same elements are there in every mode. It is on for everyone, with nothing to turn on first.
 
-## Two Kinds of Page
+## Four Kinds of Page
 
 - **Infographic**: a sheet to lay out freely, starting from a layout if you like. Everything on this page is about infographic pages unless it says otherwise.
 - **Article**: a page to write on, like a document, its writing flowing onto new pages as it grows. See [Writing Articles](/help/canvas/illustrate/articles/).
+- **Slide**: one slide of a deck, always landscape in a slide size (16:9, or the classic 4:3). It starts from its own **slide layouts** (Title Slide, Section Header, Title and Bullets, Two Columns, Image and Text, Statement, Thank You and more), and has no portrait to turn to.
+- **Logo**: a square artboard (1024 x 1024) to design a logo on, with construction guides, mirror drawing, wordmark type, combining shapes and a logo kit export. See [Logo Pages](/help/canvas/illustrate/logo-pages/).
 
 A tab's first page asks **What Is This Page For?** while it is the only page and still empty; after that, every page keeps the kind it was made with.
 
 ## Switching to Illustrate Mode
 
-- **The switch** shows the current mode: press it and choose **Illustrate**. It sits in the **Palette** panel's title row (or, with the Toolbar layout, beside the menu button at the top left). **Shift+D** cycles through the modes too.
-- **Opens in:** to have a tab open in Illustrate mode for everyone, open the tab menu (the **…** on the tab), choose **Opens in**, then **Illustrate**.
+- **The switch** shows the current mode: press it and choose **Illustrate**. It sits beside the menu button at the top left. **Shift+D** cycles through the modes too. See [Editor Modes](/help/canvas/editor-modes/) for how the switch works.
+- **On a phone** there is no switch: open the tab menu (the **…** on the tab), choose **Mode**, then **Illustrate**.
+- **Everyone switches together.** The mode belongs to the tab, so everyone on it moves to Illustrate with you, and **Undo** switches the tab back to the mode it was in.
+- People who can only view a tab follow its mode. Event storming boards have no switch.
 
-## Your Content, Laid Out Into Pages
+## Starting From a Template
 
-Switch a tab that already has a diagram, a mind map or a sketch on it into Illustrate mode and its content is laid out onto pages for you. Things joined by arrows, or sitting close together, stay together; each group gets a page of its own, turned portrait or landscape to suit its shape, in reading order (top to bottom, then left to right). Anything too big for its page is scaled down to fit, text included.
+In the New Document wizard, or Quick Start on a new tab, **Blank Illustration** (on the **Popular** shelf) starts a tab in Illustrate mode on one empty page, ready to ask what it is for. **Article** starts on one article page. To see every template that opens in Illustrate mode, open the **Show templates for** menu beside the search box and choose **Illustrate**: Event Poster, Year in Review, Résumé, Recipe Card, Data Story, How It Works, Versus and Social Carousel among them ([Templates](/help/canvas/templates/)).
 
-It is one step, and a message says so: **Undo** puts the tab back exactly as it was. Content you later leave off the pages (in the space around them) is gathered onto new pages the next time the tab enters the mode. Because every mode shows the same elements, Diagram mode sees the new arrangement too.
+## Your Content, Put Onto a Page
+
+Switching modes never changes your content. Switch a tab that already has a diagram, a mind map or a sketch on it into Illustrate mode, and if it does not fit the first page, a page is made **around it, where it is**: nothing moves, shrinks or is scaled. The page is A4 when the content fits on it, and otherwise **Fit to Content**, a page exactly the size of your board plus a margin all round. Back in Diagram mode the board looks just as it did.
+
+It happens in the same step as the switch, and a message says so: **Undo** switches the tab back to the mode it came from, with no page. Content you later leave off the pages (in the space around them) stays where you put it.
+
+**Split Into Pages** breaks a Fit to Content page into separate pages, from its page panel. Things joined by arrows, or sitting close together, stay together; each group gets a page of its own, A4 when it fits or Fit to Content when it does not, turned portrait or landscape to suit its shape, in reading order (top to bottom, then left to right). Each group moves onto its page at its own size, never scaled. At most 20 pages are made in one go; anything left over shares the last of them.
 
 ## Pages
 
-- **Add a page** with the **+** after the last page, or the **+** at the end of the toolbar strip in the Toolbar layout, and choose **Infographic** or **Article**. A new infographic page takes the last one's size and orientation, on plain paper.
-- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)") and its kind ("Infographic" or "Article"). **Press the label** to fit that page to the screen.
+<Figure caption="Two pages in a row, each labelled above its corner with its cog opposite, the navigator under the first and the + after the last.">
+  <IllustratePagesScene />
+</Figure>
+
+- **Add a page** with the **+** after the last page, or the **+** at the end of the palette strip, and choose **Infographic**, **Article**, **Slide** or **Logo** in **Add a Page**. A new infographic page takes the last one's size and orientation, on plain paper. A tab holds up to 100 pages.
+- **Each page's label** sits above its top-left corner: its name, or "Page 2", then its size ("A4 · Portrait", "Square", "Story (9:16)") and its kind ("Infographic", "Article", "Slide" or "Logo"). **Press the label** to fit that page to the screen.
 - **Drag a label sideways to reorder the pages.** A blue bar in the gap shows where the page will land; let go and it moves there with everything on it. **Escape** cancels.
 - **Content belongs to its page.** Anything whose centre is on a page moves with it when the pages around it change, and whatever hangs off a page's edge is cut off at the edge, on screen and in exports, as if the pages were the only paper.
 - **The page navigator** under each page (once there are two or more) shows "2 of 5" between **Previous page** and **Next page**, each fitting that page to the screen.
 - **Snapping:** move or resize an element and it snaps to its page's edges, centre lines and margins, with the same guides as lining up with other elements.
 - **An empty page** shows **Start from a layout** in its title bar, beside the cog. See [Infographic Layouts](/help/canvas/illustrate/infographic-layouts/).
 - The Layers panel and its button are not offered in Illustrate mode; in their place is the **Slides** button (see [Exporting and Presenting Pages](/help/canvas/illustrate/exporting-pages/)).
+- In [Zen mode](/help/tools/zen-mode/) and while presenting, the pages show on their own, without labels, cogs or buttons.
 
 ## The Page Panel
 
-Press the cog above a page's top-right corner to open its panel, which opens beside the page so the page stays in view. At the top is the page's **name** (leave it empty to go back to "Page 2"). Below are its tabs: **Page** and **Layouts** on an infographic page; **Page**, **Style** and **Text** on an article page (see [Writing Articles](/help/canvas/illustrate/articles/)). Along the bottom are the page's actions.
+Press the cog above a page's top-right corner to open its panel, which opens beside the page so the page stays in view (on a phone it slides up from the bottom of the screen). At the top is the page's **name** (leave it empty to go back to "Page 2"). Below are its tabs: **Page** and **Layouts** on an infographic or slide page; **Page**, **Style** and **Text** on an article page (see [Writing Articles](/help/canvas/illustrate/articles/)); **Page**, **Layouts** and **Logo** on a logo page (see [Logo Pages](/help/canvas/illustrate/logo-pages/)). Along the bottom are the page's actions.
+
+<Figure caption="The page panel beside its page: the name, the Page and Layouts tabs, the Size tiles, the orientation and the backgrounds.">
+  <PagePanelScene />
+</Figure>
 
 ### Size and Orientation
 
@@ -64,27 +84,49 @@ The **Page** tab starts with the **Size** tiles, each drawn to scale:
 | Square | Square social posts                                    |
 | Post   | Portrait posts for Instagram and LinkedIn (4:5)        |
 | Story  | Stories (9:16), or a widescreen slide (16:9) landscape |
+| Slide  | A widescreen slide (16:9), always landscape            |
+| Fit    | Fit to Content: sized around the board it was made for |
 
-Below them, **Portrait** and **Landscape** turn the page (a square page has no orientation). Changing a page's size or orientation keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
+**Fit** shows only on a page already in it, the page made around your board when it entered Illustrate mode; choose another size and it is gone for good. A slide page offers only **Slide** (16:9) and **Classic** (4:3), and no orientation. A logo page is always its 1024 x 1024 artboard, so it shows no sizes at all.
+
+Below them, **Portrait** and **Landscape** turn the page (a square page, a slide size and Fit to Content have no orientation). Changing a page's size or orientation keeps everything on it: content that still fits stays as it is, and content that no longer fits is scaled down as one to fit inside the margins, its text with it. Nothing is cut off.
 
 ### Backgrounds and Patterns
 
-- **From your theme**, in the first row: pale tints of the tab's theme colour, the theme's own fill, a deep shade, and a light and a dark gradient. Change the tab's theme and the row follows it.
-- **Solid colours**, from Paper (the plain page) through pale Cream, Mist, Sky, Mint, Lavender, Blush and Sunshine to dark Ink, Midnight, Forest and Plum, plus the rainbow swatch for a **custom colour** of your own.
-- **Gradients**: Sunrise, Ocean, Meadow, Peach, Dusk and Night.
+Every kind of page has the same backgrounds, sorted into **Theme**, **Solid** and **Gradient** at the top of the **Background** section; it opens on the kind the page has now.
+
+- **Theme**: pale tints of the tab's theme colour, the theme's own fill, a deep shade, and a light and a dark gradient. Change the tab's theme and these follow it.
+- **Solid**: **Paper** (the plain page), then a row of light colours and a row of dark ones (the same colours every colour picker in livediagram offers), the colours already used in the document, and **+** for a **custom colour** of your own.
+- **Gradient**: Sunrise, Ocean, Meadow, Peach, Dusk and Night, plus the rainbow swatch for a **custom gradient**: pick its **From** and **To** colours from the same colours, turn its **Angle**, or **Swap** the two.
 - **Pattern**, over any of them: **None**, **Dots**, **Grid** or **Lines**, drawn faintly so they never fight the content.
 
 **Hover a swatch to preview it** on the page; press it to keep it. A dark background keeps the page readable: elements without colours of their own are drawn in light ink on it, and text, arrows and icons you coloured yourself are lightened if they would no longer stand out (or darkened again on a light page).
 
 ### Page Actions
 
-Along the bottom of the panel: **Duplicate page** (a copy right after it, with everything on it), **Move page left**, **Move page right** and **Delete page** (the page and everything on it; the pages after it close the gap). Each one is a single step that **Undo** reverses.
+Along the bottom of the panel: **Split Into Pages** (on a Fit to Content page only, see above), **Duplicate page** (a copy right after it, with everything on it), **Move page left**, **Move page right** and **Delete page** (the page and everything on it; the pages after it close the gap, and the view glides to the page before it so you are never left looking at empty canvas). On an article page the same four act on the whole article. Each one is a single step that **Undo** reverses.
+
+## Locking a Page
+
+Press the padlock beside a page's cog to **lock** it; it reads **Locked** while it is. A locked page, of any kind, stays as it is:
+
+- What is on it can't be selected, moved, changed or deleted, and nothing new can be drawn, dropped or pasted onto it (a short notice says why).
+- Its name, size, orientation, background and layout can't change, and it can't be deleted. You can still move it along the row or duplicate it (the copy is unlocked).
+- Locking a page of an article makes the article's writing read-only.
+
+Press the padlock again to unlock it. The lock is part of the document, so everyone you share it with sees the page locked too.
+
+## Leaving Illustrate Mode
+
+Diagram, Draw and Plan modes do not show pages, so switching away from a tab you can edit asks first:
+
+- **A tab with pages** asks **Switch to Diagram?** (or Draw, or Plan) beside the switch: what you change there may not fit back onto your pages when you return. Press **Switch** to go, or **Cancel** to stay.
+- **A tab with articles** asks **Turn Articles Into Pages?**: **Turn Into Pages**, **Keep as Articles** or **Cancel** (see [Writing Articles](/help/canvas/illustrate/articles/#exporting-presenting-and-leaving)).
 
 ## Good to Know
 
 - Everything else works as always: sharing, live collaboration, comments, undo and redo. Collaborators see your pages and their changes live.
 - Your mode is yours: someone else on the same tab can work in Diagram mode while you build pages.
-- Leaving Illustrate mode on a tab with articles asks whether to turn them into **Page** elements first (see [Writing Articles](/help/canvas/illustrate/articles/)).
 - People who can only view a tab see the pages but not their cogs, buttons or the **+**.
 
 </ArticleLayout>

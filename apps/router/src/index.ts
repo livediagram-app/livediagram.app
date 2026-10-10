@@ -89,6 +89,19 @@ function hasPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
+// A stripped app's own redirect (its trailing-slash one: `/explorer/folders` to `/explorer/folders/`)
+// names a path inside that app; relative to the host it would leave the app (`/help` lost, landing
+// on the editor or a 404). Its prefix goes back on. Absolute and protocol-relative ones are left be.
+export function withPrefixedRedirect(res: Response, prefix: string): Response {
+  if (res.status < 300 || res.status >= 400) return res;
+  const location = res.headers.get('Location');
+  if (!location || !location.startsWith('/') || location.startsWith('//')) return res;
+  if (hasPrefix(location.split(/[?#]/)[0]!, prefix)) return res;
+  const headers = new Headers(res.headers);
+  headers.set('Location', `${prefix}${location}`);
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
+
 // Forward to a downstream app.
 //
 // Production (service binding): basePath/assetPrefix apps get `stripPrefix`
@@ -110,7 +123,9 @@ function forward(
     if (!stripPrefix) return binding.fetch(request);
     const rewritten = new URL(url.toString());
     rewritten.pathname = url.pathname.slice(stripPrefix.length) || '/';
-    return binding.fetch(new Request(rewritten.toString(), request));
+    return binding
+      .fetch(new Request(rewritten.toString(), request))
+      .then((res) => withPrefixedRedirect(res, stripPrefix));
   }
   if (origin) {
     const target = new URL(origin);

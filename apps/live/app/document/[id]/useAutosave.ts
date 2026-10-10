@@ -24,7 +24,7 @@ import { saveFailureStatus } from './save-failure';
 import { isDocumentDeleted } from '@/lib/document-tombstones';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
 import { computeTabSaveDiff } from './editor-page-helpers';
-import { tabBroadcastOps } from './tab-broadcast-ops';
+import { saveTabAndRelay } from './tab-save-flow';
 import {
   baselineAfterSave,
   closeSaveWindow,
@@ -32,6 +32,7 @@ import {
   type RemoteOpJournal,
 } from './save-baseline';
 import { emptyAfterSave } from '@/lib/list-row-empty';
+import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
 
 // Per-tab autosave (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
 // a debounced (600ms) save and a beforeunload flush so a fast edit ->
@@ -72,6 +73,8 @@ export function useAutosave(opts: {
   // The changeset revision each tab holds, committed with the `tabs` of this render
   // (useChangesetSeen): sent with each save so the api merges only what the save lacks.
   changesetSeen: ReadonlyMap<string, number>;
+  // Told the revision each tab save wrote (useTabRevisions), for the selection reference.
+  noteTabRevision?: (tabId: string, rev: number) => void;
 }) {
   const {
     hydrated,
@@ -93,11 +96,16 @@ export function useAutosave(opts: {
     setDocumentList,
     onDocumentTrashed,
     changesetSeen,
+    noteTabRevision,
   } = opts;
 
   // The caller passes a fresh function each render; read it when a save is refused (an effect event), so
   // it never re-arms the debounced save.
   const reportTrashed = useEffectEvent(() => onDocumentTrashed());
+  // Read when a save answers, never a trigger of the debounced save.
+  const noteRevision = useEffectEvent((tabId: string, rev: number) =>
+    noteTabRevision?.(tabId, rev),
+  );
 
   // Set once the server has told us we may not write to this document at all
   // (403). Unlike a network failure that's worth another go on the next edit,
@@ -146,6 +154,18 @@ export function useAutosave(opts: {
     },
     [],
   );
+  // Back online, a save waiting on its retry timer goes at once rather than up to a minute later
+  // (docs/specs/007-editor/load-recovery.md "Offline").
+  useEffect(() => {
+    const onOnline = () => {
+      if (retryTimerRef.current === null) return;
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+      setRetryTick((t) => t + 1);
+    };
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, []);
 
   // How many peer ops the `tabs` of THIS render already include. A peer's op
   // reaches the baseline at once but the screen only at the next render, so a
@@ -247,6 +267,9 @@ export function useAutosave(opts: {
 
       setSaveStatus('saving');
       savesInFlightRef.current++;
+      // How long the save took, Saving to Saved (docs/specs/017-telemetry/timing-telemetry.md), sampled
+      // to one per page per minute. A failed save records nothing; the Error category counts it.
+      const timing = startEditorTiming('Save');
       const journal = remoteOpJournalRef.current;
       const mark = openSaveWindow(journal);
       const gen = ++saveGenRef.current;
@@ -255,30 +278,27 @@ export function useAutosave(opts: {
       const roomCursor = roomRef.current?.cursor() ?? null;
       const writes: Promise<unknown>[] = [];
       for (const t of changedTabs) {
-        // The ops are derived NOW, against what peers have at the snapshot,
-        // not when the PUT lands: by then the baseline may hold a peer's
-        // newer copy of an element, and diffing our snapshot against it would
-        // broadcast our older copy over theirs.
+        // Granular ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0), derived from the last state
+        // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
         const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
-        const ops = tabBroadcastOps(before, t);
         writes.push(
-          apiSaveTab(selfId, documentId, t, sessionShareCode, {
-            // A loaded tab's content is authoritative, so an empty body is
-            // an intentional clear (reset-canvas / delete-all) the server
-            // backstop should accept; an unloaded placeholder is never in
-            // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
-            allowEmpty: loadedTabIdsRef.current.has(t.id),
-            roomCursor,
-            // From the same render as `t`, never ahead of it (useChangesetSeen).
-            ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
-          }).then(() => {
-            // Broadcast granular element ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0) derived from
-            // the last state peers saw so concurrent different-element edits
-            // merge instead of the whole tab clobbering. Falls back to a
-            // whole-`tab` op for a new tab or a bulk change (tabBroadcastOps).
-            for (const op of ops) {
-              roomRef.current?.send({ kind: 'op', op });
-            }
+          saveTabAndRelay(
+            before,
+            t,
+            () => roomRef.current,
+            () =>
+              apiSaveTab(selfId, documentId, t, sessionShareCode, {
+                // A loaded tab's content is authoritative, so an empty body is
+                // an intentional clear (reset-canvas / delete-all) the server
+                // backstop should accept; an unloaded placeholder is never in
+                // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
+                allowEmpty: loadedTabIdsRef.current.has(t.id),
+                roomCursor,
+                // From the same render as `t`, never ahead of it (useChangesetSeen).
+                ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
+              }),
+          ).then((rev) => {
+            if (rev !== null) noteRevision(t.id, rev);
           }),
         );
       }
@@ -324,6 +344,8 @@ export function useAutosave(opts: {
             lastSavedNameRef.current = next.name;
           }
           setSaveStatus('saved');
+          if (sampleSaveTiming()) timing.end();
+          else timing.cancel();
           retryAttemptsRef.current = 0;
           const now = Date.now();
           setSavedAt(now);
@@ -344,6 +366,7 @@ export function useAutosave(opts: {
           );
         })
         .catch((err: unknown) => {
+          timing.cancel();
           if (isDocumentTrashedError(err)) {
             writesForbiddenRef.current = true;
             reportTrashed();

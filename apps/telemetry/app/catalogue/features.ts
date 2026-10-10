@@ -6,6 +6,7 @@ import { SELECTION_MODES } from '../palette-types';
 import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
+import { LOGO_TOOL_TYPES } from '../logo-types';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -272,15 +273,71 @@ export const ILLUSTRATE_PAGES = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Added and Deleted',
-  'A page added to an Illustrate tab from the plus after its last page (an infographic page, or a new article), or deleted from its settings.',
+  'A page added to an Illustrate tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
   {
     types: [
       'PageAdded',
       'ArticleAdded',
+      'SlidePageAdded',
       'PageRemoved',
       'ArticlesToPages',
       'PageKindInfographic',
       'PageKindArticle',
+      'PageKindSlide',
+      'LogoPageAdded',
+      'PageKindLogo',
+    ],
+  },
+);
+
+// A logo page's tools (docs/specs/007-editor/logo-pages.md): shapes combined into one, Mirror
+// Copy, and wordmark type set on a text.
+export const LOGO_TOOLS = chart(
+  'Element',
+  'Changed',
+  'Logo Tools Used',
+  'On a logo page: shapes combined (Unite, Subtract, Intersect, Exclude), a Mirror Copy, and wordmark type (tracking, weight, case, arc) set on a text.',
+  { types: [...LOGO_TOOL_TYPES] },
+);
+
+// Drawing with Mirror on: each drawing that got its reflected twin.
+export const LOGO_MIRROR_TWINS = chart(
+  'Element',
+  'Created',
+  'Mirrored Drawings',
+  'A shape, path or stroke drawn on a logo page with Mirror While Drawing on, so it got a reflected twin.',
+  { types: ['MirrorTwin'] },
+);
+
+// A logo page's own switches, each person's (Show Guides is a Setting, charted there).
+export const LOGO_SWITCHES = chart(
+  'UI',
+  'Toggled',
+  'Logo Mirror Switched',
+  'Mirror While Drawing turned on or off on a logo page.',
+  { types: ['LogoMirrorOn', 'LogoMirrorOff'] },
+);
+
+// How a logo page mirrors (docs/specs/007-editor/logo-pages.md "Mirror"): the axis, a radial
+// mirror's copies and Merge Into One, from the Mirror popover.
+export const LOGO_MIRROR_SETTINGS = chart(
+  'UI',
+  'Changed',
+  'Logo Mirror Set Up',
+  "A logo page's mirror axis, radial copies or Merge Into One changed in its Mirror popover.",
+  {
+    types: [
+      'LogoMirrorAxisVertical',
+      'LogoMirrorAxisHorizontal',
+      'LogoMirrorAxisBoth',
+      'LogoMirrorAxisRadial',
+      'LogoMirrorCopies3',
+      'LogoMirrorCopies4',
+      'LogoMirrorCopies5',
+      'LogoMirrorCopies6',
+      'LogoMirrorCopies8',
+      'LogoMirrorMergeOn',
+      'LogoMirrorMergeOff',
     ],
   },
 );
@@ -290,8 +347,17 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Set Up',
-  "An Illustrate page's size, name, background or pattern changed from its panel.",
-  { types: ['PageSize', 'PageRenamed', 'PageBackground', 'PagePattern'] },
+  "An Illustrate page's size, name, background or pattern changed from its panel, or a page locked or unlocked.",
+  {
+    types: [
+      'PageSize',
+      'PageRenamed',
+      'PageBackground',
+      'PagePattern',
+      'PageLocked',
+      'PageUnlocked',
+    ],
+  },
 );
 
 // Building Illustrate pages: a layout placed, a page duplicated or moved.
@@ -299,8 +365,8 @@ export const ILLUSTRATE_PAGE_BUILDING = chart(
   'Tab',
   'Changed',
   'Illustrate Pages Built',
-  'A layout put onto an Illustrate page, a page duplicated or moved, or a tab laid out into pages.',
-  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut'] },
+  'A layout put onto an Illustrate page, a page duplicated, moved or split, or a board put onto a page.',
+  { types: ['PageLayout', 'PageDuplicated', 'PageMoved', 'PagesLaidOut', 'PageFitToContent'] },
 );
 
 // Leaving Illustrate past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
@@ -319,8 +385,8 @@ export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
   'UI',
   'Closed',
   'Empty Page Layouts Hidden',
-  'Someone hid the Start From a Layout card an empty infographic page shows inside itself.',
-  { types: ['EmptyPageLayouts'] },
+  'Someone hid the Start From a Layout card an empty page shows inside itself, or chose Start From Scratch on it.',
+  { types: ['EmptyPageLayouts', 'EmptyPageLayoutsBlank'] },
 );
 
 // Writing articles (docs/specs/007-editor/article-pages.md "Telemetry").
@@ -399,6 +465,10 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    LOGO_TOOLS,
+    LOGO_MIRROR_TWINS,
+    LOGO_SWITCHES,
+    LOGO_MIRROR_SETTINGS,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,

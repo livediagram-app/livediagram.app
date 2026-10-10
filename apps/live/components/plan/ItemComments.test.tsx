@@ -50,7 +50,7 @@ function show(item: Item, opts: { canEdit?: boolean; canComment?: boolean } = {}
 describe('ItemComments', () => {
   it('starts empty with a composer, and sends a comment', () => {
     const onComment = show(card());
-    expect(screen.getByText('No comments yet.')).toBeTruthy();
+    expect(screen.getByText('No comments yet. Start the conversation.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Resolve' })).toBeNull();
     fireEvent.change(screen.getByRole('textbox', { name: 'Add a comment' }), {
       target: { value: '  Ship it  ' },
@@ -68,7 +68,9 @@ describe('ItemComments', () => {
     const closed = show(card({ comments: [comment('a'), comment('b')], resolved: true }));
     expect(screen.getByText('2 comments')).toBeTruthy();
     expect(screen.queryByRole('textbox')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Resolved' }));
+    // Resolved reads as a badge with Reopen beside it.
+    expect(screen.getByText('Resolved')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reopen' }));
     expect(closed).toHaveBeenCalledWith({ kind: 'resolve', resolved: false });
   });
 
@@ -81,6 +83,32 @@ describe('ItemComments', () => {
       canEdit: false,
     });
     expect(screen.getAllByRole('button', { name: 'Delete comment' })).toHaveLength(1);
+  });
+
+  it('waits for text before Comment, and names the send shortcut only while typing', () => {
+    show(card());
+    const send = screen.getByRole('button', { name: 'Comment' }) as HTMLButtonElement;
+    expect(send.disabled).toBe(true);
+    const field = screen.getByRole('textbox', { name: 'Add a comment' });
+    expect(screen.queryByText(/Enter to send/)).toBeNull();
+    fireEvent.focus(field);
+    expect(screen.getByText(/^(⌘|Ctrl) Enter to send$/)).toBeTruthy();
+    fireEvent.change(field, { target: { value: '   ' } });
+    expect(send.disabled).toBe(true);
+    fireEvent.change(field, { target: { value: 'Looks good' } });
+    expect(send.disabled).toBe(false);
+    fireEvent.blur(field);
+    expect(screen.queryByText(/Enter to send/)).toBeNull();
+  });
+
+  it('sends on Cmd or Ctrl with Enter, keeping a plain Enter for new lines', () => {
+    const onComment = show(card());
+    const field = screen.getByRole('textbox', { name: 'Add a comment' });
+    fireEvent.change(field, { target: { value: 'Line one' } });
+    fireEvent.keyDown(field, { key: 'Enter' });
+    expect(onComment).not.toHaveBeenCalled();
+    fireEvent.keyDown(field, { key: 'Enter', ctrlKey: true });
+    expect(onComment).toHaveBeenCalledWith({ kind: 'add', text: 'Line one' });
   });
 
   it('offers no composer or resolve to someone who may not comment', () => {

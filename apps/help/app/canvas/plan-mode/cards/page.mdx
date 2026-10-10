@@ -1,68 +1,99 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { PlanCardMenuScene, PlanCardPanelScene } from '@/components/illustrations/plan';
 
 export const metadata = helpMetadata({
   title: 'Cards',
   description:
-    'Plan cards in livediagram: adding cards, the card panel with its tabs and Details, rich-text descriptions, labels, checklists and parents, comments, card sizes, the Trash, Archive, and presenting a card as a slide.',
+    'Plan cards in livediagram: adding cards, the card panel with its tabs and Details, linked cards and the breadcrumb, comments, flags, finding any card, the Trash, Archive, and presenting a card as a slide.',
   path: '/help/canvas/plan-mode/cards/',
 });
 
 <ArticleLayout
   title="Cards"
-  description="Every card is a piece of work you can open, fill in, move, archive or present."
+  description="Every card is a piece of work you can open, fill in, move, flag, archive or present."
   categoryTitle="Canvas"
   categorySlug="canvas/plan-mode"
 >
 
 A **card** shows one [item](/help/canvas/plan-mode/items/) on a [board](/help/canvas/plan-mode/boards/). The same item can sit on more than one board, and a change to it shows everywhere at once.
 
-## Add a card
+## Add a Card
 
-- **+ Add card** at the foot of a column: pick a type (Project, Task, Note, Idea, Action or [your own](/help/canvas/plan-mode/card-types/)), then give it a title.
-- **From the palette:** drag a card from the **Cards** category into a column; the column opens a gap where it will land.
+- **+ Add card** at the foot of a column (or of a row, on a board with swimlanes) opens **Add a Card**: press a type (Project, Task, Note, Idea, Action or [your own](/help/canvas/plan-mode/card-types/)) and a card of it lands at the end of the column and opens straight away with its title selected, ready to name.
+- **From the palette:** drag a card from the **Cards** category into a column; the column opens a gap where it will land. Or press it, then click the column.
+- **With the keyboard:** focus a card and press **N** to open **Add a Card** for its column.
 
-A board offers only the types it takes, set in its menu's **New Cards Can Be**.
+A board shows and offers only the card types set in its menu's **Card Types**; cards of other types are hidden on it, not deleted. A card dropped into a row takes that row's assignee, priority or field.
 
-## Open a card
+## Open a Card
 
-Click a card to open its panel:
+Click a card (in Plan mode), or double-click it in the other modes, to open its panel. It closes with **Escape** or the close button, and every change saves as you make it.
 
-- **On the left:** the title, and the card type's **tabs** (Overview by default). The **description** is rich text: bold, italic, headings, links, and bullet or numbered lists from their own buttons.
-- **On the right, in Details:** status, assignee and parent, then priority, labels, estimate, due date and, on a project, start date (a start after the due date says **Starts after it is due**). Labels are coloured chips, with the document's labels offered as you type. **Open** beside a parent takes you to it.
-- **A checklist** shows its progress; tick steps, edit them in place, and **Add a step**.
-- **Child Cards:** a project lists the cards that sit under it, each with its status and who has it. Click one to open it in the same panel.
-- **Find your way back:** as you move from a card to its parent or a child, the top of the panel keeps a breadcrumb of where you have been. Click a card in it to go straight back.
-- **The ⋯ menu** at the top, beside the close button, holds **Duplicate**, **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Trash**.
-- **Flag** a card to mark it for attention: it shows a red flag on every board it is on, and **Flagged** at the top of its panel. Flagging changes nothing else about the card. **Help** beside it opens this page.
+<Figure caption="The card panel: a breadcrumb back to the project, the card's tabs and Linked as Parent on the left, Details on the right.">
+  <PlanCardPanelScene />
+</Figure>
 
-On a phone the panel rises from the bottom, with **Details** as its first tab. Who a card can be assigned to is you and the members of your teams.
+- **The header:** the card's type (change it from the picker), its number, the **⋯** menu (Duplicate, Flag, Archive, Trash, **Edit Card Type**, which opens the card's type in the type editor, and **Help**, which opens this page) and the close button.
+- **On the left:** the title, then the card type's **tabs** (Overview by default) and their fields. The **description** is rich text: bold, italic, underline, strikethrough, size, colour, headings, links, and bullet or numbered lists, from the toolbar over it or the usual shortcuts. It reads as text until you click it.
+- **On the right, in Details:** status, assignee and parent, then priority, labels, estimate, due date and, on a project, start date (a start after the due date says **Starts after it is due**). Labels are coloured chips, with the document's labels offered as you type. **Open** beside a parent takes you to it. At the foot: who made the card and who last changed it.
+- **A checklist** shows its progress ("2 of 5"); tick steps, edit them in place, and **Add a step**.
+- **Linked as Parent:** a project lists the cards under it (the cards whose **Parent** is that project) on its first tab, each with its number, title and status. Click one to open it in the same panel, or **New Task** to make one already under it. Trashed cards are left out; an archived one shows an **Archived** chip.
+- **Find your way back:** as you move from a card to its parent or a child, the top of the panel keeps a breadcrumb of where you have been. Click a card in it to go straight back. It shows the nearest three (one on a phone), with earlier ones folded into **…**. Opening a card from a board starts a new trail.
+- **The ⋯ menu** holds **Duplicate**, **Flag** (or **Remove Flag**), **Archive** (or **Restore**) and **Trash**.
+
+On a phone the panel rises from the bottom, with **Details** as its first tab and the breadcrumb on a row of its own. You can assign a card to yourself or to the members of your teams; a guest can assign only themselves. Someone who can only view the document opens cards to read them, with no **⋯** menu.
+
+## Flag a Card
+
+**Flag** (in a card's right-click menu or its panel's **⋯** menu) marks a card for attention: it shows a red flag at the end of its title on every board it is on, and **Flagged** beside its number in the panel. Flagging changes nothing else about the card; **Remove Flag** takes it off.
 
 ## Comments
 
 Every card has a conversation at the end of its **Overview** tab, the same [comments](/help/collaboration/comments/) you leave on the canvas:
 
-- **Add a comment** in the box and press **Comment** (or **⌘↵**). Type **@** to mention a teammate on a team document: they get an email whose button opens the card, and the card's thread shows on their **Activity** page.
-- **Resolve** closes the thread once it is settled; **Resolved** opens it again, and so does a new comment.
+- **Add a comment** in the box and press **Comment** (or **Cmd+Enter**, **Ctrl+Enter** on Windows); a plain **Enter** starts a new line. Type **@** to mention a teammate on a team document: they get an email whose button opens the card, and the card's thread shows on their **Activity** page.
+- **Resolve** closes the thread once it is settled; it then shows **Resolved**, and **Reopen** opens it again, as does a new comment.
 - Delete your own comments from their bin. Someone who can edit the document can delete any comment.
-- Anyone who can open the document can comment, including people on a view link.
-- A card shows how many comments it has, beside its votes, while the thread is open. Turn the count off in the board's menu under **Cards**.
+- Anyone who can comment on the document can comment on a card, including people on a view link.
+- A card shows how many comments its open thread has, beside its votes. Turn the count off in the board's menu under **Cards**.
 
-Trashing or archiving a card keeps its comments; deleting it for good from the Trash deletes them. Comments are not undone with **Undo**, as on the canvas.
+Trashing or archiving a card keeps its comments; deleting it for good from the Trash deletes them. Comments are not undone with **Undo**, as on the canvas. A card holds up to 200 comments.
 
-## Card sizes
+## Right-Click a Card
 
-A board draws its cards **Minimal** (the title), **Compact** (the title over a line of number, priority, due date and assignee) or **Detailed** (everything, with a description excerpt and checklist progress). Choose it in the board's menu under **Cards**.
+<Figure caption="A card's right-click menu: Open, Duplicate, Add to Slides, a Move to row per column, Flag, Archive and Trash.">
+  <PlanCardMenuScene />
+</Figure>
 
-## Right-click a card
+**Open**, **Duplicate** (a copy right after it, without its votes), **Add to Slides**, **Move to** each of the board's other columns, **Flag**, **Archive**, and **Trash**. Someone who can only view gets **Open** alone. A face-down card on a board that hides writing has no menu.
 
-**Open**, **Duplicate**, **Add to Slides**, **Move to** another column, **Flag**, **Archive**, or **Trash**.
+## A Card on the Canvas
+
+Drag a card off a board and it stays on the canvas as a **Plan card**, showing the same item. Move it like any other element. Double-click it (double-tap on a touch screen) to open the card; a single click just selects it.
+
+Its element menu has a **Card** section with **Card Size**: **Minimal**, **Compact** or **Detailed**, the same sizes a board uses for its cards. Its card type's **Display** decides what shows at each size.
+
+## Find a Card
+
+The **Cards** button in Plan mode's bottom-right corner (beside **Card Types**) lists every card in the document that isn't archived or in the Trash, of every card type, your own included, newest change first:
+
+- **Search** by number (`12` or `#12`), title, description or a type's name (**Person** finds every Person card).
+- **Add Filter**, at the right of the search box, narrows the list by any field, **Card Type** included: pick a field, then one of its values (each says how many cards have it), such as **State: Done** or **Assignee: No assignee**. Each filter shows inside the search box; add as many as you like. A filter's cross takes it off (so does Backspace in an empty box), and the box's clear takes off the words and every filter.
+- **All Cards** and **Not on a Board** switch between every card and the ones no board shows, on any tab: the strays a renamed or removed column left behind, or cards of a type every board with their status leaves out.
+- Click a card to open it. Someone who can edit can move a card to the Trash from its bin without leaving the list.
 
 ## The Trash
 
-Drag a card onto the **Trash** button beside Undo: it opens out into a drop target as you drag. Open the Trash to **Restore** a card to where it was, delete one for good, or **Empty Trash**.
+Every way of deleting a card moves it to the Trash: **Trash** in its menus, **Delete** on a focused card, or dragging it onto the **Trash** button beside **Cards** (it opens out into a drop target as you drag). The button's badge counts the cards in it. On a phone there is no Trash button, so use **Trash** in a card's menu (hold your finger on the card).
 
-## Present a card
+Open the Trash to **Restore** a card to the column it came from, **Delete** one for good (it asks first), or **Empty Trash**. Deleting for good can't be undone. The Trash button isn't shown to people who can only view.
+
+## Archive a Card
+
+**Archive** takes a card off every board without deleting it, keeping its status for when it comes back. An **Archive** board (in the palette's **Boards**) shows every archived card; **Restore**, or dragging it onto another board, brings it back.
+
+## Present a Card
 
 **Add to Slides** adds the card to the [Slide Deck](/help/selection-modes/slide-deck/); presenting it shows the card full screen, kept up to date as it changes.
 

@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ShareLinkControls } from '@/components/illustrations/privacy';
+import { SharePasswordSwitch, ShareLifetimes } from '@/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Share Link Security',
@@ -11,44 +11,51 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared document and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-A share link is a capability: anyone holding the URL has its role. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the document and an expiry on each link. Both are set from the Share dialog, and both apply to everyone except you, the owner.
-
-<Figure caption="The Share dialog carries both controls: an expiry on each link and a single password on the document.">
-  <ShareLinkControls />
-</Figure>
+A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role, **Editor** or **Viewer**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the document and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
 ## Share password
 
-You can put a single password on a document. Once it is set, anyone opening any share link for that document must enter it before they can view, and the password rides along on every later request so writes stay gated too.
+You can put a single password on a document: switch on **Password Protection** in the Share dialog, type it, and choose **Save**. Once it is set, anyone opening any share link for that document must enter it before they can view, and the password rides along on every later request so their edits stay gated too.
 
-- **One password covers every link** on the document, not one password per link.
-- **You always bypass it.** The owner is identified directly, so you never get prompted on your own document.
-- **Nobody can read it back.** livediagram stores only a scrambled form of the password, so even you see just that one is set. Note it down when you choose it; you can replace or remove it any time.
-- **Guessing is limited.** After too many wrong passwords from one network, further attempts are refused for a while, wherever they are tried.
+- **One password covers every link** on the document, [embeds](/help/collaboration/sharing/embeds/) included, not one password per link.
+- **You always bypass it.** The owner is identified directly, so you never get prompted on your own document. So are members of the [team](/help/collaboration/teams/) whose library holds it.
+- **Nobody can read it back.** livediagram stores only a scrambled (hashed) form of the password, so even you see just **Password Set**. Note it down when you choose it; use **Replace** or **Remove** any time.
+- **Changing it takes effect at once.** Setting or replacing the password sends everyone currently in the document through a link back to the password prompt.
+- **Guessing is limited.** Share-code and password attempts are rate-limited per network (30 a minute on livediagram.app), wherever they are tried.
 
-The goal is to stop people guessing or stumbling onto a share URL, not to provide cryptographic protection. Set, change, or remove it any time from the Share dialog's Password row. See [share passwords](/help/collaboration/sharing/share-passwords/) for the full walkthrough.
+<Figure caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
+  <SharePasswordSwitch />
+</Figure>
+
+The goal is to stop people guessing or stumbling onto a share URL, not to provide cryptographic protection. See [Share Passwords](/help/collaboration/sharing/share-passwords/) for the full walkthrough.
 
 ## Link expiry
 
-When you create a share link you can give it a lifetime, so access ends automatically without you having to remember to revoke it.
+When you create a pass, the **Valid** control sets its lifetime, so access ends automatically without you having to remember to revoke it.
 
 | Choice   | Lifetime                |
 | -------- | ----------------------- |
-| Never    | no expiry (the default) |
-| 1 Week   | 7 days                  |
-| 1 Month  | 30 days                 |
-| 6 Months | 183 days                |
+| Forever  | no expiry (the default) |
+| 1 week   | 7 days                  |
+| 1 month  | 30 days                 |
+| 6 months | 183 days                |
 
-When a link expires it stops granting access everywhere at once: the share URL, the embed view, and the real-time room all behave as if the link were revoked. The expired link does not vanish, though. It moves to an "Inactive share links" section of the Share dialog, where you can **delete** it or **Extend** it to give it a fresh deadline.
+When a link expires it stops granting access everywhere at once: the share URL, its embed and live image, and the real-time room all behave as if the link were revoked. The expired link does not vanish, though. It moves to the **Expired** section of the Share dialog, where you can delete it or **Extend** it for the same lifetime again, counted from now. A link's lifetime can't be changed after it is created.
 
-<Tip>
-  Use the two together for sensitive work: a password stops casual access, and an expiry bounds how
-  long even the right people keep it. To cut access immediately, just revoke the link.
-</Tip>
+<Figure caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or delete it.">
+  <ShareLifetimes />
+</Figure>
 
 <Note>
   Existing live sessions are not force-disconnected at the exact expiry moment; a visitor loses
-  access on their next load or save. To kick someone instantly, revoke the link instead.
+  access on their next load or save. To cut someone off instantly, revoke the link instead: revoking
+  disconnects everyone using it straight away.
 </Note>
+
+<Tip>
+  Use the two together for sensitive work: a password stops casual access, and an expiry bounds how
+  long even the right people keep it. Prefer a **Viewer** pass when people only need to look, and
+  remember that anyone who can see an embed's page source can see its link.
+</Tip>
 
 </ArticleLayout>

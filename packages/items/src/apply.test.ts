@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   applyMove,
   applyPatch,
-  applyVote,
   columnItems,
   inversePatch,
   makeItem,
@@ -54,6 +53,11 @@ describe('item writes', () => {
     const c = item({ title: 'c', status: 'q' }, { rank: 'i' });
     const d = item({ title: 'd', status: 'q' }, { rank: 'i' });
     expect(rankForPlace([c, d], { status: 'q', after: c.id }) > 'i').toBe(true);
+    // ...and before the cards past the pair, never at the column's end.
+    const e = item({ title: 'e', status: 'q' }, { rank: 's' });
+    const f = item({ title: 'f', status: 'q' }, { rank: 'u' });
+    const r = rankForPlace([c, d, e, f], { status: 'q', after: c.id });
+    expect(r > 'i' && r < 's').toBe(true);
   });
 
   it('patches and inverts a patch', () => {
@@ -97,17 +101,6 @@ describe('item writes', () => {
     expect(cleared.type).toBe('bug');
     // Status kept when the move only reorders.
     expect(applyMove(a, { after: null }, [a, c], ctx).fields['status']).toBe('todo');
-  });
-
-  it('votes per person, never below zero', () => {
-    const a = item({ title: 'a' });
-    const one = applyVote(a, 'p1', 1, ctx);
-    expect(one.fields['votes']).toEqual({ p1: 1 });
-    const two = applyVote(applyVote(one, 'p1', 1, ctx), 'p2', 1, ctx);
-    expect(two.fields['votes']).toEqual({ p1: 2, p2: 1 });
-    expect(applyVote(applyVote(two, 'p2', -1, ctx), 'p2', -1, ctx).fields['votes']).toEqual({
-      p1: 2,
-    });
   });
 
   it('makes 12-character ids', () => {

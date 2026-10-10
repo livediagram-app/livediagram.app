@@ -45,6 +45,11 @@ import {
 } from './verbs/lifecycle';
 import { tabLint, tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
+import { boardVerbs } from './verbs/board';
+import { cardTypeVerbs } from './verbs/card-type';
+import { sheetVerbs } from './verbs/sheet';
+import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
+import { workbenchOpen, workbenchPair } from './verbs/workbench';
 
 export const VERBS: readonly Verb[] = [
   documentLs,
@@ -64,6 +69,9 @@ export const VERBS: readonly Verb[] = [
   tabRm,
   ...elementVerbs,
   ...itemVerbs,
+  ...boardVerbs,
+  ...cardTypeVerbs,
+  ...sheetVerbs,
   changesetApply,
   changesetLs,
   changesetShow,
@@ -95,6 +103,12 @@ export const VERBS: readonly Verb[] = [
   pull,
   push,
   exportAll,
+  linkInit,
+  linkStatus,
+  linkLs,
+  sync,
+  workbenchOpen,
+  workbenchPair,
 ] as Verb[];
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
@@ -106,10 +120,18 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },
+  { name: 'board', summary: 'Plan boards: add one' },
+  { name: 'type', summary: 'Card types and their fields' },
+  { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
+  { name: 'link', summary: 'Repository links: livediagram.toml and what it covers' },
+  {
+    name: 'workbench',
+    summary: 'Workbenches: open a document in a developer tool, pair one',
+  },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
   { name: 'skill', summary: 'The agent skill file' },
@@ -118,7 +140,16 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
+export const TOP_LEVEL = [
+  'guide',
+  'api',
+  'wait',
+  'watch',
+  'pull',
+  'push',
+  'export',
+  'sync',
+] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

@@ -58,6 +58,12 @@ async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: s
 const one = (r: ItemResponse): ItemWriteAnswer => ({ upserts: [r.item], removed: [], rev: r.rev });
 
 // Sends one write. `by` signs an offline write; the api signs a cloud one itself.
+// A patch or move body, flagged `undo: true` when it is an undo or redo (the api then lets it into a status the
+// card's type leaves out, docs/specs/026-plan/item-types.md "An item type").
+function undoBody<T extends object>(body: T, undo: true | undefined): T | (T & { undo: true }) {
+  return undo ? { ...body, undo: true } : body;
+}
+
 export async function writeItem(
   scope: ItemsScope,
   write: ItemWrite,
@@ -83,11 +89,42 @@ export async function writeItem(
       return answer;
     }
     case 'patch':
-      return one(await post(scope, id, write.patch, 'item change'));
+      return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
+    case 'tally': {
+      // One request per ITEM_BULK_MAX cards (a session vote's tally, as its host ends it).
+      const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
+      for (let i = 0; i < write.tallies.length; i += ITEM_BULK_MAX) {
+        const r = await post<ItemsResponse>(
+          scope,
+          '/tally',
+          { items: write.tallies.slice(i, i + ITEM_BULK_MAX) },
+          'items tally',
+        );
+        answer.upserts.push(...r.items);
+        answer.rev = r.rev;
+      }
+      return answer;
+    }
+    case 'patches': {
+      // One request per ITEM_BULK_MAX items (a type's or a removed column's cards to the Trash).
+      const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
+      for (let i = 0; i < write.patches.length; i += ITEM_BULK_MAX) {
+        const items = write.patches
+          .slice(i, i + ITEM_BULK_MAX)
+          .map(({ id: itemId, patch }) => ({ id: itemId, ...patch }));
+        const r = await post<ItemsResponse>(
+          scope,
+          '/patches',
+          undoBody({ items }, write.undo),
+          'items change',
+        );
+        answer.upserts.push(...r.items);
+        answer.rev = r.rev;
+      }
+      return answer;
+    }
     case 'move':
-      return one(await post(scope, `${id}/move`, write.move, 'item move'));
-    case 'vote':
-      return one(await post(scope, `${id}/vote`, { delta: write.delta }, 'item vote'));
+      return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
     case 'delete': {
       await apiDelete(itemsUrl(scope, id), scope.ownerId, {
         action: 'item delete',

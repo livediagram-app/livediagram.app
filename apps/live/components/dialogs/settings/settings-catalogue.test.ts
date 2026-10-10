@@ -128,7 +128,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { panelLayout: 'toolbar', telemetryEnabled: false };
+    const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
@@ -182,6 +182,23 @@ describe('settings catalogue', () => {
     const ctx = { emailEnabled: true, signedIn: true };
     expect(visibleCategories(false, ctx).map((c) => c.id)).not.toContain('ai');
     expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
+  });
+
+  // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
+  it('leaves the account, documents, AI and tokens, and the Appearance choice, out of a workbench', () => {
+    const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
+    const categories = visibleCategories(true, ctx);
+    const ids = categories.map((c) => c.id);
+
+    for (const hidden of ['ai', 'documents', 'account', 'notifications', 'tokens']) {
+      expect(ids).not.toContain(hidden);
+    }
+    expect(ids).toContain('editor');
+    const appearance = categories.find((c) => c.id === 'appearance')!;
+    expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
+    expect(appearance.rows.length).toBeGreaterThan(0);
+    const app = visibleCategories(true, { ...ctx, workbench: false }).map((c) => c.id);
+    expect(app).toEqual(expect.arrayContaining(['ai', 'documents', 'account', 'tokens']));
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -254,12 +271,12 @@ describe('settings catalogue', () => {
 
   it('switches power user mode through the preset, not a bare flag', () => {
     const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ panelLayout: 'floating' } as UserPreferences, true);
-    expect(on.panelLayout).toBe('toolbar');
+    const on = row.write({ alignmentGuides: false } as UserPreferences, true);
+    expect(on.alignmentGuides).toBe(true);
     expect(on.minimalChrome).toBe(true);
     expect(row.read(on)).toBe(true);
     const off = row.write(on, false);
-    expect(off).toEqual({ panelLayout: 'floating' });
+    expect(off).toEqual({ alignmentGuides: false });
     expect(row.event).toEqual({ category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' });
   });
 
@@ -285,7 +302,7 @@ describe('settings sub-categories', () => {
   it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw']);
+    expect(children).toEqual(['draw', 'illustrate']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
@@ -312,10 +329,10 @@ describe('settings sub-categories', () => {
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
 
-  it('keeps Panel Layout and Panel Opacity on Panels itself, and Enable Map under Map', () => {
+  it('keeps Panel Opacity on Panels itself, and Enable Map under Map', () => {
     const keys = (id: string) =>
       SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
-    expect(keys('panels')).toEqual(['panelLayout', 'panelOpacity']);
+    expect(keys('panels')).toEqual(['panelOpacity']);
     expect(keys('map')[0]).toBe('showMinimap');
   });
 

@@ -62,7 +62,7 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
     the zoom controls and the Map subscribe with `useViewportOf`;
   - the element layer's remote cursors and laser overlay, and the selection toolbars, subscribe.
 - A zoom tick therefore renders `CanvasView`, the counter-scaled parts and those subscribers; the
-  floating panels (Palette, Explorer, the command palette) render 0 times.
+  chrome (the Palette strip, the Explorer, the command palette) renders 0 times.
 
 ## Errors and edge cases
 

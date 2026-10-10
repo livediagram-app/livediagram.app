@@ -1,11 +1,11 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ExplorerPanel } from '@/components/illustrations/explorer';
+import { ExplorerPanelTree } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
   title: 'Explorer Panel',
   description:
-    'The floating Explorer panel is the compact document switcher inside the editor: the same Overview, Spaces and More as the Explorer, opening documents in place.',
+    'The Explorer panel is the compact document switcher inside the editor, opened from the menu button: the same Overview, Spaces and More as the Explorer, opening documents in place.',
   path: '/help/explorer/explorer-panel/',
 });
 
@@ -16,31 +16,34 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-The floating **Explorer panel** is the compact side panel you meet inside the editor and the new-document flow. Where the [full-page Explorer](/help/explorer/explorer-page/) is the complete library, the panel is built for one job: finding a document fast while you are mid-task, without leaving the canvas you are on.
+The **Explorer panel** is the compact panel you meet inside the editor. Press the **menu button** (☰) in the top-left corner of the canvas and it opens under the button; press the button again, or click anywhere outside, and it closes. Where the [full-page Explorer](/help/explorer/explorer-page/) is the complete library, the panel is built for one job: finding a document fast while you are mid-task, without leaving the canvas you are on.
 
 ## What the panel shows
 
 Under a **Current Document** card, the panel shows the same three groups as the [Explorer page](/help/explorer/explorer-page/)'s sidebar, **Overview**, **Spaces** and **More**, trimmed to the panel's width.
 
-- **Rows with documents open in place.** **Shared with me**, **My documents** (your folders, then the documents at its root), each team and **This browser** open to show their documents right there. Pick a document and it opens; the one you are in stays put behind it, and its row is highlighted.
+- **Current Document** at the top is the document you are in, with its own menu.
+- **Rows with documents open in place.** **Shared with me**, **My documents** (your folders, then the documents at its root), each team, each folder and **This browser** expand to show their documents right there, without leaving the editor. Pick a document and it opens in the editor; its row is highlighted. A row with nothing in it (an empty My documents or team, or Shared with me when nothing is shared) opens its page in the full Explorer instead.
 - **Home**, **Activity**, the **Library** pages and **Trash** open their page in the full Explorer.
 - The panel opens compact, everything closed, and remembers what you opened while the editor is open.
-- Drag one of your documents onto a folder to file it, or onto **My documents** to put it back at the root.
+- Drag one of your own documents onto one of your folders to file it, or onto **My documents** to put it back at the root. Dragging works here in the panel; on the full Explorer page, use **Change Folder** instead.
+- A folder's menu adds **Show in Explorer**, which opens that folder on the full Explorer page.
 
-<Figure caption="The floating Explorer panel docks over the canvas so you can open another document without leaving this one.">
-  <ExplorerPanel />
+<Figure caption="The Explorer panel open under the menu button: the Current Document card, then Overview, Spaces and More, with My documents opened in place.">
+  <ExplorerPanelTree />
 </Figure>
 
-It is the same data as the full page, just a quicker door into it: folders, ownership, and sharing all behave identically. Each document has the same menu as on the full page, from its **⋯** button, a right-click, or **Shift+F10**, so **Hide from Recent** works here as well. A document saved only in this browser carries the **Local only** pill ([Offline Mode](/help/privacy-and-security/offline-mode/)).
+It is the same data as the full page, just a quicker door into it: folders, ownership, and sharing all behave identically. Each document has the same menu as on the full page, from its **⋯** button, a right-click, or **Shift+F10**, so **Change Folder**, **Favourite** and **Hide from Recent** work here as well. A document saved only in this browser carries the **Local only** pill ([Offline Mode](/help/privacy-and-security/offline-mode/)).
 
 The keyboard works as in the sidebar: one stop when you press Tab, then the arrow keys to move, **Right** and **Left** to open and close, and **Enter** to open a row. Answering team invites and creating a team happen in the full Explorer.
 
-The **⋯** button in the panel's header, beside the help button, opens a menu with **New Document** and **Open Explorer** (the full-page library), then **Share** and **Export** for the document you are in, then **Search**, **GitHub** (the open-source code) and **Settings**.
+The **⋯** button in the panel's header, beside the help button, opens a menu with **New Document** and **Open Explorer** (the full-page library), then **Share** and **Export** for the document you are in, then **Search**, **GitHub** (the open-source code), **Licences** and **Settings**. With [power user mode](/help/user-interface/power-user-mode/)'s Minimal chrome on, the help button moves into this menu as **Help**.
 
 ## When you will see it
 
-- **In the editor**, to jump to another document without going back to the library.
-- **In the new-document flow**, to pick an existing document instead of starting blank.
+- **In the editor**, to jump to another document without going back to the library. [Zen mode](/help/tools/zen-mode/) hides the menu button with the rest of the chrome.
+- **On a phone**, the menu button sits in its own card at the left of the palette strip, and the panel opens under it the same way.
+- **When a document can't be opened**, it stays available beside the error screen, so you can pick another document.
 
 Like everywhere else in the Explorer, the panel works whether or not you are signed in, showing the documents your browser or account owns.
 

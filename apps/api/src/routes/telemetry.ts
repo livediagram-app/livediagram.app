@@ -12,8 +12,8 @@ import {
 import { telemetryDailyCountsSince } from '../db';
 import { json, notFound } from '../responses';
 import type { RouteContext } from './context';
+import { DAY_MS } from '@livediagram/items';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const SERIES_DAYS = TELEMETRY_WINDOW_DAYS.last30;
 
 type DailyRow = Awaited<ReturnType<typeof telemetryDailyCountsSince>>[number];

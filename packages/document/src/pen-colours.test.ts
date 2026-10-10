@@ -4,6 +4,7 @@ import {
   PEN_COLOUR_NAMES,
   WHITEBOARD_BOARD,
   WHITEBOARD_INK,
+  YELLOW_DARK_CONTRAST,
   PEN_NEUTRAL_CHROMA,
   contrastRatio,
   hexOklch,
@@ -20,15 +21,25 @@ import {
   readablePenColour,
 } from './index';
 
-// docs/specs/023-draw-mode/draw-mode.md "The colour picker": Ink and seven stock colours, each
+// docs/specs/023-draw-mode/draw-mode.md "The colour picker": Ink and eight stock colours, each
 // stored by name and drawn in the version tuned for the board it is shown on.
 describe('pen stock colours', () => {
-  it('names seven colours after the ink: Blue, Red, Orange, Green, Teal, Violet, Pink', () => {
-    expect(PEN_COLOUR_NAMES).toEqual(['blue', 'red', 'orange', 'green', 'teal', 'violet', 'pink']);
+  it('names eight colours after the ink: Blue, Red, Orange, Yellow, Green, Teal, Violet, Pink', () => {
+    expect(PEN_COLOUR_NAMES).toEqual([
+      'blue',
+      'red',
+      'orange',
+      'yellow',
+      'green',
+      'teal',
+      'violet',
+      'pink',
+    ]);
     expect(PEN_COLOUR_NAMES.map(penColourLabel)).toEqual([
       'Blue',
       'Red',
       'Orange',
+      'Yellow',
       'Green',
       'Teal',
       'Violet',
@@ -56,6 +67,16 @@ describe('pen stock colours', () => {
     }
   });
 
+  // Yellow is the lightest hue: at 6:1 on the dark board it would be mustard.
+  it('draws Yellow a golden yellow on the dark board and a deep gold on the light one', () => {
+    expect(penColourHex('yellow', 'dark')).toBe('#fdca04');
+    expect(penContrast(penColourHex('yellow', 'dark'), 'dark')).toBeGreaterThanOrEqual(
+      YELLOW_DARK_CONTRAST,
+    );
+    expect(penColourHex('yellow', 'light')).toBe('#775d01');
+    expect(penContrast(penColourHex('yellow', 'light'), 'light')).toBeGreaterThanOrEqual(6);
+  });
+
   it('reads names and custom colours', () => {
     expect(isPenColourName('blue')).toBe(true);
     expect(isPenColourName('blue-3')).toBe(false);
@@ -72,7 +93,7 @@ describe('pen stock colours', () => {
   });
 
   // Ink is a stock colour too (docs/specs/007-editor/editor-modes.md "One look"): stored by name, drawn
-  // in the board's ink for each appearance, never one of the seven hued picks.
+  // in the board's ink for each appearance, never one of the eight hued picks.
   it("stores Ink by name and draws it in each board's ink", () => {
     expect(isPenColourName('ink')).toBe(true);
     expect(PEN_COLOUR_NAMES).not.toContain('ink');
@@ -125,9 +146,9 @@ describe('nearestPenColour', () => {
     ['#9f746d', 'red'],
     ['#f08c00', 'orange'],
     ['#8b4513', 'orange'],
-    ['#ffd43b', 'orange'],
+    ['#ffd43b', 'yellow'],
     ['#2f9e44', 'green'],
-    ['#ffff00', 'green'],
+    ['#ffff00', 'yellow'],
     ['#008080', 'teal'],
     ['#00ffff', 'teal'],
     ['#c0c0ff', 'violet'],
@@ -143,8 +164,10 @@ describe('nearestPenColour', () => {
     ['#d16a7e', 'red'],
     ['#d26f56', 'red'],
     ['#d17150', 'orange'],
-    ['#a88e10', 'orange'],
-    ['#a39014', 'green'],
+    ['#cc872f', 'orange'],
+    ['#ca892c', 'yellow'],
+    ['#95a238', 'yellow'],
+    ['#90a33c', 'green'],
     ['#1ba87c', 'green'],
     ['#00a882', 'teal'],
     ['#209fbc', 'teal'],
@@ -161,7 +184,8 @@ describe('nearestPenColour', () => {
     expect(penColourAtHue(359)).toBe('pink');
     expect(penColourAtHue(10)).toBe('red');
     expect(penColourAtHue(7.5)).toBe('red');
-    expect(penColourAtHue(97.5)).toBe('orange');
+    expect(penColourAtHue(70)).toBe('orange');
+    expect(penColourAtHue(117.5)).toBe('yellow');
     expect(penColourAtHue(275)).toBe('blue');
   });
 
@@ -200,5 +224,20 @@ describe('hexOklch', () => {
     expect(hexOklch('blue')).toBeNull();
     expect(hexOklch('#12345')).toBeNull();
     expect(hexOklch('#fff')).toBeNull();
+  });
+});
+
+describe('Grey, the neutral stock colour', () => {
+  it('is a stock name, tuned per board, and never a hue the snap measures', async () => {
+    const m = await import('./pen-colours');
+    expect(m.isPenColourName('grey')).toBe(true);
+    expect(m.penColourLabel('grey')).toBe('Grey');
+    expect(m.PEN_COLOUR_NAMES).not.toContain('grey');
+    for (const board of ['light', 'dark'] as const) {
+      const hex = m.penColourHex('grey', board);
+      expect(m.hexOklch(hex)!.c).toBeLessThan(0.01);
+      expect(m.penContrast(hex, board)).toBeGreaterThanOrEqual(m.PEN_STOCK_CONTRAST - 0.2);
+      expect(hex).not.toBe(m.penColourHex('ink', board));
+    }
   });
 });

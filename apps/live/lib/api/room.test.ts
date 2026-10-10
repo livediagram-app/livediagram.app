@@ -3,7 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
-import { connectRoom, roomQueryString } from './room';
+import { connectRoom, ROOM_SEQUENCE_ACK_TIMEOUT_MS, roomQueryString } from './room';
 
 describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
   it('maps each identifier to its short key', () => {
@@ -164,7 +164,9 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     readyState = 0;
     sent: { kind: string; op?: { kind: string } }[] = [];
     private listeners: Record<string, ((e: { data?: string }) => void)[]> = {};
-    constructor() {
+    url: string;
+    constructor(url = '') {
+      this.url = url;
       FakeSocket.all.push(this);
     }
     addEventListener(type: string, fn: (e: { data?: string }) => void) {
@@ -178,6 +180,9 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       if (type === 'open') this.readyState = 1;
       if (type === 'close') this.readyState = 3;
       for (const fn of this.listeners[type] ?? []) fn({});
+    }
+    receive(data: string) {
+      for (const fn of this.listeners.message ?? []) fn({ data });
     }
   }
 
@@ -217,6 +222,38 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     ]);
   });
 
+  it('reconnects with a freshly minted ticket, since the room spends each one it admits', async () => {
+    const mintTicket = vi.fn(async () => 'second');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ticket: 'first', mintTicket },
+    );
+    const first = FakeSocket.all[0]!;
+    expect(first.url).toContain('t=first');
+    first.fire('open');
+    first.fire('close');
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).toHaveBeenCalledOnce();
+    expect(FakeSocket.all[1]!.url).toContain('t=second');
+  });
+
+  it('mints nothing for a session that came in without a ticket', async () => {
+    const mintTicket = vi.fn(async () => 'x');
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+      { ownerId: 'me', mintTicket },
+    );
+    FakeSocket.all[0]!.fire('open');
+    FakeSocket.all[0]!.fire('close');
+    await vi.runOnlyPendingTimersAsync();
+    expect(mintTicket).not.toHaveBeenCalled();
+    expect(FakeSocket.all).toHaveLength(2);
+  });
+
   it("never sends a comment's author id", () => {
     const room = connectRoom(
       'd1',
@@ -245,6 +282,90 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
       },
     });
     expect(JSON.stringify(socket.sent)).not.toContain('owner-secret');
+  });
+
+  // A save waits for the room to sequence its ledger deltas before it writes
+  // (docs/specs/012-collaboration/collab-race-hardening.md phase 6).
+  describe('sequence', () => {
+    const board = {
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'e',
+      delta: { kind: 'board', patch: { set: { title: 'T' } } },
+    } as const;
+    const open = () => {
+      const room = connectRoom(
+        'd1',
+        { id: 'me', name: 'Me', color: '#000' },
+        { onPresence() {}, onOp() {} },
+      );
+      const socket = FakeSocket.all[0]!;
+      socket.fire('open');
+      return { room, socket };
+    };
+    const answer = (socket: FakeSocket, frame: unknown) => socket.receive(JSON.stringify(frame));
+
+    it('sends the op with a ref and resolves once the room names that ref', async () => {
+      const { room, socket } = open();
+      const first = room.sequence(board);
+      const second = room.sequence(board);
+      const refs = socket.sent.slice(-2).map((m) => (m as { ref?: number }).ref);
+      expect(refs).toEqual([1, 2]);
+      expect(socket.sent.at(-1)).toMatchObject({ kind: 'op', op: { kind: 'el-delta' } });
+
+      const settled: boolean[] = [];
+      void first.then((ok) => settled.push(ok));
+      answer(socket, { kind: 'cursor', epoch: 'e1', seq: 9 });
+      await Promise.resolve();
+      expect(settled).toEqual([]);
+
+      answer(socket, { kind: 'cursor', epoch: 'e1', seq: 10, ref: 1 });
+      await expect(first).resolves.toBe(true);
+      answer(socket, { kind: 'cursor', epoch: 'e1', seq: 11, ref: 2 });
+      await expect(second).resolves.toBe(true);
+      expect(room.cursor()).toEqual({ epoch: 'e1', seq: 11 });
+    });
+
+    it('gives up after ROOM_SEQUENCE_ACK_TIMEOUT_MS, and logs it', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const { room } = open();
+      const pending = room.sequence(board);
+      vi.advanceTimersByTime(ROOM_SEQUENCE_ACK_TIMEOUT_MS);
+      await expect(pending).resolves.toBe(false);
+      expect(warn).toHaveBeenCalledWith('[room] op not confirmed in time', {
+        kind: 'el-delta',
+        timeoutMs: ROOM_SEQUENCE_ACK_TIMEOUT_MS,
+      });
+      warn.mockRestore();
+    });
+
+    it('answers false at once when the socket drops, and ignores a late ref', async () => {
+      const { room, socket } = open();
+      const pending = room.sequence(board);
+      socket.fire('close');
+      await expect(pending).resolves.toBe(false);
+      expect(() => answer(socket, { kind: 'cursor', epoch: 'e1', seq: 3, ref: 1 })).not.toThrow();
+      room.close();
+    });
+
+    it('holds the op in the outbox while the socket is down, and answers false', async () => {
+      const { room, socket } = open();
+      socket.fire('close');
+      await expect(room.sequence(board)).resolves.toBe(false);
+      vi.runOnlyPendingTimers();
+      const second = FakeSocket.all[1]!;
+      second.fire('open');
+      expect(second.sent.map((m) => m.op?.kind ?? m.kind)).toEqual(['hello', 'sync', 'el-delta']);
+      expect(second.sent[2]).not.toHaveProperty('ref');
+    });
+
+    it('answers false after close, sending nothing', async () => {
+      const { room, socket } = open();
+      room.close();
+      const sent = socket.sent.length;
+      await expect(room.sequence(board)).resolves.toBe(false);
+      expect(socket.sent).toHaveLength(sent);
+    });
   });
 
   it('reports no cursor while the socket is down', () => {
@@ -347,6 +468,25 @@ describe('connectRoom when the document is trashed', () => {
 
     expect(onAccessChanged).toHaveBeenCalledTimes(1);
     expect(onDocumentTrashed).not.toHaveBeenCalled();
+    expect(ClosingSocket.all).toHaveLength(1);
+  });
+
+  // A workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
+  // close 4006. The page turns read-only; the connector never reconnects.
+  it('reports a workbench end once and never reconnects', () => {
+    const onWorkbenchEnded = vi.fn();
+    const onAccessChanged = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onWorkbenchEnded, onAccessChanged },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4006 });
+    vi.runAllTimers();
+
+    expect(onWorkbenchEnded).toHaveBeenCalledTimes(1);
+    expect(onAccessChanged).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(1);
   });
 

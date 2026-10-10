@@ -100,6 +100,9 @@ drag previews stay for documents with an audience.
 
 - A tab `PUT` presented with an API token is refused `405 use_changesets`, its message naming the changeset route.
   The CLI and the MCP server never do whole-tab saves.
+- A [workbench session](../013-workspace/workbench-embeds.md) is a person's editor, not a token: its saves are
+  whole-tab `PUT`s, it writes no agent changesets, its selection holds as a person's does, and its Undo on a toast
+  is a person's revert.
 - A tab is renamed with `PUT /api/documents/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
   relayed to the room as the `tab-meta` an editor's own rename sends. (A `document-meta` keeps every open editor's
   tab names, so a peer's stale tab list can never revert a rename.) The CLI's and the MCP's tab renames use it.
@@ -136,6 +139,13 @@ person lets go. The CLI's `--wait-held <seconds>` retries for it.
 - People outrank agents, not each other: a changeset without a token (a person's revert) is never held.
 
 The room's answer is the source; when the room cannot be reached, nothing counts as held and the api logs it.
+
+## Strict sources
+
+A changeset on a tab bound to a source in strict compatibility
+([Diagram sources](../027-repositories/diagram-sources.md#strict)) is compiled, then checked against the bridge's
+capabilities before the write; a result holding residue is refused `422 not_expressible`, naming each element and
+field, and nothing is applied. A relaxed tab is never refused for residue.
 
 ## Revert
 

@@ -5,6 +5,8 @@ import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
+import { OfflineBanner } from '@/components/chrome/OfflineBanner';
+import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
@@ -17,12 +19,10 @@ import { VoteBanner } from '@/components/chrome/VoteBanner';
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  | 'toolbarLayout'
   | 'selfParticipant'
   | 'readOnly'
   | 'pendingDraw'
   | 'onCancelDraw'
-  | 'onCancelFormatPainter'
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
@@ -37,8 +37,6 @@ type TopCenterChromeProps = Pick<
   | 'onPrevVoteResult'
   | 'onDoneVoteReview'
 > & {
-  // From CanvasChrome's computed ChromeExtras, not CanvasProps.
-  isPaintMode: boolean;
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
   dockOnTop?: boolean;
@@ -52,17 +50,14 @@ type TopCenterChromeProps = Pick<
 };
 
 export function TopCenterChrome({
-  toolbarLayout,
   selfParticipant,
   readOnly,
   pendingDraw,
   hasPlanBoard = false,
   onCancelDraw,
-  onCancelFormatPainter,
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  isPaintMode,
   dockOnTop = false,
   tabTimer,
   tabVote,
@@ -77,10 +72,19 @@ export function TopCenterChrome({
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
+  // The palette strip, when it is on screen: the mode banners hang from it as its tray
+  // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
+  const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
+  const modeBanner = canvasTool === 'format' || drawBanner;
+  const strip = usePaletteStripBox(modeBanner);
+  const tray = !readOnly && !dockOnTop ? strip : null;
   return (
     <TopCenterStack
-      below={dockOnTop ? 'dock' : toolbarLayout === true && !readOnly ? 'toolbar' : undefined}
+      below={dockOnTop ? 'dock' : !readOnly ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}
     >
+      {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
+          anything else on screen is being saved. */}
+      <OfflineBanner readOnly={readOnly === true} />
       {/* Follow-me (docs/specs/012-collaboration/follow-me-viewport.md). Shown on every viewport and in Zen mode: being
           moved around by somebody else without being told why is the one state
           this feature must never leave you in. */}
@@ -115,12 +119,9 @@ export function TopCenterChrome({
       {/* The multi-selection toolbar used to sit here; it now floats over the
           selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
-        {/* Persistent Format tool (the palette tool): a two-phase guided
-            banner. Phase 1 (no source armed) asks the user to pick a base;
-            phase 2 (source armed) invites them to tap as many targets as
-            they like. Checked before the single-shot painter banner below
-            so the format tool owns the banner even once a source is armed
-            (which also flips isPaintMode true). */}
+        {/* The Format tool (the palette tool): a two-phase guided banner.
+            Phase 1 (no source armed) asks the user to pick a base; phase 2
+            (source armed) invites them to tap as many targets as they like. */}
         {canvasTool === 'format' ? (
           <ModeBanner
             icon={<FormatPainterIcon />}
@@ -131,12 +132,7 @@ export function TopCenterChrome({
             }
             actionLabel="Done"
             onAction={onExitFormatTool}
-          />
-        ) : isPaintMode ? (
-          <ModeBanner
-            icon={<FormatPainterIcon />}
-            message="Click an element to apply formatting"
-            onAction={onCancelFormatPainter}
+            tray={tray}
           />
         ) : null}
 
@@ -144,11 +140,12 @@ export function TopCenterChrome({
             drag one out", with a Cancel because the intent is transient. A
             held pen (a whiteboard pen, the Path tool) is excluded: a tool in
             the hand does not need telling you it is on every time you look up. */}
-        {pendingDraw && !isHeldPenIntent(pendingDraw) ? (
+        {pendingDraw && drawBanner ? (
           <ModeBanner
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync(), { hasPlanBoard })}
             onAction={onCancelDraw}
+            tray={tray}
           />
         ) : null}
 

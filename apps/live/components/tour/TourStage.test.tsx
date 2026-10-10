@@ -19,6 +19,7 @@ function engine(step: TourStepOf<unknown>, over: Partial<TourEngine<unknown>> = 
     stepDir: 'forward',
     targetRect: null,
     countableSteps: 2,
+    hasWelcome: true,
     start: vi.fn(),
     stop: vi.fn(),
     next: vi.fn(),
@@ -39,9 +40,8 @@ describe('TourStage', () => {
 
   it("wears the welcome tour's words by default", () => {
     const e = engine({ id: 'welcome', card: 'welcome', title: 'Welcome', body: 'Hi' });
-    render(<TourStage engine={e} layoutPicker={<p>picker</p>} />);
+    render(<TourStage engine={e} />);
     expect(screen.getByText('Quick tour')).toBeTruthy();
-    expect(screen.getByText('picker')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show me around' }));
     expect(e.next).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'No thanks' }));
@@ -82,5 +82,25 @@ describe('TourStage', () => {
     expect(e.back).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Skip tour' }));
     expect(e.skip).toHaveBeenCalled();
+  });
+
+  // Show Me (the card type editor) has no welcome card: its first step is "1 of N", with no Back.
+  it('counts a tour without a welcome card from its first step, ringed over a dialog', () => {
+    const e = engine(
+      { id: 'general', title: 'General', body: 'Copy' },
+      {
+        stepIndex: 0,
+        countableSteps: 5,
+        hasWelcome: false,
+        targetRect: { left: 20, top: 20, width: 100, height: 40 },
+      },
+    );
+    render(<TourStage engine={e} ariaPrefix="Show Me" layer="modal" pad={14} />);
+    expect(screen.getByRole('dialog', { name: 'Show Me step 1 of 5: General' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    const ring = document.querySelector<HTMLElement>('.border-brand-400');
+    expect(ring?.className).toContain('z-[calc(var(--z-modal)+1)]');
+    expect(ring?.style.left).toBe('6px');
+    expect(ring?.style.width).toBe('128px');
   });
 });

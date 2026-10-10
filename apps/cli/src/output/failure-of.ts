@@ -6,6 +6,10 @@ import { ApiError } from '@livediagram/api-client';
 import { CliError, type CliFailure } from './cli-error';
 import { EXIT, exitCodeForStatus } from './exit-codes';
 
+// A request that never got an answer: no connection, a timeout, an abort.
+export const isNetworkFailure = (err: unknown): err is Error =>
+  err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name);
+
 export const ISSUES_URL = 'https://github.com/livediagram-app/livediagram.app/issues';
 
 function addressFailure(err: AddressError): CliFailure {
@@ -68,14 +72,15 @@ export function failureOf(err: unknown, host: string): CliFailure {
   if (err instanceof AddressError) return addressFailure(err);
   if (err instanceof VerbRefusal)
     return {
-      exit: exitCodeForStatus(err.status),
+      // A command line the verb cannot use exits as any other usage error.
+      exit: err.code === 'usage' ? EXIT.usage : exitCodeForStatus(err.status),
       code: err.code,
       message: err.message,
       lines: err.lines,
       hint: err.hint,
     };
   if (err instanceof ApiError) return apiFailure(err, host);
-  if (err instanceof Error && ['TypeError', 'TimeoutError', 'AbortError'].includes(err.name))
+  if (isNetworkFailure(err))
     return {
       exit: EXIT.failure,
       code: 'network',

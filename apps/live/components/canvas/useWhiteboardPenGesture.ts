@@ -61,7 +61,8 @@ export function useWhiteboardPenGesture({
   });
   const pinchingNow = useEffectEvent(() => isPinchingRef?.current === true);
   const commitStroke = useEffectEvent((stroke: LiveStroke) => {
-    if (stroke.points.length < 2) return;
+    // A tap is one point, and lands as a dot (docs/specs/023-draw-mode/draw-mode.md "Pens").
+    if (stroke.points.length === 0) return;
     debugLog(
       `[whiteboard] stroke ${stroke.pointer} samples=${stroke.points.length} pressure=${stroke.pressures ? 'yes' : 'no'}`,
     );

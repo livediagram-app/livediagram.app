@@ -1,50 +1,48 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CanvasOverview, AddingElements } from '@/components/illustrations/canvas';
+import { AddingElements } from '@/components/illustrations/canvas';
+import { CanvasPaletteOverview } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'The Canvas',
   description:
-    'The infinite canvas where you build diagrams, with a floating palette for adding shapes and tools.',
+    'The infinite canvas where you build diagrams, with the palette strip across the top for adding shapes and tools.',
   path: '/help/canvas/the-canvas/',
 });
 
 <ArticleLayout
   title="The Canvas"
-  description="The infinite canvas where every diagram comes together, with a floating palette always within reach."
+  description="The infinite canvas where every diagram comes together, with the palette always within reach."
   categoryTitle="Canvas"
   categorySlug="canvas"
   subArticles={getSubArticles("the-canvas")}
 >
 
-The canvas is where you actually build diagrams in livediagram. It is an open, scrollable surface you can pan and zoom freely, with a floating palette sitting on top of it for adding elements and switching tools. Everything works straight away, no sign-in required, so you can [open a fresh canvas](/new) and start placing shapes in seconds.
+The canvas is where you actually build diagrams in livediagram. It is an open, scrollable surface you can pan and zoom freely, with the palette pinned across the top of it for adding elements and switching tools. Everything works straight away, no sign-in required, so you can [open a fresh canvas](/new) and start placing shapes in seconds.
 
-<Figure caption="The infinite canvas with a flow of shapes and arrows, and the floating palette docked in the corner.">
-  <CanvasOverview />
+<Figure caption="The canvas with the menu button top-left, the Palette strip across the top, and the paintbrush and zoom controls in the bottom-right corner.">
+  <CanvasPaletteOverview />
 </Figure>
 
-## The palette
+## The Palette
 
-A small floating panel sits over the canvas, labelled `PALETTE`, holding a row of controls for adding elements. It starts in the top-right corner on desktop, but the header row doubles as a drag handle: press it and drag to move the whole palette anywhere on the canvas. Clicking a button never starts a drag, so you can reposition the panel and still tap buttons cleanly.
+The **Palette** is a strip pinned to the top centre of the canvas, holding everything you add to it. It starts with two dropdowns: the canvas tool (**Select**, **Hand**, **Laser** and the other [selection modes](/help/selection-modes/)) and the palette category. Then come the category's first tiles, **More** (⋯) for the rest of the category, and **Search** for finding any element by name. The palette opens on **Popular**, the tiles most reached for in the current mode. See [Toolbar Layout](/help/palette/toolbar-layout/) for the details.
 
-The palette groups its contents into category tabs (Shapes, Tools, Components, Devices, Icons, and Technology), shown as a joined segmented control where one tab is open at a time. Shapes is open by default since it is the most common starting point on a fresh canvas. A collapse button beside the `PALETTE` label hides the body and leaves the title row as a slim banner, giving you back canvas space while keeping the panel one click away.
+In the top-left corner, beside the strip, the **menu button** opens the [Explorer](/help/explorer/explorer-panel/), and on a computer the mode switch (**Diagram**, **Draw**, **Illustrate** and **Plan**) sits beside it.
 
-## Adding elements
+## Adding Elements
 
-Most elements are added straight from the palette, which is organised into categories: **Shapes** carries the common nodes (square, circle, diamond, cylinder, hexagon, and more), **Write** holds text and notes, **Draw** the pens and arrows, and there are categories for Components, Data, Collaborate, Media, Devices, Icons, and Technology besides. Clicking a shape tile arms a combined gesture: a tap drops the element at your pointer, and a drag sizes it as you go. See [Adding elements](/help/canvas/the-canvas/adding-elements/) for the full walkthrough.
+Most elements are added straight from the palette, which is organised into categories you pick from its category dropdown. In Diagram mode that is **Popular**, then **Shapes**, **Write** (text, notes and pages) and **Draw** (pens and arrows), then **Build** (mind nodes, lanes, frames, tables), then **Icons**, **Stickers**, **Tech** and **Media**, then **Collaborate**. Each mode offers its own set: **Components**, **Devices** and **Data** (charts) belong to [Illustrate mode](/help/canvas/illustrate/), for example. Clicking a tile arms a combined gesture: a tap drops the element at your pointer, and a drag sizes it as you go. Single-key shortcuts skip the palette altogether, such as `R` for a rectangle, `T` for text and `N` for a sticky note. See [Adding Elements](/help/canvas/the-canvas/adding-elements/) for the full walkthrough.
 
 <Figure caption="Click a shape tile in the palette, then drop it on the canvas; it lands selected, ready to move or resize.">
   <AddingElements />
 </Figure>
 
-## Moving around
+## Moving Around
 
-The canvas is effectively infinite, so you are never boxed in. Use the Hand tool, a middle-click drag, or hold Space and drag to pan, and the on-screen zoom controls to scale the view. The [Panning and zooming](/help/canvas/the-canvas/pan-and-zoom/) article covers every way to navigate. You can also restyle the backdrop per tab from the [Tab Appearance dialog](/help/canvas/the-canvas/changing-the-background/).
+The canvas is effectively infinite, so you are never boxed in. Use the Hand tool, a middle-click drag, two fingers on a trackpad, or hold Space and drag to pan, and `Cmd` / `Ctrl` + scroll, a pinch, or the zoom controls in the bottom-right corner to scale the view. The [Panning and Zooming](/help/canvas/the-canvas/pan-and-zoom/) article covers every way to navigate.
 
-<Tip>
-  The palette's position is remembered until you reload the page, so once you nudge it somewhere
-  comfortable it stays put for the rest of your session.
-</Tip>
+Each tab has its own backdrop and theme. The paintbrush button beside the zoom controls opens the **Tab Look & Feel** dialog, where you can [change the canvas background](/help/canvas/the-canvas/changing-the-background/) or [pick a theme](/help/canvas/themes/).
 
 </ArticleLayout>

@@ -12,7 +12,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Session Tools" description="A timer, dot-voting, and polls that turn a shared document into an interactive workshop board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
 
-Session tools make a shared document interactive for live workshops. There are three: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. All are run by the facilitator and synced to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
+Session tools make a shared document interactive for live workshops. There are three: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. Anyone who can edit the document can run them (or only the [facilitator](/help/collaboration/facilitator/), once someone takes that role), and they sync to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
 
 <Figure caption="A shared Timer pill above a dot-voting tally: two of the session tools on one canvas.">
   <SessionTools />
@@ -20,19 +20,23 @@ Session tools make a shared document interactive for live workshops. There are t
 
 ## Built for facilitating live
 
-The tools all live together under one **Collaborate** row at the end of the tab's menu. Open it and a side panel appears with a switcher across the top, **Timer**, **Vote**, and **Poll**, and the chosen tool's controls underneath. A green dot on a switcher tab means that tool is running right now (amber means it is set up but paused or closed), and the panel opens on whatever is running, so coming back mid-session lands you on the thing you need to drive.
+The tools all live together under one **Collaborate** row at the end of the tab's menu: open it from the tab's **⋯** button, or right-click an empty patch of canvas. A side panel appears with a switcher across the top, **Timer**, **Vote**, and **Poll**, and the chosen tool's controls underneath. A green dot on a switcher tab means that tool is running right now (amber means it is set up but paused or closed), and the panel opens on whatever is running, so coming back mid-session lands you on the thing you need to drive.
+
+While someone else is facilitating, the panel says who at the top and its controls are greyed out.
 
 The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again. **Polls are the exception**: they are never saved to the document, and vanish completely when you end one. While a poll runs, anyone who joins late or reloads is still asked.
 
 - **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown as a floating pill at the top of the canvas. See [The Timer](/help/collaboration/session-tools/timer/).
 - **Dot-voting** lets each participant spend a budget of dots on the elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
-- **Polls** ask everyone a question (yes/no, a rating, a choice, or free text) and tally the answers live, without touching the canvas or saving anything. See [Polls](/help/collaboration/session-tools/polls/).
+- **Polls** ask everyone a question (yes/no, a rating, a choice, a person in the room, or free text) and tally the answers live, saving nothing unless you keep the results as a chart. See [Polls](/help/collaboration/session-tools/polls/).
+
+You can also put a timer, a vote or a poll **on the canvas** as a [session button](/help/palette/behaviour/session-buttons/), so a template can carry its own running order.
 
 ## Who can do what
 
-Session tools follow the document's roles automatically. Anyone with an **edit** link can run the controls and take part: starting the timer, casting votes. **View-only** visitors can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot. Typically the facilitator and participants share an edit link, while observers follow a view link.
+Session tools follow the document's roles automatically. Anyone with an **Editor** pass (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Viewer** pass can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot, and the tab menu with the Collaborate panel isn't offered to them. Typically the facilitator and participants share an Editor pass, while observers follow a Viewer pass.
 
-**A vote is narrower still.** Edit access lets you cast dots, but only the person who _started_ the vote can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
+**A vote is narrower still.** Edit access lets you cast dots, but only the person who _started_ the vote (or the facilitator) can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
 
 What a viewer actually sees during a vote also depends on its privacy settings: with **Hide running counts** on, nobody sees anyone else's dots until the results are revealed.
 
@@ -40,11 +44,11 @@ What a viewer actually sees during a vote also depends on its privacy settings: 
 
 ## What does and does not get recorded
 
-Neither tool adds to [Undo](/help/canvas/undo/): starting a timer or placing a dot is not the kind of thing you would want to Ctrl+Z.
+None of the tools adds to [Undo](/help/canvas/undo/): starting a timer, placing a dot or answering a poll is not the kind of thing you would want to Ctrl+Z. An [offline document](/help/privacy-and-security/offline-mode/) has no live room to share them with.
 
 <Tip>
-  Share an **edit** link with everyone who should vote or be timed, and a **view** link with anyone
-  who only needs to watch. The roles do the gating for you, with no extra setup.
+  Share an Editor pass with everyone who should vote or be timed, and a Viewer pass with anyone who
+  only needs to watch (or answer a poll). The roles do the gating for you, with no extra setup.
 </Tip>
 
 </ArticleLayout>

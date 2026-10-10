@@ -29,7 +29,14 @@ export type SettingsIconId =
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
-  'draw' | 'layers' | 'map' | 'collaborate' | 'quickStyle' | 'notifications' | 'tokens';
+  | 'draw'
+  | 'illustrate'
+  | 'layers'
+  | 'map'
+  | 'collaborate'
+  | 'quickStyle'
+  | 'notifications'
+  | 'tokens';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -70,8 +77,8 @@ function Svg({ children }: { children: ReactNode }) {
   );
 }
 
-// Editor: the panel layout itself: a frame with a docked side panel, which
-// is what the group's settings (panel layout, minimap) rearrange.
+// Editor: a frame with a docked side panel, the chrome the group's settings
+// (panels, minimap) dress.
 const EditorGlyph = (
   <Svg>
     <rect x="2.5" y="3.5" width="15" height="13" rx="2" />
@@ -189,8 +196,10 @@ const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
 const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
+const IllustrateSubGlyph = EDITOR_MODE_ICONS.illustrate;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   draw: () => <DrawSubGlyph size={16} />,
+  illustrate: () => <IllustrateSubGlyph size={16} />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,

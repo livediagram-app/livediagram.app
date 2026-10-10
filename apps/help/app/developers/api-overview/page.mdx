@@ -15,9 +15,9 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, and themes, exactly as the app does.
+Everything the livediagram editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update documents, tabs, folders, images, themes and more, exactly as the app does.
 
-If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly.
+If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the livediagram CLI](/help/developers/cli/).
 
 ## The base URL
 
@@ -44,10 +44,12 @@ API tokens are a [signed-in-only](/help/account-and-data/signing-in/) feature. [
 
 The token-callable surface mirrors the app:
 
-- **Documents and tabs** — list, read, create, update, copy, and delete documents, and read or replace the contents of individual tabs.
-- **Folders** — organise documents into your personal folder tree.
-- **Sharing** — create, list, and revoke share links, and set a share password.
-- **Images and themes** — upload and reference images, and manage your saved custom themes.
+- **Documents and tabs**: list, read, create, rename, copy, and delete documents; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
+- **Comments and Plan items**: read, add, reply to and resolve comments, and read and change the items on a document's Plan boards.
+- **Folders**: organise documents into your personal folder tree.
+- **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
+- **Trash**: list what you can restore, restore it, or delete it for good.
+- **Images, themes and shape libraries**: upload and reference images, and manage your saved custom themes and shape libraries.
 
 [Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples.
 

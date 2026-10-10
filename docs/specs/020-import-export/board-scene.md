@@ -76,9 +76,12 @@ Each scene colour resolves to one of three things, in this order:
 2. **A stock colour**: a clearly coloured line colour (chroma at least
    `STOCK_MIN_CHROMA`, lightness inside `STOCK_LIGHTNESS_RANGE`) whose OKLCH
    hue lies within `STOCK_HUE_TOLERANCE_DEG` of a stock colour's hue (the
-   nearest one wins). It lands **by name** (Blue, Red, Orange, Green, Teal,
-   Violet, Pink), so it is drawn in the version tuned for each viewer's board.
-   Excalidraw's blue, green, red and orange are stock colours.
+   nearest one wins), or exactly a stock colour's own version for either board
+   (dark-board Yellow is lighter than the range, and a board exported and
+   imported again keeps its names). It lands **by name** (Blue, Red, Orange,
+   Yellow, Green, Teal, Violet, Pink), so it is drawn in the version tuned for
+   each viewer's board. Excalidraw's blue, green, red and orange are stock
+   colours.
 3. **Its hex**: anything else keeps its exact `#rrggbb`, a custom colour, the
    same on both boards (Excalidraw's grey `#868e96`, pastels, browns).
 

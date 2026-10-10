@@ -55,7 +55,7 @@ than the card claims to describe.
 
 - The **list view** keeps its count badge. Four snapshots don't fit a 2-line
   row, and the list view exists for density.
-- The **editor's floating Explorer panel** is unchanged for the same reason
+- The **editor's Explorer** is unchanged for the same reason
   as [Folder location on Recent rows](recent-folder-chip.md): a ~256 px rail has no room for a mosaic.
 - The **team library** grid ([Team shared documents](team-shared-documents.md)) gets it for free — it renders the same
   `CardView`, and its own `documentsByFolder` / `childrenByParent` indexes

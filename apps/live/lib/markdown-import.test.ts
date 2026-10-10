@@ -1,3 +1,4 @@
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   buildTabFromMarkdown,
@@ -189,5 +190,24 @@ describe('buildTabFromMarkdown', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error).toMatch(/no headings, lists, or tables/i);
+  });
+});
+
+// Untrusted text stays linear: a long run of `[`, `![` or `<` once rescanned the line from each.
+describe('cleanInline on hostile input', () => {
+  it('costs about four times as much for four times the text, never sixteen', () => {
+    const fastest = (text: string) =>
+      Math.min(...[0, 1, 2].map(() => cpuMsOf(() => void cleanInline(text))));
+    for (const run of ['[', '![', '<', '[a](']) {
+      const small = fastest(run.repeat(5_000));
+      const large = fastest(run.repeat(20_000));
+      expect(large, run).toBeLessThan(small * 8 + 5);
+    }
+  });
+
+  it('still strips links, images and tags', () => {
+    expect(cleanInline('See [the docs](http://x) and ![logo](a.png) <b>now</b>')).toBe(
+      'See the docs and logo now',
+    );
   });
 });

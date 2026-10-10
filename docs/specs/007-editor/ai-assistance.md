@@ -36,7 +36,7 @@ Only the **active tab** is ever in scope, other tabs are never sent.
 
 ## Conversation history
 
-Each AI request optionally includes a `history` array of prior `{ role, content }` turns from the same panel session. The worker caps it at the most recent **6 turns** server-side (`MAX_HISTORY_TURNS`) so an extra-long session can't blow the context window. The panel maintains the history client-side and clears it when the user closes the panel or starts a new mode.
+Each AI request optionally includes a `history` array of prior `{ role, content }` turns from the same panel session. The worker caps it at the most recent **6 turns** server-side (`MAX_HISTORY_TURNS`) so an extra-long session can't blow the context window. The panel maintains the history client-side and clears it when the user closes the panel, switches to another tab, or presses **Clear context** (shown while prior exchanges are in context). Switching between the panel's modes keeps it.
 
 ## Security
 
@@ -328,7 +328,7 @@ cost no extra requests.
 
 A floating, draggable panel rendered over the canvas via `MovablePanel` (drag to
 reposition; reset returns it to its default spot). It's surfaced from the **Assistant**
-accordion in the Editor side panel, and docks in its corner in both panel layouts, a phone's too. Visible
+accordion in the Editor side panel, and docks in its corner on a desktop and a phone alike. Visible
 when `capabilities.aiEnabled && userPreferences.aiAssistanceEnabled`. Hidden in read-only /
 view-role sessions (AI mutates the document; guests can't persist changes they don't own).
 

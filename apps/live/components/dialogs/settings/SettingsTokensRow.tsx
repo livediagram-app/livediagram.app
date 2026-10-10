@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useTokens } from '@/hooks/persistence/useTokens';
+import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TokensGlyph } from './settings-icons';
 import { SettingsRowShell } from './SettingsRowShell';
@@ -22,6 +23,7 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
   const { authLoaded, clerkUserId, isSignedIn } = useClerkApiBootstrap();
   const enabled = Boolean(isSignedIn && clerkUserId);
   const tokens = useTokens(clerkUserId ?? null, { enabled });
+  const pairings = useWorkbenchPairings(clerkUserId ?? null, { enabled });
   const [composing, setComposing] = useState(false);
   const [secret, setSecret] = useState<string | null>(null);
   // First run: with no tokens and nothing just minted, the composer is the
@@ -79,7 +81,12 @@ export function SettingsTokensRow({ row }: { row: SettingsTokensRowSpec }) {
                   <HelpArticleLink article="connectAiTool" variant="text" label="Read the guide" />
                 </p>
               ) : (
-                <SettingsTokenList tokens={tokens.list} onRevoke={tokens.revoke} />
+                <SettingsTokenList
+                  tokens={tokens.list}
+                  onRevoke={tokens.revoke}
+                  pairingsFor={pairings.forToken}
+                  onUnpair={pairings.unpair}
+                />
               )}
             </>
           )}

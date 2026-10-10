@@ -27,12 +27,7 @@ export { MAX_IMAGE_BYTES } from '@livediagram/api-schema';
 // A single tab's data (the element + comment tree), held to D1's row cap less headroom
 // (docs/specs/015-api/api.md "Tab size"). Defined in @livediagram/api-schema, so the editor checks
 // the same number before it sends. The body cap above bounds one request; this bounds one tab.
-export {
-  D1_MAX_ROW_BYTES,
-  MAX_TAB_BYTES,
-  tabDataBytes,
-  tabTooLarge,
-} from '@livediagram/api-schema';
+export { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
 import { MAX_TAB_BYTES as MAX_TAB_BYTES_CAP } from '@livediagram/api-schema';
 
 /**

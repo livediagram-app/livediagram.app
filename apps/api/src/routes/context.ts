@@ -1,3 +1,4 @@
+import type { WorkbenchRole } from '@livediagram/api-schema';
 // Shared per-request context for the route handlers. The worker's
 // `fetch` entry (src/index.ts) builds one of these after resolving the
 // caller's identity + running the cross-cutting gates (CORS, write
@@ -17,6 +18,19 @@ import { clientRateKey } from '../client-ip';
 import { getDocument, getMembership, getTrashedDocumentMeta } from '../db';
 import { badRequest, documentTrashed, forbidden, missingAuth, notFound } from '../responses';
 import type { DocumentDTO, Env } from '../types';
+
+// A workbench session as the choke point resolved it (blueprint "A request bearing lvw_").
+export type WorkbenchContext = {
+  sessionId: string;
+  ownerId: string;
+  tokenId: string;
+  pairingId: string;
+  documentId: string;
+  tabId: string | null;
+  origin: string;
+  level: WorkbenchRole;
+  expiresAt: number;
+};
 
 export type RouteContext = {
   request: Request;
@@ -50,6 +64,10 @@ export type RouteContext = {
   // makes a changeset an agent's, and a token may never do a whole-tab save
   // (docs/specs/024-agents/agent-changesets.md). Optional so unit tests can leave it out.
   token?: { id: string; readOnly?: boolean } | null;
+  // The presenting workbench session (docs/specs/013-workspace/workbench-embeds.md), or null for every other
+  // caller. Under one, `clerkUserId` and `token` are null and `resolveOwner()` is the owner: a person's editor on
+  // one document, never a token and never an administrator. Optional so unit tests can leave it out.
+  workbench?: WorkbenchContext | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real

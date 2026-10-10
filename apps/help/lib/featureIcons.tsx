@@ -19,7 +19,6 @@ import {
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucidePencilLine,
-  lucideRotateCcw,
   lucideRoute,
   lucideScanEye,
   lucideSearch,
@@ -347,6 +346,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A board on its stand with a marker scribble.
+  // One canvas, two ways of working on it: a clean shape on one side of the split, a hand-drawn
+  // stroke on the other.
+  'editor-modes': (
+    <Glyph>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 3l18 18" />
+      <rect x="13.5" y="5.5" width="5" height="5" rx="1" />
+      <path d="M5.5 17.5c1-2.2 2-2.2 2.8 0s1.9 2.2 2.8-0.3" />
+    </Glyph>
+  ),
   'draw-mode': (
     <Glyph>
       <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
@@ -409,6 +418,22 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 16h2.5M17 16h2.5" />
     </Glyph>
   ),
+  // A grid with a header row and one highlighted cell: a spreadsheet tab.
+  sheets: (
+    <Glyph>
+      <rect x="2.5" y="4" width="19" height="16" rx="1.5" />
+      <path d="M2.5 8.5h19M2.5 13h19M2.5 16.5h19M8 4v16M14.5 4v16" />
+      <rect x="8.6" y="13.6" width="5.3" height="2.3" rx="0.4" />
+    </Glyph>
+  ),
+  // The function sign over a pair of brackets: what a formula calls.
+  'sheet-functions': (
+    <Glyph>
+      <path d="M11 4.5c-1.6 0-2.4 1-2.7 2.6L6.6 19.5" />
+      <path d="M5.5 10h5.5" />
+      <path d="M15 9.5c-1.2 1.2-1.8 2.6-1.8 4.5s.6 3.3 1.8 4.5M19 9.5c1.2 1.2 1.8 2.6 1.8 4.5s-.6 3.3-1.8 4.5" />
+    </Glyph>
+  ),
   // A page with a title and a bar chart: the poster an infographic becomes.
   illustrate: (
     <Glyph>
@@ -425,6 +450,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="7.5" y="11" width="4" height="4" rx="0.5" />
       <rect x="12.5" y="11" width="4" height="4" rx="0.5" />
       <path d="M7.5 18h9" />
+    </Glyph>
+  ),
+  // A square artboard with a keyline circle and its centre lines: a logo built on its guides.
+  'logo-pages': (
+    <Glyph>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="12" cy="12" r="5.5" />
+      <path d="M12 3v18M3 12h18" strokeDasharray="1.5 2" />
     </Glyph>
   ),
   // A page of writing: a title over lines of text, a short last line where a paragraph ends.
@@ -1065,6 +1098,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M11.3 12h.01M13.2 12h.01" />
     </Glyph>
   ),
+  // Two panes side by side, a tab on each, and the seam between them: the split, not a single tab.
+  'side-by-side': (
+    <Glyph>
+      <rect x="2.5" y="4.5" width="19" height="15" rx="2" />
+      <path d="M12 4.5v15" />
+      <path d="M5 7.5h4M15 7.5h4" />
+      <path d="M10.5 12l1.5-1.5 1.5 1.5" />
+    </Glyph>
+  ),
   // A tab with the padlock on it. `locking` is the bare padlock, for an element.
   'locking-tabs': (
     <Glyph>
@@ -1304,17 +1346,12 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // The strip across the top of a window, with the menu button's three bars
-  // in the corner: the two things the layout adds.
+  // in the corner: what the editor's top row is made of.
   'toolbar-layout': (
     <Glyph>
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <rect x="9" y="7" width="9" height="3" rx="1" />
       <path d="M5.5 7.5h1.5M5.5 9.5h1.5" />
-    </Glyph>
-  ),
-  'reset-palette-position': (
-    <Glyph>
-      <Prims prims={lucideRotateCcw} />
     </Glyph>
   ),
   // Canvas guides. The four layer entries are deliberately NOT four variations
@@ -1421,6 +1458,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
       <path d="M8 10.5V7.5a4 4 0 018 0v3" />
       <path d="M12 14.5v2.5" />
+    </Glyph>
+  ),
+  // A card with small marks along its top-right: the badges an element wears.
+  'element-indicators': (
+    <Glyph>
+      <rect x="3" y="5" width="18" height="15" rx="2" />
+      <path d="M6.5 15.5h7" />
+      <circle cx="13.5" cy="9" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M16 7.5h3.5v2.6h-1.6l-1.2 1.1v-1.1H16z" />
     </Glyph>
   ),
   // A magnet, not another set of guide lines: `alignment-guides` in the Palette

@@ -12,6 +12,8 @@
 // 64 chars, no separator: matches the `images.sha256` column shape
 // in the api worker's D1 schema.
 
+import { bytesToBase64Url } from './bytes';
+
 function bytesToHex(buf: Uint8Array): string {
   let out = '';
   for (let i = 0; i < buf.length; i++) {
@@ -24,4 +26,12 @@ function bytesToHex(buf: Uint8Array): string {
 export async function sha256Hex(bytes: BufferSource): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return bytesToHex(new Uint8Array(digest));
+}
+
+// The OAuth PKCE S256 code challenge for a verifier (RFC 7636 section 4.2): the
+// base64url SHA-256 of its ASCII bytes. The CLI computes it and the MCP server
+// checks it, so both take it from here and cannot drift.
+export async function pkceChallenge(verifier: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return bytesToBase64Url(digest);
 }

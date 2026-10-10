@@ -171,18 +171,19 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // their own scroll — don't hijack their wheel to pan/zoom the canvas
       // (the canvas pointer handlers guard the same way).
       if ((e.target as Element | null)?.closest?.('[data-floating-panel]')) return;
-      // Belt-and-braces: also bail if the cursor is over ANY element that
-      // can scroll on its own (a panel's icon list, a dropdown, a menu),
-      // so the wheel scrolls THAT rather than panning the canvas behind it.
-      for (let node = e.target as Element | null; node && node !== canvasEl;) {
-        if (node.scrollHeight > node.clientHeight) {
-          const oy = getComputedStyle(node).overflowY;
-          if (oy === 'auto' || oy === 'scroll') return;
-        }
-        node = node.parentElement;
-      }
+      // An element that scrolls sideways itself (the Gantt chart's timeline, data-own-wheel-x) keeps a
+      // sideways or Shift wheel; a plain vertical wheel over it still pans the canvas.
+      if (
+        !e.ctrlKey &&
+        !e.metaKey &&
+        (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) &&
+        (e.target as Element | null)?.closest?.('[data-own-wheel-x]')
+      )
+        return;
       // Ctrl covers trackpad pinch (synthesised ctrlKey) and the Windows /
-      // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier.
+      // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier. Checked before the scrollable
+      // bail below: a Ctrl or Cmd wheel never scrolls an element (a Sheet's grid, a board's body), so it
+      // zooms the canvas wherever the cursor is.
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         noteWheel('zoom');
@@ -192,6 +193,16 @@ export function useCanvasPinchZoom(deps: Deps): Api {
         const newZoom = clamp(viewportZoom * factor, ZOOM_MIN, ZOOM_MAX);
         zoomAtFocal(newZoom, e.clientX, e.clientY, viewportZoom, viewportOffset);
         return;
+      }
+      // Belt-and-braces: also bail if the cursor is over ANY element that
+      // can scroll on its own (a panel's icon list, a dropdown, a menu),
+      // so the wheel scrolls THAT rather than panning the canvas behind it.
+      for (let node = e.target as Element | null; node && node !== canvasEl;) {
+        if (node.scrollHeight > node.clientHeight) {
+          const oy = getComputedStyle(node).overflowY;
+          if (oy === 'auto' || oy === 'scroll') return;
+        }
+        node = node.parentElement;
       }
       // No modifier: a two-finger trackpad drag (or wheel scroll) pans.
       // Translate the viewport opposite the scroll delta so content

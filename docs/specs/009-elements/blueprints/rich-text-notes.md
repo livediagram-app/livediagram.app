@@ -241,7 +241,7 @@ response.
 ## Presentation and UX
 
 - Popover: `w-[26rem]`, caption "Note" (10px uppercase), toolbar, editor, footer with
-  `Cmd-Enter saves, Esc cancels.` and `Delete note` (rose, disabled slate).
+  `Cmd-Enter saves, Esc cancels.` and `Delete note` (slate as the footer's other text, disabled lighter).
 - Toolbar (always visible, editable only): Bold, Italic, Underline | Block type | Link, `h-8 w-8`
   buttons via `toolbarButtonClass(active, 'shrink-0')`, `TOOLBAR_DIVIDER` between groups, wrapping
   row on `bg-slate-50`. Each control sits in a `HoverCard` (bold name over a one-line description).

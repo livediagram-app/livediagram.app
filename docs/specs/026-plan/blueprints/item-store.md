@@ -25,9 +25,10 @@ src/fields.ts        KNOWN_FIELDS (field -> kind), PRIORITIES, validateFields, v
 src/limits.ts        named constants (Constants table)
 src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyVote (shared by api and offline store)
-src/quick-add.ts     parseQuickAdd(text, types) -> { title, type?, fields, tokens }
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
+src/board-status-picks.ts the column picker's statuses: pickableStatuses(names, items, types), missingStatuses(setup,
+                     names), missingBoardStatuses(setup, names, { items, types, boards }) (cards, boards, colour)
 src/views.ts         itemSummary, itemAccessibleName: one-line text for agents and announcements
 src/store.ts         ItemStoreState, applyItemWrite, mergeItemChanges, inverseItemWrites, storeAsCreates
 src/presets.ts       PLAN_BOARD_PRESETS, presetSetup, presetSetupOrBlank
@@ -86,7 +87,8 @@ interface ItemMove extends ItemPlace {
 
 - `ItemCreate.key` and `votes` are accepted only to restore an item (undo, sync); `validateVotes` bounds the votes
   (`ITEM_VOTERS_MAX`, `ITEM_VOTES_PER_PERSON_MAX`).
-- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`, `parent`); `type` moves a
+- `ItemMove.set` / `clear` may name only `SWIMLANE_FIELDS` (`assignee`, `priority`), `LANE_FIELD_BUILT_INS` or a
+  custom field id (Parent's `parent` among them); `type` moves a
   type swimlane.
 
 ### Validation (`validateFields(fields, mode)`)
@@ -133,9 +135,14 @@ key between always exists. Ties (equal ranks after concurrent inserts) order by 
 ### Board projection (`projectBoard(setup, items, quick?)`)
 
 - `PlanBoardSetup = { title; columns: PlanColumn[]; doneColumnId?; swimlaneBy: SwimlaneBy;
-cardFields: CardField[]; voting: { on: boolean; budget?: number }; hideWriting: boolean }`.
-- `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'parent'`.
-- No scope: every board shows every item; a `scope` an older board stored is read past.
+cardFields: CardField[]; hideWriting: boolean }` (a stored `voting` is read past: a vote is the tab's session vote).
+- `PlanColumn = { id; status; name; wipLimit?; color? }`; `SwimlaneBy = 'none' | 'assignee' | 'type' | 'priority' | 'status' | 'field'` (a stored
+  `'parent'` reads as `'field'` with `swimlaneField: 'parent'`).
+- No scope: a `scope` an older board stored is read past. Types are the one filter: the types `boardAddTypes(setup, types)`
+  resolves (every type when `addTypes` is absent or names none still in the catalogue) drops an item of a type the board does not show, before columns, lanes,
+  unplaced and counts, on every board kind (All Cards and Archive included, when they name types). The board's
+  drop target refuses such a card (`accepts`) and such a palette type (`acceptsType`), refusal "This board shows
+  <types> cards".
 - Output: `{ columns: { column, count, overLimit, lanes: { laneKey, items[] }[] }[], lanes: LaneHead[],
 unplaced: Item[], doneCount, total }`. Items sorted by `compareRank`, then `key`. Lanes ordered: assignee by
   name, type by catalogue order, priority by `PRIORITIES`, parent by key; the empty group last.
@@ -153,6 +160,20 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   at most `ITEM_RICH_RUNS_MAX` (2000) runs and `ITEM_DESCRIPTION_MAX` characters in all; anything else is
   `field_value_invalid`. `description` stays the plain-text mirror (search, card faces, agents).
 
+### Colour
+
+- `color` is a known field of kind `colour`: one of `PLAN_TYPE_COLOURS` (compared lower-case, stored as given in
+  the palette), anything else is `field_value_invalid`; clearing removes the key. `itemColourOf(item)` returns the
+  stored swatch or `undefined`, so a value written before validation (or by hand) never draws.
+- Built-in Project fields: `title, description, status, assignee, priority, color, start, due, labels` (+
+  comments). `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
+- Editor: `apps/live/components/plan/ColourSwatches.tsx` puts Plan on the one colour picker: `TypeColourButton` (a
+  swatch at the end of the type editor's Name field, opening the picker in a popover) and `ColourSelect` (the panel's
+  Colour field, None first) (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).
+  `ColourDot` draws an item's colour (8 px, ringed) beside a Parent chip and a Project swimlane header; the
+  Gantt draws a project's bar and diamond in `itemColourOf(project)` else the Project type colour (overdue red
+  still edges it) and a dot in the row's name.
+
 ### Archive
 
 - `archived` is a known field of kind `flag`: `true` is stored, anything else is `field_value_invalid`; clearing
@@ -163,6 +184,10 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
 - Board drop: onto an Archive board patches `{ set: { archived: true } }` (status kept; its own cards do not
   reorder); off one onto another board moves, then patches `{ clear: ['archived'] }`. An Archive board refuses
   palette cards and has no Add Card.
+- Card Finder (`card-finder.ts`, items.md "Finding a card"): `findCards(items, { query, show, boardStatuses, types?,
+typeLabel? })` keeps live cards of any type id (no catalogue filter), narrowed to `types` when non-empty;
+  `cardMatches(item, query, typeLabel?)` also matches the type's name. `CardFinderPanel` holds the pressed types in
+  component state and counts from the type-narrowed list.
 
 ## Data and persistence: D1
 
@@ -201,15 +226,16 @@ WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by
 All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
 (tag `Items`), DTOs in `packages/api-schema/src/items.ts` (`ItemsResponse { items, rev }`, `ItemResponse { item, rev }`).
 
-| Method | Path                  | Gate        | Body                                        | Answers             |
-| ------ | --------------------- | ----------- | ------------------------------------------- | ------------------- |
-| GET    | `/items[?tabId=]`     | read        |                                             | `ItemsResponse`     |
-| POST   | `/items`              | edit        | `ItemCreate`                                | 201 `ItemResponse`  |
-| POST   | `/items/bulk`         | edit        | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX` | 201 `ItemsResponse` |
-| POST   | `/items/:itemId`      | edit        | `ItemPatch`                                 | `ItemResponse`      |
-| POST   | `/items/:itemId/move` | edit        | `ItemMove`                                  | `ItemResponse`      |
-| POST   | `/items/:itemId/vote` | participate | `{ delta: 1 \| -1 }`                        | `ItemResponse`      |
-| DELETE | `/items/:itemId`      | edit        |                                             | 204                 |
+| Method | Path                  | Gate | Body                                                         | Answers             |
+| ------ | --------------------- | ---- | ------------------------------------------------------------ | ------------------- |
+| GET    | `/items[?tabId=]`     | read |                                                              | `ItemsResponse`     |
+| POST   | `/items`              | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
+| POST   | `/items/bulk`         | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
+| POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
+| POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
+| POST   | `/items/:itemId/move` | edit | `ItemMove`                                                   | `ItemResponse`      |
+| POST   | `/items/tally`        | edit | `{ items: { id, votes }[] }` ≤ `ITEM_BULK_MAX`               | `ItemsResponse`     |
+| DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
 
@@ -222,7 +248,16 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
 - `POST /documents` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.
 - The patch is a POST: the api's CORS admits GET, POST, PUT and DELETE only.
-- Routes live in `apps/api/src/routes/item-routes.ts`, dispatched from `document-subresource-routes.ts`.
+- `/items/patches` changes many items at once (a type's or a removed column's cards sent to the Trash): every id
+  must exist (`404 item_not_found`, and in a tab-scoped grant be in scope), each patch is validated as a single
+  one is, and every resulting item is checked (`status_excluded` unless `undo`, the field bounds) before anything
+  is written, so one refusal refuses the whole request, naming the item (`{ error, field?, id }`). The updates go
+  in one D1 batch, each guarded by the rev read, with one `items_rev` raise; an item a concurrent write moved on
+  is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs
+  `[items] patched` with the count.
+- Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
+  share, such as the caller, refusals and relay, in `item-route-kit.ts`), dispatched from
+  `document-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
 
 ## Comments
 
@@ -295,7 +330,8 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 ## Editor slice
 
 - `apps/live/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
-  patch, move, vote, delete; a create of many goes to `/items/bulk` in batches); each dispatches
+  patch, patches, move, vote, delete; a create of many goes to `/items/bulk` and a patch of many to
+  `/items/patches`, each in batches of `ITEM_BULK_MAX`); each dispatches
   `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies `applyItemWrite` to the record's store
   inside `serializeOfflineWrite`.
 - `apps/live/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the
@@ -311,6 +347,23 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 - Sync to cloud sends `storeAsCreates(items)` (column order kept, votes carried); Take offline fetches the store
   first and aborts without it; Duplicate copies it (cloud: the create body; offline: the new record); the Drive
   mirror's `DocumentEnvelope.document.items` (optional, so the file stays version 1).
+- Tab JSON export: `tabToJsonText(tab, plan?)` (`@livediagram/document`, `export-tab-text.ts`) adds
+  `ExportedTabEnvelope.items` from `tabExportItems(tab, items)` (`export-tab-plan.ts`: `itemIdsShownOnTab`, the Trash
+  dropped, `votes` and `comments` stripped from `fields`, key order) and `itemTypes` (the stored catalogue, only with
+  items). `TabPlanData = { items, types, catalogue }` is what every text export takes; the Export dialog builds it
+  from `usePlan()` once per item or type change and memoises the open format's text.
+- Tab JSON import: `parseImportedTab` reads `items` through `isItemLike` (shared with `parseDocumentEnvelope`) and
+  `itemTypes` through `readItemTypeCatalogue`, as `ImportResult.plan`. `useTabImport` lands the tab, then calls
+  `importPlanItems` (`hooks/plan/usePlanTabImport.ts`): `planTabItemsImport(incoming, catalogue, existing, types)`
+  (`@livediagram/items`, `tab-import.ts`) returns the file's types its fresh items use and the document lacks, the
+  fresh items as `storeAsCreates` without `key`, and the skipped count; `itemTypes.addTypes(types)` then one undoable
+  `write({ kind: 'create', creates })`. A refused write returns `failed: creates.length`, reported as the `Plan Cards`
+  failure line (`planCardsFailure`) on the import's report. Logged as `[plan-tab-import]`.
+- Markdown export: `tabPlanMarkdown(tab, plan)` appends `## Plan Boards` (`### title`, `#### Column · count`,
+  `- #key Title (Type)` per card, `_No cards._` for an empty column) and `## Plan Cards`, shapes in y then x order.
+- Board layout: `planBoardLayout(el, items, types)` (`plan-board-layout.ts`) places the columns and the cards that
+  fit; `svgPlanBoard` and the Excalidraw export (`apps/live/lib/excalidraw-export-plan.ts`, `planBoardParts`,
+  `planCardLabel`) both read it.
 
 ## Undo
 
@@ -319,7 +372,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 journal (`hooks/plan/item-undo-journal.ts`, pure): each item step records the depth it was made at; undo runs the
 item step when the depth still matches (no canvas step since), else the canvas's; redo mirrors it by the redo
 side's length and branch. An item step's closures send the inverse writes (`inverseItemWrites`: the old values of
-the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete), and redo
+the touched keys, the old status and neighbour, a delete for a create, a restoring create for a delete, one `patches` of each item's inverse for a `patches`), and redo
 replays the write with the keys the first write was given. Votes push nothing.
 
 ## Errors and edge cases
@@ -357,6 +410,8 @@ replays the write with the keys the first write was given. Votes push nothing.
 - Worst case 2,000 items × 16 KB = 32 MB is refused by the GET's practical size: `ITEMS_MAX` × typical 0.5 KB
   = 1 MB; the GET streams one JSON array. The per-item cap bounds the row; D1's 1 MB row limit is never reached.
 - Projection is O(n log n) per board render, memoised on `(setup, items map identity)`.
+- Changing many cards at once (`patches`) is one request per `ITEM_BULK_MAX` cards and one D1 batch, never a
+  request per card; a type with 2,000 cards is 10 requests.
 - Room op carries only the changed items. A card with a long thread (up to `ITEM_COMMENTS_BYTES`, 128 KB) sends
   its whole thread with every write to it: typical threads are a few KB; the cap bounds the worst case.
 
@@ -369,25 +424,27 @@ include `fields` or comment text.
 
 ## Testing
 
-| Rule                                           | Test                                                                                             |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                              |
-| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                  |
-| apply functions                                | `apply.test.ts`                                                                                  |
-| Quick add tokens                               | `quick-add.test.ts`                                                                              |
-| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                  |
-| Tab-scoped set                                 | `tab-items.test.ts`                                                                              |
-| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                        |
-| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                |
-| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                               |
-| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                                                 |
-| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                       |
-| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                    |
-| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                      |
-| Thread ops, item writes, redaction, restore    | `packages/document/src/item-comments.test.ts`                                                    |
-| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                |
-| Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts` |
-| Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                |
+| Rule                                           | Test                                                                                                                                                                                  |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                   |
+| Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts)                                                                                                                                       |
+| apply functions                                | `apply.test.ts`                                                                                                                                                                       |
+| Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                       |
+| Tab-scoped set                                 | `tab-items.test.ts`                                                                                                                                                                   |
+| Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                             |
+| Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                     |
+| Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                    |
+| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                                                                                                                                      |
+| Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                            |
+| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                                                                                                         |
+| Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                           |
+| Thread ops, item writes, redaction, restore    | `packages/document/src/item-comments.test.ts`                                                                                                                                         |
+| Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                     |
+| Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts`                                                                                      |
+| Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                                                                                                     |
+| Tab export: items, catalogue, Markdown, layout | `packages/document/src/export-tab-plan.test.ts`, `apps/live/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
+| Tab import: parse, plan, land, report          | `apps/live/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/live/hooks/plan/usePlanTabImport.test.ts`, `apps/live/hooks/persistence/useTabImport.plan.test.ts` |
+| Excalidraw board and card                      | `apps/live/lib/excalidraw-export-plan.test.ts`                                                                                                                                        |
 
 ## Constants and configuration
 
@@ -396,12 +453,13 @@ include `fields` or comment text.
 | `ITEMS_MAX`                | 2000                      | Spec; a board past a few hundred cards stops being read |
 | `ITEM_FIELDS_BYTES`        | 16384                     | Spec; 4 KB–64 KB                                        |
 | `ITEM_FIELDS_MAX`          | 64                        | Spec                                                    |
-| `ITEM_TITLE_MAX`           | 200                       | Spec                                                    |
+| `ITEM_TITLE_MAX`           | 500                       | Spec; raised from 200 for long card titles              |
 | `ITEM_DESCRIPTION_MAX`     | 10000                     | Spec                                                    |
 | `ITEM_LABELS_MAX`          | 12                        | Spec                                                    |
 | `ITEM_CHECKLIST_MAX`       | 50                        | Spec                                                    |
 | `ITEM_BULK_MAX`            | 200                       | A sync of a big offline doc batches                     |
 | `ITEM_WRITE_RETRIES`       | 3                         | As changesets' retry                                    |
+| `ITEM_KEY_MAX`             | 1000000                   | A named key's ceiling; keeps the next key far from 2^53 |
 | `ITEM_COMMENTS_MAX`        | 200                       | Spec; a card's conversation, well past a real one       |
 | `ITEM_COMMENTS_BYTES`      | 131072                    | Spec; 200 × typical 0.5 KB; 32 KB–512 KB                |
 | `ITEM_REFETCH_DEBOUNCE_MS` | 400                       | Coalesces a burst of gaps                               |

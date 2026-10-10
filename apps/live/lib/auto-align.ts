@@ -19,7 +19,7 @@
 // separate **Auto Layout** / Tidy up pass (`packages/document/auto-layout.ts`).
 
 import { MIN_SIZE } from './canvas';
-import { isBoxed, type Element } from '@livediagram/document';
+import { isBoxed, type Element, type ElementId } from '@livediagram/document';
 
 // Snap step in canvas pixels. Picked so the rounding is visible
 // enough to tidy up drift (a 3 px misalignment becomes 0 or 10) but
@@ -89,6 +89,12 @@ export function autoAlignElement(el: Element): Element {
 // undo behaviour for free. A pure per-element snap — no
 // cross-element resizing or relocation (see the header note); Auto Layout is
 // the structural pass.
-export function autoAlignElements(elements: Element[]): Element[] {
-  return elements.map(autoAlignElement);
+// `lockedIds` (the editor's locked elements and everything on a locked layer) are left exactly as
+// they are (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
+export function autoAlignElements(
+  elements: Element[],
+  lockedIds?: ReadonlySet<ElementId>,
+): Element[] {
+  if (!lockedIds || lockedIds.size === 0) return elements.map(autoAlignElement);
+  return elements.map((el) => (lockedIds.has(el.id) ? el : autoAlignElement(el)));
 }

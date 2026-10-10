@@ -38,6 +38,7 @@ import {
   articlePasteIsCanvas,
   parseElementsPayload,
   serialiseElements,
+  takeSheetSeeds,
   stripIdentity,
 } from '@/lib/clipboard-payload';
 import { landPastedCopies, pasteTranslation } from '@/lib/paste-placement';
@@ -52,6 +53,7 @@ import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import type { useToast } from '@/hooks/ui/useToast';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isTypingTarget } from '@/lib/typing-target';
 
 type ImageDescriptor = {
   id: string;
@@ -332,13 +334,7 @@ export function useClipboard(deps: ClipboardDeps) {
         target instanceof HTMLElement &&
         !!target.closest('[data-article-flow]') &&
         articlePasteIsCanvas(e.clipboardData ?? null);
-      if (
-        !intoArticle &&
-        (target instanceof HTMLInputElement ||
-          target instanceof HTMLTextAreaElement ||
-          target instanceof HTMLSelectElement ||
-          (target instanceof HTMLElement && target.isContentEditable))
-      ) {
+      if (!intoArticle && isTypingTarget(target)) {
         return;
       }
       if (isReadOnly) return;
@@ -435,6 +431,7 @@ export function useClipboard(deps: ClipboardDeps) {
       const text = e.clipboardData?.getData('text/plain') ?? '';
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
+        takeSheetSeeds(text);
         e.preventDefault();
         pasteRef.current.pasteFromClipboard(fromOs);
         return;
@@ -485,6 +482,7 @@ export function useClipboard(deps: ClipboardDeps) {
       }
       const elements = parseElementsPayload(e.clipboardData?.getData('text/plain'));
       if (!elements) return;
+      takeSheetSeeds(e.clipboardData?.getData('text/plain'));
       e.preventDefault();
       e.stopPropagation();
       setEditingId(null);

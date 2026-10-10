@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Button, DiagramBuildAnimation, RefreshIcon } from '@livediagram/ui';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { Button, DiagramBuildAnimation, LoadingSweep, RefreshIcon } from '@livediagram/ui';
+import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
+import { track } from '@/lib/telemetry';
+import { useOnline } from '@/hooks/ui/useOnline';
 
 // The opening screen (docs/specs/007-editor/new-document-route.md): the one
 // full-height screen between a click and the editor. /new renders it at the
@@ -12,7 +15,9 @@ import { Button, DiagramBuildAnimation, RefreshIcon } from '@livediagram/ui';
 //
 // Dark-aware on purpose: it is a whole SCREEN, not a panel, so it honours
 // the appearance like every other route (docs/specs/007-editor/live-app.md).
-// If the wait passes 10 seconds, it offers a Refresh as a way out.
+// If the wait passes 10 seconds, it offers a Refresh as a way out. When the
+// load's watchdog runs its self-healing reload (docs/specs/007-editor/load-recovery.md),
+// the screen says so for the moment before the page reloads.
 
 export type DocumentLoadingStage = 'creating' | 'opening';
 
@@ -23,16 +28,14 @@ const COPY: Record<DocumentLoadingStage, { title: string; detail: string }> = {
 
 const SLOW_AFTER_MS = 10_000;
 
-// Glow drift, the progress sweep and the label's entrance. Motion only when
+// Glow drift and the label's entrance (the progress sweep is LoadingSweep's). Motion only when
 // the user allows it; reduced motion keeps the screen still.
 const CSS = `
 @media (prefers-reduced-motion: no-preference) {
   .ldl-glow-a { animation: ldl-drift-a 14s ease-in-out infinite alternate; }
   .ldl-glow-b { animation: ldl-drift-b 18s ease-in-out infinite alternate; }
-  .ldl-sweep { animation: ldl-sweep 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
   .ldl-enter { animation: ldl-enter 250ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 }
-.ldl-sweep { transform: translateX(-100%); }
 @keyframes ldl-drift-a {
   from { transform: translate(-12%, -8%) scale(1); }
   to { transform: translate(10%, 6%) scale(1.15); }
@@ -40,10 +43,6 @@ const CSS = `
 @keyframes ldl-drift-b {
   from { transform: translate(10%, 10%) scale(1.1); }
   to { transform: translate(-8%, -6%) scale(0.95); }
-}
-@keyframes ldl-sweep {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(300%); }
 }
 @keyframes ldl-enter {
   from { opacity: 0; transform: translateY(6px); filter: blur(2px); }
@@ -53,9 +52,20 @@ const CSS = `
 export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoadingStage }) {
   const [slow, setSlow] = useState(false);
   useEffect(() => {
-    const id = window.setTimeout(() => setSlow(true), SLOW_AFTER_MS);
+    const id = window.setTimeout(() => {
+      setSlow(true);
+      if (stage === 'opening') track('Error', 'Warning', 'DocumentLoad.Slow');
+    }, SLOW_AFTER_MS);
     return () => window.clearTimeout(id);
-  }, []);
+  }, [stage]);
+  // Offline wins over both (docs/specs/007-editor/load-recovery.md "Offline"): a Refresh would only
+  // swap in the browser's own error page.
+  const online = useOnline();
+  const healing = useSyncExternalStore(
+    subscribeLoadProgress,
+    () => getLoadProgress().healing,
+    () => false,
+  );
   const copy = COPY[stage];
 
   return (
@@ -89,15 +99,18 @@ export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoading
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">{copy.detail}</p>
           </div>
-          <div
-            aria-hidden="true"
-            className="mt-5 h-1 w-40 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-800"
-          >
-            <div className="ldl-sweep h-full w-1/3 rounded-full bg-gradient-to-r from-brand-400 via-violet-400 to-emerald-400" />
-          </div>
+          <LoadingSweep className="mt-5 w-40" />
         </div>
 
-        {slow ? (
+        {!online ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            You&rsquo;re offline. Waiting for the connection&hellip;
+          </p>
+        ) : healing ? (
+          <p className="ldl-enter mt-6 text-xs text-slate-500 dark:text-slate-400">
+            Still working on it. Trying a fresh start.
+          </p>
+        ) : slow ? (
           <div className="ldl-enter mt-6 flex flex-col items-center gap-2">
             <p className="text-xs text-slate-500 dark:text-slate-400">
               This is taking longer than usual.

@@ -28,12 +28,15 @@ import {
   overviewView,
   REF_INPUT_MAX_LENGTH,
   renderView,
+  SELECTED_REF,
   VIEW_BUDGET_MAX,
   VIEW_SLOW_MS,
   type OverviewTabInput,
   type ViewRequest,
 } from '@livediagram/document-views';
 import { redactTabForCommunity } from '../community-redact';
+import { personTagFor } from '../person-tag';
+import { readRoomSelections } from '../room-client';
 import { getTab, tabBodiesInOrder } from '../db/tabs';
 import { json, textPlain } from '../responses';
 import { reportServerEvent } from '../server-telemetry';
@@ -226,18 +229,48 @@ function answerLintView(
   return parsed.json ? json(report, { headers }) : textPlain(formatLintReport(report), { headers });
 }
 
-// A tab view, after the tab GET's gate and redaction.
-export function answerTabView(
+// What the caller has selected on the tab now, for `show selected` only (blueprint "REST"): the `mine` selections
+// of the room, as the changeset submit reads them; null when the room could not answer. No other view asks.
+async function ownerSelection(
+  ctx: RouteContext,
+  request: ViewRequest,
+  documentId: string,
+  tabId: string,
+  owner: string,
+): Promise<readonly string[] | null | undefined> {
+  if (request.view !== 'show' || request.ref !== SELECTED_REF) return undefined;
+  const selections = await readRoomSelections(
+    ctx.env,
+    documentId,
+    tabId,
+    await personTagFor(documentId, owner),
+    'views',
+  );
+  const selected = selections?.filter((s) => s.mine).flatMap((s) => s.elementIds) ?? null;
+  viewsLog('info', '[views] selection', {
+    doc: documentId,
+    tab: tabId,
+    read: selected !== null,
+    count: selected?.length ?? 0,
+  });
+  return selected;
+}
+
+// A tab view, after the tab GET's gate and redaction; `owner` is the caller the GET resolved.
+export async function answerTabView(
   ctx: RouteContext,
   parsed: ParsedView | ParsedLintView,
   document: DocumentDTO,
   tab: TabDTO,
-): Response {
+  owner: string,
+): Promise<Response> {
   if ('lint' in parsed) return answerLintView(ctx, parsed, document, tab);
+  const selected = await ownerSelection(ctx, parsed.request, document.id, tab.id, owner);
   const started = Date.now();
   const rendered = renderView(parsed.request, tab, {
     rev: tab.rev,
     tabIds: document.tabs.map((t) => t.id),
+    selected,
   });
   if (!rendered.ok) {
     const { refusal } = rendered;

@@ -125,6 +125,9 @@ uncaught error or rejection, an area error boundary, or the app's root error bou
 - **Recover:** after unsaved editor changes are saved (as above), the app does a full page load of
   the destination: the URL being navigated to when that is known (a back or forward, a link or a
   programmatic navigation in the last `NAVIGATION_INTENT_MS`), otherwise the current URL.
+- **Not while offline:** a chunk that fails while the browser says it is offline is the connection,
+  not an earlier build. The recovery stands down (no reload, no claim) and the normal error shows;
+  the same failure reported once back online still recovers ([Load recovery](../007-editor/load-recovery.md) "Offline").
 - **One reload guard** (below): the recovery claims the shared allowance. A second failure inside
   the window shows the normal error, so a genuinely broken deploy can never reload forever.
 - **The root error boundary** (the editor app's `global-error.tsx`) is the app's own: it runs the recovery, and

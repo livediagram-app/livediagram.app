@@ -23,6 +23,8 @@ Tokens are created from the editor, not the API. Open **Settings**, choose **Acc
 
 Tokens have the form `lvd_` followed by a random string, so they are easy to spot in logs and secret scanners.
 
+[The livediagram CLI](/help/developers/cli/) can create its own token for you: `livediagram auth login` signs in through the browser or a device code, then sends that token on every request.
+
 ## Send the token
 
 Pass the token in the `Authorization` header as a bearer credential on **every** request. There is no separate login or session step.
@@ -32,7 +34,16 @@ curl https://livediagram.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same read and write access you have in the editor.
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A read-only token (one you created when [connecting an AI tool](/help/account-and-data/connect-ai-mcp/) with **Read-only access** on) can read but every write is refused.
+
+## Check or retire the token you are using
+
+`GET /tokens/current` describes the token the request presented: its account, name, whether it is read-only, and when it expires. It is a cheap way for a script to confirm its credential works. `DELETE /tokens/current` revokes that same token, so a script can clean up after itself without you opening Settings.
+
+```bash
+curl https://livediagram.app/api/tokens/current \
+  -H "Authorization: Bearer lvd_your_token_here"
+```
 
 ## You need an account
 

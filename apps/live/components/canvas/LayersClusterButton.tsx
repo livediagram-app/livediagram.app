@@ -2,39 +2,33 @@
 
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { HoverCard } from '@livediagram/ui';
+import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 
-// The Layers button in the bottom-right cluster (docs/specs/006-document/layers.md), in every layout.
-//
-// In the Floating layout the panel ships minimised into it, and the button un-minimises it (`onExpand`). In the Toolbar
-// layout (docs/specs/007-editor/toolbar-layout.md) it opens the panel as a
-// popover hanging ABOVE it instead (`onTogglePopover`, handed the button to
-// anchor to), and shows pressed while that popover is open.
+// The Layers button in the bottom-right cluster (docs/specs/006-document/layers.md). It opens the
+// panel as a popover hanging ABOVE it (`onTogglePopover`, handed the button
+// to anchor to), and shows pressed while that popover is open.
 //
 // `data-dock-button` makes a second press close the popover through the
 // toggle rather than the panel's outside-click closing it on pointer-down and
 // the click reopening it.
 export function LayersClusterButton({
   popoverOpen,
-  onExpand,
   onTogglePopover,
 }: {
   popoverOpen: boolean;
-  onExpand?: () => void;
-  // Set in the Toolbar layout: the button opens the popover rather than the
-  // docked panel.
-  onTogglePopover?: (button: HTMLElement) => void;
+  onTogglePopover: (button: HTMLElement) => void;
 }) {
   const button = (
     <button
       type="button"
       onPointerDown={(e) => e.stopPropagation()}
-      onClick={(e) => (onTogglePopover ? onTogglePopover(e.currentTarget) : onExpand?.())}
+      onClick={(e) => onTogglePopover(e.currentTarget)}
       aria-label="Open Layers"
-      aria-expanded={onTogglePopover ? popoverOpen : undefined}
+      aria-expanded={popoverOpen}
       className={`flex h-11 w-11 items-center justify-center transition ${
         popoverOpen
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+          : CLUSTER_CONTROL_REST
       }`}
     >
       <LayersStackIcon />
@@ -47,13 +41,13 @@ export function LayersClusterButton({
         e.preventDefault();
         e.stopPropagation();
       }}
-      className="pointer-events-auto flex animate-fade-in items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+      className={CLUSTER_STRIP}
     >
       {/* No hover card while open: it would sit over the panel it names. */}
       {popoverOpen ? (
         button
       ) : (
-        <HoverCard title="Open Layers" description="Expand the Layers panel.">
+        <HoverCard title="Open Layers" description="Show this tab's layers.">
           {button}
         </HoverCard>
       )}
