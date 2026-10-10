@@ -17,15 +17,24 @@ const STAGE_COLUMN: Record<LifecycleStage, string> = {
 
 // First authenticated sighting. INSERT OR IGNORE keyed on the owner id; returns
 // true only when a NEW row was created, which the caller treats as sign-up
-// (send the welcome immediately). One cheap write, only ever run when email is
-// enabled.
+// (send the welcome immediately). A returning owner's row then takes the
+// address from this verified token, so a changed Clerk primary email is where
+// the next notification goes. The empty-string suppression rows (the backfill
+// in docs/specs/014-identity/transactional-email.md §4) keep their sentinel, and an unchanged address writes
+// nothing. Only ever run when email is enabled, once per owner per isolate.
 export async function recordSighting(env: Env, ownerId: string, email: string): Promise<boolean> {
   const res = await env.DB.prepare(
     'INSERT OR IGNORE INTO email_lifecycle (owner_id, email, created_at) VALUES (?, ?, ?)',
   )
     .bind(ownerId, email, Date.now())
     .run();
-  return res.meta.changes === 1;
+  if (res.meta.changes === 1) return true;
+  await env.DB.prepare(
+    "UPDATE email_lifecycle SET email = ? WHERE owner_id = ? AND email <> '' AND email <> ?",
+  )
+    .bind(email, ownerId, email)
+    .run();
+  return false;
 }
 
 type LifecycleRow = { ownerId: string; email: string };

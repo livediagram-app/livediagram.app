@@ -109,7 +109,11 @@ On any request carrying a verified Clerk identity (userId + email), and only
 when `emailEnabled`, the worker does an `INSERT … ON CONFLICT DO NOTHING` into
 `email_lifecycle`. If a **new** row was created (`meta.changes === 1`), that
 first sighting is treated as sign-up: send the welcome and stamp
-`welcome_sent_at`. All of this runs in `ctx.waitUntil(...)` so it never delays
+`welcome_sent_at`. On a returning owner's sighting the row instead takes the
+token's address when it differs (an `UPDATE` guarded on `email <> ''` and on the
+address actually changing), so a changed Clerk primary email is where the next
+email goes; a backfilled suppression row (below) keeps its empty sentinel, and
+"is new" stays the insert's answer alone. All of this runs in `ctx.waitUntil(...)` so it never delays
 the response, and is wrapped so an email/D1 hiccup can't fail the user's request.
 
 **Existing-deployment caveat:** first-sighting means that turning Resend on for a
@@ -145,7 +149,8 @@ enough for onboarding; no per-user timers.
   template's telemetry token (see below): it rides on the builder's return so
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
-- `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new"), the
+- `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new", and
+  refreshes a returning owner's address), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
 - Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
   invite in `routes/teams.ts` (invite create), deletion in `routes/account.ts`.
