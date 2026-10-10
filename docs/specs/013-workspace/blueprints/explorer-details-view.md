@@ -182,6 +182,8 @@ CREATE TABLE tab_stats (
 - Numbers right-aligned with tabular figures; dates in `text-xs`.
 - `–` cells carry a `Tooltip` "Not counted yet".
 - The sorted header shows a 10 px chevron (up ascending, down descending).
+- A folder row a document is dragged over wears `DROP_TARGET_ROW` (an inset brand outline and a
+  tint): a table row paints no box-shadow, so the ring other places wear would not show.
 - Empty, loading and error states are the pane's own, as for List and Cards.
 
 ## Accessibility

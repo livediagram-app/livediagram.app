@@ -2,7 +2,7 @@
 
 import type { Folder } from '@/lib/api-client';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
-import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { DROP_TARGET_ROW } from '@/components/panels/useDocumentDropTarget';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
@@ -38,7 +38,7 @@ export function DetailsFolderRow({
   return (
     <tr
       className={`group transition hover:bg-slate-50 dark:hover:bg-slate-700/60 ${
-        drop.isDragOver ? DROP_TARGET_RING : ''
+        drop.isDragOver ? DROP_TARGET_ROW : ''
       }`}
       onContextMenu={menu.onContextMenu}
       {...drop.handlers}
