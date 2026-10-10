@@ -283,4 +283,10 @@ describe('SessionPopover', () => {
     fireEvent.pointerDown(document.body);
     expect(idle.onClose).toHaveBeenCalled();
   });
+
+  it('closes a running timer on an outside press, even while holding', () => {
+    const p = popover({ session: session({ timer: paused }) });
+    fireEvent.pointerDown(document.body);
+    expect(p.onClose).toHaveBeenCalled();
+  });
 });

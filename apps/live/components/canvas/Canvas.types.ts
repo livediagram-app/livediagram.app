@@ -751,8 +751,6 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  // "Auto align" cleanup pass on the current tab's elements. See
-  // the palette's Cleanup accordion + lib/auto-align.ts.
   // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off

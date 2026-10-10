@@ -9,8 +9,6 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
@@ -24,22 +22,13 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { TabModeChoice } from './TabModeMenuSection';
+import type { TabModeChoice } from './TabModeMenuRows';
 import type { AccessLevel } from '@livediagram/api-schema';
 
-// Canvas-scoped actions folded into the unified tab / canvas menu: change
-// theme / background, and tidy the layout. (Add-element actions used to live
-// here too but were removed — the palette + quick-connect cover adding.)
+// Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
+// Cleanup category used to live here too but were removed: the palette and quick-connect cover
+// adding, and the command palette's Actions keep Auto Layout and Auto-align.)
 export type CanvasMenuActions = {
-  // Cleanup category (docs/specs/008-canvas/layout-cleanup.md): Auto-align grid-snaps current positions;
-  // Auto Layout recomputes positions from the arrow graph (Tidy up) in the
-  // chosen style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"; omitted = smart).
-  onAutoAlign: () => void;
-  onAutoLayout: (choice?: AutoLayoutChoice) => void;
-  // Hover-to-preview for those same rows (docs/specs/008-canvas/layout-cleanup.md), desktop pointers only:
-  // lay the tab out live behind the menu, and put it back on the way out.
-  onPreviewCleanup: (kind: CleanupKind) => void;
-  onEndCleanupPreview: () => void;
   // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md); greyed,
   // not hidden, when the buffer is empty.
   onPaste: () => void;

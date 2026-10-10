@@ -128,10 +128,6 @@ export function EditorView() {
     appChrome,
     workbench,
     quickStyleDeps,
-    autoAlignTab,
-    autoLayoutTab,
-    previewCleanup,
-    endCleanupPreview,
     livePoll,
     focusInvite,
     livePresence,
@@ -421,10 +417,6 @@ export function EditorView() {
           canvasMenu={contextMenu?.mode === 'canvas' ? contextMenu : null}
           onCloseCanvasMenu={closeContextMenu}
           canvasActions={{
-            onAutoAlign: autoAlignTab,
-            onAutoLayout: autoLayoutTab,
-            onPreviewCleanup: previewCleanup,
-            onEndCleanupPreview: endCleanupPreview,
             // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
             onPaste: () =>
               pasteFromClipboard(

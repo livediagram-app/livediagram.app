@@ -348,7 +348,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     });
   }
 
-  // Cleanup (docs/specs/008-canvas/layout-cleanup.md's tab-menu band) + the app-level dialogs, then the
+  // Layout cleanup (docs/specs/008-canvas/layout-cleanup.md, here and nowhere else) + the app-level dialogs, then the
   // view-safe verbs last so selection / document commands keep the better
   // ranks for ambiguous queries.
   out.push({
@@ -357,8 +357,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: AUTO_LAYOUT_CHOICES.smart.keywords,
     run: () => h.autoLayout(),
   });
-  // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"), the
-  // same choices the Cleanup menu offers as tiles.
+  // One command per explicit layout style (docs/specs/008-canvas/layout-cleanup.md "Layout styles").
   for (const styleId of AUTO_LAYOUT_STYLE_IDS) {
     out.push({
       id: `auto-layout-${styleId}`,

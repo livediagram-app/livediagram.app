@@ -30,8 +30,9 @@ export type SessionPopoverProps = {
   session: SessionToolsProps;
   // A view-role visitor: running tools only, read-only.
   readOnly: boolean;
-  // A running tool's popover stays open until its button closes it, rather than on any press
-  // outside it (desktop; on a phone it would sit over the canvas being voted on).
+  // A running vote's or poll's popover stays open until its button closes it, rather than on any
+  // press outside it (desktop; on a phone it would sit over the canvas being voted on). The timer
+  // always closes on a press outside: its clock is on its button.
   holdOpen: boolean;
   // Who the dot-vote knows us by (the collab key).
   voteSelfId: string;
@@ -108,17 +109,10 @@ export function SessionPopover({
     );
   }
   if (segment === 'session-timer') {
-    const hold = holdOpen && !!session.timer;
     // A view-role visitor only reaches this while a timer runs (the strip offers them nothing idle).
     if (readOnly) {
       return session.timer ? (
-        <SessionToolPopover
-          title="Timer"
-          help="sessionTimer"
-          anchor={anchor}
-          onClose={onClose}
-          hold={hold}
-        >
+        <SessionToolPopover title="Timer" help="sessionTimer" anchor={anchor} onClose={onClose}>
           <TimerPane {...session} readOnly />
         </SessionToolPopover>
       ) : null;
@@ -130,7 +124,6 @@ export function SessionPopover({
         anchor={anchor}
         onClose={onClose}
         facilitatedBy={session.facilitatedBy}
-        hold={hold}
       >
         <TimerPane {...session} />
       </SessionToolPopover>
@@ -172,7 +165,6 @@ function SessionToolPopover({
   anchor,
   onClose,
   facilitatedBy,
-  hold = false,
   children,
 }: {
   title: string;
@@ -180,8 +172,6 @@ function SessionToolPopover({
   anchor?: DockAnchor;
   onClose: () => void;
   facilitatedBy?: string | null;
-  // The tool is running on a desktop: only its button closes the popover.
-  hold?: boolean;
   children: ReactNode;
 }) {
   const blocked = Boolean(facilitatedBy);
@@ -196,7 +186,7 @@ function SessionToolPopover({
       popoverAnchor={anchor}
       asPopover
       popoverWidth="w-72"
-      dismissOnOutside={!hold}
+      dismissOnOutside
       onPopoverClose={onClose}
     >
       <div className="flex flex-col gap-3 px-3 pb-3">

@@ -1515,8 +1515,9 @@ export const articles: Article[] = [
   {
     slug: 'tab-cleanup',
     title: 'Cleaning Up a Tab',
-    description: 'Tidy a tab in one click: snap to a grid, or auto-lay-out from the arrows.',
-    keywords: 'tidy auto layout snap grid arrange organise organize align',
+    description:
+      'Tidy a tab from the command palette: snap to a grid, or auto-lay-out from the arrows.',
+    keywords: 'tidy auto layout snap grid arrange organise organize align command palette cleanup',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

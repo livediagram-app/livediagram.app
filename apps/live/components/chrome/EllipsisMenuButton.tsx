@@ -4,7 +4,7 @@ import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import type { CanvasMenuActions } from './TabBar';
-import type { TabModeChoice } from './TabModeMenuSection';
+import type { TabModeChoice } from './TabModeMenuRows';
 
 // The tab-bar ⋯ button: toggles the unified tab / canvas PortalMenu anchored
 // to itself. Extracted from TabBar.tsx. Pure prop-based component.

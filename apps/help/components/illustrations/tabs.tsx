@@ -1,8 +1,8 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tab pills,
-// tab folders and their upward fan, the tab menu (toolbar plus its Organise / Content /
-// Cleanup sections), the Add to Folder / Add to Document / Import / Export dialogs, cross-tab
-// links, a locked tab, and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
-// TabOrganiseDialogs, ImportTabDialog, ExportTabDialog, TabCanvasMenuSections).
+// tab folders and their upward fan, the tab menu (toolbar over full-width rows split into groups),
+// the Add to Folder / Add to Document / Import / Export dialogs, cross-tab links, a locked tab,
+// and a before/after cleanup. Labels are the editor's own (TabPortalMenu, TabModeMenuRows,
+// TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
@@ -356,16 +356,99 @@ export function RenamingTab() {
   );
 }
 
+/** The tab menu's full-width rows, in groups parted by a hairline: one entry per row, `null` for
+ *  a separator. `highlight` tints one row as if under the pointer; `checked` dots the current
+ *  mode. */
+function MenuRowList({
+  x,
+  y,
+  w,
+  rows,
+  highlight,
+  checked,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  rows: (string | null)[];
+  highlight?: string;
+  checked?: string;
+}) {
+  let cy = y;
+  const out: ReactNode[] = [];
+  rows.forEach((r, i) => {
+    if (r === null) {
+      out.push(
+        <line
+          key={`sep-${i}`}
+          x1={x}
+          y1={cy + 4}
+          x2={x + w}
+          y2={cy + 4}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />,
+      );
+      cy += 8;
+      return;
+    }
+    const on = r === highlight;
+    out.push(
+      <g key={r}>
+        {on ? (
+          <rect x={x + 4} y={cy} width={w - 8} height={18} rx={4} className="fill-brand-50" />
+        ) : null}
+        <rect
+          x={x + 12}
+          y={cy + 5}
+          width={8}
+          height={8}
+          rx={2}
+          className={on ? 'fill-none stroke-brand-500' : 'fill-none stroke-slate-300'}
+          strokeWidth={1.2}
+        />
+        <Label
+          x={x + 28}
+          y={cy + 9.5}
+          size={10}
+          weight={on ? 600 : 400}
+          tone={on ? 'accent' : 'body'}
+        >
+          {r}
+        </Label>
+        {r === checked ? (
+          <circle cx={x + w - 14} cy={cy + 9} r={3} className="fill-brand-500" />
+        ) : null}
+      </g>,
+    );
+    cy += 18;
+  });
+  return <g>{out}</g>;
+}
+
 /** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock tab, Delete) over
- *  its collapsible sections, opened from the active tab's ⋯ button. */
+ *  full-width rows in three groups (folders and documents, content, the mode), opened from the
+ *  active tab's ⋯ button. */
 export function TabMenu() {
-  const barY = 178;
+  const barY = 258;
   const mx = 150;
-  const my = 14;
+  const my = 10;
   const mw = 200;
-  const rows = ['Organise', 'Content', 'Mode', 'Cleanup'];
+  const rows = [
+    'Add to Folder',
+    'Add to Document',
+    null,
+    'Import',
+    'Export',
+    'Clear',
+    null,
+    'Diagram',
+    'Draw',
+    'Illustrate',
+    'Plan',
+  ];
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={310}>
       <TabBar y={barY} w={420} />
       <TabPill x={14} y={barY + 8} w={64} label="Draft" />
       <TabPill x={252} y={barY + 8} w={98} label="Overview" active />
@@ -375,7 +458,7 @@ export function TabMenu() {
         x={mx}
         y={my}
         width={mw}
-        height={134}
+        height={232}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -474,19 +557,7 @@ export function TabMenu() {
         className="stroke-slate-200"
         strokeWidth={1.5}
       />
-      {rows.map((r, i) => (
-        <g key={r}>
-          <Label x={mx + 14} y={my + 56 + i * 22} size={11} weight={500} tone="body">
-            {r}
-          </Label>
-          <path
-            d={`M${mx + mw - 20} ${my + 53 + i * 22} l4 4 l4 -4`}
-            className="fill-none stroke-slate-400"
-            strokeWidth={1.4}
-            strokeLinecap="round"
-          />
-        </g>
-      ))}
+      <MenuRowList x={mx} y={my + 46} w={mw} rows={rows} checked="Diagram" />
       <Label x={14} y={30} size={10} tone="muted">
         Rename, Duplicate, Paste
       </Label>
@@ -702,11 +773,11 @@ export function AddToDocumentMenu() {
   );
 }
 
-/** The tab menu's Content section open: Import, Export and Clear tiles. */
+/** The tab menu's rows, with Import under the pointer beside Export and Clear. */
 export function ImportMenu() {
   const barY = 158;
   const mx = 150;
-  const my = 30;
+  const my = 14;
   return (
     <Scene w={420} h={210}>
       <TabBar y={barY} w={420} />
@@ -717,67 +788,18 @@ export function ImportMenu() {
         x={mx}
         y={my}
         width={192}
-        height={118}
+        height={110}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={mx + 14} y={my + 16} size={11} weight={500} tone="body">
-        Organise
-      </Label>
-      <line
-        x1={mx}
-        y1={my + 28}
-        x2={mx + 192}
-        y2={my + 28}
-        className="stroke-slate-200"
-        strokeWidth={1}
+      <MenuRowList
+        x={mx}
+        y={my + 6}
+        w={192}
+        rows={['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear']}
+        highlight="Import"
       />
-      <Label x={mx + 14} y={my + 42} size={11} weight={700} tone="strong">
-        Content
-      </Label>
-      {/* Clear is styled as its neighbours: a delete is never red. */}
-      {['Import', 'Export', 'Clear'].map((label, i) => {
-        const tx = mx + 10 + i * 59;
-        return (
-          <g key={String(label)}>
-            <rect
-              x={tx}
-              y={my + 54}
-              width={54}
-              height={48}
-              rx={7}
-              className={
-                i === 0 ? 'fill-brand-50 stroke-brand-300' : 'fill-slate-50 stroke-slate-200'
-              }
-              strokeWidth={1.2}
-            />
-            <path
-              d={
-                i === 0
-                  ? `M${tx + 27} ${my + 62} v12 M${tx + 22} ${my + 69} l5 5 l5 -5 M${tx + 20} ${my + 78} h14`
-                  : i === 1
-                    ? `M${tx + 27} ${my + 74} v-12 M${tx + 22} ${my + 67} l5 -5 l5 5 M${tx + 20} ${my + 78} h14`
-                    : `M${tx + 21} ${my + 64} l12 12 M${tx + 33} ${my + 64} l-12 12`
-              }
-              className="fill-none stroke-slate-500"
-              strokeWidth={1.6}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <Label
-              x={tx + 27}
-              y={my + 92}
-              anchor="middle"
-              size={10}
-              weight={600}
-              tone={i === 0 ? 'accent' : 'body'}
-            >
-              {String(label)}
-            </Label>
-          </g>
-        );
-      })}
     </Scene>
   );
 }

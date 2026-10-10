@@ -295,12 +295,13 @@ leaves (a mode switch) closes.
 
 Order, left to right: Timer, Vote, Poll. **On a phone** the strip takes a row of its own, right-aligned above the rest of the cluster, since one row cannot hold it beside Undo, Redo, Layers, the theme brush and Fit at phone width. Each segment opens its
 panel as a **popover hanging above it** with an arrow at the button, and a second press closes
-it. **While its tool runs, on a desktop, nothing else closes it**: a press on the canvas (casting a
-dot, answering) leaves it up, because a facilitator watches turnout or answers while the room works.
-It closes on its own **when the activity ends** (the timer or vote is cleared, the poll ended),
-rather than turning back into the set-up under the pointer. An idle tool's popover, and any
-popover on a phone (where it would cover the canvas being voted on), also closes on a press
-outside. Asking a poll keeps the popover open: it becomes the Poll panel. They share the editor's one open-popover slot with Layers, Collaborate
+it. **While a vote or poll runs, on a desktop, nothing else closes its popover**: a press on the
+canvas (casting a dot, answering) leaves it up, because a facilitator watches turnout or answers
+while the room works. Every popover closes on its own **when the activity ends** (the timer or vote
+is cleared, the poll ended), rather than turning back into the set-up under the pointer. The
+**Timer**'s popover always closes on a press outside, running or not: its clock is already on the
+button, so there is nothing to watch in it. So do an idle tool's popover and any popover on a
+phone (where it would cover the canvas being voted on). Asking a poll keeps the popover open: it becomes the Poll panel. They share the editor's one open-popover slot with Layers, Collaborate
 and the Explorer. Nothing opens on its own: a vote or poll somebody starts lights its button and
 leaves the canvas clear. The strip shows in Zen mode as well, because a session in progress is the one
 piece of chrome a facilitator still needs there; it is hidden only while presenting or in the

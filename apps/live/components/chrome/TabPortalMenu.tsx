@@ -12,20 +12,10 @@ import {
   MoveIcon,
   TabLockIcon,
 } from '@/components/chrome/tab-bar-icons';
-import {
-  MenuAccordionSection,
-  MenuActionRow,
-  MenuGroupSeparator,
-} from '@/components/primitives/PortalMenu';
-import {
-  MenuTile,
-  MenuTileGrid,
-  MenuToolbar,
-  MenuToolButton,
-} from '@/components/primitives/MenuTiles';
+import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuToolbar, MenuToolButton } from '@/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
-import { TabCanvasMenuSections } from './TabCanvasMenuSections';
-import { TabModeMenuSection, type TabModeChoice } from './TabModeMenuSection';
+import { TabModeMenuRows, type TabModeChoice } from './TabModeMenuRows';
 import {
   AddTabToDocumentDialog,
   AddTabToFolderDialog,
@@ -109,16 +99,6 @@ export function PortalMenu({
   // the outside-click dismisser below; the modal owns its own dismissal
   // and closes the whole menu with it.
   const [view, setView] = useState<'actions' | 'copyTo' | 'folder'>('actions');
-  // Which collapsible category is open in the actions view — at most one at a
-  // time, all closed by default (matches the element context menu).
-  const [openSection, setOpenSection] = useState<string | null>(null);
-  const sectionProps = (id: string) => ({
-    open: openSection === id,
-    onToggle: () => setOpenSection((s) => (s === id ? null : id)),
-    // Rows sit flush (no per-row hairline); the only rules are the
-    // MenuGroupSeparator bands, matching the element context menu.
-    flush: true,
-  });
   // Delete confirmation: an inline popover anchored to the Delete row
   // (rather than the jarring full-screen modal). Rendered inside this
   // menu's container so the outside-click handler treats it as "inside".
@@ -366,8 +346,7 @@ export function PortalMenu({
               />
             </div>
           </MenuToolbar>
-          {/* Separator under the toolbar, isolating the quick verbs from
-            the verbose category bands below. */}
+          {/* Separator under the toolbar, isolating the quick verbs from the rows below. */}
           <MenuGroupSeparator />
           {/* The empty-canvas right-click is usually "put what I copied
             HERE", so there Paste leads the menu as a labelled row
@@ -389,56 +368,43 @@ export function PortalMenu({
               <MenuGroupSeparator />
             </>
           ) : null}
-          {/* Verbose actions live in collapsible categories (closed by
-            default, one open at a time), matching the element menu. */}
-          <MenuAccordionSection
-            title="Organise"
+          {/* The rest as full-width rows, no categories: the menu is short enough to show it
+            all (docs/specs/007-editor/live-app.md "Tab menu"). Separators part the related groups:
+            where the tab lives, what is on it, and how it is worked on. */}
+          <MenuActionRow
+            plain
             icon={<FolderMenuIcon />}
-            {...sectionProps('organise')}
-          >
-            <MenuTileGrid cols={2}>
-              <MenuTile
-                icon={<FolderMenuIcon />}
-                label="Add to Folder"
-                onClick={() => setView('folder')}
-              />
-              <MenuTile
-                icon={<MoveIcon />}
-                label="Add to Document"
-                onClick={() => setView('copyTo')}
-                disabled={otherDocuments.length === 0 || planTab}
-              />
-            </MenuTileGrid>
-          </MenuAccordionSection>
-          <MenuAccordionSection
-            title="Content"
-            icon={<FileExportIcon />}
-            {...sectionProps('content')}
-          >
-            <MenuTileGrid cols={3}>
-              <MenuTile
-                icon={<FileImportIcon />}
-                label="Import"
-                onClick={onImport}
-                disabled={locked}
-              />
-              <MenuTile icon={<FileExportIcon />} label="Export" onClick={onExport} />
-              <MenuTile
-                icon={<ClearIcon />}
-                label="Clear"
-                onClick={onClearContent}
-                disabled={!canClearContent}
-              />
-            </MenuTileGrid>
-          </MenuAccordionSection>
-          {modeChoice ? <TabModeMenuSection choice={modeChoice} {...sectionProps('mode')} /> : null}
-          {/* ── Look & Feel / Font / Cleanup band — see
-            TabCanvasMenuSections. Rendered whenever canvas actions are
-            available, which is both entry points (canvas right-click AND
-            the active tab's ellipsis menu) so the two are one unified
-            menu. */}
-          {canvas ? (
-            <TabCanvasMenuSections canvas={canvas} onClose={onClose} sectionProps={sectionProps} />
+            label="Add to Folder"
+            onClick={() => setView('folder')}
+          />
+          <MenuActionRow
+            plain
+            icon={<MoveIcon />}
+            label="Add to Document"
+            onClick={() => setView('copyTo')}
+            disabled={otherDocuments.length === 0 || planTab}
+          />
+          <MenuGroupSeparator />
+          <MenuActionRow
+            plain
+            icon={<FileImportIcon />}
+            label="Import"
+            onClick={onImport}
+            disabled={locked}
+          />
+          <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
+          <MenuActionRow
+            plain
+            icon={<ClearIcon />}
+            label="Clear"
+            onClick={onClearContent}
+            disabled={!canClearContent}
+          />
+          {modeChoice ? (
+            <>
+              <MenuGroupSeparator />
+              <TabModeMenuRows choice={modeChoice} />
+            </>
           ) : null}
         </>
       ) : null}

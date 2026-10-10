@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // docs/specs/012-collaboration/assigned-actions.md §5: the Collaborate button after Layers, on the
-// LayersClusterButton contract.
+// Layers button's contract (LayersThemeStrip).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

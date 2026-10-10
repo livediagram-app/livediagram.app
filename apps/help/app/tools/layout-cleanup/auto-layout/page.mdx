@@ -1,7 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { AutoLayoutTidy, CleanupMenu } from '@/components/illustrations/tools';
+import { AutoLayoutTidy } from '@/components/illustrations/tools';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'Auto Layout',
@@ -30,35 +31,33 @@ Auto Layout is the structural tidier (the command palette calls it "Auto Layout 
 
 ## Layout styles
 
-One arrangement doesn't fit every diagram, so alongside the smart default the Cleanup section offers a row per style. All of them read the same arrow graph and differ only in the shape of the result:
+One arrangement doesn't fit every diagram, so alongside the smart default there is a command per style. All of them read the same arrow graph and differ only in the shape of the result:
 
-- **Auto Layout** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
-- **Flowchart ↓** and **Flowchart →**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
-- **Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
-- **Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
+- **Auto Layout (tidy up)** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
+- **Auto Layout: Flowchart (down)** and **Auto Layout: Flowchart (right)**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
+- **Auto Layout: Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
+- **Auto Layout: Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
 
-Every style is also available from the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K): "Auto Layout: Flowchart (down)", "Auto Layout: Tree", "Auto Layout: Mindmap", and so on. If a diagram isn't a perfect tree (a shape with two parents, or a loop), Tree and Mindmap still work: they lay out the main skeleton and reconnect the extra arrows across it.
+If a diagram isn't a perfect tree (a shape with two parents, or a loop), Tree and Mindmap still work: they lay out the main skeleton and reconnect the extra arrows across it.
 
 ## Running it
 
 <Step n={1}>
-  Right-click an empty part of the canvas (on a touchscreen, long-press it), or open the active
-  tab's ⋯ menu.
+  Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K) and
+  type **Auto Layout**.
 </Step>
 
 <Step n={2}>
-  Open the **Cleanup** section and choose **Auto Layout**, or one of the style rows below it.
+  Under **Actions**, choose **Auto Layout (tidy up)**, or one of the styles below it.
 </Step>
 
 <Step n={3}>The whole tab is laid out anew in a single undoable step.</Step>
 
-On a computer you can see a style before you choose it: **rest the pointer on a row** and the tab lays itself out behind the menu, live. Move to the next row to see that one instead, move off the rows and everything goes back exactly as it was. Nothing is saved, logged, or sent to the people you're working with until you click.
-
-<Figure caption="Resting the pointer on Tree lays the tab out as a tree behind the menu; clicking keeps it.">
-  <CleanupMenu />
+<Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
+  <SearchCommandPalette />
 </Figure>
 
-On a touchscreen there is no preview, since a tap runs the row. Because it's one undoable operation, you can still try a style and undo it in a single step (⌘Z / Ctrl+Z) if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.
+Because it's one undoable operation, you can try a style and undo it in a single step (⌘Z / Ctrl+Z) if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.
 
 ## When to use it
 

@@ -1,8 +1,10 @@
 # Layout cleanup
 
-The tab / canvas context menu carries a **Cleanup** category (next to Look & Feel
-and Font, see [Canvas and palette](canvas-and-palette.md)) holding the two layout
-tidiers. They are complementary, not duplicates: one snaps current positions, the
+The [command palette](../007-editor/command-palette.md)'s actions carry the two layout
+tidiers, **Auto Layout** (in each style) and **Auto-align**. The tab / canvas context menu
+used to hold them as a **Cleanup** category; it was removed, since a menu category per tidy
+action does not scale across the editor's modes, and the command palette reaches them from
+anywhere. They are complementary, not duplicates: one snaps current positions, the
 other recomputes them from the graph. Both are editor-only (they mutate) and run a
 single undoable operation.
 
@@ -137,32 +139,14 @@ a component's nodes are positioned:
 
 - The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
   MCP server keep calling it with no style and get Smart, unchanged.
-- **UI:** the Cleanup category shows a tile per style (Smart is the plain
-  "Auto Layout" tile), and the command palette carries one command per style
-  ("Auto Layout: Mindmap", ...). All styles are the same single undoable op.
+- **UI:** the command palette carries one command per style (Smart is the plain
+  "Auto Layout (tidy up)", then "Auto Layout: Mindmap", ...). All styles are the same
+  single undoable op.
 
-### Hover to see it first
+The transforms live in `lib/tab-cleanup.ts` (`cleanupElements`), which the commands call. (A
+desktop hover preview of each style lived on the removed Cleanup menu rows; with no rows to
+hover, it went with them.)
 
-On a desktop pointer, hovering a Cleanup row lays the tab out **live behind the
-menu**; the layout only sticks on click, and taking the pointer off the row puts
-everything back. Five styles that can only be told apart by doing them is five
-undos to find the one you wanted, and the names ("Tree", "Mindmap") describe a
-shape the author has to imagine. Showing it is cheaper than explaining it.
-
-It is the style-preset preview ([Style presets](../010-palette/style-presets.md)) one level up:
-that one previews a look on the selected elements, this one previews a position
-on all of them, and the rules are the same ones for the same reasons.
-
-- The transforms live in `lib/tab-cleanup.ts` (`cleanupElements`), shared by the
-  preview and the command, so a preview is byte-for-byte the layout its click
-  commits.
-- The first hover snapshots the tab. Every hover lays out from that snapshot, so
-  sweeping down the rows shows each style cleanly rather than stacking them.
-- Preview and revert go through `tickTabs`: present-only, no undo snapshot, and
-  autosave skips the tick (`previewingRef`), so nothing ephemeral is ever
-  persisted.
-- The click ends the preview first and commits second, in one React batch, so
-  undo returns to the layout the author actually had rather than to the preview.
 - **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a
   flicker. The row also reverts if the menu closes or the section collapses with
   the pointer still on it, since `pointerleave` does not fire on unmount.
