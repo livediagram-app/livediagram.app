@@ -121,6 +121,13 @@ The server decides everything that matters:
   (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
   `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
   deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
+- The dedupe matches the text exactly, so a client that rewords each request
+  gets past it; the hourly cap is then the only bound. Hashing the stored
+  comment or action instead needs the request to name it, and neither is
+  stored where the route can read it when the request lands: a diagram
+  comment and an assigned action reach D1 only with the next tab save (a
+  comment sits in the room ledger before then), and only a Plan card's
+  comment is written first. Known gap, recorded rather than closed.
 
 The email reads **"{author} mentioned you in {document}"**, quotes the
 comment, and has one button, **Open the document** (for a card's comment, **Open the card**, linking
