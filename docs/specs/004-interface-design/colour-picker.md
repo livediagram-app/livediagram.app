@@ -62,7 +62,7 @@ A picker shows up to three groups, always in this order, each under a small head
    - A surface that offers free colours shows a soft row headed "Light", then a strong row headed "Dark": an
      Illustrate page's background, the canvas colour and the custom theme builder.
 
-3. **Custom Colours**: the colours picked with **+** in this document, newest first, at most twelve, then **+**.
+3. **Custom Colours**: the colours picked with **Add a custom colour** in this document, newest first, at most twelve, then **Add a custom colour** (four coloured dots).
 
 **Leading options** go first in the first group: **no colour** where a surface can have none (No ... colour,
 None, No colour, Default colour, No highlight, Paper), and the surface's own named defaults (the article's
@@ -82,10 +82,10 @@ colour editor keeps the colour with the tab it was picked on (newest first, at m
 - Recording one is not a step of its own: the pick it applies is the undoable edit.
 - A colour already offered (the Theme Palette's, a standard colour) is not shown again as a custom colour.
 - The custom colour in force always shows, as the first of Custom Colours, picked, even when no one picked it
-  with **+** (an older Plan colour, a page's earlier preset, a template's colour).
+  with **Add a custom colour** (an older Plan colour, a page's earlier preset, a template's colour).
 - While a picker is open, Custom Colours hold their order. Hovering a swatch previews it on the document, which
   must not slide the swatches under the pointer, so a colour already shown keeps its place and only a colour
-  new to the list, such as one just picked with **+**, joins at the front. The order is worked out afresh each
+  new to the list, such as one just picked with **Add a custom colour**, joins at the front. The order is worked out afresh each
   time the picker opens.
 
 The per-user `customSwatches` and `whiteboardYourColours` lists are retired
@@ -94,7 +94,7 @@ slot overrides are unchanged: they replace a theme colour, they are not Custom c
 
 ## Picking a colour of your own
 
-Every picker ends Custom colours with **+**. It opens the **custom colour editor** in place, under the
+Every picker ends Custom colours with **Add a custom colour** (four coloured dots). It opens the **custom colour editor** in place, under the
 swatches: a saturation and brightness square, a hue slider, a hex field, an eyedropper where the browser has
 one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps it as a custom colour.
 
@@ -136,7 +136,7 @@ exactly as it did:
 ## Keyboard
 
 - The picker is **one Tab stop**: the picked swatch, else the first.
-- **Arrow keys move focus** through every swatch and **+** in reading order, wrapping at the ends; **Home**
+- **Arrow keys move focus** through every swatch and **Add a custom colour** in reading order, wrapping at the ends; **Home**
   and **End** jump to the first and last. Moving focus never changes the colour.
 - **Enter** or **Space** picks the focused swatch. **Escape** closes a picker that opened in a popover and
   returns focus to its trigger.
@@ -163,11 +163,14 @@ The [Quick Style Panel](../008-canvas/quick-style-panel.md) keeps its compact ro
 Ink, Draw mode's Ink and eight hued stock colours in the standard order (Red to Pink; Grey is in More
 colours), the highlighter's five tints. Each row draws the one swatch, follows the
 one keyboard model, and ends with **More colours**, a swatch button opening the full picker (the row's own
-colours as its Theme Palette, the standard colours, Custom colours). The highlighter's More colours offers the
+colours as its Theme Palette, the standard colours, Custom colours). Its glyph is four dots of the standard
+colours (Red, Orange, Green, Blue) in a dashed square (`MoreColoursGlyph`): every trigger that opens the full
+picker from a quick row wears it, as does the picker's own **Add a custom colour**; none is a +. The highlighter's More colours offers the
 soft tone.
 
 A Sheet's toolbar **Text Colour** and **Fill Colour** are quick rows too ([Sheet](../029-sheets/sheet.md)): the
-Theme Palette's first five colours with the one swatch and keyboard, then **+**, which opens the full picker.
+Theme Palette's first five colours with the one swatch and keyboard, then **More Text Colours** / **More Fill
+Colours** (the four-dot glyph), which opens the full picker.
 
 ## Not colour pickers
 

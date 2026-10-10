@@ -96,7 +96,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
   would convert), up to eight, most recently drawn first (imported and
   pasted content brings its own); with none on the tab, the section is
-  not there. A custom colour is added with the marker picker's **+**. With nothing selected
+  not there. A custom colour is added with the marker picker's **Add a custom colour**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
   **Every pen shows the same rows**, so Marker width stays at the same height
@@ -353,7 +353,7 @@ Explorer Home's Jump back in.
     twelve, newest first, the marker's own custom colour in force first among
     them ([Custom colours](../004-interface-design/colour-picker.md#custom-colours)).
     A custom colour is one exact hex value on both boards.
-  - **+** at the end of that row opens the custom picker in place: a
+  - **Add a custom colour** (four coloured dots) at the end of that row opens the custom picker in place: a
     saturation and brightness square, a hue slider, a hex field and, where
     the browser has one, an **eyedropper**; **Use** applies it. When the
     colour is under 3:1 on either board, a **warning** in the warning colour

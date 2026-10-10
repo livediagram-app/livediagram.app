@@ -6,12 +6,13 @@
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
 // arrows move through every swatch, Enter or Space picks.
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
-import { PlusIcon, Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@livediagram/ui';
 import { isHexColour } from '@livediagram/document';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { YOUR_COLOURS_MAX } from '@/lib/document-colours';
 import { CustomColourEditor } from './CustomColourEditor';
+import { MoreColoursGlyph } from './MoreColoursGlyph';
 import { ColourSwatch } from './ColourSwatch';
 import { COLOUR_PICKER_WIDTH } from './colour-metrics';
 import {
@@ -165,9 +166,10 @@ export function ColourPicker({
                     data-colour-key=""
                     tabIndex={flat.length === 0 ? 0 : -1}
                     onClick={() => setEditorOpen((open) => !open)}
-                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-400 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-500 dark:text-slate-300 dark:hover:bg-slate-800"
+                    className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
                   >
-                    <PlusIcon size={14} />
+                    {/* More colours' four dots, as every way into more colours (colour-picker.md "Skins"). */}
+                    <MoreColoursGlyph />
                   </button>
                 </Tooltip>
               ) : null}

@@ -272,7 +272,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (named "Glyph: {Name}"), then the name typed after it, then at its end a swatch of the type's colour (named
     "Colour", its tooltip "Colour"), the field no wider than a 32-character name needs. The swatch opens the one
     [colour picker](../004-interface-design/colour-picker.md) in a popover (the swatch-button skin): the strong
-    standard colours, Custom colours and **+**, which opens the custom colour editor in place; a colour not on offer
+    standard colours, Custom colours and **Add a custom colour** (four coloured dots), which opens the custom colour editor in place; a colour not on offer
     shows as the picked first of Custom colours. A pick closes the popover and hands focus back to the swatch; Escape
     closes the popover only, never the editor. The glyph opens a popover under it (above it when there is no room below), drawn over the editor so its
     scrolling body never clips it: **Search
