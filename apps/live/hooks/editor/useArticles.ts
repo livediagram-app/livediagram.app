@@ -29,6 +29,7 @@ import {
   type ArticleStyle,
   withArticleStyleChanged,
   withArticlePageCount,
+  shouldGrowForAbsentWriter,
   withZonesSettled,
   type ArticleBlock,
   type ArticleFlow,
@@ -44,6 +45,11 @@ import {
 } from '@/lib/article/article-editor-store';
 import { articleTextWidth } from '@/lib/article/article-flow-geometry';
 import { articleLocked } from '@/lib/article/article-lock';
+import {
+  clearArticleGrow,
+  isArticleGrowPending,
+  markArticleGrow,
+} from '@/lib/article/article-grow-store';
 import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/article/ArticleEditor';
 
@@ -198,10 +204,49 @@ export function useArticles(deps: {
     [tabId],
   );
 
+  // An article no writer here is settling: grown once, after an agent's write or as the tab loads
+  // (docs/specs/024-agents/illustrate-for-agents.md "Pages for the writing"). Measured only once the
+  // web fonts are in, so a fallback font's longer lines never add a page.
+  const growForAbsentWriter = useCallback(
+    (layout: FlowLayout) => {
+      const d = latest.current;
+      if (!isArticleGrowPending(tabId, layout.flow)) return;
+      if (typeof document !== 'undefined' && document.fonts?.status === 'loading') return;
+      clearArticleGrow(tabId, layout.flow);
+      if (!d.canEdit) return;
+      d.tickTabs((ts) => {
+        const out = ts.map((t) => {
+          if (t.id !== tabId || t.locked === true || !articlesOf(t)[layout.flow]) return t;
+          const own = illustratePagesOf(t).filter((p) => p.flow === layout.flow);
+          const grow = shouldGrowForAbsentWriter({
+            local: false,
+            pending: true,
+            needed: layout.pagesNeeded,
+            have: own.length,
+            locked: own.some((p) => p.locked === true),
+          });
+          if (!grow) return t;
+          debugLog('[article] grown for an absent writer', {
+            tabId,
+            flow: layout.flow,
+            from: own.length,
+            to: layout.pagesNeeded,
+          });
+          return withArticlePageCount(t, layout.flow, layout.pagesNeeded);
+        });
+        return out.every((t, i) => t === ts[i]) ? ts : out;
+      });
+    },
+    [tabId],
+  );
   const onLayout = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
-      if (!layout.local || articleEditRefused(d.canEdit, d.activeTab, layout.flow)) return;
+      if (!layout.local) {
+        growForAbsentWriter(layout);
+        return;
+      }
+      if (articleEditRefused(d.canEdit, d.activeTab, layout.flow)) return;
       d.tickTabs((ts) => {
         const out = ts.map((t) => {
           if (t.id !== tabId || !articlesOf(t)[layout.flow]) return t;
@@ -224,8 +269,16 @@ export function useArticles(deps: {
         return out.every((t, i) => t === ts[i]) ? ts : out;
       });
     },
-    [tabId],
+    [tabId, growForAbsentWriter],
   );
+
+  // Every article of the tab as it loads may be grown once (a writer who left before settling).
+  const loadMarked = useRef<string | null>(null);
+  useEffect(() => {
+    if (loadMarked.current === tabId) return;
+    loadMarked.current = tabId;
+    for (const flow of Object.keys(articlesOf(activeTab))) markArticleGrow(tabId, flow);
+  }, [activeTab, tabId]);
 
   useArticleIntake({
     activeTab,

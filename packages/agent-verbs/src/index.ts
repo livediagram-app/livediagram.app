@@ -113,3 +113,4 @@ export {
   type SheetRead,
   type SheetRefusal,
 } from './sheets';
+export * from './illustrate';

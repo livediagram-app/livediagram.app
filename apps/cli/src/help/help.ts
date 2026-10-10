@@ -26,12 +26,14 @@ const GROUPED_ROWS = [
   {
     words: ['sync'],
     after: 'link',
-    summary: "mirror a link's documents into the repository",
+    summary: "mirror a link's documents into the repo",
   },
 ] as const;
 export const NAMED_ONLY = [
   'board',
   'sheet',
+  'page',
+  'article',
   'type',
   'template',
   'icon',
@@ -72,7 +74,7 @@ export function topHelp(): string {
     ]),
     `  ${NAMED_ONLY.join(', ')}`,
     '',
-    '<doc> is a name, id prefix or link; --tab a tab name or id prefix (the first by default).',
+    '<doc> is a name, id prefix or link; --tab a tab name or id prefix (first by default).',
     'stdout is data, hints stderr; --json (=a,b picks fields), -q refs only.',
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',

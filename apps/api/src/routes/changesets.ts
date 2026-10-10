@@ -164,7 +164,7 @@ async function handleRevert(
 
 // A token's written changeset or revert keeps its presence on the tab (docs/specs/024-agents/agent-presence.md
 // "Presence"); a dry run, a refusal and a session's write leave presence alone. Off the response path.
-function refreshAfterWrite(
+export function refreshAfterWrite(
   ctx: RouteContext,
   documentId: string,
   tabId: string,
@@ -193,7 +193,7 @@ function refreshAfterWrite(
 
 // The resolved owner of the request: the token's owner for an agent. Nothing in the body names an
 // author.
-async function authorOf(ctx: RouteContext, owner: string): Promise<Author> {
+export async function authorOf(ctx: RouteContext, owner: string): Promise<Author> {
   const participant = await getParticipant(ctx.env, owner);
   return {
     id: owner,

@@ -294,7 +294,7 @@ export type Tab = {
   pages?: IllustratePage[];
   // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
   // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
-  // `articlesOf`; synced block by block (the `doc` room op), never in a `tab-meta` patch.
+  // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
   articles?: Record<string, ArticleFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withIllustratePages`).
@@ -403,6 +403,10 @@ export * from './article-zones';
 export * from './article-notes';
 export * from './article-to-page';
 export * from './article-intake';
+export * from './article-markdown';
+export * from './article-markdown-io';
+export * from './illustrate-page-paint';
+export * from './illustrate-edits';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

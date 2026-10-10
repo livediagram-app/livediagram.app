@@ -4,6 +4,7 @@ import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livedia
 import type { RoomOp } from '@livediagram/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
+import { clearArticleGrow, isArticleGrowPending } from '@/lib/article/article-grow-store';
 
 const el = (id: string, over: Partial<Element> = {}): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, ...over }) as Element;
@@ -284,6 +285,22 @@ describe('applyRoomOpToTabs: documents', () => {
     expect(applyRoomOpToTabs(tabs, late)[0]!.articles).toBeUndefined();
     const created: RoomOp = { ...late, created: true };
     expect(applyRoomOpToTabs(tabs, created)[0]!.articles!.f!.blocks).toEqual([P('a')]);
+  });
+
+  it('marks an agent’s writing for growing by whoever lays it out next', () => {
+    const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
+    const op: RoomOp = {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f',
+      ops: [{ kind: 'put', block: P('b') }],
+    };
+    applyRoomOpToTabs(tabs, op);
+    expect(isArticleGrowPending('t1', 'f')).toBe(false);
+    applyRoomOpToTabs(tabs, { ...op, agent: true });
+    expect(isArticleGrowPending('t1', 'f')).toBe(true);
+    clearArticleGrow('t1', 'f');
+    expect(isArticleGrowPending('t1', 'f')).toBe(false);
   });
 
   it('ignores a malformed article frame', () => {

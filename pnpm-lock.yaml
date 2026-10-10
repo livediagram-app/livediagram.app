@@ -787,6 +787,9 @@ importers:
       '@livediagram/sheets':
         specifier: workspace:*
         version: link:../sheets
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../templates
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -953,6 +956,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../templates
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*
@@ -987,6 +993,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/icons':
+        specifier: workspace:*
+        version: link:../icons
       '@livediagram/templates':
         specifier: workspace:*
         version: link:../templates

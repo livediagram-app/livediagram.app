@@ -197,8 +197,15 @@ type SessionAttachment = {
 };
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
-// changeset, a tab rename (docs/specs/024-agents/agent-changesets.md).
-const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'document-meta']);
+// changeset, a tab rename (docs/specs/024-agents/agent-changesets.md), an agent's article writing
+// (docs/specs/024-agents/illustrate-for-agents.md).
+const WORKER_MUTATION_KINDS = new Set([
+  'el-delta',
+  'changeset',
+  'tab-meta',
+  'document-meta',
+  'article',
+]);
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.
 const MAX_PERSON_TAG_LEN = 64;
 // A workbench pairing id is a UUID.

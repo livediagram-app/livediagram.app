@@ -48,6 +48,7 @@ import { itemVerbs } from './verbs/item';
 import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
+import { illustrateVerbs } from './verbs/illustrate';
 import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 
@@ -72,6 +73,7 @@ export const VERBS: readonly Verb[] = [
   ...boardVerbs,
   ...cardTypeVerbs,
   ...sheetVerbs,
+  ...illustrateVerbs,
   changesetApply,
   changesetLs,
   changesetShow,
@@ -123,6 +125,8 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'board', summary: 'Plan boards: add one' },
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
+  { name: 'page', summary: 'Illustrate pages: slides, logos, infographics' },
+  { name: 'article', summary: 'Articles as Markdown' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },

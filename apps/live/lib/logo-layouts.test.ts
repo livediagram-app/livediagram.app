@@ -12,7 +12,7 @@ import {
   LOGO_LAYOUTS,
   pageLayoutById,
 } from '@livediagram/templates';
-import { buildPageLayout } from './page-layout-build';
+import { buildPageLayout } from '@livediagram/templates';
 
 // docs/specs/007-editor/logo-pages.md "Logo layouts": a logo page's own catalogue, each a mark
 // fitting the artboard's safe area, its name in wordmark type.

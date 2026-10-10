@@ -1345,11 +1345,96 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
+  "ArticleSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "blocks": {
+        "type": "number"
+      },
+      "flow": {
+        "type": "string"
+      },
+      "look": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ArticleLookId"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "pages": {
+        "items": {
+          "type": "number"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "words": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "flow",
+      "title",
+      "pages",
+      "blocks",
+      "words",
+      "look"
+    ],
+    "type": "object"
+  },
   "ArticleTextSize": {
     "enum": [
       "small",
       "normal",
       "large"
+    ],
+    "type": "string"
+  },
+  "ArticleWrite": {
+    "additionalProperties": false,
+    "properties": {
+      "accent": {
+        "type": "string"
+      },
+      "article": {
+        "type": "string"
+      },
+      "look": {
+        "$ref": "#/components/schemas/ArticleLookId"
+      },
+      "markdown": {
+        "type": "string"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/ArticleWriteMode"
+      },
+      "new": {
+        "type": "boolean"
+      },
+      "orientation": {
+        "$ref": "#/components/schemas/PageOrientation"
+      },
+      "pageNumbers": {
+        "type": "boolean"
+      },
+      "size": {
+        "$ref": "#/components/schemas/PageSizeId"
+      }
+    },
+    "required": [
+      "markdown"
+    ],
+    "type": "object"
+  },
+  "ArticleWriteMode": {
+    "enum": [
+      "replace",
+      "append"
     ],
     "type": "string"
   },
@@ -6255,6 +6340,109 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "IllustrateAnswer": {
+    "additionalProperties": false,
+    "properties": {
+      "article": {
+        "additionalProperties": false,
+        "properties": {
+          "blocks": {
+            "type": "number"
+          },
+          "created": {
+            "type": "boolean"
+          },
+          "flow": {
+            "type": "string"
+          },
+          "look": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ArticleLookId"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pages": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          },
+          "words": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "blocks",
+          "created",
+          "flow",
+          "look",
+          "pages",
+          "title",
+          "words"
+        ],
+        "type": "object"
+      },
+      "articles": {
+        "items": {
+          "$ref": "#/components/schemas/ArticleSummary"
+        },
+        "type": "array"
+      },
+      "changesetId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "lines": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "pages": {
+        "items": {
+          "$ref": "#/components/schemas/PageSummary"
+        },
+        "type": "array"
+      },
+      "switched": {
+        "type": "boolean"
+      },
+      "tab": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "rev"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "tab",
+      "switched",
+      "lines",
+      "pages",
+      "articles",
+      "changesetId"
+    ],
+    "type": "object"
+  },
   "IllustratePage": {
     "additionalProperties": false,
     "properties": {
@@ -6299,6 +6487,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "orientation"
     ],
     "type": "object"
+  },
+  "IllustrateRequest": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/PageChange"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "pages"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "article": {
+            "$ref": "#/components/schemas/ArticleWrite"
+          }
+        },
+        "required": [
+          "article"
+        ],
+        "type": "object"
+      }
+    ]
   },
   "ImageCredit": {
     "additionalProperties": false,
@@ -8362,6 +8581,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "hidden": {
             "type": "number"
           },
+          "illustrate": {
+            "additionalProperties": false,
+            "properties": {
+              "kinds": {
+                "additionalProperties": false,
+                "properties": {
+                  "article": {
+                    "type": "number"
+                  },
+                  "infographic": {
+                    "type": "number"
+                  },
+                  "logo": {
+                    "type": "number"
+                  },
+                  "slide": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "pages": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "pages",
+              "kinds"
+            ],
+            "type": "object"
+          },
           "outOfScope": {
             "const": false,
             "type": "boolean"
@@ -8499,6 +8749,188 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "type": "object"
   },
+  "PageBackgroundInput": {
+    "additionalProperties": false,
+    "properties": {
+      "angle": {
+        "type": "number"
+      },
+      "color": {
+        "type": "string"
+      },
+      "gradient": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array"
+      },
+      "paper": {
+        "const": true,
+        "type": "boolean"
+      },
+      "pattern": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PagePattern"
+          },
+          {
+            "const": "none",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    "type": "object"
+  },
+  "PageChange": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "background": {
+            "$ref": "#/components/schemas/PageBackgroundInput"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PageKind"
+          },
+          "layout": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "op": {
+            "const": "add",
+            "type": "string"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/PageOrientation"
+          },
+          "size": {
+            "$ref": "#/components/schemas/PageSizeId"
+          }
+        },
+        "required": [
+          "op",
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "background": {
+            "$ref": "#/components/schemas/PageBackgroundInput"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "op": {
+            "const": "set",
+            "type": "string"
+          },
+          "orientation": {
+            "$ref": "#/components/schemas/PageOrientation"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageRef"
+          },
+          "size": {
+            "$ref": "#/components/schemas/PageSizeId"
+          }
+        },
+        "required": [
+          "op",
+          "page"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "layout": {
+            "type": "string"
+          },
+          "op": {
+            "const": "layout",
+            "type": "string"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageRef"
+          }
+        },
+        "required": [
+          "op",
+          "page",
+          "layout"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "move",
+            "type": "string"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageRef"
+          },
+          "to": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "op",
+          "page",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "duplicate",
+            "type": "string"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageRef"
+          }
+        },
+        "required": [
+          "op",
+          "page"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "op": {
+            "const": "delete",
+            "type": "string"
+          },
+          "page": {
+            "$ref": "#/components/schemas/PageRef"
+          }
+        },
+        "required": [
+          "op",
+          "page"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "PageFill": {
     "anyOf": [
       {
@@ -8569,6 +9001,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "PageRect": {
+    "additionalProperties": false,
+    "properties": {
+      "height": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "x",
+      "y",
+      "width",
+      "height"
+    ],
+    "type": "object"
+  },
+  "PageRef": {
+    "type": [
+      "string",
+      "number"
+    ]
+  },
   "PageSides": {
     "additionalProperties": false,
     "properties": {
@@ -8599,6 +9061,259 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fit"
     ],
     "type": "string"
+  },
+  "PageSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "background": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "elements": {
+        "type": "number"
+      },
+      "flow": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/PageKind"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "orientation": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PageOrientation"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "place": {
+        "type": "number"
+      },
+      "rect": {
+        "$ref": "#/components/schemas/PageRect"
+      },
+      "size": {
+        "$ref": "#/components/schemas/PageSizeId"
+      }
+    },
+    "required": [
+      "place",
+      "id",
+      "name",
+      "kind",
+      "size",
+      "orientation",
+      "rect",
+      "background",
+      "locked",
+      "flow",
+      "elements"
+    ],
+    "type": "object"
+  },
+  "PagesView": {
+    "additionalProperties": false,
+    "properties": {
+      "articles": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "blocks": {
+              "type": "number"
+            },
+            "flow": {
+              "type": "string"
+            },
+            "look": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ArticleLookId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "markdown": {
+              "type": "string"
+            },
+            "pages": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": {
+              "type": "string"
+            },
+            "words": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "blocks",
+            "flow",
+            "look",
+            "markdown",
+            "pages",
+            "title",
+            "words"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "elision": {
+        "$ref": "#/components/schemas/Elision"
+      },
+      "header": {
+        "$ref": "#/components/schemas/ViewHeader"
+      },
+      "illustrate": {
+        "type": "boolean"
+      },
+      "layouts": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "$ref": "#/components/schemas/PageKind"
+            },
+            "layouts": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "label"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "layouts"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "pages": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "elements": {
+              "type": "number"
+            },
+            "flow": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/components/schemas/PageKind"
+            },
+            "locked": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "orientation": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PageOrientation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "place": {
+              "type": "number"
+            },
+            "rect": {
+              "$ref": "#/components/schemas/PageRect"
+            },
+            "refs": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "size": {
+              "$ref": "#/components/schemas/PageSizeId"
+            }
+          },
+          "required": [
+            "background",
+            "elements",
+            "flow",
+            "id",
+            "kind",
+            "locked",
+            "name",
+            "orientation",
+            "place",
+            "rect",
+            "refs",
+            "size"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "header",
+      "illustrate",
+      "pages",
+      "articles",
+      "layouts",
+      "elision"
+    ],
+    "type": "object"
   },
   "PairingRequestStatus": {
     "enum": [
@@ -13359,6 +14074,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hidden": {
         "type": "number"
       },
+      "illustrate": {
+        "additionalProperties": false,
+        "properties": {
+          "kinds": {
+            "additionalProperties": false,
+            "properties": {
+              "article": {
+                "type": "number"
+              },
+              "infographic": {
+                "type": "number"
+              },
+              "logo": {
+                "type": "number"
+              },
+              "slide": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "pages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "pages",
+          "kinds"
+        ],
+        "type": "object"
+      },
       "rev": {
         "type": [
           "number",
@@ -13434,7 +14180,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "show",
       "find",
       "diff",
-      "lint"
+      "lint",
+      "pages"
     ],
     "type": "string"
   },

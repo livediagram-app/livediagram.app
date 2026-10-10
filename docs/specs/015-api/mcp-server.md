@@ -163,8 +163,8 @@ browser. A token minted for the CLI is named "livediagram CLI".
 
 ## 4. Tools
 
-Twenty tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)) and four for sheets
-([§4.9c](#49c-the-sheet-tools)). The search/view capability is two tools (find, then read); create,
+Twenty-two tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
+([§4.9c](#49c-the-sheet-tools)) and two for Illustrate pages and articles ([§4.9d](#49d-the-illustrate-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates));
 share, rename, and delete complete the CRUD verbs, with list_trash and
@@ -595,6 +595,26 @@ document's Plan cards when a formula reads them.
 - **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
   uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)
   framing it placed beside what the tab holds, as `add_board` places a board, in one changeset.
+
+### 4.9d The Illustrate tools
+
+The pages of a tab in Illustrate mode and the articles written on them ([Illustrate for agents](../024-agents/illustrate-for-agents.md)).
+Pages are named by id, place (`2`) or name; articles by flow id or title. Both tools go through one api route
+(`POST /api/documents/:id/tabs/:tabId/illustrate`, `apps/mcp/src/illustrate-tools.ts` over
+`packages/agent-verbs/src/illustrate/`) and the editor's own page edits, switch the tab into Illustrate when it is
+not, and reach open editors at once.
+
+- **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
+  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, slide or logo), `set`
+  `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
+  `duplicate` `{ page }` and `delete` `{ page }`, written as one edit; a refusal writes nothing and names the
+  change. The answer lists each page with its rectangle on the canvas, where `update_document` puts elements.
+- **`write_article`** (destructive, as a replace drops the old text): an article's text from Markdown (front
+  matter `title:` / `subtitle:`, headings, lists, to-dos, quotes, code, dividers, `\pagebreak`), `replace` or
+  `append`, a new article or a named one, with an optional look, accent and page numbers. The editor flows it
+  onto as many pages as it needs.
+- **Reading**: `read_document` with `view: "pages"` lists the pages, the elements on each, the layouts on offer
+  and each article as Markdown in the form `write_article` takes.
 
 ### 4.10 Prompts (discoverability)
 

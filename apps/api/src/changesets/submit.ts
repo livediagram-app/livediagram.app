@@ -247,7 +247,7 @@ function rejected(
 
 // The rules every tab write meets (CS30): migrated elements, a created tab's name capped, Q&A
 // notes kept at their newest, new comments credited to the author whatever the body claimed.
-function withServerRules(tab: Tab, stored: StoredTab | null, author: Author): Tab {
+export function withServerRules(tab: Tab, stored: StoredTab | null, author: Author): Tab {
   const migrated = migrateIncomingTab(tab) as Tab;
   const previous = stored?.tab.elements ?? [];
   const elements = rewriteCommentAuthors(
