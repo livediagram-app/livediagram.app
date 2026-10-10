@@ -570,7 +570,7 @@ and the dialog stays as the one complete, browsable index of them.
   collapsible groups), **Panels** (panel opacity; with the
   sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
-  **Accessibility** (reduce motion, show welcome tour), **AI Tools** (assistant,
+  **Accessibility** (reduce motion, Show Tours), **AI Tools** (assistant,
   suggested prompts, and a **Manage API Tokens** link row that opens the API
   Tokens sub-category), **Documents** (a **Where New Documents Go** section: first **Skip the Location Step**,
   the `skipLocationStep` preference with a Turn Off button, then one row per
