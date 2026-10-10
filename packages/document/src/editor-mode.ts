@@ -1,7 +1,6 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
 // Draw, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
-// mode a person works in is theirs (the editor remembers it per tab, device-locally); the tab only
-// says which mode it OPENS in (`Tab.opensIn`, Diagram when absent).
+// mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
 
