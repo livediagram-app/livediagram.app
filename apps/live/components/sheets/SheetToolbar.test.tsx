@@ -259,6 +259,38 @@ describe('the sheet toolbar', () => {
     expect(h.cell('A1')?.format?.fs).toBe(96);
   });
 
+  it('sets the font from a menu naming each font in its own face, left of Font Size, Default clearing it', () => {
+    width = 1000;
+    show(h);
+    pickCategory('Text');
+    const font = screen.getByRole('button', { name: 'Font: Default' });
+    // Font sits just before Font Size.
+    expect(
+      font.compareDocumentPosition(screen.getByLabelText('Font Size')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    fireEvent.click(font);
+    expect(checked('Default')).toBe(true);
+    const lora = row('Lora');
+    expect((lora.querySelector('span[style]') as HTMLElement).style.fontFamily).toContain('Lora');
+    fireEvent.click(lora);
+    expect(h.cell('A1')?.format?.ff).toBe('lora');
+    fireEvent.click(screen.getByRole('button', { name: 'Font: Lora' }));
+    expect(checked('Lora')).toBe(true);
+    fireEvent.click(row('Default'));
+    expect(h.cell('A1')?.format?.ff).toBeUndefined();
+  });
+
+  it('offers the fonts as a menu once Font folds into More', () => {
+    width = 0;
+    show(h);
+    pickCategory('Text');
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    fireEvent.click(row('Font'));
+    fireEvent.click(row('Caveat'));
+    expect(h.cell('A1')?.format?.ff).toBe('caveat');
+  });
+
   it('offers the sizes as a menu once Font Size folds into More', () => {
     width = 0;
     show(h);

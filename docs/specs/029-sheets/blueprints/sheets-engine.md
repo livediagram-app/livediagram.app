@@ -123,6 +123,7 @@ type CellFormat = {
   st?: true; // bold, italic, underline, strikethrough
   fc?: string;
   bg?: string; // #rrggbb text and fill colour
+  ff?: string; // a font id (FONT_ID_RE: a-z, digits and -, up to 32); resolved to a stack by the drawing side
   fs?: FontSize; // a whole number, FONT_SIZE_MIN 6 to FONT_SIZE_MAX 96; FONT_SIZES the − / + steps (stepFontSize)
   ha?: 'l' | 'c' | 'r';
   va?: 't' | 'm' | 'b'; // absent is 'm' (middle)

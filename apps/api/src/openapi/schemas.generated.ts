@@ -1816,6 +1816,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fc": {
         "type": "string"
       },
+      "ff": {
+        "type": "string"
+      },
       "fs": {
         "$ref": "#/components/schemas/FontSize"
       },
@@ -5453,6 +5456,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cur": {},
       "dp": {},
       "fc": {},
+      "ff": {},
       "fs": {},
       "ha": {},
       "i": {},

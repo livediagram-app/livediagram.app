@@ -11,6 +11,7 @@ import {
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
+  lucideType,
 } from '@livediagram/icons/lucide';
 
 const SIZE = 16;
@@ -36,6 +37,11 @@ export const SortIcon = () => (
 export const TextColourIcon = () => (
   <G>
     <Prims prims={lucideBaseline} />
+  </G>
+);
+export const FontIcon = () => (
+  <G>
+    <Prims prims={lucideType} />
   </G>
 );
 export const FontSizeIcon = () => (
