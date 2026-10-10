@@ -112,6 +112,30 @@ describe('DoneCheckFace', () => {
     expect(screen.getByText("I'm not done")).toBeTruthy();
   });
 
+  it('counts one per person who can mark: not my second tab, not a view-link guest', () => {
+    const myOtherTab: Participant = { ...SELF, id: 'presence-my-second-tab' };
+    const viewer: Participant = {
+      id: 'presence-viewer',
+      key: 'k-viewer',
+      name: 'Viewer',
+      color: '#888',
+      status: 'online',
+      role: 'view',
+    };
+    render(
+      <DoneCheckFace
+        element={card(['k-me', 'k-ada'])}
+        surface="#ffffff"
+        label=""
+        textColor="#000"
+        selfKey="k-me"
+        participants={[SELF, myOtherTab, PEER, viewer]}
+      />,
+    );
+    expect(count()).toBe('2/2');
+    expect(screen.getByText("Everyone's done!")).toBeTruthy();
+  });
+
   it('ignores a mark from somebody who has left', () => {
     // docs/specs/012-collaboration/done-check.md: the waiting list is derived from who is in the room NOW, so a
     // response from a departed peer is ignored rather than deleted.

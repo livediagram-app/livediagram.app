@@ -10,7 +10,7 @@ import {
   type EstimateScale,
   type ShapeElement,
 } from '@livediagram/document';
-import type { Participant } from '@/lib/identity';
+import { answeringKeys, type Participant } from '@/lib/identity';
 import { CollabPanel } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { EstimateEmpty } from './estimate/EstimateEmpty';
@@ -50,7 +50,8 @@ export function EstimateFace({
 }) {
   const responses = element.responses ?? [];
   const revealed = element.responsesRevealed === true;
-  const inRoom = Math.max(participants.length, responses.length);
+  // One per person who can pick (not a view-link guest, not your second tab).
+  const inRoom = Math.max(answeringKeys(participants).length, responses.length);
   // A card the palette placed without a scale asks for one first
   // (docs/specs/012-collaboration/estimate-card.md "Choosing a scale").
   const choosing = estimateScalePending(element);
