@@ -16,6 +16,7 @@ import {
   type TabLedger,
 } from '@livediagram/document';
 import { getTabData, swapTabData } from './db';
+import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';
 import type { Env } from './types';
 
@@ -54,7 +55,14 @@ async function swapTab<T>(
     const nextData = JSON.stringify(rest);
     let swapped: boolean;
     try {
-      swapped = await swapTabData(env, documentId, tabId, raw, nextData, rest.elements.length);
+      swapped = await swapTabData(
+        env,
+        documentId,
+        tabId,
+        raw,
+        nextData,
+        tabStatsOf(rest, nextData),
+      );
     } catch (error) {
       if (error instanceof TabTooLargeError) return { ok: false, status: 413 };
       throw error;

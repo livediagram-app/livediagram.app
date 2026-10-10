@@ -34,6 +34,7 @@ import {
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
+import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
@@ -91,7 +92,9 @@ export function useRoomConnection(opts: {
   // Merge a peer's tab / document-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).
-  applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
+  // never brings back what the peer changed.
+  applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
   // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
   // for a tab still waiting on its first fetch is left to that fetch.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
@@ -200,7 +203,7 @@ export function useRoomConnection(opts: {
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
-    applyRemoteTabs,
+    applyRemoteOp,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -423,7 +426,14 @@ export function useRoomConnection(opts: {
         if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
-        applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
+        // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
+        // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
+        const savedBefore = saveBaseline.tabs.current;
+        applyRemoteOp((prev) =>
+          op.kind === 'document-meta'
+            ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
+            : applyRoomOpToTabs(prev, op),
+        );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         const switched = peerModeSwitchOf(op);
         if (switched) {

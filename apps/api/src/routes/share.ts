@@ -88,6 +88,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           d.id,
           link.role,
           link.tabId,
+          link.code,
         ).catch(() => false);
         // docs/specs/014-identity/profile-and-email-notifications.md: tell the owner the first time a new person opens
         // their shared document. Best-effort + off the response path; the

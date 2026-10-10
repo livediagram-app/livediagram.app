@@ -1360,9 +1360,9 @@ export const articles: Article[] = [
     slug: 'plan-tour',
     title: 'The Plan Tour',
     description:
-      'A guided walkthrough of Plan mode on an example board, offered once and replayable from Settings.',
+      'A guided walkthrough of Plan mode on an example board or sheet, offered once and replayable from Settings.',
     keywords:
-      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards first time learn plan mode kanban board cards replay rerun settings accessibility',
+      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn plan mode kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -1615,9 +1615,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'list-and-card-views',
-    title: 'List and Card Views',
-    description: 'Toggle browse views between compact rows and preview cards with live snapshots.',
-    keywords: 'card grid view toggle thumbnail preview snapshot layout rows tiles gallery',
+    title: 'List, Card and Details Views',
+    description:
+      'Toggle browse views between compact rows, preview cards and a sortable details table.',
+    keywords:
+      'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

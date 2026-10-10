@@ -6,18 +6,22 @@ import { subscribeOfflineIds } from '@/lib/offline/offline-store';
 import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@livediagram/api-schema';
 import {
   Workbook,
+  applyLayoutChange,
   applySheetWrite,
   cellKey,
+  inverseLayoutChanges,
   inverseSheetWrite,
   mergeSheetChange,
   sheetFromJson,
   sheetToJson,
   splitWrite,
+  undoReadsNow,
   uniqueSheetTitle,
   validateWrite,
   type CardSource,
   type Sheet,
   type SheetJson,
+  type SheetLayout,
   type SheetPerson,
   type SheetRejection,
   type SheetWrite,
@@ -25,6 +29,7 @@ import {
 import { debugLog } from '@/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { ApiError } from '@/lib/api/core';
+import { errorStatus, isTransientWriteError, sheetWriteRetryMs } from './sheet-write-retry';
 import {
   createSheet,
   deleteSheet,
@@ -47,9 +52,14 @@ export type SheetStoreDeps = {
     writeSheet: typeof writeSheet;
     deleteSheet: typeof deleteSheet;
   };
+  // The wait before a write is sent again; injected in tests.
+  wait?: (ms: number) => Promise<void>;
 };
 
 type Pending = { wid: string; write: SheetWrite };
+// One sheet's part of an undo step; a deletion's also keeps the layout it was made on and what it did, to be undone
+// against the sheet as it is at the undo.
+type Inverse = { sheetId: string; write: SheetWrite; before?: SheetLayout; applied?: SheetWrite };
 type Entry = { confirmed: Sheet; pending: Pending[]; view: Sheet };
 export type TabStatus = 'loading' | 'ready' | 'error';
 
@@ -80,6 +90,7 @@ function keysOf(write: SheetWrite): string[] | undefined {
 export class SheetStore {
   private deps: SheetStoreDeps;
   private readonly api: NonNullable<SheetStoreDeps['api']>;
+  private readonly wait: (ms: number) => Promise<void>;
   private readonly entries = new Map<string, Entry>();
   private readonly tabStatus = new Map<string, TabStatus>();
   private readonly workbooks = new Map<string, Workbook>();
@@ -95,6 +106,7 @@ export class SheetStore {
   constructor(deps: SheetStoreDeps) {
     this.deps = deps;
     this.api = deps.api ?? { fetchSheets, createSheet, writeSheet, deleteSheet };
+    this.wait = deps.wait ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
     // The document synced to the server in place (docs/specs/006-document/offline-mode.md "Syncing in
     // place"): every loaded tab is read again from the server, so the confirmed revisions are its own.
     // The store lives for the session, as does this subscription.
@@ -105,7 +117,7 @@ export class SheetStore {
 
   // The editor's latest identity, toasts and undo (they change across renders; the store lives for the session).
   update(deps: SheetStoreDeps): void {
-    this.deps = { ...deps, api: this.api };
+    this.deps = { ...deps, api: this.api, wait: this.wait };
   }
 
   // ---- Reading -----------------------------------------------------------------------------------------
@@ -328,12 +340,17 @@ export class SheetStore {
       states.set(sheetId, state);
       plan.push({ sheetId, write, parts });
     }
-    const inverses: { sheetId: string; write: SheetWrite }[] = [];
+    const inverses: Inverse[] = [];
     for (const { sheetId, write, parts } of plan) {
       const entry = this.entries.get(sheetId)!;
       const before = entry.view;
       const result = applySheetWrite(before, write, { now, by: this.by() });
-      inverses.unshift({ sheetId, write: inverseSheetWrite(before, result) });
+      inverses.unshift({
+        sheetId,
+        write: inverseSheetWrite(before, result),
+        // A deletion's undo is worked out again when it is made, against the sheet as it is then.
+        ...(undoReadsNow(result.applied) ? { before: before.layout, applied: result.applied } : {}),
+      });
       for (const part of parts) {
         const wid = newWid();
         entry.pending.push({ wid, write: part });
@@ -348,12 +365,27 @@ export class SheetStore {
     }
     if (opts.undoable !== false) {
       this.deps.pushUndo({
-        undo: () => void this.writeAll(inverses, { undoable: false, undo: true }),
+        undo: () => void this.writeAll(this.undoWrites(inverses), { undoable: false, undo: true }),
         redo: () => void this.writeAll(edits, { undoable: false, undo: true }),
       });
     }
     this.notify();
     return null;
+  }
+
+  // The undo of a change, as it lands on the sheets now: a deletion's undo puts back what it took into the layout
+  // as it is (and as the undo's earlier writes to that sheet leave it), so links, drafts and merges made since stay.
+  private undoWrites(inverses: readonly Inverse[]): { sheetId: string; write: SheetWrite }[] {
+    const landing = new Map<string, SheetLayout>();
+    return inverses.map(({ sheetId, write, before, applied }) => {
+      const now = landing.get(sheetId) ?? this.entries.get(sheetId)?.view.layout;
+      let out = write;
+      if (before && applied?.kind === 'layout' && write.kind === 'layout' && now)
+        out = { ...write, changes: inverseLayoutChanges(before, applied.changes, now) };
+      if (now && out.kind === 'layout')
+        landing.set(sheetId, out.changes.reduce(applyLayoutChange, now));
+      return { sheetId, write: out };
+    });
   }
 
   // Delete sheets with their elements: gone from the store now, kept as they were for Undo, and deleted by the api
@@ -413,6 +445,7 @@ export class SheetStore {
     wid: string,
     write: SheetWrite,
     undo: boolean,
+    attempt = 0,
   ): Promise<void> {
     let answer: SheetWriteResponse;
     try {
@@ -423,6 +456,15 @@ export class SheetStore {
         this.by(),
       );
     } catch (e) {
+      // A dropped connection, a rate limit or a server error is not a refusal: the write stays pending (still seen,
+      // and still ahead of this sheet's later writes) and goes again after a wait. Unless the room has meanwhile
+      // confirmed it (the server stored it and only the answer was lost), or the sheet is gone.
+      if (isTransientWriteError(e)) {
+        debugLog('[sheets] sheets.write.retrying', { attempt, status: errorStatus(e) });
+        await this.wait(sheetWriteRetryMs(attempt));
+        if (!this.entries.get(sheetId)?.pending.some((p) => p.wid === wid)) return;
+        return this.send(sheetId, wid, write, undo, attempt + 1);
+      }
       this.refused(e, sheetId);
       const entry = this.entries.get(sheetId);
       if (entry) entry.pending = entry.pending.filter((p) => p.wid !== wid);

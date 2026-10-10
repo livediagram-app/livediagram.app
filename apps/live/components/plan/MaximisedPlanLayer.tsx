@@ -29,7 +29,7 @@ import {
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
-import type { LayerInsets } from '@/lib/canvas-layer-insets';
+import type { CanvasLayout } from '@/lib/canvas-layer-insets';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -47,14 +47,15 @@ export const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
 // bottom controls) stays reachable. `data-canvas-cover` also tells the canvas's capture-phase handler to stand down
 // for a press inside it (useCanvasSurfaceGestures). The element sits in it at its insets, `marker` naming which.
 export function CanvasCover({
-  insets,
+  layout,
   marker,
   children,
 }: {
-  insets: LayerInsets;
+  layout: CanvasLayout;
   marker: Record<string, string>;
   children: ReactNode;
 }) {
+  const { insets, band } = layout;
   return (
     <div
       data-canvas-cover=""
@@ -70,11 +71,27 @@ export function CanvasCover({
       }}
       onWheel={stop}
     >
-      <div {...marker} className="absolute p-2 sm:p-3" style={insets}>
+      <div
+        {...marker}
+        {...(band ? { 'data-header-band': '' } : {})}
+        className="absolute p-2 sm:p-3"
+        // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
+        // reads these, each with its own size as the fallback, so on the canvas nothing changes.
+        style={{ ...insets, ...(band ? bandVars(band) : {}) } as CSSProperties}
+      >
         {children}
       </div>
     </div>
   );
+}
+
+// The header band as the CSS properties a maximised element's header reads (PLAN_BAND_*).
+export function bandVars(band: NonNullable<CanvasLayout['band']>): Record<string, string> {
+  return {
+    '--plan-band-h': `${band.height}px`,
+    '--plan-band-left': `${band.left}px`,
+    '--plan-band-mid': `${band.mid}px`,
+  };
 }
 
 // The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref
@@ -322,8 +339,8 @@ export function MaximisedPlanLayer({
   const boxRef = useRef<HTMLDivElement>(null);
   const closing = useMaximisedPlanClosing();
   const [mark, canvas] = useCanvasRoot();
-  // Clear of the chrome over the canvas: the top row, side panels, the zoom controls.
-  const insets = useCanvasLayerInsets(canvas);
+  // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
+  const layout = useCanvasLayerInsets(canvas);
 
   // One phase at a time, opening or closing, in one effect: when restoring begins (or the layer goes), the opening's
   // cleanup cancels its pending reveal and settle (timers and listener) without running them, so an opening still
@@ -356,7 +373,7 @@ export function MaximisedPlanLayer({
       <span hidden ref={mark} />
       {canvas
         ? createPortal(
-            <CanvasCover insets={insets} marker={{ 'data-maximised-board': '' }}>
+            <CanvasCover layout={layout} marker={{ 'data-maximised-board': '' }}>
               <div
                 ref={boxRef}
                 className="relative h-full w-full origin-top-left will-change-transform"
@@ -373,8 +390,8 @@ export function MaximisedPlanLayer({
 // grow). Presses stop here, as on a maximised board.
 export function FilledTabLayer({ host }: { host: HTMLElement }) {
   const [mark, canvas] = useCanvasRoot();
-  // Clear of the chrome over the canvas: the top row, side panels, the zoom controls.
-  const insets = useCanvasLayerInsets(canvas);
+  // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
+  const layout = useCanvasLayerInsets(canvas);
   const boxRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const box = boxRef.current;
@@ -385,7 +402,7 @@ export function FilledTabLayer({ host }: { host: HTMLElement }) {
       <span hidden ref={mark} />
       {canvas
         ? createPortal(
-            <CanvasCover insets={insets} marker={{ 'data-fill-tab-board': '' }}>
+            <CanvasCover layout={layout} marker={{ 'data-fill-tab-board': '' }}>
               <div ref={boxRef} className="relative h-full w-full" />
             </CanvasCover>,
             canvas,

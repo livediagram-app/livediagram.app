@@ -31,9 +31,10 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 - **Thumbnails:** each diagram's snapshot SVG ([Document snapshots](../006-document/document-snapshots.md))
   is kept beside the note in the browser's Cache Storage (`livediagram-recent-thumbs-v1`), keyed by id
   and save time, fetched by the editor through its authenticated client when a listed diagram's entry is
-  missing, and pruned to the six in the note. A diagram the server has no snapshot for (offline, or one
-  it could not draw) is remembered as having none, so it is not asked for again until it is saved, and
-  shows its tile's placeholder; a request that failed outright (no network) is simply asked again on
+  missing, and pruned to the six in the note. A diagram the server has no snapshot for (one it could
+  not draw) is remembered as having none, so it is not asked for again until it is saved, and shows its
+  tile's placeholder. An Offline Mode document is remembered as having none without asking: its rows
+  never send a request ([Offline Mode](../006-document/offline-mode.md#local-only-badge--explorer)); a request that failed outright (no network) is simply asked again on
   the next list. The landing page reads them from the cache, never the
   network, and shows them as `<img>` (an SVG image runs no script).
 - **Forgotten on sign-out:** signing out clears the note and the thumbnails before Clerk signs out, so

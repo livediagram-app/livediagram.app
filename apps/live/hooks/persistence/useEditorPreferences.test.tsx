@@ -38,6 +38,22 @@ describe('useEditorPreferences', () => {
     expect(result.current.userPreferences).toEqual({ reduceMotion: true });
   });
 
+  it("follows another tab's write after a set, so the next write builds on it", () => {
+    const { result } = renderHook(() =>
+      useEditorPreferences({ ownerId: 'self', passwordGated: false, setAiPanelVisible: vi.fn() }),
+    );
+    act(() => result.current.setUserPreferences({ reduceMotion: true }));
+    // Another tab writes the shared cache: the browser fires `storage` here.
+    act(() => {
+      window.localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ reduceMotion: true, showMinimap: false }),
+      );
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY }));
+    });
+    expect(result.current.userPreferences).toEqual({ reduceMotion: true, showMinimap: false });
+  });
+
   it('merges the server copy once the owner resolves, and settles', async () => {
     fetchUserPreferences.mockResolvedValue({ reduceMotion: true });
     const { result } = renderHook(() =>

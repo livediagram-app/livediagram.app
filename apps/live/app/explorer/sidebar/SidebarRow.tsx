@@ -3,6 +3,7 @@
 import { useId, type HTMLAttributes, type ReactNode } from 'react';
 import { CountBadge } from '@livediagram/ui';
 import { TreeChevronIcon } from '@/components/primitives/explorer-icons';
+import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
 
 // One sidebar row (docs/specs/013-workspace/explorer-structure.md): a `treeitem` whose own line
 // is [indent][chevron gutter][icon][label][badge][trailing], with its child
@@ -92,7 +93,7 @@ export function SidebarRow({
         data-tree-row
         {...rowProps}
         className={`group flex items-center gap-1 rounded-md px-1 [li:focus-visible>&]:ring-2 [li:focus-visible>&]:ring-brand-500 ${
-          highlighted ? 'ring-2 ring-brand-400 ' : ''
+          highlighted ? `${DROP_TARGET_RING} ` : ''
         }${
           selected
             ? 'bg-brand-50 dark:bg-brand-500/15'

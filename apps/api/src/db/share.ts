@@ -14,6 +14,7 @@ import {
   rowToShareLink,
   type ShareLinkRow,
 } from '../share-link-row';
+import { dropVisitsThroughLinks } from './shared';
 import type { Env, ShareLinkDTO, ShareRole } from '../types';
 
 const SHARE_LINK_COLS =
@@ -166,6 +167,7 @@ export async function deleteShareLinksForTab(
   await env.DB.prepare('DELETE FROM share_links WHERE document_id = ? AND tab_id = ?')
     .bind(documentId, tabId)
     .run();
+  await dropVisitsThroughLinks(env, documentId, codes);
   await closeSharingIfNoLinksLeft(env, documentId);
   return codes;
 }
@@ -174,6 +176,8 @@ export async function deleteShareLink(env: Env, code: string): Promise<void> {
   const existing = await getShareLinkIncludingExpired(env, code);
   if (!existing) return;
   await env.DB.prepare('DELETE FROM share_links WHERE code = ?').bind(code).run();
+  // Revoking ends the visits the link granted (docs/specs/013-workspace/share-roles.md "Share links").
+  await dropVisitsThroughLinks(env, existing.documentId, [code]);
   await closeSharingIfNoLinksLeft(env, existing.documentId);
 }
 

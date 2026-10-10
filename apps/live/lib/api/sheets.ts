@@ -62,6 +62,12 @@ export async function fetchSheets(
 export async function fetchAllSheets(scope: SheetsScope): Promise<SheetJson[]> {
   if (await isOfflineId(scope.documentId))
     return (await offline()).offlineFetchSheets(scope.documentId, null);
+  return fetchCloudSheets(scope);
+}
+
+// The server's sheets, even while the id is still registered offline (Sync Document's check that
+// the cloud copy holds every sheet, docs/specs/006-document/offline-mode.md).
+export async function fetchCloudSheets(scope: SheetsScope): Promise<SheetJson[]> {
   const res = await apiFetch(sheetsUrl(scope), {
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
   });

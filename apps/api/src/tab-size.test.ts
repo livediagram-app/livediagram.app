@@ -6,6 +6,7 @@ import { seedTabs, swapTabData, upsertTab } from './db/tabs';
 import { TabTooLargeError } from './limits';
 import { makeTestRouteContext } from './routes/test-route-context';
 import { handleDocuments } from './routes/documents';
+import { tabStatsOfData } from './db/tab-stats';
 
 // docs/specs/015-api/api.md "Tab size": a tab's data fits one D1 row (2,000,000 bytes), which the
 // local sqlite does not enforce, so the worker does, at every write, at the boundary.
@@ -84,9 +85,9 @@ describe('the storage layer', () => {
     // Two bytes a character: under the cap in characters, over it in bytes.
     const next = JSON.stringify({ elements: [], pad: 'é'.repeat(MAX_TAB_BYTES / 2) });
     expect(next.length).toBeLessThan(MAX_TAB_BYTES);
-    await expect(swapTabData(db.env, 'd1', 't1', raw, next, 0)).rejects.toBeInstanceOf(
-      TabTooLargeError,
-    );
+    await expect(
+      swapTabData(db.env, 'd1', 't1', raw, next, tabStatsOfData(next).stats),
+    ).rejects.toBeInstanceOf(TabTooLargeError);
     expect(stored(db, 't1')?.n).toBe(100);
     warn.mockRestore();
   });

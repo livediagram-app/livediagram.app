@@ -240,9 +240,22 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
   return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);
 }
 
-/** The category the palette opens on: an event-storming board's notation, or the mode's own. */
-export function paletteLandingCategory(mode: EditorMode, esBoard: boolean): string {
-  return esBoard ? 'event-storming' : paletteLayoutFor(mode).landing;
+// Plan's landing while its tab has no board (docs/specs/026-plan/plan-mode.md "The palette"): a card lands on a
+// board, so a tab without one opens on Boards.
+export const PLAN_NO_BOARD_LANDING = 'plan-boards';
+
+/**
+ * The category the palette opens on: an event-storming board's notation, or the mode's own (Plan's Boards while
+ * the tab has no board).
+ */
+export function paletteLandingCategory(
+  mode: EditorMode,
+  esBoard: boolean,
+  hasPlanBoard = true,
+): string {
+  if (esBoard) return 'event-storming';
+  if (mode === 'plan' && !hasPlanBoard) return PLAN_NO_BOARD_LANDING;
+  return paletteLayoutFor(mode).landing;
 }
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,

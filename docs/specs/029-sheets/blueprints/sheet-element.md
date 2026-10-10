@@ -122,7 +122,11 @@ SheetSelectionLayer.tsx  selection, fill handle, copy and cut marquee, reference
 SheetCellEditor.tsx      in-place editor (textarea + coloured overlay), FunctionAssist (list and argument hint),
                          parse error line
 SheetMenus.tsx           header menus (with Resize…), the filter menu and the Sort Range dialog
-SheetCellMenu.tsx        the cell menu: Cut / Copy / Paste on top (MenuToolbar), categories of tiles below
+SheetCellMenu.tsx        the cell menu: MenuHeader (the selection, its cell count), a MenuToolbar (Cut, Copy, Paste,
+                         Paste Values, Clear Contents, Clear Formatting), plain MenuActionRows grouped by
+                         MenuGroupSeparator (insert either side, delete, merge or unmerge) and plain
+                         MenuFlyoutSections (Sort, Shift Cells, Hide, Paste Special, Insert Chart)
+sheet-cell-menu-labels.ts the rows' words for a selection (cellMenuLabels: "Insert 3 Rows Above", "Delete Columns B to C")
 SheetFindBar.tsx         Find and Replace
 SheetStatusBar.tsx       Sum / Average / Count / Min / Max of the selection (the pick is the viewer's)
 SheetAddRows.tsx         Add [100] more rows at the bottom
@@ -286,7 +290,13 @@ SheetFillTabOn` / `SheetFillTabOff`.
 - `useCardTableSync` runs while the Sheet is drawn, for someone who may edit: pulls quietly (`undoable: false`),
   pushes through the controller's `onWrote`, and links a new row's card with a `cardTable` change.
 - Deleting rows or columns prunes the tables in the engine (`store-layout.ts`, `deleteRows` / `deleteCols`), and the
-  inverse restores each table as it was (`store.ts`), so Undo puts back links and drafts too.
+  inverse puts the deleted rows' links and drafts back into each table as it is at the undo
+  (`store-inverse-delete.ts`), so Undo keeps links and drafts made since.
+- Draft ownership: a module `ownDrafts` set (`sheet:table:row`) records the drafts this client's own writes made
+  (`setPush`); only those are checked against their card's revision, so the "changed elsewhere" put-back runs on
+  the drafting client alone. Save (once it lands) and Cancel forget the key.
+- `pushPlan` reads a write's cells top to bottom; `tableOfRow` takes a row directly under the header, a linked row,
+  a draft row, or a row this write already drafted into the table.
 - `SheetCardRows`: the draft tint and the Save / Cancel strip (`STRIP_PX`, in the Controls column when there is one)
   draw for someone who may edit; Open Card in Plan mode; the active cell's dropdown (`cardFieldChoice`,
   `card-field-options.ts`) for an editor. On a date field the arrow calls `openDatePicker` on a hidden `DateInput`
@@ -401,6 +411,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Setup Sheet: steps, starts, looks, Plan Cards, Create Sheet | `apps/live/components/sheets/SheetSetup.test.tsx`                                                                                              |
 | Fill Tab on a Sheet: confirm, delete the rest, On Canvas    | `apps/live/components/sheets/SheetFillTab.test.tsx`                                                                                            |
 | Card tables: pull, push, kept fields, drafts, Controls      | `card-table-sync.test.ts`, `useCardTableSync.test.tsx`, `SheetCardRows.test.tsx`, `card-controls-column.test.ts`, `card-field-options.test.ts` |
+| Enter / Tab cycle only a selection larger than its merge    | `packages/sheets/src/selection.test.ts` (`selectsSeveral`)                                                                                     |
 | Insert Chart: range, region, placement                      | `apps/live/components/sheets/sheet-charts.test.tsx`                                                                                            |
 | End to end: place, type, formula, stored, maximise, restore | `apps/live/e2e/plan-sheet.spec.ts`                                                                                                             |
 

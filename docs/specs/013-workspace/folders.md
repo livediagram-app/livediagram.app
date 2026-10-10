@@ -149,8 +149,19 @@ documents wherever they are filed.
   share names if the user really wants. The breadcrumb path
   disambiguates them in the move picker.
 - The API rejects cycles when moving a folder (a folder can't
-  become its own ancestor). Cycle check happens server-side because
-  D1 can't enforce it declaratively.
+  become its own ancestor) with `409 cycle`. Cycle check happens server-side because
+  D1 can't enforce it declaratively. It runs **inside the move's own
+  UPDATE** (a recursive walk over the new parent's ancestors), so two
+  crossing moves (A into B while B moves into A) can never both pass a
+  check made before either wrote. A new parent deleted meanwhile is
+  refused the same way.
+- Folder names are non-empty strings of at most `MAX_NAME_LEN`
+  characters; a missing, empty or non-string `name` (or a non-string
+  `id` / `parentId` / `teamId`) is `400` before anything is written.
+- Filing a document (`PUT /api/documents/:id/folder`) checks the
+  folder's existence and scope inside the same UPDATE that files it, so
+  a folder deleted after the route's own read files nothing and the
+  move answers `404`.
 
 Migration `0007_folders.sql` creates the `folders` table and adds
 the `folder_id` column.
@@ -334,6 +345,11 @@ link.
   optimistic update. Drag transfer uses a custom MIME type
   (`application/x-livediagram-id`) so dragging a document never
   triggers a browser navigation when dropped outside any target.
+  **Resting a drag on a row with a chevron** for 800 ms
+  (`DRAG_HOVER_TOGGLE_MS`) opens it, so a document reaches a subfolder in
+  one gesture; resting on an open row closes it. One rest toggles once:
+  the row toggles again only after the drag has left it and come back.
+  A drag passing over a row never toggles it.
 - Each folder's own ellipsis offers "New subfolder" so deeper layers
   are reachable; root-level folders are created in the Explorer, or
   from the move picker's New Folder tile.
@@ -399,6 +415,19 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   opens a popover with "New document" and "New folder" (or "New
   subfolder" when a folder is focused). The documents-page FAB on the
   editor / new-document routes is unrelated.
+- **Drag-and-drop:** any document the reader can move (their own, a
+  team's, one in this browser) drags from its list row or card; a
+  document shared with them does not, nor one being renamed. It drops on
+  a sidebar folder, My documents (the root), a team or team folder, or a
+  folder row or card in the pane. The drop takes the move picker's path
+  (`moveDocumentTo`), so it moves within a space or across spaces exactly
+  as a pick does, with the same toast, rollback and telemetry. Dropping
+  on the place the document already is does nothing. A document in this
+  browser shows no drop on a team (the team's library is server-side).
+  The target wears the brand-blue ring while the drag is over it, and
+  sidebar rows open and close on a resting drag as in the editor's
+  Explorer (above). The page logs `[explorer-drop] <move|already-there|refused-local-only>`
+  for every drop.
 - **Move:** documents and folders share the move-to-folder picker.
   For a folder move, the target folder's own subtree is filtered
   out client-side so cycle-creating choices don't appear (the server

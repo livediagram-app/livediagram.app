@@ -8,6 +8,7 @@ import { handleDocumentSubresources } from '../routes/document-subresource-route
 import { deleteAccount } from './account';
 import { copyDocument, deleteDocument } from './documents';
 import { deleteTabRow, linkTabToDocument, seedTabs, swapTabData, upsertTab } from './tabs';
+import { tabStatsOfData } from './tab-stats';
 
 // Every writer of `tabs.data` keeps `image_refs` in step with the body
 // (docs/specs/009-elements/images.md, "Reference index"). A writer that
@@ -136,14 +137,25 @@ describe('swapTabData (Q&A board)', () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
     const stored = db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get('t1')!.data as string;
-    expect(await swapTabData(db.env, 'A', 't1', stored, body('img-1', 'img-2'), 2)).toBe(true);
+    expect(
+      await swapTabData(
+        db.env,
+        'A',
+        't1',
+        stored,
+        body('img-1', 'img-2'),
+        tabStatsOfData(body('img-1', 'img-2')).stats,
+      ),
+    ).toBe(true);
     expect(refs(db.sql, 't1')).toEqual(['img-1', 'img-2']);
   });
 
   it('never deletes a reference, even on a lost swap', async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tabWith('t1', 'img-1'), 0);
-    expect(await swapTabData(db.env, 'A', 't1', 'stale', body(), 0)).toBe(false);
+    expect(
+      await swapTabData(db.env, 'A', 't1', 'stale', body(), tabStatsOfData(body()).stats),
+    ).toBe(false);
     expect(refs(db.sql, 't1')).toEqual(['img-1']);
   });
 });

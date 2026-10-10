@@ -16,6 +16,9 @@ import {
   createPinnedArrow,
   createShape,
   createTable,
+  MAX_TABLE_CELLS,
+  MAX_TABLE_COLS,
+  MAX_TABLE_ROWS,
   normalizeTable,
   type ArrowElement,
   type Element,
@@ -31,6 +34,12 @@ import { getTheme, recolourElementsForTheme } from './themes';
 // ---------------------------------------------------------------------
 
 export type MarkdownNode = { label: string; children: MarkdownNode[] };
+
+// The deepest a list nests in the imported tree (docs/specs/020-import-export/markdown-import.md
+// "Limits"). With six heading levels and the root above it the tree is at most 31 deep, so the
+// recursive layout and recolour stay far inside the stack; a deeper item becomes a sibling of the
+// deepest. 24 is beyond any outline a person writes; safe range 8 to a few hundred.
+export const MAX_LIST_DEPTH = 24;
 type MarkdownTable = { headers: string[]; rows: string[][] };
 type ParsedMarkdown = { roots: MarkdownNode[]; tables: MarkdownTable[] };
 
@@ -127,7 +136,9 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
       const rows: string[][] = [];
       let j = i + 2;
       while (j < lines.length && lines[j]!.includes('|') && lines[j]!.trim() !== '') {
-        rows.push(splitTableRow(lines[j]!));
+        // Rows past what a table holds are read past, never kept (buildTableElement truncates
+        // the rest to the validator's bounds).
+        if (rows.length < MAX_TABLE_ROWS) rows.push(splitTableRow(lines[j]!));
         j++;
       }
       tables.push({ headers, rows });
@@ -162,6 +173,9 @@ export function parseMarkdown(markdown: string): ParsedMarkdown {
       while (listStack.length > 0 && listStack[listStack.length - 1]!.indent >= indent) {
         listStack.pop();
       }
+      // Nesting past MAX_LIST_DEPTH continues as siblings of the deepest item: a file of
+      // thousands of ever-deeper lines would otherwise recurse the layout past the stack.
+      if (listStack.length >= MAX_LIST_DEPTH) listStack.pop();
       const parent =
         listStack.length > 0 ? listStack[listStack.length - 1]!.node : currentHeading();
       const node: MarkdownNode = { label, children: [] };
@@ -267,14 +281,19 @@ export function layoutOutline(root: MarkdownNode, originX = 0, originY = 0): Out
   };
 }
 
+// A table larger than validation accepts (MAX_TABLE_ROWS / _COLS / _CELLS, packages/document) is
+// truncated to fit: its first columns, then as many of its first rows as the cell budget allows.
 function buildTableElement(table: MarkdownTable, x: number, y: number): TableElement {
-  const cols = Math.max(table.headers.length, ...table.rows.map((r) => r.length), 1);
+  let widest = Math.max(table.headers.length, 1);
+  for (const r of table.rows) if (r.length > widest) widest = r.length;
+  const cols = Math.min(widest, MAX_TABLE_COLS);
+  const bodyRows = Math.min(MAX_TABLE_ROWS, Math.floor(MAX_TABLE_CELLS / cols)) - 1;
   const fit = (row: string[]): string[] => {
     const out = row.slice(0, cols);
     while (out.length < cols) out.push('');
     return out;
   };
-  const cells = [fit(table.headers), ...table.rows.map(fit)];
+  const cells = [fit(table.headers), ...table.rows.slice(0, bodyRows).map(fit)];
   const rowH = 40;
   const width = Math.min(760, Math.max(MIN_W, cols * 150));
   const height = cells.length * rowH;

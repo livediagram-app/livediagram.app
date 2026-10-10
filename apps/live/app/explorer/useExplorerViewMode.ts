@@ -2,10 +2,13 @@
 
 import { useLocalStorageValue, writeLocalStorageValue } from '@/hooks/ui/useLocalStorageValue';
 
-// List vs card layout for the Explorer browse views (docs/specs/006-document/document-snapshots.md). Device-
+// List, card or details layout for the Explorer browse views (docs/specs/006-document/document-snapshots.md,
+// docs/specs/013-workspace/explorer-details-view.md). Device-
 // local: a view preference, not account data, so it lives in
 // localStorage like the panel-docking / notifications prefs.
-export type ExplorerViewMode = 'list' | 'card';
+export type ExplorerViewMode = 'list' | 'card' | 'details';
+
+const MODES: readonly ExplorerViewMode[] = ['list', 'card', 'details'];
 
 const STORAGE_KEY = 'livediagram:explorer-view';
 
@@ -22,7 +25,9 @@ export function useExplorerViewMode(): [ExplorerViewMode, (mode: ExplorerViewMod
   // prerenders with the default (no window at build), and the hydrating
   // render matches it; the saved choice lands on the render after.
   const saved = useLocalStorageValue(STORAGE_KEY);
-  const mode: ExplorerViewMode = saved === 'card' || saved === 'list' ? saved : DEFAULT_MODE;
+  const mode: ExplorerViewMode = MODES.includes(saved as ExplorerViewMode)
+    ? (saved as ExplorerViewMode)
+    : DEFAULT_MODE;
 
   const update = (next: ExplorerViewMode) => writeLocalStorageValue(STORAGE_KEY, next);
 

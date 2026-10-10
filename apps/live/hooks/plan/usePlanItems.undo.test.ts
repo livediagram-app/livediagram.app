@@ -70,4 +70,53 @@ describe('usePlanItems undo', () => {
       move: { status: 'todo' },
     });
   });
+
+  // A change of many cards refused after some of them landed: those stay changed, and are one undo step.
+  it('keeps the part of a many-card change that landed, undoable on its own', async () => {
+    const two = { ...card('done'), id: 'item-two', key: 2 };
+    api.fetchItems.mockResolvedValue({ items: [card('done'), two], rev: 1, nextKey: 3 });
+    const landed = { ...card('trash'), rev: 2 };
+    api.writeItem.mockRejectedValueOnce(
+      Object.assign(new Error('items change failed: 409'), {
+        code: 'item_busy',
+        landed: { upserts: [landed], removed: [], rev: 2 },
+      }),
+    );
+    const steps: ItemUndoStep[] = [];
+    const onError = vi.fn();
+    const { result } = renderHook(() =>
+      usePlanItems({
+        documentId: 'doc',
+        ready: true,
+        ownerId: 'owner-me',
+        name: 'Me',
+        color: '#2563eb',
+        shareCode: null,
+        tabScope: null,
+        pushUndo: (step) => steps.push(step),
+        onError,
+        onMentioned: vi.fn(),
+      }),
+    );
+    await waitFor(() => expect(result.current.items.size).toBe(2));
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.write({
+        kind: 'patches',
+        patches: [
+          { id: 'item-one', patch: { set: { status: 'trash' } } },
+          { id: 'item-two', patch: { set: { status: 'trash' } } },
+        ],
+      });
+    });
+    expect(ok).toBe(false);
+    expect(onError).toHaveBeenCalled();
+    expect(steps).toHaveLength(1);
+    await act(async () => steps[0]!.undo());
+    expect(api.writeItem.mock.calls[1]![1]).toEqual({
+      kind: 'patches',
+      undo: true,
+      patches: [{ id: 'item-one', patch: { set: { status: 'done' } } }],
+    });
+  });
 });

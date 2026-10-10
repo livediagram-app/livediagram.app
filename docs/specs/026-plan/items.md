@@ -96,7 +96,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   and the item's colour shows as a small dot beside them.
 - It is set in the item panel from one compact field showing the colour's swatch and name (or **None**); it opens
   the one colour picker ([Colour picker](../004-interface-design/colour-picker.md)) in a popover: **None** (which
-  clears it), the strong standard colours, Custom colours and **+**. A pick closes it, as does Escape (which leaves
+  clears it), the strong standard colours, Custom colours and **Add a custom colour** (four coloured dots). A pick closes it, as does Escape (which leaves
   the card open and returns focus to the field) and a press outside. A colour from an earlier Plan palette keeps
   its word ("Amber", "Cyan").
 - The picker's keyboard is the colour picker's: one Tab stop (the picked swatch, else None), the arrow keys move
@@ -137,7 +137,8 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   key removed). Its status stays, for when it comes back. It is undoable like any change.
 - It is done from a card's menu (**Archive**), the item panel's header (**Archive**), or by dragging a card onto
   an **Archive board**. **Restore** (the same places on an archived card), or dragging the card off an Archive
-  board onto another, clears the flag; dragged, the card takes the column it lands in.
+  board onto another, clears the flag; dragged, the card takes the column it lands in, in the move itself (one write,
+  one undo step).
 - An ordinary board leaves archived items out altogether: not in its columns, its counts, its widgets or its
   "not on this board" list.
 - An **Archive board** (the Boards category's Archive tile) shows only archived items, every one in its single
@@ -317,6 +318,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 
 - An [offline document](../006-document/offline-mode.md) keeps its item store inside its own record, as an
   `items` array beside its tabs. Every rule above holds, minus the room.
+- Its writes pass the api's own checks (fields, places, what a move may set, a status the card's type leaves out,
+  the size bounds) and are refused by the same names, so the record never holds what **Sync to cloud** would refuse.
 - **Sync to cloud** sends the items with the document; **Take offline** fetches every item first, all or nothing.
 
 ## Copies and exports

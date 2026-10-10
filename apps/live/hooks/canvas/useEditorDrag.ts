@@ -23,7 +23,6 @@ import {
   acceptsInlineIcon,
   anchorOutward,
   ES_LANES,
-  isEventStormingNote,
   isBoxed,
   nearestElementTowards,
   opposingAnchor,
@@ -40,6 +39,7 @@ import { applyInsertionShift, type InsertionSlot } from '@/lib/insert-between';
 import { setInsertionDragInHand, setInsertionSlot } from '@/lib/insertion-preview';
 import { setLanePreview } from '@/lib/lane-preview';
 import { isSingleNoteDrag, landNoteInSlot, resolveNoteInsertion } from './note-insertion-drag';
+import { laneAnchorOf, lanesHoldDrag } from './lane-drag';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
 import { applyCollisionAvoidance } from './arrow-avoidance-apply';
 import { applyArrowDragMove } from './arrow-drag-apply';
@@ -234,31 +234,26 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       isSingleNoteDrag(virtualTab().elements, drag.primaryId, drag.startBounds);
     setInsertionDragInHand(movingOneNote && depsRef.current.insertGate.esBoard);
     // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) apply to ANY notes being moved on one
-    // of these boards, one or many: a selection snaps by the note in hand and
-    // still meets the board's places. The insertion gesture still wants
-    // exactly one note, so it keeps its own flag.
+    // of these boards, one or many, and to a selection holding a workshop note
+    // whatever else is in it (a label, a frame): a selection snaps by the note
+    // in hand and still meets the board's places, its other members moving by
+    // the same delta. The insertion gesture still wants exactly one note, so it
+    // keeps its own flag.
+    const draggedIds = drag.kind === 'boxed' ? new Set(drag.startBounds.keys()) : null;
     const notesEligible =
       drag.kind === 'boxed' &&
       drag.mode === 'move' &&
       depsRef.current.insertGate.esBoard &&
-      [...drag.startBounds.keys()].every(
-        (id) => virtualTab().elements.find((el) => el.id === id)?.type === 'sticky',
-      );
+      lanesHoldDrag(virtualTab().elements, draggedIds!);
     // Always on a lane (docs/specs/021-event-storming/event-storming.md): a WORKSHOP note has no y tolerance.
     // A selection is snapped by the note in hand; when that is a plain
     // sticky, by the first workshop note in the selection, so every workshop
-    // note in it stays on a lane.
-    const laneAnchorId = (() => {
-      if (drag.kind !== 'boxed') return null;
-      // The previewed board: after a Shift-duplicate the note in hand is a clone only the preview has.
-      const els = virtualTab().elements;
-      const isWorkshop = (id: string) => {
-        const el = els.find((e) => e.id === id);
-        return !!el && isEventStormingNote(el);
-      };
-      if (isWorkshop(drag.primaryId)) return drag.primaryId;
-      return [...drag.startBounds.keys()].find(isWorkshop) ?? null;
-    })();
+    // note in it stays on a lane. The previewed board: after a Shift-duplicate
+    // the note in hand is a clone only the preview has.
+    const laneAnchorId =
+      drag.kind === 'boxed'
+        ? laneAnchorOf(virtualTab().elements, drag.primaryId, draggedIds!)
+        : null;
     // The last pointer position of this drag, so pressing or releasing Alt
     // without moving the mouse still opens / unwinds the slot (see onAltChange).
     let lastMove: MovePointer | null = null;

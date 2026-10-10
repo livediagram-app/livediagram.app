@@ -20,6 +20,10 @@ export type TourCardCopy = {
   finish: string;
 };
 
+// A welcome card offering more than one way in (the Plan tour's Boards and Spreadsheets): each starts the tour
+// its own way, in place of the single accept button.
+export type TourWelcomeChoice = { id: string; label: string; onPick: () => void };
+
 export const WELCOME_TOUR_COPY: TourCardCopy = {
   welcomeEyebrow: 'Quick tour',
   accept: 'Show me around',
@@ -56,6 +60,7 @@ export function TourPopover({
   ariaPrefix = 'Tour',
   copy: copyOverrides,
   welcomeArt,
+  welcomeChoices,
   onBack,
   onNext,
   onSkip,
@@ -80,6 +85,7 @@ export function TourPopover({
   copy?: Partial<TourCardCopy>;
   // The welcome card's illustration; the welcome tour's own by default.
   welcomeArt?: ReactNode;
+  welcomeChoices?: readonly TourWelcomeChoice[];
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -203,9 +209,17 @@ export function TourPopover({
                 >
                   {copy.decline}
                 </button>
-                <Button size="xs" onClick={onNext}>
-                  {copy.accept}
-                </Button>
+                {welcomeChoices ? (
+                  welcomeChoices.map((choice) => (
+                    <Button key={choice.id} size="xs" onClick={choice.onPick}>
+                      {choice.label}
+                    </Button>
+                  ))
+                ) : (
+                  <Button size="xs" onClick={onNext}>
+                    {copy.accept}
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="mt-2 flex items-center justify-between gap-2">

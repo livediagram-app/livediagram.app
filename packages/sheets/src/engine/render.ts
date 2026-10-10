@@ -21,6 +21,8 @@ export type RenderCell = {
   strike?: true;
   color?: string;
   fill?: string;
+  // A font id, resolved by the renderer.
+  font?: string;
   size?: number;
   wrap?: 'o' | 'w' | 'c';
   rowSpan?: number;
@@ -106,6 +108,7 @@ export function renderWindow(
       if (f.st) out.strike = true;
       if (f.fc) out.color = f.fc;
       if (f.bg) out.fill = f.bg;
+      if (f.ff) out.font = f.ff;
       if (f.fs) out.size = f.fs;
       if (f.wr) out.wrap = f.wr;
       if (span) {

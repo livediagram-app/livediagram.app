@@ -45,11 +45,12 @@ type UseFoldersResult = {
   // server-side timestamps) on success, undefined on rollback.
   createFolder: (input: { name?: string; parentId?: string | null }) => Promise<Folder | undefined>;
   renameFolder: (id: string, name: string) => void;
-  // Re-parents any direct children to root before delegating to
-  // the API call — same as the server-side cascade so the local
-  // tree doesn't flash an out-of-date shape between the click and
-  // the next list refresh.
-  deleteFolder: (id: string) => void;
+  // Re-parents any direct children to the folder's parent before
+  // delegating to the API call (the same as the server-side cascade) so
+  // the local tree doesn't flash an out-of-date shape between the
+  // click and the next list refresh. A refused delete is rolled back;
+  // resolves whether the server deleted it.
+  deleteFolder: (id: string) => Promise<boolean>;
   // Force a re-fetch from the server. Useful after a different
   // code path mutated folders out-of-band (e.g. a guest → authed
   // migration).
@@ -150,21 +151,42 @@ export function useFolders(
   );
 
   const deleteFolder = useCallback(
-    (id: string) => {
-      if (!ownerId) return;
+    async (id: string): Promise<boolean> => {
+      if (!ownerId) return false;
       // Its subfolders move up to its parent, as the api moves them
-      // (docs/specs/013-workspace/folders.md "Deleting a folder").
+      // (docs/specs/013-workspace/folders.md "Deleting a folder"). What the optimistic update
+      // changes is read first (from `folders`, as renameFolder reads its previous name), so a
+      // refused delete can put the tree back.
+      const index = folders.findIndex((f) => f.id === id);
+      const target = index < 0 ? null : folders[index]!;
+      const children = new Set(folders.filter((f) => f.parentId === id).map((f) => f.id));
       setFolders((prev) => {
         const parentId = prev.find((f) => f.id === id)?.parentId ?? null;
         return prev
           .filter((f) => f.id !== id)
           .map((f) => (f.parentId === id ? { ...f, parentId } : f));
       });
-      void apiDeleteFolder(ownerId, id)
-        .then(() => track('Folder', 'Deleted'))
-        .catch(() => {});
+      try {
+        await apiDeleteFolder(ownerId, id);
+        track('Folder', 'Deleted');
+        return true;
+      } catch {
+        // The server kept the folder: put it back where it was, with the subfolders that moved
+        // up for it (unless something else moved them since), so the tree stays truthful.
+        if (target) {
+          setFolders((fs) => {
+            const back = fs.some((f) => f.id === id)
+              ? fs
+              : [...fs.slice(0, index), target, ...fs.slice(index)];
+            return back.map((f) =>
+              children.has(f.id) && f.parentId === target.parentId ? { ...f, parentId: id } : f,
+            );
+          });
+        }
+        return false;
+      }
     },
-    [ownerId],
+    [folders, ownerId],
   );
 
   // Nothing loads without an owner, so there is nothing to wait for.

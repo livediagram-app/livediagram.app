@@ -20,21 +20,21 @@ Export works on one tab at a time, so switch to the tab you want first. Then eit
 - open the tab's **⋯** menu, expand **Content**, and choose **Export**; or
 - open the Explorer panel's menu and choose **Export**, which exports the tab you are on.
 
-To export only part of a tab, select two or more elements and choose **Export** on the toolbar that appears for a multi-selection.
+To export only part of a tab, select two or more elements and choose **Export** on the toolbar that appears for a multi-selection (editors only; view-only readers export the whole tab).
 
-<Figure caption="The Export dialog offers seven formats: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG and PDF.">
+<Figure caption="The Export dialog offers seven formats: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG and PDF. Illustrate mode offers PDF, PNG, SVG and JSON.">
   <ExportMenu />
 </Figure>
 
 Pick a format:
 
-- **PNG**, **SVG** or **PDF** for a picture: PNG to paste into docs and chat, SVG to stay sharp at any size, PDF to print. An options screen lets you add the canvas background pattern, tilt the picture into the isometric view, and include hidden layers, then **Download**.
+- **PNG**, **SVG** or **PDF** for a picture: PNG to paste into docs and chat, SVG to stay sharp at any size, PDF to print. An options screen with a live preview lets you leave out the canvas background pattern (it is on by default), tilt the picture into the isometric view, and include hidden layers when the tab has any, then download.
 - **JSON** for a `.livediagram-tab.json` file that [imports](/help/tabs/import-tabs/) back into livediagram with everything intact. This is the one to keep as a backup.
-- **Mermaid**, **Markdown** or **Excalidraw** to carry the structure into another tool. Each opens the text first, so you can copy it or download it.
+- **Mermaid**, **Markdown** or **Excalidraw** to carry the structure into another tool. Each opens the text first, so you can copy it or download it, and so does JSON.
 
 A few things to know about image exports:
 
-- Looping element animations and animated backgrounds **freeze to a static frame**, so a still image always looks clean.
+- Looping element animations **freeze to a static frame**, so a still image always looks clean. An animated background pattern has no still version, so the image shows the plain background colour.
 - Frames are drawn behind their contents, just as they are on the canvas.
 
 [Exporting a Tab](/help/tabs/export-tabs/) covers every format and option in detail, including how [Illustrate](/help/canvas/illustrate/) pages export one sheet at a time.
@@ -45,9 +45,9 @@ An image is the right choice when you need a fixed snapshot: a diagram for a rep
 
 When you want the document to keep updating wherever it lives, [embed it](/help/collaboration/sharing/embeds/) instead. An embed is an iframe of a shared document that you can drop into Notion, a wiki, or any page that accepts an iframe.
 
-An embed follows the role of the pass it was made from: a **Viewer** pass embeds a read-only canvas, an **Editor** pass an editable one. It hides the editor's controls, leaving the canvas with pan and zoom, and it stays live: as the document is edited, the embed updates in place rather than showing a stale snapshot.
+An embed follows the role of the pass it was made from: a **Viewer** or **Participant** pass embeds a read-only canvas, an **Editor** pass an editable one. It hides the editor's controls, leaving the canvas with pan and zoom, and it stays live: as the document is edited, the embed updates in place rather than showing a stale snapshot.
 
-To grab one, open the **Share** dialog, find the pass you want, open its **Embed** menu and choose **Copy iframe** for a ready-made snippet you can paste straight into your page.
+To grab one, open the **Share** dialog, find the pass you want, open its **Embed** menu and choose **Copy iframe** for a ready-made snippet you can paste straight into your page, or **Copy embed URL** for the address alone. A Local only document has no passes, so [sync it](/help/privacy-and-security/offline-mode/) first.
 
 <Tip>
   Reach for an image when you need a fixed snapshot, and an embed when you want the document to keep

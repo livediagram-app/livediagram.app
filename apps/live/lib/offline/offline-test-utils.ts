@@ -27,5 +27,11 @@ export function memBackend(): OfflineBackend {
     put: async (r) => void map.set(r.id, r),
     delete: async (id) => void map.delete(id),
     all: async () => [...map.values()],
+    // One synchronous step, like the IndexedDB transaction it stands in for.
+    update: async (id, change) => {
+      const next = change(map.get(id));
+      if (next === 'delete') map.delete(id);
+      else if (next) map.set(next.id, next);
+    },
   };
 }

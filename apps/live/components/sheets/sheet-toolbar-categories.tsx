@@ -13,6 +13,7 @@ import {
 } from '@livediagram/sheets';
 import { NumberStepper } from '@/components/primitives/NumberStepper';
 import { SheetColourSwatches, SWATCHES_PX } from './SheetColourSwatches';
+import { FONT_BUTTON_PX, SheetFontButton } from './SheetFontButton';
 import {
   BoldIcon,
   ItalicIcon,
@@ -28,6 +29,7 @@ import {
   DecimalsIcon,
   FillColourIcon,
   FilterIcon,
+  FontIcon,
   FontSizeIcon,
   FreezeIcon,
   HAlignIcon,
@@ -132,11 +134,20 @@ export function toolbarCategories(
           ),
         },
         {
+          // The cell's font, then its size, as one group.
+          id: 'ff',
+          label: 'Font',
+          icon: <FontIcon />,
+          menu: 'font',
+          separatorBefore: true,
+          controlPx: FONT_BUTTON_PX,
+          control: (openMenu) => <SheetFontButton font={f?.ff} onOpen={openMenu} />,
+        },
+        {
           id: 'fs',
           label: 'Font Size',
           icon: <FontSizeIcon />,
           menu: 'font-size',
-          separatorBefore: true,
           controlPx: 112,
           control: () => (
             <NumberStepper

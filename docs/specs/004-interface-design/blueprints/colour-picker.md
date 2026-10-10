@@ -109,7 +109,7 @@ ColourPicker({
   rows of glyph buttons stay radio groups whose arrows move and choose.
 - Preview: `onPointerEnter` (mouse only, `onMouseHover`) and `onFocus` call `onPreview(id)`; `onPointerLeave` of the root
   and focus leaving the root call `onPreviewEnd`; unmount reverts (`useRevertOnUnmount`).
-- **+** toggles the editor; Use calls `onPick(hex)` and closes it.
+- **Add a custom colour** (`MoreColoursGlyph`) toggles the editor; Use calls `onPick(hex)` and closes it.
 - Outside-press handling: `ContextMenu`, `IllustratePagePanel` and `RichTextEditor` ignore presses and focus inside
   `[data-anchored-popover]`, so a picker popover never closes its host.
 
@@ -143,7 +143,7 @@ ColourPicker({
 
 - An unparsable `value` ("", a named CSS colour) matches nothing and is not added to Custom colours.
 - `transparent` / `none` matches the leading no-colour option whose id it is.
-- An empty Custom colours shows only **+**, which is then the Tab stop.
+- An empty Custom colours shows only **Add a custom colour** (four coloured dots), which is then the Tab stop.
 - The editor ignores an invalid hex; Enter does nothing until it is valid.
 
 ## Security and trust

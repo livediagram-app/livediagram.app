@@ -31,6 +31,19 @@ export type ItemsScope = {
 // answer does not say; the room's op carries it).
 export type ItemWriteAnswer = { upserts: Item[]; removed: string[]; rev: number };
 
+// A write that failed after part of it landed (a many-item change, docs/specs/026-plan/blueprints/item-store.md
+// "Interfaces and contracts: REST"): what landed, so the editor keeps it and can undo it. `code` is the refusal's.
+export class ItemWritePartlyLanded extends Error {
+  readonly code: string | null;
+  readonly landed: ItemWriteAnswer;
+  constructor(landed: ItemWriteAnswer, failure: unknown) {
+    super(failure instanceof Error ? failure.message : String(failure));
+    this.name = 'ItemWritePartlyLanded';
+    this.code = (failure as { code?: string } | null)?.code ?? null;
+    this.landed = landed;
+  }
+}
+
 function itemsUrl(scope: ItemsScope, rest = ''): string {
   const q = scope.tabId ? `?tabId=${encodeURIComponent(scope.tabId)}` : '';
   return `${API_BASE}/documents/${encodeURIComponent(scope.documentId)}/items${rest}${q}`;
@@ -38,6 +51,12 @@ function itemsUrl(scope: ItemsScope, rest = ''): string {
 
 export async function fetchItems(scope: ItemsScope): Promise<ItemStoreState> {
   if (await isOfflineId(scope.documentId)) return offlineFetchItems(scope.documentId);
+  return fetchCloudItems(scope);
+}
+
+// The server's item store, even while the id is still registered offline: Sync Document checks
+// the cloud copy holds every card before it removes the local one (docs/specs/006-document/offline-mode.md).
+export async function fetchCloudItems(scope: ItemsScope): Promise<ItemStoreState> {
   const res = await apiFetch(itemsUrl(scope), {
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
   });
@@ -53,6 +72,51 @@ async function post<T>(scope: ItemsScope, rest: string, body: unknown, action: s
     body: JSON.stringify(body),
   });
   return expectOk<T>(res, action);
+}
+
+// The items a refused many-item request still landed (its body's `items`, the api's partial answer), or none.
+async function landedOf(res: Response): Promise<ItemsResponse | null> {
+  try {
+    const body = (await res.clone().json()) as Partial<ItemsResponse>;
+    return Array.isArray(body.items) && typeof body.rev === 'number'
+      ? { items: body.items, rev: body.rev }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+// Sends a change of many items, a request per ITEM_BULK_MAX of them. A failure after any of them landed (an earlier
+// request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
+async function postPatches(
+  scope: ItemsScope,
+  write: Extract<ItemWrite, { kind: 'patches' }>,
+): Promise<ItemWriteAnswer> {
+  const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
+  for (let i = 0; i < write.patches.length; i += ITEM_BULK_MAX) {
+    const items = write.patches
+      .slice(i, i + ITEM_BULK_MAX)
+      .map(({ id: itemId, patch }) => ({ id: itemId, ...patch }));
+    const res = await apiFetch(itemsUrl(scope, '/patches'), {
+      method: 'POST',
+      headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
+      body: JSON.stringify(undoBody({ items }, write.undo)),
+    });
+    const partial = res.ok ? null : await landedOf(res);
+    try {
+      const r = await expectOk<ItemsResponse>(res, 'items change');
+      answer.upserts.push(...r.items);
+      answer.rev = r.rev;
+    } catch (err) {
+      if (partial) {
+        answer.upserts.push(...partial.items);
+        answer.rev = partial.rev;
+      }
+      if (answer.upserts.length === 0) throw err;
+      throw new ItemWritePartlyLanded(answer, err);
+    }
+  }
+  return answer;
 }
 
 const one = (r: ItemResponse): ItemWriteAnswer => ({ upserts: [r.item], removed: [], rev: r.rev });
@@ -105,24 +169,9 @@ export async function writeItem(
       }
       return answer;
     }
-    case 'patches': {
-      // One request per ITEM_BULK_MAX items (a type's or a removed column's cards to the Trash).
-      const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-      for (let i = 0; i < write.patches.length; i += ITEM_BULK_MAX) {
-        const items = write.patches
-          .slice(i, i + ITEM_BULK_MAX)
-          .map(({ id: itemId, patch }) => ({ id: itemId, ...patch }));
-        const r = await post<ItemsResponse>(
-          scope,
-          '/patches',
-          undoBody({ items }, write.undo),
-          'items change',
-        );
-        answer.upserts.push(...r.items);
-        answer.rev = r.rev;
-      }
-      return answer;
-    }
+    case 'patches':
+      // A type's or a removed column's cards to the Trash.
+      return postPatches(scope, write);
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
     case 'delete': {

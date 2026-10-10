@@ -95,7 +95,7 @@ the preset tiles:
 
 Hovering any of these shows the value live on the selection and only commits on
 click, with the same ephemeral-preview / true-undo guarantees as the presets.
-The custom colour editor behind each picker's **+** commits only on **Use**, so
+The custom colour editor behind each picker's **Add a custom colour** commits only on **Use**, so
 a drag in its colour square never lands a history step.
 
 ## Arrows

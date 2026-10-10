@@ -177,7 +177,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Colour** (a menu holding two colour pickers,
     [Colour picker](../004-interface-design/colour-picker.md): **Text**, led by **Default colour**
     and the article's **Accent**, then the strong standard colours for paper; **Highlight**, led by
-    **No highlight**, then the soft standard colours; each with Custom colours and **+**);
+    **No highlight**, then the soft standard colours; each with Custom colours and **Add a custom colour** (four coloured dots));
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
@@ -327,7 +327,7 @@ A visitor, a locked tab, or a tab with no articles switches straight away.
 ## Article style
 
 Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
-**Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
+**Background**, **Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
 Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
 Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.
@@ -343,7 +343,7 @@ a choice is hovered.
   ([Fonts](../004-interface-design/fonts.md)).
 - **Accent**: the colour of headings (when accented), links, quote bars, bullets, rules and to-do
   boxes: **Theme** (the tab theme's accent, the default) or any colour from the colour picker (the strong
-  standard colours, Custom colours, **+**), previewed on hover or focus.
+  standard colours, Custom colours, **Add a custom colour** (four coloured dots)), previewed on hover or focus.
 - **Headings in the Accent**: on or off (off: headings in ink).
 - **Text Size**: Small (14 px), Normal (16 px, default), Large (18 px); headings scale with it.
 - **Line Spacing**: Single (1.3), 1.5 (default 1.5), Double (2.0).

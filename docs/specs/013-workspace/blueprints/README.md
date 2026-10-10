@@ -9,6 +9,7 @@ Follow the references below only as needed; never upfront.
 - ./shape-libraries.md - when implementing or changing shape libraries: the table, api, import landing, My shapes, the Explorer page
 - ./explorer-filters.md - when implementing or changing Explorer filters: the lens grammar, matching, suggestions, view models, `q`
 - ./explorer-structure.md - when implementing or changing the Explorer sidebar: layout rules, rows, ARIA tree keyboard hook
+- ./explorer-details-view.md - when implementing or changing the Details view: `tab_stats` and its writers, `DocumentSummary.stats`, the backfill, the preview hint, the table and its sort
 - ./explorer-home.md - when changing Home's data: recording opens, Jump back in's Within reach set, the `/api/home` read and its wire
 - ./explorer-home-view.md - when changing the Home page: its route, Jump back in (grid, phone strip, See more), What happened entries, local opens
 - ./share-roles.md - when implementing or changing access levels (Viewer, Participant, Editor): the participant content rule, the room's participant write path and adder keys, the Plan and Sheet doors, editor capabilities, the Share dialog and role pill

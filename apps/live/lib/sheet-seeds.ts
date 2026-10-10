@@ -3,7 +3,7 @@
 // not have, still makes the copy. The sheet chunk registers what it can read; a paste stashes what arrived; the
 // pasted Sheet takes its seed when it first draws. Main bundle, and tiny: types only from the engine.
 import { newPlanSheetId } from '@livediagram/document';
-import type { SheetJson } from '@livediagram/sheets';
+import type { SheetJson, SheetStartId } from '@livediagram/sheets';
 
 // The clipboard's limit for one sheet (the sheet store's write limit): a larger one pastes only within its
 // document, where the copy is made on the server.
@@ -38,6 +38,9 @@ export type PlacedSheet = {
   csv?: string;
   // Start Planning's sheet types (docs/specs/026-plan/plan-mode.md): Setup Sheet opens on this start, a step in.
   start?: PlacedSheetStart;
+  // The Plan tour's example sheet (docs/specs/026-plan/plan-tour.md "Tour content"): made already set up from this
+  // start, in the Header look with its header frozen, never awaiting setup and never an undo step.
+  setUp?: Exclude<SheetStartId, 'blank'>;
 };
 
 // The starts Start Planning offers beyond the empty sheet (SheetSetupStart's ids).

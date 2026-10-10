@@ -3,6 +3,7 @@ import type { Tab } from './index';
 import { isLayerVisible } from './layers';
 import {
   changeEventStormingKind,
+  eventStormingKindOf,
   eventStormingNoteSize,
   eventStormingTilt,
   ES_MAX_TILT_DEG,
@@ -177,8 +178,11 @@ describe('isEventStormingNote', () => {
     expect(isEventStormingNote(el({ esKind: 'domain-event' }))).toBe(true);
   });
 
-  it('is a note when only the canonical fill + fixed stationery says so', () => {
-    expect(isEventStormingNote(el({ fixedSize: true, fillColor: '#fdba74' }))).toBe(true);
+  // The colour is read once, as a note from before the stamp loads (./legacy-es-kinds), never live: a plain
+  // sticky recoloured to a canonical fill must not turn into a workshop note.
+  it('is not a note when only a canonical fill + fixed stationery says so', () => {
+    expect(isEventStormingNote(el({ fixedSize: true, fillColor: '#fdba74' }))).toBe(false);
+    expect(eventStormingKindOf(el({ fixedSize: true, fillColor: '#fef08a' }))).toBeNull();
   });
 
   it('is not a note for an ordinary sticky that merely happens to be orange', () => {

@@ -1909,6 +1909,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fc": {
         "type": "string"
       },
+      "ff": {
+        "type": "string"
+      },
       "fs": {
         "$ref": "#/components/schemas/FontSize"
       },
@@ -2309,6 +2312,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ChartSource": {
     "additionalProperties": false,
     "properties": {
+      "cols": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "range": {
         "additionalProperties": false,
         "properties": {
@@ -4421,6 +4430,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "itemTypesRev": {
+        "type": "number"
+      },
       "name": {
         "type": "string"
       },
@@ -4618,6 +4630,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "DocumentStats": {
+    "additionalProperties": false,
+    "properties": {
+      "bytes": {
+        "type": "number"
+      },
+      "comments": {
+        "type": "number"
+      },
+      "elements": {
+        "type": "number"
+      },
+      "mode": {
+        "$ref": "#/components/schemas/EditorMode"
+      }
+    },
+    "required": [
+      "mode",
+      "elements",
+      "comments",
+      "bytes"
+    ],
+    "type": "object"
+  },
   "DocumentSummary": {
     "additionalProperties": false,
     "properties": {
@@ -4677,6 +4713,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "stats": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/DocumentStats"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "tabKind": {
         "anyOf": [
           {
@@ -4717,6 +4763,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shareCode",
       "shareable",
       "source",
+      "stats",
       "tabKind",
       "teamId",
       "templateFamily"
@@ -5546,6 +5593,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cur": {},
       "dp": {},
       "fc": {},
+      "ff": {},
       "fs": {},
       "ha": {},
       "i": {},
@@ -7193,6 +7241,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemTypesRequest": {
     "additionalProperties": false,
     "properties": {
+      "expectedRev": {
+        "type": "number"
+      },
       "itemTypes": {
         "anyOf": [
           {
@@ -7221,10 +7272,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "itemTypesRev": {
+        "type": "number"
       }
     },
     "required": [
-      "itemTypes"
+      "itemTypes",
+      "itemTypesRev"
     ],
     "type": "object"
   },
@@ -9849,6 +9904,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "itemTypesRev": {
+        "type": "number"
+      },
       "statuses": {
         "items": {
           "$ref": "#/components/schemas/PlanStatusName"
@@ -9865,7 +9923,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "boards",
       "statuses",
-      "types"
+      "types",
+      "itemTypesRev"
     ],
     "type": "object"
   },

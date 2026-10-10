@@ -71,6 +71,13 @@ const withoutDraft = (t: CardTable, r: string): CardTable => {
 // Rows whose Save is on its way: a second press waits for the first (no second card for one row).
 const saving = new Set<string>();
 
+// Drafts this person's own edits made, in this session (`sheet:table:row`). Drafts are seen by everyone, but only
+// the client whose edit made one checks it against its card, so a card changing elsewhere puts the row back once,
+// from one place, and never undoes an edit someone else is still making.
+const ownDrafts = new Set<string>();
+const draftKey = (c: SheetController, tableId: string, r: string) =>
+  `${c.sheet.id}:${tableId}:${r}`;
+
 // Save a draft row: its card patched (or made, and the row linked to it), and the draft dropped once that lands. False,
 // with a toast, when the plan refuses a value; false, the row still a draft, when the card write is refused.
 export async function saveCardRow(
@@ -113,6 +120,7 @@ export async function saveCardRow(
     return false;
   }
   // The table as it is now (a pull or another save may have changed it while the write was out).
+  ownDrafts.delete(key);
   const table = tableOf(c, tableId);
   if (!table) return true;
   const next = withoutDraft(table, r);
@@ -131,6 +139,7 @@ export function cancelCardRow(
   if (!table) return;
   const id = table.rows[r];
   const linked = !!id && plan.items.has(id);
+  ownDrafts.delete(draftKey(c, tableId, r));
   setTable(c, withoutDraft(table, r));
   if (!linked) {
     const cells: CellChange[] = table.cols.map((col) => ({ r, c: col.c, i: null }));
@@ -159,8 +168,9 @@ export function useCardTableSync(
     if (write) c.store.write(c.sheet.id, write, { undoable: false });
   }, [missing, c.sheet, c.store]);
 
-  // A card changed elsewhere while its row waits as a draft: the row's edits are put back (its card wins), said once.
-  // Each draft's card revision is remembered when the draft is first seen here.
+  // A card changed elsewhere while its row waits as a draft: the row's edits are put back (its card wins), said once,
+  // by the client whose edit made the draft (another person's draft is theirs to lose). Each draft's card revision
+  // is remembered when the draft is first seen here.
   const baseline = useRef(new Map<string, number>());
   useEffect(() => {
     if (!on || !plan || !items) return;
@@ -168,7 +178,7 @@ export function useCardTableSync(
     for (const t of c.sheet.layout.cardTables ?? [])
       for (const r of t.drafts ?? []) {
         const item = items.get(t.rows[r] ?? '');
-        if (!item) continue;
+        if (!item || !ownDrafts.has(draftKey(c, t.id, r))) continue;
         const key = `${t.id}:${r}`;
         seen.add(key);
         // This person's own Save on its way: the card moves on because of it, not elsewhere.
@@ -211,8 +221,9 @@ export function useCardTableSync(
       if (out.trash.length) plan.trashItems(out.trash);
       for (const d of out.drafts) {
         const table = tableOf(c, d.tableId);
-        if (table && !table.drafts?.includes(d.row))
-          setTable(c, { ...table, drafts: [...(table.drafts ?? []), d.row] });
+        if (!table || table.drafts?.includes(d.row)) continue;
+        ownDrafts.add(draftKey(c, d.tableId, d.row));
+        setTable(c, { ...table, drafts: [...(table.drafts ?? []), d.row] });
       }
     });
     return () => setPush(null);

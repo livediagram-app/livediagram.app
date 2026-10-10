@@ -102,17 +102,14 @@ describe('the sheet toolbar', () => {
     show(h);
     act(() => h.select('A1:A2'));
     fireEvent.click(btn('Bar Chart'));
-    const [kind, range] = h.placeChart.mock.calls[0]!;
+    const [kind, pick] = h.placeChart.mock.calls[0]!;
     expect(kind).toBe('bar-chart');
     const { rows, cols } = h.store.sheet(SHEET_ID)!.layout;
-    expect(range).toEqual({ r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[0] });
+    expect(pick).toEqual({ range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[0] } });
     act(() => h.select('A1'));
     fireEvent.click(btn('Pie Chart'));
     expect(h.placeChart.mock.calls[1]![1]).toEqual({
-      r1: rows[0],
-      c1: cols[0],
-      r2: rows[1],
-      c2: cols[1],
+      range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[1] },
     });
     act(() => h.select('F9'));
     fireEvent.click(btn('Line Chart'));
@@ -215,7 +212,10 @@ describe('the sheet toolbar', () => {
     moreFill();
     // The full picker: the Theme Palette (the theme's colours, by word), the standard colours, + for a custom one.
     const palette = screen.getByRole('group', { name: 'Theme Palette' });
-    fireEvent.click(within(palette).getByRole('button', { name: 'Green' }));
+    // A real press: its pointerdown lands in the picker's own popover, which must not count as outside the menu.
+    const green = within(palette).getByRole('button', { name: 'Green' });
+    fireEvent.pointerDown(green);
+    fireEvent.click(green);
     expect(h.cell('A1')?.format?.bg).toBe('#00ff00');
     const custom = (hex: string) => {
       fireEvent.click(screen.getByRole('button', { name: 'Add a custom colour' }));
@@ -254,6 +254,38 @@ describe('the sheet toolbar', () => {
     fireEvent.change(field, { target: { value: '400' } });
     fireEvent.blur(field);
     expect(h.cell('A1')?.format?.fs).toBe(96);
+  });
+
+  it('sets the font from a menu naming each font in its own face, left of Font Size, Default clearing it', () => {
+    width = 1000;
+    show(h);
+    pickCategory('Text');
+    const font = screen.getByRole('button', { name: 'Font: Default' });
+    // Font sits just before Font Size.
+    expect(
+      font.compareDocumentPosition(screen.getByLabelText('Font Size')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    fireEvent.click(font);
+    expect(checked('Default')).toBe(true);
+    const lora = row('Lora');
+    expect((lora.querySelector('span[style]') as HTMLElement).style.fontFamily).toContain('Lora');
+    fireEvent.click(lora);
+    expect(h.cell('A1')?.format?.ff).toBe('lora');
+    fireEvent.click(screen.getByRole('button', { name: 'Font: Lora' }));
+    expect(checked('Lora')).toBe(true);
+    fireEvent.click(row('Default'));
+    expect(h.cell('A1')?.format?.ff).toBeUndefined();
+  });
+
+  it('offers the fonts as a menu once Font folds into More', () => {
+    width = 0;
+    show(h);
+    pickCategory('Text');
+    fireEvent.click(screen.getByRole('button', { name: 'More' }));
+    fireEvent.click(row('Font'));
+    fireEvent.click(row('Caveat'));
+    expect(h.cell('A1')?.format?.ff).toBe('caveat');
   });
 
   it('offers the sizes as a menu once Font Size folds into More', () => {

@@ -65,6 +65,15 @@ export function clipToTsv(values: readonly (readonly string[])[]): string {
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
 const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ESCAPES[c]!);
 
+// A font id's family name, as another spreadsheet reads it from pasted HTML: the editor's fonts are named as their
+// ids in Title Case (`space-grotesk` is Space Grotesk).
+export function fontFamilyName(id: string): string {
+  return id
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
 function styleOf(f: CellFormat | undefined): string {
   if (!f) return '';
   const out: string[] = [];
@@ -75,6 +84,7 @@ function styleOf(f: CellFormat | undefined): string {
   if (f.fc) out.push(`color:${f.fc}`);
   if (f.bg) out.push(`background-color:${f.bg}`);
   if (f.ha) out.push(`text-align:${f.ha === 'l' ? 'left' : f.ha === 'c' ? 'center' : 'right'}`);
+  if (f.ff) out.push(`font-family:'${fontFamilyName(f.ff)}'`);
   if (f.fs) out.push(`font-size:${f.fs}pt`);
   return out.length ? ` style="${out.join(';')}"` : '';
 }

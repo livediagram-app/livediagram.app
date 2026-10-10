@@ -25,7 +25,7 @@ export type FolderRow = {
 // The two fields that matter most for safety are `owner_id` (every
 // folder endpoint gates on it) and `parent_id` (drives the
 // Explorer's nested tree and the cycle-prevention walk in
-// createFolder / updateFolder). If either drifts, ownership
+// createFolder / renameFolder). If either drifts, ownership
 // boundaries leak or the explorer renders a malformed tree.
 export function rowToFolder(row: FolderRow): FolderDTO {
   return {

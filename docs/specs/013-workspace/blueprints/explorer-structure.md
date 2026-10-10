@@ -46,7 +46,12 @@ on the `nav`.
 | `apps/live/components/panels/TrashPane.tsx`                        | This browser's Trash rows carry the pill                                                                                                           |
 | `apps/live/components/chrome/SharedBadge.tsx`                      | The editor header's Local only state: the pill's label, sentence (`aria-describedby`), tone and glyph                                              |
 | `apps/live/components/primitives/explorer-icons.tsx`               | `HomeIcon` (lucide `house`), `LibraryIcon` (lucide `library`), `ThisBrowserIcon` (lucide `app-window`), `MyDocumentsIcon` (lucide `folder-root`)   |
-| `apps/live/components/primitives/EllipsisTriggerButton.tsx`        | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop                                                                              |
+| `apps/live/components/primitives/EllipsisTriggerButton.tsx`        | `tabIndex` prop: -1 for the folder rows, whose tree owns the tab stop; `reveal` hides it under a fine pointer until hover or row focus             |
+| `apps/live/components/panels/useDocumentDropTarget.ts`             | `useDocumentDropTarget`, `DRAG_HOVER_TOGGLE_MS`, `DROP_TARGET_RING`: a place taking a dragged document, its long-hover toggle                      |
+| `apps/live/components/panels/explorer-drag-mime.ts`                | `DOCUMENT_DRAG_MIME`, `DOCUMENT_LOCAL_ONLY_DRAG_MIME`, `startDocumentDrag`                                                                         |
+| `apps/live/app/explorer/useExplorerDropTarget.ts`                  | A page place (sidebar row, folder row or card) filing a dropped document through `moveDocumentTo`; logs `[explorer-drop]`                          |
+| `apps/live/app/explorer/document-drop.ts`                          | `planDocumentDrop`: `move`, `already-there` or `refused-local-only`                                                                                |
+| `apps/live/app/explorer/sidebar/TeamRows.tsx`                      | `TeamRows`, one `TeamRow` per team: a drop target opening its folders on a resting drag                                                            |
 
 ## Domain and naming
 

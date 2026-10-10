@@ -366,6 +366,10 @@ producing a broken arrow. This is the **preferred path for any node/edge
 diagram** (flowcharts, org charts, architecture, dependency graphs); `elements`
 stays for deliberate arrangements (a ring, a grid) and mixed non-node content.
 Provide **one** of `graph` / `mermaid` / `elements` / `template`, not several.
+A graph holds at most 500 nodes and 1 000 edges (`GRAPH_LAYOUT_MAX_NODES` / `_EDGES`,
+[Mermaid](../020-import-export/mermaid.md#limits)): the schema refuses a larger `graph`, and a larger
+`mermaid` answers the parser's "too large to lay out" error, so the worker never spends its CPU on
+a layout no one could read.
 
 **A label is a heading; detail goes in the note.** A node's `label` is the text
 in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a

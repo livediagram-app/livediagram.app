@@ -23,8 +23,8 @@ import { placeHint, type HintLayout, type HintPlacement } from './place-hint';
 export const HINT_FOLLOW_IDLE_FRAMES = 30;
 import type { HintSurfaceProps } from './useHint';
 
-// The two looks (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md): an inverse pill
-// for a tooltip, a white card for a hover card. In dark mode both take the dark chrome's own
+// The three looks (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md): an inverse pill
+// for a tooltip, a white card for a hover card, a wider framed card for a preview. In dark mode both take the dark chrome's own
 // colours, the Steel surface with a slate 700 border and light text, like the editor's menus;
 // neither is ever a lighter card on the dark chrome. The arrow repeats the surface's colours so
 // it reads as one shape.
@@ -39,6 +39,14 @@ const LOOK: Record<HintKind, { surface: string; arrow: string; gap: number; arro
   'hover-card': {
     surface:
       'w-56 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40',
+    arrow: 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800',
+    gap: HOVER_CARD_GAP_PX,
+    arrowPx: HOVER_CARD_ARROW_PX,
+  },
+  // The hover card's surface, wider and with a small inset, so a picture sits in a frame.
+  preview: {
+    surface:
+      'w-80 rounded-lg border border-slate-200 bg-white p-2 text-left shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-slate-950/40',
     arrow: 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800',
     gap: HOVER_CARD_GAP_PX,
     arrowPx: HOVER_CARD_ARROW_PX,
@@ -139,7 +147,7 @@ export function HintSurface({
           offset={layout.arrowOffset}
           size={look.arrowPx}
           className={look.arrow}
-          bordered={kind === 'hover-card'}
+          bordered={kind !== 'tooltip'}
         />
       ) : null}
     </div>,

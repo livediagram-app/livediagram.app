@@ -506,7 +506,7 @@ export function renderElementsToSvg(
   const chartPalette = themeChartPalette(
     getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
   );
-  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font));
+  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font, opts.sheets));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(visible);

@@ -62,10 +62,16 @@ rather than clearing it.
 
 Three details it has to get right:
 
-- **It overwrites tabs that already hold content**, unlike `usePerTabLoad`'s
+- **It replaces tabs that already hold content**, unlike `usePerTabLoad`'s
   merge (which skips a tab the user has touched). That guard exists to stop a
   lazy load clobbering local work; here the whole premise is that we missed ops,
-  so the server's copy is the authoritative one.
+  so the server's copy is the base.
+- **Unsaved edits go back on top** (`rebaseLocalEdits`). What was edited here and
+  not yet saved (offline, or inside the debounce) is not on the server, so each
+  element changed, added or deleted since the last save, judged against the save
+  baseline by content, is applied to the fetched copy, as is each tab field
+  changed here. The next save then sends exactly those edits. A reconnect after
+  offline work keeps it.
 - **`lastSavedTabsRef` moves with it.** Otherwise the next autosave tick diffs
   fresh server content against a stale baseline and PUTs the pre-resync tabs
   straight back over it.

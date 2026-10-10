@@ -47,6 +47,25 @@ afterEach(() => {
 });
 
 describe('PortalMenu', () => {
+  it('closes on a press outside it, but not in a flyout or a popover it opened', () => {
+    const onClose = vi.fn();
+    const popover = document.createElement('div');
+    popover.setAttribute('data-anchored-popover', '');
+    const swatch = document.createElement('button');
+    popover.appendChild(swatch);
+    document.body.appendChild(popover);
+    render(
+      <PortalMenu anchor={document.createElement('button')} placement="below" onClose={onClose}>
+        <span>Item</span>
+      </PortalMenu>,
+    );
+    fireEvent.pointerDown(swatch);
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.pointerDown(document.body);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    popover.remove();
+  });
+
   it('lifts a menu that would overflow the bottom edge back inside', () => {
     const anchor = document.createElement('button');
     render(

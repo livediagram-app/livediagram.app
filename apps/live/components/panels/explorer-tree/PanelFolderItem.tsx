@@ -54,7 +54,10 @@ export function PanelFolderItem({
   const menu = useRowMenu({ disabled: editing });
   const markerWords = useDefaultFolderDescription(folder.id);
   const personal = !team;
-  const drop = useDocumentDropTarget(folder.id, personal ? tree.onMoveDocumentToFolder : undefined);
+  const fileHere = personal ? tree.onMoveDocumentToFolder : undefined;
+  const drop = useDocumentDropTarget(fileHere ? (id) => fileHere(id, folder.id) : undefined, {
+    onLongHover: expandable ? () => tree.onToggle(folder.id) : undefined,
+  });
 
   // A folder just created enters renaming in the render that finds it pending, and the tree is
   // told (an effect) so it clears the request.
@@ -111,11 +114,7 @@ export function PanelFolderItem({
       onToggleExpand={() => tree.onToggle(folder.id)}
       renaming={editing}
       onContextMenu={menu.onContextMenu}
-      rowProps={
-        personal && tree.onMoveDocumentToFolder
-          ? { onDragOver: drop.onDragOver, onDragLeave: drop.onDragLeave, onDrop: drop.onDrop }
-          : undefined
-      }
+      rowProps={fileHere ? drop.handlers : undefined}
       highlighted={drop.isDragOver}
       trailing={
         editing ? null : (

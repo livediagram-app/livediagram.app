@@ -22,7 +22,7 @@ async function mount() {
   const fn = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
-  const applyRemoteTabs = vi.fn();
+  const applyRemoteOp = vi.fn();
   const markTabLoaded = vi.fn();
   const self = { id: 'user_1', name: 'Me', color: '#0ea5e9', status: 'online' as const };
   renderHook(() =>
@@ -44,7 +44,7 @@ async function mount() {
       },
       sessionShareCodeRef: { current: null },
       roomRef: { current: null },
-      applyRemoteTabs,
+      applyRemoteOp,
       markSeen: vi.fn(),
       countAppliedOp: vi.fn(),
       setDocumentName: vi.fn(),
@@ -53,7 +53,7 @@ async function mount() {
     }),
   );
   await waitFor(() => expect(room.handlers).not.toBeNull());
-  return { applyRemoteTabs, markTabLoaded };
+  return { applyRemoteOp, markTabLoaded };
 }
 
 const add = (tabId: string) =>
@@ -65,11 +65,11 @@ const add = (tabId: string) =>
 
 describe('useRoomConnection and tabs not fetched yet', () => {
   it('leaves an element op for an unfetched tab to its fetch, applying one for a loaded tab', async () => {
-    const { applyRemoteTabs } = await mount();
+    const { applyRemoteOp } = await mount();
     room.handlers!.onOp('peer', add('placeholder'));
-    expect(applyRemoteTabs).not.toHaveBeenCalled();
+    expect(applyRemoteOp).not.toHaveBeenCalled();
     room.handlers!.onOp('peer', add('loaded'));
-    expect(applyRemoteTabs).toHaveBeenCalledOnce();
+    expect(applyRemoteOp).toHaveBeenCalledOnce();
   });
 
   it("marks a peer's whole tab loaded", async () => {

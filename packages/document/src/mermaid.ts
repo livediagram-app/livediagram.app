@@ -30,6 +30,7 @@ import {
   type ParseMermaidResult,
 } from './mermaid-shared';
 import { parseStateDiagram } from './mermaid-state';
+import { GRAPH_LAYOUT_MAX_EDGES, graphTooLargeError } from './graph-limits';
 
 export type { MermaidDirection, ParseMermaidResult } from './mermaid-shared';
 
@@ -271,6 +272,14 @@ export function startsWithMermaidHeader(text: string): boolean {
 }
 
 export function parseMermaid(text: string): ParseMermaidResult {
+  const parsed = parseMermaidDialect(text);
+  if (!parsed.ok) return parsed;
+  // Every dialect's graph is held to the layout's caps (graph-limits.ts) before anything lays it out.
+  const tooLarge = graphTooLargeError(parsed.graph.nodes.length, parsed.graph.edges.length);
+  return tooLarge ? { ok: false, error: tooLarge } : parsed;
+}
+
+function parseMermaidDialect(text: string): ParseMermaidResult {
   const lines = text.split('\n');
 
   // Dispatch on the diagram-type header: the state + ER dialects get their
@@ -421,6 +430,17 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
       // invisible arrow on a real canvas is a trap, so the edge is dropped
       // (the nodes still import).
       if (!e.op.invisible) {
+        // A fan-out multiplies: `a0&...&a119 --> b0&...&b119` is 14,400 edges from one line. Past
+        // the cap the parse stops adding them; the caller refuses the graph by its size.
+        if (edges.length + group.ids.length * next.ids.length > GRAPH_LAYOUT_MAX_EDGES) {
+          return {
+            ok: false,
+            error: graphTooLargeError(
+              nodes.size,
+              edges.length + group.ids.length * next.ids.length,
+            )!,
+          };
+        }
         for (const from of group.ids) {
           for (const to of next.ids) {
             edges.push({

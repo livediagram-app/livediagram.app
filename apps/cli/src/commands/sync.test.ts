@@ -597,3 +597,88 @@ describe('a dry run', () => {
     }
   });
 });
+
+// A pass judges the files its scan read; an edit saved while it runs (the api answering in between) is the person's.
+// The write or removal re-reads the file first and refuses when its bytes moved on (blueprint "One sync pass").
+describe('an edit saved while the pass runs', () => {
+  // Edits `path` by hand at the first api request after the scan has read it.
+  const editDuringPass = (io: FakeIo, path: string) => {
+    const [read, fetch] = [io.files.read, io.fetch];
+    let scanned = false;
+    let edited = false;
+    io.files.read = async (p) => {
+      if (p === path) scanned = true;
+      return read(p);
+    };
+    io.fetch = async (request) => {
+      if (scanned && !edited) {
+        edited = true;
+        io.fileMap.set(path, { data: file(io, path)!.replace('box"', 'box!"'), mode: 0o644 });
+      }
+      return fetch(request);
+    };
+    return () => file(io, path);
+  };
+
+  it('is never written over by a behind document', async () => {
+    const { io, host } = setup('files', [home()]);
+    await sync(io);
+    host.edit('d-home', 0, [box('b1', 'Play button')]);
+    const now = editDuringPass(io, MIRROR);
+    const result = await sync(io);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: changed here and in livediagram; send it:',
+    );
+    expect(now()).toContain('box!"');
+    expect(now()).not.toContain('Play button');
+  });
+
+  it('is never removed with a document gone from the link', async () => {
+    const { io, host } = setup('files', [home()]);
+    await sync(io);
+    host.doc('d-home').state = 'trashed';
+    const now = editDuringPass(io, MIRROR);
+    const result = await sync(io);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: gone from the link, but changed here and not sent; kept.',
+    );
+    expect(now()).toContain('box!"');
+  });
+
+  it('is never removed by a lowered level, refused naming the level', async () => {
+    const { io } = setup('files', [home()]);
+    await sync(io);
+    io.fileMap.set('/work/livediagram.toml', { data: '[covers]\nfolder = "games"\n', mode: 0o644 });
+    const now = editDuringPass(io, MIRROR);
+    const result = await sync(io);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: level index keeps no mirror files',
+    );
+    expect(result.out).not.toContain('- diagrams/screens/home-screen.livediagram.json');
+    expect(now()).toContain('box!"');
+    expect(io.fileMap.has(OUTLINE)).toBe(true);
+  });
+});
+
+describe('the local sync state directory', () => {
+  it('is made 0700 before the lock is created inside it', async () => {
+    const { io } = setup('files', [home()]);
+    const calls: string[] = [];
+    const [mkdir, createExclusive] = [io.files.mkdir, io.files.createExclusive];
+    io.files.mkdir = async (path, mode) => {
+      calls.push(`mkdir ${path} ${mode?.toString(8)}`);
+      return mkdir(path, mode);
+    };
+    io.files.createExclusive = async (path, data) => {
+      calls.push(`create ${path}`);
+      return createExclusive(path, data);
+    };
+    await sync(io);
+    const dir = await stateDir();
+    const inState = calls.filter((c) => c.includes(dir));
+    expect(inState.slice(0, 2)).toEqual([`mkdir ${dir} 700`, `create ${dir}/lock`]);
+  });
+});

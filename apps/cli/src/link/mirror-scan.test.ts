@@ -3,6 +3,7 @@ import { fakeIo } from '../testing/fake-io';
 import { parseLinkFile } from './link-file';
 import { mirrorFileText, type MirrorFile } from './mirror-file';
 import { scanMirrorDir } from './mirror-scan';
+import { sha256 } from '../sync/pull-file';
 
 // Scanning the mirror directory (docs/specs/027-repositories/blueprints/repository-link.md "Scanning the mirror
 // directory"): every *.livediagram.json under dir, classified in order.
@@ -81,12 +82,14 @@ describe('scanMirrorDir', () => {
         path: 'a.livediagram.json',
         documentId: 'd1',
         other: 'b.livediagram.json',
+        bytes: expect.stringMatching(/^[0-9a-f]{64}$/),
       },
       {
         class: 'duplicate',
         path: 'b.livediagram.json',
         documentId: 'd1',
         other: 'a.livediagram.json',
+        bytes: expect.stringMatching(/^[0-9a-f]{64}$/),
       },
     ]);
   });
@@ -112,7 +115,12 @@ describe('a file gone between the listing and the read', () => {
     const io = fakeIo({ files: { '/repo/diagrams/a.livediagram.json': '{}' } });
     io.files.read = async () => null;
     expect(await scanMirrorDir(io, link, HOST)).toEqual([
-      { class: 'invalid', path: 'a.livediagram.json', message: 'not JSON' },
+      {
+        class: 'invalid',
+        path: 'a.livediagram.json',
+        message: 'not JSON',
+        bytes: await sha256(''),
+      },
     ]);
   });
 });

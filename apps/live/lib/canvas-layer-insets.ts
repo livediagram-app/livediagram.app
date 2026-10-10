@@ -70,8 +70,74 @@ export function layerInsets(
   };
 }
 
+// The header band (docs/specs/026-plan/plan-board.md "Maximised board", "The header holds the top row"): when the
+// top row leaves room beside it, the element starts at the canvas's top and its header grows to the row's height, the
+// menu and the palette strip floating inside it. In px from the element's box (inside the cover's padding): the
+// header's height, where its content starts (after the menu), and how wide that content may run (to the strip).
+export type HeaderBand = { height: number; left: number; mid: number };
+
+// The cover's padding around the element on a desktop (CanvasCover's sm:p-3); a band is only laid out that wide.
+export const COVER_PAD_PX = 12;
+// The room the header's content keeps from the menu and the strip.
+export const BAND_GAP_PX = 12;
+// The least room the band needs: for a title (its widgets truncating) between the menu and the strip, and for the header's own
+// controls (a Gantt's scale and window, Restore, the cog) between the strip and the element's right edge.
+export const BAND_MID_MIN_PX = 140;
+export const BAND_RIGHT_MIN_PX = 280;
+// Below this canvas width the cover's padding is a phone's (p-2) and the strip holds the menu: no band.
+export const BAND_CANVAS_MIN_PX = 640;
+
+// The band for `canvas` with the menu and strip where they are, given the element's side insets; null when either
+// is missing, not in the top row, or leaves too little room (the element then starts below the row).
+export function headerBand(
+  canvas: Box,
+  insets: Pick<LayerInsets, 'left' | 'right'>,
+  menu: Box | null,
+  strip: Box | null,
+): HeaderBand | null {
+  if (!menu || !strip || canvas.right - canvas.left < BAND_CANVAS_MIN_PX) return null;
+  const half = canvas.top + (canvas.bottom - canvas.top) / 2;
+  if (menu.top > half || strip.top > half || menu.right > strip.left) return null;
+  const left = canvas.left + insets.left + COVER_PAD_PX;
+  const right = canvas.right - insets.right - COVER_PAD_PX;
+  const top = canvas.top + COVER_PAD_PX;
+  const mid = strip.left - menu.right - 2 * BAND_GAP_PX;
+  if (mid < BAND_MID_MIN_PX || right - strip.right - BAND_GAP_PX < BAND_RIGHT_MIN_PX) return null;
+  if (menu.left < left) return null;
+  return {
+    height: Math.round(Math.max(menu.bottom, strip.bottom) - top),
+    left: Math.round(menu.right - left + BAND_GAP_PX),
+    mid: Math.round(mid),
+  };
+}
+
+// Where a maximised or tab-filling element sits: its insets, and its header band when there is room for one (the
+// top inset is then 0: the header holds the top row).
+export type CanvasLayout = { insets: LayerInsets; band: HeaderBand | null };
+export const NO_LAYOUT: CanvasLayout = { insets: NO_INSETS, band: null };
+
+const STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
+
+// The box round what `el` holds (its children that take up room), or null when it holds nothing shown.
+function unionOfChildren(el: HTMLElement): Box | null {
+  let out: Box | null = null;
+  for (const child of el.children) {
+    const b = child.getBoundingClientRect();
+    if (b.width <= 0 || b.height <= 0) continue;
+    out = out
+      ? {
+          left: Math.min(out.left, b.left),
+          top: Math.min(out.top, b.top),
+          right: Math.max(out.right, b.right),
+          bottom: Math.max(out.bottom, b.bottom),
+        }
+      : { left: b.left, top: b.top, right: b.right, bottom: b.bottom };
+  }
+  return out;
+}
+
 // The chrome over `canvas` now, read off the screen.
-export function measureCanvasChrome(canvas: HTMLElement): LayerInsets {
+export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
   const boxes: ChromeBox[] = [];
   const read = (selector: string, kind: ChromeBox['kind']) => {
     for (const el of document.querySelectorAll<HTMLElement>(selector)) {
@@ -81,7 +147,29 @@ export function measureCanvasChrome(canvas: HTMLElement): LayerInsets {
   };
   read(TOP_ROW_SELECTOR, 'top');
   read(PANEL_SELECTOR, 'panel');
-  return layerInsets(canvas.getBoundingClientRect(), boxes, topStripInset(canvas));
+  const area = canvas.getBoundingClientRect();
+  const insets = layerInsets(area, boxes, topStripInset(canvas));
+  const shown = (selector: string) => {
+    const el = document.querySelector<HTMLElement>(selector);
+    return el && getComputedStyle(el).visibility !== 'hidden' ? el : null;
+  };
+  const menu = shown(TOP_ROW_SELECTOR)?.getBoundingClientRect() ?? null;
+  // The strip's root runs the canvas's width to centre it: the strip is what it holds (on a phone, the menu too).
+  const strip = shown(STRIP_SELECTOR);
+  const band = headerBand(area, insets, menu, strip ? unionOfChildren(strip) : null);
+  return { insets: band ? { ...insets, top: 0 } : insets, band };
+}
+
+export function sameLayout(a: CanvasLayout, b: CanvasLayout): boolean {
+  return (
+    sameInsets(a.insets, b.insets) &&
+    (a.band === b.band ||
+      (!!a.band &&
+        !!b.band &&
+        a.band.height === b.band.height &&
+        a.band.left === b.band.left &&
+        a.band.mid === b.band.mid))
+  );
 }
 
 export function sameInsets(a: LayerInsets, b: LayerInsets): boolean {

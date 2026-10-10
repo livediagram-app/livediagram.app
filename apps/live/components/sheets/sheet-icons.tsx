@@ -3,6 +3,19 @@
 import { Glyph, Prims } from '@livediagram/ui';
 import {
   lucideALargeSmall,
+  lucideArrowDownAZ,
+  lucideArrowUpZA,
+  lucideBetweenHorizontalEnd,
+  lucideBetweenHorizontalStart,
+  lucideBetweenVerticalEnd,
+  lucideBetweenVerticalStart,
+  lucideClipboardType,
+  lucideEraser,
+  lucideEyeOff,
+  lucidePaintbrush,
+  lucideTableCellsMerge,
+  lucideTableCellsSplit,
+  lucideTrash2,
   lucideArrowUpDown,
   lucideBaseline,
   lucideChartPie,
@@ -11,6 +24,7 @@ import {
   lucideTextAlignCenter,
   lucideTextAlignEnd,
   lucideTextAlignStart,
+  lucideType,
 } from '@livediagram/icons/lucide';
 
 const SIZE = 16;
@@ -36,6 +50,11 @@ export const SortIcon = () => (
 export const TextColourIcon = () => (
   <G>
     <Prims prims={lucideBaseline} />
+  </G>
+);
+export const FontIcon = () => (
+  <G>
+    <Prims prims={lucideType} />
   </G>
 );
 export const FontSizeIcon = () => (
@@ -173,3 +192,26 @@ export const LineChartIcon = () => (
     <path d="m7 15 4-5 3 3 5-6" />
   </G>
 );
+
+// The cell menu's rows (docs/specs/029-sheets/sheet.md "Cell menu").
+const prims = (p: Parameters<typeof Prims>[0]['prims']) =>
+  function CellMenuGlyph() {
+    return (
+      <G>
+        <Prims prims={p} />
+      </G>
+    );
+  };
+export const InsertRowAboveIcon = prims(lucideBetweenHorizontalStart);
+export const InsertRowBelowIcon = prims(lucideBetweenHorizontalEnd);
+export const InsertColumnLeftIcon = prims(lucideBetweenVerticalStart);
+export const InsertColumnRightIcon = prims(lucideBetweenVerticalEnd);
+export const DeleteIcon = prims(lucideTrash2);
+export const ClearContentsIcon = prims(lucideEraser);
+export const SortAToZIcon = prims(lucideArrowDownAZ);
+export const SortZToAIcon = prims(lucideArrowUpZA);
+export const MergeCellsIcon = prims(lucideTableCellsMerge);
+export const UnmergeCellsIcon = prims(lucideTableCellsSplit);
+export const HideIcon = prims(lucideEyeOff);
+export const PasteValuesIcon = prims(lucideClipboardType);
+export const FormattingIcon = prims(lucidePaintbrush);

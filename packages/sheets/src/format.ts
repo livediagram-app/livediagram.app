@@ -32,6 +32,10 @@ export function stepFontSize(size: number, dir: 1 | -1): number {
     dir > 0 ? FONT_SIZES.find((s) => s > size) : [...FONT_SIZES].reverse().find((s) => s < size);
   return next ?? (dir > 0 ? FONT_SIZE_MAX : FONT_SIZE_MIN);
 }
+// A font id as the editor's fonts name them (`space-grotesk`): this package knows no catalogue, so it checks the
+// shape; the drawing side resolves the id, and one it no longer offers draws in the tab's font.
+export const FONT_ID_RE = /^[a-z][a-z0-9-]{0,31}$/;
+
 export const BORDER_STYLES: readonly BorderStyle[] = ['solid', 'dashed', 'dotted'];
 export const FORMAT_KEYS = [
   'nf',
@@ -43,6 +47,7 @@ export const FORMAT_KEYS = [
   'st',
   'fc',
   'bg',
+  'ff',
   'fs',
   'ha',
   'va',
@@ -85,6 +90,8 @@ export function validFormatValue(key: string, v: unknown): boolean {
     case 'fc':
     case 'bg':
       return isColour(v);
+    case 'ff':
+      return typeof v === 'string' && FONT_ID_RE.test(v);
     case 'fs':
       return (
         Number.isInteger(v) && (v as number) >= FONT_SIZE_MIN && (v as number) <= FONT_SIZE_MAX

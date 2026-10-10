@@ -62,9 +62,11 @@ export const TEXT_SCALE_MIN = 0.1;
 export const TEXT_SCALE_MAX = 40;
 const isHeadingStr = (v: unknown) => typeof v === 'string' && v.length <= PAGE_HEADING_MAX;
 const PATH_HANDLE_MODES = new Set(['corner', 'mirrored', 'aligned']);
-const MAX_TABLE_ROWS = 1_000;
-const MAX_TABLE_COLS = 1_000;
-const MAX_TABLE_CELLS = 50_000;
+// Exported so an importer building a table (Markdown, docs/specs/020-import-export/markdown-import.md)
+// truncates to exactly what validation accepts.
+export const MAX_TABLE_ROWS = 1_000;
+export const MAX_TABLE_COLS = 1_000;
+export const MAX_TABLE_CELLS = 50_000;
 
 // Exported so the MCP schema resource (docs/specs/015-api/mcp-server.md §4.5) lists the real element
 // types + anchors rather than a hand-maintained copy that can drift.

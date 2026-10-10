@@ -696,12 +696,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Items',
     summary:
-      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). Needs edit access to the whole document.",
+      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). expectedRev names the revision (itemTypesRev) the change was made to: when another change landed since, 409 item_types_stale answers with the stored types and revision to re-apply the change to. Needs edit access to the whole document.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'ItemTypesRequest',
     responseSchema: 'ItemTypesResponse',
-    statuses: [200, 400, 401, 403, 404, 405, 410],
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410],
   },
   // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
   {

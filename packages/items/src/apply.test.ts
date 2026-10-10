@@ -4,6 +4,7 @@ import {
   applyPatch,
   columnItems,
   inversePatch,
+  itemPlacer,
   makeItem,
   newItemId,
   placeOf,
@@ -106,5 +107,21 @@ describe('item writes', () => {
   it('makes 12-character ids', () => {
     expect(newItemId()).toMatch(/^[A-Za-z0-9]{12}$/);
     expect(newItemId(() => 0)).toBe('aaaaaaaaaaaa');
+  });
+});
+
+describe('itemPlacer', () => {
+  it('slots an item placed mid-column by its rank, so the next create sees the right neighbours', () => {
+    const a = item({ title: 'a', status: 'todo' }, { id: 'a', rank: 'b' });
+    const c = item({ title: 'c', status: 'todo' }, { id: 'c', rank: 'd' });
+    const placer = itemPlacer([a, c]);
+    placer.add(item({ title: 'b', status: 'todo' }, { id: 'b', rank: 'c' }));
+
+    // After the added card, before c: the added card is a neighbour now, not skipped.
+    const afterB = placer.rankFor({ status: 'todo', after: 'b' });
+    expect(afterB > 'c' && afterB < 'd').toBe(true);
+    // After a, the next card is the added one, so the rank lands between them.
+    const afterA = placer.rankFor({ status: 'todo', after: 'a' });
+    expect(afterA > 'b' && afterA < 'c').toBe(true);
   });
 });

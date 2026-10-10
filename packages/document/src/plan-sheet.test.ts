@@ -61,7 +61,9 @@ const MODEL: SheetRenderModel = {
       },
     },
     { r: 1, c: 0, text: '#DIV/0!', align: 'c', valign: 'm', error: true },
-    { r: 1, c: 1, text: '12', align: 'r', valign: 't', color: '#123456', wrap: 'w' },
+    { r: 1, c: 1, text: '12', align: 'r', valign: 't', color: '#123456', wrap: 'w', font: 'lora' },
+    // A font the editor no longer offers draws in the sheet's.
+    { r: 2, c: 0, text: 'Old', align: 'l', valign: 'm', font: 'gone-font' },
   ],
 };
 
@@ -75,6 +77,8 @@ describe('the static render', () => {
     expect(svg).toContain('text-anchor="end"');
     expect(svg).toContain('stroke-dasharray');
     expect(svg).toContain('#123456');
+    expect(svg).toContain('font-family="&#39;Lora&#39;');
+    expect(svg.match(/font-family="&#39;/g)).toHaveLength(1);
   });
   it('leaves out the gridlines and the headers when the sheet hides them', () => {
     const shown = svgPlanSheet(sheet, MODEL, 'light' as never);
@@ -97,6 +101,8 @@ describe('the static render', () => {
       sheets: new Map([['sheet0001', MODEL]]),
     });
     expect(svg).toContain('Total');
+    // The export declares the cells' fonts with the rest.
+    expect(svg).toContain('family=Lora');
     expect(renderElementsToSvg({ elements: [sheet] } as never)).toContain('>Sheet<');
   });
 });

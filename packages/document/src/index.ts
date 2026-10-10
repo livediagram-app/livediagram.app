@@ -382,6 +382,7 @@ export {
 } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
+export * from './tab-stats';
 export * from './illustrate-page';
 export * from './illustrate-page-fit';
 export * from './page-lock';
@@ -586,6 +587,7 @@ export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
 export * from './element-normalise';
 export * from './graph-input';
+export * from './graph-limits';
 export * from './tab-builders';
 
 // Shared by the editor's text export + import and reusable by the api / MCP.

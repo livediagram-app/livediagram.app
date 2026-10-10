@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckIcon, Glyph, useMenu, type MenuInitialFocus } from '@livediagram/ui';
+import { CheckIcon, Glyph, HoverCard, useMenu, type MenuInitialFocus } from '@livediagram/ui';
 import { useHoverCloseTimer } from '@/hooks/ui/useHoverCloseTimer';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
@@ -24,9 +24,32 @@ type ZoomMenuProps = {
   zoom: number;
   onSetZoom: (zoom: number) => void;
   onFitToScreen: () => void;
+  // Why zoom is off (a Plan element covering the canvas): the level shows, disabled, its hover card saying why, and
+  // the presets never open.
+  offReason?: string;
 };
 
-export function ZoomMenu({ zoom, onSetZoom, onFitToScreen }: ZoomMenuProps) {
+export function ZoomMenu({ zoom, onSetZoom, onFitToScreen, offReason }: ZoomMenuProps) {
+  const percent = Math.round(zoom * 100);
+  if (offReason)
+    return (
+      <div className="relative hidden sm:block">
+        <HoverCard title="Zoom" description={offReason}>
+          <button
+            type="button"
+            disabled
+            aria-label="Fit to screen"
+            className="flex h-9 min-w-[3.5rem] cursor-not-allowed items-center justify-center rounded-md px-2 text-center text-xs font-semibold tabular-nums text-slate-700 opacity-40 dark:text-slate-200"
+          >
+            {percent}%
+          </button>
+        </HoverCard>
+      </div>
+    );
+  return <ZoomMenuLive zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} />;
+}
+
+function ZoomMenuLive({ zoom, onSetZoom, onFitToScreen }: Omit<ZoomMenuProps, 'offReason'>) {
   const percent = Math.round(zoom * 100);
   // How it opened decides focus (docs/specs/004-interface-design/menus.md): a hover asks nothing
   // of the keyboard, so focus stays put; an arrow key on the button moves focus in.

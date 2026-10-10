@@ -8,6 +8,7 @@ import { isTrashExpired, trashPurgeDueAt, type TrashedDocument } from '@livediag
 import {
   offlineBackend,
   offlineDeleteDocument,
+  offlineUpdateRecord,
   serializeOfflineWrite,
   type OfflineDocumentRecord,
 } from './offline-store';
@@ -34,22 +35,25 @@ function isTrashed(
 
 // Move a live record to the local Trash. The first deletion time stands.
 export async function offlineTrashDocument(id: string, now: number): Promise<void> {
-  await serializeOfflineWrite(async () => {
-    const rec = await offlineBackend().get(id);
-    if (!rec || isTrashed(rec)) return;
-    await offlineBackend().put({ ...rec, trashedAt: now });
-  });
+  await serializeOfflineWrite(() =>
+    offlineUpdateRecord(id, (rec) =>
+      !rec || isTrashed(rec) ? undefined : { ...rec, trashedAt: now },
+    ),
+  );
 }
 
 // Bring a trashed record back exactly as it was: folder, star, deck. False
 // when it isn't in the local Trash.
 export async function offlineRestoreDocument(id: string): Promise<boolean> {
   return serializeOfflineWrite(async () => {
-    const rec = await offlineBackend().get(id);
-    if (!isTrashed(rec)) return false;
-    const { trashedAt: _trashedAt, ...live } = rec;
-    await offlineBackend().put(live);
-    return true;
+    let restored = false;
+    await offlineUpdateRecord(id, (rec) => {
+      if (!isTrashed(rec)) return undefined;
+      const { trashedAt: _trashedAt, ...live } = rec;
+      restored = true;
+      return live;
+    });
+    return restored;
   });
 }
 

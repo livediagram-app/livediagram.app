@@ -117,6 +117,7 @@ import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import {
+  commitUserPreferences,
   readUserPreferences,
   toggleRecentExcluded,
   writeUserPreferences,
@@ -212,6 +213,7 @@ import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/li
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
+import { activeElementsCommit } from './active-elements-commit';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import { useArticleCaretBroadcast } from '@/hooks/collab/useArticleCaretBroadcast';
 
@@ -252,6 +254,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelToCheckpoint: rawCancelToCheckpoint,
     reset: rawResetTabs,
     applyRemote: applyRemoteTabs,
+    applyRemoteOp,
     undo: tabUndo,
     redo: tabRedo,
     depth: historyDepth,
@@ -824,8 +827,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embed: !appChrome,
     zen: panelLayout.zenMode,
     apply: (next) => {
-      setUserPreferences(next);
-      writeUserPreferences(next, selfParticipant.id);
+      // Built on this render's preferences: moved onto the freshest before the whole blob is written.
+      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id));
     },
     offer: toast.offer,
   });
@@ -1027,7 +1030,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     noteSeen: realtime.changesetSeen.noteSeen,
     loadedTabIdsRef,
     markTabLoaded,
-    applyRemoteTabs,
+    applyRemoteOp,
     saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
     countAppliedOp,
     refetchTabs: resyncFromServer,
@@ -1131,8 +1134,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     ownerId: selfParticipant.id,
     shareCode: sessionShareCode,
-    catalogue: documentItemTypes,
-    setCatalogue: setDocumentItemTypes,
+    stored: documentItemTypes,
+    setStored: setDocumentItemTypes,
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
   });
@@ -1196,7 +1199,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
-    applyRemoteTabs,
+    applyRemoteOp,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -2022,20 +2025,37 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // write the element back as it was BEFORE the in-between edit, silently
     // dropping it (the bug where a link-card reset to "Add a link" once its
     // preview fetch landed).
-    const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
-    const before = liveTab.elements;
-    const after = mapElements(before);
     // An edit confined to the notes a photo draft brought in belongs to the
     // draft's gesture, not to the undo stack: it is written live and folded
     // into the one step Add leaves behind. Anything touching the author's own
     // work commits normally, so a Discard can never take it with it.
-    if (photoDraftOpenRef.current && onlyDraftNotesChanged(before, after)) {
-      tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
+    if (photoDraftOpenRef.current) {
+      const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
+      const before = liveTab.elements;
+      const after = mapElements(before);
+      if (onlyDraftNotesChanged(before, after)) {
+        tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
+        return;
+      }
+      commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
       return;
     }
-    const allowed = participant.guardCommit(liveTab, { ...liveTab, elements: after });
-    if (!allowed) return;
-    commitTabs((ts) => patchTab(ts, activeId, { elements: allowed.elements }));
+    // A Participant's edit is checked against the live tab before it lands (guardCommit may refuse it with a
+    // notice, so it runs once, here, not inside the update).
+    if (participant.participating) {
+      const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
+      const allowed = participant.guardCommit(liveTab, {
+        ...liveTab,
+        elements: mapElements(liveTab.elements),
+      });
+      if (!allowed) return;
+      commitTabs((ts) => patchTab(ts, activeId, { elements: allowed.elements }));
+      return;
+    }
+    // Mapped inside the update, from the tab as it is then (activeElementsCommit): a
+    // drag's landed result or a peer's op queued after the last render is built on,
+    // never written back over.
+    commitTabs(activeElementsCommit(activeId, mapElements));
   };
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
@@ -2202,7 +2222,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     notify: toast.info,
     readTabElements: planCover.readTabElements,
   });
-  // The Plan tour's example board and cards (docs/specs/026-plan/plan-tour.md "Tour content").
+  // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const planTour = usePlanTourContent({
     documentId,
     hydrated,
@@ -2210,6 +2230,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeId,
     tickTabs,
     planItems,
+    releaseSheets: sheets.releaseSheets,
   });
 
   // Undo / redo handlers. See useEditorHistory.

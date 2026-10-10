@@ -48,6 +48,23 @@ have cloud documents and offline documents side by side.
 - The app keeps a small **local index** of offline document ids (also in
   IndexedDB) so the Explorer can list them and the persistence layer knows which
   ids resolve locally vs to the API.
+- **Every tab of the browser agrees on the index.** Each tab mirrors it in memory
+  (`apps/live/lib/offline/offline-ids.ts`), and every id registered or removed is told
+  to the other tabs on the `livediagram-offline` BroadcastChannel (`{ kind: 'add' |
+'remove', id }`), which apply it at once. Without it, a tab that missed a Take
+  Offline kept saving that document to the server (where it no longer is), and a tab
+  that missed a Sync Document or purge kept "saving" into a record that was gone.
+- **A write to a record that is gone fails out loud.** When an edit (a tab, the name,
+  the order, the folder, the card types) finds its record missing while the tab still
+  lists the id, the id is forgotten (and the other tabs told) and the write fails with
+  `OfflineDocumentMissingError`, logged `[offline-store] write-to-missing-record`: the
+  autosave shows the failure instead of "Saved", and its retry routes to wherever the
+  document now is. A missing record whose id the tab has already forgotten (its own
+  Sync Document, with a save still queued) stays a quiet no-op.
+- **Each read-modify-write is one transaction.** A write reads the whole record and
+  writes it back; the two happen in one IndexedDB `readwrite` transaction
+  (`OfflineBackend.update`), so another tab's write cannot land between them and be
+  overwritten. Writes from the same tab are also queued one after another.
 
 <!-- legacy-names -->
 
@@ -151,12 +168,19 @@ Explorer lists follow after the paint.
   shown in the badge's visibility legend on hover and focus and given to
   assistive technology as the badge's description. It stays a status, not a
   link: the legend explains it in place.
-- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus): **Who Can See This**, "From
-  just you to everyone, as you share it.", then the audiences as a ladder joined by a rail: **Private** (a lock),
-  **Shared** (a link), **Team** (people), **Public** (a globe), each a round tile in its tone over its name and
-  its sentence; the document's own state tinted in its tone and marked **Current** with a check. **Local only**
-  (its browser-window icon, amber) stands apart under a divider, the deliberate opt-out. For the eye only: the
-  badge carries the current state's words for assistive technology.
+- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus, closing 120 ms after the
+  pointer leaves): a hero in the current state's tone, eyebrow **Who Can See This**, the state's icon and
+  name, its sentence, and its **reach** drawn as rings around you, lit out to how far the document goes
+  (Private: none; Shared: one, with people on it; Team: two; Public: all three). Under it, **From Just You
+  to Everyone**: the audiences on one scale, **Just you** (a lock), **Link** (a link), **Team** (people),
+  **Everyone** (a globe), the track filled to the current stop, which is larger, filled in its tone and
+  bold. Hovering a stop shows that audience in the hero, eyebrow **If It Were**, and tints the stop;
+  leaving the scale puts the current state back. **Local only** (its browser-window icon, amber) stands
+  apart below as "Or Local only: never leaves this browser." (when current: "Local only: saved only here,
+  never on our servers.", tinted amber). For someone who may share, **Change Who Can See This** at the
+  foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
+  pill and the legend has no button. For the eye only: the badge carries the current state's words for
+  assistive technology.
 - **Explorer.** Offline documents appear in Recent (and the other lists)
   alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.
@@ -289,6 +313,23 @@ Share dialog gate, and the move prompt after signing in).
   tab beside the original rather than overwriting it; joining them again is an
   explicit "Add to Document". A retried create (the tab already in this document)
   keeps its ids.
+- **What went up is what is removed.** The upload takes seconds and the document
+  stays editable meanwhile (here or in another tab). The local copy is removed only if
+  it still matches what was uploaded (its save time, card store revision and each
+  sheet's revision), checked and deleted in one transaction. If it changed, the cloud
+  copy is taken back (a raw delete declared as a move into this browser, so it skips
+  the Trash) and the newer record is uploaded again, logged
+  `[offline-sync] changed-during-upload attempt=<n>`; after three uploads that each
+  went stale the sync stops, keeps the local copy and says the document kept changing.
+- **The cloud copy must hold every card and sheet.** A create that resolves to an
+  existing row (a retry after a half-finished sync) never re-seeds the card or sheet
+  stores, so before the local copy goes the sync reads the cloud copy's cards and
+  sheets back and compares their counts with the record's (skipped when the record
+  has none). Short, the cloud copy is taken back, the local copy kept, and the sync
+  fails, logged `[offline-sync] stores-short`.
+- **One conversion per document at a time.** A second Sync Document or Take Offline
+  of a document while one runs (a second menu, or the Share gate) does nothing; the
+  guard lives with the conversion, not with the menu that started it, which closes.
 - On success the **local copy is removed** from IndexedDB so there's one source
   of truth; the document is now a cloud document (Share / AI / Teams reappear). The
   id is unchanged, so the route stays the same: from the Share dialog the editor
@@ -311,7 +352,9 @@ confirmation:
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
 - **The deck, star and personal folder come along** for the same reason: the
-  server row they live on is about to be deleted. A team document's folder is a
+  server row they live on is about to be deleted. The star is read from the account's
+  favourites; if that read fails the conversion aborts before anything is written,
+  rather than taking the document as unstarred and losing the star with the row. A team document's folder is a
   team folder, which has no place in the personal tree, so it lands at the root of My documents.
 - **Shared tabs fork.** A tab also linked into other documents
   ([Tab ↔ document many-to-many](tab-document-many-to-many.md)) is not taken

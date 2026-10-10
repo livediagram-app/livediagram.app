@@ -1,4 +1,4 @@
-import { isBoxed, type Element, type ElementId } from '@livediagram/document';
+import { ES_LANES, isBoxed, type Element, type ElementId } from '@livediagram/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import {
   canInsertBetweenOn,
@@ -88,6 +88,8 @@ export function resolveNoteInsertion({
     inertIds,
     excludeIds: new Set([primaryId]),
     active,
+    // An insertion is offered only on an event-storming board, which is a board of lanes.
+    lanes: ES_LANES,
   });
 }
 

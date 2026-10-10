@@ -65,8 +65,45 @@ describe('useFolders deleteFolder', () => {
     apiDeleteFolder.mockResolvedValue(undefined);
     const { result } = renderHook(() => useFolders('u5'));
     await waitFor(() => expect(result.current.folders).toHaveLength(3));
-    act(() => result.current.deleteFolder('workshops'));
+    act(() => {
+      void result.current.deleteFolder('workshops');
+    });
     expect(result.current.folders).toEqual([folder('projects'), folder('archive', 'projects')]);
     expect(apiDeleteFolder).toHaveBeenCalledWith('u5', 'workshops');
+  });
+});
+
+// A delete the server refuses is rolled back: the folder returns where it was, and the subfolders
+// that moved up for it return beneath it.
+describe('useFolders deleteFolder when the api refuses', () => {
+  it('puts the folder and its subfolders back, and resolves false', async () => {
+    const tree = [
+      folder('projects'),
+      folder('workshops', 'projects'),
+      folder('archive', 'workshops'),
+    ];
+    apiListFolders.mockResolvedValue(tree);
+    apiDeleteFolder.mockRejectedValue(new Error('500'));
+    const { result } = renderHook(() => useFolders('u5'));
+    await waitFor(() => expect(result.current.folders).toHaveLength(3));
+    let deleted: boolean | undefined;
+    await act(async () => {
+      deleted = await result.current.deleteFolder('workshops');
+    });
+    expect(deleted).toBe(false);
+    expect(result.current.folders).toEqual(tree);
+  });
+
+  it('resolves true when the api deletes it', async () => {
+    apiListFolders.mockResolvedValue([folder('a')]);
+    apiDeleteFolder.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useFolders('u5'));
+    await waitFor(() => expect(result.current.folders).toHaveLength(1));
+    let deleted: boolean | undefined;
+    await act(async () => {
+      deleted = await result.current.deleteFolder('a');
+    });
+    expect(deleted).toBe(true);
+    expect(result.current.folders).toEqual([]);
   });
 });

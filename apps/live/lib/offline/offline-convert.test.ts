@@ -18,7 +18,7 @@ vi.mock('@/lib/api-client', () => ({
   }),
   apiLoadDocument: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
-  apiListFavourites: vi.fn(async () => [] as string[]),
+  fetchCloudFavouriteIds: vi.fn(async () => [] as string[]),
   apiSetFavourite: vi.fn(async () => {
     calls.push('apiSetFavourite');
   }),
@@ -47,10 +47,12 @@ vi.mock('@/lib/api/core', () => ({
 
 vi.mock('../api/items', () => ({
   fetchItems: vi.fn(async () => ({ items: [], rev: 0, nextKey: 1 })),
+  fetchCloudItems: vi.fn(async () => ({ items: [], rev: 0, nextKey: 1 })),
 }));
 
 vi.mock('../api/sheets', () => ({
   fetchAllSheets: vi.fn(async () => []),
+  fetchCloudSheets: vi.fn(async () => []),
   sheetAsCreate: (s: unknown) => s,
 }));
 vi.mock('./offline-images', () => ({
@@ -62,8 +64,20 @@ vi.mock('./offline-images', () => ({
   isDataImageId: (id: string) => id.startsWith('data:'),
 }));
 
+// The successive states the record is in when a sync goes to remove it (a write landing during
+// the upload); once used up, it is the record the sync read.
+const states: unknown[] = [];
+
 vi.mock('./offline-store', () => ({
   offlineCreateDocument: vi.fn(),
+  offlineDeleteIfUnchanged: vi.fn(async (_id: string, unchanged: (r: unknown) => boolean) => {
+    const rec = states.length
+      ? states.shift()
+      : await vi.mocked(store.offlineGetRecord).mock.results.at(-1)?.value;
+    if (!unchanged(rec)) return { outcome: 'changed', rec };
+    calls.push('offlineDeleteDocument');
+    return { outcome: 'deleted', rec };
+  }),
   offlineDeleteDocument: vi.fn(async () => {
     calls.push('offlineDeleteDocument');
   }),
@@ -76,12 +90,20 @@ vi.mock('./offline-store', () => ({
 const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
 const images = await import('./offline-images');
+const items = await import('../api/items');
+const sheets = await import('../api/sheets');
 const store = await import('./offline-store');
-const { saveOfflineToCloud, syncFailureMessage, takeCloudOffline } =
-  await import('./offline-convert');
+const {
+  ConversionInProgressError,
+  conversionInProgress,
+  saveOfflineToCloud,
+  syncFailureMessage,
+  takeCloudOffline,
+} = await import('./offline-convert');
 
 beforeEach(() => {
   calls.length = 0;
+  states.length = 0;
   vi.clearAllMocks();
 });
 
@@ -97,7 +119,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
   it('keeps the local copy when the cloud write fails', async () => {
     vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(new Error('offline'));
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
-    expect(store.offlineDeleteDocument).not.toHaveBeenCalled();
+    expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
 
   it('carries the star to the server once the local copy is gone', async () => {
@@ -170,12 +192,72 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     );
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
     expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(1);
-    expect(store.offlineDeleteDocument).not.toHaveBeenCalled();
+    expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
 
   it('stars nothing for an unstarred document', async () => {
     await saveOfflineToCloud('d1', 'owner');
     expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();
+  });
+
+  it('uploads again when the document changed during the upload, removing the local copy only then', async () => {
+    // docs/specs/006-document/offline-mode.md "Save to server": an edit made while the upload ran
+    // would be deleted with the local copy, yet missing from the cloud one.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const edited = { id: 'd1', name: 'Roadmap', tabs: [], savedAt: 2 };
+    states.push(edited, edited);
+    await saveOfflineToCloud('d1', 'owner');
+    const creates = vi.mocked(apiClient.apiCreateDocument).mock.calls;
+    expect(creates).toHaveLength(2);
+    // The first cloud copy is taken back (declared a move, so it skips the Trash) before the second.
+    expect(calls).toEqual([
+      'apiCreateDocument',
+      'apiDelete',
+      'apiCreateDocument',
+      'offlineDeleteDocument',
+    ]);
+    const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;
+    expect((opts as { extra?: Record<string, string> }).extra).toEqual({
+      [DOCUMENT_CONVERSION_HEADER]: 'offline',
+    });
+    expect(warn).toHaveBeenCalledWith('[offline-sync] changed-during-upload attempt=1');
+    warn.mockRestore();
+  });
+
+  it('gives up, keeping the local copy, when the document changes during every upload', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const at = (savedAt: number) => ({ id: 'd1', name: 'Roadmap', tabs: [], savedAt });
+    states.push(at(2), at(3), at(4));
+    await expect(saveOfflineToCloud('d1', 'owner')).rejects.toMatchObject({
+      name: 'OfflineSyncIncompleteError',
+      reason: 'kept_changing',
+    });
+    expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(3);
+    expect(calls).not.toContain('offlineDeleteDocument');
+    expect(calls.at(-1)).toBe('apiDelete');
+  });
+
+  it('keeps the local copy when the cloud copy is short of sheets', async () => {
+    // A create that resolves to an existing row never re-seeds the stores, so a retried sync
+    // could land without them; deleting the local copy then would lose them.
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      sheets: [{ id: 's1', rev: 0, updatedAt: 1 }],
+    } as never);
+    await expect(saveOfflineToCloud('d1', 'owner')).rejects.toMatchObject({
+      reason: 'stores_short',
+    });
+    expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
+    expect(calls).toEqual(['apiCreateDocument', 'apiDelete']);
+  });
+
+  it('checks the cloud stores only for a record that has some', async () => {
+    await saveOfflineToCloud('d1', 'owner');
+    expect(items.fetchCloudItems).not.toHaveBeenCalled();
+    expect(sheets.fetchCloudSheets).not.toHaveBeenCalled();
   });
 
   it('refuses a document that is not in the local store', async () => {
@@ -203,9 +285,16 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('keeps a starred document starred on the offline record', async () => {
-    vi.mocked(apiClient.apiListFavourites).mockResolvedValueOnce(['d1']);
+    vi.mocked(apiClient.fetchCloudFavouriteIds).mockResolvedValueOnce(['d1']);
     await takeCloudOffline('d1', 'owner');
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
+  });
+
+  it('aborts before writing anything when the stars could not be read', async () => {
+    // Taken as "not starred", the star would go with the server row.
+    vi.mocked(apiClient.fetchCloudFavouriteIds).mockRejectedValueOnce(new Error('offline'));
+    await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
+    expect(calls).toEqual([]);
   });
 
   it('writes the local copy before deleting the server one', async () => {
@@ -299,11 +388,52 @@ describe('conversions declare themselves to the worker', () => {
   });
 });
 
+describe('one conversion per document at a time', () => {
+  // The menu that starts a conversion unmounts when it closes, so its own guard went with it and a
+  // second menu could start an overlapping conversion of the same document.
+  it('refuses a second conversion of a document while the first runs, then allows the next', async () => {
+    let land: () => void = () => {};
+    vi.mocked(apiClient.apiCreateDocument).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          land = () => resolve(undefined as never);
+        }),
+    );
+    const first = saveOfflineToCloud('d1', 'owner');
+    expect(conversionInProgress('d1')).toBe(true);
+    await expect(saveOfflineToCloud('d1', 'owner')).rejects.toBeInstanceOf(
+      ConversionInProgressError,
+    );
+    await expect(takeCloudOffline('d1', 'owner')).rejects.toBeInstanceOf(ConversionInProgressError);
+    land();
+    await first;
+    expect(conversionInProgress('d1')).toBe(false);
+    expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(1);
+    await expect(saveOfflineToCloud('d1', 'owner')).resolves.toMatchObject({ id: 'd1' });
+  });
+
+  it('lets a failed conversion be tried again', async () => {
+    vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(new Error('offline'));
+    await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow('offline');
+    expect(conversionInProgress('d1')).toBe(false);
+  });
+});
+
 describe('syncFailureMessage', () => {
   it('names the size cap for a 413, so it does not read as a connection blip', () => {
     const e = new core.ApiError('sync', 413, null);
     expect(syncFailureMessage(e)).toMatch(/too large to sync/i);
     expect(syncFailureMessage(e)).not.toMatch(/connection/i);
+  });
+
+  it('says the local copy is safe when the sync stopped itself', async () => {
+    const { OfflineSyncIncompleteError } = await import('./offline-sync');
+    expect(syncFailureMessage(new OfflineSyncIncompleteError('kept_changing'))).toMatch(
+      /kept changing/i,
+    );
+    expect(syncFailureMessage(new OfflineSyncIncompleteError('stores_short'))).toMatch(
+      /local copy was kept/i,
+    );
   });
 
   it('falls back to the connection wording for anything else', () => {

@@ -172,6 +172,20 @@ describe('a placed sheet', () => {
     expect(b.toast).not.toHaveBeenCalled();
   });
 
+  it("makes the Plan tour's example sheet already set up, with no undo step", async () => {
+    const { sheetId } = placeNewSheet({ title: 'Example Sheet', setUp: 'budget' });
+    const b = bridge();
+    const { result } = model(element({ sheetId }), b);
+    await waitFor(() => expect(result.current.sheet?.cells.size).toBeGreaterThan(0));
+    const sheet = result.current.sheet!;
+    expect(sheet.title).toBe('Example Sheet');
+    expect(sheet.layout.setupPending).toBeUndefined();
+    expect(sheet.layout.frozenRows).toBe(1);
+    const wb = result.current.workbook;
+    expect([wb.value(sheetId, 0, 0), wb.value(sheetId, 5, 2)]).toEqual(['Item', 1840]);
+    expect(b.pushUndo).not.toHaveBeenCalled();
+  });
+
   it('says a dropped file that was cut', async () => {
     const { sheetId } = placeNewSheet({ csv: Array.from({ length: 201 }, () => 'v').join(',') });
     const b = bridge();

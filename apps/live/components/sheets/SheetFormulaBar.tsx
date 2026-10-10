@@ -86,6 +86,8 @@ export function SheetFormulaBar({
   return (
     <div
       data-keeps-escape
+      // The Plan tour's Formulas step points here.
+      data-sheet-formula-bar
       className="relative flex shrink-0 items-start border-b text-[12px]"
       style={{ minHeight: 28, borderColor: c.palette.cardBorder, color: c.palette.text }}
       onPointerDown={stop}

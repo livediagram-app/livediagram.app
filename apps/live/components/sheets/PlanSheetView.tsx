@@ -11,7 +11,7 @@ import { usePublishSheetSettings } from './sheet-settings-registry';
 import { placeSheetChart } from './sheet-charts';
 import { Button } from '@livediagram/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { formatA1, normaliseRange, formatRange, quoteSheet } from '@livediagram/sheets';
+import { formatA1, normaliseRange, formatRange, quoteSheet, single } from '@livediagram/sheets';
 import type { ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -40,6 +40,7 @@ import { SheetFace } from './SheetFace';
 import type { PointRef } from './useSheetPointer';
 import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { listenForSheetSelect } from '@/lib/sheet-select-request';
 
 const RADIUS = 12;
 
@@ -216,7 +217,7 @@ function SheetWorkspace({
     announce: (m) => plan?.announce(m),
     toast: bridge.toast,
     notify: bridge.notify,
-    placeChart: (kind, range) => placeSheetChart(bridge, element, model.sheet!.id, kind, range),
+    placeChart: (kind, pick) => placeSheetChart(bridge, element, model.sheet!.id, kind, pick),
     onWrote: (before, write) => cardPush.current?.(before, write),
   });
   return (
@@ -308,6 +309,12 @@ function SheetParts({
         { undoable: false },
       );
   }, [filled, c.store, c.sheet.id]);
+  // A cell selected from outside the Sheet (the Plan tour's Formulas step).
+  const { setSelection } = c;
+  useEffect(
+    () => listenForSheetSelect(c.sheet.id, (at) => setSelection(single(at))),
+    [c.sheet.id, setSelection],
+  );
   // The cog's settings for the element menu's Sheet flyout (sheet-settings-registry).
   usePublishSheetSettings(element.id, { controller: c, actions, onImportCsv });
   const readFile = async (f: File) => {

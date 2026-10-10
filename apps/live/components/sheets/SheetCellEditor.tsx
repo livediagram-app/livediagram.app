@@ -9,6 +9,7 @@ import { FUNCTION_DOCS, formatA1 } from '@livediagram/sheets';
 import { argumentAt, argumentSlot, refSpans } from './formula-assist';
 import { useSheetController } from './sheet-controller';
 import { cellBox, mergeAt } from './sheet-geometry';
+import { resolveFontStack } from '@livediagram/document';
 import { fontPx } from './SheetCells';
 import type { FormulaInput } from './useFormulaInput';
 
@@ -152,7 +153,7 @@ export function SheetCellEditor({
   const text = {
     fontSize: px,
     lineHeight: `${lineH}px`,
-    fontFamily,
+    fontFamily: resolveFontStack(f?.ff) ?? fontFamily,
     fontWeight: f?.b ? 700 : undefined,
     fontStyle: f?.i ? ('italic' as const) : undefined,
   };

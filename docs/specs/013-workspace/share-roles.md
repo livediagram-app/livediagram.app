@@ -97,6 +97,12 @@ and moves stay with the owner and joined team members. No level grants any of th
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
 - `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
 - The editor's role pill reads Editing, Participating or Viewing.
+- **A visit is through one link.** Opening a document through a share link records that link with the visit
+  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the document through
+  that same link only while it is live. **Revoking a link** (or deleting the tab it is scoped to) ends every visit it
+  granted: those people lose the document from Shared with you, and from the copy and activity legs, even when
+  another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
+  before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
 - The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
   Participate or View.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no

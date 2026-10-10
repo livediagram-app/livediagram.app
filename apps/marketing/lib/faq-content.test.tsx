@@ -77,3 +77,14 @@ describe('filterFaq', () => {
     expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
   });
 });
+
+describe('domain language', () => {
+  // A mode is the tab's, shared by everyone on it (docs/specs/003-system-architecture/domain-language.md).
+  it('never calls a mode personal', () => {
+    const copy = FAQ_CATEGORIES.flatMap((c) =>
+      c.items.map((i) => (typeof i.a === 'string' ? i.a : (i.aText ?? ''))),
+    ).join(' ');
+    expect(copy).not.toMatch(/modes? (?:are|is) personal/i);
+    expect(copy).toMatch(/mode belongs to the tab/);
+  });
+});
