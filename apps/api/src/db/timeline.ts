@@ -277,21 +277,28 @@ export async function readTimeline(
         : '0';
 
   // Fetch one extra row to learn whether another page exists, rather
-  // than running a second COUNT over the same predicate.
+  // than running a second COUNT over the same predicate. The page is cut
+  // first and only its rows are joined to their document and checked
+  // against the visible set, so neither costs anything per event the
+  // ORDER BY passes over.
   binds.push(opts.limit + 1);
   const res = await env.DB.prepare(
-    `WITH ${VISIBLE_DOCUMENTS_CTES}
-     SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
-            e.title, e.description, e.occurred_at, e.snapshot,
-            CASE WHEN ${nameVisible} THEN cd.name END AS current_document_name
-       FROM timeline_event_scopes s
-       JOIN timeline_events e ON e.id = s.event_id
+    `WITH ${VISIBLE_DOCUMENTS_CTES},
+     page AS (
+       SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
+              e.title, e.description, e.occurred_at, e.snapshot
+         FROM timeline_event_scopes s
+         JOIN timeline_events e ON e.id = s.event_id
+        WHERE ${where}
+        ORDER BY e.occurred_at DESC, e.id DESC
+        LIMIT ?${binds.length}
+     )
+     SELECT e.*, CASE WHEN ${nameVisible} THEN cd.name END AS current_document_name
+       FROM page e
        LEFT JOIN documents cd
          ON cd.id = COALESCE(json_extract(e.snapshot, '$.documentId'),
                              CASE WHEN e.source_type = 'document' THEN e.source_id END)
-      WHERE ${where}
-      ORDER BY e.occurred_at DESC, e.id DESC
-      LIMIT ?${binds.length}`,
+      ORDER BY e.occurred_at DESC, e.id DESC`,
   )
     .bind(...binds)
     .all<TimelineRow>();
