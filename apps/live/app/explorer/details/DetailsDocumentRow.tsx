@@ -16,12 +16,14 @@ import { FavouriteMarker, FolderChip } from '../document-badges';
 import type { PaneDocument } from '../views';
 import {
   AccessCell,
-  CELL_CLASS,
+  CommentsCell,
   DateCell,
   NOT_COUNTED,
   NoValue,
   SHOWN_FROM_CLASS,
   TypeCell,
+  cellClass,
+  useDenseRows,
 } from './details-cells';
 import { formatSize } from './details-format';
 import { useSnapshotPrefetch } from './useSnapshotPrefetch';
@@ -39,6 +41,8 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
     folderChip,
   } = props;
   const menu = useRowMenu({ disabled: renaming });
+  const dense = useDenseRows();
+  const CELL_CLASS = cellClass(dense);
   const rowRef = useRef<HTMLTableRowElement>(null);
   const local = isLocalOnly(doc);
   const href = hrefForDocument(doc);
@@ -88,16 +92,13 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
           ) : null}
         </span>
       </td>
-      <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.sm}`}>
+      <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.sm} text-center`}>
         <TypeCell stats={stats} />
       </td>
-      <td
-        className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.md} text-right text-xs tabular-nums text-slate-600 dark:text-slate-300`}
-      >
-        {/* Zero shows nothing, so the comments that exist stand out (D151). */}
-        {stats ? stats.comments || '' : <NoValue label={NOT_COUNTED} />}
+      <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.md} text-center`}>
+        <CommentsCell stats={stats} dense={dense} />
       </td>
-      <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.md}`}>
+      <td className={`${CELL_CLASS} ${SHOWN_FROM_CLASS.md} text-center`}>
         <AccessCell level={readerAccessOf(doc)} />
       </td>
       <td
@@ -113,7 +114,12 @@ export function DetailsDocumentRow(props: DocumentEntryProps) {
       </td>
       <td className={`${CELL_CLASS} text-right`}>
         {renaming ? null : (
-          <EllipsisTriggerButton {...menu.triggerProps} reveal label={`Menu for ${doc.name}`} />
+          <EllipsisTriggerButton
+            {...menu.triggerProps}
+            reveal
+            size={dense ? 'sm' : 'lg'}
+            label={`Menu for ${doc.name}`}
+          />
         )}
         {menu.open ? (
           <DocumentEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />

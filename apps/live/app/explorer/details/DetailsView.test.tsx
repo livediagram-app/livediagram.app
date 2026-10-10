@@ -10,6 +10,8 @@ import { DOCUMENT_DRAG_MIME } from '@/components/panels/explorer-drag-mime';
 import type { ExplorerViewProps } from '../explorer-view-props';
 import type { PaneDocument } from '../views';
 import { DetailsView } from './DetailsView';
+import { ExplorerProvider } from '../ExplorerContext';
+import type { ExplorerStateValue } from '../useExplorerState';
 import { DETAILS_SORT_STORAGE_KEY } from './useDetailsSort';
 
 beforeEach(() => {
@@ -108,10 +110,50 @@ describe('DetailsView', () => {
       />,
     );
     const cells = within(screen.getAllByRole('row')[1]!).getAllByRole('cell');
-    expect(cells[1]!.textContent).toBe('Plan');
-    expect(cells[2]!.textContent).toBe('3');
-    expect(cells[3]!.textContent).toBe('Editor');
+    // Icon columns: no visible words, the value named for assistive technology.
+    expect(within(cells[1]!).getByText('Plan').className).toContain('sr-only');
+    expect(within(cells[2]!).getByText('3 comments').className).toContain('sr-only');
+    expect(within(cells[2]!).getByText('3').getAttribute('aria-hidden')).toBe('true');
+    expect(within(cells[3]!).getByText('Editor').className).toContain('sr-only');
     expect(cells[4]!.textContent).toMatch(/^12 objects \(12 KB\)$/);
+  });
+
+  it('caps the count in the bubble at 99+', () => {
+    render(
+      <DetailsView
+        {...view([doc('Busy', { stats: { mode: 'draw', elements: 1, comments: 150, bytes: 1 } })])}
+      />,
+    );
+    const cell = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[2]!;
+    expect(within(cell).getByText('99+')).toBeTruthy();
+    expect(within(cell).getByText('150 comments')).toBeTruthy();
+  });
+
+  it('heads the icon columns with an icon, their names visually hidden', () => {
+    render(<DetailsView {...view([doc('a')])} />);
+    for (const name of ['Type', 'Comments', 'Access']) {
+      const header = screen.getByRole('columnheader', { name: new RegExp(`^${name}`) });
+      expect(within(header).getByText(name).className).toContain('sr-only');
+      expect(header.querySelector('svg')).not.toBeNull();
+    }
+    expect(
+      within(screen.getByRole('columnheader', { name: /^Name/ })).getByText('Name').className,
+    ).not.toContain('sr-only');
+  });
+
+  it('draws rows at half height in power user mode', () => {
+    const { unmount } = render(<DetailsView {...view([doc('a')])} />);
+    const roomy = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[0]!.className;
+    expect(roomy).toContain('py-2');
+    unmount();
+    render(
+      <ExplorerProvider value={{ prefs: { powerUserMode: true } } as unknown as ExplorerStateValue}>
+        <DetailsView {...view([doc('a')])} />
+      </ExplorerProvider>,
+    );
+    const dense = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[0]!.className;
+    expect(dense).toContain('py-0');
+    expect(dense).not.toContain('py-2');
   });
 
   it('says what is not counted yet', () => {
@@ -126,16 +168,16 @@ describe('DetailsView', () => {
         {...view([doc('Theirs', { shared: { role: 'view', ownerName: 'Ann', shareCode: 's' } })])}
       />,
     );
-    expect(within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[3]!.textContent).toBe(
-      'Viewer',
-    );
+    expect(
+      within(within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[3]!).getByText('Viewer'),
+    ).toBeTruthy();
   });
 
   it('lists folders first, with their item count', () => {
     render(<DetailsView {...view([doc('Doc', { savedAt: 99 })], [folder])} />);
     expect(rowNames()).toEqual(['Projects', 'Doc']);
     const cells = within(screen.getAllByRole('row')[1]!).getAllByRole('cell');
-    expect(cells[1]!.textContent).toBe('Folder');
+    expect(within(cells[1]!).getByText('Folder').className).toContain('sr-only');
     expect(cells[4]!.textContent).toBe('3 items');
   });
 
