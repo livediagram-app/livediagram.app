@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('data-elements').filter((a) => a.slug !== 'timeline-rail')}
 >
 
-A timeline rail is a horizontal line with evenly spaced points along it, each labelled above. It is the natural shape for a roadmap, a release schedule, a process, or any sequence of milestones. It keeps the points evenly spaced for you, so the rail always looks deliberate.
+A timeline rail is a horizontal line with evenly spaced points above it, each joined to the line by a short tick and labelled. It is the natural shape for a roadmap, a release schedule, a process, or any sequence of milestones. It keeps the points evenly spaced for you, so the rail always looks deliberate.
 
 <Figure caption="A timeline rail with four evenly spaced milestones, each labelled above its point.">
   <TimelineRailScene />
@@ -44,10 +44,10 @@ A timeline rail is a horizontal line with evenly spaced points along it, each la
 
 There are two ways to change how many points the rail has:
 
-- **Add one** from the rail's **+** button, the same one other elements use to start an arrow: on a rail it adds a point at the right-hand end.
+- **Add one** from any of the rail's **+** buttons, the same ones other elements use to start an arrow: on a rail the menu also offers **Add Point**, which adds a point at the right-hand end (up to 12).
 - **Set the count precisely**: right-click the rail, open **Tools**, then **Timeline**, and use the **Points** stepper. It goes from 2 to 12 points, and it is the only way to remove one.
 
-The points always stay evenly spaced, and the rail widens by one step for each point you add, so it stays neat as it grows. Like every data element it is an ordinary canvas element, so it moves, resizes, rotates, locks, and recolours with the active [theme](/help/canvas/themes/); its stroke (accent) colour tints the points.
+The points always stay evenly spaced, and the rail resizes to a fixed step per point whenever you change the count (wider as you add, narrower as you remove), so it stays neat as it grows. Like every data element it is an ordinary canvas element, so it moves, resizes, rotates, locks, and recolours with the active [theme](/help/canvas/themes/); its stroke (accent) colour tints the points.
 
 <Tip>
   Pair a timeline rail with [sticky notes](/help/palette/tools/sticky-notes/) above each point to
