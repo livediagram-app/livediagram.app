@@ -368,13 +368,27 @@ export function isOfflineIdSync(id: string): boolean {
   return pendingIds.has(id) || (idCache?.has(id) ?? false);
 }
 
+// Told whenever a document joins or leaves this browser's store (a create, Sync Document, Take Offline):
+// what shows or reads a document's offline-ness follows a conversion without a reload
+// (docs/specs/006-document/offline-mode.md "Syncing in place").
+const idListeners = new Set<(id: string) => void>();
+export function subscribeOfflineIds(listener: (id: string) => void): () => void {
+  idListeners.add(listener);
+  return () => idListeners.delete(listener);
+}
+function announce(id: string): void {
+  for (const l of idListeners) l(id);
+}
+
 function rememberId(id: string): void {
   pendingIds.add(id);
   if (idCache) idCache.add(id);
+  announce(id);
 }
 function forgetId(id: string): void {
   pendingIds.delete(id);
   if (idCache) idCache.delete(id);
+  announce(id);
 }
 
 // ---------------------------------------------------------------------------

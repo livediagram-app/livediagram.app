@@ -122,7 +122,7 @@ A guest's new document is **Local only** by default ([Offline Mode](../006-docum
 
 - **Only with sign-in enabled.** Local first applies in the hybrid mode, where a guest has an account to move to. A guest-only deployment ([Three deployment modes](#three-deployment-modes)) keeps livediagram as the default: there is no account to come to, so the server is the only place a document is kept beyond the browser, and the operator chose to run one.
 - **Signed-in people are unchanged.** Their default stays livediagram.
-- **Moving to the server is always the guest's own act**: Share (one click, [Offline Mode → Sharing a guest's Local only document](../006-document/offline-mode.md#sharing-a-guests-local-only-document)), Sync Document, or the prompt after signing in (below). No guest document is uploaded silently.
+- **Moving to the server is always the guest's own act**: Sync Document (from the Share dialog, which explains why first, [Offline Mode → Sharing a Local only document](../006-document/offline-mode.md#sharing-a-local-only-document), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
 - **Nothing is purged.** Guest cloud documents already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before Clerk answers

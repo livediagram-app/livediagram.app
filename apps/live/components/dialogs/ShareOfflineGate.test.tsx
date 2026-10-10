@@ -7,60 +7,55 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 import { ShareOfflineGate } from './ShareOfflineGate';
 
-// docs/specs/006-document/offline-mode.md "Sharing a guest's Local only document": a guest's Share syncs at
-// once with its progress showing; a signed-in person is asked first; nothing syncs before the reader
-// is known, and a failure drops back to the gate's button.
+// docs/specs/006-document/offline-mode.md "Sharing a Local only document": Share says the document is
+// offline and offers Sync Document; nothing syncs until it is pressed, nor before the reader is known;
+// a failure leaves the button to try again.
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
 });
 
 describe('ShareOfflineGate', () => {
-  it('keeps the button shut until the reader is known', () => {
-    render(<ShareOfflineGate onSyncToCloud={vi.fn()} ready={false} onClose={vi.fn()} />);
-    expect(
-      (screen.getByRole('button', { name: 'Sync Document' }) as HTMLButtonElement).disabled,
-    ).toBe(true);
-  });
-
-  it('asks a signed-in person before syncing', () => {
+  it('says the document is offline and syncs nothing by itself', async () => {
     const sync = vi.fn(async () => {});
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
+    await act(async () => {});
+    expect(screen.getByText('This Document Is Offline')).toBeTruthy();
     expect(sync).not.toHaveBeenCalled();
+  });
+
+  it('syncs on Sync Document, showing progress, and confirms', async () => {
+    let finish!: () => void;
+    const sync = vi.fn(() => new Promise<void>((r) => (finish = r)));
+    render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
     expect(sync).toHaveBeenCalledOnce();
+    expect(screen.getByRole('button', { name: /Syncing/ }).getAttribute('aria-busy')).toBe('true');
+    await act(async () => finish());
+    expect(toast.success).toHaveBeenCalledOnce();
+    // Still busy until the dialog swaps the gate for the share options: no flash of the button.
+    expect(screen.getByRole('button', { name: /Syncing/ })).toBeTruthy();
   });
 
-  it("syncs a guest's document at once and shows the progress", async () => {
-    const sync = vi.fn(() => new Promise<void>(() => {}));
-    render(<ShareOfflineGate onSyncToCloud={sync} atOnce onClose={vi.fn()} />);
-    await act(async () => {});
-    expect(sync).toHaveBeenCalledOnce();
-    expect(screen.getByText('Getting a Share Link Ready')).toBeTruthy();
-    expect(screen.getByRole('status').textContent).toContain('open as soon as it is uploaded');
-  });
-
-  it('waits for the reader before syncing', async () => {
-    const sync = vi.fn(() => new Promise<void>(() => {}));
-    const { rerender } = render(
-      <ShareOfflineGate onSyncToCloud={sync} atOnce ready={false} onClose={vi.fn()} />,
-    );
-    await act(async () => {});
+  it('keeps the button shut until the reader is known', () => {
+    const sync = vi.fn();
+    render(<ShareOfflineGate onSyncToCloud={sync} ready={false} onClose={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Sync Document' }) as HTMLButtonElement;
+    expect(button.disabled).toBe(true);
+    fireEvent.click(button);
     expect(sync).not.toHaveBeenCalled();
-    expect(screen.getByText('Getting a Share Link Ready')).toBeTruthy();
-    rerender(<ShareOfflineGate onSyncToCloud={sync} atOnce ready onClose={vi.fn()} />);
-    await act(async () => {});
-    expect(sync).toHaveBeenCalledOnce();
   });
 
-  it('falls back to the button, once, when the sync fails', async () => {
+  it('says why and offers the button again when the sync fails', async () => {
     const sync = vi.fn(async () => {
       throw new Error('offline');
     });
-    render(<ShareOfflineGate onSyncToCloud={sync} atOnce onClose={vi.fn()} />);
+    render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
     await act(async () => {});
-    expect(sync).toHaveBeenCalledOnce();
     expect(toast.error).toHaveBeenCalledOnce();
-    expect(screen.getByRole('button', { name: 'Sync Document' })).toBeTruthy();
+    expect(
+      (screen.getByRole('button', { name: 'Sync Document' }) as HTMLButtonElement).disabled,
+    ).toBe(false);
   });
 });

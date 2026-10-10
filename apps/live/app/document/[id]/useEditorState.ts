@@ -173,6 +173,7 @@ import {
   mergeAiElements,
   patchTab,
 } from './editor-page-helpers';
+import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
@@ -889,6 +890,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
+  });
+  // Sync Document from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
+  // in place").
+  const syncToCloud = useSyncInPlace({
+    documentId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
+    resetTabs,
+    lastSavedTabsRef,
+    setDocumentServerStored: realtime.setDocumentServerStored,
+    refreshDocumentList,
   });
 
   // Persist self only when name or color actually changed. Without
@@ -3599,6 +3611,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
+    syncToCloud,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,

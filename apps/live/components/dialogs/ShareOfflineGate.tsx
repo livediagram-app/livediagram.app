@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button, Glyph, DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -9,89 +9,40 @@ import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 import { Spinner } from '@/components/palette/template-picker-icons';
 
-// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md). An offline document is stored only
-// in this browser, so there are no links to mint until it's synced to the
-// owner's account. Rather than hide the Share button, we keep it and explain
-// the one-step conversion here: sync moves the document to the cloud, then the
-// page reloads into the normal share flow, where Share opens again by itself.
-//
-// `atOnce` (a guest, "Sharing a guest's Local only document"): pressing Share was the ask, so the sync
-// starts as the gate opens, once `ready` (the reader is known), and the gate shows its progress. A
-// failure drops back to the gate's own button.
+// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md "Sharing a Local only
+// document"). An offline document is stored only in this browser, so there are no links to mint until it
+// is synced. The gate says so and offers Sync Document; the sync converts the open document in place
+// ("Syncing in place"), with no reload, and the Share dialog swaps the gate for its share options as the
+// document stops being offline. Sync waits for `ready` (the reader is known).
 export function ShareOfflineGate({
   onSyncToCloud,
-  atOnce = false,
   ready = true,
   onClose,
 }: {
   onSyncToCloud: () => Promise<void>;
-  atOnce?: boolean;
   ready?: boolean;
   onClose: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
-  // The one-click sync gave up: the gate's own button takes over.
-  const [atOnceFailed, setAtOnceFailed] = useState(false);
-  const atOnceStarted = useRef(false);
 
   const sync = async () => {
-    if (!ready) return;
+    if (!ready || busy) return;
     setBusy(true);
     try {
       await onSyncToCloud();
-      // onSyncToCloud reloads the page on success, so we normally never fall
-      // through. If it resolves without navigating, drop the spinner.
-      setBusy(false);
+      // The document is a cloud document now: the dialog shows the share options in place of this
+      // gate. The spinner stays until it does, so the button never flashes back.
+      toast.success('Synced. Your document is on livediagram now.');
     } catch (e) {
       setBusy(false);
       toast.error(syncFailureMessage(e));
     }
   };
 
-  // Once per gate, once the reader is known: a failure leaves the button, never a retry loop.
-  const startAtOnce = useEffectEvent(() => {
-    if (!atOnce || !ready || atOnceStarted.current) return;
-    atOnceStarted.current = true;
-    onSyncToCloud().catch((e: unknown) => {
-      setAtOnceFailed(true);
-      toast.error(syncFailureMessage(e));
-    });
-  });
-  useEffect(() => {
-    startAtOnce();
-  }, [atOnce, ready]);
-
-  // A guest's one-click share: the progress, not the question.
-  const preparing = atOnce && !atOnceFailed;
-  if (preparing) {
-    return (
-      <Dialog open onClose={onClose} ariaLabel="Getting a share link ready" size="md">
-        <DialogHeader
-          title="Getting a Share Link Ready"
-          subtitle="Uploading this document so others can open it."
-        >
-          <HelpArticleLink article="offlineMode" size="md" />
-        </DialogHeader>
-        <p
-          role="status"
-          className="flex items-center justify-center gap-2 px-6 py-8 text-xs text-slate-500 dark:text-slate-400"
-        >
-          <span className="text-sky-600 dark:text-sky-400">
-            <Spinner />
-          </span>
-          The Share options open as soon as it is uploaded.
-        </p>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open onClose={onClose} ariaLabel="Share this document" size="md">
-      <DialogHeader
-        title="Share this document"
-        subtitle="This document is saved offline, in this browser only."
-      >
+      <DialogHeader title="Share this document" subtitle="Saved only in this browser.">
         <HelpArticleLink article="offlineMode" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
@@ -105,16 +56,28 @@ export function ShareOfflineGate({
         </span>
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-            Sync it to your account to share
+            This Document Is Offline
           </p>
           <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            Share links, real-time collaboration, and the live image all need the document to live
-            on our servers. Syncing uploads this document to your account and keeps working on it
-            here. You can take it offline again any time.
+            It is saved only in this browser, so there is nothing to share yet. Sync it to
+            livediagram to share it: share links, real-time collaboration and the live image all
+            need it on our servers. You can take it offline again any time.
           </p>
         </div>
-        <Button onClick={() => void sync()} disabled={busy || !ready} className="mt-1 shadow-sm">
-          {busy ? 'Syncing…' : 'Sync Document'}
+        <Button
+          onClick={() => void sync()}
+          disabled={busy || !ready}
+          aria-busy={busy}
+          className="mt-1 shadow-sm"
+        >
+          {busy ? (
+            <span className="inline-flex items-center gap-2">
+              <Spinner />
+              Syncing…
+            </span>
+          ) : (
+            'Sync Document'
+          )}
         </Button>
       </div>
 

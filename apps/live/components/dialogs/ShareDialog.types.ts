@@ -45,9 +45,8 @@ export type ShareDialogProps = {
   // conversion (offline -> cloud), after which the real share options apply.
   offline?: boolean;
   onSyncToCloud?: () => Promise<void>;
-  // A guest's Share syncs in one click (docs/specs/006-document/offline-mode.md "Sharing a guest's Local
-  // only document"): the gate starts the sync as it opens, once `syncReady` (the reader is known).
-  syncAtOnce?: boolean;
+  // Whether the reader is known yet, so Sync Document can run (a Local only document opens before it is,
+  // docs/specs/006-document/offline-mode.md "Instant open").
   syncReady?: boolean;
   // The Community band (docs/specs/025-community/community.md "Publishing"), drawn beneath the
   // password; absent where publishing doesn't apply.

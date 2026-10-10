@@ -210,25 +210,54 @@ in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
 the move prompt ([Auth + guest access → Moving Local only documents after signing in](../014-identity/auth-and-guest-access.md#moving-local-only-documents-after-signing-in)).
 
-### Sharing a guest's Local only document
+### Sharing a Local only document
 
-Share is how most guests find out a document needs the server, so for a guest it
-is **one click**:
+Share is how most people find out a document needs the server. Pressing it never
+uploads anything by itself; the dialog explains and asks, for a guest and a
+signed-in person alike:
 
-- **A guest** pressing Share on a Local only document starts Sync Document at
-  once. The Share dialog opens on its syncing state, **Getting a Share Link
-  Ready**, "Uploading this document so others can open it.", then the page
-  reloads and the Share dialog opens again by itself on the now-cloud document.
-  The upload is owned by the guest id like any guest cloud document.
-- **A signed-in person** sees the gate as before (a deliberate Local only
-  document is not uploaded without asking): **Sync Document** syncs, and the
-  Share dialog opens by itself after the reload.
-- The reopen rides a one-shot `sessionStorage` flag
-  (`livediagram:v2:share-after-sync`, holding the document id) set just before
-  the reload and cleared when read; the editor opens Share only when the id
-  matches the document it loaded.
-- A failed sync keeps the document Local only and shows the gate's failure toast
-  (`syncFailureMessage`); nothing is half-uploaded (see below).
+- **The gate.** Share on a Local only document opens the Share dialog on its
+  offline gate (`ShareOfflineGate`): **This Document Is Offline**, "It is saved only
+  in this browser, so there is nothing to share yet. Sync it to livediagram to
+  share it: share links, real-time collaboration and the live image all need it
+  on our servers. You can take it offline again any time.", with **Sync Document**
+  and Cancel.
+- **Sync Document** syncs the open document **in place** (below): the button shows
+  **Syncing…** with a spinner, then a toast confirms "Synced. Your document is on
+  livediagram now." and the same dialog shows the share options. No reload, no
+  second press of Share. A guest's upload is owned by the guest id like any guest
+  cloud document.
+- The button waits for the reader to be known (an early open runs under the
+  `'self'` placeholder, [Instant open](#instant-open)).
+- A failed sync keeps the document Local only, says why in a toast
+  (`syncFailureMessage`) and leaves the button to try again; nothing is
+  half-uploaded (see below).
+
+### Syncing in place
+
+Sync Document from inside the editor (`useSyncInPlace` in
+`app/document/[id]/useSyncInPlace.ts`) converts the open document without a
+reload:
+
+1. **It waits for this browser's last save** to land (`hasUnsavedChanges`), up to
+   `SYNC_SAVE_WAIT_MS` (5 s), so the record it uploads is what is on screen and no
+   save lands in a record about to be deleted. Past that it refuses with
+   `SyncStillSavingError` ("Still saving this document. Try again in a moment.").
+2. **It uploads** with `saveOfflineToCloud`, which returns the images it re-homed
+   (data URI → gallery id).
+3. **The offline index announces the move** (`subscribeOfflineIds` in
+   `lib/offline/offline-store.ts`, told on every create, sync and Take Offline).
+   What reads offline-ness follows it: the header badge and every
+   `useIsOfflineDocument` (so the Share dialog swaps the gate for its options), the
+   Plan board's items (`usePlanItems` loads the server's store and revision) and
+   the sheets (`SheetStore.resync`, so confirmed revisions are the server's).
+4. **The open tabs' images are re-pointed** at their gallery copies, in the editor
+   and in its last-saved copy, so the next save does not write the data URIs back.
+5. **The room opens** (`documentServerStored` turns true) and the Explorer list
+   refreshes.
+
+The Explorer's row menu and the move prompt after signing in still reload after a
+sync: the document there is not the one on screen, or several move at once.
 
 ### Save to server (Offline → Cloud)
 
@@ -262,8 +291,9 @@ Share dialog gate, and the move prompt after signing in).
   keeps its ids.
 - On success the **local copy is removed** from IndexedDB so there's one source
   of truth; the document is now a cloud document (Share / AI / Teams reappear). The
-  id is unchanged, so the route stays the same: the editor reloads to re-hydrate
-  it as a cloud document.
+  id is unchanged, so the route stays the same: from the Share dialog the editor
+  turns into the cloud document in place ([Syncing in place](#syncing-in-place));
+  from the Explorer it reloads.
 
 ### Take offline (Cloud → Offline)
 
@@ -403,9 +433,10 @@ Track adoption without content, reusing the closed vocabulary:
   on Not Now. Each document it moves also sends the conversion event below.
 - On conversion, a coarse event for each direction, so uptake and the
   destructive take-offline path are visible: `Document`/`Moved` with type
-  `SavedToCloud` or `TakenOffline`, emitted from the shared
-  `useOfflineConversion` handlers after the conversion succeeds and before
-  the reload (the telemetry engine's pagehide beacon carries it through).
+  `SavedToCloud` or `TakenOffline`, emitted after the conversion succeeds: from
+  the shared `useOfflineConversion` handlers before their reload (the telemetry
+  engine's pagehide beacon carries it through), from `useSyncInPlace` for the
+  Share dialog, and per document from the move prompt.
 - No document content or ids ever leave (the `type` bound in [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) holds).
 
 ## Non-goals
@@ -434,8 +465,8 @@ Track adoption without content, reusing the closed vocabulary:
 - Guest default + instant open: `lib/save-locations.ts` (`defaultSaveLocationFor`),
   `lib/signed-in-hint.ts`, `app/new/useNewDocumentLocation.ts`, the early open in
   `app/document/[id]/useIdentityBootstrap.ts` with `app/document/[id]/resolve-participant.ts`.
-- One-click guest share: `components/dialogs/ShareOfflineGate.tsx` (`atOnce`, `ready`),
-  `lib/offline/share-after-sync.ts`, `hooks/persistence/useShareAfterSync.ts`.
+- Share's offline gate and syncing in place: `components/dialogs/ShareOfflineGate.tsx`,
+  `app/document/[id]/useSyncInPlace.ts`, `subscribeOfflineIds` in `lib/offline/offline-store.ts`.
 - The move prompt after signing in: `components/dialogs/LocalMovePrompt.tsx`,
   `hooks/persistence/useLocalMovePrompt.ts`, `lib/offline/local-move-dismissal.ts`.
 - Conversion actions (Explorer row menu + the Share dialog's offline gate):
