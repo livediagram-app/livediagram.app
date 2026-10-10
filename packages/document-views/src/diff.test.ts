@@ -25,6 +25,19 @@ describe('diffView (R17, VW36)', () => {
     ]);
   });
 
+  // An added id sharing a 4-character prefix lengthens refs (0bcd → 0bcd1): nothing else changed, and the diff
+  // compares ids, so it says only what was added.
+  it('reports only the added element when its id lengthens other refs', () => {
+    const frame = shapeAt('frame', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
+    const inside = shapeAt('square', 'n1', 10, 10, 100, 50, { label: 'In' });
+    const target = shapeAt('square', 'n2', 600, 0, 100, 50, { label: 'Out' });
+    const arrow = arrowBetween('a1', '0bcd1111-x', 'n2');
+    const added = shapeAt('square', '0bcd2222-x', 900, 0, 100, 50, { label: 'New' });
+    expect(
+      changeLines([frame, inside, target, arrow], [frame, inside, target, arrow, added]),
+    ).toEqual(['+ square 0bcd2 "New"']);
+  });
+
   it('says 0 changes for the same tab', () => {
     expect(diffView(checkoutTab(), checkoutTab(), { since: 41, rev: 41 }).text).toBe(
       'tab 0b34 "Checkout platform" · since rev 41 · rev 41 · 0 changes',

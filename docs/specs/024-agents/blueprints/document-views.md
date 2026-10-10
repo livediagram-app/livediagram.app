@@ -495,6 +495,9 @@ the root), a summary `<a> → <b>`, an attribute `<key> <a> → <b>`, `comments 
 A missing label, summary or attribute prints `none` and a flag attribute `on` (`VW63`); a summary change prints the
 two summaries alone. Each change speaks for the stored fields behind it; the others that differ are the other fields.
 Removed lines come first in the before tab's order; added and changed follow in the after tab's order.
+The two reads have two ref tables, and one added id can lengthen another's ref (`0bcd` becomes `0bcd1`), so `in`,
+`from` and `to` compare ids (the container's id, each end's element, arrow or free point); refs are only how a
+change prints (the before tab's for `<a>`, the after tab's for `<b>`).
 
 **`overview`** (`VW37`):
 
