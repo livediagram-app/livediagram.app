@@ -18,9 +18,11 @@ import {
 } from '@livediagram/api-schema';
 import {
   acquireDriveLease,
+  bindDriveAccount,
   createBrowserConnection,
   deleteDriveItem,
   DriveItemConflictError,
+  getDriveAccountId,
   getDriveConnection,
   getSealedRefreshToken,
   listDriveItems,
@@ -33,6 +35,7 @@ import {
 import { driveMode } from '../drive/config';
 import { importDriveKey, openRefreshToken, sealRefreshToken } from '../drive/crypto';
 import { disconnectDrive } from '../drive/disconnect';
+import { fetchGoogleAccountId } from '../drive/google-account';
 import { exchangeCode, GoogleOAuthError, refreshAccessToken } from '../drive/google-oauth';
 import { isAllowedRedirectUri, signDriveState, verifyDriveState } from '../drive/state';
 import { json, noContent, notFound, signInRequired } from '../responses';
@@ -164,8 +167,13 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
       return driveError(400, 'invalid_state');
     }
     let refreshToken: string | null;
+    let accountId: string;
     try {
-      ({ refreshToken } = await exchangeCode(env, code, redirectUri, now));
+      let accessToken: string;
+      ({ accessToken, refreshToken } = await exchangeCode(env, code, redirectUri, now));
+      // Which Google account consented: a different one than before must not
+      // inherit the first account's root folder, page token and items.
+      accountId = await fetchGoogleAccountId(env, accessToken);
     } catch (err) {
       logOutcome(
         'connect',
@@ -176,9 +184,15 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
     if (!refreshToken) {
       // Google sends a refresh token only on the first consent (or with
       // prompt=consent). Without one and nothing stored, the broker cannot
-      // mint tokens later, so the connection would be hollow.
+      // mint tokens later, so the connection would be hollow. A stored one
+      // from another Google account would mint tokens for the wrong account.
       if (!(await getSealedRefreshToken(env, owner))) {
         logOutcome('connect', 'no_refresh_token');
+        return driveError(502, 'drive_no_refresh_token');
+      }
+      const recorded = await getDriveAccountId(env, owner);
+      if (recorded !== null && recorded !== accountId) {
+        logOutcome('connect', 'no_refresh_token account_changed');
         return driveError(502, 'drive_no_refresh_token');
       }
     } else {
@@ -189,6 +203,9 @@ export async function handleDrive(ctx: RouteContext): Promise<Response> {
         await sealRefreshToken(key, owner, refreshToken),
         now,
       );
+    }
+    if (await bindDriveAccount(env, owner, accountId)) {
+      logOutcome('connect', 'account_changed state_cleared');
     }
     await setDriveConnectionStatus(env, owner, 'connected');
     logOutcome('connect', 'ok');

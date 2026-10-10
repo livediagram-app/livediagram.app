@@ -22,6 +22,7 @@ type ConnectionRow = {
   connected_at: number;
   lease_holder: string | null;
   lease_expires_at: number | null;
+  google_account_id: string | null;
 };
 
 type ItemRow = {
@@ -95,9 +96,46 @@ export async function getSealedRefreshToken(env: Env, ownerId: string): Promise<
   return (await connectionRow(env, ownerId))?.refresh_token_enc ?? null;
 }
 
+// The Google account the connection was last consented by, or null (none
+// recorded yet, or no connection).
+export async function getDriveAccountId(env: Env, ownerId: string): Promise<string | null> {
+  return (await connectionRow(env, ownerId))?.google_account_id ?? null;
+}
+
+// Record the Google account of a consent (docs/specs/022-drive-mirror/drive-mirror.md, "Reconnecting
+// with another Google account"). When a different account was recorded, its
+// root folder, page token and every mirrored item name that account's files,
+// so they go in the same batch; an unrecorded account (a row from before the
+// column existed) is adopted without clearing. Returns whether state was cleared.
+export async function bindDriveAccount(
+  env: Env,
+  ownerId: string,
+  accountId: string,
+): Promise<boolean> {
+  const changed = `EXISTS (SELECT 1 FROM drive_connections WHERE owner_id = ?1
+                     AND google_account_id IS NOT NULL AND google_account_id <> ?2)`;
+  const results = await env.DB.batch([
+    env.DB.prepare(`DELETE FROM drive_items WHERE owner_id = ?1 AND ${changed}`).bind(
+      ownerId,
+      accountId,
+    ),
+    env.DB.prepare(
+      `UPDATE drive_connections
+          SET root_folder_id = NULL, page_token = NULL, page_token_saved_at = NULL
+        WHERE owner_id = ?1 AND google_account_id IS NOT NULL AND google_account_id <> ?2`,
+    ).bind(ownerId, accountId),
+    env.DB.prepare('UPDATE drive_connections SET google_account_id = ?2 WHERE owner_id = ?1').bind(
+      ownerId,
+      accountId,
+    ),
+  ]);
+  return (results[1]?.meta.changes ?? 0) > 0;
+}
+
 // A consent in broker mode: store the sealed token, mark the connection
 // connected. A reconnect keeps the root folder and page token, which are
-// still valid for the same Google account's files.
+// still valid for the same Google account's files; bindDriveAccount clears
+// them when the account changed.
 export async function upsertBrokerConnection(
   env: Env,
   ownerId: string,

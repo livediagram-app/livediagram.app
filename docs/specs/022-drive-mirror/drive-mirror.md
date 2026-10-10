@@ -196,6 +196,23 @@ this spec does not restate it.
 - **Revoked or expired grant** (`invalid_grant`, or six months unused): the
   connection turns **Needs reconnecting**; the Cloud Sync row and a quiet banner offer
   **Reconnect**. Nothing is deleted.
+- **Reconnecting with another Google account.** Every consent asks Drive which
+  account it belongs to (`about.user.permissionId`, the account's stable id;
+  the consent asks only for `drive.file` and `drive.install`, so there is no
+  id token and no `sub` to read, and `about` answers under `drive.file`) and
+  records it on the connection. When a consent comes from a different account
+  than the one recorded, the root folder, the page token and every mirrored
+  item belong to the first account's Drive, so they are cleared in the same
+  step and the next pass starts a fresh mirror in the new account, as after a
+  disconnect. The first account's files stay where they are. If the new
+  account sent no refresh token, the stored one is the first account's, so the
+  connect answers `502 drive_no_refresh_token` and changes nothing (the app
+  always asks with `prompt=consent`, so Google sends one in practice). A consent from the same account keeps
+  everything. A connection made before accounts were recorded adopts the first
+  account that consents without clearing anything, since nothing tells whether
+  it changed. If Drive cannot name the account, the connect answers
+  `502 drive_exchange_failed` and stores nothing. Browser-only mode has no
+  server-side consent and records no account.
 
 ## The file
 
@@ -497,7 +514,8 @@ D1, owned by the api worker:
 - `drive_connections`: `owner_id` (Clerk user id, primary key),
   `refresh_token_enc`, `root_folder_id`, `page_token`, `page_token_saved_at`,
   `status` (`connected` | `needs_reconnect`), `connected_at`, `lease_holder`,
-  `lease_expires_at`.
+  `lease_expires_at`, `google_account_id` (the consenting Google account's
+  `permissionId`, migration `0088`; null until a broker consent records it).
 - `drive_items`: `owner_id`, `item_kind` (`diagram` | `folder`), `ld_id`,
   `drive_file_id`, and the last written `name`, `parent_id`, `trashed`,
   `md5`, `head_revision_id`, plus `mirrored_saved_at` (the document revision

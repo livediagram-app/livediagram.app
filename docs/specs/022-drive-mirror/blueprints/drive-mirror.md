@@ -11,6 +11,8 @@ Scope, by file:
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/drive.ts`                              | Wire types, `DriveMode`, `DRIVE_*` shared constants, `driveFileName`                    |
 | `apps/api/migrations/0057_drive_mirror.sql`                     | `drive_connections`, `drive_items`                                                      |
+| `apps/api/migrations/0088_drive_google_account.sql`             | `drive_connections.google_account_id`                                                   |
+| `apps/api/src/drive/google-account.ts`                          | Which Google account a consent belongs to (Drive `about`)                               |
 | `apps/api/src/drive/config.ts`                                  | `driveMode(env)`, the Google OAuth origin                                               |
 | `apps/api/src/drive/crypto.ts`                                  | AES-GCM seal / open of the refresh token                                                |
 | `apps/api/src/drive/state.ts`                                   | Signed consent `state`                                                                  |
@@ -383,6 +385,22 @@ now + `DRIVE_STATE_TTL_MS`, `nonce` 16 random bytes. `verifyDriveState(key, stat
 `invalid_grant` becomes `GoogleOAuthError('invalid_grant')`; any other failure `GoogleOAuthError('failed')`.
 Revoke is best effort: failures are logged, never thrown.
 
+### Google account (`drive/google-account.ts`)
+
+`fetchGoogleAccountId(env, accessToken)`: `GET ${googleApiBase(env)}/drive/v3/about?fields=user(permissionId)` with
+`Authorization: Bearer <accessToken>`, where `googleApiBase` is `GOOGLE_OAUTH_BASE_URL` (the test fake serves both)
+or `https://www.googleapis.com`. Returns the non-empty `user.permissionId`; a network failure, a non-2xx or a missing
+id throws `GoogleOAuthError('failed')`.
+
+`POST /drive/connect`, after the verified state: `exchangeCode`, then `fetchGoogleAccountId` with the fresh access
+token; either throwing → `502 drive_exchange_failed`, nothing stored. No refresh token: none stored →
+`502 drive_no_refresh_token`; one stored but `getDriveAccountId` names another account →
+`502 drive_no_refresh_token`, logged `drive: connect no_refresh_token account_changed`, nothing changed. Otherwise
+`upsertBrokerConnection`, then `bindDriveAccount(env, owner, accountId)`: one batch that, only when the recorded
+account is non-null and differs, deletes the owner's `drive_items` and nulls `root_folder_id`, `page_token` and
+`page_token_saved_at`, then records the account. A null recorded account (a row from before `0088`) is adopted
+without clearing. Returns whether it cleared; true logs `drive: connect account_changed state_cleared`.
+
 ### DriveClient (`lib/drive/drive-client.ts`)
 
 ```ts
@@ -487,10 +505,13 @@ CREATE TABLE drive_items (
 CREATE INDEX drive_items_ld_idx ON drive_items (item_kind, ld_id);
 ```
 
+`0088_drive_google_account.sql`: `ALTER TABLE drive_connections ADD COLUMN google_account_id TEXT`.
+
 | Field                          | Class             | Notes                                                                |
 | ------------------------------ | ----------------- | -------------------------------------------------------------------- |
 | `refresh_token_enc`            | secret, encrypted | `v1.<iv b64url>.<ciphertext b64url>`, AAD = owner id; never read out |
 | `root_folder_id`, `page_token` | mirror state      | Drive ids, not personal data                                         |
+| `google_account_id`            | account link      | Drive `permissionId` of the consenting account; never on the wire    |
 | `lease_*`                      | coordination      | Overwritten freely                                                   |
 | `drive_items.name`, `ld_name`  | user content      | Document and folder names, as the documents table already holds      |
 | everything else                | mirror state      |                                                                      |
@@ -513,6 +534,8 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 | 404 on the root                                         | Root treated as missing; step 3 of the pass runs                                                |
 | 5xx from Google or the api                              | Pass ends, `error = 'failed'`, logged                                                           |
 | `invalid_grant`                                         | Row `needs_reconnect`, `409`, banner                                                            |
+| Reconnect by a different Google account                 | Root, page token and items cleared with the new account recorded; fresh mirror next pass        |
+| Different account, no refresh token sent                | `502 drive_no_refresh_token`; the first account's token and state untouched                     |
 | Content over 5 MB                                       | Resumable upload                                                                                |
 | Thumbnail render fails                                  | Upload without thumbnail, logged                                                                |
 | Two devices                                             | Lease; the other still runs inbound                                                             |
@@ -726,6 +749,7 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Encryption, AAD, never returned             | `apps/api/src/drive/crypto.test.ts`, `routes/drive.test.ts`             |
 | Signed state                                | `apps/api/src/drive/state.test.ts`                                      |
 | Token routes, `invalid_grant`, revoke       | `apps/api/src/routes/drive.test.ts`                                     |
+| Reconnect by another Google account         | `routes/drive.test.ts` (`reconnecting with another Google account`)     |
 | Clerk-only, 503 when off                    | `routes/drive.test.ts`                                                  |
 | Rows removed with document, folder, account | `db/drive-removal.test.ts`, `account-owner-columns.test.ts`             |
 | OpenAPI parity                              | `openapi/route-parity.test.ts`                                          |

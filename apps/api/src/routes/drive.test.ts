@@ -22,15 +22,25 @@ const BROWSER: Partial<Env> = { GOOGLE_CLIENT_ID: 'cid' };
 type GoogleReply = { status: number; body: unknown };
 let googleReplies: GoogleReply[] = [];
 let googleCalls: { url: string; form: URLSearchParams }[] = [];
+// Drive's `about` answers for the Google account that consented, kept apart
+// from the OAuth queue above: every consent asks it once.
+let googleAccount: GoogleReply = { status: 200, body: { user: { permissionId: 'google-1' } } };
+let aboutCalls: { url: string; auth: string | null }[] = [];
 
 beforeEach(() => {
   googleReplies = [];
   googleCalls = [];
+  aboutCalls = [];
+  googleAccount = { status: 200, body: { user: { permissionId: 'google-1' } } };
   vi.spyOn(console, 'log').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init: RequestInit) => {
+      if (url.includes('/drive/v3/about')) {
+        aboutCalls.push({ url, auth: new Headers(init.headers).get('Authorization') });
+        return new Response(JSON.stringify(googleAccount.body), { status: googleAccount.status });
+      }
       googleCalls.push({ url, form: new URLSearchParams(String(init.body)) });
       const reply = googleReplies.shift() ?? { status: 500, body: {} };
       return new Response(JSON.stringify(reply.body), { status: reply.status });
@@ -201,6 +211,96 @@ describe('POST /drive/state and /drive/connect (broker)', () => {
     const res = await call(db, 'POST', '/connect', { body: { code: 'c', state } });
     expect(res.status).toBe(502);
     expect(await body(res)).toEqual({ error: 'drive_no_refresh_token' });
+  });
+});
+
+// docs/specs/022-drive-mirror/drive-mirror.md "Reconnecting with another Google account".
+describe('reconnecting with another Google account', () => {
+  const as = (permissionId: string) => {
+    googleAccount = { status: 200, body: { user: { permissionId } } };
+  };
+  async function mirrorState(db: SqliteD1) {
+    await call(db, 'PUT', '/connection', { body: { rootFolderId: 'root-a', pageToken: 'pt-a' } });
+    await call(db, 'PUT', '/items', { body: { items: [item()] } });
+  }
+  const connection = async (db: SqliteD1) =>
+    (await body<{ connection: Record<string, unknown> }>(await call(db, 'GET', '/connection')))
+      .connection;
+  const items = async (db: SqliteD1) =>
+    (await body<{ items: unknown[] }>(await call(db, 'GET', '/items'))).items;
+
+  it('asks Drive which account consented, with the fresh access token', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    expect(aboutCalls).toEqual([
+      {
+        url: 'https://oauth.test/drive/v3/about?fields=user(permissionId)',
+        auth: 'Bearer at',
+      },
+    ]);
+  });
+
+  it('keeps the root folder, page token and items for the same account', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    await mirrorState(db);
+    await connect(db);
+    expect(await connection(db)).toMatchObject({ rootFolderId: 'root-a', pageToken: 'pt-a' });
+    expect(await items(db)).toHaveLength(1);
+  });
+
+  it('clears the root folder, page token and items when another account consents', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    await mirrorState(db);
+    as('google-2');
+    const res = await connect(db);
+    expect(res.status).toBe(200);
+    expect(await connection(db)).toMatchObject({
+      status: 'connected',
+      rootFolderId: null,
+      pageToken: null,
+      pageTokenSavedAt: null,
+    });
+    expect(await items(db)).toEqual([]);
+    const row = db.sql
+      .prepare('SELECT google_account_id FROM drive_connections WHERE owner_id = ?')
+      .get('user_a');
+    expect(row).toEqual({ google_account_id: 'google-2' });
+  });
+
+  it('adopts the account on a connection made before accounts were recorded, clearing nothing', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    await mirrorState(db);
+    db.sql.exec('UPDATE drive_connections SET google_account_id = NULL');
+    as('google-2');
+    await connect(db);
+    expect(await connection(db)).toMatchObject({ rootFolderId: 'root-a', pageToken: 'pt-a' });
+    expect(await items(db)).toHaveLength(1);
+  });
+
+  it('refuses another account that sent no refresh token, keeping the first account intact', async () => {
+    const db = sqliteD1(BROKER);
+    await connect(db);
+    await mirrorState(db);
+    as('google-2');
+    const state = await signDriveState(KEY, 'user_a', URI, Date.now());
+    googleReplies.push({ status: 200, body: { access_token: 'at', expires_in: 3600 } });
+    const res = await call(db, 'POST', '/connect', { body: { code: 'c', state } });
+    expect(res.status).toBe(502);
+    expect(await body(res)).toEqual({ error: 'drive_no_refresh_token' });
+    expect(await connection(db)).toMatchObject({ rootFolderId: 'root-a', pageToken: 'pt-a' });
+    expect(await items(db)).toHaveLength(1);
+  });
+
+  it('answers 502 drive_exchange_failed, storing nothing, when Drive cannot name the account', async () => {
+    const db = sqliteD1(BROKER);
+    googleAccount = { status: 403, body: { error: { message: 'forbidden' } } };
+    const res = await connect(db);
+    expect(res.status).toBe(502);
+    expect(await body(res)).toEqual({ error: 'drive_exchange_failed' });
+    expect(await getSealedRefreshToken(db.env, 'user_a')).toBeNull();
   });
 });
 

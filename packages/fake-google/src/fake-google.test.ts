@@ -86,6 +86,14 @@ describe('auth', () => {
     expect((await call('GET', '/drive/v3/changes/startPageToken')).status).toBe(401);
   });
 
+  it('names the token user in about, honouring fields', async () => {
+    const { call } = setup();
+    expect((await call('GET', '/drive/v3/about?fields=user(permissionId)')).body).toEqual({
+      user: { permissionId: 'me' },
+    });
+    expect((await call('GET', '/drive/v3/about')).status).toBe(400);
+  });
+
   it('exchanges a code for tokens, refreshes, and answers invalid_grant once revoked', async () => {
     const fake = new FakeGoogle();
     const code = fake.consent('me');
