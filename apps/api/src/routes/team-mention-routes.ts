@@ -83,6 +83,7 @@ export async function handleTeamMentionRoutes(
       notifyMentioned(env, {
         recipientUserId: m.userId,
         recipientFallbackEmail: m.email,
+        authorUserId: userId,
         authorName,
         document: { id: liveDoc.id, name: liveDoc.name },
         commentText,

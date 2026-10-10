@@ -64,6 +64,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
     const limit = clampLimit(url.searchParams.get('limit'));
     const page = await readTimeline(env, {
       scope,
+      readerId: ownerId,
       limit,
       cursor: url.searchParams.get('cursor'),
       from: numberParam(url.searchParams.get('from')),

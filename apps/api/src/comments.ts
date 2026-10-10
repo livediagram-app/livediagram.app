@@ -41,6 +41,8 @@ export function rewriteCommentAuthors(
   const existingComments = new Map<
     string,
     {
+      text: string;
+      createdAt: number;
       authorName: string;
       authorColor: string;
       authorId?: string;
@@ -53,6 +55,8 @@ export function rewriteCommentAuthors(
     if (!thread?.comments) continue;
     for (const c of thread.comments) {
       existingComments.set(c.id, {
+        text: c.text,
+        createdAt: c.createdAt,
         authorName: c.authorName,
         authorColor: c.authorColor,
         authorId: c.authorId,
@@ -80,10 +84,14 @@ export function rewriteCommentAuthors(
         // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
         // someone else's mention after it was sent.
         const claimed = prior.authorId === undefined && c.authorId === writer.id;
+        // The words and the time lock the same way for anyone but the comment's author: an
+        // edit-role writer may delete someone else's comment, never put words in their mouth.
+        const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
         // The token id locks the same way (agent-presence I7): only the server stamps it.
         const { mentions: _sent, tokenId: _token, ...body } = c;
         return {
           ...body,
+          ...(own ? {} : { text: prior.text, createdAt: prior.createdAt }),
           authorName: prior.authorName,
           authorColor: prior.authorColor,
           authorId: claimed ? writer.id : prior.authorId,
@@ -190,11 +198,17 @@ export function redactTabDataAuthors(data: string, viewerId: string): string {
   }
 }
 
-// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
-// `prevElements`. Used by the tab-autosave handler to fire the "someone
-// commented on your document" notification only when a genuinely new comment
-// landed (not on every autosave).
-export function hasNewComments(nextElements: Element[], prevElements: Element[]): boolean {
+// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one
+// comment id not in `prevElements` written by `authorId`. Used by the tab-autosave handler to fire
+// the "someone commented on your document" notification only when a genuinely new comment landed
+// (not on every autosave), and only for the writer's own: a save can carry a peer's comment that
+// reached the writer live first, which is not the writer commenting. Pass the elements after
+// rewriteCommentAuthors, whose author ids the server set.
+export function hasNewComments(
+  nextElements: Element[],
+  prevElements: Element[],
+  authorId: string,
+): boolean {
   const seen = new Set<string>();
   for (const el of prevElements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
@@ -203,7 +217,7 @@ export function hasNewComments(nextElements: Element[], prevElements: Element[])
   for (const el of nextElements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
     for (const c of thread?.comments ?? []) {
-      if (!seen.has(c.id)) return true;
+      if (!seen.has(c.id) && c.authorId === authorId) return true;
     }
   }
   return false;

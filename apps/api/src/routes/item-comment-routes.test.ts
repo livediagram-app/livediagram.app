@@ -159,6 +159,31 @@ describe('deleting', () => {
     expect(last.status).toBe(200);
     expect(thread(last.body.item)).toBeUndefined();
   });
+
+  it('takes a deleted comment’s words off the Timeline, with the resolved snippet it opened', async () => {
+    const opening = thread((await post('the question')).body.item)!.comments[0]!;
+    const reply = thread((await post('an answer')).body.item)!.comments[1]!;
+    await call({ path: `/items/${item.id}/comments/resolve` });
+    const events = () =>
+      (
+        sql.sql
+          .prepare(
+            `SELECT event_type, source_id FROM timeline_events
+              WHERE event_type IN ('comment_added', 'comment_resolved') ORDER BY event_type, source_id`,
+          )
+          .all() as { event_type: string; source_id: string }[]
+      ).map((r) => `${r.event_type}:${r.source_id}`);
+    const resolved = `comment_resolved:d1:item:${item.id}`;
+    expect(events()).toEqual(
+      [`comment_added:${opening.id}`, `comment_added:${reply.id}`].sort().concat(resolved),
+    );
+
+    await call({ method: 'DELETE', path: `/items/${item.id}/comments/${reply.id}` });
+    expect(events()).toEqual([`comment_added:${opening.id}`, resolved]);
+
+    await call({ method: 'DELETE', path: `/items/${item.id}/comments/${opening.id}` });
+    expect(events()).toEqual([]);
+  });
 });
 
 describe('resolving', () => {

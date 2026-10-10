@@ -9,6 +9,7 @@ import type { Element, ShapeElement, Tab } from './index';
 import type { ElementAction } from './element-action';
 import type { CommentMention } from './comment-mentions';
 import { isComment, keepLocalTicks } from './element-deltas';
+import { reconcileRestoredElement } from './undo-live-reconcile';
 
 // A single comment inside a thread. The author is the participant who
 // wrote it (per `apps/live/lib/identity.ts`). The participant model is
@@ -172,6 +173,7 @@ export const LIVE_ELEMENT_FIELDS = [
   'ideasRevealed',
   'rollCall',
   'agendaCurrent',
+  'agendaTimerStartedAt',
   'pickerResult',
   // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
   // presses, not edits, so an undo must not un-start somebody's round.
@@ -196,6 +198,7 @@ type LiveFieldBag = {
   | 'ideasRevealed'
   | 'rollCall'
   | 'agendaCurrent'
+  | 'agendaTimerStartedAt'
   | 'pickerResult'
   | 'quizStartedAt'
   | 'quizLockedAt'
@@ -221,9 +224,12 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 export function graftLiveTabState(
   from: Tab[],
   onto: Tab[],
-  opts: { sessionFields?: boolean } = {},
+  // `mintRound` makes the new round id a reset needs (a quiz whose edit is
+  // undone); a test passes a fixed one.
+  opts: { sessionFields?: boolean; mintRound?: () => string } = {},
 ): Tab[] {
   const sessionFields = opts.sessionFields !== false;
+  const mintRound = opts.mintRound ?? (() => crypto.randomUUID());
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
@@ -263,6 +269,14 @@ export function graftLiveTabState(
         if (items !== next.checklistItems) {
           changed = true;
           next = { ...next, checklistItems: items };
+        }
+      }
+      // Presses that were about the authored fields follow them back.
+      if (next.type === 'shape' && liveEl?.type === 'shape') {
+        const reconciled = reconcileRestoredElement(next, liveEl, mintRound);
+        if (reconciled !== next) {
+          changed = true;
+          next = reconciled;
         }
       }
       return next;

@@ -217,6 +217,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: arrayRule(AGENDA_MAX_ITEMS, '{ label, minutes } rows'),
   },
   finite('agendaCurrent'),
+  finite('agendaTimerStartedAt'),
   { field: 'decisionStatus', valid: isDecisionStatus, rule: 'a decision status' },
   {
     field: 'decisionDate',

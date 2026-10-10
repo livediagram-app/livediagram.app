@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  answeringKeys,
   AWAY_AFTER_MS,
   OFFLINE_AFTER_MS,
   initialsOf,
@@ -10,6 +11,8 @@ import {
   statusFromIdleMs,
   statusLabel,
   statusRingColor,
+  uniqueParticipants,
+  type Participant,
   type ParticipantStatus,
 } from './identity';
 
@@ -143,5 +146,33 @@ describe('participantAccessibleName', () => {
     expect(participantAccessibleName({ ...webber, statusLine: 'adding payment service' })).toBe(
       'Webber (Online), adding payment service',
     );
+  });
+});
+
+describe('uniqueParticipants / answeringKeys', () => {
+  const p = (id: string, over: Partial<Participant> = {}): Participant => ({
+    id,
+    name: id,
+    color: '#000',
+    status: 'online',
+    ...over,
+  });
+
+  it('keeps one row per collab key, the first one winning', () => {
+    const me = p('owner', { key: 'k-me' });
+    const myOtherTab = p('socket-2', { key: 'k-me', name: 'Other tab' });
+    expect(uniqueParticipants([me, myOtherTab, p('legacy')])).toEqual([me, p('legacy')]);
+  });
+
+  it('counts only people who can answer: no view-link guests, no agents, no second tabs', () => {
+    expect(
+      answeringKeys([
+        p('owner', { key: 'k-me' }),
+        p('socket-2', { key: 'k-me' }),
+        p('viewer', { key: 'k-view', role: 'view' }),
+        p('editor', { key: 'k-ed', role: 'edit' }),
+        p('agent', { key: 'k-bot', agent: true }),
+      ]),
+    ).toEqual(['k-me', 'k-ed']);
   });
 });

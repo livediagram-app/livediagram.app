@@ -5,8 +5,10 @@
 //
 // Runs inside waitUntil after the first read is served, and stamps
 // `collab_index_state` so it never runs twice. Each tab gets the same
-// full-replace statements a save writes, so overlapping with a live
-// save is harmless: whichever lands last is a complete snapshot.
+// full-replace statements a save writes, guarded on the revision this
+// read: a save landing between the read and the write already indexed
+// the newer blob in its own batch, so the backfill's older rows for that
+// tab are skipped rather than written over it.
 
 import type { Element } from '@livediagram/document';
 import {
@@ -43,7 +45,7 @@ export async function backfillCollabIndex(env: Env, ownerId: string): Promise<vo
         // next rewrites it will. Skip rather than abort the seed.
         continue;
       }
-      stmts.push(...collabIndexStatements(env, tab.id, elements));
+      stmts.push(...collabIndexStatements(env, tab.id, elements, { tabId: tab.id, rev: tab.rev }));
     }
     if (stmts.length > 0) await env.DB.batch(stmts);
   }

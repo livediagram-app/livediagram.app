@@ -28,6 +28,7 @@ import {
   cardThreadsFromRows,
   type CardThreadRow,
 } from './plan-card-threads';
+import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
@@ -40,12 +41,16 @@ export function collabIndexStatements(
   env: Env,
   tabId: string,
   elements: Element[],
+  // The revision `elements` was read at, for a writer outside the save's own batch (the backfill).
+  guard: TabRevGuard = null,
 ): D1PreparedStatement[] {
   const rows = collabIndexRowsFromElements(elements);
+  const and = revGuardAnd(guard);
+  const g = revGuardBinds(guard);
   const stmts: D1PreparedStatement[] = [
-    env.DB.prepare('DELETE FROM collab_actions WHERE tab_id = ?').bind(tabId),
-    env.DB.prepare('DELETE FROM collab_threads WHERE tab_id = ?').bind(tabId),
-    ...planBoardIndexStatements(env, tabId, elements),
+    env.DB.prepare(`DELETE FROM collab_actions WHERE tab_id = ?${and}`).bind(tabId, ...g),
+    env.DB.prepare(`DELETE FROM collab_threads WHERE tab_id = ?${and}`).bind(tabId, ...g),
+    ...planBoardIndexStatements(env, tabId, elements, guard),
   ];
   for (const a of rows.actions) {
     stmts.push(
@@ -54,7 +59,7 @@ export function collabIndexStatements(
            (tab_id, element_id, action_id, element_label, name, description, status,
             assignee_user_id, assignee_member_id, assignee_name, assigner_id, assigner_name,
             team_id, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ${revGuardValues(15, guard)}`,
       ).bind(
         tabId,
         a.elementId,
@@ -71,6 +76,7 @@ export function collabIndexStatements(
         a.teamId,
         a.createdAt,
         a.updatedAt,
+        ...g,
       ),
     );
   }
@@ -81,7 +87,7 @@ export function collabIndexStatements(
            (tab_id, element_id, element_label, resolved, comment_count, participant_ids,
             mentioned_ids, latest_text, latest_author_name, latest_author_color, first_at,
             latest_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         ${revGuardValues(12, guard)}`,
       ).bind(
         tabId,
         t.elementId,
@@ -95,6 +101,7 @@ export function collabIndexStatements(
         t.latestAuthorColor,
         t.firstAt,
         t.latestAt,
+        ...g,
       ),
     );
   }
@@ -364,9 +371,9 @@ export async function listCollabTabsToBackfill(
   env: Env,
   ownerId: string,
   limit: number,
-): Promise<{ id: string; data: string }[]> {
+): Promise<{ id: string; data: string; rev: number }[]> {
   const res = await env.DB.prepare(
-    `SELECT DISTINCT t.id, t.data, t.updated_at
+    `SELECT DISTINCT t.id, t.data, t.rev, t.updated_at
        FROM tabs t
        JOIN document_tabs dt ON dt.tab_id = t.id
        JOIN documents d ON d.id = dt.document_id
@@ -380,8 +387,8 @@ export async function listCollabTabsToBackfill(
       LIMIT ?2`,
   )
     .bind(ownerId, limit)
-    .all<{ id: string; data: string }>();
-  return (res.results ?? []).map((r) => ({ id: r.id, data: r.data }));
+    .all<{ id: string; data: string; rev: number }>();
+  return (res.results ?? []).map((r) => ({ id: r.id, data: r.data, rev: r.rev }));
 }
 
 // Record that `ownerId` used to be `aliasId`, carrying over anything

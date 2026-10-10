@@ -266,7 +266,10 @@ the tabs of every document the reader can see (owned, joined-team,
 shared-with), cheaply pre-filtered in SQL to tabs whose JSON contains
 a `commentThread` or `action` key, capped at 300 tabs (logged when
 hit), and stamps `backfilled_at`. The write is the same full-replace
-per tab as a save, so overlapping with a live save is harmless. The
+per tab as a save, guarded on the tab's `rev` still being the one the
+backfill read: a save landing between the read and the write has already
+indexed the newer blob in its own batch, so that tab's older rows are
+skipped rather than written over it. The
 same state row moves with the owner on migration so the seed does not
 run twice against the new id.
 

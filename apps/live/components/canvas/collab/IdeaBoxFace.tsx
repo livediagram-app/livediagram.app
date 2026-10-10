@@ -9,7 +9,7 @@
 
 import { CountBadge } from '@livediagram/ui';
 import { useState } from 'react';
-import { IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/document';
+import { IDEA_MAX_CARDS, IDEA_MAX_TEXT, type ShapeElement } from '@livediagram/document';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { CollabComposer } from './CollabComposer';
@@ -46,7 +46,8 @@ export function IdeaBoxFace({
   textColor: string;
   /** The card's own fill, for the accent scope. */
   surface: string;
-  onAddIdea?: (text: string) => void;
+  // Returns whether the idea went in (false when the box is full).
+  onAddIdea?: (text: string) => boolean;
   onReveal?: () => void;
   // Empty the box for the next round. It lives in the `…` rather than beside
   // Open the box: opening is the act the element exists for, and a Clear
@@ -112,6 +113,7 @@ export function IdeaBoxFace({
               ariaLabel="Add an anonymous idea"
               sendLabel="Submit idea"
               maxLength={IDEA_MAX_TEXT}
+              full={cards.length >= IDEA_MAX_CARDS ? 'Box is full' : undefined}
               onSubmit={(text) => onAddIdea(text)}
               meta={<AnonymousBadge />}
             />

@@ -21,6 +21,7 @@ export * from './team-invites';
 export * from './teams';
 export * from './api-tokens';
 export * from './email-lifecycle';
+export * from './notify-email-claims';
 export * from './notification-prefs';
 export * from './account';
 export * from './auth-sightings';

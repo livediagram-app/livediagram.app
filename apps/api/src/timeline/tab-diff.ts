@@ -51,6 +51,48 @@ export function newComments(next: Element[], prev: Element[]): (Comment & { repl
   return added;
 }
 
+// Comments a save credits to an author for the first time: a peer's comment that reached the
+// saver live is stored without an author id (rewriteCommentAuthors credits it by the room's
+// name), and the author's own later save claims it. That claim is when its timeline actor is
+// known, so the event recorded at first sight without one gets it then.
+export function claimedComments(
+  next: Element[],
+  prev: Element[],
+): (Comment & { reply: boolean })[] {
+  const unclaimed = new Set<string>();
+  for (const el of prev) {
+    for (const c of threadOf(el)?.comments ?? []) if (c.authorId === undefined) unclaimed.add(c.id);
+  }
+  if (unclaimed.size === 0) return [];
+  const claimed: (Comment & { reply: boolean })[] = [];
+  for (const el of next) {
+    (threadOf(el)?.comments ?? []).forEach((c, i) => {
+      if (unclaimed.has(c.id) && c.authorId !== undefined) claimed.push({ ...c, reply: i > 0 });
+    });
+  }
+  return claimed;
+}
+
+// Comments present in `prev` whose id is gone from `next`: deleted one by one, or with their
+// element. `opening` says the comment opened its thread, which makes its text the snippet a
+// `comment_resolved` event for that thread carries (newlyResolvedThreads).
+export function removedComments(
+  next: Element[],
+  prev: Element[],
+): { id: string; elementId: string; opening: boolean }[] {
+  const kept = new Set<string>();
+  for (const el of next) {
+    for (const c of threadOf(el)?.comments ?? []) kept.add(c.id);
+  }
+  const removed: { id: string; elementId: string; opening: boolean }[] = [];
+  for (const el of prev) {
+    (threadOf(el)?.comments ?? []).forEach((c, i) => {
+      if (!kept.has(c.id)) removed.push({ id: c.id, elementId: el.id, opening: i === 0 });
+    });
+  }
+  return removed;
+}
+
 // Threads that flipped from unresolved (or absent) to resolved in this
 // save. Keyed by element id rather than a thread id because a thread
 // has none — it hangs off its element. Carries the thread's opening

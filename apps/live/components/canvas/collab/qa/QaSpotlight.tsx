@@ -112,10 +112,8 @@ export function QaSpotlight({
             className="text-[14.5px] font-semibold leading-snug"
             style={{
               color: textColor,
-              display: '-webkit-box',
-              WebkitBoxOrient: 'vertical',
-              WebkitLineClamp: 5,
-              overflow: 'hidden',
+              // Whole, never clamped: the panel's body scrolls (docs/specs/012-collaboration), and nowhere else
+              // shows the rest of it.
               overflowWrap: 'anywhere',
             }}
           >

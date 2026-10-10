@@ -25,6 +25,16 @@ function manageNotificationsFooter(env: Env, reason: string): string {
   return `${reason} <a href="${href}" style="color:${BRAND};text-decoration:underline">Manage your notifications</a> to turn these off.`;
 }
 
+// docs/specs/014-identity/transactional-email.md: every tip / check-in after the welcome (week 1, week 2, the
+// activation nudge, win-back) respects notifyTips, so each carries the same opt-out footer and the
+// List-Unsubscribe header pointing at the toggle that stops it.
+function tipsFooter(env: Env): string {
+  return manageNotificationsFooter(
+    env,
+    'You’re receiving this because you have a livediagram account and tips and check-ins are on.',
+  );
+}
+
 // `kind` is the template's telemetry token (docs/specs/017-telemetry/telemetry.md 'Email' category): it rides
 // along on the builder's return so it reaches `sendEmail` through the same
 // spread every caller already writes, rather than being re-stated (and
@@ -158,7 +168,9 @@ export function week1Email(env: Env): RenderedEmail {
       ],
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
+      footer: tipsFooter(env),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -179,7 +191,9 @@ export function week2Email(env: Env): RenderedEmail {
       outro: 'The canvas itself still needs no account. Teams just add a shared home on top.',
       ctaText: 'Create a team',
       ctaHref: `${base}/explorer/team`,
+      footer: tipsFooter(env),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -244,7 +258,7 @@ export function documentJoinedEmail(
       heading: 'Someone joined your document',
       intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a document you shared. They can collaborate on it with the access you granted.`,
       outro:
-        'You’re getting this because you turned on join notifications. You can turn them off any time from your profile.',
+        'Join notifications are on by default for documents you share. You can turn them off any time in your notification settings.',
       ctaText: 'Open the document',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(
@@ -301,8 +315,9 @@ const ACTION_DESCRIPTION_PREVIEW_CHARS = 200;
 export function actionAssignedEmail(
   env: Env,
   assignerName: string | null,
-  documentName: string,
-  documentId: string,
+  // Null when the assignee cannot open the document (docs/specs/012-collaboration/assigned-actions.md §4): the
+  // email names no document and its button opens the Explorer instead of a page they would be refused.
+  document: { id: string; name: string } | null,
   actionName: string,
   description: string | null,
 ): RenderedEmail {
@@ -311,7 +326,7 @@ export function actionAssignedEmail(
   const whoText =
     assignerName && assignerName.trim() ? escapeText(assignerName.trim()) : 'A teammate';
   const liveDoc =
-    documentName && documentName.trim() ? escapeHtml(documentName.trim()) : 'a shared document';
+    document && document.name.trim() ? escapeHtml(document.name.trim()) : 'a shared document';
   const action = escapeHtml(actionName.trim());
   const detail = description?.trim()
     ? escapeHtml(
@@ -320,15 +335,22 @@ export function actionAssignedEmail(
           : description.trim(),
       )
     : null;
+  const intro = document
+    ? `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`
+    : `<strong>${who}</strong> assigned you an action: <strong>${action}</strong>. You can’t open its document yet, so ask them to share it with you.`;
   return {
     kind: 'ActionAssigned',
     subject: `${whoText} assigned you an action`,
     html: shell({
       heading: 'You have a new action',
-      intro: `<strong>${who}</strong> assigned you an action on <strong>${liveDoc}</strong>: <strong>${action}</strong>.`,
+      intro,
       ...(detail ? { outro: detail } : {}),
-      ctaText: 'Open the document',
-      ctaHref: `${base}/document/${encodeURIComponent(documentId)}`,
+      ...(document
+        ? {
+            ctaText: 'Open the document',
+            ctaHref: `${base}/document/${encodeURIComponent(document.id)}`,
+          }
+        : { ctaText: 'Open livediagram', ctaHref: `${base}/explorer` }),
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
@@ -442,7 +464,7 @@ export function tokenExpiringEmail(
 }
 
 // docs/specs/014-identity/transactional-email.md (#4): a gentle nudge for someone who signed up but hasn't created a
-// document yet (fires once, ~3 days in). Onboarding, not opt-out.
+// document yet (fires once, ~3 days in). Opt-out (notifyTips).
 export function activationEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
@@ -460,7 +482,9 @@ export function activationEmail(env: Env): RenderedEmail {
       outro: 'No pressure: the canvas is free and always here.',
       ctaText: 'Make your first diagram',
       ctaHref: `${base}/new`,
+      footer: tipsFooter(env),
     }),
+    unsubscribeUrl: profilePath(env),
   };
 }
 
@@ -517,10 +541,7 @@ export function winBackEmail(env: Env): RenderedEmail {
       outro: 'No rush: it’s all still here whenever you want it.',
       ctaText: 'Open your documents',
       ctaHref: `${base}/explorer`,
-      footer: manageNotificationsFooter(
-        env,
-        'You’re receiving this because you have a livediagram account and check-ins are on.',
-      ),
+      footer: tipsFooter(env),
     }),
     unsubscribeUrl: profilePath(env),
   };

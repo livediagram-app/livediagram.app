@@ -34,6 +34,7 @@ import {
   purgeEventsForSource,
   reconcileEvents,
 } from '@/app/explorer/timeline/merge-events';
+import { fetchPeriod } from '@/app/explorer/timeline/fetch-period';
 import { useAfterApiWrite } from '@/hooks/persistence/useAfterApiWrite';
 import { useReturnToTab } from '@/hooks/ui/useReturnToTab';
 import { track } from '@/lib/telemetry';
@@ -279,25 +280,40 @@ export function useTimelineFeed(
     if (!enabled || !ownerId) return;
     if (controls.mode !== 'calendar') return;
     const period = controls.monthKey;
-    if (fetchedRanges.current.has(period)) return;
-    fetchedRanges.current.add(period);
+    // One Set for the hook's whole life (cleared, never replaced).
+    const ranges = fetchedRanges.current;
+    if (ranges.has(period)) return;
+    ranges.add(period);
     const { from, to } = monthBounds(period);
-    void apiListTimeline(ownerId, { from, to, limit: TIMELINE_PAGE_MAX, scope: stableScope }).then(
-      (page) => {
-        if (!page) {
-          // Forget the range so paging away and back retries it. Leaving
-          // it in the set would make one failed request look like a month
-          // in which nothing happened, permanently.
-          fetchedRanges.current.delete(period);
-          return;
-        }
-        if (page.events.length === 0) return;
-        // Same merge as the return-to-tab re-read: a fetched range can
-        // predate what's loaded, and the grouping relies on newest-first
-        // input to place a collapsed stack at its most recent member.
-        setEvents((prev) => mergeEvents(prev, page.events));
-      },
-    );
+    let cancelled = false;
+    let settled = false;
+    void fetchPeriod(
+      (cursor) =>
+        apiListTimeline(ownerId, {
+          from,
+          to,
+          cursor,
+          limit: TIMELINE_PAGE_MAX,
+          scope: stableScope,
+        }),
+      // Same merge as the return-to-tab re-read: a fetched range can
+      // predate what's loaded, and the grouping relies on newest-first
+      // input to place a collapsed stack at its most recent member.
+      (events) => setEvents((prev) => mergeEvents(prev, events)),
+      () => cancelled,
+    ).then((outcome) => {
+      settled = true;
+      // Forget a range that failed so paging away and back retries it.
+      // Leaving it in the set would make one failed request look like a
+      // month in which nothing happened, permanently.
+      if (outcome === 'failed') ranges.delete(period);
+    });
+    // Leaving the month (or the scope) stops its paging; one left
+    // unfinished is forgotten at once, so coming back reads it again.
+    return () => {
+      cancelled = true;
+      if (!settled) ranges.delete(period);
+    };
   }, [enabled, ownerId, controls.mode, controls.monthKey, stableScope, scopeKey]);
 
   const loadMore = useCallback(() => {

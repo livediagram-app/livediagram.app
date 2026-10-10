@@ -34,6 +34,7 @@ const COLLAB_HANDLERS = [
   'clearIdeas',
   'scatterIdeas',
   'pressAgendaItem',
+  'resetAgenda',
   'takeRoll',
   'addQaNote',
   'voteQaNote',

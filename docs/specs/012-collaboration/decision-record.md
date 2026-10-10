@@ -66,7 +66,10 @@ turned-up corner and a light chip that sat pasted onto a dark canvas.
   panel title (three lines), under a soft glow of the status colour from the
   card's top corner: this is the sentence people read.
 - **Drivers** under a small "Because" label, each a row with an arrow marker in
-  the status colour.
+  the status colour. A driver wraps, and a word wider than the row (a URL, a
+  ticket key) breaks anywhere rather than running out of the card. The export
+  wraps each to at most three lines and counts the drivers that do not fit as
+  "+N more" ([Export fidelity](../020-import-export/export-fidelity.md)).
 - **The date** in the footer as a pill with a calendar glyph, or nothing at all
   when unset. An undated decision card is common and fine; a card showing "no
   date" is noise.

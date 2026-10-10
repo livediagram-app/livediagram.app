@@ -20,7 +20,7 @@ import {
   type Tab,
   type TimerMode,
 } from '@livediagram/document';
-import { participantKey, type Participant } from '@/lib/identity';
+import { participantKey, uniqueParticipants, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
@@ -60,7 +60,8 @@ export function useCollabElements({
   sessionToolsBlocked: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
-  startTimer: (mode: TimerMode, durationMs?: number) => void;
+  // Returns the run's `startedAt`, or undefined when nothing started.
+  startTimer: (mode: TimerMode, durationMs?: number) => number | undefined;
 }) {
   // `patchElement`, for a verb that runs the room rather than answering it:
   // reveal, clear, roll, agenda. One helper rather than a flag on every call,
@@ -161,7 +162,15 @@ export function useCollabElements({
       responsesRevealed: false,
       collabRound: crypto.randomUUID(),
     }));
-    track('Element', 'Changed', element.shape === 'done-check' ? 'DoneCheck' : 'Estimate');
+    track(
+      'Element',
+      'Changed',
+      element.shape === 'done-check'
+        ? 'DoneCheck'
+        : element.shape === 'temperature'
+          ? 'Temperature'
+          : 'Estimate',
+    );
   };
 
   // --- Idea box (docs/specs/012-collaboration/idea-box.md) --------------------------------------------------
@@ -171,12 +180,13 @@ export function useCollabElements({
   // no selection, so the docs/specs/007-editor/live-app.md concurrent-selection ring doesn't put a name
   // on the box at the moment somebody types into it. This function
   // deliberately never touches the selection.
-  const addIdea = (element: ShapeElement, text: string) => {
+  // Returns whether the idea went in, so the composer keeps a refused draft.
+  const addIdea = (element: ShapeElement, text: string): boolean => {
     const clean = text.trim();
-    if (!clean || editsBlocked) return;
+    if (!clean || editsBlocked) return false;
     // A full box takes no more: one card past the cap would fail the whole
     // tab's validation on save (docs/specs/012-collaboration/collab-race-hardening.md).
-    if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return;
+    if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return false;
     // ONE idea, as a delta (docs/specs/012-collaboration/collab-race-hardening.md), so two people posting at once both
     // land. Still no author: the delta has nowhere to put one either.
     applyElementDelta(element.id, {
@@ -185,6 +195,7 @@ export function useCollabElements({
       ...(element.collabRound ? { round: element.collabRound } : {}),
     });
     track('Element', 'Changed', 'Idea-box');
+    return true;
   };
 
   const revealIdeas = (element: ShapeElement) => {
@@ -244,8 +255,21 @@ export function useCollabElements({
     if (editsBlocked || sessionToolsBlocked) return;
     const item = (element.agendaItems ?? [])[index];
     if (!item) return;
-    startTimer('countdown', clampAgendaMinutes(item.minutes) * 60_000);
-    patchElement(element.id, () => ({ agendaCurrent: index }));
+    const startedAt = startTimer('countdown', clampAgendaMinutes(item.minutes) * 60_000);
+    if (startedAt === undefined) return;
+    // The run it started, so the face shows this timer's time left only while
+    // the tab timer is still that run.
+    patchElement(element.id, () => ({ agendaCurrent: index, agendaTimerStartedAt: startedAt }));
+    track('Element', 'Changed', 'Agenda');
+  };
+
+  // Back to "not started": no segment current. The tab timer is left alone,
+  // it is the room's, and the agenda simply stops claiming it.
+  const resetAgenda = (element: ShapeElement) => {
+    patchAsFacilitator(element.id, () => ({
+      agendaCurrent: undefined,
+      agendaTimerStartedAt: undefined,
+    }));
     track('Element', 'Changed', 'Agenda');
   };
 
@@ -259,10 +283,13 @@ export function useCollabElements({
   const takeRoll = (element: ShapeElement) => {
     if (sessionToolsBlocked) return;
     const at = Date.now();
-    const seen = new Set<string>();
-    const entries = [selfParticipant, ...livePresence]
-      .filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
-      .map((p) => ({ name: p.name, color: p.color, at }));
+    // One chip per person, by collab key: your second tab (or a peer who
+    // rejoined on a new socket) has its own presence id but the same key.
+    const entries = uniqueParticipants([selfParticipant, ...livePresence]).map((p) => ({
+      name: p.name,
+      color: p.color,
+      at,
+    }));
     // Replaces rather than merges: a merge would quietly turn "who was here"
     // into "who has ever been here", a different and less useful question.
     patchElement(element.id, () => ({ rollCall: entries }));
@@ -297,6 +324,7 @@ export function useCollabElements({
     clearIdeas,
     scatterIdeas,
     pressAgendaItem,
+    resetAgenda,
     takeRoll,
   };
 }

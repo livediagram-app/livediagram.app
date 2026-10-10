@@ -74,7 +74,13 @@ truncated in one surface and not the other.
 
 ## Timer
 
-`tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs? }`.
+`tab.timer: { mode: 'countdown' | 'stopwatch'; running; durationMs?; anchorAt?; frozenMs?; startedAt? }`.
+
+`startedAt` is the instant the run was started, minted by `startTimer` (which
+returns it) and carried unchanged through pause, resume and extend; Reset and a
+length change from the Timer menu start a new run without it. It lets an
+[Agenda](agenda.md#the-current-segment) segment recognise the countdown it
+started.
 
 - Controlled from the [Session strip](#the-session-strip)'s **Timer** button. Countdown and Stopwatch are one **Timer** tool with a
   mode switch, since a tab runs one timer (the telemetry types stay

@@ -13,6 +13,7 @@
 import { HOME_OPENED_EVENT_TYPE } from '@livediagram/api-schema';
 import type { TimelineEvent, TimelineScopeRef } from '@livediagram/api-schema';
 import type { Env } from '../types';
+import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 
 export type TimelineEventDraft = {
   actorId: string | null;
@@ -61,7 +62,9 @@ export function dedupeKeyOnce(): string {
 //
 // The UPDATE on conflict is what makes the coalesced editing event
 // work: the day's first save inserts, and every later save that day
-// pushes `occurred_at` forward and refreshes the snapshot. That is a
+// pushes `occurred_at` forward and refreshes the snapshot. It fills an
+// actor the first emit could not know (a peer's comment, credited to its
+// author only once their own save claims it) and never replaces one. That is a
 // deliberate departure from a strictly additive model, and it is only
 // safe because nothing user-authored (a star, a dismissal) hangs off
 // these rows yet — see docs/specs/013-workspace/timeline.md §4.2.
@@ -86,6 +89,7 @@ export async function emitTimelineEvent(
        draft.keepExisting
          ? 'DO NOTHING'
          : `DO UPDATE SET
+       actor_id = COALESCE(timeline_events.actor_id, excluded.actor_id),
        title = excluded.title,
        description = excluded.description,
        snapshot = excluded.snapshot,
@@ -168,7 +172,7 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
   // An entry names its document as it is called NOW, not as it was called
   // when the event happened: a rename is not a timeline moment, so older
   // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A document that is
-  // gone keeps the name it had.
+  // gone, or one the reader can no longer open, keeps the name it had.
   if (row.current_document_name)
     snapshot = { ...snapshot, documentName: row.current_document_name };
   return {
@@ -186,6 +190,10 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
 
 export type ReadTimelineOptions = {
   scope: TimelineScopeRef;
+  // Who is reading, for the current-name override: only a document the reader can still open
+  // shows its live name. Defaults to the scope's owner for a user scope; a team scope without
+  // one keeps every snapshot name.
+  readerId?: string | null;
   limit: number;
   // "<occurredAt>:<eventId>" from the previous page.
   cursor?: string | null;
@@ -228,10 +236,12 @@ export async function readTimeline(
   env: Env,
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
-  const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
+  const readerId = opts.readerId ?? (opts.scope.scopeType === 'user' ? opts.scope.scopeId : null);
+  // ?1 and ?2 are VISIBLE_DOCUMENTS_CTES' own binds (the reader, now).
+  const binds: unknown[] = [readerId ?? '', Date.now(), opts.scope.scopeType, opts.scope.scopeId];
   // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
   // re-emit path can't resurrect it, but it is not part of the feed.
-  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_IN_FEED}`;
+  let where = `s.scope_type = ?3 AND s.scope_id = ?4 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_IN_FEED}`;
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -256,21 +266,39 @@ export async function readTimeline(
     where += ` AND e.source_type IN (${placeholders.join(', ')})`;
   }
 
+  // The live name is a read of the documents table, so it follows the reader's access, not the
+  // event's: a document the reader has lost (left the team, link revoked) keeps its snapshot name.
+  // A document feed already passed that document's own read gate, so it is its own visible set.
+  const nameVisible =
+    opts.scope.scopeType === 'document'
+      ? 'cd.id = ?4'
+      : readerId
+        ? 'cd.id IN (SELECT id FROM visible)'
+        : '0';
+
   // Fetch one extra row to learn whether another page exists, rather
-  // than running a second COUNT over the same predicate.
+  // than running a second COUNT over the same predicate. The page is cut
+  // first and only its rows are joined to their document and checked
+  // against the visible set, so neither costs anything per event the
+  // ORDER BY passes over.
   binds.push(opts.limit + 1);
   const res = await env.DB.prepare(
-    `SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
-            e.title, e.description, e.occurred_at, e.snapshot,
-            cd.name AS current_document_name
-       FROM timeline_event_scopes s
-       JOIN timeline_events e ON e.id = s.event_id
+    `WITH ${VISIBLE_DOCUMENTS_CTES},
+     page AS (
+       SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
+              e.title, e.description, e.occurred_at, e.snapshot
+         FROM timeline_event_scopes s
+         JOIN timeline_events e ON e.id = s.event_id
+        WHERE ${where}
+        ORDER BY e.occurred_at DESC, e.id DESC
+        LIMIT ?${binds.length}
+     )
+     SELECT e.*, CASE WHEN ${nameVisible} THEN cd.name END AS current_document_name
+       FROM page e
        LEFT JOIN documents cd
          ON cd.id = COALESCE(json_extract(e.snapshot, '$.documentId'),
                              CASE WHEN e.source_type = 'document' THEN e.source_id END)
-      WHERE ${where}
-      ORDER BY e.occurred_at DESC, e.id DESC
-      LIMIT ?${binds.length}`,
+      ORDER BY e.occurred_at DESC, e.id DESC`,
   )
     .bind(...binds)
     .all<TimelineRow>();
@@ -465,6 +493,29 @@ export async function markTimelineEventsDeletedBySource(
         AND (source_id = ?2 OR json_extract(snapshot, '$.' || ?3) = ?2)`,
   )
     .bind(sourceType, sourceId, `${sourceType}Id`)
+    .run();
+}
+
+// A deleted comment takes its words off every feed (docs/specs/013-workspace/timeline.md §4.3):
+// its `comment_added` event, and the `comment_resolved` event of each thread whose opening
+// comment it was, since that event's description is the opening comment's text. Pinned to the
+// document through the snapshot, so an id from another document can never reach its rows.
+// Both clauses probe the (source_type, source_id, ...) unique index.
+export async function deleteCommentEvents(
+  env: Env,
+  documentId: string,
+  commentIds: readonly string[],
+  threadKeys: readonly string[],
+): Promise<void> {
+  if (commentIds.length === 0 && threadKeys.length === 0) return;
+  await env.DB.prepare(
+    `DELETE FROM timeline_events
+      WHERE source_type = 'document'
+        AND ((event_type = 'comment_added' AND source_id IN (SELECT value FROM json_each(?2)))
+          OR (event_type = 'comment_resolved' AND source_id IN (SELECT value FROM json_each(?3))))
+        AND json_extract(snapshot, '$.documentId') = ?1`,
+  )
+    .bind(documentId, JSON.stringify(commentIds), JSON.stringify(threadKeys))
     .run();
 }
 

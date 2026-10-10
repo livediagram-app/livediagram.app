@@ -8,6 +8,7 @@ import {
   mergeLedgerIntoTab,
   opForTheWire,
   recordInLedger,
+  RETIRED_ROUNDS_MAX,
   stampCommentAuthor,
   tabLedgerFrom,
 } from './index';
@@ -135,6 +136,54 @@ describe('collab ledger (docs/specs/012-collaboration/collab-race-hardening.md p
     // Another round: ignored.
     const next = tab([], { vote: { ...vote, votes: {}, round: 'r2' } });
     expect(mergeLedgerIntoTab(next, ledger, 0)).toBe(next);
+  });
+
+  // A late op naming a round the room has moved past used to flip the entry
+  // back to that round, dropping the current round's answers and dots.
+  it('drops a late answer naming a retired round', () => {
+    const inRound = (participantId: string, round: string, value: string | null = 'done') =>
+      delta({ kind: 'response', participantId, value, at: 1, round });
+    const ledger = ledgerOf([inRound('a', 'r1'), inRound('b', 'r2'), inRound('a', 'r1', null)]);
+    expect(ledger.elements.card?.round).toBe('r2');
+    expect(ledger.elements.card?.retired).toEqual(['r1']);
+    const save = tab([card({ collabRound: 'r2' })]);
+    expect(who(mergeLedgerIntoTab(save, ledger, 0))).toEqual(['b']);
+    // The round before any id (a card never cleared) retires as well.
+    const fromNone = ledgerOf([done('a'), inRound('b', 'r1'), done('c')]);
+    expect(Object.keys(fromNone.elements.card?.responses ?? {})).toEqual(['b']);
+  });
+
+  it('drops a late idea naming a retired round, keeping ticks across rounds', () => {
+    const ledger = ledgerOf([
+      delta({ kind: 'check', index: 0, text: 'one', done: true }),
+      delta({ kind: 'idea', text: 'old', round: 'r1' }),
+      delta({ kind: 'idea', text: 'new', round: 'r2' }),
+      delta({ kind: 'idea', text: 'late', round: 'r1' }),
+    ]);
+    expect(ledger.elements.card?.ideas).toEqual(['new']);
+    expect(Object.keys(ledger.elements.card?.ticks ?? {})).toHaveLength(1);
+  });
+
+  it('drops a late dot or withdraw naming a retired vote round', () => {
+    const dot = (voter: string, round: string, d: 1 | -1 = 1) => ({
+      kind: 'vote',
+      tabId: 't1',
+      elementId: 'e1',
+      voter,
+      delta: d,
+      round,
+    });
+    const ledger = ledgerOf([dot('a', 'r1'), dot('b', 'r2'), dot('a', 'r1', -1), dot('c', 'r1')]);
+    expect(ledger.vote).toMatchObject({ round: 'r2', votes: { e1: ['b'] }, retired: ['r1'] });
+  });
+
+  it(`remembers at most ${RETIRED_ROUNDS_MAX} retired rounds`, () => {
+    const ops = Array.from({ length: RETIRED_ROUNDS_MAX + 5 }, (_, i) =>
+      delta({ kind: 'idea', text: 'x', round: `r${i}` }),
+    );
+    const retired = ledgerOf(ops).elements.card?.retired ?? [];
+    expect(retired).toHaveLength(RETIRED_ROUNDS_MAX);
+    expect(retired.at(-1)).toBe(`r${RETIRED_ROUNDS_MAX + 3}`);
   });
 
   it('skips malformed and untracked ops', () => {

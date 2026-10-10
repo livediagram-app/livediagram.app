@@ -1,6 +1,5 @@
 'use client';
 
-import { QUIZ_OPTION_HEIGHT, QUIZ_OPTION_WIDTH } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { tint } from '@/lib/element-tint';
@@ -14,23 +13,16 @@ import { tint } from '@/lib/element-tint';
 // <button> and an avatar with a hover card inside one is invalid markup.
 
 const AVATAR_PX = 20;
-// Clear air between the answer and the row.
-const GAP = 5;
 // Past this many the rest become "+N", so a big room cannot run a row off the
 // edge of the card.
 const SHOWN_MAX = 5;
 
 export function QuizPickers({
-  at,
-  side,
   people,
   unknown,
   index,
   textColor,
 }: {
-  // The answer's centre, in design units.
-  at: { x: number; y: number };
-  side: 'above' | 'below';
   // Who picked it, matched to the room.
   people: Participant[];
   // Picks from people no longer in the room: counted, with no face to show.
@@ -42,18 +34,11 @@ export function QuizPickers({
 }) {
   const extra = Math.max(0, people.length - SHOWN_MAX) + unknown;
   if (people.length === 0 && unknown === 0) return null;
-  const top =
-    side === 'above'
-      ? at.y - QUIZ_OPTION_HEIGHT / 2 - GAP - AVATAR_PX
-      : at.y + QUIZ_OPTION_HEIGHT / 2 + GAP;
   return (
     <div
-      className="lvd-quiz-pickers pointer-events-auto absolute flex items-center justify-center gap-2"
+      className="lvd-quiz-pickers pointer-events-auto flex items-center justify-center gap-2"
       style={
         {
-          left: at.x - QUIZ_OPTION_WIDTH / 2,
-          width: QUIZ_OPTION_WIDTH,
-          top,
           height: AVATAR_PX,
           '--lvd-quiz-delay': `${250 + index * 60}ms`,
         } as React.CSSProperties

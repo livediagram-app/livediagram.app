@@ -69,6 +69,30 @@ export function participantKey(participant: Participant): string {
   return participant.key ?? participant.id;
 }
 
+// One row per person, by `participantKey`: the same person in two tabs (or
+// re-joined on a new socket) shares a key but not an id, so deduping on `id`
+// counted them twice (docs/specs/012-collaboration/participant-responses.md).
+// The first row for a key wins, so ourselves (listed first) stays ourselves.
+export function uniqueParticipants(participants: readonly Participant[]): Participant[] {
+  const seen = new Set<string>();
+  return participants.filter((p) => {
+    const key = participantKey(p);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// The keys of everyone in the room who CAN answer a per-participant card
+// (docs/specs/012-collaboration/participant-responses.md "Who counts"): one per
+// person, leaving out view-link guests (who can't write) and agent rows (never
+// counted as a person). What a Done check waits on and an Estimate counts.
+export function answeringKeys(participants: readonly Participant[]): string[] {
+  return uniqueParticipants(participants)
+    .filter((p) => p.role !== 'view' && !p.agent)
+    .map(participantKey);
+}
+
 // What a screen reader hears for an avatar: "Webber (Online)", and their agent's status line after it
 // (docs/specs/024-agents/blueprints/agent-presence.md "Accessibility").
 export function participantAccessibleName(participant: Participant): string {

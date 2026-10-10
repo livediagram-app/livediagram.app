@@ -36,9 +36,9 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 
 6. **Activation nudge** (#4, onboarding) — ~3 days after sign-up, to anyone who
    still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
-   not opt-out. `activation_sent_at`, migration 0031.
+   opt-out `notifyTips`. `activation_sent_at`, migration 0031.
 7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
-   (last document activity via `MAX(updated_at)`; zero-document owners are excluded,
+   (last document activity via the newest `documents.saved_at`; zero-document owners are excluded,
    that's #4's job). Daily cron. `winback_sent_at`, migration 0032.
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
@@ -48,7 +48,10 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
    `api_tokens.expiry_warned_at`, migration 0030.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a document (either comment path), the owner is emailed
-    **immediately** (no cron). Never includes the comment text.
+    **immediately** (no cron). Never includes the comment text. On the tab save
+    it counts only the saver's own new comments: a save can carry a peer's
+    comment that reached the saver live first, and that is not the saver
+    commenting.
 11. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
     the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
 12. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the
@@ -62,8 +65,9 @@ and as switches in Settings > Notifications; every opt-out email's footer links 
 `/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see [Account settings & email notifications](profile-and-email-notifications.md)) so the
 recipient can turn it off in one click. `notifyTips` governs **every** tip /
 check-in after the immediate welcome, i.e. week 1, week 2, the activation nudge,
-and win-back all respect it; only the welcome (the first authenticated sighting,
-before any toggle could exist) is unconditional. The opt-out toggles are
+and win-back all respect it, and so all four carry that footer and header; only
+the welcome (the first authenticated sighting, before any toggle could exist) is
+unconditional and carries neither. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
@@ -108,7 +112,11 @@ On any request carrying a verified Clerk identity (userId + email), and only
 when `emailEnabled`, the worker does an `INSERT … ON CONFLICT DO NOTHING` into
 `email_lifecycle`. If a **new** row was created (`meta.changes === 1`), that
 first sighting is treated as sign-up: send the welcome and stamp
-`welcome_sent_at`. All of this runs in `ctx.waitUntil(...)` so it never delays
+`welcome_sent_at`. On a returning owner's sighting the row instead takes the
+token's address when it differs (an `UPDATE` guarded on `email <> ''` and on the
+address actually changing), so a changed Clerk primary email is where the next
+email goes; a backfilled suppression row (below) keeps its empty sentinel, and
+"is new" stays the insert's answer alone. All of this runs in `ctx.waitUntil(...)` so it never delays
 the response, and is wrapped so an email/D1 hiccup can't fail the user's request.
 
 **Existing-deployment caveat:** first-sighting means that turning Resend on for a
@@ -133,6 +141,15 @@ stamp `week1_sent_at`; same for `14d` / `week2_sent_at` (Teams). Daily cadence
 means "after 1 week" resolves to the first daily run on/after day 7 — close
 enough for onboarding; no per-user timers.
 
+A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
+unset for the next run to retry, and counts against the row: `send_attempts`
+goes up by one and `last_attempt_at` records when (migration 0086). Once a row
+reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
+skips it, so an address that always fails (a deleted mailbox, a hard bounce)
+cannot hold a place in the oldest-first batch for good; the sweep logs
+`[email-lifecycle] giving up` once, when it does. A successful send, or a
+sighting with a changed address (§4), resets the count to zero.
+
 ## 6. Code shape
 
 - `apps/api/src/email/client.ts` — `emailEnabled(env)` + `sendEmail(env, msg)`
@@ -144,7 +161,8 @@ enough for onboarding; no per-user timers.
   template's telemetry token (see below): it rides on the builder's return so
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
-- `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new"), the
+- `apps/api/src/db/email-lifecycle.ts` — sighting upsert (returns "is new", and
+  refreshes a returning owner's address), the
   two due-queries + mark-sent, and row deletion (called from `deleteAccount`).
 - Hooks: welcome in the request path (`index.ts`), week1/week2 in `scheduled()`,
   invite in `routes/teams.ts` (invite create), deletion in `routes/account.ts`.
@@ -177,8 +195,8 @@ name, or a recipient count.
 ## 8. Out of scope (for now)
 
 Unsubscribe endpoint for the lifecycle series, HTML theming beyond simple
-inline styles, retries/bounce handling (Resend handles delivery; sends are
-best-effort and idempotent via the `*_sent_at` stamps). Per-notification
+inline styles, bounce handling beyond the attempt cap in §5 (Resend handles
+delivery; sends are best-effort and idempotent via the `*_sent_at` stamps). Per-notification
 **email preferences** are no longer out of scope — [Account settings & email notifications](profile-and-email-notifications.md)
 adds an opt-out toggle for each of its two transactional notifications, stored
 in the [User preferences](../007-editor/user-preferences.md) preference blob.
