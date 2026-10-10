@@ -82,7 +82,7 @@ export const tabView = defineVerb({
   id: 'tab.view',
   summary: 'A view of a tab; the outline by default',
   description:
-    'Prints a view of a tab as the api renders it: outline (default), graph, layout, comments, show (needs --ref) or find (needs --text). --budget fits it to that many tokens; --raw prints the plain tab instead.',
+    'Prints a view of a tab as the api renders it: outline (default), graph, layout, comments, show (needs --ref), find (needs --text) or pages (an Illustrate tab’s pages and articles). --budget fits it to that many tokens; --raw prints the plain tab instead.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livediagram URL'),

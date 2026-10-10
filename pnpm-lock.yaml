@@ -950,6 +950,9 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
+      '@livediagram/templates':
+        specifier: workspace:*
+        version: link:../templates
     devDependencies:
       '@livediagram/eslint-config':
         specifier: workspace:*

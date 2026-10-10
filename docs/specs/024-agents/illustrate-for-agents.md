@@ -179,8 +179,10 @@ Every decision logs with the `[illustrate-agent]` fingerprint: `applied` (docume
 
 ## Telemetry
 
-Agents are server side and send no anonymous events. The editor's grow for an absent writer is not a person's
-action and sends none.
+- An agent's page change or article write sends the server-side `Agent · Applied` with its front door (`Mcp`,
+  `Cli`, `Api`), as a changeset does; a refusal sends nothing.
+- Reading the `pages` view sends `Agent · Viewed · Pages`, as every view does.
+- The editor's grow for an absent writer is not a person's action and sends nothing.
 
 ## Non-goals
 

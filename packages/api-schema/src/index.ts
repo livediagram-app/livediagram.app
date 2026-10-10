@@ -672,3 +672,4 @@ export * from './workbench';
 export * from './workbench-messages';
 export * from './illustrate';
 export * from './article-frames';
+export * from './illustrate-summary';

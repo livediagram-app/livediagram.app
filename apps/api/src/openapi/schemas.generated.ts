@@ -8526,6 +8526,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "hidden": {
             "type": "number"
           },
+          "illustrate": {
+            "additionalProperties": false,
+            "properties": {
+              "kinds": {
+                "additionalProperties": false,
+                "properties": {
+                  "article": {
+                    "type": "number"
+                  },
+                  "infographic": {
+                    "type": "number"
+                  },
+                  "logo": {
+                    "type": "number"
+                  },
+                  "slide": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "pages": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "pages",
+              "kinds"
+            ],
+            "type": "object"
+          },
           "outOfScope": {
             "const": false,
             "type": "boolean"
@@ -9041,6 +9072,191 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "locked",
       "flow",
       "elements"
+    ],
+    "type": "object"
+  },
+  "PagesView": {
+    "additionalProperties": false,
+    "properties": {
+      "articles": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "blocks": {
+              "type": "number"
+            },
+            "flow": {
+              "type": "string"
+            },
+            "look": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ArticleLookId"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "markdown": {
+              "type": "string"
+            },
+            "pages": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "title": {
+              "type": "string"
+            },
+            "words": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "blocks",
+            "flow",
+            "look",
+            "markdown",
+            "pages",
+            "title",
+            "words"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "elision": {
+        "$ref": "#/components/schemas/Elision"
+      },
+      "header": {
+        "$ref": "#/components/schemas/ViewHeader"
+      },
+      "illustrate": {
+        "type": "boolean"
+      },
+      "layouts": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "$ref": "#/components/schemas/PageKind"
+            },
+            "layouts": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "label"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "kind",
+            "layouts"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "pages": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "background": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "elements": {
+              "type": "number"
+            },
+            "flow": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/components/schemas/PageKind"
+            },
+            "locked": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "orientation": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PageOrientation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "place": {
+              "type": "number"
+            },
+            "rect": {
+              "$ref": "#/components/schemas/PageRect"
+            },
+            "refs": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "size": {
+              "$ref": "#/components/schemas/PageSizeId"
+            }
+          },
+          "required": [
+            "background",
+            "elements",
+            "flow",
+            "id",
+            "kind",
+            "locked",
+            "name",
+            "orientation",
+            "place",
+            "rect",
+            "refs",
+            "size"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "header",
+      "illustrate",
+      "pages",
+      "articles",
+      "layouts",
+      "elision"
     ],
     "type": "object"
   },
@@ -13799,6 +14015,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hidden": {
         "type": "number"
       },
+      "illustrate": {
+        "additionalProperties": false,
+        "properties": {
+          "kinds": {
+            "additionalProperties": false,
+            "properties": {
+              "article": {
+                "type": "number"
+              },
+              "infographic": {
+                "type": "number"
+              },
+              "logo": {
+                "type": "number"
+              },
+              "slide": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "pages": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "pages",
+          "kinds"
+        ],
+        "type": "object"
+      },
       "rev": {
         "type": [
           "number",
@@ -13874,7 +14121,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "show",
       "find",
       "diff",
-      "lint"
+      "lint",
+      "pages"
     ],
     "type": "string"
   },

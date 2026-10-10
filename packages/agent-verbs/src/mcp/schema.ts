@@ -364,7 +364,8 @@ export const readDocumentShape = {
     .describe(
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
         'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
-        'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
+        'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
+        "pages: an Illustrate tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
     ),
   budget: z
     .number()
