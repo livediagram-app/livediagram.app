@@ -43,11 +43,11 @@ describe('useCanvasLayerInsets', () => {
     const { flush, main, panel } = setup();
     const { result, unmount } = renderHook(() => useCanvasLayerInsets(main));
     flush();
-    expect(result.current.left).toBe(272);
+    expect(result.current.insets.left).toBe(272);
     panel.remove();
     await tick();
     flush();
-    expect(result.current.left).toBe(0);
+    expect(result.current.insets.left).toBe(0);
     unmount();
   });
 
@@ -67,7 +67,10 @@ describe('useCanvasLayerInsets', () => {
 
   it('measures nothing without a canvas', () => {
     const { result } = renderHook(() => useCanvasLayerInsets(null));
-    expect(result.current).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
+    expect(result.current).toEqual({
+      insets: { top: 0, right: 0, bottom: 0, left: 0 },
+      band: null,
+    });
   });
 });
 

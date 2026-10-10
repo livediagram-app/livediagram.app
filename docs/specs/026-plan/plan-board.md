@@ -505,6 +505,20 @@ A board can be maximised to work on it without the rest of the canvas around it.
   Card Types, Layers, a vote or poll, the AI panel, the item panel) floats over the board and never moves or resizes
   it, so nothing jumps as it opens or closes. Everything on the board works as it does on the canvas: cards drag,
   open and add, and widgets filter. The header does not move the board while it is maximised.
+- **The header holds the top row**: maximised (or filling its tab), a board, view or Sheet does not start below the
+  Toolbar layout's top row; it starts at the top of the canvas area, and its header grows to that row's height
+  (`HeaderBand`), so the menu button, the mode menu and the palette toolbar float inside the header instead of over
+  a strip of canvas above it. The header's own content keeps clear of them: its title, count and widgets start after
+  the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when narrow), and
+  its controls (the view's own, Maximise or Restore, the cog) sit at its right end beyond the palette. It is laid out
+  this way only when there is room: at least 140 px between the mode menu and the palette, and 280 px between the
+  palette and the element's right edge (a desktop or a wide tablet). Otherwise (a phone, where the menu sits in the
+  palette's strip, or a narrow window) the element starts below the top row as before. The header follows the row
+  as it changes (the palette's category switching its width, the window resizing).
+- **Zoom stands down**: while a board, view or Sheet is maximised or fills its tab, the canvas cannot zoom, so the
+  bottom-right zoom controls (Zoom out, the zoom level and its menu, Zoom in, and a phone's Fit) stay where they
+  are but are disabled, each hover card saying why: "Zoom is off while a board, view or sheet fills the canvas." They
+  come back the moment it is restored.
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
   (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot, so a phone scrolls sooner); a column
   set wider takes its slots and the gaps between them. A board of five slots or fewer fills the width as on the

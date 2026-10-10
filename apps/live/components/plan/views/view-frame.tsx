@@ -86,15 +86,24 @@ export function ViewFrame({
       }}
     >
       <div
-        className="flex h-10 shrink-0 items-center gap-2 border-b px-3"
+        // In a header band (maximised, MaximisedPlanLayer's --plan-band-*), as tall as the top row, after the menu,
+        // its title and count stopping short of the palette strip.
+        className="flex h-[var(--plan-band-h,2.5rem)] shrink-0 items-center gap-2 border-b pl-[var(--plan-band-left,0.75rem)] pr-3"
         style={{ borderColor: palette.border }}
       >
-        <span className="min-w-0 truncate text-[13px] font-semibold">{title}</span>
-        {count !== undefined && state === 'ready' ? (
-          <CountBadge size="md" background={palette.column} color={palette.text} label={countLabel}>
-            {count}
-          </CountBadge>
-        ) : null}
+        <span className="flex min-w-0 max-w-[var(--plan-band-mid,none)] items-center gap-2">
+          <span className="min-w-0 truncate text-[13px] font-semibold">{title}</span>
+          {count !== undefined && state === 'ready' ? (
+            <CountBadge
+              size="md"
+              background={palette.column}
+              color={palette.text}
+              label={countLabel}
+            >
+              {count}
+            </CountBadge>
+          ) : null}
+        </span>
         {aside || end ? (
           <span className="ml-auto flex shrink-0 items-center gap-1">
             {aside}

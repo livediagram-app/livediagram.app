@@ -217,7 +217,20 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   capped at `MAX_INSET_SHARE` per axis. Measured in one `requestAnimationFrame` after mount and after a
   `ResizeObserver` change (the canvas and each piece of chrome), a chrome element's `style`/`class` change, a
   `transitionend` on chrome, a window `resize`, or a child-list change under the canvas that adds or removes chrome
-  (`touchesChrome`; the set is re-observed only when it differs). No key or press listener. Header, tab bar and footer are outside `main`. `zenMode` is not
+  (`touchesChrome`; the set is re-observed only when it differs; the strip's children are observed too, as its card
+  changes width with the category). No key or press listener.
+  The hook returns `CanvasLayout = { insets, band }`. `headerBand(canvas, insets, menu, strip)` (the strip measured as
+  the union of `[data-toolbar-palette]`'s children, its root running the canvas width) returns `HeaderBand { height,
+left, mid }` in px from the element's box (inside the cover's `COVER_PAD_PX` 12) when the menu and strip are in the
+  top half, the canvas is at least `BAND_CANVAS_MIN_PX` 640 wide, the menu ends before the strip, and there are at least
+  `BAND_MID_MIN_PX` 140 between them (less `BAND_GAP_PX` 12 each side) and `BAND_RIGHT_MIN_PX` 280 after the strip; the
+  insets' top is then 0. `CanvasCover` marks its inner box `data-header-band` and sets `--plan-band-h`, `--plan-band-left`
+  and `--plan-band-mid` (`bandVars`). `PlanBoardHeader`, `SheetHeader` and the views' `ViewFrame` read them with their
+  own sizes as fallbacks: `h-[var(--plan-band-h,52px)]` (40 px a Sheet's, 2.5rem a view's),
+  `pl-[var(--plan-band-left,…)]`, and `max-w-[var(--plan-band-mid,none)]` on the title (and widgets, count) group, the
+  trailing controls `ml-auto`; `SheetFindBar` sits at `calc(var(--plan-band-h, 40px) + 6px)`.
+  `ViewZoomControls` passes `zoomOff={useCanvasCovered()}`: `ZoomControls` disables Zoom out, Zoom in and Fit, and
+  `ZoomMenu` (`offReason`) shows the level disabled with no presets, each hover card reading `ZOOM_OFF_REASON`. Header, tab bar and footer are outside `main`. `zenMode` is not
   touched. The layer is a `CanvasCover` (`data-canvas-cover`, `absolute inset-0` at `CANVAS_LAYER_Z`, `background: inherit`
   from the canvas `main` so it paints the canvas's colour and pattern, stopping
   pointerdown, double-click, context-menu and wheel) holding the element at its insets; `useCanvasSurfaceGestures`'
@@ -361,6 +374,8 @@ ColumnAdded | ColumnAddedExisting`.
 | Setup Board Layout step, stepper, Fill Tab       | `apps/live/components/plan/PlanSetupBoard.test.tsx`                                                                                                     |
 | Layout read from and written to the board        | `apps/live/components/plan/setup-board.test.ts`                                                                                                         |
 | Maximised/filled insets from the chrome          | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/hooks/ui/useCanvasLayerInsets.test.ts`                                                          |
+| The header band, and the cover's band variables  | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                    |
+| Zoom off while the canvas is covered             | `apps/live/components/chrome/ZoomControls.test.tsx`                                                                                                     |
 | Five slots across a maximised board              | `apps/live/components/plan/plan-board-columns.test.ts`                                                                                                  |
 | Option list roles, keys, menu items              | `apps/live/components/plan/OptionRows.test.tsx`                                                                                                         |
 | Edge auto-scroll math and drag wiring            | `apps/live/hooks/plan/edge-auto-scroll.test.ts`                                                                                                         |
