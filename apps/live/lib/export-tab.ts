@@ -195,6 +195,15 @@ export function exportScale(wanted: number, w: number, h: number): number {
   return Math.min(wanted, MAX_EXPORT_CANVAS_SIDE / longest);
 }
 
+// The scale each rendered canvas was drawn at, so a caller can size it in CSS
+// px (the single-page PDF prints it at 0.75 pt per CSS px, not per pixel).
+const renderedScale = new WeakMap<HTMLCanvasElement, number>();
+
+/** The scale `renderTabToCanvas` drew this canvas at (CSS px x scale = pixels); 1 if unknown. */
+export function renderedExportScale(canvas: HTMLCanvasElement): number {
+  return renderedScale.get(canvas) ?? 1;
+}
+
 export async function renderTabToCanvas(
   tab: Tab,
   opts: { scale?: number } & ImageExportOpts = {},
@@ -243,6 +252,7 @@ export async function renderTabToCanvas(
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.floor(w));
   canvas.height = Math.max(1, Math.floor(h));
+  renderedScale.set(canvas, scale);
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
   ctx.scale(scale, scale);
