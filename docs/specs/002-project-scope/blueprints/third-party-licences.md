@@ -271,8 +271,8 @@ content column `max-w-3xl`.
 - Chips and meta text use slate 600 or 700 on white and slate 200 or 300 on slate 900 (all over
   4.5:1). Nothing moves: the native marker swaps without animation.
 - axe (`wcag2a` to `wcag22aa`) with an entry open: no violations in dark; in light only the
-  sitewide brand-500 wordmark and primary button, which stay as they are by operator decision
-  (the wordmark is a logotype).
+  sitewide brand-500 wordmark, a logotype (the primary button moved to `brand-700`, 5.9:1, in
+  [Theme](../../004-interface-design/color-scheme.md#usage-rules)).
 
 ## Web Experience
 

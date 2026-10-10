@@ -107,7 +107,7 @@ export function EditorWindow({
               </Chip>
             )}
           </div>
-          <span className="optical-edges inline-flex items-center gap-1 rounded-md bg-brand-500 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
+          <span className="optical-edges inline-flex items-center gap-1 rounded-md bg-brand-700 px-2 py-0.5 text-[10px] font-semibold text-white dark:bg-brand-600">
             <ShareGlyph />
             <span className="text-optical-line">Share</span>
           </span>

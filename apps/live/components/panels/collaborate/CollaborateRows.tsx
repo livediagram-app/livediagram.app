@@ -138,7 +138,7 @@ export function ActionRowItem({
       </span>
       {row.mine ? (
         <span
-          className={`mt-px shrink-0 rounded-full bg-brand-500 px-1.5 py-0.5 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
+          className={`mt-px shrink-0 rounded-full bg-brand-700 px-1.5 py-0.5 text-[9px] font-semibold text-white ${SOLID_BRAND_DARK}`}
         >
           You
         </span>

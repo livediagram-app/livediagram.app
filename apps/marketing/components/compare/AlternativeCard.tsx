@@ -56,7 +56,7 @@ export function AlternativeCard({ alt }: { alt: Alternative }) {
         )}
         <span className="mt-auto flex items-center justify-between pt-6 text-sm font-medium text-slate-900 dark:text-slate-100">
           Read the comparison
-          <span className="flex size-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition group-hover:bg-brand-500 group-hover:text-white motion-reduce:transition-none dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-brand-600">
+          <span className="flex size-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition group-hover:bg-brand-700 group-hover:text-white motion-reduce:transition-none dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-brand-600">
             <ArrowIcon />
           </span>
         </span>

@@ -49,7 +49,7 @@ export function ThemeModeBanner({ themeId }: { themeId: string | undefined }) {
           type="button"
           onClick={() => set(target)}
           aria-label={toDark ? 'Switch to dark mode' : 'Switch to light mode'}
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white shadow-sm transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           {toDark ? <MoonIcon /> : <SunIcon />}
         </button>

@@ -128,7 +128,7 @@ export function TimelineFilterPopover({
               onClick={() => onModeChange(value)}
               className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
                 mode === value
-                  ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                   : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
               }`}
             >
@@ -160,7 +160,7 @@ export function TimelineFilterPopover({
             onClick={() => onActorFilterChange(value)}
             className={`flex-1 rounded-md px-2 py-1 text-[11px] font-medium transition ${
               actorFilter === value
-                ? `bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                ? `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
             }`}
           >
@@ -198,7 +198,7 @@ export function TimelineFilterPopover({
               // same popover would make the reader learn both.
               className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
                 on
-                  ? `border-transparent bg-brand-600 text-white ${SOLID_BRAND_DARK_CONTROL}`
+                  ? `border-transparent bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`
                   : 'border-slate-200 text-slate-500 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
               }`}
             >

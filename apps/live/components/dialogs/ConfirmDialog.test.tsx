@@ -19,7 +19,7 @@ describe('ConfirmDialog confirm button', () => {
       />,
     );
     const cls = screen.getByRole('button', { name: 'Delete' }).className;
-    expect(cls).toContain('bg-brand-500');
+    expect(cls).toContain('bg-brand-700');
     expect(cls).not.toMatch(/rose|red-|amber/);
   });
 });

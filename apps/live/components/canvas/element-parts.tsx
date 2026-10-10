@@ -24,7 +24,7 @@ export function LockBadge() {
   return (
     <div
       aria-hidden
-      className={`pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-500 text-white shadow-sm ${SOLID_BRAND_DARK}`}
+      className={`pointer-events-none absolute -left-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-700 text-white shadow-sm ${SOLID_BRAND_DARK}`}
     >
       <LockIcon size={11} />
     </div>

@@ -81,7 +81,7 @@ export function ActivityActionRow({
           ? `Assigned by ${action.assigner.name?.trim() || 'a teammate'}`
           : `Assigned to ${assignee}`,
         colorClass: action.assignedToMe
-          ? `bg-brand-500 ${SOLID_BRAND_DARK}`
+          ? `bg-brand-700 ${SOLID_BRAND_DARK}`
           : 'bg-slate-400 dark:bg-slate-600',
       }}
       at={action.updatedAt}
@@ -151,7 +151,7 @@ export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: 
       avatar={{
         name: 'You',
         detail: 'Assigned to you',
-        colorClass: `bg-brand-500 ${SOLID_BRAND_DARK}`,
+        colorClass: `bg-brand-700 ${SOLID_BRAND_DARK}`,
       }}
       at={card.updatedAt}
     />
@@ -296,7 +296,7 @@ export function ActivityEmptyState() {
         href={helpArticleHref('assignedActions')}
         target="_blank"
         rel="noreferrer noopener"
-        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+        className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         How actions work
       </a>
@@ -315,7 +315,7 @@ export function ActivityFailedState({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className={`mt-3 inline-block rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+        className={`mt-3 inline-block rounded-md bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
       >
         Try again
       </button>

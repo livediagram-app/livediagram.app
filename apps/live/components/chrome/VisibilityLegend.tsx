@@ -44,7 +44,7 @@ const LOOK: Record<
   team: {
     icon: <TeamGlyph />,
     reach: 'Team',
-    stop: 'bg-brand-600 text-white ring-brand-200 dark:bg-brand-600 dark:ring-brand-500/40',
+    stop: 'bg-brand-700 text-white ring-brand-200 dark:bg-brand-600 dark:ring-brand-500/40',
     hero: 'from-brand-50 to-white dark:from-brand-500/15 dark:to-slate-900',
     ink: 'text-brand-600 dark:text-brand-300',
     eyebrow: 'text-brand-700 dark:text-brand-300',
@@ -277,7 +277,7 @@ export function VisibilityLegend({
               type="button"
               tabIndex={-1}
               onClick={onManage}
-              className={`group flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-500 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-brand-500/30 transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`}
+              className={`group flex w-full items-center justify-center gap-1.5 rounded-lg bg-brand-700 px-3 py-2 text-xs font-semibold text-white shadow-sm shadow-brand-500/30 transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
             >
               Change Who Can See This
               <span className="transition-transform duration-micro group-hover:translate-x-0.5">

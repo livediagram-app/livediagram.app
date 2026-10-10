@@ -11,7 +11,7 @@ import { SOLID_BRAND_DARK, SOLID_BRAND_DARK_CONTROL, Glyph } from '@livediagram/
 type ButtonVariant = 'primary' | 'secondary';
 
 const BUTTON_CLASS: Record<ButtonVariant, string> = {
-  primary: `bg-brand-500 text-white shadow-sm hover:bg-brand-600 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-500 ${SOLID_BRAND_DARK_CONTROL}`,
+  primary: `bg-brand-700 text-white shadow-sm hover:bg-brand-800 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-500 ${SOLID_BRAND_DARK_CONTROL}`,
   secondary:
     'border border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:text-white',
 };
@@ -107,7 +107,7 @@ export function TransportButton({
       <span
         className={`flex items-center justify-center rounded-full transition ${
           primary
-            ? `h-12 w-12 bg-brand-500 text-white shadow-md group-hover:bg-brand-600 ${SOLID_BRAND_DARK} dark:group-hover:bg-brand-700`
+            ? `h-12 w-12 bg-brand-700 text-white shadow-md group-hover:bg-brand-800 ${SOLID_BRAND_DARK} dark:group-hover:bg-brand-700`
             : 'h-9 w-9 border border-slate-200 bg-white text-slate-600 group-hover:border-brand-300 group-hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:border-brand-500/60 dark:group-hover:text-white'
         }`}
       >

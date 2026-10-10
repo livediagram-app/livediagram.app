@@ -151,7 +151,7 @@ export function ElementVoteOverlay({
               className={
                 'flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold shadow-sm ' +
                 (myVotes > 0
-                  ? `bg-brand-500 text-white ${SOLID_BRAND_DARK}`
+                  ? `bg-brand-700 text-white ${SOLID_BRAND_DARK}`
                   : 'border border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100')
               }
             >

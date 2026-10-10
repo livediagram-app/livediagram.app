@@ -86,7 +86,7 @@ export function EmptyPane({ selected }: { selected: SelectedNode }) {
       {c.cta ? (
         <Link
           href={ctaHref}
-          className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-500 ${SOLID_BRAND_DARK_CONTROL}`}
+          className={`inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
         >
           <PlusIcon size={14} />
           {c.cta}

@@ -48,7 +48,7 @@ export function AddPageButton({
           onClick={() => setOpen((o) => !o)}
           className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
             open
-              ? 'bg-brand-600 text-white ring-brand-600 dark:bg-brand-600'
+              ? 'bg-brand-700 text-white ring-brand-700 dark:bg-brand-600'
               : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-100'
           }`}
         >

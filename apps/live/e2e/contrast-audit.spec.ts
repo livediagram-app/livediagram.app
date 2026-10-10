@@ -21,8 +21,8 @@ import {
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
 // screen must meet WCAG AA against the background painted under it. There is no allow-list: a failure
-// is fixed at its colour. Light mode is deliberately out of scope: its colours belong to the light half
-// of #74, owned by Thomas.
+// is fixed at its colour. Light mode is deliberately out of scope: its solid brand fills are held by
+// app/light-palette.test.ts, and its brand-coloured text is the rest of the light half of #74, owned by Thomas.
 
 test.use({ colorScheme: 'dark', reducedMotion: 'reduce', viewport: { width: 1440, height: 860 } });
 
