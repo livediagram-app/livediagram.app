@@ -258,7 +258,7 @@ export function documentJoinedEmail(
       heading: 'Someone joined your document',
       intro: `<strong>${who}</strong> just opened <strong>${named}</strong>, a document you shared. They can collaborate on it with the access you granted.`,
       outro:
-        'You’re getting this because you turned on join notifications. You can turn them off any time from your profile.',
+        'Join notifications are on by default for documents you share. You can turn them off any time in your notification settings.',
       ctaText: 'Open the document',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(

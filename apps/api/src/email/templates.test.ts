@@ -75,6 +75,12 @@ describe('email templates', () => {
     expect(e.html).toContain('https://app.test/explorer');
   });
 
+  it('document-joined says join notifications are on by default, not that the owner turned them on', () => {
+    const e = documentJoinedEmail(env, 'Roadmap', 'Anna');
+    expect(e.html).not.toContain('you turned on');
+    expect(e.html).toContain('on by default');
+  });
+
   it('document-joined falls back to "Someone" / "your document" when unknown', () => {
     const e = documentJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);

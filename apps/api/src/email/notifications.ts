@@ -11,6 +11,7 @@
 import {
   claimCommentNotify,
   claimFirstShare,
+  claimJoinNotify,
   claimMilestone,
   getNotificationPrefs,
   getOwnerEmail,
@@ -22,6 +23,9 @@ import { emailEnabled, sendEmail } from './client';
 // At most one "new comment" email per document per this window (docs/specs/014-identity/transactional-email.md #1), so a
 // burst of comments doesn't spam the owner.
 const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
+// At most one "someone joined your document" email per document per this window
+// (docs/specs/014-identity/profile-and-email-notifications.md (a)): the comment email's rule, for the same reason.
+const JOIN_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
   actionAssignedEmail,
   mentionedEmail,
@@ -112,13 +116,14 @@ export async function notifyMentioned(
   });
 }
 
-// Someone opened one of an owner's shared documents for the FIRST time
-// (recordSharedAccess reported a new row). No-op unless email is on, the owner
-// has a stored verified address (a Clerk owner — guests have none), and the
-// owner hasn't opted out.
+// A signed-in person opened one of an owner's shared documents for the FIRST
+// time (recordSharedAccess reported a new row; the route sends only for a
+// verified visitor, never a guest id). No-op unless email is on, the owner has
+// a stored verified address (a Clerk owner, guests have none), and the owner
+// hasn't opted out. Throttled per document so a run of joins is one email.
 export async function notifyDocumentJoin(
   env: Env,
-  liveDoc: { ownerId: string; name: string },
+  liveDoc: { id: string; ownerId: string; name: string },
   joinerName: string | null,
 ): Promise<void> {
   if (!emailEnabled(env)) return;
@@ -126,6 +131,8 @@ export async function notifyDocumentJoin(
   if (!to) return;
   const prefs = await getNotificationPrefs(env, liveDoc.ownerId);
   if (!prefs.notifyDocumentJoin) return;
+  const now = Date.now();
+  if (!(await claimJoinNotify(env, liveDoc.id, now, now - JOIN_NOTIFY_THROTTLE_MS))) return;
   await sendEmail(env, { to, ...documentJoinedEmail(env, liveDoc.name, joinerName) });
 }
 

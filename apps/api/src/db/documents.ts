@@ -680,3 +680,20 @@ export async function claimCommentNotify(
     .run();
   return res.meta.changes === 1;
 }
+
+// docs/specs/014-identity/profile-and-email-notifications.md (a) throttle: claim the right to email the owner that
+// someone joined this document, at most once per window. The same atomic conditional UPDATE as
+// claimCommentNotify, on its own column, so a join and a comment never spend each other's window.
+export async function claimJoinNotify(
+  env: Env,
+  documentId: string,
+  now: number,
+  cutoff: number,
+): Promise<boolean> {
+  const res = await env.DB.prepare(
+    'UPDATE documents SET join_notified_at = ? WHERE id = ? AND (join_notified_at IS NULL OR join_notified_at < ?)',
+  )
+    .bind(now, documentId, cutoff)
+    .run();
+  return res.meta.changes === 1;
+}

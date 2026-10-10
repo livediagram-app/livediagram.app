@@ -8,6 +8,7 @@ vi.mock('../db', () => ({
   claimMilestone: vi.fn(),
   claimFirstShare: vi.fn(),
   claimCommentNotify: vi.fn(),
+  claimJoinNotify: vi.fn(),
 }));
 vi.mock('./client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('./client')>()),
@@ -17,6 +18,7 @@ vi.mock('./client', async (importOriginal) => ({
 import {
   claimCommentNotify,
   claimFirstShare,
+  claimJoinNotify,
   claimMilestone,
   getNotificationPrefs,
   getOwnerEmail,
@@ -25,6 +27,7 @@ import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail } from './templates';
 import {
   notifyActionAssigned,
+  notifyDocumentJoin,
   notifyMentioned,
   notifyFirstShare,
   notifyMilestone,
@@ -60,6 +63,36 @@ describe('commentNotificationEmail', () => {
     const e = commentNotificationEmail(env, '', 'd1', null);
     expect(e.subject).toMatch(/Someone/);
     expect(e.html).toContain('your document');
+  });
+});
+
+describe('notifyDocumentJoin (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
+  it('emails the owner when the per-document claim is won', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(claimJoinNotify).mockResolvedValue(true);
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    expect(claimJoinNotify).toHaveBeenCalledWith(env, 'd1', expect.any(Number), expect.any(Number));
+    const [, now, cutoff] = vi.mocked(claimJoinNotify).mock.calls[0]!.slice(1);
+    expect((now as number) - (cutoff as number)).toBe(15 * 60 * 1000);
+    expect(sendEmail).toHaveBeenCalledOnce();
+  });
+
+  it('stays quiet inside the throttle window', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
+    vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
+    vi.mocked(claimJoinNotify).mockResolvedValue(false);
+    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it('spends no claim when the owner opted out', async () => {
+    vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyDocumentJoin: false });
+    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    expect(claimJoinNotify).not.toHaveBeenCalled();
+    expect(sendEmail).not.toHaveBeenCalled();
   });
 });
 
