@@ -322,6 +322,16 @@ rewritten.
 | passing  | a timer fires                                                                | passing  | Queued: passes run one at a time, in arrival order, merged per document                                                                                                                                                                                                                       |
 | any      | SIGINT or SIGTERM                                                            | stopped  | Every stream stopped, every timer cancelled, the running pass finished, exit 0 within `EXIT_GRACE_MS` of it                                                                                                                                                                                   |
 
+- **Coverage held.** The watch keeps one coverage: the first pass reads it, each re-read replaces it. A pass hands
+  back the coverage it used, adopted only when no re-read landed while it ran, so a pass never restores an older
+  coverage (which made the next re-read see the same documents enter again).
+- **One stream per document.** Listening to a document that already has a stream does nothing; a stream's end
+  drops only that stream, never a newer one for the same document.
+- **Coverage held.** The watch keeps one coverage: the first pass reads it, each re-read replaces it. A pass hands
+  back the coverage it used, adopted only when no re-read landed while it ran, so a pass never restores an older
+  coverage (which made the next re-read see the same documents enter again).
+- **One stream per document.** Listening to a document that already has a stream does nothing; a stream's end
+  drops only that stream, never a newer one for the same document.
 - **Own writes.** Each path the watch writes or removes is remembered with the SHA-256 of what it wrote (or
   removal); a local event whose file now hashes to that value is ignored (RL23).
 - **Output.** One stdout line per pass: `<HH:MM:SS>` (UTC) and a space, then the pass's action lines joined by a
@@ -911,6 +921,7 @@ absent.
 | An edit saved during a pass is never written over or removed; the state dir is 0700 before the lock                        | `sync.test.ts` ("an edit saved while the pass runs", "the local sync state directory") |
 | `sync --watch`: room bursts settle, then one pass; one line per sync                                                       | `apps/cli/src/link/sync-watch.test.ts` (fake sockets and timers)                       |
 | `sync --watch`: local changes synced after `SYNC_LOCAL_SETTLE_MS`; own writes ignored                                      | `sync-watch.test.ts`                                                                   |
+| `sync --watch` keeps a coverage re-read made during a pass; never two streams for one document                             | `sync-watch.test.ts`                                                                   |
 | `sync --watch` reconnects as the room stream does; trashed and refused tickets handled                                     | `sync-watch.test.ts`                                                                   |
 | `link status` prints every covered document with its state and exits 0                                                     | `link.test.ts` (every state, a refusal and a transient failure: exit 0)                |
 | `link ls` prints as `document ls`                                                                                          | `link.test.ts`; `packages/agent-verbs/src/verbs/verbs.test.ts` (shared rows)           |
