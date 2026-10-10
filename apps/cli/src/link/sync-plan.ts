@@ -216,8 +216,11 @@ export function planSync(input: PlanInput): Plan {
       taken.delete(file.path);
       const expected = mirrorPathFor({ id: documentId, name }, folderPath, taken);
       taken.add(file.path);
-      if (expected !== file.path)
+      if (expected !== file.path) {
+        // Reserved, so a second document renamed to the same name steps aside (E16b) instead of moving onto it.
+        taken.add(expected);
         documentActions.push({ kind: 'relocate', ...doc, path: file.path, to: expected });
+      }
     }
     if (state === 'in-step') {
       documentActions.push({ kind: 'none', ...doc, path });

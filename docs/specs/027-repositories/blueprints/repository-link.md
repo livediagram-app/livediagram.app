@@ -278,7 +278,8 @@ rewritten.
   (spec "A broken file holds its document back").
 - **Stable.** A `tracked` file keeps its path on every later write. Its **expected path** is `mirrorPathFor` with
   the document's current name and folder path, its own path excluded from `taken`. A different expected path is a
-  `relocate` action.
+  `relocate` action, and that path joins `taken` so no later document in the pass relocates or is written onto it
+  (E16b).
 - **Relocate** (`--relocate`): inside a git work tree `gitMove(root, from, to)` runs `git -C <root> mv <from> <to>`
   for the mirror file and its outline file; a file git does not track, or a work tree without git, is moved with
   `CliFiles.move` (RL9). Parent directories are created; a directory left empty is removed. Before anything
@@ -728,6 +729,8 @@ for tab "<name>"`, exit 7 (as `pull`).
 - **E16a** A relocation target holding a file this mirror did not write (a hand-written `docs/architecture.md`, any
   mirror file): kept byte for byte, nothing of the document moves, `refuse` reason `occupied`, exit 1; the document
   is still written at its current path.
+- **E16b** Two documents renamed alike in one pass: the first in plan order relocates to the plain slug, the second
+  to `<slug>-<id8>` (its target is reserved like any held path); never two moves onto one path.
 - **E17** `git mv` refusing (untracked file, index locked): falls back to `CliFiles.move`; a failure of both is
   `transient`-like: the line names the error, exit 7, nothing else moves for that document.
 - **E18** `mirror.dir` a symbolic link out of the link root: `invalid_dir` (its real path is outside), exit 1.
