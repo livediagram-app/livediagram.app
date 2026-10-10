@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { FONT, at } from '@/components/art-tokens';
 
 // The hero's Mind Map window (docs/specs/019-marketing/marketing-site.md "Hero"): a launch plan
 // grown from the centre in Diagram mode's mind map (docs/specs/009-elements/mind-node.md). The
@@ -7,7 +7,6 @@ import type { CSSProperties } from 'react';
 // teammate fills the Events branch at the same time, and a rocket sticker lands on the centre. Each piece arrives at its own --d delay
 // (hero-mode-animations.css).
 
-const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const CENTRE = { x: 300, y: 140 };
 // On a phone the map is drawn tall: the centre in the middle, two branches above it and two below,
 // each branch's ideas stacked away from the centre.
@@ -18,9 +17,6 @@ const PORTRAIT_AT: Record<string, { x: number; y: number }> = {
   Support: { x: 268, y: 308 },
   Events: { x: 92, y: 308 },
 };
-
-const at = (d: number, extra?: Record<string, string | number>) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
 type Leaf = { text: string; d: number };
 type Branch = {

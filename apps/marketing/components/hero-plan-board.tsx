@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 
 // The hero's Plan window (docs/specs/019-marketing/marketing-site.md "Hero"): a launch board in Plan mode
 // (docs/specs/026-plan/plan-board.md). Three columns of cards land, Doing showing its WIP limit as `2 / 3`. A
@@ -6,10 +7,6 @@ import type { CSSProperties } from 'react';
 // one from To do into Doing; each column's count ticks over as its cards change. Last, a card is quick-added to
 // To do, its title typed and `@sam #docs` turning into an avatar and a label. Every piece plays at its own --d
 // (hero-mode-animations.css), and a phone draws the same board narrower and taller.
-
-const FONT = 'ui-sans-serif, system-ui, sans-serif';
-const TEAMMATE = '#ec4899';
-const YOU = '#0ea5e9';
 
 // Item types' colour stripes (docs/specs/026-plan/item-types.md): Task, Bug, Idea.
 const TYPE = {
@@ -64,9 +61,6 @@ const PORTRAIT: Layout = {
   meta: 8,
   wrap: true,
 };
-
-const at = (d: number, extra: Record<string, string | number> = {}) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
 const slotY = (l: Layout, i: number) => l.top + i * (l.cardH + l.gap);
 

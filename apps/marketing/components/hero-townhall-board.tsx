@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { FONT, at } from '@/components/art-tokens';
 
 // The hero's Town Hall window (docs/specs/019-marketing/marketing-site.md "Hero"): the app's Town Hall
 // Q&A template (packages/templates template-builders-town-hall.ts) running live. The Q&A board
@@ -8,16 +9,12 @@ import type { CSSProperties, ReactNode } from 'react';
 // reactions floating up, and a "How useful was this?" poll filling in. A phone stacks the board over
 // the kit. Each piece arrives at its own --d delay (hero-mode-animations.css).
 
-const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const BRAND = '#0ea5e9';
 const CARD = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
 const INSET = 'fill-slate-50 stroke-slate-200 dark:fill-slate-800/70 dark:stroke-slate-700';
 const INK = 'fill-slate-800 dark:fill-slate-100';
 const MUTED = 'fill-slate-500 dark:fill-slate-400';
 const TRACK = 'fill-slate-100 dark:fill-slate-800';
-
-const at = (d: number, extra?: Record<string, string | number>) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
 type Person = { initials: string; name: string; colour: string };
 const MAYA: Person = { initials: 'MC', name: 'Maya Chen', colour: '#7c3aed' };

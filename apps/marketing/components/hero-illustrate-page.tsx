@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { FONT, at } from '@/components/art-tokens';
 
 // The hero's Infographic window (docs/specs/019-marketing/marketing-site.md "Hero"): a two-page
 // year-in-review laid out in Illustrate mode (docs/specs/007-editor/editor-modes.md "The pages"),
@@ -9,7 +9,6 @@ import type { CSSProperties } from 'react';
 // milestones, a pull quote with its attribution, and next year's targets. Both pages close on a footer and a page
 // number. Each piece arrives at its own --d delay (hero-mode-animations.css).
 
-const FONT = 'ui-sans-serif, system-ui, sans-serif';
 const SERIF = 'Georgia, "Times New Roman", serif';
 
 // The palette: ink, the brand sky, one second accent (indigo, page 2) and one for growth.
@@ -34,9 +33,6 @@ const PAGE_GAP = 30;
 // The page's margin: every block on it starts here and ends this far from the right edge.
 const MARGIN = 16;
 const CONTENT = PAGE.w - MARGIN * 2;
-
-const at = (d: number, extra?: Record<string, string | number>) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
 
 // The stats row: a figure, its label and a sparkline of the year (points as 0 to 1 heights).
 const STATS = [

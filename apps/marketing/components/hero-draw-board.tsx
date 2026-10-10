@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { FONT } from '@/components/art-tokens';
 
 // The hero's Draw window (docs/specs/019-marketing/marketing-site.md "Hero"): a retro whiteboard
 // drawn in Draw mode's marks, freehand strokes, sticky notes, the highlighter and text
@@ -8,7 +9,6 @@ import type { CSSProperties } from 'react';
 // (hero-mode-animations.css); strokes draw on by their dash, so they read as drawn by hand.
 
 const NOTE_TEXT = 'fill-[#1c1917]';
-const FONT = 'ui-sans-serif, system-ui, sans-serif';
 // Draw mode's markers: Marker 1 black, Marker 2 blue, Marker 3 red (the dock's three).
 const BLUE = '#2563eb';
 const RED = '#dc2626';
