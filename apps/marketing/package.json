@@ -26,6 +26,7 @@
   "devDependencies": {
     "@livediagram/document": "workspace:*",
     "@livediagram/eslint-config": "workspace:*",
+    "@livediagram/help-registry": "workspace:*",
     "@livediagram/licences": "workspace:*",
     "@livediagram/next-config": "workspace:*",
     "@livediagram/tailwind-config": "workspace:*",
