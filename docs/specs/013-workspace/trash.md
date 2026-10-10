@@ -25,6 +25,10 @@ Explorer, the editor, the Explorer panel's popover, the team library;
 - The **Delete** button is not red: nothing is lost for 30 days.
 - The Trash is not mentioned: it is a backstop, found in Settings. There is no
   undo toast and no "moved to Trash" message.
+- From a list (the Explorer, the editor's Explorer panel, `/new`), the row leaves at
+  once and "Document deleted" shows only once the delete has landed. A delete that
+  fails puts the row back where it was and says "Could not delete the document.
+  Please try again." (logged `[explorer] delete-failed, row restored`).
 
 Every delete of a whole document goes to the Trash: the Explorer, the editor,
 the team library, the public API with a token, and the MCP server. So does a

@@ -19,7 +19,7 @@ import {
   type SharedWithItem,
 } from '@/lib/api-client';
 import { duplicateDocument as duplicate } from '@/lib/duplicate-document';
-import { markDocumentDeleted } from '@/lib/document-tombstones';
+import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombstones';
 import { fetchSharedTabsNotice } from '@/lib/shared-tabs-notice';
 import { deleteConfirmation, lookUpShareLinks } from '@/lib/delete-confirmation';
 import { folderDeleteConfirmation } from '@/lib/folder-delete-confirmation';
@@ -132,7 +132,8 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
   // their library rather than a dead row. Deleting any other document
   // removes the row optimistically: a fire-and-forget DELETE followed
   // by an immediate list refetch used to race, repainting the row the
-  // API hadn't yet committed. It goes to the Trash (docs/specs/013-workspace/trash.md),
+  // API hadn't yet committed. The delete is awaited: a failure puts the
+  // row back and says so, and only a landed delete is confirmed. It goes to the Trash (docs/specs/013-workspace/trash.md),
   // which the confirmation mentions once; there is no undo toast.
   //
   // `beforeRemove` runs after the delete is CONFIRMED and before the
@@ -182,10 +183,26 @@ export function useDocumentListActions(deps: DocumentListActionsDeps) {
       return;
     }
     await beforeRemove?.();
+    const at = documentList.findIndex((d) => d.id === id);
+    const row = documentList[at];
     setDocumentList((prev) => prev.filter((d) => d.id !== id));
-    void apiDeleteDocument(ownerId, id)
-      .then(() => track('Document', 'Deleted'))
-      .catch(() => {});
+    try {
+      await apiDeleteDocument(ownerId, id);
+    } catch (err) {
+      // The document is still there: put its row back where it was, lift the
+      // tombstone so its editor may save again, and say so rather than
+      // claiming a delete that never happened.
+      console.warn('[explorer] delete-failed, row restored', err);
+      unmarkDocumentDeleted(id);
+      if (row) {
+        setDocumentList((prev) =>
+          prev.some((d) => d.id === id) ? prev : [...prev.slice(0, at), row, ...prev.slice(at)],
+        );
+      }
+      toast.error('Could not delete the document. Please try again.');
+      return;
+    }
+    track('Document', 'Deleted');
     // The row is gone but on a long / scrolled list its disappearance
     // can be easy to miss, and the action is destructive — confirm it.
     toast.success('Document deleted');

@@ -137,6 +137,10 @@ create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
 [Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
 a retry, so the card says why and offers **Choose another place** instead.
+On `/new`, **Retry** re-runs the same create under the same document and tab
+ids it first tried: a create that reached the server but whose answer was lost
+is then taken as the re-commit of an id the caller already owns, never a second
+document.
 
 The distinction is made at every call site that can fail this way —
 the document load and the share-link resolve in `useIdentityBootstrap`,

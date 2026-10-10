@@ -16,7 +16,7 @@ import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/Sig
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
-import { writeUserPreferences } from '@/lib/user-preferences';
+import { commitUserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
@@ -106,7 +106,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
     clerkUserId,
     ownerId,
     prefs,
-    setPrefs,
     lens,
     lensResult,
     selected,
@@ -349,8 +348,9 @@ function ShellChrome({ children }: { children: ReactNode }) {
         <SettingsDialog
           settings={prefs}
           onChange={(next) => {
-            setPrefs(next);
-            writeUserPreferences(next, ownerId);
+            // The row built `next` on this render's preferences; only its change is written, onto
+            // the freshest, so another tab's change since is kept. The cache drives `prefs`.
+            commitUserPreferences(prefs, next, ownerId);
           }}
           ownerId={ownerId}
           onClose={() => {

@@ -67,16 +67,25 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // `!== false` so undefined = on, while `autoRebindArrows` (via
   // autoRebindArrowsEnabled) and `drawToAdd` read via `=== true` so
   // undefined = off (matches docs/specs/007-editor/user-preferences.md's defaults).
-  // The cache stands until this session sets preferences of its own (the
-  // server merge below, or any toggle), which then win.
+  // The cache is followed live, this tab's writes and every other tab's. A
+  // choice this session sets without writing it stands only until the cache
+  // next changes: a choice that outlived another tab's write would hand the
+  // next whole-blob write a stale base and undo that tab's change.
   const cached = useSyncExternalStore(
     subscribeCachedPreferences,
     getCachedPreferences,
     getNoPreferences,
   );
-  const [chosen, setChosen] = useState<UserPreferences | null>(null);
-  const userPreferences = chosen ?? cached;
-  const setUserPreferences = useCallback((next: UserPreferences) => setChosen(next), []);
+  const cachedRef = useLatest(cached);
+  const [chosen, setChosen] = useState<{
+    prefs: UserPreferences;
+    over: UserPreferences;
+  } | null>(null);
+  const userPreferences = chosen && chosen.over === cached ? chosen.prefs : cached;
+  const setUserPreferences = useCallback(
+    (next: UserPreferences) => setChosen({ prefs: next, over: cachedRef.current }),
+    [cachedRef],
+  );
   // True once the server copy has been merged in, or failed to arrive: the
   // point after which a one-way latch such as `powerUserOfferShown` can be
   // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
@@ -107,20 +116,22 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // localStorage cache. Server wins for any key present on both
   // sides. The cache read above still lands first so the UI
   // never blocks on this network step; this just reconciles toggles
-  // the user made on another device.
+  // the user made on another device. The merge lands in the cache,
+  // which the store above follows; it is also chosen, for a browser
+  // whose cache write failed.
   useEffect(() => {
     if (!ownerId || ownerId === 'self') return;
     if (passwordGated) return;
     let cancelled = false;
     void fetchUserPreferences(ownerId).then((merged) => {
       if (cancelled) return;
-      if (merged !== null) setChosen(merged);
+      if (merged !== null) setUserPreferences(merged);
       setPrefsSettled(true);
     });
     return () => {
       cancelled = true;
     };
-  }, [ownerId, passwordGated]);
+  }, [ownerId, passwordGated, setUserPreferences]);
 
   return {
     userPreferences,

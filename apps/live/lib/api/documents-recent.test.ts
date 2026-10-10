@@ -5,7 +5,7 @@
 
 import { RECENT_DIAGRAMS_KEY, parseRecentDiagrams } from '@livediagram/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { __setOfflineBackend } from '../offline/offline-store';
+import { __setOfflineBackend, offlineCreateDocument } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
 import {
   apiFetchDocumentThumbnailSvg,
@@ -51,6 +51,45 @@ describe('apiListDocuments', () => {
       { id: 'new', name: 'New', savedAt: 2, mode: null },
       { id: 'old', name: 'Old', savedAt: 1, mode: 'draw' },
     ]);
+  });
+});
+
+describe('apiListDocuments thumbnails', () => {
+  it('never asks the server for an offline document’s snapshot', async () => {
+    // docs/specs/006-document/offline-mode.md: offline rows never trigger a server fetch.
+    __setOfflineBackend(memBackend());
+    await offlineCreateDocument(
+      { id: 'local', name: 'Local', tabs: [{ id: 't', name: 't', elements: [{} as never] }] },
+      5,
+    );
+    const stored = new Map<string, Response>();
+    vi.stubGlobal('caches', {
+      open: async () => ({
+        keys: async () => [],
+        match: async (url: string) => stored.get(url),
+        put: async (url: string, res: Response) => void stored.set(url, res),
+        delete: async () => true,
+      }),
+    });
+    const seen = stubFetch((url) =>
+      url.includes('/thumbnail')
+        ? new Response(SVG)
+        : Response.json({
+            documents: [{ id: 'cloud', name: 'Cloud', savedAt: 1, empty: false, opensIn: null }],
+          }),
+    );
+
+    await apiListDocuments('owner-thumbs');
+    // Both diagrams' entries land: the cloud one's snapshot, the local one remembered as having
+    // none. (An earlier list's idle pass may add its own entries; only these two are asserted.)
+    const cachedFor = (id: string) => [...stored.keys()].some((url) => url.includes(id));
+    await vi.waitFor(() => expect(cachedFor('cloud') && cachedFor('local')).toBe(true), {
+      timeout: 5000,
+    });
+
+    const thumbnails = seen.filter((u) => u.includes('/thumbnail'));
+    expect(thumbnails).toContainEqual(expect.stringMatching(/\/documents\/cloud\/thumbnail/));
+    expect(thumbnails.filter((u) => u.includes('/documents/local/'))).toEqual([]);
   });
 });
 

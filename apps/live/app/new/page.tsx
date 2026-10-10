@@ -25,7 +25,12 @@ import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
 import { useSkipLocationStep } from './useSkipLocationStep';
 import { saveSkipLocationStep } from '@/lib/skip-location-step';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
-import { createFailureCopy, type CreateFailure } from './create-failure';
+import {
+  createFailureCopy,
+  createIdsFor,
+  type CreateFailure,
+  type CreateIds,
+} from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
 import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
 import { markTourPending } from '@/lib/tour-pending';
@@ -137,6 +142,8 @@ export default function NewDocumentPage() {
     themeId: string;
     // The Settings step's choices (docs/specs/006-document/offline-mode.md): document name, placement, offline.
     settings: NewDocumentSettings;
+    // The ids it wrote under, reused by its Retry (createIdsFor).
+    ids: CreateIds;
   } | null>(null);
 
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
@@ -323,17 +330,21 @@ export default function NewDocumentPage() {
     name: string,
     themeId: string,
     settings: NewDocumentSettings,
+    // Set by Retry: the failed attempt's ids, so a create that did land is not made twice.
+    retrying: CreateIds | null = null,
   ) => {
     if (submitting) return;
     setSubmitting(true);
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
+    const { documentId, tabId } = createIdsFor(retrying);
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = {
       kind: templateKind,
       name,
       themeId,
       settings: { ...settings, skipLocationStep: undefined },
+      ids: { documentId, tabId },
     };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (docs/specs/006-document/offline-mode.md).
@@ -354,8 +365,6 @@ export default function NewDocumentPage() {
     // "Always save new documents in <place> and skip this step" (docs/specs/013-workspace/default-folders.md).
     if (settings.skipLocationStep) saveSkipLocationStep(settings.skipLocationStep, who.id);
 
-    const documentId = crypto.randomUUID();
-    const tabId = crypto.randomUUID();
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
     const tabs = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
     // A Plan template's boards bring their card types (docs/specs/026-plan/plan-templates.md "Card types a template
@@ -508,7 +517,7 @@ export default function NewDocumentPage() {
               }
               setCreateError(null);
               const a = lastCreateArgs.current;
-              if (a) void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
+              if (a) void commitNewDocument(a.kind, a.name, a.themeId, a.settings, a.ids);
             }}
           />
         </main>

@@ -19,7 +19,7 @@ import { applyItemComment, type ItemCommentChange } from '@livediagram/document'
 import { ApiError } from '../api/core';
 import {
   offlineGetRecord,
-  offlinePutRecord,
+  offlineUpdateRecord,
   serializeOfflineWrite,
   type OfflineDocumentRecord,
 } from './offline-store';
@@ -48,19 +48,23 @@ export async function offlineWriteItem(
   by: ItemPerson,
 ): Promise<ItemWriteAnswer> {
   return serializeOfflineWrite(async () => {
-    const rec = await offlineGetRecord(documentId);
-    if (!rec || rec.trashedAt !== undefined) throw new ApiError('item write', 404, 'not_found');
+    let answer: ItemWriteAnswer | undefined;
+    // The api's own checks (write-checks), then the write, in one transaction (offlineUpdateRecord).
     const read = readItemWrite(write);
     if ('error' in read) throw refused(read.error);
-    const store = recordItemStore(rec);
-    const result = applyItemWrite(store, read, { now: Date.now(), by });
-    if (!result.ok) throw new ApiError('item write', STATUS[result.error], result.error);
-    const after = writtenItemsRefusal(read, store.items, result.upserts, typesOf(rec.itemTypes));
-    if (after) throw refused(after.error);
-    const { items, rev, nextKey } = result.state;
-    await offlinePutRecord({ ...rec, items, itemsRev: rev, itemsNextKey: nextKey });
+    await offlineUpdateRecord(documentId, (rec) => {
+      if (!rec || rec.trashedAt !== undefined) throw new ApiError('item write', 404, 'not_found');
+      const store = recordItemStore(rec);
+      const result = applyItemWrite(store, read, { now: Date.now(), by });
+      if (!result.ok) throw new ApiError('item write', STATUS[result.error], result.error);
+      const after = writtenItemsRefusal(read, store.items, result.upserts, typesOf(rec.itemTypes));
+      if (after) throw refused(after.error);
+      const { items, rev, nextKey } = result.state;
+      answer = { upserts: result.upserts, removed: result.removed, rev };
+      return { ...rec, items, itemsRev: rev, itemsNextKey: nextKey };
+    });
     debugLog('[items] items.offline.write', { kind: write.kind });
-    return { upserts: result.upserts, removed: result.removed, rev };
+    return answer!;
   });
 }
 
@@ -75,20 +79,23 @@ export async function offlineWriteItemComment(
   by: ItemPerson,
 ): Promise<ItemWriteAnswer | null> {
   return serializeOfflineWrite(async () => {
-    const rec = await offlineGetRecord(documentId);
-    if (!rec || rec.trashedAt !== undefined) throw new ApiError('item comment', 404, 'not_found');
-    const store = recordItemStore(rec);
-    const item = store.items.find((i) => i.id === itemId);
-    if (!item) throw new ApiError('item comment', 404, 'item_not_found');
-    const result = applyItemComment(item, change, { now: Date.now(), by });
-    if (!result.ok) {
-      if (result.reason === 'unchanged') return null;
-      throw new ApiError('item comment', COMMENT_STATUS[result.reason], result.reason);
-    }
-    const rev = store.rev + 1;
-    const items = store.items.map((i) => (i.id === itemId ? result.item : i));
-    await offlinePutRecord({ ...rec, items, itemsRev: rev, itemsNextKey: store.nextKey });
-    debugLog('[items] items.offline.comment', { kind: change.kind });
-    return { upserts: [result.item], removed: [], rev };
+    let answer = null as ItemWriteAnswer | null;
+    await offlineUpdateRecord(documentId, (rec) => {
+      if (!rec || rec.trashedAt !== undefined) throw new ApiError('item comment', 404, 'not_found');
+      const store = recordItemStore(rec);
+      const item = store.items.find((i) => i.id === itemId);
+      if (!item) throw new ApiError('item comment', 404, 'item_not_found');
+      const result = applyItemComment(item, change, { now: Date.now(), by });
+      if (!result.ok) {
+        if (result.reason === 'unchanged') return undefined;
+        throw new ApiError('item comment', COMMENT_STATUS[result.reason], result.reason);
+      }
+      const rev = store.rev + 1;
+      const items = store.items.map((i) => (i.id === itemId ? result.item : i));
+      answer = { upserts: [result.item], removed: [], rev };
+      return { ...rec, items, itemsRev: rev, itemsNextKey: store.nextKey };
+    });
+    if (answer) debugLog('[items] items.offline.comment', { kind: change.kind });
+    return answer;
   });
 }

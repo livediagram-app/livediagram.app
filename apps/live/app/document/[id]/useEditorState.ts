@@ -116,6 +116,7 @@ import { useFolders } from '@/hooks/persistence/useFolders';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import {
+  commitUserPreferences,
   readUserPreferences,
   toggleRecentExcluded,
   writeUserPreferences,
@@ -817,8 +818,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     embed: !appChrome,
     zen: panelLayout.zenMode,
     apply: (next) => {
-      setUserPreferences(next);
-      writeUserPreferences(next, selfParticipant.id);
+      // Built on this render's preferences: moved onto the freshest before the whole blob is written.
+      setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id));
     },
     offer: toast.offer,
   });

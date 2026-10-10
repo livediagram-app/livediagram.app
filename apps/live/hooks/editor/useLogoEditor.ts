@@ -26,7 +26,7 @@ import {
   type GuideSnap,
 } from '@/lib/logo-guide-snapping';
 import { withMirrorTwins } from '@/lib/mirror-commit';
-import { writeUserPreferences, type UserPreferences } from '@/lib/user-preferences';
+import { commitUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 
 type Commit = (map: (els: Element[]) => Element[]) => void;
 
@@ -77,12 +77,12 @@ export function useLogoEditor<V extends IllustratePagesView>({
     )((els) => snapNewStrokes(els, map(els), snapRef.current, getZoom()));
 
   // Stable, so the logo view (and the pages that read it) keeps its identity across renders.
+  // The tools build `next` on this render's preferences; it is moved onto the freshest before the
+  // whole blob is written, so another tab's change since is kept.
+  const prefsRef = useLatest(prefs);
   const applyPrefs = useCallback(
-    (next: UserPreferences) => {
-      setPrefs(next);
-      writeUserPreferences(next, selfId);
-    },
-    [setPrefs, selfId],
+    (next: UserPreferences) => setPrefs(commitUserPreferences(prefsRef.current, next, selfId)),
+    [setPrefs, selfId, prefsRef],
   );
   const tools = useLogoTools({
     mirrorRef,

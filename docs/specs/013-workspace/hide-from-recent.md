@@ -26,7 +26,9 @@ means ~200 ids would blow that on their own, and the failure mode is nasty —
 the PUT starts rejecting **every** preference write, not just this one. 60 is
 far more than anyone hides by hand and leaves room for the other flags. When
 the cap bites it drops the **oldest** exclusion, so the choice just made always
-survives.
+survives. The cap alone does not guarantee the fit (60 ids plus a full account's
+other keys measured 4,967 characters), so every save is also trimmed to the api's
+cap, oldest exclusions first ([User preferences, Saving to the server](../007-editor/user-preferences.md#sync-flow)).
 
 ## Where it is enforced
 

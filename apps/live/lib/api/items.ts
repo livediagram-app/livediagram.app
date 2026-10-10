@@ -51,6 +51,12 @@ function itemsUrl(scope: ItemsScope, rest = ''): string {
 
 export async function fetchItems(scope: ItemsScope): Promise<ItemStoreState> {
   if (await isOfflineId(scope.documentId)) return offlineFetchItems(scope.documentId);
+  return fetchCloudItems(scope);
+}
+
+// The server's item store, even while the id is still registered offline: Sync Document checks
+// the cloud copy holds every card before it removes the local one (docs/specs/006-document/offline-mode.md).
+export async function fetchCloudItems(scope: ItemsScope): Promise<ItemStoreState> {
   const res = await apiFetch(itemsUrl(scope), {
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
   });

@@ -14,6 +14,7 @@ import { track } from '@/lib/telemetry';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
+import { rebaseUserPreferences } from '@/lib/user-preferences';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourStage } from './TourStage';
@@ -159,7 +160,11 @@ export function TourHost() {
     // finally go.
     apiRef.current.closeContextMenu();
     clearTourPending();
-    const next = { ...ctx.userPreferences, tourSeen: true };
+    // Onto the freshest preferences, not this render's: the whole blob is written.
+    const next = rebaseUserPreferences(ctx.userPreferences, {
+      ...ctx.userPreferences,
+      tourSeen: true,
+    });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
