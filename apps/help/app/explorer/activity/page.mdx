@@ -1,25 +1,25 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ActivitySections } from '@/components/illustrations/explorer-feeds';
+import { InboxSections } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
-  title: 'Activity',
+  title: 'Inbox',
   description:
-    'The Explorer’s Activity page lists everything outstanding for you across every document: open actions assigned to you or by you, Plan cards assigned to you, and the comment threads you are in.',
+    'The Explorer’s Inbox lists everything outstanding for you across every document: open actions assigned to you or by you, Plan cards assigned to you, and the comment threads you are in.',
   path: '/help/explorer/activity/',
 });
 
 <ArticleLayout
-  title="Activity"
+  title="Inbox"
   description="What is waiting on you right now, across every document: open actions, Plan cards, and the comment threads you are part of."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**Activity** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group. Where Home tells you what _happened_, Activity tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) and [Plan cards](/help/canvas/plan-mode/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
+The **Inbox** sits under [Home](/help/explorer/timeline/) in the Explorer sidebar's Overview group, just above the [Timeline](/help/explorer/timeline/#the-timeline). Where the Timeline tells you what _happened_, the Inbox tells you what is still _open_: the [actions](/help/collaboration/assigned-actions/) and [Plan cards](/help/canvas/plan-mode/) waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
 
 <Figure caption="Three sections, each with its count, and rows that open the document at the element in question.">
-  <ActivitySections />
+  <InboxSections />
 </Figure>
 
 ## What lands here
@@ -32,7 +32,7 @@ Everything on the page comes from one of your documents, so the row always knows
 
 The sections appear in that order, each with a count beside its heading, and a section with nothing in it is left out. When all three are empty the page says **Nothing waiting on you**.
 
-Done actions, finished cards and resolved threads are not listed. Activity is an inbox, not a history; [All activity](/help/explorer/timeline/#all-activity) and each document's own **Collaborate** panel keep the past.
+Done actions, finished cards and resolved threads are not listed. The Inbox is a list of what is outstanding, not a history; the [Timeline](/help/explorer/timeline/#the-timeline) and each document's own **Collaborate** panel keep the past.
 
 ## Reading a row
 
@@ -54,13 +54,13 @@ If the element has been deleted since the page loaded, the document still opens 
 
 ## The badge
 
-The Activity row in the sidebar shows a count of the open actions and Plan cards **assigned to you**. It counts only work waiting on you, not work you handed out and not comment threads, and it disappears at zero. You can see from any other Explorer section whether something needs you.
+The Inbox row in the sidebar shows a count of the open actions and Plan cards **assigned to you**. It counts only work waiting on you, not work you handed out and not comment threads, and it disappears at zero. You can see from any other Explorer section whether something needs you.
 
 ## Guests and signing in
 
-Activity works without an account, like the rest of the canvas. Signed out, you can still assign actions to yourself and comment on your own documents, and both show up here.
+The Inbox works without an account, like the rest of the canvas. Signed out, you can still assign actions to yourself and comment on your own documents, and both show up here.
 
-**Your activity follows you when you sign up.** Actions you gave yourself and threads you wrote in as a guest still read as yours after you create an account, alongside the documents that move with you.
+**Your Inbox follows you when you sign up.** Actions you gave yourself and threads you wrote in as a guest still read as yours after you create an account, alongside the documents that move with you.
 
 <Tip>
   Documents saved to Local Browser only (Offline Mode) never reach the server, so nothing on them

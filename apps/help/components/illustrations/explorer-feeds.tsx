@@ -1,5 +1,5 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump back in and What
-// happened), the All activity feed and its stacking, the Activity inbox, Recent, Shared with me,
+// happened), the Timeline feed and its stacking, the Inbox, Recent, Shared with me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
 // (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @livediagram/ui timeline).
 // Composed from the shared primitives plus the Explorer parts, so the house style holds.
@@ -170,7 +170,7 @@ const TONE = {
 
 type Tone = keyof typeof TONE;
 
-/** An All activity card: preview box, subject with its menu, the reason in its tone, the meta. */
+/** A Timeline card: preview box, subject with its menu, the reason in its tone, the meta. */
 function FeedCard({
   x,
   y,
@@ -269,8 +269,8 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: To
   );
 }
 
-/** The row of the Activity page: kind glyph, title (and hint), the document chip and where, the person. */
-function ActivityRow({
+/** The row of the Inbox: kind glyph, title (and hint), the document chip and where, the person. */
+function InboxRow({
   y,
   kind,
   title,
@@ -359,8 +359,8 @@ function ActivityRow({
   );
 }
 
-/** A section heading of the Activity page with its count. */
-function ActivitySectionTitle({ y, title, count }: { y: number; title: string; count: number }) {
+/** A section heading of the Inbox with its count. */
+function InboxSectionTitle({ y, title, count }: { y: number; title: string; count: number }) {
   const w = title.length * 7;
   return (
     <g>
@@ -420,7 +420,7 @@ export function HomeOverview() {
           </g>
         )),
       )}
-      <SectionHeading y={168} title="What happened" link="See all activity" />
+      <SectionHeading y={168} title="What happened" link="See timeline" />
       <Label x={32} y={192} size={10} weight={700} tone="muted">
         Today
       </Label>
@@ -446,14 +446,14 @@ export function HomeOverview() {
   );
 }
 
-/** All activity: the header's Cards / Calendar switch and Filter, the day rail, and one day's
+/** The Timeline: the header's Cards / Calendar switch and Filter, the day rail, and one day's
  *  cards, each coloured by what happened (green made, amber changed, red removed). */
-export function AllActivityFeed() {
+export function TimelineFeed() {
   return (
     <Scene w={420} h={206} bg="plain">
       <Pane h={182} />
       <Label x={32} y={31} size={12} weight={700} tone="strong">
-        All activity
+        Timeline
       </Label>
       <Tabs x={232} y={20} items={['Cards', 'Calendar']} tabW={54} h={22} />
       <rect
@@ -509,7 +509,7 @@ export function AllActivityFeed() {
 }
 
 /** A busy day: five edits fold into one stacked card, while a comment always keeps its own card. */
-export function AllActivityStack() {
+export function TimelineStack() {
   const x = 60;
   const y = 50;
   const w = 160;
@@ -575,17 +575,17 @@ export function AllActivityStack() {
   );
 }
 
-/** The Activity page: Assigned to You, You Assigned, then Open Comment Threads, each with a count. */
-export function ActivitySections() {
+/** The Inbox: Assigned to You, You Assigned, then Open Comment Threads, each with a count. */
+export function InboxSections() {
   return (
     <Scene w={420} h={274} bg="plain">
       <Pane h={250} />
       <Label x={32} y={30} size={12} weight={700} tone="strong">
-        Activity
+        Inbox
       </Label>
       <line x1={16} y1={42} x2={404} y2={42} className="stroke-slate-200" strokeWidth={1.5} />
-      <ActivitySectionTitle y={56} title="ASSIGNED TO YOU" count={2} />
-      <ActivityRow
+      <InboxSectionTitle y={56} title="ASSIGNED TO YOU" count={2} />
+      <InboxRow
         y={64}
         kind="action"
         title="Confirm the retry budget"
@@ -595,7 +595,7 @@ export function ActivitySections() {
         colour="brand"
         time="2h"
       />
-      <ActivityRow
+      <InboxRow
         y={102}
         kind="card"
         title="#12 Add the audit table"
@@ -605,8 +605,8 @@ export function ActivitySections() {
         colour="brand"
         time="1d"
       />
-      <ActivitySectionTitle y={152} title="YOU ASSIGNED" count={1} />
-      <ActivityRow
+      <InboxSectionTitle y={152} title="YOU ASSIGNED" count={1} />
+      <InboxRow
         y={160}
         kind="action"
         title="Draft the rollout note"
@@ -616,8 +616,8 @@ export function ActivitySections() {
         colour="emerald"
         time="3d"
       />
-      <ActivitySectionTitle y={208} title="OPEN COMMENT THREADS" count={1} />
-      <ActivityRow
+      <InboxSectionTitle y={208} title="OPEN COMMENT THREADS" count={1} />
+      <InboxRow
         y={216}
         kind="comment"
         title="Checkout"
