@@ -125,8 +125,15 @@ export function TourHost() {
   const seen = ctx.userPreferences?.tourSeen === true;
   // Owed by a sibling (docs/specs/012-collaboration/facilitate-tour.md "Where it appears"): someone in
   // Facilitate who has seen neither tour is offered this one first, and the Facilitate tour as it ends.
+  // Only the document's owner, on an unlocked tab, once the synced preferences are in: never an Editor
+  // joining someone else's live session (the tour's element step would put a square on their board), never a
+  // returning user whose answer has not arrived yet, and never where the Facilitate tour could not then start.
   const owedByFacilitate =
-    ctx.editorMode.mode === 'facilitate' && ctx.userPreferences?.facilitateTourSeen !== true;
+    ctx.editorMode.mode === 'facilitate' &&
+    ctx.isOwner &&
+    ctx.prefsSettled &&
+    ctx.activeTab.locked !== true &&
+    ctx.userPreferences?.facilitateTourSeen !== true;
   const ready =
     ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode && !otherTour;
   const offerRef = useLatest(offer);

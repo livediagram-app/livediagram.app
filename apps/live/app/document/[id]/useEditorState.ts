@@ -4189,6 +4189,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     unresolveThread,
     updateParticipantName,
     userPreferences,
+    // The server copy merged in (or failed to arrive): a once-ever offer (the tours) waits for it, so a
+    // returning user on a new device is not offered what another device already answered.
+    prefsSettled,
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,

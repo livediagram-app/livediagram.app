@@ -20,11 +20,15 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
   not an embed), and the tab not locked.
 - **On the welcome tour's closing card, not after it.** Someone in Facilitate who has not done the welcome
   tour (`tourSeen` not set) and not answered this one is offered the **welcome tour first**, even when nothing
-  else owed it to them (a Blank Session link skips the `/new` handoff). Its closing card, **You're ready to go**,
+  else owed it to them (a Blank Session link skips the `/new` handoff). Only on their **own** document and an
+  unlocked tab: an Editor joining someone else's live session is never shown it (its element step would put a
+  square on the room's board), and a locked tab could not start the Facilitate tour after it. Its closing card, **You're ready to go**,
   then carries this tour's offer: **Show me Facilitate** (the primary button) starts it straight at its first
   step, with no welcome card of its own, and the welcome tour's **Start creating** beside it declines it.
   However the welcome tour ends there (finished, skipped or declined), this tour counts as answered, so no
   second card pops up afterwards.
+- **Not before the synced preferences are in.** Neither offer fires until this person's preferences have
+  arrived from the server (or failed to), so an answer given on another device holds on a new one.
 - **Its own welcome card** is for someone who did the welcome tour before: the first time they are in
   Facilitate it offers itself, never at the same time as another tour.
 - **Optional.** The offer is the opt-in: **Show me around** (or **Show me Facilitate**) starts it, **No

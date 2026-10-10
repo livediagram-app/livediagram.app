@@ -22,11 +22,11 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
   (`useEverTrue`), and keeps it mounted.
 - **Armed** on entering Facilitate (or mounting in it) and by the rerun event while in Facilitate;
   disarmed on leaving, on offering, and whenever `facilitateTourSeen` is true.
-- **Offer** after `OFFER_DELAY_MS` (800) when armed, in Facilitate, `canWork` (hydrated, no welcome
+- **Offer** after `OFFER_DELAY_MS` (800) when armed, in Facilitate, `canWork` (hydrated, `prefsSettled`, no welcome
   overlay, not read-only, not embedded, tab not locked), not seen, the welcome tour seen (`tourSeen`), no
   other tour active (`useActiveTour()` is null or `'facilitate'`) and `hasTourPending()` false.
 - **Welcome tour first:** `TourHost` treats its offer as owed (`owedByFacilitate`) while the tab's mode is
-  `facilitate` and `facilitateTourSeen` is not true, beside the `/new` handoff flag; its `tourSeen` check
+  `facilitate`, `isOwner`, `prefsSettled`, the tab not locked, and `facilitateTourSeen` not true, beside the `/new` handoff flag; its `tourSeen` check
   still applies.
 - **Offer on the closing card:** while `owedByFacilitate`, `TourHost` passes `TourStage` an `outroChoice`
   ("Show me Facilitate"), rendered by `TourPopover` as the primary button with the finish button

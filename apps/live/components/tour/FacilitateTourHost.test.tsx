@@ -56,6 +56,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     setUserPreferences,
     writeUserPreferences,
     selfParticipant: { id: 'me' },
+    prefsSettled: true,
     ...over,
   };
 };
@@ -109,6 +110,7 @@ describe('FacilitateTourHost offer', () => {
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
     ['in Plan', { editorMode: { mode: 'plan' } }],
+    ['before the synced preferences are in', { prefsSettled: false }],
   ])('makes no offer when %s', (_why, over) => {
     editor(over);
     render(<FacilitateTourHost />);

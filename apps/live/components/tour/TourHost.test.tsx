@@ -41,6 +41,9 @@ const editor = (over: Record<string, unknown> = {}) => {
     embedMode: false,
     esBoard: false,
     editorMode: { mode: 'diagram' },
+    isOwner: true,
+    prefsSettled: true,
+    activeTab: { id: 'tab1', locked: false },
     userPreferences: { tourSeen: false },
     closeContextMenu: vi.fn(),
     setUserPreferences: vi.fn(),
@@ -97,6 +100,17 @@ describe('TourHost offer', () => {
     render(<TourHost />);
     act(() => vi.advanceTimersByTime(800));
     expect(offered()).toBe(true);
+  });
+
+  it.each([
+    ["to an Editor joining someone else's session", { isOwner: false }],
+    ['before the synced preferences are in', { prefsSettled: false }],
+    ['on a locked tab', { activeTab: { id: 'tab1', locked: true } }],
+  ])('is not owed in Facilitate %s', (_why, over) => {
+    editor({ editorMode: { mode: 'facilitate' }, ...over });
+    render(<TourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
   });
 
   it('is not owed in Facilitate once the Facilitate tour is answered, or once it is seen', () => {

@@ -70,6 +70,8 @@ export function FacilitateTourHost() {
   const welcomeSeen = ctx.userPreferences?.tourSeen === true;
   const canWork =
     ctx.hydrated &&
+    // The synced preferences are in, so an answer given on another device holds here too.
+    ctx.prefsSettled &&
     !ctx.anyWelcomeOpen &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
