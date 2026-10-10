@@ -144,10 +144,10 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       for (const text of itemLines(node.el)) lines.push({ text, noun: ELEMENT });
     }
   }
-  if (pages.length)
-    lines.push({
-      text: "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
-    });
+  // An Illustrate tab always has a page (illustratePagesOf), so the note always applies.
+  lines.push({
+    text: "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
+  });
   for (const a of articles) {
     const places =
       a.pages.length > 1

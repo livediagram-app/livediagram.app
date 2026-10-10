@@ -99,6 +99,44 @@ describe('the pages view', () => {
     expect(json.layouts.map((l) => l.kind)).toEqual(['slide', 'logo']);
   });
 
+  it('names a landscape page, its paint, its elements; a one-page article; no layouts for articles alone', () => {
+    const page: IllustratePage = {
+      id: 'page-wide',
+      orientation: 'landscape',
+      background: { fill: { kind: 'solid', color: '#0f172a' } },
+    };
+    const r = layOutIllustratePages([page])[0]!.rect;
+    const tab = {
+      id: 'tab-wide',
+      name: 'Wide',
+      opensIn: 'illustrate',
+      pages: [page],
+      elements: [
+        shapeAt('square', 'cccc3333', r.x + 50, r.y + 50),
+        {
+          ...shapeAt('square', 'dddd4444', r.x + 300, r.y + 50),
+          processSteps: [{ label: 'Plan' }],
+        },
+      ],
+    } as unknown as Tab;
+    const lines = pagesOf(tab).text.split('\n');
+    expect(lines[1]).toMatch(
+      /^page 1 page-wide · infographic A4 · at .* · background #0f172a · 2 elements$/,
+    );
+    expect(lines).toContain('    processSteps: Plan');
+    const articleOnly = {
+      id: 'tab-art',
+      name: 'Notes',
+      opensIn: 'illustrate',
+      pages: [{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }],
+      articles: { f: { blocks: [{ id: 'b', type: 'paragraph', runs: [{ text: 'Hi' }] }] } },
+      elements: [],
+    } as unknown as Tab;
+    const out = pagesOf(articleOnly);
+    expect(out.text).toContain('article f "Untitled" · page 1 · 1 blocks · 1 words\n  Hi');
+    expect(out.text).not.toContain('layouts ');
+  });
+
   it('keeps to a budget, saying what it left out', () => {
     const out = pagesOf(illustrateTab(), 60);
     expect(out.text).toMatch(/hidden/);
