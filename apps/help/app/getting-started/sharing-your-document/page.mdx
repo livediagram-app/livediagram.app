@@ -16,14 +16,16 @@ livediagram is multiplayer from the first shape. Sharing is just creating a link
 ## Create a share link
 
 <Step n={1}>
-  Open the document you want to share and click **Share** at the top right of the editor.
+  Open the document you want to share and click **Share** at the top right of the editor, or choose
+  **Share** from the document's **⋯** menu in the Explorer. Only the document's owner can issue
+  passes, so someone who joined through a link sees no **Share** button.
 </Step>
 
 <Step n={2}>
   Under **Issue a pass**, pick a role for the new link: **Editor** (draws with you in real time, the
-  default) or **Viewer** (watches, pans and zooms, but can't change a thing). **Valid** sets how
-  long it lasts: Forever, 1 week, 1 month or 6 months. In a document with several tabs, **Opens**
-  can limit the link to one tab.
+  default) or **Viewer** (looks, pans and zooms, comments and answers polls, but can't change the
+  canvas). **Valid** sets how long it lasts: Forever, 1 week, 1 month or 6 months. In a document
+  with several tabs, **Opens** can limit the link to one tab.
 </Step>
 
 <Step n={3}>
@@ -31,8 +33,8 @@ livediagram is multiplayer from the first shape. Sharing is just creating a link
   in the document; each pass in the list also has its own copy button.
 </Step>
 
-If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press
-**Shuffle name** for another): that is the name peers see on your cursor and comments. A document
+If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press the
+shuffle button beside it for another): that is the name peers see on your cursor and comments. A document
 saved to **Local Browser** has to be synced to your account before it can be shared.
 
 <Figure caption="The Share dialog lists your passes, Editor and Viewer, each with its own copy button.">
@@ -41,7 +43,7 @@ saved to **Local Browser** has to be synced to your account before it can be sha
 
 ## What happens when they open it
 
-When someone opens your link they land directly on the canvas:
+Someone opening your link for the first time picks the name others will see, enters the password if you set one, and then lands on the canvas:
 
 <Figure caption="Everyone in a shared document sees the others' live cursors and a presence stack of who is here.">
   <LiveCursors />
@@ -58,11 +60,13 @@ Back in the Share dialog you can manage links over time:
 - **Multiple passes.** Issue several, with different roles, for example a Viewer pass for stakeholders and an Editor pass for collaborators. They are listed under **Passes**.
 - **Revoke** a pass to cut off access through it. Expiring passes show a countdown, and expired ones move under **Expired**, where they can be extended or deleted. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
 - **Password Protection.** Protect every pass with one shared password; everyone opening a link must enter it first, embeds included. See [Share Passwords](/help/collaboration/sharing/share-passwords/).
+- **Community.** When you are signed in, the same dialog can publish the document to the public [Community](/help/collaboration/sharing/community/) gallery. A document in the Community can't have a password, and a password-protected one can't be published.
 
 <Tip>
   Want to put the document on a web page or in a doc? Each pass can also be copied as an embed
-  (**Copy iframe**) or as a live image that stays up to date. A Viewer pass embeds read-only; an
-  Editor pass embeds an editable canvas. See [Embeds](/help/collaboration/sharing/embeds/).
+  (**Copy iframe**) or, while no password is set, as a live image that stays up to date. A Viewer
+  pass embeds read-only; an Editor pass embeds an editable canvas. See
+  [Embeds](/help/collaboration/sharing/embeds/).
 </Tip>
 
 </ArticleLayout>
