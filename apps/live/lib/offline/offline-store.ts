@@ -353,6 +353,13 @@ export async function isOfflineId(id: string): Promise<boolean> {
   return (await loadIds()).has(id);
 }
 
+// How many documents this browser holds (the local Trash included), off the same cached index: a
+// cheap upper bound that lets a caller skip reading every record (the move prompt after signing in,
+// docs/specs/014-identity/auth-and-guest-access.md) when there is nothing, or nothing new, to offer.
+export async function offlineIdCount(): Promise<number> {
+  return (await loadIds()).size;
+}
+
 // Synchronous check off the already-loaded cache — for the `beforeunload`
 // beacon flush, which can't await. Returns false until the cache has loaded
 // (by which point any document being edited has already been through the async
@@ -361,13 +368,27 @@ export function isOfflineIdSync(id: string): boolean {
   return pendingIds.has(id) || (idCache?.has(id) ?? false);
 }
 
+// Told whenever a document joins or leaves this browser's store (a create, Sync Document, Take Offline):
+// what shows or reads a document's offline-ness follows a conversion without a reload
+// (docs/specs/006-document/offline-mode.md "Syncing in place").
+const idListeners = new Set<(id: string) => void>();
+export function subscribeOfflineIds(listener: (id: string) => void): () => void {
+  idListeners.add(listener);
+  return () => idListeners.delete(listener);
+}
+function announce(id: string): void {
+  for (const l of idListeners) l(id);
+}
+
 function rememberId(id: string): void {
   pendingIds.add(id);
   if (idCache) idCache.add(id);
+  announce(id);
 }
 function forgetId(id: string): void {
   pendingIds.delete(id);
   if (idCache) idCache.delete(id);
+  announce(id);
 }
 
 // ---------------------------------------------------------------------------

@@ -6,6 +6,7 @@ import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { LOGO_TOOL_TYPES } from '../logo-types';
+import { LOCAL_MOVE_OFFERED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -199,12 +200,38 @@ export const SAVED_TO_CLOUD = chart(
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// documents after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
+// Each document it moves is a Saved to Cloud.
+export const LOCAL_MOVE_ACCEPTED = chart(
+  'UI',
+  'Selected',
+  'Move Prompt Accepted',
+  'Move, pressed on that prompt. Each document it moved also counts in Saved to Cloud.',
+  { types: ['LocalMovePrompt'] },
+);
+
+export const LOCAL_MOVE_DISMISSED = chart(
+  'UI',
+  'Closed',
+  'Move Prompt Put Off',
+  'Not Now on that prompt: asked again only when there are more documents to move.',
+  { types: ['LocalMovePrompt'], rising: 'neutral' },
+);
+
 export const OFFLINE_MODE: MetricStack = {
   stack: true,
   title: 'Offline Mode',
   blurb:
-    'Documents kept only in this browser: made offline, taken offline from the cloud, and synced back up.',
-  members: [CREATED_OFFLINE, TAKEN_OFFLINE, SAVED_TO_CLOUD],
+    'Documents kept only in this browser (where a guest starts): made offline, taken offline from the cloud, synced back up, and the offer to move them after signing in.',
+  members: [
+    CREATED_OFFLINE,
+    TAKEN_OFFLINE,
+    SAVED_TO_CLOUD,
+    LOCAL_MOVE_OFFERED,
+    LOCAL_MOVE_ACCEPTED,
+    LOCAL_MOVE_DISMISSED,
+  ],
 };
 
 // Tab lifecycle.

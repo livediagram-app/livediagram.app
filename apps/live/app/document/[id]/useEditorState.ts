@@ -173,6 +173,7 @@ import {
   mergeAiElements,
   patchTab,
 } from './editor-page-helpers';
+import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
@@ -890,6 +891,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
   });
+  // Sync Document from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
+  // in place").
+  const syncToCloud = useSyncInPlace({
+    documentId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
+    resetTabs,
+    lastSavedTabsRef,
+    setDocumentServerStored: realtime.setDocumentServerStored,
+    refreshDocumentList,
+  });
 
   // Persist self only when name or color actually changed. Without
   // this guard the hydration GET → state set → effect fire chain
@@ -956,8 +968,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
   useEffect(() => {
-    // The editor in a workbench never writes the participant record (I9).
-    if (!hydrated || workbenchMode) return;
+    // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
+    // a Local only document opens before the reader is known (docs/specs/006-document/offline-mode.md
+    // "Instant open"), and 'self' is nobody's row.
+    if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;
     if (prev && prev.name === selfParticipant.name && prev.color === selfParticipant.color) {
       return;
@@ -3597,6 +3611,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
+    syncToCloud,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,

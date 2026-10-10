@@ -4,7 +4,8 @@ import { Button } from '@livediagram/ui';
 export type ImportChecklistRow = { key: string; name: string; detail: string };
 
 /**
- * The list step every many-file import shares (docs/specs/020-import-export/board-import.md): what
+ * The list step every many-file import shares (docs/specs/020-import-export/board-import.md), and the
+ * move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md): what
  * was found, each with a checkbox, all ticked, under the name it will get and a one-line detail;
  * Select all; a note about what will be left out; Back and Import.
  */
@@ -16,6 +17,7 @@ export function ImportChecklist({
   onToggleAll,
   leftOut,
   importLabel,
+  cancelLabel = 'Back',
   onImport,
   onCancel,
 }: {
@@ -27,6 +29,8 @@ export function ImportChecklist({
   /** Said when some files will be left out ("2 files couldn't be read and will be left out."). */
   leftOut?: string;
   importLabel: string;
+  /** The secondary button: Back on an import's list step. */
+  cancelLabel?: string;
   onImport: () => void;
   onCancel: () => void;
 }) {
@@ -79,7 +83,7 @@ export function ImportChecklist({
       ) : null}
       <div className="mt-4 flex justify-end gap-2">
         <Button variant="secondary" size="md" onClick={onCancel}>
-          Back
+          {cancelLabel}
         </Button>
         <Button variant="primary" size="md" onClick={onImport} disabled={count === 0}>
           {importLabel}

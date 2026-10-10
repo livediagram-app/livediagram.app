@@ -71,6 +71,9 @@ export type TemplatePickerProps = {
   teamFolders?: Record<string, { id: string; name: string; parentId: string | null }[]>;
   // Pre-selected placement (the /new URL's folder / team context).
   initialPlacement?: string;
+  // The Save location tile selected until the reader picks one (docs/specs/006-document/save-locations.md
+  // "The default depends on who is creating"): Local Browser for a guest. Re-read every render.
+  defaultSaveLocation?: SaveLocationId;
   // The template step's presets (the /new URL's `?mode=` and `?q=`,
   // docs/specs/007-editor/new-document-route.md): the mode filter to open on (its blank selected) and
   // words to open the search with. Null or absent: Everything and an empty search.

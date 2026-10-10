@@ -20,11 +20,7 @@ import { useWizardPlacement } from './useWizardPlacement';
 import type { NewDocumentSettings, TemplatePickerProps } from './template-picker-props';
 import { WizardDefaultFolder } from './WizardDefaultFolder';
 import { NewDocumentSettingsStep } from './template-picker-settings';
-import {
-  DEFAULT_SAVE_LOCATION,
-  isOfflineLocation,
-  type SaveLocationId,
-} from '@/lib/save-locations';
+import { isOfflineLocation, type SaveLocationId } from '@/lib/save-locations';
 import { TemplatePickerIdentityRow } from './TemplatePickerIdentityRow';
 import { type WizardStep } from './template-picker-wizard';
 import { TemplatePickerHeader } from './TemplatePickerHeader';
@@ -66,6 +62,7 @@ export function TemplatePicker({
   teams = [],
   teamFolders = {},
   initialPlacement,
+  defaultSaveLocation = 'livediagram',
   initialModeChoice = null,
   initialQuery = null,
   defaults,
@@ -138,8 +135,10 @@ export function TemplatePicker({
   // Save location (docs/specs/006-document/save-locations.md): livediagram (cloud) or Local Browser (Offline
   // Mode, docs/specs/006-document/offline-mode.md). Welcome wizard only; threaded into every onPick so Skip /
   // guided tour / Create all honour it. Stays at the default in non-welcome
-  // modes (the chooser never renders there).
-  const [saveLocation, setSaveLocation] = useState<SaveLocationId>(DEFAULT_SAVE_LOCATION);
+  // modes (the chooser never renders there). Undefined until the reader picks a tile: until then
+  // the caller's default is the selection, re-read each render, so it follows auth settling.
+  const [chosenLocation, setSaveLocation] = useState<SaveLocationId | undefined>(undefined);
+  const saveLocation = chosenLocation ?? defaultSaveLocation;
   // Settings step (docs/specs/006-document/offline-mode.md): document name (defaults per template) + placement.
   // `placement` is 'unsorted' | `folder:<id>` | `team:<id>` in one control.
   // The default name tracks the chosen template ("Untitled Mind Map", not a

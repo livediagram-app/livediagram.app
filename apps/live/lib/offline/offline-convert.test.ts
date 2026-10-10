@@ -55,7 +55,10 @@ vi.mock('../api/sheets', () => ({
 }));
 vi.mock('./offline-images', () => ({
   embedTabImages: vi.fn(async (tabs: unknown) => tabs),
-  uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => tabs),
+  uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => ({
+    tabs,
+    imageIds: new Map(),
+  })),
   isDataImageId: (id: string) => id.startsWith('data:'),
 }));
 

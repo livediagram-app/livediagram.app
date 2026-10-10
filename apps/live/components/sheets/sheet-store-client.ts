@@ -2,6 +2,7 @@
 // lazy sheet chunk: per sheet, the server's confirmed state and this person's pending writes laid over it (what
 // they see), one workbook per tab, writes sent one at a time per sheet in order, undo steps, and the room's ops
 // merged by rev. Writes land on ids, so pending writes rebase cleanly over anyone else's.
+import { subscribeOfflineIds } from '@/lib/offline/offline-store';
 import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@livediagram/api-schema';
 import {
   Workbook,
@@ -94,6 +95,12 @@ export class SheetStore {
   constructor(deps: SheetStoreDeps) {
     this.deps = deps;
     this.api = deps.api ?? { fetchSheets, createSheet, writeSheet, deleteSheet };
+    // The document synced to the server in place (docs/specs/006-document/offline-mode.md "Syncing in
+    // place"): every loaded tab is read again from the server, so the confirmed revisions are its own.
+    // The store lives for the session, as does this subscription.
+    subscribeOfflineIds((id) => {
+      if (id === this.deps.scope.documentId) this.resync();
+    });
   }
 
   // The editor's latest identity, toasts and undo (they change across renders; the store lives for the session).
