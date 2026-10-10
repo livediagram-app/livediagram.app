@@ -13,6 +13,7 @@
 import { HOME_OPENED_EVENT_TYPE } from '@livediagram/api-schema';
 import type { TimelineEvent, TimelineScopeRef } from '@livediagram/api-schema';
 import type { Env } from '../types';
+import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 
 export type TimelineEventDraft = {
   actorId: string | null;
@@ -168,7 +169,7 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
   // An entry names its document as it is called NOW, not as it was called
   // when the event happened: a rename is not a timeline moment, so older
   // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A document that is
-  // gone keeps the name it had.
+  // gone, or one the reader can no longer open, keeps the name it had.
   if (row.current_document_name)
     snapshot = { ...snapshot, documentName: row.current_document_name };
   return {
@@ -186,6 +187,10 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
 
 export type ReadTimelineOptions = {
   scope: TimelineScopeRef;
+  // Who is reading, for the current-name override: only a document the reader can still open
+  // shows its live name. Defaults to the scope's owner for a user scope; a team scope without
+  // one keeps every snapshot name.
+  readerId?: string | null;
   limit: number;
   // "<occurredAt>:<eventId>" from the previous page.
   cursor?: string | null;
@@ -228,10 +233,12 @@ export async function readTimeline(
   env: Env,
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
-  const binds: unknown[] = [opts.scope.scopeType, opts.scope.scopeId];
+  const readerId = opts.readerId ?? (opts.scope.scopeType === 'user' ? opts.scope.scopeId : null);
+  // ?1 and ?2 are VISIBLE_DOCUMENTS_CTES' own binds (the reader, now).
+  const binds: unknown[] = [readerId ?? '', Date.now(), opts.scope.scopeType, opts.scope.scopeId];
   // A dismissed membership (docs/specs/013-workspace/timeline.md §2.9) is still a row, so the
   // re-emit path can't resurrect it, but it is not part of the feed.
-  let where = `s.scope_type = ?1 AND s.scope_id = ?2 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_IN_FEED}`;
+  let where = `s.scope_type = ?3 AND s.scope_id = ?4 AND s.deleted_at IS NULL AND ${NOT_IN_TRASH} AND ${NOT_IN_FEED}`;
 
   if (opts.cursor) {
     const parsed = parseCursor(opts.cursor);
@@ -256,13 +263,24 @@ export async function readTimeline(
     where += ` AND e.source_type IN (${placeholders.join(', ')})`;
   }
 
+  // The live name is a read of the documents table, so it follows the reader's access, not the
+  // event's: a document the reader has lost (left the team, link revoked) keeps its snapshot name.
+  // A document feed already passed that document's own read gate, so it is its own visible set.
+  const nameVisible =
+    opts.scope.scopeType === 'document'
+      ? 'cd.id = ?4'
+      : readerId
+        ? 'cd.id IN (SELECT id FROM visible)'
+        : '0';
+
   // Fetch one extra row to learn whether another page exists, rather
   // than running a second COUNT over the same predicate.
   binds.push(opts.limit + 1);
   const res = await env.DB.prepare(
-    `SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
+    `WITH ${VISIBLE_DOCUMENTS_CTES}
+     SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
             e.title, e.description, e.occurred_at, e.snapshot,
-            cd.name AS current_document_name
+            CASE WHEN ${nameVisible} THEN cd.name END AS current_document_name
        FROM timeline_event_scopes s
        JOIN timeline_events e ON e.id = s.event_id
        LEFT JOIN documents cd

@@ -1068,7 +1068,12 @@ snapshot's `documentName`), so renaming a document updates every older entry
 about it, and a separate "Renamed" card would only repeat what those now say.
 Nothing records `document_renamed` any more, and the rows written before this
 change are filtered out of every feed and the unread count. A document that no
-longer exists keeps the name it had. Team renames are still events: a team's
+longer exists keeps the name it had, and so does one the reader can no longer
+open: the override applies only to a document in the reader's visible set (the
+documents they own, their joined teams' documents, and live shares, as
+`VISIBLE_DOCUMENTS_CTES` defines it), so leaving a team or losing a link never
+leaks a later rename. A document feed passed that document's own read gate, so
+its live name always shows there. Team renames are still events: a team's
 name is not re-read onto older entries.
 
 | `eventType`                            | Fires when                                                                                                                                       | Title / description                                             |
