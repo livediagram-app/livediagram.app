@@ -36,11 +36,19 @@ function collapsedParts(collapsed: NonNullable<Elision>['collapsed']): string[] 
 
 export type ElisionArguments = Record<string, string | number | boolean>;
 
+// A flag value as a shell reads it: bare when it holds only safe characters, else single-quoted, so an
+// `id:"Node A"` ref pastes as one argument with its quotes kept.
+const SHELL_SAFE = /^[A-Za-z0-9_.,:/@%+=-]+$/;
+const shellWord = (value: string | number | boolean) => {
+  const text = String(value);
+  return SHELL_SAFE.test(text) ? text : `'${text.replace(/'/g, `'\\''`)}'`;
+};
+
 // `view --only c991` for the CLI, `read_document {"only":"c991"}` for the MCP.
 export function elisionCommand(args: ElisionArguments, door: ViewDoor): string {
   if (door === 'mcp') return `read_document ${JSON.stringify(args)}`;
   const flags = Object.entries(args).map(([key, value]) =>
-    value === true ? ` --${key}` : ` --${key} ${value}`,
+    value === true ? ` --${key}` : ` --${key} ${shellWord(value)}`,
   );
   return `view${flags.join('')}`;
 }

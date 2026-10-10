@@ -114,7 +114,8 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
 `buildViewModel(tab, context)` runs once per render and holds, for the views to read:
 
 1. **Partition.** `partitionVisible(tab)`: an element is **hidden** when `visibleLayerElements` drops it, or when it
-   is an arrow with a pinned end on a hidden element (`VW10`). Everything else is **printed**, unknown kinds
+   is an arrow with a pinned end on a hidden element or an end riding on a hidden arrow, however long the chain
+   (`VW10`), so no printed end names a hidden element's ref. Everything else is **printed**, unknown kinds
    included.
 2. **Refs.** `computeRefs(allElementIds)` over every element of the tab, hidden ones and arrows included (`VW2`),
    so a ref never changes with layer visibility.
@@ -528,10 +529,10 @@ command names only what differs from the current request: `only` the largest col
 `budget` the estimate of the full view, `all` for resolved threads, `view outline` for unconnected graph nodes. It is
 written in the reading door's syntax (`VW54`):
 
-| Door (`door`)   | Command form                                     | Example                         |
-| --------------- | ------------------------------------------------ | ------------------------------- |
-| `cli` (default) | `view` then ` --<flag> <value>` per argument     | `view --only c991`              |
-| `mcp`           | `read_document` then the arguments as one object | `read_document {"only":"c991"}` |
+| Door (`door`)   | Command form                                                                                                      | Example                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `cli` (default) | `view` then ` --<flag> <value>` per argument; a value outside `[A-Za-z0-9_.,:/@%+=-]` single-quoted for the shell | `view --only c991`, `view --only 'id:"Node A"'` |
+| `mcp`           | `read_document` then the arguments as one object                                                                  | `read_document {"only":"c991"}`                 |
 
 ### JSON forms
 

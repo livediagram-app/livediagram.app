@@ -25,6 +25,23 @@ describe('partitionVisible (E7)', () => {
     expect(partitionVisible(tab)).toEqual({ printed: [a, aa], hidden: [b, ab, onHidden] });
   });
 
+  it('hides an arrow riding on a hidden arrow, however long the chain', () => {
+    const ridesOn = (id: string, on: string) => ({
+      ...arrowBetween(id, 'a', 'a'),
+      to: { kind: 'on-arrow' as const, arrowId: on, t: 0.5 },
+    });
+    const first = ridesOn('r1', 'ab');
+    const second = ridesOn('r2', 'r1');
+    const tab = {
+      elements: [second, a, b, ab, first],
+      layers: [
+        { id: 'default', name: 'Default' },
+        { id: 'secret', name: 'Secret', visible: false },
+      ],
+    };
+    expect(partitionVisible(tab)).toEqual({ printed: [a], hidden: [second, b, ab, first] });
+  });
+
   it('keeps an arrow whose only pinned end is visible', () => {
     const free = { ...arrowBetween('free', 'a', 'b'), to: { kind: 'free' as const, x: 0, y: 0 } };
     const tab = {
