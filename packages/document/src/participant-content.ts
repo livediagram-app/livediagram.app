@@ -1,7 +1,7 @@
 // The participant content rule (docs/specs/013-workspace/share-roles.md "What a Participant changes"; blueprint
 // "Behaviour and state"). A Participant changes a board's content, never its shape: it adds stickies, text, images
 // and mind-map branches, writes on any element but a Behaviour, moves and recolours stickies, re-lays a mind map,
-// swaps an image's picture, and removes only what it added. The server applies each of
+// swaps an image's picture, and removes what it added and any mind node. The server applies each of
 // a Participant's element ops to the STORED tab through this one pure function, so a stale screen can never write
 // an old copy of the board back: a permitted field lands, a forbidden field stays as stored, a forbidden add or
 // remove is refused with the op that puts the sender's screen back.
@@ -95,6 +95,20 @@ function isMindConnectorOn(tab: Tab, el: Element): boolean {
     to.kind === 'pinned' &&
     mindNodeOn(tab, from.elementId) &&
     mindNodeOn(tab, to.elementId)
+  );
+}
+
+// Whether a Participant may remove this element though someone else added it: any mind node (decided 2026-10-10),
+// and a mind connector, including one whose node went first in the same change (each end a mind node on the tab
+// or no longer on it), so deleting a node takes its branch line with it.
+export function removableByAnyone(tab: Tab, el: Element): boolean {
+  if (isMindNode(el)) return true;
+  if (el.type !== 'arrow') return false;
+  const ends = [(el as { from: Endpoint }).from, (el as { to: Endpoint }).to];
+  return ends.every(
+    (end) =>
+      end.kind === 'pinned' &&
+      (mindNodeOn(tab, end.elementId) || !tab.elements.some((e) => e.id === end.elementId)),
   );
 }
 
@@ -263,7 +277,7 @@ export function applyParticipantOp(
   }
   if (op.kind === 'remove') {
     if (isHeld(tab, stored)) return refuse('locked', { kind: 'add', element: stored, at: index });
-    if (!addedByAdder(stored, adderKey))
+    if (!addedByAdder(stored, adderKey) && !removableByAnyone(tab, stored))
       return refuse('not-own', { kind: 'add', element: stored, at: index });
     return {
       result: 'applied',

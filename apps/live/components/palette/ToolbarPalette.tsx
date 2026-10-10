@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from 'react';
 import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
+import { setPaletteSearchOpen } from '@/lib/palette-search-open';
 import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
@@ -242,6 +243,10 @@ export function ToolbarPalette(props: Props) {
     track('UI', 'Opened', 'ToolbarMore');
     more.openFrom(button);
   };
+  // Opening the Search starts a new choice: a tile armed to place (its "Tap to drop" banner) is let go first.
+  const beforeSearch = () => {
+    if (pendingDraw) tileActions.cancelDraw?.();
+  };
   // S asks for the Search (lib/toolbar-search-request): answered only while it is on show, so the
   // key keeps its Select meaning on an event-storming board or with the chrome away.
   const searchButtonRef = useRef<HTMLDivElement>(null);
@@ -251,6 +256,7 @@ export function ToolbarPalette(props: Props) {
     );
     if (!button || search.open) return;
     more.setOpen(false);
+    beforeSearch();
     track('UI', 'Opened', 'ToolbarSearch');
     search.openFrom(button);
   });
@@ -260,9 +266,15 @@ export function ToolbarPalette(props: Props) {
   }, [esBoard, participant, hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
+    beforeSearch();
     track('UI', 'Opened', 'ToolbarSearch');
     search.openFrom(button);
   };
+  // The open Search tells the top-centre stack, which stands its timer aside so the panel is not covered.
+  useEffect(() => {
+    setPaletteSearchOpen(search.open);
+    return () => setPaletteSearchOpen(false);
+  }, [search.open]);
   const moreButton = (
     <button
       type="button"

@@ -17,7 +17,7 @@ import { SOLID_BRAND_DARK_CONTROL } from './brand-classes';
 // can still add layout (w-full, mt-…) without re-stating the look.
 
 // No red variant: a delete or a trash looks like any other action in its place (docs/specs/004-interface-design).
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'solid';
 export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'cta-sm' | 'cta';
 
 const BASE =
@@ -29,6 +29,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
     'border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800',
   ghost:
     'text-slate-500 hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-slate-400 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+  // A filled button whose fill (and hover fill) the caller supplies in `className`, for an action that takes on a
+  // colour it represents, such as a share role's. White text, so the fill must hold 4.5:1 against white.
+  solid: 'text-white focus-visible:outline-slate-400',
 };
 
 const SIZES: Record<ButtonSize, string> = {

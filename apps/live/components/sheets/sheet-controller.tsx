@@ -54,8 +54,8 @@ export type SheetController = {
   interactive: boolean;
   // Writes cells (docs/specs/013-workspace/share-roles.md): an Editor and a Participant.
   canEdit: boolean;
-  // Changes the Sheet's shape (rows, columns, settings, title): an Editor only. Absent: as canEdit.
-  canShape?: boolean;
+  // Changes the Sheet's shape (rows, columns, settings, title, toolbar): an Editor only.
+  canShape: boolean;
   maximised: boolean;
   locale: string;
   selection: Selection;

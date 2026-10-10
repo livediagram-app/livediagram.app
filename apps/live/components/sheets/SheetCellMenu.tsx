@@ -88,7 +88,7 @@ export function SheetCellMenu({
           />
         ) : null}
       </MenuToolbar>
-      {c.canEdit ? (
+      {c.canShape ? (
         askMerge ? (
           <SheetMergeConfirm
             range={c.selection.ranges[c.selection.ranges.length - 1]!}

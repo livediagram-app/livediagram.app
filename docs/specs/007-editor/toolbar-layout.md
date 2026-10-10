@@ -43,6 +43,8 @@ A strip shows one category at a time, so finding an element means knowing which 
   stays put beside More while the tiles swipe.
 - **Not on an event-storming board:** the notation is the palette there, as the board hides the
   pickers. Draw mode has no strip, so no Search.
+- **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), and the
+  session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
 - **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
   screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
   strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes

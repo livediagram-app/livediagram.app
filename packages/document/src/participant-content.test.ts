@@ -629,3 +629,25 @@ describe('mind maps and images (docs/specs/013-workspace/share-roles.md)', () =>
     expect(r.tab.elements[0]).not.toHaveProperty('objectFit');
   });
 });
+
+describe('removing mind nodes (docs/specs/013-workspace/share-roles.md)', () => {
+  const node = (id: string, parent?: string): Element =>
+    ({
+      ...createShape('mind-node', 0, 0),
+      id,
+      ...(parent ? { mindParentId: parent } : {}),
+    }) as Element;
+  const line = { ...createPinnedArrow('root', 'e', 'kid', 'w'), id: 'a1' } as Element;
+
+  it("removes anyone's mind node and its connector together, never anyone's other arrow", () => {
+    const before = tabOf([node('root'), node('kid', 'root'), line, sticky('s1')]);
+    const after = tabOf([node('root'), sticky('s1')]);
+    expect(participantTabChange(before, after, ME)).not.toBeNull();
+    const stray = { ...createPinnedArrow('root', 'e', 's1', 'w'), id: 'a2' } as Element;
+    const withStray = tabOf([node('root'), sticky('s1'), stray]);
+    expect(applyParticipantOp(withStray, { kind: 'remove', id: 'a2' }, ME)).toMatchObject({
+      result: 'refused',
+      reason: 'not-own',
+    });
+  });
+});

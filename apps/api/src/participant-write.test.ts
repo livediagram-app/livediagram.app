@@ -57,7 +57,7 @@ describe('writeParticipantOp', () => {
     expect(refused).toMatchObject({ ok: true, outcome: { result: 'refused', reason: 'not-own' } });
     const same = await writeParticipantOp(
       {} as never,
-      req({ kind: 'update', element: sticky('s1', { width: 5 }) }),
+      req({ kind: 'update', element: sticky('s1', { rotation: 45 }) }),
     );
     expect(same).toMatchObject({ ok: true, outcome: { result: 'applied', changed: false } });
     expect(db.swapTabData).not.toHaveBeenCalled();

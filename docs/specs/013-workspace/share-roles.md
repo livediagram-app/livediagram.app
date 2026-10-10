@@ -41,7 +41,7 @@ A Participant changes the board's **content**, never its **shape**.
 | Add a sticky, a text element or an image; grow a mind map (a node as a branch of one already there, with the connector joining them)                                       | Add any other element: shapes, free connectors, frames, templates, kits; a mind node with no branch to grow from                                                      |
 | Write on any element: change its text (a sticky's, a shape's label, a table's cells)                                                                                       | Change any other field of an element it did not add: size, style, rotation, layer, lock; write on a Behaviour (a poll's question, a timer's or mode button's caption) |
 | Move and resize any sticky or image; recolour any sticky; move any mind node, and turn a mind connector's faces, so a growing map re-lays itself; swap any image's picture | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                                 |
-| Delete anything it added itself                                                                                                                                            | Delete anything someone else added                                                                                                                                    |
+| Delete anything it added itself, and any mind node (with its connector)                                                                                                    | Delete anything someone else added                                                                                                                                    |
 | Change anything about what it added (size, style, text), so long as it stays something it could add                                                                        | Reorder layers; group; lock; point its connector at anything but two mind nodes                                                                                       |
 | On a Plan board: add a card, edit its fields, move it between columns                                                                                                      | Columns, card types, custom fields, board settings; delete, trash or archive a card; restore one with its votes                                                       |
 | On a Sheet: write cells                                                                                                                                                    | Rows and columns, the Sheet's title, adding or removing a Sheet                                                                                                       |
@@ -53,18 +53,32 @@ A Participant changes the board's **content**, never its **shape**.
 - **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
   them. Shapes, frames, connectors and someone else's text boxes (which often label the structure) stay where
   their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
+- **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
+  no timer controls on a timer element, and an inert face on a mode button set to the Eraser or Format Painter; a
+  Participant sees no Sheet toolbar, row, column, merge or settings controls (cells only). Empty states describe
+  instead of instructing: an agenda, roll call or done check with nothing in it says who fills it, a mood meter
+  asks only someone who may answer, a comment thread or card finder invites only someone who may add. A Participant
+  writes on comment panels and adds Plan cards from New Card, as it may.
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or
   delete is refused. A stale screen therefore never writes an old copy of the board over a newer one.
 - **Undo** takes back the Participant's own steps; an undo that would make a forbidden change is refused like any
   other.
 
+## Building a new feature
+
+Every feature a shared document can reach states, in its own spec, what an Editor, a Participant and a Viewer may do
+with it, and is gated and tested to match ([Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md)).
+The defaults: a Viewer only looks; a Participant takes part and adds content but never reshapes the board, runs the
+session or changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
+capabilities, the Participant palette, the room) keep a new feature from widening a role by accident.
+
 ## The Participant palette
 
 - **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: the
   landing category's sticky and text tiles, an Event Storming board's coloured notes, else Sticky and Text; then
-  Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter), not
-  from a tile.
+  Image. On every mode, Draw included. No Search, no More. A mind map grows from a selected node (Tab, Enter, or Add
+  child and Add sibling on its toolbar), not from a tile.
 - **The selection modes it needs**: Select, Hand, Laser, Spotlight, Avatar, Isometric and Zen. Eraser, Format
   Painter and Slide Deck are an Editor's.
 

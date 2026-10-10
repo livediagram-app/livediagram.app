@@ -1,17 +1,14 @@
 'use client';
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useId, useState, type KeyboardEvent } from 'react';
 import { CheckIcon, ChevronDownIcon } from '@livediagram/ui';
 import { LEVEL_ORDER } from '@livediagram/api-schema';
 import type { ShareRole } from '@/lib/api-client';
 import { ROLE_PASS } from './share-dialog-parts';
 
-// How long a mouse may leave the picker before it folds, so a pointer drifting past an edge does not snap it shut.
-const HOVER_CLOSE_MS = 180;
-
 // The pass's role (docs/specs/007-editor/live-app.md "Layout, top to bottom"; docs/specs/013-workspace/share-roles.md):
-// one compact card naming the chosen role, which unfolds the three roles beneath it when hovered with a mouse or
-// pressed. It unfolds in place rather than floating, so the dialog's scroll never clips it and nothing covers the
+// one compact card naming the chosen role, which unfolds the three roles beneath it when pressed (a click, never a
+// hover). It unfolds in place rather than floating, so the dialog's scroll never clips it and nothing covers the
 // fine print. Choosing a role folds it again.
 export function ShareRolePicker({
   role,
@@ -21,28 +18,9 @@ export function ShareRolePicker({
   onChange: (role: ShareRole) => void;
 }) {
   const [open, setOpen] = useState(false);
-  const closeTimer = useRef<number | null>(null);
   const listId = useId();
   const pass = ROLE_PASS[role];
   const { Icon } = pass;
-
-  const cancelClose = () => {
-    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
-    closeTimer.current = null;
-  };
-  useEffect(() => cancelClose, []);
-
-  // Hover opens for a mouse only: a touch press is a click, and a click toggles.
-  const onEnter = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse') return;
-    cancelClose();
-    setOpen(true);
-  };
-  const onLeave = (e: PointerEvent) => {
-    if (e.pointerType !== 'mouse') return;
-    cancelClose();
-    closeTimer.current = window.setTimeout(() => setOpen(false), HOVER_CLOSE_MS);
-  };
 
   const choose = (next: ShareRole) => {
     onChange(next);
@@ -77,8 +55,6 @@ export function ShareRolePicker({
 
   return (
     <div
-      onPointerEnter={onEnter}
-      onPointerLeave={onLeave}
       className={`overflow-hidden rounded-xl border-2 transition-[border-color,box-shadow] duration-200 motion-reduce:transition-none ${
         open ? `${pass.selected} shadow-md` : `${pass.selected} shadow-sm`
       }`}
@@ -147,23 +123,17 @@ export function ShareRolePicker({
                   data-role={r}
                   onClick={() => choose(r)}
                   onKeyDown={onRoleKey}
-                  className={`flex items-center gap-3 rounded-lg px-2 py-1.5 text-left transition-colors ${
-                    active
-                      ? 'bg-white/80 dark:bg-slate-900/60'
-                      : 'hover:bg-white/60 dark:hover:bg-slate-900/40'
+                  className={`flex items-center gap-3 rounded-lg bg-white/70 px-2 py-1.5 text-left transition-colors dark:bg-slate-900/40 ${
+                    active ? option.chosen : option.hover
                   }`}
                 >
                   <span
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors ${
-                      active
-                        ? option.solid
-                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-                    }`}
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${option.solid}`}
                   >
                     <OptionIcon />
                   </span>
                   <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
+                    <span className={`text-[13px] font-semibold ${option.text}`}>
                       {option.title}
                     </span>
                     <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">

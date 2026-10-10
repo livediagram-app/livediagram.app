@@ -312,6 +312,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 
 ## Guidelines
 
+- **Every feature decides its share roles.** When specifying or building anything a shared document can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/live/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.

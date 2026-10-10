@@ -120,7 +120,8 @@ export function ShareComposer({
             onClick={() => onIssue(role, expiry, multiTab && scope ? scope : null)}
             disabled={busy}
             // The same height as the Valid control beside it, so the row reads as one line.
-            className="h-9 shadow-sm whitespace-nowrap"
+            variant="solid"
+            className={`h-9 shadow-sm whitespace-nowrap ${ROLE_PASS[role].button}`}
           >
             Create Pass
           </Button>

@@ -87,9 +87,13 @@ export function CommentThreadList({
   onDeleteComment,
   density = 'compact',
   className = 'max-h-72 overflow-y-auto px-3 py-1',
+  canComment = true,
 }: {
   thread: CommentThread | undefined;
   readOnly: boolean;
+  // Whether this session may write a comment: only then is it invited to start the conversation (a Viewer only
+  // looks, docs/specs/013-workspace/share-roles.md).
+  canComment?: boolean;
   selfId: string;
   onDeleteComment: (commentId: string) => void;
   density?: CommentDensity;
@@ -102,7 +106,7 @@ export function CommentThreadList({
       <p
         className={`${density === 'comfortable' ? 'py-1 text-[13px]' : 'px-3 py-3 text-xs'} text-slate-500 dark:text-slate-400`}
       >
-        No comments yet. Start the conversation.
+        {canComment ? 'No comments yet. Start the conversation.' : 'No comments yet.'}
       </p>
     );
   return (

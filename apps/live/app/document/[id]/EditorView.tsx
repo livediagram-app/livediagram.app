@@ -705,6 +705,7 @@ export function EditorView() {
                               <EmptyCanvasBanner
                                 tabName={activeTab.name}
                                 readOnly={isReadOnly}
+                                participant={ctx.can.addContent && isReadOnly}
                                 onQuickStart={openTemplatePicker}
                               />
                             ) : null}
@@ -725,6 +726,7 @@ export function EditorView() {
           on the move. Suppressed while a mode banner owns the top slot. */}
                             {minimalChrome ? null : (
                               <ModifierHint
+                                readOnly={isReadOnly}
                                 drag={drag}
                                 esBoard={esBoard}
                                 elements={activeTab.elements}

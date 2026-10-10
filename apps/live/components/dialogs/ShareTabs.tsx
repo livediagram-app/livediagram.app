@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, type KeyboardEvent } from 'react';
-import { SlidingTabUnderline } from '@/components/primitives/SlidingTabUnderline';
 
 export type ShareTab = 'passes' | 'community';
 
@@ -12,7 +11,8 @@ export const shareTabId = (t: ShareTab) => `share-tab-${t}`;
 export const sharePanelId = (t: ShareTab) => `share-panel-${t}`;
 
 // The Share dialog's two tabs (docs/specs/007-editor/live-app.md "Share dialog"): Passes, the links you hand out, and
-// Community, publishing to the public gallery. A tablist with one sliding underline; arrow keys move between tabs.
+// Community, publishing to the public gallery. The selected tab draws its own underline (two tabs need no sliding
+// bar, and a measured one missed its first paint inside the dialog); arrow keys move between tabs.
 export function ShareTabs({
   tab,
   onTab,
@@ -60,6 +60,12 @@ export function ShareTabs({
             }`}
           >
             {SHARE_TAB_LABELS[t]}
+            {on ? (
+              <span
+                aria-hidden
+                className="absolute inset-x-1 bottom-0 h-0.5 rounded-full bg-brand-500"
+              />
+            ) : null}
             {t === 'community' && listed ? (
               <span
                 className="h-1.5 w-1.5 rounded-full bg-emerald-500"
@@ -70,7 +76,6 @@ export function ShareTabs({
           </button>
         );
       })}
-      <SlidingTabUnderline list={listRef} selected={tab} />
     </div>
   );
 }

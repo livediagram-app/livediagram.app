@@ -151,6 +151,7 @@ export function CommentThreadPopover({
         <CommentThreadList
           thread={thread}
           readOnly={readOnly || !canComment}
+          canComment={canComment}
           // Nothing is a looker's own to delete.
           selfId={canComment ? selfId : ''}
           onDeleteComment={onDeleteComment}

@@ -599,8 +599,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. */}
-            {!zenMode && !readOnly ? (
+            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
+                (docs/specs/013-workspace/share-roles.md). */}
+            {!zenMode && (!readOnly || !!props.participantPalette) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
@@ -610,8 +611,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}
-            {/* Desktop only, as the Slide Deck itself is. */}
-            {!zenMode && !isMobile && props.illustratePages && props.slideDeck ? (
+            {/* Desktop only, as the Slide Deck itself is; an Editor's, since building and presenting a deck
+                runs the session (docs/specs/013-workspace/share-roles.md). */}
+            {!zenMode && !isMobile && !readOnly && props.illustratePages && props.slideDeck ? (
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
@@ -627,8 +629,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
                 typesButtonRef={cardTypesButtonRef}
                 // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
+                // A Participant adds cards too (docs/specs/013-workspace/share-roles.md); the Trash stays an Editor's.
                 newCard={
-                  !readOnly
+                  !readOnly || !!props.participantPalette
                     ? {
                         open: activeDockPanel === 'plan-new-card',
                         onToggle: (button) => handleDockButtonClick('plan-new-card', button, true),

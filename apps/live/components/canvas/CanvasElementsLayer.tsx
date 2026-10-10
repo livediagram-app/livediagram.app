@@ -170,6 +170,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCastVote,
     onRetractVote,
     readOnly,
+    takePart = false,
     canMove,
     canWriteText,
     canResize,
@@ -214,8 +215,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onBeginArrowLabelDrag,
     onBeginDrag,
     onShiftSelect,
-    onCastVote: readOnly ? undefined : onCastVote,
-    onRetractVote: readOnly ? undefined : onRetractVote,
+    // Voting is taking part: a Participant's as well as an Editor's (docs/specs/013-workspace/share-roles.md).
+    onCastVote: readOnly && !takePart ? undefined : onCastVote,
+    onRetractVote: readOnly && !takePart ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
     onCommitTable,
     onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
@@ -267,15 +269,20 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   });
   // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
+  // Running the timer is the session's runner's (docs/specs/013-workspace/share-roles.md, facilitator.md): a
+  // Participant, a Viewer and anyone but the facilitator see the face without its controls.
   const timerControls = useMemo(
-    () => ({
-      pause: h.onPauseTimer,
-      resume: h.onResumeTimer,
-      reset: h.onResetTimer,
-      clear: h.onClearTimer,
-      setDuration: h.onSetTimerDuration,
-    }),
-    [h],
+    () =>
+      sessionStartBlocked
+        ? {}
+        : {
+            pause: h.onPauseTimer,
+            resume: h.onResumeTimer,
+            reset: h.onResetTimer,
+            clear: h.onClearTimer,
+            setDuration: h.onSetTimerDuration,
+          },
+    [h, sessionStartBlocked],
   );
   const commentActionsFor = useMemo(() => {
     const { commentAdd, commentRemove, commentResolve, commentUnresolve } = h;
@@ -435,11 +442,21 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             layers: tabLayers,
             reviewActive: voteReview != null,
             focusKey: voteReview?.focusId ?? null,
-            onCast: readOnly ? undefined : onCastVote,
-            onRetract: readOnly ? undefined : onRetractVote,
+            onCast: readOnly && !takePart ? undefined : onCastVote,
+            onRetract: readOnly && !takePart ? undefined : onRetractVote,
           }
         : null,
-    [tabVote, voteSelfId, voteMax, tabLayers, voteReview, readOnly, onCastVote, onRetractVote],
+    [
+      tabVote,
+      voteSelfId,
+      voteMax,
+      tabLayers,
+      voteReview,
+      readOnly,
+      takePart,
+      onCastVote,
+      onRetractVote,
+    ],
   );
   return (
     <CardVoteProvider value={cardVote}>

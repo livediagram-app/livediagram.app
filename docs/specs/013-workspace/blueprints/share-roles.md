@@ -95,12 +95,12 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
 `applyParticipantOp(tab, op, adderKey)` (pure), returning `{ result: 'applied', tab, op } | { result: 'refused',
 correction: ElementOp | null, reason }`:
 
-| Op        | Applied when                                                                                 | Result                                                                                                                                                                              | Refusal correction                       |
-| --------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused; layer (if any) exists and unlocked | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
-| `update`  | The stored element exists, same type, not `locked`, its layer not locked                     | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
-| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked`                              | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
-| `reorder` | never                                                                                        | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
+| Op        | Applied when                                                                                                                                                    | Result                                                                                                                                                                              | Refusal correction                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused; layer (if any) exists and unlocked                                                                    | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
+| `update`  | The stored element exists, same type, not `locked`, its layer not locked                                                                                        | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
+| `remove`  | The stored element exists, `addedBy === adderKey` or `removableByAnyone(tab, stored)` (any mind node; a mind connector, ends a mind node or gone), not `locked` | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
+| `reorder` | never                                                                                                                                                           | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
 
 Permitted fields on another's element:
 
@@ -157,17 +157,17 @@ Editor state:
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
-| Flag            | participate                                   | view  |
-| --------------- | --------------------------------------------- | ----- |
-| `takePart`      | true                                          | false |
-| `addContent`    | true (sticky and text)                        | false |
-| `writeText(el)` | true unless `el.locked` or a Behaviour        | false |
-| `move(el)`      | a sticky, image, mind node or own; not locked | false |
-| `resize(el)`    | a sticky, image or own; not locked            | false |
-| `recolour(el)`  | `el.type === 'sticky'` or own                 | false |
-| `remove(el)`    | own (`el.addedBy === selfAdderKey`)           | false |
-| `planCards`     | true                                          | false |
-| `sheetCells`    | true                                          | false |
+| Flag            | participate                                                    | view  |
+| --------------- | -------------------------------------------------------------- | ----- |
+| `takePart`      | true                                                           | false |
+| `addContent`    | true (sticky and text)                                         | false |
+| `writeText(el)` | true unless `el.locked` or a Behaviour                         | false |
+| `move(el)`      | a sticky, image, mind node or own; not locked                  | false |
+| `resize(el)`    | a sticky, image or own; not locked                             | false |
+| `recolour(el)`  | `el.type === 'sticky'` or own                                  | false |
+| `remove(el)`    | own (`el.addedBy === selfAdderKey`) or a mind node; not locked | false |
+| `planCards`     | true                                                           | false |
+| `sheetCells`    | true                                                           | false |
 
 A Participant's commit: `editsBlocked` is false for a Participant (its gestures open through `can`), so every commit
 passes `guardCommit`, which runs `participantTabChange(before, after, adderKey)`: the change lands, with `addedBy`
@@ -233,6 +233,7 @@ export const PARTICIPANT_IMAGE_FIELDS: readonly [
 ];
 export function addableOn(tab: Tab, el: Element): boolean;
 export function participantWritesOn(el: Element): boolean;
+export function removableByAnyone(tab: Tab, el: Element): boolean;
 export const PARTICIPANT_TEXT_FIELDS: readonly ['label', 'richText'];
 export const PARTICIPANT_PLACE_TYPES: readonly ['sticky', 'image'];
 export const PARTICIPANT_PLACE_FIELDS: readonly ['x', 'y', 'width', 'height'];

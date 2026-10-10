@@ -1,5 +1,6 @@
 'use client';
 
+import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
@@ -456,6 +457,7 @@ export function EditorCanvasHost() {
     // card that can't show your own avatar is showing the wrong room.
     participants: [selfParticipant, ...livePresence],
     tabTimer: activeTab.timer,
+    canArrange: !isReadOnly,
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
     respond: can.takePart ? collabElements.respond : undefined,
     setResponsesRevealed:
@@ -514,6 +516,7 @@ export function EditorCanvasHost() {
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
         participantPalette={participating && can.addContent}
+        takePart={can.takePart}
         canMove={can.move}
         canWriteText={can.writeText}
         canResize={can.resize}
@@ -604,7 +607,13 @@ export function EditorCanvasHost() {
         // the palette, so it goes through the same setter — telemetry, the
         // selection clear, and the empty-canvas guard all included. Pressing it
         // again, while already in that mode, hands you back your previous one.
-        onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
+        // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
+        // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
+        onPressModeButton={(element) => {
+          const mode = element.mode ?? DEFAULT_BUTTON_MODE;
+          if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
+          pressModeButton(mode);
+        }}
         // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
         // see useBehaviourElements — the press resolves what to do from the
         // element and calls the tool that already exists.
@@ -634,8 +643,9 @@ export function EditorCanvasHost() {
         // Comment panels (docs/specs/012-collaboration/comment-pin.md) drive the SAME thread machinery the anchored
         // popover does — it is all keyed by element id already.
         commentSelfId={selfParticipant.id}
+        // Commenting is a Participant's too (docs/specs/013-workspace/share-roles.md); a Viewer only reads.
         commentPanelActions={
-          isReadOnly
+          !can.takePart
             ? undefined
             : {
                 add: (id, text, mentions) => addComment(id, text, undefined, mentions),
@@ -657,8 +667,8 @@ export function EditorCanvasHost() {
                 reopen: reopenAction,
               }
         }
-        // Rolling is running the session (docs/specs/013-workspace/share-roles.md): an Editor's alone.
-        onRollPicker={isReadOnly ? undefined : pickerFor}
+        // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).
+        onRollPicker={pickerFor}
         // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
         // so the pill doesn't have to look one up.
         followingName={

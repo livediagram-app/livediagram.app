@@ -136,7 +136,7 @@ export type CommandHandlers = {
 //
 // Only the id + the words are restated. The gating (empty canvas, mobile,
 // read-only) is expressed once, below.
-const CANVAS_TOOLS: {
+export const CANVAS_TOOLS: {
   id: string;
   name: string;
   keywords: string;
@@ -191,6 +191,8 @@ const CANVAS_TOOLS: {
     keywords: 'slide deck present presentation slideshow slides talk demo walkthrough',
     needsContent: true,
     desktopOnly: true,
+    // Building and presenting a deck is an Editor's (docs/specs/013-workspace/share-roles.md).
+    mutates: true,
   },
   {
     id: 'isometric',

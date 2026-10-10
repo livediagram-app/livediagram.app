@@ -56,6 +56,7 @@ export function ItemComments({
       <CommentThreadList
         thread={thread}
         readOnly={!canEdit}
+        canComment={canComment}
         selfId={selfId}
         density="comfortable"
         onDeleteComment={(commentId) => onComment({ kind: 'delete', commentId })}

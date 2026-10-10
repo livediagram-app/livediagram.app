@@ -115,7 +115,7 @@ function SheetBody({
         action={
           model.status === 'error'
             ? { label: 'Try Again', run: () => void model.store.loadTab(bridge.activeTabId, true) }
-            : !loading && !element.planSheet?.copyOf && bridge.canEdit
+            : !loading && !element.planSheet?.copyOf && bridge.canEdit && bridge.canShape
               ? {
                   label: 'Remove',
                   run: () =>
@@ -342,7 +342,8 @@ function SheetParts({
         </div>
       ) : (
         <>
-          {canEdit ? <SheetToolbar actions={actions} /> : null}
+          {/* Merge, sort, filter, freeze and charts reshape the Sheet: an Editor's, never a Participant's. */}
+          {c.canShape ? <SheetToolbar actions={actions} /> : null}
           {interactive ? <SheetFormulaBar actions={actions} input={input} /> : null}
           <SheetGrid
             elementId={element.id}

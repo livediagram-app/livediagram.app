@@ -82,7 +82,8 @@ export function resolveEditorCapabilities(input: {
     move: (el) => !isLocked(el) && (isParticipantPlaceable(el) || isMindNode(el) || own(el)),
     resize: (el) => !isLocked(el) && (isParticipantPlaceable(el) || own(el)),
     recolour: (el) => !isLocked(el) && (el.type === 'sticky' || own(el)),
-    remove: (el) => !isLocked(el) && own(el),
+    // Its own work, and any mind node (its connector goes with it; the room checks that part).
+    remove: (el) => !isLocked(el) && (own(el) || isMindNode(el)),
     planCards: true,
     sheetCells: true,
   };

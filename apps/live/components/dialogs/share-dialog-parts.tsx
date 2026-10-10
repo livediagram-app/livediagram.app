@@ -49,6 +49,12 @@ export const ROLE_PASS: Record<
     solid: string;
     // The selected role card's border + tint.
     selected: string;
+    // The role picker's row in the role's hue: its title, its hover tint, and its ring and tint once chosen.
+    text: string;
+    hover: string;
+    chosen: string;
+    // Create Pass in the role's colour (Button variant "solid"); white text at 4.5:1 or better.
+    button: string;
   }
 > = {
   edit: {
@@ -58,6 +64,10 @@ export const ROLE_PASS: Record<
     Icon: EditPassIcon,
     solid: 'bg-brand-500 text-white dark:bg-brand-600',
     selected: 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10',
+    text: 'text-brand-700 dark:text-brand-300',
+    hover: 'hover:bg-brand-50 dark:hover:bg-brand-500/10',
+    chosen: 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:ring-brand-500/50',
+    button: 'bg-brand-500 hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-700',
   },
   participate: {
     stamp: 'Participant',
@@ -67,6 +77,10 @@ export const ROLE_PASS: Record<
     // teal-700 under the 10 px bold stamp: 5.47:1 (blueprint "Accessibility").
     solid: 'bg-teal-700 text-white dark:bg-teal-600/60',
     selected: 'border-teal-600 bg-teal-50/70 dark:border-teal-400 dark:bg-teal-500/10',
+    text: 'text-teal-800 dark:text-teal-300',
+    hover: 'hover:bg-teal-50 dark:hover:bg-teal-500/10',
+    chosen: 'bg-teal-50 ring-1 ring-teal-300 dark:bg-teal-500/15 dark:ring-teal-500/50',
+    button: 'bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-700',
   },
   view: {
     stamp: 'Viewer',
@@ -75,6 +89,10 @@ export const ROLE_PASS: Record<
     Icon: ViewPassIcon,
     solid: 'bg-violet-500 text-white dark:bg-violet-500/60',
     selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',
+    text: 'text-violet-700 dark:text-violet-300',
+    hover: 'hover:bg-violet-50 dark:hover:bg-violet-500/10',
+    chosen: 'bg-violet-50 ring-1 ring-violet-300 dark:bg-violet-500/15 dark:ring-violet-500/50',
+    button: 'bg-violet-600 hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600',
   },
 };
 

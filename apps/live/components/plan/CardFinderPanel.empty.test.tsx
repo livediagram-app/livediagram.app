@@ -5,6 +5,9 @@ import { emptyCopy } from './CardFinderPanel';
 describe('the Cards panel when it shows no cards', () => {
   it('names why, most telling reason first', () => {
     expect(emptyCopy(0, 'anything', 2).title).toBe('No cards yet');
+    expect(emptyCopy(0, '', 0, false).description).toBe(
+      'Cards added to this document will show here.',
+    );
     expect(emptyCopy(5, ' launch ', 2).title).toBe('No cards match');
     expect(emptyCopy(5, '  ', 2).title).toBe('No cards match these filters');
     expect(emptyCopy(5, '', 0)).toEqual({
