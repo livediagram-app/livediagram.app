@@ -620,6 +620,10 @@ The eraser offers **both** modes, switched in its flyout:
   never a resampled copy (the ink's smoothing reads the sample spacing, so
   resampled ink would shift), and a stroke erased again and again never gains
   points.
+  **Arrows pinned to a stroke follow the cut** in the same undo step: a stroke
+  erased whole takes the arrows pinned to it, as Stroke mode does; a stroke
+  split into pieces leaves each arrow end pinned to it as a free end where it
+  was drawn, so no arrow is left pointing at a stroke that is gone.
   Partial applies to strokes only; a sticky, text or shape under a partial
   brush is untouched.
 - The brush is a fixed size per mode (`WHITEBOARD_ERASER_RADIUS_PX`), shown
