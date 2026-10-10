@@ -114,8 +114,12 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // their OWN image (a no-op outcome) and never crosses owners.
     // Falls through to the post-parse dedupe + insert below when
     // the header is missing or doesn't match anything.
+    // Not for a workbench session or an API token: they act for the owner without being the owner's
+    // own editor, and the shortcut answers a bare hash with the gallery row (id, name, size) without
+    // reading a byte, so it would let them probe the gallery for any file they can hash. They upload
+    // the body, and the body-hash dedupe below still answers a real duplicate.
     const headerSha = (request.headers.get('X-Image-Sha256') ?? '').toLowerCase();
-    if (/^[0-9a-f]{64}$/.test(headerSha)) {
+    if (!ctx.workbench && !ctx.token && /^[0-9a-f]{64}$/.test(headerSha)) {
       const headerDedupe = await findImageBySha(env, owner, headerSha);
       if (headerDedupe) {
         return json({ image: headerDedupe, deduped: true });

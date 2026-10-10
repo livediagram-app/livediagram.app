@@ -112,8 +112,9 @@ Guards run in this order; the first failure answers.
 4. `Content-Type` (lower-cased) not in `ACCEPTED_IMAGE_TYPES` → 415 `unsupported_type`.
 5. `Content-Length` missing, non-finite or `<= 0` → 400; `> MAX_IMAGE_BYTES` → 413
    `file_too_large` (unreachable behind step 2 while both caps are equal).
-6. `X-Image-Sha256` matches `/^[0-9a-f]{64}$/` and a row exists at `(owner, sha)` → 200
-   `{ image, deduped: true }`, body unread.
+6. Not a workbench session (`ctx.workbench`) and not an API token (`ctx.token`), `X-Image-Sha256`
+   matches `/^[0-9a-f]{64}$/` and a row exists at `(owner, sha)` → 200 `{ image, deduped: true }`,
+   body unread. A workbench or token caller skips this step and dedupes at step 11 (E4a).
 7. Soft caps, only when at least one is set: one `imageTotalsByOwner` query; `count >= maxImages`
    → 403 `gallery_full` `reason: 'count'`; `bytes + Content-Length > maxBytes` → 403
    `gallery_full` `reason: 'bytes'` (D35).
@@ -334,6 +335,7 @@ read a 503 as `null` and `{}`.
 | E2  | Truncated or malformed JPEG                         | 415 `malformed_jpeg`; nothing written                                                                |
 | E3  | Lying `Content-Length`                              | Body re-checked after read, 413                                                                      |
 | E4  | Forged `X-Image-Sha256`                             | Early dedupe is owner-scoped; body hash re-verified before insert                                    |
+| E4a | Workbench or token probing the gallery by hash      | Header ignored for them; the body is read and hashed, so a hash alone never names a gallery row      |
 | E5  | Same bytes uploaded concurrently                    | Unique index rejects the second insert; its R2 object is deleted and the existing row returned (GB4) |
 | E5a | Racing uploads that together pass a cap             | The later insert is refused; its R2 object deleted; 403 `gallery_full`, or 409 when room returned    |
 | E6  | Upload without a valid sha header at a full gallery | Cap check precedes body dedupe: 403 even when the bytes are already stored                           |

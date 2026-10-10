@@ -307,6 +307,59 @@ describe('POST /api/images under a per-owner cap', () => {
   });
 });
 
+// docs/specs/009-elements/images.md "Size cap": the X-Image-Sha256 shortcut answers a bare hash with the gallery row,
+// so it is only the owner's own editor's; a workbench session or an API token uploads the body.
+describe('POST /api/images hash-only dedupe shortcut', () => {
+  const SHA = 'a'.repeat(64);
+  const post = (opts: { workbench?: boolean; token?: boolean }) => {
+    const images = imagesBinding();
+    const ctx = makeTestRouteContext('POST', '/api/images', {
+      owner: 'owner-1',
+      env: { IMAGES: images } as unknown as Env,
+      ...(opts.workbench
+        ? { workbench: { documentId: 'd1', ownerId: 'owner-1', sessionId: 's1' } as never }
+        : {}),
+      ...(opts.token ? { token: { id: 'tok-1' } } : {}),
+    });
+    // A non-zero length with a body that is not an image: the probe never meant to send the file.
+    const request = new Request('https://api.test/api/images', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'image/png',
+        'Content-Length': '1',
+        'X-Image-Sha256': SHA,
+        'X-Image-Width': '4',
+        'X-Image-Height': '4',
+      },
+      body: new Uint8Array([0]),
+    });
+    return handleImages({ ...ctx, request });
+  };
+
+  beforeEach(() => {
+    db.findImageBySha.mockResolvedValue({ id: 'secret', originalName: 'payslip.png' });
+  });
+
+  it('answers the owner own editor from the hash alone', async () => {
+    const res = await post({});
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({
+      image: { id: 'secret', originalName: 'payslip.png' },
+      deduped: true,
+    });
+  });
+
+  it.each([
+    ['a workbench session', { workbench: true }],
+    ['an API token', { token: true }],
+  ])('never answers %s from the hash alone', async (_label, opts) => {
+    const res = await post(opts);
+    expect(res.status).toBe(415);
+    expect(JSON.stringify(await res.json())).not.toContain('secret');
+    expect(db.findImageBySha).not.toHaveBeenCalled();
+  });
+});
+
 // A file's own name rides a header, percent-encoded by the editor: a header is Latin-1 only.
 describe('originalNameOf', () => {
   it('decodes an encoded name, keeps an older raw one, and caps the length', async () => {
