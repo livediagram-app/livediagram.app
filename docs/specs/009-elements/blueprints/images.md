@@ -315,7 +315,9 @@ read a 503 as `null` and `{}`.
   An image a surviving shared tab still places in another owner's document goes too; that
   element renders **broken** (D142).
   **Guest to account migration**: `UPDATE OR IGNORE images SET owner_id`; rows that collide on
-  the dedupe key stay with the guest id and remain readable by reference.
+  the dedupe key stay with the guest id. The documents move in one batch after
+  `imageGrantOwnerChangeStatement(env, 'd.owner_id = ?2', [guestId], now)`, so every guest image
+  they place, a dedupe loser included, keeps serving in them by grant.
 - **Trash**: a trashed document keeps its tabs, so its images stay referenced until the purge
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
 - **Reference index**: `image_refs` is derived from tab bodies and owned by the
