@@ -7,11 +7,9 @@
 
 import type { ReactNode } from 'react';
 import { Arrow, MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
-import { Frame, PINK, SKY } from './shared';
+import { EMERALD, Frame, MONO, PINK, SKY, VIOLET } from './shared';
 
 const VIEW = '0 0 300 96';
-const VIOLET = '#8b5cf6';
-const EMERALD = '#10b981';
 
 // Terminal colours: the window is a terminal in both appearances, so these are fixed.
 const TERM = {
@@ -26,7 +24,7 @@ const TERM = {
 /** The API: a curl call with a bearer token, and the documents it returns. */
 export function ApiArt() {
   const mono = {
-    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+    fontFamily: MONO,
     fontSize: 6.2,
   } as const;
   return (
@@ -154,7 +152,7 @@ export function McpArt() {
           y="61.2"
           fontSize="5.8"
           fontWeight="600"
-          fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+          fontFamily={MONO}
         >
           livediagram.create_document
         </text>

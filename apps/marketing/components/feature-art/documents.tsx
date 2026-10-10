@@ -20,9 +20,7 @@ import {
   TextLines,
   YOU,
 } from './mode-parts';
-
-const ACCENT = '#0ea5e9';
-const WARM = '#f59e0b';
+import { AMBER as WARM, SKY as ACCENT } from './shared';
 
 /** A page on the canvas, with the label the editor sets above it. */
 function Page({

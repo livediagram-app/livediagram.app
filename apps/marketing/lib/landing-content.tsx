@@ -1020,7 +1020,7 @@ export function getLandingSection(id: string): LandingSection | undefined {
   return LANDING_SECTIONS.find((section) => section.id === id);
 }
 
-export type FeatureGroup = { title: string; items: FeatureProps[] };
+type FeatureGroup = { title: string; items: FeatureProps[] };
 
 /**
  * Split a section's features into ordered, captioned sub-groups for the

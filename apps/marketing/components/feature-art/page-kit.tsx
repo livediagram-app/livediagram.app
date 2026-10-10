@@ -7,13 +7,10 @@
 // delay through --e-d, every loop is the same length, and reduced motion settles all of it.
 
 import type { CSSProperties, ReactNode } from 'react';
+import { Cursor as TeammateCursor } from './shared';
 
-export const SKY = '#0ea5e9';
+export { AMBER, EMERALD, ROSE, SKY, VIOLET } from './shared';
 export const SKY_DEEP = '#0369a1';
-export const VIOLET = '#8b5cf6';
-export const AMBER = '#f59e0b';
-export const EMERALD = '#10b981';
-export const ROSE = '#f43f5e';
 
 /** A delay for an fa-e-* piece, so pieces in one card land in turn. */
 export const at = (seconds: number) => ({ '--e-d': `${seconds}s` }) as CSSProperties;
@@ -195,21 +192,7 @@ export function Cursor({
 }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <path
-        d="M0 0 L0 9 L2.6 6.6 L4.4 10.4 L6 9.6 L4.3 6 L7.6 6 Z"
-        fill={color}
-        stroke="#ffffff"
-        strokeWidth="0.8"
-        strokeLinejoin="round"
-      />
-      {name ? (
-        <g>
-          <rect x="6.5" y="9" width={name.length * 3.3 + 5} height="7" rx="2" fill={color} />
-          <text x="9" y="14" fontSize="4.8" fontWeight="700" fill="#ffffff">
-            {name}
-          </text>
-        </g>
-      ) : null}
+      <TeammateCursor color={color} name={name} size={9} />
     </g>
   );
 }

@@ -16,7 +16,7 @@ import { lucideGlyph } from '@livediagram/ui';
 // short highlight chips for its card. Tailwind classes are written out in full so the build sees them.
 // competitor-look.test.ts pins one entry per ALTERNATIVES slug.
 
-export type CompetitorLook = {
+type CompetitorLook = {
   icon: ReturnType<typeof lucideGlyph>;
   // The card's header wash and the glyph's colour.
   panel: string;

@@ -7,7 +7,7 @@
 // participant colours (who is who) stay fixed, as they do in the editor.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { Frame } from './shared';
+import { Cursor, Frame } from './shared';
 
 // Participant colours, as the editor hands them out: you first, then each teammate.
 export { YOU } from '@/components/art-tokens';
@@ -172,31 +172,11 @@ export function Pointer({
   className?: string;
   style?: CSSProperties;
 }) {
-  const tag = name ? name.length * 4.3 + 7 : 0;
   return (
     <g className={className} style={style}>
-      <path
-        d={`M${x} ${y} l0 11 l3 -2.8 l2.2 4.6 l2 -1 l-2.2 -4.5 l4.2 0 z`}
-        fill={color}
-        stroke="#fff"
-        strokeWidth="1"
-        strokeLinejoin="round"
-      />
-      {name ? (
-        <g>
-          <rect x={x + 9} y={y + 10} width={tag} height="10" rx="3" fill={color} />
-          <text
-            x={x + 9 + tag / 2}
-            y={y + 17.2}
-            fontSize="6.5"
-            fontWeight="700"
-            textAnchor="middle"
-            fill="#fff"
-          >
-            {name}
-          </text>
-        </g>
-      ) : null}
+      <g transform={`translate(${x} ${y})`}>
+        <Cursor color={color} name={name} size={11} />
+      </g>
     </g>
   );
 }
