@@ -1,4 +1,4 @@
-// Plan cards on the Activity page (docs/specs/013-workspace/activity-page.md §2.4, §4), against the real
+// Plan cards on the Inbox (docs/specs/013-workspace/inbox.md §2.4, §4), against the real
 // migrations: the hashed-assignee match, what counts as open, where a row opens the card, and the library
 // scope that keeps a card off the page of someone who cannot open its document.
 
@@ -245,7 +245,7 @@ describe('Activity: Plan cards assigned to the reader', () => {
     expect(await read()).toEqual([]);
   });
 
-  // docs/specs/013-workspace/activity-page.md §2.4: the read seeks the reader's cards by the assignee
+  // docs/specs/013-workspace/inbox.md §2.4: the read seeks the reader's cards by the assignee
   // index and each card's Done check by (tab, status), never scanning the item store or a tab's boards.
   // Measured: 100,000 cards, 2,000 on the reader, read in ~25ms; the Done check without the seek took ~270ms.
   it('seeks cards by assignee and the Done check by tab and status', async () => {

@@ -31,7 +31,7 @@ describe('paneHeaderActions', () => {
       expect(paneHeaderActions(kind).importFrom, kind).toBe(true);
     }
     for (const kind of [
-      'activity',
+      'inbox',
       'shared',
       'gallery',
       'themes',

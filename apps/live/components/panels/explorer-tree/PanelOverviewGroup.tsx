@@ -1,7 +1,12 @@
 'use client';
 
 import type { SharedWithItem } from '@/lib/api-client';
-import { ActivityIcon, HomeIcon, ShareIcon } from '@/components/primitives/explorer-icons';
+import {
+  HomeIcon,
+  InboxIcon,
+  ShareIcon,
+  TimelineIcon,
+} from '@/components/primitives/explorer-icons';
 import { SIDEBAR_LABELS, type SidebarDivider } from '@/app/explorer/sidebar/sidebar-structure';
 import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import { SidebarGroup } from '@/app/explorer/sidebar/SidebarGroup';
@@ -14,7 +19,7 @@ import { usePanelTree } from './PanelTreeContext';
 const SHARED_KEY = 'overview:shared';
 
 // The panel's Overview (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel):
-// Home and Activity go to their Explorer pages; Shared with me opens in place to the documents
+// Home, Inbox and Timeline go to their Explorer pages; Shared with me opens in place to the documents
 // shared with the reader.
 export function PanelOverviewGroup({
   divider,
@@ -40,13 +45,24 @@ export function PanelOverviewGroup({
         depth={0}
       />
       <SidebarRow
-        icon={<ActivityIcon />}
-        label={SIDEBAR_LABELS.activity}
-        textLabel={SIDEBAR_LABELS.activity}
+        icon={<InboxIcon />}
+        label={SIDEBAR_LABELS.inbox}
+        textLabel={SIDEBAR_LABELS.inbox}
         selected={false}
         onActivate={() => {
-          trackSidebar('Activity', 'panel');
-          openExplorerPage({ kind: 'activity' });
+          trackSidebar('Inbox', 'panel');
+          openExplorerPage({ kind: 'inbox' });
+        }}
+        depth={0}
+      />
+      <SidebarRow
+        icon={<TimelineIcon />}
+        label={SIDEBAR_LABELS.timeline}
+        textLabel={SIDEBAR_LABELS.timeline}
+        selected={false}
+        onActivate={() => {
+          trackSidebar('Timeline', 'panel');
+          openExplorerPage({ kind: 'timeline' });
         }}
         depth={0}
       />

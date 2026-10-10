@@ -257,7 +257,7 @@ export function tabWriteStatements(
     tabStatsStatement(env, id, tabStatsOf(rest, data), now),
     // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON.
     env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
-    // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1), after the tabs
+    // The collaboration index (docs/specs/013-workspace/inbox.md §2.1), after the tabs
     // upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
@@ -375,7 +375,7 @@ export async function seedTabs(
       documentId,
     ),
   );
-  // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
+  // Index rows for every seeded tab (docs/specs/013-workspace/inbox.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
@@ -571,7 +571,7 @@ export async function reorderTabs(
 //
 // Only `data` and `updated_at` move: a board write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
-// index (docs/specs/013-workspace/activity-page.md) has nothing to mirror. The
+// index (docs/specs/013-workspace/inbox.md) has nothing to mirror. The
 // image reference index is only ever ADDED to here: the swap can lose to a
 // concurrent save, and a delete would then drop references the winner wrote.
 export async function swapTabData(

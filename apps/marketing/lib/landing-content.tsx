@@ -195,7 +195,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the documents you return to most, what your teammates commented, edited and assigned you while you were away, and your own Timeline. All activity holds the full feed, and the sidebar carries a count so you can tell without looking.',
+          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the sidebar carries a count so you can tell without looking.',
       },
       {
         art: <UndoRedoArt />,

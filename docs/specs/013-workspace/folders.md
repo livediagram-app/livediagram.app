@@ -69,8 +69,8 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Section                                                        | Route                                                              |
 | -------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Home ([Explorer Home](explorer-home.md))                       | `/explorer/home` (default)                                         |
-| All activity, the [Timeline](timeline.md) feed                 | `/explorer/timeline` (no sidebar row)                              |
-| Activity ([Activity page](activity-page.md))                   | `/explorer/activity`                                               |
+| Inbox ([Inbox](inbox.md))                                      | `/explorer/inbox`                                                  |
+| Timeline ([Timeline](timeline.md))                             | `/explorer/timeline`                                               |
 | Shared with me                                                 | `/explorer/shared`                                                 |
 | Recent documents                                               | `/explorer/recent` (no sidebar row)                                |
 | Favourites ([Favourite documents](favourites.md))              | `/explorer/favourites` (no sidebar row)                            |
@@ -78,6 +78,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Search results ([Explorer filters](explorer-filters.md#views)) | `/explorer/search` (no sidebar row)                                |
 | Retired: Unsorted and Dynamic                                  | `/explorer/unsorted`, `/explorer/dynamic`, opening `/explorer/all` |
 | Retired: Generated                                             | `/explorer/generated`, opening `/explorer/search?q=made-by:ai`     |
+| Retired: Activity                                              | `/explorer/activity`, opening `/explorer/inbox`                    |
 | A folder                                                       | `/explorer/folder?id=<id>`                                         |
 | A team ([Teams](teams.md))                                     | `/explorer/team?id=<id>`                                           |
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
@@ -87,7 +88,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Shape libraries ([Shape libraries](shape-libraries.md))        | `/explorer/shape-libraries`                                        |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
-`/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
+A retired address replaces itself with its successor, so links already out there keep working, and the sidebar highlights the successor's row at once; the Inbox was once called Activity, hence `/explorer/activity`. `/explorer` itself redirects to `/explorer/home` (worker-level 302 in production, client replace in dev). Folder and team ids ride the **query string**, not a path segment: `output: 'export'` can't enumerate user-minted ids, and the `/document/<id>` placeholder-rewrite workaround ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) is deliberately kept single-purpose. The sidebar's groups, rows, labels and visibility rules are [Explorer structure](explorer-structure.md).
 
 Out of scope (V1):
 
@@ -371,7 +372,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
-  Overview (Home, Activity, Shared with me), Spaces (My documents with
+  Overview (Home, Inbox, Timeline, Shared with me), Spaces (My documents with
   its root folders beneath it, each team with its
   folders, New team), and More (This browser, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,

@@ -1,5 +1,5 @@
-// The editor's element deep link (docs/specs/013-workspace/activity-page.md §1): the URL fragment an
-// Activity row opens a document with, and the parser the editor reads it
+// The editor's element deep link (docs/specs/013-workspace/inbox.md §1): the URL fragment an
+// Inbox row opens a document with, and the parser the editor reads it
 // back with.
 //
 //   /document/<id>[?s=<code>]#t=<tabId>&el=<elementId>&open=action|comments
@@ -39,7 +39,7 @@ export function collabDeepLinkHref(place: ActivityPlace, open: CollabPopover): s
   return documentHref(place, `${pin(place.tabId, place.elementId)}&open=${open}`);
 }
 
-// A Plan card's row (docs/specs/013-workspace/activity-page.md §1, §2.5): the board it is on, and the card.
+// A Plan card's row (docs/specs/013-workspace/inbox.md §1, §2.5): the board it is on, and the card.
 export function cardDeepLinkHref(
   card: Pick<ActivityCard, 'id' | 'board' | 'documentId' | 'via' | 'shareCode'>,
 ): string {

@@ -1,4 +1,4 @@
-// What one tab's Plan boards contribute to `plan_board_statuses` (docs/specs/013-workspace/activity-page.md
+// What one tab's Plan boards contribute to `plan_board_statuses` (docs/specs/013-workspace/inbox.md
 // §2.4): one row per column status a board shows, flagged Done when the column is the board's done column or
 // after it (the statusPhasesOf rule, docs/specs/026-plan/plan-views.md "What a plan view reads"). The Activity
 // read uses the rows to drop finished cards and to find a board to open a card on.

@@ -114,7 +114,7 @@ A trashed document is gone from everywhere a live one shows up:
 
 - every document list: the Explorer (all sections, Recent, Search results, folders),
   the team library, **Shared with you**, **Favourites**, search, the
-  **Timeline**, and the **Activity** page;
+  **Timeline**, and the **Inbox**;
 - the tab picker that links a tab into another document.
 
 Nothing about it is lost: its stars, share links, history, Timeline events and

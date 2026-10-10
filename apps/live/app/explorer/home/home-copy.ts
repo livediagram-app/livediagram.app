@@ -16,7 +16,7 @@ export const HOME_COPY = {
   jumpBackIn: 'Jump back in',
   whatHappened: 'What happened',
   seeMore: 'See more',
-  seeAllActivity: 'See all activity',
+  seeTimeline: 'See timeline',
   jumpBackInEmpty: 'The documents you use most and last will gather here.',
   whatHappenedEmpty: 'Nothing from others in the last 14 days.',
   readFailed: 'Home could not load. Check your connection and try again.',

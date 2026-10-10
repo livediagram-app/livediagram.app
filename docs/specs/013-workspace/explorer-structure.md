@@ -9,7 +9,7 @@ document **lives**, and which **views** compute lists of documents from wherever
 
 - **Places.** A document lives in exactly one place: **My documents**, a **team**, or **this browser**
   ([Offline Mode](../006-document/offline-mode.md)). Moving a document changes its place.
-- **Views.** Everything else (Home, Activity, Shared with me, Recent, Favourites, Search results, the Library pages,
+- **Views.** Everything else (Home, Inbox, Timeline, Shared with me, Recent, Favourites, Search results, the Library pages,
   Trash) is a computed view. A view never owns a document; it lists documents that live somewhere else.
 - **A space's root holds documents.** A document filed in no folder sits at the root of its space, listed beside the
   root folders: there is no Unsorted bucket and no Generated bucket. What an AI made is found with the **Made by AI**
@@ -33,15 +33,18 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 
 ### Overview
 
-| Row            | Opens                                                    | Badge                                                     |
-| -------------- | -------------------------------------------------------- | --------------------------------------------------------- |
-| Home           | `/explorer/home` ([Explorer Home](explorer-home.md))     | Other people's events since the reader last looked (§2.5) |
-| Activity       | `/explorer/activity` ([Activity page](activity-page.md)) | Open actions assigned to the reader                       |
-| Shared with me | `/explorer/shared`                                       | Documents shared with the reader                          |
+| Row            | Opens                                                | Badge                                                                             |
+| -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Home           | `/explorer/home` ([Explorer Home](explorer-home.md)) | Other people's events since the reader last looked ([Timeline](timeline.md) §2.5) |
+| Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions and Plan cards assigned to the reader, always shown, 0 included      |
+| Timeline       | `/explorer/timeline` ([Timeline](timeline.md))       | None: the unread count sits on Home                                               |
+| Shared with me | `/explorer/shared`                                   | Documents shared with the reader                                                  |
 
-Home is the Explorer's landing view. Recent, Favourites and All activity (the [Timeline](timeline.md) feed) have no
-sidebar row; their routes (`/explorer/recent`, `/explorer/favourites`, `/explorer/timeline`) keep working. Recent is
-reached from Home's Jump back in (**See more**) and All activity from its What happened (**See all activity**).
+Home is the Explorer's landing view. The **Inbox** is what is outstanding for the reader now; the **Timeline** is the
+record of what happened. Recent and Favourites have no sidebar row; their routes (`/explorer/recent`,
+`/explorer/favourites`) keep working. Recent is reached from Home's Jump back in (**See more**); the Timeline is also
+reached from Home's What happened (**See timeline**). The retired `/explorer/activity` opens the Inbox
+([Folders: Explorer routes](folders.md#explorer-routes)).
 
 ### Spaces
 
@@ -100,16 +103,16 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Image gallery   | `/explorer/images`          | Image gallery   |
 | Shape libraries | `/explorer/shape-libraries` | Shape libraries |
 
-Every other row's view already carries its row's label (Activity, a folder or team by its name, Invites, Themes,
-Trash). Views without a row keep their own names (Recent, Favourites, Search results, and All activity at
-`/explorer/timeline`). Recent and All activity are reached from Home, and their breadcrumbs lead back to it
-(**Home › Recent**, **Home › All activity**).
+Every other row's view already carries its row's label (Inbox, Timeline, a folder or team by its name, Invites,
+Themes, Trash). Views without a row keep their own names (Recent, Favourites, Search results). Recent is reached from
+Home, and its breadcrumb leads back to it (**Home › Recent**). The Timeline has a row of its own, so its breadcrumb is
+its own (**Timeline**).
 
 ## Visibility at a glance
 
 | Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in                |
 | ------------- | -------------------------- | ----------------------------- | ------------------------ |
-| Overview      | All three                  | All three                     | All three                |
+| Overview      | All four                   | All four                      | All four                 |
 | My documents  | Yes                        | Yes                           | Yes                      |
 | Teams         | None                       | None                          | One row per team         |
 | Invites       | No                         | No                            | While one is pending     |
@@ -190,7 +193,7 @@ What differs is what a row does in an editor, where leaving the document is a bi
   never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
   Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the
   selected one.
-- **Rows without documents go to the Explorer.** Home, Activity, the Library pages and Trash open their Explorer page.
+- **Rows without documents go to the Explorer.** Home, Inbox, Timeline, the Library pages and Trash open their Explorer page.
 - **No team management.** The panel shows no Invites row, no New team row and no sign-in nudge: answering invites and
   creating teams happen in the Explorer, and the panel keeps its own sign-in notice under the tree.
 - **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
@@ -217,9 +220,10 @@ same pill (`LocalOnlyPill`) on the document's thumbnail ([Explorer Home](explore
 ## Telemetry
 
 Each sidebar activation emits `UI / Selected / Sidebar.<Row>`, where `<Row>` is the row kind from a closed set (Home,
-Activity, SharedWithMe, MyDocuments, Folder, Team, TeamFolder, Invites, NewTeam, ThisBrowser, Library, ImageGallery,
+Inbox, Timeline, SharedWithMe, MyDocuments, Folder, Team, TeamFolder, Invites, NewTeam, ThisBrowser, Library, ImageGallery,
 Themes, ShapeLibraries, Trash), never a name or id
-([Telemetry](../017-telemetry/telemetry.md)). Creating the team is still `Team / Created`.
+([Telemetry](../017-telemetry/telemetry.md)). Creating the team is still `Team / Created`. The Inbox row was the Activity row, and
+`Sidebar.Activity` (and `ExplorerPanel.Activity`) stay readable on the dashboard as its history.
 
 ## Help
 

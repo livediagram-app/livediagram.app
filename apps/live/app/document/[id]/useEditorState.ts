@@ -1718,8 +1718,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     viewport,
   });
 
-  // Capture an Activity-page element deep link BEFORE the tab-entry
-  // effect below rewrites the hash to the plain #t= pin (docs/specs/013-workspace/activity-page.md §1).
+  // Capture an Inbox element deep link BEFORE the tab-entry
+  // effect below rewrites the hash to the plain #t= pin (docs/specs/013-workspace/inbox.md §1).
   // Consumed further down by useCollabDeepLink once the tab is ready.
   const collabDeepLink = useCollabDeepLinkCapture();
 
@@ -1994,7 +1994,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
   const structureBlocked = editsBlocked || isReadOnly;
 
-  // An Activity-page row opened this document at one element (docs/specs/013-workspace/activity-page.md
+  // An Inbox row opened this document at one element (docs/specs/013-workspace/inbox.md
   // §1): once the pinned tab is ready, select it, bring it into view and
   // open its popover (or a Plan card's item panel). See useCollabDeepLink.
   useCollabDeepLink({

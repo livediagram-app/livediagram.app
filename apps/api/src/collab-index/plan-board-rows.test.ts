@@ -2,7 +2,7 @@ import type { Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import { ALL_CARDS_STATUS, planBoardRowsFromElements } from './plan-board-rows';
 
-// The board half of the Activity page's index (docs/specs/013-workspace/activity-page.md §2.4).
+// The board half of the Inbox's index (docs/specs/013-workspace/inbox.md §2.4).
 
 const board = (id: string, planBoard: unknown) =>
   ({

@@ -1,5 +1,5 @@
 -- An Action panel holds many actions (docs/specs/012-collaboration/action-panel.md "The data"), so the
--- Activity index (docs/specs/013-workspace/activity-page.md §2) keeps one row per ACTION rather than one per
+-- Activity index (docs/specs/013-workspace/inbox.md §2) keeps one row per ACTION rather than one per
 -- element. SQLite cannot change a primary key in place: rebuild the table with
 -- (tab_id, element_id, action_id) as the key, copy every row across (each
 -- element had at most one action, so nothing collides), and recreate the

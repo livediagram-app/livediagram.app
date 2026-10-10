@@ -3,7 +3,7 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { collabIndexStatements } from '../db/collab-index';
 import { backfillCollabIndex } from './backfill';
 
-// The collaboration index backfill (docs/specs/013-workspace/activity-page.md §2.3) writes from blobs
+// The collaboration index backfill (docs/specs/013-workspace/inbox.md §2.3) writes from blobs
 // it read earlier, so each tab's rows are guarded on the revision it read: a save landing in between
 // already indexed the newer blob, and the backfill must not write the older one back over it.
 

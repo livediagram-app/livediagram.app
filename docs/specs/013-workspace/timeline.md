@@ -3,8 +3,8 @@
 The Timeline is a chronological feed of everything that has happened
 across the user's documents, teams, and account, grouped by day as a
 grid of cards, stacked when a day gets busy, and switchable into a
-calendar month grid. Its page is **All activity**, reached from Home
-([Explorer Home](explorer-home.md), §8).
+calendar month grid. Its page is **Timeline**, with a row of its own in the
+sidebar's Overview group, under the Inbox (§8).
 
 Modelled on the Timeline subsystem in the Manager Toolkit monorepo
 (`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
@@ -1527,7 +1527,7 @@ feed vanishing and coming back.
 
 ## 8. Explorer integration
 
-### 8.1 Home is the landing view; the feed is All activity
+### 8.1 Home is the landing view; the feed is the Timeline
 
 The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. A static export has no single
 entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
@@ -1540,23 +1540,24 @@ entry point, so the landing is applied in several places, all reading one consta
 `apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
 `folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
 
-The feed keeps its route, `/explorer/timeline`, and its page is titled **All activity** (heading, document title and
-breadcrumb, **Home › All activity**). Home says what the person was working on and what others did; All activity is
-the whole record, the person's own doings included, with its filters, calendar and paging.
+The feed keeps its route, `/explorer/timeline`, and its page is titled **Timeline** (heading, document title and
+breadcrumb). Home says what the person was working on and what others did; the Timeline is the whole record, the
+person's own doings included, with its filters, calendar and paging.
 
 **Recent is not removed.** It keeps its route (`/explorer/recent`); it answers a different question ("what did I
 touch last"). It has no sidebar row.
 
 ### 8.2 Sidebar
 
-The feed has **no sidebar row**. It is reached from Home: What happened's quiet **See all activity** link opens it.
-The sidebar's **Home** row ([Explorer structure](explorer-structure.md)) opens Home, and carries this feed's unread
-badge:
+The feed has a **Timeline** row in the sidebar's Overview group ([Explorer structure](explorer-structure.md)), under
+the Inbox, and Home's What happened reaches it too, through its quiet **See timeline** link. The row carries no badge:
+the feed's unread badge sits on the **Home** row, which opens Home:
 
 ```text
 Overview
   ⌂  Home              ← Home, the landing view; badge: unread feed events
-  ◔  Activity
+  ◔  Inbox
+  ┆  Timeline          ← this feed
   ↗  Shared with me
 ```
 
@@ -1608,8 +1609,8 @@ New category `Timeline` in the closed enum in
 `@livediagram/api-schema` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Existing actions cover it:
 
 - `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
-  the page load started on it, `Nav` when reached from elsewhere (Home's
-  See all activity link).
+  the page load started on it, `Nav` when reached from elsewhere (the
+  sidebar's Timeline row, or Home's See timeline link).
 - `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
 - `Timeline`/`Selected` with `type` the source type — a filter chip
   toggled.
@@ -1692,7 +1693,7 @@ Per [Testing](../003-system-architecture/testing.md):
 ## 13. Out of scope for v1
 
 - Favourites / starring, manual entries. (Per-entry removal shipped: §2.9.)
-- An unread badge on the sidebar row.
+- An unread badge on the Timeline row (the count sits on Home, §8.2).
 - Per-document and per-team timeline scopes (the schema is ready; the
   renderers, routes, and UI are not).
 - AI day summaries.

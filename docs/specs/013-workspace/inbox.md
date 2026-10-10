@@ -1,11 +1,16 @@
-# Activity page
+# Inbox
 
-**Status: implemented.** A new Explorer section, **Activity** at
-`/explorer/activity`, that lists across every document the reader can
+**Status: implemented.** An Explorer section, the **Inbox** at
+`/explorer/inbox`, that lists across every document the reader can
 open: the **open actions assigned to them**, the **open actions they
 assigned** to other people, and the **unresolved comment threads they
 are in**. Each row opens the document on the right tab with the element
 selected and its action / comment popover already open.
+
+The Inbox was once called **Activity**, and its data layer keeps that name: it reads the
+activity index through `GET /api/activity` (§3), `useActivityFeed` and `ActivityPane`. The old
+address, `/explorer/activity`, replaces itself with `/explorer/inbox`
+([Folders: Explorer routes](folders.md#explorer-routes)).
 
 Builds on assigned actions ([Assigned actions](../012-collaboration/assigned-actions.md)), comment threads ([Canvas and palette](../008-canvas/canvas-and-palette.md)), the
 Explorer's section model ([Folders](folders.md), [Timeline](timeline.md) §8.3), and the hybrid
@@ -26,7 +31,7 @@ without moving the source of truth.
 The Timeline ([Timeline](timeline.md)) is not this. It records that an action _was
 assigned_ and a comment _was added_; it never says whether the action
 is still open, and it does not know who is still waiting on a thread.
-The Activity page answers the present-tense question: **what is
+The Inbox answers the present-tense question: **what is
 outstanding for me right now.**
 
 ## Non-goals
@@ -45,10 +50,11 @@ outstanding for me right now.**
 
 ## 1. What the user sees
 
-An **Activity** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
-under Home, with a badge counting the open actions and open Plan cards **assigned to
-the reader** (zero hides it: a "0 things to do" badge is noise, and
-the count only covers work waiting on them, not work they handed out).
+An **Inbox** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
+under Home and above the Timeline, with a badge counting the open actions and open Plan cards **assigned to
+the reader**. The badge always shows, **0** included, so an empty Inbox reads as done at a glance; it
+shows nothing only while the Inbox is loading or failed to load, so it never claims a false 0. The
+count only covers work waiting on the reader, not work they handed out.
 
 The pane is a single page of three sections, each a card-list of rows
 (the same container the List view uses), each with a heading and a
@@ -458,9 +464,10 @@ then a team's, then a shared one.
 ## 5. Explorer integration
 
 The section checklist from [Timeline](timeline.md) §8.3: `views.tsx` gains
-`{ kind: 'activity' }`, `routes.ts` maps it both ways,
-`app/explorer/activity/page.tsx` is the route stub, `ExplorerSidebar`
-gets the Overview row (with `ActivityIcon` in
+`{ kind: 'inbox' }`, `routes.ts` maps it both ways (and reads the retired
+`/explorer/activity` as the Inbox), `app/explorer/inbox/page.tsx` is the route stub,
+`app/explorer/activity/page.tsx` replaces itself with it, `ExplorerSidebar`
+gets the Overview row (with `InboxIcon` in
 `components/primitives/explorer-icons.tsx`),
 `useExplorerPane` names it, `ExplorerPane` dispatches to the
 lazy-loaded `ActivityPane` (not a `BROWSE_KIND`; no New Document / New
@@ -477,6 +484,9 @@ A new `Activity` category in `TELEMETRY_CATEGORIES` ([Telemetry + public transpa
 - `Activity` / `Opened` when the section renders (once per visit);
 - `Activity` / `Selected` with type `Action` | `Thread` | `Card` on a row click;
 - `Activity` / `Loaded` / `Retry` when a failed read is retried.
+
+The category keeps the data layer's name. Picking the sidebar row is `UI` / `Selected` / `Sidebar.Inbox`
+([Explorer structure](explorer-structure.md#telemetry)).
 
 Never an action name, comment text, document name, or any identity.
 
@@ -507,10 +517,10 @@ Never an action name, comment text, document name, or any identity.
 
 ## 8. Docs and help
 
-- Help article **Activity** under Explorer
-  (`apps/help/app/explorer/activity/page.mdx`), registered with
-  keywords ("inbox", "to do", "todo", "assigned to me", "my actions",
+- Help article **Inbox** under Explorer
+  (`apps/help/app/explorer/activity/page.mdx`, the slug kept so links already out there keep
+  working), registered with keywords ("activity", "to do", "todo", "assigned to me", "my actions",
   "outstanding", "waiting", "open threads"), a card glyph + hue, and
-  an `ActivityList` illustration.
+  an `InboxSections` illustration.
 - README / `docs/development/architecture.md` / `docs/specs/005-project-roadmap/prototype-scope.md` gain
   the section; [Assigned actions](../012-collaboration/assigned-actions.md) §9 and [Folders](folders.md)'s sidebar list point here.

@@ -15,7 +15,16 @@ import { MenuCard } from './toolbar-layout';
 // --- Local parts -------------------------------------------------------------
 
 type GlyphKind =
-  'home' | 'activity' | 'shared' | 'folder' | 'team' | 'plus' | 'library' | 'trash' | 'doc';
+  | 'home'
+  | 'inbox'
+  | 'timeline'
+  | 'shared'
+  | 'folder'
+  | 'team'
+  | 'plus'
+  | 'library'
+  | 'trash'
+  | 'doc';
 
 /** A 14x14 sidebar glyph centred on the origin. */
 function Glyph({ kind, active = false }: { kind: GlyphKind; active?: boolean }) {
@@ -29,11 +38,23 @@ function Glyph({ kind, active = false }: { kind: GlyphKind; active?: boolean }) 
   switch (kind) {
     case 'home':
       return <path d="M-6 0 L0 -6 L6 0 M-4.5 -1.5 V6 H4.5 V-1.5" {...common} />;
-    case 'activity':
+    // The Inbox: a tray with a tick, what is waiting on you.
+    case 'inbox':
       return (
         <g {...common}>
-          <circle r={6} />
-          <path d="M-3 0 L-1 2.5 L3.5 -2.5" />
+          <path d="M-6 1 V4.5 a1.5 1.5 0 0 0 1.5 1.5 h9 a1.5 1.5 0 0 0 1.5 -1.5 V1" />
+          <path d="M-6 1 h3 l1 1.8 h4 l1 -1.8 h3" />
+          <path d="M-2.5 -3.5 L-0.8 -1.8 L2.8 -5.5" />
+        </g>
+      );
+    // The Timeline: a spine with what landed against it.
+    case 'timeline':
+      return (
+        <g {...common}>
+          <path d="M-4 -6 V6" />
+          <circle cx={-4} cy={-3} r={1.3} />
+          <circle cx={-4} cy={3} r={1.3} />
+          <path d="M-1 -3 H5 M-1 3 H3 M-1 0 H2" />
         </g>
       );
     case 'shared':
@@ -528,12 +549,12 @@ export function ExplorerPageLayout() {
   const sx = 16;
   const sw = 146;
   return (
-    <Scene w={420} h={264} bg="plain">
+    <Scene w={420} h={282} bg="plain">
       <rect
         x={sx}
         y={16}
         width={sw}
-        height={232}
+        height={250}
         rx={10}
         className="fill-slate-50 stroke-slate-200"
         strokeWidth={1.5}
@@ -542,27 +563,28 @@ export function ExplorerPageLayout() {
         OVERVIEW
       </GroupTitle>
       <TreeRow x={sx} y={40} w={sw} label="Home" glyph="home" />
-      <TreeRow x={sx} y={58} w={sw} label="Activity" glyph="activity" />
-      <TreeRow x={sx} y={76} w={sw} label="Shared with me" glyph="shared" count={3} />
-      <GroupTitle x={sx + 12} y={108}>
+      <TreeRow x={sx} y={58} w={sw} label="Inbox" glyph="inbox" />
+      <TreeRow x={sx} y={76} w={sw} label="Timeline" glyph="timeline" />
+      <TreeRow x={sx} y={94} w={sw} label="Shared with me" glyph="shared" count={3} />
+      <GroupTitle x={sx + 12} y={126}>
         SPACES
       </GroupTitle>
-      <TreeRow x={sx} y={116} w={sw} label="My documents" glyph="folder" active chevron="open" />
-      <TreeRow x={sx} y={134} w={sw} label="Projects" glyph="folder" level={1} chevron="closed" />
-      <TreeRow x={sx} y={152} w={sw} label="Design" glyph="team" chevron="closed" />
-      <TreeRow x={sx} y={170} w={sw} label="New team" glyph="plus" />
-      <GroupTitle x={sx + 12} y={202}>
+      <TreeRow x={sx} y={134} w={sw} label="My documents" glyph="folder" active chevron="open" />
+      <TreeRow x={sx} y={152} w={sw} label="Projects" glyph="folder" level={1} chevron="closed" />
+      <TreeRow x={sx} y={170} w={sw} label="Design" glyph="team" chevron="closed" />
+      <TreeRow x={sx} y={188} w={sw} label="New team" glyph="plus" />
+      <GroupTitle x={sx + 12} y={220}>
         MORE
       </GroupTitle>
-      <TreeRow x={sx} y={210} w={sw} label="Library" glyph="library" chevron="closed" />
-      <TreeRow x={sx} y={228} w={sw} label="Trash" glyph="trash" />
+      <TreeRow x={sx} y={228} w={sw} label="Library" glyph="library" chevron="closed" />
+      <TreeRow x={sx} y={246} w={sw} label="Trash" glyph="trash" />
 
       {/* The pane: heading, Create and the List / Card toggle, then the cards. */}
       <rect
         x={172}
         y={16}
         width={232}
-        height={232}
+        height={250}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -587,7 +609,7 @@ export function ExplorerPanelTree() {
   const px = 24;
   const pw = 200;
   return (
-    <Scene w={420} h={350}>
+    <Scene w={420} h={368}>
       <MenuCard x={px} y={8} />
       <g transform="translate(0 40)">
         {/* The canvas behind the panel */}
@@ -615,7 +637,7 @@ export function ExplorerPanelTree() {
           x={px}
           y={14}
           width={pw}
-          height={284}
+          height={302}
           rx={10}
           className="fill-white stroke-slate-300"
           strokeWidth={2}
@@ -652,33 +674,34 @@ export function ExplorerPanelTree() {
           OVERVIEW
         </GroupTitle>
         <TreeRow x={px + 4} y={120} w={pw - 8} label="Home" glyph="home" />
-        <TreeRow x={px + 4} y={138} w={pw - 8} label="Activity" glyph="activity" />
+        <TreeRow x={px + 4} y={138} w={pw - 8} label="Inbox" glyph="inbox" />
+        <TreeRow x={px + 4} y={156} w={pw - 8} label="Timeline" glyph="timeline" />
         <TreeRow
           x={px + 4}
-          y={156}
+          y={174}
           w={pw - 8}
           label="Shared with me"
           glyph="shared"
           chevron="closed"
         />
-        <GroupTitle x={px + 14} y={186}>
+        <GroupTitle x={px + 14} y={204}>
           SPACES
         </GroupTitle>
-        <TreeRow x={px + 4} y={194} w={pw - 8} label="My documents" glyph="folder" chevron="open" />
+        <TreeRow x={px + 4} y={212} w={pw - 8} label="My documents" glyph="folder" chevron="open" />
         <TreeRow
           x={px + 4}
-          y={212}
+          y={230}
           w={pw - 8}
           label="Projects"
           glyph="folder"
           level={1}
           chevron="closed"
         />
-        <TreeRow x={px + 4} y={230} w={pw - 8} label="Quick sketch" glyph="doc" level={1} />
-        <GroupTitle x={px + 14} y={262}>
+        <TreeRow x={px + 4} y={248} w={pw - 8} label="Quick sketch" glyph="doc" level={1} />
+        <GroupTitle x={px + 14} y={280}>
           MORE
         </GroupTitle>
-        <TreeRow x={px + 4} y={270} w={pw - 8} label="Library" glyph="library" chevron="closed" />
+        <TreeRow x={px + 4} y={288} w={pw - 8} label="Library" glyph="library" chevron="closed" />
       </g>
     </Scene>
   );

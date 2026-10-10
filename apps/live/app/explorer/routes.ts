@@ -3,7 +3,7 @@
 // back button works, and new sections keep landing as new pages:
 //
 //   home     → /explorer/home            recent  → /explorer/recent
-//   timeline → /explorer/timeline (All activity)
+//   inbox    → /explorer/inbox           timeline → /explorer/timeline
 //   search   → /explorer/search          shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   gallery  → /explorer/images          invites → /explorer/invites
@@ -28,8 +28,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/home';
     case 'timeline':
       return '/explorer/timeline';
-    case 'activity':
-      return '/explorer/activity';
+    case 'inbox':
+      return '/explorer/inbox';
     case 'recent':
       return '/explorer/recent';
     case 'all':
@@ -72,8 +72,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'home' };
     case '/explorer/timeline':
       return { kind: 'timeline' };
-    case '/explorer/activity':
-      return { kind: 'activity' };
+    case '/explorer/inbox':
+      return { kind: 'inbox' };
     // Explicit, not left to the default: without its own case /explorer/recent would resolve
     // to Home (docs/specs/013-workspace/timeline.md §8.1) and the sidebar would highlight the
     // wrong row.
@@ -89,6 +89,9 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
     case '/explorer/generated':
     case '/explorer/search':
       return { kind: 'search' };
+    // The Inbox was once Activity (docs/specs/013-workspace/inbox.md); its page replaces itself.
+    case '/explorer/activity':
+      return { kind: 'inbox' };
     case '/explorer/favourites':
       return { kind: 'favourites' };
     case '/explorer/offline':

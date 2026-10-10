@@ -1,16 +1,21 @@
 'use client';
 
-import { ActivityIcon, HomeIcon, ShareIcon } from '@/components/primitives/explorer-icons';
+import {
+  HomeIcon,
+  InboxIcon,
+  ShareIcon,
+  TimelineIcon,
+} from '@/components/primitives/explorer-icons';
 import { useExplorer } from '../ExplorerContext';
 import { SIDEBAR_LABELS, type SidebarDivider } from './sidebar-structure';
 import { trackSidebar } from './sidebar-telemetry';
 import { SidebarGroup } from './SidebarGroup';
 import { SidebarRow } from './SidebarRow';
+import { inboxBadge } from './inbox-badge';
 
-// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Activity, Shared with me.
+// Overview (docs/specs/013-workspace/explorer-structure.md): Home, Inbox, Timeline, Shared with me.
 export function OverviewGroup({ divider, first }: { divider: SidebarDivider; first: boolean }) {
   const { selected, go, shared, timelineUnread, activity } = useExplorer();
-  const assigned = activity.assignedToMe.length;
   return (
     <SidebarGroup id="overview" divider={divider} first={first}>
       {/* Home (docs/specs/013-workspace/explorer-home.md). Its badge counts OTHER people's
@@ -29,18 +34,30 @@ export function OverviewGroup({ divider, first }: { divider: SidebarDivider; fir
         depth={0}
         badge={timelineUnread.count > 0 ? timelineUnread.count : undefined}
       />
-      {/* Open actions and Plan cards ASSIGNED TO the reader (docs/specs/013-workspace/activity-page.md); hidden at zero. */}
+      {/* Open actions and Plan cards ASSIGNED TO the reader (docs/specs/013-workspace/inbox.md), 0 included. */}
       <SidebarRow
-        icon={<ActivityIcon />}
-        label={SIDEBAR_LABELS.activity}
-        textLabel={SIDEBAR_LABELS.activity}
-        selected={selected.kind === 'activity'}
+        icon={<InboxIcon />}
+        label={SIDEBAR_LABELS.inbox}
+        textLabel={SIDEBAR_LABELS.inbox}
+        selected={selected.kind === 'inbox'}
         onActivate={() => {
-          trackSidebar('Activity');
-          go({ kind: 'activity' });
+          trackSidebar('Inbox');
+          go({ kind: 'inbox' });
         }}
         depth={0}
-        badge={assigned > 0 ? assigned : undefined}
+        badge={inboxBadge(activity)}
+      />
+      {/* The Timeline (docs/specs/013-workspace/timeline.md §8.2): no badge, its unread count sits on Home. */}
+      <SidebarRow
+        icon={<TimelineIcon />}
+        label={SIDEBAR_LABELS.timeline}
+        textLabel={SIDEBAR_LABELS.timeline}
+        selected={selected.kind === 'timeline'}
+        onActivate={() => {
+          trackSidebar('Timeline');
+          go({ kind: 'timeline' });
+        }}
+        depth={0}
       />
       <SidebarRow
         icon={<ShareIcon />}

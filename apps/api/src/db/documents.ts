@@ -593,7 +593,7 @@ export async function copyDocument(
       tabStatsStatement(env, freshTabId, tabStatsOfData(data).stats, now),
       // The copy carries the source's actions + threads inside its
       // data, so its index rows are copied the same way, without a
-      // parse (docs/specs/013-workspace/activity-page.md §2.1).
+      // parse (docs/specs/013-workspace/inbox.md §2.1).
       ...(redacted
         ? collabIndexStatements(env, freshTabId, redacted.elements)
         : collabIndexCopyStatements(env, row.id, freshTabId)),

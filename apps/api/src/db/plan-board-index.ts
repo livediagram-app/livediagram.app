@@ -1,4 +1,4 @@
-// plan_board_statuses and the Activity page's Plan cards (docs/specs/013-workspace/activity-page.md §2.4).
+// plan_board_statuses and the Inbox's Plan cards (docs/specs/013-workspace/inbox.md §2.4).
 //
 // The table is a per-tab projection of each Plan board's column statuses, written by collabIndexStatements in
 // the tab save's own batch (so every write path in §2.1 keeps it) and copied with a duplicated tab. The read
@@ -73,7 +73,7 @@ export async function readerPersonIds(env: Env, ownerId: string): Promise<string
   return Promise.all(ids.map((id) => itemPersonId(id)));
 }
 
-// Placing items on the Activity page (§2.4, §2.5): a `cards` CTE of the matching items in documents the reader can
+// Placing items on the Inbox (§2.4, §2.5): a `cards` CTE of the matching items in documents the reader can
 // open, `top` the newest ?3 of them by `order` (only rows passing `keep`), and `placed` each with the board that
 // shows it. `match` filters the items (it may read `i`, `v` and the read's own CTEs); `cols` adds columns to
 // `cards`. A tab-scoped share sees only what its tab's boards show, so there a board on that tab must hold the

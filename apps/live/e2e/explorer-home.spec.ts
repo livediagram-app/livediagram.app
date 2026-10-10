@@ -88,11 +88,15 @@ test('the Explorer lands on Home: Jump back in, then What happened, no Timeline'
 
   expect(await layoutShift(page)).toBe(0);
 
-  // See all activity: the feed, titled All activity, leading back to Home.
-  await happened.getByRole('link', { name: 'See all activity' }).click();
+  // See timeline: the feed, titled Timeline, its sidebar row highlighted; Home's row leads back.
+  await happened.getByRole('link', { name: 'See timeline' }).click();
   await expect(page).toHaveURL(/\/explorer\/timeline\/?$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'All activity' })).toBeVisible();
-  await page.getByRole('button', { name: 'Home' }).first().click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Timeline' })).toBeVisible();
+  await expect(page.getByRole('treeitem', { name: 'Timeline' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await page.getByRole('treeitem', { name: /^Home/ }).click();
   await expect(page).toHaveURL(/\/explorer\/home\/?$/);
   expectNoPageErrors(pageErrors);
 });
@@ -117,7 +121,7 @@ test('each section opens with a heading with a rule, in dark and light', async (
     );
     for (const [name, link] of [
       ['Jump back in', 'See more'],
-      ['What happened', 'See all activity'],
+      ['What happened', 'See timeline'],
     ] as const) {
       const heading = page.getByRole('heading', { level: 2, name });
       const row = heading.locator('..');

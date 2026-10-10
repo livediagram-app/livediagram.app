@@ -5,8 +5,8 @@ import type { Element } from '@livediagram/document';
 import { parseCollabDeepLink, type CollabDeepLink } from '@/lib/collab-deep-link';
 import type { TabLoadState } from './editor-page-helpers';
 
-// Consumes the element deep link an Activity row opens the editor with
-// (docs/specs/013-workspace/activity-page.md §1): `#t=<tab>&el=<element>&open=action|comments`. Once the
+// Consumes the element deep link an Inbox row opens the editor with
+// (docs/specs/013-workspace/inbox.md §1): `#t=<tab>&el=<element>&open=action|comments`. Once the
 // pinned tab's elements have loaded, select the element, bring it into
 // view, and open the named popover — exactly what a Collaborate Panel
 // row click does in-editor. A Plan card's row names its board and the card
@@ -90,14 +90,14 @@ export function useCollabDeepLink({
     // find); both consume the link so it can't fire on a later tab.
     consumed.current = true;
     if (activeTabLoadState !== 'ready') return;
-    // The item panel draws the card once the item store has it; a card deleted since the Activity page
+    // The item panel draws the card once the item store has it; a card deleted since the Inbox
     // loaded draws nothing.
     if (target.itemId) openCard(target.itemId);
     if (!target.at) return;
     const { elementId } = target.at;
     const el = elements.find((e) => e.id === elementId);
-    // Deleted since the Activity page loaded: the tab is open, which is
-    // as close as the link can get (docs/specs/013-workspace/activity-page.md §1).
+    // Deleted since the Inbox loaded: the tab is open, which is
+    // as close as the link can get (docs/specs/013-workspace/inbox.md §1).
     if (!el || el.type === 'arrow') return;
     arriveAt(el, target.open);
   }, [link, hydrated, activeId, activeTabLoadState, elements]);

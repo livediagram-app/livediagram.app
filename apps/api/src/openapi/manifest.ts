@@ -1912,7 +1912,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401],
   },
 
-  // ---- Activity (docs/specs/013-workspace/activity-page.md) ----
+  // ---- Activity (docs/specs/013-workspace/inbox.md) ----
   {
     method: 'GET',
     path: '/activity',

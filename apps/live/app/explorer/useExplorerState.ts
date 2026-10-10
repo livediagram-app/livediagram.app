@@ -436,7 +436,7 @@ export function useExplorerState() {
 
   const timelineUnread = useTimelineUnread(ownerId);
 
-  // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md). Read once here rather
+  // What's outstanding for the reader (docs/specs/013-workspace/inbox.md). Read once here rather
   // than in the section, because the sidebar badge draws from the same
   // list on every Explorer section.
   const activity = useActivityFeed(ownerId);
@@ -549,7 +549,7 @@ export function useExplorerState() {
     recentCount,
     // Unread Timeline events (docs/specs/013-workspace/timeline.md §2.5), for the sidebar badge.
     timelineUnread,
-    // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md): the Activity pane's
+    // What's outstanding for the reader (docs/specs/013-workspace/inbox.md): the Activity pane's
     // lists + the sidebar badge's count.
     activity,
     // Per-user document stars (docs/specs/013-workspace/favourites.md).

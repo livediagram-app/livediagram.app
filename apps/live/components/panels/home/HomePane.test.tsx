@@ -35,8 +35,8 @@ function renderIt() {
     <HomePane
       ownerId="me"
       onSeen={vi.fn()}
-      allActivityHref="/explorer/timeline"
-      onSeeAll={vi.fn()}
+      timelineHref="/explorer/timeline"
+      onSeeTimeline={vi.fn()}
       recentHref="/explorer/recent"
       onSeeMore={vi.fn()}
     />,
@@ -76,7 +76,7 @@ describe('HomePane', () => {
     renderIt();
     for (const [name, link] of [
       ['Jump back in', 'See more'],
-      ['What happened', 'See all activity'],
+      ['What happened', 'See timeline'],
     ] as const) {
       const heading = screen.getByRole('heading', { level: 2, name });
       const row = heading.parentElement!;

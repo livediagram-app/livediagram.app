@@ -1,8 +1,8 @@
 'use client';
 
 // What happened (docs/specs/013-workspace/explorer-home.md "What happened"): what other people did
-// to documents the person can open, under day headings, with no filter controls. A quiet See all
-// activity link at the end of the section's heading row opens the Timeline feed (All activity); it
+// to documents the person can open, under day headings, with no filter controls. A quiet See
+// timeline link at the end of the section's heading row opens the Timeline; it
 // sits there so it never moves when the entries land.
 
 import { useMemo } from 'react';
@@ -20,17 +20,17 @@ export function WhatHappened({
   groups,
   loading,
   lastSeenAt,
-  allActivityHref,
-  onSeeAll,
+  timelineHref,
+  onSeeTimeline,
 }: {
   groups: HomeGroup[];
   loading: boolean;
   /** The unread mark before this visit: newer entries are New. */
   lastSeenAt: number | undefined;
-  /** The All activity page, for the link's href (new tab, copy link). */
-  allActivityHref: string;
-  /** In-app navigation to All activity. */
-  onSeeAll: () => void;
+  /** The Timeline page, for the link's href (new tab, copy link). */
+  timelineHref: string;
+  /** In-app navigation to the Timeline. */
+  onSeeTimeline: () => void;
 }) {
   const now = useNow(false);
   const days = useMemo(() => groupsByDay(groups, now), [groups, now]);
@@ -39,7 +39,7 @@ export function WhatHappened({
       id="what-happened"
       title={HOME_COPY.whatHappened}
       busy={loading}
-      link={{ href: allActivityHref, label: HOME_COPY.seeAllActivity, onNavigate: onSeeAll }}
+      link={{ href: timelineHref, label: HOME_COPY.seeTimeline, onNavigate: onSeeTimeline }}
     >
       {loading ? (
         <WhatHappenedSkeleton />

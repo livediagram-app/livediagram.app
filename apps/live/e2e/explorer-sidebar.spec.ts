@@ -40,7 +40,12 @@ test.describe('explorer sidebar', () => {
     await openExplorer(page);
 
     await expect(nav(page).getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    expect(await rowNames(page, 'Overview')).toEqual(['Home', 'Activity', 'Shared with me']);
+    expect(await rowNames(page, 'Overview')).toEqual([
+      'Home',
+      'Inbox',
+      'Timeline',
+      'Shared with me',
+    ]);
     // A guest on a deployment without sign-in: My documents only, no teams, no New team.
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My documents');
     await expect(row(page, 'New team')).toHaveCount(0);
@@ -79,7 +84,7 @@ test.describe('explorer sidebar', () => {
     await openExplorer(page);
     await row(page, /^Home/).focus();
     await page.keyboard.press('ArrowDown');
-    await expect(row(page, /^Activity/)).toBeFocused();
+    await expect(row(page, /^Inbox/)).toBeFocused();
     await page.keyboard.press('End');
     await expect(row(page, 'Trash')).toBeFocused();
     await page.keyboard.press('ArrowUp');

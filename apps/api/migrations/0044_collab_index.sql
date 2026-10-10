@@ -1,4 +1,4 @@
--- Collaboration index (docs/specs/013-workspace/activity-page.md) — what the Activity page reads.
+-- Collaboration index (docs/specs/013-workspace/inbox.md) — what the Inbox reads.
 --
 -- Assigned actions (docs/specs/012-collaboration/assigned-actions.md) and comment threads (docs/specs/008-canvas/canvas-and-palette.md) live INSIDE
 -- element JSON in `tabs.data`, and that stays the source of truth: the
@@ -44,7 +44,7 @@ CREATE TABLE collab_actions (
 );
 
 -- The three involvement lookups the read applies AFTER scoping to the
--- reader's own library (docs/specs/013-workspace/activity-page.md §4).
+-- reader's own library (docs/specs/013-workspace/inbox.md §4).
 CREATE INDEX collab_actions_assignee_idx ON collab_actions (assignee_user_id, status);
 CREATE INDEX collab_actions_assigner_idx ON collab_actions (assigner_id, status);
 CREATE INDEX collab_actions_member_idx   ON collab_actions (assignee_member_id);
@@ -72,7 +72,7 @@ CREATE TABLE collab_threads (
 
 CREATE INDEX collab_threads_open_idx ON collab_threads (resolved, latest_at);
 
--- Identities an owner USED TO BE (docs/specs/013-workspace/activity-page.md §2.2). Comment author ids and
+-- Identities an owner USED TO BE (docs/specs/013-workspace/inbox.md §2.2). Comment author ids and
 -- self-assigned assignee ids are written with whatever identity the
 -- writer had at the time — a guest participant id for anyone signed out
 -- — and the blobs are not rewritten when that guest signs up. Instead
@@ -88,7 +88,7 @@ CREATE TABLE owner_aliases (
 CREATE INDEX owner_aliases_alias_idx ON owner_aliases (alias_id);
 
 -- One row per owner once the index has been seeded from their existing
--- tabs (docs/specs/013-workspace/activity-page.md §2.3). Tabs saved after this migration index
+-- tabs (docs/specs/013-workspace/inbox.md §2.3). Tabs saved after this migration index
 -- themselves; this is for the dormant ones.
 CREATE TABLE collab_index_state (
   owner_id      TEXT    PRIMARY KEY,

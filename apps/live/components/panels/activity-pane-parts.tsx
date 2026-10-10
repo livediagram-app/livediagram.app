@@ -1,11 +1,11 @@
 'use client';
 
-// The Activity page's building blocks (docs/specs/013-workspace/activity-page.md §1): a titled section
+// The Inbox's building blocks (docs/specs/013-workspace/inbox.md §1): a titled section
 // of rows, the three row kinds, and the page's empty + failed states.
 // Lifted out of ActivityPane so the pane file keeps the data split and
 // the section order, and each piece here is one cohesive slice.
 
-import { ActivityIcon, TeamIcon } from '@/components/primitives/explorer-icons';
+import { InboxIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { CountBadge, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -90,7 +90,7 @@ export function ActivityActionRow({
 }
 
 // What a thread row says about why it is on the page, an element's or a card's alike: a mention is the most
-// direct reason, so it wins (docs/specs/012-collaboration/comment-mentions.md "The Activity page").
+// direct reason, so it wins (docs/specs/012-collaboration/comment-mentions.md "The Inbox").
 type ThreadFacts = Pick<
   ActivityThread,
   'mentionsYou' | 'onYourDocument' | 'youCommented' | 'commentCount' | 'latest'
@@ -134,7 +134,7 @@ export function ActivityThreadRow({
   );
 }
 
-// A Plan card on the reader (docs/specs/013-workspace/activity-page.md §1, §2.4): its type's glyph, its
+// A Plan card on the reader (docs/specs/013-workspace/inbox.md §1, §2.4): its type's glyph, its
 // number and title, where it sits, and the reader as its assignee. A custom type, whose name lives in its
 // document's catalogue, reads as a plain card.
 export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: () => void }) {
@@ -158,7 +158,7 @@ export function ActivityCardRow({ card, onOpen }: { card: ActivityCard; onOpen: 
   );
 }
 
-// A Plan card's comment thread (docs/specs/013-workspace/activity-page.md §1, §2.5): the card's type glyph,
+// A Plan card's comment thread (docs/specs/013-workspace/inbox.md §1, §2.5): the card's type glyph,
 // number and title, and where it sits, as a card row; the latest comment and its author, and the same hints, as a
 // thread row. It opens the card.
 export function ActivityCardThreadRow({
@@ -187,7 +187,7 @@ export function ActivityCardThreadRow({
 
 // The shared row: kind glyph far left, title + detail in the middle
 // with the "where" line under them, avatar-over-time far right. The
-// whole row is one link into the editor (docs/specs/013-workspace/activity-page.md §1).
+// whole row is one link into the editor (docs/specs/013-workspace/inbox.md §1).
 function ActivityRowShell({
   href,
   place,
@@ -288,7 +288,7 @@ function PlaceChip({ place }: { place: DocumentPlace }) {
 export function ActivityEmptyState() {
   return (
     <EmptyState
-      icon={<ActivityIcon />}
+      icon={<InboxIcon />}
       title="Nothing waiting on you"
       description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every document."
     >

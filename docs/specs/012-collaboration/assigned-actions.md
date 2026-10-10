@@ -25,7 +25,7 @@ badge, and popover 1:1 with elements). The one exception is the **Action
 panel** ([The Action Panel](action-panel.md)), a card whose job is to hold a list: it carries
 `actions: ElementAction[]`. Everything that reads actions goes through
 `elementActions(el)`, which returns that list or the single `action` as a
-one-item list, so the Collaborate panel, the Activity page, the timeline and
+one-item list, so the Collaborate panel, the Inbox, the timeline and
 the email treat both the same. A new optional field on boxed elements in
 `packages/document`:
 
@@ -408,7 +408,7 @@ enum-ish tokens, not user content.
 ## 9. Out of scope (v1)
 
 - ~~A cross-document "my actions" inbox~~ — shipped as the Explorer's
-  **Activity** page ([Activity page](../013-workspace/activity-page.md)), exactly the way this bullet predicted:
+  [Inbox](../013-workspace/inbox.md), exactly the way this bullet predicted:
   a D1 projection (`collab_actions`) written beside every tab save,
   with the per-element blob still the source of truth.
 - Due dates, priorities, more than one action on an ordinary element (an

@@ -1,15 +1,15 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import {
-  AllActivityFeed,
-  AllActivityStack,
+  TimelineFeed,
+  TimelineStack,
   HomeOverview,
 } from '@/components/illustrations/explorer-feeds';
 
 export const metadata = helpMetadata({
   title: 'Home',
   description:
-    'The Explorer opens on Home: the documents you use most and last, and what other people did while you were away, with All activity one link away.',
+    'The Explorer opens on Home: the documents you use most and last, and what other people did while you were away, with the Timeline one row below.',
   path: '/help/explorer/timeline/',
 });
 
@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
   categorySlug="explorer"
 >
 
-**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
+**Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/) and the **Timeline**. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
 
 Home is one column: **Jump back in** at the top, then **What happened**. Each opens with its heading and a thin line beneath it, with its link at the right. The header carries **New document**, as every Explorer section does.
 
@@ -53,20 +53,20 @@ Below Jump back in, **What happened** lists what **other people** did to documen
 
 When several people worked on the same document on the same day, they share **one entry**: their pictures overlap and one sentence says what they did, such as "Priya, Sam and Lee commented, edited and assigned you an action in Payments architecture", with where it lives, how many updates there were and the time of the latest underneath. Click it to see every action underneath, newest first. A sentence names at most three people, then "and 2 others".
 
-Anything that arrived since you last looked carries a **New** pill, as on All activity. The very first time you visit, nothing is marked: a whole history marked new would tell you nothing.
+Anything that arrived since you last looked carries a **New** pill, as on the Timeline. The very first time you visit, nothing is marked: a whole history marked new would tell you nothing.
 
 What happened has no filters, on purpose. Whether someone simply looked at a document is theirs to know, so opens never appear here.
 
-**See all activity**, at the end of the heading, opens **All activity**: everything that has happened, your own doings included, with filters and a calendar (below).
+**See timeline**, at the end of the heading, opens the **Timeline**: everything that has happened, your own doings included, with filters and a calendar (below).
 
-Visiting Home counts as having caught up: the count on the sidebar's Home row clears, just as reading All activity clears it.
+Visiting Home counts as having caught up: the count on the sidebar's Home row clears, just as reading the Timeline clears it.
 
-## All activity
+## The Timeline
 
-**All activity** is the full feed of everything that has happened across your documents, teams and account, including what you did yourself. Open it from **See all activity** on Home (or at `/explorer/timeline`); its breadcrumb leads back to Home. It has no sidebar row of its own.
+The **Timeline** is the full feed of everything that has happened across your documents, teams and account, including what you did yourself. It has its own row in the sidebar's Overview group, under the Inbox; you can also open it from **See timeline** on Home (or at `/explorer/timeline`).
 
 <Figure caption="One group per day, one card per event, coloured by what happened; a card with nothing left to open is dimmed.">
-  <AllActivityFeed />
+  <TimelineFeed />
 </Figure>
 
 ### What lands here
@@ -84,7 +84,7 @@ If a document lives in a team's shared library, everyone in that team sees its e
 
 ### What is new since you were last here
 
-That is the question All activity exists to answer, so it keeps a watermark of when you last read it.
+That is the question the Timeline exists to answer, so it keeps a watermark of when you last read it.
 
 - **Anything that arrived since then is marked `New`.** The mark is per reader: your teammate's has its own.
 - **The sidebar's Home row carries a count** of what you haven't seen, so you can tell from any other Explorer section that something happened. It counts **other people's** events only, because a number that goes up because _you_ moved a document is not news.
@@ -102,9 +102,9 @@ Click a card to go to whatever it is about: the document, the team, your invites
 
 **A document card has the same ⋯ menu as it does in Recent.** Open, Share, Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Open Team (for a team document), Take Offline or Sync Document, Remove from Timeline, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
 
-**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over All activity.
+**Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over the Timeline.
 
-**Deleting a document takes it off All activity.** While it waits in the [Trash](/help/account-and-data/trash/) its cards are hidden, and restoring it brings them back. Once it is deleted for good, every card about it goes and nothing is written in its place: there is no "Document Deleted" card. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
+**Deleting a document takes it off the Timeline.** While it waits in the [Trash](/help/account-and-data/trash/) its cards are hidden, and restoring it brings them back. Once it is deleted for good, every card about it goes and nothing is written in its place: there is no "Document Deleted" card. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
 
 **Every card's menu ends with "Remove from Timeline".** If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
 
@@ -125,7 +125,7 @@ Three colours rather than one per feature, because the question you are asking a
 A day where you duplicated six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card, such as **Documents Updated**, reading "6 events · click to expand", with the count in its corner.
 
 <Figure caption="Several events of one kind become one stacked card; a comment always keeps a card of its own.">
-  <AllActivityStack />
+  <TimelineStack />
 </Figure>
 
 Click it to open the run in place. The stacked card stays at the front of the run, now reading "click to collapse"; click it again to fold the run back up. A stack wears a **New** pill if any event inside it is new.
@@ -140,7 +140,7 @@ Two kinds never collapse, because collapsing them would hide the thing you came 
 Not everything on the feed is in the past. Anything with an expiry (an [API token](/help/account-and-data/api-tokens/) approaching its six-month limit, a [share link](/help/collaboration/sharing/share-link-expiry/) about to lapse) appears **above** today, under an **Upcoming** pill. Upcoming cards never count as new: something scheduled is not news until it happens. Revoking the token, or revoking or extending the link, takes the warning away.
 
 <Tip>
-  This is the reason to open All activity before something breaks rather than after: a script that
+  This is the reason to open the Timeline before something breaks rather than after: a script that
   stops working next Tuesday says so this week.
 </Tip>
 
@@ -160,13 +160,13 @@ Last comes a small calendar for jumping to a particular day: pick a date and the
 
 The feed shows 50 events at a time; **Show more** at the bottom loads the next page. Filters only look at what has loaded, so if nothing matches yet, load more before concluding there is nothing.
 
-All activity is not live: nothing slides in while you are reading. It loads when you open it, and it checks again when you come back to the browser tab and shortly after you change something yourself (deleting a document from a card, say, takes its cards away straight away).
+The Timeline is not live: nothing slides in while you are reading. It loads when you open it, and it checks again when you come back to the browser tab and shortly after you change something yourself (deleting a document from a card, say, takes its cards away straight away).
 
-Filters and the calendar view are per visit. Come back tomorrow and All activity opens on Cards again.
+Filters and the calendar view are per visit. Come back tomorrow and the Timeline opens on Cards again.
 
 ### Guests and signing in
 
-Home and All activity work without an account, like the rest of the canvas. A guest sees their own document activity and comments on their documents; team, invite, and token events need an account, so they simply do not appear.
+Home and the Timeline work without an account, like the rest of the canvas. A guest sees their own document activity and comments on their documents; team, invite, and token events need an account, so they simply do not appear.
 
 **Your history follows you.** Signing up moves your history, and what you open, to your new account alongside your documents, so a week of work as a guest is still there afterwards.
 
@@ -174,11 +174,11 @@ Home and All activity work without an account, like the rest of the canvas. A gu
 
 The same feed appears in two other places:
 
-- **A team's own activity**, on the team page. Unlike your own All activity, it includes what happened before you joined, so if you joined last month you can still read what the team did before you arrived.
+- **A team's own activity**, on the team page. Unlike your own Timeline, it includes what happened before you joined, so if you joined last month you can still read what the team did before you arrived.
 - **One document's history**, from the **History** item in a document's menu. Everything that has happened to that document: created, renamed, commented on, shared, filed.
 
 <Tip>
-  All activity keeps a year (365 days) of history. To step back your own recent edits on a document,
+  The Timeline keeps a year (365 days) of history. To step back your own recent edits on a document,
   use [Undo](/help/canvas/undo/) in the editor.
 </Tip>
 

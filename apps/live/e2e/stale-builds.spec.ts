@@ -9,7 +9,7 @@ import { expect, test } from './fixtures';
 
 const CRASH = "This page couldn't load";
 
-async function openExplorer(page: Page, path = '/explorer/activity') {
+async function openExplorer(page: Page, path = '/explorer/inbox') {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto(path);
@@ -118,8 +118,8 @@ test.describe('stale builds', () => {
     await page.getByRole('treeitem', { name: /^Home/ }).click();
     await expect.poll(() => loads).toEqual(['/explorer/home']);
     await page.waitForLoadState('networkidle');
-    await page.getByRole('treeitem', { name: /^Activity/ }).click();
-    await expect.poll(() => loads).toEqual(['/explorer/home', '/explorer/activity']);
+    await page.getByRole('treeitem', { name: /^Inbox/ }).click();
+    await expect.poll(() => loads).toEqual(['/explorer/home', '/explorer/inbox']);
     await page.waitForLoadState('networkidle');
     await page.goBack();
     await expect.poll(() => loads.length).toBe(3);
