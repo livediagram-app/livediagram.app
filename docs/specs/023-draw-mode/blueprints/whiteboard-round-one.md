@@ -197,6 +197,8 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
   not move and never resolves a missing id to the origin. The arrow pass runs only when a stroke
   changed: O(elements) per changed sample.
 - Both: one `markCheckpoint` on the first change, locked elements and inert layers skipped.
+- The Eraser panel's `config` is ignored on a whiteboard: `tapOnly` is false whenever `whiteboard`
+  is set, so a Tap setting chosen on a diagram tab never stops a whiteboard sweep.
 
 ### Stroke geometry (`whiteboard-stroke.ts`)
 
@@ -975,6 +977,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Partial erase keeps pressures and streamline                                          | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Partial erase keeps the kept ink in place and never grows the point count             | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Partial erase frees arrow ends pinned to a split stroke, drops those of an erased one | `apps/live/lib/whiteboard-erase.test.ts`                                                 |
+| The whiteboard eraser sweeps whatever the Diagram Tap setting                         | `apps/live/hooks/canvas/useCanvasEraser.test.tsx`                                        |
 | Live stroke samples and pressures                                                     | `apps/live/lib/live-stroke.test.ts`                                                      |
 | Pen gesture: pressure, pointer, cancel, commit                                        | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
 | Live ink laid out as it lands, recognition preview                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                   |

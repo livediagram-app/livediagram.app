@@ -627,7 +627,9 @@ The eraser offers **both** modes, switched in its flyout:
   Partial applies to strokes only; a sticky, text or shape under a partial
   brush is untouched.
 - The brush is a fixed size per mode (`WHITEBOARD_ERASER_RADIUS_PX`), shown
-  as the eraser's ring; a whiteboard eraser has no size or target setting.
+  as the eraser's ring; a whiteboard eraser has no size, target or Tap
+  setting, and always sweeps: the Diagram eraser's panel settings never reach
+  it.
 - Locked elements and locked or hidden layers stay protected, as everywhere.
 
 ## Shape recognition

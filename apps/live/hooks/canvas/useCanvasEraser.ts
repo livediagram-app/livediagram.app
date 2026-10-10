@@ -211,8 +211,12 @@ export function useCanvasEraser(deps: EraserDeps) {
     eraseAtPoint(clientX, clientY);
 
     // Tap mode (docs/specs/008-canvas/eraser-panel.md) is one press, one thing: the move listener is what
-    // makes a two-pixel wobble take a neighbour with it, so it isn't attached.
-    const tapOnly = (depsRef.current.config ?? DEFAULT_ERASER_CONFIG).mode === 'tap';
+    // makes a two-pixel wobble take a neighbour with it, so it isn't attached. A whiteboard has no
+    // Eraser panel (docs/specs/023-draw-mode/draw-mode.md "Eraser"), so the Diagram eraser's Tap
+    // setting never reaches it: a whiteboard eraser always sweeps.
+    const tapOnly =
+      !depsRef.current.whiteboard &&
+      (depsRef.current.config ?? DEFAULT_ERASER_CONFIG).mode === 'tap';
     const onMove = (ev: PointerEvent) => {
       if (!tapOnly) eraseAtPoint(ev.clientX, ev.clientY);
     };
