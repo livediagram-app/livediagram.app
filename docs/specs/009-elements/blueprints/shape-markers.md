@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/live/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
 | `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
 | `apps/live/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
-| `apps/live/lib/editor-commands-selection.ts`                 | Command-palette "Add … marker" / "Clear marker" [QE12]                     |
+| `apps/live/lib/editor-commands-selection.ts`                 | Command-palette "Add … Marker" / "Clear Marker" [QE12]                     |
 
 ## Domain and naming
 

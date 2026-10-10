@@ -16,11 +16,11 @@ import type { CommandContext, CommandHandlers, EditorCommand } from './editor-co
 // Human-readable marker names for the "Add … marker" commands. The raw ids
 // ('green-circle', 'checkbox-checked', ...) aren't search-friendly.
 const MARKER_LABEL: Record<ShapeMarker, string> = {
-  'green-circle': 'green status',
-  'orange-circle': 'amber status',
-  'red-circle': 'red status',
-  'checkbox-unchecked': 'unchecked box',
-  'checkbox-checked': 'checked box',
+  'green-circle': 'Green Status',
+  'orange-circle': 'Amber Status',
+  'red-circle': 'Red Status',
+  'checkbox-unchecked': 'Unchecked Box',
+  'checkbox-checked': 'Checked Box',
 };
 
 export function selectionCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] {
@@ -32,31 +32,31 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
   if (hasSelection) {
     out.push({
       id: 'delete',
-      name: 'Delete selection',
+      name: 'Delete Selection',
       keywords: 'delete remove erase clear',
       run: h.deleteSelection,
     });
     out.push({
       id: 'duplicate',
-      name: 'Duplicate selection',
+      name: 'Duplicate Selection',
       keywords: 'duplicate copy clone',
       run: h.duplicateSelection,
     });
     out.push({
       id: 'lock',
-      name: 'Lock / unlock selection',
+      name: 'Lock / Unlock Selection',
       keywords: 'lock unlock freeze protect',
       run: h.toggleLockSelection,
     });
     out.push({
       id: 'bring-to-front',
-      name: 'Bring to front',
+      name: 'Bring to Front',
       keywords: 'front forward top raise order layer z-index arrange',
       run: h.bringToFront,
     });
     out.push({
       id: 'send-to-back',
-      name: 'Send to back',
+      name: 'Send to Back',
       keywords: 'back backward bottom lower order layer z-index arrange',
       run: h.sendToBack,
     });
@@ -101,7 +101,7 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     }
     out.push({
       id: 'rotate-0',
-      name: 'Reset rotation',
+      name: 'Reset Rotation',
       keywords: 'rotate reset clear angle rotation straighten upright 0',
       run: () => h.rotate(0),
     });
@@ -111,13 +111,13 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
   if (isSingle && ctx.singleIsBoxed) {
     out.push({
       id: 'note',
-      name: 'Add / edit note',
+      name: 'Add / Edit Note',
       keywords: 'note annotate memo description',
       run: h.editNote,
     });
     out.push({
       id: 'comment',
-      name: 'Add comment',
+      name: 'Add Comment',
       keywords: 'comment discuss feedback thread reply',
       run: h.addComment,
     });
@@ -129,7 +129,7 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
   if (isSingle && ctx.hasAnimation) {
     out.push({
       id: 'clear-animation',
-      name: 'Clear animation',
+      name: 'Clear Animation',
       keywords: 'animation animate clear remove stop motion flow',
       run: h.clearAnimation,
     });
@@ -141,7 +141,7 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     if (ctx.marker) {
       out.push({
         id: 'clear-marker',
-        name: 'Clear marker',
+        name: 'Clear Marker',
         keywords: 'marker status dot badge clear remove none',
         run: () => h.setMarker(null),
       });
@@ -150,7 +150,7 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
       if (m === ctx.marker) continue;
       out.push({
         id: `marker-${m}`,
-        name: `Add ${MARKER_LABEL[m]} marker`,
+        name: `Add ${MARKER_LABEL[m]} Marker`,
         keywords: `marker status dot badge add ${m}`,
         run: () => h.setMarker(m),
       });

@@ -140,6 +140,13 @@ element or add one:
   Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
   Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
   export draws an accent bar with the same words.
+- **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
+  "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
+- **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
+  Tool (or 1)"): the name is Title Case and a trailing hint in parentheses stays as written. A row
+  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)",
+  "On a mind node: add a child") and the presentation rows, which pair with the presentation
+  controls' tooltips, keep sentence case.
 
 Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
 control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only

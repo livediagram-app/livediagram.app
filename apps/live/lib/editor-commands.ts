@@ -146,25 +146,25 @@ export const CANVAS_TOOLS: {
   mutates?: boolean;
   desktopOnly?: boolean;
 }[] = [
-  { id: 'select', name: 'Select tool', keywords: 'select pointer arrow cursor pick v' },
-  { id: 'pan', name: 'Hand tool', keywords: 'hand pan grab drag move canvas scroll h' },
+  { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
+  { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
   {
     id: 'eraser',
-    name: 'Eraser tool',
+    name: 'Eraser Tool',
     keywords: 'eraser erase rub out delete remove e',
     needsContent: true,
     mutates: true,
   },
   {
     id: 'format',
-    name: 'Format painter',
+    name: 'Format Painter',
     keywords: 'format painter copy style paste style match appearance brush',
     needsContent: true,
     mutates: true,
   },
   {
     id: 'laser',
-    name: 'Laser pointer',
+    name: 'Laser Pointer',
     keywords: 'laser pointer present point highlight temporary trail k',
     needsContent: true,
   },
@@ -177,7 +177,7 @@ export const CANVAS_TOOLS: {
   },
   {
     id: 'avatar',
-    name: 'Avatar mode',
+    name: 'Avatar Mode',
     keywords: 'avatar walk character presence walkthrough tour steer w',
     needsContent: true,
   },
@@ -196,7 +196,7 @@ export const CANVAS_TOOLS: {
   },
   {
     id: 'isometric',
-    name: 'Isometric view',
+    name: 'Isometric View',
     keywords: 'isometric 3d tilt perspective depth angle i',
     needsContent: true,
   },
@@ -237,7 +237,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     },
     {
       id: 'fit-to-screen',
-      name: 'Fit to screen',
+      name: 'Fit to Screen',
       keywords: 'fit zoom overview centre center view all reset viewport',
       run: h.fitToScreen,
     },
@@ -294,7 +294,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     if (ctx.photoImportAvailable) {
       out.push({
         id: 'photo-import',
-        name: 'Add notes from a photo',
+        name: 'Add Notes from a Photo',
         keywords: 'photo camera picture wall sticky scan ocr read import capture snapshot',
         run: h.openPhotoImport,
       });
@@ -303,46 +303,46 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
 
   out.push({
     id: 'create-tab',
-    name: 'Create new tab',
+    name: 'Create New Tab',
     keywords: 'new tab create add page sheet board',
     run: h.createTab,
   });
   out.push({
     id: 'rename-tab',
-    name: 'Rename tab',
+    name: 'Rename Tab',
     keywords: 'rename tab title name relabel',
     run: h.renameTab,
   });
   out.push({
     id: 'rename-document',
-    name: 'Rename document',
+    name: 'Rename Document',
     keywords: 'rename document diagram title name relabel',
     run: h.renameDocument,
   });
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
-      name: 'Delete document',
+      name: 'Delete Document',
       keywords: 'delete document diagram remove trash destroy',
       run: h.deleteDocument,
     });
   }
   out.push({
     id: 'open-theme',
-    name: 'Open theme',
+    name: 'Open Theme',
     keywords: 'theme colour color scheme style appearance palette',
     run: h.openTheme,
   });
   out.push({
     id: 'open-canvas',
-    name: 'Open canvas options',
+    name: 'Open Canvas Options',
     keywords: 'canvas background pattern grid options style backdrop',
     run: h.openCanvasOptions,
   });
   if (ctx.isOwner && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share document',
+      name: 'Share Document',
       keywords: 'share document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });
@@ -368,7 +368,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   }
   out.push({
     id: 'auto-align',
-    name: 'Auto-align to grid',
+    name: 'Auto-align to Grid',
     keywords: 'align grid snap straighten cleanup arrange',
     run: h.autoAlign,
   });
@@ -380,19 +380,19 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'browse-templates',
-    name: 'Browse templates',
+    name: 'Browse Templates',
     keywords: 'template quick start starter scaffold gallery',
     run: h.openTemplates,
   });
   out.push({
     id: 'settings',
-    name: 'Open settings',
+    name: 'Open Settings',
     keywords: 'settings preferences options notifications',
     run: h.openSettings,
   });
   out.push({
     id: 'shortcuts',
-    name: 'Keyboard shortcuts',
+    name: 'Keyboard Shortcuts',
     keywords: 'keyboard shortcuts keys hotkeys bindings cheatsheet',
     run: h.openShortcuts,
   });
