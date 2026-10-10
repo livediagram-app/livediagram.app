@@ -8,10 +8,16 @@ import {
   type ShareLinkExpiry,
   type SharePurpose,
 } from '@livediagram/api-schema';
-import { rowToShareLink, type ShareLinkRow } from '../share-link-row';
+import {
+  legacyRoleColumn,
+  levelColumn,
+  rowToShareLink,
+  type ShareLinkRow,
+} from '../share-link-row';
 import type { Env, ShareLinkDTO, ShareRole } from '../types';
 
-const SHARE_LINK_COLS = 'code, document_id, role, created_at, expiry, expires_at, tab_id, purpose';
+const SHARE_LINK_COLS =
+  'code, document_id, role, level, created_at, expiry, expires_at, tab_id, purpose';
 
 // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) is only a link while its tab is
 // still in the document. Part of the access lookup itself, so a race between a
@@ -91,12 +97,13 @@ export async function createShareLink(
   const createdAt = Date.now();
   const expiresAt = expiresAtFor(expiry, createdAt);
   await env.DB.prepare(
-    'INSERT INTO share_links (code, document_id, role, created_at, expiry, expires_at, tab_id, purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO share_links (code, document_id, role, level, created_at, expiry, expires_at, tab_id, purpose) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
   )
     .bind(
       code,
       documentId,
-      role,
+      legacyRoleColumn(role),
+      levelColumn(role),
       createdAt,
       expiry === 'never' ? null : expiry,
       expiresAt,

@@ -149,7 +149,7 @@ export function SheetSettingsPanel({
               Title
             </span>
             <TextInput
-              disabled={!c.canEdit}
+              disabled={!c.canShape}
               aria-label="Title"
               maxLength={SHEET_TITLE_MAX}
               value={title ?? c.sheet.title}
@@ -190,7 +190,7 @@ export function SheetSettingsPanel({
             </div>
           ) : (
             <div className="flex gap-2">
-              {c.canEdit ? (
+              {c.canShape ? (
                 <ActionTile
                   icon={<ImportGlyph />}
                   label="Import CSV…"
@@ -201,7 +201,7 @@ export function SheetSettingsPanel({
                 />
               ) : null}
               {/* An empty sheet can be set up again (sheet.md "Setup Sheet"): its card takes the grid's place. */}
-              {c.canEdit && c.sheet.cells.size === 0 ? (
+              {c.canShape && c.sheet.cells.size === 0 ? (
                 <ActionTile
                   icon={<SheetArt size={18} />}
                   label="Setup Sheet"
@@ -220,7 +220,7 @@ export function SheetSettingsPanel({
                 label="Download CSV"
                 onClick={() => downloadSheetCsv(c.workbook, c.sheet)}
               />
-              {c.canEdit && c.sheet.cells.size > 0 ? (
+              {c.canShape && c.sheet.cells.size > 0 ? (
                 <ActionTile
                   icon={<ClearGlyph />}
                   label="Clear Sheet"
@@ -231,7 +231,7 @@ export function SheetSettingsPanel({
           )}
         </Body>
       </BoardSettingsSection>
-      {c.canEdit ? (
+      {c.canShape ? (
         <>
           <BoardSettingsSection title="Sheet Options" icon={<ViewGlyph />} {...section('view')}>
             <Body>
@@ -326,7 +326,7 @@ export function SheetSettingsPanel({
         </>
       ) : null}
       {/* Freeze changes the sheet: someone who may only view does not see it. */}
-      {c.canEdit ? (
+      {c.canShape ? (
         <BoardSettingsSection title="Freeze" icon={<FreezeGlyph />} {...section('freeze')}>
           <Body>
             <div className="flex flex-col gap-2">

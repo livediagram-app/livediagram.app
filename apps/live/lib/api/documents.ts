@@ -37,6 +37,7 @@ import {
   tabForWire,
   apiFetch,
 } from './core';
+import type { RoomTicketResponse } from '@livediagram/api-schema';
 
 // The document-list row every list surface renders: the Explorer
 // panel, the /explorer page, /new, and the editor's document-list
@@ -339,7 +340,7 @@ export async function apiCreateRoomTicket(
   ownerId: string,
   documentId: string,
   shareCode: string | null = null,
-): Promise<string | null> {
+): Promise<RoomTicketResponse | null> {
   // Retried with a short backoff: a team member whose mint fails has NO
   // fallback (the legacy query params are personal/share-code only), and the
   // connector mints a fresh one for every reconnect, so one transient blip
@@ -353,8 +354,12 @@ export async function apiCreateRoomTicket(
       });
       if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
       if (!res.ok) continue;
-      const { ticket } = (await res.json()) as { ticket?: string };
-      return typeof ticket === 'string' && ticket.length > 0 ? ticket : null;
+      const { ticket, adderKey } = (await res.json()) as Partial<RoomTicketResponse>;
+      if (typeof ticket !== 'string' || ticket.length === 0) return null;
+      // A Participant's own adder key (docs/specs/013-workspace/share-roles.md): which stickies are its own.
+      return typeof adderKey === 'string' && adderKey.length > 0
+        ? { ticket, adderKey }
+        : { ticket };
     } catch {
       // Network error — retry.
     }

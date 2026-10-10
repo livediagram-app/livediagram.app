@@ -54,6 +54,7 @@ export function TableView({
   element,
   isSelected,
   readOnly,
+  cellsOnly = false,
   tabSummaries,
   onCommitTable,
   onLinkCell,
@@ -63,6 +64,9 @@ export function TableView({
   element: TableElement;
   isSelected: boolean;
   readOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): its cells' words may be written, never its rows,
+  // columns or styles, so the structure controls and the cell menu stay away.
+  cellsOnly?: boolean;
   // This document's tabs (id + name), so a linked cell's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md).
   tabSummaries: { id: string; name: string }[];
@@ -115,7 +119,7 @@ export function TableView({
   const initialTextRef = useRef('');
   const typeToEditRef = useRef(false);
   const gridRef = useRef<HTMLDivElement>(null);
-  const showControls = isSelected && !readOnly && !element.locked;
+  const showControls = isSelected && !readOnly && !cellsOnly && !element.locked;
   // Multi-cell selection + the per-cell context menu (docs/specs/008-canvas/canvas-and-palette.md) — anchor,
   // shift-click extras, menu position, long-press opener, and the
   // whole-selection style / clear commits — live in useTableCellSelection.
@@ -139,7 +143,7 @@ export function TableView({
     gridRef,
     editing,
     isSelected,
-    disabled: readOnly || element.locked === true,
+    disabled: readOnly || cellsOnly || element.locked === true,
     onCommitTable,
   });
   // Hover-preview for the cell menu's colour rows: a patch shown over the

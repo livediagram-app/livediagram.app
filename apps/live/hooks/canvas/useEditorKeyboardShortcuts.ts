@@ -184,7 +184,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         !inText &&
         !mod &&
         !e.shiftKey &&
-        !live.isReadOnly &&
+        (!live.isReadOnly || live.participant) &&
         live.editingId === null &&
         selectedId !== null &&
         multiSelectedIds.size === 0 &&
@@ -249,7 +249,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // --- Delete / Backspace ---
       if (key === 'Delete' || key === 'Backspace') {
-        if (live.isReadOnly) return;
+        if (live.isReadOnly && !live.participant) return;
         if (inText) return;
         if (live.editingId !== null) return;
         if (multiSelectedIds.size > 0) {
@@ -331,7 +331,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // never types (so viewers keep V / H / K). A non-labelable selection
       // returns false and falls through to the shortcuts.
       if (
-        !live.isReadOnly &&
+        (!live.isReadOnly || live.participant) &&
         selectedId !== null &&
         multiSelectedIds.size === 0 &&
         key.length === 1 &&
@@ -455,7 +455,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       if (heldFor > 600) return; // long-press with no drag is not a tap
       const live = liveRef.current;
       const { selectedId, multiSelectedIds } = live.readSelection();
-      if (live.isReadOnly) return;
+      if (live.isReadOnly && !live.participant) return;
       if (live.editingId !== null) return;
       if (isTypingTarget(e.target)) return;
       // A dialog over the canvas owns Space: never a label edit on the shape behind it.

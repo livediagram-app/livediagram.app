@@ -90,19 +90,29 @@ describe('documentServesImage', () => {
     expect(await documentServesImage(db.env, 'D', 'bob-img')).toBe(false);
   });
 
-  it("grants an edit collaborator's image, and not a view-only visitor's", async () => {
+  it("grants an edit collaborator's and a Participant's image, and not a view-only visitor's", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'D', { owner: 'alice' });
     image(db.sql, 'editor-img', 'guest-editor');
+    image(db.sql, 'participant-img', 'guest-participant');
     image(db.sql, 'viewer-img', 'guest-viewer');
-    for (const [owner, role] of [
-      ['guest-editor', 'edit'],
-      ['guest-viewer', 'view'],
+    // A Participant's row keeps the two-valued role at 'view' (migration 0080); its level says participate.
+    for (const [owner, role, level] of [
+      ['guest-editor', 'edit', null],
+      ['guest-participant', 'view', 'participate'],
+      ['guest-viewer', 'view', null],
     ] as const) {
-      insert(db.sql, 'shared_with', { owner_id: owner, document_id: 'D', role, last_seen: 0 });
+      insert(db.sql, 'shared_with', {
+        owner_id: owner,
+        document_id: 'D',
+        role,
+        level,
+        last_seen: 0,
+      });
     }
-    await upsertTab(db.env, 'D', tabWith('t1', 'editor-img', 'viewer-img'), 0);
+    await upsertTab(db.env, 'D', tabWith('t1', 'editor-img', 'participant-img', 'viewer-img'), 0);
     expect(await documentServesImage(db.env, 'D', 'editor-img')).toBe(true);
+    expect(await documentServesImage(db.env, 'D', 'participant-img')).toBe(true);
     expect(await documentServesImage(db.env, 'D', 'viewer-img')).toBe(false);
   });
 

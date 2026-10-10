@@ -16,6 +16,7 @@ import { Glyph } from '@livediagram/ui';
 export function EmptyCanvasBanner({
   tabName,
   readOnly,
+  participant = false,
   onQuickStart,
   // On a phone it rides above the bottom-right cluster (16px inset + 44px buttons above the
   // 48px tab bar) instead of over it.
@@ -23,6 +24,8 @@ export function EmptyCanvasBanner({
 }: {
   tabName: string;
   readOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it adds stickies, text and images.
+  participant?: boolean;
   onQuickStart: () => void;
   placementClassName?: string;
 }) {
@@ -44,9 +47,11 @@ export function EmptyCanvasBanner({
             {tabName} is empty
           </p>
           <p className="mt-0.5 truncate text-xs text-slate-500 phone:hidden dark:text-slate-400">
-            {readOnly
-              ? 'Nothing here yet. The owner can build it out, and your view updates live.'
-              : 'Add an element from the Palette, or start from a template.'}
+            {participant
+              ? 'Nothing here yet. Add a sticky, text or an image from the Palette to get it going.'
+              : readOnly
+                ? 'Nothing here yet. The owner can build it out, and your view updates live.'
+                : 'Add an element from the Palette, or start from a template.'}
           </p>
         </div>
         {readOnly ? null : (

@@ -37,6 +37,8 @@ const MIND_REVEAL_SIDE_MARGIN = 300;
 // into view, all as ONE undo step.
 export function useMindGrowth(opts: {
   editsBlocked: boolean;
+  // A Participant's growth leaves the tab's own fields alone: it never edits a tab's settings.
+  participating?: boolean;
   activeId: string;
   activeTab: Tab;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
@@ -52,6 +54,7 @@ export function useMindGrowth(opts: {
 }) {
   const {
     editsBlocked,
+    participating = false,
     activeId,
     activeTab,
     commitTabs,
@@ -63,7 +66,11 @@ export function useMindGrowth(opts: {
   const patchActive = (map: (els: Element[]) => Element[]) =>
     commitTabs((ts) =>
       ts.map((t) =>
-        t.id === activeId ? { ...t, elements: map(t.elements), templateChosen: true } : t,
+        t.id !== activeId
+          ? t
+          : participating
+            ? { ...t, elements: map(t.elements) }
+            : { ...t, elements: map(t.elements), templateChosen: true },
       ),
     );
 

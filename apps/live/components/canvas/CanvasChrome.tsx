@@ -316,9 +316,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     activeDockPanel,
     handleDockButtonClick,
   });
-  // The strip only renders for an editor (not read-only) with the chrome up,
-  // and never on a whiteboard.
-  const stripShown = !readOnly && !chromeHidden && !whiteboard;
+  // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
+  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock.
+  const paletteShown = (!readOnly && !whiteboard) || !!props.participantPalette;
+  // The strip only renders with the chrome up.
+  const stripShown = paletteShown && !chromeHidden;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
   // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
   // "Where the dock sits").
@@ -328,7 +330,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // the left of the strip's row, the strip beside it (no room for a corner card
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, and nor does a whiteboard, so it keeps the corner there.
-  const menuInStrip = isMobile && !readOnly && !whiteboard;
+  const menuInStrip = isMobile && paletteShown;
   const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
@@ -520,9 +522,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
-      {!readOnly && !whiteboard ? (
+      {paletteShown ? (
         <ToolbarPalette
-          key={props.esBoard ? 'es-board' : 'standard'}
+          key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
+          participant={readOnly}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
@@ -538,7 +541,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
           logoPages={!!props.illustratePages?.pages.some((p) => p.kind === 'logo')}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
-          onAddPage={props.illustratePages?.edit?.addPage}
+          onAddPage={readOnly ? undefined : props.illustratePages?.edit?.addPage}
           tabElements={elements}
         />
       ) : null}
@@ -596,8 +599,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. */}
-            {!zenMode && !readOnly ? (
+            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
+                (docs/specs/013-workspace/share-roles.md). */}
+            {!zenMode && (!readOnly || !!props.participantPalette) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}
@@ -607,8 +611,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}
-            {/* Desktop only, as the Slide Deck itself is. */}
-            {!zenMode && !isMobile && props.illustratePages && props.slideDeck ? (
+            {/* Desktop only, as the Slide Deck itself is; an Editor's, since building and presenting a deck
+                runs the session (docs/specs/013-workspace/share-roles.md). */}
+            {!zenMode && !isMobile && !readOnly && props.illustratePages && props.slideDeck ? (
               <SlidesClusterButton
                 popoverOpen={activeDockPanel === 'slides'}
                 onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}
@@ -624,8 +629,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onToggleTypes={(button) => handleDockButtonClick('card-types', button, true)}
                 typesButtonRef={cardTypesButtonRef}
                 // The Trash leads the strip, off a phone and for an editor (docs/specs/026-plan/items.md "Trash").
+                // A Participant adds cards too (docs/specs/013-workspace/share-roles.md); the Trash stays an Editor's.
                 newCard={
-                  !readOnly
+                  !readOnly || !!props.participantPalette
                     ? {
                         open: activeDockPanel === 'plan-new-card',
                         onToggle: (button) => handleDockButtonClick('plan-new-card', button, true),

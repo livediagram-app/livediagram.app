@@ -17,6 +17,7 @@ import {
 import type { Participant } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
 import { legibleTabAccent } from '@/lib/tab-accent';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 // The Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document, grouped by
 // the tab they are on, opened by clicking any avatar in a tab's presence
@@ -29,7 +30,7 @@ type CollaboratorsDialogProps = {
   tabs: Tab[];
   activeId: string;
   selfId: string;
-  selfRole: 'edit' | 'view';
+  selfRole: AccessLevel;
   // Whose avatar opened the modal; highlighted. Null from a "+N" badge.
   focusId: string | null;
   followingId: string | null;
@@ -174,7 +175,7 @@ export function CollaboratorsDialog({
                         <FacilitatorButton
                           isSelf={isSelf}
                           name={p.name}
-                          canHold={(isSelf ? selfRole : p.role) !== 'view'}
+                          canHold={(isSelf ? selfRole : (p.role ?? 'edit')) === 'edit'}
                           theyHoldIt={isSelf ? isFacilitator : p.id === facilitatorId}
                           batonFree={facilitatorId === null && !isFacilitator}
                           iHoldIt={isFacilitator}

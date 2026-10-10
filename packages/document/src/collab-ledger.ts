@@ -403,6 +403,24 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
   return { ...tab, elements, ...(vote ? { vote } : {}) };
 }
 
+// A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
+// writes a Participant's dots, responses and ideas itself, since a Participant never saves a whole tab. Only those
+// three are taken from the ledger, every one the room holds (they are idempotent: a response is the latest per
+// person, an idea is added once, the dots are the round's whole map), and only while the stored round still
+// matches; ticks, threads and board changes stay with an Editor's save.
+export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
+  const elements: Record<string, ElementLedger> = {};
+  for (const [id, entry] of Object.entries(ledger.elements)) {
+    if (!entry.responses && !entry.ideas) continue;
+    elements[id] = {
+      ...(entry.round !== undefined ? { round: entry.round } : {}),
+      ...(entry.responses ? { responses: entry.responses } : {}),
+      ...(entry.ideas ? { ideas: entry.ideas } : {}),
+    };
+  }
+  return mergeLedgerIntoTab(tab, { ...(ledger.vote ? { vote: ledger.vote } : {}), elements }, 0);
+}
+
 // The thread changes the saver hadn't seen, in the order the room took them,
 // so an add after a resolve re-opens the thread and a resolve after it closes
 // it again, exactly as it went live. Comments aren't a shape field, so this

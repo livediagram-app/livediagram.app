@@ -51,9 +51,11 @@ import {
   itemBusy,
   itemCaller,
   itemNotFound,
+  isItemEditor,
   readPatch,
   rejected,
   relay,
+  retiresItem,
   writer,
   type ItemCaller,
 } from './item-route-kit';
@@ -183,12 +185,16 @@ async function createMany(
 }
 
 async function create(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+  const caller = await itemCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const read = readCreate(body, caller.owner);
   if (typeof read === 'string') return rejected(read);
+  // Votes, a thread and a key come back only with an Editor's undo: a Participant makes a fresh card.
+  const restores =
+    read.votes !== undefined || read.comments !== undefined || read.key !== undefined;
+  if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
   // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
   // the document is already read for the caller, so this costs no query.
   const input = withDefaultStatuses([read], typesOf(caller.doc?.itemTypes))[0]!;
@@ -242,6 +248,7 @@ export async function writeItem(
     if (next instanceof Response) return next;
     if (excludedStatus(caller, next, item, opts.undo === true))
       return rejected('status_excluded', 'status');
+    if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
     const rev = await updateItemAtRev(ctx.env, caller.documentId, next, item.rev);
@@ -256,7 +263,7 @@ export async function writeItem(
 }
 
 async function patch(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+  const caller = await itemCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -287,7 +294,7 @@ function readMove(body: Record<string, unknown>): ItemMove | ItemRejection {
 }
 
 async function move(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+  const caller = await itemCaller(ctx, documentId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;

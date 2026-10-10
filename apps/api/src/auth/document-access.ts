@@ -26,6 +26,7 @@
 //   the image route applies (a share code for the document,
 //   regardless of role).
 
+import { levelAtLeast, type AccessLevel } from '@livediagram/api-schema';
 import { communityLinkAccess, getMembership } from '../db';
 import type { Env, ShareRole } from '../types';
 import {
@@ -123,7 +124,7 @@ const FULL_EDIT: DocumentGrant = {
 // nothing there. Failing closed means a door nobody taught about scopes
 // refuses a scoped visitor rather than handing them the whole document.
 async function canAccessDocument(
-  needsEdit: boolean,
+  needs: AccessLevel,
   env: Env,
   documentId: string,
   owner: string | null,
@@ -149,7 +150,8 @@ async function canAccessDocument(
   // A Community link is a content-only pass (docs/specs/025-community/community.md "Viewing a post's
   // document"): refused by every door that has not said it serves one.
   if (grant.community && !allowCommunity) return false;
-  if (needsEdit && grant.role !== 'edit') return false;
+  // The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it.
+  if (!levelAtLeast(grant.role, needs)) return false;
   return grant.tabScope === null || grant.tabScope === targetTabId;
 }
 
@@ -165,7 +167,7 @@ export async function canEditDocument(
   targetTabId?: string,
 ): Promise<boolean> {
   return canAccessDocument(
-    true,
+    'edit',
     env,
     documentId,
     owner,
@@ -191,7 +193,7 @@ export async function canReadDocument(
   allowCommunity = false,
 ): Promise<boolean> {
   return canAccessDocument(
-    false,
+    'view',
     env,
     documentId,
     owner,
@@ -202,5 +204,32 @@ export async function canReadDocument(
     callerId,
     targetTabId,
     allowCommunity,
+  );
+}
+
+// The Participant door (docs/specs/013-workspace/share-roles.md): Plan cards, Sheet cells. A Viewer is refused; a
+// Participant and an Editor pass.
+export async function canParticipateDocument(
+  env: Env,
+  documentId: string,
+  owner: string | null,
+  shareCode: string | null,
+  ownerId: string,
+  sharePassword: SharePasswordAttempt | null = null,
+  teamId: string | null = null,
+  callerId: string | null = null,
+  targetTabId?: string,
+): Promise<boolean> {
+  return canAccessDocument(
+    'participate',
+    env,
+    documentId,
+    owner,
+    shareCode,
+    ownerId,
+    sharePassword,
+    teamId,
+    callerId,
+    targetTabId,
   );
 }

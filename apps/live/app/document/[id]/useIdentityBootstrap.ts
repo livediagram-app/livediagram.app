@@ -481,6 +481,7 @@ export function useIdentityBootstrap(opts: {
             shareRole: role,
             shareCodeParam,
             community: community !== null,
+            embed,
           });
           const codeForVisitor = session.sessionShareCode;
           // Tab seeding + name + owner fields (shared with the owner-URL

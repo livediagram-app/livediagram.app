@@ -152,6 +152,8 @@ function BoxedElementViewImpl({
   tabLocked,
   tabSummaries,
   readOnly,
+  movable = true,
+  writable,
   fontFamily,
 }: BoxedElementViewProps) {
   // Which paper this element sits on, for every colour it doesn't carry
@@ -251,7 +253,7 @@ function BoxedElementViewImpl({
       ? 'cursor-copy'
       : editLook.textCursor
         ? 'cursor-text'
-        : isLocked
+        : isLocked || !movable
           ? 'cursor-default'
           : 'cursor-move';
   // A Quiz (docs/specs/012-collaboration/quiz.md) is a disc in a square box:
@@ -581,6 +583,7 @@ function BoxedElementViewImpl({
         isEditing={isEditing}
         isSelected={isSelected}
         readOnly={readOnly}
+        writable={writable}
         fontFamily={fontFamily}
         activeMode={activeMode}
         collab={collab}

@@ -91,9 +91,10 @@ renamed participant's invitation reads correctly.
 
 ## Rules
 
-- **Anyone in the room can press it, including view-role visitors.** It mutates
-  nothing, which makes it the same read-only act as following somebody, and in a
-  workshop the person who spots the thing worth looking at is often not the
+- **Any Editor can press it; a Participant or a Viewer cannot.** Moving
+  everyone's view runs the session ([Share roles](../013-workspace/share-roles.md),
+  decided 2026-10-10), and the room drops a `focus-here` from anyone below Editor.
+  Among Editors, the person who spots the thing worth looking at is often not the
   owner. The one exception arrived with the facilitator baton
   ([Facilitator](facilitator.md)): while somebody is running the session it is
   theirs to press, because "everybody look here" is the same act as "everybody
@@ -119,9 +120,8 @@ defaults to "Bring Focus" and is edited like any label, so a canvas can have
 "Start here" and "The problem" rather than four identical buttons.
 
 Surfaces that cannot ask anyone to look (the export, the minimap) render the
-face inert rather than hiding it; a view-only session is not one of them, since
-a viewer can press it (see Rules): a viewer should still see what the canvas is
-offering. In an export that means the chip, the target and the label, drawn by
+face inert rather than hiding it; a Participant or Viewer session sees the face
+without its press (see Rules). In an export that means the chip, the target and the label, drawn by
 `svgBehaviourFace` from the same 24-unit reticle the canvas uses, so a picture
 of the canvas shows the button rather than an empty box with a word in it
 ([Export fidelity](../020-import-export/export-fidelity.md)). The press states are the one thing left

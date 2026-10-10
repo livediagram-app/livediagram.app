@@ -1,6 +1,7 @@
 import { statusLabel, type Participant, type ParticipantStatus } from '@/lib/identity';
 import { relativeSince } from '@/lib/relative-time';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
+import { parseStoredLevel, type AccessLevel } from '@livediagram/api-schema';
 
 // The Collaborators modal's roster (docs/specs/012-collaboration/collaborator-enhancements.md): everyone in the document,
 // grouped by the tab they are on. Built from the same `participantsByTab`
@@ -69,10 +70,17 @@ export function buildCollaboratorRoster<T extends RosterTab>(input: {
 // presence-stack hover card and the Collaborators modal row): "You" plus your
 // role, a peer's role when the room told us it, and "Following" for the
 // person we follow (docs/specs/012-collaboration/follow-me-viewport.md).
+// The badge each access level wears (docs/specs/013-workspace/share-roles.md).
+const LEVEL_BADGE: Record<AccessLevel, string> = {
+  edit: 'Editor',
+  participate: 'Participant',
+  view: 'Viewer',
+};
+
 export function participantBadges(
   p: Participant,
   selfId: string,
-  selfRole: 'edit' | 'view',
+  selfRole: AccessLevel,
   followingId?: string | null,
   // Whether this person holds the facilitator baton (docs/specs/012-collaboration/facilitator.md). Passed in
   // rather than read off the participant: the holder is a presence id, and
@@ -80,8 +88,8 @@ export function participantBadges(
   opts?: { isFacilitator?: boolean },
 ): string[] {
   const badges: string[] = [];
-  if (p.id === selfId) badges.push('You', selfRole === 'view' ? 'Viewer' : 'Editor');
-  else if (p.role) badges.push(p.role === 'view' ? 'Viewer' : 'Editor');
+  if (p.id === selfId) badges.push('You', LEVEL_BADGE[selfRole]);
+  else if (p.role) badges.push(LEVEL_BADGE[parseStoredLevel(p.role)]);
   if (opts?.isFacilitator) badges.push('Facilitating');
   if (followingId && followingId === p.id) badges.push('Following');
   return badges;

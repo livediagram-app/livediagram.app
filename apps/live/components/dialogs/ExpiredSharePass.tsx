@@ -3,7 +3,7 @@ import { Button, HoverCard } from '@livediagram/ui';
 import type { ShareLink } from '@/lib/api-client';
 import { SharePassTicket } from './SharePassTicket';
 import { usePassExit } from './usePassExit';
-import { EXPIRY_LABELS } from './share-dialog-parts';
+import { EXPIRY_LABELS, PASS_BIN_CLASS } from './share-dialog-parts';
 
 // One EXPIRED share link (docs/specs/013-workspace/share-link-expiry.md): the same pass, greyed,
 // with its URL struck through, an Expired stamp, and Extend + Delete in place
@@ -66,7 +66,7 @@ export function ExpiredSharePass({
           onClick={exit.leave}
           disabled={busy || exit.ticket.leaving}
           aria-label="Delete expired link"
-          className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          className={PASS_BIN_CLASS}
         >
           <TrashIcon />
         </button>

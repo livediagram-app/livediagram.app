@@ -18,6 +18,7 @@ import {
   type ShareLinkExpiry,
   type ShareRole,
 } from '@/lib/api-client';
+import { LEVEL_TELEMETRY_TYPE } from '@livediagram/api-schema';
 import { track } from '@/lib/telemetry';
 import { ApiError } from '@/lib/api/core';
 import { useToast } from '@/hooks/ui/useToast';
@@ -91,7 +92,7 @@ export function useShareLinks(deps: ShareLinksDeps) {
       // Telemetry (docs/specs/017-telemetry/telemetry.md): a share link was created. `type` is the
       // role (Edit / View) — a preset, never user content. A chosen
       // lifetime emits a second preset alongside (docs/specs/013-workspace/share-link-expiry.md).
-      track('Document', 'Shared', role === 'edit' ? 'Edit' : 'View');
+      track('Document', 'Shared', LEVEL_TELEMETRY_TYPE[role]);
       if (expiry !== 'never') {
         const expiryType = {
           week: 'ExpiryWeek',

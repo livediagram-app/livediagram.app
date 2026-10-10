@@ -17,7 +17,12 @@ import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { useLogoMarkerTiles } from './PaletteLogoTab';
-import { coveredPaletteCategories, paletteCategoriesFor } from './palette-layouts';
+import {
+  coveredPaletteCategories,
+  paletteCategoriesFor,
+  participantPaletteCategories,
+  PARTICIPANT_CANVAS_TOOLS,
+} from './palette-layouts';
 import { useBoardCovering } from '@/hooks/plan/plan-cover-store';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
@@ -44,7 +49,11 @@ type Deps = Pick<
   | 'logoPages'
   | 'onTileUsed'
 > &
-  PaletteAddHandlers;
+  PaletteAddHandlers & {
+    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
+    // modes only.
+    participant?: boolean;
+  };
 
 export function usePaletteCatalogue({
   canvasTool,
@@ -84,6 +93,7 @@ export function usePaletteCatalogue({
   esBoardControls,
   logoPages,
   onTileUsed,
+  participant = false,
 }: Deps) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
@@ -240,11 +250,13 @@ export function usePaletteCatalogue({
   // added as tiles in this person's colours and widths (logoMarkerTiles).
   const markers = useLogoMarkerTiles(!!logoPages);
   // While a Plan board covers the canvas, only Cards (coveredPaletteCategories); a maximised view keeps the palette.
-  const categories = boardCovering
-    ? coveredPaletteCategories()
-    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
-        .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-        .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
+  const categories = participant
+    ? participantPaletteCategories(editorMode, !!esBoard)
+    : boardCovering
+      ? coveredPaletteCategories()
+      : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
+          .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
+          .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -270,12 +282,15 @@ export function usePaletteCatalogue({
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current
   // tool selected (see canvas-tool-options).
-  const canvasToolOptions = buildCanvasToolOptions({
+  const allCanvasToolOptions = buildCanvasToolOptions({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
   });
+  const canvasToolOptions = participant
+    ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))
+    : allCanvasToolOptions;
   const onCanvasToolChange = (id: string) => {
     if (id === 'zen') onToggleZen?.();
     else onSetCanvasTool(id as CanvasTool);

@@ -34,7 +34,7 @@ export const VISIBLE_DOCUMENTS_CTES = `
                 ELSE 'shared' END AS via,
            CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
                 ELSE (SELECT sl.code FROM share_links sl
-                       WHERE sl.document_id = d.id AND sl.purpose = 'share' AND sl.role = s.role
+                       WHERE sl.document_id = d.id AND sl.purpose = 'share' AND COALESCE(sl.level, sl.role) = COALESCE(s.level, s.role)
                          AND sl.tab_id IS s.tab_id
                          AND (sl.expires_at IS NULL OR sl.expires_at > ?2)
                        ORDER BY sl.created_at ASC LIMIT 1) END AS share_code,

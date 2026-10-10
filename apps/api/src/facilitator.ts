@@ -14,6 +14,8 @@
 // holder, whatever presence id it happens to be wearing today. A refresh keeps
 // the baton; nobody else can take it, because nobody else was ever sent it.
 
+import type { AccessLevel } from '@livediagram/api-schema';
+
 /** How long a holder may be gone before the baton is released. */
 export const FACILITATOR_GRACE_MS = 90_000;
 
@@ -31,7 +33,7 @@ export const FREE_BATON: FacilitatorState = { holder: null, token: null };
 /** What the room knows about the session asking for something. */
 export type Asker = {
   presenceId: string;
-  role: 'edit' | 'view' | undefined;
+  role: AccessLevel | undefined;
   isOwner: boolean;
 };
 

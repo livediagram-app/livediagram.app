@@ -67,6 +67,7 @@ function bridge(over: Partial<SheetsBridge> = {}): Fake {
     activeTabId: 't1',
     self: by,
     canEdit: true,
+    canShape: true,
     locale: 'en-GB',
     peers: [],
     pushUndo: vi.fn(),

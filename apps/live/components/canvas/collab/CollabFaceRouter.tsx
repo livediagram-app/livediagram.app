@@ -41,6 +41,9 @@ export type CollabApi = {
   // The tab's timer, so an agenda can show the live remaining time on the
   // segment the room is in. Undefined when no timer is running.
   tabTimer?: TabTimer;
+  // This viewer edits the element itself (an Editor): its empty states tell them how to fill it. A Participant or
+  // Viewer reads a description instead (docs/specs/013-workspace/share-roles.md).
+  canArrange?: boolean;
   // Absent when this viewer may not write (view role, locked tab): the faces
   // render their controls disabled rather than lying about what a press does.
   respond?: (element: ShapeElement, value: string) => void;
@@ -124,6 +127,7 @@ export function CollabFaceRouter({
         // `respond` already withdraws when you send the value you already
         // sent (docs/specs/012-collaboration/participant-responses.md), so marking and unmarking are the same call.
         onToggleMine={api?.respond ? () => api.respond!(element, DONE_VALUE) : undefined}
+        canArrange={api?.canArrange === true}
         onResetAll={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
         onOpenSettings={onOpenSettings}
       />
@@ -233,6 +237,7 @@ export function CollabFaceRouter({
         textColor={textColor}
         surface={surface}
         timer={api?.tabTimer}
+        canArrange={api?.canArrange === true}
         onPressItem={
           api?.pressAgendaItem ? (index) => api.pressAgendaItem!(element, index) : undefined
         }

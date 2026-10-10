@@ -157,7 +157,7 @@ function CardFinderBody({
           <div className={`flex ${LIST_HEIGHT} flex-col [&>div]:flex-1`}>
             <EmptyState
               icon={<PlanCardsIcon size={18} />}
-              {...emptyCopy(live.length, query, filters.length)}
+              {...emptyCopy(live.length, query, filters.length, !!plan?.canEditCards)}
             />
           </div>
         ) : (
@@ -218,11 +218,15 @@ export function emptyCopy(
   cards: number,
   query: string,
   filters: number,
+  // Whether this session adds cards: only then is it told how (a Viewer only looks).
+  canAdd = true,
 ): { title: string; description: string } {
   if (cards === 0)
     return {
       title: 'No cards yet',
-      description: 'Add one from a board, or drag one in from the palette.',
+      description: canAdd
+        ? 'Add one from a board, or drag one in from the palette.'
+        : 'Cards added to this document will show here.',
     };
   if (query.trim())
     return { title: 'No cards match', description: 'Try another word, a number or a card type.' };

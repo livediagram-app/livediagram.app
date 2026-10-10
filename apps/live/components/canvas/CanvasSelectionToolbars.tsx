@@ -150,8 +150,12 @@ export function CanvasSelectionToolbars({
                 : undefined
             }
             // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
-            // for Tab / Enter. Not on a locked node: growing re-lays the map.
-            {...(!readOnly && !selectedLocked && selected && isMindNode(selected)
+            // for Tab / Enter. Not on a locked node: growing re-lays the map. A Participant grows maps too
+            // (docs/specs/013-workspace/share-roles.md).
+            {...((!readOnly || !!props.participantPalette) &&
+            !selectedLocked &&
+            selected &&
+            isMindNode(selected)
               ? {
                   onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
                   onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
