@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { fakeD1 } from '../test-d1';
-import { dropSharedAccess, hasSharedAccess, listSharedWith, recordSharedAccess } from './shared';
+import {
+  dropSharedAccess,
+  dropVisitsThroughLinks,
+  hasSharedAccess,
+  listSharedWith,
+  recordSharedAccess,
+} from './shared';
 
 // `shared_with` is what a visitor sees under "Shared with you", and it is also
 // one leg of the access check the notify-action route runs (docs/specs/012-collaboration/assigned-actions.md). Both
@@ -157,5 +163,20 @@ describe('dropSharedAccess', () => {
     await dropSharedAccess(db.env, 'visitor-1', 'diag-1');
     const del = db.one('DELETE FROM shared_with');
     expect(del.bindings).toEqual(['visitor-1', 'diag-1']);
+  });
+});
+
+describe('dropVisitsThroughLinks (docs/specs/013-workspace/share-roles.md Share links)', () => {
+  it('deletes the visits on this document that came in through the deleted links', async () => {
+    const db = fakeD1();
+    await dropVisitsThroughLinks(db.env, 'diag-1', ['code-1', 'code-2']);
+    const del = db.one('DELETE FROM shared_with');
+    expect(del.bindings).toEqual(['diag-1', JSON.stringify(['code-1', 'code-2'])]);
+  });
+
+  it('writes nothing when no links were deleted', async () => {
+    const db = fakeD1();
+    await dropVisitsThroughLinks(db.env, 'diag-1', []);
+    expect(db.calls).toHaveLength(0);
   });
 });
