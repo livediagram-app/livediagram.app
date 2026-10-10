@@ -85,6 +85,7 @@ export function SidebarFolderSubtree({
             <EllipsisTriggerButton
               {...menu.triggerProps}
               size="md"
+              reveal
               tabIndex={-1}
               label={`Menu for ${folder.name}`}
             />

@@ -44,7 +44,7 @@ export function SpacesGroup({
     setMobileNavOpen,
     rootDefaults,
   } = useExplorer();
-  const myDocumentsMenu = useMyDocumentsMenu(rootDefaults);
+  const myDocumentsMenu = useMyDocumentsMenu(rootDefaults, { reveal: true });
   const has = (row: SidebarRowKind) => rows.includes(row);
   return (
     <SidebarGroup
