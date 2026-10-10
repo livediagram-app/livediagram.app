@@ -138,7 +138,12 @@ the DO only stores it):
   starts empty, so the deltas are the whole map).
 
 A delta for a new round replaces that element's answers and ideas (ticks
-carry over, since rows have no round). One storage key per element, and
+carry over, since rows have no round) and retires the round it replaced; a
+`vote` op for a new vote round does the same to the dots. The entry keeps the
+last `RETIRED_ROUNDS_MAX` (16) retired rounds, and an op naming one is late
+and dropped: before, a late answer, idea, dot or even a withdraw from the
+previous round flipped the entry back to it and lost the current round's
+answers or dots. One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
