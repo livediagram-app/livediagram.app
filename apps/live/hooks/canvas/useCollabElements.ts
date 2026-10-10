@@ -20,7 +20,7 @@ import {
   type Tab,
   type TimerMode,
 } from '@livediagram/document';
-import { participantKey, type Participant } from '@/lib/identity';
+import { participantKey, uniqueParticipants, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 
@@ -259,10 +259,13 @@ export function useCollabElements({
   const takeRoll = (element: ShapeElement) => {
     if (sessionToolsBlocked) return;
     const at = Date.now();
-    const seen = new Set<string>();
-    const entries = [selfParticipant, ...livePresence]
-      .filter((p) => (seen.has(p.id) ? false : (seen.add(p.id), true)))
-      .map((p) => ({ name: p.name, color: p.color, at }));
+    // One chip per person, by collab key: your second tab (or a peer who
+    // rejoined on a new socket) has its own presence id but the same key.
+    const entries = uniqueParticipants([selfParticipant, ...livePresence]).map((p) => ({
+      name: p.name,
+      color: p.color,
+      at,
+    }));
     // Replaces rather than merges: a merge would quietly turn "who was here"
     // into "who has ever been here", a different and less useful question.
     patchElement(element.id, () => ({ rollCall: entries }));

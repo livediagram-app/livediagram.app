@@ -15,6 +15,9 @@ canvas that holds the output can't hold the attendance.
 
 The element does **not** render live presence. Pressing **Take roll** copies
 the presence list into the element, and that copy is what it shows forever.
+The list is the person taking it first, then everyone else, one entry per
+person by collab key (`uniqueParticipants`): your own second tab, or a peer
+who rejoined on a new socket, is one chip, not two.
 
 That is the entire feature. A card that tracked presence would be empty five
 minutes after the session, which is precisely when anyone reads it.
