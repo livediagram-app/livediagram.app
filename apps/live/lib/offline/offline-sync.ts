@@ -49,11 +49,17 @@ export function uploadMark(rec: OfflineDocumentRecord): string {
   ]);
 }
 
-async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<void> {
+// What a finished sync hands back: the (unchanged) document id, and every image it re-homed (data URI ->
+// gallery id), so an editor syncing in place can re-point its own copy (docs/specs/006-document/offline-mode.md
+// "Syncing in place").
+export type OfflineSyncResult = { id: string; imageIds: Map<string, string> };
+
+// Uploads the record and answers the images it re-homed.
+async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<Map<string, string>> {
   // Re-home embedded data-URI images to R2 first (docs/specs/009-elements/images.md + /76): the cloud
   // copy gets real gallery images instead of bloated tab JSON. Best-effort
   // per image; a kept data URI still renders.
-  const tabs = await uploadEmbeddedImages(ownerId, rec.tabs);
+  const { tabs, imageIds } = await uploadEmbeddedImages(ownerId, rec.tabs);
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
   // reporting a brand-new document (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
   // Everything the record holds besides tabs travels too: the local copy is
@@ -88,6 +94,7 @@ async function upload(rec: OfflineDocumentRecord, ownerId: string): Promise<void
     console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);
     await create(null);
   }
+  return imageIds;
 }
 
 // True when the cloud copy holds as many cards and sheets as the record. Skips the fetch for a
@@ -115,13 +122,18 @@ async function takeBackCloudCopy(id: string, ownerId: string): Promise<void> {
   }
 }
 
-// Returns the (unchanged) document id. Callers go through ./offline-convert's saveOfflineToCloud,
-// which refuses a second conversion of the same document while one runs.
-export async function syncOfflineDocument(offlineId: string, ownerId: string): Promise<string> {
+// Callers go through ./offline-convert's saveOfflineToCloud, which refuses a second conversion of the
+// same document while one runs. The images re-homed are gathered across attempts: a retry uploads the
+// record as it changed, which may hold pictures the first upload never saw.
+export async function syncOfflineDocument(
+  offlineId: string,
+  ownerId: string,
+): Promise<OfflineSyncResult> {
   let rec = await offlineGetRecord(offlineId);
   if (!rec) throw new Error('offline document not found');
+  const imageIds = new Map<string, string>();
   for (let attempt = 1; ; attempt++) {
-    await upload(rec, ownerId);
+    for (const [dataUrl, id] of await upload(rec, ownerId)) imageIds.set(dataUrl, id);
     if (!(await cloudHoldsStores(rec, ownerId))) {
       console.warn('[offline-sync] stores-short, local copy kept');
       await takeBackCloudCopy(rec.id, ownerId);
@@ -130,13 +142,13 @@ export async function syncOfflineDocument(offlineId: string, ownerId: string): P
     const uploaded = uploadMark(rec);
     const done = await offlineDeleteIfUnchanged(rec.id, (now) => uploadMark(now) === uploaded);
     // Gone already: another tab finished a sync of it first. Nothing here is left to move.
-    if (done.outcome === 'missing') return rec.id;
+    if (done.outcome === 'missing') return { id: rec.id, imageIds };
     if (done.outcome === 'deleted') {
       // The star lived on the offline record (docs/specs/013-workspace/favourites.md), which just went. Re-star
       // on the server AFTER the delete: while the id is still registered offline,
       // apiSetFavourite would route the star straight back to the local store.
       if (done.rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
-      return rec.id;
+      return { id: rec.id, imageIds };
     }
     console.warn(`[offline-sync] changed-during-upload attempt=${attempt}`);
     await takeBackCloudCopy(rec.id, ownerId);

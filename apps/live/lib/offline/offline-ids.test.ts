@@ -9,7 +9,7 @@ import {
   offlineSaveDocumentMeta,
   offlineSaveTab,
 } from './offline-store';
-import { OFFLINE_IDS_CHANNEL, type OfflineIdChange } from './offline-ids';
+import { OFFLINE_IDS_CHANNEL, subscribeOfflineIds, type OfflineIdChange } from './offline-ids';
 import { memBackend, testRecord as rec, testTab as tab } from './offline-test-utils';
 import type { OfflineBackend } from './offline-backend';
 
@@ -70,6 +70,19 @@ describe('offline ids across tabs', () => {
     await settle();
     // The load's snapshot still holds d1 (memBackend answers from before the purge here).
     expect(await isOfflineId('d1')).toBe(false);
+  });
+
+  it("tells this tab's listeners about its own changes and another tab's, until they unsubscribe", async () => {
+    const told: string[] = [];
+    const stop = subscribeOfflineIds((id) => told.push(id));
+    await isOfflineId('d1');
+    await offlinePutRecord(rec({ id: 'd1' }));
+    otherTab.postMessage({ kind: 'remove', id: 'd2' });
+    await settle();
+    expect(told).toEqual(['d1', 'd2']);
+    stop();
+    await offlineDeleteDocument('d1');
+    expect(told).toEqual(['d1', 'd2']);
   });
 
   it('ignores a malformed message', async () => {

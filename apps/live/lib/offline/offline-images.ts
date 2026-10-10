@@ -92,9 +92,15 @@ export async function embedTabImages(
 // Sync Document: upload each embedded image to the gallery and swap the data
 // URI for the stored image's id. The server dedupes by SHA-256, so syncing
 // the same picture twice lands on one gallery entry.
-export async function uploadEmbeddedImages(ownerId: string, tabs: Tab[]): Promise<Tab[]> {
+// Also hands back the mapping (data URI -> gallery id), so an editor that already holds these tabs can
+// re-point its own copy without reading them back (docs/specs/006-document/offline-mode.md "Syncing in
+// place").
+export async function uploadEmbeddedImages(
+  ownerId: string,
+  tabs: Tab[],
+): Promise<{ tabs: Tab[]; imageIds: Map<string, string> }> {
   const ids = collectImageIds(tabs, isDataImageId);
-  if (ids.length === 0) return tabs;
+  if (ids.length === 0) return { tabs, imageIds: new Map() };
   const mapping = new Map<string, string>();
   await Promise.all(
     ids.map(async (dataUrl) => {
@@ -109,5 +115,5 @@ export async function uploadEmbeddedImages(ownerId: string, tabs: Tab[]): Promis
       }
     }),
   );
-  return rewriteImageIds(tabs, mapping);
+  return { tabs: rewriteImageIds(tabs, mapping), imageIds: mapping };
 }

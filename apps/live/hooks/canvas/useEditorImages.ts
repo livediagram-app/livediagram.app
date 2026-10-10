@@ -93,13 +93,14 @@ export function useEditorImages(deps: EditorImagesDeps) {
   // newly-uploaded image surfaces without a document reload. View-
   // role visitors skip the fetch (the accordion is hidden for them
   // anyway via the !isReadOnly gate at the call site).
-  // The owner is read when the load runs, not a trigger of its own (it is
-  // set on mount and stable for the session).
+  // The owner is a trigger too: a Local only document opens under the 'self' placeholder and learns
+  // who is reading afterwards (docs/specs/006-document/offline-mode.md "Instant open"), and the
+  // placeholder is nobody's gallery.
   const loadRecentImages = useEffectEvent(() => refreshRecentImages(ownerId));
   useEffect(() => {
-    if (!documentId || isReadOnly || embedMode || galleryHidden) return;
+    if (!documentId || isReadOnly || embedMode || galleryHidden || ownerId === 'self') return;
     loadRecentImages();
-  }, [documentId, isReadOnly, embedMode, galleryHidden]);
+  }, [documentId, isReadOnly, embedMode, galleryHidden, ownerId]);
 
   // Placing a NEW image lives in useElementCreation.addImage: it arms the
   // tap-or-drag draw gesture (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/009-elements/images.md) rather than dropping a

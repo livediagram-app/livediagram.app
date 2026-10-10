@@ -244,9 +244,9 @@ async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
     // unique in every list.
     const offlineIds = new Set(offline.map((o) => o.id));
     const documents = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
-    // The landing page's Welcome back reads this (docs/specs/019-marketing/returning-visitor.md).
-    // An offline document has no server snapshot and never sends a request
-    // (docs/specs/006-document/offline-mode.md): it is answered as having none.
+    // The landing page's Welcome back reads this (docs/specs/019-marketing/returning-visitor.md). A Local
+    // only document has no server snapshot: its placeholder, never a request that can only 404 (once per
+    // save, since the version is in the key), which matters now a guest's documents start local.
     rememberRecentDiagrams(documents, (id, savedAt) =>
       offlineIds.has(id)
         ? Promise.resolve(null)

@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
-import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
 import { LeaveIllustrateDialog } from '@/components/dialogs/LeaveIllustrateDialog';
@@ -66,6 +65,7 @@ export function EditorTabDialogs() {
     rescopeShareLink,
     setDocumentSharePassword,
     setShareDialogOpen,
+    syncToCloud,
     leaveIllustrate,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
@@ -80,14 +80,11 @@ export function EditorTabDialogs() {
   );
 
   // Offline documents (docs/specs/006-document/offline-mode.md) can't be shared until they're synced to the
-  // owner's account; the Share dialog shows a gate that runs this conversion,
-  // then reloads so the editor re-hydrates as a normal cloud document.
+  // owner's account; the Share dialog says so and offers Sync Document, which converts the open document
+  // in place ("Syncing in place"), and then shows the share options. Never as the 'self' placeholder an
+  // early open runs under: the gate waits for the reader (`syncReady`).
   const isOffline = useIsOfflineDocument(documentId);
-  const syncToCloud = async () => {
-    if (!documentId) return;
-    await saveOfflineToCloud(documentId, selfParticipant.id);
-    window.location.reload();
-  };
+  const readerKnown = selfParticipant.id !== 'self';
 
   return (
     <>
@@ -146,6 +143,7 @@ export function EditorTabDialogs() {
           onSetPassword={setDocumentSharePassword}
           offline={isOffline}
           onSyncToCloud={syncToCloud}
+          syncReady={readerKnown}
           documentId={documentId}
           documentName={documentName}
           signedIn={!!clerkUserId}

@@ -12,12 +12,12 @@
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
-    "@clerk/react": "^6.17.4",
+    "@clerk/react": "^6.17.6",
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/icons": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
-    "next": "^16.3.8",
+    "next": "^16.4.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },

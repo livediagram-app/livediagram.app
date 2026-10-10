@@ -1,5 +1,6 @@
 'use client';
 
+import { subscribeOfflineIds } from '@/lib/offline/offline-store';
 import { debugLog } from '@/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@livediagram/api-schema';
@@ -184,6 +185,16 @@ export function usePlanItems(opts: {
       if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
     },
     [],
+  );
+
+  // The document synced to the server in place (docs/specs/006-document/offline-mode.md "Syncing in
+  // place"): the server's store, and its revision, replace the local one the board was reading.
+  useEffect(
+    () =>
+      subscribeOfflineIds((id) => {
+        if (loadedRef.current && id === scopeRef.current?.documentId) void load();
+      }),
+    [load, scopeRef],
   );
 
   const receive = useCallback(

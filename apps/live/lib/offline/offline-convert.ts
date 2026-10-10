@@ -18,7 +18,11 @@ import {
   type OfflineDocumentRecord,
 } from './offline-store';
 import { fetchAllSheets } from '../api/sheets';
-import { OfflineSyncIncompleteError, syncOfflineDocument } from './offline-sync';
+import {
+  OfflineSyncIncompleteError,
+  syncOfflineDocument,
+  type OfflineSyncResult,
+} from './offline-sync';
 
 // One conversion per document at a time, in this tab: two overlapping ones (a second menu, or the
 // Share gate beside a menu) would each upload, or each delete, behind the other's back. Kept here
@@ -48,8 +52,9 @@ async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise
   }
 }
 
-// Offline → Cloud ("Sync Document"), in ./offline-sync.
-export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<string> {
+// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id and the images it
+// re-homed (data URI -> gallery id), for an editor syncing in place.
+export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
   return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
 }
 
@@ -161,9 +166,19 @@ async function downloadAndRemoveCloudCopy(
 // hard per-tab size cap (usually a large embedded image whose gallery
 // upload failed, leaving the data URI in the tab JSON): retrying won't
 // help, so it must not read as a connection problem.
+// A sync from inside the editor that found this browser's last save still going after
+// SYNC_SAVE_WAIT_MS (app/document/[id]/useSyncInPlace.ts): refused rather than racing it.
+export class SyncStillSavingError extends Error {
+  constructor() {
+    super('Still saving this document. Try again in a moment.');
+    this.name = 'SyncStillSavingError';
+  }
+}
+
 // A sync stopped by its own checks (./offline-sync) names what happened: the local copy is kept
 // either way, and a retry is the fix.
 export function syncFailureMessage(e: unknown): string {
+  if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
     return e.reason === 'kept_changing'
       ? 'This document kept changing while it synced. Your local copy is safe; try again when you finish editing.'

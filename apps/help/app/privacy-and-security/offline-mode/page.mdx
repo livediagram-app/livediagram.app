@@ -14,9 +14,10 @@ Most documents are saved to livediagram's servers so you can reach them from any
 
 ## Creating an offline document
 
-Offline Mode is off by default and chosen per document, so you can keep normal documents and offline ones side by side.
+Offline Mode is chosen per document, so you can keep normal documents and offline ones side by side.
 
-- On the [New Document](/new) screen, pick a template, then go on to the **Location** step and choose the **Local Browser** tile ("This device only") as the save location, then click **Create**. A warning under it reminds you that the document is not backed up or synced.
+- **If you haven't signed in**, your new documents start offline. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. The **Location** step on the [New Document](/new) screen shows **Local Browser** already picked, and the links that create a document straight away (a template from the home page, **Start Blank**) make an offline one too. Pick **livediagram** instead if you would rather it went to the server now.
+- **Once you've signed in**, new documents go to your account. To make one offline, pick a template on the [New Document](/new) screen, go on to the **Location** step, choose the **Local Browser** tile ("This device only"), then click **Create**. A warning under it reminds you that the document is not backed up or synced.
 - The document is written to your browser's own storage (IndexedDB) and opens like any other. A **Local only** badge next to its name in the editor, and the matching **Local only** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it so you always know which documents are local-only. Hover or focus the pill to read that the document lives only in this browser and that clearing this browser's site data deletes it; click it to come back to this guide. The Explorer sidebar's **This browser** row lists them all.
 
 <Note>
@@ -29,7 +30,7 @@ Offline Mode is off by default and chosen per document, so you can keep normal d
 
 An offline document is a normal document: every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
-- **Sharing** needs a document on the server, so opening **Share** on an offline document prompts you to sync it to your account first. Embeds are unavailable for the same reason.
+- **Sharing** needs a document on the server. Opening **Share** on an offline document tells you so and offers **Sync Document**: press it and the document uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
 - **Live collaboration** and **teams** don't apply; an offline document is yours alone. Comments still work, but only you see them.
 - The AI assistant works while you're online (it reads your current canvas), but not with no connection.
 - Images you add are stored **inside the document**, so it stays fully local.
@@ -38,6 +39,8 @@ An offline document is a normal document: every editor feature works, including 
 ## Moving to and from your account
 
 You can change your mind at any time, from the document's **⋯** menu in the Explorer.
+
+- **When you sign in** with offline documents in this browser, we offer to move them to your account. Every one is ticked; untick any you want to keep offline, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
 - **Sync Document** uploads an offline document to the cloud. It becomes a normal document, shareable and reachable from your other devices, and the local-only copy is removed.
 - **Take Offline** does the reverse: it downloads a cloud document into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.

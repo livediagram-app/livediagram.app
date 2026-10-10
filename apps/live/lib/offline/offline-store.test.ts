@@ -12,6 +12,7 @@ import {
   offlinePutRecord,
   offlineDeleteDocument,
   offlineDeleteTab,
+  offlineIdCount,
   offlineListDocuments,
   offlineLoadDocument,
   offlineLoadTab,
@@ -215,5 +216,17 @@ describe('offlineDeleteIfUnchanged (Sync Document, docs/specs/006-document/offli
   it('answers missing for a record already gone', async () => {
     __setOfflineBackend(memBackend());
     expect(await offlineDeleteIfUnchanged('gone', () => true)).toEqual({ outcome: 'missing' });
+  });
+});
+
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// documents after signing in"): a count off the cached index, never a full read.
+describe('offlineIdCount', () => {
+  it('counts the documents this browser holds', async () => {
+    __setOfflineBackend(memBackend());
+    expect(await offlineIdCount()).toBe(0);
+    await offlineCreateDocument({ id: 'a', name: 'A' }, 1);
+    await offlineCreateDocument({ id: 'b', name: 'B' }, 2);
+    expect(await offlineIdCount()).toBe(2);
   });
 });

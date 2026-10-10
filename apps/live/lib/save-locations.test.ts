@@ -1,20 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DEFAULT_SAVE_LOCATION,
   SAVE_LOCATIONS,
+  defaultSaveLocationFor,
   isOfflineLocation,
   saveLocationLabel,
   type SaveLocationId,
 } from './save-locations';
 
 // The catalogue drives the Save location tiles (docs/specs/006-document/save-locations.md) and the create
-// branch in /new. Pin the invariants a new entry must keep: the default is
+// branch in /new. Pin the invariants a new entry must keep: livediagram is
 // the first tile, ids are unique, and exactly one id is the browser-only
 // store (docs/specs/006-document/offline-mode.md), so a future location can't silently create offline.
 describe('save locations', () => {
-  it('opens on livediagram, the first tile', () => {
-    expect(DEFAULT_SAVE_LOCATION).toBe('livediagram');
-    expect(SAVE_LOCATIONS[0]?.id).toBe(DEFAULT_SAVE_LOCATION);
+  it('lists livediagram first', () => {
+    expect(SAVE_LOCATIONS[0]?.id).toBe('livediagram');
+  });
+
+  // docs/specs/006-document/save-locations.md "The default depends on who is creating".
+  it('starts a guest on Local Browser when sign-in is enabled', () => {
+    expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: true })).toBe('browser');
+  });
+
+  it('starts a signed-in person on livediagram', () => {
+    expect(defaultSaveLocationFor({ signedIn: true, clerkEnabled: true })).toBe('livediagram');
+  });
+
+  it('starts everyone on livediagram on a deployment without sign-in', () => {
+    expect(defaultSaveLocationFor({ signedIn: false, clerkEnabled: false })).toBe('livediagram');
   });
 
   it('has a unique id and a label + caption per tile', () => {
@@ -34,6 +46,5 @@ describe('save locations', () => {
   it('routes only Local Browser to the offline store', () => {
     const offline = SAVE_LOCATIONS.filter((l) => isOfflineLocation(l.id)).map((l) => l.id);
     expect(offline).toEqual<SaveLocationId[]>(['browser']);
-    expect(isOfflineLocation(DEFAULT_SAVE_LOCATION)).toBe(false);
   });
 });

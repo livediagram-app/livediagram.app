@@ -223,6 +223,14 @@ describe('writeUserPreferences (server sync)', () => {
     expect(mockedPut).not.toHaveBeenCalled();
   });
 
+  // docs/specs/006-document/offline-mode.md "Instant open": a Local only document opens under the
+  // 'self' placeholder, which is nobody's preferences row.
+  it("keeps the write local under the 'self' placeholder", () => {
+    mockBrowser();
+    writeUserPreferences({ autoRebindArrows: false }, 'self');
+    expect(mockedPut).not.toHaveBeenCalled();
+  });
+
   // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/blueprints/
   // workbench-embeds.md, I9): the local write and the event stay.
   it('keeps the write local under a workbench session', () => {

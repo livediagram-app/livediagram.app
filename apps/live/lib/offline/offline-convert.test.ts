@@ -57,7 +57,10 @@ vi.mock('../api/sheets', () => ({
 }));
 vi.mock('./offline-images', () => ({
   embedTabImages: vi.fn(async (tabs: unknown) => tabs),
-  uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => tabs),
+  uploadEmbeddedImages: vi.fn(async (_owner: string, tabs: unknown) => ({
+    tabs,
+    imageIds: new Map(),
+  })),
   isDataImageId: (id: string) => id.startsWith('data:'),
 }));
 
@@ -406,7 +409,7 @@ describe('one conversion per document at a time', () => {
     await first;
     expect(conversionInProgress('d1')).toBe(false);
     expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(1);
-    await expect(saveOfflineToCloud('d1', 'owner')).resolves.toBe('d1');
+    await expect(saveOfflineToCloud('d1', 'owner')).resolves.toMatchObject({ id: 'd1' });
   });
 
   it('lets a failed conversion be tried again', async () => {

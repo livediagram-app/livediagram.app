@@ -217,7 +217,7 @@ export {
   type OfflineBackend,
   type OfflineRecordChange,
 } from './offline-backend';
-export { isOfflineId, isOfflineIdSync } from './offline-ids';
+export { isOfflineId, isOfflineIdSync, offlineIdCount, subscribeOfflineIds } from './offline-ids';
 
 // Test seam: swap in an in-memory backend. Also resets the id cache.
 export function __setOfflineBackend(b: OfflineBackend | null): void {
