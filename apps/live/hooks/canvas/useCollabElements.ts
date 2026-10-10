@@ -180,12 +180,13 @@ export function useCollabElements({
   // no selection, so the docs/specs/007-editor/live-app.md concurrent-selection ring doesn't put a name
   // on the box at the moment somebody types into it. This function
   // deliberately never touches the selection.
-  const addIdea = (element: ShapeElement, text: string) => {
+  // Returns whether the idea went in, so the composer keeps a refused draft.
+  const addIdea = (element: ShapeElement, text: string): boolean => {
     const clean = text.trim();
-    if (!clean || editsBlocked) return;
+    if (!clean || editsBlocked) return false;
     // A full box takes no more: one card past the cap would fail the whole
     // tab's validation on save (docs/specs/012-collaboration/collab-race-hardening.md).
-    if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return;
+    if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return false;
     // ONE idea, as a delta (docs/specs/012-collaboration/collab-race-hardening.md), so two people posting at once both
     // land. Still no author: the delta has nowhere to put one either.
     applyElementDelta(element.id, {
@@ -194,6 +195,7 @@ export function useCollabElements({
       ...(element.collabRound ? { round: element.collabRound } : {}),
     });
     track('Element', 'Changed', 'Idea-box');
+    return true;
   };
 
   const revealIdeas = (element: ShapeElement) => {

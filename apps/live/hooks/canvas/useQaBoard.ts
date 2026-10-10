@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
 import {
   applyQaAction,
   isParticipantQaAction,
+  QA_MAX_NOTES,
   qaVoterId,
   type QaAction,
   type QaActor,
@@ -188,8 +189,13 @@ export function useQaBoard({
 
   return {
     receiveQa,
-    addQaNote: (element: ShapeElement, text: string, anonymous: boolean) =>
-      void run(element, { type: 'add', id: crypto.randomUUID(), text, anonymous }),
+    // Returns whether the note was sent: a full board (QA_MAX_NOTES, as this
+    // viewer sees it) takes no more, and the composer keeps the draft.
+    addQaNote: (element: ShapeElement, text: string, anonymous: boolean): boolean => {
+      if ((element.qaNotes ?? []).length >= QA_MAX_NOTES) return false;
+      void run(element, { type: 'add', id: crypto.randomUUID(), text, anonymous });
+      return true;
+    },
     voteQaNote: (element: ShapeElement, noteId: string, on: boolean) =>
       void run(element, { type: 'vote', noteId, on }),
     discussQaNote: (element: ShapeElement, noteId: string | null) =>

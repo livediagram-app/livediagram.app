@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livediagram/document';
+import { IDEA_MAX_CARDS, type ShapeElement, type Tab } from '@livediagram/document';
 
 import type { Participant } from '@/lib/identity';
 import { useCollabElements } from './useCollabElements';
@@ -100,5 +100,14 @@ describe('useCollabElements: agenda', () => {
     api.resetAgenda(el());
     expect(el().agendaCurrent).toBeUndefined();
     expect(el().agendaTimerStartedAt).toBeUndefined();
+  });
+});
+
+describe('useCollabElements: idea box', () => {
+  it('says whether the idea went in, so a refused draft is kept', () => {
+    const box = (n: number) =>
+      card({ shape: 'idea-box', ideaCards: Array.from({ length: n }, (_, i) => `i${i}`) });
+    expect(setup(box(0)).api.addIdea(box(0), 'Coffee')).toBe(true);
+    expect(setup(box(IDEA_MAX_CARDS)).api.addIdea(box(IDEA_MAX_CARDS), 'Coffee')).toBe(false);
   });
 });
