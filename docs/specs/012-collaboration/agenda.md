@@ -21,7 +21,7 @@ A **shape kind**, `agenda`. Its `label` is the session's name.
   `validate.ts`.
 - **`ShapeElement.agendaCurrent`** — the index of the running segment, or
   absent for "not started". Shared, so the whole room sees where they are.
-- **`ShapeElement.agendaTimerStartedAt`** — the `startedAt` of the tab timer
+- **`ShapeElement.agendaTimerStartedAt`**: the `startedAt` of the tab timer
   run that segment started (`TabTimer.startedAt`, minted by `startTimer` and
   kept through pause, resume and extend). Absent when no segment is current.
 
