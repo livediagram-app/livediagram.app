@@ -287,11 +287,15 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 
 ### Pull and push
 
-- `pull <doc> [--to <dir>] [--svg]`: `documentOf` (a share link's code applies), then each tab with its `ETag`, in
+- `pull <doc> [--to <dir>] [--svg] [--force]`: `documentOf` (a share link's code applies), then each tab with its `ETag`, in
   order; writes the pull file (CLI27) atomically (temporary file then rename) and records each tab's read copy; a tab
   answered without a revision exits 7. `--svg` adds `<slug>.<tab-slug>.svg` per tab from
   `GET .../tabs/:tabId/render.svg` (`apps/api/src/routes/tab-render-route.ts`, `renderTabSvg` in
   `apps/api/src/thumbnail.ts`), two tabs of one name told apart by `-<id8>`.
+- **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
+  (`apps/cli/src/link/sync-state.ts`, the test `sync` uses for `ahead`) finds a tab hashing other than its pulled
+  record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
+  the check and overwrites.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
   `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `livediagramSync`, is created
@@ -909,6 +913,7 @@ npx @livediagram/cli@latest`
 | Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
 | Held                      | `<n> elements are selected by people:`, `  <ref> (<name>)`                 | `retry later, or add --wait-held 30`                                                            |
 | Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
+| Unpushed changes          | `<path> changed here and is not pushed; not overwritten`                   | `send it: livediagram push <path>, or drop it: livediagram pull "<doc>" --force`                |
 | Rate limited              | `<host> is rate limiting this token`                                       | `wait a minute, then retry`                                                                     |
 | Network                   | `could not reach <host> (<code>)`                                          | `check the connection, or choose another host with --host`                                      |
 | Server                    | `<host> failed (HTTP <status>)`                                            | `retry shortly`                                                                                 |
@@ -1010,6 +1015,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                               |
 | A self-host profile never contacts livediagram.app                                            | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                     |
 | Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                            |
+| Pull refuses a file with unpushed changes; `--force` overwrites (CLI27a)                      | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                   |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                   |
 | Export every document, each format                                                            | `apps/cli/src/commands/export-views.test.ts`                                                                                                                |
 | Render prints path and size, never bytes; MCP and CLI draw alike                              | `apps/cli/src/commands/render.test.ts`; `packages/render-png/src/index.test.ts` (size, text drawn in Inter, one wasm initialisation, a failed load retried) |

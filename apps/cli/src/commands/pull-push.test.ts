@@ -132,6 +132,12 @@ const pulledFile = (io: FakeIo, path = '/work/shop-checkout.livediagram.json'): 
   return parsed.file;
 };
 
+const edit = (io: FakeIo, path: string, change: (file: PullFile) => void) => {
+  const file = pulledFile(io, path);
+  change(file);
+  io.fileMap.set(path, { data: JSON.stringify(file), mode: 0o644 });
+};
+
 describe('pull', () => {
   it('writes the document with every tab, its folder and revision, and keeps read copies', async () => {
     const h = host();
@@ -178,6 +184,24 @@ describe('pull', () => {
     expect(stepped.out).toBe('/work/shop-checkout-aaaa1111.livediagram.json\n');
   });
 
+  it('refuses to overwrite changes not yet pushed, unless --force drops them', async () => {
+    const h = host();
+    const first = await cli(['pull', DOC], h.route);
+    const path = '/work/shop-checkout.livediagram.json';
+    edit(first.io, path, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    const edited = first.io.fileMap.get(path)!.data;
+    const refused = await cli(['pull', DOC], h.route, first.io);
+    expect(refused.code).toBe(1);
+    expect(refused.err).toContain(`error: ${path} changed here and is not pushed; not overwritten`);
+    expect(refused.err).toContain(
+      `hint: send it: livediagram push ${path}, or drop it: livediagram pull "${DOC}" --force`,
+    );
+    expect(first.io.fileMap.get(path)!.data).toBe(edited);
+    const forced = await cli(['pull', DOC, '--force'], h.route, first.io);
+    expect(forced.code).toBe(0);
+    expect(first.io.fileMap.get(path)!.data).not.toContain('"API"');
+  });
+
   it('pulls through a share link, sending its code', async () => {
     const { code, io } = await cli(['pull', `${HOST}/document/shared?s=CODE1234`], host().route);
     expect(code).toBe(0);
@@ -208,11 +232,6 @@ describe('push', () => {
     const { io } = await cli(['pull', DOC], h.route);
     return { h, io, path: '/work/shop-checkout.livediagram.json' };
   }
-  const edit = (io: FakeIo, path: string, change: (file: PullFile) => void) => {
-    const file = pulledFile(io, path);
-    change(file);
-    io.fileMap.set(path, { data: JSON.stringify(file), mode: 0o644 });
-  };
 
   it('says so when nothing changed', async () => {
     const { h, io, path } = await pulled();
