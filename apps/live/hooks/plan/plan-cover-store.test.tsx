@@ -3,7 +3,8 @@ import { act, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { maximisePlanElement, releasePlanElement } from './maximised-plan';
 import {
-  isBoardCovering,
+  isBoardFillingTab,
+  isSheetFillingTab,
   isCanvasCovered,
   setPlanCover,
   useCanvasCovered,
@@ -45,16 +46,21 @@ describe('plan-cover-store', () => {
     expect(renders).toHaveBeenCalledTimes(2);
   });
 
-  it('tells a board from a view covering the canvas', () => {
+  it('narrows the palette for a board filling the tab, never for a maximised one', () => {
     act(() => maximisePlanElement('v', 'View'));
     expect(isCanvasCovered()).toBe(true);
-    expect(isBoardCovering()).toBe(false);
+    expect(isBoardFillingTab()).toBe(false);
     act(() => releasePlanElement('v'));
     act(() => maximisePlanElement('b', 'Board'));
-    expect(isBoardCovering()).toBe(true);
+    expect(isCanvasCovered()).toBe(true);
+    expect(isBoardFillingTab()).toBe(false);
     act(() => releasePlanElement('b'));
     act(() => setPlanCover({ fillTabId: 'x', fillTabKind: 'Board', tabElementCount: 1 }));
-    expect(isBoardCovering()).toBe(true);
+    expect(isBoardFillingTab()).toBe(true);
+    expect(isSheetFillingTab()).toBe(false);
+    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet', tabElementCount: 1 }));
+    expect(isBoardFillingTab()).toBe(false);
+    expect(isSheetFillingTab()).toBe(true);
   });
 
   it('gives the tab’s element count to whoever asks', () => {

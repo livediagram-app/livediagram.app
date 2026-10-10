@@ -6,7 +6,7 @@
 // maximised-plan.ts: the open tab's board filling it and its element count, published by usePlanCoverWiring; the
 // maximised element comes from maximised-plan.ts.
 import { useSyncExternalStore } from 'react';
-import { getMaximisedPlanId, getMaximisedPlanKind, subscribeMaximisedPlan } from './maximised-plan';
+import { getMaximisedPlanId, subscribeMaximisedPlan } from './maximised-plan';
 
 export type PlanCover = {
   // The board or Sheet filling the open tab, or null, and which it is.
@@ -45,10 +45,16 @@ export function isCanvasCovered(): boolean {
   return getMaximisedPlanId() !== null || cover.fillTabId !== null;
 }
 
-// A board covers it (maximised or filling the tab), not a view: what the palette narrows to Cards for, since cards
-// land only on a board.
-export function isBoardCovering(): boolean {
-  return getMaximisedPlanKind() === 'Board' || cover.fillTabKind === 'Board';
+// A board fills the tab (docs/specs/026-plan/plan-board.md "The palette follows what fills the screen"): the palette
+// narrows to Cards, since cards land only on a board. A maximised board is the person's view for a moment and keeps
+// the mode's palette.
+export function isBoardFillingTab(): boolean {
+  return cover.fillTabKind === 'Board';
+}
+
+// A Sheet fills the tab: the palette is hidden, since nothing it offers lands anywhere.
+export function isSheetFillingTab(): boolean {
+  return cover.fillTabKind === 'Sheet';
 }
 
 const serverFalse = () => false;
@@ -56,8 +62,12 @@ export function useCanvasCovered(): boolean {
   return useSyncExternalStore(subscribe, isCanvasCovered, serverFalse);
 }
 
-export function useBoardCovering(): boolean {
-  return useSyncExternalStore(subscribe, isBoardCovering, serverFalse);
+export function useBoardFillingTab(): boolean {
+  return useSyncExternalStore(subscribe, isBoardFillingTab, serverFalse);
+}
+
+export function useSheetFillingTab(): boolean {
+  return useSyncExternalStore(subscribe, isSheetFillingTab, serverFalse);
 }
 
 // The board or Sheet filling the open tab is `id`.

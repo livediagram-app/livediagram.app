@@ -30,6 +30,7 @@ import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { CanvasLayout } from '@/lib/canvas-layer-insets';
+import { announceHeaderBand } from './menu-name-slot';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -56,6 +57,12 @@ export function CanvasCover({
   children: ReactNode;
 }) {
   const { insets, band } = layout;
+  // The element's name moves to the menu box while there is a band, and back when it goes (menu-name-slot).
+  const banded = !!band;
+  useLayoutEffect(() => {
+    announceHeaderBand();
+    return announceHeaderBand;
+  }, [banded]);
   return (
     <div
       data-canvas-cover=""
@@ -211,7 +218,10 @@ export function MaximisableSlot({
   const over = maximised || fill;
   useLayoutEffect(() => {
     const slot = slotRef.current;
-    if (!over && host && slot && host.parentElement !== slot) slot.appendChild(host);
+    if (!over && host && slot && host.parentElement !== slot) {
+      slot.appendChild(host);
+      announceHeaderBand();
+    }
   }, [over, host]);
   useEffect(() => () => host?.remove(), [host]);
   if (!host) return <>{children}</>;
@@ -251,7 +261,11 @@ export function openBox(box: HTMLElement, id: string, host: HTMLElement): () => 
   const origin = originOf(id);
   box.style.opacity = '';
   const reveal = () => {
-    if (host.parentElement !== box) box.appendChild(host);
+    if (host.parentElement !== box) {
+      box.appendChild(host);
+      // Moved under the band: its name looks again (menu-name-slot).
+      announceHeaderBand();
+    }
   };
   const settle = () => box.classList.remove(...GHOST_CLASSES);
   if (!origin || prefersReducedMotion()) {
@@ -299,7 +313,10 @@ export function openBox(box: HTMLElement, id: string, host: HTMLElement): () => 
 // once without motion). Returns the cancel (maximising again while it shrinks back).
 export function closeBox(box: HTMLElement, id: string, host: HTMLElement): () => void {
   const slot = document.querySelector(`[data-plan-slot="${CSS.escape(id)}"]`);
-  if (slot && host.parentElement !== slot) slot.appendChild(host);
+  if (slot && host.parentElement !== slot) {
+    slot.appendChild(host);
+    announceHeaderBand();
+  }
   const origin = originOf(id);
   if (!origin || prefersReducedMotion()) {
     finishRestore();
@@ -395,7 +412,10 @@ export function FilledTabLayer({ host }: { host: HTMLElement }) {
   const boxRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const box = boxRef.current;
-    if (box && host.parentElement !== box) box.appendChild(host);
+    if (box && host.parentElement !== box) {
+      box.appendChild(host);
+      announceHeaderBand();
+    }
   }, [canvas, host]);
   return (
     <>

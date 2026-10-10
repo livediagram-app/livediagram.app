@@ -20,6 +20,7 @@ import { lucideGlyph } from '@livediagram/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
 import { BoardTitle } from './BoardTitle';
+import { InMenuBox } from './menu-name-slot';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
 
@@ -137,16 +138,22 @@ export function PlanBoardHeader({
       ) : null}
       {/* Title and widgets: in a header band, they stop short of the palette strip floating over the header. */}
       <div className="flex min-w-0 max-w-[var(--plan-band-mid,none)] flex-1 items-center gap-3">
-        <span data-board-title className="contents">
-          <BoardTitle
-            title={setup.title}
-            editing={renaming}
-            selected={selected}
-            palette={palette}
-            onRename={(title) => onSetup({ ...setup, title }, 'Title')}
-            onDone={() => setRenaming(false)}
-          />
-        </span>
+        {/* In a header band, the title rides in the menu box (menu-name-slot). */}
+        <InMenuBox
+          render={(inBox) => (
+            <span data-board-title className="contents">
+              <BoardTitle
+                title={setup.title}
+                editing={renaming}
+                selected={selected}
+                palette={palette}
+                inBox={inBox}
+                onRename={(title) => onSetup({ ...setup, title }, 'Title')}
+                onDone={() => setRenaming(false)}
+              />
+            </span>
+          )}
+        />
         {/* No press guard here: a press on the zone's empty space selects and moves the board like the
           rest of the header; each widget keeps its own presses. */}
         <div className="flex min-w-0 flex-1 items-center">

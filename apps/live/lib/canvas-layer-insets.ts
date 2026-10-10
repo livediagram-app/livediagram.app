@@ -87,27 +87,37 @@ export const BAND_RIGHT_MIN_PX = 280;
 // Below this canvas width the cover's padding is a phone's (p-2) and the strip holds the menu: no band.
 export const BAND_CANVAS_MIN_PX = 640;
 
-// The band for `canvas` with the menu and strip where they are, given the element's side insets; null when either
-// is missing, not in the top row, or leaves too little room (the element then starts below the row).
+// The band for `canvas` with the menu and strip where they are, given the element's side insets; null when the menu
+// is missing, the menu or strip is not in the top row, or they leave too little room (the element then starts below
+// the row). No strip (the palette hidden or absent): the header holds the menu alone, its content running on to its
+// controls. `nameWidth` is the element's name riding in the menu box (docs/specs/026-plan/plan-board.md "The name
+// rides in the menu box"): the room is judged from the box without it, so the name coming or going never takes the
+// band away, while the content still starts after the box as it is.
 export function headerBand(
   canvas: Box,
   insets: Pick<LayerInsets, 'left' | 'right'>,
   menu: Box | null,
   strip: Box | null,
+  nameWidth = 0,
 ): HeaderBand | null {
-  if (!menu || !strip || canvas.right - canvas.left < BAND_CANVAS_MIN_PX) return null;
+  if (!menu || canvas.right - canvas.left < BAND_CANVAS_MIN_PX) return null;
   const half = canvas.top + (canvas.bottom - canvas.top) / 2;
-  if (menu.top > half || strip.top > half || menu.right > strip.left) return null;
+  const baseRight = menu.right - Math.max(0, nameWidth);
+  if (menu.top > half || (strip && (strip.top > half || baseRight > strip.left))) return null;
   const left = canvas.left + insets.left + COVER_PAD_PX;
   const right = canvas.right - insets.right - COVER_PAD_PX;
   const top = canvas.top + COVER_PAD_PX;
-  const mid = strip.left - menu.right - 2 * BAND_GAP_PX;
-  if (mid < BAND_MID_MIN_PX || right - strip.right - BAND_GAP_PX < BAND_RIGHT_MIN_PX) return null;
   if (menu.left < left) return null;
+  if (strip) {
+    const room = strip.left - baseRight - 2 * BAND_GAP_PX;
+    if (room < BAND_MID_MIN_PX || right - strip.right - BAND_GAP_PX < BAND_RIGHT_MIN_PX)
+      return null;
+  } else if (right - baseRight - BAND_GAP_PX < BAND_MID_MIN_PX + BAND_RIGHT_MIN_PX) return null;
+  const end = strip ? strip.left - BAND_GAP_PX : right;
   return {
-    height: Math.round(Math.max(menu.bottom, strip.bottom) - top),
+    height: Math.round(Math.max(menu.bottom, strip?.bottom ?? menu.bottom) - top),
     left: Math.round(menu.right - left + BAND_GAP_PX),
-    mid: Math.round(mid),
+    mid: Math.max(0, Math.round(end - menu.right - BAND_GAP_PX)),
   };
 }
 
@@ -117,6 +127,8 @@ export type CanvasLayout = { insets: LayerInsets; band: HeaderBand | null };
 export const NO_LAYOUT: CanvasLayout = { insets: NO_INSETS, band: null };
 
 const STRIP_SELECTOR = '[data-toolbar-palette]:not(.hidden)';
+// The menu box's slot for the element's name (MenuNameSlot).
+export const MENU_NAME_SLOT_SELECTOR = '[data-menu-name-slot]';
 
 // The box round what `el` holds (its children that take up room), or null when it holds nothing shown.
 function unionOfChildren(el: HTMLElement): Box | null {
@@ -153,10 +165,14 @@ export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
     const el = document.querySelector<HTMLElement>(selector);
     return el && getComputedStyle(el).visibility !== 'hidden' ? el : null;
   };
-  const menu = shown(TOP_ROW_SELECTOR)?.getBoundingClientRect() ?? null;
+  const menuEl = shown(TOP_ROW_SELECTOR);
+  const menu = menuEl?.getBoundingClientRect() ?? null;
+  // The element's name riding in the menu box, left out of the room the band needs.
+  const name = menuEl?.querySelector<HTMLElement>(MENU_NAME_SLOT_SELECTOR);
+  const nameWidth = name ? name.getBoundingClientRect().width : 0;
   // The strip's root runs the canvas's width to centre it: the strip is what it holds (on a phone, the menu too).
   const strip = shown(STRIP_SELECTOR);
-  const band = headerBand(area, insets, menu, strip ? unionOfChildren(strip) : null);
+  const band = headerBand(area, insets, menu, strip ? unionOfChildren(strip) : null, nameWidth);
   return { insets: band ? { ...insets, top: 0 } : insets, band };
 }
 

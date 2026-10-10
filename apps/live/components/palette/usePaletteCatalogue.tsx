@@ -12,7 +12,7 @@ import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
-import { withTileActionPreamble } from './palette-tile-actions';
+import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
@@ -23,7 +23,8 @@ import {
   participantPaletteCategories,
   PARTICIPANT_CANVAS_TOOLS,
 } from './palette-layouts';
-import { useBoardCovering } from '@/hooks/plan/plan-cover-store';
+import { useBoardFillingTab } from '@/hooks/plan/plan-cover-store';
+import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -203,8 +204,11 @@ export function usePaletteCatalogue({
       cancelDraw: onCancelDraw,
       hasImage: !!onAddImage,
     },
-    () => {
+    (action, args) => {
       if (canvasTool === 'avatar') onExitAvatarMode?.();
+      // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
+      // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
+      if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
     },
   );
   // Icon-picker search query (Icons tab). Filters the catalogue
@@ -244,15 +248,15 @@ export function usePaletteCatalogue({
   // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
   // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  // A board covering the canvas (maximised or filling its tab), not a view: cards land only on a board.
-  const boardCovering = useBoardCovering();
+  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
+  const boardFillingTab = useBoardFillingTab();
   // Logo only while the tab has a logo page (docs/specs/007-editor/logo-pages.md), its markers
   // added as tiles in this person's colours and widths (logoMarkerTiles).
   const markers = useLogoMarkerTiles(!!logoPages);
-  // While a Plan board covers the canvas, only Cards (coveredPaletteCategories); a maximised view keeps the palette.
+  // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
     ? participantPaletteCategories(editorMode, !!esBoard)
-    : boardCovering
+    : boardFillingTab
       ? coveredPaletteCategories()
       : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
           .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')

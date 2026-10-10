@@ -30,6 +30,7 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
+import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
@@ -344,6 +345,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
     () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
     [elements],
   );
+  // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
+  const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
   usePublishCardTypesTaken(elements);
   // Panel elements + their wiring live in useCanvasChromePanels.
@@ -620,8 +623,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
               />
             ) : null}
             {/* Find a Card and Card Types (docs/specs/026-plan/items.md "Finding a card", item-types.md): in Plan
-                mode, one strip where Layers would be. */}
-            {!zenMode && props.editorMode === 'plan' ? (
+                mode, one strip where Layers would be, while the tab has something that shows cards ("The Plan
+                strip"). */}
+            {!zenMode && props.editorMode === 'plan' && tabShowsCards ? (
               <PlanCardsClusterStrip
                 finderOpen={activeDockPanel === 'plan-cards'}
                 onToggleFinder={(button) => handleDockButtonClick('plan-cards', button, true)}

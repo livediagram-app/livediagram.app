@@ -124,10 +124,35 @@ describe('headerBand', () => {
     });
   });
 
-  it('is not laid out without a menu or a strip, or with either low on the canvas', () => {
+  it('is not laid out without a menu, or with the menu or strip low on the canvas', () => {
     expect(headerBand(canvas, none, null, strip)).toBeNull();
-    expect(headerBand(canvas, none, menu, null)).toBeNull();
     expect(headerBand(canvas, none, menu, box(497, 700, 943, 750))).toBeNull();
+    expect(headerBand(canvas, none, box(12, 700, 124, 750), null)).toBeNull();
+  });
+
+  it('holds the menu alone with no strip, its content running to the right edge', () => {
+    expect(headerBand(canvas, none, menu, null)).toEqual({
+      height: 145 - (80 + 12),
+      left: 124 - 12 + 12,
+      mid: 1440 - 12 - 124 - 12,
+    });
+    // Still needs room for a title and the controls.
+    // A side panel on the right takes the rest: what is left must hold both.
+    const panel = 1440 - 12 - (124 + 12 + BAND_MID_MIN_PX + BAND_RIGHT_MIN_PX);
+    expect(headerBand(canvas, { left: 0, right: panel }, menu, null)).not.toBeNull();
+    expect(headerBand(canvas, { left: 0, right: panel + 1 }, menu, null)).toBeNull();
+  });
+
+  // "The name rides in the menu box": the room is judged without the name, the content starting after the box.
+  it('judges the room from the menu box without the name riding in it', () => {
+    const tight = 124 + 24 + BAND_MID_MIN_PX;
+    const withName = box(12, 92, 124 + 200, 145);
+    const band = headerBand(canvas, none, withName, box(tight, 92, tight + 300, 145), 200);
+    expect(band).not.toBeNull();
+    expect(band!.left).toBe(124 + 200 - 12 + 12);
+    // The strip now starts before the box's end: the content has no room, never a negative one.
+    expect(band!.mid).toBe(0);
+    expect(headerBand(canvas, none, withName, box(tight, 92, tight + 300, 145))).toBeNull();
   });
 
   it('is not laid out when the menu sits in the strip (a phone) or the canvas is narrow', () => {

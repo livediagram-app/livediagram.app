@@ -29,6 +29,7 @@ import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { sheetStoreOf, type SheetStore, type TabStatus } from './sheet-store-client';
 import { sheetPresenceFor } from './sheet-presence-store';
+import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
 
 export type SheetModel = {
@@ -211,5 +212,12 @@ export function useSheetModel(
     store.setCards(cardSourceOf(items.values(), types, { statusNames, version: Date.now() }));
   }, [usesCards, items, types, statusNames, store]);
 
-  return { store, sheet: sheetId ? store.sheet(sheetId) : undefined, workbook, status, version };
+  // Tell the main bundle whether this sheet holds a card table (Plan's strip shows for one).
+  const sheet = sheetId ? store.sheet(sheetId) : undefined;
+  const hasCardTable = !!sheet?.layout.cardTables?.length;
+  useEffect(() => {
+    if (sheet) markCardTableSheet(sheetId, hasCardTable);
+  }, [sheet, sheetId, hasCardTable]);
+
+  return { store, sheet, workbook, status, version };
 }
