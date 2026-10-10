@@ -33,7 +33,7 @@ The Format Painter mode copies the look of one element (its colours, line, text 
 </Step>
 <Step n={3}>Click each element you want to apply that style to, one at a time.</Step>
 
-Every element you click takes on the copied look. Because it copies the styling rather than the content, each target keeps its own text and position; only its look changes. Press **Done** on the banner, press `Esc`, or pick another tool to finish.
+Every element you click takes on the copied look. Because it copies the styling rather than the content, each target keeps its own text and position; only its look changes. Press **Done** on the banner or click empty canvas to return to the tool you had before, press `Esc` to go to Select, or pick another tool.
 
 Arrows join in too: click an arrow as the source to copy its line colour, thickness, pattern, arrowheads, flow animation and label styling, then tap other arrows to give them the same look. Styles copy between like kinds (shape to shape, arrow to arrow), so tapping a shape while an arrow is the source simply does nothing.
 
@@ -45,14 +45,14 @@ Arrows join in too: click an arrow as the source to copy its line colour, thickn
 
 While the mode is active a **Format** panel sits at the top right. The top of it shows what the brush is holding: the element you picked, and a swatch of its look drawn from only the parts you have switched on. Until you pick one it reads "Pick something to copy from". Beneath that:
 
-- **Copies**: five toggles, **Fill**, **Border**, **Text**, **Effects** (shadow, opacity, animations) and **Size** (width, height, aspect lock, padding). All are on to start, which copies everything. Turn Fill off to give a row of boxes the same typography while they keep their own colours; turn everything off but Border to spread one dashed outline around.
+- **Copies**: five toggles, **Fill**, **Border**, **Text**, **Effects** (shadow, opacity, animations) and **Size** (width, height, aspect lock, padding, icon size). All are on to start, which copies everything. Turn Fill off to give a row of boxes the same typography while they keep their own colours; turn everything off but Border to spread one dashed outline around.
 - **After painting**: **Keep the brush** to paint one element after another, or **Paint once** to have the brush empty itself after a single apply, ready for you to pick a new source.
 
 <Figure caption="Painting with Fill switched off: the Format panel copies only Border and Text, so the target keeps its own colour.">
   <FormatPanelScene />
 </Figure>
 
-The collapsed row always names what is currently enabled ("Border, Text"), so a painter that seems to be ignoring colours explains itself at a glance. With every toggle off the row turns amber and the brush paints nothing. Your choices are remembered on this device.
+The collapsed row always names what is currently enabled ("Border, Text", or "Everything" when all are on), so a painter that seems to be ignoring colours explains itself at a glance. With every toggle off it reads "Nothing", turns amber, and the brush paints nothing. Your choices are remembered on this device.
 
 Labels, links and comments are never copied whatever the toggles say: the painter copies the look, not the content.
 

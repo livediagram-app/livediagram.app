@@ -29,7 +29,7 @@ The palette strip starts with two dropdowns: the tool picker first, showing the 
 - **Present**: **Laser**, **Spotlight**, **Avatar** and **Slide Deck**, the tools you use in front of an audience.
 - **Preview**: **Isometric**, and **Zen**, which hides the editor's chrome rather than changing tool.
 
-The current tool is tinted, and a tool with a keyboard shortcut shows its letter in the tile's corner. Every tool after Hand, apart from Zen, needs something on the canvas to act on, so those tiles are greyed out on an empty tab.
+The current tool is tinted, and a tool with a keyboard shortcut shows its letter in the tile's corner. Every tool after Hand, apart from Zen, needs something on the canvas to act on, so those tiles are greyed out on an empty tab. On a phone, Spotlight and Slide Deck are left out of the picker.
 
 <Figure caption="The tool picker opened from the palette: three bands of tiles, with Select as the current tool.">
   <ToolPicker />
@@ -52,7 +52,7 @@ In Select mode the pointer interacts directly with your elements:
   <SelectMode />
 </Figure>
 
-You can still pan while holding Select: drag with the middle mouse button, hold `Space` and drag, or scroll with two fingers on a trackpad. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+You can still pan while holding Select: drag with the middle mouse button (unless it is turned off in Settings), hold `Space` and drag, or scroll with two fingers on a trackpad. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
 
 ## When Select is not the starting tool
 
@@ -70,6 +70,9 @@ Select is your home base. Choosing a different tool changes what a click or drag
 
 View-only visitors have no palette, but they can still press `V` to select an element and read it. They cannot move or edit it.
 
-<Tip>Press `V` from anywhere to jump straight back to Select without opening the tool picker.</Tip>
+<Tip>
+  Press `V` to jump straight back to Select without opening the tool picker. If a single element is
+  selected, press `Esc` first: with one element selected, a letter key types into its label instead.
+</Tip>
 
 </ArticleLayout>
