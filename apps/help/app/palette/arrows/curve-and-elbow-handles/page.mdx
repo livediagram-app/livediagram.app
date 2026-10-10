@@ -26,7 +26,7 @@ Straight lines are not always enough. When two connectors would overlap, or a li
 Press anywhere on an arrow's line and drag. It works on an arrow that isn't selected yet too: the press selects it and the same drag bends it. The arrow bends where you grabbed it:
 
 - A **straight** arrow becomes a smooth curve that passes through your pointer.
-- A **curved** arrow reshapes its bow the same way. If it already has bend points, dragging the line adds a new one where you grabbed it.
+- A **curved** arrow gains a bend point where you grabbed it (a single bow first becomes a bend point at its peak), so each drag of the line adds another. To reshape a single bow without adding a point, drag its curve handle instead.
 - An **angled** arrow slides the segment you grabbed sideways, adding a short jog where needed so its ends stay put.
 
 A click without dragging only selects the arrow, and a quick double-click always opens its label, however fast you click. Each bend is one undo step.
@@ -44,7 +44,10 @@ The handle appears once you give the arrow a curved or angled geometry. Right-cl
 
 ## Dragging the handle
 
-<Step n={1}>Select the arrow so its handle becomes visible on the line.</Step>
+<Step n={1}>
+  Select the arrow so its handle appears: on the elbow for an angled arrow, just off the bow for a
+  curved one.
+</Step>
 <Step n={2}>
   For a curved arrow, drag the handle to control how far and which way the line bows.
 </Step>
@@ -52,7 +55,7 @@ The handle appears once you give the arrow a curved or angled geometry. Right-cl
 
 Releasing the drag commits the new shape, and like other drag edits it collapses into a single undo step, so one tap of undo returns the line to where it was before you started.
 
-A dragged handle or bend snaps into line with nearby shapes' edges and centres and with other arrows' bends, so a set of angled arrows can turn on the same line. Hold **Cmd** or **Ctrl** while dragging to place it freely.
+A dragged handle or bend snaps into line with nearby shapes' edges and centres and with other arrows' bends, so a set of angled arrows can turn on the same line. (Holding **Cmd** or **Ctrl** turns this off when you slide an angled segment by its line; handle drags always snap.)
 
 <Figure caption="Dragging a curved arrow's handle controls how far and which way the line bows.">
   <CurveElbowHandles />
