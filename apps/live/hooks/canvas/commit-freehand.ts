@@ -1,6 +1,7 @@
 import {
   createFreehand,
   createShape,
+  fitStrokeToLimit,
   INK_PEN_COLOUR,
   isPenColourName,
   nearestBorderStroke,
@@ -80,7 +81,7 @@ export function makeCommitFreehand({
   //      doesn't trip the close), commit a closed path. Otherwise
   //      commit an open stroke.
   //   3. createFreehand to mint the element + commit.
-  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, ink?: PenInk) => {
+  return (rawPoints: { x: number; y: number }[], recogniseShapesMode: boolean, drawn?: PenInk) => {
     // Disarm on a gesture too short to be a stroke, unless a whiteboard pen is HELD
     // (docs/specs/023-draw-mode/draw-mode.md "Pens"), where a stray tap must not silently put it down.
     const whiteboardPen =
@@ -97,8 +98,16 @@ export function makeCommitFreehand({
     }
     const zoom = zoomRef.current ?? 1;
     // A whiteboard stroke keeps its raw samples; anything else is simplified here
-    // (lib/pen-smoothing).
-    const simplified = whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom);
+    // (lib/pen-smoothing). Either is then fitted to what a stroke can store
+    // (docs/specs/006-document/stroke-points.md "Limits"): a stroke longer than that is simplified
+    // just enough to fit, so it is kept, never lost on release.
+    const fitted = fitStrokeToLimit(
+      whiteboardPen ? rawPoints : simplifyPenStroke(rawPoints, zoom),
+      whiteboardPen ? drawn?.pressures : undefined,
+    );
+    const simplified = fitted.points;
+    const ink: PenInk | undefined =
+      drawn && fitted.pressures ? { ...drawn, pressures: fitted.pressures } : drawn;
     if (simplified.length < fewestPoints) {
       disarm();
       return;

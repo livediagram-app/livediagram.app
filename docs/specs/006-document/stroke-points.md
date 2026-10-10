@@ -117,6 +117,10 @@ A block the editor cannot decode at draw time (it never passed validation) draws
 
 - At most `MAX_FREEHAND_POINTS` (20,000) points per stroke, as before: at most 100,002 bytes,
   133,336 base64 characters.
+- A stroke drawn with more samples than that is **kept, never lost**: on release it is simplified
+  just enough to fit (the smallest tolerance from a tenth of a pixel, doubling, that brings it
+  under the cap, else evenly thinned), its pressures following the samples it keeps. A stroke
+  that fits is stored exactly as drawn.
 - The decode cache holds at most `STROKE_DECODE_CACHE_POINTS` decoded points; the least recently
   used blocks leave it first.
 

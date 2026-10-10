@@ -555,6 +555,7 @@ export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
 export * from './stroke-points';
+export * from './stroke-fit';
 export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';
