@@ -215,7 +215,10 @@ describe('the sheet toolbar', () => {
     moreFill();
     // The full picker: the Theme Palette (the theme's colours, by word), the standard colours, + for a custom one.
     const palette = screen.getByRole('group', { name: 'Theme Palette' });
-    fireEvent.click(within(palette).getByRole('button', { name: 'Green' }));
+    // A real press: its pointerdown lands in the picker's own popover, which must not count as outside the menu.
+    const green = within(palette).getByRole('button', { name: 'Green' });
+    fireEvent.pointerDown(green);
+    fireEvent.click(green);
     expect(h.cell('A1')?.format?.bg).toBe('#00ff00');
     const custom = (hex: string) => {
       fireEvent.click(screen.getByRole('button', { name: 'Add a custom colour' }));
