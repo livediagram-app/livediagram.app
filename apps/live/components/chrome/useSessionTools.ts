@@ -4,10 +4,8 @@ import { useMemo } from 'react';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
-// The session-tools bundle (session-tools-props.ts) read off the editor, in one place. Two surfaces
-// drive the same tools: the tab menu's Session Studio and the bottom-right cluster's Session strip
-// (docs/specs/012-collaboration/session-tools.md "The Session strip"), so both take the bundle from
-// here rather than each assembling it from the context.
+// The session-tools bundle (session-tools-props.ts) read off the editor, for the bottom-right
+// cluster's Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip").
 export function useSessionTools(): SessionToolsProps {
   const {
     activeTab,

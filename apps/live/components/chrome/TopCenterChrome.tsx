@@ -1,6 +1,5 @@
 import { lucidePencilLine } from '@livediagram/icons/lucide';
 import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
-import { participantKey } from '@/lib/identity';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -8,29 +7,17 @@ import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
-import { VoteBanner } from '@/components/chrome/VoteBanner';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
-// the active editor-mode banner and the vote banner. (The session timer is
-// the Session strip's Timer button, docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
+// the active editor-mode banner. (The session timer and the vote's status and
+// results walkthrough live in the Session strip's popovers,
+// docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  | 'selfParticipant'
-  | 'readOnly'
-  | 'participantPalette'
-  | 'pendingDraw'
-  | 'onCancelDraw'
-  | 'onExitFormatTool'
-  | 'canvasTool'
-  | 'formatSourceId'
-  | 'tabVote'
-  | 'voteReview'
-  | 'onNextVoteResult'
-  | 'onPrevVoteResult'
-  | 'onDoneVoteReview'
+  'readOnly' | 'participantPalette' | 'pendingDraw' | 'onCancelDraw' | 'onExitFormatTool' | 'canvasTool' | 'formatSourceId'
 > & {
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
@@ -45,7 +32,6 @@ type TopCenterChromeProps = Pick<
 };
 
 export function TopCenterChrome({
-  selfParticipant,
   readOnly,
   participantPalette = false,
   pendingDraw,
@@ -55,11 +41,6 @@ export function TopCenterChrome({
   canvasTool,
   formatSourceId,
   dockOnTop = false,
-  tabVote,
-  voteReview,
-  onNextVoteResult,
-  onPrevVoteResult,
-  onDoneVoteReview,
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
@@ -142,20 +123,6 @@ export function TopCenterChrome({
           />
         ) : null}
       </TopCenterRow>
-
-      {/* Vote status (docs/specs/012-collaboration/session-tools.md), stacked below the banner row. While results
-          are under review it becomes the walkthrough bar (Previous / Next /
-          Done over the ordered top picks). */}
-      {tabVote ? (
-        <VoteBanner
-          vote={tabVote}
-          selfId={participantKey(selfParticipant)}
-          review={voteReview}
-          onNext={onNextVoteResult}
-          onPrev={onPrevVoteResult}
-          onDone={onDoneVoteReview}
-        />
-      ) : null}
     </TopCenterStack>
   );
 }

@@ -2,8 +2,8 @@
 
 A facilitator-run **poll**: ask the room a question, everyone viewing the
 document gets a prompt, answers tally live, and when the host ends it the whole
-thing evaporates. Sits beside the timer and dot-vote in the tab menu's session
-band ([Session tools (timer + voting)](session-tools.md)) but is deliberately **not** built like them.
+thing evaporates. Sits beside the timer and dot-vote in the bottom bar's
+[Session strip](session-tools.md#the-session-strip) (Diagram mode only) but is deliberately **not** built like them.
 
 ## Why it is NOT a session tool on the Tab
 
@@ -132,8 +132,8 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Collaborate → Poll** (the Session Studio,
-   [Session tools (timer + voting)](session-tools.md)): question, answer style picked from drawn tiles, answers if the
+1. **Compose.** The Session strip's **Poll** button
+   ([Session tools (timer + voting)](session-tools.md#the-session-strip)), or a poll element's menu: question, answer style picked from drawn tiles, answers if the
    style needs them (Enter moves to the next, making one at the end), then
    **Ask everyone** (or Enter in the question). A **What people see** card
    previews the exact prompt, built from the same `pollStyleTokens` the real

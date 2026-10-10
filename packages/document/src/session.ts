@@ -47,7 +47,7 @@ export function timerDone(timer: TabTimer, now: number): boolean {
 }
 
 // m:ss readout for a timer's display ms — the one formatting rule the
-// floating TimerWidget (live ticking clock) and the Session tools
+// Session strip's Timer button (live ticking clock) and the Session tools
 // section (static snapshot) share; each used to carry its own copy.
 export function formatTimerClock(ms: number): string {
   const s = Math.round(ms / 1000);

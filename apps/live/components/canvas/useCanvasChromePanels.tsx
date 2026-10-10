@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -14,6 +14,7 @@ import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
+import { sessionStripTools } from './SessionClusterStrip';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -120,6 +121,9 @@ export function useCanvasChromePanels({
     isVoteHost,
     participantCount,
     voteReview,
+    onNextVoteResult,
+    onPrevVoteResult,
+    onDoneVoteReview,
     onSelectLayer,
     onAddLayer,
     onRemoveLayer,
@@ -409,10 +413,13 @@ export function useCanvasChromePanels({
     activeDockPanel === 'session-poll'
       ? activeDockPanel
       : null;
-  const sessionTools = props.sessionTools;
+  // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
+  const stripTools = sessionStripTools(props.editorMode);
+  const sessionTools = stripTools ? props.sessionTools : undefined;
   const sessionButtonGone =
     sessionSegment !== null &&
     (!sessionTools ||
+      (sessionSegment === 'session-poll' && !stripTools?.poll) ||
       (!!readOnly &&
         ((sessionSegment === 'session-timer' && !sessionTools.timer) ||
           (sessionSegment === 'session-vote' && !tabVote) ||
@@ -420,6 +427,25 @@ export function useCanvasChromePanels({
   useEffect(() => {
     if (sessionButtonGone) closeDockPanel();
   }, [sessionButtonGone, closeDockPanel]);
+  // A running tool's popover stays up until its button closes it, and goes when the activity ends
+  // (docs/specs/012-collaboration/session-tools.md "The Session strip"), rather than turning back
+  // into the set-up under the facilitator's pointer.
+  const sessionRunning =
+    sessionSegment === 'session-timer'
+      ? !!sessionTools?.timer
+      : sessionSegment === 'session-vote'
+        ? !!tabVote
+        : sessionSegment === 'session-poll'
+          ? !!sessionTools?.livePoll
+          : false;
+  // Per segment: switching from a running tool's popover to an idle one is not an ending.
+  const wasRunning = useRef({ segment: sessionSegment, running: sessionRunning });
+  useEffect(() => {
+    const prev = wasRunning.current;
+    wasRunning.current = { segment: sessionSegment, running: sessionRunning };
+    if (sessionSegment && prev.segment === sessionSegment && prev.running && !sessionRunning)
+      closeDockPanel();
+  }, [sessionRunning, sessionSegment, closeDockPanel]);
   const sessionPopoverEl =
     !chromeHidden && sessionSegment && sessionTools && !sessionButtonGone ? (
       <SessionPopover
@@ -428,6 +454,7 @@ export function useCanvasChromePanels({
         onClose={closeDockPanel}
         session={sessionTools}
         readOnly={!!readOnly}
+        holdOpen={!isMobile}
         voteSelfId={participantKey(selfParticipant)}
         pollPanel={pollPanel}
         vote={{
@@ -438,6 +465,10 @@ export function useCanvasChromePanels({
           reviewIndex: voteReview ? voteReview.index : null,
           onJumpToResult: onJumpToVoteResult,
           isHost: isVoteHost,
+          review: voteReview,
+          onNextResult: onNextVoteResult,
+          onPrevResult: onPrevVoteResult,
+          onDoneReview: onDoneVoteReview,
         }}
       />
     ) : null;

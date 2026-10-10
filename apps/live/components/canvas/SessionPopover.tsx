@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import type { Element, TabVote } from '@livediagram/document';
 import type { DockAnchor } from '@/lib/canvas-chrome';
+import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -29,6 +30,9 @@ export type SessionPopoverProps = {
   session: SessionToolsProps;
   // A view-role visitor: running tools only, read-only.
   readOnly: boolean;
+  // A running tool's popover stays open until its button closes it, rather than on any press
+  // outside it (desktop; on a phone it would sit over the canvas being voted on).
+  holdOpen: boolean;
   // Who the dot-vote knows us by (the collab key).
   voteSelfId: string;
   pollPanel: CanvasProps['pollPanel'];
@@ -40,6 +44,11 @@ export type SessionPopoverProps = {
     reviewIndex: number | null;
     onJumpToResult: (index: number) => void;
     isHost: boolean;
+    // The results walkthrough and its controls, shown in the Vote panel.
+    review: VoteReview | null;
+    onNextResult: () => void;
+    onPrevResult: () => void;
+    onDoneReview: () => void;
   };
 };
 
@@ -49,6 +58,7 @@ export function SessionPopover({
   onClose,
   session,
   readOnly,
+  holdOpen,
   voteSelfId,
   pollPanel,
   vote,
@@ -66,9 +76,16 @@ export function SessionPopover({
         onRevealVote={session.onRevealVote}
         onClearVote={session.onClearVote}
         isHost={vote.isHost}
+        selfId={voteSelfId}
+        voteLayers={session.voteLayers}
+        review={vote.review}
+        onNextResult={vote.onNextResult}
+        onPrevResult={vote.onPrevResult}
+        onDoneReview={vote.onDoneReview}
         readOnly={readOnly}
         popoverAnchor={anchor}
         onPopoverClose={onClose}
+        dismissOnOutside={!holdOpen}
       />
     );
   }
@@ -86,14 +103,22 @@ export function SessionPopover({
         }}
         popoverAnchor={anchor}
         onPopoverClose={onClose}
+        dismissOnOutside={!holdOpen}
       />
     );
   }
   if (segment === 'session-timer') {
+    const hold = holdOpen && !!session.timer;
     // A view-role visitor only reaches this while a timer runs (the strip offers them nothing idle).
     if (readOnly) {
       return session.timer ? (
-        <SessionToolPopover title="Timer" help="sessionTimer" anchor={anchor} onClose={onClose}>
+        <SessionToolPopover
+          title="Timer"
+          help="sessionTimer"
+          anchor={anchor}
+          onClose={onClose}
+          hold={hold}
+        >
           <TimerPane {...session} readOnly />
         </SessionToolPopover>
       ) : null;
@@ -105,6 +130,7 @@ export function SessionPopover({
         anchor={anchor}
         onClose={onClose}
         facilitatedBy={session.facilitatedBy}
+        hold={hold}
       >
         <TimerPane {...session} />
       </SessionToolPopover>
@@ -132,15 +158,8 @@ export function SessionPopover({
       onClose={onClose}
       facilitatedBy={session.facilitatedBy}
     >
-      <PollPane
-        {...session}
-        // Starting a poll puts its question on screen for everyone, this popover included; it
-        // steps aside, and the Poll button carries the results from here on.
-        onStartPoll={(draft) => {
-          session.onStartPoll(draft);
-          onClose();
-        }}
-      />
+      {/* Asking keeps the popover open: once the poll runs it becomes the Poll panel. */}
+      <PollPane {...session} />
     </SessionToolPopover>
   );
 }
@@ -153,6 +172,7 @@ function SessionToolPopover({
   anchor,
   onClose,
   facilitatedBy,
+  hold = false,
   children,
 }: {
   title: string;
@@ -160,6 +180,8 @@ function SessionToolPopover({
   anchor?: DockAnchor;
   onClose: () => void;
   facilitatedBy?: string | null;
+  // The tool is running on a desktop: only its button closes the popover.
+  hold?: boolean;
   children: ReactNode;
 }) {
   const blocked = Boolean(facilitatedBy);
@@ -174,7 +196,7 @@ function SessionToolPopover({
       popoverAnchor={anchor}
       asPopover
       popoverWidth="w-72"
-      dismissOnOutside
+      dismissOnOutside={!hold}
       onPopoverClose={onClose}
     >
       <div className="flex flex-col gap-3 px-3 pb-3">

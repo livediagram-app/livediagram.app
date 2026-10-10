@@ -375,7 +375,7 @@ export function TabMenu() {
         x={mx}
         y={my}
         width={mw}
-        height={156}
+        height={134}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -487,23 +487,6 @@ export function TabMenu() {
           />
         </g>
       ))}
-      <line
-        x1={mx}
-        y1={my + 134}
-        x2={mx + mw}
-        y2={my + 134}
-        className="stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={mx + 14} y={my + 146} size={11} weight={500} tone="body">
-        Collaborate
-      </Label>
-      <path
-        d={`M${mx + mw - 18} ${my + 142} l4 4 l-4 4`}
-        className="fill-none stroke-slate-400"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-      />
       <Label x={14} y={30} size={10} tone="muted">
         Rename, Duplicate, Paste
       </Label>

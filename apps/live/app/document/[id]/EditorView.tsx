@@ -76,7 +76,6 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
-import { useSessionTools } from '@/components/chrome/useSessionTools';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -178,7 +177,6 @@ export function EditorView() {
     connectSourceId,
     cancelConnect,
     selfParticipant,
-    voteSelfId,
     sessionRole,
     sessionShareCode,
     setDocumentName,
@@ -222,7 +220,6 @@ export function EditorView() {
   );
   const role = useRoleIndicator();
 
-  const sessionTools = useSessionTools();
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
   // selection-aware command list + dispatcher, built off the same editor
@@ -381,8 +378,6 @@ export function EditorView() {
             setExportScope('tab');
             setExportOpen(true);
           }}
-          // The timer, the vote and the poll, read once for both of their surfaces (useSessionTools).
-          {...sessionTools}
           otherDocuments={
             // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
             // offline document's tabs nor an offline destination can take part
@@ -403,7 +398,6 @@ export function EditorView() {
           renameActiveNonce={renameTabNonce}
           participantsByTab={participantsByTab}
           selfId={selfParticipant.id}
-          voteSelfId={voteSelfId}
           selfRole={sessionRole}
           onOpenSettings={() => {
             // Preferences are user-scoped, not document-scoped, so

@@ -24,7 +24,6 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import type { TabModeChoice } from './TabModeMenuSection';
 import type { AccessLevel } from '@livediagram/api-schema';
 
@@ -145,8 +144,6 @@ type TabBarProps = {
   // broadcast role per ParticipantPresence), so the badge only appears
   // when the participant id matches `selfId`.
   selfId: string;
-  // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
-  voteSelfId?: string;
   selfRole: AccessLevel;
   // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
   // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
@@ -154,7 +151,7 @@ type TabBarProps = {
   // presence indicators.
   followingId?: string | null;
   onOpenCollaborators?: (participantId: string | null) => void;
-} & SessionToolsProps;
+};
 
 export function TabBar({
   tabs,
@@ -171,26 +168,6 @@ export function TabBar({
   onClearContent,
   onImportTab,
   onExportTab,
-  facilitatedBy,
-  facilitating,
-  timer,
-  vote,
-  onStartTimer,
-  onPauseTimer,
-  onResumeTimer,
-  onResetTimer,
-  onClearTimer,
-  onExtendTimer,
-  onStartVote,
-  onEndVote,
-  onRevealVote,
-  onClearVote,
-  livePoll,
-  pollHasAudience,
-  onStartPoll,
-  pollCollaborators,
-  voteLayers,
-  activeLayerId,
   otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
@@ -201,7 +178,6 @@ export function TabBar({
   renameActiveNonce = 0,
   participantsByTab,
   selfId,
-  voteSelfId,
   selfRole,
   followingId,
   onOpenCollaborators,
@@ -241,7 +217,7 @@ export function TabBar({
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
   // menu and the canvas right-click menu so both drive the exact same
-  // actions (rename / duplicate / folder / session / ...). `close` differs
+  // actions (rename / duplicate / folder / ...). `close` differs
   // per surface — the ellipsis closes via setMenuFor, the canvas menu via
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
@@ -253,7 +229,6 @@ export function TabBar({
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
     selfId,
-    voteSelfId,
     otherDocuments,
     folderNames,
     currentFolder: tabFolderName(tab),
@@ -297,26 +272,6 @@ export function TabBar({
       onDelete(tab.id);
       close();
     },
-    facilitatedBy,
-    facilitating,
-    timer,
-    vote,
-    onStartTimer,
-    onPauseTimer,
-    onResumeTimer,
-    onResetTimer,
-    onClearTimer,
-    onExtendTimer,
-    onStartVote,
-    onEndVote,
-    onRevealVote,
-    onClearVote,
-    livePoll,
-    pollHasAudience,
-    onStartPoll,
-    pollCollaborators,
-    voteLayers,
-    activeLayerId,
   });
 
   const activeTab = tabs.find((t) => t.id === activeId);

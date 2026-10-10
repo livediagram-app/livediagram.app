@@ -540,24 +540,41 @@ export function TeamSharedTree() {
 
 /** The floating timer pill: its kicker, the clock, and (for editors) pause, reset and remove.
  *  A countdown drains left to right, so the tinted part is the time left. */
-/** The Session strip in the bottom bar: the Timer showing its clock over the countdown's drain,
- *  then Vote (live, with its green dot) and Poll, beside the Layers button. */
+/** The Session strip in the bottom bar: the Timer showing its clock over the countdown's drain
+ *  (or its glyph alone, idle), then Vote with your dots left as a badge, and Poll, beside the
+ *  Layers and Theme strip. */
 function SessionStripArt({
   x,
   y,
   time,
   left = 0.7,
+  dotsLeft,
 }: {
   x: number;
   y: number;
-  time: string;
+  // The running timer's clock; absent, the Timer is its glyph alone.
+  time?: string;
   left?: number;
+  dotsLeft: number;
 }) {
   const h = 40;
-  const timerW = 96;
   const seg = 40;
+  const timerW = time ? 96 : seg;
   const w = timerW + seg * 2;
   const glyph = 'fill-none stroke-slate-500';
+  const divider = (dx: number) => (
+    <line
+      x1={dx}
+      y1={y + 6}
+      x2={dx}
+      y2={y + h - 6}
+      className="stroke-slate-100"
+      strokeWidth={1.5}
+    />
+  );
+  const tx = time ? x + 18 : x + seg / 2;
+  const vx = x + timerW + seg / 2;
+  const lx = x + w + 8;
   return (
     <g>
       <rect
@@ -570,73 +587,74 @@ function SessionStripArt({
         strokeWidth={1.5}
       />
       {/* The countdown's drain behind the Timer segment. */}
+      {time ? (
+        <path
+          d={`M${x + 8} ${y + 0.75} H${x + timerW * left} V${y + h - 0.75} H${x + 8} a7.25 7.25 0 0 1 -7.25 -7.25 V${y + 8} a7.25 7.25 0 0 1 7.25 -7.25 Z`}
+          className="fill-brand-100"
+        />
+      ) : null}
+      {/* Timer glyph, and the clock while one runs */}
+      <circle cx={tx} cy={y + 21} r={6} className={glyph} strokeWidth={1.5} />
       <path
-        d={`M${x + 8} ${y + 0.75} H${x + timerW * left} V${y + h - 0.75} H${x + 8} a7.25 7.25 0 0 1 -7.25 -7.25 V${y + 8} a7.25 7.25 0 0 1 7.25 -7.25 Z`}
-        className="fill-brand-100"
-      />
-      {/* Timer glyph */}
-      <circle cx={x + 18} cy={y + 21} r={6} className={glyph} strokeWidth={1.5} />
-      <path
-        d={`M${x + 18} ${y + 21} v-3 M${x + 16} ${y + 12} h4`}
+        d={`M${tx} ${y + 21} v-3 M${tx - 2} ${y + 12} h4`}
         className={glyph}
         strokeWidth={1.5}
         strokeLinecap="round"
       />
-      <Label x={x + 30} y={y + 21} size={14} weight={700} tone="strong">
-        {time}
-      </Label>
-      {/* Vote: a check in a circle, live */}
-      <line
-        x1={x + timerW}
-        y1={y + 6}
-        x2={x + timerW}
-        y2={y + h - 6}
-        className="stroke-slate-100"
-        strokeWidth={1.5}
-      />
-      <circle cx={x + timerW + 20} cy={y + 20} r={7} className={glyph} strokeWidth={1.5} />
+      {time ? (
+        <Label x={x + 30} y={y + 21} size={14} weight={700} tone="strong">
+          {time}
+        </Label>
+      ) : null}
+      {/* Vote: a check in a circle, with your dots left as a badge */}
+      {divider(x + timerW)}
+      <circle cx={vx} cy={y + 20} r={7} className={glyph} strokeWidth={1.5} />
       <path
-        d={`M${x + timerW + 17} ${y + 20} l2.5 2.5 l4 -4.5`}
+        d={`M${vx - 3} ${y + 20} l2.5 2.5 l4 -4.5`}
         className={glyph}
         strokeWidth={1.5}
         strokeLinecap="round"
       />
       <circle
-        cx={x + timerW + 27}
-        cy={y + 13}
-        r={3}
-        className="fill-emerald-500 stroke-white"
+        cx={vx + 8}
+        cy={y + 11}
+        r={6.5}
+        className="fill-brand-500 stroke-white"
         strokeWidth={1.5}
       />
+      <Label x={vx + 8} y={y + 11.5} anchor="middle" size={8} weight={700} tone="onAccent">
+        {dotsLeft}
+      </Label>
       {/* Poll: rising bars */}
-      <line
-        x1={x + timerW + seg}
-        y1={y + 6}
-        x2={x + timerW + seg}
-        y2={y + h - 6}
-        className="stroke-slate-100"
-        strokeWidth={1.5}
-      />
+      {divider(x + timerW + seg)}
       <path
         d={`M${x + timerW + seg + 13} ${y + 27} v-4 M${x + timerW + seg + 20} ${y + 27} v-9 M${x + timerW + seg + 27} ${y + 27} v-13`}
         className={glyph}
         strokeWidth={2}
         strokeLinecap="round"
       />
-      {/* Layers, its own button to the right */}
+      {/* Layers and the Theme & Canvas brush, one strip to the right */}
       <rect
-        x={x + w + 8}
+        x={lx}
         y={y}
-        width={40}
+        width={seg * 2}
         height={h}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       <path
-        d={`M${x + w + 28} ${y + 12} l9 5 l-9 5 l-9 -5 Z M${x + w + 19} ${y + 22} l9 5 l9 -5`}
+        d={`M${lx + 20} ${y + 12} l9 5 l-9 5 l-9 -5 Z M${lx + 11} ${y + 22} l9 5 l9 -5`}
         className={glyph}
         strokeWidth={1.5}
+        strokeLinejoin="round"
+      />
+      {divider(lx + seg)}
+      <path
+        d={`M${lx + seg + 27} ${y + 12} l-9 9 M${lx + seg + 18} ${y + 21} c-3 0 -5 2 -5 6 c3 0 6 -1 6 -4`}
+        className={glyph}
+        strokeWidth={1.5}
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </g>
@@ -691,41 +709,21 @@ function VoteShape({
   );
 }
 
-/** The dots-left banner a vote floats at the top of the canvas. */
-function VoteBannerPill({ x, y, text }: { x: number; y: number; text: string }) {
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <rect
-        width={150}
-        height={26}
-        rx={13}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <circle cx={16} cy={13} r={4} className="fill-brand-500" />
-      <Label x={28} y={14} size={11} weight={600} tone="strong">
-        {text}
-      </Label>
-    </g>
-  );
-}
-
 /** A dot vote in progress with the Session strip below: the timer's clock on its button, the
  *  Vote button lit while the vote runs. */
 export function SessionTools() {
   return (
     <Scene w={420} h={230}>
-      <VoteBannerPill x={135} y={16} text="2 of 3 dots left" />
-      <VoteShape x={20} y={64} label="Idea A" count={3} mine />
-      <VoteShape x={156} y={64} label="Idea B" count={1} />
-      <VoteShape x={292} y={64} label="Idea C" count={0} />
-      <SessionStripArt x={180} y={176} time="4:32" />
+      <VoteShape x={20} y={40} label="Idea A" count={3} mine />
+      <VoteShape x={156} y={40} label="Idea B" count={1} />
+      <VoteShape x={292} y={40} label="Idea C" count={0} />
+      <SessionStripArt x={140} y={176} time="4:32" dotsLeft={2} />
     </Scene>
   );
 }
 
-/** The Session Studio on its Timer pane: the Timer / Vote / Poll switcher, Countdown or Stopwatch,
- *  the dial with its nudge buttons, the presets, and the start button. */
+/** The Timer set-up, as the bottom bar's Timer button opens it: Countdown or Stopwatch, the dial
+ *  with its nudge buttons, the presets, and the start button. */
 export function TimerControl() {
   const presets = ['1', '3', '5', '10', '15', '30'];
   // The dial: one lap is an hour, so a 5 minute wedge is a twelfth of it.
@@ -737,11 +735,9 @@ export function TimerControl() {
   const ey = cy - r * Math.cos(a);
   return (
     <Scene w={420} h={316} bg="plain">
-      <Panel x={88} y={10} w={244} h={298} title="Collaborate">
-        {/* The switcher */}
-        <Tabs x={104} y={42} items={['Timer', 'Vote', 'Poll']} active={0} tabW={70} />
+      <Panel x={88} y={10} w={244} h={298} title="Timer">
         {/* Mode toggle */}
-        <Tabs x={124} y={76} items={['Countdown', 'Stopwatch']} active={0} tabW={86} />
+        <Tabs x={124} y={56} items={['Countdown', 'Stopwatch']} active={0} tabW={86} />
         {/* Dial with the 5 minute wedge and its drag handle, between the nudge buttons */}
         <circle
           cx={cx}
@@ -800,15 +796,15 @@ export function TimerControl() {
   );
 }
 
-/** Dot voting in progress: the dots-left banner, and each votable element's stepper with its
- *  tally (tinted where you have spent your own dots). */
+/** Dot voting in progress: each votable element's stepper with its tally (tinted where you have
+ *  spent your own dots), and your dots left on the Vote button below. */
 export function DotVoting() {
   return (
-    <Scene w={420} h={210}>
-      <VoteBannerPill x={135} y={16} text="1 of 3 dots left" />
-      <VoteShape x={20} y={90} label="Reduce WIP" count={4} mine />
-      <VoteShape x={156} y={90} label="Pair more" count={1} />
-      <VoteShape x={292} y={90} label="Auto tests" count={2} mine />
+    <Scene w={420} h={230}>
+      <VoteShape x={20} y={40} label="Reduce WIP" count={4} mine />
+      <VoteShape x={156} y={40} label="Pair more" count={1} />
+      <VoteShape x={292} y={40} label="Auto tests" count={2} mine />
+      <SessionStripArt x={196} y={176} dotsLeft={1} />
     </Scene>
   );
 }

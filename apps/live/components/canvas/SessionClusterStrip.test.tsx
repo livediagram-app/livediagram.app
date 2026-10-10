@@ -7,7 +7,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TabTimer } from '@livediagram/document';
-import { SessionClusterStrip } from './SessionClusterStrip';
+import { SessionClusterStrip, sessionStripTools } from './SessionClusterStrip';
 
 afterEach(cleanup);
 
@@ -87,5 +87,27 @@ describe('SessionClusterStrip', () => {
     const poll = screen.getByRole('button', { name: 'Start a Poll' });
     fireEvent.click(poll);
     expect(onToggle).toHaveBeenCalledWith('session-poll', poll);
+  });
+
+  it('carries your dots left on the Vote button while casting is open', () => {
+    strip({ voteRunning: true, voteDotsLeft: 2 });
+    const vote = screen.getByRole('button', { name: 'Open Vote (2 dots left)' });
+    expect(vote.textContent).toContain('2');
+  });
+
+  it('leaves Poll out where the mode does not offer it', () => {
+    strip({ offersPoll: false, pollRunning: true });
+    expect(screen.queryByRole('button', { name: /Poll/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open Timer' })).toBeTruthy();
+  });
+});
+
+describe('sessionStripTools', () => {
+  it('offers all three in Diagram, Timer and Vote in Plan, none in Draw or Illustrate', () => {
+    expect(sessionStripTools(undefined)).toEqual({ timer: true, vote: true, poll: true });
+    expect(sessionStripTools('diagram')).toEqual({ timer: true, vote: true, poll: true });
+    expect(sessionStripTools('plan')).toEqual({ timer: true, vote: true, poll: false });
+    expect(sessionStripTools('draw')).toBeNull();
+    expect(sessionStripTools('illustrate')).toBeNull();
   });
 });

@@ -49,6 +49,7 @@ function popover(overrides: Partial<SessionPopoverProps> = {}) {
     onClose: vi.fn(),
     session: session(),
     readOnly: false,
+    holdOpen: true,
     voteSelfId: 'me',
     pollPanel: null,
     vote: {
@@ -59,6 +60,10 @@ function popover(overrides: Partial<SessionPopoverProps> = {}) {
       reviewIndex: null,
       onJumpToResult: () => {},
       isHost: true,
+      review: null,
+      onNextResult: () => {},
+      onPrevResult: () => {},
+      onDoneReview: () => {},
     },
     ...overrides,
   };
@@ -117,7 +122,7 @@ describe('SessionPopover', () => {
     expect(q.session.onEndVote).toHaveBeenCalled();
   });
 
-  it('opens the poll composer while idle, and steps aside once the poll starts', () => {
+  it('opens the poll composer while idle, and stays open once the poll starts', () => {
     const p = popover({ segment: 'session-poll' });
     fireEvent.change(screen.getByLabelText('Poll question'), { target: { value: 'Lunch?' } });
     fireEvent.click(screen.getByRole('radio', { name: /Choices/ }));
@@ -125,7 +130,8 @@ describe('SessionPopover', () => {
     fireEvent.change(screen.getByLabelText('Answer 2'), { target: { value: 'Tacos' } });
     fireEvent.click(screen.getByRole('button', { name: 'Ask everyone' }));
     expect(p.session.onStartPoll).toHaveBeenCalled();
-    expect(p.onClose).toHaveBeenCalled();
+    // Asking keeps the popover: it becomes the Poll panel once the poll runs.
+    expect(p.onClose).not.toHaveBeenCalled();
   });
 
   it('opens the Poll panel while a poll runs, and a Dismiss closes it', () => {
@@ -158,6 +164,7 @@ describe('SessionPopover', () => {
         onClose={() => {}}
         session={session()}
         readOnly
+        holdOpen
         voteSelfId="me"
         pollPanel={null}
         vote={{
@@ -168,6 +175,10 @@ describe('SessionPopover', () => {
           reviewIndex: null,
           onJumpToResult: () => {},
           isHost: false,
+          review: null,
+          onNextResult: () => {},
+          onPrevResult: () => {},
+          onDoneReview: () => {},
         }}
       />,
     );
@@ -179,5 +190,97 @@ describe('SessionPopover', () => {
     expect(screen.getByText('Sam')).toBeTruthy();
     const start = screen.getByRole('button', { name: /Start 5 min countdown/ });
     expect(start.closest('fieldset')?.disabled).toBe(true);
+  });
+
+  it('leads the Vote panel with your dots left while casting is open', () => {
+    popover({
+      segment: 'session-vote',
+      session: session({ vote: openVote }),
+      vote: {
+        tabVote: openVote,
+        elements: [],
+        participantCount: 2,
+        results: [],
+        reviewIndex: null,
+        onJumpToResult: () => {},
+        isHost: true,
+        review: null,
+        onNextResult: () => {},
+        onPrevResult: () => {},
+        onDoneReview: () => {},
+      },
+    });
+    expect(screen.getByText('2 of 3 dots left')).toBeTruthy();
+  });
+
+  it('runs the results walkthrough from the Vote panel for whoever drives it', () => {
+    const onNextResult = vi.fn();
+    const onDoneReview = vi.fn();
+    const revealed: TabVote = { ...openVote, active: false, revealed: true };
+    const base = {
+      tabVote: revealed,
+      elements: [],
+      participantCount: 2,
+      results: [
+        { id: 'a', votes: 2 },
+        { id: 'b', votes: 1 },
+      ],
+      reviewIndex: 0,
+      onJumpToResult: () => {},
+      isHost: true,
+      onNextResult,
+      onPrevResult: () => {},
+      onDoneReview,
+    };
+    popover({
+      segment: 'session-vote',
+      session: session({ vote: revealed }),
+      vote: { ...base, review: { focusId: 'a', index: 0, total: 2, votes: 2, canControl: true } },
+    });
+    expect(screen.getByText(/Top result 1 of 2/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(onNextResult).toHaveBeenCalled();
+    cleanup();
+    popover({
+      segment: 'session-vote',
+      session: session({ vote: revealed }),
+      vote: { ...base, review: { focusId: 'b', index: 1, total: 2, votes: 1, canControl: true } },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(onDoneReview).toHaveBeenCalled();
+    cleanup();
+    popover({
+      segment: 'session-vote',
+      session: session({ vote: revealed }),
+      vote: { ...base, review: { focusId: 'a', index: 0, total: 2, votes: 2, canControl: false } },
+    });
+    expect(screen.getByText(/Top result 1 of 2/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Next' })).toBeNull();
+  });
+
+  it('keeps a running tool open on an outside press while holding, and not while idle', () => {
+    const running = popover({
+      segment: 'session-vote',
+      session: session({ vote: openVote }),
+      vote: {
+        tabVote: openVote,
+        elements: [],
+        participantCount: 2,
+        results: [],
+        reviewIndex: null,
+        onJumpToResult: () => {},
+        isHost: true,
+        review: null,
+        onNextResult: () => {},
+        onPrevResult: () => {},
+        onDoneReview: () => {},
+      },
+    });
+    fireEvent.pointerDown(document.body);
+    expect(running.onClose).not.toHaveBeenCalled();
+    cleanup();
+    const idle = popover({ segment: 'session-vote' });
+    fireEvent.pointerDown(document.body);
+    expect(idle.onClose).toHaveBeenCalled();
   });
 });

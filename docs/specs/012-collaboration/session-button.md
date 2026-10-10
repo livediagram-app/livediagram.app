@@ -35,8 +35,8 @@ Right-click → **Session**: the button's one setting — minutes for a timer, d
 
 ### A stopwatch is its own tool, not a timer mode
 
-`SESSION_TOOLS` is `timer | stopwatch | vote | poll`. The Session Studio keeps
-one Timer tool with a Countdown / Stopwatch toggle, because the Studio is where
+`SESSION_TOOLS` is `timer | stopwatch | vote | poll`. The Session strip keeps
+one Timer tool with a Countdown / Stopwatch toggle, because its Timer set-up is where
 you choose which kind of clock to run. An ELEMENT is not: it is a countdown you
 placed on a canvas, with a length, and the question its `…` answers is "how
 long".
@@ -59,8 +59,8 @@ on", never a silent restart.
 ### One answer cap, not two
 
 The button's answer list is capped by `POLL_OPTIONS_MAX` — the same number the
-Session Studio uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
-and the two drifted the instant the poll cap went to 10: the Studio offered ten
+Session strip's poll composer uses. It used to have its own `SESSION_POLL_MAX_OPTIONS = 6`,
+and the two drifted the instant the poll cap went to 10: the composer offered ten
 answers while this menu silently stopped at six, with no hint which number was
 real. Two constants for one idea will always produce that, so there is one now,
 declared beside `PollStyle` in `@livediagram/document` for the same reason that
@@ -70,7 +70,7 @@ depends on document rather than the reverse.
 ### A poll button carries its ANSWER STYLE, not just its answers
 
 `session.style` is a [Live poll (ephemeral pulse-check)](live-poll.md) `PollStyle` — the same five the
-tab menu's poll composer offers, from the same list — so a button can ask
+Session strip's poll composer offers, from the same list — so a button can ask
 Yes / No, + Abstain, your own **Choices**, a 1-5 **Rating**, or **Free text**.
 
 It has to be stored, because the press has to say which one. It originally

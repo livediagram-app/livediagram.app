@@ -23,9 +23,7 @@ import {
   MenuToolbar,
   MenuToolButton,
 } from '@/components/primitives/MenuTiles';
-import { CollaborateMenuIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
-import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
-import { SessionStudio } from '@/components/panels/session-studio/SessionStudio';
+import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { TabCanvasMenuSections } from './TabCanvasMenuSections';
 import { TabModeMenuSection, type TabModeChoice } from './TabModeMenuSection';
 import {
@@ -41,7 +39,6 @@ import {
   Portal,
 } from '@livediagram/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
-import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 
 // The unified tab / canvas portal menu (actions, copy-to-document, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
@@ -62,7 +59,6 @@ export function PortalMenu({
   modeChoice,
   planTab = false,
   selfId,
-  voteSelfId,
   otherDocuments,
   folderNames,
   currentFolder,
@@ -71,7 +67,6 @@ export function PortalMenu({
   onDelete,
   canClearContent,
   canDelete,
-  ...session
 }: {
   // Positioned EITHER above an anchor button (tab ellipsis) OR at a screen
   // point (canvas right-click / footer button). Exactly one is provided.
@@ -96,9 +91,6 @@ export function PortalMenu({
   planTab?: boolean;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
-  // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): the collab key, never the owner
-  // id. Falls back to `selfId` for a caller that doesn't run a vote.
-  voteSelfId?: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
@@ -107,7 +99,7 @@ export function PortalMenu({
   onDelete: () => void;
   canDelete: boolean;
   canClearContent: boolean;
-} & SessionToolsProps) {
+}) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
   // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
   // document) and "folder" (docs/specs/006-document/tab-folders.md, file the tab into a tab-bar folder) —
@@ -125,16 +117,6 @@ export function PortalMenu({
     onToggle: () => setOpenSection((s) => (s === id ? null : id)),
     // Rows sit flush (no per-row hairline); the only rules are the
     // MenuGroupSeparator bands, matching the element context menu.
-    flush: true,
-  });
-  // Which side-flyout row is open — SEPARATE from openSection, because the
-  // accordions nested inside a flyout draw from that same pool and would
-  // otherwise close their own parent. Mirrors useContextMenuScaffold's
-  // split for the element menu's Style / Text / Tools rows.
-  const [openFlyout, setOpenFlyout] = useState<string | null>(null);
-  const flyoutProps = (id: string) => ({
-    open: openFlyout === id,
-    onToggle: () => setOpenFlyout((f) => (f === id ? null : id)),
     flush: true,
   });
   // Delete confirmation: an inline popover anchored to the Delete row
@@ -241,10 +223,9 @@ export function PortalMenu({
       // it; its buttons must not dismiss the menu they're pointing at.
       const inTour =
         e.target instanceof Element && e.target.closest('[data-tour-popover]') !== null;
-      // A MenuFlyoutSection (the Collaborate row) portals its panel to
-      // <body> to escape this menu's overflow-hidden, so every click
-      // inside it — picking Poll, typing a question — lands "outside"
-      // and used to close the whole menu, making the flyout unusable.
+      // A MenuFlyoutSection (a canvas section's side panel) portals its
+      // panel to <body> to escape this menu's overflow-hidden, so every
+      // click inside it lands "outside" and would close the whole menu.
       // The panel marks itself data-menu-flyout for exactly this; the
       // element ContextMenu and the primitives PortalMenu already honour
       // it, and this dismisser is the third that had to.
@@ -459,31 +440,6 @@ export function PortalMenu({
           {canvas ? (
             <TabCanvasMenuSections canvas={canvas} onClose={onClose} sectionProps={sectionProps} />
           ) : null}
-          {/* ── Collaborate: the live session tools (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md) in
-            ONE side-flyout panel, the Session Studio: a switcher for
-            Timer / Vote / Poll over a purpose-built pane per tool.
-            Timer and vote are per-tab state; the poll lives only in the
-            realtime room and leaves no trace on the document. ── */}
-          <MenuGroupSeparator />
-          <MenuFlyoutSection
-            title="Collaborate"
-            icon={<CollaborateMenuIcon />}
-            panel
-            {...flyoutProps('collaborate')}
-          >
-            <SessionStudio
-              {...session}
-              selfId={voteSelfId ?? selfId}
-              // Starting a poll puts the question on screen for everyone,
-              // including the facilitator, and this menu sits right on top
-              // of it. Close on start: the poll panel carries the results
-              // and the End control from here on.
-              onStartPoll={(draft) => {
-                session.onStartPoll(draft);
-                onClose();
-              }}
-            />
-          </MenuFlyoutSection>
         </>
       ) : null}
     </>
