@@ -119,7 +119,8 @@ The server decides everything that matters:
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour
   (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
-  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours.
+  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
+  deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
 
 The email reads **"{author} mentioned you in {document}"**, quotes the
 comment, and has one button, **Open the document** (for a card's comment, **Open the card**, linking

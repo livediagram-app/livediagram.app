@@ -121,6 +121,9 @@ export async function deleteAccount(
   await env.DB.prepare('DELETE FROM email_lifecycle WHERE owner_id = ?').bind(ownerId).run();
   // auth_accounts (docs/specs/017-telemetry/telemetry.md): the first-seen row the sign-up count keys on.
   await env.DB.prepare('DELETE FROM auth_accounts WHERE owner_id = ?').bind(ownerId).run();
+  // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
+  // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
+  await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): revoke the grant
   // at Google and drop the connection and every mirror row. The Drive files are
   // the user's and stay.
