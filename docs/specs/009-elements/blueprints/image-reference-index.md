@@ -35,7 +35,7 @@ Scope, by file (all under `apps/api/`):
 | Dangling reference | a reference whose `tab_id` is not in `tabs` | Never counted; pruned by the delete paths and the sweep                     |
 | Backfill           | `image_refs_backfill` row `id = 1`          | Progress of indexing tabs saved before 0050                                 |
 | Complete           | `completed_at IS NOT NULL`                  | Every tab is indexed; readers trust the index alone                         |
-| Tripwire           | `sweepTripped(old, unused)`                 | The sweep's refusal to delete a suspicious share                            |
+| Tripwire           | `sweepTripped(old, unused)`                 | The sweep slowing to one capped page on a suspicious share                  |
 
 Banned synonyms: "image usage table", "image links", "refcount". A reference is never counted, only present or absent.
 
@@ -112,7 +112,9 @@ the isolate's life (`D2`); `resetImageRefIndexMemo()` clears it for tests.
 1. No `IMAGES` binding: return 0.
 2. Not complete: log, return 0.
 3. One pass: `SELECT COUNT(*) AS old, COALESCE(SUM(NOT live), 0) AS unused FROM images WHERE created_at < ?`.
-4. `unused = 0`: return 0. `sweepTripped(old, unused)`: error-log the tripwire line, return 0.
+4. `unused = 0`: return 0. `sweepTripped(old, unused)`: error-log the tripwire line, then select at most
+   `IMAGE_SWEEP_TRIPPED_MAX` unreferenced old ids `ORDER BY created_at, id`, reap that one page as in step 5 and
+   return its count.
 5. Keyset pages on `id` (`id > last`), `IMAGE_SWEEP_PAGE` at a time, of unreferenced old ids:
    `DELETE FROM images WHERE id IN (json_each(?)) AND NOT live RETURNING id`; for the returned ids,
    `DELETE FROM image_refs WHERE image_id IN (…)` then `IMAGES.delete(ids)`; an R2 throw is logged with the ids and
@@ -157,7 +159,9 @@ foreign keys (migration 0075, which also grants every reference that already cro
 - I1: after any committed writer batch, the tab's references equal its body ids (replace writers) or include them
   (add-only writers).
 - I2: no reader counts a dangling reference.
-- I3: the sweep deletes nothing while the backfill is incomplete or the tripwire holds.
+- I3: the sweep deletes nothing while the backfill is incomplete, and at most `IMAGE_SWEEP_TRIPPED_MAX` (the oldest
+  unreferenced) while the tripwire holds; a tripped run never deletes zero when there is something to reap, so the
+  tripwire cannot latch.
 - I4: an image with a live reference at the instant of its `DELETE` statement is not deleted.
 
 ## Interfaces and contracts
@@ -272,7 +276,7 @@ rebuilds `tabs` must keep tab ids (the index is keyed on them); nothing cascades
 | Image placed between count and delete                  | The `DELETE` re-checks; it survives                                       |
 | Unused count an exact multiple of the page             | A final empty page ends the loop                                          |
 | R2 delete fails after D1 delete                        | Objects stay (bytes kept); ids logged; next page continues                |
-| Unreferenced share over the tripwire                   | Nothing deleted; error logged; repeats daily                              |
+| Unreferenced share over the tripwire                   | At most one capped page, oldest first; error logged; drains over runs     |
 | No `IMAGES` binding                                    | Sweep is a no-op; the index is still maintained                           |
 
 ## Security and trust
@@ -309,19 +313,19 @@ bodies inside D1; the run stops after 60 s of wall clock, inside the cron's limi
 
 ## Observability
 
-| Fingerprint                                                                 | Level | When                           |
-| --------------------------------------------------------------------------- | ----- | ------------------------------ |
-| `image-refs backfill: settling`                                             | info  | Run inside the settle hour     |
-| `image-refs backfill: indexed tabs <from>..<to>`                            | info  | Budget spent, not yet complete |
-| `image-refs backfill: corrupt tab <id> scanned as text (<n> ids)`           | warn  | Text scan used                 |
-| `image-refs backfill: state row missing; restarting`                        | warn  | Row recreated                  |
-| `image-refs backfill: complete at cursor <n>`                               | info  | Completion                     |
-| `image-refs backfill failed`                                                | error | The run threw                  |
-| `image sweep: paused, reference index backfill incomplete`                  | info  | Sweep gated                    |
-| `image-sweep-tripwire: <u> of <o> old images unreferenced; nothing deleted` | error | Tripwire                       |
-| `image sweep: R2 delete failed`                                             | error | R2 threw after the D1 delete   |
-| `image sweep: deleted N images older than <cutoff>`                         | info  | End of every sweep             |
-| `image sweep failed`                                                        | error | The sweep threw                |
+| Fingerprint                                                                                      | Level | When                           |
+| ------------------------------------------------------------------------------------------------ | ----- | ------------------------------ |
+| `image-refs backfill: settling`                                                                  | info  | Run inside the settle hour     |
+| `image-refs backfill: indexed tabs <from>..<to>`                                                 | info  | Budget spent, not yet complete |
+| `image-refs backfill: corrupt tab <id> scanned as text (<n> ids)`                                | warn  | Text scan used                 |
+| `image-refs backfill: state row missing; restarting`                                             | warn  | Row recreated                  |
+| `image-refs backfill: complete at cursor <n>`                                                    | info  | Completion                     |
+| `image-refs backfill failed`                                                                     | error | The run threw                  |
+| `image sweep: paused, reference index backfill incomplete`                                       | info  | Sweep gated                    |
+| `image-sweep-tripwire: <u> of <o> old images unreferenced; deleting at most <cap>, oldest first` | error | Tripwire                       |
+| `image sweep: R2 delete failed`                                                                  | error | R2 threw after the D1 delete   |
+| `image sweep: deleted N images older than <cutoff>`                                              | info  | End of every sweep             |
+| `image sweep failed`                                                                             | error | The sweep threw                |
 
 ## Testing
 
@@ -343,16 +347,17 @@ All run against `src/test-sqlite-d1.ts` (real SQLite, every migration); shared a
 
 ## Constants and configuration
 
-| Constant                        | Value     | Provenance                          | Safe range    |
-| ------------------------------- | --------- | ----------------------------------- | ------------- |
-| `IMAGE_REF_ID_MAX_LENGTH`       | 128       | Spec; gallery ids are 36-char UUIDs | 36 to 512     |
-| `IMAGE_REFS_BACKFILL_PAGE_ROWS` | 100       | Spec                                | 10 to 1000    |
-| `IMAGE_REFS_BACKFILL_SETTLE_MS` | 3 600 000 | Spec (one hour)                     | ≥ one deploy  |
-| `IMAGE_REFS_BACKFILL_BUDGET_MS` | 60 000    | Spec (one minute)                   | 1 s to 10 min |
-| `UNUSED_IMAGE_RETENTION_MS`     | 30 days   | Spec                                | ≥ 7 days      |
-| `IMAGE_SWEEP_PAGE`              | 1000      | Spec; R2 `delete()` key limit       | 1 to 1000     |
-| `IMAGE_SWEEP_TRIPWIRE_RATIO`    | 0.5       | Spec (operator decision)            | 0 to 1        |
-| `IMAGE_SWEEP_TRIPWIRE_MIN`      | 20        | Spec (operator decision)            | ≥ 0           |
+| Constant                        | Value                     | Provenance                          | Safe range              |
+| ------------------------------- | ------------------------- | ----------------------------------- | ----------------------- |
+| `IMAGE_REF_ID_MAX_LENGTH`       | 128                       | Spec; gallery ids are 36-char UUIDs | 36 to 512               |
+| `IMAGE_REFS_BACKFILL_PAGE_ROWS` | 100                       | Spec                                | 10 to 1000              |
+| `IMAGE_REFS_BACKFILL_SETTLE_MS` | 3 600 000                 | Spec (one hour)                     | ≥ one deploy            |
+| `IMAGE_REFS_BACKFILL_BUDGET_MS` | 60 000                    | Spec (one minute)                   | 1 s to 10 min           |
+| `UNUSED_IMAGE_RETENTION_MS`     | 30 days                   | Spec                                | ≥ 7 days                |
+| `IMAGE_SWEEP_PAGE`              | 1000                      | Spec; R2 `delete()` key limit       | 1 to 1000               |
+| `IMAGE_SWEEP_TRIPPED_MAX`       | 1000 (`IMAGE_SWEEP_PAGE`) | Spec; one R2 call a tripped day     | 1 to `IMAGE_SWEEP_PAGE` |
+| `IMAGE_SWEEP_TRIPWIRE_RATIO`    | 0.5                       | Spec (operator decision)            | 0 to 1                  |
+| `IMAGE_SWEEP_TRIPWIRE_MIN`      | 20                        | Spec (operator decision)            | ≥ 0                     |
 
 ## Defaults ledger
 

@@ -1,11 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { resetImageRefIndexMemo } from './image-refs';
-import { deleteOldUnusedImages, IMAGE_SWEEP_PAGE, sweepTripped } from './image-retention';
+import {
+  deleteOldUnusedImages,
+  IMAGE_SWEEP_PAGE,
+  IMAGE_SWEEP_TRIPPED_MAX,
+  sweepTripped,
+} from './image-retention';
 import { deleteDocument } from './documents';
 import { upsertTab } from './tabs';
 import {
   CUTOFF,
+  DAY,
   liveDoc,
   ids,
   imageIds,
@@ -112,15 +118,38 @@ describe('deleteOldUnusedImages', () => {
     expect(db.bucket.delete).not.toHaveBeenCalled();
   });
 
-  it('trips, deleting nothing, when most old images look unreferenced', async () => {
+  it('trips, logging loudly, but still deletes up to its cap when most old images look unreferenced', async () => {
     const db = setup();
     images(db.sql, OLD, ...ids('lost', 21));
     const error = vi.spyOn(console, 'error').mockImplementation(() => {});
-    expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(0);
-    expect(imageIds(db.sql)).toHaveLength(21);
+    expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(21);
+    expect(imageIds(db.sql)).toEqual([]);
     expect(error).toHaveBeenCalledWith(
-      'image-sweep-tripwire: 21 of 21 old images unreferenced; nothing deleted',
+      `image-sweep-tripwire: 21 of 21 old images unreferenced; deleting at most ${IMAGE_SWEEP_TRIPPED_MAX}, oldest first`,
     );
+  });
+
+  it('never latches: a tripped backlog drains one capped page per run, oldest first', async () => {
+    const db = setup();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Unused images far outnumber the one in use, as after a large Trash purge.
+    liveDoc(db.sql, 'A');
+    images(db.sql, OLD, 'used');
+    db.sql.exec("INSERT INTO tabs (id, name, data, updated_at) VALUES ('t', 't', '{}', 0)");
+    db.sql.exec("INSERT INTO image_refs (tab_id, image_id) VALUES ('t', 'used')");
+    const ancient = ids('ancient', 5);
+    images(db.sql, OLD - DAY, ...ancient);
+    images(db.sql, OLD, ...ids('later', IMAGE_SWEEP_TRIPPED_MAX));
+
+    expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(IMAGE_SWEEP_TRIPPED_MAX);
+    expect(db.bucket.delete).toHaveBeenCalledTimes(1);
+    const left = imageIds(db.sql);
+    expect(left.filter((id) => id.startsWith('ancient'))).toEqual([]);
+    expect(left).toHaveLength(5 + 1);
+
+    // The next run (5 of 6 unused, under the tripwire count) reaps the rest.
+    expect(await deleteOldUnusedImages(db.env, CUTOFF)).toBe(5);
+    expect(imageIds(db.sql)).toEqual(['used']);
   });
 
   it('pages through more unused images than one R2 call takes', async () => {
