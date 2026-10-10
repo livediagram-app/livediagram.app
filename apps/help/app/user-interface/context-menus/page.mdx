@@ -18,18 +18,19 @@ export const metadata = helpMetadata({
 
 A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
 
-<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, text, and collaboration.">
+<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, text, animation and collaboration.">
   <ElementContextMenu />
 </Figure>
 
 ## On an element
 
-The element menu is where an element is **styled and described**. It is built from collapsible sections, and which ones appear depends on what you clicked. For a shape:
+The element menu is where an element is **styled and described**. It is built from collapsible sections, with Style and Text opening to the side, and which ones appear depends on what you clicked. For a shape:
 
 - **Layer**: **Bring to Front**, **Send to Back**, moving it to another [layer](/help/canvas/layers/), and its opacity.
 - **Size**, **Shape** (change the kind of shape) and **Rotation**.
 - **Style**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text and background, with **Reset to Theme**) and **Border**.
-- **Text**: font, size, alignment and markers.
+- **Text** (once it has text): font, size, padding, alignment and markers.
+- **Animation**: how it enters and exits (see [Animations](/help/canvas/animations/)).
 - **Collaborate**: **Add Comment** and **Assign Action**. **Resources**: a link and a note.
 
 An arrow's menu has **Line** (straight, curved or angled, pattern and thickness) and **Pointer** (its arrowheads) instead of the shape sections, and images, tables, icons and data elements each add a section of their own.
@@ -40,18 +41,18 @@ On a desktop pointer, the style controls **preview on hover**: rest the pointer 
 
 ## On empty canvas
 
-Right-click empty canvas and you get the **tab menu** (below) with **Paste** leading it, since a right-click on empty space is usually "paste what I copied". Pasted elements land just offset from where they were copied, selected and ready to drag into place.
+Right-click empty canvas and you get the **tab menu** (below) with a labelled **Paste** row straight under the quick actions, since a right-click on empty space is usually "paste what I copied". Pasted elements land just offset from where they were copied, selected and ready to drag into place.
 
 ## On a tab
 
 Right-click a tab in the [tab bar](/help/user-interface/tab-bar/), or use its **⋯** button, for the tab menu:
 
-- A row of quick actions: **Rename**, **Duplicate**, **Paste**, **Side by Side**, **Lock Tab** (or **Unlock Tab**), and **Delete**, which asks you to confirm and is unavailable while the tab is locked.
-- Then full-width rows, in groups split by a line: **Add to Folder** (a [tab folder](/help/tabs/tab-folders/)) and **Add to Document** (copy it into another document); **Import**, **Export** and **Clear**; and the modes, **Diagram**, **Draw**, **Illustrate** and **Plan**, the tab's [editor mode](/help/canvas/editor-modes/#one-mode-for-everyone), the same for everyone, with a dot on the current one. Choosing one switches the tab.
+- A row of quick actions: **Rename**, **Duplicate**, **Paste**, **Side by Side** (**Close Side by Side** while a split is open; not on a phone or with only one tab), **Lock Tab** (or **Unlock Tab**), and **Delete**, which asks you to confirm and is unavailable while the tab is locked or when it is the document's only tab.
+- Then full-width rows, in groups split by a line: **Add to Folder** (a [tab folder](/help/tabs/tab-folders/)) and **Add to Document** (link it into another of your documents, so it stays one live tab and edits show in both places; not available for Plan tabs); **Import**, **Export** and **Clear**; and the modes, **Diagram**, **Draw**, **Illustrate** and **Plan**, the tab's [editor mode](/help/canvas/editor-modes/#one-mode-for-everyone), the same for everyone, with a dot on the current one (not shown while the tab is locked). Choosing one switches the tab.
 
 The layout tidiers, Auto Layout and Auto-align, are in the [command palette](/help/search-panel/the-search-panel/command-palette/) rather than this menu. See [Layout Cleanup](/help/tools/layout-cleanup/).
 
-A tab's theme and canvas background are not in this menu: they are behind the **Theme & canvas** paintbrush in the bottom-right corner. See [Themes](/help/canvas/themes/). Nor are the timer, vote and poll: they have their own buttons in the bottom bar. See [Session Tools](/help/collaboration/session-tools/).
+A tab's theme and canvas background are not in this menu: they are behind the **Theme & canvas** paintbrush in the bottom-right corner. See [Themes](/help/canvas/themes/). Nor are the timer, vote and poll: they have their own buttons in the bottom-right corner, in Diagram and Plan modes. See [Session Tools](/help/collaboration/session-tools/).
 
 View-only visitors get no element or tab menu, since everything in them changes the document.
 
