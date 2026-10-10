@@ -407,7 +407,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Structure',
-        us: 'Templates, tabs, folders, layers, themes, four editor modes',
+        us: 'Templates, tabs, folders, layers, themes, five editor modes',
         them: 'A freeform canvas (Excalidraw+ adds workspaces and presentations)',
       },
       {

@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 28,
+    articleCount: 29,
     kind: 'feature',
   },
   {
@@ -1287,9 +1287,9 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Illustrate and Plan: what each mode is for, the mode switch, Shift+D and Opens in.',
+      'Diagram, Draw, Illustrate, Plan and Facilitate: what each mode is for, the mode switch, Shift+D and Opens in.',
     keywords:
-      'editor mode editor modes mode switch switch mode change mode modes diagram draw illustrate plan shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
+      'editor mode editor modes mode switch switch mode change mode modes diagram draw illustrate plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1310,6 +1310,16 @@ export const articles: Article[] = [
       'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
     keywords:
       'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'facilitate-mode',
+    title: 'Facilitate Mode',
+    description:
+      'Run a session on any tab: retros, town halls and workshops, with timers, votes, polls and reveals.',
+    keywords:
+      'facilitate mode facilitation facilitator session sessions run a session workshop meeting team meeting retro retrospective town hall all hands lean coffee crazy eights icebreaker q&a questions agenda timer countdown stopwatch vote dot vote voting poll survey pulse check reveal hide estimate planning poker quiz temperature check fist of five idea box anonymous picker random spin reactions confetti stickers emoji sticker badge collaborate category session strip blank session editor mode switch shift+d where did the timer go where are stickers missing tools moved',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

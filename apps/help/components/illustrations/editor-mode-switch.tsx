@@ -2,7 +2,7 @@
 // (docs/specs/018-help/help-app.md): the mode switch beside the menu button with its menu open
 // (chrome/editor-mode/ModeMenuChip.tsx), and Draw mode's dock across the top of the canvas
 // (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout:
-// the four modes, the ⇧D hint on the row the key leads to, the dock's tools and their keys.
+// the five modes, the ⇧D hint on the row the key leads to, the dock's tools and their keys.
 
 import type { ReactNode } from 'react';
 import { Scene, Label } from './primitives';
@@ -38,6 +38,13 @@ function ModeGlyph({ mode, tone = 'slate' }: { mode: string; tone?: 'slate' | 'b
           <path d="M-2.5 -2.5 h5 M-2.5 0.5 h5 M-2.5 3 h3" {...common} />
         </g>
       );
+    case 'Facilitate':
+      return (
+        <g>
+          <rect x={-5} y={-6} width={10} height={7} rx={0.8} {...common} />
+          <path d="M-6.5 -6 h13 M0 1 v5 M-3 1 l-2 5 M3 1 l2 5" {...common} />
+        </g>
+      );
     default:
       return (
         <g>
@@ -49,16 +56,16 @@ function ModeGlyph({ mode, tone = 'slate' }: { mode: string; tone?: 'slate' | 'b
   }
 }
 
-const MODES = ['Diagram', 'Draw', 'Illustrate', 'Plan'];
+const MODES = ['Diagram', 'Draw', 'Illustrate', 'Plan', 'Facilitate'];
 
-/** The mode switch beside the menu button in the top-left card, its menu open: the four modes,
+/** The mode switch beside the menu button in the top-left card, its menu open: the five modes,
  *  the current one checked, and ⇧D on the row the key leads to. */
 export function ModeSwitchScene() {
   const mx = 40;
   const my = 64;
   const rowH = 26;
   return (
-    <Scene w={420} h={190}>
+    <Scene w={420} h={200}>
       <MenuCard x={12} y={14} />
       <Strip x={82} y={14} />
       {/* The menu, hanging below the switch */}

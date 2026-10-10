@@ -295,7 +295,8 @@ running they get no strip. While somebody else [facilitates](facilitator.md), an
 panes are disabled under a note naming them.
 
 **Which tools a mode offers** (`sessionStripTools`): **Facilitate** has all three
-([Facilitate mode](facilitate-mode.md#the-session-strip-per-mode)); **Plan** has Timer and
+([Facilitate mode](facilitate-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
+workshop that is always Diagram; **Plan** has Timer and
 Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) but no Poll; **Diagram**,
 **Draw** and **Illustrate** have no strip, keeping their bottom bar to their own tools, even while a
 tool runs (a session button on the canvas still starts one there). A popover whose button

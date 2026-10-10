@@ -1,0 +1,56 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Facilitate Mode',
+  description:
+    'Switch a tab into Facilitate mode to run a session with your team: retros, town halls, lean coffee and workshops, with timers, dot votes, polls, reveals and stickers to hand.',
+  path: '/help/canvas/facilitate-mode/',
+});
+
+<ArticleLayout
+  title="Facilitate Mode"
+  description="Run a session with your team: timers, votes, polls and reveals."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+**Facilitate mode** is a way of working on a tab, made for running a session with your team: a retrospective, a town hall, a lean coffee, a planning workshop or a quick icebreaker. It puts the tools that run a room in front of you (timers, dot votes, polls, reveals, quizzes, stickers) and keeps them out of the way when you are drawing a diagram.
+
+Facilitate is one of the five [editor modes](/help/canvas/editor-modes/), beside Diagram, Draw, Illustrate and Plan, and it is on for everyone: there is nothing to turn on in Settings.
+
+## What Facilitate Mode Changes
+
+- **The palette** opens on a **Popular** of session tools: Sticky note, Text, Frame, Arrow, the Timer, Vote and Poll buttons, Reveal zone, Agenda, Idea box, Q&A board and Temperature check. It also offers Shapes, Write, Draw, Build, Icons, **Stickers**, Media and **Collaborate**, the whole session kit, from estimates and quizzes to pickers and reactions. See [Collaborate](/help/palette/behaviour/).
+- **The bottom-right corner** gains the **Timer**, **Vote** and **Poll** buttons, right after Undo and Redo. See [Session Tools](/help/collaboration/session-tools/).
+- **Everything else works as in Diagram mode:** selection, arrows, text, sticky notes, snapping, undo and shortcuts.
+
+## What Moved Out of Diagram
+
+Diagram mode is for diagrams, so the session kit now lives here:
+
+- **Collaborate** and **Stickers** are no longer in Diagram's palette. Diagram keeps the **Comment panel** and the **Action card** in its Write category, since comments and actions belong to every mode.
+- **The Timer, Vote and Poll buttons** are no longer in Diagram's bottom-right corner.
+- **Nothing on your tabs changes.** Session elements already on a tab keep working in every mode: a session button still starts its timer, a reveal zone still reveals and a quiz still takes answers.
+- **The element search still finds them.** Search for "timer" or a sticker from Diagram mode and it is still there, under **Not in Diagram Mode**, and it is placed without switching mode. See [Toolbar Layout](/help/palette/toolbar-layout/).
+
+## Switching Modes
+
+- Press the mode switch and choose **Facilitate**, or press **Shift+D** until you reach it. The switch sits beside the menu button at the top left.
+- **On a phone** there is no mode switch: open the tab menu and choose **Facilitate** from its mode rows.
+- **One mode for everyone:** the mode belongs to the tab, so when someone who can edit switches it, everyone on the tab moves to Facilitate together, and **Undo** switches it back.
+- **Participants and viewers** have no mode switch: they see the tab in its mode. Participants take part in everything that is running (they vote, answer polls and add sticky notes); viewers watch.
+
+## Starting a Session
+
+- **A new document:** in the New Document wizard, pick **Blank Session** on the **Popular** shelf, or choose **Facilitate** beside the search box to see the session templates. **Blank Session** is one empty tab in Facilitate mode.
+- **Session templates open in Facilitate:** the retrospectives (Retrospective, Start, Stop, Continue, Mad, Sad, Glad, 4Ls and Sailboat), Town Hall Q&A, Lean Coffee, Crazy Eights and Meeting Agenda. Team Retro stays in [Plan mode](/help/canvas/plan-mode/), since it is a board of cards.
+- **Any tab:** switch it to Facilitate when the session starts, and back to Diagram when you are done. Everything on it stays where it is.
+
+<Tip>
+  Share a Participant pass with everyone in the session, so they can vote, answer polls and add
+  sticky notes, and hand the [facilitator](/help/collaboration/facilitator/) baton to whoever is
+  running it, so only they start and end the tools.
+</Tip>
+
+</ArticleLayout>

@@ -373,6 +373,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="16.6" y="7" width="3" height="3" rx="0.6" />
     </Glyph>
   ),
+  // Three people round a speech bubble: a team in a session, someone asking the room.
+  'facilitate-mode': (
+    <Glyph>
+      <path d="M8 3h8a1.5 1.5 0 0 1 1.5 1.5v3A1.5 1.5 0 0 1 16 9h-3l-2 2v-2H8A1.5 1.5 0 0 1 6.5 7.5v-3A1.5 1.5 0 0 1 8 3z" />
+      <circle cx="5" cy="15" r="2" />
+      <circle cx="12" cy="14.5" r="2" />
+      <circle cx="19" cy="15" r="2" />
+      <path d="M1.5 21c0.6-2 1.8-3 3.5-3s2.9 1 3.5 3M8.5 21c0.6-2 1.8-3.3 3.5-3.3s2.9 1.3 3.5 3.3M15.5 21c0.6-2 1.8-3 3.5-3s2.9 1 3.5 3" />
+    </Glyph>
+  ),
   // A card with a number and a type stripe: one item.
   items: (
     <Glyph>

@@ -100,7 +100,7 @@ Facilitate's layout, in order:
 
 ## The Session strip per mode
 
-`sessionStripTools(mode)`:
+`sessionStripTools(mode, esBoard)`:
 
 | Mode       | Strip tools       |
 | ---------- | ----------------- |
@@ -109,6 +109,9 @@ Facilitate's layout, in order:
 | Diagram    | none              |
 | Draw       | none (as today)   |
 | Illustrate | none (as today)   |
+
+- **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
+  switch, so it could never reach Facilitate's strip; the tab kind brings the strip itself.
 
 - **Diagram has no strip, running or not.** A timer, vote or poll started on a Diagram tab (by a
   session button on it, or before the tab was switched out of Facilitate) runs as before and shows
@@ -170,7 +173,7 @@ as for a viewer, as every mode does.
 
 ## Help
 
-- **Facilitate mode** gets its own help article (`/help/collaboration/facilitate-mode/`),
+- **Facilitate mode** gets its own help article (`/help/canvas/facilitate-mode/`),
   registered per [Register a help article](../../instructions/register-a-help-article.md), and
   **Editor Modes** covers five modes.
 - The Session tools article says the set-up lives in Facilitate (and Plan).
