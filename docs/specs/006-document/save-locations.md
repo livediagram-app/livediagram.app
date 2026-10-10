@@ -23,11 +23,11 @@ the `PlacementCard` tile). The locations today:
 
 | Tile              | Caption          | What it means                                                                                                |
 | ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livediagram**   | Your account     | The default. A normal cloud document, saved to the api (D1), reachable from any device.                      |
+| **livediagram**   | Your account     | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
 | **Local Browser** | This device only | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
-- **livediagram is the default** and pre-selected on every open of the wizard.
-  Nothing about the default behaviour of creating a document changes.
+- **The default is pre-selected** on every open of the wizard, and depends on
+  who is creating (below).
 - Choosing **Local Browser** does what turning the old toggle on did: the
   data-loss warning (with its help link) appears beneath the row, and the
   folder step **disappears**, because an offline document has no server folder
@@ -39,6 +39,30 @@ the `PlacementCard` tile). The locations today:
 - Only **shipped** locations are shown. There are no greyed-out "coming soon"
   tiles for GitHub: a tile that cannot be chosen is a promise the
   product has not made yet.
+
+### The default depends on who is creating
+
+| Who                               | Default           |
+| --------------------------------- | ----------------- |
+| A guest, with sign-in enabled     | **Local Browser** |
+| A signed-in person                | **livediagram**   |
+| Anyone on a guest-only deployment | **livediagram**   |
+
+Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
+
+- One function answers it: `defaultSaveLocationFor({ signedIn, clerkEnabled })` in
+  `apps/live/lib/save-locations.ts`. Every create path asks it: the wizard's
+  pre-selection and the wizard-less links (`/new?template=`, `/new?blank=1`).
+- Before Clerk has answered, `signedIn` is the `__client_uat` hint
+  ([Who is a guest, before Clerk answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-clerk-answers));
+  once it settles, the settled answer. The wizard re-reads the default until
+  the reader picks a tile, so a signed-in person never sees Local Browser stuck
+  on from the moment before Clerk answered.
+- A saved "Always save new documents in <place> and skip this step"
+  ([Default folders](../013-workspace/default-folders.md)) beats the default: it
+  is the reader's own choice.
+- For a guest, choosing Local Browser shows the same data-loss warning as
+  anyone gets; that it is the default does not soften it.
 
 The tile glyphs: the livediagram tile carries the brand mark (the same
 `BrandMark` the site header uses, exported from `@livediagram/ui` rather than
