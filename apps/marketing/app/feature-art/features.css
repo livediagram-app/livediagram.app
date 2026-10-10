@@ -1,0 +1,322 @@
+/* ── Editor-feature and connection cards (components/feature-art/features.tsx,
+   foundations.tsx). Every loop runs 6s and shares one timeline: a pointer arrives (fa-b-go) by
+   28%, its press lands at 32% (fa-b-press), and what it caused arrives at 40% (fa-b-late) as what
+   it replaced leaves (fa-b-early). Moving pieces read their destination from --tx / --ty (and
+   --ux / --uy for the undo pointer's second stop), in the scene's own units. Under reduced
+   motion each settles on its finished state. */
+@keyframes fa-b-go {
+  0%,
+  10% {
+    transform: translate(0, 0);
+  }
+  28%,
+  80% {
+    transform: translate(var(--tx), var(--ty));
+  }
+  94%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.fa-b-go {
+  animation: fa-b-go 6s ease-in-out infinite;
+}
+@keyframes fa-b-press {
+  0%,
+  28% {
+    opacity: 0;
+  }
+  32% {
+    opacity: 1;
+  }
+  44%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-b-press {
+  opacity: 0;
+  animation: fa-b-press 6s ease-out infinite;
+}
+@keyframes fa-b-late {
+  0%,
+  34% {
+    opacity: 0;
+  }
+  40%,
+  90% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-b-late {
+  opacity: 0;
+  animation: fa-b-late 6s ease-in-out infinite;
+}
+@keyframes fa-b-early {
+  0%,
+  34% {
+    opacity: 1;
+  }
+  40%,
+  92% {
+    opacity: 0;
+  }
+  98%,
+  100% {
+    opacity: 1;
+  }
+}
+.fa-b-early {
+  animation: fa-b-early 6s ease-in-out infinite;
+}
+/* A piece carried from where it starts to --tx/--ty, fading out as it lands. */
+@keyframes fa-b-carry {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(0, -2px);
+  }
+  34% {
+    opacity: 1;
+    transform: translate(var(--tx), var(--ty));
+  }
+  40%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty));
+  }
+}
+.fa-b-carry {
+  opacity: 0;
+  animation: fa-b-carry 6s ease-in-out infinite;
+}
+/* A thumbnail picked up: lit while it is chosen and carried. */
+@keyframes fa-b-pick {
+  0%,
+  6% {
+    opacity: 0;
+  }
+  10%,
+  34% {
+    opacity: 1;
+  }
+  40%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-b-pick {
+  opacity: 0;
+  animation: fa-b-pick 6s ease-out infinite;
+}
+/* Undo: your node is dragged to --tx/--ty, then steps back after the press at 32%. */
+@keyframes fa-b-drag {
+  0%,
+  4% {
+    transform: translate(0, 0);
+  }
+  16%,
+  34% {
+    transform: translate(var(--tx), var(--ty));
+  }
+  44%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.fa-b-drag {
+  animation: fa-b-drag 6s ease-in-out infinite;
+}
+@keyframes fa-b-undo {
+  0%,
+  4% {
+    transform: translate(0, 0);
+  }
+  16% {
+    transform: translate(var(--tx), var(--ty));
+  }
+  28%,
+  56% {
+    transform: translate(var(--ux), var(--uy));
+  }
+  76%,
+  100% {
+    transform: translate(0, 0);
+  }
+}
+.fa-b-undo {
+  animation: fa-b-undo 6s ease-in-out infinite;
+}
+@keyframes fa-b-tip {
+  0%,
+  26% {
+    opacity: 0;
+  }
+  30%,
+  50% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-b-tip {
+  opacity: 0;
+  animation: fa-b-tip 6s ease-in-out infinite;
+}
+/* A locked element answering a drag: a short shake, no move. */
+@keyframes fa-b-shake {
+  0%,
+  30% {
+    transform: translateX(0);
+  }
+  32% {
+    transform: translateX(2px);
+  }
+  34% {
+    transform: translateX(-2px);
+  }
+  36% {
+    transform: translateX(1.5px);
+  }
+  38% {
+    transform: translateX(-1px);
+  }
+  40%,
+  100% {
+    transform: translateX(0);
+  }
+}
+.fa-b-shake {
+  animation: fa-b-shake 6s ease-in-out infinite;
+}
+/* Shift-drag: a translucent copy follows the pointer to --tx/--ty and lands solid. */
+@keyframes fa-b-dup {
+  0%,
+  8% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  12% {
+    opacity: 0.5;
+    transform: translate(0, 0);
+  }
+  38% {
+    opacity: 0.5;
+    transform: translate(var(--tx), var(--ty));
+  }
+  44%,
+  88% {
+    opacity: 1;
+    transform: translate(var(--tx), var(--ty));
+  }
+  96%,
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty));
+  }
+}
+.fa-b-dup {
+  opacity: 0;
+  animation: fa-b-dup 6s ease-in-out infinite;
+}
+/* A key going down and held: Shift through a drag, ⌘ while the palette shows its keys. */
+@keyframes fa-b-key {
+  0%,
+  8% {
+    transform: translateY(0);
+  }
+  12%,
+  84% {
+    transform: translateY(1.6px);
+  }
+  90%,
+  100% {
+    transform: translateY(0);
+  }
+}
+.fa-b-key {
+  animation: fa-b-key 6s ease-in-out infinite;
+}
+@keyframes fa-b-hold {
+  0%,
+  14% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  20%,
+  80% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  86%,
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+.fa-b-hold {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-b-hold 6s ease-out infinite;
+}
+/* The timer's bar draining as the time goes. */
+@keyframes fa-b-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0.3);
+  }
+}
+.fa-b-drain {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: fa-b-drain 6s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-b-go,
+  .fa-b-dup {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: translate(var(--tx), var(--ty)) !important;
+  }
+  .fa-b-undo {
+    animation: none !important;
+    transform: translate(var(--ux), var(--uy)) !important;
+  }
+  .fa-b-late,
+  .fa-b-tip,
+  .fa-b-hold {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .fa-b-early,
+  .fa-b-press,
+  .fa-b-carry,
+  .fa-b-pick {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-b-drag,
+  .fa-b-shake,
+  .fa-b-key {
+    animation: none !important;
+    transform: none !important;
+  }
+  .fa-b-drain {
+    animation: none !important;
+    transform: scaleX(0.6) !important;
+  }
+}

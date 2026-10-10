@@ -65,7 +65,7 @@ A progress ring that fills over a timer's window measures that timer. It is an a
 - **Chrome** durations are tokens, in chrome stylesheets and in component classes.
 - **Canvas** and **content** durations live only in their own stylesheets. In the editor that's
   `canvas-motion.css` and `qa-board.css`. In marketing it's `hero-animations.css`,
-  `feature-art-animations.css` and `page-motion.css`. In telemetry
+  `feature-art/*.css` and `page-motion.css`. In telemetry
   it's `dataviz-motion.css`. In the template previews it's `preview-motion.css`. Any other
   stylesheet is chrome.
 - No component class or inline style carries a duration above the ceiling.

@@ -2,7 +2,7 @@
 // a flourish over a card, an arrow flowing to a second node that pops in, and a
 // scatter of sparkles, a quick "start drawing" cue above the heading. White
 // line-art reads on the brand-500 band; every moving part reuses the shared
-// `.fa-*` classes (apps/marketing/app/feature-art-animations.css), which the
+// `.fa-*` classes (apps/marketing/app/feature-art/core.css), which the
 // reduced-motion guard in globals.css settles to a clean static frame. Purely
 // decorative, so the whole SVG is aria-hidden.
 

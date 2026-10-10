@@ -1,0 +1,241 @@
+/* ── Whiteboard, Plan and documents card art (components/feature-art/whiteboard.tsx, plan.tsx, documents.tsx) ──
+   Each picture is whole at rest: the finished scene is the base state, and these loops only move
+   the accents (a stroke drawing on, a card carried, a caret, a flip). One 7s cycle; a piece's
+   --d staggers it. Reduced motion shows the finished frame (rules at the end of this block). */
+
+/* A stroke draws on along pathLength="1", holds, and fades just before the loop restarts. */
+@keyframes fa-f-draw {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  22%,
+  90% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  97%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+.fa-f-draw {
+  stroke-dasharray: 1;
+  animation: fa-f-draw 7s cubic-bezier(0.45, 0, 0.25, 1) var(--d, 0s) infinite both;
+}
+
+/* A piece lands with a small rise, holds, and leaves at the end of the cycle. */
+@keyframes fa-f-in {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  7%,
+  92% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+.fa-f-in {
+  animation: fa-f-in 7s ease-out var(--d, 0s) infinite both;
+}
+
+/* Carried from (--fx, --fy) to where it is drawn, then held. */
+@keyframes fa-f-carry {
+  0%,
+  18% {
+    transform: translate(var(--fx, 0px), var(--fy, 0px));
+  }
+  38%,
+  92% {
+    transform: none;
+  }
+  100% {
+    transform: translate(var(--fx, 0px), var(--fy, 0px));
+  }
+}
+.fa-f-carry {
+  animation: fa-f-carry 7s cubic-bezier(0.55, 0, 0.25, 1) var(--d, 0s) infinite both;
+}
+
+/* There at the start, gone mid-cycle (an erased stroke, a card the filter hides). */
+@keyframes fa-f-out {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  40%,
+  88% {
+    opacity: 0;
+  }
+  96%,
+  100% {
+    opacity: 1;
+  }
+}
+.fa-f-out {
+  animation: fa-f-out 7s ease-in-out var(--d, 0s) infinite both;
+}
+
+/* Dims mid-cycle (cards a widget filters away) and comes back. */
+@keyframes fa-f-dim {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  40%,
+  88% {
+    opacity: 0.22;
+  }
+  96%,
+  100% {
+    opacity: 1;
+  }
+}
+.fa-f-dim {
+  animation: fa-f-dim 7s ease-in-out var(--d, 0s) infinite both;
+}
+
+/* Grows from its left edge (a Gantt bar), holds. */
+@keyframes fa-f-grow-x {
+  0% {
+    transform: scaleX(0);
+  }
+  20%,
+  100% {
+    transform: none;
+  }
+}
+.fa-f-grow-x {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: fa-f-grow-x 7s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d, 0s) infinite both;
+}
+
+/* A retro card turning over: its back folds away, then its face opens. */
+@keyframes fa-f-flip-back {
+  0%,
+  34% {
+    transform: none;
+  }
+  42%,
+  92% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes fa-f-flip-face {
+  0%,
+  42% {
+    transform: scaleX(0);
+  }
+  50%,
+  92% {
+    transform: none;
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+.fa-f-flip-back,
+.fa-f-flip-face {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.fa-f-flip-back {
+  animation: fa-f-flip-back 7s ease-in-out var(--d, 0s) infinite both;
+}
+.fa-f-flip-face {
+  animation: fa-f-flip-face 7s ease-in-out var(--d, 0s) infinite both;
+}
+
+/* A soft ring that breathes around the thing in focus. */
+@keyframes fa-f-ring {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+.fa-f-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-f-ring 2.4s ease-in-out infinite;
+}
+
+/* A text caret. */
+@keyframes fa-f-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-f-caret {
+  animation: fa-f-caret 1s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-f-draw,
+  .fa-f-in,
+  .fa-f-carry,
+  .fa-f-grow-x,
+  .fa-f-flip-face,
+  .fa-f-ring,
+  .fa-f-caret {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+  /* The finished frame: the erased stroke gone, the filtered cards dimmed, the cards face up. */
+  .fa-f-out,
+  .fa-f-flip-back {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .fa-f-dim {
+    animation: none !important;
+    opacity: 0.22 !important;
+  }
+}
+
+/* Whiteboard, Plan and documents card art, continued: the other half of fa-f-out, hidden at the start and shown mid-cycle (a
+   count that ticks over as a card lands). Reduced motion shows it, as the finished frame. */
+@keyframes fa-f-on {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  40%,
+  88% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-f-on {
+  animation: fa-f-on 7s ease-in-out var(--d, 0s) infinite both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fa-f-on {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+}

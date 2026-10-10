@@ -3,7 +3,7 @@
 // fonts, and Markdown and Mermaid live in ./versatility-more, re-exported here). Each is a small
 // mock of the editor surface its card describes, drawn on the full-width 300 by 96 card stage from
 // the parts in ./versatility-parts with a light and a dark half, and moving with the shared fa-*
-// loops plus the fa-c-* ones (app/feature-art-animations.css), which settle to the finished frame
+// loops plus the fa-c-* ones (app/feature-art/versatility.css), which settle to the finished frame
 // under reduced motion.
 
 import { Frame } from './shared';

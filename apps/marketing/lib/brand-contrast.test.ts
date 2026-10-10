@@ -66,7 +66,7 @@ describe('brand text contrast', () => {
   it('keeps the CTA panels, eyebrows and FAQ links on those pairs', () => {
     expect(read('../components/StartDrawingCta.tsx')).toMatch(/bg-brand-700 .*dark:bg-brand-700/);
     expect(read('../components/TryItCard.tsx')).toMatch(/bg-brand-700 .*dark:bg-brand-700/);
-    expect(read('../components/band-classes.ts')).toContain('text-brand-700');
+    expect(read('../components/eyebrow.ts')).toContain('text-brand-700');
     expect(read('../components/faq/FaqItem.tsx')).toContain('[&_a]:text-brand-700');
   });
 });

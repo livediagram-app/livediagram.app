@@ -2,7 +2,7 @@
 // shift-drag, layers, images, keyboard shortcuts and the session tools. Each is a small,
 // faithful mock of what the editor draws, on the Default scheme's canvas (--art-*) with panel
 // chrome that has a light and a dark half, moving on a shared 6s loop (fa-b-* in
-// app/feature-art-animations.css). Under reduced motion every scene shows its finished state.
+// app/feature-art/features.css). Under reduced motion every scene shows its finished state.
 //
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants, ./features-parts
 // for the pointer, window, node, arrow and key cap the scenes are drawn from.
