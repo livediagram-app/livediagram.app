@@ -95,6 +95,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     setLoadingDocument,
     setPasswordRetry,
   } = state;
+  // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
+  // which a Local only document opens under (docs/specs/006-document/offline-mode.md "Instant open").
+  const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
   // The full Explorer panel that sits behind the error / not-found status
   // screens (identical in both), built once from state. Just a React
   // element until a branch returns it, so building it on every render is
@@ -107,7 +110,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       onToggleFavourite={state.toggleFavourite}
       position={explorerPosition}
       documents={documentList}
-      ownerId={state.selfParticipant?.id ?? null}
+      ownerId={ownerId}
       folders={folders}
       loading={documentListLoading}
       shared={sharedDocuments}
@@ -150,12 +153,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // show the error card (with the Explorer behind it for navigation)
   // instead of NotFound. Retry re-runs hydration via a full reload.
   if (loadError) {
-    const card = (
-      <LoadErrorCard
-        embed={!appChrome}
-        ownerId={state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null)}
-      />
-    );
+    const card = <LoadErrorCard embed={!appChrome} ownerId={ownerId} />;
     // Embed and workbench frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return !appChrome ? (
@@ -217,7 +215,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           builder share one source of truth and getTheme resolves saved
           themes referenced by this document's tabs. */}
       <CustomThemeProvider
-        ownerId={state.selfParticipant?.id ?? null}
+        ownerId={ownerId}
         readOnly={workbenchMode}
         onThemeDeleted={state.resetTabsUsingTheme}
       >
@@ -225,7 +223,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
         <MentionContext.Provider value={state.commentMentions}>
           {/* The owner's shape libraries, for the palette's My shapes
               (docs/specs/013-workspace/shape-libraries.md). */}
-          <ShapeLibraryProvider ownerId={state.selfParticipant?.id ?? null}>
+          <ShapeLibraryProvider ownerId={ownerId}>
             <EditorView />
           </ShapeLibraryProvider>
         </MentionContext.Provider>
