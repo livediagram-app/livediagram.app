@@ -2,11 +2,18 @@
 
 // A page's panel (docs/specs/007-editor/illustrate-pages.md "page panel"): opened from the cog
 // above the page's top-right corner, in screen space so it reads at one size whatever the zoom.
-// Its name, then two tabs: Page (size, orientation, background; every hover over a background
-// previews on the page itself) and Layouts; then the page's actions. It closes on an outside press, Escape, or the canvas
+// Its name, then its tabs: Page (size, orientation; absent where the page has neither), Background
+// (every hover over a swatch previews on the page itself) and the kind's own (Layouts, or an
+// article's Style and Text); then the page's actions. It closes on an outside press, Escape, or the canvas
 // panning or zooming under it (it would no longer sit by its cog).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { PAGE_NAME_MAX, type LaidOutPage, type PageBackground } from '@livediagram/document';
+import {
+  PAGE_NAME_MAX,
+  pageHasOrientation,
+  pageSizeChoices,
+  type LaidOutPage,
+  type PageBackground,
+} from '@livediagram/document';
 import {
   ACTIVE_SEGMENT,
   SEGMENT_TRACK,
@@ -37,7 +44,26 @@ const GAP = 6;
 const PAGE_EASE_MS = 200;
 
 export type PagePreview = { pageId: string; patch: Partial<PageBackground> } | null;
-export type PagePanelTab = 'page' | 'layouts' | 'style' | 'text';
+export type PagePanelTab = 'page' | 'background' | 'layouts' | 'style' | 'text';
+
+const TAB_LABEL: Record<PagePanelTab, string> = {
+  page: 'Page',
+  background: 'Background',
+  layouts: 'Layouts',
+  style: 'Style',
+  text: 'Text',
+};
+
+// The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
+// Background, then the kind's own (an article's Style and Text, any other page's Layouts).
+export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
+  const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
+  return [
+    ...(hasPage ? (['page'] as const) : []),
+    'background',
+    ...(page.flow ? (['style', 'text'] as const) : (['layouts'] as const)),
+  ];
+}
 
 export function IllustratePagePanel({
   page,
@@ -70,13 +96,9 @@ export function IllustratePagePanel({
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const mobile = useIsMobileViewport();
-  // A tab a page of this kind lacks (Layouts on an article page) opens as Page.
-  const [tab, setTab] = useState<PagePanelTab>(
-    (initialTab === 'layouts' && page.flow) ||
-      ((initialTab === 'style' || initialTab === 'text') && !page.flow)
-      ? 'page'
-      : initialTab,
-  );
+  const tabs = pagePanelTabs(page);
+  // A tab a page of this kind lacks (Layouts on an article page) opens as its first.
+  const [tab, setTab] = useState<PagePanelTab>(tabs.includes(initialTab) ? initialTab : tabs[0]!);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
 
   // The anchor lookup is a fresh closure each render: read through a ref so placing stays stable.
@@ -183,10 +205,12 @@ export function IllustratePagePanel({
       <div inert={locked} className={locked ? 'opacity-50' : undefined}>
         <PanelTabs
           tab={tab}
-          kind={page.flow ? 'article' : 'other'}
+          tabs={tabs}
           onTab={(next) => {
             // Leaving Layouts takes its preview (a pending Replace's too) off the page.
             if (next !== 'layouts') onLayoutPreview(null);
+            // Leaving Background takes a hovered swatch's preview off the page.
+            if (next !== 'background') onPreview(null);
             setTab(next);
           }}
         />
@@ -197,16 +221,17 @@ export function IllustratePagePanel({
               page={page}
               onOrientation={(o) => edit.setOrientation(page.id, o)}
             />
-            <BackgroundSection
-              page={page}
-              themePresets={themeBackgrounds}
-              onBackground={(patch) => {
-                edit.setBackground(page.id, patch);
-                onPreview(null);
-              }}
-              onPreview={preview}
-            />
           </>
+        ) : tab === 'background' ? (
+          <BackgroundSection
+            page={page}
+            themePresets={themeBackgrounds}
+            onBackground={(patch) => {
+              edit.setBackground(page.id, patch);
+              onPreview(null);
+            }}
+            onPreview={preview}
+          />
         ) : tab === 'style' || tab === 'text' ? (
           (articleStyle?.(tab) ?? null)
         ) : (
@@ -270,42 +295,26 @@ export function IllustratePagePanel({
   );
 }
 
-// Page (its size and paint), then the kind's own tabs (Layouts, or an article's Style and Text):
-// the shared segmented control, its highlight sliding between them.
+// The page's tabs (pagePanelTabs): the shared segmented control, its highlight sliding between them.
+const GRID_COLS = ['grid-cols-1', 'grid-cols-2', 'grid-cols-3', 'grid-cols-4'];
 function PanelTabs({
   tab,
-  kind,
+  tabs,
   onTab,
 }: {
   tab: PagePanelTab;
-  // An article page's tabs after Page are Style and Text; any other page's Layouts.
-  kind: 'article' | 'other';
+  tabs: PagePanelTab[];
   onTab: (t: PagePanelTab) => void;
 }) {
-  const tabs: [PagePanelTab, string][] =
-    kind === 'article'
-      ? [
-          ['page', 'Page'],
-          ['style', 'Style'],
-          ['text', 'Text'],
-        ]
-      : [
-          ['page', 'Page'],
-          ['layouts', 'Layouts'],
-        ];
   return (
     <div className="px-3 pt-2">
       <div
         role="group"
         aria-label="Page panel section"
-        className={`relative grid ${tabs.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} rounded-lg p-0.5 ${SEGMENT_TRACK}`}
+        className={`relative grid ${GRID_COLS[tabs.length - 1]} rounded-lg p-0.5 ${SEGMENT_TRACK}`}
       >
-        <SegmentSlider
-          count={tabs.length}
-          index={tabs.findIndex(([id]) => id === tab)}
-          className={ACTIVE_SEGMENT}
-        />
-        {tabs.map(([id, label]) => (
+        <SegmentSlider count={tabs.length} index={tabs.indexOf(tab)} className={ACTIVE_SEGMENT} />
+        {tabs.map((id) => (
           <button
             key={id}
             type="button"
@@ -317,7 +326,7 @@ function PanelTabs({
                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            {label}
+            {TAB_LABEL[id]}
           </button>
         ))}
       </div>

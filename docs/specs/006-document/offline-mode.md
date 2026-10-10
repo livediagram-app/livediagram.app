@@ -168,12 +168,19 @@ Explorer lists follow after the paint.
   shown in the badge's visibility legend on hover and focus and given to
   assistive technology as the badge's description. It stays a status, not a
   link: the legend explains it in place.
-- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus): **Who Can See This**, "From
-  just you to everyone, as you share it.", then the audiences as a ladder joined by a rail: **Private** (a lock),
-  **Shared** (a link), **Team** (people), **Public** (a globe), each a round tile in its tone over its name and
-  its sentence; the document's own state tinted in its tone and marked **Current** with a check. **Local only**
-  (its browser-window icon, amber) stands apart under a divider, the deliberate opt-out. For the eye only: the
-  badge carries the current state's words for assistive technology.
+- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus, closing 120 ms after the
+  pointer leaves): a hero in the current state's tone, eyebrow **Who Can See This**, the state's icon and
+  name, its sentence, and its **reach** drawn as rings around you, lit out to how far the document goes
+  (Private: none; Shared: one, with people on it; Team: two; Public: all three). Under it, **From Just You
+  to Everyone**: the audiences on one scale, **Just you** (a lock), **Link** (a link), **Team** (people),
+  **Everyone** (a globe), the track filled to the current stop, which is larger, filled in its tone and
+  bold. Hovering a stop shows that audience in the hero, eyebrow **If It Were**, and tints the stop;
+  leaving the scale puts the current state back. **Local only** (its browser-window icon, amber) stands
+  apart below as "Or Local only: never leaves this browser." (when current: "Local only: saved only here,
+  never on our servers.", tinted amber). For someone who may share, **Change Who Can See This** at the
+  foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
+  pill and the legend has no button. For the eye only: the badge carries the current state's words for
+  assistive technology.
 - **Explorer.** Offline documents appear in Recent (and the other lists)
   alongside cloud documents, each with the **Local only** pill (below) and the
   fixed offline thumbnail, so a local-only document is recognisable at a glance.

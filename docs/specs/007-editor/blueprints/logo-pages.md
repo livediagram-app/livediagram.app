@@ -111,8 +111,8 @@ Exclude), **Wordmark**, **Logo Kit**.
   lay the cards out two by two (Up / Down step a row, `KIND_COLUMNS`). The first-page card and the
   in-page layout card are solid (`bg-white`, `dark:bg-slate-900`); the layout card's list scrolls
   past 380 px.
-- `IllustratePagePanel.tsx`: a logo page has the Page and Layouts tabs. The Page tab
-  shows only Background on a logo page (`SizeSection` hides a single size; Pattern hidden for logo).
+- `IllustratePagePanel.tsx`: a logo page has the Background and Layouts tabs (`pagePanelTabs`
+  drops Page: one size, no orientation); Pattern is hidden for logo.
 - `IllustratePages.tsx`: a logo page's title bar holds, before the cog, `LogoTitleBar pageId`
   (Beside the cog, below), its room reserved by `logoTitleBarRoom`; an
   empty logo page draws its guides first in the page's own box (under its cards); the layout card

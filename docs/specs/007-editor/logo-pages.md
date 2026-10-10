@@ -94,10 +94,11 @@ the selection's context menu.
 
 ## The page panel
 
-A logo page's panel has two tabs: **Page** and **Layouts** (its guides and Mirror are beside the
+A logo page's panel has two tabs: **Background** and **Layouts** (its guides and Mirror are beside the
 cog).
 
-- **Page**: the **Background** swatches. No Size, Orientation or Pattern sections.
+- **Background**: the **Background** swatches, no Pattern. It has no Size or Orientation to choose, so no
+  **Page** tab.
 - **Layouts**: the **logo layouts** (below), in the same browser as the infographic layouts
   (categories, then a category's layouts, the same Replace question and hover previews). Each
   tile is the layout exactly as it lands: built for this page and drawn by the export renderer in
