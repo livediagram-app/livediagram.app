@@ -3,12 +3,12 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { TEMPLATES } from '@livediagram/templates';
+import { SLIDE_LAYOUTS, TEMPLATES } from '@livediagram/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
 import { ALTERNATIVES } from './alternatives';
-import { FAQ_CATEGORIES, faqAnswerText, TEMPLATE_COUNT } from './faq-content';
+import { FAQ_CATEGORIES, faqAnswerText, SLIDE_LAYOUT_COUNT, TEMPLATE_COUNT } from './faq-content';
 import { filterFaq } from './faq-filter';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
@@ -56,6 +56,25 @@ describe('template counts in marketing copy', () => {
     const counts = [...copy.matchAll(/(\d+) (?:starter )?templates/g)].map((m) => Number(m[1]));
     expect(counts.length).toBeGreaterThan(0);
     for (const n of counts) expect(n).toBe(TEMPLATES.length);
+  });
+});
+
+// Slide layout counts are written out too, as digits or a word; each must match Illustrate's catalogue.
+describe('slide layout counts in marketing copy', () => {
+  const WORDS: Record<string, number> = { seventeen: 17 };
+  const countsIn = (copy: string) =>
+    [...copy.matchAll(/\b(\d+|[a-z]+teen) (?:ready-made )?layouts\b/gi)].map((m) =>
+      /^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()],
+    );
+
+  it('matches the catalogue in the FAQ', () => {
+    expect(SLIDE_LAYOUT_COUNT).toBe(SLIDE_LAYOUTS.length);
+  });
+
+  it('matches the catalogue on every comparison page', () => {
+    const counts = countsIn(JSON.stringify(ALTERNATIVES));
+    expect(counts.length).toBeGreaterThan(0);
+    for (const n of counts) expect(n).toBe(SLIDE_LAYOUTS.length);
   });
 });
 

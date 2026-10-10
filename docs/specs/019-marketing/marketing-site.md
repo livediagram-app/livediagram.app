@@ -94,6 +94,7 @@ Beyond that:
 
 - Product name **livediagram** (lowercase). Brand colour sky-blue `#0EA5E9` (`brand-500`), see [01-color-scheme](../004-interface-design/color-scheme.md); primary buttons and the closing call-to-action band sit two steps deeper on `brand-700` so their white text meets AA.
 - Fast, clean, structured. Plain and confident; not cutesy, not enterprise-jargon.
+- **Accessibility:** text meets WCAG 2.2 AA (4.5:1, or 3:1 at large sizes) in light and dark. `brand-500` and `brand-600` are too light for white text or small text on white (2.8:1 and 4.1:1), so the closing CTA band and `TryItCard` sit on `brand-700`, and small brand text (eyebrows, FAQ links, "Learn more") is `brand-700` in light and `brand-300` in dark. `lib/brand-contrast.test.ts` pins these pairs to the palette.
 - Positioning: multiplayer-from-the-start diagramming for teams who think visually, between casual whiteboards and heavyweight suites (see [00-purpose](../001-project-vision/purpose.md)).
 
 ## Auth messaging

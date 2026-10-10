@@ -36,7 +36,7 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
             beside the scene from lg. */}
         <div className={`enter-on-scroll text-center lg:text-left ${artFirst ? 'lg:order-2' : ''}`}>
           {/* The beat's number beside the feature's plain name, above the headline. */}
-          <p className="flex items-center justify-center gap-3 text-sm lg:justify-start font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-300">
+          <p className="flex items-center justify-center gap-3 text-sm lg:justify-start font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-300">
             <GlyphDisc
               aria-hidden
               className="h-8 w-8 bg-brand-700 text-xs font-semibold text-white tabular-nums"

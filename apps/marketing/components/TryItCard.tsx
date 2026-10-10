@@ -21,7 +21,7 @@ export function TryItCard({
 }) {
   return (
     <div
-      className={`relative flex flex-col items-start justify-between overflow-hidden rounded-2xl bg-brand-700 p-6 text-white dark:bg-brand-600 ${className}`}
+      className={`relative flex flex-col items-start justify-between overflow-hidden rounded-2xl bg-brand-700 p-6 text-white dark:bg-brand-700 ${className}`}
     >
       {art && (
         <>

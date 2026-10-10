@@ -23,7 +23,7 @@ export function FeatureCategoryHero({ section }: { section: LandingSection }) {
         {/* Centred while the hero is one column, as the landing beats are. */}
         <div className="text-center lg:text-left">
           <p
-            className="enter text-sm font-semibold tracking-wide text-brand-600 uppercase dark:text-brand-300"
+            className="enter text-sm font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-300"
             style={delay(0)}
           >
             {section.label}

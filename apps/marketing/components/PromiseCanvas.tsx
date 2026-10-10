@@ -129,7 +129,7 @@ export function PromiseCanvas() {
     <section aria-labelledby="promises-heading" className="relative">
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-wide text-brand-600 dark:text-brand-300">
+          <p className="text-sm font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">
             No catch
           </p>
           <h2

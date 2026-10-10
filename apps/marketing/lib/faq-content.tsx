@@ -34,6 +34,8 @@ const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
 export const TEMPLATE_COUNT = 95;
+// Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
+export const SLIDE_LAYOUT_COUNT = 17;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -144,8 +146,21 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer.',
       },
       {
+        q: 'Is there a spreadsheet?',
+        a: (
+          <>
+            Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort,
+            filter and freeze, edited live by everyone on the tab. Formulas can read the cards on
+            the board, and Budget Planner, Timesheet, Contact List and Task Tracker templates start
+            you off. See <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
+          </>
+        ),
+        aText:
+          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you off. See Sheets.',
+      },
+      {
         q: 'Can I present from it?',
-        a: 'Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. A laser pointer and spotlight help you guide the room.',
+        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Illustrate adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. A laser pointer and spotlight help you guide the room.`,
       },
       {
         q: 'Can I undo a mistake?',
@@ -165,7 +180,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I work on a diagram with my team?',
-        a: 'Yes, that is the point. Share a link and teammates join the same canvas in real time, with live cursors, selection rings, presence on each tab, comments and a laser pointer.',
+        a: 'Yes, that is the point. Share a link and teammates join the same canvas in real time, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -229,13 +244,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool
             and, after a one-time authorisation, it can find, read, create and edit the documents in
-            your account. Its changes appear live for anyone on the tab, outlined so you can see
-            them and undo them. See{' '}
-            <a href="/features/diagrams#build-diagrams-with-ai">AI and MCP</a>.
+            your account, including writing articles, building slide decks and designing logos. Its
+            changes appear live for anyone on the tab, outlined so you can see them and undo them.
+            See <a href="/features/diagrams#build-diagrams-with-ai">AI and MCP</a>.
           </>
         ),
         aText:
-          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. See AI and MCP.',
+          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. See AI and MCP.',
       },
       {
         q: 'Is there AI built into the editor?',
