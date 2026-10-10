@@ -28,7 +28,8 @@ describe('SiteHeader', () => {
   it('keeps Choose Template the primary beside it', () => {
     const primary = html.match(/<a [^>]*href="\/new\?via=Home\.Header"[^>]*>(.*?)<\/a>/);
     expect(primary?.[0]).toContain('aria-label="Choose Template"');
-    expect(primary?.[1]?.replace(/<[^>]+>/g, '')).toBe('Choose Template');
+    // The visible text with the tags dropped (split, not a sanitising replace).
+    expect(primary?.[1]?.split(/<[^>]+>/).join('')).toBe('Choose Template');
   });
 
   it('drops "Choose" only below 360px, so the bar fits a 320px phone', () => {
