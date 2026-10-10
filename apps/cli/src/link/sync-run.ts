@@ -105,7 +105,7 @@ type Acting = {
   // Where a relocation moved a document's files.
   moved: Map<string, string>;
   // The SHA-256 of each scanned file's bytes, by its path at scan time: the file the plan judged.
-  scanned: ReadonlyMap<string, string>;
+  scanned: ReadonlyMap<string, string | undefined>;
   // A path relative to the mirror directory, as the working directory reaches it.
   pathOf: (rel: string) => string;
   now: number;
@@ -113,8 +113,8 @@ type Acting = {
 
 // Whether the file at `now` still holds the bytes the scan read at `scanned` (absent then: absent now). The plan
 // judged the scan; an edit saved while the pass ran is the person's, and is never written over or removed.
-async function unchangedSinceScan(acting: Acting, scanned: string | null, now: string) {
-  const expected = scanned === null ? null : (acting.scanned.get(scanned) ?? null);
+async function unchangedSinceScan(acting: Acting, scanned: string, now: string) {
+  const expected = acting.scanned.get(scanned) ?? null;
   const text = await acting.tree.read(now);
   return (text === null ? null : await sha256(text)) === expected;
 }
@@ -204,8 +204,9 @@ async function writeAct(
       reason: failure.code,
     };
   }
+  // At `files` the plan always names a path: the scanned file's, or the one a new document takes.
   const path = acting.moved.get(action.documentId) ?? action.path!;
-  if (!(await unchangedSinceScan(acting, action.path, path)))
+  if (!(await unchangedSinceScan(acting, action.path!, path)))
     return changedHere(acting, action, path, 'diverged');
   await acting.tree.write(path, mirrorFileText(file));
   if (!(await acting.tree.writeGenerated(outlinePathOf(path), outlineOf(file))))
@@ -375,9 +376,7 @@ async function pass(options: PassOptions, stateDir: string): Promise<PassResult>
     remote,
     mirrors: new Map(),
     moved: new Map(),
-    scanned: new Map(
-      scan.flatMap((s) => (s.bytes === undefined ? [] : [[s.path, s.bytes] as const])),
-    ),
+    scanned: new Map(scan.map((s) => [s.path, s.bytes])),
     pathOf,
     now: io.now(),
   };

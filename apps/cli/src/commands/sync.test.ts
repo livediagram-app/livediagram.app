@@ -646,6 +646,21 @@ describe('an edit saved while the pass runs', () => {
     );
     expect(now()).toContain('box!"');
   });
+
+  it('is never removed by a lowered level, refused naming the level', async () => {
+    const { io } = setup('files', [home()]);
+    await sync(io);
+    io.fileMap.set('/work/livediagram.toml', { data: '[covers]\nfolder = "games"\n', mode: 0o644 });
+    const now = editDuringPass(io, MIRROR);
+    const result = await sync(io);
+    expect(result.code).toBe(1);
+    expect(result.out).toContain(
+      '! diagrams/screens/home-screen.livediagram.json: level index keeps no mirror files',
+    );
+    expect(result.out).not.toContain('- diagrams/screens/home-screen.livediagram.json');
+    expect(now()).toContain('box!"');
+    expect(io.fileMap.has(OUTLINE)).toBe(true);
+  });
 });
 
 describe('the local sync state directory', () => {
