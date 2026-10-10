@@ -22,17 +22,10 @@ export async function listApiTokensByOwner(env: Env, ownerId: string): Promise<A
   return (result.results ?? []).map(rowToApiToken);
 }
 
-// Live = not revoked and not expired. Drives the per-owner creation cap.
-export async function countLiveApiTokens(env: Env, ownerId: string): Promise<number> {
-  const row = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = ? AND revoked = 0 AND expires_at > ?',
-  )
-    .bind(ownerId, Date.now())
-    .first<{ n: number }>();
-  return row?.n ?? 0;
-}
-
-export async function createApiToken(
+// Insert a token row only while its owner holds fewer than MAX_API_TOKENS_PER_OWNER live (not revoked, not expired)
+// tokens. The count and the insert are one statement, so two concurrent mints cannot both pass a count of 9 and
+// leave the owner with 11 (D1 runs each statement atomically). Returns whether the row was written.
+async function insertApiTokenUnderCap(
   env: Env,
   t: {
     id: string;
@@ -45,13 +38,26 @@ export async function createApiToken(
     // read+write when omitted.
     readOnly?: boolean;
   },
-): Promise<void> {
-  await env.DB.prepare(
+): Promise<boolean> {
+  const res = await env.DB.prepare(
     `INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, last_used_at, expires_at, revoked, read_only)
-     VALUES (?, ?, ?, ?, ?, NULL, ?, 0, ?)`,
+     SELECT ?, ?, ?, ?, ?, NULL, ?, 0, ?
+     WHERE (SELECT COUNT(*) FROM api_tokens WHERE owner_id = ? AND revoked = 0 AND expires_at > ?) < ?`,
   )
-    .bind(t.id, t.ownerId, t.tokenHash, t.name, t.createdAt, t.expiresAt, t.readOnly ? 1 : 0)
+    .bind(
+      t.id,
+      t.ownerId,
+      t.tokenHash,
+      t.name,
+      t.createdAt,
+      t.expiresAt,
+      t.readOnly ? 1 : 0,
+      t.ownerId,
+      t.createdAt,
+      MAX_API_TOKENS_PER_OWNER,
+    )
     .run();
+  return (res.meta?.changes ?? 0) > 0;
 }
 
 /**
@@ -65,7 +71,8 @@ export async function createApiToken(
  * copy is a second place for one of those to quietly stop being true, and the
  * OAuth path is the one no person watches as it happens.
  *
- * Returns null when the owner is already at the cap, so the caller answers
+ * Returns null when the owner is already at the cap (checked in the INSERT
+ * itself, so concurrent mints cannot overshoot it), so the caller answers
  * with its own 409 envelope. The plaintext `secret` comes back once, here, and
  * is never retrievable again.
  */
@@ -73,12 +80,11 @@ export async function mintApiToken(
   env: Env,
   t: { ownerId: string; name: string | null; readOnly?: boolean },
 ): Promise<{ secret: string; id: string; expiresAt: number } | null> {
-  if ((await countLiveApiTokens(env, t.ownerId)) >= MAX_API_TOKENS_PER_OWNER) return null;
   const secret = generateApiToken();
   const now = Date.now();
   const id = crypto.randomUUID();
   const expiresAt = apiTokenExpiry(now);
-  await createApiToken(env, {
+  const inserted = await insertApiTokenUnderCap(env, {
     id,
     ownerId: t.ownerId,
     name: t.name,
@@ -87,6 +93,10 @@ export async function mintApiToken(
     expiresAt,
     readOnly: t.readOnly,
   });
+  if (!inserted) {
+    console.info('[api-tokens] mint refused: owner at the token cap');
+    return null;
+  }
   return { secret, id, expiresAt };
 }
 
