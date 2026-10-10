@@ -80,14 +80,16 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
 - Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
-  page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
-  and **Layouts** (a slide page's Layouts are the slide layouts; an article page: **Page**,
-  **Style** and **Text**, [Article pages](article-pages.md) "Article style"; a logo page: **Page**
-  and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md) "The page panel"), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
-  with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
-  (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
-  the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
-  layout invite opens it on Layouts. The two tabs, and Portrait / Landscape, are the shared
+  page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs, **Page**,
+  **Background** and **Layouts** (a slide page's Layouts are the slide layouts; an article page:
+  **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
+  a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
+  "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
+  with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
+  (Portrait / Landscape, absent for a page with no orientation); **Background** holds the
+  **Background** swatches and the **Pattern** tiles; **Layouts** holds the layouts by category. The
+  cog opens it on its first tab; the layout invite opens it on Layouts. The tabs, and Portrait /
+  Landscape, are the shared
   segmented control, its highlight sliding between the choices.
 - **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
   at once; leaving the section puts the page back; a press commits.

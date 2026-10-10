@@ -54,7 +54,11 @@ The user's search terms and IP address reach Openverse. The hosted service's
   Enter or the button, never on each keystroke, so typing doesn't spend the user's allowance. An
   empty or whitespace-only query does nothing. The field takes focus when the tab opens.
 - **Before searching.** A short line: "Find openly licensed photos and illustrations from Openverse."
-- **Loading.** The previous results stay visible, dimmed, with "Searching…"; the button is disabled.
+- **Loading.** A new search fills the grid with two rows of placeholder photos (a soft tinted wash with a
+  sun and hills) while a glint rolls across them tile by tile, under a line with a circling lens:
+  "Searching Openverse for “<query>”…"; the button is disabled. Load more adds a row of the same
+  placeholders under the results, with "Loading more…". A result's tile is a placeholder photo until its
+  thumbnail arrives. Under reduced motion the placeholders hold still.
 - **Results.** A 4-column grid of square thumbnails, 20 per page. Each tile names its creator and
   licence on hover and focus. **Load more** under the grid fetches the next page and appends it, until
   Openverse reports no more pages.
@@ -63,7 +67,10 @@ The user's search terms and IP address reach Openverse. The hosted service's
   - Rate limited (HTTP 429): "Too many searches for now. Wait a minute and try again."
   - Anything else (network, Openverse down, a malformed answer): "Couldn't reach Openverse. Check
     your connection and try again."
-- **Picking.** Clicking a tile shows a spinner on that tile and disables the rest. On success the
+- **Picking.** Clicking a tile lifts it (a brand ring, slightly larger) under a soft veil with a chasing
+  ring and its stage, **Downloading** then **Adding**; the other tiles dim, grey and disable, and Search
+  and Load more wait. Under the grid a status box says the stage in full ("Downloading the full-size
+  picture…", then "Adding it to your gallery…") over a two-step bar, the active step running. On success the
   picker behaves as for an upload: the element gets the image and the modal closes. On failure the
   tile's error shows under the grid in the upload copy ("Your image gallery is full…", "Image uploads
   are not available on this server.", or "Couldn't download that image. Try another one.").

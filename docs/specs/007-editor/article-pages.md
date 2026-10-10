@@ -327,7 +327,7 @@ A visitor, a locked tab, or a tab with no articles switches straight away.
 ## Article style
 
 Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
-**Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
+**Background**, **Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
 Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
 Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.
