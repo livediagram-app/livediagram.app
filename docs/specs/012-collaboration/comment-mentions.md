@@ -114,7 +114,7 @@ The server decides everything that matters:
   first 280, cut at a word with an ellipsis.
 - The quoted text comes from the body, not the stored tab (the request names no
   comment id), so each email is **claimed** before it goes
-  (`notify_email_claims`, migration 0082): a hash of the author, document, card,
+  (`notify_email_claims`, migration 0086): a hash of the author, document, card,
   recipient and text is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour

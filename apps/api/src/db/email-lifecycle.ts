@@ -123,7 +123,7 @@ export async function markActivationSent(env: Env, ownerId: string): Promise<voi
 }
 
 // docs/specs/014-identity/transactional-email.md (#5): owners whose most recent document activity was at or before
-// `cutoff` (active once, now quiet), not yet win-backed. MAX(updated_at) is NULL
+// `cutoff` (active once, now quiet), not yet win-backed. MAX(saved_at) is NULL
 // for a zero-document owner and NULL <= ? is false, so they're excluded (the
 // activation nudge handles those). Quietest-longest first.
 export async function dueForWinback(
@@ -134,7 +134,7 @@ export async function dueForWinback(
   const { results } = await env.DB.prepare(
     `SELECT el.owner_id, el.email FROM email_lifecycle el
      WHERE el.winback_sent_at IS NULL AND el.email <> '' AND el.send_attempts < ?
-       AND (SELECT MAX(d.updated_at) FROM documents d WHERE d.owner_id = el.owner_id) <= ?
+       AND (SELECT MAX(d.saved_at) FROM documents d WHERE d.owner_id = el.owner_id) <= ?
      ORDER BY el.created_at ASC LIMIT ?`,
   )
     .bind(MAX_SEND_ATTEMPTS, cutoff, limit)

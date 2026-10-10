@@ -3,6 +3,7 @@ import { sqliteD1 } from '../test-sqlite-d1';
 import {
   dueForActivation,
   dueForStage,
+  dueForWinback,
   getOwnerEmail,
   markStageSent,
   MAX_SEND_ATTEMPTS,
@@ -94,5 +95,40 @@ describe('send attempts', () => {
     expect(await due(db)).toEqual({ week1: 0, week2: 0 });
     await recordSighting(db.env, 'user_a', 'fixed@x.test');
     expect(await due(db)).toEqual({ week1: 1, week2: 1 });
+  });
+});
+
+// docs/specs/014-identity/transactional-email.md #7: win-back reads the owner's newest document save, so it runs
+// against the real schema (it once read a `documents.updated_at` that never existed and threw every day).
+describe('dueForWinback', () => {
+  const CUTOFF = 1_000;
+
+  function withOwner(savedAt: number[]) {
+    const db = sqliteD1();
+    db.sql
+      .prepare(
+        `INSERT INTO email_lifecycle (owner_id, email, created_at) VALUES ('user_a', 'a@x.test', 1)`,
+      )
+      .run();
+    savedAt.forEach((at, i) =>
+      db.sql
+        .prepare(
+          'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+        )
+        .run(`d${i}`, 'user_a', 'D', at, 1),
+    );
+    return db;
+  }
+
+  it('picks an owner whose newest save is at or before the cutoff', async () => {
+    const db = withOwner([10, CUTOFF]);
+    expect(await dueForWinback(db.env, CUTOFF, 10)).toEqual([
+      { ownerId: 'user_a', email: 'a@x.test' },
+    ]);
+  });
+
+  it('skips an owner who saved after the cutoff, and one with no documents', async () => {
+    expect(await dueForWinback(withOwner([10, CUTOFF + 1]).env, CUTOFF, 10)).toEqual([]);
+    expect(await dueForWinback(withOwner([]).env, CUTOFF, 10)).toEqual([]);
   });
 });

@@ -38,7 +38,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
    still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
    opt-out `notifyTips`. `activation_sent_at`, migration 0031.
 7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
-   (last document activity via `MAX(updated_at)`; zero-document owners are excluded,
+   (last document activity via the newest `documents.saved_at`; zero-document owners are excluded,
    that's #4's job). Daily cron. `winback_sent_at`, migration 0032.
 8. **Milestone** (#6, opt-out `notifyMilestones`) — a celebration when an owner's
    document count reaches 10, fired on a genuine create. Atomic `claimMilestone`
@@ -143,7 +143,7 @@ enough for onboarding; no per-user timers.
 
 A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
 unset for the next run to retry, and counts against the row: `send_attempts`
-goes up by one and `last_attempt_at` records when (migration 0081). Once a row
+goes up by one and `last_attempt_at` records when (migration 0085). Once a row
 reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
 skips it, so an address that always fails (a deleted mailbox, a hard bounce)
 cannot hold a place in the oldest-first batch for good; the sweep logs
