@@ -3392,6 +3392,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
+    createBlocked,
+    explainCreateBlocked: layersState.explainCreateBlocked,
     embedMode,
     readSelection,
     editingId,

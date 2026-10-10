@@ -104,16 +104,18 @@ export function useLayersState(opts: {
   // Fired on the rising edge / cause change only, not on unrelated renders: the toast function is read
   // at that moment (an effect event), not depended on.
   const explainBlockedLayer = useEffectEvent((hidden: boolean) =>
-    toastInfo(
-      hidden
-        ? 'The active layer is hidden, so adding elements is paused. Show it or switch layers.'
-        : 'The active layer is locked, so adding elements is paused. Unlock it or switch layers.',
-    ),
+    toastInfo(blockedLayerMessage(hidden)),
   );
   useEffect(() => {
     if (editsBlocked || !activeLayerBlocked) return;
     explainBlockedLayer(activeLayerHidden);
   }, [activeLayerBlocked, activeLayerHidden, editsBlocked]);
+  // The same notice on demand, for a creation the user asked for outright (a
+  // paste) that the layer refused. Silent when the layer is not the reason.
+  const explainCreateBlocked = () => {
+    if (editsBlocked || !activeLayerBlocked) return;
+    toastInfo(blockedLayerMessage(activeLayerHidden));
+  };
 
   // Hover-to-solo (docs/specs/006-document/layers.md): while a panel row is hovered the canvas
   // renders ONLY that layer. Pure view state — never persisted, synced,
@@ -280,6 +282,7 @@ export function useLayersState(opts: {
     layers,
     activeLayerId,
     activeLayerBlocked,
+    explainCreateBlocked,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,
@@ -300,4 +303,12 @@ export function useLayersState(opts: {
     previewLayerId,
     setPreviewLayerId,
   };
+}
+
+// Why adding is paused on the active layer (docs/specs/006-document/layers.md
+// "Blocked-creation notice").
+export function blockedLayerMessage(hidden: boolean): string {
+  return hidden
+    ? 'The active layer is hidden, so adding elements is paused. Show it or switch layers.'
+    : 'The active layer is locked, so adding elements is paused. Unlock it or switch layers.';
 }

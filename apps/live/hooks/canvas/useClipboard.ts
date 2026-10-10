@@ -64,6 +64,14 @@ type ImageDescriptor = {
 
 type ClipboardDeps = {
   isReadOnly: boolean;
+  // True while new elements can't land: edits are blocked, or the active layer
+  // is hidden or locked (docs/specs/006-document/layers.md). A paste adds
+  // elements, so it obeys the same guard as every other creation path.
+  createBlocked?: boolean;
+  // Says why a paste was refused (the layers slice's blocked-creation notice).
+  // A paste is a deliberate keystroke with nothing on screen to show it was
+  // ignored, so unlike the palette gates it explains itself every time.
+  explainCreateBlocked?: () => void;
   // Editable embeds (docs/specs/013-workspace/embeds.md) still don't paste-upload images — see
   // pasteImageFile.
   embedMode: boolean;
@@ -105,6 +113,8 @@ type ClipboardDeps = {
 export function useClipboard(deps: ClipboardDeps) {
   const {
     isReadOnly,
+    createBlocked = false,
+    explainCreateBlocked,
     embedMode,
     readSelection,
     editingId,
@@ -123,6 +133,13 @@ export function useClipboard(deps: ClipboardDeps) {
   } = deps;
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
+  // True (after explaining) when nothing may be created right now. Every
+  // paste and drop path that adds elements asks this first.
+  const refuseCreate = () => {
+    if (!createBlocked) return false;
+    explainCreateBlocked?.();
+    return true;
+  };
   // Did the last copy actually reach the OS clipboard? It decides who wins
   // when the clipboard holds text that ISN'T ours (see the paste handler):
   // if our write landed, foreign text means the user copied something else
@@ -181,6 +198,7 @@ export function useClipboard(deps: ClipboardDeps) {
     if (isReadOnly) return;
     const pasting = source && source.length > 0 ? source : clipboard;
     if (!pasting || pasting.length === 0) return;
+    if (refuseCreate()) return;
     const pointer = at !== undefined ? at : (canvasPointerRef?.current ?? null);
     const { dx, dy, atPointer } = pasteTranslation(pasting, activeTab, pointer);
     const clipIds = new Set(pasting.map((el) => el.id));
@@ -219,6 +237,7 @@ export function useClipboard(deps: ClipboardDeps) {
     // Embeds never upload (docs/specs/013-workspace/embeds.md): the upload endpoint authorises by owner
     // identity, which inside a partitioned iframe is a throwaway guest.
     if (embedMode) return;
+    if (refuseCreate()) return;
     // Browsers hand inline screenshots over with file.name === ""
     // or "image.png"; synthesise a clearer name so the gallery row
     // doesn't read as "image.png" for everything pasted.
@@ -246,6 +265,7 @@ export function useClipboard(deps: ClipboardDeps) {
   // landed by the board-scene insert. A file that turns out not to hold a scene is `otherwise`'s.
   const pasteExcalidrawText = async (text: string) => {
     if (!insertBoardScene) return;
+    if (refuseCreate()) return;
     const { sceneFromExcalidrawText } = await import('@/lib/excalidraw-read');
     const read = sceneFromExcalidrawText(text);
     if (!read.ok) {
@@ -261,6 +281,7 @@ export function useClipboard(deps: ClipboardDeps) {
     at?: { x: number; y: number },
   ) => {
     if (!insertBoardScene) return otherwise();
+    if (refuseCreate()) return;
     const { readExcalidrawFile } = await import('@/lib/excalidraw-read');
     const read = await readExcalidrawFile(file);
     if (read.kind === 'not-excalidraw') return otherwise();
@@ -285,7 +306,12 @@ export function useClipboard(deps: ClipboardDeps) {
   const pasteRef = useLatest({
     pasteFromClipboard,
     pasteImageFile,
-    onPastePhoto,
+    // A photo read onto the board adds notes, so the creation guard applies.
+    onPastePhoto:
+      onPastePhoto &&
+      ((file: File) => {
+        if (!refuseCreate()) onPastePhoto(file);
+      }),
     pasteExcalidrawText,
     pasteExcalidrawFile,
     canPasteScene: !!insertBoardScene,
