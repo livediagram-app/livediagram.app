@@ -11,7 +11,12 @@ import type { QaNote, ShapeElement, Tab } from './index';
 
 const svgOf = (el: ShapeElement) =>
   renderElementsToSvg({ id: 't', name: 'Tab', elements: [el] } as unknown as Tab);
-const texts = (svg: string) => [...svg.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]!);
+// Each <text>'s content, by splitting rather than a backtracking regex (linear in the SVG's length).
+const texts = (svg: string) =>
+  svg
+    .split('<text')
+    .slice(1)
+    .map((part) => part.slice(part.indexOf('>') + 1, part.indexOf('</text>')));
 
 describe('fitLine', () => {
   it('keeps a short line and cuts a long one with an ellipsis', () => {

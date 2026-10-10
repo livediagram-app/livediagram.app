@@ -16,7 +16,7 @@
 //
 // CTE bodies only, to follow a WITH (or a comma). Binds: ?1 = the person's owner id, ?2 = now
 // (share-link expiry).
-import { visitLinkSql } from './shared';
+import { visitLinkSql } from './visit-link';
 
 export const VISIBLE_DOCUMENTS_CTES = `
   my_teams(team_id) AS (

@@ -4,6 +4,7 @@ import type { SharedWithItem } from '@livediagram/api-schema';
 import type { Env, ShareRole } from '../types';
 import { firstTabCountSql, isEmptyCount } from './tabs';
 import { legacyRoleColumn, levelColumn, storedLevelOf } from '../share-link-row';
+import { visitLinkSql } from './visit-link';
 
 // Record a visitor's access to a shared document. Idempotent on
 // (owner_id, document_id): repeat visits just bump last_seen + role.
@@ -43,21 +44,6 @@ export async function recordSharedAccess(
     .bind(legacyRoleColumn(role), levelColumn(role), tabId, now, shareCode, ownerId, documentId)
     .run();
   return false;
-}
-
-/** SQL for the live link a visit (`s`, a shared_with row, on document `d`) opens its document through, or
- *  NULL when it has none (docs/specs/013-workspace/share-roles.md "Share links"): the link it came in
- *  through while that is live and still matches its role and scope; for a visit recorded before links were
- *  recorded (`share_code` NULL), the oldest live link of its role and scope. `now` is the bound parameter
- *  holding the current time. One definition, so Shared with you, Home and every access leg agree. */
-export function visitLinkSql(now: string, s = 's', d = 'd'): string {
-  const live = `sl.document_id = ${d}.id AND sl.purpose = 'share'
-                AND COALESCE(sl.level, sl.role) = COALESCE(${s}.level, ${s}.role)
-                AND sl.tab_id IS ${s}.tab_id AND (sl.expires_at IS NULL OR sl.expires_at > ${now})`;
-  return `CASE WHEN ${s}.share_code IS NOT NULL
-            THEN (SELECT sl.code FROM share_links sl WHERE sl.code = ${s}.share_code AND ${live})
-            ELSE (SELECT sl.code FROM share_links sl WHERE ${live} ORDER BY sl.created_at ASC LIMIT 1)
-          END`;
 }
 
 // Whether this owner has ever opened the document through a share link
