@@ -99,7 +99,7 @@ export function AgendaStep({
       >
         <span className="flex items-baseline justify-between gap-2">
           <span
-            className={`min-w-0 truncate text-[12px] leading-snug ${current ? 'font-semibold' : 'font-medium'} ${state === 'done' ? 'line-through opacity-45' : ''}`}
+            className={`min-w-0 break-words text-[12px] leading-snug ${current ? 'font-semibold' : 'font-medium'} ${state === 'done' ? 'line-through opacity-45' : ''}`}
             style={{ color: textColor }}
           >
             {name}

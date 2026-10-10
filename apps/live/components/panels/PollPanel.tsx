@@ -145,7 +145,9 @@ function TallyBar({ row }: { row: PollTallyRow }) {
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="truncate text-[11px] text-slate-700 dark:text-slate-200">{row.token}</span>
+        <span className="min-w-0 break-words text-[11px] text-slate-700 dark:text-slate-200">
+          {row.token}
+        </span>
         <span className="shrink-0 text-[11px] font-semibold tabular-nums text-slate-500 dark:text-slate-400">
           {row.count}
         </span>
