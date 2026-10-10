@@ -4,6 +4,7 @@ import {
   BRAND_FACES,
   BRAND_GRADIENTS,
   BRAND_MARK_VIEWBOX,
+  type BrandFace,
   type BrandMarkVariant,
 } from './brand-mark-geometry';
 import { prismPalette } from './brand-prism';
@@ -84,9 +85,18 @@ export function Brand({
 const STOP_CLASS =
   '[stop-color:var(--ldm-l)] dark:[stop-color:var(--ldm-d)] transition-[stop-color] duration-micro ease-out motion-reduce:transition-none';
 const BLEND_CLASS = 'mix-blend-multiply dark:mix-blend-screen';
-// Hovering a linked logo lifts the top plate, as if opening the box.
-const LID_CLASS =
-  'transition-transform duration-micro ease-out group-hover:[transform:translateY(-14px)] motion-reduce:transition-none';
+// Hovering or focusing a linked logo opens the prism: the faces drift apart
+// along the cube's own axes (the lid up, the sides out on the 30 degree
+// isometric diagonals, the bottom fold down), so the glass layers separate and
+// their blended overlaps shift, then settle back. Transform only, so it stays
+// on the compositor; reduced motion holds the cube still.
+const FACE_MOTION = 'transition-transform duration-micro ease-out motion-reduce:transition-none';
+const FACE_HOVER: Record<BrandFace['key'], string> = {
+  top: `${FACE_MOTION} group-hover:[transform:translateY(-16px)] group-focus-visible:[transform:translateY(-16px)]`,
+  rearRight: `${FACE_MOTION} group-hover:[transform:translate(9px,5px)] group-focus-visible:[transform:translate(9px,5px)]`,
+  left: `${FACE_MOTION} group-hover:[transform:translate(-9px,5px)] group-focus-visible:[transform:translate(-9px,5px)]`,
+  bottom: `${FACE_MOTION} group-hover:[transform:translateY(10px)] group-focus-visible:[transform:translateY(10px)]`,
+};
 
 // The Living Prism (docs/specs/004-interface-design/brand-mark.md): a glass
 // cube over the brand palette, or tinted from `accentColor`, following the
@@ -112,14 +122,19 @@ export function BrandMark({
 
   if (tone === 'mono') {
     return (
-      <svg viewBox={BRAND_MARK_VIEWBOX} className={className} style={style} aria-hidden="true">
+      <svg
+        viewBox={BRAND_MARK_VIEWBOX}
+        className={`overflow-visible ${className ?? ''}`.trim()}
+        style={style}
+        aria-hidden="true"
+      >
         {BRAND_FACES.map((face) => (
           <path
             key={face.key}
             d={face.d}
             fill="currentColor"
             opacity={face.monoOpacity}
-            className={face.key === 'top' ? LID_CLASS : undefined}
+            className={FACE_HOVER[face.key]}
           />
         ))}
       </svg>
@@ -131,7 +146,7 @@ export function BrandMark({
   return (
     <svg
       viewBox={BRAND_MARK_VIEWBOX}
-      className={`isolate ${className ?? ''}`.trim()}
+      className={`isolate overflow-visible ${className ?? ''}`.trim()}
       style={style}
       aria-hidden="true"
     >
@@ -174,7 +189,7 @@ export function BrandMark({
           <path
             d={face.d}
             fill={`url(#${uid}-${face.gradient})`}
-            className={face.key === 'top' ? LID_CLASS : face.blend ? BLEND_CLASS : undefined}
+            className={face.blend ? `${FACE_HOVER[face.key]} ${BLEND_CLASS}` : FACE_HOVER[face.key]}
           />
           {full && i === 1 && (
             <g

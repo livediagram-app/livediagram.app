@@ -59,7 +59,7 @@ wordmark in email follows the same split: `live` in brand blue, `diagram` in ink
 
 The mark sits a size up from the wordmark text (28px beside the 18px header wordmark, 20px beside 16px), since a solid cube reads smaller than a line icon in the same box.
 
-Hovering a linked logo lifts the top plate slightly, as if opening the box. Reduced motion holds it still.
+Hovering or keyboard-focusing a linked logo opens the prism: the faces drift apart along the cube's own axes (the lid up, the sides out on the isometric diagonals, the bottom fold down) over the micro duration, so the glass layers separate and their blended overlaps shift, then settle back when the pointer leaves. The faces may drift past the mark's box; nothing clips them. Reduced motion holds the cube still.
 
 ## One source
 
