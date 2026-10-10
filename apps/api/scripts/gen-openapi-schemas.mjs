@@ -35,6 +35,8 @@ export const ROOT_TYPES = [
   'Tab',
   'TabRecord',
   'ChangesetRequest',
+  'IllustrateRequest',
+  'IllustrateAnswer',
   'ItemsResponse',
   'SheetsResponse',
   'SheetResponse',
