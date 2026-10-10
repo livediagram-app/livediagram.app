@@ -20,13 +20,23 @@ import { OverviewGroup } from './OverviewGroup';
 const go = vi.fn();
 const clearUnread = vi.fn();
 
-function renderGroup(selected: SelectedNode = { kind: 'home' }, unread = 3, assigned = 2) {
+function renderGroup(
+  selected: SelectedNode = { kind: 'home' },
+  unread = 3,
+  assigned = 2,
+  feed: { loading?: boolean; error?: boolean } = {},
+) {
   explorer.current = {
     selected,
     go,
     shared: [],
     timelineUnread: { count: unread, clear: clearUnread },
-    activity: { assignedToMe: Array.from({ length: assigned }, (_, i) => ({ id: `a${i}` })) },
+    activity: {
+      assignedToMe: Array.from({ length: assigned }, (_, i) => ({ id: `a${i}` })),
+      loading: false,
+      error: false,
+      ...feed,
+    },
   };
   render(<OverviewGroup divider="titles" first />);
 }
@@ -87,8 +97,16 @@ describe('OverviewGroup', () => {
     expect(labelOf('Timeline')).toBe('Timeline');
   });
 
-  it('hides the Inbox badge at zero', () => {
+  it('shows the Inbox badge at zero', () => {
     renderGroup({ kind: 'home' }, 0, 0);
+    expect(labelOf('Inbox')).toBe('Inbox (0)');
+  });
+
+  it('shows no Inbox badge while the Inbox loads or after it failed', () => {
+    renderGroup({ kind: 'home' }, 0, 0, { loading: true });
+    expect(labelOf('Inbox')).toBe('Inbox');
+    cleanup();
+    renderGroup({ kind: 'home' }, 0, 0, { error: true });
     expect(labelOf('Inbox')).toBe('Inbox');
   });
 });

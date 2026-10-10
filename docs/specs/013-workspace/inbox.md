@@ -52,8 +52,9 @@ outstanding for me right now.**
 
 An **Inbox** row in the sidebar's **Overview** group ([Explorer structure](explorer-structure.md)), directly
 under Home and above the Timeline, with a badge counting the open actions and open Plan cards **assigned to
-the reader** (zero hides it: a "0 things to do" badge is noise, and
-the count only covers work waiting on them, not work they handed out).
+the reader**. The badge always shows, **0** included, so an empty Inbox reads as done at a glance; it
+shows nothing only while the Inbox is loading or failed to load, so it never claims a false 0. The
+count only covers work waiting on the reader, not work they handed out.
 
 The pane is a single page of three sections, each a card-list of rows
 (the same container the List view uses), each with a heading and a

@@ -36,7 +36,7 @@ Top to bottom. "Opens" names the view a row selects; every view keeps its own ro
 | Row            | Opens                                                | Badge                                                                             |
 | -------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Home           | `/explorer/home` ([Explorer Home](explorer-home.md)) | Other people's events since the reader last looked ([Timeline](timeline.md) §2.5) |
-| Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions assigned to the reader                                               |
+| Inbox          | `/explorer/inbox` ([Inbox](inbox.md))                | Open actions and Plan cards assigned to the reader, always shown, 0 included      |
 | Timeline       | `/explorer/timeline` ([Timeline](timeline.md))       | None: the unread count sits on Home                                               |
 | Shared with me | `/explorer/shared`                                   | Documents shared with the reader                                                  |
 
