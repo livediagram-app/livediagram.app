@@ -137,7 +137,9 @@ tab ref unique within the document (`VW4`).
   a JSON string (`id:"Node A"`). The edit-operations selector grammar takes the same `id:"…"` token (`VW3`).
 - **Resolution** (`resolveRef(input, table)`), case-sensitive (`VW1`):
   1. an element whose full id equals the input (an `id:"…"` input is unquoted first);
-  2. else every element whose id starts with the input: one is the match, none is `not-found`, several is
+  2. an `id:"…"` input that matched no full id is `not-found` (with its nearest refs): it always carries a full
+     id, so it never falls back to a prefix and never names a longer id after its own element is gone;
+  3. else every element whose id starts with the input: one is the match, none is `not-found`, several is
      `ambiguous` with every candidate.
 - A ref computed by `computeRefs` always resolves to its own element: a slug or a full id wins rule 1, and a prefix
   is unique by construction.
@@ -735,40 +737,41 @@ the tab and its `rev`.
 
 ## Errors and edge cases
 
-| #   | Case                                          | Handling                                                                                         |
-| --- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| E1  | Empty tab                                     | Header `0 elements`, nothing else; never an error                                                |
-| E2  | Unlabelled element                            | Kind word and ref only                                                                           |
-| E3  | Label with newlines, quotes, `→`, `\|`        | Inside a JSON string; `cellText` in tables and entities                                          |
-| E4  | Overlapping containers                        | Smallest area holding the centre; equal areas, the earlier                                       |
-| E5  | Element larger than a frame it overlaps       | Not nested (strict area)                                                                         |
-| E6  | Rotated element                               | Centre of the stored box; `layout` prints `r=`                                                   |
-| E7  | Hidden layer                                  | Left out, counted `· n hidden`; arrows to hidden elements counted with them                      |
-| E8  | Free, on-arrow ends                           | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
-| E9  | Parallel arrows                               | Both on the source line                                                                          |
-| E10 | Self-loop                                     | `→ <own ref>`                                                                                    |
-| E11 | Mind map cycle or dangling parent             | Broken at the lowest index; a dangling parent reads as a root                                    |
-| E12 | Unknown type or shape                         | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
-| E13 | Element without geometry                      | Root, after the rows, in array order                                                             |
-| E14 | Id with unsafe characters                     | `id:"…"` ref                                                                                     |
-| E15 | Id shorter than 4                             | The full id is the ref                                                                           |
-| E16 | Slug id that is another id's prefix           | Exact match wins; the longer id's ref grows past the common prefix                               |
-| E17 | Prefix ambiguous after a collaborator's add   | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                                 |
-| E18 | Ref of a deleted element                      | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                        |
-| E19 | `only` on a non-container                     | The element's line alone                                                                         |
-| E20 | Budget below the header                       | Header and elision line still print                                                              |
-| E21 | Comment thread with zero comments             | Not a thread                                                                                     |
-| E22 | Tab-scoped visitor asks `overview`            | Out-of-scope tabs print `(out of scope)`; their bodies are never read                            |
-| E23 | Tab-scoped visitor asks a view of another tab | The GET's 404, unchanged                                                                         |
-| E24 | `view=diff` asked of the api                  | 400 `unknown_view`, naming the CLI's `tab diff`                                                  |
-| E25 | Trashed document                              | The GET's 410, unchanged                                                                         |
-| E26 | Table with ragged rows                        | Columns = the longest row's length; missing cells print empty                                    |
-| E27 | One bare stroke, or strokes split by a shape  | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
-| E28 | Event-storming note with the `actor` notation | Kind word `es:actor`                                                                             |
-| E29 | CLI cache holds no tab at `--since`           | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
-| E30 | `show selected`, nothing selected on the tab  | 404 `target_not_found`, "nothing is selected"                                                    |
-| E31 | `show selected` when the room cannot be read  | 404 `target_not_found`, "the selection could not be read"                                        |
-| E32 | `show selected` on a pulled file, offline     | As E31: a file has no live selection (`VW68`)                                                    |
+| #    | Case                                           | Handling                                                                                         |
+| ---- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| E1   | Empty tab                                      | Header `0 elements`, nothing else; never an error                                                |
+| E2   | Unlabelled element                             | Kind word and ref only                                                                           |
+| E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables and entities                                          |
+| E4   | Overlapping containers                         | Smallest area holding the centre; equal areas, the earlier                                       |
+| E5   | Element larger than a frame it overlaps        | Not nested (strict area)                                                                         |
+| E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                                   |
+| E7   | Hidden layer                                   | Left out, counted `· n hidden`; arrows to hidden elements counted with them                      |
+| E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
+| E9   | Parallel arrows                                | Both on the source line                                                                          |
+| E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
+| E11  | Mind map cycle or dangling parent              | Broken at the lowest index; a dangling parent reads as a root                                    |
+| E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
+| E13  | Element without geometry                       | Root, after the rows, in array order                                                             |
+| E14  | Id with unsafe characters                      | `id:"…"` ref                                                                                     |
+| E15  | Id shorter than 4                              | The full id is the ref                                                                           |
+| E16  | Slug id that is another id's prefix            | Exact match wins; the longer id's ref grows past the common prefix                               |
+| E17  | Prefix ambiguous after a collaborator's add    | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                                 |
+| E18  | Ref of a deleted element                       | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                        |
+| E18a | `id:"n1"` after `n1` is deleted, `n10` present | `not-found`; never `n10` by prefix                                                               |
+| E19  | `only` on a non-container                      | The element's line alone                                                                         |
+| E20  | Budget below the header                        | Header and elision line still print                                                              |
+| E21  | Comment thread with zero comments              | Not a thread                                                                                     |
+| E22  | Tab-scoped visitor asks `overview`             | Out-of-scope tabs print `(out of scope)`; their bodies are never read                            |
+| E23  | Tab-scoped visitor asks a view of another tab  | The GET's 404, unchanged                                                                         |
+| E24  | `view=diff` asked of the api                   | 400 `unknown_view`, naming the CLI's `tab diff`                                                  |
+| E25  | Trashed document                               | The GET's 410, unchanged                                                                         |
+| E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                                    |
+| E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
+| E28  | Event-storming note with the `actor` notation  | Kind word `es:actor`                                                                             |
+| E29  | CLI cache holds no tab at `--since`            | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
+| E30  | `show selected`, nothing selected on the tab   | 404 `target_not_found`, "nothing is selected"                                                    |
+| E31  | `show selected` when the room cannot be read   | 404 `target_not_found`, "the selection could not be read"                                        |
+| E32  | `show selected` on a pulled file, offline      | As E31: a file has no live selection (`VW68`)                                                    |
 
 ## Security and trust
 
