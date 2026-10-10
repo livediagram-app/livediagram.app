@@ -355,7 +355,11 @@ implementation, not two.
   disabled. A step is small enough that
   skipping empty periods would hide the shape of a quiet stretch, which
   is often the thing being looked at, and whichever period you land on is
-  fetched on demand.
+  fetched on demand. The fetch follows the month's cursor to its end, page
+  by page (each merged as it arrives), so a month busier than one page of
+  `TIMELINE_PAGE_MAX` shows all its days; it stops at
+  `TIMELINE_PERIOD_PAGES_MAX` (10) pages, logged, and a month left before
+  its last page (a failed page, or paging away) is fetched again on return.
 
   Month paging used to jump to the nearest month that had events and
   disable itself when there was none, tooltipped "No earlier events" —
