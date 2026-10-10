@@ -36,6 +36,9 @@ const ICON = 18;
 export const TEMPLATE_COUNT = 95;
 // Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 17;
+// Illustrate's infographic page layouts and logo layouts, pinned the same way.
+export const PAGE_LAYOUT_COUNT = 31;
+export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -146,6 +149,46 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a document onto a folder to file it.',
       },
       {
+        q: 'Can I write documents in it?',
+        a: (
+          <>
+            Yes. Switch a tab to Illustrate and write an article straight onto pages: Markdown
+            shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and
+            Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the
+            text, and teammates comment on the words themselves. Pick one of five looks, then export
+            every page as a PDF. See <a href="/help/canvas/illustrate/articles/">Articles</a>.
+          </>
+        ),
+        aText:
+          'Yes. Switch a tab to Illustrate and write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
+      },
+      {
+        q: 'Can I design infographics, posters or a logo?',
+        a: (
+          <>
+            Yes, in Illustrate. Lay out pages in print sizes (A4, US Letter, A3) or social sizes,
+            starting from one of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF,
+            PNG or SVG. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
+            construction guides, mirror drawing and wordmark type, and it exports a logo kit. See{' '}
+            <a href="/help/canvas/illustrate/">Illustrate mode</a>.
+          </>
+        ),
+        aText: `Yes, in Illustrate. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Illustrate mode.`,
+      },
+      {
+        q: 'Can I use it as a whiteboard?',
+        a: (
+          <>
+            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
+            text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
+            stylus, a resting palm never leaves a mark. See{' '}
+            <a href="/help/canvas/draw-mode/">Draw mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+      },
+      {
         q: 'Is there a spreadsheet?',
         a: (
           <>
@@ -179,8 +222,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucideUsers, ICON),
     items: [
       {
-        q: 'Can I work on a diagram with my team?',
-        a: 'Yes, that is the point. Share a link and teammates join the same canvas in real time, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
+        q: 'Can I work with my team in real time?',
+        a: 'Yes, that is the point. Share a link and teammates join the same document in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -281,8 +324,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucideArrowUpDown, ICON),
     items: [
       {
-        q: 'Can I export my diagrams?',
-        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Hidden layers stay out of exports.',
+        q: 'Can I export my work?',
+        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as one print-ready PDF, and a logo page as a logo kit. Hidden layers stay out of exports.',
       },
       {
         q: 'Does it work with Mermaid?',

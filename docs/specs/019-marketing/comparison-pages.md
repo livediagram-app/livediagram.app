@@ -52,7 +52,7 @@ Miro, XMind, Excalidraw, draw.io (diagrams.net), and Google Slides (compared as 
 
 ## Second set (October 2026)
 
-- **Microsoft Whiteboard** (`/alternatives/microsoft-whiteboard`), listed first while it is time-sensitive: Microsoft retires Whiteboard for personal accounts and the standalone apps on 16 October 2026 (work and school accounts keep it in Teams and on the web, and the page says so). The angle is the [Microsoft Whiteboard import](../020-import-export/whiteboard-import.md), which needs a board export folder; the page says that plainly rather than implying a one-click migration.
+- **Microsoft Whiteboard** (`/alternatives/microsoft-whiteboard`), listed first while it is time-sensitive: Microsoft retires Whiteboard for personal accounts (read-only since 25 September 2026, legacy boards deleted on 16 October 2026) and the standalone apps (retiring between 16 October and 30 November 2026; Microsoft's notices differ) (work and school accounts keep it in Teams and on the web, and the page says so). The angle is the [Microsoft Whiteboard import](../020-import-export/whiteboard-import.md), which needs a board export folder; the page says that plainly rather than implying a one-click migration.
 - **FigJam** (`/alternatives/figjam`): no account or Figma seat, structured diagrams, workshop tools, API and MCP. No importer exists, and the FAQ says so.
 - **Lucidchart** (`/alternatives/lucidchart`): no document or shape limits. No importer exists; the honest route is through draw.io, which takes a Lucidchart diagram pasted from its editor and opens Visio files, then our draw.io import. Lucidchart imports Mermaid itself, so Mermaid import is never framed as our edge there.
 

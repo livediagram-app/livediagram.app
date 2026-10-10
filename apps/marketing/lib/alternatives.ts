@@ -76,7 +76,7 @@ export const ALTERNATIVES: Alternative[] = [
     description:
       'A free, open-source Microsoft Whiteboard alternative: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with the ink still editable.',
     h1: 'The open-source Microsoft Whiteboard alternative',
-    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, and the standalone apps and remaining legacy boards go on 16 October 2026. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
+    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, the remaining legacy boards are deleted on 16 October 2026, and the standalone apps retire this autumn. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
     rows: [
       {
         label: 'Price',
@@ -126,7 +126,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'What the retirement means',
         paragraphs: [
-          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, and on 16 October 2026 the standalone Windows, iOS and Android apps retire and the remaining legacy boards are deleted for good.',
+          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, the remaining legacy boards are deleted for good on 16 October 2026, and the standalone Windows, iOS and Android apps retire between 16 October and 30 November 2026, depending on which of Microsoft’s notices you read.',
           'If you used Whiteboard on a personal account, for teaching, family planning, tutoring or your own thinking, you need a new home for those boards and for the next ones. Check Microsoft’s own retirement notice for the details that apply to your account.',
         ],
       },
@@ -155,7 +155,7 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Is Microsoft Whiteboard being discontinued?',
-        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, and the standalone apps retire and remaining legacy boards are deleted on 16 October 2026. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
+        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, remaining legacy boards are deleted on 16 October 2026, and the standalone apps retire by 30 November 2026. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
       },
       {
         q: 'Can I import my Microsoft Whiteboard boards?',
@@ -212,7 +212,7 @@ export const ALTERNATIVES: Alternative[] = [
     themBest: [
       'Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.',
       'A deep template and integration marketplace (Jira, Slack, and more).',
-      'AI woven through the whole workspace, well beyond a single assistant panel.',
+      'AI across the canvas: assistants, flows and generators, well beyond a single panel.',
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
     usBest: [
@@ -322,7 +322,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
     ],
     themBest: [
-      'Deep, keyboard-fast mind-map outlining and dedicated brainstorming modes.',
+      'Deep, keyboard-fast mind-map outlining, with a distraction-free ZEN mode.',
       'A refined native desktop experience with dedicated mobile apps.',
       "Pitch mode turns a map's branches into presentation slides.",
     ],
@@ -735,7 +735,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Your team designs in Figma, and you want boards that sit beside your design files and copy across into them.',
       'A playful, polished feel: stamps, stickers, emotes, cursor chat and widgets.',
       'A large community of plugins, widgets and templates.',
-      'AI features built into the board for generating and summarising content.',
+      'FigJam AI on paid plans, for generating boards and summarising sticky notes.',
     ],
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
