@@ -39,8 +39,12 @@ export function PresentationHost() {
   const plan = usePlan();
   const surface = useCanvasSurface();
   const at = slideDeck?.presentingAt ?? null;
+  // The slide on screen ('end' for the end state): a peer's edit can move the
+  // slide's place in the run without the slide changing, which is no move.
+  const shown = at === null ? null : (slideDeck?.runnable[at]?.slide.id ?? 'end');
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const prevAt = useRef<number | null>(null);
+  const prevShown = useRef<string | null>(null);
   // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned by the deck hook, because
   // the camera reads them too.
   const config = slideDeck?.config;
@@ -55,10 +59,13 @@ export function PresentationHost() {
       root.removeAttribute('data-presenting');
       root.removeAttribute('data-slide-move');
       prevAt.current = null;
+      prevShown.current = null;
       return;
     }
     const before = prevAt.current;
+    const shownBefore = prevShown.current;
     prevAt.current = at;
+    prevShown.current = shown;
     root.setAttribute('data-presenting', '');
     const cfg = configRef.current;
     if (cfg) {
@@ -71,32 +78,38 @@ export function PresentationHost() {
     if (before === null) {
       // Entering: the first slide arrives as a card rather than a page swap.
       root.setAttribute('data-slide-move', 'in');
-    } else if (at === before) {
-      return;
-    } else {
+    } else if (shown !== shownBefore) {
       const dir = at > before ? 'forward' : 'back';
       setDirection(dir);
       root.setAttribute('data-slide-move', dir);
     }
+    // The same slide at a new place (a peer's edit) moves nothing, but the
+    // listeners below still clear a move already under way.
     // Cleared on the animation's OWN end event, not on a timer. A timer has to
     // guess the duration, and guessing even slightly short yanked the
     // attribute mid-animation — the element snapped from wherever it had got
     // to straight to its resting place, which is the little bounce at the end
     // of a transition that reads as rubber-banding.
     const surface = document.querySelector(SURFACE_SELECTOR);
-    const done = () => root.removeAttribute('data-slide-move');
+    // The surface's OWN animation: an animationend bubbling up from an element inside it (a note's entrance, a
+    // looping sticker) must not end the slide move early.
+    const done = (e?: Event) => {
+      if (e && e.target !== surface) return;
+      root.removeAttribute('data-slide-move');
+    };
+    const failsafeDone = () => done();
     surface?.addEventListener('animationend', done);
     surface?.addEventListener('animationcancel', done);
     // Belt and braces: if the surface is missing or the animation never runs
     // (reduced motion with animations disabled outright, a hidden tab), the
     // attribute must not stick and block the next transition.
-    const failsafe = window.setTimeout(done, 1200);
+    const failsafe = window.setTimeout(failsafeDone, 1200);
     return () => {
       surface?.removeEventListener('animationend', done);
       surface?.removeEventListener('animationcancel', done);
       window.clearTimeout(failsafe);
     };
-  }, [at, configRef]);
+  }, [at, shown, configRef]);
 
   // Leaving the mode must always clean up, including on unmount (a navigation
   // away mid-presentation would otherwise leave the attribute on <html>).
@@ -130,7 +143,7 @@ export function PresentationHost() {
         onSetCanvasTool={setCanvasTool}
         steps={slideDeck.runnable}
         at={at}
-        onGo={(next) => slideDeck.setPresentingAt(next)}
+        onGo={slideDeck.setPresentingAt}
         onExit={slideDeck.exitPresentation}
         direction={direction}
         config={config}

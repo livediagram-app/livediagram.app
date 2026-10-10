@@ -220,6 +220,15 @@ export function inSelection(sel: Selection, r: number, c: number): boolean {
   return sel.ranges.some((range) => rangeContains(range, r, c));
 }
 
+// Does the selection hold more than one cell? A merge is one cell, so a clicked merge (its range the merge's) is a
+// single cell: Enter edits it and Tab moves on, rather than walking into the cells it covers.
+export function selectsSeveral(sel: Selection, grid: Grid): boolean {
+  const range = primaryRange(sel);
+  const { r, c } = sel.active;
+  const one = grid.mergeAt(r, c) ?? { r1: r, c1: c, r2: r, c2: c };
+  return range.r1 < one.r1 || range.c1 < one.c1 || range.r2 > one.r2 || range.c2 > one.c2;
+}
+
 // The range Enter and Tab move within, when more than one cell is selected.
 export function primaryRange(sel: Selection): GridRange {
   return sel.ranges[sel.ranges.length - 1]!;

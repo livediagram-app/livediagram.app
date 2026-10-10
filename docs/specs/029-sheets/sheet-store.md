@@ -66,6 +66,10 @@ elements, its snapshots, its changesets or its room.
 - **Delete**: removes the sheet and its cells. **Delete when unreferenced** (the editor's, with its element) removes
   them now if nothing references the sheet, or else as soon as nothing does ([Deleting a sheet](#deleting-a-sheet)).
 - Every write answers with what is stored: the changed cells, the layout if it changed, and the sheet rev.
+- A write the server could not take for now (no answer, a timeout, a rate limit, a server error) is kept, still
+  shown and still ahead of the sheet's later writes, and sent again after a wait that doubles from half a second
+  up to 30 seconds, until it lands or the room confirms it. Only a refusal (any other answer) drops it, with a
+  toast, and fetches the sheet again.
 
 ## Deleting a sheet
 
@@ -119,6 +123,10 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   changes ([Items](../026-plan/items.md#undo)).
 - An undo writes back the old inputs and formats of exactly the cells its change touched, and the old layout of
   what its layout change touched (a deleted row comes back with its id, place and cells).
+- Undoing a deletion of rows or columns puts back only what the deletion took, into the sheet as it is at the
+  undo: the deleted lines' sizes, hidden state and card-table links and drafts, the merges, filter range and named
+  ranges it shrank or dropped, a card table's deleted columns. What changed since is kept (a row linked or drafted,
+  a merge or a name made), and a merge, filter or name someone changed after the deletion is theirs, not put back.
 - Like canvas undo, an undo writes the old value back even over a later change someone else made to that cell.
 
 ## Offline documents

@@ -107,7 +107,11 @@ const initial = (): SheetJson => ({
 
 function store(
   api: ReturnType<typeof server>['api'],
-  extra: Partial<{ toast: (m: string) => void; pushUndo: (s: unknown) => void }> = {},
+  extra: Partial<{
+    toast: (m: string) => void;
+    pushUndo: (s: unknown) => void;
+    wait: (ms: number) => Promise<void>;
+  }> = {},
 ) {
   return new SheetStore({
     scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
@@ -116,6 +120,7 @@ function store(
     pushUndo: (extra.pushUndo ?? (() => {})) as never,
     toast: extra.toast ?? (() => {}),
     api: api as never,
+    ...(extra.wait ? { wait: extra.wait } : {}),
   });
 }
 
@@ -204,6 +209,40 @@ describe('the sheet store client', () => {
     expect(value(2, 0)).toBeNull();
     expect(s.write('nope', set(0, 0, 1))).toBe('write_invalid');
   });
+  it('keeps a write the server could not take for now and sends it again, waiting longer each time', async () => {
+    const toast = vi.fn();
+    const waits: number[] = [];
+    s = store(srv.api, { toast, wait: async (ms) => void waits.push(ms) });
+    await s.loadTab('t1');
+    srv.api.writeSheet
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockRejectedValueOnce(new ApiError('sheet write', 503, null))
+      .mockRejectedValueOnce(new ApiError('sheet write', 429, 'rate_limited'));
+    s.write('sheet0001', set(2, 0, 4));
+    await s.settle();
+    expect(waits).toEqual([500, 1000, 2000]);
+    expect(srv.api.writeSheet).toHaveBeenCalledTimes(4);
+    expect(toast).not.toHaveBeenCalled();
+    expect(value(2, 0)).toBe(4);
+    expect(srv.sheet.cells.get(cellKey(rows[2]!, cols[0]!))?.input).toEqual({ n: 4 });
+  });
+  it('sends nothing again once the room has confirmed a write whose answer was lost', async () => {
+    srv.api.writeSheet.mockImplementationOnce(async (...args) => {
+      await srv.api.writeSheet.getMockImplementation()!(...args);
+      throw new TypeError('Failed to fetch');
+    });
+    s = store(srv.api, {
+      wait: async () => {
+        for (const op of srv.drain()) s.receive(op);
+      },
+    });
+    await s.loadTab('t1');
+    s.write('sheet0001', set(2, 0, 4));
+    await s.settle();
+    expect(srv.api.writeSheet).toHaveBeenCalledTimes(1);
+    expect(srv.sheet.rev).toBe(1);
+    expect(value(2, 0)).toBe(4);
+  });
   it('pushes an undo step that puts the cells back', async () => {
     const steps: { undo: () => void; redo: () => void }[] = [];
     s = store(srv.api, { pushUndo: (st) => steps.push(st as never) });
@@ -216,6 +255,39 @@ describe('the sheet store client', () => {
     expect(value(0, 0)).toBe(3);
     await s.settle();
     expect(steps).toHaveLength(1);
+  });
+  it("undoes a row deletion into the sheet as it is then, keeping a card table's later links", async () => {
+    const steps: { undo: () => void; redo: () => void }[] = [];
+    s = store(srv.api, { pushUndo: (st) => steps.push(st as never) });
+    await s.loadTab('t1');
+    const table = {
+      id: 'tbl1',
+      head: rows[0]!,
+      cols: [{ c: cols[0]!, field: 'Title' }],
+      rows: { [rows[1]!]: 'i1', [rows[2]!]: 'i2' },
+      type: 'task',
+    };
+    const quiet = { undoable: false };
+    s.write(
+      'sheet0001',
+      { kind: 'layout', changes: [{ k: 'cardTable', id: 'tbl1', table }] },
+      quiet,
+    );
+    s.write('sheet0001', { kind: 'layout', changes: [{ k: 'deleteRows', ids: [rows[2]!] }] });
+    // A card linked to another row after the deletion (the sync's bookkeeping, no undo step).
+    const linked = { ...table, rows: { [rows[1]!]: 'i1', [rows[3]!]: 'i3' } };
+    s.write(
+      'sheet0001',
+      { kind: 'layout', changes: [{ k: 'cardTable', id: 'tbl1', table: linked }] },
+      quiet,
+    );
+    steps.at(-1)!.undo();
+    expect(s.sheet('sheet0001')!.layout.cardTables![0]!.rows).toEqual({
+      [rows[1]!]: 'i1',
+      [rows[2]!]: 'i2',
+      [rows[3]!]: 'i3',
+    });
+    await s.settle();
   });
   it('takes several writes as one change: one undo step puts them all back, a refusal applies none', async () => {
     const steps: { undo: () => void; redo: () => void }[] = [];

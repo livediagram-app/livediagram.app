@@ -40,6 +40,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { positionAt, presentingIndex, type PresentingPosition } from '@/lib/presenting-position';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
 // bursts (drag a row through four positions, type a sentence of notes), and
@@ -105,8 +106,9 @@ export function useSlideDeck({
   // Which slide the PANEL has open. Separate from the presentation's own
   // index: checking slide 4 in the panel should not mean starting there.
   const [openSlideId, setOpenSlideId] = useState<string | null>(null);
-  // Non-null only while presenting: the index into the presentable list.
-  const [presentingAt, setPresentingAt] = useState<number | null>(null);
+  // Non-null only while presenting: the slide on screen, by id (lib/presenting-position.ts), so a peer's edit to the
+  // deck or its tabs never moves the presenter to another slide.
+  const [presenting, setPresenting] = useState<PresentingPosition | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
   // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned here rather than in the
   // overlay because the FIT reads them too — "Actual size" is a setting about
@@ -174,6 +176,15 @@ export function useSlideDeck({
   // Slides whose tab still exists and are not hidden, in deck order — what
   // Present will run.
   const runnable = useMemo(() => presentableSlides(deck, tabs), [deck, tabs]);
+  const runnableRef = useLatest(runnable);
+  // The index into the presentable list, while presenting.
+  const presentingAt = presenting === null ? null : presentingIndex(presenting, runnable);
+  // Stable, so a running deck's timers are not restarted by a re-render (PresentationOverlay's auto-advance).
+  const setPresentingAt = useCallback(
+    (next: number | null) =>
+      setPresenting(next === null ? null : positionAt(next, runnableRef.current)),
+    [runnableRef],
+  );
   // Row previews, from the same headless renderer the Layers panel uses.
   const thumbs = useSlideThumbnails(deck, tabs, plan);
   // Each page slide's page, named from its own tab (null once the page is gone).
@@ -444,10 +455,10 @@ export function useSlideDeck({
     setMultiSelectedIds(new Set());
     setPresentingAt(0);
     track('UI', 'Started', 'Presentation');
-  }, [loadAllTabs, runnable.length, setMultiSelectedIds, setSelectedId]);
+  }, [loadAllTabs, runnable.length, setMultiSelectedIds, setPresentingAt, setSelectedId]);
 
   const exitPresentation = useCallback(() => {
-    setPresentingAt((at) => {
+    setPresenting((at) => {
       if (at === null) return null;
       track('UI', 'Closed', 'Presentation');
       return null;

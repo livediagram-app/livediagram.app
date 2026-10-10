@@ -234,6 +234,39 @@ describe('card table sync', () => {
     );
   });
 
+  it("leaves someone else's draft alone when its card changes elsewhere: only its owner puts it back", async () => {
+    renderSheet(h, () => <Sync h={h} />);
+    await waitFor(() => expect(h.cell('A2')?.input).toEqual({ s: 'Fresh' }));
+    // Another person's edit, heard as the table's bookkeeping: their row is a draft, made on their client.
+    const r = ids().rows[1]!;
+    act(() => {
+      h.store.write(
+        SHEET_ID,
+        {
+          kind: 'layout',
+          changes: [{ k: 'cardTable', id: 'tbl1', table: { ...table(), drafts: [r] } }],
+          cells: [{ r, c: ids().cols[0]!, i: { s: 'Theirs, typing' } }],
+        },
+        { undoable: false },
+      );
+    });
+    plan = {
+      ...plan!,
+      items: new Map([['i1', { ...card(1, { title: 'Board', status: 'todo' }), rev: 2 }]]),
+    };
+    act(() => {
+      h.store.write(
+        SHEET_ID,
+        { kind: 'cells', cells: [{ r: ids().rows[5]!, c: ids().cols[3]!, i: { s: 'nudge' } }] },
+        { undoable: false },
+      );
+    });
+    await h.store.settle();
+    expect(table().drafts).toEqual([r]);
+    expect(h.cell('A2')?.input).toEqual({ s: 'Theirs, typing' });
+    expect(h.notify).not.toHaveBeenCalled();
+  });
+
   it('does nothing for someone who may only view', async () => {
     plan = { ...plan!, canEdit: false };
     renderSheet(h, () => <Sync h={h} />);

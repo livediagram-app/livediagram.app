@@ -6,6 +6,7 @@ import {
   laneIndexAt,
   type Element,
   type ElementId,
+  type EsTimeline,
 } from '@livediagram/document';
 
 // Inserting a note BETWEEN two notes (docs/specs/021-event-storming/event-storming.md). An event-storming wall is a
@@ -94,6 +95,11 @@ type FindArgs = {
   // The slot currently on offer, if any. Passed back in so the offer sticks
   // through a shaky hand (see SLOT_HYSTERESIS).
   active?: InsertionSlot | null;
+  // The board's timeline lanes. With them, the row is the notes on the
+  // cursor's lane: lanes sit closer together (ES_LANE_GAP) than a note's own
+  // row reach (half its height), so the reach alone would take in the
+  // neighbouring lanes' notes and open the slot in the wrong row.
+  lanes?: EsTimeline | null;
 };
 
 // The event-storming template's own gap, used when the row has no gap worth
@@ -159,14 +165,34 @@ function medianGap(sorted: { x: number; width: number }[]): number {
   return gaps[Math.floor((gaps.length - 1) / 2)] ?? DEFAULT_INSERTION_GAP;
 }
 
+// On a lanes board, the lane a note sits on (by its centre).
+const laneOf = (el: { y: number; height: number }, lanes: EsTimeline) =>
+  laneIndexAt(el.y + el.height / 2, lanes);
+
+// Is this note in the cursor's row? On a lanes board, the cursor's lane; else
+// within the note's own reach.
+function inRow(
+  el: Element & { y: number; height: number },
+  cursorY: number,
+  lanes: EsTimeline | null | undefined,
+): boolean {
+  return lanes ? laneOf(el, lanes) === laneIndexAt(cursorY, lanes) : rowContains(el, cursorY);
+}
+
 // Is the cursor still inside the slot it opened (plus the hysteresis margin)?
-function stillInside(slot: InsertionSlot, cursorX: number, cursorY: number, elements: Element[]) {
+function stillInside(
+  slot: InsertionSlot,
+  cursorX: number,
+  cursorY: number,
+  elements: Element[],
+  lanes: EsTimeline | null | undefined,
+) {
   const left = elements.find((el) => el.id === slot.leftId);
   const right = elements.find((el) => el.id === slot.rightId);
   if (!left || !right || !isBoxed(left) || !isBoxed(right)) return false;
   const withinX =
     cursorX >= left.x + left.width - SLOT_HYSTERESIS && cursorX <= right.x + SLOT_HYSTERESIS;
-  const withinY = rowContains(right, cursorY) || rowContains(left, cursorY);
+  const withinY = inRow(right, cursorY, lanes) || inRow(left, cursorY, lanes);
   return withinX && withinY;
 }
 
@@ -198,16 +224,17 @@ export function findInsertionSlot({
   inertIds,
   excludeIds,
   active,
+  lanes,
 }: FindArgs): InsertionSlot | null {
   // The board as the insertion sees it: everything except what is being
   // inserted. One filter up front, so no rule below has to remember.
   const elements = excludeIds === undefined ? all : all.filter((el) => !excludeIds.has(el.id));
-  if (active && stillInside(active, cursorX, cursorY, elements)) return active;
+  if (active && stillInside(active, cursorX, cursorY, elements, lanes)) return active;
 
   // Row candidates: what the author can actually see and aim at.
   const row = elements
     .filter(isBoxed)
-    .filter((el) => movable(el) && !inertIds?.has(el.id) && rowContains(el, cursorY))
+    .filter((el) => movable(el) && !inertIds?.has(el.id) && inRow(el, cursorY, lanes))
     .sort((a, b) => a.x - b.x);
   if (row.length < 2) return null;
 

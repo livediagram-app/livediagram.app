@@ -266,6 +266,9 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 | Ctrl/⌘ + Shift + 1, 4, 5            | Number, Currency, Percent format                                                                      |
 | Escape (nothing in edit)            | Ends the copy's marquee, then Find; then leaves the grid: the Sheet element is selected on the canvas |
 
+- With more than one cell selected, **Enter** and **Tab** (and their Shift forms) walk the active cell through the
+  selection and wrap. A merged cell is one cell: a clicked merge is a single cell, so Enter edits it and Tab moves
+  on, never into the cells it covers.
 - While the grid has focus, its keys are the grid's: the canvas's single-key shortcuts (tools, Delete for the
   element) do not fire. Escape hands the keys back to the canvas.
 
@@ -435,15 +438,18 @@ from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cance
   case aside, Labels separated by commas, a date as the card's date (its day; a time of day is dropped). A cleared
   cell clears its field, except Type, Title and State, which a card always has (the card keeps them, and the next
   sync writes them back); Number is the card's own and is left. Field names are read as the card functions read them
-  (State or Status, Assignee, Owner or Assigned To, Due or Due Date, and so on). A new row (directly under a linked row or the header) becomes a card: its type from its
+  (State or Status, Assignee, Owner or Assigned To, Due or Due Date, and so on). A new row (directly under a linked row, a draft row or the header) becomes a card: its type from its
   Type cell or the table's, its State from its State cell or the table's first card's, its title from its Title cell
-  (else the type's new-card title); its Number fills in. A value the plan does not know ("No column 'Doing'") is
+  (else the type's new-card title); its Number fills in. A row directly under a draft row joins the table too,
+  so a block of rows pasted under the table becomes a block of new rows, each a draft. A value the plan does not know ("No column 'Doing'") is
   refused with a toast and the row stays a draft. The draft ends only once the card write lands: a write the plan
   store refuses keeps the row a draft ("That row could not be saved to its card. Its edits are kept: try Save
   again."), and a second Save while one is on its way does nothing. **Cancel** puts a card's row back as its card is, and empties a
   new row.
 - A card changed elsewhere (a board, the card panel, an agent) while its row waits as a draft wins: the row's edits are
   put back to the card's values, and a notice says so ("Card #3 changed elsewhere, so its row's edits were put back").
+  Only the person whose edit made the draft (in the session they made it in) puts it back and sees the notice;
+  everyone else leaves another person's draft alone.
 - **Dropdowns**: in a column whose field has set values (Type, State, Priority, Assignee, a choice field), the active
   cell of a table row shows a dropdown arrow inside its right edge, in the room such a column keeps at its cells'
   right so the arrow never covers a value ("Choose State", with a tooltip), opening an option list of those values,
@@ -454,7 +460,8 @@ from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cance
 - **Deleted rows**: deleting a linked row moves its card to the Trash (restorable from there, and Undo brings both
   back). Clearing a row's cells only clears its fields. A deleted row leaves the table at once (its link and any
   draft); deleting the header row ends the table, and deleting its Controls column drops it (the next one found
-  again). Undo puts the table back as it was.
+  again). Undo puts back what the deletion took (the deleted rows' links and drafts, a deleted column, the table
+  itself when the deletion ended it) into the table as it is then, keeping rows linked or drafted since.
 - Open Card, the draft tint and Save and Cancel draw only for someone who may edit (Open Card for everyone in Plan
   mode), and never over the frozen rows or columns a row has scrolled under.
 - Sync runs while the Sheet is drawn, for someone who may edit; the card side follows the item store's rules and

@@ -113,22 +113,29 @@ function fieldValue(v: unknown, field: string): unknown {
 
 const blank = (v: unknown) => v === null || v === undefined || v === '';
 
-// The table a row of `sheet` belongs to: linked to it, or a new row directly under one of its rows (or its header).
-// A row linked to a card the plan does not have (its card never made, or deleted for good) counts as new, so its
-// next edit makes it a card again; a trashed card stays linked.
+// The table a row of `sheet` belongs to: linked to it, or a new row directly under one of its rows (its header, a
+// linked row, a draft row, or a row `drafting` already took into it), so a block of rows pasted under the table
+// joins it whole. A row linked to a card the plan does not have (its card never made, or deleted for good) counts
+// as new, so its next edit makes it a card again; a trashed card stays linked.
 function tableOfRow(
   sheet: Sheet,
   r: string,
   items: ReadonlyMap<string, Item>,
+  drafting: ReadonlyMap<string, string> = new Map(),
 ): { table: CardTable; linked: string | null } | null {
   const rows = sheet.layout.rows;
   const at = rows.indexOf(r);
   for (const t of sheet.layout.cardTables ?? []) {
     const id = t.rows[r];
     if (id && items.has(id)) return { table: t, linked: id };
-    const above = rows[at - 1];
-    if (id || (at > 0 && above && (above === t.head || t.rows[above])))
-      return { table: t, linked: null };
+    const above = at > 0 ? rows[at - 1] : undefined;
+    const joins =
+      !!above &&
+      (above === t.head ||
+        !!t.rows[above] ||
+        !!t.drafts?.includes(above) ||
+        drafting.get(above) === t.id);
+    if (id || joins) return { table: t, linked: null };
   }
   return null;
 }
@@ -146,12 +153,18 @@ export function pushPlan(before: Sheet, after: Sheet, write: SheetWrite, plan: C
             const id = t.rows[r];
             if (id && live(plan.items.get(id)) && !out.trash.includes(id)) out.trash.push(id);
           }
-  for (const cell of write.kind === 'title' ? [] : (write.cells ?? [])) {
-    const found = tableOfRow(after, cell.r, plan.items);
+  // Top to bottom, so each pasted row finds the one above it already taken in.
+  const pos = layoutIndex(after.layout).rowPos;
+  const cells = (write.kind === 'title' ? [] : (write.cells ?? []))
+    .filter((cell) => pos.has(cell.r))
+    .sort((a, b) => pos.get(a.r)! - pos.get(b.r)!);
+  const drafting = new Map<string, string>();
+  for (const cell of cells) {
+    const found = tableOfRow(after, cell.r, plan.items, drafting);
     if (!found || !found.table.cols.some((col) => col.c === cell.c)) continue;
-    if (found.table.drafts?.includes(cell.r)) continue;
-    if (!out.drafts.some((d) => d.row === cell.r))
-      out.drafts.push({ tableId: found.table.id, row: cell.r });
+    if (found.table.drafts?.includes(cell.r) || drafting.has(cell.r)) continue;
+    drafting.set(cell.r, found.table.id);
+    out.drafts.push({ tableId: found.table.id, row: cell.r });
   }
   return out;
 }

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { type ArrowElement, type Element, type StickyElement } from '@livediagram/document';
+import {
+  ES_LANES,
+  type ArrowElement,
+  type Element,
+  type StickyElement,
+} from '@livediagram/document';
 import {
   DEFAULT_INSERTION_GAP,
   applyInsertionShift,
@@ -535,5 +540,46 @@ describe('findInsertionSlot — notes a gutter apart', () => {
       elements: [esNote('c', 'command', 784), esNote('e', 'domain-event', 1000)],
     });
     expect(slot).toMatchObject({ leftId: 'c', rightId: 'e' });
+  });
+});
+
+// docs/specs/021-event-storming/event-storming.md "Alt insertion": on a board of lanes the row is the cursor's
+// lane. Lanes are a 40px gap apart, inside a note's own half-height reach, so the reach alone would take a gap
+// between the neighbouring lane's notes.
+describe("findInsertionSlot: the row is the cursor's lane", () => {
+  const PITCH = 240;
+  // The cursor's lane (lane 0) has a gap at 200..600; the lane below (lane 1) one at 200..272.
+  const board: Element[] = [
+    note('a', 0),
+    note('b', 600),
+    note('c', 0, PITCH),
+    note('d', 272, PITCH),
+  ];
+
+  it("offers the gap in the cursor's lane, never the next lane's", () => {
+    // Low in lane 0's band, within reach of lane 1's notes (they start 40px below lane 0's).
+    const slot = findInsertionSlot({
+      cursorX: 236,
+      cursorY: 195,
+      incomingWidth: 200,
+      elements: board,
+      lanes: ES_LANES,
+    });
+    expect(slot).toMatchObject({ leftId: 'a', rightId: 'b', atY: 100 });
+  });
+
+  it('keeps an open slot only while the cursor stays in its lane', () => {
+    const at = (cursorY: number, active: ReturnType<typeof findInsertionSlot>) =>
+      findInsertionSlot({
+        cursorX: 236,
+        cursorY,
+        incomingWidth: 200,
+        elements: board,
+        lanes: ES_LANES,
+        active,
+      });
+    const open = at(100, null);
+    expect(at(210, open)).toBe(open);
+    expect(at(PITCH + 100, open)).toMatchObject({ leftId: 'c', rightId: 'd' });
   });
 });

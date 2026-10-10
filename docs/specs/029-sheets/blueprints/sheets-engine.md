@@ -364,13 +364,25 @@ type SheetWrite =
   (ids that no longer exist dropped, `insert after` a gone id resolved to its stored neighbour or the end), which
   is what the api stores and relays and every client applies. Deleting rows or columns removes their cells and
   merges/filters touching them shrink or go; card tables lose the deleted rows' links and drafts, a table whose
-  header row or every column went is gone, and a deleted Controls column is dropped (`store-layout.ts`). The
-  inverse (`inverseSheetWrite`) restores each card table as it was, links and drafts of the deleted lines included. Pure, used by the api, the offline store and the editor's optimistic
-  apply, so all converge.
-- `inverseSheetWrite(before, applied)`: cells → their old inputs and formats (exact keys touched); insert → delete
-  of the same ids; delete → insert of the same ids after their old neighbours, plus their cells and sizes; move →
-  move back after the old neighbour; orderRows → the old order; size/hide/freeze/merge/filter/options → old values;
-  title → old title.
+  header row or every column went is gone, and a deleted Controls column is dropped (`store-layout.ts`). Its
+  inverse (`inverseDelete`, `store-inverse-delete.ts`) puts back what the deletion took into the layout the undo
+  lands on (below). Pure, used by the api, the offline store and the editor's optimistic apply, so all converge.
+- `inverseSheetWrite(before, applied, now?)`: cells → their old inputs and formats (exact keys touched); insert →
+  delete of the same ids; delete → insert of the same ids after their old neighbours, plus their cells and sizes;
+  move → move back after the old neighbour; orderRows → the old order; size/hide/freeze/merge/filter/options → old
+  values; title → old title. The layout half is `inverseLayoutChanges(before, changes, now)`: each change undone
+  last to first, each landing on `now` (the layout at the undo; the result's own by default) as the undo's earlier
+  changes leave it.
+- A delete's undo (`inverseDelete`) merges into `now`, never replaces: `merges` → `now`'s merges with each merge
+  the delete shrank swapped back to its old range (only while `now` still has it as the delete left it) and each
+  it dropped added, in the old order; `filter` → the old range with `now`'s conditions plus the deleted columns'
+  (only while `now`'s filter is the delete's shrunk one, or none when the delete removed it); `name` → each name the
+  delete shrank or dropped, while `now` still has it so (or not at all); `cardTable` → each table the delete
+  touched as it is in `now` plus the deleted rows' links and drafts, its deleted columns (old order, columns added
+  since at the end) and a deleted Controls column when `now` has none; a table the delete ended comes back whole
+  unless `now` has one by its id. `undoReadsNow(write)` says when an undo must be worked out at the undo (a write
+  with a delete); the store client keeps the pre-delete layout and the applied write for those and calls
+  `inverseLayoutChanges` against the sheet's view when Undo is pressed.
 - `mergeSheetChange(local, op)`: applies a room change when `op.rev === local.rev + 1`; `<=` is a duplicate
   (ignored); a gap returns `'refetch'`.
 - `writeTouches(write)`: the set of cells / axes touched, for the undo journal and presence.
