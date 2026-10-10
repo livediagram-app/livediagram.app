@@ -302,7 +302,7 @@ Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) but no
 tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.
 
-Order, left to right: Timer, Vote, Poll. **On a phone** the strip takes a row of its own, right-aligned above the rest of the cluster, since one row cannot hold it beside Undo, Redo, Layers, the theme brush and Fit at phone width. Each segment opens its
+Order, left to right: Timer, Vote, Poll. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the three tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
 panel as a **popover hanging above it** with an arrow at the button, and a second press closes
 it. **While a vote or poll runs, on a desktop, nothing else closes its popover**: a press on the
 canvas (casting a dot, answering) leaves it up, because a facilitator watches turnout or answers

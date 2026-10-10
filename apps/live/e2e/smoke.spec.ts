@@ -336,6 +336,17 @@ test.describe('mobile', () => {
     await expect(undo).toBeVisible();
     const undoBox = await undo.boundingBox();
     expect(undoBox && undoBox.x >= 0).toBe(true);
+    // And the whole cluster is one row at phone width, the Session strip beside Undo
+    // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+    const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
+      ...new Set(
+        buttons
+          .map((b) => b.getBoundingClientRect())
+          .filter((r) => r.width > 0)
+          .map((r) => Math.round((r.top + r.bottom) / 2 / 10)),
+      ),
+    ]);
+    expect(rows).toHaveLength(1);
 
     // The Timer opens its set-up as a popover that is genuinely on top, not just present.
     await page.getByRole('button', { name: 'Open Timer' }).tap();
