@@ -21,7 +21,7 @@ export const metadata = helpMetadata({
 
 A deck is built from the **Slide Deck** panel, one slide per point you mean to make. Each row shows the slide's position, its name, which tab it draws from, and how many elements are on it, plus a marker when it has notes or is hidden.
 
-Building a deck needs edit access. On a view-only link the panel lists the deck and offers **Present**, but no menus, notes or reordering.
+Building and presenting a deck needs edit access: on a view-only or participant link the Slide Deck tool isn't offered.
 
 **A row does one thing: press it to open that slide.** The editor switches to that slide's tab and selects its elements, which is how you check a slide without presenting it. Everything you can _do_ to a slide lives in its `…` menu instead, so a panel the width of the palette never has to carry five controls per row.
 
@@ -29,7 +29,7 @@ Building a deck needs edit access. On a view-only link the panel lists the deck 
 
 Press the `…` at the right of a row and you get the same shape of menu the Explorer's rows and the tab context menu use: a row of quick actions across the top, then two labelled categories you can open.
 
-<Figure caption="The slide menu: quick actions across the top, then the Selection and Visibility categories.">
+<Figure caption="The slide menu: Rename, Add notes and Duplicate across the top with Delete apart on the right, then the Selection and Visibility categories.">
   <SlideMenu />
 </Figure>
 
@@ -44,7 +44,7 @@ A slide's membership is editable for the life of the deck, not just at the momen
 - **Add** puts the elements you have selected onto the slide. With several selected it counts them, as in **Add 3**.
 - **Remove** takes them off again. Only the slide changes; nothing leaves the canvas.
 
-Both are offered only while you are on **that slide's own tab**, and the category says so when you are not. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.
+Both are offered only while you are on **that slide's own tab** with something selected, and the category tells you which is missing when they aren't. A slide holds one tab's elements, so adding from a different tab isn't something to refuse politely; it is something that cannot be expressed.
 
 ### Visibility: hiding a slide from the run
 
@@ -66,7 +66,7 @@ Notes belong to the slide, not to anything on it, which matters because the same
 
 ## A time budget per slide
 
-Beside the notes box sits **Budget**, a number of minutes for this slide. It is blank for most slides and that is the normal case; fill it in for the ones you know you tend to overrun.
+Under the notes box sits **Budget**, a number of minutes for this slide, shown while you present once you turn the budget on in the presenter settings. It is blank for most slides and that is the normal case; fill it in for the ones you know you tend to overrun.
 
 It sits with the notes deliberately: both are decided while you are _writing_ the talk, not while you are giving it. While you present, a slide with a budget can show time-on-this-slide against it in the presenter's display, and going over is marked rather than enforced. See [the pacing display](/help/selection-modes/slide-deck/presenter-controls/).
 

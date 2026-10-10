@@ -24,7 +24,7 @@ This is deliberate, and it is the answer to "why is my arrow curved when I drew 
 
 ## When it happens
 
-Only at the moment you **finish drawing a new arrow** out of a shape: dragging it from the **Arrow** option of a shape's **+** buttons, clicking a target to place it, Shift-chaining several from one source, or Shift-forking a branch off another arrow. The editor looks at the straight line it is about to leave behind and asks whether that line would read badly:
+Only at the moment you **finish drawing a new arrow**, out of a shape or off another arrow: dragging it from the **Arrow** option of a shape's **+** buttons, clicking a target to place it, Shift-chaining several from one source, or Shift-forking a branch off another arrow. The editor looks at the straight line it is about to leave behind and asks whether that line would read badly:
 
 - **It would cut through something.** The line passes through another element's box, or close enough to graze it. The arrow bows around, on whichever side needs the smaller bend.
 - **It would run flush along its own boxes.** Two stacked elements joined along one edge give a line that hugs their sides and is hard to see. The arrow bows outward, away from them.
@@ -35,7 +35,7 @@ If neither side can be cleared without an enormous bend, the arrow stays straigh
 
 It is deliberately a one-shot at draw time, not a rule the diagram lives under:
 
-- **Arrows are never re-routed later.** Move a box onto an existing arrow and the arrow stays exactly as it is. Nothing quietly reshapes work you have already arranged.
+- **Arrows are never re-routed later.** Move a box onto an existing arrow and the arrow keeps its route; it is not re-curved. (By default its line passes behind the box with a short gap; see **Pass Behind Boxes** in [Arrow Styles](/help/palette/arrows/arrow-styles/).) Nothing quietly reshapes work you have already arranged.
 - **Repositioning an endpoint never triggers it.** Only a brand-new arrow's head placement does.
 - **Anything you chose wins.** If the arrow already has a style, a curve, or bend points, that is left alone.
 - **Imported and generated diagrams keep their own geometry**: [imports](/help/tabs/import-tabs/), templates, AI authoring and auto layout all decide their own routing.

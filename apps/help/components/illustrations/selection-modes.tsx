@@ -605,16 +605,8 @@ export function WalkingTogether() {
     <Scene w={420} h={220}>
       <Shape x={40} y={60} w={96} h={48} label="Sign up" />
       <Shape x={250} y={60} w={150} h={48} accent label="Payment" />
+      {/* No ring under Priya: only your own character rings what it stands on (Canvas.tsx). */}
       <Arrow from={[136, 84]} to={[250, 84]} tone="muted" />
-      <rect
-        x={246}
-        y={56}
-        width={158}
-        height={56}
-        rx={9}
-        className="fill-none stroke-violet-400"
-        strokeWidth={2}
-      />
       <PixelCharacter fx={92} fy={196} />
       <PixelCharacter fx={204} fy={186} shirt="emerald" name="Sam" hair="fill-slate-800" />
       <PixelCharacter fx={272} fy={112} shirt="violet" name="Priya" hair="fill-slate-900" />

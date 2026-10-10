@@ -54,8 +54,7 @@ export function CodeBlockCard() {
           className="fill-slate-800 stroke-slate-600"
           strokeWidth={2}
         />
-        {/* Language badge, top-right */}
-        <rect x={x + w - 42} y={y + 12} width={30} height={16} rx={5} className="fill-slate-700" />
+        {/* Language badge, top-right: muted monospace text, no pill (CodeBlockView.tsx) */}
         <Label x={x + w - 27} y={y + 21} anchor="middle" size={10} weight={600} tone="muted">
           ts
         </Label>
