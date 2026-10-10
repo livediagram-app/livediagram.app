@@ -1895,6 +1895,19 @@ export const COLLABORATE_CATEGORY_GROUPS: Readonly<
   'collab-navigate': 'move',
 };
 
+/** The palette category a tile renders under by default: its section, its tool group inside
+ *  Tools, or for a Collaborate element its group's category. The inverse of tilesForCategory. */
+export function tileCategoryId(tile: PaletteTileDef): string {
+  if (tile.section !== 'tools') return tile.section;
+  if (tile.toolGroup === 'behaviour' && tile.tileGroup) {
+    const id = Object.keys(COLLABORATE_CATEGORY_GROUPS).find(
+      (c) => COLLABORATE_CATEGORY_GROUPS[c] === tile.tileGroup,
+    );
+    if (id) return id;
+  }
+  return tile.toolGroup ?? 'tools';
+}
+
 /**
  * The tiles a palette CATEGORY holds by default, which is not the same thing as a
  * section id. A mode's palette layout (palette-layouts.ts) starts from these and may

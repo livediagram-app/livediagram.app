@@ -9,6 +9,7 @@ import {
   TILE_GLYPH_PX,
   TOOL_GROUPS,
   COLLABORATE_CATEGORY_GROUPS,
+  tileCategoryId,
   tilesForCategory,
   tilesInSection,
   tilesInToolGroup,
@@ -258,5 +259,15 @@ describe('session clock tiles', () => {
     const glyph = (id: string) =>
       renderToStaticMarkup(<>{PALETTE_TILES.find((t) => t.id === id)!.icon}</>);
     expect(glyph('tools:session-timer')).not.toBe(glyph('tools:session-stopwatch'));
+  });
+});
+
+describe('tileCategoryId', () => {
+  it('names the category every tile is drawn in, the inverse of tilesForCategory', () => {
+    for (const category of PALETTE_CATEGORIES) {
+      for (const tile of tilesForCategory(category.id)) {
+        expect(tileCategoryId(tile), tile.id).toBe(category.id);
+      }
+    }
   });
 });

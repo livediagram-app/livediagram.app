@@ -7,7 +7,11 @@ import type { ShapeKind } from '@livediagram/document';
 import type { PendingDraw } from './draw-mode';
 import { SHAPE_TILES, shapeTileSearchItem } from './palette-search';
 import { PALETTE_CATEGORIES } from '@/components/palette/palette-categories';
-import { PALETTE_TILES, type PaletteTileDef } from '@/components/palette/palette-tile-defs';
+import {
+  PALETTE_TILES,
+  tileCategoryId,
+  type PaletteTileDef,
+} from '@/components/palette/palette-tile-defs';
 import {
   WHITEBOARD_SHAPES,
   whiteboardShapeIntent,
@@ -64,11 +68,6 @@ const LINE_KEYWORDS: Record<'line' | 'arrow', string> = {
   arrow: 'arrow connector pointer direction flow',
 };
 
-// The palette category a tile renders under: its section, or its tool group inside Tools.
-function tileCategory(tile: PaletteTileDef): string {
-  return tile.section === 'tools' ? (tile.toolGroup ?? 'tools') : tile.section;
-}
-
 function tileEntry(tile: PaletteTileDef): WhiteboardShapeEntry {
   const item = shapeTileSearchItem(tile);
   const { type: _type, shapeKind, ...choice } = item.add;
@@ -76,7 +75,7 @@ function tileEntry(tile: PaletteTileDef): WhiteboardShapeEntry {
     key: item.id.slice('shape:'.length) as WhiteboardShapeKey,
     label: item.name,
     keywords: item.keywords,
-    group: tileCategory(tile),
+    group: tileCategoryId(tile),
     intent: { type: 'shape', kind: shapeKind, ...choice, board: true },
     tile,
   };
@@ -95,7 +94,7 @@ function dockEntry(id: WhiteboardShapeId, label: string): WhiteboardShapeEntry {
     key: id,
     label,
     keywords,
-    group: tile ? tileCategory(tile) : 'draw',
+    group: tile ? tileCategoryId(tile) : 'draw',
     intent: whiteboardShapeIntent(id),
     dockShape: id,
   };
@@ -109,7 +108,7 @@ function stickyEntry(): WhiteboardShapeEntry {
     key: 'sticky',
     label: 'Sticky Note',
     keywords: `sticky note post-it postit memo card ${tile?.description ?? ''}`,
-    group: tile ? tileCategory(tile) : 'write',
+    group: tile ? tileCategoryId(tile) : 'write',
     intent: { type: 'sticky' },
     glyph: 'sticky',
   };
@@ -120,7 +119,7 @@ function buildCatalogue(): WhiteboardShapeEntry[] {
   const entries = [
     ...WHITEBOARD_SHAPES.map((s) => dockEntry(s.id, s.label)),
     stickyEntry(),
-    ...SHAPE_TILES.filter((t) => !EXCLUDED_CATEGORIES.has(tileCategory(t)))
+    ...SHAPE_TILES.filter((t) => !EXCLUDED_CATEGORIES.has(tileCategoryId(t)))
       .filter((t) => !(t.action.type === 'shape' && docked.has(t.action.kind)))
       .map(tileEntry),
   ];

@@ -13,7 +13,7 @@ One row per default applied where a spec is silent or qualitative.
 | --- | --------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
 | D1  | facilitate-mode | Position in the mode order (switch, Shift+D)     | Last, after Plan: the catalogue order, so existing Shift+D muscle memory is unchanged                  |
 | D2  | facilitate-mode | The catalogue's one-line description             | "Run a session with your team: timers, votes, polls and reveals"                                       |
-| D3  | facilitate-mode | Order of Facilitate's categories within a band   | Diagram's order for the shared ones; Collaborate last, as it was in Diagram                            |
+| D3  | facilitate-mode | Order of Facilitate's categories within a band   | Diagram's order for the shared ones; the six Collaborate categories last, in its old group order       |
 | D4  | facilitate-mode | Where Diagram's Comment panel and Action card go | The end of Write, after its existing tiles, in that order                                              |
 | D5  | facilitate-mode | MODE_BEST for Facilitate                         | Retrospective, Town Hall Q&A, Lean Coffee, Crazy Eights (spec "Templates by mode")                     |
 | D6  | facilitate-mode | Blank Session's content                          | None: an empty canvas, Facilitate's Popular landing; no Start screen of its own                        |
