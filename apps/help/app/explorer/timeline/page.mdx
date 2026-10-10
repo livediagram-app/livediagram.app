@@ -22,7 +22,7 @@ export const metadata = helpMetadata({
 
 **Home** is the page the [Explorer](/explorer) opens on, and the first row of its sidebar, above the [Inbox](/help/explorer/activity/) and the **Timeline**. It answers the two questions you bring back with you, on one screen: **what was I working on?** and **what happened while I was away?**
 
-Home is one column: **Jump back in** at the top, then **What happened**. Each opens with its heading and a thin line beneath it, with its link at the right. The header carries **New document**, as every Explorer section does.
+Home is one column: **Jump back in** at the top, then **What happened**. Each opens with its heading and a thin line beneath it, with its link at the right. The header carries **New document**, so the first screen always offers a way to start one.
 
 <Figure caption="Home: the documents you use most and last, then what other people did, grouped by day.">
   <HomeOverview />
@@ -43,7 +43,7 @@ Each document shows a picture of what is drawn on it, with its name underneath; 
 
 Opening a document is private: it counts towards your own Jump back in, and nobody else ever sees that you opened it.
 
-**See more** opens [Recent](/help/explorer/recent/), every document you can open, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
+**See more** opens [Recent](/help/explorer/recent/): the 12 most recently changed documents you can open, newest first, with the same filters as the rest of the Explorer. Its breadcrumb leads back to Home.
 
 ## What happened
 
@@ -100,13 +100,13 @@ A card leads with a preview of the document, then its name, then **why it is on 
 
 Click a card to go to whatever it is about: the document, the team, your invites. Cards you cannot open are dimmed, so you can tell at a glance. A deleted folder or theme is the usual case: there is nothing left to open.
 
-**A document card has the same ⋯ menu as it does in Recent.** Open, Share, Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Open Team (for a team document), Take Offline or Sync Document, Remove from Timeline, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
+**A document card has the same ⋯ menu as it does in Recent.** Open, Share, Rename, Duplicate, Change Folder, Favourite, History, Hide from Recent, Open Team (for a team document), Take Offline or Sync Document, Remove from Timeline, Delete: if you spot yesterday's document on the feed and want to file it, you do it from there rather than finding it again in a folder. Right-clicking the card opens the same menu. **A folder card has the same ⋯ menu as a folder does elsewhere in the Explorer**: Rename, New Subfolder, Change Folder, Use as default for, Delete. Whatever you do from a card shows on the feed straight away, with no need to refresh the page.
 
 **Other cards offer what you can do with that kind of thing.** An API token's card can revoke the token; a team's card can open, edit, leave or delete the team (edit and delete for admins); an invite's card can accept or decline it; a theme's card can edit or delete the theme. A document card also has **Share**, which opens the document with its Share dialog up. If the thing no longer exists (a revoked token, an answered invite), the card just offers to open where it lived: a token's card opens the **API Tokens** category of Settings, right over the Timeline.
 
 **Deleting a document takes it off the Timeline.** While it waits in the [Trash](/help/account-and-data/trash/) its cards are hidden, and restoring it brings them back. Once it is deleted for good, every card about it goes and nothing is written in its place: there is no "Document Deleted" card. Folders, themes and teams you delete keep one "Deleted" card, since other people may have relied on them.
 
-**Every card's menu ends with "Remove from Timeline".** If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
+**Every card's menu has "Remove from Timeline"**, just above Delete or any other destructive verb. If today is getting cluttered, take off the cards you don't need to see again. A stack has the same menu, and removing it takes every card in the run off at once. It only tidies _your_ feed: a teammate looking at the same event still has it, and a team's activity feed keeps everything. A removed card stays removed even if the same thing happens again later that day.
 
 A document you created and then worked on the same day shows **one card, "Document Created"**, rather than a Created and an Updated card with the same picture. Editing a new document on the day you made it is not news.
 
@@ -122,7 +122,7 @@ Three colours rather than one per feature, because the question you are asking a
 
 #### Busy days collapse
 
-A day where you duplicated six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card, such as **Documents Updated**, reading "6 events · click to expand", with the count in its corner.
+A day where you duplicated six documents should not be six cards. When several events of the same kind land on one day, they fold into a single stacked card, such as **Documents Duplicated**, reading "6 events · click to expand", with the count in its corner.
 
 <Figure caption="Several events of one kind become one stacked card; a comment always keeps a card of its own.">
   <TimelineStack />
@@ -132,7 +132,7 @@ Click it to open the run in place. The stacked card stays at the front of the ru
 
 Two kinds never collapse, because collapsing them would hide the thing you came to read:
 
-- **Comments** stay separate, so you can always read what was actually said.
+- **New comments** stay separate, so you can always read what was actually said.
 - **Team invites** stay separate, because each one is waiting for your answer.
 
 ### What is coming up
@@ -175,7 +175,7 @@ Home and the Timeline work without an account, like the rest of the canvas. A gu
 The same feed appears in two other places:
 
 - **A team's own activity**, on the team page. Unlike your own Timeline, it includes what happened before you joined, so if you joined last month you can still read what the team did before you arrived.
-- **One document's history**, from the **History** item in a document's menu. Everything that has happened to that document: created, renamed, commented on, shared, filed.
+- **One document's history**, from the **History** item in a document's menu. Everything that has happened to that document: created, commented on, shared, filed.
 
 <Tip>
   The Timeline keeps a year (365 days) of history. To step back your own recent edits on a document,
