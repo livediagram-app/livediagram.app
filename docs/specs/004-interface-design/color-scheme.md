@@ -20,7 +20,7 @@ A single brand hue with a full 50–950 ramp. Built on Tailwind's `sky` scale.
 | `brand-900`     | `#0C4A6E`     | Dark mode brand text                                  |
 | `brand-950`     | `#082F49`     | Dark mode surfaces                                    |
 
-`brand-500` (`#0EA5E9`) is the canonical "livediagram blue" — the color that appears in the logo, primary buttons, and selection highlights.
+`brand-500` (`#0EA5E9`) is the canonical "livediagram blue": the color of primary buttons and selection highlights. The logo draws on its own prism palette, sky into deep indigo ([Brand mark](./brand-mark.md)).
 
 ## Neutrals — Slate
 
@@ -108,8 +108,8 @@ part of the chrome rather than a sticker on it.
 | `brand-900` | `#1d3553`  | Deep accents                                     |
 | `brand-950` | `#142538`  | Deepest accent surfaces                          |
 
-The wordmark's "diagram" half is the one vivid note: **sky-400 `#38bdf8`** in dark mode. Light mode keeps
-`brand-500`, and the logo mark keeps its own colour in both.
+The wordmark's "live" half is the one vivid note: **sky-400 `#38bdf8`** in dark mode. Light mode uses
+`brand-600`, and the logo mark switches between its own light and dark prism palettes ([Brand mark](./brand-mark.md)).
 
 ### Rules
 

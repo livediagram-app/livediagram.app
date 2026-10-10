@@ -18,10 +18,11 @@ export const dynamic = 'force-static';
 export const size = { width: 180, height: 180 };
 export const contentType = 'image/png';
 
-// The brand mark (the same shapes as app/icon.svg, from the shared Brand
-// module). Passed to <img> as a data URI so next/og's resvg pass rasterises
-// it with full SVG fidelity (including the decorative arc paths).
-const ICON_DATA_URI = `data:image/svg+xml,${encodeURIComponent(brandMarkSvg())}`;
+// The full Living Prism mark (the tile is well over the 48px the full drawing
+// needs) in its light palette, from the shared brand module. Passed to <img> as
+// a data URI so next/og's resvg pass rasterises it with full SVG fidelity
+// (gradients, face blending and the glow on the inner nodes).
+const ICON_DATA_URI = `data:image/svg+xml,${encodeURIComponent(brandMarkSvg({ variant: 'full', scheme: 'light' }))}`;
 
 export default function AppleIcon() {
   return new ImageResponse(

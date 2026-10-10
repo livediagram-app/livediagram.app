@@ -1,4 +1,7 @@
-export { Brand, BrandMark, BRAND_MARK, brandMarkSvg } from './Brand';
+export { Brand, BrandMark } from './Brand';
+export { brandMarkSvg, BRAND_MARK_VIEWBOX, type BrandMarkVariant } from './brand-mark-geometry';
+export { brandLogoSvg } from './brand-logo-svg';
+export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
 export { ProductNav, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
 export { StartBlankMenu } from './StartBlankMenu';

@@ -1,12 +1,28 @@
-type BrandSize = 'sm' | 'md';
+'use client';
+
+import { useId, useMemo, useRef, useState } from 'react';
+import {
+  BRAND_DETAIL,
+  BRAND_FACES,
+  BRAND_GRADIENTS,
+  BRAND_MARK_VIEWBOX,
+  type BrandFace,
+  type BrandMarkVariant,
+} from './brand-mark-geometry';
+import { prismPalette } from './brand-prism';
+import { prismFrame } from './brand-prism-motion';
+import { useBrandShimmer } from './useBrandShimmer';
+import { useBrandSpin, type BrandSpinTargets } from './useBrandSpin';
+
+type BrandSize = 'sm' | 'md' | 'lg';
 
 type BrandProps = {
   href?: string;
   size?: BrandSize;
   className?: string;
-  // Override colour for the "diagram" half of the wordmark and the logo
-  // mark. Used by the editor header to tint the logo with the active tab's
-  // theme accent — when unset, falls back to the brand-500 utility.
+  // Override colour for the "live" half of the wordmark and the logo mark.
+  // Used by the editor header to tint the logo with the active tab's theme
+  // accent; when unset, the brand palette and brand-600 / sky-400 show.
   accentColor?: string;
   // Extra classes for the wordmark span ("live" + "diagram"). The editor
   // passes `hidden sm:inline` here so the wordmark drops off the mobile
@@ -15,12 +31,47 @@ type BrandProps = {
   wordmarkClassName?: string;
 };
 
+// Type size, and the gap between the mark and the wordmark at that size.
 const sizeClasses: Record<BrandSize, string> = {
-  sm: 'text-base font-semibold tracking-tight',
-  md: 'text-lg font-semibold tracking-tight',
+  sm: 'gap-2 text-base font-semibold tracking-tight',
+  md: 'gap-2.5 text-lg font-semibold tracking-tight',
+  lg: 'gap-3 text-2xl font-semibold tracking-tight',
 };
 
-const BRAND_500 = '#0ea5e9';
+// The cube is a solid, so it reads smaller than a line icon at the same box;
+// it sits a size up from the text so it holds its own beside the wordmark.
+const markClasses: Record<BrandSize, string> = {
+  sm: 'size-5',
+  md: 'size-7',
+  lg: 'size-10',
+};
+
+// The wordmark's one-off gleam: a highlight band clipped to the letters, white
+// over light-mode ink, sky-300 over dark mode's near-white (white would vanish).
+const SHIMMER_CLASS =
+  'pointer-events-none absolute inset-0 bg-clip-text text-transparent opacity-0 [--ldm-shine:rgba(255,255,255,0.9)] dark:[--ldm-shine:#7dd3fc]';
+const SHIMMER_STYLE: React.CSSProperties = {
+  backgroundImage:
+    'linear-gradient(105deg, transparent 38%, var(--ldm-shine) 50%, transparent 62%)',
+  backgroundSize: '300% 100%',
+  backgroundPosition: '100% 0',
+};
+
+// A logo link to the page already open scrolls back to its top instead of
+// reloading (the footer's on the homepage, the header's anywhere). Modified
+// clicks (new tab, new window) keep the browser's own behaviour.
+function scrollTopIfHere(e: React.MouseEvent<HTMLAnchorElement>) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+    return;
+  const target = new URL(e.currentTarget.href, window.location.href);
+  if (target.origin !== window.location.origin || target.pathname !== window.location.pathname)
+    return;
+  e.preventDefault();
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+}
+
+const COLOUR_TRANSITION = 'color var(--transition-duration-micro) ease-out';
 
 export function Brand({
   href,
@@ -29,26 +80,49 @@ export function Brand({
   accentColor,
   wordmarkClassName = '',
 }: BrandProps) {
+  // Pointing at the logo (or reaching it by keyboard) opens and turns the prism.
+  // Each start also counts a hover, which runs the wordmark's gleam once.
+  const [spinning, setSpinning] = useState(false);
+  const [hovers, setHovers] = useState(0);
+  const shimmer = useRef<HTMLSpanElement>(null);
+  useBrandShimmer(hovers, shimmer);
+  const start = () => {
+    if (spinning) return;
+    setSpinning(true);
+    setHovers((n) => n + 1);
+  };
+  const spinHandlers = {
+    onPointerEnter: (e: React.PointerEvent) => e.pointerType !== 'touch' && start(),
+    onPointerLeave: () => setSpinning(false),
+    onFocus: (e: React.FocusEvent<HTMLElement>) =>
+      e.currentTarget.matches(':focus-visible') && start(),
+    onBlur: () => setSpinning(false),
+  };
   const classes =
-    `group inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
-  const accentStyle: React.CSSProperties = accentColor
-    ? { color: accentColor, transition: 'color var(--transition-duration-micro) ease-out' }
-    : { transition: 'color var(--transition-duration-micro) ease-out' };
+    `inline-flex items-center ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
   const content = (
     <>
       <BrandMark
-        className={`${size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`}
-        style={{
-          color: accentColor ?? BRAND_500,
-          transition: 'color var(--transition-duration-micro) ease-out',
-        }}
+        className={`${markClasses[size]} shrink-0`}
+        accentColor={accentColor}
+        spinning={spinning}
       />
       {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
           contrast audits skip it by this mark. */}
-      <span className={wordmarkClassName} data-logotype="">
-        live
-        <span className={accentColor ? '' : 'text-brand-500 dark:text-sky-400'} style={accentStyle}>
-          diagram
+      <span className={`relative ${wordmarkClassName}`.trim()} data-logotype="">
+        <span
+          className={accentColor ? '' : 'text-brand-600 dark:text-sky-400'}
+          style={
+            accentColor
+              ? { color: accentColor, transition: COLOUR_TRANSITION }
+              : { transition: COLOUR_TRANSITION }
+          }
+        >
+          live
+        </span>
+        diagram
+        <span ref={shimmer} aria-hidden="true" className={SHIMMER_CLASS} style={SHIMMER_STYLE}>
+          <span>live</span>diagram
         </span>
       </span>
     </>
@@ -56,81 +130,202 @@ export function Brand({
 
   if (href) {
     return (
-      <a href={href} className={classes}>
+      <a href={href} className={classes} onClick={scrollTopIfHere} {...spinHandlers}>
         {content}
       </a>
     );
   }
-  return <span className={classes}>{content}</span>;
-}
-
-// The mark's geometry on its 24x24 viewBox, shared by the React <BrandMark>
-// below and by raster renders that need it as an SVG string (marketing's
-// app/apple-icon.tsx). The app/icon.svg favicons carry the same shapes as a
-// static file per app, since Next's file convention needs one in each.
-export const BRAND_MARK = {
-  // The rotational sync arc: two thin strokes at 30% opacity.
-  arcs: ['M16.8 3.8 A9.5 9.5 0 0 1 16.8 20.2', 'M7.2 20.2 A9.5 9.5 0 0 1 7.2 3.8'],
-  // The link between the two nodes.
-  link: 'M15 11.6 C15 14.4 10.2 11.4 10 14.2',
-  circle: { cx: 15.2, cy: 9, r: 2.9 },
-  square: { x: 6.6, y: 12.4, size: 5.8, rx: 1.9 },
-} as const;
-
-// The mark as a standalone SVG document in one flat colour, for renderers that
-// take markup rather than React (next/og's resvg pass via a data URI).
-export function brandMarkSvg(color: string = BRAND_500): string {
-  const { arcs, link, circle, square } = BRAND_MARK;
   return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">` +
-    `<g stroke="${color}" stroke-width="1.4" stroke-linecap="round" opacity="0.3">` +
-    arcs.map((d) => `<path d="${d}"/>`).join('') +
-    `</g>` +
-    `<path d="${link}" stroke="${color}" stroke-width="2.4" stroke-linecap="round" fill="none"/>` +
-    `<circle cx="${circle.cx}" cy="${circle.cy}" r="${circle.r}" fill="${color}"/>` +
-    `<rect x="${square.x}" y="${square.y}" width="${square.size}" height="${square.size}" rx="${square.rx}" fill="${color}"/>` +
-    `</svg>`
+    <span className={classes} {...spinHandlers}>
+      {content}
+    </span>
   );
 }
 
-// The livediagram mark: two connected nodes (a circle joined to a rounded
-// square) ringed by a rotational sync arc. Single-colour via currentColor so
-// it tints with the accent; sized by the caller. The multiplayer cursors from
-// the full logo are dropped here as they'd be illegible at header size.
+// Each stop carries its light and dark colour as custom properties and picks
+// one by the page's `.dark` class; a theme change crossfades the stop colours.
+const STOP_CLASS =
+  '[stop-color:var(--ldm-l)] dark:[stop-color:var(--ldm-d)] transition-[stop-color] duration-micro ease-out motion-reduce:transition-none';
+const BLEND_CLASS = 'mix-blend-multiply dark:mix-blend-screen';
+// The face layers' opacity per tone: in colour each layer shows as drawn; in
+// mono a side wears the artwork's left or right face opacity.
+const MONO_OPACITY = Object.fromEntries(BRAND_FACES.map((f) => [f.key, f.monoOpacity])) as Record<
+  BrandFace['key'],
+  number
+>;
+const LAYER_OPACITY = {
+  colour: { left: 1, right: 1 },
+  mono: { left: MONO_OPACITY.left, right: MONO_OPACITY.rearRight },
+} as const;
+
+// The resting pose: identical to the artwork's paths.
+const REST = prismFrame({ turn: 0, open: 0 });
+
+// The Living Prism (docs/specs/004-interface-design/brand-mark.md): a glass
+// cube over the brand palette, or tinted from `accentColor`, following the
+// page's light / dark scheme. `full` adds the inner diagram, sheen and pulse
+// for 48px and up. `tone="mono"` draws it in currentColor for a solid tile.
+// While `spinning`, the prism opens and turns in 3D (useBrandSpin).
 export function BrandMark({
   className,
   style,
+  accentColor,
+  variant = 'compact',
+  tone = 'colour',
+  spinning = false,
 }: {
   className?: string;
   style?: React.CSSProperties;
+  accentColor?: string;
+  variant?: BrandMarkVariant;
+  tone?: 'colour' | 'mono';
+  spinning?: boolean;
 }) {
+  // Gradient ids are document-global, so each instance prefixes its own.
+  const uid = `ldm${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const light = useMemo(() => prismPalette('light', accentColor), [accentColor]);
+  const dark = useMemo(() => prismPalette('dark', accentColor), [accentColor]);
+  const targets = useRef<BrandSpinTargets>({ top: null, bottom: null, left: [], right: [] });
+  const layerOpacity = LAYER_OPACITY[tone];
+  useBrandSpin(spinning, targets, layerOpacity);
+
+  const mono = tone === 'mono';
+  const full = !mono && variant === 'full';
+  const fill = (gradient: string) => (mono ? 'currentColor' : `url(#${uid}-${gradient})`);
+  const blend = mono ? undefined : BLEND_CLASS;
+  const { nodes, sheen, pulse } = BRAND_DETAIL;
   return (
-    <svg viewBox="0 0 24 24" className={className} style={style} fill="none" aria-hidden="true">
-      <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.3">
-        {BRAND_MARK.arcs.map((d) => (
-          <path key={d} d={d} />
-        ))}
-      </g>
-      {/* The two connected nodes spin 45° about the icon centre on hover.
-          transform-box:view-box makes `origin-center` resolve to (12,12). */}
-      <g className="origin-center transition-transform duration-micro ease-out [transform-box:view-box] group-hover:[transform:rotate(45deg)] motion-reduce:transition-none">
+    <svg
+      viewBox={BRAND_MARK_VIEWBOX}
+      className={`isolate overflow-visible ${className ?? ''}`.trim()}
+      style={style}
+      aria-hidden="true"
+    >
+      {!mono && (
+        <defs>
+          {BRAND_GRADIENTS.map(({ key, vector: v, stops }) => (
+            <linearGradient
+              key={key}
+              id={`${uid}-${key}`}
+              x1={`${v.x1}%`}
+              y1={`${v.y1}%`}
+              x2={`${v.x2}%`}
+              y2={`${v.y2}%`}
+            >
+              {stops.map(([stop, offset, opacity]) => (
+                <stop
+                  key={offset}
+                  offset={`${offset}%`}
+                  stopOpacity={opacity}
+                  className={STOP_CLASS}
+                  style={{ '--ldm-l': light[stop], '--ldm-d': dark[stop] } as React.CSSProperties}
+                />
+              ))}
+            </linearGradient>
+          ))}
+          {full && (
+            <>
+              <linearGradient id={`${uid}-sheen`} x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity={0.45} />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity={0.05} />
+              </linearGradient>
+              <filter id={`${uid}-glow`} x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </>
+          )}
+        </defs>
+      )}
+      {/* Back to front, as the artwork: the lid, every side's right-lit layer,
+          the inner diagram, every side's left-lit layer, the bottom fold. */}
+      <path
+        ref={(el) => {
+          targets.current.top = el;
+        }}
+        d={REST.top}
+        fill={fill('backTop')}
+        opacity={mono ? MONO_OPACITY.top : undefined}
+      />
+      {REST.sides.map((side, i) => (
         <path
-          d={BRAND_MARK.link}
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          fill="none"
+          key={`r${i}`}
+          ref={(el) => {
+            targets.current.right[i] = el;
+          }}
+          d={side.d}
+          fill={fill('backRight')}
+          opacity={side.right * layerOpacity.right}
+          className={blend}
         />
-        <circle {...BRAND_MARK.circle} fill="currentColor" />
-        <rect
-          x={BRAND_MARK.square.x}
-          y={BRAND_MARK.square.y}
-          width={BRAND_MARK.square.size}
-          height={BRAND_MARK.square.size}
-          rx={BRAND_MARK.square.rx}
-          fill="currentColor"
+      ))}
+      {full && (
+        <g
+          opacity={nodes.opacity}
+          className="[--ldm-n:var(--ldm-nl)] dark:[--ldm-n:var(--ldm-nd)]"
+          style={{ '--ldm-nl': light.highlight, '--ldm-nd': dark.highlight } as React.CSSProperties}
+        >
+          <path
+            d={nodes.link}
+            fill="none"
+            style={{ stroke: 'var(--ldm-n)' }}
+            strokeWidth={2.5}
+            strokeDasharray="4 4"
+          />
+          {nodes.circles.map((c) => (
+            <circle
+              key={c.cx}
+              {...c}
+              style={{ fill: 'var(--ldm-n)' }}
+              filter={`url(#${uid}-glow)`}
+            />
+          ))}
+        </g>
+      )}
+      {REST.sides.map((side, i) => (
+        <path
+          key={`l${i}`}
+          ref={(el) => {
+            targets.current.left[i] = el;
+          }}
+          d={side.d}
+          fill={fill('frontLeft')}
+          opacity={side.left * layerOpacity.left}
         />
-      </g>
+      ))}
+      <path
+        ref={(el) => {
+          targets.current.bottom = el;
+        }}
+        d={REST.bottom}
+        fill={fill('frontBottom')}
+        opacity={mono ? MONO_OPACITY.bottom : undefined}
+        className={blend}
+      />
+      {full &&
+        sheen.map((s) => (
+          <path
+            key={s.d}
+            d={s.d}
+            stroke={`url(#${uid}-sheen)`}
+            strokeWidth={s.width}
+            strokeLinecap="round"
+            fill="none"
+            opacity={s.opacity}
+          />
+        ))}
+      {full &&
+        pulse.map((p) => (
+          <circle
+            key={p.cx}
+            cx={p.cx}
+            cy={p.cy}
+            r={p.r}
+            fill="#ffffff"
+            opacity={p.opacity}
+            filter={p.glow ? `url(#${uid}-glow)` : undefined}
+          />
+        ))}
     </svg>
   );
 }

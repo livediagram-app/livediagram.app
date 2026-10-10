@@ -14,7 +14,7 @@ export function VsBadge({ slug, size = 'lg' }: { slug: string; size?: 'lg' | 'sm
       <span
         className={`flex items-center justify-center bg-brand-500 text-white shadow-md shadow-brand-500/25 dark:bg-brand-600 ${tile}`}
       >
-        <BrandMark className={mark} />
+        <BrandMark className={mark} tone="mono" />
       </span>
       <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold tracking-widest text-slate-500 uppercase ring-1 ring-slate-200 dark:bg-slate-900/80 dark:text-slate-400 dark:ring-slate-700">
         vs
