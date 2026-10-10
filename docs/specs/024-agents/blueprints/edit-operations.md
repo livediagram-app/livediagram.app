@@ -294,10 +294,10 @@ means `newElementId` ([Ids](#ids)).
   arrow from b to a does not count; `a` equal to `b` is `invalid_value`. Otherwise a new arrow
   `createPinnedArrow(a, bestAnchorTowards(a, centreOf(b)), b, bestAnchorTowards(b, centreOf(a)))`, new id, other
   fields as `set`, painted, on a's layer, inserted in the order directly after the later of a and b.
-- **`rewire <arrow> from=<x> | to=<y>`.** The target must be an arrow; x or y a boxed element (`invalid_value`
-  otherwise). The named end is pinned to it; both ends re-anchor with `bestAnchorTowards` facing each other; the
-  arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31). An end named onto the box its other
-  end is pinned to is `invalid_value` ("an arrow joins two different boxes"), as `connect a -> a` is.
+- **`rewire <arrow> from=<x> | to=<y> | from=<x> to=<y>`.** At least one end is named, both may be (a reversal names both, so it never passes through a self-loop). The target must be an arrow; x and y boxed elements (`invalid_value`
+  otherwise). Each named end is pinned to its box; both ends re-anchor with `bestAnchorTowards` facing each other; the
+  arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31). Ends that would land on one box (a named end onto the box
+  the other end is pinned to, or both named alike) are `invalid_value` ("an arrow joins two different boxes"), as `connect a -> a` is.
 - **`insert <kind> [id=] key=value… between <a> <b>`.** The arrows pinned from a to b: none is `not_connected`,
   several is `target_ambiguous` naming them, with the hint "rewire one of them by its ref instead". The node is
   built as `add` builds it, then:

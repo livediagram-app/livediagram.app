@@ -87,7 +87,8 @@ function words(operation: EditOperation): string[] {
       return [
         'rewire',
         operation.target,
-        'from' in operation ? `from=${oneWord(operation.from)}` : `to=${oneWord(operation.to)}`,
+        ...(operation.from !== undefined ? [`from=${oneWord(operation.from)}`] : []),
+        ...(operation.to !== undefined ? [`to=${oneWord(operation.to)}`] : []),
       ];
     case 'insert':
       return [

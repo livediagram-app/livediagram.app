@@ -1,4 +1,4 @@
-// `connect <a> -> <b> [id=] [label=…] [line=…] [again]` and `rewire <arrow> from=<x> | to=<y>`
+// `connect <a> -> <b> [id=] [label=…] [line=…] [again]` and `rewire <arrow> from=<x> | to=<y> | both`
 // (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO29, EO31): a pinned arrow
 // between boxes, anchors facing each other; a second arrow a→b needs `again`. Rewiring moves one end
 // and re-anchors both, dropping the old route.
@@ -136,36 +136,53 @@ export function applyRewire(
     };
   const lock = state.locked.get(arrow.id);
   if (lock) return refuseLocked(state, 'rewire', index, arrow, lock);
-  const end = 'from' in operation ? 'from' : 'to';
-  const other = end === 'from' ? 'to' : 'from';
-  const target = resolveBox(state, 'from' in operation ? operation.from : operation.to, index);
-  if ('rejection' in target) return target.rejection;
-  // The moved end faces the other end; a pinned other end faces back.
-  const otherEnd = arrow[other];
+  const fromBox = operation.from !== undefined ? resolveBox(state, operation.from, index) : null;
+  if (fromBox && 'rejection' in fromBox) return fromBox.rejection;
+  const toBox = operation.to !== undefined ? resolveBox(state, operation.to, index) : null;
+  if (toBox && 'rejection' in toBox) return toBox.rejection;
+  // The box each end lands on: a named one, or the box an unnamed pinned end already holds.
+  const fromId = fromBox ? fromBox.el.id : pinnedId(arrow.from);
+  const toId = toBox ? toBox.el.id : pinnedId(arrow.to);
   // As connect refuses (E18): an arrow joins two different boxes, so rewire never makes a self-loop.
-  const named = 'from' in operation ? operation.from : operation.to;
-  if (otherEnd.kind === 'pinned' && otherEnd.elementId === target.el.id)
+  if (fromId !== undefined && fromId === toId) {
+    const named = [
+      operation.from !== undefined ? `from=${operation.from}` : '',
+      operation.to !== undefined ? `to=${operation.to}` : '',
+    ].filter(Boolean);
     return {
       code: 'invalid_value',
       operation: index,
-      details: [`${operation.target} ${end}=${named}: an arrow joins two different boxes`],
+      details: [`${operation.target} ${named.join(' ')}: an arrow joins two different boxes`],
       hint: 'name another box for that end',
     };
-  const pinned: Endpoint = {
-    kind: 'pinned',
-    elementId: target.el.id,
-    anchor: bestAnchorTowards(target.el, endpointPosition(otherEnd, state.byId)),
-  };
-  const otherBox = otherEnd.kind === 'pinned' ? boxedOf(state, otherEnd.elementId) : undefined;
-  const otherFacing: Endpoint =
-    otherEnd.kind === 'pinned' && otherBox
-      ? { ...otherEnd, anchor: bestAnchorTowards(otherBox, centreOf(target.el)) }
-      : otherEnd;
-  const next = withoutRoute(
-    end === 'from'
-      ? { ...arrow, from: pinned, to: otherFacing }
-      : { ...arrow, from: otherFacing, to: pinned },
-  );
-  writeFields(state, next, index, [end]);
+  }
+  const endFacing = (
+    end: Endpoint,
+    box: BoxedElement | undefined,
+    towards: { x: number; y: number },
+  ): Endpoint =>
+    box ? { kind: 'pinned', elementId: box.id, anchor: bestAnchorTowards(box, towards) } : end;
+  const fromEl =
+    fromBox?.el ??
+    (arrow.from.kind === 'pinned' ? boxedOf(state, arrow.from.elementId) : undefined);
+  const toEl =
+    toBox?.el ?? (arrow.to.kind === 'pinned' ? boxedOf(state, arrow.to.elementId) : undefined);
+  // A moved end faces the other end's box when that moved too, else its current point.
+  const towardsTo = toBox ? centreOf(toBox.el) : endpointPosition(arrow.to, state.byId);
+  const towardsFrom = fromBox ? centreOf(fromBox.el) : endpointPosition(arrow.from, state.byId);
+  const next = withoutRoute({
+    ...arrow,
+    from:
+      arrow.from.kind === 'pinned' || fromBox
+        ? endFacing(arrow.from, fromEl, towardsTo)
+        : arrow.from,
+    to: arrow.to.kind === 'pinned' || toBox ? endFacing(arrow.to, toEl, towardsFrom) : arrow.to,
+  });
+  const moved = [...(fromBox ? (['from'] as const) : []), ...(toBox ? (['to'] as const) : [])];
+  writeFields(state, next, index, moved);
   return null;
+}
+
+function pinnedId(end: Endpoint): string | undefined {
+  return end.kind === 'pinned' ? end.elementId : undefined;
 }

@@ -113,4 +113,16 @@ describe('rewire', () => {
     ]);
     expect(refused(run('rewire a1 from=n2')).code).toBe('invalid_value');
   });
+
+  it('moves both ends in one operation, so a reversal never passes through a self-loop', () => {
+    const { tab } = applied(run('rewire a1 from=n2 to=n1'));
+    const arrow = tab.elements.find((el) => el.id === 'a1');
+    expect(arrow).toMatchObject({
+      from: { kind: 'pinned', elementId: 'n2' },
+      to: { kind: 'pinned', elementId: 'n1' },
+    });
+    expect(refused(run('rewire a1 from=n3 to=n3')).details).toEqual([
+      'a1 from=n3 to=n3: an arrow joins two different boxes',
+    ]);
+  });
 });

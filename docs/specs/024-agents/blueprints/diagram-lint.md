@@ -433,7 +433,7 @@ that way, else the arrow's ref (N18).
 | `group-escape`      | `move {a} inside:{frame}`                                                    | `drop the group`                              |
 | `group-split-edges` | `unwrap {frame}`                                                             | `group by ownership, or drop the groups`      |
 | `duplicate-label`   | `set {b} label="<text>"`                                                     | `rename one, or merge the nodes`              |
-| `flow-backwards`    | `rewire {arrow} from={y}; rewire {arrow} to={x}`                             | `reverse the edge, unless it is a loop`       |
+| `flow-backwards`    | `rewire {arrow} from={y} to={x}`                                             | `reverse the edge, unless it is a loop`       |
 | `aspect-extreme`    | `layout type:shape direction={down \| right}`                                | `direction: {down \| right}`                  |
 | `colour-on-themed`  | `set {a} fill= stroke=` (the fields set)                                     | `drop the colour`                             |
 
