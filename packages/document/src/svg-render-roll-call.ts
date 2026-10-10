@@ -33,6 +33,10 @@ import {
 const STACK = 5;
 const BLOCK_H = 57;
 const CHIP_H = 24;
+// A chip's padding, disc and gap around its name, and the name's advance per
+// character at 11px.
+const CHIP_CHROME = 2 + 20 + 6 + 10;
+const CHIP_CHAR = 5.9;
 
 // RollCallFace.takenLabel: the time alone when taken today, else with the date.
 function takenLabel(at: number, now: number): string {
@@ -137,7 +141,12 @@ export function svgRollCall(
     let x = PAD_X;
     let y = top + BLOCK_H + 10;
     for (const e of entries) {
-      const cw = Math.min(inner, 2 + 20 + 6 + e.name.length * 5.9 + 10);
+      // Cut to the widest chip a row holds, as the canvas's chip truncates a
+      // long name, rather than running out of the card.
+      const room = inner - CHIP_CHROME;
+      const name =
+        e.name.length * CHIP_CHAR <= room ? e.name : fitLine(e.name, room, 11, CHIP_CHAR / 11);
+      const cw = Math.min(inner, CHIP_CHROME + name.length * CHIP_CHAR);
       if (x + cw > PAD_X + inner) {
         x = PAD_X;
         y += CHIP_H + 6;
@@ -146,12 +155,7 @@ export function svgRollCall(
       out +=
         pill(x, y, cw, CHIP_H, color, 0.06) +
         personDisc(x + 12, y + CHIP_H / 2, 10, color, person(e)) +
-        // Cut to the chip, as the canvas's chip truncates a long name.
-        text(x + 28, y + 16, fitLine(e.name, cw - 28 - 10, 11, 0.54), {
-          size: 11,
-          weight: 500,
-          color,
-        });
+        text(x + 28, y + 16, name, { size: 11, weight: 500, color });
       x += cw + 6;
     }
     return out + foot;
