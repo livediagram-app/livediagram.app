@@ -615,6 +615,11 @@ The eraser offers **both** modes, switched in its flyout:
   the stroke into the pieces either side. Pieces are new `freehand` elements
   with the original's colour, width and layer; one gesture is one undo, as
   for every eraser gesture ([Eraser panel](../008-canvas/eraser-panel.md)).
+  **The ink a piece keeps stays where it was drawn**: a piece holds the
+  original stroke's own samples plus the point where the brush's edge cut it,
+  never a resampled copy (the ink's smoothing reads the sample spacing, so
+  resampled ink would shift), and a stroke erased again and again never gains
+  points.
   Partial applies to strokes only; a sticky, text or shape under a partial
   brush is untouched.
 - The brush is a fixed size per mode (`WHITEBOARD_ERASER_RADIUS_PX`), shown

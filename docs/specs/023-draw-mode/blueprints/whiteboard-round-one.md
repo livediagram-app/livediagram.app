@@ -204,12 +204,16 @@ same in Diagram mode and to every collaborator ([One look](../../007-editor/edit
 - `strokeTouchesBrush(el, a, b, r)`: true when any polyline segment lies within `r + halfWidth` of
   segment `ab` (segment-to-segment distance); a bbox reject first.
 - `eraseStrokePart(el, a, b, r, mintId)`:
-  1. Densify the polyline so no segment exceeds `max(r / 2, 1)`; a pen stroke's pressures are
-     interpolated with its points (crossings too).
+  1. Densify the polyline so no segment exceeds `max(r / 2, 1)`, for the hit test only: each
+     densified point is flagged as one of the stroke's own samples or an inserted one. A pen
+     stroke's pressures are interpolated with its points (crossings too).
   2. Mark each point inside when its distance to `ab` <= `r + halfWidth`.
   3. None inside → `null` (untouched). All inside → `[]`.
   4. Split into runs of outside points; at each inside/outside boundary insert the crossing point,
-     found by bisection (12 steps) on the segment. A closed stroke's first and last runs join.
+     found by bisection (12 steps) on the densified segment. A run stores only the crossings and
+     the stroke's own samples between them, never the inserted points, so the kept ink smooths
+     exactly as before and a piece has at most its samples plus two crossings. A closed stroke's
+     first and last runs join.
   5. Drop runs with fewer than 2 points or a length under 1 canvas px.
   6. Each run → `createFreehand(points, false, pressures?)` (a fresh packed block) with a fresh id, carrying `strokeColor`,
      `strokeWidth`, `strokeStyle`, `penWidth`, `pen`, `streamline`, `layerId`, `opacity`,
@@ -964,6 +968,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pressures and streamline validated                                             | `packages/document/src/validate.test.ts`                                                 |
 | Export draws the pen outline                                                   | `packages/document/src/svg-render.test.ts`, `svg-render-shapes.test.ts`                  |
 | Partial erase keeps pressures and streamline                                   | `packages/document/src/whiteboard-stroke.test.ts`                                        |
+| Partial erase keeps the kept ink in place and never grows the point count      | `packages/document/src/whiteboard-stroke.test.ts`                                        |
 | Live stroke samples and pressures                                              | `apps/live/lib/live-stroke.test.ts`                                                      |
 | Pen gesture: pressure, pointer, cancel, commit                                 | `apps/live/components/canvas/useWhiteboardPenGesture.test.tsx`                           |
 | Live ink laid out as it lands, recognition preview                             | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                   |

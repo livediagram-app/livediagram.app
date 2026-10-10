@@ -10,6 +10,7 @@ import {
   strokeTouchesBrush,
 } from './whiteboard-stroke';
 import { createPath } from './path-element';
+import { freehandPenStroke, penStrokeCentreline } from './pen-stroke';
 
 // A horizontal stroke from (0, 100) to (200, 100), 4px wide, with a pen's pressures when given.
 const line = (over: Partial<FreehandElement> = {}, pressures?: number[]): FreehandElement => ({
@@ -168,6 +169,71 @@ describe('eraseStrokePart', () => {
     expect(pieces).toHaveLength(2);
     expect(Math.max(...xs(pieces[0]!))).toBeLessThanOrEqual(53);
     expect(Math.min(...xs(pieces[1]!))).toBeGreaterThanOrEqual(147);
+  });
+
+  describe('keeps the ink it does not erase where it was drawn', () => {
+    // A fast zig-zag: 41 samples 25 px apart across, 60 px up and down, with a pen's pressures
+    // and a mouse's streamline (the smoothing that reads sample spacing the most).
+    const zig = Array.from({ length: 41 }, (_, i) => ({ x: i * 25, y: i % 2 ? 0 : 60 }));
+    const src: FreehandElement = {
+      ...createFreehand(
+        zig,
+        false,
+        zig.map((_, i) => 0.3 + 0.4 * Math.abs(Math.sin(i / 3))),
+      ),
+      id: 'zig',
+      penWidth: 4,
+      streamline: 0.5,
+    };
+    const cut = freehandAbsolutePoints(src)[20]!;
+    const pieces = eraseStrokePart(src, cut, cut, 10, mint)!;
+    const centre = (el: FreehandElement) =>
+      penStrokeCentreline(freehandPenStroke(el, { x: el.x, y: el.y }));
+    const distTo = (p: { x: number; y: number }, line: { x: number; y: number }[]) => {
+      let best = Infinity;
+      for (let i = 1; i < line.length; i++) {
+        const a = line[i - 1]!;
+        const b = line[i]!;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const t = Math.max(
+          0,
+          Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy)),
+        );
+        best = Math.min(best, Math.hypot(a.x + dx * t - p.x, a.y + dy * t - p.y));
+      }
+      return best;
+    };
+
+    it('splits into two pieces that store only the samples plus one crossing each', () => {
+      expect(pieces).toHaveLength(2);
+      const stored = pieces.reduce((sum, el) => sum + freehandAbsolutePoints(el).length, 0);
+      // 40 samples survive (the one under the brush goes) plus the two brush-edge crossings.
+      expect(stored).toBe(42);
+    });
+
+    it('draws the kept ink on the original line, away from the fresh ends', () => {
+      const original = centre(src);
+      // The streamline restarts at a cut, so the first few samples of a piece settle onto the
+      // line; past three samples (about 200 px on this zig-zag) the ink must not move.
+      for (const piece of pieces) {
+        for (const p of centre(piece)) {
+          if (Math.hypot(p.x - cut.x, p.y - cut.y) < 200) continue;
+          expect(distTo(p, original)).toBeLessThan(0.05);
+        }
+      }
+    });
+
+    it('does not grow a stroke erased again and again', () => {
+      let el = src;
+      for (const x of [100, 250, 400, 550, 700, 850]) {
+        const at = { x, y: 30 };
+        const out = eraseStrokePart(el, at, at, 4, mint);
+        if (out && out.length > 0) el = out[0]!;
+      }
+      // Each erase keeps the first piece; it can only lose samples and gain one crossing.
+      expect(freehandAbsolutePoints(el).length).toBeLessThanOrEqual(41);
+    });
   });
 
   it('joins the run that wraps round a closed stroke', () => {

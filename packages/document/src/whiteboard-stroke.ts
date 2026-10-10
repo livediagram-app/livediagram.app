@@ -187,18 +187,22 @@ export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number)
   return filled && (inside(a) || inside(b));
 }
 
-// Cut long segments so the brush cannot slip between two samples.
-function densify(pts: InkPoint[], step: number): InkPoint[] {
+// Cut long segments so the brush cannot slip between two samples. The extra points are for the
+// hit test only: `sample[i]` marks the points that are the stroke's own samples, the only ones a
+// kept piece stores (the ink's smoothing reads its sample spacing, so resampled ink would move).
+function densify(pts: InkPoint[], step: number): { pts: InkPoint[]; sample: boolean[] } {
   const out: InkPoint[] = [pts[0]!];
+  const sample = [true];
   for (let i = 1; i < pts.length; i++) {
     const from = pts[i - 1]!;
     const to = pts[i]!;
     const n = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) / step));
     for (let k = 1; k <= n; k++) {
-      out.push(lerpInk(from, to, k / n));
+      out.push(k === n ? to : lerpInk(from, to, k / n));
+      sample.push(k === n);
     }
   }
-  return out;
+  return { pts: out, sample };
 }
 
 // The point on `out -> in` where the brush's edge lies.
@@ -250,21 +254,20 @@ export function eraseStrokePart(
   if (boxesApart(raw, a, b, reach)) return null;
   const isInside = (p: Point) => distToSegment(p, a, b) <= reach;
   const closedPath = el.closed && raw.length > 2 ? [...raw, raw[0]!] : raw;
-  const pts = densify(closedPath, Math.max(r / 2, 1));
+  const { pts, sample } = densify(closedPath, Math.max(r / 2, 1));
   const inside = pts.map(isInside);
   if (!inside.some(Boolean)) return null;
   if (inside.every(Boolean)) return [];
 
+  // A kept piece is the stroke's own samples outside the brush, plus the points where the brush's
+  // edge cuts it: the ink it keeps is drawn as before, and it never gains points.
   const runs: InkPoint[][] = [];
   let run: InkPoint[] | null = null;
   for (let i = 0; i < pts.length; i++) {
     const p = pts[i]!;
     if (!inside[i]) {
-      if (!run) {
-        run = i > 0 ? [crossing(p, pts[i - 1]!, isInside), p] : [p];
-      } else {
-        run.push(p);
-      }
+      if (!run) run = i > 0 ? [crossing(p, pts[i - 1]!, isInside)] : [];
+      if (sample[i]) run.push(p);
     } else if (run) {
       run.push(crossing(pts[i - 1]!, p, isInside));
       runs.push(run);
