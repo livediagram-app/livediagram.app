@@ -150,7 +150,11 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
   if (out.gap !== undefined) {
     if (!out.place || out.place.rel === 'at')
       return { column: out.gap.column, expected: 'gap: with a side, after or align placement' };
-    out.place.gap = Number(out.gap.raw.slice('gap:'.length));
+    const gap = out.gap.raw.slice('gap:'.length);
+    // `gap:` alone is not 0: a missing number is refused, as is anything Number reads as not finite.
+    if (gap.trim() === '' || !Number.isFinite(Number(gap)))
+      return { column: out.gap.column, expected: 'a number after gap:' };
+    out.place.gap = Number(gap);
   }
   return out;
 }

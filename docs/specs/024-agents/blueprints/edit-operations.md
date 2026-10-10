@@ -252,7 +252,8 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 | `at:x,y`         | Top-left at `origin + (x, y)`, exact, never nudged (EO25)                                                                                                              |
 
 - `gap` defaults to `PLACEMENT_GAP` and is an integer in `[0, PLACEMENT_GAP_MAX]` (EO23); it applies to the four
-  sides and `after`.
+  sides and `after`. `gap:` with no number, or one that is not a number, is a `parse_error` ("a number after
+  gap:"), never 0.
 - **No placement** on `add`: `right-of` the element the latest earlier `add` or `insert` in this changeset created;
   else top-left at `(contentRight + PLACEMENT_GAP, contentTop)` of all boxed elements; on an empty tab at the
   origin (EO26). `align:` on `add` aligns that default spot.
@@ -295,7 +296,8 @@ means `newElementId` ([Ids](#ids)).
   fields as `set`, painted, on a's layer, inserted in the order directly after the later of a and b.
 - **`rewire <arrow> from=<x> | to=<y>`.** The target must be an arrow; x or y a boxed element (`invalid_value`
   otherwise). The named end is pinned to it; both ends re-anchor with `bestAnchorTowards` facing each other; the
-  arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31).
+  arrow's `curveOffset`, `curvePoints` and `elbowOffset` are removed (EO31). An end named onto the box its other
+  end is pinned to is `invalid_value` ("an arrow joins two different boxes"), as `connect a -> a` is.
 - **`insert <kind> [id=] key=value… between <a> <b>`.** The arrows pinned from a to b: none is `not_connected`,
   several is `target_ambiguous` naming them, with the hint "rewire one of them by its ref instead". The node is
   built as `add` builds it, then:
@@ -530,7 +532,9 @@ Line form, words separated by whitespace:
 
 `formatOperation` prints the canonical line form: operation, selector or kind, `id=`, fields in the given order
 (strings quoted when they hold whitespace, `"`, `#` at the start, `=` or `:`), placement, flags. Parsing its output
-gives the same operation.
+gives the same operation. Two operations have no line form and print as their JSON form, which parses back alike:
+an `add` with a whole element, and a `wrap` with two or more targets that are not one ref or one quoted label (the
+line form would join them into one selector).
 
 ### Result lines
 

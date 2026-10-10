@@ -142,6 +142,15 @@ export function applyRewire(
   if ('rejection' in target) return target.rejection;
   // The moved end faces the other end; a pinned other end faces back.
   const otherEnd = arrow[other];
+  // As connect refuses (E18): an arrow joins two different boxes, so rewire never makes a self-loop.
+  const named = 'from' in operation ? operation.from : operation.to;
+  if (otherEnd.kind === 'pinned' && otherEnd.elementId === target.el.id)
+    return {
+      code: 'invalid_value',
+      operation: index,
+      details: [`${operation.target} ${end}=${named}: an arrow joins two different boxes`],
+      hint: 'name another box for that end',
+    };
   const pinned: Endpoint = {
     kind: 'pinned',
     elementId: target.el.id,

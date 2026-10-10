@@ -363,6 +363,24 @@ describe('formatOperation round trip', () => {
     ]);
   });
 
+  it('prints a wrap of two compound selectors as its JSON form, which parses back alike', () => {
+    const wrap: EditOperation = {
+      op: 'wrap',
+      targets: ['n3', 'type:sticky', 'type:square in:f2'],
+      in: 'frame',
+    };
+    const printed = formatOperation(wrap);
+    expect(printed.startsWith('{')).toBe(true);
+    expect(operationsOf(printed)).toEqual([wrap]);
+  });
+
+  it('refuses gap: with no number rather than reading 0', () => {
+    for (const line of ['add square below:n3 gap:', 'add square below:n3 gap:wide']) {
+      const [error] = errorsOf(line);
+      expect(error!.details.join(' ')).toContain('a number after gap:');
+    }
+  });
+
   it('prints an add with no fields and no placement', () => {
     expect(formatOperation({ op: 'add', kind: 'square' })).toBe('add square');
   });

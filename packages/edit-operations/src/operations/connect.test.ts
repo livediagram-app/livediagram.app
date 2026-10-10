@@ -106,4 +106,11 @@ describe('rewire', () => {
     expect(refused(run('rewire nowhere to=n4')).code).toBe('target_not_found');
     expect(refused(run('rewire a1 to=n4', lockedFlow('a1'))).code).toBe('element_locked');
   });
+
+  it('refuses a rewire that would join an arrow to the box at its other end, as connect does', () => {
+    expect(refused(run('rewire a1 to=n1')).details).toEqual([
+      'a1 to=n1: an arrow joins two different boxes',
+    ]);
+    expect(refused(run('rewire a1 from=n2')).code).toBe('invalid_value');
+  });
 });
