@@ -381,6 +381,8 @@ describe('a mirror file', () => {
     const after = pulledFile(io, path);
     expect(after.livediagramSync.tabs.main!.rev).toBe(4);
     expect('pulledAt' in after.livediagramSync).toBe(false);
+    // Rewritten in the mirror's canonical form, byte for byte what a sync would write (RL30, RL31).
+    expect(io.fileMap.get(path)!.data).toBe(mirrorFileText(after));
     const view = await cli(['document', 'view', path], h.route, io);
     expect([view.code, view.out]).toEqual([0, expect.stringContaining('rev 4')]);
   });

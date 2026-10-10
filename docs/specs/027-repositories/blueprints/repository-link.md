@@ -590,8 +590,8 @@ two, a comma after every element but the last; an empty array prints `[]`. LF li
   the same bytes.
 - Compatibility: `parseDocumentEnvelope` reads it (`exportedAt` absent reads as 0), so "Import a copy" reads it;
   `parsePullFile` reads it once `pulledAt` is optional; `push <mirror file>` works unchanged and, when it lands,
-  rewrites the file with `pullFileText` (two-space JSON, no per-line elements). Such a file is still `tracked` and
-  hashes alike; the next sync that writes it restores the canonical form (spec "Formatting is not meaning").
+  rewrites a file without `pulledAt` with `mirrorFileText`, so the mirror stays in its canonical, byte-stable form
+  (RL30, RL31) and git sees only the revisions and hashes that moved; a pull file keeps `pullFileText`.
 - `push` writes no `pulledAt` into a file that had none: `pushFile` spreads the parsed `livediagramSync` back, so
   an absent key stays absent.
 - Every command that takes a pull file's path (CLI70) takes a mirror file's path alike.
