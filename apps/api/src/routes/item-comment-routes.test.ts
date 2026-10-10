@@ -184,6 +184,41 @@ describe('deleting', () => {
     await call({ method: 'DELETE', path: `/items/${item.id}/comments/${opening.id}` });
     expect(events()).toEqual([]);
   });
+
+  // docs/specs/013-workspace/timeline.md §4.3: a card deleted whole takes every comment's words with it.
+  it('takes a deleted card’s comments off the Timeline, and only its own', async () => {
+    await post('the question');
+    await post('an answer');
+    await call({ path: `/items/${item.id}/comments/resolve` });
+    const other = (
+      await call<ItemResponse>({ path: '/items', body: { type: 'task', fields: { title: 'B' } } })
+    ).body.item;
+    const kept = thread(
+      (await call<ItemResponse>({ path: `/items/${other.id}/comments`, body: { text: 'stays' } }))
+        .body.item,
+    )!.comments[0]!;
+    const count = () =>
+      (
+        sql.sql
+          .prepare(
+            `SELECT COUNT(*) AS n FROM timeline_events
+              WHERE event_type IN ('comment_added', 'comment_resolved')`,
+          )
+          .get() as { n: number }
+      ).n;
+    expect(count()).toBe(4);
+
+    expect((await call({ method: 'DELETE', path: `/items/${item.id}` })).status).toBe(204);
+    expect(
+      sql.sql
+        .prepare(
+          `SELECT event_type, source_id FROM timeline_events
+            WHERE event_type IN ('comment_added', 'comment_resolved')`,
+        )
+        .all()
+        .map((r) => ({ ...r })),
+    ).toEqual([{ event_type: 'comment_added', source_id: kept.id }]);
+  });
 });
 
 describe('resolving', () => {

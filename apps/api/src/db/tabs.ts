@@ -413,10 +413,21 @@ export async function tabIdsHeldElsewhere(
 // an unlink from one of their containing documents so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
-export async function deleteTabRow(env: Env, documentId: string, tabId: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?')
+//
+// Answers the tab's stored body as it was unlinked (null when this document did not hold it), read
+// by the unlink itself so a comment written a moment before cannot slip between a read and the
+// delete: the caller retracts the tab's comment events from this document's feed with it.
+export async function deleteTabRow(
+  env: Env,
+  documentId: string,
+  tabId: string,
+): Promise<string | null> {
+  const unlinked = await env.DB.prepare(
+    `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
+      RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data`,
+  )
     .bind(documentId, tabId)
-    .run();
+    .first<{ data: string | null }>();
   const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM document_tabs WHERE tab_id = ?')
     .bind(tabId)
     .first<{ n: number }>();
@@ -430,6 +441,7 @@ export async function deleteTabRow(env: Env, documentId: string, tabId: string):
   // The tab's references are gone (by the FK cascade, or by the unlink the reference join reads), with the link
   // the triggers would find the document by, so the document's sheets settle here.
   await env.DB.batch(sheetSettleStatements(env, documentId, Date.now()));
+  return unlinked?.data ?? null;
 }
 
 // Link an existing tab into another document (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
