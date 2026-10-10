@@ -43,7 +43,10 @@ const sheetJson = (id: string, over: Partial<SheetJson> = {}): SheetJson => ({
   ...over,
 });
 
-const element = (planSheet: { sheetId: string; copyOf?: string }, id = 'el1'): ShapeElement =>
+const element = (
+  planSheet: { sheetId: string; copyOf?: string; start?: string },
+  id = 'el1',
+): ShapeElement =>
   ({
     id,
     type: 'shape',
@@ -241,6 +244,37 @@ describe('a sheet deleted with its element', () => {
       expect.objectContaining({ id: 'sheetDEL1', title: 'Costs', restore: true }),
       by,
     );
+  });
+});
+
+// docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheet a path left unmade is made by the first
+// editor to draw it, from its start, and the mark dropped quietly.
+describe('a template’s Sheet not yet made', () => {
+  it('makes it from its start and drops the mark with no undo step', async () => {
+    const tickElements = vi.fn();
+    const b = bridge({ tickElements });
+    const el = element({ sheetId: 'sheetTPL1', start: 'budget-planner' });
+    const { result } = model(el, b);
+    await waitFor(() => expect(result.current.sheet?.id).toBe('sheetTPL1'));
+    expect(result.current.sheet!.title).toBe('Budget');
+    // Planned total, row 9 column C.
+    expect(result.current.workbook.value('sheetTPL1', 8, 2)).toBe(2335);
+    expect(createSheet).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ id: 'sheetTPL1', tabId: 't1', title: 'Budget' }),
+      by,
+    );
+    expect(tickElements).toHaveBeenCalledTimes(1);
+    const dropped = tickElements.mock.calls[0]![0]([el]) as ShapeElement[];
+    expect(dropped[0]!.planSheet).toEqual({ sheetId: 'sheetTPL1' });
+    expect(b.commitElements).not.toHaveBeenCalled();
+  });
+
+  it('leaves it for an editor when this person may only view', async () => {
+    const b = bridge({ canEdit: false });
+    model(element({ sheetId: 'sheetTPL2', start: 'timesheet' }), b);
+    await waitFor(() => expect(fetchSheets).toHaveBeenCalled());
+    expect(createSheet).not.toHaveBeenCalled();
   });
 });
 

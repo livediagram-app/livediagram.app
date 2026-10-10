@@ -17,7 +17,8 @@ views and facilitation tools are ready, and the team adds its own work.
 
 ## How a template with tabs is made
 
-- **Every Plan template but Blank Plan makes several tabs**, in the order below; Blank Plan makes one. Every
+- **Every Plan template but Blank Plan and the spreadsheet templates makes several tabs**, in the order below; those
+  make one. Every
   template of another mode makes one tab, as before.
 - **Where a person makes one**:
   - **The New Document wizard** makes the document with all the template's tabs, named as the template names
@@ -243,6 +244,34 @@ Requests from users, voted on and reviewed, and the ones planned followed to shi
 
 - How this works: add each request as a Request; vote on what matters; review the top voted each week; Planned
   moves it to Delivery.
+
+## Spreadsheet templates
+
+Four Plan templates are a spreadsheet rather than boards: each makes its tabs with a **Sheet** already filled from a
+template start (the Header look, the header row frozen, the canvas's light or dark tints), and no board, so the tab
+opens on the sheet, not on Start Planning. They sit in the template picker's Plan section beside the board
+templates, and bring no card types. Whether the Sheet fills its tab is decided per template:
+
+- **Fill Tab** when the sheet is the whole job (a budget, a timesheet, a contact list): nothing else belongs on the
+  tab, so the sheet takes it, as a spreadsheet file would ([Fill Tab](../029-sheets/sheet.md#fill-tab)).
+- **On Canvas** when the sheet is one piece of a working space: the tracker sits on the canvas with its How this
+  works sticky beside it, and room around it for notes, a diagram or a board.
+
+| Template       | Kind             | Sheet         | Fills its tab | Holds                                                                                                                                                                                                                                                                                                  |
+| -------------- | ---------------- | ------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Budget Planner | `budget-planner` | **Budget**    | Yes           | Category, Item, Planned, Actual, Difference (`=Planned-Actual`); seven rows (Home, Food, Travel, Leisure, Savings, Other); a **Total** row summing the three amounts; amounts to two decimals                                                                                                          |
+| Timesheet      | `timesheet`      | **Timesheet** | Yes           | Day, Date, Project, Task, Hours; Monday to Friday of the week it is made, dated; a **Total** row summing the hours                                                                                                                                                                                     |
+| Contact List   | `contact-list`   | **Contacts**  | Yes           | Name, Company, Role, Email, Phone, Last Contacted (dates), Notes; four people                                                                                                                                                                                                                          |
+| Task Tracker   | `task-tracker`   | **Tracker**   | No            | Task, Owner, Status, Priority, Start, Due, Done (a whole percentage); five tasks dated from the day it is made; on the canvas with a How this works sticky beside it ("Add a row for each task"; "Set its Status and how much is Done"; "Sort or filter by Owner, Status or Due from a column's menu") |
+
+- Each makes one tab, which keeps the name it would have had, as any template of one tab; the Sheet is titled as the
+  table says.
+- **The sheet is made with the document.** The template's Sheet element names its start (`start` on the element,
+  [Sheet store](../029-sheets/sheet-store.md#template-starts)); every path that makes the tabs makes the sheet
+  from it there and then: the New Document wizard (stored with the document, cloud or Local only), Quick Start (as
+  it adds the tabs), and agents (the MCP's `create_document` and `add_tab`, the api's seeded create). So the sheet
+  is there for everyone, an agent's `read_sheet` included, the moment the document is.
+- Telemetry as any template: `Template` · `Used` with its kind.
 
 ## Telemetry
 

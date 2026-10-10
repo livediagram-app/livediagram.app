@@ -81,6 +81,8 @@ import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs } from './document-seed';
+import { hasTemplateSheets } from '@livediagram/templates';
+import { materialiseTemplateSheets } from '@livediagram/templates/template-sheets';
 import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
 import { placementLookups } from '../placement/placement-lookups';
 import {
@@ -186,12 +188,33 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
           }
         }
       }
+      // A template's Sheets (docs/specs/029-sheets/sheet-store.md "Template starts"), however the tabs came (the
+      // wizard, an agent, a template compiled above), on the validated tabs: made into seed sheets now, so the sheet exists the moment the
+      // document does, the mark dropped from each Sheet. Validated with the rest of the seed sheets below.
+      let templateSheets: unknown[] = [];
+      if (Array.isArray(body.tabs) && hasTemplateSheets(body.tabs)) {
+        const made = materialiseTemplateSheets(body.tabs, Date.now());
+        body.tabs = made.tabs;
+        templateSheets = made.sheets;
+        console.info('[documents] template sheets made', {
+          documentId: body.id,
+          count: made.sheets.length,
+        });
+      }
       // Seed items (docs/specs/026-plan/items.md): an offline document's, on sync. Validated whole
       // before anything is written.
       const seedItemCreates = readSeedItems(body.items, owner);
       if (seedItemCreates instanceof Response) return seedItemCreates;
       // Seed sheets (docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies"), validated the same way.
-      const seedSheetCreates = readSeedSheets(body.sheets);
+      const seedSheetCreates = readSeedSheets(
+        templateSheets.length === 0
+          ? body.sheets
+          : body.sheets === undefined
+            ? templateSheets
+            : Array.isArray(body.sheets)
+              ? [...body.sheets, ...templateSheets]
+              : body.sheets,
+      );
       if (seedSheetCreates instanceof Response) return seedSheetCreates;
       // Ownership guard (security): upsertDocumentMeta is INSERT ... ON
       // CONFLICT(id) DO UPDATE owner_id = excluded.owner_id, so a POST with an

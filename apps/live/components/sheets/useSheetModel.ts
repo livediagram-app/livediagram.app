@@ -7,6 +7,8 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import {
   copyTitle,
   emptyLayout,
+  isTemplateStart,
+  templateSheet,
   nextSheetTitle,
   setupWrite,
   sheetStarter,
@@ -164,6 +166,33 @@ export function useSheetModel(
       if (placed.csv) fillFromCsv(store, tabId, sheetId, placed.csv, bridge.toast);
       return;
     }
+    // A template's Sheet a path left unmade (sheet-store.md "Template starts"): made from its start now, tinted for
+    // this canvas, and the mark dropped quietly (saved and sent, no undo step). Someone else making it at the same
+    // moment wins: their sheet loads.
+    if (ref?.start && isTemplateStart(ref.start)) {
+      const made = templateSheet({ id: sheetId, tabId, start: ref.start, now: Date.now(), dark });
+      if (made) {
+        store.create(
+          { ...made, id: sheetId, title: uniqueSheetTitle(made.title, titles) },
+          undefined,
+          {
+            onRefused: (code) => {
+              if (code !== 'sheet_exists') return false;
+              store.resync();
+              return true;
+            },
+          },
+        );
+      }
+      bridge.tickElements((els) =>
+        els.map((el) =>
+          el.id === element.id && el.type === 'shape' && el.planSheet?.start
+            ? { ...el, planSheet: (({ start: _s, ...rest }) => rest)(el.planSheet) }
+            : el,
+        ),
+      );
+      return;
+    }
     const from = ref?.copyOf;
     if (!from) return;
     const source = store.sheet(from);
@@ -199,7 +228,7 @@ export function useSheetModel(
           : el,
       ),
     );
-  }, [sheetId, status, store, tabId, bridge, ref?.copyOf, element.id, dark]);
+  }, [sheetId, status, store, tabId, bridge, ref?.copyOf, ref?.start, element.id, dark]);
 
   // Plan cards for the card functions (formulas.md "Plan cards"), when a formula on the tab reads them.
   const workbook = store.workbook(tabId);

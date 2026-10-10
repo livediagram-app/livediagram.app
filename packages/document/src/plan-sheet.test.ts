@@ -26,6 +26,10 @@ describe('the Sheet element', () => {
     expect(isValidElement({ ...sheet, planSheet: { sheetId: 'bad id!' } })).toBe(false);
     expect(isPlanSheetRef({ sheetId: 'sheet0001', x: 1 })).toBe(false);
     expect(isPlanSheetRef(null)).toBe(false);
+    // A template's Sheet not yet made names its start (sheet-store.md "Template starts").
+    expect(isPlanSheetRef({ sheetId: 'sheet0001', start: 'budget-planner' })).toBe(true);
+    expect(isPlanSheetRef({ sheetId: 'sheet0001', start: 'Budget Planner' })).toBe(false);
+    expect(isPlanSheetRef({ sheetId: 'sheet0001', start: 3 })).toBe(false);
     expect(takesTypedLabel(sheet)).toBe(false);
     expect(elementKindLabel(sheet as never)).toBe('Sheet');
   });
@@ -120,6 +124,14 @@ describe('copies of a Sheet', () => {
     const again = freshCopyFields({ ...sheet, planSheet: copy.planSheet } as never) as typeof copy;
     expect(again.planSheet.copyOf).toBe('sheet0001');
     expect(freshCopyFields({ ...sheet, planSheet: { sheetId: '' } } as never)).toEqual({});
+    // A copy of a template's Sheet not yet made is made from the same start.
+    const started = freshCopyFields({
+      ...sheet,
+      planSheet: { sheetId: 'sheet0001', start: 'timesheet' },
+    } as never) as typeof copy & { planSheet: { start?: string } };
+    expect(started.planSheet.start).toBe('timesheet');
+    expect(started.planSheet.copyOf).toBeUndefined();
+    expect(started.planSheet.sheetId).not.toBe('sheet0001');
     expect(isPlanSheetRef({ sheetId: 'sheet0001', copyOf: 'x' })).toBe(false);
     // Fill Tab is exactly true, or absent.
     expect(isPlanSheetRef({ sheetId: 'sheet0001', fillTab: true })).toBe(true);

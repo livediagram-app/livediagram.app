@@ -605,6 +605,32 @@ describe('deleting, copies and seeds', () => {
     });
     expect(badEntry.status).toBe(400);
   });
+
+  // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheet is made with the document, from a
+  // template the api compiles or from tabs a client built, and the stored element no longer carries the mark.
+  it('makes a template’s Sheets with the document, the mark dropped', async () => {
+    const res = await call({
+      path: '',
+      doc: '',
+      body: {
+        id: 'd10',
+        name: 'Budget',
+        tabs: [{ id: 'tbudget', name: 'Tab 1', template: 'budget-planner' }],
+      },
+    });
+    expect(res.status).toBeLessThan(300);
+    const made = await db.listSheets(sql.env, 'd10');
+    expect(made).toHaveLength(1);
+    expect(made[0]).toMatchObject({ tabId: 'tbudget', title: 'Budget' });
+    expect(made[0]!.cells.length).toBeGreaterThan(20);
+    const tab = (await db.getTab(sql.env, 'd10', 'tbudget')) as unknown as {
+      elements: { planSheet?: Record<string, unknown> }[];
+    };
+    const ref = tab.elements.find((el) => el.planSheet)!.planSheet!;
+    expect(ref.start).toBeUndefined();
+    expect(ref.sheetId).toBe(made[0]!.id);
+    expect(ref.fillTab).toBe(true);
+  });
 });
 
 describe('deleting with the element', () => {

@@ -40,6 +40,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   okrs: 'plan',
   'product-launch': 'plan',
   'feedback-board': 'plan',
+  'budget-planner': 'plan',
+  timesheet: 'plan',
+  'contact-list': 'plan',
+  'task-tracker': 'plan',
 };
 
 /** The mode a template's tab opens in. */

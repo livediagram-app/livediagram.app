@@ -206,7 +206,11 @@ export type TemplateKind =
   | 'hiring-pipeline'
   | 'okrs'
   | 'product-launch'
-  | 'feedback-board';
+  | 'feedback-board'
+  | 'budget-planner'
+  | 'timesheet'
+  | 'contact-list'
+  | 'task-tracker';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -377,6 +381,35 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Feedback Board',
     description:
       'Two tabs: Feedback from users, voted on and reviewed, and Delivery for what you plan, through to shipped.',
+    extra: true,
+  },
+  // Spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates").
+  {
+    kind: 'budget-planner',
+    title: 'Budget Planner',
+    description:
+      'A spreadsheet filling the tab: planned and actual amounts by category, the difference worked out and totalled.',
+    extra: true,
+  },
+  {
+    kind: 'timesheet',
+    title: 'Timesheet',
+    description:
+      'A spreadsheet filling the tab: this week Monday to Friday, by project and task, with the hours totalled.',
+    extra: true,
+  },
+  {
+    kind: 'contact-list',
+    title: 'Contact List',
+    description:
+      'A spreadsheet filling the tab: names, companies, roles, emails, phones, when you last spoke and notes.',
+    extra: true,
+  },
+  {
+    kind: 'task-tracker',
+    title: 'Task Tracker',
+    description:
+      'A spreadsheet on the canvas: tasks with owners, status, priority, dates and how much is done, beside a how-to.',
     extra: true,
   },
   {
@@ -938,6 +971,10 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   okrs: 'project-management',
   'product-launch': 'project-management',
   'feedback-board': 'planning',
+  'budget-planner': 'project-management',
+  timesheet: 'project-management',
+  'contact-list': 'project-management',
+  'task-tracker': 'project-management',
   retrospective: 'planning',
   'start-stop-continue': 'planning',
   'mad-sad-glad': 'planning',
@@ -1104,6 +1141,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   okrs: 'grid',
   'product-launch': 'grid',
   'feedback-board': 'grid',
+  'budget-planner': 'grid',
+  timesheet: 'grid',
+  'contact-list': 'grid',
+  'task-tracker': 'grid',
   'mobile-wireframe': 'graph',
   'laptop-wireframe': 'graph',
   venn: 'blank',

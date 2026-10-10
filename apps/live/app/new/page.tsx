@@ -32,6 +32,7 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
+import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 import { markTourPending } from '@/lib/tour-pending';
@@ -415,9 +416,17 @@ export default function NewDocumentPage() {
     try {
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
-        // also registers its id so every later load / save routes local.
+        // also registers its id so every later load / save routes local. A template's Sheets are made with it, as
+        // the api's create makes them (docs/specs/029-sheets/sheet-store.md "Template starts").
+        const made = tabs ? await withTemplateSheets(tabs, Date.now()) : null;
         await offlineCreateDocument(
-          { id: documentId, name: documentName, tabs: tabs ?? [tab], itemTypes },
+          {
+            id: documentId,
+            name: documentName,
+            tabs: made?.tabs ?? tabs ?? [tab],
+            itemTypes,
+            ...(made?.sheets.length ? { sheets: made.sheets } : {}),
+          },
           Date.now(),
         );
       } else {

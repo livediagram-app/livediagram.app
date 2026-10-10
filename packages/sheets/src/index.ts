@@ -30,6 +30,7 @@ export * from './validate';
 export * from './a1-io';
 export * from './chart-data';
 export * from './sheet-starters';
+export * from './template-starts';
 export * from './formula/values';
 export * from './formula/ast';
 export * from './formula/tokens';

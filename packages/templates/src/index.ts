@@ -20,3 +20,6 @@ export * from './logo-layouts';
 export * from './layout-catalogue';
 export * from './template-tab';
 export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';
+// The engine-free check; materialiseTemplateSheets (which carries the sheets engine) is the
+// '@livediagram/templates/template-sheets' subpath, so only a caller making sheets bundles it.
+export { hasTemplateSheets } from './template-sheet-marks';

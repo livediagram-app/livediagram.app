@@ -100,23 +100,25 @@ function SheetBody({
   const model = useSheetModel(element, bridge, plan);
   const [hint, setHint] = useState(false);
   if (!model.sheet) {
+    // A copy, or a template's Sheet (sheet-store.md "Template starts"), not made yet is on its way, never gone.
+    const pending = !!element.planSheet?.copyOf || !!element.planSheet?.start;
     const loading = model.status === 'loading' || model.status === undefined;
     return (
       <SheetFace
         palette={palette}
         title="Sheet"
-        loading={model.status !== 'error' && (loading || !!element.planSheet?.copyOf)}
+        loading={model.status !== 'error' && (loading || pending)}
         message={
           model.status === 'error'
             ? "Couldn't load this sheet"
-            : loading || element.planSheet?.copyOf
+            : loading || pending
               ? 'Opening Sheet'
               : 'This sheet is no longer in this document'
         }
         action={
           model.status === 'error'
             ? { label: 'Try Again', run: () => void model.store.loadTab(bridge.activeTabId, true) }
-            : !loading && !element.planSheet?.copyOf && bridge.canEdit && bridge.canShape
+            : !loading && !pending && bridge.canEdit && bridge.canShape
               ? {
                   label: 'Remove',
                   run: () =>
