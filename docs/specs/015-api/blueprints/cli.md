@@ -644,8 +644,9 @@ random bytes, base64url; `user_code` is 8 letters of `USER_CODE_ALPHABET`, print
 - `loginWithBrowser`: PKCE verifier of 32 random bytes (43 base64url characters), S256 challenge, 16-byte `state`;
   `http.createServer` on `127.0.0.1`, port 0; authorize URL with `client_id=livediagram-cli`, `redirect_uri`
   `http://127.0.0.1:<port>/callback`, `response_type=code`, `code_challenge_method=S256`; opens the browser
-  (`openBrowser`: `open` on macOS, `xdg-open` on Linux, `cmd /c start ""` on Windows) and always prints the URL to
-  stderr. The first `GET /callback` with the matching `state` answers the callback page and closes the server;
+  (`openerFor` in `apps/cli/src/node-io.ts`: `open` on macOS, `xdg-open` on Linux, `rundll32
+  url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never passes through a shell, so `&` in
+  it is never a command separator; only an http(s) URL is opened) and always prints the URL to stderr. The first `GET /callback` with the matching `state` answers the callback page and closes the server;
   `error=access_denied` ends with exit 4. `POST /oauth/token` form `grant_type=authorization_code`, `code`,
   `code_verifier`, `redirect_uri`, `client_id`. Timeout `LOGIN_TIMEOUT_MS`.
 - `loginWithDevice`: `POST /oauth/device_authorization`; stderr: `Open <verification_uri> and enter <user code>.`
