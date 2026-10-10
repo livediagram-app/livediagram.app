@@ -151,6 +151,17 @@ async function relocateAct(
   const { ctx } = acting.options;
   try {
     const how = await acting.tree.move(action.path, action.to);
+    if (typeof how === 'object') {
+      // A file this mirror did not write is at the target (E16a): kept, and nothing of this document moves.
+      ctx.log(`relocate ${action.documentId} occupied`);
+      return {
+        kind: 'refuse',
+        documentId: action.documentId,
+        path: action.path,
+        reason: 'occupied',
+        detail: how.occupied,
+      };
+    }
     ctx.log(`relocate ${action.documentId} moved ${how}`);
     acting.moved.set(action.documentId, action.to);
     return action;

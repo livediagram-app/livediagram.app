@@ -22,7 +22,9 @@ export type RefuseReason =
   | 'conflicted'
   | 'invalid'
   | 'foreign-host'
-  | 'duplicate';
+  | 'duplicate'
+  // `--relocate` found a file it did not write at the target (E16a).
+  | 'occupied';
 
 // A tab as a write line names it: its revision before (null: new) and now.
 export type TabMove = { id: string; name: string; from: number | null; to: number };
@@ -54,7 +56,7 @@ export type SyncAction =
       documentId: string | null;
       path: string;
       reason: RefuseReason;
-      // The parse failure, the other host, or the other file.
+      // The parse failure, the other host, or the other file (at `occupied`, the file at the target).
       detail: string | null;
     }
   // An unreadable document with no file has no path.
