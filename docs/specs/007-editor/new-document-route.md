@@ -392,7 +392,10 @@ records the tab the picker opened on and dismisses the picker when the active
 tab changes (a ref, not an activeId diff — `addTab` switches tab and opens the
 picker in one commit, which a naive diff would close immediately).
 `chooseTemplate` carries the matching backstop: a confirm that would land on a
-tab with elements dismisses the picker and writes nothing.
+tab with elements dismisses the picker and writes nothing. The builders load
+after that check, so a collaborator's element can reach the tab meanwhile; the
+commit itself checks again (`landTemplateOnTab` in `template-tab-set.ts`) and
+leaves a tab that is no longer empty, or is gone, unchanged.
 
 **Quick Start closes when you reach past it.** It is a panel over the canvas,
 not a blocking modal: the palette, the Explorer, the bottom toolbars and the

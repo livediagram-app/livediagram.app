@@ -4,7 +4,7 @@
 // forms share one validation.
 
 import type { FieldValue } from './types';
-import { hasQuotes, unquotedPrefix, type Word } from './tokenise';
+import { arrowParts, hasQuotes, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
 import { isSingleWord } from './selectors';
 import {
   EDIT_OPERATION_NAMES,
@@ -43,7 +43,8 @@ const SELECTOR_KEYS_OF: ReadonlySet<string> = new Set(['from', 'to', 'above', 'b
 const PLACEMENT_WORDS: ReadonlySet<string> = new Set([...PLACEMENT_RELATIONS, 'at']);
 const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
-const JSON_START = /^(-?\d|true$|false$)/;
+// A whole JSON number, `true` or `false`; `2FA`, `3D` or `1st` are strings (EO19).
+const JSON_LITERAL = /^(-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?|true|false)$/;
 
 const fail = (word: Word | undefined, fallback: number, expected: string): LineResult => ({
   error: { column: word?.column ?? fallback, expected },
@@ -70,7 +71,7 @@ function fieldOf(word: Word): FieldWord | null {
 // A value starting with `[` or `{` is JSON as written; otherwise a quoted value is a string, an empty one
 // unsets, and a number, true or false reads as JSON (EO19).
 function fieldValue({ text, raw, quoted }: FieldWord): { value: FieldValue } | null {
-  const json = /^[[{]/.test(raw) ? raw : !quoted && JSON_START.test(text) ? text : null;
+  const json = /^[[{]/.test(raw) ? raw : !quoted && JSON_LITERAL.test(text) ? text : null;
   if (json === null) return { value: quoted || text !== '' ? text : null };
   try {
     return { value: JSON.parse(json) as FieldValue };
@@ -149,7 +150,11 @@ function collect(name: EditOperationName, words: readonly Word[]): Collected | L
   if (out.gap !== undefined) {
     if (!out.place || out.place.rel === 'at')
       return { column: out.gap.column, expected: 'gap: with a side, after or align placement' };
-    out.place.gap = Number(out.gap.raw.slice('gap:'.length));
+    const gap = out.gap.raw.slice('gap:'.length);
+    // `gap:` alone is not 0: a missing number is refused, as is anything Number reads as not finite.
+    if (gap.trim() === '' || !Number.isFinite(Number(gap)))
+      return { column: out.gap.column, expected: 'a number after gap:' };
+    out.place.gap = Number(gap);
   }
   return out;
 }
@@ -197,26 +202,32 @@ export function parseOperationWords(
   }
 
   if (name === 'connect') {
-    const arrow = rest.findIndex((w) => !hasQuotes(w) && w.value === '->');
+    const isArrow = (w: Word) => !hasQuotes(w) && w.value === '->';
+    const arrows = rest.filter(isArrow);
+    const joined = rest.filter((w) => !isArrow(w) && !fieldOf(w) && arrowParts(w) !== null);
+    // One arrow has two ends: `a -> b -> c` or `a->b->c` is refused, never read as `a -> b` (EO24a).
+    const extra = arrows[1] ?? joined.find((w) => arrows.length > 0 || arrowParts(w)!.length > 2);
+    if (extra ?? joined[1]) return fail(extra ?? joined[1], end, 'one -> in connect: <a> -> <b>');
+    const arrow = rest.findIndex(isArrow);
     let fromTerms: Word[];
     let tail: Word[];
     if (arrow >= 0) {
       fromTerms = rest.slice(0, arrow);
       tail = rest.slice(arrow + 1);
     } else {
-      // `a->b` as one word.
-      const joined = rest.findIndex((w) => !hasQuotes(w) && /^[^-].*->.+$/.test(w.value));
-      if (joined < 0) return fail(rest[0], end, 'connect <a> -> <b>');
-      const [a, b] = rest[joined]!.value.split('->') as [string, string];
-      const column = rest[joined]!.column;
-      const bare = (value: string, at: number): Word => ({
-        value,
-        segments: [{ text: value, quoted: false }],
-        column: at,
-        raw: value,
-      });
-      fromTerms = [...rest.slice(0, joined), bare(a, column)];
-      tail = [bare(b, column + a.length + 2), ...rest.slice(joined + 1)];
+      // `a->b` as one word, either end may be quoted: `"Sign in"->"Pay"`.
+      const at = joined[0] ? rest.indexOf(joined[0]) : -1;
+      if (at < 0) return fail(rest[0], end, 'connect <a> -> <b>');
+      const [a, b] = arrowParts(rest[at]!) as [string, string];
+      const column = rest[at]!.column;
+      // Each part is cut from a word that already tokenised, at a -> outside quotes, so it tokenises too.
+      const part = (text: string, offset: number): Word[] =>
+        (tokeniseLine(text) as { words: Word[] }).words.map((w) => ({
+          ...w,
+          column: column + offset,
+        }));
+      fromTerms = [...rest.slice(0, at), ...part(a, 0)];
+      tail = [...part(b, a.length + 2), ...rest.slice(at + 1)];
     }
     const c = collect(name, tail);
     if ('column' in c) return { error: c };

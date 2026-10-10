@@ -129,7 +129,7 @@ export function CanvasSelectionToolbars({
             // becomes undefined and the matching button drops out.
             locked={readOnly ? undefined : selectedLocked}
             // Edit text: on every text-CAPABLE element, even before it has
-            // a label — an empty shape's "Add text" button teaches that
+            // a label — an empty shape's "Add Text" button teaches that
             // text can be added. Enters inline edit mode (same path as
             // double-click); kinds with no label carry no button.
             onEditText={

@@ -74,6 +74,18 @@ describe('findView (R17, VW35)', () => {
     expect(lines.at(-1)).toBe('5 matches: 1 edge, 1 field, 1 item, 1 code, 1 comment');
   });
 
+  // Whatever the budget, the totals stay, and a cut answer always says so: never a silent truncation.
+  it('keeps its match count at every budget, and names what any budget left out', () => {
+    const full = findView(checkout(), 'order');
+    const total = full.text.split('\n').length;
+    for (let budget = 1; budget <= full.fit.estimate; budget++) {
+      const lines = findView(checkout(), 'order', { budget }).text.split('\n');
+      const cut = lines.length < total;
+      expect(lines.some((line) => /^\d+ match(es)?: /.test(line))).toBe(true);
+      if (cut) expect(lines.at(-1)).toMatch(/^… \d+ lines? hidden: /);
+    }
+  });
+
   it('fits a budget', () => {
     const { text } = findView(checkout(), 'order', { budget: 60 });
     expect(text.split('\n').at(-1)).toMatch(/^… \d+ lines hidden: view --budget \d+$/);

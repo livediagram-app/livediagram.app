@@ -114,6 +114,14 @@ describe('resolveRef', () => {
     expect(resolveRef(UUID_B, refs)).toEqual({ kind: 'found', id: UUID_B });
   });
 
+  it('matches an id:"…" ref exactly, never a longer id it prefixes', () => {
+    const table = computeRefs(['n 1', 'n 10']);
+    expect(resolveRef('id:"n 1"', table)).toEqual({ kind: 'found', id: 'n 1' });
+    const gone = computeRefs(['n 10']);
+    expect(resolveRef('id:"n 1"', gone)).toMatchObject({ kind: 'not-found', input: 'id:"n 1"' });
+    expect(resolveRef('id:"n1"', computeRefs(['n10']))).toMatchObject({ kind: 'not-found' });
+  });
+
   it('prefers the exact id over the prefix it shares', () => {
     expect(resolveRef('orders', refs)).toEqual({ kind: 'found', id: 'orders' });
   });
@@ -160,7 +168,8 @@ describe('resolveRef', () => {
   it('unquotes an id: ref', () => {
     const quoted = computeRefs(['Node A', 'Node B']);
     expect(resolveRef('id:"Node B"', quoted)).toEqual({ kind: 'found', id: 'Node B' });
-    expect(resolveRef('id:"Node"', quoted)).toMatchObject({ kind: 'ambiguous' });
+    // A full id or nothing: `id:"Node"` prefixes both, and names neither.
+    expect(resolveRef('id:"Node"', quoted)).toMatchObject({ kind: 'not-found' });
     expect(resolveRef('id:"broken', quoted)).toMatchObject({ kind: 'not-found' });
     expect(resolveRef('id:42', quoted)).toMatchObject({ kind: 'not-found' });
   });

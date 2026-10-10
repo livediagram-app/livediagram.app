@@ -252,12 +252,14 @@ export function useTabImport({
     }
 
     if (format === 'markdown') {
-      const { buildTabFromMarkdown } = await import('@/lib/markdown-import');
+      const { buildTabFromMarkdown, markdownImportOutcome } = await import('@/lib/markdown-import');
       const result = buildTabFromMarkdown(text, { tabName: active?.name, themeId: active?.theme });
       if (!result.ok) return { status: 'error', error: result.error };
       replaceActiveTabContent(result.tab);
       track('Tab', 'Imported', 'Markdown');
-      return { status: 'done' };
+      if (result.leftOut > 0) debugLog('[markdown-import] left out', { leftOut: result.leftOut });
+      // Past the node cap, the dialog's report says how much was left out.
+      return markdownImportOutcome(result.tab, result.leftOut);
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');

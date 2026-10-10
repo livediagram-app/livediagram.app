@@ -258,6 +258,7 @@ describe('disconnect and reconnect', () => {
       pageToken: null,
       pageTokenSavedAt: null,
       connectedAt: w.clock.tick(MIN),
+      pendingAccountSwitch: null,
     };
     const second = makeEngine(w);
     await second.engine.start();
@@ -281,6 +282,7 @@ describe('idle states', () => {
       pageToken: null,
       pageTokenSavedAt: null,
       connectedAt: w.clock.now,
+      pendingAccountSwitch: null,
     };
     await engine.syncNow();
     expect(w.timers.pending()).toEqual([DRIVE_POLL_INTERVAL_MS]);

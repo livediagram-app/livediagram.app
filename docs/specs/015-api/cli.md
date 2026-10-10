@@ -53,7 +53,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `wait <doc> --for comment\|change [--timeout <s>]`                              | Blocks until it happens, prints it, exits                                                                                                                               |
 | `watch <doc>`                                                                   | Streams changes, one line each, until interrupted                                                                                                                       |
 | `graph lint\|render <file>`                                                     | Lint or preview a graph or Mermaid file locally, before writing anything                                                                                                |
-| `pull <doc> [--to <dir>]` / `push <file>`                                       | Sync one document to a file and back                                                                                                                                    |
+| `pull <doc> [--to <dir>] [--force]` / `push <file>`                             | Sync one document to a file and back                                                                                                                                    |
 | `export --all --to <dir> [--format json,svg,png,mermaid,md]`                    | Every document to files                                                                                                                                                 |
 | `link init [--folder <f>] [--doc <d>] [--level <l>]`                            | Writes `livediagram.toml`; with no folder or document, a picker of the folders                                                                                          |
 | `link status\|ls [--all]`                                                       | A [repository link](../027-repositories/repository-link.md)'s documents and states                                                                                      |
@@ -166,7 +166,8 @@ In order of precedence:
 ## Local files
 
 - `pull <doc>` writes `<slug>.livediagram.json`: the document, its tabs and each tab's revision. `--svg` adds a
-  picture per tab.
+  picture per tab. A pull never drops edits not yet pushed: when the file there changed since its pull, it is
+  refused, naming `push`, and kept; `--force` drops those edits and pulls anyway.
 - `push <file>` sends each changed tab as a changeset based on the pulled revision. A tab changed on the server
   since is refused as a conflict, naming it; the person pulls again. Nothing is overwritten blindly. Only elements
   are pushed: a changed tab name, theme or background, and a tab gone from the file, are named as not pushed, and

@@ -92,8 +92,13 @@ is mentioned in it, commented in it, or owns the document, and carries the same 
 
 After a comment with mentions is added, the author's editor asks the api to
 notify: `POST /api/teams/<teamId>/notify-mention` with `{ documentId,
-commentText, mentions: [{ userId?, memberId? }], itemId? }`. `itemId` is set for a comment on a Plan card: it
-must name an item of that document (else `404`), and the email's button then opens the card. It is signed-in only (the
+commentText, mentions: [{ userId?, memberId? }] }` for a comment on the canvas, or `{ documentId, itemId,
+commentId }` for a comment on a Plan card. A card's comment is stored before the request goes (the card comment
+add answers the new comment's `commentId`), so the server reads it: `itemId` must name an item of that document,
+and `commentId` a comment on it written by the caller within the last 24 hours (`NOTIFY_EMAIL_DEDUPE_MS`), else
+`404`; a card request without `commentId` is `400`. The email quotes that stored comment's text and goes to its
+stored mentions; a body's `commentText` and `mentions` are ignored for a card. The email's button then opens the
+card. It is signed-in only (the
 teams mutation gate) and best-effort: the comment has already persisted, a
 failure is swallowed, the response is `202`.
 
@@ -110,16 +115,23 @@ The server decides everything that matters:
 - Each recipient's **"Someone Mentions Me in a Comment"** preference
   (`notifyMentions`, default on) is honoured; an invited member with no
   account has no preferences and is emailed at their invite address.
-- `commentText` is required, at most 5000 characters; the email quotes the
-  first 280, cut at a word with an ellipsis.
-- The quoted text comes from the body, not the stored tab (the request names no
-  comment id), so each email is **claimed** before it goes
-  (`notify_email_claims`, migration 0087): a hash of the author, document, card,
-  recipient and text is sent at most once per 24 hours
+- On the canvas, `commentText` is required, at most 5000 characters; the email
+  quotes the first 280, cut at a word with an ellipsis.
+- Each email is **claimed** before it goes (`notify_email_claims`, migration
+  0087): a hash of the author, document, card, recipient and, for a card, the
+  stored comment's id (on the canvas, the body's text) is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour
   (`NOTIFY_EMAILS_PER_SENDER_PER_HOUR`). A refused claim sends nothing and logs
-  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours.
+  `[notify-email] skipped`; the daily cron deletes claims past the 24 hours, and
+  deleting an account deletes the claims it sent ([Owner-keyed data](../015-api/api.md#owner-keyed-data)).
+- A card's comment is claimed by its stored id, so rewording the request cannot
+  send it again; and the comment must be the caller's own and under 24 hours old,
+  so it cannot be sent again once its claim lapses. A canvas comment and an
+  assigned action ([Assigned actions](assigned-actions.md)) keep the exact-text
+  dedupe: neither is stored where the route can read it when the request lands
+  (both reach D1 only with the next tab save), so a client that rewords each
+  request gets past the dedupe, and the hourly cap is the bound.
 
 The email reads **"{author} mentioned you in {document}"**, quotes the
 comment, and has one button, **Open the document** (for a card's comment, **Open the card**, linking

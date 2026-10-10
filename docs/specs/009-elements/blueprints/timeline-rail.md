@@ -19,7 +19,7 @@ Scope, by file:
 | `apps/live/components/canvas/element-variant.ts`          | Borderless wrapper via `SELF_PAINTING_SHAPES`                          |
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`           | `setRailCountSelected`, `addRailPointSelected`, `setRailLabelSelected` |
 | `apps/live/components/canvas/quick-connect-options.tsx`   | `ADD_POINT_OPTION`                                                     |
-| `apps/live/components/canvas/QuickConnectRing.tsx`        | Appends "Add point" when `onAddRailPoint` is set                       |
+| `apps/live/components/canvas/QuickConnectRing.tsx`        | Appends "Add Point" when `onAddRailPoint` is set                       |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`     | `selectedIsRail` gate for `onAddRailPoint`                             |
 | `apps/live/components/palette/ElementDataSections.tsx`    | The Timeline menu section                                              |
 | `apps/live/components/palette/context-menu-data-rows.tsx` | `RailPointsRow`: the Points stepper                                    |
@@ -52,7 +52,7 @@ The rail holds no state of its own beyond `railCount` and `railLabels`. Every wr
    `n = clamp(round(count), RAIL_MIN_POINTS, RAIL_MAX_POINTS)`; write `railCount: n` and
    `width: n * RAIL_POINT_STEP_PX`. Non-rail selections are untouched. Tracks
    `Element·Changed·TimelineRail`.
-3. **Add point** (`addRailPointSelected()`): for each selected rail,
+3. **Add Point** (`addRailPointSelected()`): for each selected rail,
    `n = min(RAIL_MAX_POINTS, (railCount ?? RAIL_DEFAULT_POINTS) + 1)`; same width rule. The ring
    offers it only while `railCount < RAIL_MAX_POINTS` and fires no event on a no-op [GA3].
 4. **Set label** (`setRailLabelSelected(elementId, index, text)`): pads `railLabels` with `''` up to
@@ -71,7 +71,7 @@ Guards:
 
 - `editable = isSelected && !readOnly && !isLocked` (`ShapeContentRouter.tsx`). The first click
   selects; the next one edits.
-- The ring's "Add point" exists only when the single selected element is a rail
+- The ring's "Add Point" exists only when the single selected element is a rail
   (`selectedIsRail`).
 
 Invariants:
@@ -126,7 +126,7 @@ No migration: both fields are optional and every reader defaults them.
 | E2  | Stored `railCount` out of range          | Rejected on write [GA6]; renderers draw `max(1, round(n))` (`D13`) |
 | E3  | `railLabels` shorter than the count      | Missing labels render blank                                        |
 | E4  | `railLabels` longer than the count       | Extra entries kept, not drawn [QA7]                                |
-| E5  | "Add point" at `RAIL_MAX_POINTS`         | Not offered [GA3]                                                  |
+| E5  | "Add Point" at `RAIL_MAX_POINTS`         | Not offered [GA3]                                                  |
 | E6  | Stepper at a bound                       | The button is `disabled`                                           |
 | E7  | Label edited while another peer edits it | Last commit wins; the local draft re-seeds from the new value      |
 | E8  | Locked or read-only rail                 | Labels inert, setters not wired (`onSetRailLabel` undefined)       |
@@ -143,7 +143,7 @@ At most 12 points, each one `<g>` plus one `textarea` or `div`. No measurement, 
 ## Presentation and UX
 
 - Palette: tile `tools:timeline` in the Build tab, caption "Timeline", description naming the
-  ring's "Add point" [GA4].
+  ring's "Add Point" [GA4].
 - Geometry (element-relative, `D14`): inset `padX = min(44, 0.12 w)`; points evenly spaced from
   `padX` to `w - padX`; label slot top `0.06 h`, height `0.36 h`, width `0.92` of the spacing;
   dot at `0.58 h`, radius `clamp(0.1 h, 5, 9)`; line at `0.82 h`; font `clamp(0.16 h, 10, 16)`.
@@ -180,7 +180,7 @@ None in code today. The decision points (count clamp, no-op add) emit nothing [G
 | Export draws a body, rasterised in PNG | every kind with a body draws one; image exports agree     | `packages/document/src/export-consistency.test.ts` |
 | Label write pads and sets (I3)         | none [GA14]                                               |                                                    |
 | Label commits on blur / Enter, once    | none [GA14]                                               |                                                    |
-| "Add point" hidden at the cap          | none [GA3]                                                |                                                    |
+| "Add Point" hidden at the cap          | none [GA3]                                                |                                                    |
 | `Added·TimelineRail` token             | none [QA6]                                                |                                                    |
 
 ## Constants and configuration

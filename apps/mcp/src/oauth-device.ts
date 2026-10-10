@@ -1,7 +1,9 @@
 // The device authorization grant (RFC 8628; docs/specs/015-api/blueprints/cli.md "The device grant", CLI36): a CLI on
 // a machine without a browser shows a short code; the person opens /oauth/device anywhere, signs in, enters it and
 // approves; the CLI, polling /oauth/token, receives the token the page minted. Built-in clients only. State lives in
-// OAUTH_KV for DEVICE_CODE_TTL_S: `device:<device code>` and `usercode:<user code>`.
+// OAUTH_KV for DEVICE_CODE_TTL_S: `device:<device code>`, `usercode:<user code>` and `devicepoll:<device code>`.
+// Only the page writes `device:` after it starts (approve, deny); polls write only `devicepoll:`, so a poll that read
+// the record before an approval can never write it back as pending (KV reads can be a minute stale across regions).
 
 import { appBase } from './tool-helpers';
 import {
@@ -25,7 +27,6 @@ type DeviceRecord = {
   interval: number;
   // Epoch ms the record ends; KV's own TTL is set from it on every rewrite.
   endsAt: number;
-  lastPolledAt?: number;
   status: 'pending' | 'approved' | 'denied';
   token?: string;
   expiresAt?: number;
@@ -37,7 +38,11 @@ const START_LIMIT = { max: 20, windowS: 3600 };
 const LOOKUP_LIMIT = { max: 30, windowS: 600 };
 const SIX_MONTHS_S = 60 * 60 * 24 * 180;
 
+// The poll's own state: when it last polled and the interval it has earned. Never written by the page.
+type PollState = { lastPolledAt: number; interval: number };
+
 const deviceKey = (code: string) => `device:${code}`;
+const pollKey = (code: string) => `devicepoll:${code}`;
 const userCodeKey = (code: string) => `usercode:${code}`;
 
 const log = (event: string, fields: Record<string, unknown> = {}) =>
@@ -64,9 +69,30 @@ async function overLimit(
 
 const ipOf = (c: Context<{ Bindings: Env }>) => c.req.header('CF-Connecting-IP') ?? 'unknown';
 
+const ttlUntil = (endsAt: number) =>
+  Math.max(KV_MIN_TTL_S, Math.ceil((endsAt - Date.now()) / 1000));
+
 async function save(env: Env, deviceCode: string, record: DeviceRecord): Promise<void> {
-  const ttl = Math.max(KV_MIN_TTL_S, Math.ceil((record.endsAt - Date.now()) / 1000));
-  await env.OAUTH_KV.put(deviceKey(deviceCode), JSON.stringify(record), { expirationTtl: ttl });
+  await env.OAUTH_KV.put(deviceKey(deviceCode), JSON.stringify(record), {
+    expirationTtl: ttlUntil(record.endsAt),
+  });
+}
+
+async function savePoll(
+  env: Env,
+  deviceCode: string,
+  endsAt: number,
+  poll: PollState,
+): Promise<void> {
+  await env.OAUTH_KV.put(pollKey(deviceCode), JSON.stringify(poll), {
+    expirationTtl: ttlUntil(endsAt),
+  });
+}
+
+// A finished grant: both keys go.
+async function forget(env: Env, deviceCode: string): Promise<void> {
+  await env.OAUTH_KV.delete(deviceKey(deviceCode));
+  await env.OAUTH_KV.delete(pollKey(deviceCode));
 }
 
 // The pending record a typed user code names, with its device code; null for an unknown or expired code.
@@ -184,26 +210,27 @@ export async function handleDeviceToken(
     return c.json({ error: 'expired_token' }, 400);
   }
   if (record.status === 'denied') {
-    await c.env.OAUTH_KV.delete(deviceKey(deviceCode));
+    await forget(c.env, deviceCode);
     return c.json({ error: 'access_denied' }, 400);
   }
   if (record.status === 'approved') {
-    await c.env.OAUTH_KV.delete(deviceKey(deviceCode));
+    await forget(c.env, deviceCode);
     const expiresIn = record.expiresAt
       ? Math.max(0, Math.floor((record.expiresAt - now) / 1000))
       : SIX_MONTHS_S;
     return c.json({ access_token: record.token, token_type: 'Bearer', expires_in: expiresIn });
   }
-  // Polling faster than the interval earns a longer one (RFC 8628 §3.5).
-  if (record.lastPolledAt !== undefined && now - record.lastPolledAt < record.interval * 1000) {
-    await save(c.env, deviceCode, {
-      ...record,
-      interval: record.interval + DEVICE_SLOW_DOWN_S,
+  // Polling faster than the interval earns a longer one (RFC 8628 §3.5). Only the poll key is written here.
+  const last = await c.env.OAUTH_KV.get<PollState>(pollKey(deviceCode), 'json');
+  const interval = last?.interval ?? record.interval;
+  if (last && now - last.lastPolledAt < interval * 1000) {
+    await savePoll(c.env, deviceCode, record.endsAt, {
+      interval: interval + DEVICE_SLOW_DOWN_S,
       lastPolledAt: now,
     });
     log('slow_down', { clientId });
     return c.json({ error: 'slow_down' }, 400);
   }
-  await save(c.env, deviceCode, { ...record, lastPolledAt: now });
+  await savePoll(c.env, deviceCode, record.endsAt, { interval, lastPolledAt: now });
   return c.json({ error: 'authorization_pending' }, 400);
 }

@@ -20,7 +20,8 @@ export interface PlanBoardOutline {
   elementId: string;
   title: string;
   kind: PlanBoardKind;
-  // The card types it shows and takes; null is every type.
+  // The card types it shows and takes; null is every type, and an empty list none (a board whose last type was
+  // turned off: the editor shows no card on it).
   types: string[] | null;
   columns: PlanColumnOutline[];
 }
@@ -92,7 +93,7 @@ export function planOutline(
         elementId,
         title: setup.title,
         kind: kindOf(setup),
-        types: setup.addTypes?.length ? [...setup.addTypes] : null,
+        types: setup.addTypes ? [...setup.addTypes] : null,
         columns: setup.columns.map((c) => ({
           status: c.status,
           name: c.name,

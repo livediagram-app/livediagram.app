@@ -7,13 +7,20 @@ import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
 import { edgeJson, edgeText, ownLineText, type ViewEdge } from './edges';
 import { estimateTokens, type ViewResult } from './budget';
-import { buildElision, elisionLine, type ElisionArguments } from './elision';
+import {
+  buildElision,
+  collapsedPartsOf,
+  elisionCommand,
+  elisionLine,
+  elisionText,
+  type ElisionArguments,
+} from './elision';
 import { textField } from './fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { stateAttributeOf } from './state-attribute';
 import { styleAttributesOf, styleBaselines, type StyleBaselines } from './style-attributes';
-import { LABEL_CUT_CHARS } from './constants';
+import { ELISION_CONTAINERS_NAMED, LABEL_CUT_CHARS } from './constants';
 import { jsonString } from './text';
 import {
   isViewRun,
@@ -161,9 +168,11 @@ type Collapse = { index: number; node: ViewNode; elements: number };
 type Fit = { level: Level; collapsed: Collapse[]; root: boolean };
 
 type Measure = {
-  // Joined length of the header and the lines a fit keeps, the root collapse aside.
-  length: (fit: Fit) => number;
+  // Joined length of the header and every line at a level; a collapse subtracts what it hides itself.
+  length: (level: Level) => number;
   elementsUnder: (index: number) => number;
+  // Joined length of entries `from` to `to` (exclusive) at a level, each with its newline.
+  range: (level: Level, from: number, to: number) => number;
 };
 
 function measure(entries: readonly Entry[], header: string): Measure {
@@ -177,14 +186,9 @@ function measure(entries: readonly Entry[], header: string): Measure {
   for (const entry of entries) elements.push(elements.at(-1)! + entry.elements);
   const range = (level: Level, from: number, to: number) => sums[level]![to]! - sums[level]![from]!;
   return {
-    length: ({ level, collapsed }) => {
-      const hidden = collapsed.reduce(
-        (n, c) => n + range(level, c.index + 1, entries[c.index]!.end),
-        0,
-      );
-      return header.length + range(level, 0, entries.length) - hidden;
-    },
+    length: (level) => header.length + range(level, 0, entries.length),
     elementsUnder: (i) => elements[entries[i]!.end]! - elements[i + 1]!,
+    range,
   };
 }
 
@@ -234,11 +238,13 @@ function fitOutline(
 ): { fit: Fit; state: OutlineState; fullTokens: number } {
   const m = measure(entries, header);
   const full: Fit = { level: 0, collapsed: [], root: false };
-  const fullTokens = estimateTokens(m.length(full));
+  const fullTokens = estimateTokens(m.length(full.level));
   if (budget === undefined) return { fit: full, state: 'full', fullTokens };
   const tokens = (fit: Fit) => {
     const elision = elisionOf(model, entries, fit, fullTokens, door);
-    return estimateTokens(m.length(fit) + (elision === null ? 0 : elisionLine(elision).length + 1));
+    return estimateTokens(
+      m.length(fit.level) + (elision === null ? 0 : elisionLine(elision).length + 1),
+    );
   };
   if (tokens(full) <= budget) return { fit: full, state: 'full', fullTokens };
   const notes: Fit = { ...full, level: 1 };
@@ -255,15 +261,37 @@ function fitOutline(
         : [],
     )
     .sort((a, b) => b.elements - a.elements || a.index - b.index);
-  let fit: Fit = attributes;
+  // Each step adds one collapse and measures in O(ELISION_CONTAINERS_NAMED): the hidden length and the elided
+  // totals are kept running, entries inside a collapse are marked once (collapses never nest), and the elision
+  // line is measured from its named containers (the first collapsed, being the largest) and the rest's totals.
+  // Rebuilding the fit and its elision per step was quadratic: 1.3 s for 4,000 frames at the MCP budget.
+  const collapsed: Collapse[] = [];
+  const inside = new Uint8Array(entries.length);
+  let hiddenLength = 0;
+  let restElements = 0;
+  const dropped = ['notes', 'attributes'];
+  const collapsedTokens = () => {
+    const named = collapsed.slice(0, ELISION_CONTAINERS_NAMED).map((c) => ({
+      ref: model.refs.refOf(c.node.el.id),
+      kind: model.kindOf(c.node.el),
+      elements: c.elements,
+    }));
+    const rest = { count: collapsed.length - named.length, elements: restElements };
+    const command = elisionCommand({ only: named[0]!.ref }, door);
+    const line = elisionText(dropped, collapsedPartsOf(named, rest), [], command);
+    return estimateTokens(m.length(attributes.level) - hiddenLength + line.length + 1);
+  };
   for (const candidate of candidates) {
-    const holds = (c: Collapse) =>
-      candidate.index > c.index && candidate.index < entries[c.index]!.end;
-    if (fit.collapsed.some(holds)) continue;
-    fit = { ...fit, collapsed: [...fit.collapsed, candidate] };
-    if (tokens(fit) <= budget) return { fit, state: 'containers-collapsed', fullTokens };
+    if (inside[candidate.index] === 1) continue;
+    const end = entries[candidate.index]!.end;
+    inside.fill(1, candidate.index + 1, end);
+    hiddenLength += m.range(2, candidate.index + 1, end);
+    if (collapsed.length >= ELISION_CONTAINERS_NAMED) restElements += candidate.elements;
+    collapsed.push(candidate);
+    if (collapsedTokens() <= budget)
+      return { fit: { ...attributes, collapsed }, state: 'containers-collapsed', fullTokens };
   }
-  return { fit: { ...fit, root: true }, state: 'root-collapsed', fullTokens };
+  return { fit: { ...attributes, collapsed, root: true }, state: 'root-collapsed', fullTokens };
 }
 
 function runJson(model: ViewModel, run: FreehandRunItem): FreehandRunJson {

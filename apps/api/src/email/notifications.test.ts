@@ -332,6 +332,18 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     expect(second!.key).toBe(first!.key);
     expect(first!.senderId).toBe('u1');
   });
+
+  // A card's comment is claimed by its stored id, so the quoted text cannot vary the key.
+  it("claims a card's comment by its id, not its text", async () => {
+    vi.mocked(sendEmail).mockResolvedValue({ sent: true });
+    const card = { ...input, recipientUserId: null, itemId: 'item0001', commentId: 'c1' };
+    await notifyMentioned(env, card);
+    await notifyMentioned(env, { ...card, commentText: 'Reworded' });
+    await notifyMentioned(env, { ...card, commentId: 'c2' });
+    const [a, b, c] = vi.mocked(claimNotifyEmail).mock.calls.map((call) => call[1].key);
+    expect(b).toBe(a);
+    expect(c).not.toBe(a);
+  });
 });
 
 describe('notifyMilestone (docs/specs/014-identity/transactional-email.md #6)', () => {

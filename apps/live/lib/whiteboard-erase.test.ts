@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createArrow,
   createFreehand,
+  endpointPosition,
   createPath,
   createShape,
+  type ArrowElement,
   type Element,
   type FreehandElement,
   type PathElement,
@@ -67,6 +70,49 @@ describe('partialEraseStep', () => {
         mint,
       ),
     ).toBeNull();
+  });
+
+  describe('arrows pinned to a cut stroke', () => {
+    // An arrow from a free point to stroke `a`'s east anchor, one from a box to it, and one elsewhere.
+    const pinned = (id: string, over: Partial<ArrowElement> = {}): ArrowElement => ({
+      ...createArrow(0, 0, 0, 0),
+      id,
+      from: { kind: 'free', x: 400, y: 400 },
+      to: { kind: 'pinned', elementId: 'a', anchor: 'e' },
+      ...over,
+    });
+
+    it('turns an end pinned to a split stroke free, where it was drawn', () => {
+      const stroke = line('a', 100);
+      const was = endpointPosition({ kind: 'pinned', elementId: 'a', anchor: 'e' }, [stroke]);
+      const els: Element[] = [stroke, pinned('arr')];
+      const out = partialEraseStep(els, { x: 100, y: 100 }, { x: 100, y: 100 }, 10, free, mint)!;
+      const arrow = out.find((e) => e.id === 'arr') as ArrowElement;
+      expect(arrow.to).toEqual({ kind: 'free', x: was.x, y: was.y });
+      expect(arrow.from).toEqual({ kind: 'free', x: 400, y: 400 });
+      expect(was).not.toEqual({ x: 0, y: 0 });
+    });
+
+    it('drops an arrow pinned to a stroke erased whole, but keeps a locked one', () => {
+      // The brush sweeps the whole line, so the stroke goes with no pieces.
+      const els: Element[] = [line('a', 100), pinned('arr'), pinned('kept', { locked: true })];
+      const out = partialEraseStep(
+        els,
+        { x: -50, y: 100 },
+        { x: 250, y: 100 },
+        30,
+        (el) => el.locked === true,
+        mint,
+      )!;
+      expect(out.map((e) => e.id)).toEqual(['kept']);
+    });
+
+    it('leaves arrows pinned to other elements as they were', () => {
+      const other = pinned('arr', { to: { kind: 'pinned', elementId: 'b', anchor: 'e' } });
+      const els: Element[] = [line('a', 100), line('b', 300), other];
+      const out = partialEraseStep(els, { x: 100, y: 100 }, { x: 100, y: 100 }, 10, free, mint)!;
+      expect(out.find((e) => e.id === 'arr')).toBe(other);
+    });
   });
 });
 

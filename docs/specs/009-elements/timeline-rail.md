@@ -12,7 +12,7 @@ components rather than being a one-off.
   Select the rail, then click a label to type; it commits on blur / Enter as one
   undo step.
 - Adding a point is offered from the element's **standard quick-connect "+"**
-  (an "Add point" action), so the rail draws no competing on-canvas button.
+  (an "Add Point" action), so the rail draws no competing on-canvas button.
   Points are evenly spaced and the rail **widens by one step** per point
   (constant spacing × point count), so it stays neat as it grows; capped at 12.
 - A **Timeline** context-menu category (modelled on Progress) carries a
@@ -37,8 +37,8 @@ with no new render/copy/export branches to maintain.
   gives the rail a borderless wrapper.
 - Setters in `useDataShapeSetters.ts` (composed into `useElementStyle`):
   `setRailCountSelected(n)` (sets count + width), `addRailPointSelected()` (the
-  quick-connect "Add point") and `setRailLabelSelected(elementId, index, text)`
-  (one point's label). The "Add point" handler threads EditorCanvasHost → Canvas →
+  quick-connect "Add Point") and `setRailLabelSelected(elementId, index, text)`
+  (one point's label). The "Add Point" handler threads EditorCanvasHost → Canvas →
   CanvasElementsLayer → QuickConnectRing (`onAddRailPoint`), the same channel the
   table ring's structural adds use.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Added', 'TimelineRail')` on create,

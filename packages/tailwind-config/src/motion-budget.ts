@@ -42,6 +42,7 @@ const SKIP_DIRS = new Set([
   'node_modules',
   '.next',
   '.next-dev',
+  '.next-analyze',
   'out',
   'coverage',
   'e2e',

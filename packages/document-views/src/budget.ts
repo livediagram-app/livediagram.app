@@ -45,15 +45,18 @@ function omissionsOf(counts: ReadonlyMap<Noun, number>): Omission[] {
   );
 }
 
-// The header, as many whole lines as fit, then one elision line when anything is left out.
+// The header, as many whole lines as fit, the closing line (a view's totals, such as find's `<n> matches`, always
+// printed), then one elision line when anything is left out.
 export function fitLines(input: {
   header: string;
   lines: readonly ViewLine[];
   budget?: number;
   door: ViewDoor;
   fixed?: FixedOmission | null;
+  closing?: string;
 }): FittedLines {
-  const { header, lines, budget, door, fixed = null } = input;
+  const { header, lines, budget, door, fixed = null, closing } = input;
+  const closingLength = closing === undefined ? 0 : closing.length + 1;
   const elisionFor = (left: ReadonlyMap<Noun, number>, fullTokens: number): Elision => {
     const dropped = omissionsOf(left);
     const omitted = [...dropped, ...(fixed?.omitted ?? [])];
@@ -67,11 +70,15 @@ export function fitLines(input: {
     [
       header,
       ...lines.slice(0, kept).map((l) => l.text),
+      ...(closing === undefined ? [] : [closing]),
       ...(elision ? [elisionLine(elision)] : []),
     ].join('\n');
 
   const none = new Map<Noun, number>();
-  const allLines = lines.reduce((n, line) => n + 1 + line.text.length, header.length);
+  const allLines = lines.reduce(
+    (n, line) => n + 1 + line.text.length,
+    header.length + closingLength,
+  );
   const fullTokens = estimateTokens(allLines + elisionLength(elisionFor(none, 0)));
   const whole = elisionFor(none, fullTokens);
   if (budget === undefined || fullTokens <= budget) {
@@ -90,7 +97,7 @@ export function fitLines(input: {
     return counts;
   };
   for (const line of lines) count(left, line.noun, 1);
-  let length = header.length;
+  let length = header.length + closingLength;
   let kept = 0;
   for (const line of lines) {
     const after = count(new Map(left), line.noun, -1);

@@ -4819,6 +4819,25 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "pendingAccountSwitch": {
+        "anyOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "expiresAt": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "expiresAt"
+            ],
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "rootFolderId": {
         "type": [
           "string",
@@ -4835,7 +4854,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rootFolderId",
       "pageToken",
       "pageTokenSavedAt",
-      "connectedAt"
+      "connectedAt",
+      "pendingAccountSwitch"
     ],
     "type": "object"
   },
@@ -10849,6 +10869,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "ideaCardIds": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "ideaCards": {
         "items": {

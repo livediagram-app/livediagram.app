@@ -24,6 +24,7 @@ spec.
 | File                                                | Responsibility                                                                                                                                           |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/stroke-points.ts`            | The codec: constants, `encodeStrokePoints`, `parseStrokePoints`, `strokePointCount`, `EMPTY_STROKE_POINTS`, base64                                       |
+| `packages/document/src/stroke-fit.ts`               | `fitStrokeToLimit`: a drawn stroke past `MAX_FREEHAND_POINTS` simplified to fit                                                                          |
 | `packages/document/src/stroke-points-cache.ts`      | `createStrokePointsDecoder`, `decodeStrokePoints`: the memoised, bounded decode the renderers call                                                       |
 | `packages/document/src/stroke-points-debug.ts`      | `describeStrokePoints`, `expandPackedPoints`: the debug decoder                                                                                          |
 | `packages/document/src/freehand-points.ts`          | `freehandGeometry`, `packFreehandPoints` and the readers `freehandStrokePoints`, `freehandCanvasPoints`, `freehandNormalisedPoints`, `freehandPressures` |
@@ -129,6 +130,15 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
   throws `RangeError('stroke-pressures-length')`; more than `MAX_FREEHAND_POINTS` throws
   `RangeError('stroke-too-many-points')`. A throw is a programming error in a writer; every
   writer's tests cover its inputs.
+- **Fitting a drawn stroke** (`stroke-fit.ts`): `fitStrokeToLimit(points, pressures?, max =
+MAX_FREEHAND_POINTS)` returns copies unchanged when `points.length <= max`; otherwise it runs
+  `simplifyPolylineSurvival` once (the RDP of `simplifyPolyline` at every tolerance: per point,
+  the squared tolerance it survives below, so `survival[i] > t²` is `simplifyPolylineMask(points,
+t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PASSES` times by
+  counting survivors, and keeps the first result that fits; failing that, `max` evenly spaced samples. First and last points always
+  stay; pressures follow the kept indices. The editor's `makeCommitFreehand` fits every pen stroke
+  (whiteboard pen, pencil, highlighter) before it packs, so release never throws
+  `stroke-too-many-points`.
 - **Base64:** the module's own table codec (the document package cannot depend on
   `@livediagram/api-schema`, which depends on it): standard alphabet, `=` padding, canonical only
   (a non-zero pad remainder is `not-base64`), no whitespace.
@@ -269,6 +279,11 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit and erase: linear in the stroke; the live ink never encodes.
+- Fitting runs on release only, and only past the cap: one full RDP, then one O(n) count per
+  tolerance tried. Measured (vitest on an M-series Mac, median of 5): a 25,000-sample gentle curve
+  6 ms, a 30,000-sample handwriting trace 9 ms, a 60,000-sample dense scribble 12 ms (the worst
+  case tried; 54 ms with one RDP per tolerance, and about 80 ms under coverage instrumentation). A
+  stroke that fits costs one array copy.
 - The bench (`scripts/stroke-points-bench.ts`, `pnpm bench:stroke-points`, run with `--expose-gc`)
   records tab bytes, bytes per point, objects allocated, heap held, `JSON.parse` time, parse and
   draw of one viewport and of the whole board (cold decode cache), and the worst errors, which it
@@ -285,43 +300,46 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 
 ## Testing
 
-| Spec rule                                                                                                                       | Test                                                                                |
-| ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| Byte layout, version, flags, little-endian                                                                                      | `packages/document/src/stroke-points.test.ts`                                       |
-| Round trip and precision bound (tiny, huge, degenerate, single, empty)                                                          | `stroke-points.test.ts`                                                             |
-| Pressure present and absent, pressure precision                                                                                 | `stroke-points.test.ts`                                                             |
-| Re-encoding a decoded block is stable                                                                                           | `stroke-points.test.ts`                                                             |
-| Every named rejection                                                                                                           | `stroke-points.test.ts`                                                             |
-| Encoder throws on non-finite, length mismatch, too many                                                                         | `stroke-points.test.ts`                                                             |
-| Memoised decode: same arrays, bounded, LRU, oversize                                                                            | `packages/document/src/stroke-points-cache.test.ts`                                 |
-| Corrupt block draws nothing and logs once                                                                                       | `stroke-points-cache.test.ts`                                                       |
-| Debug decoder and expansion                                                                                                     | `packages/document/src/stroke-points-debug.test.ts`                                 |
-| Migration: shape, extent widening, pressures, idempotent                                                                        | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| Validation accepts packed, rejects former shape and corrupt                                                                     | `packages/document/src/validate.test.ts`                                            |
-| Eraser split behaviour unchanged                                                                                                | `packages/document/src/whiteboard-stroke.test.ts`                                   |
-| Pen outline unchanged                                                                                                           | `packages/document/src/pen-stroke.test.ts`                                          |
-| SVG export within the bound                                                                                                     | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
-| Api migrates former shape on create and save                                                                                    | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
-| Clipboard and tab import migrate                                                                                                | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Room ops migrated on receipt                                                                                                    | `apps/live/app/document/[id]/room-op-migrate.test.ts`                               |
-| Untrusted tabs and elements: migrated or passed through                                                                         | `packages/document/src/legacy-stroke-points.test.ts`                                |
-| MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `packages/document/src/element-normalise.test.ts`                                   |
-| Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `packages/templates/src/template-tab.test.ts`                                       |
-| Drive mirror round trip keeps packed strokes byte for byte                                                                      | `apps/live/lib/drive/open-with.test.ts`                                             |
-| End to end: draw, partial erase, undo, reload, former shape on the way in, a peer's stroke live, SVG and PNG export (dark mode) | `apps/live/e2e/whiteboard-stroke-points.spec.ts`                                    |
-| Live ink matches landed ink within the bound                                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`              |
+| Spec rule                                                                                                                       | Test                                                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Byte layout, version, flags, little-endian                                                                                      | `packages/document/src/stroke-points.test.ts`                                                |
+| Round trip and precision bound (tiny, huge, degenerate, single, empty)                                                          | `stroke-points.test.ts`                                                                      |
+| Pressure present and absent, pressure precision                                                                                 | `stroke-points.test.ts`                                                                      |
+| Re-encoding a decoded block is stable                                                                                           | `stroke-points.test.ts`                                                                      |
+| Every named rejection                                                                                                           | `stroke-points.test.ts`                                                                      |
+| Encoder throws on non-finite, length mismatch, too many                                                                         | `stroke-points.test.ts`                                                                      |
+| A stroke past the cap is fitted, never refused; pressures follow; worst-case budget                                             | `packages/document/src/stroke-fit.test.ts`, `apps/live/hooks/canvas/commit-freehand.test.ts` |
+| Memoised decode: same arrays, bounded, LRU, oversize                                                                            | `packages/document/src/stroke-points-cache.test.ts`                                          |
+| Corrupt block draws nothing and logs once                                                                                       | `stroke-points-cache.test.ts`                                                                |
+| Debug decoder and expansion                                                                                                     | `packages/document/src/stroke-points-debug.test.ts`                                          |
+| Migration: shape, extent widening, pressures, idempotent                                                                        | `packages/document/src/legacy-stroke-points.test.ts`                                         |
+| Validation accepts packed, rejects former shape and corrupt                                                                     | `packages/document/src/validate.test.ts`                                                     |
+| Eraser split behaviour unchanged                                                                                                | `packages/document/src/whiteboard-stroke.test.ts`                                            |
+| Pen outline unchanged                                                                                                           | `packages/document/src/pen-stroke.test.ts`                                                   |
+| SVG export within the bound                                                                                                     | `packages/document/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts`          |
+| Api migrates former shape on create and save                                                                                    | `apps/api/src/routes/stroke-points-writes.test.ts`                                           |
+| Clipboard and tab import migrate                                                                                                | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                              |
+| Room ops migrated on receipt                                                                                                    | `apps/live/app/document/[id]/room-op-migrate.test.ts`                                        |
+| Untrusted tabs and elements: migrated or passed through                                                                         | `packages/document/src/legacy-stroke-points.test.ts`                                         |
+| MCP packs a model's former-shape stroke; an update's points replace the block                                                   | `packages/document/src/element-normalise.test.ts`                                            |
+| Every template builds a valid tab with packed strokes (MCP and editor)                                                          | `packages/templates/src/template-tab.test.ts`                                                |
+| Drive mirror round trip keeps packed strokes byte for byte                                                                      | `apps/live/lib/drive/open-with.test.ts`                                                      |
+| End to end: draw, partial erase, undo, reload, former shape on the way in, a peer's stroke live, SVG and PNG export (dark mode) | `apps/live/e2e/whiteboard-stroke-points.spec.ts`                                             |
+| Live ink matches landed ink within the bound                                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardPenPreview.test.tsx`                       |
 
 ## Constants and configuration
 
-| Constant                     | Value     | Provenance                                               | Safe range           |
-| ---------------------------- | --------- | -------------------------------------------------------- | -------------------- |
-| `STROKE_POINTS_VERSION`      | 1         | First binary layout                                      | 1 to 255             |
-| `STROKE_POINT_STEPS`         | 65,535    | u16 range; 0.069 px worst error measured on a real board | fixed by the layout  |
-| `STROKE_PRESSURE_STEPS`      | 255       | u8 range; pressure drives width only                     | fixed by the layout  |
-| `STROKE_POINT_MAX_ERROR`     | 1/131,070 | Half a step                                              | derived              |
-| `MAX_FREEHAND_POINTS`        | 20,000    | Unchanged from before                                    | 1 to 65,535          |
-| `MAX_PACKED_POINTS_LENGTH`   | 133,336   | `4 * ceil((2 + 20,000 * 5) / 3)`                         | derived              |
-| `STROKE_DECODE_CACHE_POINTS` | 500,000   | 7x the largest real board's 66,128 points; 12 MB         | 100,000 to 2,000,000 |
+| Constant                        | Value     | Provenance                                               | Safe range           |
+| ------------------------------- | --------- | -------------------------------------------------------- | -------------------- |
+| `STROKE_POINTS_VERSION`         | 1         | First binary layout                                      | 1 to 255             |
+| `STROKE_POINT_STEPS`            | 65,535    | u16 range; 0.069 px worst error measured on a real board | fixed by the layout  |
+| `STROKE_PRESSURE_STEPS`         | 255       | u8 range; pressure drives width only                     | fixed by the layout  |
+| `STROKE_POINT_MAX_ERROR`        | 1/131,070 | Half a step                                              | derived              |
+| `MAX_FREEHAND_POINTS`           | 20,000    | Unchanged from before                                    | 1 to 65,535          |
+| `STROKE_FIT_START_TOLERANCE_PX` | 0.1       | A tenth of a canvas px: invisible at zoom 1              | above 0, under 1     |
+| `STROKE_FIT_MAX_PASSES`         | 8         | 0.1 px doubled to 12.8 px, then even thinning            | 4 to 10              |
+| `MAX_PACKED_POINTS_LENGTH`      | 133,336   | `4 * ceil((2 + 20,000 * 5) / 3)`                         | derived              |
+| `STROKE_DECODE_CACHE_POINTS`    | 500,000   | 7x the largest real board's 66,128 points; 12 MB         | 100,000 to 2,000,000 |
 
 ## Defaults ledger
 

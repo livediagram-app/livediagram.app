@@ -266,6 +266,10 @@ export type ShapeElement = {
   // undo the feature — the anonymity guarantee is that the schema has nowhere
   // to record who wrote a card. Bounded in validate.ts.
   ideaCards?: string[];
+  // Each card's random id, by position (`ideaCardIds[i]` names `ideaCards[i]`; '' or missing is an id-less
+  // card). Minted fresh per card by the posting browser, so it names the card, never the person
+  // (docs/specs/012-collaboration/idea-box.md "Anonymity is structural").
+  ideaCardIds?: string[];
   ideasRevealed?: boolean;
   // Q&A board (docs/specs/012-collaboration/qa-board.md): the notes, in submission order (the sort is a view,
   // never stored), and the server-bumped revision every whole-element sync

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { fakeD1 } from '../test-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import {
   apiTokensExpiringSoon,
-  countLiveApiTokens,
+  LAST_USED_STAMP_WINDOW_MS,
   listApiTokensByOwner,
   markApiTokenExpiryWarned,
   MAX_API_TOKENS_PER_OWNER,
@@ -18,9 +19,10 @@ import {
 // cap, the expiry and the hashing, so this is where those are tested rather
 // than twice over in the route suites.
 //
-// A D1 stub, not a real database: the SELECT returns whatever count the test
-// wants and the INSERT records its bindings, which is enough to see what would
-// have been written. What matters here is which values reach the row.
+// Mostly a D1 stub, not a real database: the INSERT records its bindings and
+// reports a row written while the test's count is under the cap, which is
+// enough to see what would have been written. The cap itself lives in the
+// INSERT's WHERE, so it is tested against a real table below.
 
 type Recorded = { sql: string; bindings: unknown[] };
 
@@ -30,9 +32,9 @@ function envWithTokenCount(count: number): { env: Env; writes: Recorded[] } {
     DB: {
       prepare: (sql: string) => ({
         bind: (...bindings: unknown[]) => ({
-          first: async () => ({ n: count }),
           run: async () => {
             writes.push({ sql, bindings });
+            return { meta: { changes: count < MAX_API_TOKENS_PER_OWNER ? 1 : 0 } };
           },
         }),
       }),
@@ -45,11 +47,46 @@ const insert = (writes: Recorded[]) => writes.find((w) => w.sql.includes('INSERT
 
 describe('mintApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('refuses once the owner is at the cap, and writes nothing', async () => {
-    const { env, writes } = envWithTokenCount(MAX_API_TOKENS_PER_OWNER);
-    expect(await mintApiToken(env, { ownerId: 'u1', name: 'CI' })).toBeNull();
+    const db = sqliteD1();
+    for (let i = 0; i < MAX_API_TOKENS_PER_OWNER; i++) {
+      expect(await mintApiToken(db.env, { ownerId: 'u1', name: `t${i}` })).not.toBeNull();
+    }
+    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'one too many' })).toBeNull();
     // Null is not enough on its own: a mint that refused but still inserted
     // would hand the caller a 409 for a token that exists.
-    expect(insert(writes)).toBeUndefined();
+    const rows = db.sql.prepare("SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = 'u1'").get();
+    expect(rows).toEqual({ n: MAX_API_TOKENS_PER_OWNER });
+  });
+
+  it('never lets concurrent mints overshoot the cap', async () => {
+    // Counting then inserting let two requests both see 9 and both insert. The count is now part of the INSERT.
+    const db = sqliteD1();
+    const results = await Promise.all(
+      Array.from({ length: MAX_API_TOKENS_PER_OWNER + 5 }, (_, i) =>
+        mintApiToken(db.env, { ownerId: 'u1', name: `t${i}` }),
+      ),
+    );
+    expect(results.filter((r) => r !== null)).toHaveLength(MAX_API_TOKENS_PER_OWNER);
+    const rows = db.sql.prepare("SELECT COUNT(*) AS n FROM api_tokens WHERE owner_id = 'u1'").get();
+    expect(rows).toEqual({ n: MAX_API_TOKENS_PER_OWNER });
+  });
+
+  it('counts only live tokens towards the cap, and only the owner’s own', async () => {
+    const db = sqliteD1();
+    for (let i = 0; i < MAX_API_TOKENS_PER_OWNER; i++) {
+      await mintApiToken(db.env, { ownerId: 'u1', name: `t${i}` });
+    }
+    // Someone else's full set does not block u2.
+    expect(await mintApiToken(db.env, { ownerId: 'u2', name: 'mine' })).not.toBeNull();
+    // A revoked token and an expired one each free a slot.
+    const ids = db.sql.prepare("SELECT id FROM api_tokens WHERE owner_id = 'u1' LIMIT 2").all() as {
+      id: string;
+    }[];
+    db.sql.prepare('UPDATE api_tokens SET revoked = 1 WHERE id = ?').run(ids[0]!.id);
+    db.sql.prepare('UPDATE api_tokens SET expires_at = 1 WHERE id = ?').run(ids[1]!.id);
+    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'a' })).not.toBeNull();
+    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'b' })).not.toBeNull();
+    expect(await mintApiToken(db.env, { ownerId: 'u1', name: 'c' })).toBeNull();
   });
 
   it('mints below the cap', async () => {
@@ -85,8 +122,8 @@ describe('mintApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
     ] as const) {
       const { env, writes } = envWithTokenCount(0);
       await mintApiToken(env, { ownerId: 'u1', name: null, readOnly });
-      // Last binding is read_only in the INSERT's column order.
-      expect(insert(writes)!.bindings.at(-1), `readOnly=${String(readOnly)}`).toBe(expected);
+      // The seventh binding is read_only in the INSERT's column order (the cap's bindings follow it).
+      expect(insert(writes)!.bindings[6], `readOnly=${String(readOnly)}`).toBe(expected);
     }
   });
 
@@ -96,6 +133,14 @@ describe('mintApiToken (docs/specs/015-api/public-api-and-tokens.md)', () => {
     const b = await mintApiToken(env, { ownerId: 'u1', name: null });
     expect(a!.id).not.toBe(b!.id);
     expect(a!.secret).not.toBe(b!.secret);
+  });
+
+  it('refuses when the driver reports no change count at all', async () => {
+    // An INSERT that may not have written must not hand back a secret: the
+    // caller would show a token that cannot authenticate anything.
+    const db = fakeD1();
+    expect(await mintApiToken(db.env, { ownerId: 'u1', name: null })).toBeNull();
+    expect(db.one('INSERT INTO api_tokens').method).toBe('run');
   });
 });
 
@@ -144,22 +189,6 @@ describe('listApiTokensByOwner (docs/specs/015-api/public-api-and-tokens.md)', (
   });
 });
 
-describe('countLiveApiTokens (the cap, docs/specs/015-api/public-api-and-tokens.md)', () => {
-  it('counts only unrevoked, unexpired tokens', async () => {
-    const db = fakeD1(() => ({ first: { n: 3 } }));
-    expect(await countLiveApiTokens(db.env, 'u1')).toBe(3);
-    const query = db.one('COUNT(*)');
-    expect(query.sql).toContain('revoked = 0');
-    expect(query.sql).toContain('expires_at > ?');
-    expect(query.bindings[0]).toBe('u1');
-  });
-
-  it('reads an empty answer as zero rather than blocking minting', async () => {
-    const db = fakeD1(() => ({ first: null }));
-    expect(await countLiveApiTokens(db.env, 'u1')).toBe(0);
-  });
-});
-
 describe('resolveApiToken (the auth hot path, docs/specs/015-api/public-api-and-tokens.md)', () => {
   it('resolves a live token to its owner and stamps last_used_at', async () => {
     const db = fakeD1(({ sql }) =>
@@ -171,6 +200,43 @@ describe('resolveApiToken (the auth hot path, docs/specs/015-api/public-api-and-
       readOnly: false,
     });
     expect(db.one('UPDATE api_tokens SET last_used_at').bindings[1]).toBe('t1');
+  });
+
+  it('skips the stamp while last_used_at is fresher than the window', async () => {
+    // One MCP tool call is 3 to 6 api requests; stamping each was 3 to 6 D1 writes for a value read at day grain.
+    const db = fakeD1(({ sql }) =>
+      sql.includes('SELECT')
+        ? { first: { id: 't1', owner_id: 'u1', read_only: 0, last_used_at: Date.now() - 1_000 } }
+        : {},
+    );
+    expect(await resolveApiToken(db.env, 'ld_secret')).not.toBeNull();
+    expect(db.matching('UPDATE api_tokens')).toEqual([]);
+  });
+
+  it('stamps once per window against a real table, however many requests land', async () => {
+    const db = sqliteD1();
+    const owner = { ownerId: 'u1', name: 'CI' };
+    const minted = (await mintApiToken(db.env, owner))!;
+    const lastUsed = () =>
+      (
+        db.sql.prepare('SELECT last_used_at FROM api_tokens WHERE id = ?').get(minted.id) as {
+          last_used_at: number | null;
+        }
+      ).last_used_at;
+    expect(lastUsed()).toBeNull();
+    await resolveApiToken(db.env, minted.secret);
+    const first = lastUsed();
+    expect(first).not.toBeNull();
+    // Back-date to just inside the window: the next requests leave it alone.
+    const inside = Date.now() - LAST_USED_STAMP_WINDOW_MS + 5_000;
+    db.sql.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?').run(inside, minted.id);
+    await Promise.all([1, 2, 3].map(() => resolveApiToken(db.env, minted.secret)));
+    expect(lastUsed()).toBe(inside);
+    // Past the window: the next request stamps it again.
+    const outside = Date.now() - LAST_USED_STAMP_WINDOW_MS - 5_000;
+    db.sql.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?').run(outside, minted.id);
+    await resolveApiToken(db.env, minted.secret);
+    expect(lastUsed()).toBeGreaterThan(outside + LAST_USED_STAMP_WINDOW_MS);
   });
 
   it('looks up the hash, never the presented secret', async () => {

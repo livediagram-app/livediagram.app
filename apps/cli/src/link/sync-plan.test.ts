@@ -79,6 +79,23 @@ describe('planSync at files', () => {
     ]);
   });
 
+  it('never relocates two documents to one path: the second steps aside', async () => {
+    const a = fixtureDoc('d-aaaaaaaa1', 'Start', [1]);
+    const b = fixtureDoc('d-bbbbbbbb2', 'Start', [1]);
+    const { actions } = plan({
+      scan: [
+        await trackedFile(fixtureDoc('d-aaaaaaaa1', 'One', [1]), 'one.livediagram.json'),
+        await trackedFile(fixtureDoc('d-bbbbbbbb2', 'Two', [1]), 'two.livediagram.json'),
+      ],
+      coverage: coverageOf([a, b]),
+      remote: facts(a, b),
+    });
+    const targets = actions.flatMap((x) => (x.kind === 'relocate' ? [x.to] : []));
+    expect(targets).toHaveLength(2);
+    expect(new Set(targets).size).toBe(2);
+    expect(targets).toContain('start.livediagram.json');
+  });
+
   it('steps a new document aside for a path another file holds', async () => {
     const twin = fixtureDoc('d-twin', 'Home', [1]);
     const { actions } = plan({

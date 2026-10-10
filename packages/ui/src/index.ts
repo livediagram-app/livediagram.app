@@ -37,7 +37,7 @@ export { Tooltip, type TooltipProps } from './Tooltip';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { StableLabel } from './StableLabel';
 export { HoverCard, type HoverCardProps } from './HoverCard';
-export { PreviewHint, type PreviewHintProps } from './PreviewHint';
+export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
 export { SheetBuildAnimation } from './SheetBuildAnimation';

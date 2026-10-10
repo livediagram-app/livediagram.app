@@ -14,7 +14,7 @@ import {
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { applyItemChanges, type ItemChange } from '../plan/item-changes';
 import { FIELD_HINT } from '../plan/api-refusal';
-import { planListing } from '../plan/plan-listing';
+import { planListing, resolveListingFilter } from '../plan/plan-listing';
 import { readPlanState, type PlanState } from '../plan/plan-state';
 import { columns, documentOf } from './shared';
 
@@ -107,7 +107,15 @@ export const itemLs = defineVerb({
   listKey: 'items',
   run: async (ctx, input) => {
     const { state } = await planOf(ctx, input.doc);
-    const listing = planListing(state, input);
+    const filter = resolveListingFilter(state, input);
+    if (!filter.ok)
+      throw new VerbRefusal({
+        status: 400,
+        code: filter.code,
+        message: filter.message,
+        hint: 'list the columns and card types with: livediagram item ls <doc>',
+      });
+    const listing = planListing(state, filter);
     const keys = new Map(state.items.map((i) => [i.id, i.key]));
     // A board's line: its title and each column with its card count ("Sprint: To Do 2 · Done 1").
     const boards = listing.boards.map(

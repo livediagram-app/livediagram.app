@@ -33,8 +33,8 @@ type SelectionPopoverProps = {
   // label yet, so the button itself teaches that text can be added. Absent
   // for kinds with no label (tables, images, annotations, data shapes).
   onEditText?: () => void;
-  // True when the element already has text: the button reads "Edit text";
-  // false = "Add text". Defaults to edit for older callers.
+  // True when the element already has text: the button reads "Edit Text";
+  // false = "Add Text". Defaults to edit for older callers.
   hasText?: boolean;
   // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
@@ -166,7 +166,7 @@ export function SelectionPopover({
       {onEditText ? (
         <>
           <PopoverButton
-            label={hasText ? 'Edit text' : 'Add text'}
+            label={hasText ? 'Edit Text' : 'Add Text'}
             description={hasText ? "Edit this element's text." : 'Give this element a text label.'}
             onClick={onEditText}
           >
@@ -179,7 +179,7 @@ export function SelectionPopover({
       {onEditPoints ? (
         <>
           <PopoverButton
-            label="Edit points"
+            label="Edit Points"
             description="Adjust the path's points, corners and curves."
             onClick={onEditPoints}
           >
@@ -225,14 +225,14 @@ export function SelectionPopover({
       {onBringToFront && onSendToBack ? (
         <>
           <PopoverButton
-            label="Bring to front"
+            label="Bring to Front"
             description="Stack this in front of everything else on its layer."
             onClick={onBringToFront}
           >
             <BringToFrontIcon />
           </PopoverButton>
           <PopoverButton
-            label="Send to back"
+            label="Send to Back"
             description="Stack this behind everything else on its layer."
             onClick={onSendToBack}
           >

@@ -734,7 +734,7 @@ export function EditorView() {
                               />
                             ) : null}
 
-                            {/* The one file input behind "Add from photo". Hidden, opened by the
+                            {/* The one file input behind "Add from Photo". Hidden, opened by the
             palette row and the command palette; `capture` makes a phone open
             the camera straight away, because the act is "photograph this wall". */}
                             {photoImportAvailable ? (

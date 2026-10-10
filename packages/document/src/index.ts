@@ -427,7 +427,7 @@ export function isBoxed(element: Element): element is BoxedElement {
 
 // True when the element carries a non-empty text label — the plain-text
 // `label` every labelable kind mirrors (shape / text / sticky / freehand /
-// link-card and arrows). Drives the selection toolbar's "Edit text" button,
+// link-card and arrows). Drives the selection toolbar's "Edit Text" button,
 // which only appears once an element actually has text to edit. Tables
 // (per-cell `cells`), images (`alt`), and annotations (`note`) carry no
 // single `label`, so this reads false for them — matching the inline label
@@ -444,7 +444,7 @@ export function elementHasText(element: Element): boolean {
 // deliberately OUT: its view renders link metadata, never `label`, and its
 // double-click opens the link picker (docs/specs/009-elements/link-cards.md) — an Add-text button there
 // entered an edit state with no editor on screen.
-// Drives the selection toolbar's "Edit text" / "Add text" button, which
+// Drives the selection toolbar's "Edit Text" / "Add Text" button, which
 // shows on every text-capable element (an empty one included, so the
 // affordance teaches that text can be added).
 export function elementSupportsText(element: Element): boolean {
@@ -555,6 +555,7 @@ export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
 export * from './stroke-points';
+export * from './stroke-fit';
 export * from './stroke-points-cache';
 export * from './freehand-points';
 export * from './stroke-points-debug';

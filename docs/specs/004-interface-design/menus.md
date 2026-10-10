@@ -117,6 +117,44 @@ bottom sheet on a phone, menu-follows-selection on the canvas and
 [flyout height stability](./flyout-height-stability.md) behave exactly as before. Roles, focus and
 keys add nothing to a menu's box: no row grows, moves or appears when focus arrives.
 
+## Item labels
+
+Every item an element's menus print is **Title Case**: the element menu and the selection menu
+(accordion titles, tiles, toggle rows, action buttons and the row buttons inside a section), the
+cell menu, the locked element menu, the selection filter menu and the element quick menus. Short
+articles, conjunctions and prepositions (a, an, the, and, or, of, to, in, on, for, at, by, with,
+from, as) stay lowercase unless they lead: "Empty the Box", "Reset to Theme", "Start at Exact
+Anchor", "A List".
+
+The same rule covers the close cousins of a menu item, the controls that name an action on an
+element or add one:
+
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky
+  Note", "Add Domain Event Note"), the Toolbar strip's **Add Page** and **Add from Photo**, and
+  the Draw dock's shapes. A catalogue entry (an icon, a sticker, a technology, an Event Storming
+  note kind) keeps its own sentence-case name and its tile Title Cases it on the way
+  (`headlineCase` in `@livediagram/api-schema`).
+- **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
+  Point", "Add Stat".
+- **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
+  Text"), the path toolbar ("Delete Point", "Close Path"), a facilitator's accent bar ("Open the
+  Box", "New Round", "Take Roll") and a Q&A note's row actions ("Discuss Now", "Mark Done"). An
+  export draws an accent bar with the same words.
+- **Command palette names**: every command search offers ("Bring to Front", "Create New Tab",
+  "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
+- **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
+  Tool (or 1)"): the name is Title Case and a trailing hint in parentheses stays as written. A row
+  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)",
+  "On a mind node: add a child") and the presentation rows, which pair with the presentation
+  controls' tooltips, keep sentence case.
+
+Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the
+control's only name (the page lock, the slide deck eye), descriptions, aria-labels written only
+for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
+case. An element's own name in prose ("a Done check") stays sentence case too. A help article
+that names an item in bold spells it exactly as the editor does
+(`apps/help/lib/ui-labels-in-articles.test.ts`).
+
 ## The menus
 
 Each menu, how it opens, what it holds, and what the keyboard could do before this spec.
@@ -139,7 +177,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Zoom menu             | Hovering or focusing the zoom percentage                                 | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                                         | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                                     | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                             | Verbs, All settings… under a separator                                   | Tab only                                            |
+| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                             | Verbs, All Settings… under a separator                                   | Tab only                                            |
 | Locked element menu   | Right-click on an element someone else holds                             | "In use" header, Release rows, a note                                    | Escape only                                         |
 | Product switcher      | The section name in the help, Community, telemetry and marketing headers | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                                 | Views                                                                    | Tab only                                            |

@@ -127,9 +127,9 @@ describe('MultiSelectionToolbar', () => {
   });
 });
 
-// Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling ride the toolbar of a mind node.
+// Mind map (docs/specs/009-elements/mind-node.md): Add Child / Add Sibling ride the toolbar of a mind node.
 describe('SelectionPopover mind-node growth', () => {
-  it('offers Add child and Add sibling, each firing its own grower', () => {
+  it('offers Add Child and Add Sibling, each firing its own grower', () => {
     setTouch(false);
     const child = vi.fn();
     const sibling = vi.fn();
@@ -142,8 +142,8 @@ describe('SelectionPopover mind-node growth', () => {
         onAddMindSibling={sibling}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Add child' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Add sibling' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Child' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Sibling' }));
     expect(child).toHaveBeenCalledOnce();
     expect(sibling).toHaveBeenCalledOnce();
   });
@@ -151,15 +151,15 @@ describe('SelectionPopover mind-node growth', () => {
   it('shows neither on an element that is not a mind node', () => {
     setTouch(false);
     renderSingle();
-    expect(screen.queryByRole('button', { name: 'Add child' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Add sibling' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Child' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Sibling' })).toBeNull();
   });
 });
 
-describe('Edit points (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
+describe('Edit Points (docs/specs/023-draw-mode/path-tool.md "Editing")', () => {
   afterEach(cleanup);
 
-  it('offers Edit points for a path and opens its edit mode', () => {
+  it('offers Edit Points for a path and opens its edit mode', () => {
     setTouch(false);
     const onEditPoints = vi.fn();
     render(
@@ -171,7 +171,7 @@ describe('Edit points (docs/specs/023-draw-mode/path-tool.md "Editing")', () => 
         onEditPoints={onEditPoints}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /^Edit points/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Edit Points/ }));
     expect(onEditPoints).toHaveBeenCalled();
   });
 });

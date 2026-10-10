@@ -127,7 +127,7 @@ export function PieDataEditor({
         onClick={() => onChange([...rows, { label: `Item ${rows.length + 1}`, value: 10 }])}
         className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
       >
-        + Add slice
+        + Add Slice
       </button>
     </div>
   );
@@ -191,7 +191,7 @@ export function LegendDataEditor({
         onClick={() => onChange([...rows, { label: `Item ${rows.length + 1}` }])}
         className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
       >
-        Add row
+        Add Row
       </button>
     </div>
   );
@@ -199,7 +199,7 @@ export function LegendDataEditor({
 
 // Line-chart data summary (docs/specs/009-elements/pie-chart.md): the 2-D grid is too wide for the narrow
 // menu, so the Data category just lists the series (a colour dot + name) and an
-// "Edit data" button that opens the full grid + CSV import in a modal.
+// "Edit Data" button that opens the full grid + CSV import in a modal.
 export function LineDataSummary({
   series,
   palette = PIE_PALETTE,
@@ -231,7 +231,7 @@ export function LineDataSummary({
         onClick={onEdit}
         className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
       >
-        Edit data
+        Edit Data
       </button>
     </div>
   );
@@ -314,7 +314,7 @@ export function EntityFieldsEditor({
         onClick={() => onChange([...rows, { name: '' }])}
         className={MENU_ADD_ROW_BUTTON}
       >
-        Add field
+        Add Field
       </button>
     </div>
   );
@@ -376,14 +376,14 @@ export function ChecklistRowsEditor({
         onClick={() => onChange([...rows, { text: '', done: false }])}
         className={MENU_ADD_ROW_BUTTON}
       >
-        + Add row
+        + Add Row
       </button>
     </div>
   );
 }
 
 // Code block summary (docs/specs/009-elements/code-block.md): a multi-line editor is too big for the menu,
-// so the Code category shows the language + line count and an "Edit code"
+// so the Code category shows the language + line count and an "Edit Code"
 // button that opens the modal — the LineDataSummary pattern.
 export function CodeSummary({
   code,
@@ -414,7 +414,7 @@ export function CodeSummary({
         onClick={onEdit}
         className="mt-1.5 inline-flex w-full cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15"
       >
-        Edit code
+        Edit Code
       </button>
       <div className="-mx-2 mt-1">
         <MenuToggleRow label="Wrap Long Lines" checked={wrap} onToggle={() => onSetWrap(!wrap)} />

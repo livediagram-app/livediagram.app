@@ -36,7 +36,7 @@ function mount(
 describe('LockedElementMenu', () => {
   it('names the person whose hold it would break', () => {
     mount();
-    expect(screen.getByRole('menuitem', { name: /Release Ariel’s hold/ })).toBeTruthy();
+    expect(screen.getByRole('menuitem', { name: /Release Ariel’s Hold/ })).toBeTruthy();
   });
 
   it('lists every holder when more than one has it', () => {

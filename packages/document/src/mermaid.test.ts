@@ -232,6 +232,30 @@ describe('parseMermaid', () => {
   });
 });
 
+describe('parseMermaid %% comments', () => {
+  it('keeps a %% inside a quoted label and still drops a trailing comment', () => {
+    const r = parseMermaid('flowchart TD\n  A["50%% done"] --> B %% the tail\n  %% a whole line');
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes.map((n) => n.label)).toEqual(['50%% done', 'B']);
+    expect(r.graph.edges).toHaveLength(1);
+  });
+
+  it('decodes Mermaid numeric entity codes and leaves an out-of-range one as written', () => {
+    const r = parseMermaid('flowchart TD\n  A["#37; and #9999999;"]');
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.graph.nodes[0]!.label).toBe('% and #9999999;');
+  });
+
+  it('scans a long line of quotes and percents in linear time', () => {
+    const line = `A["${'"%%'.repeat(50_000)}"]`;
+    const t0 = performance.now();
+    parseMermaid(`flowchart TD\n  ${line}`);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
+});
+
 describe('mermaidFromTab', () => {
   it('serialises shapes + labelled arrows to flowchart text', () => {
     const els = graphToElements(
@@ -436,6 +460,22 @@ describe('mermaidFromTab', () => {
     if (!back.ok) return;
     expect(back.graph.nodes).toHaveLength(2);
     expect(back.graph.edges.map((e) => e.label)).toEqual(['yes|no']);
+  });
+
+  it('round-trips labels holding %% and entity-looking text, node and edge alike', () => {
+    const labels = ['50%% done', 'a %%%b', '#124; and #37;', '#%%', '100%'];
+    const els = graphToElements({
+      nodes: [...labels.map((label, i) => ({ id: `n${i}`, label })), { id: 'z', label: 'Z' }],
+      edges: labels.map((label, i) => ({ from: `n${i}`, to: 'z', label })),
+    });
+    const out = mermaidFromTab({ elements: els });
+    // Never a raw `%%`: an unquoted edge label would read it as a comment.
+    expect(out).not.toContain('%%');
+    const back = parseMermaid(out);
+    expect(back.ok).toBe(true);
+    if (!back.ok) return;
+    expect(back.graph.nodes.map((n) => n.label)).toEqual([...labels, 'Z']);
+    expect(back.graph.edges.map((e) => e.label)).toEqual(labels);
   });
 
   it('round-trips a clustered, styled flowchart through layout and back', () => {

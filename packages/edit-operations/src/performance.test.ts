@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Element, Tab } from '@livediagram/document';
 import { applyEditOperations } from './apply';
+import { containersBehindMembers } from './finalise';
+import { createState, noteTarget } from './state';
 import { parseEditOperations } from './parse';
 import type { EditOperation } from './types';
 
@@ -102,7 +104,75 @@ function rowOf(count: number): Tab {
   return { id: 'row', name: 'Row', elements };
 }
 
+// One frame holding `count` boxes: a container with every element as its member.
+function frameOf(count: number): Tab {
+  const columns = 100;
+  const elements: Element[] = [
+    {
+      id: 'f0',
+      type: 'shape',
+      shape: 'frame',
+      x: 0,
+      y: 0,
+      width: columns * 200 + 20,
+      height: 4000,
+    },
+  ];
+  for (let i = 0; i < count; i++)
+    elements.push({
+      id: `b${i}`,
+      type: 'shape',
+      shape: 'square',
+      x: 10 + (i % columns) * 200,
+      y: 10 + Math.floor(i / columns) * 15,
+      width: 10,
+      height: 10,
+    });
+  return { id: 'frame', name: 'Frame', elements };
+}
+
 describe('performance', () => {
+  // The container order pass once scanned the order per member and copied the member list per member: 157 ms
+  // of a one-field set at 10,000 members, now 19 ms. Timed alone, so the rest of an apply does not hide it.
+  it(
+    'orders containers behind their members in time linear in the tab',
+    { timeout: TIMEOUT_MS },
+    () => {
+      const fastest = (tab: Tab) => {
+        let best = Infinity;
+        for (let run = 0; run < RUNS; run++)
+          best = Math.min(
+            best,
+            cpuMsOf(() => containersBehindMembers(tab.elements)),
+          );
+        return best;
+      };
+      const small = fastest(frameOf(2400));
+      const large = fastest(frameOf(2400 * GROWTH));
+      expect(large / small).toBeLessThan(RATIO_CEILING);
+    },
+  );
+
+  // Noting each resolved target once searched the targets so far (`includes`): quadratic in a `set … all`.
+  it('notes targets in time linear in their number', { timeout: TIMEOUT_MS }, () => {
+    const fastest = (tab: Tab) => {
+      let best = Infinity;
+      for (let run = 0; run < RUNS; run++) {
+        const state = createState(tab, {}, () => {});
+        best = Math.min(
+          best,
+          cpuMsOf(() => {
+            for (const el of tab.elements) noteTarget(state, el.id);
+          }),
+        );
+      }
+      return best;
+    };
+    const small = fastest(frameOf(2400));
+    const large = fastest(frameOf(2400 * GROWTH));
+    expect(large / small).toBeLessThan(RATIO_CEILING);
+  });
+
   it('walks past a row of boxes in time linear in the row', { timeout: TIMEOUT_MS }, () => {
     const add = parseEditOperations('add square right-of:r0 gap:0');
     if ('errors' in add) throw new Error('add');

@@ -173,13 +173,13 @@ export function ArrowLineControls({
           >
             <span className="flex flex-col">
               <span className="text-[11px] text-slate-600 dark:text-slate-300">
-                Pass behind boxes
+                Pass Behind Boxes
               </span>
               <span className="text-[10px] leading-snug text-slate-400">
                 Break the line where it crosses another box.
               </span>
             </span>
-            <ToggleSwitch checked={routeBehind} label="Pass behind boxes" presentational />
+            <ToggleSwitch checked={routeBehind} label="Pass Behind Boxes" presentational />
           </button>
         </>
       ) : null}
@@ -191,13 +191,13 @@ export function ArrowLineControls({
         >
           <span className="flex flex-col">
             <span className="text-[11px] text-slate-600 dark:text-slate-300">
-              Start at exact anchor
+              Start at Exact Anchor
             </span>
             <span className="text-[10px] leading-snug text-slate-400">
               Start where you connected it, not spread out from other arrows there.
             </span>
           </span>
-          <ToggleSwitch checked={exactStart} label="Start at exact anchor" presentational />
+          <ToggleSwitch checked={exactStart} label="Start at Exact Anchor" presentational />
         </button>
       ) : null}
     </>

@@ -10,6 +10,7 @@ import type { Element } from '@livediagram/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';
+import { showSelectedView } from './show-selected';
 
 const FRAMES = 10;
 const GROWTH = 8;
@@ -63,6 +64,55 @@ describe('views as tabs grow', () => {
       const ratio = fastestRender(large) / fastestRender(small);
       expect(large.elements.length).toBeGreaterThan(GROWTH * (small.elements.length - FRAMES));
       expect(ratio).toBeLessThan(RATIO_CEILING);
+    },
+    TIMEOUT_MS,
+  );
+});
+
+// `n` frames, each holding one box: n containers for a budget to collapse one by one.
+function framesOf(n: number) {
+  const elements: Element[] = [];
+  for (let i = 0; i < n; i++) {
+    elements.push(shapeAt('frame', `fr-${i}`, i * 1000, 0, 500, 500, { label: `Frame ${i}` }));
+    elements.push(shapeAt('square', `bx-${i}`, i * 1000 + 50, 50, 100, 50, { label: `Box ${i}` }));
+  }
+  return { id: 'frames', name: 'Frames', elements };
+}
+
+const fastestOf = (work: () => void) => {
+  let fastest = Infinity;
+  for (let run = 0; run < RUNS; run++) fastest = Math.min(fastest, cpuMsOf(work));
+  return fastest;
+};
+
+describe('views over many containers or a whole selection', () => {
+  // Fitting collapsed containers one by one rebuilt the fit and its elision per step: 1.2 s for 4,000 frames,
+  // now about 30 ms (1.3 s and 0.13 s with the model built, at the MCP budget).
+  it(
+    'fit many containers to a budget about linearly',
+    () => {
+      // A budget small enough that both sizes collapse every container, so both take the same path.
+      const time = (n: number) => {
+        const model = buildViewModel(framesOf(n));
+        return fastestOf(() => outlineView(model, { budget: 2000 }));
+      };
+      time(500);
+      expect(time(500 * GROWTH) / time(500)).toBeLessThan(RATIO_CEILING);
+    },
+    TIMEOUT_MS,
+  );
+
+  // Showing each selected element scanned every arrow and the whole tab's origin: 3.4 s for a select-all of
+  // 8,000 elements, now about 80 ms.
+  it(
+    'show a whole selection about linearly',
+    () => {
+      const time = (n: number) => {
+        const model = buildViewModel(framesOf(n));
+        return fastestOf(() => showSelectedView(model, model.printed));
+      };
+      time(250);
+      expect(time(250 * GROWTH) / time(250)).toBeLessThan(RATIO_CEILING);
     },
     TIMEOUT_MS,
   );

@@ -14,7 +14,14 @@ import { describeElement, kindOf, labelOf } from './element-text';
 import { reachableFrom } from './graph-walk';
 import { nearestElements } from './nearest';
 import { currentElements, holdersOf, namingOf, noteTarget, refsOf, type EditState } from './state';
-import { hasQuotes, isQuotedWord, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
+import {
+  arrowParts,
+  hasQuotes,
+  isQuotedWord,
+  tokeniseLine,
+  unquotedPrefix,
+  type Word,
+} from './tokenise';
 import { REJECTION_CANDIDATES_MAX, RESERVED_WORDS, SELECTOR_KEYS } from './vocabulary';
 
 // Keys whose value names one element.
@@ -37,6 +44,13 @@ const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
 function termOf(word: Word): SelectorTerm | string {
   if (isQuotedWord(word)) return { kind: 'label', text: word.value };
   const prefix = unquotedPrefix(word);
+  // `a->b` with either end quoted: `"Sign in"->"Pay"` (an unquoted `->` anywhere in the word).
+  const parts = arrowParts(word);
+  if (parts) {
+    if (parts.length > 2) return 'a->b with one arrow: an arrow has two ends';
+    const [from, to] = parts as [string, string];
+    return from && to ? { kind: 'arrow', from, to } : 'a->b with an element on each side';
+  }
   // The always-safe ref the views print for an id that is not a plain word: `id:"…"`.
   if (prefix === 'id:' && word.raw.length > 3) return { kind: 'ref', text: word.raw };
   if (/^label~/i.test(prefix)) return { kind: 'label~', text: word.value.slice('label~'.length) };
@@ -52,11 +66,6 @@ function termOf(word: Word): SelectorTerm | string {
       return { kind: key, value: word.value.slice(key.length + 1) };
     const wordKey = WORD_KEYS.find((k) => k === key)!;
     return { kind: wordKey, word: value };
-  }
-  const arrow = prefix.indexOf('->');
-  if (arrow >= 0) {
-    const [from, to] = [word.raw.slice(0, arrow), word.raw.slice(arrow + 2)];
-    return from && to ? { kind: 'arrow', from, to } : 'a->b with an element on each side';
   }
   if (word.value === 'selected') return { kind: 'selected' };
   if (RESERVED_WORDS.has(word.value))

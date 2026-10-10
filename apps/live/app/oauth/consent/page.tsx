@@ -11,10 +11,11 @@ import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livediagram/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell } from '../oauth-shell';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
-import { apiExchangeOauthToken } from '@/lib/api-client';
+import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
 import { fetchConsentSession, type McpConsentSession } from '@/lib/mcp-consent-session';
+import { handoverFailureCopy, mintAndHandOver, type HandoverFailure } from '@/lib/oauth-handover';
 import { track } from '@/lib/telemetry';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 
@@ -23,6 +24,8 @@ function Consent() {
   const session = params.get('session');
   const { authLoaded, isSignedIn, clerkUserId } = useClerkApiBootstrap();
   const [status, setStatus] = useState<'idle' | 'connecting' | 'error' | 'cancelled'>('idle');
+  // Why the last Connect failed, for the line under the buttons.
+  const [failure, setFailure] = useState<HandoverFailure>('failed');
   // Read-only opt-in (docs/specs/015-api/mcp-server.md §4.11): grant the tool view-only access — it can
   // find and read documents but not create / edit / delete / share.
   const [readOnly, setReadOnly] = useState(false);
@@ -153,28 +156,44 @@ function Consent() {
   }
 
   const approve = async () => {
+    if (!session) return;
     setStatus('connecting');
+    // Checks the session is still live before minting, and revokes a token the MCP did not take, so a failed
+    // Connect never leaves a six-month token behind (lib/oauth-handover.ts).
+    const result = await mintAndHandOver({
+      sessionLive: async () => (await fetchConsentSession(session)) !== null,
+      mint: () => apiExchangeOauthToken(clerkUserId, client, readOnly),
+      complete: async (token, expiresAt) => {
+        const res = await fetch(`${MCP_ORIGIN}/oauth/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session, token, expiresAt }),
+        });
+        if (!res.ok) return null;
+        const { redirectTo } = (await res.json()) as { redirectTo: string };
+        return redirectTo;
+      },
+      revoke: (id) => apiRevokeToken(clerkUserId, id),
+    });
+    if (!result.ok) {
+      setFailure(result.reason);
+      setStatus('error');
+      return;
+    }
+    // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): an app was connected, which mints a token.
+    // `type` is the fixed source, never the client name: the CLI by its public client id (CLI77), else an MCP
+    // client.
+    track('Token', 'Created', resolved.clientId === CLI_CLIENT_ID ? 'Cli' : 'MCP');
     try {
-      const { token, expiresAt } = await apiExchangeOauthToken(clerkUserId, client, readOnly);
-      const res = await fetch(`${MCP_ORIGIN}/oauth/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session, token, expiresAt }),
-      });
-      if (!res.ok) throw new Error('complete failed');
-      // Anonymous telemetry (docs/specs/017-telemetry/telemetry.md): an app was connected, which mints a token.
-      // `type` is the fixed source, never the client name: the CLI by its public client id (CLI77), else an MCP
-      // client.
-      track('Token', 'Created', resolved.clientId === CLI_CLIENT_ID ? 'Cli' : 'MCP');
-      const { redirectTo } = (await res.json()) as { redirectTo: string };
       // Only ever navigate to an http(s) URL: a `javascript:` target would run
       // as script on this origin with the signed-in session.
-      const target = new URL(redirectTo);
+      const target = new URL(result.value);
       if (target.protocol !== 'https:' && target.protocol !== 'http:') {
         throw new Error('unsafe redirect');
       }
       window.location.href = target.toString();
     } catch {
+      setFailure('failed');
       setStatus('error');
     }
   };
@@ -218,8 +237,8 @@ function Consent() {
         </p>
       ) : null}
       {status === 'error' ? (
-        <p className="mt-3 text-xs text-rose-600 dark:text-rose-400">
-          Something went wrong. Please try again.
+        <p role="alert" className="mt-3 text-xs text-rose-600 dark:text-rose-400">
+          {handoverFailureCopy(failure, 'Start the connection again from your app.')}
         </p>
       ) : null}
       <div className="mt-5 flex items-center gap-2">

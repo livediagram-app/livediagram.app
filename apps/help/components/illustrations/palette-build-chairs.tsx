@@ -118,7 +118,7 @@ export function BuildRows() {
     blurb: string;
     glyph: 'mind' | 'lane' | 'frame' | 'timeline' | 'table';
   }[] = [
-    { name: 'Mind node', blurb: 'Tab adds a child, Enter a sibling', glyph: 'mind' },
+    { name: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling', glyph: 'mind' },
     { name: 'Table', blurb: 'An editable grid of cells', glyph: 'table' },
     { name: 'Lane', blurb: 'A titled band that carries its steps', glyph: 'lane' },
     { name: 'Frame', blurb: 'A labelled box that groups a section', glyph: 'frame' },

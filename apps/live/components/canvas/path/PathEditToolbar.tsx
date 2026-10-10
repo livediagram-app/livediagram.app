@@ -80,7 +80,7 @@ export function PathEditToolbar({
           ))}
         </div>
         <Divider />
-        <Tip label="Delete point">
+        <Tip label="Delete Point">
           <button
             type="button"
             aria-keyshortcuts="Delete"
@@ -88,10 +88,10 @@ export function PathEditToolbar({
             onClick={onDelete}
             className={BUTTON}
           >
-            Delete point
+            Delete Point
           </button>
         </Tip>
-        <Tip label={view.closed ? 'Open path' : 'Close path'}>
+        <Tip label={view.closed ? 'Open Path' : 'Close Path'}>
           <button
             type="button"
             aria-keyshortcuts={view.closed ? undefined : 'J'}
@@ -99,7 +99,7 @@ export function PathEditToolbar({
             onClick={onToggleClosed}
             className={BUTTON}
           >
-            {view.closed ? 'Open path' : 'Close path'}
+            {view.closed ? 'Open Path' : 'Close Path'}
           </button>
         </Tip>
         <Divider />

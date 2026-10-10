@@ -217,7 +217,7 @@ test('paste lands at the pointer over the canvas, and staggers when it is elsewh
 
   // Over the Palette strip is not over the canvas either: staggered again.
   const panelRow = (await page
-    .getByRole('button', { name: 'Add from photo' })
+    .getByRole('button', { name: 'Add from Photo' })
     .first()
     .boundingBox())!;
   await page.mouse.move(panelRow.x + 10, panelRow.y + 10);

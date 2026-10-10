@@ -25,7 +25,7 @@ arrow that should pass behind never has to be told to. The cost is that
 existing diagrams _change appearance_ on upgrade — deliberate, since crossing
 a box was never the intent in the cases this fixes.
 
-The per-arrow escape is the **Pass behind boxes** toggle in the arrow's Line
+The per-arrow escape is the **Pass Behind Boxes** toggle in the arrow's Line
 section, for the times drawing over the top is wanted. It's hidden in a
 multi-selection: the row shows one arrow's state, and a mixed selection has no
 single answer.

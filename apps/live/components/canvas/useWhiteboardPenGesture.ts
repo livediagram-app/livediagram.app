@@ -15,6 +15,8 @@ type WhiteboardPenGestureDeps = Pick<
 > & {
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
+  // Whether the tab is in Draw mode. Leaving it mid-stroke finishes the stroke.
+  whiteboard: boolean;
 };
 
 // The whiteboard pen's gesture (docs/specs/023-draw-mode/draw-mode.md "Pens", "Touch and pen
@@ -23,13 +25,17 @@ type WhiteboardPenGestureDeps = Pick<
 // notifies its subscribers (the ink, the recognition dwell), so drawing costs no React render. One
 // sample per move, as Excalidraw takes them: its streamline values are tuned to that rate. Release
 // commits the very samples the stroke showed, so what was drawn is what lands. Alt (Option) pressed
-// while the stroke is live flips it between ink and a shape ("Shape recognition").
+// while the stroke is live flips it between ink and a shape ("Shape recognition"). A switch out of
+// Draw mode mid-stroke (one's own Shift+D, or a collaborator's) finishes the stroke first, as
+// docs/specs/007-editor/editor-modes.md "Everyone follows a switch" says; putting the pen down
+// (Escape, another tool) discards it.
 export function useWhiteboardPenGesture({
   pendingDraw,
   wrapperRef,
   viewportZoom,
   isPinchingRef,
   onCommitFreehand,
+  whiteboard,
 }: WhiteboardPenGestureDeps) {
   const [penStroke, setPenStroke] = useState<LiveStroke | null>(null);
   // A pen stroke is a stroke gesture (docs/specs/008-canvas/canvas-performance.md), however it ends.
@@ -74,6 +80,22 @@ export function useWhiteboardPenGesture({
       ...(snapped ? { snapped } : stroke.keepsInk() ? { keepInk: true as const } : {}),
     });
   });
+
+  // The tab left Draw mode with a stroke live: it lands as drawn so far. This runs before the
+  // editor's own effect puts the pen down (a child's effects run first), so the commit still sees
+  // the pen in hand, and the render-time discard above never fires for a mode switch.
+  const wasWhiteboard = useRef(whiteboard);
+  const finishOnLeave = useEffectEvent(() => {
+    if (!penStroke) return;
+    debugLog('[whiteboard] stroke finished: mode switched');
+    setPenStroke(null);
+    commitStroke(penStroke);
+  });
+  useEffect(() => {
+    const left = wasWhiteboard.current && !whiteboard;
+    wasWhiteboard.current = whiteboard;
+    if (left) finishOnLeave();
+  }, [whiteboard]);
 
   const penWidth = useEffectEvent(() =>
     isWhiteboardPenIntent(pendingDraw) ? pendingDraw.width : 0,

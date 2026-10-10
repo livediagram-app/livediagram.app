@@ -179,6 +179,7 @@ import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
+import { useIdeaPosts } from '@/hooks/collab/useIdeaPosts';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useReactionBursts } from '@/hooks/canvas/useReactionBursts';
@@ -574,10 +575,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
   // checklist and the collaboration elements below.
   const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  // Idea posts held until the room answers them (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
+  const ideaPosts = useIdeaPosts({
+    tabs,
+    tickTabs,
+    roomRef,
+    onRefused: (message) => toast.error(message),
+  });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
   const mentionNotifyRef = useRef<
-    (text: string, mentions: CommentMention[], itemId?: string) => void
+    (text: string, mentions: CommentMention[], itemId?: string, commentId?: string) => void
   >(() => {});
   // Comment-thread state + handlers. The open-id drives the
   // dynamic <CommentThreadPopover> JSX gate further down; the
@@ -1124,7 +1132,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
     // A card comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
-    onMentioned: (text, mentions, itemId) => mentionNotifyRef.current(text, mentions, itemId),
+    onMentioned: (text, mentions, itemId, commentId) =>
+      mentionNotifyRef.current(text, mentions, itemId, commentId),
   });
 
   // The document's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
@@ -1199,6 +1208,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCodeRef,
     roomRef,
     applyRemoteOp,
+    pendingIdeaIds: ideaPosts.pendingIdeaIds,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -2657,6 +2667,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     tickTabs,
     applyElementDelta,
+    postIdea: ideaPosts.post,
     activeElements: activeTab.elements,
     editsBlocked,
     sessionToolsBlocked: runsBlocked,
@@ -3392,6 +3403,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
+    createBlocked,
+    explainCreateBlocked: layersState.explainCreateBlocked,
     embedMode,
     readSelection,
     editingId,

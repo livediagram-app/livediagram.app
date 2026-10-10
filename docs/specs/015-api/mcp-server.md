@@ -130,7 +130,17 @@ This implements the OAuth flow Manager Toolkit uses:
    `apps/api/src/auth/api-token.ts` + `db/api-tokens.ts`) to create an `lvd_`
    token owned by that Clerk user, named for the connecting client (e.g. "Claude
    (MCP)"). It binds the PKCE challenge so only the holder of the verifier can
-   redeem it.
+   redeem it. A minted token is never left orphaned: the page re-checks the
+   session (`GET /oauth/session/<id>`) before minting, and when the MCP's
+   `/oauth/complete` refuses the token (the session expired or was used, a 429)
+   it revokes it at once (`DELETE /api/tokens/<id>`), so retries never pile up
+   six-month tokens against the per-account cap. The failure line names the
+   cause: an expired request ("This request has expired. Start the connection
+   again from your app."), the token cap (409 `token_limit_reached`: "Your
+   account has reached its limit of API tokens. Revoke one in Settings, under
+   Account › API Tokens, then try again."), or anything else ("Something went
+   wrong. Please try again."). The device page does the same
+   (`apps/live/lib/oauth-handover.ts`).
 5. **Callback + token exchange** — the MCP redirects back to the client with a
    code; `POST /oauth/token` (with the PKCE `code_verifier`) exchanges it for the
    `access_token` (= the `lvd_` secret). `expires_in` reflects the token's

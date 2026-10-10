@@ -270,8 +270,8 @@ normalise(node − in))` (the handles' averaged angle) and the mean of their len
 - **Delete nodes**: the selected nodes go; their neighbours join (a joining segment keeps the
   survivors' facing handles). Closed stays closed. Invalid afterwards: the element is deleted.
   Nothing selected: nothing happens (P9).
-- **Close / open** (toolbar): **Close path** closes an open path, joining its ends (with any
-  selection; `J` asks for both ends selected), kind `join`. **Open path** (a closed path, exactly
+- **Close / open** (toolbar): **Close Path** closes an open path, joining its ends (with any
+  selection; `J` asks for both ends selected), kind `join`. **Open Path** (a closed path, exactly
   one node selected): `openPathAt(anchors, i)` runs `i, i+1, …, n−1, 0, …, i−1` then a copy of `i`;
   the first keeps only its `handleOut`, the copy only its `handleIn`, both `corner`; kind `edit`.
 - **Snapping** (dragging nodes): per axis, the pressed node's candidate is the nearest `x` (and `y`)
@@ -282,7 +282,7 @@ normalise(node − in))` (the handles' averaged angle) and the mean of their len
 - **The edit toolbar** (`PathEditToolbar`, `role="toolbar"`, "Edit path", `data-floating-panel`): in
   screen space above the path's box (or just above the long-pressed node), clamped to the canvas;
   a radio group "Node type" (Corner, Mirrored, Aligned; disabled with no node selected), **Delete
-  point** (disabled with none), **Close path** or **Open path** (disabled without exactly one node
+  Point** (disabled with none), **Close Path** or **Open Path** (disabled without exactly one node
   selected), **Done**. Each button carries the house `Tooltip` and its key in `aria-keyshortcuts`
   where it has one (Delete, J, Escape). Presses on it never reach the canvas.
 - **Commit**: every gesture ends in one `onCommitPathEdit(id, anchors, closed, kind)` → one `commit`

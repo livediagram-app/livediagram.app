@@ -62,7 +62,7 @@ graduated gauge plate.
   inside the card. Under it, the average to one decimal, large, with the respondent count.
 - **A new reading.** Once anyone has answered, the card's own `…` offers **Reset Answers** (beside
   the way into the element's settings), which clears every answer into a new round, the same
-  `clearResponses` the Done check's Reset everyone and the estimate's New round use. Like them it
+  `clearResponses` the Done check's Reset Everyone and the estimate's New round use. Like them it
   runs the room, so it is the facilitator's ([Facilitator](facilitator.md)), and absent for a
   view-role visitor. With nothing to reset the card shows the shared settings `…` instead.
 - **Empty** says "No readings yet" and "Tap the face that fits" over a quiet track with no marker,

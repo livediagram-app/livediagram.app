@@ -34,13 +34,9 @@ export const fixes = {
     pick(s, `unwrap ${frame}`, 'group by ownership, or drop the groups'),
   duplicateLabel: (s: LintSource, b: string) =>
     pick(s, `set ${b} label="<text>"`, 'rename one, or merge the nodes'),
-  // By the arrow's own ref: after the first rewire an `x->y` selector no longer names it.
+  // Both ends in one rewire: one end at a time would pass through a self-loop, which rewire refuses.
   flowBackwards: (s: LintSource, arrow: string, x: string, y: string) =>
-    pick(
-      s,
-      `rewire ${arrow} from=${y}; rewire ${arrow} to=${x}`,
-      'reverse the edge, unless it is a loop',
-    ),
+    pick(s, `rewire ${arrow} from=${y} to=${x}`, 'reverse the edge, unless it is a loop'),
   aspectExtreme: (s: LintSource, direction: 'down' | 'right') =>
     pick(s, `layout type:shape direction=${direction}`, `direction: ${direction}`),
   colourOnThemed: (s: LintSource, a: string, fields: readonly ('fill' | 'stroke')[]) =>

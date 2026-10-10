@@ -37,8 +37,10 @@ export function CollabComposer({
   // place of the placeholder, and the field and send are off.
   full?: string;
   // Returns false when the post was refused (the board filled up meanwhile),
-  // so the draft stays for the person to keep; anything else clears it.
-  onSubmit: (text: string, mentions: CommentMention[]) => boolean | void;
+  // so the draft stays for the person to keep; anything else clears it. A
+  // promise (a post the server decides) clears the draft at once and, when it
+  // resolves false, puts it back unless something new has been typed since.
+  onSubmit: (text: string, mentions: CommentMention[]) => boolean | void | Promise<boolean | void>;
 }) {
   const [draft, setDraft] = useState('');
   const fieldRef = useRef<HTMLInputElement>(null);
@@ -53,8 +55,15 @@ export function CollabComposer({
 
   const submit = () => {
     if (!text || full) return;
-    if (onSubmit(text, mentionScope ? mention.take(text) : []) === false) return;
+    const sent = draft;
+    const taken = onSubmit(text, mentionScope ? mention.take(text) : []);
+    if (taken === false) return;
     setDraft('');
+    if (taken instanceof Promise) {
+      void taken.then((ok) => {
+        if (ok === false) setDraft((now) => (now === '' ? sent : now));
+      });
+    }
   };
 
   return (

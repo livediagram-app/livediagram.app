@@ -2,7 +2,7 @@
 
 // The Estimate card face (docs/specs/012-collaboration/estimate-card.md): pick from the scale's cards, who has
 // answered shows as face-down cards (never what), Reveal turns them face up with
-// the spread, and New round only appears once revealed.
+// the spread, and New Round only appears once revealed.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -83,7 +83,7 @@ describe('EstimateFace', () => {
       'true',
     );
     expect(screen.queryByText(/Spread/)).toBeNull();
-    expect(screen.queryByText('New round')).toBeNull();
+    expect(screen.queryByText('New Round')).toBeNull();
   });
 
   it('counts the room once per person who can pick', () => {
@@ -116,7 +116,7 @@ describe('EstimateFace', () => {
   it('turns the cards face up with the spread once revealed', () => {
     show(card({ responses: answers, responsesRevealed: true }));
     expect(screen.getByText('Spread 3 → 13')).toBeTruthy();
-    expect(screen.getByText('New round')).toBeTruthy();
+    expect(screen.getByText('New Round')).toBeTruthy();
     expect(screen.queryByText(/Reveal \(/)).toBeNull();
   });
 });

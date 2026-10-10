@@ -158,6 +158,14 @@ export const DRIVE_NEEDS_RECONNECT = chart(
   { types: ['NeedsReconnect'], rising: 'bad' },
 );
 
+export const DRIVE_ACCOUNT_SWITCH = chart(
+  'Drive',
+  'Changed',
+  'Drive Account Switches',
+  'Someone reconnected Drive with a different Google account: switched the mirror to it, or kept the current one.',
+  { types: ['AccountSwitched', 'AccountKept'], rising: 'neutral' },
+);
+
 export const DRIVE_FIRST_MIRROR = chart(
   'Drive',
   'Created',
@@ -263,6 +271,7 @@ export const DRIVE_MIRROR: MetricStack = {
     DRIVE_CHANGES_APPLIED,
     DRIVE_OPEN_WITH,
     DRIVE_NEEDS_RECONNECT,
+    DRIVE_ACCOUNT_SWITCH,
     DRIVE_DISCONNECTED,
   ],
 };

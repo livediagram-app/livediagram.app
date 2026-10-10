@@ -132,6 +132,12 @@ const pulledFile = (io: FakeIo, path = '/work/shop-checkout.livediagram.json'): 
   return parsed.file;
 };
 
+const edit = (io: FakeIo, path: string, change: (file: PullFile) => void) => {
+  const file = pulledFile(io, path);
+  change(file);
+  io.fileMap.set(path, { data: JSON.stringify(file), mode: 0o644 });
+};
+
 describe('pull', () => {
   it('writes the document with every tab, its folder and revision, and keeps read copies', async () => {
     const h = host();
@@ -176,6 +182,35 @@ describe('pull', () => {
     });
     const stepped = await cli(['pull', DOC], h.route, first.io);
     expect(stepped.out).toBe('/work/shop-checkout-aaaa1111.livediagram.json\n');
+    // The file it stepped aside to is its own from then on: pulled again, and guarded as the plain one is.
+    const own = '/work/shop-checkout-aaaa1111.livediagram.json';
+    expect((await cli(['pull', DOC], h.route, first.io)).out).toBe(`${own}\n`);
+    edit(first.io, own, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    expect((await cli(['pull', DOC], h.route, first.io)).err).toContain(
+      `error: ${own} changed here and is not pushed; not overwritten`,
+    );
+    // A file there that is not this document's pull file holds no edits of its own to keep.
+    first.io.fileMap.set(own, { data: 'not a pull file', mode: 0o644 });
+    expect((await cli(['pull', DOC], h.route, first.io)).code).toBe(0);
+    expect(pulledFile(first.io, own).document.id).toBe(DOC);
+  });
+
+  it('refuses to overwrite changes not yet pushed, unless --force drops them', async () => {
+    const h = host();
+    const first = await cli(['pull', DOC], h.route);
+    const path = '/work/shop-checkout.livediagram.json';
+    edit(first.io, path, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    const edited = first.io.fileMap.get(path)!.data;
+    const refused = await cli(['pull', DOC], h.route, first.io);
+    expect(refused.code).toBe(1);
+    expect(refused.err).toContain(`error: ${path} changed here and is not pushed; not overwritten`);
+    expect(refused.err).toContain(
+      `hint: send it: livediagram push ${path}, or drop it: livediagram pull "${DOC}" --force`,
+    );
+    expect(first.io.fileMap.get(path)!.data).toBe(edited);
+    const forced = await cli(['pull', DOC, '--force'], h.route, first.io);
+    expect(forced.code).toBe(0);
+    expect(first.io.fileMap.get(path)!.data).not.toContain('"API"');
   });
 
   it('pulls through a share link, sending its code', async () => {
@@ -208,11 +243,6 @@ describe('push', () => {
     const { io } = await cli(['pull', DOC], h.route);
     return { h, io, path: '/work/shop-checkout.livediagram.json' };
   }
-  const edit = (io: FakeIo, path: string, change: (file: PullFile) => void) => {
-    const file = pulledFile(io, path);
-    change(file);
-    io.fileMap.set(path, { data: JSON.stringify(file), mode: 0o644 });
-  };
 
   it('says so when nothing changed', async () => {
     const { h, io, path } = await pulled();
@@ -362,6 +392,8 @@ describe('a mirror file', () => {
     const after = pulledFile(io, path);
     expect(after.livediagramSync.tabs.main!.rev).toBe(4);
     expect('pulledAt' in after.livediagramSync).toBe(false);
+    // Rewritten in the mirror's canonical form, byte for byte what a sync would write (RL30, RL31).
+    expect(io.fileMap.get(path)!.data).toBe(mirrorFileText(after));
     const view = await cli(['document', 'view', path], h.route, io);
     expect([view.code, view.out]).toEqual([0, expect.stringContaining('rev 4')]);
   });

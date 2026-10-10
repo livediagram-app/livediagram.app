@@ -100,10 +100,57 @@ describe('rewire', () => {
     });
   });
 
+  it('keeps a free to end as it is when only the from end moves', () => {
+    const loose = flowWith((el) =>
+      el.id === 'a1' ? ({ ...el, to: { kind: 'free', x: 300, y: 230 } } as Element) : el,
+    );
+    const a1 = elementOf(applied(run('rewire a1 from=n3', loose)).tab, 'a1');
+    expect(a1).toMatchObject({
+      from: { kind: 'pinned', elementId: 'n3' },
+      to: { kind: 'free', x: 300, y: 230 },
+    });
+  });
+
+  it('keeps an end pinned to a box that is gone as it is', () => {
+    const dangling = flowWith((el) =>
+      el.id === 'a1'
+        ? ({ ...el, from: { kind: 'pinned', elementId: 'gone', anchor: 'e' } } as Element)
+        : el,
+    );
+    const a1 = elementOf(applied(run('rewire a1 to=n3', dangling)).tab, 'a1');
+    expect(a1).toMatchObject({
+      from: { kind: 'pinned', elementId: 'gone', anchor: 'e' },
+      to: { kind: 'pinned', elementId: 'n3' },
+    });
+  });
+
   it('rewires only an arrow, onto a box, unlocked', () => {
     expect(refused(run('rewire n3 to=n4')).details).toEqual(['n3: n3 is not an arrow']);
     expect(refused(run('rewire a1 to=a2')).code).toBe('invalid_value');
     expect(refused(run('rewire nowhere to=n4')).code).toBe('target_not_found');
+    expect(refused(run('rewire a1 from=nowhere')).code).toBe('target_not_found');
+    expect(refused(run('rewire a1 from=a2')).details).toEqual([
+      'a2: a2 is an arrow; arrows connect boxes',
+    ]);
     expect(refused(run('rewire a1 to=n4', lockedFlow('a1'))).code).toBe('element_locked');
+  });
+
+  it('refuses a rewire that would join an arrow to the box at its other end, as connect does', () => {
+    expect(refused(run('rewire a1 to=n1')).details).toEqual([
+      'a1 to=n1: an arrow joins two different boxes',
+    ]);
+    expect(refused(run('rewire a1 from=n2')).code).toBe('invalid_value');
+  });
+
+  it('moves both ends in one operation, so a reversal never passes through a self-loop', () => {
+    const { tab } = applied(run('rewire a1 from=n2 to=n1'));
+    const arrow = tab.elements.find((el) => el.id === 'a1');
+    expect(arrow).toMatchObject({
+      from: { kind: 'pinned', elementId: 'n2' },
+      to: { kind: 'pinned', elementId: 'n1' },
+    });
+    expect(refused(run('rewire a1 from=n3 to=n3')).details).toEqual([
+      'a1 from=n3 to=n3: an arrow joins two different boxes',
+    ]);
   });
 });

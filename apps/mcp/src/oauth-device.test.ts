@@ -11,11 +11,15 @@ import { registerOauthRoutes } from './oauth';
 
 // The device grant (docs/specs/015-api/blueprints/cli.md "The device grant", CLI36).
 
+// `afterGet` runs once a read has taken its value and before it returns it: a stand-in for a stale KV read.
+let afterGet: ((key: string) => Promise<void>) | null = null;
+
 function mockKV(): KVNamespace {
   const m = new Map<string, string>();
   return {
     get: async (k: string, type?: string) => {
       const v = m.get(k);
+      if (afterGet) await afterGet(k);
       if (v == null) return null;
       return type === 'json' ? JSON.parse(v) : v;
     },
@@ -37,7 +41,10 @@ beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
   vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 });
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  afterGet = null;
+  vi.restoreAllMocks();
+});
 
 const form = (fields: Record<string, string>, ip = '1.2.3.4') => ({
   method: 'POST',
@@ -161,6 +168,26 @@ describe('polling', () => {
       expires_in: 3600,
     });
     expect((await poll(s.device_code)).body).toEqual({ error: 'expired_token' });
+  });
+
+  it('never reverts an approval that lands between a poll reading the record and answering it', async () => {
+    const s = await start();
+    expect((await poll(s.device_code)).body).toEqual({ error: 'authorization_pending' });
+    now += 1000;
+    // This poll reads the pending record, then the page approves, then the poll (a slow_down) writes its state.
+    afterGet = async (key) => {
+      if (key !== `device:${s.device_code}`) return;
+      afterGet = null;
+      const done = await app.request(
+        '/oauth/device/complete',
+        json({ userCode: s.user_code, token: 'lvd_race', expiresAt: now + 3_600_000 }),
+        env,
+      );
+      expect(await done.json()).toEqual({ ok: true });
+    };
+    expect((await poll(s.device_code)).body).toEqual({ error: 'slow_down' });
+    now += 60_000;
+    expect((await poll(s.device_code)).body).toMatchObject({ access_token: 'lvd_race' });
   });
 
   it('reports a denial once, and an expired or foreign code', async () => {

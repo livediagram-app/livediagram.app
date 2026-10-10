@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
+import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import type { CommentThread } from '@livediagram/document';
 import type { Item } from '@livediagram/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -100,6 +100,14 @@ describe('adding', () => {
     expect(thread(out)!.comments[0]!.text).toBe('Looks good');
   });
 
+  // docs/specs/012-collaboration/comment-mentions.md "The email": the mention request names the stored comment.
+  it('names the comment it wrote, the one the card now holds', async () => {
+    const res = await post('Names it');
+    expect(res.status).toBe(200);
+    const body = res.body as ItemCommentAddResponse;
+    expect(body.commentId).toBe(thread(body.item)!.comments[0]!.id);
+  });
+
   it('refuses empty or overlong text, and a patch that tries to write comments', async () => {
     expect((await post('   ')).status).toBe(400);
     expect((await post('x'.repeat(2001))).status).toBe(400);
@@ -183,6 +191,41 @@ describe('deleting', () => {
 
     await call({ method: 'DELETE', path: `/items/${item.id}/comments/${opening.id}` });
     expect(events()).toEqual([]);
+  });
+
+  // docs/specs/013-workspace/timeline.md §4.3: a card deleted whole takes every comment's words with it.
+  it('takes a deleted card’s comments off the Timeline, and only its own', async () => {
+    await post('the question');
+    await post('an answer');
+    await call({ path: `/items/${item.id}/comments/resolve` });
+    const other = (
+      await call<ItemResponse>({ path: '/items', body: { type: 'task', fields: { title: 'B' } } })
+    ).body.item;
+    const kept = thread(
+      (await call<ItemResponse>({ path: `/items/${other.id}/comments`, body: { text: 'stays' } }))
+        .body.item,
+    )!.comments[0]!;
+    const count = () =>
+      (
+        sql.sql
+          .prepare(
+            `SELECT COUNT(*) AS n FROM timeline_events
+              WHERE event_type IN ('comment_added', 'comment_resolved')`,
+          )
+          .get() as { n: number }
+      ).n;
+    expect(count()).toBe(4);
+
+    expect((await call({ method: 'DELETE', path: `/items/${item.id}` })).status).toBe(204);
+    expect(
+      sql.sql
+        .prepare(
+          `SELECT event_type, source_id FROM timeline_events
+            WHERE event_type IN ('comment_added', 'comment_resolved')`,
+        )
+        .all()
+        .map((r) => ({ ...r })),
+    ).toEqual([{ event_type: 'comment_added', source_id: kept.id }]);
   });
 });
 

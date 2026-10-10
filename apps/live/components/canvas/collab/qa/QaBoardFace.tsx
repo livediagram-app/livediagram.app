@@ -33,8 +33,8 @@ import { useFlipList } from './useFlipList';
 // anyone in a live session (view links too); the facilitator verbs only for
 // whoever is running the board (docs/specs/012-collaboration/facilitator.md). Everything absent = inert.
 export type QaFaceActions = {
-  // Returns whether the note was sent (false when the board is full).
-  add?: (text: string, anonymous: boolean) => boolean;
+  // Whether the note went in (false when the board is full), or a promise of the server's word.
+  add?: (text: string, anonymous: boolean) => boolean | Promise<boolean>;
   vote?: (noteId: string, on: boolean) => void;
   discuss?: (noteId: string | null) => void;
   close?: (noteId: string) => void;
@@ -104,7 +104,7 @@ export function QaBoardFace({
                   close();
                 }}
               >
-                Clear the spotlight
+                Clear the Spotlight
               </ElementMenuItem>
             ) : null}
             {actions.clear ? (
@@ -114,7 +114,7 @@ export function QaBoardFace({
                   close();
                 }}
               >
-                Empty the board
+                Empty the Board
                 {total ? <CountBadge count={total} /> : null}
               </ElementMenuItem>
             ) : null}
@@ -174,7 +174,7 @@ export function QaBoardFace({
           />
         ) : running && queue.length > 0 ? (
           <AccentBar onPress={() => actions.discuss!(queue[0]!.id)} icon={<DiscussGlyph />}>
-            Discuss the top note
+            Discuss the Top Note
           </AccentBar>
         ) : null}
 

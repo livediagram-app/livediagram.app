@@ -24,9 +24,17 @@ const SHAPE_TO_BRACKET: Record<string, [string, string]> = {
 };
 
 // Element label -> Mermaid quoted-label text. `&` first so the entities it
-// introduces aren't double-escaped; newlines become <br/>.
+// introduces aren't double-escaped; newlines become <br/>. A `#` that would
+// read as an entity code is itself written as one (`#35;`), and `%%` (a
+// comment opener in an unquoted edge label) as `#37;#37;`, so every label
+// round-trips.
 function escapeLabel(label: string): string {
-  return label.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/\n/g, '<br/>');
+  return label
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/#(?=\d+;)/g, '#35;')
+    .replace(/%%/g, '#37;#37;')
+    .replace(/\n/g, '<br/>');
 }
 
 // Mermaid ids must be plain tokens; map our arbitrary element ids to n1, n2…

@@ -207,6 +207,15 @@ describe('validation bounds', () => {
     expect(isValidElement(withFields({ ideaCards: ['a real idea'] }))).toBe(true);
   });
 
+  // docs/specs/012-collaboration/blueprints/idea-box-race.md: ids are bounded, '' marks an id-less card.
+  it('bounds idea card ids', () => {
+    expect(isValidElement(withFields({ ideaCards: ['a', 'b'], ideaCardIds: ['', 'c1'] }))).toBe(
+      true,
+    );
+    expect(isValidElement(withFields({ ideaCardIds: ['x'.repeat(65)] }))).toBe(false);
+    expect(isValidElement(withFields({ ideaCardIds: [7] as unknown as string[] }))).toBe(false);
+  });
+
   it('rejects a bad decision date but keeps an absent one', () => {
     expect(isValidElement(withFields({ decisionDate: 'yesterday' }))).toBe(false);
     expect(isValidElement(withFields({ decisionDate: '2026-01-05' }))).toBe(true);

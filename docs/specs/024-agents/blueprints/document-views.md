@@ -114,7 +114,8 @@ No view reads a clock, a random source or a locale; `overview` takes `now` as an
 `buildViewModel(tab, context)` runs once per render and holds, for the views to read:
 
 1. **Partition.** `partitionVisible(tab)`: an element is **hidden** when `visibleLayerElements` drops it, or when it
-   is an arrow with a pinned end on a hidden element (`VW10`). Everything else is **printed**, unknown kinds
+   is an arrow with a pinned end on a hidden element or an end riding on a hidden arrow, however long the chain
+   (`VW10`), so no printed end names a hidden element's ref. Everything else is **printed**, unknown kinds
    included.
 2. **Refs.** `computeRefs(allElementIds)` over every element of the tab, hidden ones and arrows included (`VW2`),
    so a ref never changes with layer visibility.
@@ -137,7 +138,9 @@ tab ref unique within the document (`VW4`).
   a JSON string (`id:"Node A"`). The edit-operations selector grammar takes the same `id:"…"` token (`VW3`).
 - **Resolution** (`resolveRef(input, table)`), case-sensitive (`VW1`):
   1. an element whose full id equals the input (an `id:"…"` input is unquoted first);
-  2. else every element whose id starts with the input: one is the match, none is `not-found`, several is
+  2. an `id:"…"` input that matched no full id is `not-found` (with its nearest refs): it always carries a full
+     id, so it never falls back to a prefix and never names a longer id after its own element is gone;
+  3. else every element whose id starts with the input: one is the match, none is `not-found`, several is
      `ambiguous` with every candidate.
 - A ref computed by `computeRefs` always resolves to its own element: a slug or a full id wins rule 1, and a prefix
   is unique by construction.
@@ -253,7 +256,8 @@ budget:
   subtree's total, so a step subtracts and adds lengths instead of re-rendering. O(n + c log c) for c containers.
 - The header line and the elision line always print, even when they alone exceed the budget.
 - `fitLines(lines, budget)` fits every other view: whole lines in order until the next would exceed the budget,
-  then the elision line (`VW40`).
+  then the view's closing line, then the elision line (`VW40`). A closing line (`find`'s `<n> matches: …`) is
+  reserved like the header and always prints; only counted lines are dropped, so a cut is never silent.
 
 Invariants:
 
@@ -321,8 +325,13 @@ are escaped as `\;` and `\}` too.
 | `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                                 | `VW21` |
 | `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                      | `VW21` |
 | `checklist`              | `done=<done>/<total>`                                                                       |        |
+| `plan-board`             | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`      |        |
+| `plan-card`              | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                      |        |
+| `plan-view`              | `view=<planView.view as cellText>`, `view=none` when absent                                 |        |
+| `plan-sheet`             | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                  |        |
 
-The table line prints its label first when it has one.
+The table line prints its label first when it has one. Every text a summary prints from the document goes through
+`cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 
@@ -468,7 +477,8 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
 cells, entity field names and types, checklist item text, code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
-arrow prints as an own-line arrow under its source's chain. The last line is
+arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the
+elision line) is
 `<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `field`, `item`, `code`,
 `comment`. No match prints `0 matches`.
 
@@ -488,6 +498,9 @@ the root), a summary `<a> → <b>`, an attribute `<key> <a> → <b>`, `comments 
 A missing label, summary or attribute prints `none` and a flag attribute `on` (`VW63`); a summary change prints the
 two summaries alone. Each change speaks for the stored fields behind it; the others that differ are the other fields.
 Removed lines come first in the before tab's order; added and changed follow in the after tab's order.
+The two reads have two ref tables, and one added id can lengthen another's ref (`0bcd` becomes `0bcd1`), so `in`,
+`from` and `to` compare ids (the container's id, each end's element, arrow or free point); refs are only how a
+change prints (the before tab's for `<a>`, the after tab's for `<b>`).
 
 **`overview`** (`VW37`):
 
@@ -516,10 +529,10 @@ command names only what differs from the current request: `only` the largest col
 `budget` the estimate of the full view, `all` for resolved threads, `view outline` for unconnected graph nodes. It is
 written in the reading door's syntax (`VW54`):
 
-| Door (`door`)   | Command form                                     | Example                         |
-| --------------- | ------------------------------------------------ | ------------------------------- |
-| `cli` (default) | `view` then ` --<flag> <value>` per argument     | `view --only c991`              |
-| `mcp`           | `read_document` then the arguments as one object | `read_document {"only":"c991"}` |
+| Door (`door`)   | Command form                                                                                                      | Example                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `cli` (default) | `view` then ` --<flag> <value>` per argument; a value outside `[A-Za-z0-9_.,:/@%+=-]` single-quoted for the shell | `view --only c991`, `view --only 'id:"Node A"'` |
+| `mcp`           | `read_document` then the arguments as one object                                                                  | `read_document {"only":"c991"}`                 |
 
 ### JSON forms
 
@@ -735,40 +748,41 @@ the tab and its `rev`.
 
 ## Errors and edge cases
 
-| #   | Case                                          | Handling                                                                                         |
-| --- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| E1  | Empty tab                                     | Header `0 elements`, nothing else; never an error                                                |
-| E2  | Unlabelled element                            | Kind word and ref only                                                                           |
-| E3  | Label with newlines, quotes, `→`, `\|`        | Inside a JSON string; `cellText` in tables and entities                                          |
-| E4  | Overlapping containers                        | Smallest area holding the centre; equal areas, the earlier                                       |
-| E5  | Element larger than a frame it overlaps       | Not nested (strict area)                                                                         |
-| E6  | Rotated element                               | Centre of the stored box; `layout` prints `r=`                                                   |
-| E7  | Hidden layer                                  | Left out, counted `· n hidden`; arrows to hidden elements counted with them                      |
-| E8  | Free, on-arrow ends                           | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
-| E9  | Parallel arrows                               | Both on the source line                                                                          |
-| E10 | Self-loop                                     | `→ <own ref>`                                                                                    |
-| E11 | Mind map cycle or dangling parent             | Broken at the lowest index; a dangling parent reads as a root                                    |
-| E12 | Unknown type or shape                         | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
-| E13 | Element without geometry                      | Root, after the rows, in array order                                                             |
-| E14 | Id with unsafe characters                     | `id:"…"` ref                                                                                     |
-| E15 | Id shorter than 4                             | The full id is the ref                                                                           |
-| E16 | Slug id that is another id's prefix           | Exact match wins; the longer id's ref grows past the common prefix                               |
-| E17 | Prefix ambiguous after a collaborator's add   | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                                 |
-| E18 | Ref of a deleted element                      | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                        |
-| E19 | `only` on a non-container                     | The element's line alone                                                                         |
-| E20 | Budget below the header                       | Header and elision line still print                                                              |
-| E21 | Comment thread with zero comments             | Not a thread                                                                                     |
-| E22 | Tab-scoped visitor asks `overview`            | Out-of-scope tabs print `(out of scope)`; their bodies are never read                            |
-| E23 | Tab-scoped visitor asks a view of another tab | The GET's 404, unchanged                                                                         |
-| E24 | `view=diff` asked of the api                  | 400 `unknown_view`, naming the CLI's `tab diff`                                                  |
-| E25 | Trashed document                              | The GET's 410, unchanged                                                                         |
-| E26 | Table with ragged rows                        | Columns = the longest row's length; missing cells print empty                                    |
-| E27 | One bare stroke, or strokes split by a shape  | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
-| E28 | Event-storming note with the `actor` notation | Kind word `es:actor`                                                                             |
-| E29 | CLI cache holds no tab at `--since`           | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
-| E30 | `show selected`, nothing selected on the tab  | 404 `target_not_found`, "nothing is selected"                                                    |
-| E31 | `show selected` when the room cannot be read  | 404 `target_not_found`, "the selection could not be read"                                        |
-| E32 | `show selected` on a pulled file, offline     | As E31: a file has no live selection (`VW68`)                                                    |
+| #    | Case                                           | Handling                                                                                         |
+| ---- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| E1   | Empty tab                                      | Header `0 elements`, nothing else; never an error                                                |
+| E2   | Unlabelled element                             | Kind word and ref only                                                                           |
+| E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables and entities                                          |
+| E4   | Overlapping containers                         | Smallest area holding the centre; equal areas, the earlier                                       |
+| E5   | Element larger than a frame it overlaps        | Not nested (strict area)                                                                         |
+| E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                                   |
+| E7   | Hidden layer                                   | Left out, counted `· n hidden`; arrows to hidden elements counted with them                      |
+| E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
+| E9   | Parallel arrows                                | Both on the source line                                                                          |
+| E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
+| E11  | Mind map cycle or dangling parent              | Broken at the lowest index; a dangling parent reads as a root                                    |
+| E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
+| E13  | Element without geometry                       | Root, after the rows, in array order                                                             |
+| E14  | Id with unsafe characters                      | `id:"…"` ref                                                                                     |
+| E15  | Id shorter than 4                              | The full id is the ref                                                                           |
+| E16  | Slug id that is another id's prefix            | Exact match wins; the longer id's ref grows past the common prefix                               |
+| E17  | Prefix ambiguous after a collaborator's add    | 400 `target_ambiguous`, `stale: true`, candidates; never a guess                                 |
+| E18  | Ref of a deleted element                       | 404 `target_not_found` with nearest refs; the message suggests `tab diff`                        |
+| E18a | `id:"n1"` after `n1` is deleted, `n10` present | `not-found`; never `n10` by prefix                                                               |
+| E19  | `only` on a non-container                      | The element's line alone                                                                         |
+| E20  | Budget below the header                        | Header and elision line still print                                                              |
+| E21  | Comment thread with zero comments              | Not a thread                                                                                     |
+| E22  | Tab-scoped visitor asks `overview`             | Out-of-scope tabs print `(out of scope)`; their bodies are never read                            |
+| E23  | Tab-scoped visitor asks a view of another tab  | The GET's 404, unchanged                                                                         |
+| E24  | `view=diff` asked of the api                   | 400 `unknown_view`, naming the CLI's `tab diff`                                                  |
+| E25  | Trashed document                               | The GET's 410, unchanged                                                                         |
+| E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                                    |
+| E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
+| E28  | Event-storming note with the `actor` notation  | Kind word `es:actor`                                                                             |
+| E29  | CLI cache holds no tab at `--since`            | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
+| E30  | `show selected`, nothing selected on the tab   | 404 `target_not_found`, "nothing is selected"                                                    |
+| E31  | `show selected` when the room cannot be read   | 404 `target_not_found`, "the selection could not be read"                                        |
+| E32  | `show selected` on a pulled file, offline      | As E31: a file has no live selection (`VW68`)                                                    |
 
 ## Security and trust
 
@@ -793,6 +807,15 @@ the tab and its `rev`.
   default budget holds it to `READ_DOCUMENT_DEFAULT_BUDGET` tokens (about 24 KB).
 - Refs O(n log n); reading order O(n log n); containment O(n · c) for c containers, about 10⁶ checks at 100
   containers, measured by the bench below; budget O(n + c log c) on the precomputed cost model.
+- Collapsing containers one at a time keeps the hidden length and the elided totals running and measures the
+  elision line from its named containers and the rest's totals, so each step is O(`ELISION_CONTAINERS_NAMED`):
+  4,000 frames at a budget take about 30 ms (1.2 s when each step rebuilt the fit and its elision line). The
+  result is byte-equal to the step-by-step rebuild.
+- `show` and `show selected` read the content origin and each element's incoming and outgoing arrows from an
+  index built once per model, so a select-all of 8,000 elements takes about 80 ms (3.4 s when each element scanned
+  every arrow). The edge model appends each arrow to its source's list in place.
+- `performance.test.ts` gates these as growth: eight times the containers, or the selection, costs under 24 times
+  as much.
 - The api reads one tab body per view; `overview` holds at most `OVERVIEW_TAB_BATCH` bodies at once (about 15 MB at
   the tab cap) and makes one D1 query per batch.
 - `read_document` makes two service-binding calls (document, view), three with `image: true` (the tab, in parallel).

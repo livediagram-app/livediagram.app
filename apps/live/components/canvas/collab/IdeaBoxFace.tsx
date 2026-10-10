@@ -47,9 +47,9 @@ export function IdeaBoxFace({
   /** The card's own fill, for the accent scope. */
   surface: string;
   // Returns whether the idea went in (false when the box is full).
-  onAddIdea?: (text: string) => boolean;
+  onAddIdea?: (text: string) => boolean | Promise<boolean>;
   onReveal?: () => void;
-  // Empty the box for the next round. It lives in the `…` rather than beside
+  // Empty the Box: clear it for the next round. It lives in the `…` rather than beside
   // Open the box: opening is the act the element exists for, and a Clear
   // sitting next to it is a mis-tap that throws away everything the room wrote.
   onClear?: () => void;
@@ -76,7 +76,7 @@ export function IdeaBoxFace({
                   close();
                 }}
               >
-                Empty the box
+                Empty the Box
                 {cards.length ? <CountBadge count={cards.length} /> : null}
               </ElementMenuItem>
             ) : null}
@@ -122,12 +122,12 @@ export function IdeaBoxFace({
       >
         {!open && onReveal && cards.length > 0 ? (
           <AccentBar onPress={onReveal} icon={<EyeGlyph />} count={cards.length}>
-            Open the box
+            Open the Box
           </AccentBar>
         ) : null}
         {open && onScatter && cards.length > 0 ? (
           <AccentBar onPress={onScatter} icon={<ScatterGlyph />}>
-            Scatter to sticky notes
+            Scatter to Sticky Notes
           </AccentBar>
         ) : null}
 

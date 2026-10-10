@@ -117,12 +117,12 @@ export function MultiPlacementSections({
                 <span className="text-slate-400 dark:text-slate-400">
                   <AspectLockMenuIcon />
                 </span>
-                Lock aspect ratio
+                Lock Aspect Ratio
               </span>
               <ToggleSwitch
                 presentational
                 checked={!!boxedSel[0]!.aspectLocked}
-                label="Lock aspect ratio"
+                label="Lock Aspect Ratio"
               />
             </button>
           </>
@@ -147,7 +147,7 @@ export function MultiPlacementSections({
           </div>
           <div className="px-2 pb-1.5 pt-0.5">
             <MenuActionButton
-              label="Reset aspect ratio"
+              label="Reset Aspect Ratio"
               onClick={() => {
                 props.onResetAspectRatio();
                 onClose();

@@ -15,6 +15,8 @@ type Script = {
   tokenAnswers?: Record<string, unknown>[];
   meta?: Record<string, unknown>;
   noIssuer?: boolean;
+  // Fields over the device authorization answer.
+  device?: Record<string, unknown>;
 };
 
 function host(script: Script = {}) {
@@ -46,6 +48,7 @@ function host(script: Script = {}) {
           verification_uri: 'https://livediagram.app/oauth/device',
           verification_uri_complete: 'https://livediagram.app/oauth/device?code=BCDF-GHJK',
           interval: 5,
+          ...script.device,
         });
       const next = answers.shift() ?? { access_token: NEW, token_type: 'Bearer' };
       return Response.json(next, { status: 'access_token' in next ? 200 : 400 });
@@ -96,7 +99,7 @@ describe('auth login through the browser', () => {
       `Opening ${url.href} in your browser. If it does not open, open it yourself.`,
     );
     expect((await io.visit('http://127.0.0.1:4321/favicon.ico')).status).toBe(404);
-    expect((await io.visit('http://127.0.0.1:4321/callback?state=wrong&code=x')).status).toBe(404);
+    expect((await io.visit('http://127.0.0.1:4321/callback?state=wrong&code=x')).status).toBe(400);
     const page = await io.visit(`http://127.0.0.1:4321/callback?state=${q.get('state')}&code=c1`);
     expect([page.status, page.html]).toEqual([200, expect.stringContaining("You're signed in")]);
     expect(await exit).toBe(0);
@@ -187,6 +190,36 @@ describe('auth login --device', () => {
       });
       expect(await exit).toBe(4);
       expect(io.err()).toContain(words);
+    }
+  });
+
+  it('stops polling once the code has expired, however long the server says pending', async () => {
+    const { io, exit } = await start(['auth', 'login', '--device'], {
+      tokenAnswers: Array.from({ length: 500 }, () => ({ error: 'authorization_pending' })),
+    });
+    expect(await exit).toBe(4);
+    expect(io.err()).toContain('the code expired before it was approved');
+    // DEVICE_CODE_TTL_S (600 s, no expires_in given) at a 5 s interval: 120 polls, never more.
+    expect(io.slept).toHaveLength(120);
+  });
+
+  it('waits as long as the code lives, or DEVICE_CODE_TTL_S when its lifetime is no length', async () => {
+    const pending = Array.from({ length: 500 }, () => ({ error: 'authorization_pending' }));
+    // 30 s at a 5 s interval: 6 polls.
+    const short = await start(['auth', 'login', '--device'], {
+      tokenAnswers: pending,
+      device: { expires_in: 30 },
+    });
+    expect(await short.exit).toBe(4);
+    expect(short.io.slept).toHaveLength(6);
+    for (const expires_in of [0, 'soon']) {
+      const odd = await start(['auth', 'login', '--device'], {
+        tokenAnswers: pending,
+        device: { expires_in },
+      });
+      expect(await odd.exit).toBe(4);
+      expect(odd.io.err()).toContain('the code expired before it was approved');
+      expect(odd.io.slept).toHaveLength(120);
     }
   });
 

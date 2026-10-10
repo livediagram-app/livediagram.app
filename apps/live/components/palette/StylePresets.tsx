@@ -464,11 +464,11 @@ export function ChartPalettePresets({
   );
 }
 
-// Shared "Reset to default" button beneath the preset grids.
+// Shared "Reset to Default" button beneath the preset grids.
 function ResetButton({ onReset }: { onReset: () => void }) {
   return (
     <div className="px-0 pb-1 pt-1.5">
-      <MenuActionButton label="Reset to default" onClick={onReset} />
+      <MenuActionButton label="Reset to Default" onClick={onReset} />
     </div>
   );
 }

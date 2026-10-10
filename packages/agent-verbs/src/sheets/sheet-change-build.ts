@@ -194,10 +194,21 @@ export function buildSheetChange(
         );
       const write = deleteAxis(sheet, rows ? 'r' : 'c', s.from, s.to);
       if (!write) return refuse('range_invalid', 'A sheet keeps at least one row and one column.');
-      const label = rows
-        ? `rows ${s.from + 1}:${s.to + 1}`
-        : `columns ${columnLetters(s.from)}:${columnLetters(s.to)}`;
-      return { ok: true, writes: [write], line: `deleted ${label}` };
+      // What deleteAxis actually deletes: the span as far as the sheet goes, less the last row or column when the
+      // span is all of them (a sheet keeps one). The line says that, not the span asked for.
+      const { changes } = write as Extract<SheetWrite, { kind: 'layout' }>;
+      const deleted = (changes[0] as { ids: string[] }).ids.length;
+      const size = rows ? rowCount : colCount;
+      const name = (at: number) => (rows ? String(at + 1) : columnLetters(at));
+      const noun = rows ? 'row' : 'column';
+      const last = s.from + deleted - 1;
+      const label =
+        deleted === 1 ? `${noun} ${name(s.from)}` : `${noun}s ${name(s.from)}:${name(last)}`;
+      const kept =
+        Math.min(s.to, size - 1) > last
+          ? `; ${noun} ${name(last + 1)} stays, as a sheet keeps one`
+          : '';
+      return { ok: true, writes: [write], line: `deleted ${label}${kept}` };
     }
     case 'rename': {
       const title = change.title.trim();

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { PLAN_BOARD_PRESET_IDS } from '@livediagram/items';
 import { defineVerb, VerbRefusal } from '../define';
 import { addBoard } from '../plan/add-board';
-import { changeBoard } from '../plan/change-board';
+import { changeBoard, EVERY_TYPE } from '../plan/change-board';
 import { documentOf } from './shared';
 
 const csv = (v: string | undefined) =>
@@ -108,7 +108,7 @@ export const boardSet = defineVerb({
   run: async (ctx, input) => {
     const document = await documentOf(ctx, input.doc);
     const columns = csv(input.columns);
-    const types = input.types?.trim().toLowerCase() === 'all' ? [] : csv(input.types);
+    const types = input.types?.trim().toLowerCase() === 'all' ? EVERY_TYPE : csv(input.types);
     const result = await changeBoard(
       ctx.api,
       document.id,
@@ -136,7 +136,7 @@ export const boardSet = defineVerb({
   },
   text: ({ title, columns, takes }) => [
     `~ board ${JSON.stringify(title)}: ${columns.map((c) => c.name).join(' · ')} (takes ${
-      takes === 'every type' ? takes : takes.join(', ')
+      takes === 'every type' ? takes : takes.length ? takes.join(', ') : 'no type'
     })`,
   ],
   quiet: ({ elementId }) => [elementId],

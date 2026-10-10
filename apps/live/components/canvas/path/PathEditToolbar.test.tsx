@@ -48,10 +48,10 @@ describe('PathEditToolbar', () => {
 
   it('deletes, closes and finishes, each with its key', () => {
     const h = renderBar();
-    const del = screen.getByRole('button', { name: 'Delete point' });
+    const del = screen.getByRole('button', { name: 'Delete Point' });
     expect(del.getAttribute('aria-keyshortcuts')).toBe('Delete');
     fireEvent.click(del);
-    fireEvent.click(screen.getByRole('button', { name: 'Close path' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close Path' }));
     const done = screen.getByRole('button', { name: 'Done' });
     expect(done.getAttribute('aria-keyshortcuts')).toBe('Escape');
     fireEvent.click(done);
@@ -66,9 +66,9 @@ describe('PathEditToolbar', () => {
       true,
     );
     expect(
-      (screen.getByRole('button', { name: 'Delete point' }) as HTMLButtonElement).disabled,
+      (screen.getByRole('button', { name: 'Delete Point' }) as HTMLButtonElement).disabled,
     ).toBe(true);
-    expect((screen.getByRole('button', { name: 'Open path' }) as HTMLButtonElement).disabled).toBe(
+    expect((screen.getByRole('button', { name: 'Open Path' }) as HTMLButtonElement).disabled).toBe(
       true,
     );
   });

@@ -91,11 +91,25 @@ describe('reshapeBoard', () => {
     expect(dropped.ok && dropped.setup.doneColumnId).toBeUndefined();
   });
 
+  it('never gives two columns one id, a kept column keeping its own', () => {
+    // Kanban's "In Progress" has the id `doing`; a new "Doing" column slugs to the same id.
+    const kanban = presetSetup('kanban');
+    const r = reshapeBoard(kanban, { columns: ['In Progress', 'Doing', 'Doing 2'] }, [], fixed);
+    if (!r.ok) throw new Error(r.message);
+    const ids = r.setup.columns.map((c) => c.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(r.setup.columns[0]).toBe(kanban.columns.find((c) => c.name === 'In Progress'));
+    expect(ids).toEqual(['doing', 'doing-2', 'doing-2-2']);
+  });
+
   it('sets a title and card types, or every type again', () => {
     const r = reshapeBoard(setup, { title: 'Sprint 15', types: ['task', 'bug'] }, others);
     expect(r).toMatchObject({ ok: true, setup: { title: 'Sprint 15', addTypes: ['task', 'bug'] } });
     const every = reshapeBoard(setup, { types: null }, others);
     expect(every.ok && every.setup.addTypes).toBeUndefined();
+    // An empty list takes none, as the editor's last type turned off does; it never reads as every type.
+    const none = reshapeBoard(setup, { types: [] }, others);
+    expect(none.ok && none.setup.addTypes).toEqual([]);
     expect(reshapeBoard(setup, { title: ' ' }, others)).toMatchObject({ ok: false });
     expect(reshapeBoard(setup, { columns: [] }, others)).toMatchObject({ ok: false });
   });

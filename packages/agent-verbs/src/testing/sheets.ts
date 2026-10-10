@@ -47,19 +47,21 @@ export function sheetJson(
 
 export type SheetServer = {
   sheets: SheetJson[];
-  // Every write body, and every create, in order.
+  // Every write body, every create and every deleted sheet id, in order.
   writes: { sheetId: string; write: SheetWrite; wid?: string }[];
   creates: unknown[];
+  deletes: string[];
   routes: Record<string, unknown>;
 };
 
-// The sheet routes of one document. `refuse` answers a write with that error instead (a 400, or `status`).
+// The sheet routes of one document (list, create, delete, write). `refuse` answers a write with that error instead
+// (a 400, or `status`), from the write after the first `refuseAfter` (every write when absent).
 export function sheetServer(
   documentId: string,
   sheets: SheetJson[],
-  opts: { refuse?: string; status?: number } = {},
+  opts: { refuse?: string; status?: number; refuseAfter?: number } = {},
 ): SheetServer {
-  const server: SheetServer = { sheets, writes: [], creates: [], routes: {} };
+  const server: SheetServer = { sheets, writes: [], creates: [], deletes: [], routes: {} };
   const base = `/documents/${documentId}/sheets`;
   server.routes[base] = async (r: Request) => {
     if (r.method === 'POST') {
@@ -78,7 +80,8 @@ export function sheetServer(
     const sheetId = new URL(r.url).pathname.split('/').at(-2)!;
     const body = (await r.json()) as { write: SheetWrite; wid?: string };
     server.writes.push({ sheetId, ...body });
-    if (opts.refuse) return Response.json({ error: opts.refuse }, { status: opts.status ?? 400 });
+    if (opts.refuse && server.writes.length > (opts.refuseAfter ?? 0))
+      return Response.json({ error: opts.refuse }, { status: opts.status ?? 400 });
     const at = server.sheets.findIndex((s) => s.id === sheetId);
     const landed = applySheetWrite(sheetFromJson(server.sheets[at]!), body.write, {
       now: 0,
@@ -88,12 +91,23 @@ export function sheetServer(
     server.sheets[at] = { ...sheetToJson(landed.sheet), rev };
     return Response.json({ applied: landed.applied, rev, cells: [] });
   };
-  // Every sheet's writes, those made during the test included.
+  const remove = (r: Request) => {
+    if (r.method !== 'DELETE') return Response.json({ error: 'not_found' }, { status: 404 });
+    const sheetId = new URL(r.url).pathname.split('/').at(-1)!;
+    server.deletes.push(sheetId);
+    server.sheets = server.sheets.filter((s) => s.id !== sheetId);
+    return new Response(null, { status: 204 });
+  };
+  // Every sheet's writes and deletes, those made during the test included.
   const isWrites = (key: string | symbol) =>
     typeof key === 'string' && key.startsWith(`${base}/`) && key.endsWith('/writes');
+  const isSheet = (key: string | symbol) =>
+    typeof key === 'string' &&
+    key.startsWith(`${base}/`) &&
+    !key.slice(base.length + 1).includes('/');
   server.routes = new Proxy(server.routes, {
-    has: (target, key) => isWrites(key) || key in target,
-    get: (target, key) => (isWrites(key) ? writes : target[key as string]),
+    has: (target, key) => isWrites(key) || isSheet(key) || key in target,
+    get: (target, key) => (isWrites(key) ? writes : isSheet(key) ? remove : target[key as string]),
     ownKeys: (target) => Reflect.ownKeys(target),
   });
   return server;

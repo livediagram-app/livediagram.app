@@ -39,7 +39,8 @@ const clock = (ms: number) => new Date(ms).toISOString().slice(11, 19);
 export function watchLink(options: WatchOptions): Promise<ExitCode> {
   const { io, ctx, link, host } = options;
   const base = posix.join(link.root, link.mirror.dir);
-  let coverage: Coverage;
+  // Unset until the first pass reads it.
+  let coverage: Coverage | undefined;
   const streams = new Map<string, RoomStream>();
   const timers = new Map<string, () => void>();
   const touched = new Map<string, string | null>();
@@ -63,14 +64,11 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
     for (const [path, id] of result.mirrors) known.set(path, id);
   };
 
-  const pass = async (scope: Scope | null, fresh?: Coverage) => {
-    const result = await runSyncPass({
-      ...options,
-      dryRun: false,
-      coverage: fresh ?? coverage,
-      scope,
-    });
-    coverage = result.coverage;
+  const pass = async (scope: Scope | null) => {
+    const used = coverage;
+    const result = await runSyncPass({ ...options, dryRun: false, coverage: used, scope });
+    // A coverage read that landed while the pass ran is newer than the one the pass used: it stays.
+    if (coverage === used) coverage = result.coverage;
     print(result, scope === null);
   };
 
@@ -104,6 +102,8 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
     );
   };
 
+  // At most one stream per document, a second hearing every change twice and never being stopped: it is called
+  // only for a covered document without one (the first coverage, whose documents are unique, then those unheard).
   const listen = (documentId: string) => {
     const stream = openRoomStream({
       io,
@@ -123,6 +123,7 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
     });
     streams.set(documentId, stream);
     // Moved to the Trash, or its ticket refused: a pass decides `gone` or `unreadable`, and the stream is dropped.
+    // Only a stream never stopped ends so, and until stopped it is still the document's one.
     const drop = () => {
       streams.delete(documentId);
       due({ documents: new Set([documentId]) });
@@ -158,16 +159,17 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
           (fresh) => {
             ctx.log('watch coverage settled');
             if (stopped) return;
-            const before = new Set(coverage.documents.map((d) => d.id));
+            const before = new Set(coverage!.documents.map((d) => d.id));
             const after = new Set(fresh.documents.map((d) => d.id));
             const entered = [...after].filter((id) => !before.has(id));
             const left = [...before].filter((id) => !after.has(id));
             coverage = fresh;
             // Every covered document without a stream gets one: those that entered, and any whose stream ended
             // (trashed then restored, refused, dropped), so a change never waits on a later pass to be noticed.
-            const unheard = [...after].filter((id) => !streams.has(id) && !entered.includes(id));
-            if (unheard.length > 0) ctx.log(`watch relisten ${unheard.length}`);
-            [...entered, ...unheard].forEach(listen);
+            const unheard = [...after].filter((id) => !streams.has(id));
+            const relisten = unheard.filter((id) => !entered.includes(id)).length;
+            if (relisten > 0) ctx.log(`watch relisten ${relisten}`);
+            unheard.forEach(listen);
             for (const id of left) {
               streams.get(id)?.stop();
               streams.delete(id);
@@ -206,7 +208,7 @@ export function watchLink(options: WatchOptions): Promise<ExitCode> {
       .then(async () => {
         if (stopped) return;
         if (link.mirror.level === 'none') return stop();
-        coverage.documents.forEach((d) => listen(d.id));
+        coverage!.documents.forEach((d) => listen(d.id));
         await io.files.mkdir(base);
         // Ctrl-C during the mkdir: its cleanups have run, so nothing more may be registered.
         if (stopped) return;

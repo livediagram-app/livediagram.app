@@ -115,15 +115,19 @@ const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
   test: ['target', 'fields'],
 };
 
-// Members of which exactly one or at most one (`atMostOne`) is given, and how the line form says them.
+// Members of which exactly one, at most one (`atMostOne`) or at least one (`atLeastOne`) is given,
+// and how the line form says them.
 const CHOICES: Readonly<
   Partial<
-    Record<EditOperationName, { members: readonly string[]; atMostOne?: true; inLines: string }>
+    Record<
+      EditOperationName,
+      { members: readonly string[]; atMostOne?: true; atLeastOne?: true; inLines: string }
+    >
   >
 > = {
   add: { members: ['kind', 'element'], inLines: 'add <kind> key=value…' },
   move: { members: ['place', 'by'], inLines: 'a placement such as below=n3, or by=dx,dy' },
-  rewire: { members: ['from', 'to'], inLines: 'from=<x> or to=<y>' },
+  rewire: { members: ['from', 'to'], atLeastOne: true, inLines: 'from=<x>, to=<y> or both' },
   order: { members: ['to', 'above', 'below'], inLines: 'front, back, above=<x> or below=<x>' },
   wrap: { members: ['absorb', 'makeRoom'], atMostOne: true, inLines: 'absorb or make-room' },
 };
@@ -135,8 +139,9 @@ function choiceIssue(name: EditOperationName, raw: Raw): string | null {
     (member) => raw[member] !== undefined && raw[member] !== false,
   );
   if (given.length === 1 || (given.length === 0 && choice.atMostOne)) return null;
+  if (given.length > 1 && choice.atLeastOne) return null;
   const quoted = choice.members.map((member) => `"${member}"`).join(', ');
-  const which = choice.atMostOne ? 'at most' : 'exactly';
+  const which = choice.atMostOne ? 'at most' : choice.atLeastOne ? 'at least' : 'exactly';
   return `${which} one of ${quoted} (in a line: ${choice.inLines})`;
 }
 

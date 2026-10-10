@@ -40,6 +40,7 @@ describe('scanMirrorDir', () => {
           ...handWritten,
           livediagramSync: { tabs: 1 },
         }),
+        '/repo/diagrams/fa.livediagram.json': mirrorFileText(mirrorOf('d7', 'not a url')),
         '/repo/diagrams/sub/g.livediagram.json': mirrorFileText(mirrorOf('d3')),
         '/repo/diagrams/INDEX.md': '',
         '/repo/diagrams/a.md': '',
@@ -58,12 +59,14 @@ describe('scanMirrorDir', () => {
       ['d.livediagram.json', 'local-new'],
       ['e.livediagram.json', 'foreign-host'],
       ['f.livediagram.json', 'invalid'],
+      ['fa.livediagram.json', 'invalid'],
       ['sub/g.livediagram.json', 'tracked'],
     ]);
     expect(scanned[2]).toMatchObject({ message: 'not JSON' });
     expect(scanned[3]).toMatchObject({ documentId: 'd-new' });
     expect(scanned[4]).toMatchObject({ host: 'https://self.example' });
     expect(scanned[5]).toMatchObject({ message: 'not pulled by the CLI (no livediagramSync)' });
+    expect(scanned[6]).toMatchObject({ message: 'livediagramSync.host is not a URL' });
     const tracked = scanned[0]!;
     expect(tracked.class === 'tracked' && tracked.file.document.id).toBe('d1');
     expect(tracked.class === 'tracked' && tracked.hashes.t1!.hash).toMatch(/^[0-9a-f]{64}$/);

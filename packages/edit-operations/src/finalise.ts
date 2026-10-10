@@ -135,17 +135,24 @@ export function containersBehindMembers(elements: readonly Element[]): Element[]
   for (const [id, holder] of deriveContainers(elements)) {
     const container = holder ? byId.get(holder) : undefined;
     // A mind node holds its children by link, not by drawing behind them.
-    if (container && container.type !== 'arrow' && isContainer(container))
-      members.set(container, [...(members.get(container) ?? []), id]);
+    if (!container || container.type === 'arrow' || !isContainer(container)) continue;
+    const held = members.get(container);
+    if (held) held.push(id);
+    else members.set(container, [id]);
   }
   const order = elements.map((el) => el.id);
+  // Each id's index in `order`, kept true as containers move: a move shifts only the range it crosses, so the
+  // pass is linear in the tab plus what actually moves, never a scan of the order per member.
+  const at = new Map(order.map((id, i) => [id, i]));
   const innermostFirst = [...members].sort(([a], [b]) => a.width * a.height - b.width * b.height);
   for (const [container, held] of innermostFirst) {
-    const at = order.indexOf(container.id);
-    const earliest = Math.min(...held.map((id) => order.indexOf(id)));
-    if (earliest > at) continue;
-    order.splice(at, 1);
+    const from = at.get(container.id)!;
+    let earliest = Infinity;
+    for (const id of held) earliest = Math.min(earliest, at.get(id)!);
+    if (earliest > from) continue;
+    order.splice(from, 1);
     order.splice(earliest, 0, container.id);
+    for (let i = earliest; i <= from; i++) at.set(order[i]!, i);
   }
   return order.map((id) => byId.get(id)!);
 }

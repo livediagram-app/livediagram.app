@@ -69,7 +69,7 @@ ringed, because they are the two people who should talk first.
 - **Reveal** flips `responsesRevealed` for everyone. It is not gated on
   everyone having answered: a facilitator waiting on someone who stepped away
   needs to move on, and the count already says who is missing.
-- **New round** empties `responses` and un-reveals, for the next story. It only
+- **New Round** empties `responses` and un-reveals, for the next story. It only
   appears once the card is revealed, in Reveal's place: the revealed board is
   the artefact of the round, and clearing it is a decision, not a press made by
   mistake beside Reveal. Before the reveal there is nothing to clear that a
@@ -94,7 +94,7 @@ rubber stamp after the reveal, and Reveal / Clear pills side by side.
   cascade, sorted low to high.
 - **The one action** is the Q&A board's dashed accent bar, at the foot of the
   card under the cards it acts on: **Reveal** with its count as a badge while
-  hidden, **New round** once revealed. No hover card on either: the label says
+  hidden, **New Round** once revealed. No hover card on either: the label says
   what it does.
 - **Empty**, a quiet line of face-down ghost cards over "No picks yet" and
   "Your pick stays hidden from everyone until the reveal."

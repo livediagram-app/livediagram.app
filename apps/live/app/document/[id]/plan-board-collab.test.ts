@@ -38,7 +38,8 @@ function edit(base: Tab, change: (s: PlanBoardSetup) => PlanBoardSetup) {
   return { tabs: [after], ops: tabBroadcastOps(base, after) };
 }
 
-const receive = (tabs: Tab[], ops: RoomOp[]) => ops.reduce(applyRoomOpToTabs, tabs);
+const receive = (tabs: Tab[], ops: RoomOp[]) =>
+  ops.reduce((ts, op) => applyRoomOpToTabs(ts, op), tabs);
 
 describe('two peers setting up one board', () => {
   const base = tabWith(presetSetup('kanban'));

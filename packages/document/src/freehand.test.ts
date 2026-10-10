@@ -7,6 +7,8 @@ import {
   freehandNormalisedPoints,
   freehandPressures,
   simplifyPolyline,
+  simplifyPolylineMask,
+  simplifyPolylineSurvival,
 } from './index';
 
 // Three pure helpers underpin the pencil tool (docs/specs/008-canvas/canvas-and-palette.md Pencil
@@ -89,6 +91,33 @@ describe('simplifyPolyline', () => {
     const out = simplifyPolyline(loop, 0.5);
     expect(out.length).toBeGreaterThanOrEqual(2);
     expect(out.every((p) => Number.isFinite(p.x) && Number.isFinite(p.y))).toBe(true);
+  });
+});
+
+describe('simplifyPolylineSurvival', () => {
+  it('keeps exactly what the mask keeps, at every tolerance', () => {
+    // A scribble with sharp corners, straight runs, repeated points and a split that beats its parent.
+    const points = [
+      ...Array.from({ length: 400 }, (_, i) => ({
+        x: (i % 40) + Math.sin(i) * 3,
+        y: Math.floor(i / 40) * 2 + Math.cos(i * 1.7) * 3,
+      })),
+      { x: 50, y: 50 },
+      { x: 50, y: 50 },
+      { x: 60, y: 50 },
+      { x: 70, y: 50 },
+    ];
+    const survival = simplifyPolylineSurvival(points);
+    for (const t of [0.01, 0.1, 0.2, 0.4, 0.8, 1.6, 3.2, 6.4, 12.8, 100]) {
+      expect(Array.from(survival, (s) => s > t * t)).toEqual(simplifyPolylineMask(points, t));
+    }
+  });
+
+  it('survives any tolerance at the ends and none on a straight run', () => {
+    expect(simplifyPolylineSurvival([])).toHaveLength(0);
+    expect(Array.from(simplifyPolylineSurvival([{ x: 1, y: 1 }]))).toEqual([Infinity]);
+    const line = [0, 1, 2, 3].map((x) => ({ x, y: 0 }));
+    expect(Array.from(simplifyPolylineSurvival(line))).toEqual([Infinity, 0, 0, Infinity]);
   });
 });
 

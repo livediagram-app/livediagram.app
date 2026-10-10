@@ -1,5 +1,7 @@
 import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
+import { createEraseFrameReader } from '@/lib/erase-frame';
+import { useLatest } from '@/hooks/ui/useLatest';
 import { peerPushTarget } from '@/lib/avatar-walk';
 import { avatarScale, parseAvatarConfig } from '@/lib/avatar-config';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -88,6 +90,9 @@ export function useCanvasSurfaceGestures({
   onDeselect: () => void;
   onCanvasDoubleClick: (x: number, y: number) => void;
 }) {
+  // The live view, for an erase sweep's frame reader (lib/erase-frame): read per sample, after
+  // any pan or zoom since the press.
+  const viewRef = useLatest({ offset: viewportOffset, zoom: viewportZoom });
   // Which peer's character a click landed on, plus where to stand and which way
   // to shove. The decision itself is pure (see peerPushTarget); this only feeds
   // it the peers as the presence packets describe them.
@@ -279,11 +284,13 @@ export function useCanvasSurfaceGestures({
       focusCanvas();
       e.preventDefault();
       e.stopPropagation();
-      const rect = wrapperRef.current?.getBoundingClientRect();
       onEraseStart?.(
         e.clientX,
         e.clientY,
-        rect ? { left: rect.left, top: rect.top, zoom: viewportZoom } : undefined,
+        createEraseFrameReader(
+          () => viewRef.current,
+          () => wrapperRef.current?.getBoundingClientRect(),
+        ),
       );
       return;
     }

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { headlineCase } from '@livediagram/api-schema';
 import { EVENT_STORMING_NOTES } from '@livediagram/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { BEHAVIOUR_GROUPS } from './palette-create-tabs';
@@ -63,7 +64,7 @@ describe('event-storming tiles', () => {
         fill: note.fill,
         esKind: note.kind,
       });
-      expect(tile.label, note.kind).toContain(note.label);
+      expect(tile.label, note.kind).toBe(`Add ${headlineCase(note.label)} Note`);
     }
   });
 

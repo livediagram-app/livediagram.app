@@ -5,18 +5,37 @@
 // concern, distinct from the canvas/SVG renderers; it just needs the rendered
 // pixels from renderTabToCanvas.
 import type { LaidOutPage, Tab } from '@livediagram/document';
-import { renderTabToCanvas, type ImageExportOpts } from './export-tab';
+import { renderedExportScale, renderTabToCanvas, type ImageExportOpts } from './export-tab';
 
 export async function exportTabAsPdf(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const canvas = await renderTabToCanvas(tab, opts);
-  // One page sized to fit the image at ~72 dpi: a pixel to a point.
   return assemblePdf([
-    { ...(await pdfImage(canvas)), mediaW: canvas.width, mediaH: canvas.height },
+    {
+      ...(await pdfImage(canvas)),
+      ...singlePageMedia(canvas.width, canvas.height, renderedExportScale(canvas)),
+    },
   ]);
 }
 
 // CSS px to PDF points (96 to 72 per inch): an A4 page is 595 x 842 pt, as printed.
 const PT_PER_PX = 0.75;
+// The largest page side a PDF holds (the PDF 1.4 limit, 200 inches).
+export const MAX_PDF_PAGE_PT = 14400;
+
+/** A single-page PDF's page in points: the canvas at its CSS size (pixels / render scale) at
+ *  0.75 pt per px, so it prints at the size it shows rather than at the render's 2x; a page past
+ *  the PDF limit shrinks uniformly to fit it. The image keeps every pixel either way. */
+export function singlePageMedia(
+  pixelW: number,
+  pixelH: number,
+  scale: number,
+): { mediaW: number; mediaH: number } {
+  const w = (pixelW / scale) * PT_PER_PX;
+  const h = (pixelH / scale) * PT_PER_PX;
+  const fit = Math.min(1, MAX_PDF_PAGE_PT / Math.max(w, h, 1));
+  const pt = (n: number) => Math.max(1, Math.round(n * fit * 100) / 100);
+  return { mediaW: pt(w), mediaH: pt(h) };
+}
 
 /** An Illustrate tab's pages as one PDF (docs/specs/007-editor/illustrate-pages.md "Export"):
  *  every page in row order, one PDF page each at its own size and orientation in print points,

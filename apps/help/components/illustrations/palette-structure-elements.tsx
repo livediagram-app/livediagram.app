@@ -161,7 +161,7 @@ export function LaneCarry() {
 // appearances, the way stickies keep their colour on the canvas.
 const NOTES: { label: string; blurb: string; fill: string; size: 'square' | 'wide' | 'small' }[] = [
   {
-    label: 'Domain event',
+    label: 'Domain Event',
     blurb: 'Something that happened, past tense',
     fill: 'fill-orange-300',
     size: 'square',
@@ -175,13 +175,13 @@ const NOTES: { label: string; blurb: string; fill: string; size: 'square' | 'wid
   { label: 'Actor', blurb: 'Who issues the command', fill: 'fill-yellow-200', size: 'small' },
   { label: 'Policy', blurb: 'Whenever X happens, then Y', fill: 'fill-purple-300', size: 'wide' },
   {
-    label: 'Read model',
+    label: 'Read Model',
     blurb: 'Information the actor decides on',
     fill: 'fill-green-300',
     size: 'square',
   },
   {
-    label: 'External system',
+    label: 'External System',
     blurb: 'A third party the flow touches',
     fill: 'fill-pink-300',
     size: 'wide',
@@ -195,7 +195,7 @@ const NOTES: { label: string; blurb: string; fill: string; size: 'square' | 'wid
   },
 ];
 
-/** The palette on an event-storming board: no header band, Add from photo
+/** The palette on an event-storming board: no header band, Add from Photo
  *  above a rule, then one row per note kind with its stationery silhouette. */
 export function EventStormingPalette() {
   const px = 60;
@@ -205,7 +205,7 @@ export function EventStormingPalette() {
   return (
     <Scene w={420} h={304} bg="plain">
       <Panel x={px} y={py} w={pw} h={284} />
-      {/* Add from photo: a camera, the row's name and its line. */}
+      {/* Add from Photo: a camera, the row's name and its line. */}
       <rect x={px + 12} y={py + 10} width={24} height={24} rx={6} className="fill-slate-100" />
       <path
         d={`M${px + 17} ${py + 18}h3l1.5-2h5l1.5 2h3v9h-14z`}
@@ -220,7 +220,7 @@ export function EventStormingPalette() {
         strokeWidth={1.3}
       />
       <Label x={px + 44} y={py + 16} size={11} weight={600} tone="strong">
-        Add from photo
+        Add from Photo
       </Label>
       <Label x={px + 44} y={py + 29} size={10} tone="muted">
         Read the stickies off a photo of the wall

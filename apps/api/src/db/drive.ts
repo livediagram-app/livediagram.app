@@ -22,6 +22,10 @@ type ConnectionRow = {
   connected_at: number;
   lease_holder: string | null;
   lease_expires_at: number | null;
+  google_account_id: string | null;
+  pending_refresh_token_enc: string | null;
+  pending_google_account_id: string | null;
+  pending_expires_at: number | null;
 };
 
 type ItemRow = {
@@ -48,7 +52,11 @@ export class DriveItemConflictError extends Error {
   }
 }
 
-function toConnection(row: ConnectionRow): DriveConnection {
+function toConnection(row: ConnectionRow, now: number): DriveConnection {
+  const pendingLive =
+    row.pending_refresh_token_enc !== null &&
+    row.pending_expires_at !== null &&
+    row.pending_expires_at > now;
   return {
     status: row.status,
     hasRefreshToken: row.refresh_token_enc !== null,
@@ -56,6 +64,7 @@ function toConnection(row: ConnectionRow): DriveConnection {
     pageToken: row.page_token,
     pageTokenSavedAt: row.page_token_saved_at,
     connectedAt: row.connected_at,
+    pendingAccountSwitch: pendingLive ? { expiresAt: row.pending_expires_at! } : null,
   };
 }
 
@@ -85,9 +94,10 @@ async function connectionRow(env: Env, ownerId: string): Promise<ConnectionRow |
 export async function getDriveConnection(
   env: Env,
   ownerId: string,
+  now: number = Date.now(),
 ): Promise<DriveConnection | null> {
   const row = await connectionRow(env, ownerId);
-  return row ? toConnection(row) : null;
+  return row ? toConnection(row, now) : null;
 }
 
 // The sealed refresh token, for the broker only. Never part of a response.
@@ -97,7 +107,8 @@ export async function getSealedRefreshToken(env: Env, ownerId: string): Promise<
 
 // A consent in broker mode: store the sealed token, mark the connection
 // connected. A reconnect keeps the root folder and page token, which are
-// still valid for the same Google account's files.
+// still valid for the same Google account's files. A consent by another
+// account never reaches here: it waits as a pending switch (db/drive-account.ts).
 export async function upsertBrokerConnection(
   env: Env,
   ownerId: string,

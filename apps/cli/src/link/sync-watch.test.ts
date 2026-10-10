@@ -163,6 +163,46 @@ describe('sync --watch', () => {
     expect(await done).toBe(0);
   });
 
+  // A coverage read that lands while a pass is under way is kept: the pass never puts back the coverage it started
+  // with, so the next read does not see the same document enter again and open a second stream to it.
+  it('keeps a coverage read made during a pass, and never streams one document twice', async () => {
+    const host = linkHost([hostDoc('d-home', 'Home', { folderId: 'games' })], folders);
+    let gate: Promise<void> | null = null;
+    let release = () => {};
+    const io = fakeIo({
+      env: { LIVEDIAGRAM_TOKEN: TOKEN },
+      routes: [
+        async (_request, url) => {
+          if (gate && url.pathname.endsWith('/documents/d-home')) await gate;
+          return undefined;
+        },
+        host.route,
+      ],
+      files: {
+        '/work/livediagram.toml': '[covers]\nfolder = "games"\n[mirror]\nlevel = "files"\n',
+      },
+    });
+    const done = run(['sync', '--watch'], io);
+    await until(() => io.sockets.length === 1);
+    socketOf(io, 'd-home').open();
+    gate = new Promise((resolve) => (release = resolve));
+    host.edit('d-home');
+    socketOf(io, 'd-home').send(changed('d-home-t1'));
+    await io.advance(WAIT_SETTLE_MS);
+    await flush();
+    host.docs.push(hostDoc('d-new', 'New', { folderId: 'games' }));
+    await io.advance(SYNC_WATCH_COVERAGE_MS - WAIT_SETTLE_MS);
+    await until(() => io.sockets.length === 2);
+    gate = null;
+    release();
+    await until(() => io.fileMap.has('/work/diagrams/new.livediagram.json'));
+    await io.advance(SYNC_WATCH_COVERAGE_MS);
+    await flush();
+    expect(io.sockets.filter((s) => s.url.includes('/documents/d-new/'))).toHaveLength(1);
+    io.interrupt();
+    expect(await done).toBe(0);
+  });
+
   // A covered document whose stream ended (trashed, then restored before coverage was read again) is listened to
   // again on the next coverage read, so its changes arrive live rather than never.
   it('listens again to a covered document whose stream ended', async () => {

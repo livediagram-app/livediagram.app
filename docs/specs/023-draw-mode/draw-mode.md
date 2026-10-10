@@ -594,6 +594,11 @@ author sets on an element on purpose still plays.
   fragment.
 - A stroke the browser cancels (`pointercancel`, for example when the system
   takes the touch over) is discarded.
+- A stroke the tab leaves Draw mode during (one's own Shift+D or switch, a
+  collaborator's switch, an undo or redo that switches) is finished first: it
+  lands as drawn so far ([Editor modes](../007-editor/editor-modes.md)
+  "Everyone follows a switch"). Putting the pen down mid-stroke (Escape,
+  another tool) discards it.
 - Only the pointer that started a stroke draws it; another finger landing
   meanwhile is a pinch or pan, never part of the stroke.
 - Palm rejection beyond this is the browser's; no timing heuristics.
@@ -615,10 +620,23 @@ The eraser offers **both** modes, switched in its flyout:
   the stroke into the pieces either side. Pieces are new `freehand` elements
   with the original's colour, width and layer; one gesture is one undo, as
   for every eraser gesture ([Eraser panel](../008-canvas/eraser-panel.md)).
+  **The ink a piece keeps stays where it was drawn**: a piece holds the
+  original stroke's own samples plus the point where the brush's edge cut it,
+  never a resampled copy (the ink's smoothing reads the sample spacing, so
+  resampled ink would shift), and a stroke erased again and again never gains
+  points.
+  **Arrows pinned to a stroke follow the cut** in the same undo step: a stroke
+  erased whole takes the arrows pinned to it, as Stroke mode does; a stroke
+  split into pieces leaves each arrow end pinned to it as a free end where it
+  was drawn, so no arrow is left pointing at a stroke that is gone.
   Partial applies to strokes only; a sticky, text or shape under a partial
   brush is untouched.
 - The brush is a fixed size per mode (`WHITEBOARD_ERASER_RADIUS_PX`), shown
-  as the eraser's ring; a whiteboard eraser has no size or target setting.
+  as the eraser's ring; a whiteboard eraser has no size, target or Tap
+  setting, and always sweeps: the Diagram eraser's panel settings never reach
+  it.
+- The brush stays under the pointer through a pan or zoom mid-sweep (a wheel
+  or a pinch while erasing).
 - Locked elements and locked or hidden layers stay protected, as everywhere.
 
 ## Shape recognition

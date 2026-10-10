@@ -57,6 +57,46 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     });
   });
 
+  it('reads an unquoted value that starts with a digit but is not a number as a string (EO19)', () => {
+    expect(one('set n1 label=2FA')).toMatchObject({ fields: { label: '2FA' } });
+    expect(one('set n1 label=3D note=1st')).toMatchObject({ fields: { label: '3D', note: '1st' } });
+    expect(one('set n1 label=1.2.3 width=-12.5e1')).toMatchObject({
+      fields: { label: '1.2.3', width: -125 },
+    });
+    expect(one('set n1 label=truer locked=false')).toMatchObject({
+      fields: { label: 'truer', locked: false },
+    });
+  });
+
+  it('reads quoted labels on either side of a joined -> (rm, connect)', () => {
+    expect(one('rm "Login"->"Address"')).toEqual({ op: 'rm', target: '"Login"->"Address"' });
+    expect(one('connect "Sign in"->"Pay" label=a->b')).toEqual({
+      op: 'connect',
+      from: '"Sign in"',
+      to: '"Pay"',
+      fields: { label: 'a->b' },
+    });
+    expect(one("connect n1->'Pay now'")).toMatchObject({ from: 'n1', to: "'Pay now'" });
+    // A -> inside quotes is text, an escaped \" never closes a double quote, and \ is literal in single quotes.
+    expect(one(`connect "Say \\"hi\\"->x"->'a\\b'`)).toMatchObject({
+      from: '"Say \\"hi\\"->x"',
+      to: "'a\\b'",
+    });
+  });
+
+  it('refuses a connect with more than two ends rather than dropping one', () => {
+    for (const line of [
+      'connect a->b->c',
+      'connect a -> b -> c',
+      'connect a->b -> c',
+      'connect a->b c->d',
+    ]) {
+      const [error] = errorsOf(line);
+      expect(error!.code).toBe('parse_error');
+      expect(error!.details.join(' ')).toContain('one -> in connect: <a> -> <b>');
+    }
+  });
+
   it('reads rm, move, connect and rewire', () => {
     expect(one('rm n7 all keep-arrows')).toEqual({
       op: 'rm',
@@ -290,6 +330,7 @@ describe('formatOperation round trip', () => {
     'connect n3 -> verify id=a9 label=ok again',
     'rewire a3 from=n1',
     'rewire a3 to="Orders DB"',
+    'rewire a3 from=n1 to="Orders DB"',
     'insert diamond label=Valid? between n3 "Orders DB"',
     'wrap n3 type:sticky in frame label=Services absorb',
     'unwrap f2',
@@ -320,6 +361,7 @@ describe('formatOperation round trip', () => {
       'connect n3 -> verify id=a9 label=ok again',
       'rewire a3 from=n1',
       'rewire a3 to="Orders DB"',
+      'rewire a3 from=n1 to="Orders DB"',
       'insert diamond label=Valid? between n3 "Orders DB"',
       'wrap n3 type:sticky in frame label=Services absorb',
       'unwrap f2',
@@ -331,6 +373,24 @@ describe('formatOperation round trip', () => {
       'test n3 label=Login',
       '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
     ]);
+  });
+
+  it('prints a wrap of two compound selectors as its JSON form, which parses back alike', () => {
+    const wrap: EditOperation = {
+      op: 'wrap',
+      targets: ['n3', 'type:sticky', 'type:square in:f2'],
+      in: 'frame',
+    };
+    const printed = formatOperation(wrap);
+    expect(printed.startsWith('{')).toBe(true);
+    expect(operationsOf(printed)).toEqual([wrap]);
+  });
+
+  it('refuses gap: with no number rather than reading 0', () => {
+    for (const line of ['add square below:n3 gap:', 'add square below:n3 gap:wide']) {
+      const [error] = errorsOf(line);
+      expect(error!.details.join(' ')).toContain('a number after gap:');
+    }
   });
 
   it('prints an add with no fields and no placement', () => {

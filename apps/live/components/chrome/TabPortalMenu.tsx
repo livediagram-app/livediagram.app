@@ -328,7 +328,7 @@ export function PortalMenu({
             <div ref={setDeleteRow} className="ml-auto flex items-center gap-0.5">
               <MenuToolButton
                 icon={<TabLockIcon />}
-                label={locked ? 'Unlock tab' : 'Lock tab'}
+                label={locked ? 'Unlock Tab' : 'Lock Tab'}
                 description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
                 onClick={onToggleLock}
                 active={locked}

@@ -37,7 +37,7 @@ function setup(zoom = 1) {
   const onCommitFreehand = vi.fn();
   let renders = 0;
   const hook = renderHook(
-    (p: { pendingDraw: PendingDraw | null }) => {
+    (p: { pendingDraw: PendingDraw | null; whiteboard?: boolean }) => {
       renders++;
       return useWhiteboardPenGesture({
         pendingDraw: p.pendingDraw,
@@ -45,9 +45,15 @@ function setup(zoom = 1) {
         viewportZoom: zoom,
         isPinchingRef,
         onCommitFreehand,
+        whiteboard: p.whiteboard ?? true,
       });
     },
-    { initialProps: { pendingDraw: PEN as PendingDraw | null } },
+    {
+      initialProps: { pendingDraw: PEN } as {
+        pendingDraw: PendingDraw | null;
+        whiteboard?: boolean;
+      },
+    },
   );
   const press = (x: number, y: number, pointerType = 'mouse', pressure = 0.5) =>
     act(() => {
@@ -171,6 +177,31 @@ describe('useWhiteboardPenGesture', () => {
     s.send(pointer('pointerup', { x: 30, y: 20 }));
     expect(s.onCommitFreehand).not.toHaveBeenCalled();
     expect(debug).toHaveBeenCalledWith('[whiteboard] stroke discarded: pen put down');
+  });
+
+  // docs/specs/007-editor/editor-modes.md "Everyone follows a switch": a stroke in progress is
+  // finished first.
+  it('lands the stroke drawn so far when the tab leaves Draw mode mid-stroke', () => {
+    const debug = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const s = setup();
+    s.press(10, 20);
+    s.send(pointer('pointermove', { x: 30, y: 20 }));
+    s.send(pointer('pointermove', { x: 50, y: 20 }));
+    // The switch reaches the canvas with the pen still in hand; the editor puts it down after.
+    s.hook.rerender({ pendingDraw: PEN, whiteboard: false });
+    expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
+    expect(s.onCommitFreehand.mock.calls[0]![0]).toEqual([
+      { x: 0, y: 0 },
+      { x: 20, y: 0 },
+      { x: 40, y: 0 },
+    ]);
+    expect(s.hook.result.current.penStroke).toBeNull();
+    s.hook.rerender({ pendingDraw: null, whiteboard: false });
+    // The lift that follows adds nothing.
+    s.send(pointer('pointerup', { x: 70, y: 20 }));
+    expect(s.onCommitFreehand).toHaveBeenCalledTimes(1);
+    expect(debug).toHaveBeenCalledWith('[whiteboard] stroke finished: mode switched');
+    expect(debug).not.toHaveBeenCalledWith('[whiteboard] stroke discarded: pen put down');
   });
 
   it('logs each committed stroke with its pointer, samples and pressure', () => {

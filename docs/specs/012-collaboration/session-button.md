@@ -115,7 +115,7 @@ Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): 
 
 ## One tile per tool in the palette
 
-The palette offers **Timer**, **Stopwatch**, **Dot vote** and **Poll** as separate
+The palette offers **Timer**, **Stopwatch**, **Dot Vote** and **Poll** as separate
 tiles in Collaborate. There is no Session group: a dot vote and a poll ask the
 room, so they sit in **Ask** beside the estimate card and the temperature
 check; a timer and a stopwatch are facilitation, so they sit in **Tools** beside

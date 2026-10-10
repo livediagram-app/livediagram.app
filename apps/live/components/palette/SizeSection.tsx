@@ -107,14 +107,14 @@ export function SizeSection({
         <SizeField label="Height" value={height} onCommit={(n) => onSetSize({ height: n })} />
       </div>
       <MenuToggleRow
-        label="Lock aspect ratio"
+        label="Lock Aspect Ratio"
         description="Typing one dimension carries the other"
         checked={aspectLocked}
         onToggle={onToggleAspectLock}
       />
       {showReset ? (
         <div className="px-2 pb-1.5 pt-0.5">
-          <MenuActionButton label="Reset aspect ratio" onClick={onResetAspectRatio} />
+          <MenuActionButton label="Reset Aspect Ratio" onClick={onResetAspectRatio} />
         </div>
       ) : null}
     </>

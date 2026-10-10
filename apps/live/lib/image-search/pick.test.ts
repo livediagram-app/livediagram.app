@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ImportImageOutcome, ImportImageSource } from '../import-images';
+import { IMPORT_IMAGE_MAX_SOURCE_BYTES } from '../import-images/constants';
 import type { OpenverseImage } from './openverse';
 import { pickFailureMessage, storeSearchResult, type PickStore } from './pick';
 
@@ -129,6 +130,26 @@ describe('storeSearchResult', () => {
       failure: 'download-failed',
     });
     expect(store).not.toHaveBeenCalled();
+  });
+
+  it('refuses a full picture declared over the source cap as too-large, without the thumbnail', async () => {
+    const store = storeReturning();
+    const fetchImpl = fetchFrom({
+      [result.url]: () =>
+        new Response(new Uint8Array([1]), {
+          headers: {
+            'content-type': 'image/jpeg',
+            'content-length': String(IMPORT_IMAGE_MAX_SOURCE_BYTES + 1),
+          },
+        }),
+      [result.thumbnail]: () => image(),
+    });
+    expect(await storeSearchResult(result, store, fetchImpl)).toEqual({
+      ok: false,
+      failure: 'too-large',
+    });
+    expect(store).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -6,7 +6,7 @@ import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
-import { insertTabsAfter, templateFollowerTabs } from './template-tab-set';
+import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 type TemplatePickerMode = 'welcome' | 'templates' | 'identity';
@@ -206,24 +206,25 @@ export function useTemplateFlow(opts: {
     // A Plan template's boards bring their card types, every tab's (docs/specs/026-plan/plan-templates.md "Card
     // types a template uses"), before the tabs land.
     bringCardTypes([...elements, ...followers.flatMap((f) => f.elements)]);
-    commitTabs((ts) => {
-      const active = ts.find((t) => t.id === activeId);
-      if (!active) return ts;
-      const backdrop =
-        theme && themeId ? switchThemeBackdrop(active, getTheme(active.theme), theme) : null;
-      const landed: Tab = {
-        ...active,
-        elements,
-        templateChosen: true,
-        ...(first!.name ? { name: first!.name } : {}),
-        ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
-        ...overrides,
-        ...(opensIn ? { opensIn } : {}),
-      };
-      const next = ts.map((t) => (t.id === activeId ? landed : t));
-      const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
-      return insertTabsAfter(next, activeId, templateFollowerTabs(landed, followers, withMode));
-    });
+    // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's
+    // element while the builders loaded, and the scaffold must never replace it.
+    commitTabs((ts) =>
+      landTemplateOnTab(ts, activeId, (active) => {
+        const backdrop =
+          theme && themeId ? switchThemeBackdrop(active, getTheme(active.theme), theme) : null;
+        const landed: Tab = {
+          ...active,
+          elements,
+          templateChosen: true,
+          ...(first!.name ? { name: first!.name } : {}),
+          ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
+          ...overrides,
+          ...(opensIn ? { opensIn } : {}),
+        };
+        const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
+        return { landed, followers: templateFollowerTabs(landed, followers, withMode) };
+      }),
+    );
     for (const f of followers) markTabLoaded(f.id);
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();

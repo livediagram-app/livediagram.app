@@ -146,6 +146,9 @@ export async function notifyMentioned(
     commentText: string;
     // A Plan card's comment: the card the button opens.
     itemId?: string;
+    // A Plan card's stored comment, read by the route: the claim names it in place of the text, so the same
+    // comment emails each recipient once however the request is worded.
+    commentId?: string;
   },
 ): Promise<void> {
   if (!emailEnabled(env)) return;
@@ -162,7 +165,7 @@ export async function notifyMentioned(
     input.document.id,
     input.itemId ?? null,
     input.recipientUserId ?? `mail:${to}`,
-    input.commentText,
+    input.commentId ? `comment:${input.commentId}` : input.commentText,
   ]);
   if (!claimed) return;
   await sendEmail(env, {

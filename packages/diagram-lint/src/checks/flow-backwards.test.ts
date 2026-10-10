@@ -18,7 +18,7 @@ describe('flow-backwards', () => {
         severity: 'info',
         refs: ['back'],
         message: 'd→a points up, against the flow down',
-        fix: 'rewire back from=a; rewire back to=d',
+        fix: 'rewire back from=a to=d',
       },
     ]);
   });

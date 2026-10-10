@@ -66,7 +66,7 @@ export function CollabCard({
 }
 
 /** The dashed accent bar every modern Collaborate card uses for its one
- *  action (Reveal, Open the box, Take roll, Add Action). */
+ *  action (Reveal, Open the Box, Take Roll, Add Action). */
 function AccentBar({
   x,
   y,
@@ -408,7 +408,7 @@ export function TemperatureCheckCard() {
   );
 }
 
-/** An idea box while it is closed: a count, nothing else, Open the box above
+/** An idea box while it is closed: a count, nothing else, Open the Box above
  *  the sealed panel, and the composer with its Anonymous chip at the foot. */
 export function IdeaBoxCard() {
   const x = 100;
@@ -419,7 +419,7 @@ export function IdeaBoxCard() {
     <Scene w={420} h={222}>
       <CollabCard x={x} y={y} w={w} h={198} title="What slowed us down?" aside="7 IDEAS">
         {/* The facilitator's one action, the Q&A board's dashed accent bar. */}
-        <AccentBar x={x + 12} y={y + 40} w={w - 24} label="Open the box (7)" />
+        <AccentBar x={x + 12} y={y + 40} w={w - 24} label="Open the Box (7)" />
         {/* Sealed: a lock, the count, and no text. */}
         <rect
           x={x + 12}
@@ -752,7 +752,7 @@ export function RollCallCard() {
             </g>
           );
         })}
-        <AccentBar x={x + 12} y={y + 156} w={w - 24} label="Take again" />
+        <AccentBar x={x + 12} y={y + 156} w={w - 24} label="Take Again" />
       </CollabCard>
     </Scene>
   );

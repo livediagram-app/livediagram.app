@@ -216,3 +216,46 @@ describe('DetailsView', () => {
     );
   });
 });
+
+// docs/specs/013-workspace/explorer-details-view.md "Preview on a resting hover": the row is the
+// trigger, keyboard focus of the name opens it at once, and the row's menu button does not.
+describe('DetailsView preview', () => {
+  let now = Date.UTC(2030, 0, 1);
+  beforeEach(() => {
+    vi.useFakeTimers();
+    // Past any warm-up an earlier case left, so the delay applies.
+    now += 60_000;
+    vi.setSystemTime(now);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  const previewHint = () => document.querySelector('[data-hint="preview"]');
+
+  it('opens after a resting hover anywhere on the row', () => {
+    render(<DetailsView {...view([doc('Roadmap')])} />);
+    const sizeCell = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[4]!;
+    fireEvent.pointerEnter(sizeCell, { pointerType: 'mouse' });
+    expect(previewHint()).toBeNull();
+    act(() => vi.advanceTimersByTime(600));
+    expect(previewHint()?.textContent).toContain('Roadmap');
+  });
+
+  it('opens at once on keyboard focus of the name, but not of the menu button', () => {
+    // jsdom has no keyboard-modality heuristic: count every focus as keyboard-visible.
+    const matches = Element.prototype.matches;
+    vi.spyOn(Element.prototype, 'matches').mockImplementation(function (
+      this: Element,
+      selector: string,
+    ) {
+      return selector === ':focus-visible' || matches.call(this, selector);
+    });
+    render(<DetailsView {...view([doc('Roadmap')])} />);
+    fireEvent.focus(screen.getByRole('button', { name: 'Menu for Roadmap' }));
+    expect(previewHint()).toBeNull();
+    fireEvent.focus(screen.getByRole('link', { name: 'Roadmap' }));
+    expect(previewHint()?.textContent).toContain('Roadmap');
+  });
+});

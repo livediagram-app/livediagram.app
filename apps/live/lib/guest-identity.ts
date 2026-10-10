@@ -38,7 +38,7 @@ let inflight: Promise<GuestIdentity> | null = null;
 
 export function ensureSignedGuestIdentity(): Promise<GuestIdentity> {
   if (!inflight) {
-    inflight = resolveSignedGuestIdentity().finally(() => {
+    inflight = withGuestUpgradeLock(resolveSignedGuestIdentity).finally(() => {
       inflight = null;
     });
   }
@@ -56,7 +56,23 @@ export async function retrySignedGuestIdentity(): Promise<GuestIdentity | null> 
   return identity.sig ? identity : null;
 }
 
+// The `inflight` share above covers one tab only. Two tabs that open at once on a legacy unsigned
+// id would each mint a different signed id and each move the data: the second move takes it onto
+// its own id, the first tab's write to storage can land last, and the data is stranded under an id
+// whose signature this browser no longer holds. A Web Lock serialises the resolution across tabs;
+// `resolveSignedGuestIdentity` reads storage only once it holds the lock, so the second tab adopts
+// the signed identity the first one wrote. Browsers without `navigator.locks` keep the old
+// unserialised behaviour.
+export const GUEST_UPGRADE_LOCK_NAME = 'livediagram-guest-upgrade';
+
+function withGuestUpgradeLock<T>(run: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator === 'undefined' ? undefined : navigator.locks;
+  if (!locks || typeof locks.request !== 'function') return run();
+  return locks.request(GUEST_UPGRADE_LOCK_NAME, run) as Promise<T>;
+}
+
 async function resolveSignedGuestIdentity(): Promise<GuestIdentity> {
+  // Read inside the lock: another tab may have finished an upgrade while this one waited.
   const existingId = getGuestSelfId();
   const existingSig = getGuestSelfSig();
   if (existingId && existingSig) return { id: existingId, sig: existingSig };

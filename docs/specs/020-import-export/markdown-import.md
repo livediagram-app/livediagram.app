@@ -39,7 +39,13 @@ Input is treated as a hierarchical outline:
 the deepest, so every item is kept and the layout's recursion stays shallow (12 000 ever-deeper
 lines used to overflow the stack). A table larger than a table element holds (`MAX_TABLE_ROWS`,
 `MAX_TABLE_COLS`, `MAX_TABLE_CELLS`, `packages/document`) keeps its first columns, then as many of
-its first rows as fit; the rest is left out.
+its first rows as fit; the rest is left out. One import keeps at most `MAX_MARKDOWN_IMPORT_NODES`
+(2 000) nodes, headings, list items, prose lines and tables together, the first in document order;
+the rest are counted, never kept, and the Import dialog shows the shared import report with what
+landed and one skipped line, "Headings, list items, lines and tables beyond the first 2,000 were
+left out", with the count. Each node lands as a box and an arrow, so 2 000 nodes at the 120-character
+label cap make a tab of about 1.3 MB and 4 000 elements, inside the tab's row and element caps
+(measured; the constant's comment has the numbers).
 
 If the document has a single top-level node it becomes the diagram's
 root; otherwise a synthetic root (named from the file) holds the

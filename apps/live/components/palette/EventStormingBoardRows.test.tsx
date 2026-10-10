@@ -75,14 +75,14 @@ describe('EventStormingBoardRows disabled photo import', () => {
         }}
       />,
     );
-    const row = screen.getByRole('button', { name: /Add from photo/ });
+    const row = screen.getByRole('button', { name: /Add from Photo/ });
     expect(row.textContent).toContain('Finish the open photo first');
     expect(row.hasAttribute('title')).toBe(false);
   });
 
   it('describes the import while it is available', () => {
     render(<EventStormingBoardRows controls={{ onImportPhoto: noop }} />);
-    expect(screen.getByRole('button', { name: /Add from photo/ }).textContent).toContain(
+    expect(screen.getByRole('button', { name: /Add from Photo/ }).textContent).toContain(
       'Read the stickies off a photo of the wall',
     );
   });

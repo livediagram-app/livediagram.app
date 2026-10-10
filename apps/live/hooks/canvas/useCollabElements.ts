@@ -34,6 +34,7 @@ export function useCollabElements({
   commitTabs,
   tickTabs,
   applyElementDelta,
+  postIdea,
   activeElements,
   editsBlocked,
   sessionToolsBlocked,
@@ -50,6 +51,9 @@ export function useCollabElements({
   // An answer or an idea: applied here and sent to the room as a delta, so
   // two people pressing the same card at once both land (docs/specs/012-collaboration/collab-race-hardening.md).
   applyElementDelta: ApplyElementDelta;
+  // One idea into a box, held until the room answers it (useIdeaPosts): false when it lost the box's
+  // last card to an earlier post (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
+  postIdea: (tabId: string, element: ShapeElement, text: string) => Promise<boolean>;
   // The active tab's elements, to read a checklist row before ticking it.
   activeElements: Element[];
   // A view-role visitor / locked tab. The room already drops their mutations
@@ -180,22 +184,18 @@ export function useCollabElements({
   // no selection, so the docs/specs/007-editor/live-app.md concurrent-selection ring doesn't put a name
   // on the box at the moment somebody types into it. This function
   // deliberately never touches the selection.
-  // Returns whether the idea went in, so the composer keeps a refused draft.
-  const addIdea = (element: ShapeElement, text: string): boolean => {
+  // Returns whether the idea went in, so the composer keeps a refused draft: false at the press for a full
+  // box, else the post's promise, which answers false when the room numbered another card first.
+  const addIdea = (element: ShapeElement, text: string): boolean | Promise<boolean> => {
     const clean = text.trim();
     if (!clean || editsBlocked) return false;
     // A full box takes no more: one card past the cap would fail the whole
     // tab's validation on save (docs/specs/012-collaboration/collab-race-hardening.md).
     if ((element.ideaCards ?? []).length >= IDEA_MAX_CARDS) return false;
     // ONE idea, as a delta (docs/specs/012-collaboration/collab-race-hardening.md), so two people posting at once both
-    // land. Still no author: the delta has nowhere to put one either.
-    applyElementDelta(element.id, {
-      kind: 'idea',
-      text: clean,
-      ...(element.collabRound ? { round: element.collabRound } : {}),
-    });
+    // land. Still no author: the delta has nowhere to put one either, and its card id is random.
     track('Element', 'Changed', 'Idea-box');
-    return true;
+    return postIdea(activeId, element, clean);
   };
 
   const revealIdeas = (element: ShapeElement) => {
@@ -203,13 +203,14 @@ export function useCollabElements({
     track('Element', 'Changed', 'Idea-box');
   };
 
-  // Empty the box for the next round. Un-reveals as well, exactly as
+  // Empty the Box: clear it for the next round. Un-reveals as well, exactly as
   // clearResponses does: a box that kept its lid off would collect the first
   // card of the next round in the open, and the whole point of the element is
   // that nothing is visible until somebody decides it is.
   const clearIdeas = (element: ShapeElement) => {
     patchAsFacilitator(element.id, () => ({
       ideaCards: [],
+      ideaCardIds: [],
       ideasRevealed: false,
       collabRound: crypto.randomUUID(),
     }));

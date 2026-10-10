@@ -407,7 +407,7 @@ export function SearchAddToCanvas() {
   );
 }
 
-/** A "Create new tab" action row below an ordinary tab match. */
+/** A "Create New Tab" action row below an ordinary tab match. */
 export function SearchCreateTab() {
   return (
     <SearchOverlay
@@ -419,7 +419,7 @@ export function SearchCreateTab() {
         },
         {
           title: 'Actions',
-          rows: [{ icon: <CommandIcon />, label: 'Create new tab' }],
+          rows: [{ icon: <CommandIcon />, label: 'Create New Tab' }],
         },
       ]}
     />

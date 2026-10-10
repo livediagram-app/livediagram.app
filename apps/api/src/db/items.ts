@@ -208,21 +208,27 @@ function updateAtRevStatement(
   );
 }
 
-// Returns the store's new rev, or null when there was no such item.
+// Returns the store's new rev and the item as it was deleted (its comments retract from the Timeline,
+// docs/specs/013-workspace/timeline.md §4.3), or null when there was no such item. The item is read
+// by the delete itself, so a comment written a moment before cannot slip between a read and it.
 export async function deleteItemRow(
   env: Env,
   documentId: string,
   id: string,
-): Promise<number | null> {
+): Promise<{ rev: number; item: Item } | null> {
   const results = await env.DB.batch([
-    env.DB.prepare('DELETE FROM items WHERE document_id = ? AND id = ?').bind(documentId, id),
+    env.DB.prepare(`DELETE FROM items WHERE document_id = ? AND id = ? RETURNING ${COLUMNS}`).bind(
+      documentId,
+      id,
+    ),
     env.DB.prepare(
       `UPDATE documents SET items_rev = items_rev + 1
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
     ).bind(documentId),
   ]);
-  if ((results[0]?.meta?.changes ?? 0) === 0) return null;
-  return revOf(results[1]);
+  const row = (results[0]?.results as ItemRow[] | undefined)?.[0];
+  if (!row) return null;
+  return { rev: revOf(results[1]), item: itemFromRow(row) };
 }
 
 // A document copy takes the items with it, ids and keys unchanged, so every card on the copied

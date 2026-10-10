@@ -5,6 +5,8 @@ import {
   articlePasteIsCanvas,
   CLIPBOARD_KIND,
   CLIPBOARD_SCHEMA_VERSION,
+  clipboardWriteFor,
+  inAppCopyIdOf,
   MAX_CLIPBOARD_BYTES,
   MAX_CLIPBOARD_ELEMENTS,
   parseElementsPayload,
@@ -154,12 +156,45 @@ describe('parseElementsPayload salvages', () => {
     expect((back![0] as ShapeElement).x).toBe(1);
   });
 
-  it('caps how many elements one paste can carry', () => {
+  it('refuses a payload past the element cap rather than pasting part of it', () => {
     const elements: Element[] = Array.from({ length: MAX_CLIPBOARD_ELEMENTS + 50 }, (_, i) =>
       shape(`e${i}`),
     );
-    const back = parseElementsPayload(serialiseElements(elements));
-    expect(back).toHaveLength(MAX_CLIPBOARD_ELEMENTS);
+    expect(parseElementsPayload(serialiseElements(elements))).toBeNull();
+    expect(
+      parseElementsPayload(serialiseElements(elements.slice(0, MAX_CLIPBOARD_ELEMENTS))),
+    ).toHaveLength(MAX_CLIPBOARD_ELEMENTS);
+  });
+});
+
+describe('clipboardWriteFor', () => {
+  it('writes the elements when the selection fits', () => {
+    const write = clipboardWriteFor([shape('a')], 'copy-1');
+    expect(write.inAppOnly).toBe(false);
+    expect(parseElementsPayload(write.text)).toHaveLength(1);
+    expect(inAppCopyIdOf(write.text)).toBeNull();
+  });
+
+  it('writes a marker naming the copy when there are too many elements', () => {
+    const many = Array.from({ length: MAX_CLIPBOARD_ELEMENTS + 1 }, (_, i) => shape(`e${i}`));
+    const write = clipboardWriteFor(many, 'copy-2');
+    expect(write.inAppOnly).toBe(true);
+    expect(parseElementsPayload(write.text)).toBeNull();
+    expect(inAppCopyIdOf(write.text)).toBe('copy-2');
+  });
+
+  it('writes a marker when the payload is past the byte cap', () => {
+    const write = clipboardWriteFor([shape('a', { label: 'x'.repeat(MAX_CLIPBOARD_BYTES) })], 'c3');
+    expect(write.inAppOnly).toBe(true);
+    expect(write.text.length).toBeLessThan(1024);
+    expect(inAppCopyIdOf(write.text)).toBe('c3');
+  });
+
+  it('reads no copy id from ordinary or foreign text', () => {
+    expect(inAppCopyIdOf('hello')).toBeNull();
+    expect(inAppCopyIdOf('{"kind":"other","inAppCopy":"x"}')).toBeNull();
+    expect(inAppCopyIdOf('{"inAppCopy": broken')).toBeNull();
+    expect(inAppCopyIdOf(undefined)).toBeNull();
   });
 });
 

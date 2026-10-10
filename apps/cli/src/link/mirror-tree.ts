@@ -25,8 +25,10 @@ export type MirrorTree = {
   writeGenerated(rel: string, text: string): Promise<boolean>;
   // `generated`: only while its first line is the generated line.
   remove(rel: string, generated: boolean): Promise<void>;
-  // A mirror file and its outline file; how they moved.
-  move(from: string, to: string): Promise<'git' | 'rename'>;
+  // A mirror file and its outline file; how they moved. Nothing moves while a file is already at the target that
+  // is not this mirror's own: any mirror file, or Markdown whose first line is not the generated line (a
+  // hand-written `architecture.md` a renamed document would slug onto). That file comes back as `occupied`.
+  move(from: string, to: string): Promise<'git' | 'rename' | { occupied: string }>;
   // Each absolute path written (the SHA-256 of its bytes) or removed (null).
   touched: Map<string, string | null>;
 };
@@ -97,11 +99,19 @@ export function mirrorTree(io: CliIo, link: LinkFile): MirrorTree {
     move: async (from, to) => {
       await guard(from);
       await guard(to);
-      await io.files.mkdir(posix.dirname(abs(to)));
       const pairs = [
         [from, to],
         [outlinePathOf(from), outlinePathOf(to)],
       ] as const;
+      // A move that only changes letter case reads its own file at the target on a case-insensitive disk.
+      const sameFile = (a: string, b: string) => abs(a).toLowerCase() === abs(b).toLowerCase();
+      for (const [a, b] of pairs) {
+        if (sameFile(a, b) || (await io.files.read(abs(a))) === null) continue;
+        const there = await io.files.read(abs(b));
+        if (there === null) continue;
+        if (b === to || !there.startsWith(GENERATED_LINE_START)) return { occupied: b };
+      }
+      await io.files.mkdir(posix.dirname(abs(to)));
       const rootRel = (rel: string) => posix.relative(link.root, abs(rel));
       let how: 'git' | 'rename' = 'git';
       for (const [a, b] of pairs) {
