@@ -18,13 +18,14 @@ import {
   AuthCard,
   AuthEmailField,
   EmailCodeStep,
-  GoogleAuthButton,
   OrDivider,
+  ProviderAuthButton,
   POST_AUTH_DEFAULT,
   POST_AUTH_SIGNIN_DEFAULT,
   resolvePostAuthDestination,
   useAuthHrefs,
 } from '@/components/chrome/auth-shared';
+import { FeishuGlyph } from '@/components/chrome/auth-glyphs';
 import { Button } from '@livediagram/ui';
 import { SELF_HOST_AUTH_EVENT } from '@/components/providers/SelfHostAuthBridge';
 import { useAuthMethods } from '@/lib/self-host-auth';
@@ -178,7 +179,8 @@ export function SelfHostSignInForm({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         <form onSubmit={sendCode} className="space-y-4">
           {methods?.includes('feishu') ? (
             <>
-              <GoogleAuthButton
+              <ProviderAuthButton
+                glyph={<FeishuGlyph />}
                 label="Continue with Feishu"
                 loading={socialLoading === 'feishu'}
                 disabled={socialLoading !== ''}
