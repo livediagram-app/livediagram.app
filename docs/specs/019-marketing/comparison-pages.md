@@ -4,7 +4,7 @@ SEO landing pages that capture high-intent "is there a `<tool>` alternative?" se
 
 ## Why they exist
 
-The marketing site's biggest organic-growth ceiling is content footprint: the editor's routes are intentionally `noindex`, so the only indexable surface is `/`, `/faq`, and the legal pages. Comparison pages add indexable, intent-matched content targeting queries like "Miro alternative", "open source Excalidraw alternative", "draw.io alternative", "diagrams in Google Slides". They are the first deliberate expansion of that footprint.
+The marketing site's biggest organic-growth ceiling is content footprint: the editor's routes are intentionally `noindex`, so the only indexable surface is `/`, `/faq`, and the legal pages. Comparison pages add indexable, intent-matched content targeting queries like "Miro alternative", "open source Excalidraw alternative", "draw.io alternative", "Google Slides alternative". They are the first deliberate expansion of that footprint.
 
 ## Routes
 
@@ -18,6 +18,7 @@ Everything claimed about **livediagram** must map to a shipped feature ([16](mar
 
 - **Be fair about competitors.** Every page includes a "where `<competitor>` is the better pick" section with genuine reasons to choose them. This is non-negotiable: it builds trust, it's honest, and disparaging/one-sided comparison spam is exactly what Google demotes.
 - **State competitor facts qualitatively, not with volatile specifics.** Pricing tiers, exact free-plan limits, and feature lists change. Describe positioning ("free tier, then paid plans"; "desktop-first"; "vast shape libraries"), not numbers that rot. A short dated disclaimer ("comparisons reflect general positioning and may change") sits on each page.
+- **Compete on their ground.** Each page compares livediagram with the competitor at that competitor's own job, using the mode that does it: Google Slides as a presentation tool (Illustrate slide pages, decks built from the canvas, presenting), Miro and FigJam as workspaces and whiteboards, XMind as mind mapping, Microsoft Whiteboard as a whiteboard, draw.io and Lucidchart as diagram editors. Diagrams are one facet of livediagram, never the whole pitch, and "they are not a diagram tool" is never a selling point against a tool that does something else.
 - **Never imply a free/open-source competitor is paid/proprietary.** Excalidraw and draw.io are themselves free and open source; the honest differentiator there is _structure_ (templates, tabs, folders, themes) and _real-time multiplayer / hosting model_, not price or licensing. Miro and XMind are the ones where "open-source, free, no sign-up" is the genuine contrast.
 
 ## Page shape
@@ -27,7 +28,7 @@ Per competitor, rendered by the shared template:
 - **Breadcrumb** Home › Product Comparison › vs `<competitor>`, as a visible bar (`components/Breadcrumb.tsx`) and as `BreadcrumbJsonLd` with a `trail`.
 - **Hero**: the shared `PageHero` band with a "livediagram vs `<competitor>`" eyebrow and the `VsBadge` tiles. The competitor is drawn as a generic glyph of what the tool is (a sticky note for Miro, a tree for XMind), never its logo, in line with the no-vendor-trademarks rule ([Iconography](../004-interface-design/iconography.md)). Each competitor's glyph, accent tone and card chips live in `components/compare/competitor-look.ts`; a test pins one entry per slug.
 - **Layout**: on wide screens a sticky "On this page" index (At a glance, Which to pick, each deep-dive heading, FAQ) sits beside the content.
-- **H1** framed for the target query (e.g. "The open-source Miro alternative"; for Google Slides, "A canvas built for diagrams, not slides").
+- **H1** framed for the target query (e.g. "The open-source Miro alternative", "A free, open-source Google Slides alternative").
 - **Lede**: one or two honest sentences positioning livediagram against that tool.
 - **Comparison table** ("At a glance", `components/compare/ComparisonTable.tsx`, a card that scrolls sideways inside itself on a phone): livediagram vs `<competitor>` across a handful of dimensions, with per-cell text authored in the data (so every claim is deliberate and accurate, no blanket "we win").
 - **Which to pick**: **Why livediagram** (shipped differentiators) + **Where `<competitor>` is the better pick** (the fairness section), side by side as two cards of equal weight.
@@ -47,7 +48,7 @@ Both the hub and the per-competitor detail pages also emit an `article:modified_
 
 ## Initial set
 
-Miro, XMind, Excalidraw, draw.io (diagrams.net), and Google Slides (used for diagrams). Add more by appending to `lib/alternatives.ts`; the hub's descriptions name every competitor from the same list.
+Miro, XMind, Excalidraw, draw.io (diagrams.net), and Google Slides (compared as a presentation tool, against Illustrate slide pages and Presentation mode). Add more by appending to `lib/alternatives.ts`; the hub's descriptions name every competitor from the same list.
 
 ## Second set (October 2026)
 

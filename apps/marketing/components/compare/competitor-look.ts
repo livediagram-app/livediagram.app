@@ -60,7 +60,7 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideAppWindow, 22),
     panel: 'from-yellow-100 to-lime-50 dark:from-yellow-500/15 dark:to-lime-500/5',
     glyph: 'text-yellow-700 dark:text-yellow-300',
-    highlights: ['Connectors that route', 'Infinite canvas', 'Present from it'],
+    highlights: ['Slide layouts', 'Slides from your canvas', 'No account'],
   },
   figjam: {
     icon: lucideGlyph(lucideShapes, 22),
