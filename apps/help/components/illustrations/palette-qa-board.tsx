@@ -18,8 +18,8 @@ export function QaBoardCard() {
   const w = 240;
   const max = ROWS[0]!.votes;
   return (
-    <Scene w={420} h={300}>
-      <CollabCard x={x} y={y} w={w} h={280} title="Questions for the panel" aside="5 NOTES">
+    <Scene w={420} h={318}>
+      <CollabCard x={x} y={y} w={w} h={298} title="Questions for the panel" aside="4 NOTES">
         {/* The spotlight, with the facilitator's two buttons. */}
         <rect
           x={x + 12}
@@ -38,7 +38,7 @@ export function QaBoardCard() {
           What does launch look like?
         </Label>
         <rect
-          x={x + w - 128}
+          x={x + w - 142}
           y={y + 80}
           width={44}
           height={20}
@@ -46,11 +46,11 @@ export function QaBoardCard() {
           className="fill-white stroke-brand-300"
           strokeWidth={1.2}
         />
-        <Label x={x + w - 106} y={y + 90.5} anchor="middle" size={10} weight={600} tone="accent">
+        <Label x={x + w - 120} y={y + 90.5} anchor="middle" size={10} weight={600} tone="accent">
           Done
         </Label>
-        <rect x={x + w - 78} y={y + 80} width={62} height={20} rx={6} className="fill-brand-500" />
-        <Label x={x + w - 47} y={y + 90.5} anchor="middle" size={10} weight={600} tone="onAccent">
+        <rect x={x + w - 92} y={y + 80} width={76} height={20} rx={6} className="fill-brand-500" />
+        <Label x={x + w - 54} y={y + 90.5} anchor="middle" size={10} weight={600} tone="onAccent">
           Done, next →
         </Label>
         {ROWS.map((r, i) => {
@@ -115,29 +115,30 @@ export function QaBoardCard() {
             </g>
           );
         })}
-        {/* The composer at the foot, with the Anonymous switch. */}
+        {/* The composer at the foot: the field and its send button, the Anonymous switch under it. */}
         <rect
           x={x + 12}
-          y={y + 246}
+          y={y + 244}
           width={w - 24}
           height={26}
           rx={13}
           className="fill-white stroke-slate-200"
           strokeWidth={1.2}
         />
-        <Label x={x + 24} y={y + 259.5} size={10} tone="muted">
+        <Label x={x + 24} y={y + 257.5} size={10} tone="muted">
           Add a note…
         </Label>
-        <rect
-          x={x + w - 102}
-          y={y + 252}
-          width={22}
-          height={14}
-          rx={7}
-          className="fill-slate-200"
+        <circle cx={x + w - 26} cy={y + 257} r={9} className="fill-brand-500" />
+        <path
+          d={`M${x + w - 26} ${y + 261.5} V${y + 253} M${x + w - 29.5} ${y + 256} L${x + w - 26} ${y + 252.5} L${x + w - 22.5} ${y + 256}`}
+          className="fill-none stroke-white"
+          strokeWidth={1.6}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <circle cx={x + w - 95} cy={y + 259} r={5} className="fill-white" />
-        <Label x={x + w - 76} y={y + 259.5} size={10} tone="muted">
+        <rect x={x + 14} y={y + 276} width={22} height={14} rx={7} className="fill-slate-200" />
+        <circle cx={x + 21} cy={y + 283} r={5} className="fill-white" />
+        <Label x={x + 42} y={y + 283.5} size={10} tone="muted">
           As you
         </Label>
       </CollabCard>

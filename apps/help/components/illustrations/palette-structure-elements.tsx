@@ -105,48 +105,50 @@ export function EntityPair() {
 export function LaneCarry() {
   const x = 20;
   const w = 380;
-  const gutter = 70;
+  const h = 88;
+  const gutter = 84;
   const lanes = [
-    { y: 20, title: 'Customer' },
-    { y: 108, title: 'Support' },
+    { y: 16, title: 'Customer' },
+    { y: 16 + h, title: 'Support' },
   ];
   return (
-    <Scene w={420} h={210}>
-      {lanes.map((l, i) => (
+    <Scene w={420} h={226}>
+      {lanes.map((l) => (
         <g key={l.title}>
-          <rect
-            x={x}
-            y={l.y}
-            width={w}
-            height={88}
-            className={i === 0 ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-300'}
-            strokeWidth={i === 0 ? 2 : 1}
-          />
-          <rect x={x + 1} y={l.y + 1} width={gutter} height={86} className="fill-brand-50" />
+          <rect x={x} y={l.y} width={w} height={h} className="fill-white stroke-slate-300" />
+          <rect x={x + 0.5} y={l.y + 0.5} width={gutter} height={h - 1} className="fill-brand-50" />
           <line
             x1={x + gutter}
             y1={l.y}
             x2={x + gutter}
-            y2={l.y + 88}
+            y2={l.y + h}
             className="stroke-slate-300"
             strokeWidth={1}
           />
-          <Label x={x + 12} y={l.y + 44} size={12} weight={700} tone="strong">
+          <Label x={x + 12} y={l.y + h / 2} size={12} weight={700} tone="strong">
             {l.title}
           </Label>
         </g>
       ))}
+      {/* The lane being dragged, outlined on top so its edge reads clearly. */}
+      <rect
+        x={x}
+        y={lanes[0]!.y}
+        width={w}
+        height={h}
+        className="fill-none stroke-brand-500"
+        strokeWidth={2}
+      />
       {/* Inside the top lane: these travel with it. */}
-      <Shape x={110} y={42} w={80} h={40} label="Order" accent />
-      <Shape x={216} y={42} w={80} h={40} label="Pay" accent />
-      <Arrow from={[190, 62]} to={[214, 62]} />
+      <Shape x={124} y={40} w={80} h={40} label="Order" accent />
+      <Shape x={228} y={40} w={80} h={40} label="Pay" accent />
+      <Arrow from={[204, 60]} to={[226, 60]} />
       {/* Straddling the edge with its centre in the lane below: stays. */}
-      <Shape x={312} y={92} w={76} h={40} label="Refund" dashed />
-      <circle cx={350} cy={112} r={2.5} className="fill-slate-500" />
-      <Label x={350} y={150} anchor="middle" size={10} tone="muted">
-        centre below the line
+      <Shape x={318} y={88} w={70} h={44} label="Refund" dashed />
+      <Label x={353} y={150} anchor="middle" size={10} tone="muted">
+        centre in Support
       </Label>
-      <Label x={110 + 93} y={186} anchor="middle" size={11} weight={600} tone="accent">
+      <Label x={210} y={210} anchor="middle" size={11} weight={600} tone="accent">
         Drag Customer: Order and Pay travel, Refund stays
       </Label>
     </Scene>
