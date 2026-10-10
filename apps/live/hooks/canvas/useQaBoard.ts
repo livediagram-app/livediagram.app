@@ -30,6 +30,7 @@ import { apiQaAction } from '@/lib/api-client';
 import { isVoteLimitError, VOTE_LIMIT_MESSAGE } from '@/lib/vote-limit';
 import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 type Pending = { seq: number; action: QaAction; actor: QaActor };
 
@@ -188,7 +189,7 @@ export function useQaBoard({
       // The server answers a refused add with the board as it stands, its note missing. Only a full board
       // refuses a well-formed add, so that is what the person is told; the composer puts the draft back.
       if (action.type === 'add' && !state.notes.some((n) => n.id === action.id)) {
-        console.info('[qa] add.refused_full', { notes: state.notes.length });
+        debugLog('[qa] add.refused_full', { notes: state.notes.length });
         onError(QA_BOARD_FULL_MESSAGE);
         return false;
       }

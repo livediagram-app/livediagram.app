@@ -3,6 +3,7 @@ import type { ElementDelta, ShapeElement, Tab } from '@livediagram/document';
 import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs, type PendingIdeaIds } from '@/app/document/[id]/room-op-apply';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { debugLog } from '@/lib/debug-log';
 
 // This browser's idea posts, from the press until the room answers them
 // (docs/specs/012-collaboration/idea-box.md "Racing for the last card", blueprint idea-box-race.md).
@@ -84,7 +85,7 @@ export function useIdeaPosts(deps: {
       }
       if (el.ideaCardIds?.includes(id)) p.seen = true;
       else if (p.seen) {
-        console.info('[idea-box] post yielded to an earlier card', { elementId: p.elementId });
+        debugLog('[idea-box] post yielded to an earlier card', { elementId: p.elementId });
         settle(id, false);
         onRefused.current(IDEA_BOX_FULL_MESSAGE);
       }

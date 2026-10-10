@@ -5,6 +5,7 @@
 // did not take is revoked straight away.
 
 import { ApiError } from './api/core';
+import { debugLog } from '@/lib/debug-log';
 
 export type HandoverFailure = 'expired' | 'token_limit' | 'failed';
 export type HandoverResult<T> = { ok: true; value: T } | { ok: false; reason: HandoverFailure };
@@ -36,7 +37,7 @@ export async function mintAndHandOver<T>(steps: HandoverSteps<T>): Promise<Hando
   await steps.revoke(minted.id).catch(() => {
     console.warn('[oauth] handover revoke failed');
   });
-  console.info('[oauth] handover refused; minted token revoked');
+  debugLog('[oauth] handover refused; minted token revoked');
   return { ok: false, reason: 'failed' };
 }
 
