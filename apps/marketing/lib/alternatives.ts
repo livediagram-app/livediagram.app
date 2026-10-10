@@ -205,7 +205,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Focus',
-        us: 'One document, four modes: diagrams, whiteboards, designed pages and slides, Plan boards and Sheets',
+        us: 'One document, five modes: diagrams, whiteboards, designed pages and slides, Plan boards and Sheets, and Facilitate sessions',
         them: 'All-in-one visual workspace',
       },
     ],
@@ -219,7 +219,7 @@ export const ALTERNATIVES: Alternative[] = [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas, even to create a document.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
-      'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards and spreadsheets.',
+      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards and spreadsheets, and Facilitate for running a session with your team.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
       'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, a Q&A board and hidden-then-revealed responses.',
@@ -229,9 +229,9 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     sections: [
       {
-        heading: 'One workspace, four ways to work',
+        heading: 'One workspace, five ways to work',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of four modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards.',
+          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of five modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards. Facilitate for running the workshop itself: timers, dot votes, polls and reveals.',
           'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
@@ -741,7 +741,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
       'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 26 one-click themes and 96 templates.',
-      'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards.',
+      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards, and Facilitate for running a session with your team.',
       'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, a Q&A board and hidden-then-revealed responses.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
