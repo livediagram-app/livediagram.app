@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
-import { HERO_WORDS, HeroWordCard } from './HeroWordCard';
+import { HERO_WORDS } from './hero-words';
 import { useHeroWordPin } from '@/lib/hero-word-pin';
 
 // The headline's first word cycles through what livediagram is for
@@ -17,10 +17,8 @@ import { useHeroWordPin } from '@/lib/hero-word-pin';
 // sliding up out of the clipped slot as the next slides up into place (hero-word-* in
 // app/hero-animations.css). The static HTML reads "Diagram",
 // the first paint has no motion, and reduced motion holds "Diagram". A dotted underline marks the
-// word as more than it shows (only where there is a mouse to hover with; a touch screen gets no
-// underline and no card): hovering it opens a card listing every word
-// (HeroWordCard, the current one in brand) and holds the cycle while it is up. Decorative: the h1 carries the stable
-// text for screen readers.
+// word (only where there is a mouse to hover with), turning brand on hover; it opens nothing.
+// Decorative: the h1 carries the stable text for screen readers.
 
 // How long each word holds before the next.
 const WORD_MS = 2500;
@@ -52,41 +50,14 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
   const wordRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const slotRef = useRef<HTMLSpanElement>(null);
   const [widths, setWidths] = useState<number[] | null>(null);
-  // The card listing every word: opened by hovering the word with a mouse and closed by leaving it.
-  // A touch screen never opens it. The cycle holds while it is up.
-  const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLSpanElement>(null);
-  const cardRef = useRef<HTMLSpanElement>(null);
-  // Centred under the word, the card can run off a phone's edge (the word sits near it): nudge it
-  // back inside an 8px margin. Straight onto the element, before paint, with no extra render.
-  useLayoutEffect(() => {
-    const card = cardRef.current;
-    if (!open || !card) return;
-    card.style.marginLeft = '';
-    card.style.removeProperty('--hero-card-nudge');
-    const r = card.getBoundingClientRect();
-    const margin = 8;
-    const nudge =
-      r.left < margin
-        ? margin - r.left
-        : r.right > window.innerWidth - margin
-          ? window.innerWidth - margin - r.right
-          : 0;
-    if (nudge) {
-      card.style.marginLeft = `${nudge}px`;
-      // The pointer stays on the word.
-      card.style.setProperty('--hero-card-nudge', `${-nudge}px`);
-    }
-  }, [open]);
-
   useEffect(() => {
-    if (reduceMotion || open || pinIndex >= 0) return;
+    if (reduceMotion || pinIndex >= 0) return;
     const id = window.setInterval(
       () => setWords((w) => ({ index: (w.index + 1) % HERO_WORDS.length, leaving: w.index })),
       WORD_MS,
     );
     return () => window.clearInterval(id);
-  }, [reduceMotion, open, pinIndex]);
+  }, [reduceMotion, pinIndex]);
 
   // Each word's rendered width, re-read when the headline resizes (it scales with the viewport).
   useLayoutEffect(() => {
@@ -104,8 +75,6 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
   // Before the words are measured (the static HTML, and the first client render, which must match
   // it), "Diagram" is centred by its measured share of the slot: 0.7em in the house sans.
   const transform = widths ? `translateX(${shift}px)` : `translateX(-${DIAGRAM_SHIFT_EM}em)`;
-  // The showing word's centre in the line (it is right-aligned in a slot as wide as the widest).
-  const wordCentre = widths ? Math.max(...widths) - (widths[shown] ?? 0) / 2 : '50%';
 
   useEffect(() => {
     window.dispatchEvent(new Event(HERO_TITLE_SHIFT_EVENT));
@@ -118,16 +87,7 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
       className="hero-title-line relative inline-block whitespace-nowrap"
       style={{ transform }}
     >
-      <span
-        ref={triggerRef}
-        className="group cursor-default"
-        onPointerEnter={(e) => {
-          if (e.pointerType === 'mouse') setOpen(true);
-        }}
-        onPointerLeave={(e) => {
-          if (e.pointerType === 'mouse') setOpen(false);
-        }}
-      >
+      <span className="group cursor-default">
         <span ref={slotRef} className="hero-word-slot inline-grid justify-items-end">
           {HERO_WORDS.map(({ word }, i) => {
             const state =
@@ -153,10 +113,6 @@ export function HeroTitleLine({ children }: { children: ReactNode }) {
           })}
         </span>
       </span>
-      {open ? (
-        // Opened by a mouse hover only.
-        <HeroWordCard shown={shown} left={wordCentre} cardRef={cardRef} />
-      ) : null}
       {children}
     </span>
   );
