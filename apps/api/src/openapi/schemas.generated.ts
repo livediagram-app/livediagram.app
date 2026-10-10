@@ -4328,6 +4328,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           }
         ]
       },
+      "itemTypesRev": {
+        "type": "number"
+      },
       "name": {
         "type": "string"
       },
@@ -6966,6 +6969,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemTypesRequest": {
     "additionalProperties": false,
     "properties": {
+      "expectedRev": {
+        "type": "number"
+      },
       "itemTypes": {
         "anyOf": [
           {
@@ -6994,10 +7000,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "null"
           }
         ]
+      },
+      "itemTypesRev": {
+        "type": "number"
       }
     },
     "required": [
-      "itemTypes"
+      "itemTypes",
+      "itemTypesRev"
     ],
     "type": "object"
   },
@@ -9126,6 +9136,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "itemTypesRev": {
+        "type": "number"
+      },
       "statuses": {
         "items": {
           "$ref": "#/components/schemas/PlanStatusName"
@@ -9142,7 +9155,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "boards",
       "statuses",
-      "types"
+      "types",
+      "itemTypesRev"
     ],
     "type": "object"
   },

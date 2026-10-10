@@ -7,6 +7,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ShapeElement } from '@livediagram/document';
 import {
+  ARCHIVED_FIELD,
   boardAddTypes,
   boardShowsType,
   isArchived,
@@ -73,14 +74,13 @@ export function usePlanBoardDrop(opts: {
       track('Plan', 'Moved', 'Archive');
       return;
     }
-    const move = boardMoveFor(setup, projection, item, itemId, slot);
-    if (!move) return;
+    const lands = boardMoveFor(setup, projection, item, itemId, slot);
+    if (!lands) return;
+    // Off an Archive board onto another: it comes back, in the move itself (one write, one undo step).
+    const restored = !!item && isArchived(item);
+    const move = restored ? { ...lands, clear: [...(lands.clear ?? []), ARCHIVED_FIELD] } : lands;
     plan.moveItem(itemId, move);
-    // Off an Archive board onto another: it comes back.
-    if (item && isArchived(item)) {
-      plan.patchItem(itemId, { clear: ['archived'] });
-      track('Plan', 'Restored', 'Card');
-    }
+    if (restored) track('Plan', 'Restored', 'Card');
     const column = setup.columns.find((c) => c.status === slot.status);
     plan.announce(`Moved to ${column?.name ?? slot.status}`);
   };

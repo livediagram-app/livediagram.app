@@ -42,6 +42,6 @@ export async function handlePlanRoute(ctx: RouteContext): Promise<Response | nul
   const scopedTab = caller.scope ? ctx.url.searchParams.get('tabId') : null;
   const plan = planOutline(await planTabs(ctx, documentId, scopedTab), caller.doc?.itemTypes);
   console.info('[plan] read', { boards: plan.boards.length, scoped: scopedTab !== null });
-  const answer: PlanResponse = plan;
+  const answer: PlanResponse = { ...plan, itemTypesRev: caller.doc?.itemTypesRev ?? 0 };
   return json(answer);
 }

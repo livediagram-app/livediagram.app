@@ -110,6 +110,9 @@ excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a 
   (`validateItemTypeCatalogue`) and saves it once; a refusal saves nothing and names the change and the rule. It
   answers the types as `list_items` lists them, with the ids it made (`bug`, `f-severity`), so the next call can
   use them.
+- The save names the catalogue's revision it read ([Item types](item-types.md#storage-and-sync)): when someone
+  changed the card types in between, it reads them again and applies its changes to theirs (a board an agent adds
+  brings its types the same way), so neither change is lost. After three tries it refuses (`item_types_stale`).
 - Only someone who may edit the whole document changes card types (a tab-scoped grant may not), as in the editor.
 
 ## Errors that teach

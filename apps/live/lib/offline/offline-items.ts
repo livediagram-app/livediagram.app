@@ -1,11 +1,16 @@
 // An offline document's item store (docs/specs/026-plan/items.md "Offline documents"): the items
 // live in the document's own record, and every write is the same pure transition the api applies
-// (@livediagram/items applyItemWrite), serialised with the record's other writes.
+// (@livediagram/items applyItemWrite), serialised with the record's other writes. A write passes the
+// api's own checks first (readItemWrite, writtenItemsRefusal) and is refused as the api refuses it, so
+// the record never holds what Sync to Cloud would refuse.
 
 import { debugLog } from '@/lib/debug-log';
 import {
   EMPTY_ITEM_STORE,
   applyItemWrite,
+  readItemWrite,
+  typesOf,
+  writtenItemsRefusal,
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
@@ -31,6 +36,12 @@ export async function offlineFetchItems(documentId: string): Promise<ItemStoreSt
 
 const STATUS = { item_not_found: 404, item_exists: 409, items_full: 413 } as const;
 
+// A write the api's checks refuse: the 400 the api answers, by the same name.
+function refused(error: string): ApiError {
+  debugLog('[items] items.offline.rejected', { error });
+  return new ApiError('item write', 400, error);
+}
+
 export async function offlineWriteItem(
   documentId: string,
   write: ItemWrite,
@@ -39,8 +50,13 @@ export async function offlineWriteItem(
   return serializeOfflineWrite(async () => {
     const rec = await offlineGetRecord(documentId);
     if (!rec || rec.trashedAt !== undefined) throw new ApiError('item write', 404, 'not_found');
-    const result = applyItemWrite(recordItemStore(rec), write, { now: Date.now(), by });
+    const read = readItemWrite(write);
+    if ('error' in read) throw refused(read.error);
+    const store = recordItemStore(rec);
+    const result = applyItemWrite(store, read, { now: Date.now(), by });
     if (!result.ok) throw new ApiError('item write', STATUS[result.error], result.error);
+    const after = writtenItemsRefusal(read, store.items, result.upserts, typesOf(rec.itemTypes));
+    if (after) throw refused(after.error);
     const { items, rev, nextKey } = result.state;
     await offlinePutRecord({ ...rec, items, itemsRev: rev, itemsNextKey: nextKey });
     debugLog('[items] items.offline.write', { kind: write.kind });

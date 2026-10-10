@@ -43,10 +43,13 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Data and persistence
 
-- Migration `0072_item_types.sql`: `documents.item_types TEXT NULL`.
-- `db/documents.ts`: `DocumentDTO.itemTypes` read through `readItemTypeCatalogue`; written by the create's
-  INSERT (copy, sync, Drive) and by `setDocumentItemTypes(env, id, catalogue | null)`; `copyDocument` copies the
-  column. Never in a meta upsert's UPDATE.
+- Migration `0072_item_types.sql`: `documents.item_types TEXT NULL`. Migration `0081_item_types_rev.sql`:
+  `documents.item_types_rev INTEGER NOT NULL DEFAULT 0`.
+- `db/documents.ts`: `DocumentDTO.itemTypes` read through `readItemTypeCatalogue`, `DocumentDTO.itemTypesRev`
+  (0 when absent); written by the create's INSERT (copy, sync, Drive; the revision starts at 0) and by
+  `setDocumentItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
+  returning it, or null when `expectedRev` is given and no longer stored; `copyDocument` copies the column. Never in
+  a meta upsert's UPDATE.
 - Offline: `OfflineDocumentRecord.itemTypes?`; `offlineSaveItemTypes(id, catalogue, now)`; `recordToDocument`
   reads it back. Duplicate (both paths), Sync to Cloud, Take Offline and the Drive envelope
   (`DocumentEnvelope.document.itemTypes?`, still version 1) carry it.
@@ -57,19 +60,35 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 | ------ | -------------------------------- | -------------------- | ------------------ | ------------------- |
 | PUT    | `/api/documents/{id}/item-types` | edit, whole document | `ItemTypesRequest` | `ItemTypesResponse` |
 
-- 400 `{ error: 'item_types_invalid', reason }` for a catalogue that fails; 400 for no `itemTypes` key or bad
-  JSON; 403 for a view grant or a tab-scoped one; 405 for any other method. The create accepts `itemTypes`
-  under the same check.
-- Room: `relayItemTypes` broadcasts `{ kind: 'item-types', itemTypes }` ordered; `item-types` is a system op
-  kind and in `room-scope`'s tab-less delivered set.
+- `ItemTypesRequest = { itemTypes, expectedRev? }`; `ItemTypesResponse = { itemTypes, itemTypesRev }`.
+- 400 `{ error: 'item_types_invalid', reason }` for a catalogue that fails; 400 for no `itemTypes` key, bad JSON or
+  an `expectedRev` that is not a whole number from 0; 403 for a view grant or a tab-scoped one; 405 for any other
+  method; 409 `ItemTypesStale` `{ error: 'item_types_stale', itemTypes, itemTypesRev }` (what is stored) when
+  `expectedRev` has moved on, nothing written or relayed. The create accepts `itemTypes` under the same check.
+- `PlanResponse.itemTypesRev` (the plan route): what an agent's change names.
+- Room: `relayItemTypes` broadcasts `{ kind: 'item-types', itemTypes, itemTypesRev }` ordered; `item-types` is a
+  system op kind and in `room-scope`'s tab-less delivered set.
 
 ## Editor
 
-- `editor-persistence`: `documentItemTypes` state, seeded by `seed-fetched-document`.
-- `hooks/plan/useItemTypes.ts` (`ItemTypesSlice`): `types`, `saveType`, `deleteType` (never the last),
-  `addTypes`, `addDefaultTypes`, `saveCatalogue` (a whole catalogue, one step), `receive`. A change is optimistic, saved whole through `lib/api/item-types.ts`
-  (`saveItemTypes`, offline-aware), kept as answered, reverted with "Couldn’t save the card types" on failure,
-  and pushed as one undo step (undo and redo replay a save without a step).
+- `editor-persistence`: `documentItemTypes` state, the catalogue as stored with its revision (`SavedItemTypes
+{ itemTypes, itemTypesRev }`), seeded by `seed-fetched-document`.
+- `packages/items/src/type-catalogue-change.ts`: `CatalogueChange { before, after }`, `rebaseCatalogueChange(current,
+change)` (exactly `after` on `before`; otherwise deleted types removed, changed ones replaced, added ones placed after
+  the type they follow in `after`, first when they lead, last when that type is gone; never empty) and
+  `inverseCatalogueChange`.
+- `hooks/plan/useItemTypes.ts` (`ItemTypesSlice`): `catalogue` (stored with the pending changes rebased over it),
+  `types`, `saveType`, `deleteType` (never the last), `addTypes`, `addDefaultTypes`, `saveCatalogue` (a whole
+  catalogue, one step), `receive` (a room op at a lower revision than held is ignored). A change is a
+  `CatalogueChange` from the catalogue shown, pending at once, saved one at a time through `lib/api/item-types.ts`
+  (`saveItemTypes(scope, catalogue, expectedRev)`, offline-aware) as `rebaseCatalogueChange(stored, change)` naming the
+  stored revision; the answer becomes the stored catalogue. `ItemTypesStaleError` (the 409) takes the stored catalogue
+  it carries and sends again, up to `ITEM_TYPES_SAVE_ATTEMPTS` (3); any other failure, or the last stale one, drops
+  only that change with "Couldn’t save the card types". Each change is one undo step: undo makes
+  `inverseCatalogueChange(change)`, redo the change, each as a new pending change without a step.
+- Agents (`packages/agent-verbs`): `changeCardTypes` reads the plan, applies its changes and saves naming
+  `plan.itemTypesRev`; `bringBoardCardTypes` names the document's `itemTypesRev`. A stale refusal reads again and
+  applies again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then answers the `item_types_stale` refusal.
 - `PlanContext`: `types`, `itemTypes`, `editType(id | 'new')`; `usePlanSlice` holds `editingTypeId`.
 - Parent: `PARENT_FIELD_ID` (`'parent'`) and `PARENT_FIELD` (`{ id: 'parent', label: 'Parent', kind: 'card',
 linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story carry it in `custom`. The old grouping
@@ -164,7 +183,8 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | Custom value of the wrong kind     | Shown empty; replaced by the next edit                       |
 | Field taken off a type             | Values kept in `fields`; shown again if it returns           |
 | Deleting the last type             | Not offered (`canDelete`); `deleteType` refuses              |
-| Save fails                         | Previous catalogue back, toast                               |
+| Save fails                         | That change dropped (later ones kept), toast                 |
+| Another change landed first (409)  | Change made again to the stored catalogue, sent again (3×)   |
 
 ## Security and trust
 
@@ -185,42 +205,47 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 ## Observability
 
-- `[item-types] item-types.saved` / `item-types.rejected` (api); `[item-types] saved` / `save failed`
-  (editor debug log).
+- `[item-types] item-types.saved` / `item-types.rejected` / `item-types.stale` (api); `[item-types] saved` /
+  `save stale` / `save failed` (editor debug log).
 
 ## Testing
 
-| Rule                                                     | Test                                                      |
-| -------------------------------------------------------- | --------------------------------------------------------- |
-| Catalogue checks, ids, read-back, glyphs                 | `packages/items/src/type-catalogue.test.ts`               |
-| Glyph categories, keywords, old ids kept, search         | `packages/items/src/glyphs.test.ts`                       |
-| Glyph picker filters, empty state, picks                 | `apps/live/components/plan/GlyphPicker.test.tsx`          |
-| Route: store, relay, null, refusals, gates, copy, create | `apps/api/src/routes/item-routes.test.ts`                 |
-| Scoped sessions hear the op                              | `apps/api/src/room-scope.test.ts`                         |
-| Card tiles follow the catalogue                          | `apps/live/components/palette/palette-plan-tiles.test.ts` |
-| Custom values on a card                                  | `apps/live/components/plan/custom-field-text.test.ts`     |
-| Left-out statuses: read, refuse, allow                   | `packages/items/src/type-catalogue.test.ts`               |
-| Left-out statuses: api refuses moves, patches, makes     | `apps/api/src/routes/item-routes.test.ts`                 |
-| Left-out statuses: agent refusal message                 | `packages/agent-verbs/src/verbs/item.test.ts`             |
-| Statuses chips, panel Status options                     | `apps/live/components/plan/ItemTypeStatuses.test.tsx`     |
-| Editor tabs, Configuration sections, flags, arrow keys   | `apps/live/components/plan/ItemTypeEditor.tabs.test.tsx`  |
-| Show Me steps open Configuration, scroll to Fields       | `apps/live/components/tour/CardTypeTour.test.tsx`         |
-| Palette card refused in a left-out column                | `apps/live/hooks/plan/plan-card-drop.test.ts`             |
-| Panel, editor, card face, palette in a browser           | checked by hand against the dev stack (screenshots)       |
+| Rule                                                      | Test                                                      |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`               |
+| Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                       |
+| Glyph picker filters, empty state, picks                  | `apps/live/components/plan/GlyphPicker.test.tsx`          |
+| Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                 |
+| Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                 |
+| A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`        |
+| Editor: stale resend, failure drops one, undo keeps later | `apps/live/hooks/plan/useItemTypes.test.ts`               |
+| Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`       |
+| Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                         |
+| Card tiles follow the catalogue                           | `apps/live/components/palette/palette-plan-tiles.test.ts` |
+| Custom values on a card                                   | `apps/live/components/plan/custom-field-text.test.ts`     |
+| Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`               |
+| Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                 |
+| Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`             |
+| Statuses chips, panel Status options                      | `apps/live/components/plan/ItemTypeStatuses.test.tsx`     |
+| Editor tabs, Configuration sections, flags, arrow keys    | `apps/live/components/plan/ItemTypeEditor.tabs.test.tsx`  |
+| Show Me steps open Configuration, scroll to Fields        | `apps/live/components/tour/CardTypeTour.test.tsx`         |
+| Palette card refused in a left-out column                 | `apps/live/hooks/plan/plan-card-drop.test.ts`             |
+| Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)       |
 
 ## Constants and configuration
 
-| Constant                          | Value  | Why                                                                      |
-| --------------------------------- | ------ | ------------------------------------------------------------------------ |
-| `ITEM_TYPES_MAX`                  | 32     | Spec "An item type"                                                      |
-| `ITEM_TYPE_FIELDS_MAX`            | 24     | Spec                                                                     |
-| `ITEM_TYPE_CUSTOM_MAX`            | 12     | Spec                                                                     |
-| `ITEM_TYPE_LABEL_MAX`             | 32     | Spec                                                                     |
-| `CUSTOM_CHOICE_OPTIONS_MAX`       | 20     | Spec                                                                     |
-| `CUSTOM_CHOICE_OPTION_MAX`        | 40     | D11                                                                      |
-| `ITEM_TYPES_BYTES`                | 32,768 | Spec "Limits and validation"                                             |
-| `ITEM_TYPE_EXCLUDED_STATUSES_MAX` | 64     | Far more than a board's columns; keeps the catalogue small               |
-| `PLAN_TYPE_COLOURS`               | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more |
+| Constant                                               | Value  | Why                                                                            |
+| ------------------------------------------------------ | ------ | ------------------------------------------------------------------------------ |
+| `ITEM_TYPES_MAX`                                       | 32     | Spec "An item type"                                                            |
+| `ITEM_TYPE_FIELDS_MAX`                                 | 24     | Spec                                                                           |
+| `ITEM_TYPE_CUSTOM_MAX`                                 | 12     | Spec                                                                           |
+| `ITEM_TYPE_LABEL_MAX`                                  | 32     | Spec                                                                           |
+| `CUSTOM_CHOICE_OPTIONS_MAX`                            | 20     | Spec                                                                           |
+| `CUSTOM_CHOICE_OPTION_MAX`                             | 40     | D11                                                                            |
+| `ITEM_TYPES_BYTES`                                     | 32,768 | Spec "Limits and validation"                                                   |
+| `ITEM_TYPES_SAVE_ATTEMPTS`, `CARD_TYPES_SAVE_ATTEMPTS` | 3      | Spec "Storage and sync": a change made again a few times, then refused; 1 to 5 |
+| `ITEM_TYPE_EXCLUDED_STATUSES_MAX`                      | 64     | Far more than a board's columns; keeps the catalogue small                     |
+| `PLAN_TYPE_COLOURS`                                    | 12     | The default types' five (Black, Gray, Blue, Yellow, Red) then seven more       |
 
 ## Default and ready-made types
 

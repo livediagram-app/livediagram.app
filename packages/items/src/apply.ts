@@ -38,7 +38,14 @@ export function byRank(a: Item, b: Item): number {
 // The rank that places an item at `place` among `items` (the item itself
 // excluded). A neighbour that is gone, or in another column, means the end.
 export function rankForPlace(items: Iterable<Item>, place: ItemPlace, exceptId?: string): string {
-  const column = columnItems(items, place.status, exceptId);
+  return rankInColumn(columnItems(items, place.status, exceptId), place).rank;
+}
+
+// Where `place` lands in `column` (its items in rank order): the index it goes in at and its rank.
+export function rankInColumn(
+  column: readonly Item[],
+  place: ItemPlace,
+): { index: number; rank: string } {
   const at = (id: string | null | undefined) => (id ? column.findIndex((i) => i.id === id) : -1);
   let index: number;
   if (place.after !== undefined) {
@@ -58,15 +65,52 @@ export function rankForPlace(items: Iterable<Item>, place: ItemPlace, exceptId?:
   // Equal neighbours (a concurrent insert) leave no gap: go after the run of equal ranks, before
   // the first card past it, never to the column's end.
   if (prev !== null && next !== null && compareRank(prev, next) >= 0) {
-    const past = column.slice(index).find((i) => compareRank(i.rank, prev) > 0);
-    return rankBetween(prev, past?.rank ?? null);
+    const pastAt = column.findIndex((i, n) => n >= index && compareRank(i.rank, prev) > 0);
+    const past = pastAt === -1 ? column.length : pastAt;
+    return { index: past, rank: rankBetween(prev, column[past]?.rank ?? null) };
   }
-  return rankBetween(prev, next);
+  return { index, rank: rankBetween(prev, next) };
 }
 
+// Ranks many new items against one store (a bulk create, a seed): each status's column is sorted once and kept
+// in order as items are placed, so n creates cost one sort per column, not one per create (rankForPlace).
+export interface ItemPlacer {
+  rankFor: (place: ItemPlace) => string;
+  // Records a placed item (its rank from rankFor) so the next create sees it.
+  add: (item: Item) => void;
+}
+
+export function itemPlacer(items: Iterable<Item>): ItemPlacer {
+  const pool = [...items];
+  const columns = new Map<string | undefined, Item[]>();
+  const columnOf = (status: string | undefined) => {
+    let column = columns.get(status);
+    if (!column) {
+      column = columnItems(pool, status);
+      columns.set(status, column);
+    }
+    return column;
+  };
+  return {
+    rankFor: (place) => rankInColumn(columnOf(place.status), place).rank,
+    add: (item) => {
+      const column = columnOf(itemStatus(item));
+      // Usually the end of the column (a create with no neighbour); otherwise its place by rank.
+      const last = column[column.length - 1];
+      if (!last || byRank(last, item) <= 0) column.push(item);
+      else {
+        const at = column.findIndex((i) => byRank(i, item) > 0);
+        column.splice(at, 0, item);
+      }
+    },
+  };
+}
+
+// `items` is the store it joins, or a placer over it (itemPlacer) when many are made at once; the caller then
+// adds the made item to the placer.
 export function makeItem(
   create: ItemCreate,
-  ctx: WriteContext & { id: string; key: number; items: Iterable<Item> },
+  ctx: WriteContext & { id: string; key: number; items: Iterable<Item> | ItemPlacer },
 ): Item {
   const fields: ItemFields = { ...create.fields };
   if (create.votes && Object.keys(create.votes).length) fields['votes'] = { ...create.votes };
@@ -81,7 +125,7 @@ export function makeItem(
     id: ctx.id,
     type: create.type,
     key: ctx.key,
-    rank: rankForPlace(ctx.items, place),
+    rank: 'rankFor' in ctx.items ? ctx.items.rankFor(place) : rankForPlace(ctx.items, place),
     fields,
     rev: 1,
     createdAt: ctx.now,

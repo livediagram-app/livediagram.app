@@ -40,6 +40,7 @@ type DocumentRow = {
   presentation: string | null;
   // The type catalogue (docs/specs/026-plan/item-types.md), JSON, or null for the default types.
   item_types: string | null;
+  item_types_rev?: number;
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
@@ -99,6 +100,7 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
     source: (row.source as DocumentDTO['source']) ?? null,
     presentation: row.presentation ?? null,
     itemTypes: readItemTypeCatalogue(row.item_types ?? null),
+    itemTypesRev: row.item_types_rev ?? 0,
     savedAt: row.saved_at,
     createdAt: row.created_at,
     ownerName: ownerParticipant?.name ?? null,
@@ -123,7 +125,7 @@ const INTENT_COLS = 'opens_in, tab_kind, template_family';
 const COMMUNITY_STATE_EXPR = `(SELECT CASE WHEN cp.state <> 'listed' THEN cp.state WHEN ${PUBLIC_POST} THEN 'listed' END
   FROM community_posts cp JOIN documents d ON d.id = cp.document_id
   WHERE cp.document_id = documents.id) AS community_state`;
-const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
+const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
@@ -318,15 +320,27 @@ export async function setDocumentPresentation(
 
 // Type catalogue write (docs/specs/026-plan/item-types.md "Storage and sync"): its own statement, as
 // the deck's, so no meta save can rewrite it. `itemTypes` is already validated; null puts back the
-// default types.
+// default types. Raises the catalogue's revision; with `expectedRev` it lands only while the stored
+// revision is that one. Returns the new revision, or null when the stored one had moved on.
 export async function setDocumentItemTypes(
   env: Env,
   id: string,
   itemTypes: ItemTypeCatalogue | null,
-): Promise<void> {
-  await env.DB.prepare(`UPDATE documents SET item_types = ?, saved_at = ? WHERE id = ?`)
-    .bind(itemTypes ? JSON.stringify(itemTypes) : null, Date.now(), id)
-    .run();
+  expectedRev?: number,
+): Promise<number | null> {
+  const row = await env.DB.prepare(
+    `UPDATE documents SET item_types = ?, item_types_rev = item_types_rev + 1, saved_at = ?
+      WHERE id = ? AND (? IS NULL OR item_types_rev = ?) RETURNING item_types_rev`,
+  )
+    .bind(
+      itemTypes ? JSON.stringify(itemTypes) : null,
+      Date.now(),
+      id,
+      expectedRev ?? null,
+      expectedRev ?? null,
+    )
+    .first<{ item_types_rev: number }>();
+  return row?.item_types_rev ?? null;
 }
 
 // Placement write (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): folder and team scope move

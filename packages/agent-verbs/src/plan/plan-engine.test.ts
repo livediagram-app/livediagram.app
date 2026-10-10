@@ -344,6 +344,50 @@ describe('changeCardTypes', () => {
     const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
     expect(r.refusal!.message).toContain('view this document but not change it');
   });
+
+  // docs/specs/026-plan/item-types.md "Storage and sync": a save names the revision it read; when an editor's change
+  // landed first, the plan is read again and the change applied to it, keeping the editor's.
+  it('applies its changes again to card types someone else changed meanwhile', async () => {
+    let rev = 4;
+    let types: unknown[] = [...ITEM_TYPES, BUG];
+    const puts: { itemTypes: { types: { id: string }[] }; expectedRev: number }[] = [];
+    const { api: a } = api({
+      [`/documents/${D}/plan`]: () =>
+        Response.json({ boards: [BOARD()], statuses: STATUSES, types, itemTypesRev: rev }),
+      [`/documents/${D}/item-types`]: async (r: Request) => {
+        const body = (await r.json()) as (typeof puts)[number];
+        puts.push(body);
+        if (puts.length === 1) {
+          // An editor added a type between the read and the save.
+          rev = 5;
+          types = [...types, { ...BUG, id: 'spike', label: 'Spike' }];
+          return Response.json(
+            { error: 'item_types_stale', itemTypes: null, itemTypesRev: 5 },
+            { status: 409 },
+          );
+        }
+        return Response.json({ itemTypes: body.itemTypes, itemTypesRev: 6 });
+      },
+    });
+    const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
+    expect(r.refusal).toBeUndefined();
+    expect(puts.map((p) => p.expectedRev)).toEqual([4, 5]);
+    const ids = puts[1]!.itemTypes.types.map((t) => t.id);
+    expect(ids).toContain('spike');
+    expect(ids).toContain('risk');
+  });
+
+  it('gives up with a refusal when the card types keep changing', async () => {
+    const { api: a } = api({
+      [`/documents/${D}/item-types`]: () =>
+        Response.json(
+          { error: 'item_types_stale', itemTypes: null, itemTypesRev: 9 },
+          { status: 409 },
+        ),
+    });
+    const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
+    expect(r.refusal).toMatchObject({ code: 'item_types_stale' });
+  });
 });
 
 describe('addBoard', () => {

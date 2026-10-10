@@ -1105,8 +1105,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     ownerId: selfParticipant.id,
     shareCode: sessionShareCode,
-    catalogue: documentItemTypes,
-    setCatalogue: setDocumentItemTypes,
+    stored: documentItemTypes,
+    setStored: setDocumentItemTypes,
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
   });

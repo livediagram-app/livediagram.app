@@ -12,25 +12,21 @@ import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
   ITEM_KEY_MAX,
-  ITEM_STATUS_MAX,
   ITEM_WRITE_RETRIES,
-  isSwimlaneSettable,
   applyMove,
+  itemPlacer,
   applyPatch,
   fieldsWithinBounds,
-  isValidItemId,
-  isValidItemType,
+  readItemCreate,
+  readItemMove,
+  readItemPatch,
   typesOf,
   withDefaultStatuses,
   makeItem,
   newItemId,
-  validateFields,
-  validateVotes,
   type Item,
   type ItemCreate,
-  type ItemMove,
   type ItemPerson,
-  type ItemPlace,
   type ItemRejection,
 } from '@livediagram/items';
 import {
@@ -38,7 +34,6 @@ import {
   getItemStoreHead,
   getItemsRev,
   insertItems,
-  itemKeyTaken,
   listItems,
   readItem,
   updateItemAtRev,
@@ -51,7 +46,6 @@ import {
   itemBusy,
   itemCaller,
   itemNotFound,
-  readPatch,
   rejected,
   relay,
   writer,
@@ -61,50 +55,14 @@ import { patches } from './item-patches-route';
 import { tally } from './item-tally-route';
 import { readBody, type RouteContext } from './context';
 
-function readPlace(raw: unknown): ItemPlace | ItemRejection {
-  if (raw === undefined) return {};
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'place_invalid';
-  const p = raw as Record<string, unknown>;
-  const place: ItemPlace = {};
-  if (p.status !== undefined) {
-    if (typeof p.status !== 'string' || !p.status.trim() || p.status.length > ITEM_STATUS_MAX)
-      return 'place_invalid';
-    place.status = p.status.trim();
-  }
-  for (const side of ['after', 'before'] as const) {
-    const v = p[side];
-    if (v === undefined) continue;
-    if (v !== null && !isValidItemId(v)) return 'place_invalid';
-    place[side] = v;
-  }
-  return place;
-}
-
 // `owner` is the caller: a restored comment thread keeps author ids on their own comments only.
 function readCreate(raw: unknown, owner: string): ItemCreate | ItemRejection {
-  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return 'field_value_invalid';
-  const b = raw as Record<string, unknown>;
-  if (!isValidItemType(b.type)) return 'type_invalid';
-  if (b.id !== undefined && !isValidItemId(b.id)) return 'id_invalid';
-  const fields = validateFields(b.fields, 'create');
-  if (!fields.ok) return fields.error;
-  const place = readPlace(b.place);
-  if (typeof place === 'string') return place;
-  const bound = fieldsWithinBounds(fields.fields);
-  if (bound) return bound;
-  const votes = validateVotes(b.votes);
-  if (!votes) return 'field_value_invalid';
-  const comments = b.comments === undefined ? undefined : readRestoredThread(b.comments, owner);
+  const read = readItemCreate(raw);
+  if (typeof read === 'string') return read;
+  const thread = (raw as { comments?: unknown }).comments;
+  const comments = thread === undefined ? undefined : readRestoredThread(thread, owner);
   if (comments === null) return 'field_value_invalid';
-  return {
-    type: b.type,
-    fields: fields.fields,
-    place,
-    ...(Object.keys(votes).length ? { votes } : {}),
-    ...(comments ? { comments: comments as unknown as ItemCreate['comments'] } : {}),
-    ...(typeof b.id === 'string' ? { id: b.id } : {}),
-    ...(typeof b.key === 'number' && Number.isInteger(b.key) && b.key > 0 ? { key: b.key } : {}),
-  };
+  return comments ? { ...read, comments: comments as unknown as ItemCreate['comments'] } : read;
 }
 
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
@@ -121,7 +79,10 @@ async function list(ctx: RouteContext, documentId: string): Promise<Response> {
 }
 
 // Creates `creates` in one batch. A named key (a restore, an offline sync, a copy) is kept while it is free, below
-// the store's next key or above it; every other create takes the next key not already in use.
+// the store's next key or above it; every other create takes the next key not already in use. The store is read
+// once per attempt: its keys answer whether a named key is free (a key taken by a racing write fails the insert,
+// which retries), and one placer ranks every create (itemPlacer), so a seed of n cards costs no per-card query and
+// no per-card sort.
 async function createMany(
   ctx: RouteContext,
   caller: ItemCaller,
@@ -138,7 +99,7 @@ async function createMany(
     }
     const existing = await listItems(ctx.env, caller.documentId);
     const ids = new Set(existing.map((i) => i.id));
-    const pool = [...existing];
+    const placer = itemPlacer(existing);
     const keys = new Set(existing.map((i) => i.key));
     const made: Item[] = [];
     let nextKey = head.nextKey;
@@ -149,12 +110,7 @@ async function createMany(
         create.id ?? newItemId(() => crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32);
       ids.add(id);
       let key: number;
-      if (
-        create.key !== undefined &&
-        create.key <= ITEM_KEY_MAX &&
-        !keys.has(create.key) &&
-        !(await itemKeyTaken(ctx.env, caller.documentId, create.key))
-      ) {
+      if (create.key !== undefined && create.key <= ITEM_KEY_MAX && !keys.has(create.key)) {
         key = create.key;
       } else {
         // A key named earlier in this batch may sit at or above the next key.
@@ -163,8 +119,8 @@ async function createMany(
         nextKey += 1;
       }
       keys.add(key);
-      const item = makeItem(create, { id, key, now, by, items: pool });
-      pool.push(item);
+      const item = makeItem(create, { id, key, now, by, items: placer });
+      placer.add(item);
       made.push(item);
     }
     try {
@@ -223,13 +179,14 @@ async function bulk(ctx: RouteContext, documentId: string): Promise<Response> {
   return json(answer, { status: 201 });
 }
 
-// Reads the item, applies `change` and writes at the rev read; a lost race reads again. A change may answer
-// with a Response instead (a refusal, or nothing to write).
+// Reads the item, applies `change` and writes at the rev read; a lost race reads again, and runs `change` again,
+// so anything it reads (a move's neighbours) is read afresh on every attempt. A change may answer with a Response
+// instead (a refusal, or nothing to write).
 export async function writeItem(
   ctx: RouteContext,
   caller: ItemCaller,
   itemId: string,
-  change: (item: Item, by: ItemPerson) => Item | Response,
+  change: (item: Item, by: ItemPerson) => Item | Response | Promise<Item | Response>,
   // An undo or redo (the body's `undo: true`): a card type's left-out statuses do not refuse it.
   opts: { undo?: boolean } = {},
 ): Promise<Response> {
@@ -238,7 +195,7 @@ export async function writeItem(
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const item = await readItem(ctx.env, caller.documentId, itemId);
     if (!item) return itemNotFound();
-    const next = change(item, by);
+    const next = await change(item, by);
     if (next instanceof Response) return next;
     if (excludedStatus(caller, next, item, opts.undo === true))
       return rejected('status_excluded', 'status');
@@ -260,7 +217,7 @@ async function patch(ctx: RouteContext, documentId: string, itemId: string): Pro
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readPatch(body);
+  const input = readItemPatch(body);
   if (typeof input === 'string') return rejected(input);
   return writeItem(
     ctx,
@@ -271,35 +228,20 @@ async function patch(ctx: RouteContext, documentId: string, itemId: string): Pro
   );
 }
 
-function readMove(body: Record<string, unknown>): ItemMove | ItemRejection {
-  const place = readPlace(body);
-  if (typeof place === 'string') return place;
-  const move: ItemMove = place;
-  const lane = readPatch(body);
-  if (typeof lane === 'string') return lane;
-  const touched = [...Object.keys(lane.set ?? {}), ...(lane.clear ?? [])];
-  // A move sets only what a swimlane stands for (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
-  if (touched.some((k) => !isSwimlaneSettable(k))) return 'place_invalid';
-  if (lane.set) move.set = lane.set;
-  if (lane.clear) move.clear = lane.clear;
-  if (lane.type) move.type = lane.type;
-  return move;
-}
-
 async function move(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
   const caller = await itemCaller(ctx, documentId, 'edit');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
-  const input = readMove(body);
+  const input = readItemMove(body);
   if (typeof input === 'string') return rejected(input);
-  // The neighbours are read before the change runs (the change itself is synchronous).
-  const items = await listItems(ctx.env, documentId);
+  // The neighbours are read on every attempt: a retry after a lost race ranks against the column as it now is.
   return writeItem(
     ctx,
     caller,
     itemId,
-    (item, by) => applyMove(item, input, items, { now: Date.now(), by }),
+    async (item, by) =>
+      applyMove(item, input, await listItems(ctx.env, documentId), { now: Date.now(), by }),
     { undo: body.undo === true },
   );
 }

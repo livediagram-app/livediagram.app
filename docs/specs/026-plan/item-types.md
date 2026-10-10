@@ -395,6 +395,16 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 - The stored catalogue is a JSON column on the document (`item_types`, null while no card types are chosen: the default types), written only by
   its own route, `PUT /api/documents/{id}/item-types` with `{ itemTypes }` (a catalogue, or null for the default
   types), by anyone who may edit the document. Its answer is the catalogue as stored.
+- The catalogue has a **revision** (`item_types_rev`, 0 until its first write), raised by every write and carried by
+  the document's GET (`itemTypesRev`), the plan agents read and the room's op. A write names the revision it changed
+  (`expectedRev`); when another change landed since, it is refused (409 `item_types_stale`, carrying the catalogue and
+  revision stored), so two people changing card types at once never overwrite each other. A write that names no
+  revision lands whatever is stored.
+- A change is kept as the catalogue before and after it, so it can be made again to whatever is stored: only the
+  types it added, changed or deleted move, every other type stays as stored. Refused as stale, the editor and agents
+  make it again to the stored catalogue and send it again (up to three tries); a save that still fails drops only
+  that change, never one saved after it. An undo makes the change's inverse to the catalogue as it then is, so it
+  never takes back anyone's later change; a redo makes the change again the same way.
 - Each write reaches the document's room as an ordered system op, `item-types`, carrying the catalogue, so open
   editors redraw at once; a tab-scoped session receives it too (types hold no content).
 - The document's GET carries `itemTypes`. An offline document keeps it in its record and writes it there.

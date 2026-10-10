@@ -57,6 +57,66 @@ describe('offline items', () => {
     });
   });
 
+  // The api's field checks run offline too, so Sync to Cloud never meets a card the api would refuse.
+  it('checks fields, moves and card types as the api does', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(
+      testRecord({
+        itemTypes: {
+          version: 1,
+          types: [
+            {
+              id: 'task',
+              label: 'Task',
+              color: '#71717a',
+              glyph: 'task',
+              fields: [],
+              newTitle: 'New task',
+              excludedStatuses: ['done'],
+            },
+          ],
+        },
+      }),
+    );
+    const create = (fields: Record<string, unknown>) =>
+      offlineWriteItem(
+        'd1',
+        { kind: 'create', creates: [{ id: 'item-one', type: 'task', fields } as never] },
+        ME,
+      );
+    await expect(create({ title: '   ' })).rejects.toMatchObject({
+      status: 400,
+      code: 'title_required',
+    });
+    await expect(create({ title: 'x'.repeat(5000) })).rejects.toMatchObject({
+      code: 'title_too_long',
+    });
+    // Stored as the api stores it: the title trimmed.
+    const made = await create({ title: '  One  ', status: 'todo' });
+    expect(made.upserts[0]!.fields['title']).toBe('One');
+    await expect(
+      offlineWriteItem('d1', { kind: 'patch', id: 'item-one', patch: { clear: ['title'] } }, ME),
+    ).rejects.toMatchObject({ code: 'title_required' });
+    await expect(
+      offlineWriteItem(
+        'd1',
+        { kind: 'move', id: 'item-one', move: { status: 'todo', set: { title: 'no' } } },
+        ME,
+      ),
+    ).rejects.toMatchObject({ code: 'place_invalid' });
+    // A status the type leaves out is refused, unless the write puts a change back.
+    await expect(
+      offlineWriteItem('d1', { kind: 'move', id: 'item-one', move: { status: 'done' } }, ME),
+    ).rejects.toMatchObject({ code: 'status_excluded' });
+    expect((await offlineGetRecord('d1'))?.items?.[0]?.fields['status']).toBe('todo');
+    const undone = await offlineWriteItem(
+      'd1',
+      { kind: 'move', id: 'item-one', move: { status: 'done' }, undo: true },
+      ME,
+    );
+    expect(undone.upserts[0]!.fields['status']).toBe('done');
+  });
+
   // docs/specs/026-plan/items.md "Comments": an offline document comments locally, by the same rules.
   it('comments on a card in the record: add, resolve, delete, and refuses as the api does', async () => {
     __setOfflineBackend(memBackend());

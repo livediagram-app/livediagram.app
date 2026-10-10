@@ -11,6 +11,7 @@ import {
   applyTally,
   byRank,
   inversePatch,
+  itemPlacer,
   makeItem,
   newItemId,
   placeOf,
@@ -59,6 +60,7 @@ export function applyItemWrite(
     if (state.items.length + write.creates.length > ITEMS_MAX)
       return { ok: false, error: 'items_full' };
     const pool = [...state.items];
+    const placer = itemPlacer(pool);
     const ids = new Set(pool.map((i) => i.id));
     const keys = new Set(pool.map((i) => i.key));
     const made: Item[] = [];
@@ -72,7 +74,8 @@ export function applyItemWrite(
         create.key !== undefined && create.key < state.nextKey && !keys.has(create.key);
       const key = restore ? create.key! : nextKey++;
       keys.add(key);
-      const item = makeItem(create, { ...base, id, key, items: pool });
+      const item = makeItem(create, { ...base, id, key, items: placer });
+      placer.add(item);
       pool.push(item);
       made.push(item);
     }
@@ -165,6 +168,24 @@ export function itemIdsOfWrite(write: ItemWrite): string[] {
   if (write.kind === 'patches') return write.patches.map((p) => p.id);
   if (write.kind === 'tally') return write.tallies.map((t) => t.id);
   return [write.id];
+}
+
+// `write` narrowed to the items in `ids`: what of it landed when the rest did not (a many-item change refused after
+// some of its items were written). Null when none of it is left.
+export function writeLimitedTo(write: ItemWrite, ids: ReadonlySet<string>): ItemWrite | null {
+  if (write.kind === 'patches') {
+    const patches = write.patches.filter((p) => ids.has(p.id));
+    return patches.length ? { ...write, patches } : null;
+  }
+  if (write.kind === 'create') {
+    const creates = write.creates.filter((c) => c.id !== undefined && ids.has(c.id));
+    return creates.length ? { kind: 'create', creates } : null;
+  }
+  if (write.kind === 'tally') {
+    const tallies = write.tallies.filter((t) => ids.has(t.id));
+    return tallies.length ? { kind: 'tally', tallies } : null;
+  }
+  return ids.has(write.id) ? write : null;
 }
 
 // A fresh read folded over the store: anything newer that arrived while the read was in flight is kept, except

@@ -7,7 +7,14 @@ import { ITEM_TYPE_PATTERN } from './limits';
 import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
 import { statusTitleCase } from './status-title-case';
 import type { Item, ItemPerson } from './item';
-import { LANE_FIELD_BUILT_INS, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import {
+  ARCHIVED_FIELD,
+  LANE_FIELD_BUILT_INS,
+  itemAssignee,
+  itemLabels,
+  itemStatus,
+  itemTitle,
+} from './item';
 import type { ItemMove } from './item';
 import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
 import {
@@ -143,7 +150,7 @@ export const UNASSIGNED = '-';
 
 // An archived item (docs/specs/026-plan/items.md "Archive"): off every board but an Archive board.
 export function isArchived(item: Item): boolean {
-  return item.fields['archived'] === true;
+  return item.fields[ARCHIVED_FIELD] === true;
 }
 
 // A flagged item (docs/specs/026-plan/items.md "Flags"): marked for attention wherever it shows.

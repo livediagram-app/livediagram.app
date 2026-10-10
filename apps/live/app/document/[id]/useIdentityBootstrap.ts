@@ -1,4 +1,4 @@
-import type { ItemTypeCatalogue } from '@livediagram/items';
+import type { SavedItemTypes } from '@/lib/api/item-types';
 import {
   useLayoutEffect,
   useRef,
@@ -88,7 +88,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
     setDocumentPresentation: SetState<string | null>;
-    setDocumentItemTypes: SetState<ItemTypeCatalogue | null>;
+    setDocumentItemTypes: SetState<SavedItemTypes>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The document is in the Trash (docs/specs/013-workspace/trash.md).
