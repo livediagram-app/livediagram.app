@@ -48,7 +48,7 @@ async function run(
   if (
     emailEnabled(env) &&
     w.author.id !== w.document.ownerId &&
-    hasNewComments(w.next.elements, previous)
+    hasNewComments(w.next.elements, previous, w.author.id)
   ) {
     work.push(
       notifyNewComment(

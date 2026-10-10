@@ -190,11 +190,17 @@ export function redactTabDataAuthors(data: string, viewerId: string): string {
   }
 }
 
-// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one comment id not in
-// `prevElements`. Used by the tab-autosave handler to fire the "someone
-// commented on your document" notification only when a genuinely new comment
-// landed (not on every autosave).
-export function hasNewComments(nextElements: Element[], prevElements: Element[]): boolean {
+// docs/specs/014-identity/transactional-email.md (#1): true when `nextElements` adds at least one
+// comment id not in `prevElements` written by `authorId`. Used by the tab-autosave handler to fire
+// the "someone commented on your document" notification only when a genuinely new comment landed
+// (not on every autosave), and only for the writer's own: a save can carry a peer's comment that
+// reached the writer live first, which is not the writer commenting. Pass the elements after
+// rewriteCommentAuthors, whose author ids the server set.
+export function hasNewComments(
+  nextElements: Element[],
+  prevElements: Element[],
+  authorId: string,
+): boolean {
   const seen = new Set<string>();
   for (const el of prevElements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
@@ -203,7 +209,7 @@ export function hasNewComments(nextElements: Element[], prevElements: Element[])
   for (const el of nextElements) {
     const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
     for (const c of thread?.comments ?? []) {
-      if (!seen.has(c.id)) return true;
+      if (!seen.has(c.id) && c.authorId === authorId) return true;
     }
   }
   return false;

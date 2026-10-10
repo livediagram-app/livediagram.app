@@ -1179,6 +1179,22 @@ comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
 as the document itself.)
 
+**A comment event's actor is the comment's author, never simply the saver.** A
+tab save can carry a peer's new comment that reached the saver live before the
+author's own save landed; `rewriteCommentAuthors` stores it without an author
+id, credited by the room's name. Its `comment_added` is recorded with no actor
+then, and the author's own later save, which claims the comment, fills the actor
+in (an emit's conflict update fills a missing actor and never replaces one). An
+author id other than the saver's is never trusted as an actor.
+
+**A deleted comment takes its words with it.** Every path that removes a comment
+deletes its `comment_added` event, and, when it opened its thread, the thread's
+`comment_resolved` event, whose description is that opening comment's text: the
+delete-own comment route, a Plan card's comment delete, and a tab save that drops
+comment ids (one by one, or with their element), diffed by `removedComments`. A
+comment that comes back (an undo) is new again to the next save and is recorded
+afresh.
+
 A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
 `action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no
 account yet). Both are what [Explorer Home](explorer-home.md)'s What happened needs to say "replied" and "assigned

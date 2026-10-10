@@ -48,7 +48,10 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
    `api_tokens.expiry_warned_at`, migration 0030.
 10. **New comment** (#1, opt-out `notifyComments`) — when someone other than the
     owner comments on a document (either comment path), the owner is emailed
-    **immediately** (no cron). Never includes the comment text.
+    **immediately** (no cron). Never includes the comment text. On the tab save
+    it counts only the saver's own new comments: a save can carry a peer's
+    comment that reached the saver live first, and that is not the saver
+    commenting.
 11. **Action assigned** (opt-out `notifyActionAssigned`) — a teammate assigned
     the recipient an action ([Assigned actions](../012-collaboration/assigned-actions.md)).
 12. **Mentioned** (opt-out `notifyMentions`) — a teammate @-mentioned the

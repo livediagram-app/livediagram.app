@@ -62,7 +62,9 @@ export function dedupeKeyOnce(): string {
 //
 // The UPDATE on conflict is what makes the coalesced editing event
 // work: the day's first save inserts, and every later save that day
-// pushes `occurred_at` forward and refreshes the snapshot. That is a
+// pushes `occurred_at` forward and refreshes the snapshot. It fills an
+// actor the first emit could not know (a peer's comment, credited to its
+// author only once their own save claims it) and never replaces one. That is a
 // deliberate departure from a strictly additive model, and it is only
 // safe because nothing user-authored (a star, a dismissal) hangs off
 // these rows yet — see docs/specs/013-workspace/timeline.md §4.2.
@@ -87,6 +89,7 @@ export async function emitTimelineEvent(
        draft.keepExisting
          ? 'DO NOTHING'
          : `DO UPDATE SET
+       actor_id = COALESCE(timeline_events.actor_id, excluded.actor_id),
        title = excluded.title,
        description = excluded.description,
        snapshot = excluded.snapshot,
@@ -483,6 +486,29 @@ export async function markTimelineEventsDeletedBySource(
         AND (source_id = ?2 OR json_extract(snapshot, '$.' || ?3) = ?2)`,
   )
     .bind(sourceType, sourceId, `${sourceType}Id`)
+    .run();
+}
+
+// A deleted comment takes its words off every feed (docs/specs/013-workspace/timeline.md §4.3):
+// its `comment_added` event, and the `comment_resolved` event of each thread whose opening
+// comment it was, since that event's description is the opening comment's text. Pinned to the
+// document through the snapshot, so an id from another document can never reach its rows.
+// Both clauses probe the (source_type, source_id, ...) unique index.
+export async function deleteCommentEvents(
+  env: Env,
+  documentId: string,
+  commentIds: readonly string[],
+  threadKeys: readonly string[],
+): Promise<void> {
+  if (commentIds.length === 0 && threadKeys.length === 0) return;
+  await env.DB.prepare(
+    `DELETE FROM timeline_events
+      WHERE source_type = 'document'
+        AND ((event_type = 'comment_added' AND source_id IN (SELECT value FROM json_each(?2)))
+          OR (event_type = 'comment_resolved' AND source_id IN (SELECT value FROM json_each(?3))))
+        AND json_extract(snapshot, '$.documentId') = ?1`,
+  )
+    .bind(documentId, JSON.stringify(commentIds), JSON.stringify(threadKeys))
     .run();
 }
 
