@@ -254,7 +254,9 @@ export async function renderTabToCanvas(
   // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
   const surface = frame ? frame.surface : canvasSurface(bgColor);
-  ctx.fillStyle = frame ? EXPORT_PAPER : bgColor;
+  // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
+  const paper = frame ? EXPORT_PAPER : bgColor;
+  ctx.fillStyle = paper;
   if (!frame?.transparent) ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (frame) {
@@ -377,7 +379,7 @@ export async function renderTabToCanvas(
     if (el.type === 'arrow') {
       const svg = svgZoneClipped(
         el.id,
-        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els),
+        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper),
         clips,
       );
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
@@ -521,6 +523,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // See the PNG path: unpainted elements take the exported paper's ink.
   const surface = frame ? frame.surface : canvasSurface(bgColor);
+  // As the PNG path: a hollow head takes this paper, and an arrow breaks only
+  // behind the boxes this export draws (`els`), never a hidden or off-page one.
+  const paper = frame ? EXPORT_PAPER : bgColor;
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
@@ -592,7 +597,11 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
     for (const el of band.elements) {
       if (el.type === 'arrow')
         inner.push(
-          svgZoneClipped(el.id, svgArrow(el, tab.elements, surface, tab.font, labels), clips),
+          svgZoneClipped(
+            el.id,
+            svgArrow(el, tab.elements, surface, tab.font, labels, undefined, els, paper),
+            clips,
+          ),
         );
     }
     parts.push(wrapBand(layerOpacityOf(band.layer), inner));

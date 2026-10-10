@@ -75,6 +75,12 @@ chips, count boxes, the 16-unit glyphs). The done green is `COLLAB_DONE_COLOR`.
 Cards whose rows reflow (Q&A board, Idea box, Comment panel, Action panel,
 Agenda, Roll call) lay out at the element's own size rather than scaling.
 
+**Every export draws an arrow the same way.** The SVG and the PNG / PDF both
+hand `svgArrow` the elements the export draws as its occluders, so a line
+breaks only behind a box that is in the picture (never one on a hidden layer
+or off the page), and the export's paper (`EXPORT_PAPER` on a page frame, else
+the tab's background) as the fill of a hollow head, as the canvas fills it.
+
 **A self-painting element gets no box and no label.** `SELF_PAINTING_SHAPES`
 already said which kinds draw their own body; the export now honours it, so a
 chart is not framed in a rectangle that is not on the canvas, and a rail does not
