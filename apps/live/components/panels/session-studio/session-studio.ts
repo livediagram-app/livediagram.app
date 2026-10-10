@@ -1,53 +1,13 @@
-// Pure logic behind the Session Studio (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md): which tool the
-// panel opens on, the Timer dial's angle <-> minutes mapping, and the dot
-// vote's phase. Kept out of the components so it can be tested without a
+// Pure logic behind the session panes (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md): the Timer
+// dial's angle <-> minutes mapping, and the rules a running dot vote is under. Kept out of the components so it can be tested without a
 // DOM, and so the dial's snapping rules live in one place.
 
-import { TIMER_MINUTES_RANGE, type TabTimer, type TabVote } from '@livediagram/document';
-
-export type StudioTool = 'timer' | 'vote' | 'poll';
-
-export const STUDIO_TOOLS: readonly StudioTool[] = ['timer', 'vote', 'poll'];
-
-// What each tool is doing right now, for the switcher's status dots. `live`
-// is something the room is looking at this second; `idle` is set up but
-// waiting (a paused timer, a closed vote whose results aren't cleared).
-export type StudioToolStatus = 'live' | 'idle' | null;
-
-export function studioToolStatus(
-  tool: StudioTool,
-  state: { timer: TabTimer | null; vote: TabVote | null; pollRunning: boolean },
-): StudioToolStatus {
-  switch (tool) {
-    case 'timer':
-      if (!state.timer) return null;
-      return state.timer.running ? 'live' : 'idle';
-    case 'vote':
-      if (!state.vote) return null;
-      return state.vote.active ? 'live' : 'idle';
-    case 'poll':
-      return state.pollRunning ? 'live' : null;
-  }
-}
-
-// The tool the panel opens on. Whatever is LIVE wins, because the reason
-// most people reopen this menu mid-session is to drive the thing that is
-// running (pause the timer, end the vote); failing that, anything set up
-// but idle; failing that, the timer, the most common first reach.
-export function initialStudioTool(state: {
-  timer: TabTimer | null;
-  vote: TabVote | null;
-  pollRunning: boolean;
-}): StudioTool {
-  for (const want of ['live', 'idle'] as const) {
-    // Poll before vote before timer: the rarer, more deliberate tool is the
-    // likelier reason to be here when two things run at once.
-    for (const tool of ['poll', 'vote', 'timer'] as const) {
-      if (studioToolStatus(tool, state) === want) return tool;
-    }
-  }
-  return 'timer';
-}
+import {
+  TIMER_MINUTES_RANGE,
+  voteHidesCursors,
+  voteHidesTallies,
+  type TabVote,
+} from '@livediagram/document';
 
 // --- Timer dial --------------------------------------------------------------
 //
@@ -115,23 +75,22 @@ export function formatMinutesLabel(minutes: number): string {
 
 // --- Dot vote -----------------------------------------------------------------
 
-export type VotePhase = 'setup' | 'casting' | 'closed' | 'results';
-
-export function votePhase(vote: TabVote | null): VotePhase {
-  if (!vote) return 'setup';
-  if (vote.active) return 'casting';
-  return vote.revealed ? 'results' : 'closed';
-}
-
-// Dots cast and the number of distinct people who cast them.
-export function voteTurnout(vote: TabVote): { dots: number; voters: number } {
-  const voters = new Set<string>();
-  let dots = 0;
-  for (const ids of Object.values(vote.votes)) {
-    dots += ids.length;
-    for (const id of ids) voters.add(id);
-  }
-  return { dots, voters: voters.size };
+// The rules a running vote is under, as short chips for the Vote panel. Phase-aware: the privacy
+// rules read what is in force NOW (cursors come back the moment voting closes), not what was
+// ticked at start.
+export function voteRules(
+  vote: TabVote,
+  layers: readonly { id: string; name: string }[],
+): string[] {
+  return [
+    `${vote.votesPerPerson} ${vote.votesPerPerson === 1 ? 'dot' : 'dots'} each`,
+    vote.onePerElement ? 'One per item' : null,
+    vote.voteLayerId
+      ? `${layers.find((l) => l.id === vote.voteLayerId)?.name ?? 'One layer'} only`
+      : null,
+    voteHidesCursors(vote) ? 'Cursors hidden' : null,
+    voteHidesTallies(vote) ? 'Counts hidden' : null,
+  ].filter((r): r is string => r !== null);
 }
 
 // Dragging the dial handle past twelve o'clock would otherwise wrap: 59 -> 1

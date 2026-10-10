@@ -1,7 +1,8 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CleanupBeforeAfter, CleanupMenu } from '@/components/illustrations/tools';
+import { CleanupBeforeAfter } from '@/components/illustrations/tools';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'Layout Cleanup',
@@ -34,13 +35,13 @@ When a diagram gets messy, you usually want one of two things: either everything
 
 ## How to run them
 
-Right-click an empty part of the canvas (on a touchscreen, long-press it), or open the active tab's ⋯ menu, then open the **Cleanup** section and pick the tidier you want. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was. Each is also a command in the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K): type "Auto Layout" or "Auto-align to grid".
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto Layout** or **Auto-align**, and pick the tidier you want under **Actions**. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
 
-<Figure caption="The Cleanup section lists one tidier per row. On a computer, resting the pointer on a row previews it on the tab behind the menu.">
-  <CleanupMenu />
+<Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
+  <SearchCommandPalette />
 </Figure>
 
-On a computer, resting the pointer on a row lays the tab out that way behind the menu, live; nothing changes for real until you click, and moving off the rows puts everything back. Cleanup is for editors: it isn't offered in a view-only session, and it leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
+The tidiers are for editors: it isn't offered in a view-only session, and it leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
 
 The two tools compose nicely. Auto Layout finishes by running Auto-Align, so a freshly laid-out diagram is also grid-aligned. If you want, you can run Auto Layout to get the structure right, then trust it has already snapped to the grid for you.
 

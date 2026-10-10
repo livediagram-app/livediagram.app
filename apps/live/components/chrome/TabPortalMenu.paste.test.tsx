@@ -37,10 +37,6 @@ function props(over: Partial<Props> = {}): Props {
     canDelete: true,
     canClearContent: true,
     canvas: {
-      onAutoAlign: noop,
-      onAutoLayout: noop,
-      onPreviewCleanup: noop,
-      onEndCleanupPreview: noop,
       onPaste: noop,
       canPaste: true,
     },

@@ -1,7 +1,9 @@
 import { mirroredLogoPages } from '@/hooks/editor/useLogoTools';
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { ES_LANES } from '@livediagram/document';
+import { ES_LANES, votesSpentBy } from '@livediagram/document';
+import { participantKey } from '@/lib/identity';
+import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
@@ -23,16 +25,16 @@ const TemplatePicker = dynamic(
   { ssr: false },
 );
 
-import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 import { OffscreenContentHint } from '@/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
+import { SessionClusterStrip, sessionStripTools } from '@/components/canvas/SessionClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
-import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
+import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
@@ -50,7 +52,7 @@ import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import type { StampGhost } from '@/components/canvas/useStampGhost';
-import { HoverCard, atLeastInset } from '@livediagram/ui';
+import { atLeastInset } from '@livediagram/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@/hooks/canvas/useSnapHaptic';
@@ -61,7 +63,6 @@ import { panelEnabled } from '@/lib/user-preferences';
 import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
-import { CLUSTER_STRIP } from '@/components/canvas/cluster-strip';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -316,6 +317,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
     activeDockPanel,
     handleDockButtonClick,
   });
+  // The Vote button, which a starting results walkthrough opens for whoever drives it.
+  const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
+    activeDockPanel,
+    handleDockButtonClick,
+  });
   // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
   // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock.
   const paletteShown = (!readOnly && !whiteboard) || !!props.participantPalette;
@@ -357,6 +363,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     trashPopoverEl,
     newCardPopoverEl,
     cardFinderPopoverEl,
+    sessionPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -522,6 +529,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
+      {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
+      {sessionPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
           key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
@@ -563,8 +572,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.collaborate}
           {panelEls.ai}
           {panelEls.minimap}
-          {panelEls.poll}
-          {panelEls.vote}
           {panelEls.avatar}
           {panelEls.laser}
           {panelEls.spotlight}
@@ -575,10 +582,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Layers button, the Collaborate button (only while the tab
-          has a thread or an action), the Theme & Canvas paintbrush, then the
-          Zoom controls. Layers and Collaborate open as popovers above their buttons
-          (docs/specs/007-editor/live-app.md). */}
+          strip, the Session strip (Timer, Vote, Poll), the mode's own strip (Slides, Plan), the
+          Collaborate button (only while the tab has a thread or an action), the Layers and
+          Theme & Canvas strip, then the Zoom controls. The buttons open their panels as popovers
+          above them (docs/specs/007-editor/live-app.md). */}
       <div
         // Presenting hides this cluster (docs/specs/012-collaboration/presentation-mode.md): zen keeps the zoom controls
         // as its one way back out, and a deck has its own way out plus no
@@ -594,7 +601,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_TOOLBAR_ITEMS}`}
+        // On a phone the cluster may wrap: the Session strip takes its own row above the rest
+        // (docs/specs/012-collaboration/session-tools.md), or it would push Undo off the screen.
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>
@@ -608,6 +617,40 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canUndo={canUndo}
                 canRedo={canRedo}
               />
+            ) : null}
+            {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
+                Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
+                chrome a facilitator still needs there. Diagram has all three, Plan its Timer and
+                Vote; Draw and Illustrate keep their bottom bar to their own tools. */}
+            {props.sessionTools && sessionStripTools(props.editorMode) ? (
+              <div className="contents phone:order-first phone:flex phone:basis-full phone:justify-end">
+                <SessionClusterStrip
+                  timer={props.sessionTools.timer}
+                  voteRunning={!!props.tabVote}
+                  voteDotsLeft={
+                    props.tabVote?.active && !readOnly
+                      ? Math.max(
+                          0,
+                          props.tabVote.votesPerPerson -
+                            votesSpentBy(props.tabVote, participantKey(selfParticipant)),
+                        )
+                      : null
+                  }
+                  voteReviewing={!!props.voteReview}
+                  voteButtonRef={voteButtonRef}
+                  pollRunning={!!props.pollPanel}
+                  canStart={!readOnly}
+                  offersPoll={!!sessionStripTools(props.editorMode)?.poll}
+                  open={
+                    activeDockPanel === 'session-timer' ||
+                    activeDockPanel === 'session-vote' ||
+                    activeDockPanel === 'session-poll'
+                      ? activeDockPanel
+                      : null
+                  }
+                  onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
+                />
+              </div>
             ) : null}
             {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}
@@ -648,14 +691,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 }
               />
             ) : null}
-            {/* Layers (docs/specs/006-document/layers.md): see LayersClusterButton. */}
-            {!zenMode && !readOnly && panelsOn.layers ? (
-              <LayersClusterButton
-                popoverOpen={activeDockPanel === 'layers'}
-                onTogglePopover={(button) => handleDockButtonClick('layers', button, true)}
-              />
-            ) : null}
-            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): right after Layers, only while
+            {/* Collaborate (docs/specs/012-collaboration/assigned-actions.md §5): before Layers, only while
                 the tab has a comment thread or an action. A view-role visitor
                 gets it too: they read threads and answer them. */}
             {!zenMode &&
@@ -667,35 +703,21 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
-            {/* Theme & Canvas dock button (docs/specs/011-theme/canvas-and-theme-dialog.md): the paintbrush right of
-                the Layers dock opens the CanvasThemeDialog. It is the one
-                entry point: the canvas and tab menus no longer carry the
-                theme and canvas controls. All viewports, mobile included
-                (read-only sessions pass no handler). */}
-            {!zenMode && onOpenCanvasTheme && !whiteboard ? (
-              <div
-                data-tour-id="canvas-theme"
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                className={CLUSTER_STRIP}
-              >
-                <HoverCard
-                  title="Theme & canvas"
-                  description="Change this tab's theme and canvas background."
-                >
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={onOpenCanvasTheme}
-                    aria-label="Theme and canvas"
-                    className="flex h-11 w-11 items-center justify-center text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                  >
-                    <ThemeBrushIcon />
-                  </button>
-                </HoverCard>
-              </div>
+            {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
+                (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
+                pass no handler), one strip in every mode: see LayersThemeStrip. */}
+            {!zenMode ? (
+              <LayersThemeStrip
+                layers={
+                  !readOnly && panelsOn.layers
+                    ? {
+                        open: activeDockPanel === 'layers',
+                        onToggle: (button) => handleDockButtonClick('layers', button, true),
+                      }
+                    : undefined
+                }
+                onOpenTheme={onOpenCanvasTheme && !whiteboard ? onOpenCanvasTheme : undefined}
+              />
             ) : null}
             <ViewZoomControls
               onZoomIn={handleZoomIn}

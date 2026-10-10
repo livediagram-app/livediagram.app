@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type CSSProperties, type PointerEventHandler, type ReactNode } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import {
   ChevronDownIcon,
   MENU_LABEL_ATTR,
@@ -229,8 +229,6 @@ export function MenuActionRow({
   label,
   icon,
   onClick,
-  onPointerEnter,
-  onPointerLeave,
   disabled = false,
   plain = false,
   labelStyle,
@@ -240,11 +238,6 @@ export function MenuActionRow({
   onClick: () => void;
   // The label's own look (a font menu draws each font's name in that font).
   labelStyle?: CSSProperties;
-  // For a row whose result can be SHOWN before it is chosen: the Cleanup
-  // layouts preview on hover (docs/specs/008-canvas/layout-cleanup.md), the same way the tiles above do.
-  // Rows without a preview pass neither, and behave exactly as they did.
-  onPointerEnter?: PointerEventHandler<HTMLButtonElement>;
-  onPointerLeave?: PointerEventHandler<HTMLButtonElement>;
   // Sentence-case, 13px, full-contrast: the reading size for a menu
   // that IS the list (the document actions menu), where the uppercase
   // label rhythm of a category header is too quiet to scan eight verbs
@@ -257,6 +250,22 @@ export function MenuActionRow({
   disabled?: boolean;
 }) {
   const { itemProps } = useMenuItemProps({ disabled });
+  if (disabled && plain) {
+    // A command menu keeps it as a focusable, announced item that does nothing (D50). A plain row
+    // keeps its own reading size and layout, only greyed, so the list doesn't change shape.
+    return (
+      <span
+        aria-disabled
+        {...itemProps}
+        className="flex w-full cursor-not-allowed items-center gap-2.5 px-3 py-2 text-[13px] text-slate-300 dark:text-slate-600"
+      >
+        <span className="flex w-5 shrink-0 items-center justify-center [&_svg]:h-4 [&_svg]:w-4">
+          {icon}
+        </span>
+        {label}
+      </span>
+    );
+  }
   if (disabled) {
     // A command menu keeps it as a focusable, announced item that does nothing (D50).
     return (
@@ -276,8 +285,6 @@ export function MenuActionRow({
         type="button"
         {...itemProps}
         onClick={onClick}
-        onPointerEnter={onPointerEnter}
-        onPointerLeave={onPointerLeave}
         className={`flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-[13px] transition ${'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'}`}
       >
         <span
@@ -294,8 +301,6 @@ export function MenuActionRow({
       type="button"
       {...itemProps}
       onClick={onClick}
-      onPointerEnter={onPointerEnter}
-      onPointerLeave={onPointerLeave}
       className={`flex w-full cursor-pointer items-center gap-2 px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${'text-slate-400 hover:bg-slate-50 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-300'}`}
     >
       <span className="flex w-4 shrink-0 items-center justify-center">{icon}</span>

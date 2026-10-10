@@ -56,7 +56,6 @@ function boardWithImages(): Buffer {
 
 async function importExcalidrawFile(page: Page, name: string, buffer: Buffer) {
   await page.getByRole('button', { name: 'Tab menu' }).click();
-  await page.getByText('Content', { exact: true }).click();
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await page.getByRole('button', { name: /^Excalidraw/ }).click();
   const chooser = page.waitForEvent('filechooser');

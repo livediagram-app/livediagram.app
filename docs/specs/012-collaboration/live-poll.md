@@ -2,8 +2,8 @@
 
 A facilitator-run **poll**: ask the room a question, everyone viewing the
 document gets a prompt, answers tally live, and when the host ends it the whole
-thing evaporates. Sits beside the timer and dot-vote in the tab menu's session
-band ([Session tools (timer + voting)](session-tools.md)) but is deliberately **not** built like them.
+thing evaporates. Sits beside the timer and dot-vote in the bottom bar's
+[Session strip](session-tools.md#the-session-strip) (Diagram mode only) but is deliberately **not** built like them.
 
 ## Why it is NOT a session tool on the Tab
 
@@ -132,8 +132,8 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Collaborate → Poll** (the Session Studio,
-   [Session tools (timer + voting)](session-tools.md)): question, answer style picked from drawn tiles, answers if the
+1. **Compose.** The Session strip's **Poll** button
+   ([Session tools (timer + voting)](session-tools.md#the-session-strip)), or a poll element's menu: question, answer style picked from drawn tiles, answers if the
    style needs them (Enter moves to the next, making one at the end), then
    **Ask everyone** (or Enter in the question). A **What people see** card
    previews the exact prompt, built from the same `pollStyleTokens` the real
@@ -170,14 +170,10 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
      answer (counted separately) rather than a silent dodge. There is no
      backdrop left to click, so Skip and Escape are the whole of it.
 
-3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
-   Collaborate / Layers: draggable, resettable, and dockable
-   into a corner stack, homed **top-right**
-   (the corner the panels you act on live in). It registers as a real
-   `PanelId` rather than floating outside the panel system, but it is the
-   only panel that isn't always present — it joins and leaves its corner
-   stack with the poll, on a desktop and a phone alike. The Vote
-   panel follows the same rule. Shown to the host and to anyone who has responded — so
+3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, opened as a popover
+   from the **Poll button** of the [Session strip](session-tools.md#the-session-strip) in the
+   bottom-right cluster, on a desktop and a phone alike. While no poll runs the same button
+   opens the poll composer, and the Vote button works the same way. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.
@@ -187,7 +183,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    completely at the end without anyone losing work.
 5. **End.** Host only. Removes the question, the answers, and the panel for
    everyone. Non-hosts additionally get a local **Dismiss** that hides their
-   own panel without ending the poll (and rescues them if the host vanished).
+   own panel and its button without ending the poll (and rescues them if the host vanished).
 
 ## Anonymity — what is and isn't guaranteed
 

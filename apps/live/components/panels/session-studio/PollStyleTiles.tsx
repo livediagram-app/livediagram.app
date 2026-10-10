@@ -108,7 +108,7 @@ function PollStyleTile({
       className={`flex h-full min-h-[3.5rem] cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-lg border px-1.5 py-2 text-center transition ${
         selected
           ? 'border-brand-400 bg-brand-50 text-brand-700 dark:border-brand-500/60 dark:bg-brand-500/15 dark:text-brand-200'
-          : 'border-slate-200 bg-white text-slate-500 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+          : 'border-slate-200 bg-white text-slate-500 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-brand-500/60 dark:hover:text-slate-200'
       }`}
     >
       <span className="flex h-4 w-8 items-center justify-center">{STYLE_ART[style]}</span>

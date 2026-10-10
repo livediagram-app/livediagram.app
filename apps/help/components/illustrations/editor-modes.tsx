@@ -1,6 +1,6 @@
 // Editor-mode illustrations for the Canvas article on Editor Modes (docs/specs/018-help/help-app.md,
-// docs/specs/007-editor/editor-modes.md): the tab menu's Mode section open on the four modes
-// (chrome/TabModeMenuSection.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
+// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the four modes at its foot
+// (chrome/TabModeMenuRows.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
 // confirmation card that hangs from the mode switch when an editor leaves Illustrate on a tab with
 // pages (dialogs/LeaveIllustrateConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
 // editor-mode-switch.tsx. Real labels throughout: the modes' names and one-line descriptions from the
@@ -67,7 +67,7 @@ function ModeMark({
   return <g transform={`scale(${scale}) translate(-12 -12)`}>{body}</g>;
 }
 
-// The four modes as the tab menu's Mode lists them: name, then the catalogue's description, wrapped.
+// The four modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
   { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
@@ -75,30 +75,28 @@ const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
 ];
 
-/** The tab menu with its Mode section open (Content and Cleanup closed around it): the four modes, each with its mark, name and what
- *  it is for, a dot on the one the tab opens in (Draw), above the tab bar whose pill leads with the
- *  same mark. */
+/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the four
+ *  mode rows, each with its mark, name and what it is for, a dot on the tab's current one (Draw),
+ *  above the tab bar whose pill leads with the same mark. */
 export function TabModeMenuScene() {
   const mx = 150;
   const my = 10;
   const mw = 252;
-  const sectionH = 22;
+  const rowH = 18;
   const current: Mode = 'Draw';
-  let y = my + 8;
+  let y = my + 6;
+  const content = ['Import', 'Export', 'Clear'].map((label, i) => ({ label, y: y + i * rowH }));
+  y += content.length * rowH;
+  const sepY = y + 4;
+  y += 10;
   const rows: { mode: Mode; lines: string[]; y: number; h: number }[] = [];
-  const sections = ['Content'];
-  const sectionsY = sections.map((s, i) => ({ s, y: y + i * sectionH }));
-  y += sections.length * sectionH;
-  const headerY = y;
-  y += sectionH + 2;
   for (const r of OPENS_IN) {
     const h = 18 + r.lines.length * 12;
     rows.push({ ...r, y, h });
     y += h;
   }
-  const cleanupY = y + 4;
-  const menuH = cleanupY + sectionH - my;
-  const barY = cleanupY + sectionH + 10;
+  const menuH = y + 6 - my;
+  const barY = my + menuH + 10;
   return (
     <Scene w={420} h={barY + 36}>
       {/* The menu */}
@@ -111,31 +109,30 @@ export function TabModeMenuScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      {sectionsY.map(({ s, y: sy }) => (
-        <g key={s}>
-          <Label x={mx + 14} y={sy + sectionH / 2} size={11} weight={500} tone="body">
-            {s}
-          </Label>
-          <path
-            d={`M${mx + mw - 20} ${sy + sectionH / 2 - 2} l4 4 l4 -4`}
-            className="fill-none stroke-slate-400"
-            strokeWidth={1.4}
-            strokeLinecap="round"
+      {/* Import, Export, Clear: full-width rows */}
+      {content.map(({ label, y: ry }) => (
+        <g key={label}>
+          <rect
+            x={mx + 16}
+            y={ry + 5}
+            width={8}
+            height={8}
+            rx={2}
+            className="fill-none stroke-slate-300"
+            strokeWidth={1.2}
           />
+          <Label x={mx + 34} y={ry + 9.5} size={11} tone="body">
+            {label}
+          </Label>
         </g>
       ))}
-      {/* Mode, open: its header carries the current mode's mark */}
-      <g transform={`translate(${mx + 20} ${headerY + sectionH / 2})`}>
-        <ModeMark mode={current} className="stroke-slate-600" scale={0.55} />
-      </g>
-      <Label x={mx + 32} y={headerY + sectionH / 2} size={11} weight={600} tone="strong">
-        Mode
-      </Label>
-      <path
-        d={`M${mx + mw - 20} ${headerY + sectionH / 2 + 2} l4 -4 l4 4`}
-        className="fill-none stroke-slate-400"
-        strokeWidth={1.4}
-        strokeLinecap="round"
+      <line
+        x1={mx}
+        y1={sepY}
+        x2={mx + mw}
+        y2={sepY}
+        className="stroke-slate-200"
+        strokeWidth={1.5}
       />
       {rows.map((r) => {
         const on = r.mode === current;
@@ -166,23 +163,6 @@ export function TabModeMenuScene() {
           </g>
         );
       })}
-      <line
-        x1={mx}
-        y1={cleanupY - 2}
-        x2={mx + mw}
-        y2={cleanupY - 2}
-        className="stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={mx + 14} y={cleanupY + sectionH / 2} size={11} weight={500} tone="body">
-        Cleanup
-      </Label>
-      <path
-        d={`M${mx + mw - 20} ${cleanupY + sectionH / 2 - 2} l4 4 l4 -4`}
-        className="fill-none stroke-slate-400"
-        strokeWidth={1.4}
-        strokeLinecap="round"
-      />
       {/* The tab bar: each pill leads with the mode you work in on that tab */}
       <rect x={0} y={barY} width={420} height={36} className="fill-slate-50" />
       <line x1={0} y1={barY} x2={420} y2={barY} className="stroke-slate-200" strokeWidth={1.5} />

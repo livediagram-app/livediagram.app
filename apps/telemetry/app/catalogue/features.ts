@@ -952,6 +952,26 @@ export const EDITOR_REASONS_OPENED = opened(
   (t) => t === 'SignInReasonsEditor',
 );
 
+// The Session strip's buttons in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md
+// "The Session strip"), each opening its tool: the set-up while idle, the live tool while running.
+export const SESSION_TIMER_OPENED = opened(
+  'Timer Button Opened',
+  'The Timer button in the bottom bar opened, to start a timer or to drive the one running.',
+  (t) => t === 'SessionTimer',
+);
+
+export const SESSION_VOTE_OPENED = opened(
+  'Vote Button Opened',
+  'The Vote button in the bottom bar opened, to start a vote or to follow the one running.',
+  (t) => t === 'SessionVote',
+);
+
+export const SESSION_POLL_OPENED = opened(
+  'Poll Button Opened',
+  'The Poll button in the bottom bar opened, to ask a question or to read the answers.',
+  (t) => t === 'SessionPoll',
+);
+
 export const ACTION_SIGN_IN_NUDGE = opened(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',
