@@ -1,13 +1,10 @@
 'use client';
 
-// The live POLL panel (docs/specs/012-collaboration/live-poll.md): results for a running poll, on the same
-// shared MovablePanel every other floating panel uses (Collaborate,
-// Layers, Activity) — draggable, resettable, and dockable into a corner
-// stack, rather than a bespoke fixed card of its own.
+// The live POLL panel (docs/specs/012-collaboration/live-poll.md): results for a running poll, a popover
+// over the Session strip's Poll button (docs/specs/012-collaboration/session-tools.md "The Session strip"),
+// on the same shared MovablePanel as Layers and Collaborate.
 //
-// Unlike its neighbours the panel only EXISTS while a poll is running, so
-// it joins and leaves its corner stack (top-right, under the Palette)
-// instead of sitting there permanently. Shown to the host and to anyone who has responded:
+// It only EXISTS while a poll is running. Shown to the host and to anyone who has responded:
 // answering is what buys you the tally, so a participant who hasn't
 // answered can't be nudged by the running numbers.
 //
@@ -18,8 +15,11 @@
 
 import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+
+// A popover never moves.
+const NO_MOVE = () => {};
 
 export function PollPanel({
   poll,
@@ -28,10 +28,8 @@ export function PollPanel({
   onEnd,
   onKeepResults,
   onDismiss,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
+  popoverAnchor,
+  onPopoverClose,
 }: {
   poll: LivePoll;
   answers: Map<string, string | null>;
@@ -42,19 +40,25 @@ export function PollPanel({
   // leaves the plain End alone.
   onKeepResults?: () => void;
   onDismiss: () => void;
-} & MovablePanelPlacementProps) {
+  // Where the Poll button sits, for the popover's arrow, and how it asks to close.
+  popoverAnchor?: DockAnchor;
+  onPopoverClose: () => void;
+}) {
   const { rows, textAnswers, answered, skipped } = tallyPoll(poll, answers);
 
   return (
     <MovablePanel
       helpArticle="sessionPolls"
       title="Poll"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      {...dock}
+      position={null}
+      defaultCorner="bottom-right"
+      onMoveTo={NO_MOVE}
+      popoverOpen
+      popoverAnchor={popoverAnchor}
+      asPopover
+      popoverWidth="w-72"
+      dismissOnOutside
+      onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-2 pb-2">
         <p className="text-[12px] font-medium leading-snug text-slate-800 dark:text-slate-100">

@@ -16,7 +16,7 @@ import {
   studioToolStatus,
   type StudioTool,
 } from './session-studio';
-import { StudioSwitcher } from './studio-ui';
+import { FacilitatedNote, StudioSwitcher } from './studio-ui';
 import { TimerPane } from './TimerPane';
 import { VotePane } from './VotePane';
 import { PollPane } from './PollPane';
@@ -43,12 +43,7 @@ export function SessionStudio({
           who had never seen the timer would not know there was one. A
           `fieldset` because it disables every control inside it natively,
           including ones added later. */}
-      {blocked ? (
-        <p className="rounded-md bg-slate-100 px-2.5 py-2 text-[12px] leading-snug text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-          <span className="font-semibold">{session.facilitatedBy}</span> is facilitating this
-          session. Ask them to start the timer, the vote or a poll.
-        </p>
-      ) : null}
+      {blocked ? <FacilitatedNote name={session.facilitatedBy!} /> : null}
       <StudioSwitcher
         tools={STUDIO_TOOLS}
         tool={tool}

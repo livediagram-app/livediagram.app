@@ -19,20 +19,19 @@ describe('panel-layout', () => {
     const layout = defaultPanelLayout();
     // The top-left holds the menu button, not a panel (docs/specs/007-editor/toolbar-layout.md).
     expect(layout.corners['top-left']).toEqual([]);
-    // Vote (docs/specs/012-collaboration/session-tools.md) and Poll (docs/specs/012-collaboration/live-poll.md)
-    // exist only while their session runs, so most of the time this corner is just ai.
-    expect(layout.corners['top-right']).toEqual(['vote', 'poll', 'ai']);
+    // Vote and Poll open over the Session strip (docs/specs/012-collaboration/session-tools.md), not here.
+    expect(layout.corners['top-right']).toEqual(['ai']);
     expect(layout.corners['bottom-left']).toEqual(['minimap']);
     expect(layout.corners['bottom-right']).toEqual(['collaborate']);
     expect(layout.free).toEqual({});
   });
 
   it('docks a panel to the bottom of a corner stack, removing it from its old spot', () => {
-    const next = dockPanel(defaultPanelLayout(), 'vote', 'bottom-right');
+    const next = dockPanel(defaultPanelLayout(), 'ai', 'bottom-right');
     // Left its old corner...
-    expect(next.corners['top-right']).toEqual(['poll', 'ai']);
+    expect(next.corners['top-right']).toEqual([]);
     // ...and joined below whatever is in the target corner.
-    expect(next.corners['bottom-right']).toEqual(['collaborate', 'vote']);
+    expect(next.corners['bottom-right']).toEqual(['collaborate', 'ai']);
   });
 
   it('a panel lives in exactly one place (free clears its corner)', () => {
@@ -56,9 +55,11 @@ describe('panel-layout', () => {
   });
 
   it('reflow: removing a stacked panel shifts the rest up', () => {
-    // Move the top-right Vote panel away; poll should now lead the stack.
-    const next = dockPanel(defaultPanelLayout(), 'vote', 'top-left');
-    expect(next.corners['top-right']).toEqual(['poll', 'ai']);
+    // Stack two in the top-right, then move the first away; the second leads the stack.
+    const stacked = dockPanel(defaultPanelLayout(), 'avatar', 'top-right');
+    expect(stacked.corners['top-right']).toEqual(['ai', 'avatar']);
+    const next = dockPanel(stacked, 'ai', 'top-left');
+    expect(next.corners['top-right']).toEqual(['avatar']);
   });
 
   it('resolves an unmentioned panel to its default corner', () => {
@@ -74,13 +75,23 @@ describe('panel-layout', () => {
       const layout = normalizePanelLayout({
         corners: {
           'top-left': ['ai', 'bogus', 'ai'],
-          'top-right': ['ai', 'poll'],
+          'top-right': ['ai', 'avatar'],
         },
         free: {},
       });
       expect(layout.corners['top-left']).toEqual(['ai']);
-      // ai already seen in top-left, so top-right keeps only poll.
-      expect(layout.corners['top-right']).toEqual(['poll']);
+      // ai already seen in top-left, so top-right keeps only avatar.
+      expect(layout.corners['top-right']).toEqual(['avatar']);
+    });
+
+    // Poll and Vote moved to the Session strip (docs/specs/012-collaboration/session-tools.md).
+    it('ignores the Poll and Vote panels in a stored layout', () => {
+      const layout = normalizePanelLayout({
+        corners: { 'top-right': ['vote', 'poll', 'ai'] },
+        free: { poll: { x: 1, y: 2 } },
+      });
+      expect(layout.corners['top-right']).toEqual(['ai']);
+      expect(layout.free).toEqual({});
     });
 
     // The retired Floating layout's corner panels (docs/specs/007-editor/toolbar-layout.md "One layout").

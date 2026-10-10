@@ -170,14 +170,10 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
      answer (counted separately) rather than a silent dodge. There is no
      backdrop left to click, so Skip and Escape are the whole of it.
 
-3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
-   Collaborate / Layers: draggable, resettable, and dockable
-   into a corner stack, homed **top-right**
-   (the corner the panels you act on live in). It registers as a real
-   `PanelId` rather than floating outside the panel system, but it is the
-   only panel that isn't always present — it joins and leaves its corner
-   stack with the poll, on a desktop and a phone alike. The Vote
-   panel follows the same rule. Shown to the host and to anyone who has responded — so
+3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, opened as a popover
+   from the **Poll button** of the [Session strip](session-tools.md#the-session-strip) in the
+   bottom-right cluster, on a desktop and a phone alike. While no poll runs the same button
+   opens the poll composer, and the Vote button works the same way. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.
@@ -187,7 +183,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    completely at the end without anyone losing work.
 5. **End.** Host only. Removes the question, the answers, and the panel for
    everyone. Non-hosts additionally get a local **Dismiss** that hides their
-   own panel without ending the poll (and rescues them if the host vanished).
+   own panel and its button without ending the poll (and rescues them if the host vanished).
 
 ## Anonymity — what is and isn't guaranteed
 

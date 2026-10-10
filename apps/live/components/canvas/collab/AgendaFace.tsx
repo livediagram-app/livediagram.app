@@ -49,7 +49,7 @@ export function AgendaFace({
 }) {
   const items = element.agendaItems ?? [];
   const current = element.agendaCurrent;
-  // 4x a second while a countdown runs, as the TimerWidget does; a paused or
+  // 4x a second while a countdown runs, as the Session strip's Timer does; a paused or
   // absent timer is static, so nothing spins then.
   const running = timer?.running === true && current !== undefined;
   const now = useNow(running);

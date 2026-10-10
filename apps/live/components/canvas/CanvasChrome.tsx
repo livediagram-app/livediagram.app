@@ -30,6 +30,7 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { SlidesClusterButton } from '@/components/canvas/SlidesClusterButton';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
+import { SessionClusterStrip } from '@/components/canvas/SessionClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
 import { LayersClusterButton } from '@/components/canvas/LayersClusterButton';
@@ -357,6 +358,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     trashPopoverEl,
     newCardPopoverEl,
     cardFinderPopoverEl,
+    sessionPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -522,6 +524,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
+      {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
+      {sessionPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
           key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
@@ -563,8 +567,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           {panelEls.collaborate}
           {panelEls.ai}
           {panelEls.minimap}
-          {panelEls.poll}
-          {panelEls.vote}
           {panelEls.avatar}
           {panelEls.laser}
           {panelEls.spotlight}
@@ -575,7 +577,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       )}
 
       {/* Bottom-right cluster. Order, left to right: the Undo / Redo
-          strip, the Layers button, the Collaborate button (only while the tab
+          strip, the Session strip (Timer, Vote, Poll), the Layers button, the Collaborate button (only while the tab
           has a thread or an action), the Theme & Canvas paintbrush, then the
           Zoom controls. Layers and Collaborate open as popovers above their buttons
           (docs/specs/007-editor/live-app.md). */}
@@ -594,7 +596,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 ${PHONE_TOOLBAR_ITEMS}`}
+        // On a phone the cluster may wrap: the Session strip takes its own row above the rest
+        // (docs/specs/012-collaboration/session-tools.md), or it would push Undo off the screen.
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>
@@ -608,6 +612,27 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 canUndo={canUndo}
                 canRedo={canRedo}
               />
+            ) : null}
+            {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
+                Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
+                chrome a facilitator still needs there. */}
+            {props.sessionTools ? (
+              <div className="contents phone:order-first phone:flex phone:basis-full phone:justify-end">
+                <SessionClusterStrip
+                  timer={props.sessionTools.timer}
+                  voteRunning={!!props.tabVote}
+                  pollRunning={!!props.pollPanel}
+                  canStart={!readOnly}
+                  open={
+                    activeDockPanel === 'session-timer' ||
+                    activeDockPanel === 'session-vote' ||
+                    activeDockPanel === 'session-poll'
+                      ? activeDockPanel
+                      : null
+                  }
+                  onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
+                />
+              </div>
             ) : null}
             {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}

@@ -218,6 +218,17 @@ export function StudioLabel({ children, aside }: { children: ReactNode; aside?: 
   );
 }
 
+// Somebody else is running the session (docs/specs/012-collaboration/facilitator.md): said once, above
+// the controls it disables, in the Studio and on the Session strip's popovers alike.
+export function FacilitatedNote({ name }: { name: string }) {
+  return (
+    <p className="rounded-md bg-slate-100 px-2.5 py-2 text-[12px] leading-snug text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      <span className="font-semibold">{name}</span> is facilitating this session. Ask them to start
+      the timer, the vote or a poll.
+    </p>
+  );
+}
+
 // --- Glyphs ------------------------------------------------------------------
 // Transport icons at the 16px grid the rest of the menu icons use.
 

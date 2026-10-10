@@ -106,15 +106,12 @@ truncated in one surface and not the other.
   `timerDisplayMs(timer, now)`. Pausing freezes the value into `frozenMs`;
   resuming re-anchors. Minor cross-client clock skew is acceptable for a
   workshop timer (out of scope: a server-authoritative clock).
-- A floating **`TimerWidget`** pill shows the live clock, ticking ~4×/sec
-  while running; it flashes when a countdown hits 0:00. Edit-role sees inline
-  pause/resume + reset; view-role sees a read-only clock. It renders inside the
-  shared **`TopCenterStack`** (`TopCenter.tsx`), which lays out every floating
-  top pill — follow-me pill, mode banners, timer,
-  vote — as one non-overlapping column. The stack centres at the top from `sm:`
-  up; on mobile it sits under the Toolbar strip ([Toolbar layout](../007-editor/toolbar-layout.md)). The timer shares a row
-  with the active mode banner / selection toolbar: it sits to the **right** of
-  it on desktop and **underneath** it on mobile rather than stacking on top.
+- The running timer is the **Timer button** of the [Session strip](#the-session-strip) in the
+  bottom-right cluster. The button shows the live clock, ticking ~4×/sec while running, with the
+  countdown's drain behind it, and it flashes when a countdown hits 0:00. Pressing it opens the
+  live Timer pane as a popover above it: the dial, the +30s / +1 min / +5 min extensions and
+  Reset / Pause or Resume / End. View-role visitors, and everyone while somebody else
+  [facilitates](facilitator.md), get the dial alone. There is no timer band at the top of the canvas.
 
 ## Voting (dot-voting)
 
@@ -242,7 +239,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   can't bubble into the element-body cast and re-add what it just removed.
   Once casting closes it reverts to a read-only count: a result to read,
   not a control. A floating **`VoteBanner`**
-  (the same `TopCenterStack`, stacked below the timer row) tells each
+  (in the `TopCenterStack` at the top of the canvas) tells each
   participant how many dots they have left — and **only** that. It floats
   over the canvas for the whole vote, so it carries one glanceable phrase
   ("2 of 3 dots left") rather than instructions or status chips; anything
@@ -271,12 +268,43 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   focus; the Previous / Next / Done buttons and the Vote panel's clickable
   rows are hidden for them rather than rendered as no-ops.
 
+## The Session strip
+
+The running session tools live in **one strip in the bottom-right cluster**, the way Plan mode's
+New Card, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
+own strip where Layers is not: Slides in Illustrate mode, the Plan strip in Plan mode), right
+after Undo and Redo. **An editor always has all three buttons**, running or not, so a session tool
+is one press away. Idle, a button is just its glyph and opens that tool's Session Studio set-up
+pane, the same form the tab menu offers; running, it opens the live tool:
+
+- **Timer**: idle, the timer glyph, opening the Timer set-up. While the tab has a timer, the glyph
+  and the live clock, so the time reads without opening anything; it opens the live Timer pane
+  (see Timer above).
+- **Vote**: the vote glyph, opening the vote set-up. While the tab has a vote, the glyph carries a
+  live dot and opens the **Vote panel** (below).
+- **Poll**: the poll glyph, opening the poll composer. While a poll runs and its results are yours
+  to see (the host, or anyone who has answered, [Live poll](live-poll.md)), the glyph carries a
+  live dot and opens the **Poll panel**. Asking a poll closes the composer: the question is on
+  everyone's screen, and the button carries the results from there.
+
+**A view-role visitor**, who cannot start anything, gets only the buttons of tools that are
+running, and their popovers read-only (the Timer's dial without its controls); with nothing
+running they get no strip. While somebody else [facilitates](facilitator.md), an editor's set-up
+panes are disabled under the same note the Studio shows.
+
+Order, left to right: Timer, Vote, Poll, as the Session Studio orders them. **On a phone** the strip takes a row of its own, right-aligned above the rest of the cluster, since one row cannot hold it beside Undo, Redo, Layers, the theme brush and Fit at phone width. Each segment opens its
+panel as a **popover hanging above it** with an arrow at the button, and a second press, or a
+press outside, closes it. They share the editor's one open-popover slot with Layers, Collaborate
+and the Explorer. Nothing opens on its own: a vote or poll somebody starts lights its button and
+leaves the canvas clear. The strip shows in Zen mode as well, because a session in progress is the one
+piece of chrome a facilitator still needs there; it is hidden only while presenting or in the
+welcome flow, with the rest of the cluster.
+
 ## The Vote panel
 
-A **`VotePanel`** on the shared `MovablePanel` (like Poll / Collaborate /
-Layers), homed **top-right**. Present only while a vote is
-on the tab, so it joins and leaves its corner stack rather than sitting in
-it. Two phases, one panel:
+A **`VotePanel`** on the shared `MovablePanel`, opened as a popover from the
+[Session strip](#the-session-strip)'s Vote button. Present only while a vote is
+on the tab. Two phases, one panel:
 
 - **While casting is open — turnout.** Dots cast against dots available, how
   many people have finished, and one row per voter showing their budget as

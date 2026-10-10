@@ -540,7 +540,9 @@ export function TeamSharedTree() {
 
 /** The floating timer pill: its kicker, the clock, and (for editors) pause, reset and remove.
  *  A countdown drains left to right, so the tinted part is the time left. */
-function TimerPill({
+/** The Session strip in the bottom bar: the Timer showing its clock over the countdown's drain,
+ *  then Vote (live, with its green dot) and Poll, beside the Layers button. */
+function SessionStripArt({
   x,
   y,
   time,
@@ -549,11 +551,13 @@ function TimerPill({
   x: number;
   y: number;
   time: string;
-  /** Share of the countdown still to run, drawn as the tinted fill. */
   left?: number;
 }) {
-  const w = 176;
-  const h = 34;
+  const h = 40;
+  const timerW = 96;
+  const seg = 40;
+  const w = timerW + seg * 2;
+  const glyph = 'fill-none stroke-slate-500';
   return (
     <g>
       <rect
@@ -561,42 +565,79 @@ function TimerPill({
         y={y}
         width={w}
         height={h}
-        rx={17}
+        rx={8}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {/* The countdown's drain behind the Timer segment. */}
+      <path
+        d={`M${x + 8} ${y + 0.75} H${x + timerW * left} V${y + h - 0.75} H${x + 8} a7.25 7.25 0 0 1 -7.25 -7.25 V${y + 8} a7.25 7.25 0 0 1 7.25 -7.25 Z`}
+        className="fill-brand-100"
+      />
+      {/* Timer glyph */}
+      <circle cx={x + 18} cy={y + 21} r={6} className={glyph} strokeWidth={1.5} />
+      <path
+        d={`M${x + 18} ${y + 21} v-3 M${x + 16} ${y + 12} h4`}
+        className={glyph}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <Label x={x + 30} y={y + 21} size={14} weight={700} tone="strong">
+        {time}
+      </Label>
+      {/* Vote: a check in a circle, live */}
+      <line
+        x1={x + timerW}
+        y1={y + 6}
+        x2={x + timerW}
+        y2={y + h - 6}
+        className="stroke-slate-100"
+        strokeWidth={1.5}
+      />
+      <circle cx={x + timerW + 20} cy={y + 20} r={7} className={glyph} strokeWidth={1.5} />
+      <path
+        d={`M${x + timerW + 17} ${y + 20} l2.5 2.5 l4 -4.5`}
+        className={glyph}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <circle
+        cx={x + timerW + 27}
+        cy={y + 13}
+        r={3}
+        className="fill-emerald-500 stroke-white"
+        strokeWidth={1.5}
+      />
+      {/* Poll: rising bars */}
+      <line
+        x1={x + timerW + seg}
+        y1={y + 6}
+        x2={x + timerW + seg}
+        y2={y + h - 6}
+        className="stroke-slate-100"
+        strokeWidth={1.5}
+      />
+      <path
+        d={`M${x + timerW + seg + 13} ${y + 27} v-4 M${x + timerW + seg + 20} ${y + 27} v-9 M${x + timerW + seg + 27} ${y + 27} v-13`}
+        className={glyph}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      {/* Layers, its own button to the right */}
+      <rect
+        x={x + w + 8}
+        y={y}
+        width={40}
+        height={h}
+        rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       <path
-        d={`M${x + 17} ${y} H${x + w * left} V${y + h} H${x + 17} a17 17 0 0 1 0 -34 Z`}
-        className="fill-brand-100"
-      />
-      <Label x={x + 14} y={y + 18} size={10} weight={700} tone="muted">
-        Timer
-      </Label>
-      <Label x={x + 50} y={y + 18} size={15} weight={700} tone="strong">
-        {time}
-      </Label>
-      {/* pause */}
-      <rect x={x + 112} y={y + 12} width={3} height={10} rx={1} className="fill-slate-500" />
-      <rect x={x + 118} y={y + 12} width={3} height={10} rx={1} className="fill-slate-500" />
-      {/* reset */}
-      <path
-        d={`M${x + 141} ${y + 12} a5 5 0 1 0 5 5`}
-        fill="none"
-        className="stroke-slate-500"
+        d={`M${x + w + 28} ${y + 12} l9 5 l-9 5 l-9 -5 Z M${x + w + 19} ${y + 22} l9 5 l9 -5`}
+        className={glyph}
         strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-      <path
-        d={`M${x + 139} ${y + 9} l3 3 l-3 3`}
-        fill="none"
-        className="stroke-slate-500"
-        strokeWidth={1.5}
-      />
-      {/* remove */}
-      <path
-        d={`M${x + 158} ${y + 13} l8 8 M${x + 166} ${y + 13} l-8 8`}
-        className="stroke-slate-500"
-        strokeWidth={1.5}
+        strokeLinejoin="round"
       />
     </g>
   );
@@ -669,15 +710,16 @@ function VoteBannerPill({ x, y, text }: { x: number; y: number; text: string }) 
   );
 }
 
-/** A shared countdown pill above a dot vote in progress: two of the session tools at a glance. */
+/** A dot vote in progress with the Session strip below: the timer's clock on its button, the
+ *  Vote button lit while the vote runs. */
 export function SessionTools() {
   return (
     <Scene w={420} h={230}>
-      <TimerPill x={42} y={16} time="4:32" />
-      <VoteBannerPill x={228} y={20} text="2 of 3 dots left" />
-      <VoteShape x={20} y={110} label="Idea A" count={3} mine />
-      <VoteShape x={156} y={110} label="Idea B" count={1} />
-      <VoteShape x={292} y={110} label="Idea C" count={0} />
+      <VoteBannerPill x={135} y={16} text="2 of 3 dots left" />
+      <VoteShape x={20} y={64} label="Idea A" count={3} mine />
+      <VoteShape x={156} y={64} label="Idea B" count={1} />
+      <VoteShape x={292} y={64} label="Idea C" count={0} />
+      <SessionStripArt x={180} y={176} time="4:32" />
     </Scene>
   );
 }

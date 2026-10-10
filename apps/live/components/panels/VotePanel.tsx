@@ -1,8 +1,8 @@
 'use client';
 
 // The live VOTE panel (docs/specs/012-collaboration/session-tools.md): the facilitator's read on a dot-vote in
-// progress, on the same shared MovablePanel as Poll / Collaborate /
-// Layers. Two phases, one panel:
+// progress, a popover over the Session strip's Vote button on the same shared MovablePanel as Poll /
+// Collaborate / Layers. Two phases, one panel:
 //
 //   Casting open  -> TURNOUT. How many dots are spent and how many people
 //                    still hold some, so the host knows when to call it
@@ -11,8 +11,7 @@
 //                    first, each row clickable to jump the results
 //                    walkthrough straight to that element.
 //
-// Like the poll panel it only exists while a vote does, so it joins and
-// leaves its corner stack rather than sitting in it.
+// Like the poll panel it only exists while a vote does.
 //
 // On naming: rows are NOT attributed to people, and can't be. Dots are
 // keyed by the local participant id while the room's presence roster is
@@ -26,8 +25,11 @@ import { itemTitle } from '@livediagram/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
+import type { DockAnchor } from '@/lib/canvas-chrome';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+
+// A popover never moves.
+const NO_MOVE = () => {};
 
 const primaryBtn = `flex-1 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`;
 const quietBtn =
@@ -44,10 +46,8 @@ export function VotePanel({
   onRevealVote,
   onClearVote,
   isHost,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
+  popoverAnchor,
+  onPopoverClose,
   readOnly,
 }: {
   vote: TabVote;
@@ -71,19 +71,25 @@ export function VotePanel({
   isHost: boolean;
   // View-role visitors watch the vote but never drive it (docs/specs/012-collaboration/session-tools.md).
   readOnly: boolean;
-} & MovablePanelPlacementProps) {
+  // Where the Vote button sits, for the popover's arrow, and how it asks to close.
+  popoverAnchor?: DockAnchor;
+  onPopoverClose: () => void;
+}) {
   const showResults = vote.revealed;
 
   return (
     <MovablePanel
       helpArticle="sessionVoting"
       title="Vote"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      {...dock}
+      position={null}
+      defaultCorner="bottom-right"
+      onMoveTo={NO_MOVE}
+      popoverOpen
+      popoverAnchor={popoverAnchor}
+      asPopover
+      popoverWidth="w-72"
+      dismissOnOutside
+      onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-2 pb-2">
         {showResults ? (

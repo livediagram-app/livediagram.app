@@ -14,19 +14,21 @@ export const metadata = helpMetadata({
 
 Session tools make a shared document interactive for live workshops. There are three: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. Anyone who can edit the document can run them (or only the [facilitator](/help/collaboration/facilitator/), once someone takes that role), and they sync to everyone in real time, so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
 
-<Figure caption="A shared Timer pill above a dot-voting tally: two of the session tools on one canvas.">
+<Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
   <SessionTools />
 </Figure>
 
 ## Built for facilitating live
 
-The tools all live together under one **Collaborate** row at the end of the tab's menu: open it from the tab's **⋯** button, or right-click an empty patch of canvas. A side panel appears with a switcher across the top, **Timer**, **Vote**, and **Poll**, and the chosen tool's controls underneath. A green dot on a switcher tab means that tool is running right now (amber means it is set up but paused or closed), and the panel opens on whatever is running, so coming back mid-session lands you on the thing you need to drive.
+The quickest way in is the bottom bar: **Timer**, **Vote**, and **Poll** sit together left of Layers. Each button opens its tool above it: the set-up while it's idle, and the running tool once it's going, with the timer's clock showing on its button so you can read it at a glance. View-only visitors see a button only while its tool is running.
+
+The same tools also live together under one **Collaborate** row at the end of the tab's menu: open it from the tab's **⋯** button, or right-click an empty patch of canvas. A side panel appears with a switcher across the top, **Timer**, **Vote**, and **Poll**, and the chosen tool's controls underneath. A green dot on a switcher tab means that tool is running right now (amber means it is set up but paused or closed), and the panel opens on whatever is running, so coming back mid-session lands you on the thing you need to drive.
 
 While someone else is facilitating, the panel says who at the top and its controls are greyed out.
 
 The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again. **Polls are the exception**: they are never saved to the document, and vanish completely when you end one. While a poll runs, anyone who joins late or reloads is still asked.
 
-- **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown as a floating pill at the top of the canvas. See [The Timer](/help/collaboration/session-tools/timer/).
+- **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown on its button in the bottom bar. See [The Timer](/help/collaboration/session-tools/timer/).
 - **Dot-voting** lets each participant spend a budget of dots on the elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
 - **Polls** ask everyone a question (yes/no, a rating, a choice, a person in the room, or free text) and tally the answers live, saving nothing unless you keep the results as a chart. See [Polls](/help/collaboration/session-tools/polls/).
 

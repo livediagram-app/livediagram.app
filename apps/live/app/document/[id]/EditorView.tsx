@@ -76,6 +76,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
+import { useSessionTools } from '@/components/chrome/useSessionTools';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -132,22 +133,9 @@ export function EditorView() {
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
-    facilitator,
-    startTimer,
-    pauseTimer,
-    resumeTimer,
-    resetTimer,
-    extendTimer,
-    clearTimer,
-    startVote,
-    endVote,
-    revealVote,
-    clearVote,
     livePoll,
     focusInvite,
     livePresence,
-    layers,
-    activeLayerId,
     canvasTool,
     drag,
     esBoard,
@@ -181,7 +169,6 @@ export function EditorView() {
     makeCopy,
     openTemplatePicker,
     participantsByTab,
-    pollCollaborators,
     pendingDraw,
     renameTab,
     renameTabFolder,
@@ -235,14 +222,7 @@ export function EditorView() {
   );
   const role = useRoleIndicator();
 
-  // Who is facilitating, named for the UI, or null when it is nobody or us
-  // (docs/specs/012-collaboration/facilitator.md). Resolved from the roster we already hold so a rename reads
-  // correctly, and null when we hold it: our own controls are not blocked,
-  // so there is nothing to explain.
-  const facilitatorName =
-    facilitator.sessionToolsBlocked && facilitator.facilitatorId
-      ? (livePresence.find((p) => p.id === facilitator.facilitatorId)?.name ?? 'Someone else')
-      : null;
+  const sessionTools = useSessionTools();
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
   // selection-aware command list + dispatcher, built off the same editor
@@ -401,31 +381,8 @@ export function EditorView() {
             setExportScope('tab');
             setExportOpen(true);
           }}
-          timer={activeTab.timer ?? null}
-          vote={activeTab.vote ?? null}
-          // Somebody else is running this session (docs/specs/012-collaboration/facilitator.md), so the Studio
-          // says whose it is and disables its controls.
-          facilitatedBy={facilitatorName}
-          facilitating={facilitator.isFacilitator}
-          onStartTimer={startTimer}
-          onPauseTimer={pauseTimer}
-          onResumeTimer={resumeTimer}
-          onResetTimer={resetTimer}
-          onExtendTimer={extendTimer}
-          onClearTimer={clearTimer}
-          onStartVote={startVote}
-          onEndVote={endVote}
-          onRevealVote={revealVote}
-          onClearVote={clearVote}
-          livePoll={livePoll.poll}
-          // A poll only reaches other people through the realtime room
-          // (docs/specs/012-collaboration/live-poll.md). Unshared and off-team, it still runs, just for you;
-          // the composer says so rather than refusing.
-          pollHasAudience={documentShareable || !!documentTeamId}
-          onStartPoll={livePoll.startPoll}
-          pollCollaborators={pollCollaborators}
-          voteLayers={layers}
-          activeLayerId={activeLayerId}
+          // The timer, the vote and the poll, read once for both of their surfaces (useSessionTools).
+          {...sessionTools}
           otherDocuments={
             // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
             // offline document's tabs nor an offline destination can take part
