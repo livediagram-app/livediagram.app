@@ -294,9 +294,11 @@ running, and their popovers read-only (the Timer's dial without its controls); w
 running they get no strip. While somebody else [facilitates](facilitator.md), an editor's set-up
 panes are disabled under a note naming them.
 
-**Which tools a mode offers** (`sessionStripTools`): **Diagram** has all three; **Plan** has Timer and
-Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) but no Poll; **Draw** and
-**Illustrate** have no strip, keeping their bottom bar to their own tools. A popover whose button
+**Which tools a mode offers** (`sessionStripTools`): **Facilitate** has all three
+([Facilitate mode](facilitate-mode.md#the-session-strip-per-mode)); **Plan** has Timer and
+Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) but no Poll; **Diagram**,
+**Draw** and **Illustrate** have no strip, keeping their bottom bar to their own tools, even while a
+tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.
 
 Order, left to right: Timer, Vote, Poll. **On a phone** the strip takes a row of its own, right-aligned above the rest of the cluster, since one row cannot hold it beside Undo, Redo, Layers, the theme brush and Fit at phone width. Each segment opens its

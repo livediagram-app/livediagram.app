@@ -44,7 +44,7 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 | **Common**     | Logo (Illustrate, with a [logo page](../007-editor/logo-pages.md#the-logo-palette)), Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw |
 | **Structure**  | Build, Components, Devices, Event Storming (on an event-storming board only)                                                                                                                    |
 | **Decorate**   | Icons, Stickers, Technology, Media                                                                                                                                                              |
-| **Dynamic**    | Data, Collaborate                                                                                                                                                                               |
+| **Dynamic**    | Data, Collaborate (Facilitate)                                                                                                                                                                  |
 
 ## Why flatten
 
@@ -153,6 +153,11 @@ which two groups they are. A rename that broke seven live links to say
 "Behaviours" in a path would be a cosmetic match bought with real breakage.
 
 ## Collaborate: one category, fully grouped
+
+**Collaborate is Facilitate's.** Since [Facilitate mode](../012-collaboration/facilitate-mode.md#the-palette),
+only Facilitate's layout offers the category, with every group below; Diagram offers it no longer,
+and keeps only the Comment panel and the Action card, in its Write category. Search still finds
+every Collaborate tile from any mode.
 
 **Renamed from Behaviours to Collaborate.** The category is what you open to run a
 session with the room, and "Collaborate" names that job where "Behaviours" named the

@@ -106,6 +106,7 @@ The editor is real:
 
 ## Next
 
+- **Facilitate mode** ([Facilitate mode](../012-collaboration/facilitate-mode.md)): a fifth editor mode for running a session with a team, taking the Collaborate and Stickers categories and the Session strip out of Diagram.
 - **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
 - **Repository sync** ([Repository link](../027-repositories/repository-link.md), [Diagram sources](../027-repositories/diagram-sources.md)): merging offline edits back, the git hooks and merge driver, adopting existing Mermaid, PlantUML, DOT, draw.io and Excalidraw diagrams, and strict and relaxed compatibility.
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
