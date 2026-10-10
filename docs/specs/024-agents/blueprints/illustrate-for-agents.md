@@ -5,40 +5,48 @@ function and a test here; nothing here adds design.
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                                | Where                                                                                   |
-| ----------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| page change       | `PageChange` (union on `op`: `add`, `set`, `layout`, `move`, `duplicate`, `delete`)                       | `packages/api-schema/src/illustrate.ts`                                                 |
-| article write     | `ArticleWrite` `{ article?, new?, markdown, mode?, size?, orientation?, look?, accent?, pageNumbers? }`   | `packages/api-schema/src/illustrate.ts`                                                 |
-| page ref          | `PageRef = string \| number` (id, place, or name)                                                         | `packages/api-schema/src/illustrate.ts`                                                 |
-| page summary      | `PageSummary` `{ place, id, name, kind, size, orientation, rect, background?, locked?, flow?, elements }` | `packages/api-schema/src/illustrate.ts`                                                 |
-| article summary   | `ArticleSummary` `{ flow, title, pages: number[], blocks, words, look }`                                  | `packages/api-schema/src/illustrate.ts`                                                 |
-| refusal           | `IllustrateRefusal` `{ code: IllustrateRefusalCode, message, change? }`                                   | `packages/api-schema/src/illustrate.ts`                                                 |
-| the engine        | `applyPageChanges(tab, changes, ctx)`, `applyArticleWrite(tab, write, ctx)`                               | `packages/edit-operations/src/illustrate/`                                              |
-| pure page edits   | `pageAdded`, `pageSet`, `pageLaidOut`, `pageMovedTo`, `pageDuplicated`, `pageRemoved`                     | `packages/document/src/illustrate-edits.ts`                                             |
-| Markdown in / out | `articleFromMarkdown(text, current?)`, `articleToMarkdown(flow)`                                          | `packages/document/src/article-markdown-io.ts`                                          |
-| paste reading     | `parseMarkdownBlocks`, `parseInline`, `looksLikeMarkdown`, `plainTextBlocks` (moved)                      | `packages/document/src/article-markdown.ts`                                             |
-| layout build      | `buildPageLayout(layout, page)` (moved)                                                                   | `packages/templates/src/page-layout-build.ts`                                           |
-| page paint        | `withBackgroundPatch`, `sameFill` (moved)                                                                 | `packages/document/src/illustrate-page-paint.ts`                                        |
-| route             | `handleTabIllustrate`                                                                                     | `apps/api/src/routes/tab-illustrate-route.ts`                                           |
-| verbs             | `changePages`, `writeArticle`, `readArticle`                                                              | `packages/agent-verbs/src/illustrate/`                                                  |
-| MCP tools         | `change_pages`, `write_article` (`mcpChangePages`, `mcpWriteArticle`)                                     | `packages/agent-verbs/src/mcp/illustrate-schema.ts`, `apps/mcp/src/illustrate-tools.ts` |
-| CLI verbs         | `page.ls`, `page.set`, `article.get`, `article.set`                                                       | `packages/agent-verbs/src/verbs/page.ts`, `verbs/article.ts`                            |
-| view              | `pages` in `TAB_VIEW_NAMES`, rendered by `pagesView`                                                      | `packages/document-views/src/pages.ts`                                                  |
+| Spec term         | Identifier                                                                                                                                                                                    | Where                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| page change       | `PageChange` (union on `op`: `add`, `set`, `layout`, `move`, `duplicate`, `delete`)                                                                                                           | `packages/api-schema/src/illustrate.ts`                                                 |
+| article write     | `ArticleWrite` `{ article?, new?, markdown, mode?, size?, orientation?, look?, accent?, pageNumbers? }`                                                                                       | `packages/api-schema/src/illustrate.ts`                                                 |
+| page ref          | `PageRef = string \| number` (id, place, or name)                                                                                                                                             | `packages/api-schema/src/illustrate.ts`                                                 |
+| page summary      | `PageSummary` `{ place, id, name, kind, size, orientation, rect, background?, locked?, flow?, elements }`                                                                                     | `packages/api-schema/src/illustrate.ts`                                                 |
+| article summary   | `ArticleSummary` `{ flow, title, pages: number[], blocks, words, look }`                                                                                                                      | `packages/api-schema/src/illustrate.ts`                                                 |
+| refusal           | `IllustrateRefusal` `{ code: IllustrateRefusalCode, message, change? }`                                                                                                                       | `packages/api-schema/src/illustrate.ts`                                                 |
+| the engine        | `applyPageChanges(tab, changes, ctx)`, `applyArticleWrite(tab, write, ctx)`                                                                                                                   | `packages/edit-operations/src/illustrate/`                                              |
+| pure page edits   | `pageAdded`, `pageRenamed`, `pageResized`, `pageTurned`, `pageBackgroundSet`, `pageLockSet`, `pageLaidOut`, `pageMovedTo`, `pageDuplicated`, `pageRemoved`; `pagesSharing`, `pageLockRefuses` | `packages/document/src/illustrate-edits.ts`                                             |
+| Markdown in / out | `articleFromMarkdown(text, current?)`, `articleToMarkdown(flow)`, `articleWordCount`, `articleTitleOf`, `ARTICLE_MARKDOWN_MAX`                                                                | `packages/document/src/article-markdown-io.ts`                                          |
+| paste reading     | `parseMarkdownBlocks`, `parseInline`, `looksLikeMarkdown`, `plainTextBlocks` (moved)                                                                                                          | `packages/document/src/article-markdown.ts`                                             |
+| layout build      | `buildPageLayout(layout, page)` (moved)                                                                                                                                                       | `packages/templates/src/page-layout-build.ts`                                           |
+| page paint        | `withBackgroundPatch`, `sameFill`, `PAGE_GRADIENT_ANGLE` (moved)                                                                                                                              | `packages/document/src/illustrate-page-paint.ts`                                        |
+| summaries         | `pageSummaries`, `articleSummaries`, `describeBackground`                                                                                                                                     | `packages/api-schema/src/illustrate-summary.ts`                                         |
+| article frames    | `tabArticleOps(before, after, { agent })`, `ARTICLE_FRAME_CHARS` (moved)                                                                                                                      | `packages/api-schema/src/article-frames.ts`                                             |
+| submit            | `submitIllustrate`, `illustrateRoomOps`                                                                                                                                                       | `apps/api/src/changesets/illustrate.ts`                                                 |
+| relay             | `relayIllustrate`                                                                                                                                                                             | `apps/api/src/room-client.ts`                                                           |
+| grow marks        | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`; `shouldGrowForAbsentWriter`                                                                                                    | `apps/live/lib/article/article-grow-store.ts`, `packages/document/src/article-pages.ts` |
+| icon check        | `isIconId`, `iconsLike`                                                                                                                                                                       | `packages/icons/src/search.ts`                                                          |
+| route             | `handleTabIllustrate`                                                                                                                                                                         | `apps/api/src/routes/tab-illustrate-route.ts`                                           |
+| verbs             | `changePages`, `writeArticle`, `readArticle`, `illustrateTabOf`                                                                                                                               | `packages/agent-verbs/src/illustrate/illustrate-calls.ts`                               |
+| MCP tools         | `change_pages`, `write_article` (`mcpChangePages`, `mcpWriteArticle`)                                                                                                                         | `packages/agent-verbs/src/mcp/illustrate-schema.ts`, `apps/mcp/src/illustrate-tools.ts` |
+| CLI verbs         | `page.ls`, `page.set`, `article.get`, `article.set` (`illustrateVerbs`)                                                                                                                       | `packages/agent-verbs/src/verbs/illustrate.ts`                                          |
+| view              | `pages` in `TAB_VIEW_NAMES`, rendered by `pagesView`                                                                                                                                          | `packages/document-views/src/pages.ts`                                                  |
 
 Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it is a tab of slide pages),
 "template" for a layout.
 
 ## Behaviour and state
 
-### Moves out of apps/live (no behaviour change)
+### Moves out of the editor (no behaviour change)
 
-1. `apps/live/lib/article/article-markdown.ts` (+ test) → `packages/document/src/article-markdown.ts`, exported
-   from the package index; `article-paste.ts` imports it from `@livediagram/document`.
-2. `apps/live/lib/page-layout-build.ts` → `packages/templates/src/page-layout-build.ts`; the three editor callers
-   import it from `@livediagram/templates`.
-3. `apps/live/lib/illustrate-page-paint.ts` `withBackgroundPatch` and `sameFill` →
-   `packages/document/src/illustrate-page-paint.ts`; the editor file keeps only what draws.
-4. The tab transforms inside `apps/live/hooks/editor/illustrate-page-edits.ts` become pure functions in
+1. The paste reading of Markdown now lives in `packages/document/src/article-markdown.ts` (+ test), exported from
+   the package index; the editor's `article-paste.ts` imports it from `@livediagram/document`. It gains Markdown's
+   backslash escapes (`\*` is a literal `*`), so what `articleToMarkdown` escapes reads back as written.
+2. `buildPageLayout` now lives in `packages/templates/src/page-layout-build.ts`; the editor's callers import it
+   from `@livediagram/templates`.
+3. `withBackgroundPatch`, `sameFill` and `PAGE_GRADIENT_ANGLE` now live in
+   `packages/document/src/illustrate-page-paint.ts`; the editor's paint module re-exports them and keeps only what
+   draws.
+4. The tab transforms inside `apps/live/hooks/editor/illustrate-page-edits.ts` became pure functions in
    `packages/document/src/illustrate-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
    (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'page_limit' |
 'last_page' | 'unknown_page'`); the hook keeps telemetry, toasts, `onGoTo`, `claimArticleLayout` and debug
@@ -55,61 +63,69 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
      `1 Cover (slide), 2 (slide)`;
    - `add`: `kind === 'article'` → `article_by_write`; if the only page is unchosen and empty
-     (`offersPageKindChoice`) → `withPageKindChosen`, else `pageAdded(tab, kind, newId())`; then apply `size`,
-     `orientation`, `name`, `background` through `pageSet`, `layout` through `pageLaidOut`, `at` through
-     `pageMovedTo`. Line: `Added page 3 (slide, 16:9)` plus ` from layout Title`;
-   - `set`: each present field through `pageSet` in the order name, size, orientation, background, locked
-     (`locked: false` first when present, so an unlock-and-edit works). Line: `Set page 2: size A3, background #0f172a`;
+     (`offersPageKindChoice`) → `withPageKindChosen`, else `pageAdded(tab, kind, newId(), newFlowId())`; then
+     `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,
+     `pageBackgroundSet`, `at` through `pageMovedTo`, `layout` through `pageLaidOut`. Line:
+     `Added page 3 (slide, Slide (16:9)) from layout Title Slide: name "Cover".`;
+   - `set`: `locked: false` first (so an unlock-and-edit works), then name, size, orientation and background
+     through their edits, then `locked: true`. Line: `Set page 2: size A3, background #0f172a`;
    - `layout`: id checked against `layoutCatalogueFor(kind).layouts` else `layout_unknown` naming them; then
-     `pageLaidOut(tab, pageId, buildPageLayout(id, laidOutPage))`, re-coloured for the tab theme with
-     `recolourElementsForTheme`. Line: `Laid out page 1 as Title (replaced 4 elements)`;
+     `pageLaidOut(tab, pageId, buildPageLayout(id, laidOutPage))`, exactly as the page panel places it. Line: `Laid out page 1 as Title (replaced 4 elements)`;
    - `move`: `to` clamped to 1..units; `pageMovedTo`. Line: `Moved page 4 to 1`;
    - `duplicate`: `pageDuplicated`. Line: `Duplicated page 2 as page 3`;
    - `delete`: `pageRemoved`; refused `last_page` when one unit is left. Line: `Deleted page 2 and 4 elements on it`
      (an article: `Deleted article "Brief" (3 pages)`);
-   - a `refused` from a pure edit maps to the code of the same name and stops: `{ errors: [{ code, message,
-change: i }] }`, nothing returned to write.
-4. Answer `{ tab, lines, switched, pages: summarise(tab) }`.
+   - a `refused` from a pure edit maps to its code (`unknown_page` → `page_unknown`, `locked` → `page_locked`,
+     the rest the same name) and stops: `{ refusal: { code, message, change: i } }`, nothing to write.
+4. Answer `{ tab, lines, switched }`; the route adds the summaries (`pageSummaries`, `articleSummaries`).
 
-`article-write.ts` `applyArticleWrite(tab, write, { newId, newFlowId })`:
+`article-write.ts` `applyArticleWrite(tab, write, { page?, flow? })` (ids injectable for tests):
 
 1. Tab refusals as above; switch into Illustrate as above.
-2. `markdown.length > ARTICLE_MARKDOWN_MAX` → `article_too_large` ("400,000 characters").
+2. `markdown.length > ARTICLE_MARKDOWN_MAX` → `article_too_large`, refused by the request reader, pointing at
+   `append`.
 3. Resolve the article: `new` → new; `article` → flow id, else title by `nameKey` among `articlesOf(tab)` →
    `article_unknown` listing titles; absent → the only one, none → new, several → `article_ambiguous`.
-4. New: `offersPageKindChoice` → `withPageKindChosen(tab, onlyPage, 'article', flow)`, else `withArticleAdded`
-   with the paper rule (`size`/`orientation` when given and in `pageSizesFor('article')`, else
+4. New: `offersPageKindChoice` → `withPageKindChosen(tab, onlyPage, 'article', flow)`, else
+   `pageAdded(tab, 'article', id, flow)` (the editor's paper rule), then `size` and `orientation` in turn (`size`/`orientation` when given and in `pageSizesFor('article')`, else
    `size_not_offered`). Refuse at `MAX_ILLUSTRATE_PAGES` → `page_limit`.
 5. Any page of the flow locked → `page_locked`.
-6. Parse: `articleFromMarkdown(markdown, current)` → `{ blocks, keptZones, droppedZones, droppedNotes }` or
-   `zone_unknown`. `append` concatenates after the current blocks and keeps every zone and note.
-7. Blocks past `MAX_ARTICLE_BLOCKS` or a block text past `MAX_ARTICLE_BLOCK_TEXT` → `article_too_large`.
-8. Dropped zones: their elements (`elementsInZone`) removed; dropped notes: their marker elements removed.
+6. Parse: `articleFromMarkdown(markdown, current)` → `{ blocks, keptZones, droppedZones }`, or `unknownZone`
+   (`zone_unknown`), or `tooLong` (a paragraph past `MAX_ARTICLE_BLOCK_TEXT`: `article_too_large`, never cut).
+   Fresh ids never meet the article's own, so `append` concatenates after the current blocks (a new article's
+   placeholder Title and paragraph give way) and keeps every zone and note.
+7. No blocks left → one empty paragraph. Blocks past `MAX_ARTICLE_BLOCKS` → `article_too_large`.
+8. Dropped zones: their elements removed (`withZoneContentsRemoved`); notes whose text is gone (`articleNoteIds`
+   before and after): their markers removed (`withNoteMarkersRemoved`).
 9. Style: `look`, `accent` (`isArticleHex` else `invalid_value`), `pageNumbers` merged into `style`.
-10. `withArticleFlow(tab, flow, { blocks, style })`. Answer `{ tab, flow, created, lines, summary }`.
+10. `withArticleFlow(tab, flow, { blocks, style })`. Answer `{ tab, flow, created, lines, switched }`.
 
 ### Markdown in and out (`article-markdown-io.ts`)
 
 - `articleFromMarkdown`: strip a leading front matter (`/^---\n([\s\S]*?)\n---\n/`), read `title:` and `subtitle:`
   (trimmed, quotes removed); split the body on lines matching `/^\[zone ([^\]\s]{1,64})\]$/` and
   `/^\\pagebreak$/`, parse each text stretch with `parseMarkdownBlocks`, put a `pageBreak` block or the current
-  zone block (by id, else `zone_unknown`) between them; prepend `title` and `subtitle` paragraph blocks. Fresh
-  block ids from `nextArticleBlockId`, the zone keeps its id.
+  zone block (by id, else `unknownZone`) between them, never inside a code fence; prepend `title` and `subtitle`
+  paragraph blocks. A paragraph (lines with no blank between) past `MAX_ARTICLE_BLOCK_TEXT` answers `tooLong`.
+  Fresh block ids from `nextArticleBlockId`, never one of `current`'s; a kept zone keeps its id.
 - `articleToMarkdown`: front matter from the first `title` / `subtitle` blocks, then each block: paragraph by style
   (`#`, `##`, `###`, `>`, body), list by level (two spaces a level, `-`, `1.`, `- [ ]` / `- [x]`), code fenced,
   divider `---`, page break `\pagebreak`, zone `[zone <id>]`; runs: `**b**`, `*i*`, `~~s~~`, `` `code` ``,
-  `[text](href)`; underline, colour, highlight, sup and sub print as plain text (lossy, stated in the view).
+  `[text](href)`, emphasis kept inside a run's own spaces; Markdown's characters escaped with a backslash, and a
+  block's text that would open a heading, quote, list or divider escaped at the line start; a line break inside a
+  block prints as a space; underline, colour, highlight, sup and sub print as plain text (lossy). A numbered
+  list counts as the editor does: a bullet or to-do at a level restarts that level.
 - Round trip: `articleFromMarkdown(articleToMarkdown(f))` keeps every block's type, style, list, level, checked
   and text for an article without the lossy marks.
 
 ### The editor grows an article for an absent writer
 
 - `RoomOp` `article` gains `agent?: true`, set by the api relay only.
-- `apps/live/hooks/editor/useArticles.ts`: a ref `growPending: Set<flow>` filled on load (every flow of the tab at
-  first render) and on an incoming `article` op with `agent: true`; `onLayout` with `!layout.local` and the flow in
-  `growPending` deletes it and, when `layout.pagesNeeded > articlePages(pages, flow).length` and no page of the flow
-  is locked, ticks `withArticlePageCount(t, flow, pagesNeeded)` (grow only) and logs
-  `[article] grown for an absent writer`.
+- `apps/live/lib/article/article-grow-store.ts` holds the marks (tab and flow). `room-op-apply.ts` marks a flow on
+  an incoming `article` op with `agent: true`; `useArticles` marks every flow of the active tab as it loads.
+- `useArticles` `onLayout` with `!layout.local` calls `growForAbsentWriter`: a marked flow, once web fonts are
+  loaded (`document.fonts.status`), clears its mark and, when the pure decision says so, ticks
+  `withArticlePageCount(t, flow, pagesNeeded)` (grow only) and logs `[article] grown for an absent writer`.
 - The pure decision is `shouldGrowForAbsentWriter({ local, pending, needed, have, locked })` in
   `packages/document/src/article-pages.ts`.
 
@@ -156,31 +172,38 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 ### MCP
 
 - `change_pages` `{ documentId, tabId?, changes: PageChange[] (1..50) }`, behaviour `destructive`, output
-  `{ documentId, tabId, switched, lines, pages, url }`.
+  `{ documentId, tabId, switched, lines, pages, articles, rev, url }`; a refusal is a tool error, `Change n: …`
+  counting from 1.
 - `write_article` `{ documentId, tabId?, article?, new?, markdown, mode?, size?, orientation?, look?, accent?,
-pageNumbers? }`, behaviour `destructive`, output `{ documentId, tabId, article, lines, url }`.
+pageNumbers? }`, behaviour `destructive`, output as `change_pages` plus `article` (with `created`). Fields not
+  given are not sent.
+- Which tab, before the route (`illustrateTabOf`): the one named, else the first in Illustrate mode, else the first
+  tab when it is empty, else `tab_needed` saying to name a tab or `add_tab` with `blank-illustration`.
 - Every input and output property `.describe()`d; layout ids described by kind in `change_pages`'s `layout`
   description, generated from `layoutCatalogueFor`.
 - `read_document` `view` enum gains `pages`.
-- The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain one sentence: Illustrate tabs hold pages
-  (infographic, slide, logo) changed with `change_pages` and articles written in Markdown with `write_article`;
-  `read_document` view `pages` shows them.
+- The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain a paragraph: what Illustrate tabs hold,
+  which tool makes what (a document or brief → an article, a deck → slides, a logo → a logo page), how a document
+  for pages starts (`create_document` with template `blank-illustration`), and that a layout's sample text is
+  found in the `pages` view and replaced with `update_document`.
 
 ### CLI
 
 - `page ls <doc> [--tab]` → the `pages` view.
-- `page set <doc> [--tab] --json <changes>` or flags for one change (`--add slide --layout title`, `--page 2
---name Cover`, `--delete 2`).
+- `page set <doc> [--tab] --changes <file|->` (a JSON list, or one change) or flags for one change (`--add slide
+--layout slide-title`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--size`,
+  `--orientation`).
 - `article get <doc> [--tab] [--article]` → Markdown on stdout.
-- `article set <doc> [--tab] [--article] [--new] [--append] [--file path | stdin] [--look] [--accent]
-[--page-numbers]`.
+- `article set <doc> <file|-> [--tab] [--article] [--new] [--append] [--size] [--orientation] [--look]
+[--accent] [--page-numbers]`.
+- `page` and `article` are named-only resources in the top-level help (its 500-token budget).
 
 ## Data and persistence
 
 - Stored fields touched: `Tab.opensIn`, `Tab.pages`, `Tab.articles`, `Tab.elements`. No new field, no migration.
 - One write per call: `writeChangeset` when the elements changed (its batch writes the whole next tab, pages and
-  articles included), else `upsertTabAtRev`. `ChangesetWrite` gains `tabFieldsChanged: boolean` so a write with
-  element ops records as today and a pages-only write never goes through it.
+  articles included, and records and relays the element ops), else `upsertTabAtRev`. The tab passes
+  `withServerRules` first, as a changeset's does.
 - Revision: read `stored.rev`, write at it; on `isTabRevStale` re-read and re-apply once; a second stale →
   `409 tab_busy`.
 
@@ -206,6 +229,8 @@ pageNumbers? }`, behaviour `destructive`, output `{ documentId, tabId, article, 
 | Tab bytes over `MAX_TAB_BYTES` after the edit                 | `413 tab_too_large`                                                    |
 | Revision moved twice                                          | `409 tab_busy`                                                         |
 | Relay fails                                                   | logged `[illustrate-agent] relay-missed`, the write stands             |
+| No tab named, no Illustrate tab, first tab not empty          | `tab_needed` (verbs), saying how to get one                            |
+| An `iconId` that names no icon (any edit operation)           | `invalid_value` "is not an icon", hint: icons like it (`iconsLike`)    |
 
 ## Security and trust
 
@@ -241,21 +266,24 @@ pageNumbers? }`, behaviour `destructive`, output `{ documentId, tabId, article, 
 
 ## Testing
 
-| Spec rule                                      | Test                                                                            |
-| ---------------------------------------------- | ------------------------------------------------------------------------------- |
-| Which tab, switch, event storming, locked tab  | `edit-operations/src/illustrate/page-changes.test.ts` "which tab"               |
-| Naming a page (id, place, name, order)         | `page-changes.test.ts` "naming a page"                                          |
-| Each change and each refusal                   | `page-changes.test.ts` one `it` per row of the change table and errors          |
-| First page's choice                            | `page-changes.test.ts` "fresh tab"                                              |
-| Pure edits match the editor                    | `document/src/illustrate-edits.test.ts`                                         |
-| Article resolution, new, append, style, limits | `edit-operations/src/illustrate/article-write.test.ts`                          |
-| Front matter, zones, page breaks, round trip   | `document/src/article-markdown-io.test.ts`                                      |
-| Grow for an absent writer                      | `document/src/article-pages.test.ts` `shouldGrowForAbsentWriter`                |
-| Route gate, write, stale retry, busy, relay    | `apps/api/src/routes/tab-illustrate-route.test.ts`                              |
-| The `pages` view and header                    | `document-views/src/pages.test.ts`, `outline` header fixture                    |
-| Tools, parity, output schema                   | `apps/mcp/src/illustrate-tools.test.ts`, `verb-parity`, `output-schema`         |
-| CLI verbs                                      | `agent-verbs/src/verbs/page.test.ts`, `article.test.ts`                         |
-| Performance budgets                            | `page-changes.test.ts` "worst case", `article-markdown-io.test.ts` "worst case" |
+| Spec rule                                       | Test                                                                                    |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Request read strictly, each refusal by name     | `packages/edit-operations/src/illustrate/parse.test.ts`                                 |
+| Which tab, switch, event storming, locked tab   | `packages/edit-operations/src/illustrate/page-changes.test.ts` "which tab"              |
+| Naming a page (id, place, name, order)          | `page-changes.test.ts` "naming a page", `summary.test.ts`                               |
+| Each change and each refusal, the fresh tab     | `page-changes.test.ts`                                                                  |
+| Pure edits match the editor                     | `packages/document/src/illustrate-edits.test.ts`, the editor's own page-edit tests      |
+| Article resolution, new, append, style, limits  | `packages/edit-operations/src/illustrate/article-write.test.ts`                         |
+| Front matter, zones, page breaks, escapes, trip | `packages/document/src/article-markdown-io.test.ts`                                     |
+| Grow for an absent writer                       | `packages/document/src/article-pages.test.ts`, `room-op-apply.test.ts` (the agent mark) |
+| Route gate, write, changeset, relay, refusals   | `apps/api/src/routes/tab-illustrate-route.test.ts`                                      |
+| The `pages` view and header                     | `packages/document-views/src/pages.test.ts`, `render-view.test.ts`                      |
+| Tools, parity, output schema                    | `apps/mcp/src/illustrate-tools.test.ts`, `verb-parity.test.ts`, `output-schema.test.ts` |
+| Which tab (verbs), CLI verbs                    | `packages/agent-verbs/src/verbs/illustrate.test.ts`                                     |
+| Icon ids                                        | `packages/edit-operations/src/fields.test.ts`, `packages/icons/src/search.test.ts`      |
+| Performance                                     | `page-changes.test.ts` "worst case", `article-markdown-io.test.ts` "worst case"         |
+
+Not unit tested: the route's stale retry and `tab_busy` (they follow the changeset submit's own, tested there).
 
 ## Constants and configuration
 
