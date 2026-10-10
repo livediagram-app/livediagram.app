@@ -259,27 +259,20 @@ export function ImagePicker() {
 
 /** A small wall of coloured sticky notes with text, the way a brainstorm looks. */
 export function StickyNotes() {
-  const notes: [number, number, string, string, string][] = [
-    [48, 50, 'fill-amber-100', 'stroke-amber-300', 'fill-amber-300'],
-    [186, 38, 'fill-emerald-100', 'stroke-emerald-300', 'fill-emerald-300'],
-    [300, 70, 'fill-rose-100', 'stroke-rose-300', 'fill-rose-300'],
-    [120, 132, 'fill-violet-100', 'stroke-violet-300', 'fill-violet-300'],
-    [256, 140, 'fill-brand-100', 'stroke-brand-300', 'fill-brand-300'],
+  const notes: [number, number, string, string][] = [
+    [48, 50, 'fill-amber-100', 'fill-amber-300'],
+    [186, 38, 'fill-emerald-100', 'fill-emerald-300'],
+    [300, 70, 'fill-rose-100', 'fill-rose-300'],
+    [120, 132, 'fill-violet-100', 'fill-violet-300'],
+    [256, 140, 'fill-brand-100', 'fill-brand-300'],
   ];
   return (
     <Scene w={420} h={220}>
-      {notes.map(([x, y, fill, stroke, bar], i) => (
+      {notes.map(([x, y, fill, bar], i) => (
         <g key={i}>
-          <rect
-            x={x}
-            y={y}
-            width={84}
-            height={68}
-            rx={4}
-            className={`${fill} ${stroke}`}
-            strokeWidth={1.5}
-          />
-          <rect x={x} y={y} width={84} height={68} rx={4} className="fill-slate-900/5" />
+          {/* Square corners and no border, as a sticky draws by default */}
+          <rect x={x} y={y} width={84} height={68} className={fill} />
+          <rect x={x} y={y} width={84} height={68} className="fill-slate-900/5" />
           <TextBar x={x + 12} y={y + 18} w={56} />
           <TextBar x={x + 12} y={y + 32} w={44} tone="faint" />
           <rect x={x + 12} y={y + 48} width={20} height={8} rx={2} className={bar} />
@@ -417,7 +410,14 @@ export function PageSheet() {
 
       {/* Masthead: heading, subtitle, hairline rule. Always present, so the
           page has the same shape before and after anyone writes in it. */}
-      <rect x={x + 16} y={y + 18} width={72} height={9} rx={2} className="fill-brand-500" />
+      <rect
+        x={x + 16}
+        y={y + 18}
+        width={72}
+        height={9}
+        rx={2}
+        className="fill-slate-800 dark:fill-slate-200"
+      />
       <TextBar x={x + 16} y={y + 34} w={54} tone="faint" />
       <line
         x1={x + 16}

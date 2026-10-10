@@ -40,16 +40,16 @@ Where a [pie chart](/help/palette/tools/data-elements/pie-chart/) shows one tota
 
 ## Editing a bar chart
 
-A bar chart holds one value per bar, the same way a pie chart holds one per slice. Right-click it, open **Tools**, then **Data**: each row is a bar, with a swatch for its colour, a label and a value. Edit them in place, remove a bar with **×**, or add one with **+ Add Slice**. The chart redraws as you type.
+A bar chart holds one value per bar, the same way a pie chart holds one per slice. Right-click it, open **Tools**, then **Data**: each row is a bar, with a swatch for its colour, a label and a value. Edit them in place, remove a bar with **×**, or add one with **+ Add Slice**. The chart updates as soon as you leave a field.
 
 ## Editing a line chart
 
 A line chart's data is a grid, too wide for the menu, so its **Tools** then **Data** section lists the series and offers **Edit Data**. That opens the **Chart data** dialog:
 
 - **Edit the grid** directly: a row per category, a column per series. Add a series with the **+** at the end of the header row, add a category with **+ Add row**, and remove either with its **×** (a chart always keeps at least one of each).
-- **Import CSV** loads a file: the header row is the series names and the first column is the categories, so you can save a sheet from a spreadsheet and load it straight in. Importing replaces what the grid held.
+- **Import CSV** loads a file: the header row's first cell labels the category column and the rest name the series, and each row below is a category and its values (up to 12 series and 200 rows), so you can save a sheet from a spreadsheet and load it straight in. Importing replaces what the grid held.
 
-Changes apply as you make them; **Done** closes the dialog.
+Changes apply as you make them (a typed cell when you leave it); **Done** closes the dialog.
 
 <Figure caption="The Chart data dialog: Import CSV, a column per series, a row per category, and + Add row.">
   <LineDataDialog />

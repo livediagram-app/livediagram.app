@@ -144,9 +144,9 @@ function Row({
 
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
-/** The Components category as Illustrate mode's palette shows it: the Web
- *  Elements group opened in place, its six components below it. (Illustrate
- *  leaves the category's Entity tile out, so the group is all there is.) */
+/** The Components category as Illustrate mode's palette shows it: Code and
+ *  Checklist, then the Web Elements group opened in place with its six components
+ *  below it. (Illustrate leaves the category's Entity tile out.) */
 export function ComponentsCategory() {
   const x = PX + 12;
   const rows: [string, string][] = [
@@ -158,10 +158,24 @@ export function ComponentsCategory() {
     ['Header', 'A website-style nav bar'],
   ];
   return (
-    <PaletteFrame category="Components" h={258} sceneH={282}>
+    <PaletteFrame category="Components" h={318} sceneH={342}>
       <Row
         x={x}
         y={56}
+        name="Code"
+        blurb="A syntax-highlighted code card"
+        glyph={<path d="M-2 -5l-4 5 4 5M2 -5l4 5 -4 5" {...g} />}
+      />
+      <Row
+        x={x}
+        y={86}
+        name="Checklist"
+        blurb="Tickable to-do rows"
+        glyph={<path d="M-6 -5h5v5h-5zM-5 -3l1.5 1.5 3 -3M2 -3h5M-6 2h5v5h-5zM2 4h5" {...g} />}
+      />
+      <Row
+        x={x}
+        y={116}
         name="Web Elements"
         blurb="Themed page sections"
         open
@@ -172,7 +186,7 @@ export function ComponentsCategory() {
         <Row
           key={name}
           x={x + 14}
-          y={92 + i * 30}
+          y={152 + i * 30}
           name={name}
           blurb={blurb}
           glyph={
