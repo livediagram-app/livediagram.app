@@ -48,7 +48,7 @@ Both the hub and the per-competitor detail pages also emit an `article:modified_
 
 ## Initial set
 
-Miro, XMind, Excalidraw, draw.io (diagrams.net), and Google Slides (compared as a presentation tool, against Illustrate slide pages and Presentation mode). Add more by appending to `lib/alternatives.ts`; the hub's descriptions name every competitor from the same list.
+Miro, XMind, Excalidraw, draw.io (diagrams.net), and Google Slides (compared as a presentation tool, against Illustrate slide pages and Presentation mode). Add more by appending to `lib/alternatives.ts`; the hub's ItemList description names every competitor from the same list (its meta description is a fixed sentence naming a few, so it stays within 160 characters).
 
 ## Second set (October 2026)
 

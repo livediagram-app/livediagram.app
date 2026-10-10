@@ -74,7 +74,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Microsoft Whiteboard',
     title: 'Microsoft Whiteboard alternative · livediagram',
     description:
-      'A free, open-source Microsoft Whiteboard alternative: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with the ink still editable.',
+      'A free, open-source Microsoft Whiteboard alternative: pressure-sensitive ink, no Microsoft account, and an import that keeps your boards editable.',
     h1: 'The open-source Microsoft Whiteboard alternative',
     lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, the remaining legacy boards are deleted on 16 October 2026, and the standalone apps retire this autumn. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
     rows: [
@@ -593,7 +593,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Google Slides',
     title: 'Google Slides alternative · livediagram',
     description:
-      'A free, open-source Google Slides alternative: slide pages from ready-made layouts and decks built from your live canvas, presented with notes, timing and transitions, no account needed.',
+      'A free, open-source Google Slides alternative: slide pages from ready-made layouts, decks built from your canvas, notes, timing and transitions.',
     h1: 'A free, open-source Google Slides alternative',
     lede: 'Google Slides is the presentation tool most people already have open. livediagram makes decks differently: start a slide page from a ready-made layout, or build slides straight from the work on your canvas, so the deck, the write-up and the plan behind it live in one document that your team edits together.',
     rows: [
@@ -698,7 +698,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livediagram',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard and diagram canvas with no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 95 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livediagram covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -800,7 +800,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Lucidchart',
     title: 'Lucidchart alternative · livediagram',
     description:
-      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, Mermaid, an API and MCP.',
     h1: 'The free Lucidchart alternative, with no limits',
     lede: 'Lucidchart is a mature, professional diagramming tool, with a free plan that limits how many documents and shapes you can make. livediagram is free and open source with no such limits: real-time flowcharts, org charts and architecture diagrams that anyone can open from a link, no account needed.',
     rows: [
