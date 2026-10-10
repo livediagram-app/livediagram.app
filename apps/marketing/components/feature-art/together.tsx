@@ -528,26 +528,39 @@ export function AvatarModeArt() {
 
 /* ───────────────────────── Sharing and access ───────────────────────── */
 
-/** Editor or view-only links: two links side by side, one copied to send. */
+/** Editor, participant or view-only links: three passes side by side, one copied to send. */
 export function ShareLinksArt() {
-  const row = (y: number, label: string, url: string, role: string, tone: 'sky' | 'slate') => (
+  // One row per pass: its role, its link and what it lets the holder do, on a single line.
+  const row = (
+    y: number,
+    label: string,
+    url: string,
+    role: string,
+    tone: 'sky' | 'amber' | 'slate',
+  ) => (
     <g>
       <rect
         className="fill-slate-50 stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
         x="50"
         y={y}
         width="200"
-        height="24"
+        height="18"
         rx="5"
         strokeWidth="1"
       />
-      <text className={TEXT} x="58" y={y + 10} fontSize="7" fontWeight="700">
+      <text className={TEXT} x="58" y={y + 11.6} fontSize="7" fontWeight="700">
         {label}
       </text>
-      <text className={MUTED} x="58" y={y + 19} fontSize="6.5" fontFamily="ui-monospace, monospace">
+      <text
+        className={MUTED}
+        x="110"
+        y={y + 11.4}
+        fontSize="6"
+        fontFamily="ui-monospace, monospace"
+      >
         {url}
       </text>
-      <Pill x={204} y={y + 6.5} w={40} label={role} tone={tone} />
+      <Pill x={204} y={y + 3.5} w={40} label={role} tone={tone} />
     </g>
   );
   return (
@@ -565,8 +578,9 @@ export function ShareLinksArt() {
       <g className="fa-a-late" style={at(0.9)}>
         <Pill x={210} y={12} w={40} label="Copied" tone="green" />
       </g>
-      {row(30, 'Editors', 'livediagram.app/d/9fk2', 'Can edit', 'sky')}
-      {row(60, 'Viewers', 'livediagram.app/d/qp7x', 'Can view', 'slate')}
+      {row(28, 'Editors', 'livediagram.app/d/9fk2', 'Can edit', 'sky')}
+      {row(48, 'Participants', 'livediagram.app/d/m3wd', 'Can add', 'amber')}
+      {row(68, 'Viewers', 'livediagram.app/d/qp7x', 'Can view', 'slate')}
       <Pointer x={232} y={19} color={YOU} className="fa-a-move" style={from(24, 46, 0)} />
     </Scene>
   );
