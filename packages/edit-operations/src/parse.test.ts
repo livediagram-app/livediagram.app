@@ -57,6 +57,17 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     });
   });
 
+  it('reads an unquoted value that starts with a digit but is not a number as a string (EO19)', () => {
+    expect(one('set n1 label=2FA')).toMatchObject({ fields: { label: '2FA' } });
+    expect(one('set n1 label=3D note=1st')).toMatchObject({ fields: { label: '3D', note: '1st' } });
+    expect(one('set n1 label=1.2.3 width=-12.5e1')).toMatchObject({
+      fields: { label: '1.2.3', width: -125 },
+    });
+    expect(one('set n1 label=truer locked=false')).toMatchObject({
+      fields: { label: 'truer', locked: false },
+    });
+  });
+
   it('reads rm, move, connect and rewire', () => {
     expect(one('rm n7 all keep-arrows')).toEqual({
       op: 'rm',

@@ -43,7 +43,8 @@ const SELECTOR_KEYS_OF: ReadonlySet<string> = new Set(['from', 'to', 'above', 'b
 const PLACEMENT_WORDS: ReadonlySet<string> = new Set([...PLACEMENT_RELATIONS, 'at']);
 const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
-const JSON_START = /^(-?\d|true$|false$)/;
+// A whole JSON number, `true` or `false`; `2FA`, `3D` or `1st` are strings (EO19).
+const JSON_LITERAL = /^(-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?|true|false)$/;
 
 const fail = (word: Word | undefined, fallback: number, expected: string): LineResult => ({
   error: { column: word?.column ?? fallback, expected },
@@ -70,7 +71,7 @@ function fieldOf(word: Word): FieldWord | null {
 // A value starting with `[` or `{` is JSON as written; otherwise a quoted value is a string, an empty one
 // unsets, and a number, true or false reads as JSON (EO19).
 function fieldValue({ text, raw, quoted }: FieldWord): { value: FieldValue } | null {
-  const json = /^[[{]/.test(raw) ? raw : !quoted && JSON_START.test(text) ? text : null;
+  const json = /^[[{]/.test(raw) ? raw : !quoted && JSON_LITERAL.test(text) ? text : null;
   if (json === null) return { value: quoted || text !== '' ? text : null };
   try {
     return { value: JSON.parse(json) as FieldValue };
