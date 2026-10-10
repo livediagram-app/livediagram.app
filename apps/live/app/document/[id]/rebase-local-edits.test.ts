@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { rebaseLocalEdits } from './rebase-local-edits';
 
-// docs/specs/012-collaboration/resync-without-reload.md "Unsaved edits": a resync keeps what was not saved yet.
+// docs/specs/012-collaboration/resync-without-reload.md "Fault 2": a resync keeps what was not saved yet.
 const el = (id: string, x = 0): Element =>
   ({ id, type: 'text', x, y: 0, width: 10, height: 10, label: id }) as Element;
 const tab = (els: Element[], extra: Partial<Tab> = {}): Tab =>

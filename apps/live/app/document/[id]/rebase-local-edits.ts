@@ -1,5 +1,5 @@
 // A resync's fetched tab with this editor's unsaved edits put back on top (docs/specs/012-collaboration/
-// resync-without-reload.md "Unsaved edits"). A resync re-reads a tab because ops were missed, but what was edited
+// resync-without-reload.md "Fault 2"). A resync re-reads a tab because ops were missed, but what was edited
 // here and not yet saved (offline, or inside the debounce) is not on the server: overwriting with the fetched
 // copy threw it away. Each element changed, added or deleted here since the last save (judged against the save
 // baseline, by content, since a peer's op makes new objects on both sides) is applied to the fetched elements; so
