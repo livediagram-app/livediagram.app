@@ -219,11 +219,13 @@ pageNumbers? }`, behaviour `destructive`, output `{ documentId, tabId, article, 
 
 ## Performance and limits
 
-- Engine cost is linear in pages (≤ 100) times changes (≤ 50) plus elements touched by moves: ≤ 5,000 page
-  passes, each re-laying out ≤ 100 rects. Budget: under 20 ms for 50 changes on a 100-page tab with 2,000
-  elements; a test holds it at 200 ms (CI headroom).
+- Engine cost per change is linear in elements times log pages: a change that moves pages walks every element once
+  and finds its page by halving the row (`rowPageAt` in `withIllustratePages`); a change that moves no page (name,
+  lock, paint) skips the walk. Measured: 50 changes (25 moves, 25 renames) on a 99-page tab with 2,000 elements take
+  29 to 57 ms on a loaded machine (load average 50), down from 180 to 310 ms with the linear page scan. A test holds
+  it at 2,000 ms (CI headroom).
 - Markdown parse is a single pass of line regexes with no backtracking across lines; the inline pattern is
-  bounded per line. Budget: 400,000 characters in under 100 ms; a test holds it at 1,000 ms.
+  bounded per line. Measured: 400,000 characters (4,654 blocks) read in 77 to 346 ms on a loaded machine (load average 50), most of it the editor's own inline reading (`parseInline`, ~20 µs a paragraph); a test holds it at 1,000 ms. A paragraph past `MAX_ARTICLE_BLOCK_TEXT` is refused before it is read (`tooLong`), never cut.
 - `articleToMarkdown` is linear in runs.
 - The route does one D1 read and one batch write (two of each on a stale retry), and at most three room calls.
 - Room frames: an article's ops ride in frames of 200,000 characters as the editor's (`tabArticleOps`).

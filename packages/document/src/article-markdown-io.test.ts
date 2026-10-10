@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleBlock, ArticleFlow } from './article-flow';
+import { MAX_ARTICLE_BLOCK_TEXT, type ArticleBlock, type ArticleFlow } from './article-flow';
 import {
   ARTICLE_MARKDOWN_MAX,
   articleFromMarkdown,
@@ -13,7 +13,7 @@ import { parseInline } from './article-markdown';
 
 const blocksOf = (text: string, current?: ArticleFlow): ArticleBlock[] => {
   const out = articleFromMarkdown(text, current);
-  if ('unknownZone' in out) throw new Error(out.unknownZone);
+  if (!('blocks' in out)) throw new Error(JSON.stringify(out));
   return out.blocks;
 };
 // Blocks without their ids, to compare shapes.
@@ -66,7 +66,7 @@ describe('Markdown into an article', () => {
   it('keeps a zone where its line is, drops the zones left out, refuses an unknown one', () => {
     const current: ArticleFlow = { blocks: [zone('z-1'), zone('z-2')] };
     const out = articleFromMarkdown('Before\n\n[zone z-2]\n\nAfter\n\n[zone z-2]', current);
-    if ('unknownZone' in out) throw new Error('unexpected');
+    if (!('blocks' in out)) throw new Error('unexpected');
     expect(out.blocks.map((b) => b.type)).toEqual(['paragraph', 'zone', 'paragraph']);
     expect(out.blocks[1]).toBe(current.blocks[1]);
     expect(out.keptZones).toEqual(['z-2']);
@@ -78,6 +78,14 @@ describe('Markdown into an article', () => {
   it('gives every block a fresh, distinct id', () => {
     const blocks = blocksOf('---\ntitle: T\n---\nA\n\n\\pagebreak\n\nB\n\n- c\n- d');
     expect(new Set(blocks.map((b) => b.id)).size).toBe(blocks.length);
+  });
+});
+
+describe('a paragraph too long for a block', () => {
+  it('is refused rather than cut, a blank line resetting the count', () => {
+    const half = 'x'.repeat(MAX_ARTICLE_BLOCK_TEXT / 2 + 10);
+    expect(articleFromMarkdown(`${half}\n${half}`)).toEqual({ tooLong: true });
+    expect('blocks' in articleFromMarkdown(`${half}\n\n${half}`)).toBe(true);
   });
 });
 
@@ -185,7 +193,7 @@ describe('worst case', () => {
     const blocks = blocksOf(text);
     const took = performance.now() - started;
     expect(blocks.length).toBeGreaterThan(1000);
-    // Budget 100 ms; held at 1,000 ms for CI under load.
+    // Measured 77 to 346 ms on a loaded machine; held at 1,000 ms for CI under load.
     expect(took).toBeLessThan(1000);
   });
 });

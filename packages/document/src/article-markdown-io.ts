@@ -6,6 +6,7 @@
 // text (underline, colours, highlights, superscript and subscript have no Markdown and read as
 // plain text).
 import {
+  MAX_ARTICLE_BLOCK_TEXT,
   nextArticleBlockId,
   type ArticleBlock,
   type ArticleFlow,
@@ -27,7 +28,10 @@ export type ArticleFromMarkdown =
       keptZones: string[];
       droppedZones: string[];
     }
-  | { unknownZone: string };
+  | { unknownZone: string }
+  // A paragraph (a run of lines with no blank line between) longer than a block holds: refused
+  // rather than cut, as the editor's reading would cut it.
+  | { tooLong: true };
 
 const unquote = (v: string) =>
   v
@@ -52,15 +56,16 @@ function frontMatterOf(text: string): { title?: string; subtitle?: string; body:
 
 /**
  * Markdown as an article's blocks. `current` is the article being written over: a `[zone <id>]`
- * line keeps that zone there; a zone id it lacks answers `unknownZone`. Block ids are fresh except
- * a kept zone's.
+ * line keeps that zone there; a zone id it lacks answers `unknownZone`. Block ids are fresh (never
+ * one of `current`'s) except a kept zone's.
  */
 export function articleFromMarkdown(text: string, current?: ArticleFlow): ArticleFromMarkdown {
   const zones = new Map(
     (current?.blocks ?? []).flatMap((b) => (b.type === 'zone' ? [[b.id, b] as const] : [])),
   );
   const { title, subtitle, body } = frontMatterOf(text.replace(/\r\n?/g, '\n'));
-  const taken = new Set<string>(zones.keys());
+  // Fresh ids never meet one the article has, so appended blocks sit beside its own.
+  const taken = new Set<string>((current?.blocks ?? []).map((b) => b.id));
   const fresh = () => {
     const id = nextArticleBlockId(taken);
     taken.add(id);
@@ -80,7 +85,10 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
     for (const b of parseMarkdownBlocks(stretch.join('\n'))) blocks.push({ ...b, id: fresh() });
     stretch = [];
   };
+  let paragraph = 0;
   for (const line of body.split('\n')) {
+    paragraph = line.trim() ? paragraph + line.length + 1 : 0;
+    if (paragraph > MAX_ARTICLE_BLOCK_TEXT) return { tooLong: true };
     if (/^```/.test(line.trim())) fenced = !fenced;
     const bare = line.trim();
     const zone = fenced ? null : ZONE_LINE.exec(bare);
