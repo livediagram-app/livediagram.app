@@ -1,4 +1,4 @@
-// notify_email_claims (migration 0086): the dedupe and per-sender cap on the team notification emails whose
+// notify_email_claims (migration 0087): the dedupe and per-sender cap on the team notification emails whose
 // text comes from the request body, action-assigned (docs/specs/012-collaboration/assigned-actions.md §4) and
 // mentioned (docs/specs/012-collaboration/comment-mentions.md "The email"). One atomic statement decides both, so
 // two concurrent requests can neither send the same email twice nor slip past the cap together.

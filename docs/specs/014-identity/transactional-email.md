@@ -143,7 +143,7 @@ enough for onboarding; no per-user timers.
 
 A failed send (the welcome inline, or any stage in the sweep) leaves its stamp
 unset for the next run to retry, and counts against the row: `send_attempts`
-goes up by one and `last_attempt_at` records when (migration 0085). Once a row
+goes up by one and `last_attempt_at` records when (migration 0086). Once a row
 reaches `MAX_SEND_ATTEMPTS` (3, in `db/email-lifecycle.ts`) every due-query
 skips it, so an address that always fails (a deleted mailbox, a hard bounce)
 cannot hold a place in the oldest-first batch for good; the sweep logs
