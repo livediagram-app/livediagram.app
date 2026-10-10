@@ -698,13 +698,19 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
   costs the neighbourhood and a walk past a row of n boxes costs O(n). Capture (`wrap`) reads holders once.
 - **Containment.** `deriveContainers` is `O(n × containers)` through `smallestHolder`; computed twice per changeset (before and after) and for
   `in:` on demand.
+- **Container order.** `containersBehindMembers` builds each container's member list once and keeps an index map
+  of the order, updating only the range a moved container crosses: `O(n)` plus what moves. Before, a scan of the
+  order per member made a one-field `set` cost 157 ms at 10,000 members of one frame; now 19 ms.
+- **Targets.** `noteTarget` keeps a `Set` beside the ordered `targets`, so a `set … all` notes each element in
+  `O(1)`; the old `includes` was quadratic in the elements resolved.
 - **Nearest candidates** run only on `target_not_found` / `unknown_field`: banded Levenshtein with band
   `NEAREST_MAX_DISTANCE` over labels cut to 60 characters, `O(n × 60 × band)`, about 6,000,000 cells at worst.
 - **Layout** costs `autoLayoutElements` on the selection only.
 - **Budget.** `EDIT_APPLY_BUDGET_MS` is the aim for a 500-operation changeset on a 2,000-element tab, measured, not
   a gate. Measured: 498 operations on 1,980 elements take 39 ms without inserts, and 88 ms with 83 of them inserts
   (make room reads the tab's holders and the connected group once per insert). The gate is `performance.test.ts`:
-  four times the tab, or four times the changeset, costs under eight times as much.
+  four times the tab, or four times the changeset, costs under eight times as much; the container order pass and
+  `noteTarget` are timed alone at 2,400 and 9,600 elements, under the same ratio.
 
 ## Observability
 
