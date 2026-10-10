@@ -32,6 +32,9 @@ import type { Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 
 type Pending = { seq: number; action: QaAction; actor: QaActor };
+
+// What a post the server refused at the cap says (docs/specs/012-collaboration/qa-board.md "The face", Adding).
+export const QA_BOARD_FULL_MESSAGE = 'The board filled up before your note landed.';
 type Base = { notes: QaNote[]; rev: number };
 
 const keyOf = (tabId: string, elementId: string) => `${tabId}\u0000${elementId}`;
@@ -125,7 +128,9 @@ export function useQaBoard({
     [rebuild],
   );
 
-  const run = async (element: ShapeElement, action: QaAction) => {
+  // Resolves false only when the server's answer leaves out a note this browser just added: the board filled
+  // up between this viewer's last look and the post (docs/specs/012-collaboration/qa-board.md "The face", Adding).
+  const run = async (element: ShapeElement, action: QaAction): Promise<boolean> => {
     const tabId = activeId;
     const key = keyOf(tabId, element.id);
     const self = selfRef.current;
@@ -159,7 +164,10 @@ export function useQaBoard({
       settle();
       rebuild(tabId, element.id, true);
     };
-    if (!documentId) return applyLocally();
+    if (!documentId) {
+      applyLocally();
+      return true;
+    }
     try {
       const state = await apiQaAction(
         self.id,
@@ -169,11 +177,22 @@ export function useQaBoard({
         action,
         sessionShareCode,
       );
-      if (!state) return applyLocally();
+      if (!state) {
+        applyLocally();
+        return true;
+      }
       settle();
       const base = baseRef.current.get(key);
       if (!base || state.rev > base.rev) baseRef.current.set(key, state);
       rebuild(tabId, element.id);
+      // The server answers a refused add with the board as it stands, its note missing. Only a full board
+      // refuses a well-formed add, so that is what the person is told; the composer puts the draft back.
+      if (action.type === 'add' && !state.notes.some((n) => n.id === action.id)) {
+        console.info('[qa] add.refused_full', { notes: state.notes.length });
+        onError(QA_BOARD_FULL_MESSAGE);
+        return false;
+      }
+      return true;
     } catch (err) {
       settle();
       rebuild(tabId, element.id);
@@ -184,17 +203,22 @@ export function useQaBoard({
             ? 'That didn’t reach the board. Try again in a moment.'
             : 'Couldn’t update the board. Try again in a moment.',
       );
+      return true;
     }
   };
 
   return {
     receiveQa,
-    // Returns whether the note was sent: a full board (QA_MAX_NOTES, as this
-    // viewer sees it) takes no more, and the composer keeps the draft.
-    addQaNote: (element: ShapeElement, text: string, anonymous: boolean): boolean => {
+    // Whether the note went in: false at once when the board is full as this viewer sees it
+    // (QA_MAX_NOTES), else a promise of the server's word, false when the board filled up meanwhile.
+    // Either way a refused draft goes back in the composer.
+    addQaNote: (
+      element: ShapeElement,
+      text: string,
+      anonymous: boolean,
+    ): boolean | Promise<boolean> => {
       if ((element.qaNotes ?? []).length >= QA_MAX_NOTES) return false;
-      void run(element, { type: 'add', id: crypto.randomUUID(), text, anonymous });
-      return true;
+      return run(element, { type: 'add', id: crypto.randomUUID(), text, anonymous });
     },
     voteQaNote: (element: ShapeElement, noteId: string, on: boolean) =>
       void run(element, { type: 'vote', noteId, on }),

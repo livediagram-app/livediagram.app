@@ -33,8 +33,8 @@ import { useFlipList } from './useFlipList';
 // anyone in a live session (view links too); the facilitator verbs only for
 // whoever is running the board (docs/specs/012-collaboration/facilitator.md). Everything absent = inert.
 export type QaFaceActions = {
-  // Returns whether the note was sent (false when the board is full).
-  add?: (text: string, anonymous: boolean) => boolean;
+  // Whether the note went in (false when the board is full), or a promise of the server's word.
+  add?: (text: string, anonymous: boolean) => boolean | Promise<boolean>;
   vote?: (noteId: string, on: boolean) => void;
   discuss?: (noteId: string | null) => void;
   close?: (noteId: string) => void;

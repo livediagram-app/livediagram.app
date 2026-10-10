@@ -69,7 +69,11 @@ export type CollabApi = {
   // Present for anyone in a live session, view links included: the server
   // owns the board and gates these on read access.
   // Returns whether the note was sent (false when the board is full).
-  addQaNote?: (element: ShapeElement, text: string, anonymous: boolean) => boolean;
+  addQaNote?: (
+    element: ShapeElement,
+    text: string,
+    anonymous: boolean,
+  ) => boolean | Promise<boolean>;
   voteQaNote?: (element: ShapeElement, noteId: string, on: boolean) => void;
   // Whoever is running the board (docs/specs/012-collaboration/facilitator.md): absent for everyone else.
   discussQaNote?: (element: ShapeElement, noteId: string | null) => void;

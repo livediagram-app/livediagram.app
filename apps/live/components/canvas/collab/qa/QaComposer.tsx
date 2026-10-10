@@ -20,7 +20,7 @@ export function QaComposer({
   selfName: string;
   // The board holds QA_MAX_NOTES and takes no more.
   full?: boolean;
-  onAdd: (text: string, anonymous: boolean) => boolean;
+  onAdd: (text: string, anonymous: boolean) => boolean | Promise<boolean>;
 }) {
   const [anonymous, setAnonymous] = useState(false);
   return (

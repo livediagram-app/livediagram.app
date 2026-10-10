@@ -59,8 +59,18 @@ Two people posting in the same second both land: a card travels as one
 whole-element update never replaces the box's cards unless it empties the
 box (a new round). A full box (`IDEA_MAX_CARDS`, 300) refuses the next card at
 the press, and the composer says so: at the cap its field reads **Box is full**
-and is off, and a post refused because the box filled meanwhile keeps its draft
-rather than throwing the text away.
+and is off, and a post refused because the box filled meanwhile (as this
+viewer's copy shows it) keeps its draft rather than throwing the text away.
+
+Known gap: two posts racing for the last card both land in their posters' own
+copies, but the room's ledger takes only the first (`recordElement` refuses the
+card past the cap), and nothing tells the second poster: an idea delta has no
+acknowledgement, so the room cannot say which card it refused. Their card stays
+on their screen until the box next reloads; a Participant's card, kept only
+through the ledger, is then gone, while an Editor's whole-tab save can carry it
+and leave the other poster's card out instead. Closing it needs the
+room to answer a refused delta to its sender, and the editor to take the card
+back and say so.
 
 ## Closed and open
 
