@@ -195,7 +195,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the sidebar carries a count so you can tell without looking.',
+          'The Explorer opens on Home: the documents you return to most, and what your teammates commented, edited and assigned you while you were away. The Timeline holds the full feed, and the Inbox gathers the actions and threads still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <UndoRedoArt />,
@@ -211,7 +211,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. Drop a timer straight onto it (the real one, with start, pause, restart and a bar that drains as the time goes), or start a countdown or stopwatch the whole room sees, then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Facilitate live from the canvas. Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
       },
       {
         art: <FacilitatorArt />,
@@ -959,7 +959,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Sheets with real formulas',
         description:
-          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, and copy and paste works with Google Sheets and Excel.',
+          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, copy and paste works with Google Sheets and Excel, and the cells zoom from 50% to 200%.',
       },
       {
         art: <BoardWidgetsArt />,
