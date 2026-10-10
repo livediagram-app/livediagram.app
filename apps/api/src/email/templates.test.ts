@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import {
   accountDeletedEmail,
+  activationEmail,
+  winBackEmail,
   documentJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
@@ -27,6 +29,23 @@ describe('email templates', () => {
 
   it('week 2 links to teams', () =>
     expect(week2Email(env).html).toContain('https://app.test/explorer/team'));
+
+  // docs/specs/014-identity/transactional-email.md: every tip / check-in respects notifyTips, so each one
+  // links to the toggle in its footer and in its List-Unsubscribe header.
+  it.each([
+    ['week 1', week1Email],
+    ['week 2', week2Email],
+    ['activation', activationEmail],
+    ['win-back', winBackEmail],
+  ])('%s carries the manage-notifications footer and unsubscribe url', (_label, build) => {
+    const e = build(env);
+    expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
+    expect(e.html).toContain('Manage your notifications');
+    expect(e.html).toContain('tips and check-ins are on');
+  });
+
+  it('the welcome is not opt-out, so it carries no unsubscribe url', () =>
+    expect(welcomeEmail(env).unsubscribeUrl).toBeUndefined());
 
   it('team invite links to the invites page + names the team', () => {
     const e = teamInviteEmail(env, 'Acme');

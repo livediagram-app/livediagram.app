@@ -36,7 +36,7 @@ invite** — read from the [User preferences](../007-editor/user-preferences.md)
 
 6. **Activation nudge** (#4, onboarding) — ~3 days after sign-up, to anyone who
    still has zero documents (`dueForActivation`'s `NOT EXISTS` check). Daily cron,
-   not opt-out. `activation_sent_at`, migration 0031.
+   opt-out `notifyTips`. `activation_sent_at`, migration 0031.
 7. **Win-back** (#5, opt-out `notifyTips`) — one-shot for owners quiet ~4 weeks
    (last document activity via `MAX(updated_at)`; zero-document owners are excluded,
    that's #4's job). Daily cron. `winback_sent_at`, migration 0032.
@@ -62,8 +62,9 @@ and as switches in Settings > Notifications; every opt-out email's footer links 
 `/explorer?settings=notifications` (also emitted as a `List-Unsubscribe` header; the old `/explorer/profile` URL in already-sent mail redirects there, see [Account settings & email notifications](profile-and-email-notifications.md)) so the
 recipient can turn it off in one click. `notifyTips` governs **every** tip /
 check-in after the immediate welcome, i.e. week 1, week 2, the activation nudge,
-and win-back all respect it; only the welcome (the first authenticated sighting,
-before any toggle could exist) is unconditional. The opt-out toggles are
+and win-back all respect it, and so all four carry that footer and header; only
+the welcome (the first authenticated sighting, before any toggle could exist) is
+unconditional and carries neither. The opt-out toggles are
 documented for users in the [Email Notifications](../../../apps/help/app/account-and-data/email-notifications/page.mdx)
 help article.
 
