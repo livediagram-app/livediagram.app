@@ -11,13 +11,13 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared document and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role, **Editor** or **Viewer**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the document and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
+A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role: **Editor**, **Participant** or **Viewer**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the document and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
 ## Share password
 
 You can put a single password on a document: switch on **Password Protection** in the Share dialog, type it, and choose **Save**. Once it is set, anyone opening any share link for that document must enter it before they can view, and the password rides along on every later request so their edits stay gated too.
 
-- **One password covers every link** on the document, [embeds](/help/collaboration/sharing/embeds/) included, not one password per link.
+- **One password covers every link** on the document, [embeds](/help/collaboration/sharing/embeds/) included, not one password per link. While a password is set, the live image option is unavailable, because an image can't ask for a password.
 - **You always bypass it.** The owner is identified directly, so you never get prompted on your own document. So are members of the [team](/help/collaboration/teams/) whose library holds it.
 - **Nobody can read it back.** livediagram stores only a scrambled (hashed) form of the password, so even you see just **Password Set**. Note it down when you choose it; use **Replace** or **Remove** any time.
 - **Changing it takes effect at once.** Setting or replacing the password sends everyone currently in the document through a link back to the password prompt.
@@ -40,7 +40,7 @@ When you create a pass, the **Valid** control sets its lifetime, so access ends 
 | 1 month  | 30 days                 |
 | 6 months | 183 days                |
 
-When a link expires it stops granting access everywhere at once: the share URL, its embed and live image, and the real-time room all behave as if the link were revoked. The expired link does not vanish, though. It moves to the **Expired** section of the Share dialog, where you can delete it or **Extend** it for the same lifetime again, counted from now. A link's lifetime can't be changed after it is created.
+When a link expires it stops granting access everywhere at once: the share URL, its embed and live image, and the real-time room all behave as if the link were revoked. The expired link does not vanish, though. It moves to the **Expired** section of the Share dialog, where you can delete it or **Extend** it for the same lifetime again, counted from now. A link's lifetime can't be changed after it is created. A week before a link expires, your Timeline shows a **Share Link Expiring** entry.
 
 <Figure caption="Valid sets a new pass's lifetime; an expired pass waits under Expired until you extend or delete it.">
   <ShareLifetimes />
@@ -54,7 +54,8 @@ When a link expires it stops granting access everywhere at once: the share URL, 
 
 <Tip>
   Use the two together for sensitive work: a password stops casual access, and an expiry bounds how
-  long even the right people keep it. Prefer a **Viewer** pass when people only need to look, and
+  long even the right people keep it. Prefer a **Viewer** pass when people only need to look, or a
+  **Participant** pass when they need to add stickies and vote without reshaping the board, and
   remember that anyone who can see an embed's page source can see its link.
 </Tip>
 
