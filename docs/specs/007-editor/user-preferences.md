@@ -257,6 +257,9 @@ type UserPreferences = {
   // tour's. Surfaced in Settings as "Show Plan Tour" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
+  // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
+  // Surfaced in Settings as "Show Facilitate Tour" (inverted). Missing / undefined === not seen.
+  facilitateTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -709,7 +712,8 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE, so the dashboard series keeps its meaning. **Show Plan Tour**, beneath it, is inverted
   against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
   entering Plan), so closing the dialog only reruns it, when it was turned on from off
-  ([Plan tour](../026-plan/plan-tour.md)).
+  ([Plan tour](../026-plan/plan-tour.md)). **Show Facilitate Tour**, beneath that, works the same way
+  against `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)).
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the
   categories and, per row, its label, description, help article, section,

@@ -31,6 +31,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   cards: '#0d9488',
   'card-types': '#0891b2',
   'plan-tour': '#0284c7',
+  'facilitate-tour': '#ea580c',
   sheets: '#16a34a',
   'sheet-functions': '#059669',
   illustrate: '#e11d48',

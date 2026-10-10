@@ -112,6 +112,20 @@ describe('settings catalogue', () => {
     expect(keys.indexOf('planTourSeen')).toBe(keys.indexOf('tourSeen') + 1);
   });
 
+  it('inverts the Facilitate tour row the same way, after the Plan tour row', () => {
+    // docs/specs/012-collaboration/facilitate-tour.md "Where it appears".
+    const row = TOGGLES.find((r) => r.key === 'facilitateTourSeen')!;
+    expect(row.read({ facilitateTourSeen: true })).toBe(false);
+    expect(row.read({})).toBe(true);
+    expect(row.write({}, true).facilitateTourSeen).toBe(false);
+    expect(row.write({}, false).facilitateTourSeen).toBe(true);
+    expect(row.event.on).toBe('FacilitateTourSeenOff');
+    expect(row.event.off).toBe('FacilitateTourSeenOn');
+    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
+    const keys = accessibility.rows.map((r) => ('key' in r ? r.key : null));
+    expect(keys.indexOf('facilitateTourSeen')).toBe(keys.indexOf('planTourSeen') + 1);
+  });
+
   it('defaults every slider and choice to a value it actually offers', () => {
     for (const row of CHOICES) {
       const fallback = row.read({} as UserPreferences);

@@ -434,7 +434,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Facilitate tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -840,6 +840,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         read: (p) => p.planTourSeen !== true,
         write: (p, v) => ({ ...p, planTourSeen: !v }),
         event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
+      },
+      {
+        kind: 'toggle',
+        key: 'facilitateTourSeen',
+        keywords:
+          'walkthrough onboarding intro show me around facilitate session retro workshop timer vote poll getting started',
+        label: 'Show Facilitate Tour',
+        description:
+          'Offers a short tour of Facilitate mode the next time you work in Facilitate. It switches itself off once you have taken or dismissed the tour. Turn it back on and close Settings to run it again: straight away if you are in Facilitate, otherwise the next time you are.',
+        helpArticle: 'facilitateTour',
+        // Inverted like Show Plan Tour (docs/specs/012-collaboration/facilitate-tour.md).
+        read: (p) => p.facilitateTourSeen !== true,
+        write: (p, v) => ({ ...p, facilitateTourSeen: !v }),
+        event: { category: 'UI', on: 'FacilitateTourSeenOff', off: 'FacilitateTourSeenOn' },
       },
     ],
   },

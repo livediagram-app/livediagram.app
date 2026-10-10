@@ -419,6 +419,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A board with one card ringed by the tour's spotlight: Plan shown one part at a time.
+  // A flipchart on its easel with a dashed spotlight ring on its pad: a guided look at Facilitate.
+  'facilitate-tour': (
+    <Glyph>
+      <rect x="4" y="3" width="16" height="12" rx="1.5" />
+      <path d="M8 15l-2.5 6M16 15l2.5 6M12 15v6" />
+      <rect x="7" y="6" width="10" height="6" rx="1.5" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
   'plan-tour': (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="1.5" />

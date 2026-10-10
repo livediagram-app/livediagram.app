@@ -966,6 +966,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
+  'UI|Closed|FacilitateTourOffer':
+    "Someone dismissed the Facilitate tour's offer card without starting it.",
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
@@ -992,6 +994,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the card type editor's Show Me tour.",
   'UI|Ended|CardTypeTourSkipped':
     "Someone left the card type editor's Show Me tour before its end.",
+  'UI|Ended|FacilitateTourCompleted':
+    "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
   'UI|Ended|PlanTourCompleted':
     "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PlanTourSkipped':
@@ -1072,6 +1077,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
     'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
+  'UI|Opened|FacilitateTourOffer':
+    'The Facilitate tour\'s offer card was shown, the first time someone worked in Facilitate mode (after the welcome tour, when that was still owed) or replayed from Settings\' "Show Facilitate Tour".',
   'UI|Opened|PlanTourOffer':
     'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
   'UI|Opened|activity':
@@ -1128,6 +1135,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
   'UI|Started|CardTypeTour':
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
+  'UI|Started|FacilitateTour':
+    "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
     "Someone picked a track on the Plan tour's first card, beginning its walkthrough on an example board or sheet.",
   'UI|Toggled|ActivityRevertPreviewOff':
@@ -1267,6 +1276,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on "Show Welcome Tour" in Settings, marking the tour as not yet seen and relaunching it immediately.',
   'UI|Toggled|TourSeenOn':
     'Someone switched off "Show Welcome Tour" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+  'UI|Toggled|FacilitateTourSeenOff':
+    'Someone switched on "Show Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
+  'UI|Toggled|FacilitateTourSeenOn':
+    'Someone switched off "Show Facilitate Tour" in Settings, marking the Facilitate tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
     'Someone switched on "Show Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
@@ -1278,6 +1291,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+  'UI|View|FacilitateTourStepKit':
+    'The Facilitate tour reached its "Your session kit" step, on the palette\'s Popular.',
+  'UI|View|FacilitateTourStepCollaborate':
+    'The Facilitate tour reached its "Collaborate" step, opening the palette\'s categories.',
+  'UI|View|FacilitateTourStepSessionStrip':
+    'The Facilitate tour reached its "Run the room" step, on the Session strip.',
+  'UI|View|FacilitateTourStepShare':
+    'The Facilitate tour reached its "Bring people in" step, on Share.',
+  'UI|View|FacilitateTourStepModes':
+    'The Facilitate tour reached its "Switch modes" step, on the mode switch.',
+  'UI|View|FacilitateTourStepOutro':
+    'The Facilitate tour reached its closing "You\'re ready to facilitate" card.',
   'UI|View|PlanTourStepBoard':
     'The Plan tour reached its "Your board" step, placing its example board.',
   'UI|View|PlanTourStepAddCards':

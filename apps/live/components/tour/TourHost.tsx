@@ -95,8 +95,9 @@ export function TourHost() {
   const { active } = engine;
 
   // One tour at a time (docs/specs/026-plan/plan-tour.md "Where it appears"): this one publishes itself
-  // while on screen, and waits while the Plan tour is.
-  const otherTour = useActiveTour() === 'plan';
+  // while on screen, and waits while the Plan or Facilitate tour is.
+  const shown = useActiveTour();
+  const otherTour = shown !== null && shown !== 'welcome';
   useEffect(() => {
     setActiveTour('welcome', active);
   }, [active]);

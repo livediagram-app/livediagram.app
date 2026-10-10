@@ -19,6 +19,7 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { requestPlanTourRelaunch } from '@/lib/plan-tour';
+import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -186,12 +187,16 @@ export function SettingsDialog({
   // itself on entering Plan; turning the row on from off reruns it in place.
   const planTourSeen = settings.planTourSeen === true;
   const planTourSeenAtOpen = useRef(planTourSeen);
+  // "Show Facilitate Tour" (docs/specs/012-collaboration/facilitate-tour.md): as Show Plan Tour.
+  const facilitateTourSeen = settings.facilitateTourSeen === true;
+  const facilitateTourSeenAtOpen = useRef(facilitateTourSeen);
   const close = () => {
     if (!tourSeen) {
       markTourPending();
       if (tourSeenAtOpen.current) requestTourRelaunch();
     }
     if (!planTourSeen && planTourSeenAtOpen.current) requestPlanTourRelaunch();
+    if (!facilitateTourSeen && facilitateTourSeenAtOpen.current) requestFacilitateTourRelaunch();
     onClose();
   };
 

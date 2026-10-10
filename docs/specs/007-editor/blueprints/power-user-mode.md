@@ -88,6 +88,7 @@ const POWER_USER_PRESET = {
   autoRebindArrows: { autoRebindArrows: true },
   tourSeen: { tourSeen: true },
   planTourSeen: { planTourSeen: true },
+  facilitateTourSeen: { facilitateTourSeen: true },
   aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
@@ -318,7 +319,7 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 - Offer copy: message "Power user mode: fewer labels and a few faster defaults.", actions "Try power
   user mode" (primary) and "No thanks".
 - Settings copy:
-  - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off.
+  - **Power User Mode**: "Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Facilitate tours marked as seen, and AI suggested prompts off.
     Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change."
   - **Minimal Chrome**: "Hides labels and hints you no longer need: palette captions, panel titles, the selection
     caption, status bar text and onboarding notices. Every control stays; its name shows when you hover or focus it."

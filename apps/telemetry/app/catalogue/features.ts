@@ -918,6 +918,14 @@ export const PLAN_TOUR_OFFERED = opened(
   (t) => t === 'PlanTourOffer',
 );
 
+// The Facilitate tour's offer (docs/specs/012-collaboration/facilitate-tour.md); charted in its funnel on
+// the Visitors tab.
+export const FACILITATE_TOUR_OFFERED = opened(
+  'Facilitate Tour Offered',
+  'The Facilitate tour offered, the first time someone works in Facilitate mode.',
+  (t) => t === 'FacilitateTourOffer',
+);
+
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
 // the Visitors tab.
 export const POWER_USER_OFFERED = opened(

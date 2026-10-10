@@ -85,7 +85,8 @@ export function PlanTourHost() {
   const { active } = engine;
 
   // One tour at a time: publish this one while it is on screen.
-  const otherTour = useActiveTour() === 'welcome';
+  const shown = useActiveTour();
+  const otherTour = shown !== null && shown !== 'plan';
   useEffect(() => {
     setActiveTour('plan', active);
   }, [active]);

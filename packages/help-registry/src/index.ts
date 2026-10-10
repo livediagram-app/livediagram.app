@@ -1367,6 +1367,17 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'facilitate-tour',
+    title: 'The Facilitate Tour',
+    description:
+      'A short, optional walkthrough of Facilitate mode, offered once after the welcome tour and replayable from Settings.',
+    keywords:
+      'facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn facilitate mode session retro workshop timer vote poll session strip collaborate share participant replay rerun settings accessibility',
+    category: 'Canvas',
+    categorySlug: 'canvas/facilitate-mode',
+    parentSlug: 'facilitate-mode',
+  },
+  {
     slug: 'plan-tour',
     title: 'The Plan Tour',
     description:

@@ -75,6 +75,7 @@ export const HELP_ARTICLES = {
   planCards: 'canvas/plan-mode/cards',
   planSheets: 'canvas/plan-mode/sheets',
   planTour: 'canvas/plan-mode/plan-tour',
+  facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -141,6 +142,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   planTour: {
     title: 'Learn about the Plan Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  facilitateTour: {
+    title: 'Learn about the Facilitate Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   sharing: {

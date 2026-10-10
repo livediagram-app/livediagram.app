@@ -286,6 +286,13 @@ export const ACCESSIBILITY_SETTINGS = settingsStack(
       'Show Plan Tour',
       'The Plan tour switched back on or off.',
     ),
+    toggle(
+      'UI',
+      'FacilitateTourSeenOff',
+      'FacilitateTourSeenOn',
+      'Show Facilitate Tour',
+      'The Facilitate tour switched back on or off.',
+    ),
   ],
 );
 

@@ -195,6 +195,7 @@ as for a viewer, as every mode does.
   registered per [Register a help article](../../instructions/register-a-help-article.md), and
   **Editor Modes** covers five modes.
 - The Session tools article says the set-up lives in Facilitate (and Plan).
+- An optional [Facilitate tour](facilitate-tour.md) shows the mode the first time someone is in it.
 
 ## Existing tabs
 

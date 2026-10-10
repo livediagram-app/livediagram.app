@@ -21,6 +21,7 @@ Switching the mode **on** writes these values, once:
 | Auto-attach arrows   | `autoRebindArrows`   | on    |
 | Welcome tour         | `tourSeen`           | seen  |
 | Plan tour            | `planTourSeen`       | seen  |
+| Facilitate tour      | `facilitateTourSeen` | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 

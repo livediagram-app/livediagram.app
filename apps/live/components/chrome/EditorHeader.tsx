@@ -186,6 +186,7 @@ export function EditorHeader({
           >
             <button
               type="button"
+              data-tour-id="share"
               onClick={onOpenShare}
               className={`${HEADER_ACTION_BTN} ${
                 shareable

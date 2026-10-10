@@ -9,6 +9,7 @@ import {
   EXPLORER_REASONS_OPENED,
   TOUR_OFFERED,
   PLAN_TOUR_OFFERED,
+  FACILITATE_TOUR_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
@@ -259,6 +260,64 @@ export const PLAN_TOUR: MetricStack = {
     PLAN_TOURS_SKIPPED,
   ],
   headline: PLAN_TOURS_STARTED,
+};
+
+// The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): its own funnel, beside the Plan
+// tour's.
+export const FACILITATE_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Facilitate Tours Declined',
+  'The Facilitate tour turned down on its welcome card, before it started.',
+  { types: ['FacilitateTourOffer'], rising: 'neutral' },
+);
+
+export const FACILITATE_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Facilitate Tours Started',
+  'The Facilitate tour started.',
+  { types: ['FacilitateTour'] },
+);
+
+export const FACILITATE_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Facilitate Tour Steps Viewed',
+  'A step of the Facilitate tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('FacilitateTourStep') },
+);
+
+export const FACILITATE_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Facilitate Tours Completed',
+  'The Facilitate tour run to its last step.',
+  { types: ['FacilitateTourCompleted'] },
+);
+
+export const FACILITATE_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Facilitate Tours Skipped',
+  'The Facilitate tour closed before its end.',
+  { types: ['FacilitateTourSkipped'], rising: 'neutral' },
+);
+
+export const FACILITATE_TOUR: MetricStack = {
+  stack: true,
+  title: 'Facilitate Tour',
+  blurb:
+    'The first time in Facilitate mode: the Facilitate tour offered, stepped through, finished or skipped.',
+  members: [
+    FACILITATE_TOUR_OFFERED,
+    FACILITATE_TOUR_DECLINED,
+    FACILITATE_TOURS_STARTED,
+    FACILITATE_TOUR_STEPS_VIEWED,
+    FACILITATE_TOURS_COMPLETED,
+    FACILITATE_TOURS_SKIPPED,
+  ],
+  headline: FACILITATE_TOURS_STARTED,
 };
 
 // Show Me in the card type editor (docs/specs/026-plan/item-types.md "Editing a type"): never offered, so it starts
