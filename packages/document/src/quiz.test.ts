@@ -170,3 +170,32 @@ describe('quizPickerKeys', () => {
     ).toEqual([['p2'], ['p1', 'p3']]);
   });
 });
+
+// docs/specs/012-collaboration/quiz.md "Answers": an answer is never cut short, in the export either, and grows
+// away from the disc.
+describe('a long quiz answer', () => {
+  it('exports whole, wrapped over as many lines as it needs', async () => {
+    const { svgCollabFace } = await import('./svg-render-collab-faces');
+    const long = 'Mercury is a very hot planet, the smallest one, and closest to the sun of all';
+    expect(long.length).toBeLessThanOrEqual(80);
+    const el = {
+      ...createShape('quiz', 0, 0),
+      quizOptions: ['Venus', long, 'Mars', 'Earth'],
+      quizCorrect: 1,
+      quizRevealed: true,
+    };
+    const svg = svgCollabFace(el as never, 'Which planet is closest to the sun?', '#1e3a5f')!;
+    for (const word of long.split(/\s+/)) expect(svg).toContain(word.replace(/,$/, ''));
+    expect(svg).not.toContain('…');
+  });
+
+  it('grows away from the disc: up above it, down below it, both ways beside it', async () => {
+    const { quizOptionCentres, quizOptionTop, QUIZ_OPTION_HEIGHT } = await import('./quiz');
+    const [top, side, bottom] = quizOptionCentres(4);
+    const tall = QUIZ_OPTION_HEIGHT + 40;
+    // The edge nearest the disc stays put.
+    expect(quizOptionTop(top!, tall) + tall).toBe(top!.y + QUIZ_OPTION_HEIGHT / 2);
+    expect(quizOptionTop(bottom!, tall)).toBe(bottom!.y - QUIZ_OPTION_HEIGHT / 2);
+    expect(quizOptionTop(side!, tall)).toBe(side!.y - tall / 2);
+  });
+});

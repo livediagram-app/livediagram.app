@@ -16,7 +16,9 @@ import {
   QUIZ_OPTION_HEIGHT,
   QUIZ_OPTION_WIDTH,
   quizCorrectKeys,
+  QUIZ_OPTION_LONG_TEXT,
   quizOptionCentres,
+  quizOptionTop,
   quizTally,
 } from './quiz';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -40,6 +42,17 @@ import {
   text,
   type Face,
 } from './svg-render-face-kit';
+
+// A Quiz answer in the export: its text size and line, its padding, and enough lines for the longest answer
+// (QUIZ_OPTION_MAX_TEXT characters at about 11 a line).
+const QUIZ_EXPORT_TEXT_PX = 12;
+const QUIZ_EXPORT_LINE_PX = 14;
+const QUIZ_EXPORT_PAD_X = 10;
+const QUIZ_EXPORT_PAD_Y = 8;
+const QUIZ_EXPORT_LINES_MAX = 9;
+// The revealed question's lines inside the disc: its width (the disc's chord near the middle) and line height.
+const QUIZ_EXPORT_QUESTION_WIDTH = 180;
+const QUIZ_EXPORT_QUESTION_LINE_PX = 16;
 
 // ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
 
@@ -162,16 +175,24 @@ export function svgCollabFace(
         (el.strokeColor && stroke
           ? `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="3"/>`
           : `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(color)}" stroke-width="2" opacity="0.3"/>`);
+      // The question over two lines, as the revealed canvas shows it (QuizCentre), the second one ending in an
+      // ellipsis only when it runs on: never cut at a fixed count on one line.
+      const asked = wrapLines(title, QUIZ_EXPORT_QUESTION_WIDTH, 13, 2);
+      const askedTop = c - 6 - ((asked.length - 1) * QUIZ_EXPORT_QUESTION_LINE_PX) / 2;
       const centre = revealed
-        ? text(c, c - 6, title.length > 34 ? `${title.slice(0, 33)}…` : title, {
-            size: 13,
-            weight: 600,
-            color,
-            anchor: 'middle',
-          }) +
+        ? asked
+            .map((line, n) =>
+              text(c, askedTop + n * QUIZ_EXPORT_QUESTION_LINE_PX, line, {
+                size: 13,
+                weight: 600,
+                color,
+                anchor: 'middle',
+              }),
+            )
+            .join('') +
           text(
             c,
-            c + 16,
+            askedTop + (asked.length - 1) * QUIZ_EXPORT_QUESTION_LINE_PX + 22,
             `${quizCorrectKeys(el).length} of ${(el.responses ?? []).length} correct`,
             {
               size: 10,
@@ -187,18 +208,37 @@ export function svgCollabFace(
             .map((p, i) => {
               const right = i === el.quizCorrect;
               const x = p.x - QUIZ_OPTION_WIDTH / 2;
-              const y = p.y - QUIZ_OPTION_HEIGHT / 2;
+              // The whole answer, wrapped, the pill grown away from the disc as the canvas grows it
+              // (docs/specs/012-collaboration/quiz.md "Answers"): never cut short.
               const body = options[i] ?? '';
+              // A long answer a size smaller, as the canvas sets it.
+              const size = body.length > QUIZ_OPTION_LONG_TEXT ? 11 : QUIZ_EXPORT_TEXT_PX;
+              const lines = wrapLines(
+                body,
+                QUIZ_OPTION_WIDTH - QUIZ_EXPORT_PAD_X * 2,
+                size,
+                QUIZ_EXPORT_LINES_MAX,
+              );
+              const h = Math.max(
+                QUIZ_OPTION_HEIGHT,
+                lines.length * QUIZ_EXPORT_LINE_PX + QUIZ_EXPORT_PAD_Y * 2,
+              );
+              const y = quizOptionTop(p, h);
+              const firstBaseline = y + h / 2 - ((lines.length - 1) * QUIZ_EXPORT_LINE_PX) / 2 + 4;
               return (
-                `<rect x="${r2(x)}" y="${r2(y)}" width="${QUIZ_OPTION_WIDTH}" height="${QUIZ_OPTION_HEIGHT}" rx="14"` +
+                `<rect x="${r2(x)}" y="${r2(y)}" width="${QUIZ_OPTION_WIDTH}" height="${r2(h)}" rx="14"` +
                 ` fill="${right ? QUIZ_CORRECT_GREEN : xmlEscape(color)}" opacity="${right ? 1 : 0.1}"/>` +
-                text(p.x, p.y + 4, body.length > 18 ? `${body.slice(0, 17)}…` : body, {
-                  size: 12,
-                  weight: 600,
-                  color: right ? '#ffffff' : color,
-                  anchor: 'middle',
-                }) +
-                text(p.x, y + QUIZ_OPTION_HEIGHT - 6, String(tally[i] ?? 0), {
+                lines
+                  .map((line, n) =>
+                    text(p.x, firstBaseline + n * QUIZ_EXPORT_LINE_PX, line, {
+                      size,
+                      weight: 600,
+                      color: right ? '#ffffff' : color,
+                      anchor: 'middle',
+                    }),
+                  )
+                  .join('') +
+                text(p.x, y + h - 6, String(tally[i] ?? 0), {
                   size: 9,
                   color: right ? '#ffffff' : color,
                   anchor: 'middle',
