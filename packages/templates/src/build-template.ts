@@ -235,9 +235,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'event-storming':
       return buildEventStorming(cx, cy);
     // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element.
+    // kind, which templateCanvasOverrides sets, not any seeded element. Facilitate's blank is an empty
+    // tab too, opened in Facilitate the same way.
     case 'whiteboard':
-    // Facilitate's blank is an empty tab too; templateCanvasOverrides opens it in Facilitate.
     case 'blank-session':
       return [];
     // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
