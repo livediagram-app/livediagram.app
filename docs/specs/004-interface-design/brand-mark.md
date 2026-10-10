@@ -55,7 +55,9 @@ surrounding ink (`slate-900`, `slate-100` in dark). The name never carries `.app
 1.4.3 exempts from contrast minimums, and the contrast audits skip it by its `data-logotype` mark. The plain-text
 wordmark in email follows the same split: `live` in brand blue, `diagram` in ink.
 
-## Motion
+## Size and motion
+
+The mark sits a size up from the wordmark text (28px beside the 18px header wordmark, 20px beside 16px), since a solid cube reads smaller than a line icon in the same box.
 
 Hovering a linked logo lifts the top plate slightly, as if opening the box. Reduced motion holds it still.
 

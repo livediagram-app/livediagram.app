@@ -30,6 +30,13 @@ const sizeClasses: Record<BrandSize, string> = {
   md: 'text-lg font-semibold tracking-tight',
 };
 
+// The cube is a solid, so it reads smaller than a line icon at the same box;
+// it sits a size up from the text so it holds its own beside the wordmark.
+const markClasses: Record<BrandSize, string> = {
+  sm: 'size-5',
+  md: 'size-7',
+};
+
 const COLOUR_TRANSITION = 'color var(--transition-duration-micro) ease-out';
 
 export function Brand({
@@ -40,13 +47,10 @@ export function Brand({
   wordmarkClassName = '',
 }: BrandProps) {
   const classes =
-    `group inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
+    `group inline-flex items-center gap-2 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
   const content = (
     <>
-      <BrandMark
-        className={`${size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`}
-        accentColor={accentColor}
-      />
+      <BrandMark className={`${markClasses[size]} shrink-0`} accentColor={accentColor} />
       {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
           contrast audits skip it by this mark. */}
       <span className={wordmarkClassName} data-logotype="">
