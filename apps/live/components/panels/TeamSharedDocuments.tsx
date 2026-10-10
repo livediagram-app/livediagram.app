@@ -8,6 +8,8 @@ import { FilteredEmpty, LensAnnouncer } from '@/app/explorer/lens/LensStates';
 import { EmptyState } from '@livediagram/ui';
 import { FolderSolidIcon, TeamIcon } from '@/components/primitives/explorer-icons';
 import { CardView } from '@/app/explorer/CardView';
+import { DetailsView } from '@/app/explorer/details/DetailsView';
+import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
 import { TeamLibraryHeader } from '@/components/panels/TeamLibraryHeader';
 import { useExplorerViewMode } from '@/app/explorer/useExplorerViewMode';
 import { DocumentRow } from '@/app/explorer/explorer-route-document-row';
@@ -97,7 +99,7 @@ export function TeamSharedDocuments({
   // "+ Create" dropdown (mirrors the personal pane header): one compact
   // button instead of two, so the breadcrumb keeps its room on mobile.
   const confirm = useConfirm();
-  // List vs card layout — the same device-local preference (docs/specs/006-document/document-snapshots.md) the
+  // List, card or details layout — the same device-local preference (docs/specs/006-document/document-snapshots.md) the
   // Explorer browse views use, so a card-view user gets cards here too.
   const [viewMode, setViewMode] = useExplorerViewMode();
 
@@ -212,6 +214,28 @@ export function TeamSharedDocuments({
     if (ok) void lib.deleteDocument(id);
   };
 
+  // The props the card grid and the Details view share (ExplorerViewProps), built once.
+  const teamViewProps: ExplorerViewProps = {
+    folders: visibleFolders,
+    documents: visibleDocuments,
+    ownerId,
+    onOpenFolder: (id) => setSpot({ kind: 'folder', id }),
+    onCommitRenameFolder: commitRenameFolder,
+    onCancelRenameFolder: () => setRenamingFolderId(null),
+    renamingFolderId,
+    renamingDocumentId,
+    onCommitRenameDocument: commitRenameDocument,
+    onCancelRenameDocument: () => setRenamingDocumentId(null),
+    folderActions,
+    onStartRenameDocument: startRenameDocument,
+    onDuplicateDocument: duplicateDocument,
+    onDeleteDocument: deleteDocument,
+    onMoveDocument: (id) => setMoveTarget({ kind: 'document', id }),
+    childrenCount: (id) => lib.childrenByParent.get(id)?.length ?? 0,
+    documentsCount: (id) => lib.documentsByFolder.get(id)?.length ?? 0,
+    folderChipFor,
+  };
+
   return (
     <div className={LIST_CARD}>
       {/* ---------- Breadcrumb + new-folder ---------- */}
@@ -254,6 +278,12 @@ export function TeamSharedDocuments({
             />
           )}
         </div>
+      ) : viewMode === 'details' ? (
+        // The Explorer's Details view (docs/specs/013-workspace/explorer-details-view.md), from the
+        // same props as the cards.
+        <div className="p-3">
+          <DetailsView {...teamViewProps} />
+        </div>
       ) : viewMode === 'card' ? (
         // Same folders + documents as the list, rendered as the Explorer's
         // card grid (docs/specs/006-document/document-snapshots.md). Team documents (DocumentSummary) satisfy the
@@ -261,31 +291,14 @@ export function TeamSharedDocuments({
         // since every card here is a team document.
         <div className="p-3">
           <CardView
-            folders={visibleFolders}
-            documents={visibleDocuments}
-            ownerId={ownerId}
-            onOpenFolder={(id) => setSpot({ kind: 'folder', id })}
-            onCommitRenameFolder={commitRenameFolder}
-            onCancelRenameFolder={() => setRenamingFolderId(null)}
-            renamingFolderId={renamingFolderId}
-            renamingDocumentId={renamingDocumentId}
-            onCommitRenameDocument={commitRenameDocument}
-            onCancelRenameDocument={() => setRenamingDocumentId(null)}
-            folderActions={folderActions}
-            onStartRenameDocument={startRenameDocument}
-            onDuplicateDocument={duplicateDocument}
-            onDeleteDocument={deleteDocument}
-            onMoveDocument={(id) => setMoveTarget({ kind: 'document', id })}
-            childrenCount={(id) => lib.childrenByParent.get(id)?.length ?? 0}
-            documentsCount={(id) => lib.documentsByFolder.get(id)?.length ?? 0}
+            {...teamViewProps}
             // Folder content previews (docs/specs/013-workspace/folder-content-previews.md), from the team library's
-            // own indexes — the same ones the counts above read.
+            // own indexes — the same ones the counts read.
             folderContents={(id) => ({
               folders: lib.childrenByParent.get(id) ?? [],
               documents: lib.documentsByFolder.get(id) ?? [],
             })}
             showVisibilityBadge={false}
-            folderChipFor={folderChipFor}
           />
         </div>
       ) : (

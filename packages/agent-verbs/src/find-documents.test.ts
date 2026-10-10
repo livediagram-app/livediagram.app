@@ -25,6 +25,7 @@ function summary(overrides: Partial<DocumentSummary>): DocumentSummary {
     savedAt: 1,
     createdAt: 1,
     empty: false,
+    stats: null,
     ...overrides,
   };
 }

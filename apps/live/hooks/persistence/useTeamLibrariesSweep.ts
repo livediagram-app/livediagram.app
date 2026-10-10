@@ -101,6 +101,9 @@ export function useTeamLibrariesSweep(
               opensIn: d.opensIn,
               tabKind: d.tabKind,
               templateFamily: d.templateFamily,
+              // The Details view's columns (docs/specs/013-workspace/explorer-details-view.md).
+              createdAt: d.createdAt,
+              stats: d.stats,
               team: { id: team.id, name: team.name },
             })),
           };

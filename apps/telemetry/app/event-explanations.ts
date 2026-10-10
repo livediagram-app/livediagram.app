@@ -1129,6 +1129,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|Dark': "Someone set the editor's appearance to Dark.",
   'UI|Toggled|ExplorerViewCard':
     'Someone switched the Explorer to Card view, showing a large preview of each document.',
+  'UI|Toggled|ExplorerViewDetails':
+    'Someone switched the Explorer to Details view, a sortable table of type, comments, access, size and dates.',
   'UI|Toggled|ExplorerViewList':
     'Someone switched the Explorer to List view, showing documents as compact rows.',
   'UI|Toggled|HiddenLayersExport':

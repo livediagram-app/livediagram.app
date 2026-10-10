@@ -191,7 +191,7 @@ of those gets a 404 and the row falls back to its icon.
 ### List / card view
 
 The browse views (Recent / My documents / folders / Search results / This browser)
-have a **List ↔ Card** toggle at the far right of the header (device-
+have a **List / Card / Details** toggle at the far right of the header (device-
 local preference, `livediagram:explorer-view`). **Card is the default**:
 a diagram is a picture, and a wall of names in one typeface makes you read
 every line to find the one you would have recognised on sight. Somebody who
@@ -203,7 +203,7 @@ by width), each with a large snapshot and every column the list shows
 (name, owner, visibility badge, updated time, actions menu). List and
 card share one badge module (`document-badges.tsx`) and one actions-menu
 module (`document-row-shared.tsx`) so they can't drift. A real switch (not a click on the already-active side)
-emits `UI / Toggled / ExplorerViewList | ExplorerViewCard` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+emits `UI / Toggled / ExplorerViewList | ExplorerViewCard | ExplorerViewDetails` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). The Details view, a sortable table with a snapshot preview on a resting hover, is [Explorer Details view](../013-workspace/explorer-details-view.md).
 
 **The actions menu** (the ⋯ on a row or card, and on a Timeline document
 card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**

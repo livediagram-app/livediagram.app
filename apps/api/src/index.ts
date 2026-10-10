@@ -3,6 +3,7 @@ import {
   isLegacyDocumentsPath,
   toLegacyResponse,
 } from './legacy-documents-alias';
+import { runTabStatsBackfill } from './tab-stats-backfill';
 import { getClerkIdentity } from './auth/clerk';
 import { noteAuthSighting } from './auth/session-telemetry';
 import { emailEnabled } from './email/client';
@@ -579,6 +580,13 @@ const worker = {
       // docs/specs/009-elements/images.md "Retention": advance the reference-index backfill,
       // then reap unused images. runImageRetention logs its own outcome.
       ctx.waitUntil(runImageRetention(env, now));
+      // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the
+      // tabs written before tab stats existed, a bounded number a run. Logs its own outcome.
+      ctx.waitUntil(
+        runTabStatsBackfill(env)
+          .then(() => undefined)
+          .catch((err) => console.error('tab-stats: backfill failed', err)),
+      );
       // docs/specs/013-workspace/blueprints/workbench-embeds.md "Retention": spent tickets and requests,
       // sessions past their grace, pairings of tokens no longer live.
       ctx.waitUntil(

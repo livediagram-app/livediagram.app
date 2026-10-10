@@ -3,24 +3,24 @@ import { helpMetadata } from '@/lib/seo';
 import { CardViewGrid } from '@/components/illustrations/explorer-structure';
 
 export const metadata = helpMetadata({
-  title: 'List and Card Views',
+  title: 'List, Card and Details Views',
   description:
-    'Switch the Explorer between compact list rows and a card grid with live document previews, and learn how the snapshot thumbnails behave.',
+    'Switch the Explorer between compact list rows, a card grid with live document previews, and a sortable details table, and learn how the snapshot thumbnails behave.',
   path: '/help/explorer/list-and-card-views/',
 });
 
 <ArticleLayout
-  title="List and Card Views"
-  description="Browse your library as dense rows or as preview cards, with a toggle that remembers your choice on this device."
+  title="List, Card and Details Views"
+  description="Browse your library as dense rows, as preview cards, or as a sortable table, with a toggle that remembers your choice on this device."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-The Explorer's browse views can render the same folders and documents two ways: a compact **list** of rows, or a grid of **cards**, each with a large live preview of the document's canvas. Recognising a document by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
+The Explorer's browse views can render the same folders and documents three ways: a compact **list** of rows, a grid of **cards**, each with a large live preview of the document's canvas, or a **details** table you can sort by any column. Recognising a document by its picture is often faster than reading near-identical names, so the card view shines in folders full of variations on a theme; the list packs more onto the screen when you know exactly what you're looking for.
 
 ## Switching views
 
-Look for the two-button toggle at the right of the header on the [Explorer page](/help/explorer/explorer-page/)'s browse views (Recent, Favourites, Search results, My documents, folders, and This browser). Click **List view** (the rows icon) for the list, or **Card view** (the grid icon) for cards. The choice applies immediately and to all of those views at once.
+Look for the three-button toggle at the right of the header on the [Explorer page](/help/explorer/explorer-page/)'s browse views (Recent, Favourites, Search results, My documents, folders, and This browser). Click **List view** (the rows icon) for the list, **Card view** (the grid icon) for cards, or **Details view** (the table icon) for the table. The choice applies immediately and to all of those views at once.
 
 <Figure caption="Card view inside a folder: the toggle set to cards, a subfolder previewing what it holds, and a starred document.">
   <CardViewGrid />
@@ -40,6 +40,23 @@ Each card carries everything its list row does, arranged around the preview:
 - Folders appear as folder cards in the same grid, so navigation doesn't change between views, and a folder card **previews what is inside it**: a small mosaic of up to four tiles, the document snapshots it holds first, then its subfolders. When there are more than four, the last tile becomes a muted **+N** counting the rest. An empty folder keeps the plain folder glyph. This is the card grid only; the list view keeps its count badge, and the editor's [Explorer panel](/help/explorer/explorer-panel/) is unchanged.
 
 The grid is responsive: one column on a phone, two on a tablet, three on a wide screen.
+
+## The details view
+
+The details view is a table, one row per folder or document, much like the details pane of a desktop file manager:
+
+- **Name**: open a document or folder from it. Rest the pointer on a document's name for a moment and a **preview** of its canvas appears beside it; move down the rows and each next preview appears at once.
+- **Type**: the mode the document was last worked in (Diagram, Draw, Illustrate or Plan), with its icon. Folders read **Folder**.
+- **Comments**: how many comments the document holds, resolved ones included. Empty when there are none.
+- **Access**: what you may do with it, as the Share dialog's role icon: **Editor** for your own, team and this-browser documents, or the role a shared link gives you.
+- **Size**: how many objects the document holds across its tabs, and how much space it takes, for example **12 objects (34 KB)**. A folder shows how many items it holds.
+- **Created** and **Updated**: the date and time.
+
+Press any column heading to sort by it; press it again to reverse. Folders always stay above documents. The sort is remembered on this device, like the view.
+
+A document's numbers can show **–** for a short while after an update to livediagram, while older documents are counted; they fill in on their own. On a phone the table keeps just the name and the last update.
+
+You can drag any document row onto a folder, here or in the sidebar, to move it there.
 
 ## About the previews
 

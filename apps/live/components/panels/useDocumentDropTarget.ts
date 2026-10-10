@@ -13,6 +13,9 @@ export const DRAG_HOVER_TOGGLE_MS = 800;
 
 // The brand-blue ring a place wears while a document is dragged over it.
 export const DROP_TARGET_RING = 'ring-2 ring-brand-400';
+// The same ring for a table row, which paints no box-shadow: an inset outline, and a tint.
+export const DROP_TARGET_ROW =
+  'bg-brand-50 outline-2 -outline-offset-2 outline-brand-400 dark:bg-brand-500/15';
 
 // A place that takes a document dragged onto it (docs/specs/013-workspace/folders.md): a folder
 // row, My documents, a team, a folder card. Returns the hover-highlight flag plus the

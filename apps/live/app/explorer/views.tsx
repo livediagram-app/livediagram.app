@@ -8,7 +8,7 @@
 // level state, no api calls. The page wires them together.
 
 import Link from 'next/link';
-import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
+import { documentEntryPropsFor, type ExplorerViewProps } from '@/app/explorer/explorer-view-props';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DocumentRow } from './explorer-route-document-row';
@@ -103,26 +103,11 @@ export function ListView(props: ExplorerViewProps) {
   const {
     folders,
     documents: liveDocs,
-    ownerId,
     onOpenFolder,
     onCommitRenameFolder,
     onCancelRenameFolder,
     renamingFolderId,
-    renamingDocumentId,
-    onCommitRenameDocument,
-    onCancelRenameDocument,
     folderActions,
-    onStartRenameDocument,
-    onDuplicateDocument,
-    onDeleteDocument,
-    onMoveDocument,
-    onDismissShared,
-    recentExcludedIds,
-    favouriteIds,
-    onToggleFavourite,
-    folderChipFor,
-    onToggleRecentExclusion,
-    onShowHistory,
     childrenCount,
     documentsCount,
     showOwner = false,
@@ -157,28 +142,7 @@ export function ListView(props: ExplorerViewProps) {
           />
         ))}
         {liveDocs.map((d) => (
-          <DocumentRow
-            key={d.id}
-            document={d}
-            ownerId={ownerId}
-            showOwner={showOwner}
-            renaming={renamingDocumentId === d.id}
-            onStartRename={() => onStartRenameDocument(d.id)}
-            onCommitRename={(name) => onCommitRenameDocument(d.id, name)}
-            onCancelRename={onCancelRenameDocument}
-            onDuplicate={() => onDuplicateDocument(d.id)}
-            onDelete={() => onDeleteDocument(d.id)}
-            onMove={(anchor) => onMoveDocument(d.id, anchor)}
-            onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
-            folderChip={folderChipFor?.(d) ?? null}
-            favourite={favouriteIds?.has(d.id) === true}
-            onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
-            recentExcluded={recentExcludedIds?.includes(d.id) === true}
-            onShowHistory={onShowHistory ? () => onShowHistory(d.id) : undefined}
-            onToggleRecentExclusion={
-              onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
-            }
-          />
+          <DocumentRow key={d.id} {...documentEntryPropsFor(props, d)} />
         ))}
       </ul>
     </div>

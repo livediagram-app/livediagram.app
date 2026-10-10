@@ -64,6 +64,10 @@ export type DocumentListItem = Pick<
   // Listed in the public Community (docs/specs/025-community/community.md "In the Explorer"): the Public badge.
   // Absent on a synthetic or offline row, which is never listed.
   communityListed?: DocumentSummary['communityListed'];
+  // The Details view's Created column and counted stats (docs/specs/013-workspace/explorer-details-view.md).
+  // Absent on a synthetic row (shared with you), which reads as not counted.
+  createdAt?: DocumentSummary['createdAt'];
+  stats?: DocumentSummary['stats'];
 };
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict

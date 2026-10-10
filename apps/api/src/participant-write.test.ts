@@ -8,6 +8,7 @@ const { db } = vi.hoisted(() => ({ db: { getTabData: vi.fn(), swapTabData: vi.fn
 vi.mock('./db', () => db);
 
 import { TabTooLargeError } from './limits';
+import { tabStatsOfData } from './db/tab-stats';
 import {
   TAB_CAS_MAX_ATTEMPTS,
   writeParticipantAnswers,
@@ -42,8 +43,11 @@ describe('writeParticipantOp', () => {
       req({ kind: 'add', element: sticky('s2'), at: 1 }),
     );
     expect(out).toMatchObject({ ok: true, outcome: { result: 'applied', changed: true } });
-    const [, documentId, tabId, expected, next, count] = db.swapTabData.mock.calls[0]!;
-    expect([documentId, tabId, expected, count]).toEqual(['d1', 't1', before, 2]);
+    const [, documentId, tabId, expected, next, stats] = db.swapTabData.mock.calls[0]!;
+    expect([documentId, tabId, expected]).toEqual(['d1', 't1', before]);
+    // The stats handed over are the next body's, counted as every write counts them.
+    expect(stats).toEqual(tabStatsOfData(next as string).stats);
+    expect(stats).toMatchObject({ elementCount: 2 });
     // The row keeps everything else it held, and never gains an id or a name.
     expect(JSON.parse(next as string)).toEqual({
       elements: [sticky('s1'), { ...sticky('s2'), addedBy: ME }],

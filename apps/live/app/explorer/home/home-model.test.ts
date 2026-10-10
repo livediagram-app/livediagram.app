@@ -60,6 +60,7 @@ const local = (
     savedAt,
     createdAt: 1,
     empty: true,
+    stats: null,
   },
   opens: { days, lastOpenedAt },
 });

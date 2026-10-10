@@ -110,7 +110,19 @@ export type DocumentSummary = {
   // Nothing drawn: the first tab has no elements, or there is no tab
   // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
   empty: boolean;
+  // What the Details view shows (docs/specs/013-workspace/explorer-details-view.md), summed over the
+  // document's tabs; null when it has no tab or one of its tabs is not counted yet.
+  stats: DocumentStats | null;
 } & RecordedIntent;
+
+// A document's tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
+// from"): the mode of the tab written last, and elements, comments and stored bytes over every tab.
+export type DocumentStats = {
+  mode: EditorMode;
+  elements: number;
+  comments: number;
+  bytes: number;
+};
 
 // A document's shared tabs: how many of its tabs are also linked into another
 // document, and how many other documents hold them. What the delete and Take
