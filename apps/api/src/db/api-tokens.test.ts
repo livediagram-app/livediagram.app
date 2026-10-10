@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { fakeD1 } from '../test-d1';
+import { sqliteD1 } from '../test-sqlite-d1';
 import {
   apiTokensExpiringSoon,
   countLiveApiTokens,
+  LAST_USED_STAMP_WINDOW_MS,
   listApiTokensByOwner,
   markApiTokenExpiryWarned,
   MAX_API_TOKENS_PER_OWNER,
@@ -171,6 +173,43 @@ describe('resolveApiToken (the auth hot path, docs/specs/015-api/public-api-and-
       readOnly: false,
     });
     expect(db.one('UPDATE api_tokens SET last_used_at').bindings[1]).toBe('t1');
+  });
+
+  it('skips the stamp while last_used_at is fresher than the window', async () => {
+    // One MCP tool call is 3 to 6 api requests; stamping each was 3 to 6 D1 writes for a value read at day grain.
+    const db = fakeD1(({ sql }) =>
+      sql.includes('SELECT')
+        ? { first: { id: 't1', owner_id: 'u1', read_only: 0, last_used_at: Date.now() - 1_000 } }
+        : {},
+    );
+    expect(await resolveApiToken(db.env, 'ld_secret')).not.toBeNull();
+    expect(db.matching('UPDATE api_tokens')).toEqual([]);
+  });
+
+  it('stamps once per window against a real table, however many requests land', async () => {
+    const db = sqliteD1();
+    const owner = { ownerId: 'u1', name: 'CI' };
+    const minted = (await mintApiToken(db.env, owner))!;
+    const lastUsed = () =>
+      (
+        db.sql.prepare('SELECT last_used_at FROM api_tokens WHERE id = ?').get(minted.id) as {
+          last_used_at: number | null;
+        }
+      ).last_used_at;
+    expect(lastUsed()).toBeNull();
+    await resolveApiToken(db.env, minted.secret);
+    const first = lastUsed();
+    expect(first).not.toBeNull();
+    // Back-date to just inside the window: the next requests leave it alone.
+    const inside = Date.now() - LAST_USED_STAMP_WINDOW_MS + 5_000;
+    db.sql.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?').run(inside, minted.id);
+    await Promise.all([1, 2, 3].map(() => resolveApiToken(db.env, minted.secret)));
+    expect(lastUsed()).toBe(inside);
+    // Past the window: the next request stamps it again.
+    const outside = Date.now() - LAST_USED_STAMP_WINDOW_MS - 5_000;
+    db.sql.prepare('UPDATE api_tokens SET last_used_at = ? WHERE id = ?').run(outside, minted.id);
+    await resolveApiToken(db.env, minted.secret);
+    expect(lastUsed()).toBeGreaterThan(outside + LAST_USED_STAMP_WINDOW_MS);
   });
 
   it('looks up the hash, never the presented secret', async () => {
