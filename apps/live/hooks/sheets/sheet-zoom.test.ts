@@ -1,6 +1,12 @@
 // docs/specs/029-sheets/sheet.md "Zoom": a covering Sheet's zoom, 50% to 200% in whole percents.
 import { afterEach, describe, expect, it } from 'vitest';
-import { getSheetZoom, setSheetZoom, SHEET_ZOOM_MAX, SHEET_ZOOM_MIN, stepSheetZoom } from './sheet-zoom';
+import {
+  getSheetZoom,
+  setSheetZoom,
+  SHEET_ZOOM_MAX,
+  SHEET_ZOOM_MIN,
+  stepSheetZoom,
+} from './sheet-zoom';
 
 afterEach(() => setSheetZoom(1));
 
