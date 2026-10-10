@@ -213,7 +213,7 @@ export function usePresenceRows(deps: PresenceRowsDeps) {
   // select / edit / marquee; the element view uses it for the cursor +
   // "Locked to <name>" hover card.
   const lockedByOther = useCallback(
-    (id: string) => remoteSelectionsByElement.has(id),
+    (id: string) => remoteSelectionsByElement.get(id)?.some((s) => s.holds) ?? false,
     [remoteSelectionsByElement],
   );
 

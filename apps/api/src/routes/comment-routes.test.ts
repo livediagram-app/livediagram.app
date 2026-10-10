@@ -85,8 +85,9 @@ beforeEach(() => {
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 't2', 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
+    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
@@ -137,8 +138,19 @@ describe('add', () => {
     ).toBe(404);
   });
 
-  it('lets a view link comment, as today, and keeps a tab-scoped link to its tab', async () => {
+  // docs/specs/013-workspace/share-roles.md: commenting is a Participant's; a Viewer only looks.
+  it('lets a Participant link comment, refuses a view link, and keeps a tab-scoped link to its tab', async () => {
     seed([shape('a')], [shape('b')]);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          owner: 'looker',
+          code: 'LOOK',
+        })
+      ).status,
+    ).toBe(403);
     expect(
       (
         await call({

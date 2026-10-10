@@ -91,7 +91,9 @@ export function RollCallFace({
       >
         {entries.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody recorded yet" rows={0}>
-            Take the roll to freeze who is here into the document.
+            {onTakeRoll
+              ? 'Take the roll to freeze who is here into the document.'
+              : 'Whoever runs the session takes the roll.'}
           </EmptyRows>
         ) : (
           <div className="flex min-h-0 flex-col gap-2.5">

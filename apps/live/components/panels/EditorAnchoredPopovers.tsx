@@ -37,6 +37,7 @@ export function EditorAnchoredPopovers() {
     activeTab,
     addComment,
     isReadOnly,
+    can,
     documentId,
     selfParticipant,
     sessionShareCode,
@@ -157,6 +158,7 @@ export function EditorAnchoredPopovers() {
                 onUnresolve={() => unresolveThread(target.id, persistThreadState(target, false))}
                 onClose={closeComments}
                 readOnly={isReadOnly}
+                canComment={can.takePart}
                 selfId={selfParticipant.id}
               />
             );

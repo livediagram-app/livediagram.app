@@ -51,7 +51,7 @@ and reads these three to keep the running poll (above).
 - `{ kind: 'poll-end'; pollId: string }` — tear it down everywhere.
 
 None of them touches the document. `poll-answer` relays unordered like cursor /
-select / laser (it is open to view-role); `poll-start` / `poll-end` are
+select / laser (it is open to a Participant, never a Viewer); `poll-start` / `poll-end` are
 edit-role mutations. What a joiner needs comes from the room's replay on
 hello, not from the op log. Two polls started in the same moment converge on
 the newer (`pollSupersedes`): the room and every client apply the same rule,
@@ -62,13 +62,14 @@ since a starter never receives its own poll-start back.
 The room drops non-presence ops from view-role senders ([API app](../015-api/api.md)). Polls split
 across that line:
 
-- **`poll-answer` is allowed from any role.** A presenter pulse-checking an
-  audience is the main use for this, and audiences are usually on view links.
-  `'poll-answer'` therefore joins the room's any-role op allowlist
-  (`PRESENCE_OP_KINDS` in `@livediagram/api-schema`).
+- **`poll-answer` is a Participant's.** A presenter pulse-checking an audience
+  is the main use for this, so an audience is handed a Participant link
+  ([Share roles](../013-workspace/share-roles.md)): a Viewer only looks, and the
+  room drops a Viewer's answer. `'poll-answer'` rides the presence class
+  (`PRESENCE_OP_KINDS` in `@livediagram/api-schema`), checked for level first.
 - **`poll-start` / `poll-end` stay edit-role only**, via the existing gate. An
-  audience member on a view link can answer, but cannot start a poll or end
-  someone else's.
+  audience member on a Participant link can answer, but cannot start a poll or
+  end someone else's.
 
 ## Answer styles
 

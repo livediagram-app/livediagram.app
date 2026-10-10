@@ -50,6 +50,17 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only for every structural control, with a
+  // palette of its own holding only what it may add.
+  participantPalette?: boolean;
+  // A read-only session that still takes part (a Participant): it casts dots in a vote (docs/specs/013-workspace/share-roles.md).
+  takePart?: boolean;
+  // Which elements a read-only session may still drag (a Participant's stickies and its own adds); absent, none.
+  canMove?: (el: Element) => boolean;
+  // Which elements' words a read-only session may still write (a Participant's); absent, none.
+  canWriteText?: (el: Element) => boolean;
+  // Which elements a read-only session may still resize (a Participant's); absent, none.
+  canResize?: (el: Element) => boolean;
   documentName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;

@@ -13,7 +13,7 @@ export function SheetAddRows({ top, onAdd }: { top: number; onAdd: (count: numbe
   const c = useSheetController();
   const [count, setCount] = useState(String(ADD_ROWS_DEFAULT));
   const room = SHEET_ROWS_MAX - c.sheet.layout.rows.length;
-  if (!c.canEdit || room <= 0) return null;
+  if (!(c.canShape ?? c.canEdit) || room <= 0) return null;
   const n = Math.max(1, Math.min(room, Math.floor(Number(count)) || ADD_ROWS_DEFAULT));
   const add = () => {
     onAdd(n);

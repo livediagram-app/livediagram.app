@@ -20,7 +20,7 @@ import { logRefusal } from './refusal-log';
 import {
   deniedOnTab,
   gateEdit,
-  gateParticipate,
+  gateRead,
   missingDocument,
   shareCodeOf,
   type RouteContext,
@@ -77,7 +77,7 @@ async function presenceRoute(ctx: RouteContext): Promise<Response | null> {
   if (!token || !owner) return refuse(403, { error: 'presence_requires_token' });
   const doc = await getDocument(env, documentId);
   if (!doc) return missingDocument(ctx, documentId);
-  if (!(await gateParticipate(ctx, documentId, doc.ownerId, doc.teamId, tabId)))
+  if (!(await gateRead(ctx, documentId, doc.ownerId, doc.teamId, tabId)))
     return deniedOnTab(ctx, doc);
 
   // A clear skips the tab check, so an entry on a deleted tab can still go (PR34).

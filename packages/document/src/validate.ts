@@ -20,6 +20,7 @@ import type { Element, ShapeKind, Tab } from './index';
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
+import { ADDER_KEY_LENGTH } from './adder';
 import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
@@ -195,6 +196,12 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
   // (docs/specs/023-draw-mode/draw-mode.md "The colour picker", "Imported and pasted content").
   { field: 'penColour', valid: isPenColourName, rule: 'a pen colour name' },
   { field: 'penTextColour', valid: isPenColourName, rule: 'a pen colour name' },
+  // A Participant's adder key (docs/specs/013-workspace/share-roles.md), stamped by the server.
+  {
+    field: 'addedBy',
+    valid: (v) => typeof v === 'string' && v.length > 0 && v.length <= ADDER_KEY_LENGTH,
+    rule: `an adder key of 1 to ${ADDER_KEY_LENGTH} characters`,
+  },
 ];
 
 // An import's exact end and its own label width (docs/specs/008-canvas/arrow-anchors.md "Exact

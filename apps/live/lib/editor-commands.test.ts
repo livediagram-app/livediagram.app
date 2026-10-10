@@ -257,7 +257,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'tool:laser',
       'tool:spotlight',
       'tool:avatar',
-      'tool:slide-deck',
+      // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
       'tool:isometric',
     ]);
   });

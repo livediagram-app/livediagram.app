@@ -18,6 +18,14 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { HoverCard } from '@livediagram/ui';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
+import type { AccessLevel } from '@livediagram/api-schema';
+
+// The Shared with you chip per level (docs/specs/013-workspace/share-roles.md).
+const SHARED_CHIP: Record<AccessLevel, string> = {
+  edit: 'Edit',
+  participate: 'Participate',
+  view: 'View',
+};
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -36,7 +44,7 @@ export { FolderRow };
 //     "Dismiss" action. Mutually exclusive with `team`.
 export type PaneDocument = DocumentListItem & {
   team?: { id: string; name: string };
-  shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
+  shared?: { ownerName: string | null; role: AccessLevel; shareCode: string };
 };
 
 // A document shared WITH the viewer, as a pane row. It lives in the
@@ -223,7 +231,7 @@ export function SharedList({
               {s.ownerName || 'Unknown owner'}
             </span>
             <span className="inline-flex w-fit items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
-              {s.role === 'edit' ? 'Edit' : 'View'}
+              {SHARED_CHIP[s.role]}
             </span>
             <RelativeTimeChip at={s.savedAt} />
             <HoverCard title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>

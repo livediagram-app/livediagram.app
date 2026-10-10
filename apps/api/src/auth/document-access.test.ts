@@ -38,7 +38,12 @@ const communityLinkAccessMock = vi.fn<
 // Import AFTER the mock declaration so the helpers pick up the
 // stubbed `getShareLink`. The helpers themselves don't care about
 // the Env shape past the type, so we hand the assertions a stub.
-import { canEditDocument, canReadDocument, resolveDocumentGrant } from './document-access';
+import {
+  canEditDocument,
+  canParticipateDocument,
+  canReadDocument,
+  resolveDocumentGrant,
+} from './document-access';
 
 // The password a request carries, with the caller network its check spends.
 const pw = (value: string) => ({ value, rateKey: 'net-1' });
@@ -151,6 +156,40 @@ describe('canEditDocument', () => {
     const allowed = await canEditDocument(FAKE_ENV, 'diag-1', 'owner-a', 'ANY2345A', 'owner-a');
     expect(allowed).toBe(true);
     expect(getShareLinkMock).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md: the ladder, view < participate < edit.
+describe('canParticipateDocument', () => {
+  const link = (role: ShareLink['role']): ShareLink => ({
+    code: 'CODE2345',
+    role,
+    documentId: 'diag-1',
+    createdAt: 0,
+    expiry: 'never',
+    expiresAt: null,
+    purpose: 'share',
+    tabId: null,
+  });
+
+  it('admits a Participant and an Editor link, and the owner; refuses a Viewer', async () => {
+    for (const [role, admitted] of [
+      ['participate', true],
+      ['edit', true],
+      ['view', false],
+    ] as const) {
+      getShareLinkMock.mockResolvedValue(link(role));
+      expect(await canParticipateDocument(FAKE_ENV, 'diag-1', null, 'CODE2345', 'owner-a')).toBe(
+        admitted,
+      );
+    }
+    expect(await canParticipateDocument(FAKE_ENV, 'diag-1', 'owner-a', null, 'owner-a')).toBe(true);
+  });
+
+  it('keeps a Participant link off edit doors and on read doors', async () => {
+    getShareLinkMock.mockResolvedValue(link('participate'));
+    expect(await canEditDocument(FAKE_ENV, 'diag-1', null, 'CODE2345', 'owner-a')).toBe(false);
+    expect(await canReadDocument(FAKE_ENV, 'diag-1', null, 'CODE2345', 'owner-a')).toBe(true);
   });
 });
 

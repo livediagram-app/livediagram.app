@@ -1,5 +1,6 @@
 'use client';
 
+import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import dynamic from 'next/dynamic';
 import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
@@ -66,6 +67,9 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           <ShellChrome>{children}</ShellChrome>
         </ShapeLibraryProvider>
       </CustomThemeProvider>
+      {/* Moving this browser's Local only documents after signing in
+          (docs/specs/014-identity/auth-and-guest-access.md). */}
+      <LocalMovePrompt />
     </ExplorerProvider>
   );
 }

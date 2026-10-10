@@ -26,6 +26,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
 import { TabPill, type TabPillCtx } from './TabPill';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import type { TabModeChoice } from './TabModeMenuSection';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu: change
 // theme / background, and tidy the layout. (Add-element actions used to live
@@ -146,7 +147,7 @@ type TabBarProps = {
   selfId: string;
   // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
   voteSelfId?: string;
-  selfRole: 'edit' | 'view';
+  selfRole: AccessLevel;
   // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
   // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
   // Optional: a surface with no room behind it leaves the avatars as plain

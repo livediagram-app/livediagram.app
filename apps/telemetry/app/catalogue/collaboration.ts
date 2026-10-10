@@ -43,7 +43,7 @@ export const SHARE_SETTINGS = chart(
   'Shared',
   'Share Link Settings',
   'A password or an expiry set on a share link.',
-  { typeIn: (t) => t !== 'Edit' && t !== 'View' },
+  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
 );
 
 export const SHARE_LINKS_REMOVED = chart(
@@ -231,6 +231,23 @@ export const VIEW_LINKS_SHARED: Metric = {
   action: 'Shared',
   type: 'View',
   title: 'View Links Shared',
+};
+
+// Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
+export const PARTICIPATE_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Participate',
+  title: 'Participant Links Shared',
+};
+
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
 };
 
 export const COLLABORATORS_JOINED: Metric = {
@@ -483,11 +500,13 @@ export const LIVE_TOGETHER: MetricStack = {
 export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
   title: 'Sharing & Joining',
-  blurb: 'Edit and view links made, and the people who came in through them.',
+  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
   members: [
     EDIT_LINKS_SHARED,
+    PARTICIPATE_LINKS_SHARED,
     VIEW_LINKS_SHARED,
     COLLABORATORS_JOINED,
+    PARTICIPANTS_JOINED,
     VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
     SHARE_SETTINGS,
@@ -496,7 +515,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     WORKBENCH_SESSIONS,
     LIVE_IMAGE_TABS,
   ],
-  headline: [COLLABORATORS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
 };
 
 export const DISCUSSION: MetricStack = {

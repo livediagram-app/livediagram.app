@@ -44,6 +44,7 @@ import { recordCommentAdded, recordCommentResolved } from '../timeline';
 import type { TabDTO } from '../types';
 import {
   deniedOnTab,
+  deniedParticipate,
   gateParticipate,
   gateRead,
   missingDocument,
@@ -70,8 +71,9 @@ async function participant(
   if (owner instanceof Response) return owner;
   const doc = await getDocument(ctx.env, id);
   if (!doc) return missingDocument(ctx, id);
+  // Commenting is a Participant's (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
   if (!(await gateParticipate(ctx, id, doc.ownerId, doc.teamId, tabId)))
-    return deniedOnTab(ctx, doc);
+    return deniedParticipate(ctx, doc, tabId);
   return { doc, owner };
 }
 

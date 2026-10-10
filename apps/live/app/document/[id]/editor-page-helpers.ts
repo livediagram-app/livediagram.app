@@ -11,6 +11,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { autoAlignElements } from '@/lib/auto-align';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 export function createTab(name: string): Tab {
   // New tabs (and a new document's first tab) default the per-tab text size
@@ -208,24 +209,28 @@ export function computeTabSaveDiff(
 //                       admitted them so write paths can authorise.
 export type DocumentSession = {
   isOwner: boolean;
-  sessionRole: 'edit' | 'view';
+  sessionRole: AccessLevel;
   sessionShareCode: string | null;
 };
 
 export function resolveDocumentSession(input: {
   documentOwnerId: string;
   selfId: string;
-  shareRole: 'edit' | 'view';
+  shareRole: AccessLevel;
   shareCodeParam: string | null;
   community?: boolean;
+  // The embed view (docs/specs/013-workspace/embeds.md): below Editor it only looks, having no identity screen to
+  // put a name on what it adds (docs/specs/013-workspace/share-roles.md, blueprint SR6).
+  embed?: boolean;
 }): DocumentSession {
   if (input.community) {
     return { isOwner: false, sessionRole: 'view', sessionShareCode: input.shareCodeParam };
   }
   const isOwner = input.documentOwnerId === input.selfId;
+  const linkRole = input.embed && input.shareRole !== 'edit' ? 'view' : input.shareRole;
   return {
     isOwner,
-    sessionRole: isOwner ? 'edit' : input.shareRole,
+    sessionRole: isOwner ? 'edit' : linkRole,
     sessionShareCode: isOwner ? null : input.shareCodeParam,
   };
 }

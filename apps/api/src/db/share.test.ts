@@ -162,6 +162,7 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
       'ABCD2345',
       'diag-1',
       'edit',
+      null,
       1_000,
       null,
       null,
@@ -174,7 +175,7 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     const db = fakeD1();
     const link = await createShareLink(db.env, 'diag-1', 'ABCD2345', 'view', 'never', 'tab-2');
     expect(link.tabId).toBe('tab-2');
-    expect(db.one('INSERT INTO share_links').bindings[6]).toBe('tab-2');
+    expect(db.one('INSERT INTO share_links').bindings[7]).toBe('tab-2');
   });
 
   it('arms the deadline from creation time for a timed link', async () => {
@@ -182,7 +183,16 @@ describe('createShareLink (docs/specs/013-workspace/share-link-expiry.md)', () =
     const db = fakeD1();
     const link = await createShareLink(db.env, 'diag-1', 'ABCD2345', 'view', 'week');
     expect(link.expiresAt).toBe(1_000 + SHARE_LINK_EXPIRY_MS.week);
-    expect(db.one('INSERT INTO share_links').bindings[4]).toBe('week');
+    expect(db.one('INSERT INTO share_links').bindings[5]).toBe('week');
+  });
+
+  // docs/specs/013-workspace/share-roles.md (migration 0080): a Participant link's legacy role is view, so an older
+  // reader fails closed; its level column says participate.
+  it('stores a Participant link as role view with level participate', async () => {
+    const db = fakeD1();
+    const link = await createShareLink(db.env, 'diag-1', 'ABCD2345', 'participate');
+    expect(link.role).toBe('participate');
+    expect(db.one('INSERT INTO share_links').bindings.slice(2, 4)).toEqual(['view', 'participate']);
   });
 
   it('flips the document shareable, which is what opens the realtime room', async () => {

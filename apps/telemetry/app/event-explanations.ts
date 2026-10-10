@@ -168,6 +168,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Duplicated|Copy': 'A document was duplicated into a new one.',
   'Document|Joined|Edit':
     'Someone came into a document through an edit-role share link. Counted once per person per document, not on every revisit.',
+  'Document|Joined|Participate':
+    'Someone came into a document through a Participant share link. Counted once per person per document, not on every revisit.',
   'Document|Loaded|':
     'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
   'Document|Moved|': 'A document was moved into (or out of) a folder.',
@@ -186,6 +188,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a share link to expire after a week, when creating it.',
   'Document|Shared|Extended':
     'Someone re-armed an expiring share link for another full round of its original lifetime.',
+  'Document|Shared|Participate':
+    'Someone generated a Participant share link: people take part and write without reshaping the board.',
   'Document|Shared|PasswordCleared': "Someone removed the password from a document's share link.",
   'Document|Shared|PasswordSet': "Someone set a password on a document's share link.",
   'Document|Shared|View': 'Someone generated a view-role share link for a document.',

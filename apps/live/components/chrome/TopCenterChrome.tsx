@@ -9,6 +9,7 @@ import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
+import { usePaletteSearchOpen } from '@/lib/palette-search-open';
 import { VoteBanner } from '@/components/chrome/VoteBanner';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
@@ -21,6 +22,7 @@ type TopCenterChromeProps = Pick<
   CanvasProps,
   | 'selfParticipant'
   | 'readOnly'
+  | 'participantPalette'
   | 'pendingDraw'
   | 'onCancelDraw'
   | 'onExitFormatTool'
@@ -52,6 +54,7 @@ type TopCenterChromeProps = Pick<
 export function TopCenterChrome({
   selfParticipant,
   readOnly,
+  participantPalette = false,
   pendingDraw,
   hasPlanBoard = false,
   onCancelDraw,
@@ -77,10 +80,16 @@ export function TopCenterChrome({
   const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
-  const tray = !readOnly && !dockOnTop ? strip : null;
+  const searchOpen = usePaletteSearchOpen();
+  // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):
+  // either way the stack starts beneath it, or the timer and banners sit on the palette.
+  const stripShown = !readOnly || participantPalette;
+  const tray = stripShown && !dockOnTop ? strip : null;
   return (
     <TopCenterStack
-      below={dockOnTop ? 'dock' : !readOnly ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}
+      below={
+        dockOnTop ? 'dock' : stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined
+      }
     >
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
@@ -150,7 +159,8 @@ export function TopCenterChrome({
         ) : null}
 
         {/* Session timer (docs/specs/012-collaboration/session-tools.md), ticking locally off the tab timer. */}
-        {tabTimer ? (
+        {/* Stood aside while the palette's Search is open: the panel hangs where the pill sits. */}
+        {tabTimer && !searchOpen ? (
           <TimerWidget
             timer={tabTimer}
             readOnly={readOnly}

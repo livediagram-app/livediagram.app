@@ -58,6 +58,9 @@ export const PERSON_ID_FIELDS = [
   'actions[].teamId',
   'responses[].participantId',
   'qaNotes[].voters',
+  // Which Participant added a sticky or text (docs/specs/013-workspace/share-roles.md): the room's record, a key
+  // that ties one person's additions together, so it never leaves through a view either.
+  'addedBy',
 ] as const;
 
 type Segment = { key: string; each: boolean };

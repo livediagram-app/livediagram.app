@@ -32,6 +32,7 @@ import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
 import { ModeButtonFace } from '@/components/canvas/ModeButtonFace';
+import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
@@ -70,6 +71,7 @@ type ElementFaceRouterProps = Pick<
   | 'isEditing'
   | 'isSelected'
   | 'readOnly'
+  | 'writable'
   | 'fontFamily'
   | 'activeMode'
   | 'collab'
@@ -128,6 +130,7 @@ export function ElementFaceRouter({
   isEditing,
   isSelected,
   readOnly,
+  writable = true,
   fontFamily,
   activeMode,
   collab,
@@ -210,7 +213,13 @@ export function ElementFaceRouter({
           label={label}
           activeMode={activeMode}
           textColor={textColor}
-          onPress={onPressModeButton ? () => onPressModeButton(element) : undefined}
+          // A mode a read-only session lacks (the Eraser, Format Painter) draws an inert face for it.
+          onPress={
+            onPressModeButton &&
+            (!readOnly || PARTICIPANT_CANVAS_TOOLS.includes(element.mode ?? DEFAULT_BUTTON_MODE))
+              ? () => onPressModeButton(element)
+              : undefined
+          }
         />
       ) : element.type === 'shape' &&
         element.shape === 'session-button' &&
@@ -298,7 +307,8 @@ export function ElementFaceRouter({
           candidates={onRollPicker?.(element).candidates ?? []}
           textColor={textColor}
           shared={onRollPicker?.(element).shared ?? false}
-          onRoll={onRollPicker ? () => onRollPicker(element).roll() : undefined}
+          // Rolling is running the session (docs/specs/013-workspace/share-roles.md): an Editor's alone.
+          onRoll={onRollPicker && !readOnly ? () => onRollPicker(element).roll() : undefined}
         />
       ) : element.type === 'shape' && isCollabPanelShape(element.shape) && !isEditing ? (
         /* The collaboration panels (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md): an estimate card,
@@ -438,7 +448,8 @@ export function ElementFaceRouter({
         <TableView
           element={element}
           isSelected={isSelected}
-          readOnly={isLocked || readOnly}
+          readOnly={isLocked || (readOnly && !writable)}
+          cellsOnly={readOnly}
           tabSummaries={tabSummaries}
           onCommitTable={onCommitTable}
           onLinkCell={onLinkCell}

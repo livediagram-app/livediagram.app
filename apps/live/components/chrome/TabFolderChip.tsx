@@ -5,6 +5,7 @@ import type { Tab } from '@livediagram/document';
 import type { Participant } from '@/lib/identity';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { useEscape, Glyph } from '@livediagram/ui';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 // One folder group in the tab bar (docs/specs/006-document/tab-folders.md). The folder renders as a
 // compact chip (glyph + name + count) plus, when the ACTIVE tab lives in
@@ -35,7 +36,7 @@ type TabFolderChipProps = {
   // active pill shows its own stack).
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
-  selfRole: 'edit' | 'view';
+  selfRole: AccessLevel;
   // Same as the pill's stack: follow ring + the Collaborators modal (docs/specs/012-collaboration/collaborator-enhancements.md).
   followingId?: string | null;
   onOpenCollaborators?: (participantId: string | null) => void;

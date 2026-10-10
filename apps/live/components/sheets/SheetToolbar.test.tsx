@@ -102,17 +102,14 @@ describe('the sheet toolbar', () => {
     show(h);
     act(() => h.select('A1:A2'));
     fireEvent.click(btn('Bar Chart'));
-    const [kind, range] = h.placeChart.mock.calls[0]!;
+    const [kind, pick] = h.placeChart.mock.calls[0]!;
     expect(kind).toBe('bar-chart');
     const { rows, cols } = h.store.sheet(SHEET_ID)!.layout;
-    expect(range).toEqual({ r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[0] });
+    expect(pick).toEqual({ range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[0] } });
     act(() => h.select('A1'));
     fireEvent.click(btn('Pie Chart'));
     expect(h.placeChart.mock.calls[1]![1]).toEqual({
-      r1: rows[0],
-      c1: cols[0],
-      r2: rows[1],
-      c2: cols[1],
+      range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[1] },
     });
     act(() => h.select('F9'));
     fireEvent.click(btn('Line Chart'));

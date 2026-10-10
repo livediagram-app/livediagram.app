@@ -17,6 +17,8 @@ import type { ShareDialogProps } from './ShareDialog.types';
 import { ShareIdentity } from './ShareIdentity';
 import { ShareOfflineGate } from './ShareOfflineGate';
 import { SharePasswordSection } from './SharePasswordSection';
+import { ShareTabs, shareTabId, sharePanelId, type ShareTab } from './ShareTabs';
+import { CommunityGuide } from './community/CommunityGuide';
 import { ShareStatus } from './ShareStatus';
 import { SECTION_LABEL } from './share-dialog-parts';
 
@@ -45,6 +47,7 @@ export function ShareDialog({
   onSetPassword,
   offline,
   onSyncToCloud,
+  syncReady = true,
   community,
   communityListed = false,
   passwordLockedReason,
@@ -56,6 +59,8 @@ export function ShareDialog({
   const nameLocked = !!lockedName;
   const toast = useToast();
   const [busy, setBusy] = useState(false);
+  // Passes first; Community is its own tab, there only when the caller supplies its section.
+  const [tab, setTab] = useState<ShareTab>('passes');
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
   // The pass issued in this dialog session, which opens into the list on arrival.
   const [freshCode, setFreshCode] = useState<string | null>(null);
@@ -145,7 +150,7 @@ export function ShareDialog({
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing to share yet, so swap the whole
   // dialog for the sync gate until the owner moves it to the cloud.
   if (offline && onSyncToCloud) {
-    return <ShareOfflineGate onSyncToCloud={onSyncToCloud} onClose={onClose} />;
+    return <ShareOfflineGate onSyncToCloud={onSyncToCloud} ready={syncReady} onClose={onClose} />;
   }
 
   return (
@@ -170,86 +175,106 @@ export function ShareDialog({
         <DialogCloseButton onClick={close} />
       </DialogHeader>
 
-      <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
-        <ShareComposer tabs={tabs} busy={busy} onIssue={issue} />
+      {community ? <ShareTabs tab={tab} onTab={setTab} listed={communityListed} /> : null}
 
-        <section
-          className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
-          aria-labelledby="share-passes-heading"
+      {community && tab === 'community' ? (
+        <div
+          id={sharePanelId('community')}
+          role="tabpanel"
+          aria-labelledby={shareTabId('community')}
+          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
         >
-          <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
-            Passes
-            {activeLinks.length > 0 ? <CountBadge count={activeLinks.length} /> : null}
-          </p>
-          {activeLinks.length === 0 ? (
-            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-              {links.length === 0
-                ? 'No passes yet. Only you can open this document.'
-                : 'Every pass has expired. Extend one below or issue a new one.'}
-            </p>
-          ) : (
-            <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
-              {activeLinks.map((link) => (
-                <ActiveSharePass
-                  key={link.code}
-                  link={link}
-                  now={now}
-                  origin={origin}
-                  copied={copiedCode === link.code}
-                  fresh={freshCode === link.code}
-                  highlight={highlightCode === link.code}
-                  busy={busy}
-                  sharePasswordSet={sharePasswordSet}
-                  tabs={tabs}
-                  liveImageTabId={liveImageTabId}
-                  firstTabId={firstTabId}
-                  liveImageTabParam={liveImageTabParam}
-                  setLiveImageTabId={setLiveImageTabId}
-                  shareUrlFor={shareUrlFor}
-                  onCopy={copy}
-                  onRevoke={(code) => withBusy(() => onRevokeLink(code))}
-                  onRescope={
-                    multiTab ? (code, tabId) => withBusy(() => onRescopeLink(code, tabId)) : null
-                  }
-                />
-              ))}
-            </ul>
-          )}
-        </section>
+          <CommunityGuide />
+          {community}
+        </div>
+      ) : (
+        <div
+          id={community ? sharePanelId('passes') : undefined}
+          role={community ? 'tabpanel' : undefined}
+          aria-labelledby={community ? shareTabId('passes') : undefined}
+          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+        >
+          <ShareComposer tabs={tabs} busy={busy} onIssue={issue} />
 
-        {/* Expired passes (docs/specs/013-workspace/share-link-expiry.md): only when there's
-            something in it, so owners who never use expiry never see it. */}
-        {inactiveLinks.length > 0 ? (
-          <section className="flex flex-col gap-2" aria-labelledby="share-expired-heading">
-            <p id="share-expired-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
-              Expired
-              <CountBadge count={inactiveLinks.length} />
+          <section
+            className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
+            aria-labelledby="share-passes-heading"
+          >
+            <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+              Passes
+              {activeLinks.length > 0 ? <CountBadge count={activeLinks.length} /> : null}
             </p>
-            <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
-              {inactiveLinks.map((link) => (
-                <ExpiredSharePass
-                  key={link.code}
-                  link={link}
-                  busy={busy}
-                  shareUrlFor={shareUrlFor}
-                  onExtend={(code) => withBusy(() => onExtendLink(code))}
-                  onDelete={(code) => withBusy(() => onRevokeLink(code))}
-                />
-              ))}
-            </ul>
+            {activeLinks.length === 0 ? (
+              <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+                {links.length === 0
+                  ? 'No passes yet. Only you can open this document.'
+                  : 'Every pass has expired. Extend one below or issue a new one.'}
+              </p>
+            ) : (
+              <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
+                {activeLinks.map((link) => (
+                  <ActiveSharePass
+                    key={link.code}
+                    link={link}
+                    now={now}
+                    origin={origin}
+                    copied={copiedCode === link.code}
+                    fresh={freshCode === link.code}
+                    highlight={highlightCode === link.code}
+                    busy={busy}
+                    sharePasswordSet={sharePasswordSet}
+                    tabs={tabs}
+                    liveImageTabId={liveImageTabId}
+                    firstTabId={firstTabId}
+                    liveImageTabParam={liveImageTabParam}
+                    setLiveImageTabId={setLiveImageTabId}
+                    shareUrlFor={shareUrlFor}
+                    onCopy={copy}
+                    onRevoke={(code) => withBusy(() => onRevokeLink(code))}
+                    onRescope={
+                      multiTab ? (code, tabId) => withBusy(() => onRescopeLink(code, tabId)) : null
+                    }
+                  />
+                ))}
+              </ul>
+            )}
           </section>
-        ) : null}
 
-        <SharePasswordSection
-          sharePasswordSet={sharePasswordSet}
-          onSetPassword={onSetPassword}
-          busy={busy}
-          setBusy={setBusy}
-          lockedReason={passwordLockedReason ?? null}
-        />
+          {/* Expired passes (docs/specs/013-workspace/share-link-expiry.md): only when there's
+            something in it, so owners who never use expiry never see it. */}
+          {inactiveLinks.length > 0 ? (
+            <section className="flex flex-col gap-2" aria-labelledby="share-expired-heading">
+              <p
+                id="share-expired-heading"
+                className={`${SECTION_LABEL} flex items-center gap-1.5`}
+              >
+                Expired
+                <CountBadge count={inactiveLinks.length} />
+              </p>
+              <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
+                {inactiveLinks.map((link) => (
+                  <ExpiredSharePass
+                    key={link.code}
+                    link={link}
+                    busy={busy}
+                    shareUrlFor={shareUrlFor}
+                    onExtend={(code) => withBusy(() => onExtendLink(code))}
+                    onDelete={(code) => withBusy(() => onRevokeLink(code))}
+                  />
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-        {community}
-      </div>
+          <SharePasswordSection
+            sharePasswordSet={sharePasswordSet}
+            onSetPassword={onSetPassword}
+            busy={busy}
+            setBusy={setBusy}
+            lockedReason={passwordLockedReason ?? null}
+          />
+        </div>
+      )}
 
       <DialogFooter>
         {nameLocked ? null : (

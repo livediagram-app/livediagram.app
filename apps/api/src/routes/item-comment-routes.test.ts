@@ -63,7 +63,8 @@ beforeEach(async () => {
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('visitor', 'Vee', '#16a34a', 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
   item = (
     await call<ItemResponse>({ path: '/items', body: { type: 'task', fields: { title: 'A' } } })
@@ -72,6 +73,17 @@ beforeEach(async () => {
 });
 
 describe('adding', () => {
+  // docs/specs/013-workspace/share-roles.md: a Viewer only looks.
+  it('refuses a comment from a view link', async () => {
+    const res = await call({
+      path: `/items/${item.id}/comments`,
+      body: { text: 'hi' },
+      owner: 'looker',
+      code: 'LOOK',
+    });
+    expect(res.status).toBe(403);
+  });
+
   it('stamps the author from the server, answers the item, and relays it without author ids', async () => {
     const res = await call<ItemResponse>({
       path: `/items/${item.id}/comments`,

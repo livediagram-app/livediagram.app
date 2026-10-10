@@ -70,6 +70,7 @@ export function EditorElementDialogs() {
     closeImagePicker,
     refreshRecentImages,
     workbenchMode,
+    can,
   } = useEditorContext();
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
@@ -217,7 +218,8 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {imagePickerOpenFor && documentId && !isReadOnly ? (
+      {/* A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md). */}
+      {imagePickerOpenFor && documentId && (!isReadOnly || can.addContent) ? (
         <ImagePicker
           ownerId={selfParticipant.id}
           documentId={documentId}

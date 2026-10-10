@@ -22,8 +22,9 @@ const SERVES = `(i.owner_id = d.owner_id
 
 // For each image a saved body places, in each document holding the tab: grant it
 // when the image's owner is entitled to place it there right now, as a joined
-// member of the document's team or an edit collaborator. The writer's identity
-// is not needed. An image the document's owner owns needs no row.
+// member of the document's team, or a collaborator who may add content: an edit
+// collaborator, or a Participant (docs/specs/013-workspace/share-roles.md), who
+// places images too. The writer's identity is not needed. An image the document's owner owns needs no row.
 export function imageGrantPlacementStatements(
   env: Env,
   tabId: string,
@@ -45,7 +46,8 @@ export function imageGrantPlacementStatements(
                    WHERE m.team_id = d.team_id AND m.user_id = i.owner_id AND m.status = 'joined'))
                OR EXISTS (
                   SELECT 1 FROM shared_with s
-                   WHERE s.owner_id = i.owner_id AND s.document_id = d.id AND s.role = 'edit'))`,
+                   WHERE s.owner_id = i.owner_id AND s.document_id = d.id
+                     AND (s.role = 'edit' OR s.level = 'participate')))`,
     ).bind(tabId, JSON.stringify(ids), now),
   ];
 }

@@ -2,6 +2,7 @@
 // and what they reach, the refusals, the writer's signature, a field patch's reading, and the room relay.
 import { itemForRoom, itemForViewer } from '@livediagram/document';
 import {
+  isArchived,
   isTrashed,
   itemIdsShownOnTab,
   itemPersonId,
@@ -45,6 +46,8 @@ export type ItemCaller = {
   scope: Set<string> | null;
   // The store as read to work out that scope, so a list does not read it twice.
   items?: Item[];
+  // Whether the caller holds edit, once a write has had to ask (isItemEditor).
+  editor?: boolean;
 };
 
 const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
@@ -73,6 +76,27 @@ export function excludedStatus(
   const type = typeIn(typesOf(caller.doc?.itemTypes), next.type);
   return !typeAllowsStatus(type, status);
 }
+// A Participant works with cards but never deletes one (docs/specs/013-workspace/share-roles.md "What a
+// Participant changes"): moving a card into or out of the Trash or the Archive, and restoring one whole (its votes,
+// thread and key, an Editor's undo), needs an Editor. Asked only when a write does that, so an ordinary card edit
+// pays for no second gate.
+export function retiresItem(before: Item, next: Item): boolean {
+  return isTrashed(before) !== isTrashed(next) || isArchived(before) !== isArchived(next);
+}
+
+export async function isItemEditor(ctx: RouteContext, caller: ItemCaller): Promise<boolean> {
+  if (caller.editor !== undefined) return caller.editor;
+  const doc = caller.doc;
+  const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
+  caller.editor =
+    !!doc &&
+    ((await gateEdit(ctx, caller.documentId, doc.ownerId, doc.teamId)) ||
+      (!!tabId && (await gateEdit(ctx, caller.documentId, doc.ownerId, doc.teamId, tabId))));
+  if (!caller.editor)
+    console.info('[items] items.retire.refused', { documentId: caller.documentId });
+  return caller.editor;
+}
+
 export const itemBusy = () => {
   console.warn('[items] items.write.busy');
   return json(

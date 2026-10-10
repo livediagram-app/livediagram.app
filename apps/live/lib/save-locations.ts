@@ -17,13 +17,22 @@ export type SaveLocation = {
   description: string;
 };
 
-// Display order. The default is first.
+// Display order: the server first, then this browser.
 export const SAVE_LOCATIONS: readonly SaveLocation[] = [
   { id: 'livediagram', label: 'livediagram', description: 'Your account' },
   { id: 'browser', label: 'Local Browser', description: 'This device only' },
 ];
 
-export const DEFAULT_SAVE_LOCATION: SaveLocationId = 'livediagram';
+// Where a new document goes when nobody picked (docs/specs/006-document/save-locations.md "The default
+// depends on who is creating"): a guest starts Local only, so a visitor trying things out never
+// leaves an orphan on the server; a signed-in person, or anyone on a deployment without sign-in,
+// starts on livediagram.
+export function defaultSaveLocationFor(who: {
+  signedIn: boolean;
+  clerkEnabled: boolean;
+}): SaveLocationId {
+  return who.clerkEnabled && !who.signedIn ? 'browser' : 'livediagram';
+}
 
 export function saveLocationLabel(id: SaveLocationId): string {
   return SAVE_LOCATIONS.find((l) => l.id === id)?.label ?? id;

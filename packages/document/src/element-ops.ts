@@ -102,6 +102,36 @@ export function applyElementOp(elements: Element[], op: ElementOp): Element[] {
   }
 }
 
+// Some fields of one element changed (docs/specs/013-workspace/share-roles.md "Integrity"). Only the room sends
+// it, for a Participant's change: peers take exactly the fields that changed and keep their own live copy of the
+// rest, which may be newer than anything saved. `set` writes fields, `clear` removes them. A room op, never a
+// changeset's or a save's, so it lives beside ElementOp rather than in it.
+export type ElementPatchOp = {
+  kind: 'patch';
+  id: string;
+  set: Record<string, unknown>;
+  clear?: string[];
+};
+export type RoomElementOp = ElementOp | ElementPatchOp;
+
+export function applyElementPatch(elements: Element[], op: ElementPatchOp): Element[] {
+  if (!elements.some((e) => e.id === op.id)) return elements;
+  return elements.map((e) => {
+    if (e.id !== op.id) return e;
+    const next: Record<string, unknown> = { ...(e as Record<string, unknown>), ...op.set };
+    for (const field of op.clear ?? []) delete next[field];
+    // A patch never changes what an element is.
+    next.id = e.id;
+    next.type = e.type;
+    return next as Element;
+  });
+}
+
+// One room `el` op: a patch, or any ElementOp.
+export function applyRoomElementOp(elements: Element[], op: RoomElementOp): Element[] {
+  return op.kind === 'patch' ? applyElementPatch(elements, op) : applyElementOp(elements, op);
+}
+
 // Apply a sequence of ops in order (a whole commit's ops): exactly `ops.reduce(applyElementOp, elements)`,
 // with runs of updates written through an index of ids rather than a pass over every element each, so a
 // changeset touching thousands of elements stays linear.

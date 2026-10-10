@@ -12,6 +12,7 @@ import { EllipsisMenuButton } from './EllipsisMenuButton';
 import { OutOfScopeTabPill } from './OutOfScopeTabPill';
 import type { useTabReorderDrag } from './useTabReorderDrag';
 import type { CanvasMenuActions } from './TabBar';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 // One tab pill, lifted out of TabBar's renderTabPill closure. Loose
 // tabs and folder members (rendered inside TabFolderChip via the
@@ -33,7 +34,7 @@ export type TabPillCtx = {
   reorderDrag: ReturnType<typeof useTabReorderDrag>;
   participantsByTab: Map<string, Participant[]>;
   selfId: string;
-  selfRole: 'edit' | 'view';
+  selfRole: AccessLevel;
   // True for a tab outside a tab-scoped share session's scope
   // (docs/specs/013-workspace/tab-scoped-share-links.md); such a tab renders as a "Not shared" pill.
   isOutOfScope?: (tabId: string) => boolean;

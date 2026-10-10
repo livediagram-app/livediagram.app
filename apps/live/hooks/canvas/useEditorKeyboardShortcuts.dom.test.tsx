@@ -29,6 +29,7 @@ function deps(overrides: Overrides = {}) {
     multiSelectedIds: new Set<string>(),
     editingId: null,
     isReadOnly: false,
+    participant: false,
     canvasTool: 'select',
     enabled: true,
     zenMode: false,
@@ -90,6 +91,14 @@ describe('Delete and Backspace', () => {
     renderHook(() => useEditorKeyboardShortcuts(editing.bag));
     press('Delete');
     expect(editing.spies.deleteSelected).not.toHaveBeenCalled();
+  });
+
+  // docs/specs/013-workspace/share-roles.md: a Participant deletes; the commit guard decides what goes.
+  it("reach a Participant's delete", () => {
+    const participant = deps({ isReadOnly: true, participant: true });
+    renderHook(() => useEditorKeyboardShortcuts(participant.bag));
+    press('Delete');
+    expect(participant.spies.deleteSelected).toHaveBeenCalled();
   });
 });
 

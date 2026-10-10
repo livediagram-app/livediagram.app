@@ -69,7 +69,7 @@ export function SheetMenus({ actions }: { actions: SheetActions }) {
         <MenuHeader
           title={rows ? `Row ${menu.index + 1}` : `Column ${columnLetters(menu.index)}`}
         />
-        {c.canEdit ? (
+        {c.canShape ? (
           <>
             <MenuActionRow
               plain

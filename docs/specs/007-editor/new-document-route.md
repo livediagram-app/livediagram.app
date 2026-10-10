@@ -462,6 +462,14 @@ default document name) without walking the wizard:
     content under that flag, and React then swaps in the opening screen at
     hydration (detected pre-paint in a layout effect, so the trees always
     match).
+- **Where these links store the document**: the default for who is creating
+  ([Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating),
+  `resolveBypassLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a
+  Local only document, created without waiting for identity at all
+  ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
+  a signed-in person's create still waits for auth to settle. A placement param
+  (`folder` / `team`) names a server place, so it makes the create a cloud one
+  whoever is creating.
 - **`/new?template=<kind>`** — the same bypass for a named template: the
   page commits that template (Default theme, the template's default name)
   the moment identity resolves and lands on the editor, with the same

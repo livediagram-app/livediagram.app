@@ -413,4 +413,14 @@ describe('elementGrips', () => {
         }
       }
   });
+
+  it('gives a resizable Participant element its handles and never its anchors', () => {
+    const ro = { ...base, readOnly: true };
+    expect(elementGrips(box('a'), true, ro)).toEqual({ handles: false, anchors: false });
+    expect(elementGrips(box('a'), true, { ...ro, resizable: true })).toEqual({
+      handles: true,
+      anchors: false,
+    });
+    expect(elementGrips(locked, true, { ...ro, resizable: true }).handles).toBe(false);
+  });
 });

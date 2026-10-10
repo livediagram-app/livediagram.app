@@ -29,6 +29,7 @@ import {
   type TemplateKind,
 } from '@livediagram/templates';
 import {
+  DEFAULT_MCP_SHARE_LEVEL,
   TRASH_RETENTION_DAYS,
   creationIntentOf,
   type LiveDoc,
@@ -337,10 +338,10 @@ export function registerTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpShareDocument, async (args, extra) => {
     const token = requireToken(extra as Extra);
-    // Default to view (least privilege for an automated share): showing your
-    // work shouldn't silently grant edit. The api's own default is edit, so
-    // we send the role explicitly.
-    const role = args.role === 'edit' ? 'edit' : 'view';
+    // Default to Participant (docs/specs/013-workspace/share-roles.md): people take part without reshaping the
+    // board, and an automated share never silently grants edit. The api's own default is edit, so the role is
+    // always sent.
+    const role = args.role ?? DEFAULT_MCP_SHARE_LEVEL;
     const { link } = await apiJson<ShareLinkResponse>(
       env,
       token,

@@ -40,6 +40,7 @@ export function DoneCheckFace({
   selfKey,
   participants,
   onToggleMine,
+  canArrange = true,
   onResetAll,
   onOpenSettings,
 }: {
@@ -56,6 +57,8 @@ export function DoneCheckFace({
   // when you send the value you already sent (docs/specs/012-collaboration/participant-responses.md), so there is no
   // separate un-mark path to keep in step.
   onToggleMine?: () => void;
+  // An Editor is told how the card fills (share the document); anyone else, that it fills as people join.
+  canArrange?: boolean;
   // Clear everyone, for the next round. Absent on a surface that can't write,
   // which renders the card readable but inert.
   onResetAll?: () => void;
@@ -127,7 +130,9 @@ export function DoneCheckFace({
       >
         {keys.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody here yet" rows={0}>
-            Share the document and the card fills itself in.
+            {canArrange
+              ? 'Share the document and the card fills itself in.'
+              : 'It fills in as people join the board.'}
           </EmptyRows>
         ) : (
           <div className="flex min-h-0 flex-1 items-center gap-4">

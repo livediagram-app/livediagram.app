@@ -29,16 +29,19 @@ import { fetchAllSheets, sheetAsCreate } from '../api/sheets';
 
 // Offline → Cloud ("Save to your account"). Creates the cloud copy first, then
 // removes the local one, so a network failure leaves the offline document
-// intact. Returns the (unchanged) document id. `apiCreateDocument` does not
-// dispatch on the offline index, so it always writes to the server even while
-// the id is still registered offline.
-export async function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<string> {
+// intact. Returns the (unchanged) document id and the images it re-homed (data URI -> gallery id), for an
+// editor syncing in place. `apiCreateDocument` does not dispatch on the offline index, so it always writes
+// to the server even while the id is still registered offline.
+export async function saveOfflineToCloud(
+  offlineId: string,
+  ownerId: string,
+): Promise<{ id: string; imageIds: Map<string, string> }> {
   const rec = await offlineGetRecord(offlineId);
   if (!rec) throw new Error('offline document not found');
   // Re-home embedded data-URI images to R2 first (docs/specs/009-elements/images.md + /76): the cloud
   // copy gets real gallery images instead of bloated tab JSON. Best-effort
   // per image; a kept data URI still renders.
-  const tabs = await uploadEmbeddedImages(ownerId, rec.tabs);
+  const { tabs, imageIds } = await uploadEmbeddedImages(ownerId, rec.tabs);
   // Declare the conversion so the feed says "Synced to the Cloud" rather than
   // reporting a brand-new document (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
   // Everything the record holds besides tabs travels too: the local copy is
@@ -78,7 +81,7 @@ export async function saveOfflineToCloud(offlineId: string, ownerId: string): Pr
   // on the server AFTER the delete: while the id is still registered offline,
   // apiSetFavourite would route the star straight back to the local store.
   if (rec.favourite) await apiSetFavourite(ownerId, rec.id, true);
-  return rec.id;
+  return { id: rec.id, imageIds };
 }
 
 // Cloud → Offline ("Take offline"). Downloads the whole document, writes it to
@@ -181,7 +184,17 @@ export async function takeCloudOffline(
 // hard per-tab size cap (usually a large embedded image whose gallery
 // upload failed, leaving the data URI in the tab JSON): retrying won't
 // help, so it must not read as a connection problem.
+// A sync from inside the editor that found this browser's last save still going after
+// SYNC_SAVE_WAIT_MS (app/document/[id]/useSyncInPlace.ts): refused rather than racing it.
+export class SyncStillSavingError extends Error {
+  constructor() {
+    super('Still saving this document. Try again in a moment.');
+    this.name = 'SyncStillSavingError';
+  }
+}
+
 export function syncFailureMessage(e: unknown): string {
+  if (e instanceof SyncStillSavingError) return e.message;
   return e instanceof ApiError && e.status === 413
     ? 'This document is too large to sync: a tab exceeds the server size limit, usually a big embedded image. Remove or shrink it and try again.'
     : 'Could not sync this document. Check your connection and try again.';

@@ -163,6 +163,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Borrowed tiles, listed by the Plan layout (palette-layouts.ts), so no tile of their own.
   'plan-content': 0,
   'plan-tools': 0,
+  // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
+  participate: 0,
 };
 
 describe('PALETTE_CATEGORIES', () => {

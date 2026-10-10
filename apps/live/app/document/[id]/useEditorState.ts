@@ -106,6 +106,7 @@ import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useViewPreview } from './useViewPreview';
+import { useParticipantSession } from './useParticipantSession';
 import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
@@ -172,6 +173,7 @@ import {
   mergeAiElements,
   patchTab,
 } from './editor-page-helpers';
+import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { useDriveFollow } from './useDriveFollow';
@@ -802,6 +804,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   );
   const isReadOnly = !canEdit;
+  // A Participant's adder key, what it may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md).
+  // `isReadOnly` stays true for a Participant: its content gestures open through `participant.can` alone.
+  const participant = useParticipantSession(
+    viewPreview || workbench?.ended ? 'view' : sessionRole,
+    toast.info,
+  );
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
@@ -858,7 +866,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { hasUnsavedChanges } = useAutosave({
     hydrated,
     documentId,
-    isReadOnly: autosaveReadOnly({ canEdit, loadError, documentNotFound }),
+    // A Participant saves too, its own way (participant below).
+    isReadOnly: autosaveReadOnly({
+      canEdit: canEdit || participant.participating,
+      loadError,
+      documentNotFound,
+    }),
+    participant: participant.participating,
     tabs,
     documentName,
     selfId: selfParticipant.id,
@@ -876,6 +890,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onDocumentTrashed: () => documentTrashed.setDocumentTrashed(true),
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
+  });
+  // Sync Document from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
+  // in place").
+  const syncToCloud = useSyncInPlace({
+    documentId,
+    ownerId: selfParticipant.id,
+    hasUnsavedChanges,
+    resetTabs,
+    lastSavedTabsRef,
+    setDocumentServerStored: realtime.setDocumentServerStored,
+    refreshDocumentList,
   });
 
   // Persist self only when name or color actually changed. Without
@@ -943,8 +968,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
   useEffect(() => {
-    // The editor in a workbench never writes the participant record (I9).
-    if (!hydrated || workbenchMode) return;
+    // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
+    // a Local only document opens before the reader is known (docs/specs/006-document/offline-mode.md
+    // "Instant open"), and 'self' is nobody's row.
+    if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;
     if (prev && prev.name === selfParticipant.name && prev.color === selfParticipant.color) {
       return;
@@ -1130,7 +1157,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     shareCode: sessionShareCode,
     tabScope: sessionTabScope,
     self: planItems.self,
-    canEdit,
+    // A Participant writes cells; only an Editor shapes the Sheet (docs/specs/013-workspace/share-roles.md).
+    canEdit: participant.can.sheetCells,
+    canShape: canEdit,
     peers: livePresence,
     pushUndo: itemUndo.push,
     toast: (message) => toast.error(message),
@@ -1149,6 +1178,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   useRoomConnection({
+    participant: participant.participating,
+    onAdderKey: participant.setAdderKey,
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
@@ -1951,7 +1982,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // below stays blocked with a single check, and the interaction
   // starters (beginDrag, beginEdit, ...) layer on their own isReadOnly
   // checks so a viewer can still select and inspect.
-  const editsBlocked = activeTabLocked || isReadOnly || activeTabLoadState !== 'ready';
+  // Running a session (start, end, reveal, clear, pace) is an Editor's, whoever holds the baton
+  // (docs/specs/013-workspace/share-roles.md): a Participant's editsBlocked is false, so it is shut here.
+  const runsBlocked = facilitator.sessionToolsBlocked || isReadOnly;
+  // A Participant commits too: every one of its commits passes participant.guardCommit.
+  const editsBlocked =
+    activeTabLocked || (isReadOnly && !participant.participating) || activeTabLoadState !== 'ready';
+  // Everything but a Participant's own gestures stays shut to it (docs/specs/013-workspace/share-roles.md): the hooks
+  // that write the tab's structure, or write without passing commit's guard, take this instead of editsBlocked.
+  const structureBlocked = editsBlocked || isReadOnly;
 
   // An Activity-page row opened this document at one element (docs/specs/013-workspace/activity-page.md
   // §1): once the pinned tab is ready, select it, bring it into view and
@@ -1994,7 +2033,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
       return;
     }
-    commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
+    const allowed = participant.guardCommit(liveTab, { ...liveTab, elements: after });
+    if (!allowed) return;
+    commitTabs((ts) => patchTab(ts, activeId, { elements: allowed.elements }));
   };
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
@@ -2006,6 +2047,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
     const next = mapTab(liveTab);
     if (next === liveTab) return;
+    if (participant.participating && !participant.guardCommit(liveTab, next)) return;
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mapTab(t) : t)));
   };
 
@@ -2039,7 +2081,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const layersState = useLayersState({
     activeId,
     activeTab,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     commitActiveTab,
     tickTabs,
     markCheckpoint,
@@ -2070,12 +2112,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (docs/specs/006-document/layers.md).
   const createBlocked = editsBlocked || activeLayerBlocked;
+  // As structureBlocked, for the hooks that take createBlocked: shut to a Participant.
+  const structureCreateBlocked = createBlocked || isReadOnly;
 
   // An older event-storming board is settled onto the lanes once
   // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
   useLaneSettle({
     activeTab,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     commitActiveTab,
     markSettled: (tabId) =>
       tickTabs((ts) => ts.map((t) => (t.id === tabId ? { ...t, esLanesSettled: true } : t))),
@@ -2139,7 +2183,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     itemTypes,
     editorMode: editorMode.mode,
     canEdit: !isReadOnly,
-    canVote: hydrated,
+    canEditCards: participant.can.planCards,
+    // Card votes and card comments are a Participant's (docs/specs/013-workspace/share-roles.md).
+    canVote: hydrated && participant.can.takePart,
     teamPeople,
     presence: planPresence.presence,
     publishPresence: planPresence.publish,
@@ -2160,7 +2206,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const planTour = usePlanTourContent({
     documentId,
     hydrated,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     activeId,
     tickTabs,
     planItems,
@@ -2244,7 +2290,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       activeTab,
       // Creation-only helpers: additionally blocked while the active layer
       // is hidden / locked (docs/specs/006-document/layers.md).
-      editsBlocked: createBlocked,
+      editsBlocked: structureCreateBlocked,
       formatSourceId,
       formatConfig: formatSettings.config,
       getViewportCenter,
@@ -2504,7 +2550,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setBackgroundPatternScale,
     setBackgroundAnimationSpeed,
   } = useTabCanvas({
-    editsBlocked,
+    editsBlocked: structureBlocked,
     activeId,
     activeTab,
     commit,
@@ -2533,7 +2579,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     retractVote,
   } = useTabSession({
     editsBlocked,
-    sessionToolsBlocked: facilitator.sessionToolsBlocked,
+    sessionToolsBlocked: runsBlocked,
     isFacilitator: facilitator.isFacilitator,
     activeId,
     activeTab,
@@ -2571,7 +2617,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       commitTabs,
       tickTabs,
       editsBlocked,
-      sessionToolsBlocked: facilitator.sessionToolsBlocked,
+      sessionToolsBlocked: runsBlocked,
       selfParticipant,
       livePresence,
       activeTimer: activeTab.timer,
@@ -2594,7 +2640,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyElementDelta,
     activeElements: activeTab.elements,
     editsBlocked,
-    sessionToolsBlocked: facilitator.sessionToolsBlocked,
+    sessionToolsBlocked: runsBlocked,
     selfParticipant,
     livePresence,
     startTimer,
@@ -2608,7 +2654,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyElementDelta,
     patchAsFacilitator: collabElements.patchAsFacilitator,
     editsBlocked,
-    sessionToolsBlocked: facilitator.sessionToolsBlocked,
+    sessionToolsBlocked: runsBlocked,
     selfParticipant,
   });
 
@@ -2639,8 +2685,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     refreshRecentImages,
     closeImagePicker,
   } = useEditorImages({
-    editsBlocked,
-    isReadOnly,
+    // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
+    editsBlocked: participant.participating
+      ? editsBlocked || !participant.can.addContent
+      : structureBlocked,
+    isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
@@ -2713,7 +2762,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a drawn path, a continued one, an edit.
   const { commitPath, commitPathEdit } = usePathCommits({
-    editsBlocked: createBlocked,
+    editsBlocked: structureCreateBlocked,
     commit: logo.drawCommit,
     styleNewElement: styleMemory.styleNewElement,
     setSelectedId,
@@ -2721,7 +2770,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
   const { canGrowMindNode, growMindNode, abandonMindNode } = useMindGrowth({
-    editsBlocked: createBlocked,
+    // A Participant grows a mind map (docs/specs/013-workspace/share-roles.md): branches are content.
+    editsBlocked: participant.participating
+      ? createBlocked || !participant.can.addContent
+      : structureCreateBlocked,
+    participating: participant.participating,
     activeId,
     activeTab,
     commitTabs,
@@ -2732,7 +2785,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
   const mindOutline = useMindOutline({
-    editsBlocked: createBlocked,
+    editsBlocked: structureCreateBlocked,
     activeId,
     activeTab,
     commitTabs,
@@ -2840,7 +2893,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const snapColours = useSnapColours({
     elements: activeTab.elements,
     inertIds: layerInertIds,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     commit,
   });
 
@@ -2851,7 +2904,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     drawMode,
     canvasTool,
     pendingDraw,
-    editsBlocked: createBlocked,
+    editsBlocked: structureCreateBlocked,
     setCanvasTool,
     selectCanvasTool,
     beginDraw,
@@ -2871,7 +2924,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { beginErase } = useCanvasEraser({
     config: eraserSettings.config,
     whiteboard: whiteboardDock.whiteboard ? { mode: whiteboardDock.prefs.eraserMode } : null,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     layerInertIds,
     activeId,
     activeTab,
@@ -3009,7 +3062,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeTab,
     drawMode,
     theme: activeTheme,
-    editsBlocked,
+    editsBlocked: structureBlocked,
+    canStyle: participant.participating ? participant.can.recolour : undefined,
     liveElements: liveActiveElements,
     commit,
     memory: styleMemory,
@@ -3124,7 +3178,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md): hovering a Cleanup row in the tab
   // menu lays the whole tab out behind it, and the layout only sticks on click.
   const { previewCleanup, endCleanupPreview } = useCleanupPreview({
-    editsBlocked,
+    editsBlocked: structureBlocked,
     activeId,
     tabsRef,
     tickTabs,
@@ -3166,6 +3220,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readSelection,
     isReadOnly,
     tabLocked: activeTabLocked,
+    canWriteText: participant.can.writeText,
     layerInertIds,
     adoptLayerName: layersState.adoptLayerNameFromLabel,
     formatSourceId,
@@ -3283,6 +3338,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setMultiSelectedIds,
     editingId,
     isReadOnly,
+    canMove: participant.can.move,
+    canResize: participant.can.resize,
     formatSourceId,
     applyFormatFromSource,
     formatToolActive,
@@ -3356,7 +3413,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const boardSceneInsert = useBoardSceneInsert({
     activeTab,
     drawMode,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -3369,7 +3426,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // paste, one commit, selected.
   const insertLibraryShape = useLibraryShapeInsert({
     activeTab,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     commit,
     setSelectedId,
     setMultiSelectedIds,
@@ -3398,6 +3455,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readSelection,
     editingId,
     isReadOnly,
+    participant: participant.participating,
     deleteSelected,
     deleteMultiSelected,
     undo,
@@ -3554,6 +3612,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Whether anything edited is still unsaved: the new version prompt reloads only once it is not
     // (docs/specs/016-platform/new-version-prompt.md).
     hasUnsavedChanges,
+    syncToCloud,
     // Tab-scoped share session (docs/specs/013-workspace/tab-scoped-share-links.md).
     sessionTabScope,
     isOutOfScope,
@@ -3793,6 +3852,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     importScenesAsNewDocuments,
     isPinchingRef,
     isReadOnly,
+    // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
+    can: participant.can,
+    participating: participant.participating,
     laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,

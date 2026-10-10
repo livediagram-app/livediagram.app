@@ -13,20 +13,24 @@ export function SegmentSlider({
   count,
   index,
   className,
+  flush = false,
 }: {
   count: number;
   index: number;
   className: string;
+  // Fills its track edge to edge instead of sitting 2px in, for a track drawn with a ring rather than padding, so
+  // the selection is the full height of a button beside it.
+  flush?: boolean;
 }) {
   if (count <= 0) return null;
   return (
     <span
       aria-hidden
-      className={`pointer-events-none absolute bottom-0.5 left-0.5 top-0.5 rounded-md transition-[transform,opacity,background-color] duration-short ease-out ${className} ${
+      className={`pointer-events-none absolute ${flush ? 'inset-y-0 left-0' : 'bottom-0.5 left-0.5 top-0.5'} rounded-md transition-[transform,opacity,background-color] duration-short ease-out ${className} ${
         index < 0 ? 'opacity-0' : 'opacity-100'
       }`}
       style={{
-        width: `calc((100% - 0.25rem) / ${count})`,
+        width: flush ? `calc(100% / ${count})` : `calc((100% - 0.25rem) / ${count})`,
         transform: `translateX(${Math.max(index, 0) * 100}%)`,
       }}
     />

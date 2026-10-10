@@ -53,3 +53,41 @@ describe('CommentThreadPopover', () => {
     expect(document.activeElement).toBe(screen.getByPlaceholderText('Add a comment…'));
   });
 });
+
+// docs/specs/013-workspace/share-roles.md: a Viewer only looks.
+describe('CommentThreadPopover for a Viewer', () => {
+  it('reads the thread with no composer, no resolve and no delete', () => {
+    addAnchor('a');
+    const thread = {
+      resolved: false,
+      comments: [
+        {
+          id: 'c1',
+          text: 'Mine',
+          createdAt: 0,
+          authorName: 'Me',
+          authorColor: '#000',
+          authorId: 'me',
+        },
+      ],
+    };
+    render(
+      <CommentThreadPopover
+        elementId="a"
+        thread={thread as never}
+        onAddComment={noop}
+        onDeleteComment={noop}
+        onResolve={noop}
+        onUnresolve={noop}
+        onClose={noop}
+        readOnly
+        canComment={false}
+        selfId="me"
+      />,
+    );
+    expect(screen.getByText('Mine')).toBeTruthy();
+    expect(screen.queryByPlaceholderText('Add a comment…')).toBeNull();
+    expect(screen.queryByRole('button', { name: /resolve/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /delete/i })).toBeNull();
+  });
+});

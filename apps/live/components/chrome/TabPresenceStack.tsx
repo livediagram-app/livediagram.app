@@ -4,6 +4,7 @@ import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
 import { participantBadges } from '@/lib/collaborator-roster';
 import { GlyphDisc } from '@livediagram/ui';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 // Compact stack of participant initials, sitting between the tab
 // label and the ellipsis menu in TabBar. Rendered smaller than the
@@ -38,7 +39,7 @@ export function TabPresenceStack({
 }: {
   participants: Participant[];
   selfId: string;
-  selfRole: 'edit' | 'view';
+  selfRole: AccessLevel;
   // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + hover card chip.
   followingId?: string | null;
   // Opens the Collaborators modal with the clicked person highlighted (null

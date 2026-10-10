@@ -1,4 +1,4 @@
-import { lucidePenTool, lucideSparkles } from '@livediagram/icons/lucide';
+import { lucidePenTool, lucideSparkles, lucideVote } from '@livediagram/icons/lucide';
 import { Glyph, Prims } from '@livediagram/ui';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), lifted out of
 // the palette's category definitions so the palette file reads as wiring
@@ -177,6 +177,15 @@ export function MyShapesTabIcon() {
       <path d="M4.5 4.5h9.5a1 1 0 0 1 1 1v8" />
       <rect x="2.5" y="6.5" width="10" height="9" rx="1" />
       <circle cx="7.5" cy="11" r="2.2" />
+    </Glyph>
+  );
+}
+
+// Participate (docs/specs/013-workspace/share-roles.md): a ballot, the Participant level's glyph.
+export function ParticipateTabIcon() {
+  return (
+    <Glyph size={18} units={24}>
+      <Prims prims={lucideVote} />
     </Glyph>
   );
 }

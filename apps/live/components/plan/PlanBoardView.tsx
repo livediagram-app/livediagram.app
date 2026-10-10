@@ -129,6 +129,8 @@ export function PlanBoardView({
     (s) => s.selectedId === element.id || s.multiSelectedIds.has(element.id),
   );
   const canEdit = !!plan?.canEdit;
+  // Cards move, open for editing and are added by an Editor or a Participant (docs/specs/013-workspace/share-roles.md).
+  const canEditCards = !!plan?.canEditCards;
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
   const { maximised, filled } = useBoardMaximised(element.id, interactive);
@@ -158,12 +160,13 @@ export function PlanBoardView({
     items,
     interactive,
     canEdit,
+    canEditCards,
   });
 
   // A press on a card in Plan mode without edit rights still opens it.
   const onCardPress = (id: string, e: React.PointerEvent<HTMLElement>) => {
     if (!interactive) return;
-    if (canEdit) drag.onCardPointerDown(id, e);
+    if (canEditCards) drag.onCardPointerDown(id, e);
     else {
       stop(e);
       plan?.openItem(id);
@@ -249,7 +252,7 @@ export function PlanBoardView({
 
   const onCardKey = (item: Item, e: React.KeyboardEvent<HTMLElement>) => {
     if (!plan) return;
-    const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEdit);
+    const action = planBoardKey(projection, item.id, e.key, e.shiftKey, canEditCards);
     if (!action) return;
     e.preventDefault();
     e.stopPropagation();
@@ -487,7 +490,7 @@ export function PlanBoardView({
                         const isAdding =
                           adding?.status === col.column.status && adding.laneKey === lane.key;
                         const firstEmpty =
-                          empty && canEdit && laneIndex === 0 && col === projection.columns[0];
+                          empty && canEditCards && laneIndex === 0 && col === projection.columns[0];
                         const done = setup.doneColumnId === col.column.id;
                         // Every type the board takes may be added in any cell: a type's left-out statuses only
                         // stop a card moving there (docs/specs/026-plan/item-types.md "An item type").
@@ -552,7 +555,7 @@ export function PlanBoardView({
                                 refused={held?.refused}
                               />
                             ) : null}
-                            {canEdit &&
+                            {canEditCards &&
                             !loading &&
                             !setup.archive &&
                             (cellTypes.length || createType) ? (

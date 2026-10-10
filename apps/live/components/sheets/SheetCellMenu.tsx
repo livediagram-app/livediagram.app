@@ -138,7 +138,7 @@ export function SheetCellMenu({
           </>
         ) : null}
       </MenuToolbar>
-      {!c.canEdit ? null : askMerge ? (
+      {!c.canShape ? null : askMerge ? (
         <SheetMergeConfirm
           range={range}
           onCancel={() => setAskMerge(false)}

@@ -30,6 +30,9 @@ type CommentThreadPopoverProps = {
   // open the popover from the toolbar anyway, but the element
   // comment-badge is a separate entry point, so delete needs its own gate.
   readOnly?: boolean;
+  // Whether this session may take part in the thread at all (docs/specs/013-workspace/share-roles.md): a Viewer
+  // only looks, so with it false the thread reads with no composer, no resolve or reopen, and no delete.
+  canComment?: boolean;
   // The local participant's stable id, matched against each comment's
   // server-stamped authorId to decide whether a view-role visitor may
   // delete it. The API only ever exposes the visitor's own authorId
@@ -55,6 +58,7 @@ export function CommentThreadPopover({
   onUnresolve,
   onClose,
   readOnly = false,
+  canComment = true,
   selfId,
 }: CommentThreadPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -126,7 +130,7 @@ export function CommentThreadPopover({
             ) : null}
           </h3>
           <div className="flex items-center gap-1">
-            {comments.length > 0 ? (
+            {comments.length > 0 && canComment ? (
               <CommentResolveToggle
                 resolved={resolved}
                 onResolve={onResolve}
@@ -146,18 +150,22 @@ export function CommentThreadPopover({
 
         <CommentThreadList
           thread={thread}
-          readOnly={readOnly}
-          selfId={selfId}
+          readOnly={readOnly || !canComment}
+          canComment={canComment}
+          // Nothing is a looker's own to delete.
+          selfId={canComment ? selfId : ''}
           onDeleteComment={onDeleteComment}
         />
 
-        {/* Add-comment textarea is available even in view-role: viewers
-          can chime in, resolve and reopen (the comments endpoints allow
-          view-role), but can't delete others' comments. Resolved threads
+        {/* The add-comment textarea is a Participant's and an Editor's (a Viewer only looks): a
+          Participant chimes in, resolves and reopens through the comment endpoints, but can't
+          delete others' comments. Resolved threads
           still hide the textarea: adding a comment would functionally reopen the
           thread and that's a deliberate intent best surfaced as the
           reopen button up top, not a sneaky side effect of typing. */}
-        {!resolved ? <CommentComposer onAddComment={onAddComment} fieldRef={composerRef} /> : null}
+        {!resolved && canComment ? (
+          <CommentComposer onAddComment={onAddComment} fieldRef={composerRef} />
+        ) : null}
       </div>
     </Portal>
   );

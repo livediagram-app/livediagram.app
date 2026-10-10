@@ -276,7 +276,8 @@ export async function seedSheets(
   owner: string,
   creates: SheetCreateRequest[],
 ): Promise<Response | null> {
-  const caller: SheetCaller = { documentId, owner, scopeTab: null };
+  // The new document's own maker: its owner, and no team yet.
+  const caller: SheetCaller = { documentId, owner, scopeTab: null, ownerId: owner, teamId: null };
   const by = await writer(ctx, owner);
   for (const c of creates) {
     const made = await makeSheet(ctx, caller, c, by, false);

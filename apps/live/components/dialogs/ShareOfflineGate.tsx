@@ -7,29 +7,33 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
+import { Spinner } from '@/components/palette/template-picker-icons';
 
-// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md). An offline document is stored only
-// in this browser, so there are no links to mint until it's synced to the
-// owner's account. Rather than hide the Share button, we keep it and explain
-// the one-step conversion here: sync moves the document to the cloud, then the
-// page reloads into the normal share flow.
+// The Share dialog's offline gate (docs/specs/006-document/offline-mode.md "Sharing a Local only
+// document"). An offline document is stored only in this browser, so there are no links to mint until it
+// is synced. The gate says so and offers Sync Document; the sync converts the open document in place
+// ("Syncing in place"), with no reload, and the Share dialog swaps the gate for its share options as the
+// document stops being offline. Sync waits for `ready` (the reader is known).
 export function ShareOfflineGate({
   onSyncToCloud,
+  ready = true,
   onClose,
 }: {
   onSyncToCloud: () => Promise<void>;
+  ready?: boolean;
   onClose: () => void;
 }) {
   const [busy, setBusy] = useState(false);
   const toast = useToast();
 
   const sync = async () => {
+    if (!ready || busy) return;
     setBusy(true);
     try {
       await onSyncToCloud();
-      // onSyncToCloud reloads the page on success, so we normally never fall
-      // through. If it resolves without navigating, drop the spinner.
-      setBusy(false);
+      // The document is a cloud document now: the dialog shows the share options in place of this
+      // gate. The spinner stays until it does, so the button never flashes back.
+      toast.success('Synced. Your document is on livediagram now.');
     } catch (e) {
       setBusy(false);
       toast.error(syncFailureMessage(e));
@@ -38,10 +42,7 @@ export function ShareOfflineGate({
 
   return (
     <Dialog open onClose={onClose} ariaLabel="Share this document" size="md">
-      <DialogHeader
-        title="Share this document"
-        subtitle="This document is saved offline, in this browser only."
-      >
+      <DialogHeader title="Share this document" subtitle="Saved only in this browser.">
         <HelpArticleLink article="offlineMode" size="md" />
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
@@ -55,16 +56,28 @@ export function ShareOfflineGate({
         </span>
         <div className="flex flex-col gap-1.5">
           <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-            Sync it to your account to share
+            This Document Is Offline
           </p>
           <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            Share links, real-time collaboration, and the live image all need the document to live
-            on our servers. Syncing uploads this document to your account and keeps working on it
-            here. You can take it offline again any time.
+            It is saved only in this browser, so there is nothing to share yet. Sync it to
+            livediagram to share it: share links, real-time collaboration and the live image all
+            need it on our servers. You can take it offline again any time.
           </p>
         </div>
-        <Button onClick={() => void sync()} disabled={busy} className="mt-1 shadow-sm">
-          {busy ? 'Syncing…' : 'Sync Document'}
+        <Button
+          onClick={() => void sync()}
+          disabled={busy || !ready}
+          aria-busy={busy}
+          className="mt-1 shadow-sm"
+        >
+          {busy ? (
+            <span className="inline-flex items-center gap-2">
+              <Spinner />
+              Syncing…
+            </span>
+          ) : (
+            'Sync Document'
+          )}
         </Button>
       </div>
 
