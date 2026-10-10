@@ -2,7 +2,7 @@
 // "Limits"): a stroke with more samples than MAX_FREEHAND_POINTS is simplified, never refused, so a
 // long stroke is kept rather than lost on release. Pure.
 
-import { simplifyPolylineMask } from './polyline';
+import { simplifyPolylineSurvival } from './polyline';
 import { MAX_FREEHAND_POINTS } from './stroke-points';
 
 type Point = { x: number; y: number };
@@ -17,7 +17,8 @@ export const STROKE_FIT_START_TOLERANCE_PX = 0.1;
 /**
  * The tolerance doubles until the stroke fits, at most this many times (0.1 px up to 0.1 * 2^7 =
  * 12.8 px). A stroke still too long after that (a dense scribble with no straight run) keeps evenly
- * spaced samples instead. Safe range: 4 to 10; each pass is one O(n log n) simplification.
+ * spaced samples instead. Safe range: 4 to 10; each pass is one O(n) count over a single
+ * simplification shared by every pass.
  */
 export const STROKE_FIT_MAX_PASSES = 8;
 
@@ -44,12 +45,14 @@ export function fitStrokeToLimit(
     return pressures ? { points: out, pressures: outPressures } : { points: out };
   };
   if (points.length <= max) return take(() => true);
+  // One simplification answers every tolerance: a point is kept at `t` while survival > t².
+  const survival = simplifyPolylineSurvival(points);
   let tolerance = STROKE_FIT_START_TOLERANCE_PX;
   for (let pass = 0; pass < STROKE_FIT_MAX_PASSES; pass++, tolerance *= 2) {
-    const mask = simplifyPolylineMask(points, tolerance);
+    const tol2 = tolerance * tolerance;
     let kept = 0;
-    for (const k of mask) if (k) kept++;
-    if (kept <= max) return take((i) => mask[i]!);
+    for (const s of survival) if (s > tol2) kept++;
+    if (kept <= max) return take((i) => survival[i]! > tol2);
   }
   // Evenly spaced samples, the last always among them.
   const last = points.length - 1;

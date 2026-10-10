@@ -132,9 +132,10 @@ export function migrateIncomingElements(elements: readonly unknown[]): Element[]
   writer's tests cover its inputs.
 - **Fitting a drawn stroke** (`stroke-fit.ts`): `fitStrokeToLimit(points, pressures?, max =
 MAX_FREEHAND_POINTS)` returns copies unchanged when `points.length <= max`; otherwise it runs
-  `simplifyPolylineMask` (the RDP of `simplifyPolyline`, as a keep flag per point) at
-  `STROKE_FIT_START_TOLERANCE_PX`, doubling up to `STROKE_FIT_MAX_PASSES` times, and keeps the
-  first result that fits; failing that, `max` evenly spaced samples. First and last points always
+  `simplifyPolylineSurvival` once (the RDP of `simplifyPolyline` at every tolerance: per point,
+  the squared tolerance it survives below, so `survival[i] > t²` is `simplifyPolylineMask(points,
+t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PASSES` times by
+  counting survivors, and keeps the first result that fits; failing that, `max` evenly spaced samples. First and last points always
   stay; pressures follow the kept indices. The editor's `makeCommitFreehand` fits every pen stroke
   (whiteboard pen, pencil, highlighter) before it packs, so release never throws
   `stroke-too-many-points`.
@@ -278,10 +279,11 @@ fields from the type and compiling every workspace, plus the untyped entry point
 - Decode: one pass over the bytes into three `Float64Array`s; 20,000 points in well under 1 ms.
 - Cache budget: 500,000 points, 12 MB of `Float64Array` at most; every real board measured fits.
 - Encode on commit and erase: linear in the stroke; the live ink never encodes.
-- Fitting runs on release only, and only past the cap: one RDP pass per tolerance tried. Measured
-  (Node, median of 5): a 25,000-sample gentle curve 12 ms (one pass), a 30,000-sample handwriting
-  trace 34 ms, a 60,000-sample dense scribble 160 ms (the worst case tried). A stroke that fits
-  costs one array copy.
+- Fitting runs on release only, and only past the cap: one full RDP, then one O(n) count per
+  tolerance tried. Measured (vitest on an M-series Mac, median of 5): a 25,000-sample gentle curve
+  6 ms, a 30,000-sample handwriting trace 9 ms, a 60,000-sample dense scribble 12 ms (the worst
+  case tried; 54 ms with one RDP per tolerance, and about 80 ms under coverage instrumentation). A
+  stroke that fits costs one array copy.
 - The bench (`scripts/stroke-points-bench.ts`, `pnpm bench:stroke-points`, run with `--expose-gc`)
   records tab bytes, bytes per point, objects allocated, heap held, `JSON.parse` time, parse and
   draw of one viewport and of the whole board (cold decode cache), and the worst errors, which it

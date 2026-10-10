@@ -81,6 +81,57 @@ export function simplifyPolylineMask(
   return keep;
 }
 
+/**
+ * Every simplification at once: for each point, the squared tolerance it survives below.
+ * `simplifyPolylineMask(points, t)[i]` is exactly `survival[i] > t * t`. The split tree is the same
+ * at every tolerance (each segment splits at its farthest point), so a point is kept while it and
+ * every split above it beat the tolerance: its survival is the smallest of those. The ends survive
+ * any tolerance. One full simplification, for callers that try several tolerances.
+ */
+export function simplifyPolylineSurvival(
+  points: readonly { x: number; y: number }[],
+): Float64Array {
+  const survival = new Float64Array(points.length);
+  if (points.length === 0) return survival;
+  survival[0] = Infinity;
+  survival[points.length - 1] = Infinity;
+  // [start, end, the survival of the split that made this segment].
+  const stack: [number, number, number][] = [[0, points.length - 1, Infinity]];
+  while (stack.length > 0) {
+    const [start, end, above] = stack.pop()!;
+    if (end <= start + 1) continue;
+    let maxDist2 = 0;
+    let maxIdx = start;
+    const a = points[start]!;
+    const b = points[end]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lineLen2 = dx * dx + dy * dy;
+    for (let i = start + 1; i < end; i++) {
+      const p = points[i]!;
+      let ex = p.x - a.x;
+      let ey = p.y - a.y;
+      if (lineLen2 !== 0) {
+        const t = (ex * dx + ey * dy) / lineLen2;
+        ex -= t * dx;
+        ey -= t * dy;
+      }
+      const d2 = ex * ex + ey * ey;
+      if (d2 > maxDist2) {
+        maxDist2 = d2;
+        maxIdx = i;
+      }
+    }
+    // Nothing off the line: every point inside goes at any tolerance (survival stays 0).
+    if (maxDist2 === 0) continue;
+    const own = Math.min(maxDist2, above);
+    survival[maxIdx] = own;
+    stack.push([start, maxIdx, own]);
+    stack.push([maxIdx, end, own]);
+  }
+  return survival;
+}
+
 // Catmull-Rom to cubic-Bezier SVG path. Turns a sequence of points
 // into a smooth curve passing through every one. The output is an
 // SVG `d` attribute string (M, then cubic C segments). `closed`
