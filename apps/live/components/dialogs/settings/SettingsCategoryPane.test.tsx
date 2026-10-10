@@ -137,11 +137,11 @@ describe('SettingsCategoryPane toggle group', () => {
         onChange={onChange}
       />,
     );
-    const plan = screen.getByRole('switch', { name: 'Plan Tour' });
+    const plan = screen.getByRole('switch', { name: 'Plan' });
     expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(
-      screen.getByRole('switch', { name: 'Facilitate Tour' }).getAttribute('aria-checked'),
-    ).toBe('true');
+    expect(screen.getByRole('switch', { name: 'Facilitate' }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
     fireEvent.click(plan);
     expect(track).toHaveBeenCalledWith('UI', 'Toggled', 'PlanTourSeenOff');
     expect(onChange).toHaveBeenCalledWith({ tourSeen: true, planTourSeen: false });

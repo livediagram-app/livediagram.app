@@ -254,11 +254,11 @@ type UserPreferences = {
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome
-  // tour's. Surfaced in Settings as Show Tours › "Plan Tour" (inverted); turning it on from off and closing
+  // tour's. Surfaced in Settings as Show Tours › "Plan" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
   // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Show Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
+  // Surfaced in Settings as Show Tours › "Facilitate" (inverted). Missing / undefined === not seen.
   facilitateTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -703,19 +703,19 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken.
 
   **Show Tours** is one control for the three guided tours: a heading and one description over a grid of
-  switches, **Welcome Tour**, **Plan Tour** and **Facilitate Tour**, each its own preference with its own
+  switches, **Welcome**, **Plan** and **Facilitate**, each its own preference with its own
   telemetry, and a **Learn more** link per tour after the description (a `toggleGroup` row: three
   near-identical rows each repeating the same paragraph read as clutter). Every switch is inverted: on
   means "show me the tour", the preference records "already seen".
 
-  **Welcome Tour** is inverted against the stored `tourSeen`. Because `tourSeen !== true` is necessary but
+  **Welcome** is inverted against the stored `tourSeen`. Because `tourSeen !== true` is necessary but
   NOT sufficient for the offer (TourHost also needs the per-tab pending flag, which only `/new` sets),
   closing the dialog with the switch on **marks that flag**, so its promise is true for a reader who had
   simply never taken the tour. Turning it on from off additionally relaunches in place. Its telemetry
-  tokens still describe the PREFERENCE, so the dashboard series keeps its meaning. **Plan Tour** is
+  tokens still describe the PREFERENCE, so the dashboard series keeps its meaning. **Plan** is
   inverted against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
   entering Plan), so closing the dialog only reruns it, when it was turned on from off
-  ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
+  ([Plan tour](../026-plan/plan-tour.md)). **Facilitate** works the same way against
   `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)).
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the

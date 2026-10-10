@@ -19,9 +19,9 @@ describe('presetSummaryLines', () => {
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
-      ['Welcome Tour', 'Off', 'Accessibility'],
-      ['Plan Tour', 'Off', 'Accessibility'],
-      ['Facilitate Tour', 'Off', 'Accessibility'],
+      ['Show Tours: Welcome', 'Off', 'Accessibility'],
+      ['Show Tours: Plan', 'Off', 'Accessibility'],
+      ['Show Tours: Facilitate', 'Off', 'Accessibility'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

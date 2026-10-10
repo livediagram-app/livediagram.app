@@ -132,9 +132,9 @@ describe('settings catalogue', () => {
     if (group?.kind !== 'toggleGroup') return;
     expect(group.label).toBe('Show Tours');
     expect(group.toggles.map((t) => [t.key, t.label])).toEqual([
-      ['tourSeen', 'Welcome Tour'],
-      ['planTourSeen', 'Plan Tour'],
-      ['facilitateTourSeen', 'Facilitate Tour'],
+      ['tourSeen', 'Welcome'],
+      ['planTourSeen', 'Plan'],
+      ['facilitateTourSeen', 'Facilitate'],
     ]);
     expect(accessibility.rows.some((r) => r.key === 'tourSeen')).toBe(false);
   });

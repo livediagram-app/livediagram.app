@@ -59,7 +59,7 @@ export function SettingsToggleGroupRow({
                   onClick={() => onChange(toggle.key, !on)}
                   className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-900/40 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
                 >
-                  <span className="min-w-0 text-xs font-medium text-slate-700 dark:text-slate-200">
+                  <span className="min-w-0 truncate text-xs font-medium text-slate-700 dark:text-slate-200">
                     {toggle.label}
                   </span>
                   <span aria-hidden>

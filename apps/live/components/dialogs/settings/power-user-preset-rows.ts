@@ -46,7 +46,8 @@ function findRow(key: string): {
         return {
           category,
           rowKey: row.key,
-          label: toggle.label,
+          // Named with its group, since the switch's own label leans on the group's heading.
+          label: `${row.label}: ${toggle.label}`,
           read: (p) => (toggle.read(p) ? 'On' : 'Off'),
         };
     }

@@ -23,7 +23,7 @@ card were removed once this tour proved the better introduction.
   device the user signs in from (guests get the same via their
   owner-keyed preference row + the localStorage warm cache).
 - **Replayable from Settings.** The Settings dialog's Accessibility category
-  has a **Show Tours** control whose **Welcome Tour** switch surfaces `tourSeen`
+  has a **Show Tours** control whose **Welcome** switch surfaces `tourSeen`
   (inverted: on means not seen). Turning a previously-off switch on and closing Settings relaunches the
   tour from the top: the welcome card is always step 1, on a rerun too.
   Finishing the rerun turns it off again.

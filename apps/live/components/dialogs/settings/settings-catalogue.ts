@@ -843,7 +843,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         toggles: [
           {
             key: 'tourSeen',
-            label: 'Welcome Tour',
+            label: 'Welcome',
             helpArticle: 'welcomeTour',
             // INVERTED against the stored preference: the switch asks "show me the
             // tour?", `tourSeen` records "already seen". Switch on === not seen.
@@ -856,7 +856,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           },
           {
             key: 'planTourSeen',
-            label: 'Plan Tour',
+            label: 'Plan',
             helpArticle: 'planTour',
             // Inverted the same way (docs/specs/026-plan/plan-tour.md).
             read: (p) => p.planTourSeen !== true,
@@ -865,7 +865,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           },
           {
             key: 'facilitateTourSeen',
-            label: 'Facilitate Tour',
+            label: 'Facilitate',
             helpArticle: 'facilitateTour',
             // Inverted the same way (docs/specs/012-collaboration/facilitate-tour.md).
             read: (p) => p.facilitateTourSeen !== true,

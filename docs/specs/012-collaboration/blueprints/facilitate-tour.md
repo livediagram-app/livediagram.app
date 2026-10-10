@@ -13,7 +13,7 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
 | The seen-guard      | `UserPreferences.facilitateTourSeen` (synced)                                                           |
 | The rerun signal    | `FACILITATE_TOUR_RELAUNCH_EVENT`, `requestFacilitateTourRelaunch` in `apps/live/lib/facilitate-tour.ts` |
 | The one-tour slot   | `ActiveTour` `'facilitate'` in `apps/live/lib/tour-active.ts`                                           |
-| The Settings switch | `facilitateTourSeen`, "Facilitate Tour", third in the Show Tours `toggleGroup` (Accessibility)          |
+| The Settings switch | `facilitateTourSeen`, "Facilitate", third in the Show Tours `toggleGroup` (Accessibility)               |
 | The help article    | `canvas/facilitate-mode/facilitate-tour` (`helpArticle: 'facilitateTour'`)                              |
 
 ## Behaviour and state
