@@ -33,30 +33,31 @@ In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.live
   <McpConsent />
 </Figure>
 
-Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works. The token is an ordinary API token: it appears in **Settings**, under **Account**, then **API Tokens**, named after the tool, and you can revoke it there any time to disconnect the tool. Like all tokens, it lasts six months; you get an email a week before it expires (where email is set up), and reconnecting the tool then creates a fresh one.
+Approving creates an [API token](/help/account-and-data/api-tokens/) behind the scenes and hands it to your tool. From then on the connection just works. The token is an ordinary API token: it appears in **Settings**, under **Account**, then **API Tokens**, named after the tool, and you can revoke it there any time to disconnect the tool. Like all tokens, it lasts six months; you get a reminder in its last week (by email, where email is set up), and reconnecting the tool then creates a fresh one.
 
 ## What the AI can do
 
 The connection gives your AI tool these tools:
 
 - **Find documents**: search your documents by name, across your personal library and the shared libraries of every [team](/help/collaboration/teams/) you belong to.
-- **Read a document**: get a tab's contents and an inline picture of it.
+- **Read a document**: get a tab's contents as a text outline, and a picture of it when the AI asks for one.
 - **List templates**: browse the same hand-tuned [template library](/help/canvas/templates/) the editor's Quick Start offers.
 - **Create a document**: turn a request into a new document, with one tab or several. A tab can start from a template: ask for "a kanban board" and the AI can lay down the curated scaffold, then fill in your content.
 - **Add a tab**: add another tab (its own canvas) to an existing document, for example a detail view of one part. Tabs can start from a template too.
 - **Update a document**: rework a whole tab or make a small adjustment.
 - **Share a document**: turn a document into a [share link](/help/collaboration/sharing/) to hand to someone. Unless you ask for another level, the AI makes a **Participant** link: people can add stickies, write and vote, but not reshape the board.
-- **Rename a document** and **Delete a document**: tidy your library from the AI tool. Delete moves the document to the [Trash](/help/account-and-data/trash/).
+- **Rename a document** and **Delete a document**: tidy your library from the AI tool, a whole document or a single tab. Deleting a document moves it to the [Trash](/help/account-and-data/trash/); deleting a tab removes it for good.
 - **List the Trash** and **Restore a document**: bring back something deleted by mistake, by you or by the AI.
 - **List items** and **Change items**: read and update the cards on a document's [Plan](/help/canvas/plan-mode/) boards (add a task, move it to another column, change its fields). The AI names things the way your board shows them, so it says "In Progress" or "Bug" or "Severity", and livediagram refuses a column, card type or field the document doesn't have instead of filing a card where no board shows it.
 - **Add a board** and **Change a board**: put a Plan board on a tab, from a ready-made one (Kanban, Sprint, Bug Triage...) or with the columns you name, and later rename it, change its columns or choose which card types it shows.
+- **List sheets**, **Read a sheet**, **Change a sheet** and **Add a sheet**: work with the [Sheets](/help/canvas/plan-mode/sheets/) on a document's tabs, reading cells by A1 address, setting values and formulas, formatting, sorting, and adding a new sheet from rows or CSV.
 - **Change card types**: add, edit or delete the [card types](/help/canvas/plan-mode/items/) a document's boards hold, with their own fields. Deleting a type moves its cards to the Trash, as it does in the editor.
 
 For building the picture, the AI can just describe the **graph** (the nodes and what connects to what) and livediagram lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what, or hand over the same thing as **Mermaid** text (a flowchart, state diagram, or ER diagram). It can group related boxes into labelled sections and choose a flow, a tree (an org chart), or a mind map. Box labels are kept to short headings: when the AI writes a long sentence, the box shows the heading and the full text goes into the box's note, so a chatty AI doesn't fill your diagram with paragraphs.
 
 Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, and **bar, line, and pie charts**. Your AI tool may also surface a few ready-made **prompts** ("Diagram this", "Flowchart from steps" and "Show my document") as quick actions, so you don't have to know the tool names.
 
-When the AI changes a document you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept, and an element you have selected is left alone until you let go of it.
+When the AI changes a document you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. An element someone else in the document has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
 The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New documents an AI creates land at the root of **My documents** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 
@@ -64,7 +65,9 @@ The AI does the thinking; livediagram validates, lays out, saves, and renders wh
 
 By default the token behind a connection has full read and write access to your documents, including the documents in your teams' shared libraries, so only connect tools you trust, and revoke the token if you stop using one. If you'd rather a tool could look but not change anything, switch on **Read-only access** on the approval page when you connect it: the connection can then find and read your documents (and list your Trash) but can't create, edit, share, rename, delete or restore anything. The block is enforced by our server, not just the tool. Its token shows a **Read-only** badge in the [API Tokens](/help/account-and-data/api-tokens/) list.
 
-Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay in the app. It can never delete a document for good either; that stays with you, in the Trash.
+Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay in the app. It can never delete a document for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
+
+Approving a connection creates a token, so it fails if you already have ten; revoke one in **API Tokens** first. Some tools list each document tool twice, once under an older _diagram_ name marked deprecated: they do the same thing.
 
 <Tip>
   Connected a tool you no longer use? Open **Settings**, then **Account**, then **API Tokens**, and
