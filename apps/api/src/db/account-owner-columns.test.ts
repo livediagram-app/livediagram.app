@@ -463,6 +463,30 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     for (const r of rows) expect(r.tab_id).toBe('t-2');
   });
 
+  // A visit is to someone else's document, so a visit the guest paid to the account's document, or
+  // the account to the guest's, would list the account's own document under its "Shared with you".
+  it('drops visits to documents the account now owns', async () => {
+    const { env, sql } = arrange();
+    liveDoc(sql, 'd-account', ACCOUNT);
+    insert(sql, 'shared_with', {
+      owner_id: GUEST,
+      document_id: 'd-account',
+      role: 'view',
+      last_seen: T0,
+    });
+    insert(sql, 'shared_with', {
+      owner_id: ACCOUNT,
+      document_id: `d-${GUEST}`,
+      role: 'edit',
+      last_seen: T0,
+    });
+
+    await migrateOwnerId(env, GUEST, ACCOUNT);
+
+    const visits = sql.prepare('SELECT owner_id, document_id FROM shared_with').all();
+    expect(visits.map((v) => ({ ...v }))).toEqual([{ owner_id: ACCOUNT, document_id: 'd-other' }]);
+  });
+
   it("keeps the account's participant row over the guest's", async () => {
     const { env, sql } = arrange();
     insert(sql, 'participants', { id: ACCOUNT, name: 'Ada', color: '#123456', created_at: T0 });

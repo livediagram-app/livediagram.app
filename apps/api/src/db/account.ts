@@ -244,6 +244,15 @@ export async function migrateOwnerId(
     .bind(toOwnerId, fromOwnerId)
     .run();
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(fromOwnerId).run();
+  // A visit is to someone else's document. The guest may have visited one the account owns, and
+  // the account may have visited one the guest owned (now the account's): either way the visit
+  // would list the account's own document under its "Shared with you", so drop it.
+  await env.DB.prepare(
+    `DELETE FROM shared_with WHERE owner_id = ?1
+       AND document_id IN (SELECT id FROM documents WHERE owner_id = ?1)`,
+  )
+    .bind(toOwnerId)
+    .run();
   // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
   // shared_with so a Clerk userId who somehow already had a row (an
   // earlier sign-in on a different device) keeps that authoritative
