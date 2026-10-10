@@ -105,7 +105,8 @@ Writes an article's text from **Markdown**.
 - **The Markdown** (the editor's paste reading, `parseMarkdownBlocks`, shared): `#`, `##`, `###` headings (h1 to
   h3), paragraphs, `-` / `*` / `1.` lists by indent (five levels), `- [ ]` / `- [x]` to-dos, `>` quotes, fenced
   code, `---` dividers; bold, italic, strikethrough, inline code and links (http, https, mailto). A line holding only
-  `\pagebreak` is a page break.
+  `\pagebreak` is a page break. An article's text holds no tables: a Markdown table is written as a list, one item
+  per row, and the answer says how many it wrote that way and points at a table element on a page instead.
 - **Front matter** sets the title and subtitle: a first line `---`, then `title: ...` and `subtitle: ...` lines, then
   `---`. They become the article's `title` and `subtitle` blocks, first. Without front matter the text is written as
   given (a replace keeps no old title).
@@ -133,7 +134,8 @@ Where a line breaks is measured by the editor, so the server never counts an art
 - An article whose writing reaches past its last page is grown by an editor that is not its writer at two moments
   only: the first lay-out after **an agent's write** reaches it (the relayed `article` op says `agent: true`), and
   the first lay-out after **the tab loads** (a writer who left before settling). Pages are added, never removed, as
-  the writer's would be; shrinking stays the writer's. Any other time the writer settles, as today, so two devices
+  the writer's would be; shrinking stays the writer's. The grow waits until the page's web fonts are in, so a
+  lay-out measured in a fallback font never adds a page the real type does not need. Any other time the writer settles, as today, so two devices
   measuring type a line apart never take turns adding and removing a page.
 - Two editors growing it at once each send their pages; the `tab-meta` patch is the last one's, whole, so the row
   never holds both sets, and the next lay-out settles what is left.

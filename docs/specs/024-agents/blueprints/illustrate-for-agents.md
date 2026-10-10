@@ -92,6 +92,8 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 5. Any page of the flow locked → `page_locked`.
 6. Parse: `articleFromMarkdown(markdown, current)` → `{ blocks, keptZones, droppedZones }`, or `unknownZone`
    (`zone_unknown`), or `tooLong` (a paragraph past `MAX_ARTICLE_BLOCK_TEXT`: `article_too_large`, never cut).
+   Tables are read as lists (`tablesAsLists` in `packages/document/src/article-markdown-io.ts`) and counted in
+   `tables`; a count above zero adds the line "Wrote Markdown tables as lists (N): ...".
    Fresh ids never meet the article's own, so `append` concatenates after the current blocks (a new article's
    placeholder Title and paragraph give way) and keeps every zone and note.
 7. No blocks left → one empty paragraph. Blocks past `MAX_ARTICLE_BLOCKS` → `article_too_large`.
