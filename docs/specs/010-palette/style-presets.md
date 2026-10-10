@@ -48,7 +48,7 @@ fill / border to preset:
   radius controls in the **Border** category remain for fine-tuning after a
   preset.
 
-- **Reset to default** — clears the shape's colour overrides back to the
+- **Reset to Default** — clears the shape's colour overrides back to the
   theme and removes border weight / pattern / radius overrides, returning the
   shape to its theme default in one click.
 
@@ -106,7 +106,7 @@ one-click arrow styles, ordered as hierarchical tiers: the **solid weights**
 lightest → heaviest (Fine / Plain / Bold), then the **patterns** with their
 weight variants (Fine Dash / Dashed / Bold Dash / Dotted), then the
 **animated flows** (Flow / Dash Flow / Dot Flow / Signal / Pulse), plus
-**Reset to default**. Reset clears the arrow's line-pattern / thickness /
+**Reset to Default**. Reset clears the arrow's line-pattern / thickness /
 animation overrides. The active-tile highlight matches on pattern +
 thickness + flow (thickness disambiguates the weight tiers). In a
 multi-selection the preset applies to every selected arrow at once.

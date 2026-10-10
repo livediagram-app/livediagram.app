@@ -56,7 +56,7 @@ note.
 | Pick the note to discuss    | The facilitator, else any editor         |
 | Mark done / reopen          | The facilitator, else any editor         |
 | Remove a note (moderation)  | The facilitator, else any editor         |
-| Empty the board             | The facilitator, else any editor         |
+| Empty the Board             | The facilitator, else any editor         |
 
 "The facilitator, else any editor" is [Facilitator](facilitator.md)'s rule: while somebody holds the
 baton the controls are theirs; when nobody does, any editor can run the board.

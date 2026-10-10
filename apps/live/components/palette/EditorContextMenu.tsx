@@ -197,7 +197,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               label="Send to Back"
               onClick={runAndClose(props.onStackBack)}
             />
-            {/* Change kind (docs/specs/021-event-storming/event-storming.md): the ONE styling-shaped thing this menu
+            {/* Change Kind (docs/specs/021-event-storming/event-storming.md): the ONE styling-shaped thing this menu
                 offers, because on this board the kind is not styling — it is
                 what the note MEANS. Re-paints, re-cuts the silhouette and
                 leaves the note centred where it was. */}
@@ -205,7 +205,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
               <>
                 <MenuGroupSeparator />
                 <MenuAccordionSection
-                  title="Change kind"
+                  title="Change Kind"
                   icon={<SquareMenuIcon />}
                   {...sectionProps('es-kind')}
                 >

@@ -24,7 +24,7 @@ function pluralize(label: string): string {
 // Shapes split by their kind (so Squares / Circles / Diamonds are each their
 // own row, matching how a user thinks of them); every other element type is
 // its own bucket. When the selection spans 2+ distinct shape kinds we also
-// prepend a generic "All shapes" bucket so the user can grab every shape at
+// prepend a generic "All Shapes" bucket so the user can grab every shape at
 // once. Buckets are ordered by size (largest first) so the dominant type is
 // the easiest to hit.
 export function buildFilterGroups(elements: Element[]): FilterGroup[] {
@@ -48,7 +48,7 @@ export function buildFilterGroups(elements: Element[]): FilterGroup[] {
     .map(([key, v]) => ({ key, label: v.label, ids: v.ids }))
     .sort((a, b) => b.ids.length - a.ids.length || a.label.localeCompare(b.label));
   if (shapeKinds.size >= 2) {
-    groups.unshift({ key: 'all-shapes', label: 'All shapes', ids: shapeIds });
+    groups.unshift({ key: 'all-shapes', label: 'All Shapes', ids: shapeIds });
   }
   return groups;
 }

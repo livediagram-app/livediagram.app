@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/live/lib/board-scene-browser.ts`                                    | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
 | `apps/live/components/dialogs/ImportImageReport.tsx`                      | The dialog's result view: scene report, board failures, images                                    |
 | `apps/live/lib/quick-style-applicability.ts`                              | `quickStyleApplicability`, `quickStyleCaption`                                                    |
-| `apps/live/lib/reset-colours.ts`                                          | "Reset to theme" per element, named colours included                                              |
+| `apps/live/lib/reset-colours.ts`                                          | "Reset to Theme" per element, named colours included                                              |
 | `apps/live/components/canvas/BoardSceneNotice.tsx`                        | The paste notice                                                                                  |
 | `apps/live/components/dialogs/BoardSceneReportList.tsx`                   | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
@@ -452,7 +452,7 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
   custom section and the snap agree.
 - Quick style: a stock name on an element marks no theme swatch; applying a stroke clears
   `penColour`, a text colour clears `penTextColour`; Clear styles clears both (see the quick style
-  blueprint's delta). "Reset to theme" (`resetElementColours`) clears them too.
+  blueprint's delta). "Reset to Theme" (`resetElementColours`) clears them too.
 
 ## Testing
 

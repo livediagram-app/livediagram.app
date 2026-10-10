@@ -104,7 +104,7 @@ export function QaBoardFace({
                   close();
                 }}
               >
-                Clear the spotlight
+                Clear the Spotlight
               </ElementMenuItem>
             ) : null}
             {actions.clear ? (
@@ -114,7 +114,7 @@ export function QaBoardFace({
                   close();
                 }}
               >
-                Empty the board
+                Empty the Board
                 {total ? <CountBadge count={total} /> : null}
               </ElementMenuItem>
             ) : null}

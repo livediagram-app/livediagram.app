@@ -117,6 +117,18 @@ bottom sheet on a phone, menu-follows-selection on the canvas and
 [flyout height stability](./flyout-height-stability.md) behave exactly as before. Roles, focus and
 keys add nothing to a menu's box: no row grows, moves or appears when focus arrives.
 
+## Item labels
+
+Every item an element's menus print is **Title Case**: the element menu and the selection menu
+(accordion titles, tiles, toggle rows, action buttons and the row buttons inside a section), the
+cell menu, the locked element menu, the selection filter menu and the element quick menus. Short
+articles, conjunctions and prepositions (a, an, the, and, or, of, to, in, on, for, at, by, with,
+from, as) stay lowercase unless they lead: "Empty the Box", "Reset to Theme", "Start at Exact
+Anchor", "A List". Captions inside a section ("Picks from", "Move to layer"), hints, tooltips,
+aria-labels and the Explorer's folder actions are not item labels and keep sentence case. A help
+article that names an item in bold spells it exactly as the menu does
+(`apps/help/lib/ui-labels-in-articles.test.ts`).
+
 ## The menus
 
 Each menu, how it opens, what it holds, and what the keyboard could do before this spec.
@@ -139,7 +151,7 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | Zoom menu             | Hovering or focusing the zoom percentage                                 | One-of-a-set zoom levels, Fit to screen                                  | Opened on focus; Tab through; no arrows             |
 | Account menu          | The account pill                                                         | Name header, Account, Sign out                                           | Tab only; trigger had no `aria-haspopup`; no Escape |
 | Embed tab menu        | The tab pill on an embedded document                                     | One-of-a-set tabs                                                        | Tab, Escape                                         |
-| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                             | Verbs, All settings… under a separator                                   | Tab only                                            |
+| Element quick menus   | ⋯ on a Q&A board, Done check, Idea box, Quiz                             | Verbs, All Settings… under a separator                                   | Tab only                                            |
 | Locked element menu   | Right-click on an element someone else holds                             | "In use" header, Release rows, a note                                    | Escape only                                         |
 | Product switcher      | The section name in the help, Community, telemetry and marketing headers | Section links                                                            | Tab only                                            |
 | Telemetry view picker | The view button on the sticky window bar                                 | Views                                                                    | Tab only                                            |

@@ -114,7 +114,7 @@ absent repeat follows the loop rule. No migration.
 | E2  | `rating` > 5, < 0, decimal | `clampRating` rounds and clamps                                                                            |
 | E3  | Unknown `ratingAnim`       | `lvd-rating-<x>` has no rule; static                                                                       |
 | E4  | Very narrow or short box   | Star floor 12 px; stars overflow the box, unclipped                                                        |
-| E5  | Theme switch               | `switchThemeElement` keeps the seeded amber (it is not the old theme's stroke); Reset to theme replaces it |
+| E5  | Theme switch               | `switchThemeElement` keeps the seeded amber (it is not the old theme's stroke); Reset to Theme replaces it |
 
 ## Security and trust
 

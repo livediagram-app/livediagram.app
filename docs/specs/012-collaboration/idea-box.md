@@ -106,7 +106,7 @@ nothing written on it.
   its author. Ideas added after the box first painted slide in.
 - **The facilitator's one action sits above the rows** as the Q&A board's
   dashed accent bar: **Open the box (6)** while closed, **Scatter to sticky
-  notes** once open. Empty the box stays in the `…` menu.
+  notes** once open. Empty the Box stays in the `…` menu.
 - All of it is layout and `tint()` of the element's own colours, so it holds
   on any theme and in either appearance, and every motion collapses under
   reduced motion.

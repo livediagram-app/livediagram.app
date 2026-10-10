@@ -49,7 +49,7 @@ export function IdeaBoxFace({
   // Returns whether the idea went in (false when the box is full).
   onAddIdea?: (text: string) => boolean;
   onReveal?: () => void;
-  // Empty the box for the next round. It lives in the `…` rather than beside
+  // Empty the Box: clear it for the next round. It lives in the `…` rather than beside
   // Open the box: opening is the act the element exists for, and a Clear
   // sitting next to it is a mis-tap that throws away everything the room wrote.
   onClear?: () => void;
@@ -76,7 +76,7 @@ export function IdeaBoxFace({
                   close();
                 }}
               >
-                Empty the box
+                Empty the Box
                 {cards.length ? <CountBadge count={cards.length} /> : null}
               </ElementMenuItem>
             ) : null}

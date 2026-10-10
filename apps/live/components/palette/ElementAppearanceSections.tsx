@@ -109,7 +109,7 @@ export function ElementAppearanceSections({
   // the actor, and the self-drawing data shapes, whose controls were dead).
   const borderable = supportsBorderControls(target);
   // A regular shape carrying an inline icon (drag-an-icon-onto-it
-  // feature, docs/specs/008-canvas/canvas-and-palette.md) gets a "Remove icon" entry; the dedicated 'icon'
+  // feature, docs/specs/008-canvas/canvas-and-palette.md) gets a "Remove Icon" entry; the dedicated 'icon'
   // shape is its own glyph and excluded.
   const hasInlineIcon =
     target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
@@ -313,7 +313,7 @@ export function ElementAppearanceSections({
             <div className="px-2 py-1.5">
               <MenuTile
                 icon={<RemoveIconGlyph />}
-                label="Remove icon"
+                label="Remove Icon"
                 onClick={() => {
                   props.onRemoveIcon(target.id);
                   onClose();
@@ -390,7 +390,7 @@ export function ElementAppearanceSections({
                   (docs/specs/009-elements/lane.md "Upright titles"); a band always reads across. */}
               {shapeTarget?.shape === 'lane' && !isLaneBand(laneEdgeOfElement(shapeTarget)) ? (
                 <MenuToggleRow
-                  label="Upright title"
+                  label="Upright Title"
                   description="Read bottom to top in a thin strip"
                   checked={shapeTarget.titleOrientation === 'upright'}
                   onToggle={() =>

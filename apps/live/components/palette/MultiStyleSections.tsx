@@ -169,7 +169,7 @@ export function MultiStyleSections({
           ) : null}
           <div className="px-2 pb-1 pt-1.5">
             <MenuActionButton
-              label="Reset to theme"
+              label="Reset to Theme"
               onClick={() => {
                 props.onResetColors();
                 onClose();

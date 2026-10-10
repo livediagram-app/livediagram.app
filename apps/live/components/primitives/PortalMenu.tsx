@@ -354,7 +354,7 @@ export function MenuGroupSeparator() {
 }
 
 // A full-width, outlined action button for the bottom of a menu section —
-// the "Reset to theme / default", "Reset aspect ratio", "Apply to all
+// the "Reset to Theme / Default", "Reset Aspect Ratio", "Apply to all
 // elements" style buttons. One definition so the (long) outlined-button
 // styling can't drift across the context menu, style presets, and tab menu.
 // The caller supplies its own surrounding padding wrapper.

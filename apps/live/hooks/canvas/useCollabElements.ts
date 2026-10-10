@@ -203,7 +203,7 @@ export function useCollabElements({
     track('Element', 'Changed', 'Idea-box');
   };
 
-  // Empty the box for the next round. Un-reveals as well, exactly as
+  // Empty the Box: clear it for the next round. Un-reveals as well, exactly as
   // clearResponses does: a box that kept its lid off would collect the first
   // card of the next round in the open, and the whole point of the element is
   // that nothing is visible until somebody decides it is.

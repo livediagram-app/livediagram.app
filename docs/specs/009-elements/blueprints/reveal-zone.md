@@ -50,8 +50,8 @@ States per viewer: **covered**, **revealed for me**, **revealed for all**.
 | ---------------- | ------------------------- | ----------- | --------------------------- |
 | covered          | double press on the cover | not blocked | revealed for me             |
 | revealed for me  | single press on Hide      | not blocked | covered (unreachable, GF16) |
-| any              | menu **Reveal for all**   | [QF15]      | revealed for all            |
-| revealed for all | menu **Hide for all**     | [QF15]      | covered or revealed for me  |
+| any              | menu **Reveal for All**   | [QF15]      | revealed for all            |
+| revealed for all | menu **Hide for All**     | [QF15]      | covered or revealed for me  |
 | revealed for me  | reload                    |             | covered                     |
 
 1. **Double press.** `onClick` swallows a dragged click (`isDragTravel`), then pairs presses with
@@ -98,7 +98,7 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 
 - **Persisted:** `revealed`, `label`, colours.
 - **Session only:** `revealedIds`; lost on reload by design.
-- **Undo:** Reveal / Hide for all is an ordinary commit; a local lift is not undoable.
+- **Undo:** Reveal / Hide for All is an ordinary commit; a local lift is not undoable.
 - **Export:** covered unless `revealed === true` (D120); the content beneath is in the export
   either way.
 
@@ -114,8 +114,8 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 | E6  | Blocked viewer presses the cover              | Nothing happens; copy still says "to reveal" [QF15] |
 | E7  | Lifted locally, then a facilitator takes over | Stays lifted; `onToggleForMe` is absent [QF15]      |
 | E11 | Hide pill pressed                             | Takes no pointer: the click passes through (GF16)   |
-| E8  | Blocked viewer uses the menu                  | **Reveal for all** still writes [QF15]              |
-| E9  | Revealed for all, then Hide for all           | Viewers with a personal lift keep it                |
+| E8  | Blocked viewer uses the menu                  | **Reveal for All** still writes [QF15]              |
+| E9  | Revealed for all, then Hide for All           | Viewers with a personal lift keep it                |
 | E10 | Element deleted while lifted locally          | Stale id in `revealedIds`, harmless                 |
 
 ## Security and trust
@@ -148,7 +148,7 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
   "Double-click to reveal" (an export has no pointer), on the wrapper's `REVEAL_RADIUS_PX`
   corners; the sweep is motion and stays out.
 - **Menu:** accordion **Reveal**, hint "Anyone can click the cover to peek for themselves. This
-  takes it off for everyone." [QF14], tiles **Reveal for all** / **Hide for all** [QF14].
+  takes it off for everyone." [QF14], tiles **Reveal for All** / **Hide for All** [QF14].
 - **Palette:** tile `tools:reveal` ("Add reveal zone") in the **Tools** accordion
   (`tileGroup: 'facilitate'`); blurb "Double-click to look underneath"; its hover card reads "Click
   it to uncover it just for you" although a single click never uncovers [QF14].

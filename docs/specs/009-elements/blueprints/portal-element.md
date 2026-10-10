@@ -17,7 +17,7 @@ Scope, by file:
 | `apps/live/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
 | `apps/live/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
 | `apps/live/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
-| `apps/live/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create portal                                     |
+| `apps/live/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |
 | `apps/live/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                          |
 | `apps/live/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone           |
 
@@ -185,7 +185,7 @@ export function usePortalTravel(deps: PortalTravelDeps): {
 - **Menu:** accordion **Portal**: **Name** field (placeholder = own positional name, commit on blur
   / Enter, re-seeded by `useFollowingDraft` on another portal or a changed label); **Leads to**
   two-column tiles, this tab first, off-tab as `Name · Tab`, current active, re-pick unlinks;
-  **Create portal** always last.
+  **Create Portal** always last.
 - **Theme:** `deriveNewBoxedColours` returns early for `portal`; the energy keeps `#38bdf8`.
 
 ## Accessibility

@@ -37,7 +37,7 @@ function mountInFace(handlers: {
         {(close) => (
           <>
             <input aria-label="Choice" defaultValue="Ariel" />
-            <ElementMenuItem onPress={close}>All settings…</ElementMenuItem>
+            <ElementMenuItem onPress={close}>All Settings…</ElementMenuItem>
           </>
         )}
       </ElementEllipsisMenu>
@@ -95,7 +95,7 @@ describe('ElementEllipsisMenu event containment', () => {
     // closes the panel.
     mountInFace({});
     openMenu();
-    fireEvent.click(screen.getByRole('button', { name: 'All settings…' }));
+    fireEvent.click(screen.getByRole('button', { name: 'All Settings…' }));
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 });
@@ -106,14 +106,14 @@ describe('ElementEllipsisMenu kinds', () => {
   it('is a menu of menu items for verbs, focused on open and closed by Escape', () => {
     render(
       <ElementEllipsisMenu label="Q&A board options" kind="command">
-        {(close) => <ElementMenuItem onPress={close}>Empty the board</ElementMenuItem>}
+        {(close) => <ElementMenuItem onPress={close}>Empty the Board</ElementMenuItem>}
       </ElementEllipsisMenu>,
     );
     const trigger = screen.getByRole('button', { name: 'Q&A board options' });
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     trigger.focus();
     fireEvent.click(trigger);
-    const item = screen.getByRole('menuitem', { name: 'Empty the board' });
+    const item = screen.getByRole('menuitem', { name: 'Empty the Board' });
     expect(document.activeElement).toBe(item);
     fireEvent.keyDown(item, { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();

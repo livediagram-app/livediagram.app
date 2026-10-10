@@ -1,4 +1,4 @@
-// "Reset to theme" for one element (docs/specs/008-canvas/canvas-and-palette.md, the Colours
+// "Reset to Theme" for one element (docs/specs/008-canvas/canvas-and-palette.md, the Colours
 // category): every colour override goes, so the element falls back to what the tab's theme
 // dictates. A theme with its own element colours writes them, since `addBoxed` is what normally
 // writes them on create; the brand default (all null) just deletes the overrides. Bindings go
@@ -42,7 +42,7 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
     return rest as typeof el;
   }
   if (el.type === 'table') {
-    // Reset to theme grid + text; clear cell fill + header overrides.
+    // Reset to Theme: grid + text; clear cell fill + header overrides.
     return {
       ...el,
       ...(theme.elementStroke !== null

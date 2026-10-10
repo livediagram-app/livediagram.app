@@ -1007,7 +1007,7 @@ low-threshold capture surface can least afford.
   largely missed, and crop quality for small pen handwriting is unproven. The
   flow itself is proven end to end — photo in, draft on the canvas, Add, Undo —
   with the operator's own key and `gemini-3.6-flash`. Treat the DETECTOR as
-  usable-but-partial and the reader prompt as untuned; the draft's Change kind,
+  usable-but-partial and the reader prompt as untuned; the draft's Change Kind,
   delete and add-by-hand paths are
   what make a partial read workable today. `packages/sticky-vision/scripts/calibrate.ts`
   is the loop to continue in (it caches decoded photos, so a run is ~1s).
@@ -1750,7 +1750,7 @@ shape and horizontal in fact.
 **A per-board colour legend (`esColourLegend`).** Every wall invents its own
 convention — the operator's uses pink for hotspots and green for read models,
 neither of which is the catalogue's. The photo import currently resolves that
-with one global decision (pink is hotspot) plus the draft's Change kind verb;
+with one global decision (pink is hotspot) plus the draft's Change Kind verb;
 the honest version is a legend on the board itself, which the detector reads
 instead of the catalogue and which the author sets once per wall. It is also
 what would let a board say "we don't use policies" and have the reader stop

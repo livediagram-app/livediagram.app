@@ -46,5 +46,5 @@ Behaviour:
 Boxed elements only (`isBoxed`), which is the same set the aspect lock always
 applied to. Arrows have no width and height to type.
 
-`Reset aspect ratio` still only shows for a shape with a canonical proportion
+`Reset Aspect Ratio` still only shows for a shape with a canonical proportion
 to return to, matching the Shape category's morph grid.
