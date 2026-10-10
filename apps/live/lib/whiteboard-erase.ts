@@ -98,7 +98,7 @@ export function partialEraseStep(
     return pieces;
   });
   if (gone.size === 0 && split.size === 0) return null;
-  return out.flatMap((el) => {
+  return out.flatMap((el): Element[] => {
     if (el.type !== 'arrow') return [el];
     if (gone.size > 0 && !isProtected(el) && arrowReferencesAny(el, gone)) return [];
     if (split.size === 0) return [el];

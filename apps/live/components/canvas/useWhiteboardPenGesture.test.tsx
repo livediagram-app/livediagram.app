@@ -48,7 +48,12 @@ function setup(zoom = 1) {
         whiteboard: p.whiteboard ?? true,
       });
     },
-    { initialProps: { pendingDraw: PEN as PendingDraw | null } },
+    {
+      initialProps: { pendingDraw: PEN } as {
+        pendingDraw: PendingDraw | null;
+        whiteboard?: boolean;
+      },
+    },
   );
   const press = (x: number, y: number, pointerType = 'mouse', pressure = 0.5) =>
     act(() => {
