@@ -7,6 +7,7 @@ import {
   Fragment,
   useEffect,
   useEffectEvent,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -145,11 +146,25 @@ export function ToolbarPalette(props: Props) {
       },
     });
   // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
-  // mode's Popular, or the notation on an event-storming board.
-  const defaultId = paletteLandingCategory(editorMode, !!esBoard);
+  // mode's Popular, or the notation on an event-storming board; Plan's Cards, or Boards while the tab has no board
+  // (docs/specs/026-plan/plan-mode.md "The palette").
+  const hasPlanBoard = useMemo(
+    () => (props.tabElements ?? []).some((el) => el.type === 'shape' && el.shape === 'plan-board'),
+    [props.tabElements],
+  );
+  const defaultId = paletteLandingCategory(editorMode, !!esBoard, hasPlanBoard);
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, so a board change re-lands the category.
   const [categoryId, setCategoryId] = useState(defaultId);
+  // A Plan tab gaining its first board moves the palette on from Boards to Cards, and losing its last moves it
+  // back; a category the person picked otherwise stays. Adjusted during render.
+  const [hadPlanBoard, setHadPlanBoard] = useState(hasPlanBoard);
+  if (hadPlanBoard !== hasPlanBoard) {
+    setHadPlanBoard(hasPlanBoard);
+    const from = paletteLandingCategory('plan', false, hadPlanBoard);
+    if (editorMode === 'plan' && categoryId === from)
+      setCategoryId(paletteLandingCategory('plan', false, hasPlanBoard));
+  }
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
     () =>
@@ -158,7 +173,9 @@ export function ToolbarPalette(props: Props) {
       }),
     [tabs],
   );
-  const category = tabs.find((t) => t.id === categoryId) ?? tabs[0];
+  // A category this mode does not offer (one picked in another mode) shows the mode's landing.
+  const category =
+    tabs.find((t) => t.id === categoryId) ?? tabs.find((t) => t.id === defaultId) ?? tabs[0];
 
   // The strip holds as many tiles as the window fits, up to twelve; the rest
   // of the category is behind More.

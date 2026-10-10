@@ -6,7 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import type { EsBoardControls } from './EventStormingBoardRows';
-import type { EditorMode, Element } from '@livediagram/document';
+import { createShape, type EditorMode, type Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
@@ -106,6 +106,42 @@ describe('ToolbarPalette', () => {
     const { h } = show();
     fireEvent.click(within(strip()).getByRole('button', { name: 'Add square' }));
     expect(h.onAddShape).toHaveBeenCalledWith('square', expect.anything());
+  });
+
+  // docs/specs/026-plan/plan-mode.md "The palette": Boards until the tab has a board, then Cards.
+  it('opens a Plan tab without a board on Boards, and moves on to Cards once one lands', () => {
+    const picked = () => screen.getByRole('button', { name: 'Palette category' }).textContent;
+    const board = { ...createShape('plan-board', 0, 0), id: 'b1' } as Element;
+    const view = show({ mode: 'plan', tabElements: [] });
+    expect(picked()).toContain('Boards');
+    const again = (tabElements: Element[]) =>
+      view.rerender(
+        inMode(
+          'plan',
+          <ToolbarPalette
+            canvasTool="select"
+            onSetCanvasTool={vi.fn()}
+            canvasEmpty={false}
+            pendingDraw={null}
+            tabElements={tabElements}
+            {...view.h}
+          />,
+        ),
+      );
+    again([board]);
+    expect(picked()).toContain('Cards');
+    // The last board going takes it back to Boards.
+    again([]);
+    expect(picked()).toContain('Boards');
+    // A category the person picked stays when a board lands.
+    pickCategory('plan-widgets');
+    again([board]);
+    expect(picked()).toContain('Widgets');
+  });
+
+  it('opens a Plan tab with a board on Cards', () => {
+    show({ mode: 'plan', tabElements: [{ ...createShape('plan-board', 0, 0), id: 'b1' }] });
+    expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain('Cards');
   });
 
   // docs/specs/026-plan/plan-board.md "Maximised board": only Cards while a board covers the canvas, and the

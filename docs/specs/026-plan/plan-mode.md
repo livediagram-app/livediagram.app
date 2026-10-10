@@ -117,7 +117,10 @@ Plan must cost nothing to a document that does not use it:
 
 ## The palette
 
-The Plan layout offers eight categories and opens on **Cards**. **Cards**, **Boards**, **Widgets**, **Metrics** and
+The Plan layout offers eight categories and opens on **Cards**, or on **Boards** while the tab has no board (a card
+lands on a board, so the first thing such a tab needs is one). A board arriving on a tab that had none (placed,
+pasted, a peer's) moves the palette from Boards to Cards; the tab's last board going moves it from Cards back to
+Boards. Any other category the person picked stays. **Cards**, **Boards**, **Widgets**, **Metrics** and
 **Visualisations** sit under the **Boards & Cards** heading of the category picker, first; then **Sheet** under
 **Spreadsheets** ([Sheet](../029-sheets/sheet.md)); then **Content** under **Common** and **Tools** under **Dynamic**, the headings their elements belong to elsewhere. The Cards category ends with **Edit Cards**, which opens the Card Types panel
 ([Item types](item-types.md)); the Toolbar strip ends with it while Cards is chosen. A Plan tab is worked by its boards, so there is no Popular and none of the
