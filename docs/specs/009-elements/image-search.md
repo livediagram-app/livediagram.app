@@ -39,6 +39,8 @@ cross-origin requests), not through the api worker:
 Picking a result downloads the picture in the browser too: first the full-size file from its host,
 and if that fails (the host refuses cross-origin reads, is down, or returns something that is not an
 image) Openverse's own thumbnail of it instead, which is always a cross-origin-readable raster.
+A download stops as soon as the host declares or sends more than the pipeline's 50 MB source
+limit, and the pick fails as too large rather than reading the rest.
 The bytes then go through the [Import image pipeline](../020-import-export/import-image-pipeline.md)
 unchanged: decoded, resized to at most 2048 px on the longer edge, re-encoded (which also drops any
 metadata), deduped and uploaded to the gallery, or embedded for an
