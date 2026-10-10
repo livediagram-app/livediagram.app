@@ -21,6 +21,7 @@ const UPLOAD_ERROR_MESSAGES: Record<string, string> = {
   unsupported_type: `Unsupported file type. Use ${IMAGE_TYPES_LABEL}.`,
   file_too_large: `Too large. Limit is ${MAX_IMAGE_MB} MB.`,
   images_unavailable: 'Image uploads are not available on this server.',
+  upload_limit_reached: 'The image upload limit for today has been reached. Try again tomorrow.',
 };
 
 // Shared client-side file → /api/images upload flow. Called from

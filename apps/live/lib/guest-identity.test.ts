@@ -7,7 +7,7 @@ vi.mock('./api/self', () => ({
 vi.mock('./telemetry', () => ({ track: vi.fn() }));
 
 import { apiMintGuestId, apiUpgradeGuestId } from './api/self';
-import { ensureSignedGuestIdentity } from './guest-identity';
+import { ensureSignedGuestIdentity, retrySignedGuestIdentity } from './guest-identity';
 
 const mockMint = vi.mocked(apiMintGuestId);
 const mockUpgrade = vi.mocked(apiUpgradeGuestId);
@@ -222,6 +222,33 @@ describe('an interrupted guest id upgrade', () => {
     expect(await ensureSignedGuestIdentity()).toEqual({ id: 'fresh', sig: 'fsig' });
     expect(mockUpgrade).toHaveBeenCalledWith('other', 'fresh', 'fsig');
     expect(window.localStorage.getItem(PENDING)).toBeNull();
+  });
+});
+
+// docs/specs/014-identity/auth-and-guest-access.md "Server-minted": a refused first mint leaves an
+// unsigned id; the user's retry mints again instead of retrying with it.
+describe('retrySignedGuestIdentity', () => {
+  it('does nothing for a guest that already holds a signature', async () => {
+    window.localStorage.setItem(ID, 'id-1');
+    window.localStorage.setItem(SIG, 'sig-1');
+    expect(await retrySignedGuestIdentity()).toBeNull();
+    expect(mockMint).not.toHaveBeenCalled();
+  });
+
+  it('mints a signed id for a guest left on an unsigned one', async () => {
+    // A brand-new id with no data behind it: the fallback a refused mint leaves.
+    mockMint.mockResolvedValueOnce(null);
+    const unsigned = await ensureSignedGuestIdentity();
+    expect(unsigned.sig).toBeNull();
+    mockMint.mockResolvedValueOnce({ ownerId: 'signed', ownerSig: 'sig' });
+    mockUpgrade.mockResolvedValueOnce('moved');
+    expect(await retrySignedGuestIdentity()).toEqual({ id: 'signed', sig: 'sig' });
+    expect(window.localStorage.getItem(SIG)).toBe('sig');
+  });
+
+  it('reports nothing changed when the mint is still refused', async () => {
+    mockMint.mockResolvedValue(null);
+    expect(await retrySignedGuestIdentity()).toBeNull();
   });
 });
 

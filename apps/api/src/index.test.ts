@@ -300,6 +300,48 @@ describe('worker room-ticket throttle', () => {
   });
 });
 
+// The guest-id mint is limited per network whatever X-Owner-Id it carries: a
+// caller-chosen header would otherwise buy a fresh bucket per request
+// (docs/specs/014-identity/auth-and-guest-access.md "Server-minted").
+describe('worker guest-id mint throttle', () => {
+  beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
+
+  const mint = (ownerHeader: string | null, limit: ReturnType<typeof vi.fn>) =>
+    worker.fetch(
+      new Request('https://api.test/api/guest-id', {
+        method: 'POST',
+        headers: {
+          'CF-Connecting-IP': '203.0.113.7',
+          ...(ownerHeader === null ? {} : { 'X-Owner-Id': ownerHeader }),
+        },
+      }),
+      { WRITE_RATE_LIMITER: { limit } } as unknown as Env,
+    );
+
+  it('keys every mint from one address on that address, never on the header', async () => {
+    const limit = vi.fn(async () => ({ success: true }));
+    for (const header of [null, '', crypto.randomUUID(), crypto.randomUUID()]) {
+      expect((await mint(header, limit)).status).toBe(200);
+    }
+    expect(limit.mock.calls.map((c) => (c as unknown as [{ key: string }])[0].key)).toEqual([
+      'guest-id:203.0.113.7',
+      'guest-id:203.0.113.7',
+      'guest-id:203.0.113.7',
+      'guest-id:203.0.113.7',
+    ]);
+  });
+
+  it('429s with Retry-After once the bucket is spent, so the client can wait and retry', async () => {
+    const res = await mint(
+      null,
+      vi.fn(async () => ({ success: false })),
+    );
+    expect(res.status).toBe(429);
+    expect(res.headers.get('Retry-After')).toBe('60');
+    expect(await res.json()).toEqual({ error: 'rate_limited' });
+  });
+});
+
 // docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one document, confined at
 // the front door before any route runs.
 describe('workbench sessions at the front door', () => {

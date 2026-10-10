@@ -36,7 +36,15 @@ import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room';
-import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
+import {
+  CORS_HEADERS,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+  rateLimited,
+  rateLimitedRetryAfter,
+} from './responses';
 import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { clientIp, clientRateKey } from './client-ip';
@@ -87,6 +95,10 @@ export { DocumentRoom };
 // WRITE_RATE_LIMITER binding) so the endpoint can short-circuit
 // with a 429. Falls through to "allowed" when the binding is
 // absent so self-host deployments without the feature still serve.
+// The write limiter's window (WRITE_RATE_LIMITER, period 60 in wrangler.toml):
+// an over-limit guest-id mint is told to try again once it has passed.
+const GUEST_ID_RETRY_AFTER_SECONDS = 60;
+
 async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
   if (!env.WRITE_RATE_LIMITER) return false;
   const result = await env.WRITE_RATE_LIMITER.limit({ key: ownerId });
@@ -341,15 +353,23 @@ async function routeApiRequest(
     // A token request rate-limits on the TOKEN id (docs/specs/015-api/public-api-and-tokens.md §3.5), so a
     // runaway integration is throttled independently of the owner's
     // interactive app use; everything else keys on the resolved owner.
-    // A caller with no identity yet (minting a guest id) is keyed on its
-    // network, not one global 'anonymous' bucket every new visitor shares.
+    // A caller with no identity yet is keyed on its network, not one global
+    // 'anonymous' bucket every new visitor shares. The guest-id mint is keyed
+    // on the network whatever X-Owner-Id it carries: a caller-chosen header
+    // would otherwise buy a fresh mint bucket per request
+    // (docs/specs/014-identity/auth-and-guest-access.md "Server-minted").
     // A workbench session's writes key on the session (WB10), apart from its owner's own app use.
-    const key = tokenAuth
-      ? `token:${tokenAuth.tokenId}`
-      : workbench
-        ? `workbench:${workbench.sessionId}`
-        : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
-    if (await isWriteRateLimited(env, key)) return rateLimited();
+    const isGuestIdMint = segments[1] === 'guest-id';
+    const key = isGuestIdMint
+      ? `guest-id:${clientRateKey(request)}`
+      : tokenAuth
+        ? `token:${tokenAuth.tokenId}`
+        : workbench
+          ? `workbench:${workbench.sessionId}`
+          : (resolveOwner() ?? `anonymous:${clientRateKey(request)}`);
+    if (await isWriteRateLimited(env, key)) {
+      return isGuestIdMint ? rateLimitedRetryAfter(GUEST_ID_RETRY_AFTER_SECONDS) : rateLimited();
+    }
   }
   // Token-authed READS (docs/specs/015-api/public-api-and-tokens.md §3.5): GETs under a token aren't covered by
   // the write limiter, so an external integration's reads get their own

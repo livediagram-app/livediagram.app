@@ -131,18 +131,40 @@ export async function apiMigrateGuestData(
 // its HMAC signature (`ownerSig` is null when the worker has no
 // GUEST_ID_HMAC_SECRET configured). Returns null on a network failure so
 // the caller can fall back to a local unsigned id.
+//
+// The mint is rate-limited per network, so a busy shared address can be told
+// to wait (429 with Retry-After). A first visit should not give up on that:
+// it waits, at most MINT_RETRY_MAX_WAIT_MS, and tries again up to
+// MINT_RETRIES times before falling back.
+export const MINT_RETRIES = 2;
+export const MINT_RETRY_MAX_WAIT_MS = 10_000;
+
+function mintRetryWaitMs(res: Response): number {
+  const seconds = Number(res.headers.get('Retry-After'));
+  return Number.isFinite(seconds) && seconds > 0
+    ? Math.min(seconds * 1000, MINT_RETRY_MAX_WAIT_MS)
+    : MINT_RETRY_MAX_WAIT_MS;
+}
+
 export async function apiMintGuestId(): Promise<{
   ownerId: string;
   ownerSig: string | null;
 } | null> {
   try {
-    const res = await apiFetch(`${API_BASE}/guest-id`, {
-      method: 'POST',
-      headers: await apiHeaders('', { body: true }),
-      body: '{}',
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as { ownerId: string; ownerSig: string | null };
+    for (let attempt = 0; ; attempt++) {
+      const res = await apiFetch(`${API_BASE}/guest-id`, {
+        method: 'POST',
+        headers: await apiHeaders('', { body: true }),
+        body: '{}',
+      });
+      if (res.status === 429 && attempt < MINT_RETRIES) {
+        console.warn('[guest-identity] mint rate-limited; retrying', { attempt });
+        await new Promise((resolve) => setTimeout(resolve, mintRetryWaitMs(res)));
+        continue;
+      }
+      if (!res.ok) return null;
+      return (await res.json()) as { ownerId: string; ownerSig: string | null };
+    }
   } catch {
     return null;
   }
