@@ -13,7 +13,7 @@ import {
   type LaidOutPage,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
-import { buildPageLayout } from '@/lib/page-layout-build';
+import { buildPageLayout } from '@livediagram/templates';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { LogoLayoutThumb } from './logo-layout-thumb';
 

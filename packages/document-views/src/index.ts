@@ -15,3 +15,4 @@ export {
   type SelectionReference,
   type SelectionReferenceInput,
 } from './selection-reference';
+export { pagesView } from './pages';

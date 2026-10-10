@@ -5,8 +5,8 @@ import { CountBadge } from '@livediagram/ui';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 
-// The Collaborate button in the bottom-right cluster, right after Layers
-// (docs/specs/012-collaboration/assigned-actions.md §5). Built like LayersClusterButton, but it opens the
+// The Collaborate button in the bottom-right cluster, just before the Layers and Theme strip
+// (docs/specs/012-collaboration/assigned-actions.md §5). Built like the Layers button, but it opens the
 // panel as a popover hanging above it in EVERY layout (`onTogglePopover`,
 // handed the button to anchor to), and shows pressed while it is open: a panel
 // docked in the bottom-right corner ran up under the Palette on a short

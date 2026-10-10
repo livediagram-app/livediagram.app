@@ -2,7 +2,8 @@
 // in the page's content box, the page less its margins. Shared by placing a layout, its picker
 // tile and its hover preview, so all three show the same arrangement.
 import { pageMargin, type Element, type LaidOutPage } from '@livediagram/document';
-import { pageLayoutById, type PageLayoutId } from '@livediagram/templates';
+import { pageLayoutById } from './layout-catalogue';
+import type { PageLayoutId } from './page-layouts';
 
 export function buildPageLayout(
   layout: PageLayoutId,

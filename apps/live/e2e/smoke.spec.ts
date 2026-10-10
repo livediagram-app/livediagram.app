@@ -308,10 +308,10 @@ test('a note already on the board inserts between two others', async ({ page, pa
 // a popover that only OVERLAPS its host when the viewport is too narrow to
 // put it alongside, and so only then has to win the stacking contest.
 //
-// The bug it is a tombstone for: the Collaborate flyout was z-overlay while
-// the tab menu it opens from is z-modal. On desktop the flyout sits beside
-// the menu and the z-order never matters; on a phone it clamps on top of the
-// menu and rendered behind it, so tapping Collaborate did nothing at all.
+// The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
+// phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
+// was pushed off the left edge. The strip now takes a row of its own on a phone
+// (docs/specs/012-collaboration/session-tools.md "The Session strip"). A desktop run is blind to it.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
@@ -323,7 +323,7 @@ test.describe('mobile', () => {
     deviceScaleFactor: 3,
   });
 
-  test('the tab menu opens the Collaborate flyout in front of the menu', async ({
+  test('the Session strip keeps Undo on screen and opens its tools on top', async ({
     page,
     pageErrors,
   }) => {
@@ -331,66 +331,29 @@ test.describe('mobile', () => {
     // A fresh guest gets the tour offer over a scrim that eats taps, a beat after the canvas.
     await dismissQuickTour(page);
 
-    await page.getByRole('button', { name: 'Tab menu' }).tap();
-    const collaborate = page.getByRole('button', { name: /collaborate/i });
-    await expect(collaborate).toBeVisible();
-    await collaborate.tap();
+    // Every cluster button is inside the viewport: nothing pushed off the left edge.
+    const undo = page.getByRole('button', { name: /^undo/i });
+    await expect(undo).toBeVisible();
+    const undoBox = await undo.boundingBox();
+    expect(undoBox && undoBox.x >= 0).toBe(true);
 
-    // Present in the DOM is not the assertion that matters — it was present
-    // and painted behind the menu before the fix. Ask the browser what is
-    // actually on top at the flyout's own centre.
-    const flyout = page.locator('[data-menu-flyout]');
-    await expect(flyout).toBeVisible();
-    const onTop = await page.evaluate(() => {
-      const panel = document.querySelector('[data-menu-flyout]');
-      if (!panel) return false;
-      const r = panel.getBoundingClientRect();
+    // The Timer opens its set-up as a popover that is genuinely on top, not just present.
+    await page.getByRole('button', { name: 'Open Timer' }).tap();
+    const start = page.getByRole('button', { name: /Start 5 min countdown/ });
+    await expect(start).toBeVisible();
+    const onTop = await start.evaluate((el) => {
+      const r = el.getBoundingClientRect();
       const hit = document.elementFromPoint(
         Math.round(r.x + r.width / 2),
         Math.round(r.y + r.height / 2),
       );
-      return !!hit && panel.contains(hit);
+      return !!hit && el.contains(hit);
     });
     expect(onTop).toBe(true);
 
-    // And the session tools are genuinely reachable, not just painted. Since
-    // the Session Studio (docs/specs/012-collaboration/session-tools.md) they are TABS in its switcher, not a strip
-    // of buttons, and a running tool's status dot joins the tab's name
-    // ("Timer Running"), so match the start of the name, not all of it.
-    // Tapping one proves the tap lands in the flyout rather than behind it.
-    const timerTab = page.getByRole('tab', { name: /^timer\b/i });
-    const pollTab = page.getByRole('tab', { name: /^poll\b/i });
-    await expect(timerTab).toBeVisible();
-    await expect(pollTab).toBeVisible();
-    await pollTab.tap();
-    await expect(pollTab).toHaveAttribute('aria-selected', 'true');
-
-    // Covering the parent hides which row is open and the way back, so the
-    // mobile panel carries its own header: the category name, and a Close
-    // that returns to the menu underneath.
-    await expect(flyout.getByText('COLLABORATE')).toBeVisible();
-    const close = flyout.getByRole('button', { name: /close collaborate/i });
-    await expect(close).toBeVisible();
-
-    // It sits ON the parent rather than beside it — the whole reason the
-    // header is needed.
-    const covers = await page.evaluate(() => {
-      const panel = document.querySelector('[data-menu-flyout]');
-      const host = document.querySelector('[data-tour-id="tab-menu"]');
-      if (!panel || !host) return null;
-      const p = panel.getBoundingClientRect();
-      const h = host.getBoundingClientRect();
-      return {
-        sameLeft: Math.abs(p.left - h.left) <= 1,
-        sameWidth: Math.abs(p.width - h.width) <= 1,
-      };
-    });
-    expect(covers).toEqual({ sameLeft: true, sameWidth: true });
-
-    // Close returns to the parent menu.
-    await close.tap();
-    await expect(flyout).toHaveCount(0);
-    await expect(page.getByRole('button', { name: /collaborate/i })).toBeVisible();
+    // Starting it puts the clock on the button.
+    await start.tap();
+    await expect(page.getByRole('button', { name: /^Timer \d+:\d\d$/ })).toBeVisible();
 
     expectNoPageErrors(pageErrors);
   });

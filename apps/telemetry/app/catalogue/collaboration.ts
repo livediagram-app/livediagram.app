@@ -2,7 +2,12 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
-import { SLIDE_DECK_OPENED } from './features';
+import {
+  SESSION_POLL_OPENED,
+  SESSION_TIMER_OPENED,
+  SESSION_VOTE_OPENED,
+  SLIDE_DECK_OPENED,
+} from './features';
 import { chart } from './helpers';
 
 export const VOTES_ENDED = chart(
@@ -574,6 +579,7 @@ export const VOTING: MetricStack = {
     VOTES_DISCARDED,
     VOTES_ENDED,
     VOTE_REVIEWS_ENDED,
+    SESSION_VOTE_OPENED,
   ],
   headline: VOTES_STARTED,
 };
@@ -582,7 +588,7 @@ export const POLLS: MetricStack = {
   stack: true,
   title: 'Polls',
   blurb: 'Live pulse-checks opened, answered, and closed.',
-  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED],
+  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED, SESSION_POLL_OPENED],
   headline: POLLS_STARTED,
 };
 
@@ -601,6 +607,7 @@ export const COUNTDOWNS: MetricStack = {
     TIMERS_PAUSED,
     TIMERS_RESET,
     TIMERS_RESUMED,
+    SESSION_TIMER_OPENED,
   ],
   headline: COUNTDOWNS_STARTED,
 };
@@ -609,7 +616,14 @@ export const STOPWATCHES: MetricStack = {
   stack: true,
   title: 'Stopwatches',
   blurb: 'Count-up timers set running on a tab, and finished.',
-  members: [STOPWATCHES_STARTED, STOPWATCHES_FINISHED, TIMERS_PAUSED, TIMERS_RESET, TIMERS_RESUMED],
+  members: [
+    STOPWATCHES_STARTED,
+    STOPWATCHES_FINISHED,
+    TIMERS_PAUSED,
+    TIMERS_RESET,
+    TIMERS_RESUMED,
+    SESSION_TIMER_OPENED,
+  ],
   headline: STOPWATCHES_STARTED,
 };
 

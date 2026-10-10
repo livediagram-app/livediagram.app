@@ -25,6 +25,7 @@ import { handleQaBoardRoute } from './qa-board-routes';
 import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
+import { handleTabIllustrate } from './tab-illustrate-route';
 import { handleChangesetRoutes } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
@@ -72,6 +73,14 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   //   DELETE — remove one tab.
   //   PUT / DELETE are writes: owner or edit-role only.
   // /api/documents/<id>/tabs/<tabId>/name: a tab rename (docs/specs/024-agents/agent-changesets.md).
+  if (
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === 'illustrate' &&
+    ctx.request.method === 'POST'
+  ) {
+    return handleTabIllustrate(ctx, segments[2]!, segments[4]!);
+  }
   if (
     segments.length === 6 &&
     segments[3] === 'tabs' &&

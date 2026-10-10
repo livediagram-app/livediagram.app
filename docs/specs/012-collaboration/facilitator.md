@@ -329,9 +329,9 @@ everywhere it matters.
 ### Being told you cannot
 
 A gated control that is not yours is **disabled with the reason on it** where
-the control has a home of its own: the Session Studio names the facilitator at
+the control has a home of its own: the Session strip's set-up popovers name the facilitator at
 the top ("Alex is facilitating this session. Ask them to start the timer, the
-vote or a poll.") and wraps its panes in a disabled `fieldset`, which disables
+vote or a poll.") and wrap their pane in a disabled `fieldset`, which disables
 every control inside it natively, including ones added later. Hiding the panel
 would teach a different editor to every participant, and somebody who had never
 seen the timer would not know there was one.

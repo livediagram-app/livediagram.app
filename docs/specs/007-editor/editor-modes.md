@@ -43,7 +43,7 @@ where it is and changes only how the next mark is made.
   - Directly beside the menu (hamburger) button, in its card at the top left
     ([Toolbar layout](toolbar-layout.md)), icon-only.
   - **Not on a phone.** A phone's top row belongs to the strip, so its menu card holds the menu
-    button alone. A phone switches mode from the tab menu's **Mode** (below); Shift+D needs a
+    button alone. A phone switches mode from the tab menu's mode rows (below); Shift+D needs a
     keyboard. The tour's Diagram & Draw step is skipped there.
   - It stays up in Draw mode, so the switch never moves when the mode
     changes.
@@ -83,7 +83,7 @@ where it is and changes only how the next mark is made.
 - **The mode is the tab's, the same for everyone.** A general tab stores its editor mode
   (`Tab.opensIn`, `diagram` when absent; the field keeps its stored name). Everyone on the tab
   works in that mode at once: a view that differed from person to person would be inconsistent.
-- **Switching is a tab edit.** The switch, Shift+D, the tab menu's **Mode** choices and a sheet's
+- **Switching is a tab edit.** The switch, Shift+D, the tab menu's mode rows and a sheet's
   **Switch to Plan** ([Sheet](../029-sheets/sheet.md)), used by an editor on a general, unlocked tab, set the tab's mode: **one tab edit** (one undo step,
   synced to everyone). Everything the switch brings with it lands in the same edit: entering
   Illustrate puts a board that does not fit its first page onto a page made around it

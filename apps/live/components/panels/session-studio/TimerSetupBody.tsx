@@ -144,7 +144,7 @@ function NudgeButton({
       aria-label={label}
       onClick={onClick}
       disabled={disabled}
-      className="border border-slate-200 bg-white text-[15px] font-semibold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+      className="border border-slate-200 bg-white text-[15px] font-semibold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:opacity-30 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-white"
     >
       {children}
     </GlyphDisc>

@@ -27,8 +27,6 @@ async function shot(page: Page, name: string) {
 
 async function importFile(page: Page, file: string) {
   await page.getByRole('button', { name: 'Tab menu' }).click();
-  const content = page.getByRole('button', { name: 'Content' });
-  if ((await content.getAttribute('aria-expanded')) === 'false') await content.click();
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await page.getByRole('button', { name: /^draw\.io/ }).click();
   await shot(page, `${file}-1-panel`);

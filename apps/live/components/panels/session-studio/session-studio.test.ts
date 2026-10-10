@@ -1,59 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import type { TabTimer, TabVote } from '@livediagram/document';
+import type { TabVote } from '@livediagram/document';
 import {
   clampTimerMinutes,
   dialAngle,
   dialDragMinutes,
   dialFraction,
   formatMinutesLabel,
-  initialStudioTool,
   minutesForDialAngle,
-  studioToolStatus,
-  votePhase,
-  voteTurnout,
+  voteRules,
   wedgePath,
 } from './session-studio';
 
-const running: TabTimer = { mode: 'countdown', running: true, durationMs: 60_000, anchorAt: 1 };
-const paused: TabTimer = { mode: 'stopwatch', running: false, frozenMs: 5_000 };
 const vote = (patch: Partial<TabVote> = {}): TabVote => ({
   active: true,
   revealed: false,
   votesPerPerson: 3,
   votes: {},
   ...patch,
-});
-
-describe('initialStudioTool', () => {
-  it('opens on the timer when nothing is set up', () => {
-    expect(initialStudioTool({ timer: null, vote: null, pollRunning: false })).toBe('timer');
-  });
-
-  it('opens on whatever is live, ahead of anything idle', () => {
-    expect(
-      initialStudioTool({ timer: paused, vote: vote({ active: true }), pollRunning: false }),
-    ).toBe('vote');
-    expect(
-      initialStudioTool({ timer: running, vote: vote({ active: false }), pollRunning: false }),
-    ).toBe('timer');
-  });
-
-  it('prefers the poll when several things are live', () => {
-    expect(initialStudioTool({ timer: running, vote: vote(), pollRunning: true })).toBe('poll');
-  });
-
-  it('falls back to an idle tool', () => {
-    expect(initialStudioTool({ timer: paused, vote: null, pollRunning: false })).toBe('timer');
-  });
-});
-
-describe('studioToolStatus', () => {
-  it('reads live, idle, or nothing per tool', () => {
-    const state = { timer: paused, vote: vote({ active: false }), pollRunning: false };
-    expect(studioToolStatus('timer', state)).toBe('idle');
-    expect(studioToolStatus('vote', state)).toBe('idle');
-    expect(studioToolStatus('poll', state)).toBeNull();
-  });
 });
 
 describe('timer dial', () => {
@@ -103,18 +66,27 @@ describe('timer dial', () => {
   });
 });
 
-describe('vote', () => {
-  it('walks setup, casting, closed, results', () => {
-    expect(votePhase(null)).toBe('setup');
-    expect(votePhase(vote())).toBe('casting');
-    expect(votePhase(vote({ active: false }))).toBe('closed');
-    expect(votePhase(vote({ active: false, revealed: true }))).toBe('results');
+describe('voteRules', () => {
+  const layers = [{ id: 'l2', name: 'Ideas' }];
+
+  it('names the budget and nothing else for a plain vote', () => {
+    expect(voteRules(vote(), layers)).toEqual(['3 dots each']);
   });
 
-  it('counts dots and distinct voters', () => {
-    expect(voteTurnout(vote({ votes: { a: ['p1', 'p1', 'p2'], b: ['p3'] } }))).toEqual({
-      dots: 4,
-      voters: 3,
-    });
+  it('adds one per item, the layer scope and the privacy in force', () => {
+    const v = vote({ onePerElement: true, voteLayerId: 'l2', hideCursors: true, hideCounts: true });
+    expect(voteRules(v, layers)).toEqual([
+      '3 dots each',
+      'One per item',
+      'Ideas only',
+      'Cursors hidden',
+      'Counts hidden',
+    ]);
+  });
+
+  it('brings cursors back when voting closes, and counts once results show', () => {
+    const closed = vote({ active: false, hideCursors: true, hideCounts: true });
+    expect(voteRules(closed, layers)).toEqual(['3 dots each', 'Counts hidden']);
+    expect(voteRules({ ...closed, revealed: true }, layers)).toEqual(['3 dots each']);
   });
 });

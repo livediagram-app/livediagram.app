@@ -72,7 +72,8 @@ const BOARD = {
     hideWriting: false,
   },
 };
-const TAB = { id: 't_1', name: 'Tab 1', rev: 1, elements: [BOARD] };
+// In Illustrate mode, so the Illustrate tools find it (docs/specs/024-agents/illustrate-for-agents.md).
+const TAB = { id: 't_1', name: 'Tab 1', rev: 1, opensIn: 'illustrate', elements: [BOARD] };
 const PLAN = {
   boards: [
     {
@@ -110,6 +111,19 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
+  }
+  // An Illustrate edit (docs/specs/024-agents/illustrate-for-agents.md "The route").
+  if (path.endsWith('/illustrate')) {
+    const article = { flow: 'art-1', title: 'A', pages: [1], blocks: 1, words: 1, look: null };
+    return json({
+      tab: { id: 't_1', rev: 2 },
+      switched: false,
+      lines: [],
+      pages: [],
+      articles: [article],
+      article: { ...article, created: true },
+      changesetId: null,
+    });
   }
   // Tab writes are changesets and the tab name route (docs/specs/024-agents/agent-changesets.md).
   if (path.endsWith('/changesets')) {
@@ -202,7 +216,7 @@ const AUTHED = { authInfo: { token: 'tok_test' } };
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('registerTools', () => {
-  it('registers the twenty documented tools, each with a description', () => {
+  it('registers the twenty-two documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered.filter((r) => !isDeprecated(r));
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -212,6 +226,7 @@ describe('registerTools', () => {
       'change_board',
       'change_card_types',
       'change_items',
+      'change_pages',
       'change_sheet',
       'create_document',
       'delete_document',
@@ -226,6 +241,7 @@ describe('registerTools', () => {
       'restore_document',
       'share_document',
       'update_document',
+      'write_article',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -338,6 +354,10 @@ describe('tool annotations', () => {
     read_sheet: 'read',
     change_sheet: 'destructive',
     add_sheet: 'write',
+    // docs/specs/024-agents/illustrate-for-agents.md: change_pages deletes pages and replaces their
+    // content; write_article replaces an article's text.
+    change_pages: 'destructive',
+    write_article: 'destructive',
   };
 
   it('gives every tool one of the three documented presets', () => {
@@ -405,9 +425,11 @@ describe('tool annotations', () => {
     expect(destructive).toEqual([
       'change_card_types',
       'change_items',
+      'change_pages',
       'change_sheet',
       'delete_document',
       'update_document',
+      'write_article',
     ]);
   });
 });

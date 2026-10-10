@@ -20,6 +20,7 @@ import { outlineView } from './outline';
 import { showView } from './show';
 import { selectedElements, showSelectedView } from './show-selected';
 import { SELECTED_REF } from './constants';
+import { pagesView } from './pages';
 
 export type ViewRequest = {
   view: TabViewName;
@@ -167,5 +168,7 @@ export function renderView(
           refusal: { error: 'invalid_value', message: 'find needs q, the text to look for' },
         };
       return done(findView(model, request.q, { budget, door }));
+    case 'pages':
+      return done(pagesView(model, { budget, door }));
   }
 }

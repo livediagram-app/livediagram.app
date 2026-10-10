@@ -5,19 +5,16 @@ import type { PollCandidate } from '@/lib/poll-collaborators';
 // The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the
 // dot vote, the live poll, and every verb that drives them.
 //
-// Three chrome surfaces offer the same Session category — the tab bar's
-// ellipsis menu, the tab context menu, and the standalone ellipsis button —
-// and each had declared all sixteen props by hand. None of the three reads
-// them; they thread the bundle down to the same SessionStudio, so the
-// three lists could only ever be identical, and were.
+// One bundle, read once (useSessionTools) for the bottom bar's Session strip and handed to its
+// popovers' panes (docs/specs/012-collaboration/session-tools.md "The Session strip").
 //
 // The one asymmetry worth keeping in view: the timer and the vote are Tab
 // FIELDS, so they persist with the document, while the poll is ephemeral room
 // state and never becomes one. That is why the poll arrives as three separate
 // props rather than a `poll` slot on the tab beside the other two.
 export type SessionToolsProps = {
-  // Who is running the session, when it is not you (docs/specs/012-collaboration/facilitator.md). The Studio
-  // shows the name and disables every control in one place, which is the
+  // Who is running the session, when it is not you (docs/specs/012-collaboration/facilitator.md). The set-up
+  // popovers show the name and disables every control in one place, which is the
   // whole reason these sixteen verbs already travel as one bundle.
   facilitatedBy?: string | null;
   // We hold the facilitator baton, so the vote's controls are ours even when

@@ -17,15 +17,10 @@ export function usePanelLayout() {
   const [commentsPanelPosition, setCommentsPanelPosition] = useState<Pos | null>(null);
   const [aiPanelPosition, setAiPanelPosition] = useState<Pos | null>(null);
   const [aiPanelVisible, setAiPanelVisible] = useState(false);
-  // Live poll (docs/specs/012-collaboration/live-poll.md): position only. The panel has no minimised state
-  // because it isn't always there to minimise — it exists only while a
-  // poll is running, and the host's End (or a local Dismiss) removes it.
-  const [pollPanelPosition, setPollPanelPosition] = useState<Pos | null>(null);
-  // Live vote (docs/specs/012-collaboration/session-tools.md): same deal — present only while a vote is running.
-  const [votePanelPosition, setVotePanelPosition] = useState<Pos | null>(null);
   // Avatar Panel (docs/specs/008-canvas/avatar-mode.md): present only while Avatar mode is active, so
   // position only — there is nothing to minimise when leaving the mode
-  // dismisses the panel outright.
+  // dismisses the panel outright. (Poll and Vote open over the Session strip's buttons, so they
+  // keep no position: docs/specs/012-collaboration/session-tools.md.)
   const [avatarPanelPosition, setAvatarPanelPosition] = useState<Pos | null>(null);
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the same — present only while the Laser tool is.
   const [laserPanelPosition, setLaserPanelPosition] = useState<Pos | null>(null);
@@ -52,10 +47,6 @@ export function usePanelLayout() {
     setAiPanelPosition,
     aiPanelVisible,
     setAiPanelVisible,
-    pollPanelPosition,
-    setPollPanelPosition,
-    votePanelPosition,
-    setVotePanelPosition,
     avatarPanelPosition,
     setAvatarPanelPosition,
     laserPanelPosition,

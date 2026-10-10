@@ -14,7 +14,6 @@ import {
   type RefObject,
 } from 'react';
 import { onToolbarSearchRequest } from '@/lib/toolbar-search-request';
-import { setPaletteSearchOpen } from '@/lib/palette-search-open';
 import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@livediagram/ui';
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
@@ -294,11 +293,6 @@ export function ToolbarPalette(props: Props) {
     track('UI', 'Opened', 'ToolbarSearch');
     search.openFrom(button);
   };
-  // The open Search tells the top-centre stack, which stands its timer aside so the panel is not covered.
-  useEffect(() => {
-    setPaletteSearchOpen(search.open);
-    return () => setPaletteSearchOpen(false);
-  }, [search.open]);
   const moreButton = (
     <button
       type="button"

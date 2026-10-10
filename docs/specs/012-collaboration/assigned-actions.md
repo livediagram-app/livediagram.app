@@ -270,8 +270,8 @@ which crowded the same corner:
   renders as a popover); `CollaboratePanel.tsx` under `components/panels/` on
   `MovablePanel`, lazily imported and mounted from `useCanvasChromePanels.tsx`.
 - **It lives behind a button in the bottom-right cluster.** A
-  **Collaborate** button (speech-bubble glyph) sits **right after the Layers
-  button** ([Layers](../006-document/layers.md) is the model). It shows the tab's
+  **Collaborate** button (speech-bubble glyph) sits **just before the Layers and
+  Theme strip** ([Layers](../006-document/layers.md) is the model). It shows the tab's
   **open count** as a badge (the shared `CountBadge`, brand tone, hidden at
   zero). Pressing it opens the panel as a **popover hanging above it**
   (`computeDockAnchor(..., 'above')`); a second press or a press outside closes it, and it shares the

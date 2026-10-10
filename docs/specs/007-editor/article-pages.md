@@ -302,7 +302,7 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 ## Leaving Illustrate
 
 Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
-Illustrate (the mode switch, Shift+D or the tab menu's Mode) is asked first, in a dialog **Turn Articles
+Illustrate (the mode switch, Shift+D or the tab menu's mode rows) is asked first, in a dialog **Turn Articles
 Into Pages?**:
 
 - **Turn Into Pages** (the default button): every article page becomes a **Page** element
@@ -412,6 +412,10 @@ ink").
   two people's views never fight over them. The writer is whoever changed the article within the
   last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it. Having the
   caret in it is not writing: two people in one article never both add a page for one overflow.
+  The two exceptions, an agent's write and a writer who left before settling, are grown by the
+  first editor to lay the article out ([Illustrate for agents](../024-agents/illustrate-for-agents.md#pages-for-the-writing)).
+- **Agents** read an article as Markdown and write it from Markdown
+  ([Illustrate for agents](../024-agents/illustrate-for-agents.md)); their writing arrives as anyone's.
 
 ## Telemetry
 
@@ -434,4 +438,4 @@ ink").
 - Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
   and tracked changes, find and replace, Word / Google Docs import.
 - Character-level merging of two people typing in the same paragraph at the same moment.
-- The writing in Diagram or Draw mode, and the writing read or written by AI tools (MCP).
+- The writing in Diagram or Draw mode.

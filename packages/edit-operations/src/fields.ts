@@ -21,6 +21,7 @@ import { applyLabel } from './labels';
 import { invalidValue, unknownField } from './rejections';
 import type { FieldValue, Fields } from './types';
 import { PROTOTYPE_KEYS } from './vocabulary';
+import { iconsLike, isIconId } from '@livediagram/icons/search';
 
 // The spec's names, then the style keys the views print (`STYLE_KEYS`), so a printed `key=value` writes back
 // unchanged; `font` is a stored field name already.
@@ -144,6 +145,19 @@ export function writeFieldsOnto<T extends Element>(
       return unknownField(operation, kindOf(el), key, stored, aliases);
     if (RAW_COLOURS.has(key) && el.type !== 'sticky' && isHexColour(value))
       warnings.push(overridesTheme(ref, key, value));
+    // An icon id that names no icon draws a question mark: refused, with the icons like it.
+    if (key === 'iconId' && typeof value === 'string' && !isIconId(value)) {
+      const like = iconsLike(value).map((i) => i.id);
+      return invalidValue(
+        operation,
+        key,
+        value,
+        'is not an icon',
+        like.length
+          ? `Icons like it: ${like.join(', ')}.`
+          : 'Name the thing it shows in plain words (a heart, a clock, a server) and pick an icon id like it.',
+      );
+    }
     patch[key] = value;
   }
   let capped = false;

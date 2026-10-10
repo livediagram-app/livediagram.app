@@ -32,7 +32,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The tab pill's mode icon    | `TabModeIcon`, `apps/live/components/chrome/editor-mode/`                                                                                                                                                                 |
 | Each mode's mark            | `EDITOR_MODE_ICON` (`editor-mode-copy.ts`): `FlowchartIcon`, `MarkerIcon`, `IllustrateIcon` (`packages/ui/src/icons/drawing-kinds.tsx`)                                                                                   |
 | A template's opening mode   | `templateOpensIn(overrides)`, `apps/live/app/document/[id]/useTemplateFlow.ts`                                                                                                                                            |
-| The tab menu's Mode         | `useTabModeMenu` (`apps/live/hooks/editor/`), `TabModeMenuSection` (chrome)                                                                                                                                               |
+| The tab menu's Mode         | `useTabModeMenu` (`apps/live/hooks/editor/`), `TabModeMenuRows` (chrome)                                                                                                                                                  |
 | A new tab's seed            | `newTabSeed(source)`, `apps/live/lib/new-tab-seed.ts`                                                                                                                                                                     |
 | A text box's sizing         | `TextElement.sizing?: TextSizing` (`'fit' \| 'wrap'`), absent = a fixed box                                                                                                                                               |
 | Ink by name                 | `INK_PEN_COLOUR` (`'ink'`), a `PenColourName`, drawn in `PEN_INK`                                                                                                                                                         |
@@ -85,7 +85,7 @@ or written (left in place). Nothing is pinned per page.
   it. Undo switches back to <from>." and `Tab · Changed · PageFitToContent`. One undo step: the
   history restores the whole tab, mode included, so Undo switches back for everyone and Redo
   switches again.
-- **Every mode offered**: `ModeMenuChip` and `TabModeMenuSection` list `EDITOR_MODE_CATALOGUE`
+- **Every mode offered**: `ModeMenuChip` and `TabModeMenuRows` list `EDITOR_MODE_CATALOGUE`
   whole; Shift+D is `nextEditorMode(mode, 1)`.
 - **Wrappers, in order** (`useEditorState`): `rawEditorMode = useEditorMode(...)`; then
   `useLeaveIllustrate(rawEditorMode, { tab, canEdit })` (asks before leaving Illustrate; Turn Into
@@ -115,7 +115,7 @@ or written (left in place). Nothing is pinned per page.
 - **The tab menu's Mode** (`useTabModeMenu({ canEdit, commitTabs, activeId, switchActive })`,
   `switchActive` being the editor's `editorMode.setMode`): `choiceFor(tab)` is `undefined` unless
   `canEdit && editorModeSwitchable(tab) && !tab.locked`; else `{ mode: opensInOf(tab), onChange }`.
-  A choice of the tab's mode does nothing (`TabModeMenuSection` drops a press on the checked row).
+  A choice of the tab's mode does nothing (`TabModeMenuRows` drops a press on the checked row).
   The active tab switches through `switchActive` (with the Leave Illustrate questions); another
   tab gets `Editor · Changed · Mode<Next>` and one `commitTabs` of `switchedTab(t, mode)`.
 - **New tab** (`useTabActions.addTab`): `newTabSeed(activeTab)` copies the source tab's look
@@ -310,7 +310,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
   everyone: power user mode does not change it.
 - The tab pill leads with `TabModeIcon` (in place of the accent dot), tinted with the tab's
   accent.
-- Mode is an accordion section of the tab menu (`TabModeMenuSection`), after Content: one row per
+- The modes are full-width rows in the tab menu (`TabModeMenuRows`), after Import, Export and Clear and a separator: one row per
   catalogue entry with its icon, name, description and a dot on the checked one. Offered only
   where a switch is (no disabled state).
 - No other cue marks the mode (spec "No further cue").
@@ -368,7 +368,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | A Draw tool in hand never takes the press        | `ToolbarExplorerButton.test.tsx` "marks its card as floating chrome…", e2e "switches back to Diagram with a marker in hand"                  |
 | The tab pill shows the tab's mode                | `components/chrome/TabPill.test.tsx`                                                                                                         |
 | A template decides the tab's mode                | `app/document/[id]/useTemplateFlow.test.ts`                                                                                                  |
-| The tab menu's Mode                              | `hooks/editor/useTabModeMenu.test.tsx`, `components/chrome/TabModeMenuSection.test.tsx`                                                      |
+| The tab menu's Mode                              | `hooks/editor/useTabModeMenu.test.tsx`, `components/chrome/TabModeMenuRows.test.tsx`                                                         |
 | A peer's switch is followed and named            | `lib/peer-mode-switch.test.ts`, e2e `editor-modes.spec.ts` "the tab menu's Mode switches the tab for everyone, and Undo switches it back"    |
 | New tab opens in Diagram                         | `lib/new-tab-seed.test.ts`, e2e `editor-modes.spec.ts` "a new tab opens in Diagram, even when made in Draw mode"                             |
 | Entering / leaving Draw                          | `hooks/canvas/useWhiteboard.test.tsx`, `useWhiteboard.board-tools.test.tsx`                                                                  |

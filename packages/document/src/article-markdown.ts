@@ -9,7 +9,7 @@ import {
   type ArticleBlock,
   type ArticleListKind,
   type ArticleRun,
-} from '@livediagram/document';
+} from './article-flow';
 
 // Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link.
 const MARKDOWN_SIGNAL =
@@ -22,8 +22,25 @@ export function looksLikeMarkdown(text: string): boolean {
 const INLINE =
   /(\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\)|\*([^*\s][^*]*)\*|_([^_\s][^_]*)_)/;
 
+// Markdown's backslash escapes (`\\*` is a literal `*`): held as private-use characters while the
+// marks are read, so an escaped character never opens or closes one, then put back as the character.
+const ESCAPABLE = '\\`*_~[]#>+-.!()';
+const HELD = 0xe000;
+const holdEscapes = (text: string) =>
+  text.replace(/\\([\\`*_~[\]#>+\-.!()])/g, (_, c: string) =>
+    String.fromCharCode(HELD + ESCAPABLE.indexOf(c)),
+  );
+const releaseEscapes = (text: string) =>
+  text.replace(/[\ue000-\ue00f]/g, (c) => ESCAPABLE[c.charCodeAt(0) - HELD]!);
+
 /** One line's inline Markdown as runs. */
 export function parseInline(text: string, base: Omit<ArticleRun, 'text'> = {}): ArticleRun[] {
+  return normaliseRuns(
+    readInline(holdEscapes(text), base).map((r) => ({ ...r, text: releaseEscapes(r.text) })),
+  );
+}
+
+function readInline(text: string, base: Omit<ArticleRun, 'text'>): ArticleRun[] {
   const runs: ArticleRun[] = [];
   let rest = text;
   while (rest) {
@@ -34,15 +51,16 @@ export function parseInline(text: string, base: Omit<ArticleRun, 'text'> = {}): 
     }
     if (m.index > 0) runs.push({ ...base, text: rest.slice(0, m.index) });
     const [, , bold, bold2, strike, code, linkText, href, ital, ital2] = m;
-    if (bold ?? bold2) runs.push(...parseInline((bold ?? bold2)!, { ...base, b: true }));
-    else if (strike) runs.push(...parseInline(strike, { ...base, s: true }));
+    if (bold ?? bold2) runs.push(...readInline((bold ?? bold2)!, { ...base, b: true }));
+    else if (strike) runs.push(...readInline(strike, { ...base, s: true }));
     else if (code) runs.push({ ...base, text: code, code: true });
-    else if (linkText && href)
-      runs.push(...parseInline(linkText, isSafeArticleHref(href) ? { ...base, href } : base));
-    else if (ital ?? ital2) runs.push(...parseInline((ital ?? ital2)!, { ...base, i: true }));
+    else if (linkText && href) {
+      const safe = releaseEscapes(href);
+      runs.push(...readInline(linkText, isSafeArticleHref(safe) ? { ...base, href: safe } : base));
+    } else if (ital ?? ital2) runs.push(...readInline((ital ?? ital2)!, { ...base, i: true }));
     rest = rest.slice(m.index + m[0].length);
   }
-  return normaliseRuns(runs);
+  return runs;
 }
 
 const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
