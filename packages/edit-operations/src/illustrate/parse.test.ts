@@ -114,6 +114,14 @@ describe('page changes', () => {
   });
 });
 
+describe('an add without a place', () => {
+  it('leaves it at the end', () => {
+    expect(parseIllustrateRequest({ pages: [{ op: 'add', kind: 'logo' }] })).toEqual({
+      pages: [{ op: 'add', kind: 'logo' }],
+    });
+  });
+});
+
 describe('an article write', () => {
   it('reads every field', () => {
     expect(

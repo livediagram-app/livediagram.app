@@ -87,22 +87,18 @@ const describePatch = (input: PageBackgroundInput) =>
 
 function messageFor(why: PageEditRefusal, tab: Tab, page: IllustratePage | undefined): string {
   const kind = page ? pageKindOf(page) : 'infographic';
-  switch (why) {
-    case 'unknown_page':
-      return `No such page. Pages: ${listPages(tab)}.`;
-    case 'locked':
-      return 'That page is locked (an article: one of its pages is). Unlock it first with set { locked: false }.';
-    case 'no_orientation':
-      return `A ${kind} page has no orientation: it is always ${kind === 'logo' ? 'square' : 'landscape'}.`;
-    case 'size_not_offered':
-      return `A ${kind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`;
-    case 'pattern_not_offered':
-      return 'A logo page takes no pattern; give it a color or gradient.';
-    case 'page_limit':
-      return 'A tab holds at most 100 pages: delete one first.';
-    case 'last_page':
-      return "That is the tab's only page (or article): add another before deleting it.";
-  }
+  // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
+  const words: Record<PageEditRefusal, string> = {
+    unknown_page: `No such page. Pages: ${listPages(tab)}.`,
+    locked:
+      'That page is locked (an article: one of its pages is). Unlock it first with set { locked: false }.',
+    no_orientation: `A ${kind} page has no orientation: it is always the shape its size is.`,
+    size_not_offered: `A ${kind} page takes the sizes ${pageSizesFor(kind).join(', ')}.`,
+    pattern_not_offered: 'A logo page takes no pattern; give it a color or gradient.',
+    page_limit: 'A tab holds at most 100 pages: delete one first.',
+    last_page: "That is the tab's only page (or article): add another before deleting it.",
+  };
+  return words[why];
 }
 
 export function applyPageChanges(

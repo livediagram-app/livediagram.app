@@ -182,6 +182,24 @@ describe('the calls', () => {
   });
 });
 
+describe('the calls with no tab to act on', () => {
+  it('answer the refusal rather than send anything', async () => {
+    const { api, sent } = setUp({
+      [TWO]: { id: TWO, elements: DRAWN },
+      [ONE]: { id: ONE, elements: DRAWN },
+    });
+    expect(
+      await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp'),
+    ).toMatchObject({
+      code: 'tab_needed',
+    });
+    expect(await writeArticle(api, DOC_A, { markdown: 'x' }, 'mcp')).toMatchObject({
+      code: 'tab_needed',
+    });
+    expect(sent).toEqual([]);
+  });
+});
+
 describe('page ls and page set', () => {
   it('prints the pages view, fitted when asked', async () => {
     const { ctx } = setUp();
@@ -238,6 +256,14 @@ describe('page ls and page set', () => {
       ]);
       expect(pageSet.quiet!(out)).toEqual(['page-1']);
     }
+  });
+
+  it('adds a page with no layout, and lists an unnamed page without a name', async () => {
+    const unnamed = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, name: null }] };
+    const { ctx, sent } = setUp(undefined, () => Response.json(unnamed));
+    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' }));
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
+    expect(pageSet.text!(out)[1]).toBe('1  slide  slide  -960,-540 1920x1080');
   });
 
   it('takes a JSON list of changes, on the tab named', async () => {
@@ -319,6 +345,14 @@ describe('article get and article set', () => {
     expect(out).toMatchObject({ flow: 'art-1', title: 'Brief', created: true, rev: 5 });
     expect(articleSet.text!(out)).toEqual(['~ Added page 2 (slide, Slide (16:9)).']);
     expect(articleSet.quiet!(out)).toEqual(['art-1']);
+  });
+
+  it('reads and writes on the tab named', async () => {
+    const { ctx, sent } = setUp(undefined, undefined, 'x');
+    const got = await articleGet.run!(ctx, articleGet.input.parse({ doc: DOC_A, tab: 'Overview' }));
+    expect(got.flow).toBe('art-1');
+    await articleSet.run!(ctx, articleSet.input.parse({ doc: DOC_A, tab: 'Overview', file: '-' }));
+    expect(sent).toEqual([{ article: { markdown: 'x' } }]);
   });
 
   it('starts a new article, and refuses what the api refuses', async () => {

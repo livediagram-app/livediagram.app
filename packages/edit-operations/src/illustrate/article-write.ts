@@ -44,7 +44,9 @@ const refuse = (code: IllustrateRefusal['code'], message: string) => ({
 
 const nameKey = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
 
-const settled = (out: PageEdit<Tab>, before: Tab): Tab => ('tab' in out ? out.tab : before);
+// A fresh article page: its size was checked against the article's and an article turns, so neither
+// edit can be refused.
+const fresh = (out: PageEdit<Tab>): Tab => (out as { tab: Tab }).tab;
 
 export function applyArticleWrite(
   tab: Tab,
@@ -107,10 +109,8 @@ export function applyArticleWrite(
         return refuse('page_limit', 'A tab holds at most 100 pages: delete one first.');
       current = added.tab;
     }
-    // A fresh page: neither can be refused (the size was checked, an article turns).
-    if (write.size) current = settled(pageResized(current, pageId, write.size), current);
-    if (write.orientation)
-      current = settled(pageTurned(current, pageId, write.orientation), current);
+    if (write.size) current = fresh(pageResized(current, pageId, write.size));
+    if (write.orientation) current = fresh(pageTurned(current, pageId, write.orientation));
     flow = newFlow;
   }
   const doc: ArticleFlow = articlesOf(current)[flow!]!;
@@ -176,16 +176,11 @@ export function applyArticleWrite(
   );
   if (read.tables)
     lines.push(
-      `Wrote ${read.tables} Markdown table${read.tables === 1 ? '' : 's'} as a list: an article's text holds no tables (put a table element on a page with update_document).`,
+      `Wrote Markdown tables as lists (${read.tables}): an article's text holds no tables (put a table element on a page with update_document).`,
     );
   if (gone.length)
-    lines.push(
-      `Removed ${gone.length} zone${gone.length === 1 ? '' : 's'} and what was in them: ${gone.map((z) => z.id).join(', ')}.`,
-    );
-  if (markersGone)
-    lines.push(
-      `Removed ${markersGone} margin note${markersGone === 1 ? '' : 's'} whose text is gone.`,
-    );
+    lines.push(`Removed zones and what was in them: ${gone.map((z) => z.id).join(', ')}.`);
+  if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);
   lines.push('The writing flows onto as many pages as it needs when it is laid out in the editor.');
   return { tab: current, flow: flow!, created, lines, switched: entered.switched };
 }

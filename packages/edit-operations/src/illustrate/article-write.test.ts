@@ -102,6 +102,17 @@ describe('a new article', () => {
   });
 });
 
+describe('fresh ids', () => {
+  it('mints its own page and article ids when none are given', () => {
+    const out = applyArticleWrite(tabOf({ pages: [page('p', { kind: 'infographic' })] }), {
+      markdown: 'x',
+    });
+    if ('refusal' in out) throw new Error('refused');
+    expect(out.flow).toMatch(/^art-/);
+    expect(illustratePagesOf(out.tab)[1]!.id).toMatch(/^page-/);
+  });
+});
+
 describe('which article', () => {
   const two = tabOf({
     pages: [page('a1', { kind: 'article', flow: 'f' }), page('b1', { kind: 'article', flow: 'g' })],
@@ -147,7 +158,7 @@ describe('the writing', () => {
   it('says a Markdown table was written as a list', () => {
     const out = write(tabOf(), { markdown: '| a | b |\n|---|---|\n| 1 | 2 |' });
     expect(out.lines).toContain(
-      "Wrote 1 Markdown table as a list: an article's text holds no tables (put a table element on a page with update_document).",
+      "Wrote Markdown tables as lists (1): an article's text holds no tables (put a table element on a page with update_document).",
     );
   });
 
@@ -184,7 +195,7 @@ describe('the writing', () => {
     const out = write(tab, { markdown: 'Intro\n\n[zone z2]' });
     expect(articlesOf(out.tab).f!.blocks.map((b) => b.type)).toEqual(['paragraph', 'zone']);
     expect(out.tab.elements).toEqual([]);
-    expect(out.lines[1]).toBe('Removed 1 zone and what was in them: z1.');
+    expect(out.lines[1]).toBe('Removed zones and what was in them: z1.');
     expect(refusal(tab, { markdown: '[zone z9]' }).code).toBe('zone_unknown');
   });
 
@@ -205,7 +216,7 @@ describe('the writing', () => {
     );
     const out = write(tab, { markdown: 'Fresh text' });
     expect(out.tab.elements).toEqual([]);
-    expect(out.lines).toContain('Removed 1 margin note whose text is gone.');
+    expect(out.lines).toContain('Removed margin notes whose text is gone (1).');
     expect(write(tab, { markdown: 'More', mode: 'append' }).tab.elements).toHaveLength(1);
   });
 

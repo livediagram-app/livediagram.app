@@ -51,6 +51,23 @@ const refusal = (tab: Tab, changes: PageChange[]) => {
 };
 const kinds = (tab: Tab) => pageSummaries(tab).map((p) => p.kind);
 
+describe('fresh ids and the unexpected', () => {
+  it('mints its own page ids when none are given', () => {
+    const out = applyPageChanges(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'slide' }]);
+    if ('refusal' in out) throw new Error('refused');
+    expect(illustratePagesOf(out.tab)[1]!.id).toMatch(/^page-/);
+  });
+
+  it('lets an error that is not a refusal through', () => {
+    const hostile = {
+      get op(): never {
+        throw new TypeError('boom');
+      },
+    } as unknown as PageChange;
+    expect(() => applyPageChanges(tabOf(), [hostile])).toThrow('boom');
+  });
+});
+
 describe('which tab', () => {
   it('switches a diagram tab into Illustrate, saying so', () => {
     const out = run(tabOf({ opensIn: undefined }), [{ op: 'add', kind: 'slide' }]);
@@ -206,6 +223,16 @@ describe('setting', () => {
     expect(refusal(tab, [{ op: 'set', page: 2, background: { pattern: 'dots' } }]).code).toBe(
       'pattern_not_offered',
     );
+  });
+
+  it('says the paper and no pattern in words', () => {
+    const tab = tabOf({
+      pages: [
+        page('p1', { background: { fill: { kind: 'solid', color: '#000' }, pattern: 'dots' } }),
+      ],
+    });
+    const out = run(tab, [{ op: 'set', page: 1, background: { paper: true, pattern: 'none' } }]);
+    expect(out.lines[0]).toBe('Set page 1: background paper, no pattern.');
   });
 
   it('reads a background input as the patch it means', () => {
