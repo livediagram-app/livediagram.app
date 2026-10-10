@@ -7,6 +7,7 @@ import type { ReadCopies, ReadCopy } from '@livediagram/agent-verbs';
 import { cacheDir } from '../config/paths';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
+import { sha256Hex } from '@livediagram/api-schema';
 
 export const READ_COPY_REVS_PER_TAB = 3;
 export const READ_COPY_MAX_BYTES = 32 * 1024 * 1024;
@@ -15,13 +16,9 @@ type Entry = { key: string; where: string; rev: number; bytes: number; usedAt: n
 type Index = { version: 1; entries: Entry[] };
 
 async function keyOf(profile: string, documentId: string, tabId: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(`${profile}|${documentId}|${tabId}`),
-  );
-  return [...new Uint8Array(digest).slice(0, 8)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
+  // The first 8 bytes of the digest, as 16 hex characters.
+  const hex = await sha256Hex(new TextEncoder().encode(`${profile}|${documentId}|${tabId}`));
+  return hex.slice(0, 16);
 }
 
 export function fileReadCopies(io: CliIo, profile: string, log: DebugLog): ReadCopies {

@@ -3,6 +3,7 @@
 
 import type { MirrorLevel } from './link-file';
 import type { SyncAction, TabMove } from './sync-plan';
+import { plural } from '@livediagram/document';
 import { oneLine } from '../output/one-line';
 
 export type LineContext = {
@@ -22,7 +23,6 @@ export type Totals = {
 };
 
 const quoted = (name: string) => JSON.stringify(name);
-const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
 
 function writeLine(action: Extract<SyncAction, { kind: 'write' }>, lc: LineContext): string {
   const head = `${action.path === null ? '' : `${lc.pathOf(action.path)}  `}${quoted(action.name)}`;

@@ -11,12 +11,11 @@ import {
   type ImportScenes,
   type MsWhiteboardStep,
 } from '@/hooks/persistence/useMsWhiteboardImport';
+import { pluralGrouped } from '@livediagram/document';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
 const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
 // The Microsoft Whiteboard import, whole (docs/specs/020-import-export/whiteboard-import.md
 // "Importing"): pick or drop a board export, choose boards, watch them import, read the report.
@@ -67,7 +66,7 @@ export function MsWhiteboardImportPanel({
             name: b.name,
             detail: [
               b.dates.modifiedAt ? `Edited ${DATE.format(new Date(b.dates.modifiedAt))}` : null,
-              plural(b.elementCount, 'item', 'items'),
+              pluralGrouped(b.elementCount, 'item', 'items'),
             ]
               .filter(Boolean)
               .join(' · '),
@@ -77,10 +76,10 @@ export function MsWhiteboardImportPanel({
           onToggleAll={flow.toggleAll}
           {...(state.failures.length > 0
             ? {
-                leftOut: `${plural(state.failures.length, "board couldn't be read", "boards couldn't be read")} and will be left out.`,
+                leftOut: `${pluralGrouped(state.failures.length, "board couldn't be read", "boards couldn't be read")} and will be left out.`,
               }
             : {})}
-          importLabel={`Import ${plural(state.checked.size, 'board', 'boards')}`}
+          importLabel={`Import ${pluralGrouped(state.checked.size, 'board', 'boards')}`}
           onImport={() => void flow.importChecked()}
           onCancel={flow.reset}
         />

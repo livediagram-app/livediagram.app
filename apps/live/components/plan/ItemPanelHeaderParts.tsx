@@ -2,9 +2,8 @@
 
 // The current card's part of the item panel header (docs/specs/026-plan/plan-board.md "The header reads part by
 // part"): its Card Type picker as a bordered pill, and its number as a quiet tag that copies "#12".
-import { useEffect, useState } from 'react';
 import type { ItemTypeDef } from '@livediagram/items';
-import { ChevronDownIcon, Tooltip } from '@livediagram/ui';
+import { ChevronDownIcon, Tooltip, useCopiedFlash } from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 
@@ -63,12 +62,7 @@ export function ItemTypePill({
 }
 
 export function ItemKeyTag({ itemKey }: { itemKey: number }) {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(false), KEY_COPIED_MS);
-    return () => clearTimeout(t);
-  }, [copied]);
+  const { copied, flash } = useCopiedFlash(KEY_COPIED_MS);
   const text = `#${itemKey}`;
   return (
     <Tooltip label={copied ? 'Copied' : 'Copy Card Number'}>
@@ -77,7 +71,7 @@ export function ItemKeyTag({ itemKey }: { itemKey: number }) {
         aria-label={copied ? `Copied ${text}` : `Copy card number ${text}`}
         onClick={() => {
           void navigator.clipboard?.writeText(text).then(
-            () => setCopied(true),
+            () => flash(),
             () => undefined,
           );
         }}

@@ -5,13 +5,11 @@
 
 import type { PullFile, PullSync } from '../sync/pull-file';
 import { canonicalJson } from '../sync/pull-file';
+import { isRecord } from '@livediagram/document';
 
 export type MirrorFile = Omit<PullFile, 'exportedAt' | 'livediagramSync'> & {
   livediagramSync: Omit<PullSync, 'pulledAt'>;
 };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 // As `JSON.stringify(value, null, 2)` prints, keys sorted; an array at `document.tabs[i].elements` prints each
 // element on its own line, as its canonical JSON.

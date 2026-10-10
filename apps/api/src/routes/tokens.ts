@@ -10,7 +10,15 @@
 //   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
 
 import type { CurrentTokenResponse } from '@livediagram/api-schema';
-import { badRequest, forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  json,
+  methodNotAllowed,
+  noContent,
+  notFound,
+} from '../responses';
 import { type RouteContext } from './context';
 import {
   getParticipant,
@@ -42,7 +50,7 @@ export async function handleTokens(ctx: RouteContext): Promise<Response> {
       if (name.length > MAX_NAME_LEN) return badRequest('name too long');
       const minted = await mintApiToken(env, { ownerId: owner, name: name || null });
       // Null means the per-account cap (docs/specs/015-api/public-api-and-tokens.md) is already reached.
-      if (!minted) return json({ error: 'token_limit_reached' }, { status: 409 });
+      if (!minted) return conflict('token_limit_reached');
       ctx.waitUntil?.(recordTokenCreated(env, { id: minted.id, name: name || 'API token' }, owner));
       // The plaintext is returned ONCE, here. It is never stored and never
       // retrievable again; the client shows it for copy then drops it.
@@ -85,7 +93,7 @@ async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
   const { request, env, token } = ctx;
   if (request.method !== 'GET' && request.method !== 'DELETE') return methodNotAllowed();
   const owner = ctx.resolveOwner();
-  if (!token || !owner) return json({ error: 'not_a_token' }, { status: 403 });
+  if (!token || !owner) return forbidden('not_a_token');
   const current = (await listApiTokensByOwner(env, owner)).find((t) => t.id === token.id);
   if (!current) return notFound();
   if (request.method === 'GET') {

@@ -61,6 +61,15 @@ describe('LinkedCardField', () => {
     expect(screen.getByRole('button', { name: 'Parent: Missing card' })).toBeTruthy();
   });
 
+  it('closes its list on a press outside the field, keeping it on a press inside', () => {
+    field(undefined, [card('a', 1, 'Alpha')]);
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Parent: None' }), { key: 'ArrowDown' });
+    fireEvent.pointerDown(screen.getByRole('listbox', { name: 'Parent' }));
+    expect(screen.getByRole('listbox')).toBeTruthy();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
   it('opens a list from the keyboard, moves with the arrows, picks with Enter', () => {
     const a = card('a', 1, 'Alpha');
     const b = card('b', 2, 'Beta');

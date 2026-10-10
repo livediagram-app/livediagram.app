@@ -1,7 +1,12 @@
 // Shape libraries (docs/specs/013-workspace/shape-libraries.md): the wire types, the limits, and the
 // rules both sides apply (the api enforces them; the client checks before it sends). Pure.
 
-import { isValidElement, migrateIncomingElements, type Element } from '@livediagram/document';
+import {
+  isRecord,
+  isValidElement,
+  migrateIncomingElements,
+  type Element,
+} from '@livediagram/document';
 
 /** How many shape libraries one owner can create. */
 export const MAX_SHAPE_LIBRARIES_PER_OWNER = 100;
@@ -67,8 +72,6 @@ export function uniqueLibraryName(name: string, taken: Iterable<string>): string
 export type ShapeLibraryItemsRejection =
   'not-a-list' | 'too-many-items' | 'invalid-item' | 'duplicate-item-id' | 'invalid-element';
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
 const side = (v: unknown) =>
   typeof v === 'number' && Number.isFinite(v) && v > 0 && v <= MAX_SHAPE_LIBRARY_ITEM_SIDE;
 

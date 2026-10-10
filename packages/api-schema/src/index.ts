@@ -495,7 +495,7 @@ export type ImageSummary = {
 // Canonical hash function for the X-Image-Sha256 wire-format header.
 // Lives here so the client and server can't drift on the dedup key
 // (see ./sha256.ts for the rationale).
-export { sha256Hex } from './sha256';
+export { pkceChallenge, sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).

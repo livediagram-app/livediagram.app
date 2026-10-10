@@ -43,7 +43,7 @@ import {
   readItem,
   updateItemAtRev,
 } from '../db';
-import { badRequest, forbidden, json, methodNotAllowed, noContent } from '../responses';
+import { badRequest, conflict, forbidden, json, methodNotAllowed, noContent } from '../responses';
 import { handleItemCommentRoutes } from './item-comment-routes';
 import {
   excludedStatus,
@@ -144,7 +144,7 @@ async function createMany(
     let nextKey = head.nextKey;
     const now = Date.now();
     for (const create of creates) {
-      if (create.id && ids.has(create.id)) return json({ error: 'item_exists' }, { status: 409 });
+      if (create.id && ids.has(create.id)) return conflict('item_exists');
       const id =
         create.id ?? newItemId(() => crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32);
       ids.add(id);

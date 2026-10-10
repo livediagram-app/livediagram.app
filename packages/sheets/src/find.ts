@@ -3,6 +3,7 @@
 import { displayValue } from './number-format';
 import { layoutIndex } from './layout';
 import { splitCellKey, type CellInput } from './sheet';
+import { escapeRegExp } from './input';
 import { inputAsText, readTypedInput } from './typed-input';
 import type { CellChange } from './store';
 import type { Workbook } from './engine/workbook';
@@ -45,7 +46,7 @@ export function findMatches(
 
 function replaceIn(text: string, query: string, by: string, opts: FindOptions): string {
   if (opts.entireCell) return by;
-  const re = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), opts.matchCase ? 'g' : 'gi');
+  const re = new RegExp(escapeRegExp(query), opts.matchCase ? 'g' : 'gi');
   return text.replace(re, () => by);
 }
 

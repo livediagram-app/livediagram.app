@@ -1,3 +1,4 @@
+import { isRecord } from '@livediagram/document';
 // Finding and reading board exports (docs/specs/020-import-export/whiteboard-import.md "The board
 // export"): a board is a folder holding manifest.json, session.json and changes.json.
 
@@ -45,8 +46,6 @@ export function findBoards(files: ExportFileSet): BoardRef[] {
     .sort((a, b) => (a.dir < b.dir ? -1 : a.dir > b.dir ? 1 : 0));
 }
 
-type Rec = Record<string, unknown>;
-const isRecord = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 const text = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined);
 
 async function readJson(files: ExportFileSet, path: string): Promise<unknown> {

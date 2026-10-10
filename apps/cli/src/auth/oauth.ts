@@ -3,8 +3,8 @@
 // grant, for the profile's host. Both end in an ordinary lvd_ API token; what happens with it is login's.
 
 import {
-  bytesToBase64Url,
   randomBase64Url,
+  pkceChallenge,
   CLI_CLIENT_ID,
   DEVICE_CODE_GRANT,
   DEVICE_SLOW_DOWN_S,
@@ -80,9 +80,7 @@ export async function loginWithBrowser(
   log: DebugLog,
 ): Promise<string> {
   const verifier = randomBase64Url(32);
-  const challenge = bytesToBase64Url(
-    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)),
-  );
+  const challenge = await pkceChallenge(verifier);
   const state = randomBase64Url(16);
   const loopback = await io.listenLoopback();
   const redirectUri = `http://127.0.0.1:${loopback.port}/callback`;

@@ -2,11 +2,8 @@
 // shape the MCP's `graph` argument takes): `layoutGraph` trusts its input, and a changeset's body is
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
-import { MAX_ELEMENTS_PER_TAB, type GraphInput } from '@livediagram/document';
+import { isRecord, MAX_ELEMENTS_PER_TAB, type GraphInput } from '@livediagram/document';
 
-type Raw = Record<string, unknown>;
-
-const isObject = (v: unknown): v is Raw => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isId = (v: unknown) => typeof v === 'string' && v !== '';
 const optional =
   (check: (v: unknown) => boolean) =>
@@ -17,16 +14,16 @@ const isOneOf = (values: readonly string[]) => (v: unknown) => values.includes(v
 const isListOf = (v: unknown, check: (item: unknown) => boolean) =>
   Array.isArray(v) && v.every(check);
 
-const isEntityField = (f: unknown) => isObject(f) && isString(f.name) && optional(isString)(f.type);
+const isEntityField = (f: unknown) => isRecord(f) && isString(f.name) && optional(isString)(f.type);
 
 const isNode = (n: unknown) =>
-  isObject(n) &&
+  isRecord(n) &&
   isId(n.id) &&
   ['label', 'shape', 'link', 'note', 'group'].every((key) => optional(isString)(n[key])) &&
   optional((v) => isListOf(v, isEntityField))(n.fields);
 
 const isEdge = (e: unknown) =>
-  isObject(e) &&
+  isRecord(e) &&
   isId(e.from) &&
   isId(e.to) &&
   optional(isString)(e.label) &&
@@ -35,7 +32,7 @@ const isEdge = (e: unknown) =>
   optional(isOneOf(['triangle', 'circle', 'cross']))(e.head);
 
 const isGroup = (g: unknown) =>
-  isObject(g) &&
+  isRecord(g) &&
   isId(g.id) &&
   optional(isString)(g.label) &&
   optional((v) => isListOf(v, isString))(g.members);
@@ -50,7 +47,7 @@ const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
 ];
 
 export function graphBodyIssue(graph: unknown): string | null {
-  if (!isObject(graph)) return 'graph: expected an object with nodes and edges';
+  if (!isRecord(graph)) return 'graph: expected an object with nodes and edges';
   for (const [member, valid, rule] of MEMBER_RULES)
     if (!valid(graph[member])) return `graph.${member}: expected ${rule}`;
   const { nodes, edges } = graph as GraphInput;

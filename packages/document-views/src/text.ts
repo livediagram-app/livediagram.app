@@ -38,7 +38,5 @@ export function cellText(text: string, inEntity = false): string {
   return inEntity ? escaped.replace(/;/g, '\\;').replace(/\}/g, '\\}') : escaped;
 }
 
-// `1 element`, `2 elements`.
-export function plural(count: number, one: string, many: string): string {
-  return `${count} ${count === 1 ? one : many}`;
-}
+// `1 element`, `2 elements`: the shared wording, re-exported for this package's views.
+export { plural } from '@livediagram/document';

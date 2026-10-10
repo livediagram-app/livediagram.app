@@ -11,8 +11,8 @@
 // (NoteFormatToolbar) — they host the same block-type picker (docs/specs/009-elements/block-type-picker.md) and a
 // second copy of this would drift on the first behaviour fix.
 
-import { useEffect, useRef, useState } from 'react';
-import { ChevronDownIcon, HoverCard } from '@livediagram/ui';
+import { useRef, useState } from 'react';
+import { ChevronDownIcon, HoverCard, useClickOutside } from '@livediagram/ui';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // preventDefault on mousedown keeps focus + the live selection in the
@@ -39,14 +39,7 @@ export function ToolbarDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('pointerdown', onDown, true);
-    return () => document.removeEventListener('pointerdown', onDown, true);
-  }, [open]);
+  useClickOutside(rootRef, () => setOpen(false), open);
   return (
     <div className="relative" ref={rootRef}>
       <HoverCard title={label} description={description}>

@@ -12,6 +12,7 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import { LibraryItemThumbnail } from '@/components/primitives/LibraryItemThumbnail';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { pluralGrouped } from '@livediagram/document';
 
 // The Explorer's Shape libraries page (docs/specs/013-workspace/shape-libraries.md "Managing
 // libraries: the Explorer"): the owner's libraries, newest first, each a card to rename, delete, or
@@ -21,8 +22,6 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 /** How many thumbnails a closed card shows (spec: "the first eight"). */
 export const SHAPE_LIBRARY_CARD_PREVIEWS = 8;
 
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 const titleOf = (item: ShapeLibraryItem, index: number) =>
   item.title.trim() || `Shape ${index + 1}`;
 
@@ -114,7 +113,7 @@ function LibraryCard({ library }: { library: ShapeLibrary }) {
           {library.name}
         </h3>
         <span className="text-xs text-slate-500 dark:text-slate-400">
-          {plural(library.items.length, 'shape', 'shapes')}
+          {pluralGrouped(library.items.length, 'shape', 'shapes')}
         </span>
       </div>
       {library.items.length > 0 ? (

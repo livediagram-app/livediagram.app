@@ -10,6 +10,7 @@ import {
   type ExcalidrawEnvelopeType,
   type ExcalidrawFiles,
 } from './excalidraw-types';
+import { isRecord } from '@livediagram/document';
 
 /** Excalidraw caps one image at 4 MiB; this admits about a dozen as data URLs. */
 export const EXCALIDRAW_MAX_SCENE_CHARS = 64 * 1024 * 1024;
@@ -38,9 +39,6 @@ export function looksLikeExcalidraw(text: string): boolean {
   return PREFIX.test(text.slice(0, EXCALIDRAW_DETECT_PREFIX_CHARS));
 }
 
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  !!v && typeof v === 'object' && !Array.isArray(v);
-
 const reject = (rejection: ExcalidrawRejection): ReadEnvelopeResult => ({
   ok: false,
   rejection,
@@ -58,22 +56,22 @@ export function readExcalidrawEnvelope(
   } catch {
     return reject('not-json');
   }
-  if (!isPlainObject(raw)) return reject('not-object');
+  if (!isRecord(raw)) return reject('not-object');
   const type = raw.type;
   if (!EXCALIDRAW_ENVELOPE_TYPES.includes(type as ExcalidrawEnvelopeType)) {
     return reject('not-excalidraw');
   }
   if (!Array.isArray(raw.elements)) return reject('no-elements');
   const elements = (raw.elements as unknown[]).filter(
-    (e): e is ExcalidrawElement => isPlainObject(e) && e.isDeleted !== true,
+    (e): e is ExcalidrawElement => isRecord(e) && e.isDeleted !== true,
   );
-  const files = isPlainObject(raw.files) ? (raw.files as ExcalidrawFiles) : {};
+  const files = isRecord(raw.files) ? (raw.files as ExcalidrawFiles) : {};
   const envelope: ExcalidrawEnvelope = {
     type: type as ExcalidrawEnvelopeType,
     elements,
     files,
   };
-  if (type === 'excalidraw' && isPlainObject(raw.appState)) {
+  if (type === 'excalidraw' && isRecord(raw.appState)) {
     envelope.appState = raw.appState as ExcalidrawAppState;
   }
   return { ok: true, envelope };

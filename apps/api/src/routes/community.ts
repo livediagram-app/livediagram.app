@@ -26,7 +26,7 @@ import {
   recordCommunityReport,
   setCommunityLike,
 } from '../db';
-import { json, noContent, notFound } from '../responses';
+import { json, noContent, notFound, signInRequired } from '../responses';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
 
@@ -76,7 +76,7 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
   // author's own posts under the same search words, hidden ones included, with their totals. Personal, so
   // never cached.
   if (segments.length === 3 && segments[2] === 'mine' && method === 'GET') {
-    if (!ctx.clerkUserId) return json({ error: 'sign_in_required' }, { status: 401 });
+    if (!ctx.clerkUserId) return signInRequired();
     const query = parseCommunityListQuery(url.searchParams);
     if (!query.ok) return json({ error: 'invalid_query' }, { status: 400 });
     const [{ rows, nextOffset }, totals] = await Promise.all([

@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from './env';
-import { __test, isAllowedRedirectUri, registerOauthRoutes } from './oauth';
+import { pkceChallenge } from '@livediagram/api-schema';
+import { isAllowedRedirectUri, registerOauthRoutes } from './oauth';
 
 function mockKV(): KVNamespace {
   const m = new Map<string, string>();
@@ -106,7 +107,7 @@ describe('dynamic client registration', () => {
     await env.OAUTH_KV.put('client:old', JSON.stringify({ redirectUris: [evil], clientName: 'x' }));
     const res = await app.request(
       `/oauth/authorize?client_id=old&redirect_uri=${encodeURIComponent(evil)}` +
-        `&code_challenge=${await __test.sha256base64url('x'.repeat(64))}&response_type=code`,
+        `&code_challenge=${await pkceChallenge('x'.repeat(64))}&response_type=code`,
       {},
       env,
     );
@@ -132,7 +133,7 @@ describe('dynamic client registration', () => {
 // Start a real authorize and hand back its session id — the same value the
 // consent screen receives in its URL.
 async function startAuthorize(clientId: string): Promise<string> {
-  const challenge = await __test.sha256base64url('x'.repeat(64));
+  const challenge = await pkceChallenge('x'.repeat(64));
   const auth = await app.request(
     `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}` +
       `&code_challenge=${challenge}&response_type=code`,
@@ -211,7 +212,7 @@ describe('GET /oauth/session/:id (what the consent screen may believe)', () => {
     const { client_id } = (await res.json()) as { client_id: string };
     const session = await app.request(
       `/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent('https://evil.test/cb')}` +
-        `&code_challenge=${await __test.sha256base64url('x'.repeat(64))}&response_type=code`,
+        `&code_challenge=${await pkceChallenge('x'.repeat(64))}&response_type=code`,
       {},
       env,
     );
@@ -229,7 +230,7 @@ describe('full authorize -> complete -> token flow', () => {
   it('round-trips a PKCE code to the minted token', async () => {
     const clientId = await register();
     const verifier = 'x'.repeat(64);
-    const challenge = await __test.sha256base64url(verifier);
+    const challenge = await pkceChallenge(verifier);
 
     const auth = await app.request(
       `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}` +
@@ -279,7 +280,7 @@ describe('full authorize -> complete -> token flow', () => {
   it('rejects a wrong PKCE verifier and a reused code', async () => {
     const clientId = await register();
     const verifier = 'y'.repeat(64);
-    const challenge = await __test.sha256base64url(verifier);
+    const challenge = await pkceChallenge(verifier);
     const auth = await app.request(
       `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${challenge}&code_challenge_method=S256`,
       {},
@@ -334,7 +335,7 @@ describe('full authorize -> complete -> token flow', () => {
   it('refuses to redeem a code for a different client_id', async () => {
     const clientId = await register();
     const verifier = 'v'.repeat(64);
-    const challenge = await __test.sha256base64url(verifier);
+    const challenge = await pkceChallenge(verifier);
     const auth = await app.request(
       `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${challenge}&code_challenge_method=S256`,
       {},
@@ -392,7 +393,7 @@ describe('full authorize -> complete -> token flow', () => {
 
     // token: short verifier against a valid code.
     const verifier = 'z'.repeat(64);
-    const challenge = await __test.sha256base64url(verifier);
+    const challenge = await pkceChallenge(verifier);
     const auth = await app.request(
       `/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(REDIRECT)}&code_challenge=${challenge}`,
       {},

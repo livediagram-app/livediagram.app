@@ -1,6 +1,7 @@
 // Which totals the status bar shows (docs/specs/029-sheets/sheet.md "Selection"): the viewer's own pick, kept in their
 // browser and shared by every Sheet on the page, set from the bar's own menu or the Sheet's settings.
 import { useSyncExternalStore } from 'react';
+import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
 export const STATS = ['Sum', 'Average', 'Count', 'Min', 'Max'] as const;
 export type Stat = (typeof STATS)[number];
@@ -10,15 +11,12 @@ const PICK_KEY = 'livediagram:sheet-status-stats';
 let pick: readonly Stat[] | null = null;
 const listeners = new Set<() => void>();
 
+// No storage (a private window, blocked site data) or a malformed value: the default pick.
 function read(): readonly Stat[] {
-  try {
-    const raw = JSON.parse(localStorage.getItem(PICK_KEY) ?? 'null') as unknown;
-    if (Array.isArray(raw)) {
-      const kept = STATS.filter((s) => raw.includes(s));
-      if (kept.length) return kept;
-    }
-  } catch {
-    // No storage (a private window, blocked site data): the default pick.
+  const raw = safeJson(readLocalStorageSafe(PICK_KEY) ?? 'null');
+  if (Array.isArray(raw)) {
+    const kept = STATS.filter((s) => raw.includes(s));
+    if (kept.length) return kept;
   }
   return DEFAULT_PICK;
 }
@@ -36,11 +34,8 @@ export function toggleStatusPick(stat: Stat): void {
     : STATS.filter((s) => s === stat || now.includes(s));
   if (!next.length) return;
   pick = next;
-  try {
-    localStorage.setItem(PICK_KEY, JSON.stringify(next));
-  } catch {
-    // Kept for this page only.
-  }
+  // A blocked write keeps the pick for this page only.
+  writeLocalStorageSafe(PICK_KEY, JSON.stringify(next));
   for (const l of listeners) l();
 }
 

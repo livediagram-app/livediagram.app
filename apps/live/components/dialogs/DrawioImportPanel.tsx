@@ -11,11 +11,9 @@ import {
 import { ImportChecklist } from './ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
 import { ImportImageReport } from './ImportImageReport';
+import { pluralGrouped } from '@livediagram/document';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
-
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
 /** A folder pick or a drop as files, each named after its own path's last part. */
 export function filesOfPick(picked: PickedExport | null): File[] {
@@ -68,10 +66,10 @@ export function DrawioImportPanel({
         onToggleAll={flow.toggleAll}
         {...(state.failures.length > 0
           ? {
-              leftOut: `${plural(state.failures.length, 'file', 'files')} will be left out; the report says why.`,
+              leftOut: `${pluralGrouped(state.failures.length, 'file', 'files')} will be left out; the report says why.`,
             }
           : {})}
-        importLabel={`Import ${plural(count, 'file', 'files')}`}
+        importLabel={`Import ${pluralGrouped(count, 'file', 'files')}`}
         onImport={() => void flow.importChecked()}
         onCancel={flow.reset}
       />

@@ -24,7 +24,7 @@ import {
 } from '@livediagram/document';
 import { getDocument, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
-import { badRequest, conflict, forbidden, json, notFound } from '../responses';
+import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { refuseGuestVoteOverCap } from '../vote-integrity';
 import {
   gateEdit,
@@ -99,7 +99,7 @@ export async function handleQaBoardRoute(ctx: RouteContext): Promise<Response | 
     } satisfies QaWriteRequest),
   });
   if (res.status === 404) return notFound();
-  if (res.status === 413) return json({ error: 'payload_too_large' }, { status: 413 });
+  if (res.status === 413) return payloadTooLarge();
   if (!res.ok) return conflict('qa_busy');
   const state = (await res.json()) as { notes: QaNote[]; rev: number };
   return json({ ...state, voterId });

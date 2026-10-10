@@ -1,10 +1,8 @@
 // Whether a draw.io vertex overlaps another (spec "Opacity over paper", D41): a translucent shape
 // over or under something else keeps its opacity, because seeing through it matters there.
 
+import { rectsIntersect } from '@livediagram/document';
 import { absoluteRect, type DrawioGraph, type Rect } from './cells';
-
-const intersects = (a: Rect, b: Rect) =>
-  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
 /** A memoised test over the page's visible vertices, ancestors and descendants left out. */
 export function overlapTest(graph: DrawioGraph): (cellId: string) => boolean {
@@ -33,7 +31,7 @@ export function overlapTest(graph: DrawioGraph): (cellId: string) => boolean {
           v.id !== cellId &&
           !mine.has(v.id) &&
           !ancestorsOf(v.id).has(cellId) &&
-          intersects(own, v.rect),
+          rectsIntersect(own, v.rect),
       );
     memo.set(cellId, hit);
     return hit;

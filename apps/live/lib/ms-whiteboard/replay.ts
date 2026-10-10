@@ -3,6 +3,7 @@
 // edit naming a node no longer there is skipped and counted, never thrown.
 import { MSWB_COMMAND, MSWB_COMMAND_TRAIT, MSWB_TRAIT, MSWB_TYPE } from './format';
 import { buildNode, children, createIndex, unindex, type TreeIndex, type WbNode } from './tree';
+import { isRecord } from '@livediagram/document';
 
 export type ReplayStats = {
   changes: number;
@@ -27,7 +28,6 @@ export type ReplayedBoard = {
 };
 
 type Rec = Record<string, unknown>;
-const isRecord = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
 
 /** Changes in replay order: timestamp, then sync order. */

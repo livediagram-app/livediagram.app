@@ -12,6 +12,7 @@ import type { DrawioDocumentFile } from '@/lib/drawio/new-document';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { toggled, toggledAll } from '@/lib/import-selection';
 import { track } from '@/lib/telemetry';
+import { pluralGrouped } from '@livediagram/document';
 
 export const DRAWIO_UNEXPECTED = "Couldn't import that. Check the files and try again.";
 
@@ -48,8 +49,6 @@ const DATE = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
   timeZone: 'UTC',
 });
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 
 function rowsOf(read: DrawioFiles): ImportChecklistRow[] {
   const diagrams = read.diagrams.map((d, i) => ({
@@ -57,7 +56,7 @@ function rowsOf(read: DrawioFiles): ImportChecklistRow[] {
     name: d.name,
     detail: [
       d.modifiedAt ? `Edited ${DATE.format(new Date(d.modifiedAt))}` : null,
-      plural(d.pages.length, 'page', 'pages'),
+      pluralGrouped(d.pages.length, 'page', 'pages'),
     ]
       .filter(Boolean)
       .join(' · '),
@@ -65,7 +64,7 @@ function rowsOf(read: DrawioFiles): ImportChecklistRow[] {
   const libraries = read.libraries.map((l, i) => ({
     key: `library:${i}`,
     name: l.name,
-    detail: `Shape library · ${plural(l.items.length, 'shape', 'shapes')}`,
+    detail: `Shape library · ${pluralGrouped(l.items.length, 'shape', 'shapes')}`,
   }));
   return [...diagrams, ...libraries];
 }

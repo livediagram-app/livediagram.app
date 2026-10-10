@@ -13,8 +13,14 @@
 // Positioned at the click, like the context menu it stands in for, and clamped
 // so a right-click near an edge does not open it off-screen.
 
-import { useCallback, useEffect, useId, useRef } from 'react';
-import { MENU_LABEL_ATTR, MenuTreeContext, useMenu, Portal } from '@livediagram/ui';
+import { useCallback, useId, useRef } from 'react';
+import {
+  MENU_LABEL_ATTR,
+  MenuTreeContext,
+  useMenu,
+  Portal,
+  useClickOutside,
+} from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 
 const WIDTH = 236;
@@ -48,16 +54,9 @@ export function LockedElementMenu({
   );
   const noteId = useId();
 
-  useEffect(() => {
-    // Capture, like every other canvas popover: the canvas swallows pointerdown
-    // on its own surface, so a bubbling listener never hears the click that
-    // should dismiss this.
-    const onDown = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) onClose();
-    };
-    window.addEventListener('pointerdown', onDown, true);
-    return () => window.removeEventListener('pointerdown', onDown, true);
-  }, [onClose]);
+  // Capture-phase (inside the hook), like every other canvas popover: the canvas swallows
+  // pointerdown on its own surface, so a bubbling listener never hears the dismissing click.
+  useClickOutside(ref, onClose);
 
   const left = Math.min(at.x, window.innerWidth - WIDTH - EDGE);
   const top = Math.min(at.y, window.innerHeight - 40 * holders.length - 60 - EDGE);

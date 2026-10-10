@@ -16,10 +16,10 @@ import { migrateIncomingElements } from './stored-tab';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
 import type { TableElement, TextSize } from './index';
+import { isRecord } from './is-record';
 
 type Raw = Record<string, unknown>;
 
-const isObject = (v: unknown): v is Raw => typeof v === 'object' && v !== null && !Array.isArray(v);
 const num = (v: unknown) => {
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -55,7 +55,7 @@ function normaliseEntity(el: Raw): Raw {
 function normaliseChart(el: Raw): Raw {
   const out = { ...el };
   if (Array.isArray(el.pieSlices))
-    out.pieSlices = el.pieSlices.filter(isObject).map((s) => ({
+    out.pieSlices = el.pieSlices.filter(isRecord).map((s) => ({
       ...s,
       label: str(s.label),
       value: Math.max(0, num(s.value)),
@@ -63,7 +63,7 @@ function normaliseChart(el: Raw): Raw {
   if (Array.isArray(el.lineCategories)) out.lineCategories = el.lineCategories.map(str);
   if (Array.isArray(el.lineSeries)) {
     const count = Array.isArray(out.lineCategories) ? out.lineCategories.length : undefined;
-    out.lineSeries = el.lineSeries.filter(isObject).map((s) => {
+    out.lineSeries = el.lineSeries.filter(isRecord).map((s) => {
       const values = Array.isArray(s.values) ? s.values.map(num) : [];
       const fitted =
         count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
@@ -84,7 +84,7 @@ function normaliseSticky(el: Raw): Raw {
 // One element made safe (the edits path runs this on just the elements an
 // edit touched, leaving the rest of the diagram as it is).
 export function normaliseElement(el: unknown): unknown {
-  if (!isObject(el)) return el;
+  if (!isRecord(el)) return el;
   // A stroke in a former stored shape (docs/specs/006-document/stroke-points.md) is packed first.
   const [current] = migrateIncomingElements([el]) as unknown as Raw[];
   return normaliseContent(withFactoryDefaults(current!));
@@ -143,7 +143,7 @@ function normaliseContent(el: Raw): unknown {
   }
 }
 
-const isLane = (el: unknown) => isObject(el) && el.type === 'shape' && el.shape === 'lane';
+const isLane = (el: unknown) => isRecord(el) && el.type === 'shape' && el.shape === 'lane';
 
 // Lanes moved to the front (their order kept) so they paint behind what they
 // hold, and so each is the backmost box under its contents.
@@ -160,8 +160,8 @@ export function lanesToFront<T>(elements: T[]): T[] {
  * left beside them, the migration would keep the old block and drop the new points.
  */
 export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
-  const base = isObject(prev) ? prev : {};
-  if (!isObject(patch)) return { ...base };
+  const base = isRecord(prev) ? prev : {};
+  if (!isRecord(patch)) return { ...base };
   if (!('points' in patch)) return { ...base, ...patch };
   const { packedPoints: _replaced, ...unpacked } = base;
   return { ...unpacked, ...patch };

@@ -10,6 +10,8 @@ import { LINK_ID_HEX, SYNC_REPORTS_KEPT } from './constants';
 import { gitDirOf } from './git';
 import type { LinkFile } from './link-file';
 import type { RecordedDocument } from './recorded-state';
+import { isRecord } from '@livediagram/document';
+import { sha256Hex } from '@livediagram/api-schema';
 
 export type LinkState = {
   version: 1;
@@ -29,11 +31,7 @@ const DIR_MODE = 0o700;
 const FILE_MODE = 0o600;
 
 export async function linkIdOf(realPath: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(realPath));
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-    .slice(0, LINK_ID_HEX);
+  return (await sha256Hex(new TextEncoder().encode(realPath))).slice(0, LINK_ID_HEX);
 }
 
 export async function linkStateDir(io: CliIo, link: LinkFile): Promise<string> {
@@ -41,9 +39,6 @@ export async function linkStateDir(io: CliIo, link: LinkFile): Promise<string> {
   const gitDir = await gitDirOf(io, link.root);
   return gitDir ? posix.join(gitDir, 'livediagram', id) : `${cacheDir(io)}/links/${id}`;
 }
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 // A missing, unreadable or other-version state starts empty, and is rewritten by the next pass.
 export async function readLinkState(io: CliIo, dir: string, linkPath: string): Promise<LinkState> {

@@ -16,7 +16,13 @@ import {
   type Item,
   type ItemTypeDef,
 } from '@livediagram/items';
-import { ChevronDownIcon, ChevronRightIcon, Tooltip, useEscape } from '@livediagram/ui';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  Tooltip,
+  useEscape,
+  useClickOutside,
+} from '@livediagram/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { planColourName } from './ColourSwatches';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
@@ -98,14 +104,7 @@ export function LinkedCardField({
   }, [open]);
 
   // A press outside the field closes the list.
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: PointerEvent) => {
-      if (!boxRef.current?.contains(e.target as Node)) close(false);
-    };
-    document.addEventListener('pointerdown', onDown, true);
-    return () => document.removeEventListener('pointerdown', onDown, true);
-  }, [open]);
+  useClickOutside(boxRef, () => close(false), open);
 
   const onListKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {

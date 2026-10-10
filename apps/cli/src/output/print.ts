@@ -4,11 +4,9 @@
 import type { Verb } from '@livediagram/agent-verbs';
 import { CliError } from './cli-error';
 import { EXIT } from './exit-codes';
+import { isRecord } from '@livediagram/document';
 
 export type PrintMode = { json: boolean; fields?: string[]; quiet: boolean };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 function pick(value: unknown, fields: readonly string[]): unknown {
   if (!isRecord(value)) return value;

@@ -12,12 +12,10 @@ import {
 } from '@livediagram/api-schema';
 import { debugLog } from './debug-log';
 import type { Participant } from './identity';
+import { isRecord } from '@livediagram/document';
 
 // The longest id an entry carries: element ids, presence ids and the room's entry ids are all under it.
 const AGENT_ID_MAX = 128;
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const clampedIds = (value: unknown, max: number): string[] | null =>
   Array.isArray(value) && value.every((id) => typeof id === 'string')

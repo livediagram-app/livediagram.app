@@ -9,6 +9,7 @@ import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
 import { buildTemplateTabs, isTemplateKind, templateFamilyOf } from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
+import { isRecord } from '@livediagram/document';
 
 const SOURCES = ['graph', 'mermaid', 'template'] as const;
 
@@ -19,9 +20,6 @@ type Refusal = { status: number; body: Record<string, unknown> };
 export type CompiledSeed =
   | { tabs: unknown[]; intent: CreationIntent | null; templateElements: Tab['elements'] }
   | { refusal: Refusal };
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 // The source a seeded tab names, when it names exactly one and no elements.
 function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
