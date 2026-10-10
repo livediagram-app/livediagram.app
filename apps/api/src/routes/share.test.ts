@@ -453,7 +453,14 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   it('records the visit for an identified non-owner, at the link’s role', async () => {
     const { ctx } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
-    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view', null);
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(
+      FAKE_ENV,
+      'visitor-1',
+      'd1',
+      'view',
+      null,
+      expect.any(String),
+    );
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md
@@ -476,7 +483,14 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       ['', true],
       ['Roadmap', undefined],
     ]);
-    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view', 't2');
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(
+      FAKE_ENV,
+      'visitor-1',
+      'd1',
+      'view',
+      't2',
+      expect.any(String),
+    );
   });
 
   it('tells an All-tabs visitor they have every tab', async () => {

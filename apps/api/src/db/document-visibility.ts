@@ -16,6 +16,8 @@
 //
 // CTE bodies only, to follow a WITH (or a comma). Binds: ?1 = the person's owner id, ?2 = now
 // (share-link expiry).
+import { visitLinkSql } from './shared';
+
 export const VISIBLE_DOCUMENTS_CTES = `
   my_teams(team_id) AS (
     SELECT team_id FROM team_members WHERE user_id = ?1 AND status = 'joined'
@@ -33,11 +35,7 @@ export const VISIBLE_DOCUMENTS_CTES = `
                 WHEN d.team_id IN (SELECT team_id FROM my_teams) THEN 'team'
                 ELSE 'shared' END AS via,
            CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
-                ELSE (SELECT sl.code FROM share_links sl
-                       WHERE sl.document_id = d.id AND sl.purpose = 'share' AND sl.role = s.role
-                         AND sl.tab_id IS s.tab_id
-                         AND (sl.expires_at IS NULL OR sl.expires_at > ?2)
-                       ORDER BY sl.created_at ASC LIMIT 1) END AS share_code,
+                ELSE ${visitLinkSql('?2')} END AS share_code,
            CASE WHEN d.owner_id = ?1 OR d.team_id IN (SELECT team_id FROM my_teams) THEN NULL
                 ELSE s.tab_id END AS scope_tab_id
       FROM visible_ids vi

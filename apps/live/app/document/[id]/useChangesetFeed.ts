@@ -20,8 +20,8 @@ import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline
 // What an editor does with a relayed changeset (docs/specs/024-agents/agent-changesets.md "In the
 // editor"; blueprint "The editor"): apply it as a peer's op would be applied, or re-read the tab when
 // the relay could not carry it; outline what it touched in its author's colour; and raise one toast
-// per burst offering Show and Undo. Undo is a revert, never personal history: applyRemoteTabs keeps
-// the undo stacks as they are, so Ctrl+Z never reaches a changeset.
+// per burst offering Show and Undo. Undo is a revert, never personal history: applyRemoteOp puts the
+// changeset into every undo / redo snapshot too, so Ctrl+Z never takes it back.
 
 export function useChangesetFeed(opts: {
   documentId: string | null;
@@ -31,7 +31,9 @@ export function useChangesetFeed(opts: {
   noteSeen: (tabId: string, rev: number) => void;
   loadedTabIdsRef: MutableRefObject<Set<string>>;
   markTabLoaded: (tabId: string) => void;
-  applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
+  // never brings back what the peer changed.
+  applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
   saveBaseline: SaveBaselineRefs;
   countAppliedOp: () => void;
   // Re-reads the named tabs from D1 in place (useRoomResync), moving the seen revision with them.
@@ -48,7 +50,7 @@ export function useChangesetFeed(opts: {
     noteSeen,
     loadedTabIdsRef,
     markTabLoaded,
-    applyRemoteTabs,
+    applyRemoteOp,
     saveBaseline,
     countAppliedOp,
     refetchTabs,
@@ -84,7 +86,7 @@ export function useChangesetFeed(opts: {
       // Applied as a peer's op, to the tabs on screen and to the save baseline alike
       // (docs/specs/012-collaboration/collab-race-hardening.md), in one batch with the seen revision
       // so a save never claims it before its content is on screen (useChangesetSeen).
-      applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
+      applyRemoteOp((prev) => applyRoomOpToTabs(prev, op));
       foldRemoteOpIntoBaseline(saveBaseline, op);
       countAppliedOp();
       if (op.tab && !loadedTabIdsRef.current.has(op.tabId)) markTabLoaded(op.tabId);
@@ -117,7 +119,7 @@ export function useChangesetFeed(opts: {
     [
       seenRef,
       loadedTabIdsRef,
-      applyRemoteTabs,
+      applyRemoteOp,
       saveBaseline,
       countAppliedOp,
       markTabLoaded,

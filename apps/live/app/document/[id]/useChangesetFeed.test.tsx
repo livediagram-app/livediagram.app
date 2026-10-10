@@ -63,7 +63,7 @@ function setup(seen = new Map([['t1', 1]])) {
       sessionShareCodeRef: { current: null },
       seenRef: { current: seen },
       loadedTabIdsRef: { current: new Set(['t1']) },
-      applyRemoteTabs: (updater) => {
+      applyRemoteOp: (updater) => {
         tabs = updater(tabs);
       },
       saveBaseline: {

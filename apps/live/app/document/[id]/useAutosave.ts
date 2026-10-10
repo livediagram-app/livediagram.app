@@ -15,7 +15,6 @@ import {
   apiSaveDocumentMeta,
   apiSaveTab,
   connectRoom,
-  flushDocumentSavesBeacon,
   reportSaveFailure,
   type DocumentListItem,
 } from '@/lib/api-client';
@@ -32,6 +31,8 @@ import {
   type RemoteOpJournal,
 } from './save-baseline';
 import { emptyAfterSave } from '@/lib/list-row-empty';
+import { createTabSaveQueue, type TabSaveQueue } from './tab-save-queue';
+import { useUnloadFlush } from './useUnloadFlush';
 import { sampleSaveTiming, startEditorTiming } from '@/lib/timing';
 
 // Per-tab autosave (docs/specs/006-document/per-tab-storage.md), lifted out of editor-page.tsx. Two effects:
@@ -181,41 +182,9 @@ export function useAutosave(opts: {
     writesForbiddenRef.current = false;
   }, [documentId]);
 
-  useEffect(() => {
-    if (!hydrated || !documentId || isReadOnly) return;
-    const handler = () => {
-      // Nothing we send can be accepted; don't beacon on the way out either.
-      if (writesForbiddenRef.current) return;
-      // The user just deleted this document (navigating to /explorer fires
-      // beforeunload): don't beacon its tabs/meta back and re-create it.
-      if (isDocumentDeleted(documentId)) return;
-      const { changedTabs, deletedIds, orderChanged, nameChanged, hasChanges } = computeTabSaveDiff(
-        lastSavedTabsRef.current,
-        tabs,
-        lastSavedNameRef.current,
-        documentName,
-        loadedTabIdsRef.current,
-      );
-      if (!hasChanges) return;
-      // The raw keepalive writes live behind the api-client boundary now
-      // (flushDocumentSavesBeacon) so this hook holds no fetch of its own.
-      flushDocumentSavesBeacon({
-        ownerId: selfId,
-        documentId,
-        shareCode: sessionShareCode,
-        changedTabs,
-        deletedIds,
-        loadedTabIds: loadedTabIdsRef.current,
-        orderChanged,
-        nameChanged,
-        name: documentName,
-        tabs,
-        changesetSeen,
-      });
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, [
+  // The last edits on the way out: a page closed, hidden for good, or left for another page of the app
+  // (useUnloadFlush).
+  useUnloadFlush({
     hydrated,
     documentId,
     isReadOnly,
@@ -227,7 +196,23 @@ export function useAutosave(opts: {
     lastSavedNameRef,
     loadedTabIdsRef,
     changesetSeen,
-  ]);
+    writesForbiddenRef,
+  });
+
+  // A page going to the background saves at once rather than after the debounce: a phone may discard it
+  // there without another event (docs/specs/006-document/per-tab-storage.md "Saving").
+  const [hiddenTick, setHiddenTick] = useState(0);
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') setHiddenTick((t) => t + 1);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
+
+  // Each tab's writes in order (tab-save-queue.ts).
+  const saveQueueRef = useRef<TabSaveQueue | null>(null);
+  saveQueueRef.current ??= createTabSaveQueue();
 
   useEffect(() => {
     if (!hydrated || !documentId) return;
@@ -282,28 +267,36 @@ export function useAutosave(opts: {
         // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
         const before = lastSavedTabsRef.current.find((s) => s.id === t.id);
         writes.push(
-          saveTabAndRelay(
-            before,
-            t,
-            () => roomRef.current,
-            () =>
-              apiSaveTab(selfId, documentId, t, sessionShareCode, {
-                // A loaded tab's content is authoritative, so an empty body is
-                // an intentional clear (reset-canvas / delete-all) the server
-                // backstop should accept; an unloaded placeholder is never in
-                // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
-                allowEmpty: loadedTabIdsRef.current.has(t.id),
-                roomCursor,
-                // From the same render as `t`, never ahead of it (useChangesetSeen).
-                ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
-              }),
-          ).then((rev) => {
-            if (rev !== null) noteRevision(t.id, rev);
-          }),
+          saveQueueRef
+            .current!.run(t.id, () =>
+              saveTabAndRelay(
+                before,
+                t,
+                () => roomRef.current,
+                () =>
+                  apiSaveTab(selfId, documentId, t, sessionShareCode, {
+                    // A loaded tab's content is authoritative, so an empty body is
+                    // an intentional clear (reset-canvas / delete-all) the server
+                    // backstop should accept; an unloaded placeholder is never in
+                    // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
+                    allowEmpty: loadedTabIdsRef.current.has(t.id),
+                    roomCursor,
+                    // From the same render as `t`, never ahead of it (useChangesetSeen).
+                    ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
+                  }),
+              ),
+            )
+            .then((rev) => {
+              if (rev !== null) noteRevision(t.id, rev);
+            }),
         );
       }
       for (const tabId of deletedIds) {
-        writes.push(apiDeleteTab(selfId, documentId, tabId, sessionShareCode));
+        writes.push(
+          saveQueueRef.current!.run(tabId, () =>
+            apiDeleteTab(selfId, documentId, tabId, sessionShareCode),
+          ),
+        );
       }
       if (orderChanged || nameChanged) {
         writes.push(
@@ -388,7 +381,7 @@ export function useAutosave(opts: {
           savesInFlightRef.current--;
           closeSaveWindow(journal);
         });
-    }, 600);
+    }, saveDelayMs());
     return () => window.clearTimeout(handle);
   }, [
     hydrated,
@@ -400,6 +393,7 @@ export function useAutosave(opts: {
     sessionShareCode,
     opsInRender,
     retryTick,
+    hiddenTick,
     changesetSeen,
     lastSavedTabsRef,
     lastSavedNameRef,
@@ -414,6 +408,11 @@ export function useAutosave(opts: {
 
   return { hasUnsavedChanges };
 }
+
+// The autosave's debounce: none while the page is in the background, where it may not live to the next.
+export const SAVE_DEBOUNCE_MS = 600;
+const saveDelayMs = () =>
+  typeof document !== 'undefined' && document.visibilityState === 'hidden' ? 0 : SAVE_DEBOUNCE_MS;
 
 // 5s, 10s, 20s, 40s, then a minute between attempts.
 export function saveRetryDelayMs(attempt: number): number {

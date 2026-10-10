@@ -250,6 +250,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelToCheckpoint: rawCancelToCheckpoint,
     reset: rawResetTabs,
     applyRemote: applyRemoteTabs,
+    applyRemoteOp,
     undo: tabUndo,
     redo: tabRedo,
     depth: historyDepth,
@@ -1000,7 +1001,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     noteSeen: realtime.changesetSeen.noteSeen,
     loadedTabIdsRef,
     markTabLoaded,
-    applyRemoteTabs,
+    applyRemoteOp,
     saveBaseline: { tabs: lastSavedTabsRef, name: lastSavedNameRef, journal: remoteOpJournalRef },
     countAppliedOp,
     refetchTabs: resyncFromServer,
@@ -1165,7 +1166,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
-    applyRemoteTabs,
+    applyRemoteOp,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -1983,18 +1984,28 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // write the element back as it was BEFORE the in-between edit, silently
     // dropping it (the bug where a link-card reset to "Add a link" once its
     // preview fetch landed).
-    const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
-    const before = liveTab.elements;
-    const after = mapElements(before);
     // An edit confined to the notes a photo draft brought in belongs to the
     // draft's gesture, not to the undo stack: it is written live and folded
     // into the one step Add leaves behind. Anything touching the author's own
     // work commits normally, so a Discard can never take it with it.
-    if (photoDraftOpenRef.current && onlyDraftNotesChanged(before, after)) {
-      tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
+    if (photoDraftOpenRef.current) {
+      const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
+      const before = liveTab.elements;
+      const after = mapElements(before);
+      if (onlyDraftNotesChanged(before, after)) {
+        tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
+        return;
+      }
+      commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
       return;
     }
-    commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
+    // Mapped inside the update, from the tab as it is then: a peer's op that
+    // arrived after the last render (tabsRef lags it) is built on, never
+    // written back over in its older form and broadcast as ours.
+    commitTabs((ts) => {
+      const tab = ts.find((t) => t.id === activeId);
+      return tab ? patchTab(ts, activeId, { elements: mapElements(tab.elements) }) : ts;
+    });
   };
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
