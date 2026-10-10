@@ -20,7 +20,8 @@ import {
   CommunityPostTileSkeleton,
   useNearViewport,
 } from '@livediagram/ui';
-import { BAND_EYEBROW, BAND_LEAD, BAND_TITLE } from '@/components/band-classes';
+import { BAND_LEAD, BAND_TITLE } from '@/components/band-classes';
+import { EYEBROW } from '@/components/eyebrow';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page";
 // docs/specs/019-marketing/marketing-site.md): six documents people are proud of, the most liked over the
@@ -76,7 +77,7 @@ export function CommunityShowcase() {
     >
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={BAND_EYEBROW}>From the Community</p>
+          <p className={EYEBROW}>From the Community</p>
           <h2 className={BAND_TITLE}>Made by people like you</h2>
           <p className={BAND_LEAD}>
             Documents people are proud of, shared for anyone to open and make their own. Find a

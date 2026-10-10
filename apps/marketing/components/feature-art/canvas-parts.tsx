@@ -16,7 +16,7 @@ export const ALEX = '#8b5cf6';
 export const SAM = '#10b981';
 export const AWAY = '#f59e0b';
 
-// A delay into the shared 6s timeline (app/feature-art-animations.css, the canvas and collaboration block).
+// A delay into the shared 6s timeline (app/feature-art/canvas.css, the canvas and collaboration block).
 export const at = (seconds: number, extra?: CSSProperties) =>
   ({ '--d': `${seconds}s`, ...extra }) as CSSProperties;
 

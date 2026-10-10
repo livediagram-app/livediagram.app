@@ -2,7 +2,7 @@
 // canvas cards; the Collaborate cards live in ./together). Each is a small mock of the editor
 // surface its card describes, plain SVG on the card's 300 by 96 stage (Scene in ./canvas-parts),
 // composed across the full width. Motion runs on one shared 6s timeline
-// (app/feature-art-animations.css, the canvas and collaboration block): pieces are drawn where they end up and staggered
+// (app/feature-art/canvas.css, the canvas and collaboration block): pieces are drawn where they end up and staggered
 // with --d, and every one settles to its finished frame under reduced motion.
 
 import type { CSSProperties, ReactNode } from 'react';

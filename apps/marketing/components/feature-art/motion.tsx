@@ -1,7 +1,7 @@
 // Feature illustrations for motion (docs/specs/008-canvas/canvas-and-palette.md "Animated
 // elements" and the animated background patterns). Each scene is a small working diagram whose
 // motion carries meaning, a status, a direction, a mood. Motion is pure CSS (fa-* and fa-d-* in
-// app/feature-art-animations.css), so it survives the static export and settles to a still frame
+// app/feature-art/content.css), so it survives the static export and settles to a still frame
 // under prefers-reduced-motion, as the editor's own animations do. Shared marks: ./canvas-marks.
 import type { CSSProperties, ReactNode } from 'react';
 import { ARROW, INK, INK_TEXT, PANEL, SHADOW, Scene, TEXT_BODY, TEXT_MUTED } from './canvas-marks';

@@ -1,7 +1,7 @@
 // Feature illustrations: working together, presenting to the room, and sharing
 // (docs/specs/019-marketing/marketing-site.md "Feature category pages"), the Collaborate
 // category's cards. Plain SVG on the card's 300 by 96 stage (Scene in ./canvas-parts), on the
-// shared 6s timeline (app/feature-art-animations.css, the canvas and collaboration block); every piece settles to its
+// shared 6s timeline (app/feature-art/canvas.css, the canvas and collaboration block); every piece settles to its
 // finished frame under reduced motion. Split from ./canvas.tsx, which keeps the editing and tab
 // scenes.
 

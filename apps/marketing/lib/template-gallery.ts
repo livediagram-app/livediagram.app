@@ -34,7 +34,7 @@ export type GalleryShelf = { id: ShelfId; label: string; templates: GalleryTempl
 // Everything, or one editor mode (the gallery's mode filter, as the template step's).
 export type ModeChoice = 'all' | EditorMode;
 
-export const POPULAR_LABEL = 'Popular';
+const POPULAR_LABEL = 'Popular';
 
 const LABELS = new Map(TEMPLATE_CATEGORIES.map((c) => [c.id, c.label]));
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

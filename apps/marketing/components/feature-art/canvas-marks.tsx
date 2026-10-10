@@ -1,6 +1,6 @@
 // Shared marks for the richer feature-card scenes (content.tsx, structure.tsx, motion.tsx): the
 // scene's SVG surface, the editor's chrome surfaces, a teammate's cursor and a text caret. Each
-// scene reads finished at rest and moves only an accent (fa-d-* in app/feature-art-animations.css),
+// scene reads finished at rest and moves only an accent (fa-d-* in app/feature-art/content.css),
 // so any moment of the loop is a good picture, in light and in dark.
 
 import type { CSSProperties, ReactNode } from 'react';

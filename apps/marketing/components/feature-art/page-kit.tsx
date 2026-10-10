@@ -3,7 +3,7 @@
 // screen, lines of writing, a teammate's cursor. Every colour has its light value as the SVG
 // attribute and its dark value as a dark: utility, so a card is right in both appearances.
 //
-// Motion lives in app/feature-art-animations.css (the fa-e-* block): each piece takes its own
+// Motion lives in app/feature-art/pages.css (the fa-e-* block): each piece takes its own
 // delay through --e-d, every loop is the same length, and reduced motion settles all of it.
 
 import type { CSSProperties, ReactNode } from 'react';

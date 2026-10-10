@@ -7,9 +7,6 @@
 export const BAND_SECTION =
   'border-t border-slate-200/70 bg-slate-100 dark:border-slate-800/70 dark:bg-slate-950';
 
-export const BAND_EYEBROW =
-  'text-sm font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300';
-
 export const BAND_TITLE =
   'mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100';
 

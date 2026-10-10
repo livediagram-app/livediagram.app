@@ -18,11 +18,11 @@ import {
 import {
   BAND_CARD,
   BAND_CONTROL_HOVER,
-  BAND_EYEBROW,
   BAND_LEAD,
   BAND_SECTION,
   BAND_TITLE,
 } from '@/components/band-classes';
+import { EYEBROW } from '@/components/eyebrow';
 
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): every template the
 // editor ships, laid out as the editor's template step lays them out
@@ -63,7 +63,7 @@ export function TemplateGallery() {
     <section className={BAND_SECTION}>
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={BAND_EYEBROW}>One canvas, many jobs</p>
+          <p className={EYEBROW}>One canvas, many jobs</p>
           <h2 className={BAND_TITLE}>What do you want to create?</h2>
           <p className={BAND_LEAD}>
             Pick a starting point and you are on the canvas with it already drawn. Every template

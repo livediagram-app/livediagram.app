@@ -5,7 +5,13 @@
 @import './hero-animations.css';
 @import './hero-mode-animations.css';
 @import './promises.css';
-@import './feature-art-animations.css';
+@import './feature-art/core.css';
+@import './feature-art/content.css';
+@import './feature-art/canvas.css';
+@import './feature-art/pages.css';
+@import './feature-art/versatility.css';
+@import './feature-art/modes.css';
+@import './feature-art/features.css';
 @import './page-motion.css';
 @import './privacy-art.css';
 @import './licences.css';

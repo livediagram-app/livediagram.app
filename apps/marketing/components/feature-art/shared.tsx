@@ -2,7 +2,7 @@
 // scene sits in and the few colours the SVG attributes restate. The scenes live in
 // one file per subject beside this one; FeatureArt.tsx re-exports them all.
 //
-// Motion is pure CSS (fa-* classes + keyframes in app/feature-art-animations.css) so
+// Motion is pure CSS (fa-* classes + keyframes in app/feature-art/*.css) so
 // it survives the static export and settles under prefers-reduced-motion.
 
 import type { ReactNode } from 'react';

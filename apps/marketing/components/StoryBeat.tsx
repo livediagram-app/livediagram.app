@@ -4,6 +4,7 @@ import { CtaLink } from '@/components/CtaLink';
 import { FeatureScene } from '@/components/FeatureScene';
 import { featureHref } from '@/lib/feature-anchor';
 import { sectionHighlights, type LandingSection } from '@/lib/landing-content';
+import { EYEBROW } from '@/components/eyebrow';
 
 // One beat of the landing page's story (docs/specs/019-marketing/marketing-site.md "Story beats"):
 // one core feature of the app. Its number and plain name above the headline, its pitch, a few
@@ -36,7 +37,7 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
             beside the scene from lg. */}
         <div className={`enter-on-scroll text-center lg:text-left ${artFirst ? 'lg:order-2' : ''}`}>
           {/* The beat's number beside the feature's plain name, above the headline. */}
-          <p className="flex items-center justify-center gap-3 text-sm lg:justify-start font-semibold tracking-wide text-brand-700 uppercase dark:text-brand-300">
+          <p className={`flex items-center justify-center gap-3 lg:justify-start ${EYEBROW}`}>
             <GlyphDisc
               aria-hidden
               className="h-8 w-8 bg-brand-700 text-xs font-semibold text-white tabular-nums"

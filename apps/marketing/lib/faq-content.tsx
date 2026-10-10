@@ -143,7 +143,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I organise a big document?',
-        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer.',
+        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a document onto a folder to file it.',
       },
       {
         q: 'Is there a spreadsheet?',

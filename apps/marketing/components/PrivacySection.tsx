@@ -3,13 +3,8 @@
 // set apart from the story beats. Each card leads with an animated illustration in the
 // FeatureArt vocabulary (Frame + SVG + fa-* keyframes), drawn for both appearances.
 
-import {
-  BAND_CARD,
-  BAND_EYEBROW,
-  BAND_LEAD,
-  BAND_SECTION,
-  BAND_TITLE,
-} from '@/components/band-classes';
+import { BAND_CARD, BAND_LEAD, BAND_SECTION, BAND_TITLE } from '@/components/band-classes';
+import { EYEBROW } from '@/components/eyebrow';
 import {
   DataIsYoursArt,
   EncryptedArt,
@@ -63,7 +58,7 @@ export function PrivacySection() {
     <section id="privacy" className={BAND_SECTION} aria-labelledby="privacy-heading">
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={BAND_EYEBROW}>Privacy by design</p>
+          <p className={EYEBROW}>Privacy by design</p>
           <h2 id="privacy-heading" className={BAND_TITLE}>
             Your data, your call
           </h2>
