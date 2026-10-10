@@ -69,3 +69,36 @@ describe('useCollabElements: roll call', () => {
     expect(el().rollCall?.map((r) => r.name)).toEqual(['Me', 'Ada']);
   });
 });
+
+describe('useCollabElements: agenda', () => {
+  const agenda = (over: Partial<ShapeElement> = {}) =>
+    card({
+      shape: 'agenda',
+      agendaItems: [
+        { label: 'Intro', minutes: 5 },
+        { label: 'Retro', minutes: 10 },
+      ],
+      ...over,
+    });
+
+  it('stamps the run it started on the segment', () => {
+    const startTimer = vi.fn(() => 4242);
+    const { api, el } = setup(agenda(), { startTimer });
+    api.pressAgendaItem(el(), 1);
+    expect(startTimer).toHaveBeenCalledWith('countdown', 600_000);
+    expect(el()).toMatchObject({ agendaCurrent: 1, agendaTimerStartedAt: 4242 });
+  });
+
+  it('moves nothing when the timer did not start', () => {
+    const { api, el } = setup(agenda(), { startTimer: vi.fn(() => undefined) });
+    api.pressAgendaItem(el(), 1);
+    expect(el().agendaCurrent).toBeUndefined();
+  });
+
+  it('Reset Agenda goes back to not started', () => {
+    const { api, el } = setup(agenda({ agendaCurrent: 1, agendaTimerStartedAt: 4242 }));
+    api.resetAgenda(el());
+    expect(el().agendaCurrent).toBeUndefined();
+    expect(el().agendaTimerStartedAt).toBeUndefined();
+  });
+});

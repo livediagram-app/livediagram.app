@@ -60,7 +60,8 @@ export function useCollabElements({
   sessionToolsBlocked: boolean;
   selfParticipant: Participant;
   livePresence: Participant[];
-  startTimer: (mode: TimerMode, durationMs?: number) => void;
+  // Returns the run's `startedAt`, or undefined when nothing started.
+  startTimer: (mode: TimerMode, durationMs?: number) => number | undefined;
 }) {
   // `patchElement`, for a verb that runs the room rather than answering it:
   // reveal, clear, roll, agenda. One helper rather than a flag on every call,
@@ -161,7 +162,15 @@ export function useCollabElements({
       responsesRevealed: false,
       collabRound: crypto.randomUUID(),
     }));
-    track('Element', 'Changed', element.shape === 'done-check' ? 'DoneCheck' : 'Estimate');
+    track(
+      'Element',
+      'Changed',
+      element.shape === 'done-check'
+        ? 'DoneCheck'
+        : element.shape === 'temperature'
+          ? 'Temperature'
+          : 'Estimate',
+    );
   };
 
   // --- Idea box (docs/specs/012-collaboration/idea-box.md) --------------------------------------------------
@@ -244,8 +253,21 @@ export function useCollabElements({
     if (editsBlocked || sessionToolsBlocked) return;
     const item = (element.agendaItems ?? [])[index];
     if (!item) return;
-    startTimer('countdown', clampAgendaMinutes(item.minutes) * 60_000);
-    patchElement(element.id, () => ({ agendaCurrent: index }));
+    const startedAt = startTimer('countdown', clampAgendaMinutes(item.minutes) * 60_000);
+    if (startedAt === undefined) return;
+    // The run it started, so the face shows this timer's time left only while
+    // the tab timer is still that run.
+    patchElement(element.id, () => ({ agendaCurrent: index, agendaTimerStartedAt: startedAt }));
+    track('Element', 'Changed', 'Agenda');
+  };
+
+  // Back to "not started": no segment current. The tab timer is left alone,
+  // it is the room's, and the agenda simply stops claiming it.
+  const resetAgenda = (element: ShapeElement) => {
+    patchAsFacilitator(element.id, () => ({
+      agendaCurrent: undefined,
+      agendaTimerStartedAt: undefined,
+    }));
     track('Element', 'Changed', 'Agenda');
   };
 
@@ -300,6 +322,7 @@ export function useCollabElements({
     clearIdeas,
     scatterIdeas,
     pressAgendaItem,
+    resetAgenda,
     takeRoll,
   };
 }

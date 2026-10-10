@@ -468,6 +468,7 @@ export function EditorCanvasHost() {
     clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
     scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
     pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+    resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
     takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
     // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
     // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and

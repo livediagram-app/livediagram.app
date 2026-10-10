@@ -56,6 +56,8 @@ export type CollabApi = {
   clearIdeas?: (element: ShapeElement) => void;
   scatterIdeas?: (element: ShapeElement) => void;
   pressAgendaItem?: (element: ShapeElement, index: number) => void;
+  // Back to "not started" (docs/specs/012-collaboration/agenda.md).
+  resetAgenda?: (element: ShapeElement) => void;
   takeRoll?: (element: ShapeElement) => void;
   // The Q&A board (docs/specs/012-collaboration/qa-board.md). Our OWNER id, only so the board can compute our
   // voter id the way the server does (qaVoterId) and know which notes we
@@ -94,8 +96,8 @@ export function CollabFaceRouter({
   label: string;
   textColor: string;
   collab: CollabApi | undefined;
-  // The Done check and the Idea box draw their own `…` (their round
-  // controls), so the shared settings button is suppressed for them and this
+  // The Done check, the Idea box, the Temperature check and the Agenda draw
+  // their own `…` (their round controls), so the shared settings button is suppressed for them and this
   // is how their menus still reach the element's full settings (docs/specs/008-canvas/canvas-and-palette.md).
   // Every other card here takes the shared button and never sees this.
   onOpenSettings?: () => void;
@@ -163,6 +165,8 @@ export function CollabFaceRouter({
         textColor={textColor}
         selfKey={api?.selfKey ?? ''}
         onRespond={api?.respond ? (value) => api.respond!(element, value) : undefined}
+        onClear={api?.clearResponses ? () => api.clearResponses!(element) : undefined}
+        onOpenSettings={onOpenSettings}
       />
     );
   }
@@ -241,6 +245,8 @@ export function CollabFaceRouter({
         onPressItem={
           api?.pressAgendaItem ? (index) => api.pressAgendaItem!(element, index) : undefined
         }
+        onReset={api?.resetAgenda ? () => api.resetAgenda!(element) : undefined}
+        onOpenSettings={onOpenSettings}
       />
     );
   }

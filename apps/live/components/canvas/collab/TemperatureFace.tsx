@@ -14,6 +14,11 @@ import {
   responseTally,
   type ShapeElement,
 } from '@livediagram/document';
+import {
+  ElementEllipsisMenu,
+  ElementMenuItem,
+  ElementMenuSettingsRow,
+} from '@/components/canvas/ElementEllipsisMenu';
 import { CollabPanel } from './collab-chrome';
 import { MoodBars } from './temperature/MoodBars';
 import { MoodButtons } from './temperature/MoodButtons';
@@ -25,12 +30,19 @@ export function TemperatureFace({
   textColor,
   selfKey,
   onRespond,
+  onClear,
+  onOpenSettings,
 }: {
   element: ShapeElement;
   label: string;
   textColor: string;
   selfKey: string;
   onRespond?: (value: string) => void;
+  // Clear everyone's answer for the next reading, as the Done check resets.
+  // Absent for anyone who may not run the room.
+  onClear?: () => void;
+  /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
+  onOpenSettings?: () => void;
 }) {
   const responses = element.responses ?? [];
   const stats = responseStats(responses);
@@ -42,6 +54,39 @@ export function TemperatureFace({
       title={label.trim() || 'How are we feeling?'}
       textColor={textColor}
       aside={stats.count ? `${stats.count} answered` : undefined}
+      // Its own `…` only while there are answers to reset; otherwise the
+      // shared settings button stands there as on every other card.
+      headerExtra={
+        onClear && responses.length > 0 ? (
+          <ElementEllipsisMenu
+            kind="command"
+            label="Temperature check options"
+            color={textColor}
+            align="left"
+          >
+            {(close) => (
+              <>
+                <ElementMenuItem
+                  onPress={() => {
+                    onClear();
+                    close();
+                  }}
+                >
+                  Reset Answers
+                </ElementMenuItem>
+                {onOpenSettings ? (
+                  <ElementMenuSettingsRow
+                    onOpen={() => {
+                      onOpenSettings();
+                      close();
+                    }}
+                  />
+                ) : null}
+              </>
+            )}
+          </ElementEllipsisMenu>
+        ) : undefined
+      }
     >
       <MoodButtons
         mine={responseOf(responses, selfKey)}

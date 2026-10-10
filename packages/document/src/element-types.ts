@@ -283,6 +283,9 @@ export type ShapeElement = {
   // is in (absent = not started). Only meaningful on 'agenda'.
   agendaItems?: AgendaItem[];
   agendaCurrent?: number;
+  // The `startedAt` of the tab timer the current segment started, so the face
+  // shows that timer's time left only while it is still that run.
+  agendaTimerStartedAt?: number;
   // Decision record (docs/specs/012-collaboration/decision-record.md): the status chip, the day it was taken
   // (`YYYY-MM-DD`, a date rather than a timestamp), and the reasons. The
   // element's `label` is the decision STATEMENT, so it needs no extra field.

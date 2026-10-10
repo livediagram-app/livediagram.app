@@ -46,6 +46,24 @@ afterEach(() => {
   vi.mocked(track).mockClear();
 });
 
+describe('a timer run’s startedAt (docs/specs/012-collaboration/agenda.md)', () => {
+  it('is minted at start, returned, and kept through pause, resume and extend', () => {
+    const h = harness();
+    expect(h.session().startTimer('countdown', 60_000)).toBe(1_000_000);
+    expect(h.tab().timer?.startedAt).toBe(1_000_000);
+    vi.setSystemTime(1_010_000);
+    h.session().pauseTimer();
+    h.session().resumeTimer();
+    h.session().extendTimer(60_000);
+    expect(h.tab().timer).toMatchObject({ running: true, startedAt: 1_000_000 });
+  });
+
+  it('is undefined when the start is refused', () => {
+    const { session } = harness({}, { sessionToolsBlocked: true });
+    expect(session().startTimer('countdown', 60_000)).toBeUndefined();
+  });
+});
+
 describe('extendTimer', () => {
   it('pushes a running countdown’s end and length out together', () => {
     const h = harness({

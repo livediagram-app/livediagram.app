@@ -93,6 +93,7 @@ export const ELEMENT_FIELD_NAMES = {
     'collabRound',
     'agendaItems',
     'agendaCurrent',
+    'agendaTimerStartedAt',
     'decisionStatus',
     'decisionDate',
     'decisionDrivers',

@@ -10721,6 +10721,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "agendaTimerStartedAt": {
+        "type": "number"
+      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -12549,6 +12552,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "running": {
         "type": "boolean"
+      },
+      "startedAt": {
+        "type": "number"
       }
     },
     "required": [

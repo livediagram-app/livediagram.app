@@ -172,6 +172,7 @@ export const LIVE_ELEMENT_FIELDS = [
   'ideasRevealed',
   'rollCall',
   'agendaCurrent',
+  'agendaTimerStartedAt',
   'pickerResult',
   // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
   // presses, not edits, so an undo must not un-start somebody's round.
@@ -196,6 +197,7 @@ type LiveFieldBag = {
   | 'ideasRevealed'
   | 'rollCall'
   | 'agendaCurrent'
+  | 'agendaTimerStartedAt'
   | 'pickerResult'
   | 'quizStartedAt'
   | 'quizLockedAt'

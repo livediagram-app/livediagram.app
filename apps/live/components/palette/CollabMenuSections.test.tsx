@@ -40,6 +40,31 @@ describe('AgendaMenuSection', () => {
     expect(name(1).value).toBe('Welcome');
   });
 
+  it('carries the current segment with its row on move and remove', () => {
+    const onSetItems = vi.fn();
+    render(
+      <AgendaMenuSection
+        target={shape({
+          agendaItems: [
+            { label: 'A', minutes: 5 },
+            { label: 'B', minutes: 5 },
+            { label: 'C', minutes: 5 },
+          ],
+        })}
+        sectionProps={sectionProps}
+        onSetItems={onSetItems}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText('Move segment 3 up'));
+    const [moved, moveCurrent] = onSetItems.mock.calls[0]!;
+    expect(moved.map((r: AgendaItem) => r.label)).toEqual(['A', 'C', 'B']);
+    expect([0, 1, 2].map(moveCurrent)).toEqual([0, 2, 1]);
+    fireEvent.click(screen.getByLabelText('Remove segment 2'));
+    const [left, removeCurrent] = onSetItems.mock.calls[1]!;
+    expect(left.map((r: AgendaItem) => r.label)).toEqual(['A', 'C']);
+    expect([0, 1, 2].map(removeCurrent)).toEqual([0, undefined, 1]);
+  });
+
   it('follows the element when its segments change', () => {
     const { rerender } = render(agenda([{ label: 'Intro', minutes: 5 }]));
     fireEvent.change(name(1), { target: { value: 'Welcome' } });
