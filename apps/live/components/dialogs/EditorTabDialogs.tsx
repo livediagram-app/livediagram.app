@@ -9,6 +9,7 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { markShareAfterSync } from '@/lib/offline/share-after-sync';
+import { track } from '@/lib/telemetry';
 import { useShareAfterSync } from '@/hooks/persistence/useShareAfterSync';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -91,6 +92,8 @@ export function EditorTabDialogs() {
   const syncToCloud = async () => {
     if (!documentId || !readerKnown) return;
     await saveOfflineToCloud(documentId, selfParticipant.id);
+    // Before the reload, like the Explorer's Sync Document: the pagehide beacon carries it through.
+    track('Document', 'Moved', 'SavedToCloud');
     markShareAfterSync(documentId);
     window.location.reload();
   };

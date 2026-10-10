@@ -958,6 +958,14 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// documents after signing in"); charted with Offline Mode on the Dashboard.
+export const LOCAL_MOVE_OFFERED = opened(
+  'Move Prompt Shown',
+  'Someone signed in with documents kept only in this browser and was offered to move them to the account.',
+  (t) => t === 'LocalMovePrompt',
+);
+
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
 
 export const OTHER_OPENED = chart(

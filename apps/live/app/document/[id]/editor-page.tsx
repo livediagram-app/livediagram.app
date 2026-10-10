@@ -14,6 +14,7 @@ import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { LoadErrorCard } from '@/components/chrome/LoadErrorCard';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
 import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
+import { LocalMovePrompt } from '@/components/dialogs/LocalMovePrompt';
 import { EditorContext } from './EditorContext';
 import { EditorView } from './EditorView';
 import { useEditorState } from './useEditorState';
@@ -228,6 +229,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           </ShapeLibraryProvider>
         </MentionContext.Provider>
       </CustomThemeProvider>
+      {/* Moving this browser's Local only documents after signing in
+          (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
+      {appChrome ? <LocalMovePrompt /> : null}
     </EditorContext.Provider>
   );
 }
