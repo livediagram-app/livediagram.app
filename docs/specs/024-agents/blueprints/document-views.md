@@ -323,8 +323,13 @@ are escaped as `\;` and `\}` too.
 | `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                                 | `VW21` |
 | `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                      | `VW21` |
 | `checklist`              | `done=<done>/<total>`                                                                       |        |
+| `plan-board`             | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`      |        |
+| `plan-card`              | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                      |        |
+| `plan-view`              | `view=<planView.view as cellText>`, `view=none` when absent                                 |        |
+| `plan-sheet`             | `sheet=<planSheet.sheetId as cellText>`, `sheet=none` when absent or empty                  |        |
 
-The table line prints its label first when it has one.
+The table line prints its label first when it has one. Every text a summary prints from the document goes through
+`cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
 
 **State attributes** (`stateAttributeOf`), one per element of these kinds, printed after the summary (`VW22`):
 

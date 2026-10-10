@@ -44,7 +44,8 @@ function checklistSummary(el: Element): string {
 function planBoardSummary(el: Element): string {
   const setup = (el as { planBoard?: { columns?: unknown } }).planBoard;
   const columns = Array.isArray(setup?.columns) ? setup.columns.filter(isObject) : [];
-  return `columns=${columns.map((c) => stringField(c, 'name') ?? '?').join('|')}`;
+  // Each name escaped as a table cell: a newline or `|` in a name never forges a line or a column.
+  return `columns=${columns.map((c) => cellText(stringField(c, 'name') ?? '?')).join('|')}`;
 }
 
 export function contentSummaryOf(el: Element): string | null {
@@ -66,15 +67,15 @@ export function contentSummaryOf(el: Element): string | null {
       return planBoardSummary(el);
     case 'plan-card': {
       const card = (el as { planCard?: { itemId?: unknown } }).planCard;
-      return `item=${typeof card?.itemId === 'string' && card.itemId ? card.itemId : 'none'}`;
+      return `item=${typeof card?.itemId === 'string' && card.itemId ? cellText(card.itemId) : 'none'}`;
     }
     case 'plan-view': {
       const view = (el as { planView?: { view?: unknown } }).planView?.view;
-      return `view=${typeof view === 'string' ? view : 'none'}`;
+      return `view=${typeof view === 'string' ? cellText(view) : 'none'}`;
     }
     case 'plan-sheet': {
       const sheet = (el as { planSheet?: { sheetId?: unknown } }).planSheet;
-      return `sheet=${typeof sheet?.sheetId === 'string' && sheet.sheetId ? sheet.sheetId : 'none'}`;
+      return `sheet=${typeof sheet?.sheetId === 'string' && sheet.sheetId ? cellText(sheet.sheetId) : 'none'}`;
     }
     default:
       return null;
