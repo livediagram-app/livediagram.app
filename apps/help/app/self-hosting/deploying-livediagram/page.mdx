@@ -47,7 +47,7 @@ Deployments run through **GitHub Actions to Cloudflare Workers**. In broad strok
 
 Deploying needs a Cloudflare API token and account id, supplied as repository secrets (`CF_API_TOKEN` and `CF_ACCOUNT_ID`), never committed to source. You can also deploy by hand: run `pnpm build`, apply migrations with `pnpm --filter @livediagram/api db:migrate:remote`, then run `wrangler deploy` for each Worker in the same order. The repository also has a staging workflow that the hosted service uses for rehearsals. It runs automatically after every green CI on `main`, so a fork should delete it, or it fails on every merge.
 
-<Figure caption="GitHub Actions deploys five apps in parallel, then live and the optional mcp after the api, and the router last.">
+<Figure caption="GitHub Actions deploys five apps in parallel, then live and mcp once the api is up, and the router last.">
   <DeployFlow />
 </Figure>
 
