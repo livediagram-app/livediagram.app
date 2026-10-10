@@ -12,7 +12,7 @@ import {
   useMaximisedPlanId,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
-import { MaximisableSlot, useMaximisedPlanLifetime } from './MaximisedPlanLayer';
+import { CanvasCover, MaximisableSlot, useMaximisedPlanLifetime } from './MaximisedPlanLayer';
 
 // docs/specs/026-plan/plan-board.md "Maximised board" and plan-views.md "Maximised view": maximising moves the body,
 // never remounts it; a view lays out at the overlay's size; one Escape restores, whatever else listens for it.
@@ -206,5 +206,30 @@ describe('restoring while it is still growing', () => {
     act(() => vi.advanceTimersByTime(MOTION_MS.long * 2));
     expect(isMaximisedPlanClosing()).toBe(false);
     expect(inOverlay()).toBe(true);
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "The header holds the top row": the cover hands the band to the element's header.
+describe('the canvas cover', () => {
+  const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  it('sets the header band for the element it holds, and none without one', () => {
+    const { container, rerender } = render(
+      <CanvasCover layout={{ insets, band: { height: 53, left: 124, mid: 349 } }} marker={{}}>
+        <span />
+      </CanvasCover>,
+    );
+    const inner = container.querySelector<HTMLElement>('[data-header-band]')!;
+    expect(inner.style.getPropertyValue('--plan-band-h')).toBe('53px');
+    expect(inner.style.getPropertyValue('--plan-band-left')).toBe('124px');
+    expect(inner.style.getPropertyValue('--plan-band-mid')).toBe('349px');
+    rerender(
+      <CanvasCover layout={{ insets: { ...insets, top: 66 }, band: null }} marker={{}}>
+        <span />
+      </CanvasCover>,
+    );
+    expect(container.querySelector('[data-header-band]')).toBeNull();
+    const plain = container.querySelector<HTMLElement>('[data-canvas-cover] > div')!;
+    expect(plain.style.top).toBe('66px');
+    expect(plain.style.getPropertyValue('--plan-band-h')).toBe('');
   });
 });

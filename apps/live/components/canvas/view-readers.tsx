@@ -26,9 +26,12 @@ export function ZoomedLaserOverlay(props: Omit<ComponentProps<typeof LaserOverla
   return <LaserOverlay {...props} zoom={useCanvasZoom()} />;
 }
 
-// The corner zoom controls, showing the zoom from the viewport store.
-export function ViewZoomControls(props: Omit<ComponentProps<typeof ZoomControls>, 'zoom'>) {
-  return <ZoomControls {...props} zoom={useViewportOf(zoomOf)} />;
+// The corner zoom controls, showing the zoom from the viewport store; off while a Plan element covers the canvas
+// (docs/specs/026-plan/plan-board.md "Maximised board": the canvas cannot zoom then).
+export function ViewZoomControls(
+  props: Omit<ComponentProps<typeof ZoomControls>, 'zoom' | 'zoomOff'>,
+) {
+  return <ZoomControls {...props} zoom={useViewportOf(zoomOf)} zoomOff={useCanvasCovered()} />;
 }
 
 // The Map, its view box following the view (its picture is memoised and does not redraw for it). Hidden while a Plan

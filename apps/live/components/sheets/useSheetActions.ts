@@ -318,9 +318,9 @@ export function useSheetActions() {
       },
       // Insert Chart: the selection (or the data around the cell) as a chart over the Sheet.
       insertChart(kind: SheetChartKind) {
-        const range = chartRangeOf(c.workbook, c.sheet, c.selectionNow());
-        if (!range) return c.toast(NOTHING_TO_CHART);
-        c.placeChart?.(kind, range);
+        const pick = chartRangeOf(c.workbook, c.sheet, c.selectionNow());
+        if (!pick) return c.toast(NOTHING_TO_CHART);
+        c.placeChart?.(kind, pick);
       },
       // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), one change and one undo.
       clearSheet() {

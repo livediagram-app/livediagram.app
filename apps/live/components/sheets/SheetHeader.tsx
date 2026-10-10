@@ -45,8 +45,9 @@ export function SheetHeader({
 
   return (
     <div
-      className="flex shrink-0 items-center gap-1.5 border-b px-3"
-      style={{ height: HEADER_PX, borderColor: c.palette.cardBorder }}
+      // In a header band (maximised, MaximisedPlanLayer's --plan-band-*), as tall as the top row, after the menu.
+      className="flex h-[var(--plan-band-h,40px)] shrink-0 items-center gap-1.5 border-b pl-[var(--plan-band-left,0.75rem)] pr-3"
+      style={{ borderColor: c.palette.cardBorder }}
       onDoubleClick={(e) => {
         // As a board's: a double-click on the title or the header's empty space renames, never on its buttons.
         if (!c.canShape || renaming) return;
@@ -85,7 +86,7 @@ export function SheetHeader({
         // A press on the title moves the element, as on the rest of the header; a double-click renames.
         <div
           data-sheet-title
-          className="min-w-0 truncate text-[14px] font-semibold"
+          className="min-w-0 max-w-[var(--plan-band-mid,none)] truncate text-[14px] font-semibold"
           style={{ color: c.palette.text }}
         >
           {c.sheet.title}

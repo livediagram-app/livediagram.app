@@ -137,9 +137,12 @@ export function exportFontFamily(el: BoxedElement, tabFont?: string): string | u
 export function exportFontIds(
   elements: readonly { type: string; font?: string; esKind?: unknown; fillColor?: string }[],
   tabFont?: string,
+  // The Sheet windows drawn (docs/specs/029-sheets/sheet.md "Formatting"): a cell's own font is painted too.
+  sheets?: ReadonlyMap<string, { cells: readonly { font?: string }[] }>,
 ): string[] {
   const boxed = elements.filter((el) => el.type !== 'arrow') as BoxedElement[];
-  return fontIdsUsed(boxed, tabFont, boxed.map(eventStormingNoteFont));
+  const cellFonts = [...(sheets?.values() ?? [])].flatMap((m) => m.cells.map((c) => c.font));
+  return fontIdsUsed(boxed, tabFont, [...boxed.map(eventStormingNoteFont), ...cellFonts]);
 }
 
 export function describeBoxedExport(

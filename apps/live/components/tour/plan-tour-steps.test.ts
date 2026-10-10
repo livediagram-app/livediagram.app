@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PLAN_TOUR_STEPS, planTourStepTelemetryType, type PlanTourApi } from './plan-tour-steps';
+import {
+  PLAN_TOUR_STEPS,
+  planTourSteps,
+  planTourStepTelemetryType,
+  type PlanTourApi,
+} from './plan-tour-steps';
 
 // The Plan tour's steps (docs/specs/026-plan/plan-tour.md "The steps").
 
@@ -14,6 +19,9 @@ vi.mock('./tour-dom', () => ({
 
 const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
   placeBoard: vi.fn(async () => {}),
+  placeSheet: vi.fn(async () => {}),
+  selectTotal: vi.fn(),
+  sheetElementId: () => 'sheet1',
   addCards: vi.fn(async () => {}),
   moveCard: vi.fn(async () => {}),
   openCard: vi.fn(),
@@ -25,6 +33,8 @@ const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
   ...over,
 });
 const step = (id: string) => PLAN_TOUR_STEPS.find((s) => s.id === id)!;
+const SHEET_STEPS = planTourSteps('sheets');
+const sheetStep = (id: string) => SHEET_STEPS.find((s) => s.id === id)!;
 
 afterEach(() => vi.clearAllMocks());
 
@@ -47,7 +57,7 @@ describe('PLAN_TOUR_STEPS', () => {
   });
 
   it('keeps its copy short and free of em dashes', () => {
-    for (const s of PLAN_TOUR_STEPS) {
+    for (const s of [...PLAN_TOUR_STEPS, ...SHEET_STEPS]) {
       expect(s.body.length, s.id).toBeLessThanOrEqual(180);
       expect(`${s.title}${s.body}`).not.toContain('\u2014');
     }
@@ -111,9 +121,63 @@ describe('PLAN_TOUR_STEPS', () => {
   });
 });
 
+describe("planTourSteps('sheets')", () => {
+  it('runs the same welcome, six sheet steps, then its own outro', () => {
+    expect(SHEET_STEPS.map((s) => s.id)).toEqual([
+      'welcome',
+      'sheet',
+      'cells',
+      'formulas',
+      'sheet-toolbar',
+      'sheet-settings',
+      'sheet-palette',
+      'outro',
+    ]);
+    expect(SHEET_STEPS[0]).toBe(PLAN_TOUR_STEPS[0]);
+    expect(SHEET_STEPS.filter((s) => !s.card)).toHaveLength(6);
+    expect(SHEET_STEPS.at(-1)!.body).toContain('example sheet');
+  });
+
+  it('points each step at a part of the example sheet', () => {
+    const a = api();
+    const on = '[data-element-id="sheet1"]';
+    expect(sheetStep('sheet').selector!(a)).toBe(on);
+    expect(sheetStep('cells').selector!(a)).toBe(`${on} [role="grid"]`);
+    expect(sheetStep('formulas').selector!(a)).toBe(`${on} [data-sheet-formula-bar]`);
+    expect(sheetStep('sheet-toolbar').selector!(a)).toBe(`${on} [role="toolbar"]`);
+    expect(sheetStep('sheet-settings').selector!(a)).toBe(
+      `${on} button[aria-label="Sheet Settings"]`,
+    );
+    const none = api({ sheetElementId: () => null });
+    for (const id of ['sheet', 'cells', 'formulas', 'sheet-toolbar', 'sheet-settings'])
+      expect(sheetStep(id).selector!(none), id).toBeNull();
+  });
+
+  it('places the sheet, then selects its total for the formula step', async () => {
+    const a = api();
+    await sheetStep('sheet').prepare!(a);
+    await sheetStep('cells').prepare!(a);
+    expect(a.placeSheet).toHaveBeenCalledTimes(2);
+    expect(a.selectTotal).not.toHaveBeenCalled();
+    await sheetStep('formulas').prepare!(a);
+    expect(a.selectTotal).toHaveBeenCalledTimes(1);
+    expect(a.placeBoard).not.toHaveBeenCalled();
+  });
+
+  it('opens the category picker, and takes the sheet away as the outro shows', async () => {
+    findTour.mockReturnValue(null);
+    await sheetStep('sheet-palette').prepare!(api());
+    expect(clickTour).toHaveBeenCalledWith('palette-category');
+    const a = api();
+    await sheetStep('outro').prepare!(a);
+    expect(a.removeContent).toHaveBeenCalled();
+  });
+});
+
 describe('planTourStepTelemetryType', () => {
   it('names a step PlanTourStep<Id>', () => {
     expect(planTourStepTelemetryType('add-cards')).toBe('PlanTourStepAddCards');
     expect(planTourStepTelemetryType('outro')).toBe('PlanTourStepOutro');
+    expect(planTourStepTelemetryType('sheet-settings')).toBe('PlanTourStepSheetSettings');
   });
 });

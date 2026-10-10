@@ -192,7 +192,7 @@ The seven colours are **theme-relative**:
 - **Then More colours**, every colour row's last target: a swatch button opening the full colour
   picker ([Colour picker](../004-interface-design/colour-picker.md#quick-style)) with the row's own
   colours as its Theme Palette, the standard colours (strong on Stroke and Text colour, by name; soft
-  on Background), the document's Custom colours and **+**. A pick there styles the selection like any
+  on Background), the document's Custom colours and **Add a custom colour** (four coloured dots). A pick there styles the selection like any
   hand-picked colour: it binds no slot.
 - Every swatch is named by a colour word ("Theme default", "Green", "Deep orange"), never a hex, for
   its tooltip and its accessible name.

@@ -148,11 +148,14 @@ export const TOUR_STEP_SOURCE: string[] = [
   );
 
 // The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
-// docs/specs/026-plan/plan-tour.md). The welcome card sends no step view.
+// docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
 export const PLAN_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+  ...new Set(
+    [...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
+      (m) => m[1]!,
+    ),
+  ),
 ]
-  .map((m) => m[1]!)
   .filter((id) => id !== 'welcome')
   .map(
     (id) =>

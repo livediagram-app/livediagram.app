@@ -32,7 +32,17 @@ describe('copy and paste', () => {
         {
           r: b.sheets[0]!.layout.rows[0]!,
           c: b.sheets[0]!.layout.cols[1]!,
-          f: { b: true, fc: '#ff0000', ha: 'c', i: true, u: true, st: true, bg: '#00ff00', fs: 14 },
+          f: {
+            b: true,
+            fc: '#ff0000',
+            ha: 'c',
+            i: true,
+            u: true,
+            st: true,
+            bg: '#00ff00',
+            ff: 'space-grotesk',
+            fs: 14,
+          },
         },
       ],
     });
@@ -49,7 +59,7 @@ describe('copy and paste', () => {
     ).toBe('a\t"b\tc"\n""""\t');
     const html = clipToHtml(clip);
     expect(html).toContain(
-      '<td style="font-weight:bold;font-style:italic;text-decoration:underline line-through;color:#ff0000;background-color:#00ff00;text-align:center;font-size:14pt">2</td>',
+      `<td style="font-weight:bold;font-style:italic;text-decoration:underline line-through;color:#ff0000;background-color:#00ff00;text-align:center;font-family:'Space Grotesk';font-size:14pt">2</td>`,
     );
     const p = pasteClip(b.wb, id, { r1: 4, c1: 0, r2: 4, c2: 0 }, clip, 'all', seeded())!;
     apply(b, id, p.edits[0]!.write);

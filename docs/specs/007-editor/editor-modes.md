@@ -275,7 +275,7 @@ Illustrate offers **Logo** only while the tab has a logo page, and turns to it w
 or pressed into ([Logo pages](logo-pages.md#the-logo-palette)).
 
 Plan offers only its own seven categories (Cards, Boards, Widgets, Metrics,
-Visualisations, Content and Tools) and opens on Cards
+Visualisations, Content and Tools) and opens on Cards (Boards while the tab has no board)
 ([Plan mode](../026-plan/plan-mode.md#the-palette)).
 
 - **The landing category** is the mode's **Popular** (Plan's is **Cards**), and the notation on an

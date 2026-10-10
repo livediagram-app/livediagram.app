@@ -58,6 +58,8 @@ export type CellFormat = {
   st?: true;
   fc?: string;
   bg?: string;
+  // A font id (the editor's fonts, docs/specs/004-interface-design/fonts.md); unset, the tab's font.
+  ff?: string;
   fs?: FontSize;
   ha?: 'l' | 'c' | 'r';
   va?: 't' | 'm' | 'b';

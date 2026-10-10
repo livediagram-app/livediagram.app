@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type PointerEventHandler, type ReactNode } from 'react';
+import { useId, type CSSProperties, type PointerEventHandler, type ReactNode } from 'react';
 import {
   ChevronDownIcon,
   MENU_LABEL_ATTR,
@@ -233,10 +233,13 @@ export function MenuActionRow({
   onPointerLeave,
   disabled = false,
   plain = false,
+  labelStyle,
 }: {
   label: string;
   icon: ReactNode;
   onClick: () => void;
+  // The label's own look (a font menu draws each font's name in that font).
+  labelStyle?: CSSProperties;
   // For a row whose result can be SHOWN before it is chosen: the Cleanup
   // layouts preview on hover (docs/specs/008-canvas/layout-cleanup.md), the same way the tiles above do.
   // Rows without a preview pass neither, and behave exactly as they did.
@@ -282,7 +285,7 @@ export function MenuActionRow({
         >
           {icon}
         </span>
-        {label}
+        {labelStyle ? <span style={labelStyle}>{label}</span> : label}
       </button>
     );
   }

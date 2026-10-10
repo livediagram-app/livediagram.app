@@ -69,7 +69,8 @@ export function SheetFindBar() {
       aria-label="Find in sheet"
       className="absolute right-2 z-30 w-80 rounded-lg border p-2 text-[12px] shadow-lg"
       style={{
-        top: HEADER_PX + 6,
+        // Under the header, as tall as the top row in a header band (MaximisedPlanLayer).
+        top: `calc(var(--plan-band-h, ${HEADER_PX}px) + 6px)`,
         backgroundColor: c.palette.surface,
         borderColor: c.palette.border,
         color: c.palette.text,

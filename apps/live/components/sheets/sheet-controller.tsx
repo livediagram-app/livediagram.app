@@ -5,7 +5,7 @@
 // open over it, and the write helper every command goes through. Lives inside MaximisableSlot, so maximising and
 // restoring keep all of it.
 import type { SheetChartKind } from './sheet-charts';
-import type { IdRange } from '@livediagram/sheets';
+import type { ChartPick } from './sheet-charts';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
   filteredOutRows,
@@ -99,7 +99,7 @@ export type SheetController = {
   toast: (message: string) => void;
   notify: (message: string) => void;
   // Place a chart reading `range` over the Sheet (sheet-charts.ts).
-  placeChart?: (kind: SheetChartKind, range: IdRange) => void;
+  placeChart?: (kind: SheetChartKind, pick: ChartPick) => void;
 };
 
 const SheetControllerContext = createContext<SheetController | null>(null);
@@ -143,7 +143,7 @@ export function useSheetControllerState(opts: {
   announce: (message: string) => void;
   toast: (message: string) => void;
   notify: (message: string) => void;
-  placeChart?: (kind: SheetChartKind, range: IdRange) => void;
+  placeChart?: (kind: SheetChartKind, pick: ChartPick) => void;
   // After this person's own write to this sheet lands locally (card tables push it to the cards).
   onWrote?: (before: Sheet, write: SheetWrite) => void;
 }): SheetController {

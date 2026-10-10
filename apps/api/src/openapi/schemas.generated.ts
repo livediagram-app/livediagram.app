@@ -1824,6 +1824,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fc": {
         "type": "string"
       },
+      "ff": {
+        "type": "string"
+      },
       "fs": {
         "$ref": "#/components/schemas/FontSize"
       },
@@ -2224,6 +2227,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ChartSource": {
     "additionalProperties": false,
     "properties": {
+      "cols": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "range": {
         "additionalProperties": false,
         "properties": {
@@ -5461,6 +5470,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cur": {},
       "dp": {},
       "fc": {},
+      "ff": {},
       "fs": {},
       "ha": {},
       "i": {},

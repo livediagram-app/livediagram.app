@@ -199,7 +199,7 @@ the swatches below, then, on Gradient, its **custom** choice last.
 - **Solid**: one colour, from the one colour picker drawn in the panel
   ([Colour picker](../004-interface-design/colour-picker.md)): **Paper** (the default, no
   `background` stored), then the soft standard colours ("Light") and the strong ones ("Dark"), for
-  light paper, then Custom colours and **+**. A page holding an earlier preset (Cream, Mist, Midnight
+  light paper, then Custom colours and **Add a custom colour** (four coloured dots). A page holding an earlier preset (Cream, Mist, Midnight
   and so on) keeps it; it shows as the custom colour in force.
 - **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
   element stroke, else its first palette colour, else the brand blue) and a second colour (a
@@ -220,7 +220,7 @@ the swatches below, then, on Gradient, its **custom** choice last.
   5°, previewed while dragged, one edit on release) and **Swap** (exchanges From and To, one
   edit). The editor closes when another category or a preset is chosen.
 - **Previews**: hovering or focusing any colour (Solid, From, To) previews it on the page; a pick
-  is one edit. **+** opens the custom colour editor (no board warning). **Escape** in a From or To
+  is one edit. **Add a custom colour** (four coloured dots) opens the custom colour editor (no board warning). **Escape** in a From or To
   popover closes the popover only, dropping its preview, and never the panel.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
   lines), drawn faintly in the page's ink at 24 px pitch.

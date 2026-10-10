@@ -1097,6 +1097,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
+  'UI|Selected|PlanTourBoards':
+    "Someone picked Boards on the Plan tour's first card, touring boards and cards on an example board.",
+  'UI|Selected|PlanTourSheets':
+    "Someone picked Spreadsheets on the Plan tour's first card, touring Sheets on an example sheet.",
   'UI|Selected|LiveImageTab':
     "Someone picked a specific tab from the dropdown in the Share dialog's Live Image menu, pointing the live-updating image at that tab instead of the default.",
   'UI|Selected|SignInBanner':
@@ -1111,7 +1115,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|CardTypeTour':
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|PlanTour':
-    "Someone clicked past the Plan tour's first card, beginning its walkthrough on an example board.",
+    "Someone picked a track on the Plan tour's first card, beginning its walkthrough on an example board or sheet.",
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -1269,7 +1273,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepPalette':
     'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
   'UI|View|PlanTourStepOutro':
-    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board taken away.',
+    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board or sheet taken away.',
+  'UI|View|PlanTourStepSheet':
+    'The Plan tour\'s Spreadsheets track reached its "Your sheet" step, placing its example sheet.',
+  'UI|View|PlanTourStepCells':
+    'The Plan tour\'s Spreadsheets track reached its "Type into cells" step.',
+  'UI|View|PlanTourStepFormulas':
+    'The Plan tour\'s Spreadsheets track reached its "Formulas" step, selecting the example sheet\'s total.',
+  'UI|View|PlanTourStepSheetToolbar':
+    'The Plan tour\'s Spreadsheets track reached its "The toolbar" step.',
+  'UI|View|PlanTourStepSheetSettings':
+    'The Plan tour\'s Spreadsheets track reached its "Sheet Settings" step.',
+  'UI|View|PlanTourStepSheetPalette':
+    'The Plan tour\'s Spreadsheets track reached its "The Plan palette" step, opening the palette\'s categories.',
   'UI|View|TourStepCategories':
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':

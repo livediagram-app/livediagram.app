@@ -5,30 +5,33 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 
 ## Domain and naming
 
-| Spec term     | Identifier                                                                            |
-| ------------- | ------------------------------------------------------------------------------------- |
-| Plan tour     | `PlanTourHost`, `PLAN_TOUR_STEPS`, `planTourStepTelemetryType`                        |
-| welcome tour  | `TourHost`, `TOUR_STEPS` (unchanged names)                                            |
-| example board | `PlanTourContent.boardId`, built by `exampleBoard(centre)`                            |
-| example cards | `PlanTourContent.itemIds`, built by `exampleCards(setup)`                             |
-| tour content  | `PlanTourContent` (`{ documentId, boardId, itemIds }`), owned by `usePlanTourContent` |
-| seen guard    | `UserPreferences.planTourSeen`                                                        |
+| Spec term     | Identifier                                                                         |
+| ------------- | ---------------------------------------------------------------------------------- |
+| Plan tour     | `PlanTourHost`, `planTourSteps(track)`, `planTourStepTelemetryType`                |
+| welcome tour  | `TourHost`, `TOUR_STEPS` (unchanged names)                                         |
+| tour track    | `PlanTourTrack` (`'boards' \| 'sheets'`), `PLAN_TOUR_TRACKS`                       |
+| example board | `PlanTourContent.elementId` (Boards), built by `exampleBoard(centre)`              |
+| example cards | `PlanTourContent.itemIds`, built by `exampleCards(setup)`                          |
+| example sheet | `PlanTourContent.elementId` + `.sheetId` (Sheets), built by `exampleSheet(centre)` |
+| tour content  | `PlanTourContent` (`{ documentId, elementId, sheetId?, itemIds }`)                 |
+| seen guard    | `UserPreferences.planTourSeen`                                                     |
 
 ## Files
 
-| File                                           | Holds                                                                                                        |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `apps/live/components/tour/tour-step.ts`       | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                      |
-| `apps/live/components/tour/useTourEngine.ts`   | The shared step runner, extracted from `TourHost`: step index, direction, target rect, prepare / wait / heal |
-| `apps/live/components/tour/TourStage.tsx`      | The shared overlay: card backdrop, highlight ring, `TourPopover`                                             |
-| `apps/live/components/tour/TourPopover.tsx`    | Gains `copy` (`TourCardCopy`) and `welcomeArt`; defaults are the welcome tour's strings                      |
-| `apps/live/components/tour/TourHost.tsx`       | The welcome tour on the engine; publishes itself to `tour-active`                                            |
-| `apps/live/components/tour/plan-tour-steps.ts` | `PLAN_TOUR_STEPS`, `PlanTourApi`, `planTourStepTelemetryType`                                                |
-| `apps/live/components/tour/PlanTourHost.tsx`   | Offer, relaunch, deferral, end; builds `PlanTourApi`                                                         |
-| `apps/live/components/tour/PlanTourArt.tsx`    | The welcome card's illustration                                                                              |
-| `apps/live/lib/tour-active.ts`                 | Which tour is on screen (`'welcome' \| 'plan' \| null`), a module store read with `useSyncExternalStore`     |
-| `apps/live/lib/plan-tour.ts`                   | Relaunch event, `PlanTourContent` and its leftover record in `localStorage`, `exampleBoard`, `exampleCards`  |
-| `apps/live/hooks/plan/usePlanTourContent.ts`   | Places, moves and removes tour content with no history and no telemetry; sweeps a leftover record            |
+| File                                           | Holds                                                                                                             |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `apps/live/components/tour/tour-step.ts`       | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                           |
+| `apps/live/components/tour/useTourEngine.ts`   | The shared step runner, extracted from `TourHost`: step index, direction, target rect, prepare / wait / heal      |
+| `apps/live/components/tour/TourStage.tsx`      | The shared overlay: card backdrop, highlight ring, `TourPopover`                                                  |
+| `apps/live/components/tour/TourPopover.tsx`    | Gains `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept)        |
+| `apps/live/components/tour/TourHost.tsx`       | The welcome tour on the engine; publishes itself to `tour-active`                                                 |
+| `apps/live/components/tour/plan-tour-steps.ts` | `planTourSteps(track)`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `planTourStepTelemetryType`                    |
+| `apps/live/components/tour/PlanTourHost.tsx`   | Offer, relaunch, deferral, end; builds `PlanTourApi`                                                              |
+| `apps/live/components/tour/PlanTourArt.tsx`    | The welcome card's illustration                                                                                   |
+| `apps/live/lib/tour-active.ts`                 | Which tour is on screen (`'welcome' \| 'plan' \| null`), a module store read with `useSyncExternalStore`          |
+| `apps/live/lib/plan-tour.ts`                   | Relaunch event, tracks, `PlanTourContent` and its leftover record, `exampleBoard`, `exampleCards`, `exampleSheet` |
+| `apps/live/lib/sheet-select-request.ts`        | `listenForSheetSelect` / `requestSheetSelect`: selecting a drawn Sheet's cell from outside it                     |
+| `apps/live/hooks/plan/usePlanTourContent.ts`   | Places, moves and removes tour content with no history and no telemetry; sweeps a leftover record                 |
 
 Also touched: `tour-steps.ts` (its `TourStep` is `TourStepOf<TourApi>`; `ensurePaletteOpen` and `closeDropdown`
 are exported for the Plan palette step), `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes
@@ -38,7 +41,12 @@ dashboard (`apps/telemetry/app/catalogue/features.ts`, `apps/telemetry/app/catal
 `apps/telemetry/app/catalogue/settings.ts`, `apps/telemetry/app/DashboardView.tsx`,
 `apps/telemetry/app/computed-emitters.ts`, `apps/telemetry/app/event-explanations.ts`).
 
-Wiring: `useEditorState` composes `usePlanTourContent` and returns it as `planTour`; `EditorView` mounts
+Sheets side: `PlacedSheet.setUp` (`lib/sheet-seeds.ts`) makes a placed sheet already set up (`useSheetModel`'s
+`setUpNow`: `setupWrite` of the start in the Header look, header frozen, Default size, `undoable: false`);
+`PlanSheetView`'s `SheetParts` listens for `requestSheetSelect` on its sheet id; `SheetFormulaBar` carries
+`data-sheet-formula-bar` for the Formulas step.
+
+Wiring: `useEditorState` composes `usePlanTourContent` (with `sheets.releaseSheets`) and returns it as `planTour`; `EditorView` mounts
 `<PlanTourHost />` beside `<TourHost />` in the same `AreaErrorBoundary`. `usePlanItems` gains `writeQuiet`
 (applies and sends a write without an undo step). `usePlanSlice` returns `showItem(id | null)`, setting the open
 item without `Plan` · `Opened`.
@@ -87,10 +95,26 @@ End: `planTour.removeAll()`, close the item panel, write `planTourSeen: true` (a
 `tourSeen`), and send `Closed` · `PlanTourOffer`, `Ended` · `PlanTourCompleted` or `Ended` · `PlanTourSkipped`.
 Unmounting mid-tour runs `removeAll()`.
 
+### Tracks
+
+The welcome card's `welcomeChoices` are **Boards** and **Spreadsheets**; each sends `Selected` ·
+`PlanTourBoards` | `PlanTourSheets`, sets the host's `tourTrack`, then `engine.next()` (which sends `Started` ·
+`PlanTour`). The engine's `steps` are `planTourSteps(tourTrack)`: the shared welcome card then that track's steps
+and outro. `tourTrack` resets to `'boards'` on each offer, so the welcome card always has a next step; the switch
+lands with the index move to 1, in one render. The outro's help link follows the track
+(`/help/canvas/plan-mode/` or `/help/canvas/plan-mode/sheets/`).
+
+Sheets steps: `sheet` (the element; prepare `placeSheet`), `cells` (`[role="grid"]`), `formulas`
+(`[data-sheet-formula-bar]`; prepare `selectTotal`), `sheet-toolbar` (`[role="toolbar"]`), `sheet-settings`
+(`button[aria-label="Sheet Settings"]`), `sheet-palette` (the palette step), `outro`, each scoped to
+`[data-element-id="<sheet element>"]`. `placeSheet` waits up to `SHEET_DRAW_WAIT_MS` for the grid.
+
 ### Tour content (`usePlanTourContent`)
 
-`{ ensureBoard(centre), ensureCards(), moveFirstCard(), removeAll(), boardId(), firstCardId(), status(column) }`,
-each idempotent; placing and adding are no-ops while edits are blocked or there is no document id.
+`{ ensureBoard(centre), ensureSheet(centre), ensureCards(), moveFirstCard(), removeAll(), boardId(),
+sheetElementId(), sheetId(), firstCardId(), status(column) }`, each idempotent; placing and adding are no-ops while
+edits are blocked or there is no document id. Content is one track's: `ensureBoard` after a sheet, or
+`ensureSheet` after a board, returns null.
 
 - `ensureBoard`: when no board is placed yet, builds `exampleBoard(centre)` and appends it to the active tab
   with `tickTabs` (no history), records the content, writes the leftover record.
@@ -98,9 +122,13 @@ each idempotent; placing and adding are no-ops while edits are blocked or there 
   create of `exampleCards(setup)` with fresh ids, records them, rewrites the leftover record.
 - `moveFirstCard`: `writeQuiet` move of "Plan the launch" to the board's In Progress status, end of column;
   a no-op once it is there.
-- `removeAll`: `writeQuiet` delete of each recorded item, `tickTabs` filtering the board out of every tab,
-  clears the record and the leftover record.
-- Sweep: once the document has hydrated, a leftover record for this document has its board removed; once the
+- `ensureSheet`: builds `exampleSheet(centre)` (a `plan-sheet` element of `EXAMPLE_SHEET_SIZE` whose
+  `placeNewSheet({ title: EXAMPLE_SHEET_TITLE, setUp: 'budget' })` makes it set up when it first draws), appends it
+  with `tickTabs`, records element and sheet ids.
+- `removeAll`: `writeQuiet` delete of each recorded item, `releaseSheets([sheetId])` for a sheet (a warning
+  `content.failed { step: 'sheet' }` when no Sheet has drawn to take it), `tickTabs` filtering the element out of
+  every tab, clears the record and the leftover record.
+- Sweep: once the document has hydrated, a leftover record for this document has its element (and sheet) removed; once the
   items are ready, its items too, then the record is cleared. A record for another document is kept. The
   sweep never touches what this visit's tour is showing.
 
@@ -115,7 +143,8 @@ the host builds wraps these (`placeBoard` also waits for the board to draw), plu
 - `UserPreferences.planTourSeen?: boolean`; missing = not seen. No migration (free-form preferences blob).
 - `PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch'`, dispatched by `requestPlanTourRelaunch()`.
 - Leftover record: `localStorage['livediagram:v2:plan-tour-content']` = JSON `PlanTourContent`; a malformed value is
-  dropped, never thrown.
+  dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its `elementId`.
+- `requestSheetSelect(sheetId, { r, c })`: true when a drawn Sheet took it (selects that one cell, unsaved).
 - Settings row: toggle `planTourSeen`, label **Show Plan Tour**, inverted read / write, help article
   `planTour`, event `{ on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' }`. `SettingsDialog`'s close relaunches
   when the row is on and was off at open.
@@ -130,16 +159,18 @@ the host builds wraps these (`placeBoard` also waits for the board to draw), plu
 
 ## Errors and edge cases
 
-| Case                                             | Handling                                                                         |
-| ------------------------------------------------ | -------------------------------------------------------------------------------- |
-| Items never load                                 | `ensureCards` gives up after 3000 ms; the cards / move / panel steps are skipped |
-| A write is refused                               | `writeQuiet` returns false; the step's target never appears and it is skipped    |
-| The person deletes the example board mid-tour    | Board steps are skipped (no target); `removeAll` deletes the recorded items      |
-| The person switches tab mid-tour                 | The tour ends as skipped; `removeAll` filters every tab                          |
-| Reload or closed window mid-tour                 | The leftover record sweeps the content on the next visit to that document        |
-| Leftover record for another document             | Kept until that document is opened                                               |
-| Welcome tour relaunched while the Plan tour runs | The welcome tour waits for `activeTour() === null`, as the Plan tour does        |
-| Locked tab                                       | No offer                                                                         |
+| Case                                             | Handling                                                                                  |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Items never load                                 | `ensureCards` gives up after 3000 ms; the cards / move / panel steps are skipped          |
+| A write is refused                               | `writeQuiet` returns false; the step's target never appears and it is skipped             |
+| The person deletes the example board mid-tour    | Board steps are skipped (no target); `removeAll` deletes the recorded items               |
+| The person switches tab mid-tour                 | The tour ends as skipped; `removeAll` filters every tab                                   |
+| Reload or closed window mid-tour                 | The leftover record sweeps the content on the next visit to that document                 |
+| Leftover record for another document             | Kept until that document is opened                                                        |
+| Welcome tour relaunched while the Plan tour runs | The welcome tour waits for `activeTour() === null`, as the Plan tour does                 |
+| Locked tab                                       | No offer                                                                                  |
+| The example sheet's chunk or tab is slow to load | `placeSheet` waits 3000 ms; the sheet steps skip if the grid never draws                  |
+| A reload mid Sheets track, before a Sheet draws  | The sweep's `releaseSheets` returns false: the element goes, the sheet is left as a Cut's |
 
 ## Security and trust
 
@@ -151,6 +182,7 @@ nothing new crosses a trust boundary. A viewer never sees an offer.
 - Nothing loads until Plan mode: `PlanTourHost` renders `null` and subscribes to one module store; its steps
   module is a few strings.
 - Three item writes in one create, one move, three deletes; one board element. Well inside `ITEMS_MAX`.
+- Sheets track: one element, one sheet create and one setup write of 18 cells; one release.
 - The engine's 150 ms re-measure runs only while a tour is on screen (unchanged from the welcome tour).
 
 ## Presentation and UX
@@ -184,7 +216,11 @@ surface is fixed-position over the canvas.
 | Not offered when seen, read-only, locked, or another tour     | `PlanTourHost.test.tsx`                                  |
 | Waits for the welcome tour, then offers                       | `PlanTourHost.test.tsx`                                  |
 | Relaunch offers in Plan only                                  | `PlanTourHost.test.tsx`                                  |
-| Steps and telemetry tokens                                    | `plan-tour-steps.test.ts`                                |
+| Steps and telemetry tokens, both tracks                       | `plan-tour-steps.test.ts`                                |
+| Welcome choices pick the track; Sheets runs on the sheet      | `PlanTourHost.test.tsx`, `TourStage.test.tsx`            |
+| Example sheet placed set up, no undo step                     | `useSheetModel.test.tsx`, `plan-tour.test.ts`            |
+| Example sheet placed and released with its element            | `usePlanTourContent.test.ts`                             |
+| A cell selected from outside a Sheet                          | `sheet-select-request.test.ts`, `PlanSheetView.test.tsx` |
 | Example board is a fresh Kanban, example cards on its columns | `plan-tour.test.ts`                                      |
 | Leftover record round trip, malformed value dropped           | `plan-tour.test.ts`                                      |
 | Content placed and removed without history or telemetry       | `usePlanTourContent.test.ts`                             |
@@ -205,6 +241,10 @@ surface is fixed-position over the canvas.
 | `TARGET_WAIT_MS`        | 3500                                 | The welcome tour's target wait            | 1000 to 6000 |
 | `ITEMS_READY_WAIT_MS`   | 3000                                 | Default D28                               | 1000 to 6000 |
 | `EXAMPLE_BOARD_TITLE`   | `'Example Board'`                    | Spec                                      | fixed        |
+| `EXAMPLE_SHEET_TITLE`   | `'Example Sheet'`                    | Spec                                      | fixed        |
+| `EXAMPLE_SHEET_SIZE`    | 600 × 400                            | Budget's 3 columns, 6 rows, header, bars  | 480 to 960   |
+| `EXAMPLE_TOTAL_CELL`    | `{ r: 5, c: 2 }` (C6)                | Spec: the Budget start's Total amount     | fixed        |
+| `SHEET_DRAW_WAIT_MS`    | 3000                                 | As `ITEMS_READY_WAIT_MS`                  | 1000 to 6000 |
 | `PLAN_TOUR_CONTENT_KEY` | `'livediagram:v2:plan-tour-content'` | The editor's storage key scheme           | fixed        |
 
 ## Defaults ledger

@@ -96,7 +96,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   and the item's colour shows as a small dot beside them.
 - It is set in the item panel from one compact field showing the colour's swatch and name (or **None**); it opens
   the one colour picker ([Colour picker](../004-interface-design/colour-picker.md)) in a popover: **None** (which
-  clears it), the strong standard colours, Custom colours and **+**. A pick closes it, as does Escape (which leaves
+  clears it), the strong standard colours, Custom colours and **Add a custom colour** (four coloured dots). A pick closes it, as does Escape (which leaves
   the card open and returns focus to the field) and a press outside. A colour from an earlier Plan palette keeps
   its word ("Amber", "Cyan").
 - The picker's keyboard is the colour picker's: one Tab stop (the picked swatch, else None), the arrow keys move

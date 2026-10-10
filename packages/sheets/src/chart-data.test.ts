@@ -55,6 +55,28 @@ describe('a chart from a range', () => {
     });
   });
 
+  // sheet.md "Charts": several ranges picked together read only their columns.
+  it('reads only the columns a link names', () => {
+    const { b, link } = setup({
+      A1: 'Item',
+      B1: 'Category',
+      C1: 'Amount',
+      A2: 'Rent',
+      B2: 'Home',
+      C2: '1200',
+      A3: 'Food',
+      B3: 'Home',
+      C3: '320',
+    });
+    const { cols } = b.sheets[0]!.layout;
+    expect(
+      sheetChartTable(b.wb, { ...link(0, 0, 2, 2), cols: [cols[0]!, cols[2]!] }, 'en-GB'),
+    ).toEqual({
+      categories: ['Rent', 'Food'],
+      series: [{ name: 'Amount', values: [1200, 320] }],
+    });
+  });
+
   it('leaves out hidden rows', () => {
     const { b, link, apply } = setup({ A1: 'a', B1: '1', A2: 'b', B2: '2' });
     const l = link(0, 0, 1, 1);

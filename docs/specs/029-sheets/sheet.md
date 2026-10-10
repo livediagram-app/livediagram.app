@@ -37,6 +37,8 @@ cells are worked out in every browser that shows it.
 - Dropping a `.csv` file on the canvas in Plan mode places a sheet filled from it, titled by the file's name
   (CSV, below).
 - Placing one sends `Element · Added · PlanSheet`.
+- The [Plan tour](../026-plan/plan-tour.md)'s Spreadsheets track places its own **Example Sheet**, already set up
+  (Budget, Header look, header frozen) and never awaiting setup; it sends no event and is no undo step.
 
 ### Setup Sheet
 
@@ -142,7 +144,7 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 
 | Category  | Buttons                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text      | **Bold**, **Italic**, **Underline**, **Strikethrough** · **Text Colour** (a quick row of the one [colour picker](../004-interface-design/colour-picker.md): the Theme Palette's first five, the cell's picked, and **+** for the full picker) · **Font Size** (· a divider)                                                                                                                                                                                                                                          |
+| Text      | **Bold**, **Italic**, **Underline**, **Strikethrough** · **Text Colour** (a quick row of the one [colour picker](../004-interface-design/colour-picker.md): the Theme Palette's first five, the cell's picked, and **More Text Colours** (the four-dot glyph) for the full picker) · **Font**, **Font Size** (· a divider)                                                                                                                                                                                           |
 | Cells     | **Fill Colour**, **Borders** · **Align Left**, **Align Centre**, **Align Right** · **Align Top**, **Align Middle**, **Align Bottom** · **Merge Cells**, **Wrap Text** · **Clear Formatting**                                                                                                                                                                                                                                                                                                                         |
 | Numbers   | **Number Format** (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text), **Fewer Decimals**, **More Decimals**                                                                                                                                                                                                                                                                                                                                                 |
 | Data      | **Sort** (A to Z, Z to A, Custom Sort…), **Filter** (on or off), **Freeze** (rows, columns)                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -312,29 +314,46 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 
 ### Cell menu
 
-Right-click on a cell, shaped like the element menu: **Cut**, **Copy** and **Paste** as icon buttons along its top,
-then categories that open one at a time, each a list of option rows:
+Right-click on a cell (or a selection) opens the cell menu, built from the editor's menu parts, as the Explorer's
+document menu is: a header, a toolbar of the clipboard verbs, then icon-left rows in groups, the everyday verbs
+named in full and on show, the rarer ones in side flyouts, short enough to fit a laptop's window. Each row names what it will do to this selection
+("Insert 3 Rows Above", "Delete Columns B to C"), so nothing has to be guessed.
 
-| Category      | Rows                                                                          |
-| ------------- | ----------------------------------------------------------------------------- |
-| Insert        | **Row Above**, **Column Left**, **Cells, Shift Right**, **Cells, Shift Down** |
-| Delete        | **Row**, **Column**, **Cells, Shift Left**, **Cells, Shift Up**               |
-| Paste Special | **Values Only**, **Formatting Only**                                          |
-| Clear         | **Everything**, **Formatting**                                                |
-| Cells         | **Sort Range…**, **Merge Cells** (asking first when it would clear values)    |
-| Chart         | **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))              |
+- **Header**: the selection (`B2:C4`, or `B4` for one cell) and how many cells it covers ("6 Cells").
+- **Toolbar**: **Cut**, **Copy**, **Paste**, **Paste Values**, **Clear Contents** and **Clear Formatting** (icon
+  buttons with their names, and keys where they have them, in the hover card: Cut ⌘X, Copy ⌘C, Paste ⌘V, Paste
+  Values ⇧⌘V, Clear Contents Delete; Ctrl on other systems).
+- **Rows and columns**: **Insert Row Above**, **Insert Row Below**, **Insert Column Left**, **Insert Column Right**
+  (as many as the selection spans: "Insert 3 Rows Above"), then **Delete Row 4** or **Delete Rows 2 to 4**, and
+  **Delete Column B** or **Delete Columns B to C**.
+- **Merge Cells** (a selection of more than one cell; asking first when it would drop values) or **Unmerge Cells**
+  (a selection touching a merge).
+- **Flyouts**, each a side panel of rows:
+
+| Flyout        | Rows                                                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Sort          | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**     |
+| Shift Cells   | **Insert Cells, Shift Right**, **Insert Cells, Shift Down**, **Delete Cells, Shift Left**, **Delete Cells, Shift Up** |
+| Hide          | **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**                                    |
+| Paste Special | **Values Only**, **Formatting Only**                                                                                  |
+| Insert Chart  | **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))                                                      |
 
 Every row closes the menu once it has acted. A merge that would drop values asks the same thing from here and
-from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only view gets **Copy** alone.
+from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only
+view gets the header and **Copy** alone.
 
 ### Formatting
 
 - Formats a cell can take: number format (and its decimals), bold, italic, underline, strikethrough, text colour,
-  fill colour, font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +
+  fill colour, font (one of the editor's [fonts](../004-interface-design/fonts.md), by id; unset, the tab's font; the
+  toolbar's **Font** is a button naming the active cell's font in its own face, left of Font Size, opening a menu of
+  **Default** then every font, each named in its own face, the active cell's ticked; an id the editor no longer
+  offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +
   that step through 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 36, 48 and 72, and takes a typed size, kept within the
   limits; folded into More it is a menu of those sizes), horizontal alignment, vertical alignment (top, middle,
   bottom; middle when unset), wrap (overflow, wrap, clip) and a border on each side (thin, medium, thick, dashed or dotted, in a colour).
-- Colours are picked from the one [colour picker](../004-interface-design/colour-picker.md): the toolbar's quick rows draw its swatch and follow its keyboard, and **+** opens it in full (Theme Palette, Standard Colours, Custom Colours).
+- Colours are picked from the one [colour picker](../004-interface-design/colour-picker.md): the toolbar's quick rows draw its swatch and follow its keyboard, and their last button (four coloured dots, as Quick Style's More colours) opens it in full (Theme Palette,
+  Standard Colours, Custom Colours).
 - Number formats:
 
 | Format     | `1234.5` shows     | Notes                                                    |
@@ -464,14 +483,18 @@ from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cance
 
 - **Insert Chart** makes a pie, bar or line chart ([Pie chart](../009-elements/pie-chart.md)) from the sheet's cells:
   the toolbar's **Charts** category (**Bar Chart**, **Line Chart**, **Pie Chart**) and the cell menu's **Chart**
-  section. It reads the selection (its last range); a single cell reads the block of data around it (a spreadsheet's current
+  section. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
   region). A single empty cell with nothing around it says "Select the cells to chart first".
+- Several ranges picked together (Ctrl or ⌘ and a drag: the labels in A2:A5 and the amounts in C2:C5) chart as one:
+  the rows they span, and only the columns picked, in the sheet's order, so a column between them (Category in B) is
+  left out.
 - The range is read as a spreadsheet does: a first row with no numbers among the values names the series; a first
   column of text or dates labels the categories (numbered 1, 2, … without one); every other column is a series
   ("Column B" when unnamed). A pie or bar chart shows the first series (a pie never below zero); a line chart shows
   them all. Rows a filter hides are left out. At most 500 categories and 12 series are read.
 - The chart is an ordinary chart element whose `chartSource` names the sheet and the range by stable row and
-  column ids, so it grows with rows inserted inside the range and follows moves. Its data is read live: change
+  column ids, and, when only some of its columns were picked, those columns (`cols`), so it grows with rows inserted
+  inside the range and follows moves. Its data is read live: change
   the cells and the chart changes, for everyone.
 - It is placed floating over the Sheet's top right (24 px in, below the toolbar), selected. While its centre is
   on its Sheet it moves with the Sheet; dragged onto the canvas it stays there, still live. Moved back on, it is
