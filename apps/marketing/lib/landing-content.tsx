@@ -12,6 +12,7 @@ import {
   ArticleWrapArt,
   AssignedActionsArt,
   AvatarModeArt,
+  BoardImportArt,
   BoardWidgetsArt,
   BorderStyleArt,
   BringFocusArt,
@@ -72,7 +73,9 @@ import {
   ShapesArt,
   ShareLinksArt,
   SharedItemsArt,
+  SheetsArt,
   ShortcutsArt,
+  SideBySideArt,
   SlideDeckArt,
   SlideLayoutsArt,
   SpotlightArt,
@@ -270,9 +273,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <ShareLinksArt />,
         href: '/help/collaboration/sharing/',
         group: 'Share & access',
-        title: 'Editor or view-only links',
+        title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds read-only in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
       },
       {
         art: <TeamsArt />,
@@ -572,6 +575,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Big document, lots of tabs? Group related tabs into named folders along the tab bar and collapse the ones you are not using. Drag a tab in or out, and a folder opens on its own when you work in it.',
       },
       {
+        art: <SideBySideArt />,
+        href: '/help/tabs/side-by-side/',
+        group: 'Tabs',
+        title: 'Two tabs side by side',
+        description:
+          'Drag a tab to the right edge of the screen and it opens beside the one you are on, so the overview and the detail, or the retro and its actions, sit on screen together and you can work in either.',
+      },
+      {
         art: <TabCopyArt />,
         href: '/help/tabs/add-to-document/',
         group: 'Tabs',
@@ -652,6 +663,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it builds onto the current tab, and one undo takes it back.',
       },
       {
+        art: <BoardImportArt />,
+        href: '/help/explorer/drawio-import/',
+        group: 'AI & your tools',
+        title: 'Bring your boards from other tools',
+        description:
+          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a document you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page.',
+      },
+      {
         art: <ExportArt />,
         href: '/help/tabs/export-tabs/',
         group: 'AI & your tools',
@@ -665,7 +684,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations. Signed in, revocable, six-month tokens, no lock-in.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in.',
       },
     ],
   },
@@ -934,6 +953,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Live charts of every card',
         description:
           'A Gantt chart, a due-date calendar, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date.',
+      },
+      {
+        art: <SheetsArt />,
+        href: '/help/canvas/plan-mode/sheets/',
+        title: 'Sheets with real formulas',
+        description:
+          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, and copy and paste works with Google Sheets and Excel.',
       },
       {
         art: <BoardWidgetsArt />,

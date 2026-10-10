@@ -30,3 +30,7 @@ export * from './feature-art/article';
 export * from './feature-art/whiteboard';
 export * from './feature-art/plan';
 export * from './feature-art/documents';
+// Sheets on a Plan tab, two tabs side by side, and boards brought in from other tools.
+export * from './feature-art/sheet';
+export * from './feature-art/side-by-side';
+export * from './feature-art/imports';
