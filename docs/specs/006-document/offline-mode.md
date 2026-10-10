@@ -128,15 +128,17 @@ auth has settled, the path names a document registered in the local index
   the tabs across in memory: the read is one IndexedDB get, small beside the
   waits removed, and keeps one load path.
 
-**Measured** on the local dev stack (headless Chromium, median of 5, a fresh
-browser profile per first visit), guest create to first canvas paint:
+**Measured** against production builds of `main` and of this change, served the
+same way with the local api (headless Chromium, 10 runs each, interleaved; a
+fresh browser profile per first visit), guest create to first canvas paint:
 
-| Link                   | Before (cloud) first / return | After (Local only) first / return |
-| ---------------------- | ----------------------------- | --------------------------------- |
-| `/new?blank=1`         | 2,402 / 1,237 ms              | 1,221 / 922 ms                    |
-| `/new?template=kanban` | 2,611 / 1,433 ms              | see the PR (dev-server noise)     |
+| Link                   | Before (cloud) first / return | After (Local only) first / return | API requests |
+| ---------------------- | ----------------------------- | --------------------------------- | ------------ |
+| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                      | 24 → 1       |
+| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                    | 20 → 1       |
 
-API requests on the way to the canvas fell from 21 to 2 (both `GET /api/capabilities`) for `/new?blank=1`.
+The one request left is `GET /api/capabilities`; the guest id, participant and
+Explorer lists follow after the paint.
 
 ## "Local only" badge + Explorer
 
