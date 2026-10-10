@@ -1,41 +1,29 @@
 import { lucidePencilLine } from '@livediagram/icons/lucide';
 import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
-import { participantKey } from '@/lib/identity';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
-import { TimerWidget } from '@/components/chrome/TimerWidget';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
-import { VoteBanner } from '@/components/chrome/VoteBanner';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
-// the active editor-mode banner, the session timer and the vote
-// banner. (The multi-selection toolbar now floats over the selection
+// the active editor-mode banner. (The session timer and the vote's status and
+// results walkthrough live in the Session strip's popovers,
+// docs/specs/012-collaboration/session-tools.md.) (The multi-selection toolbar now floats over the selection
 // itself, via Canvas + FloatingToolbar.) Extracted from CanvasChrome so the
 // chrome shell stays lean — this is one cohesive concern (the top-centre
 // stack and its non-overlap layout) with its own props.
 type TopCenterChromeProps = Pick<
   CanvasProps,
-  | 'selfParticipant'
   | 'readOnly'
+  | 'participantPalette'
   | 'pendingDraw'
   | 'onCancelDraw'
   | 'onExitFormatTool'
   | 'canvasTool'
   | 'formatSourceId'
-  | 'tabTimer'
-  | 'tabVote'
-  | 'onPauseTimer'
-  | 'onResumeTimer'
-  | 'onResetTimer'
-  | 'onClearTimer'
-  | 'voteReview'
-  | 'onNextVoteResult'
-  | 'onPrevVoteResult'
-  | 'onDoneVoteReview'
 > & {
   // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
   // the stack starts beneath it.
@@ -50,8 +38,8 @@ type TopCenterChromeProps = Pick<
 };
 
 export function TopCenterChrome({
-  selfParticipant,
   readOnly,
+  participantPalette = false,
   pendingDraw,
   hasPlanBoard = false,
   onCancelDraw,
@@ -59,16 +47,6 @@ export function TopCenterChrome({
   canvasTool,
   formatSourceId,
   dockOnTop = false,
-  tabTimer,
-  tabVote,
-  onPauseTimer,
-  onResumeTimer,
-  onResetTimer,
-  onClearTimer,
-  voteReview,
-  onNextVoteResult,
-  onPrevVoteResult,
-  onDoneVoteReview,
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
@@ -77,10 +55,15 @@ export function TopCenterChrome({
   const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
-  const tray = !readOnly && !dockOnTop ? strip : null;
+  // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):
+  // either way the stack starts beneath it, or the timer and banners sit on the palette.
+  const stripShown = !readOnly || participantPalette;
+  const tray = stripShown && !dockOnTop ? strip : null;
   return (
     <TopCenterStack
-      below={dockOnTop ? 'dock' : !readOnly ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}
+      below={
+        dockOnTop ? 'dock' : stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined
+      }
     >
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
@@ -111,11 +94,8 @@ export function TopCenterChrome({
           </TopCenterBanner>
         </TopCenterRow>
       ) : null}
-      {/* Active mode banner / multi-selection toolbar + the session timer.
-          The timer sits to the RIGHT of the banner on desktop
-          (sm:flex-row) and stacks UNDERNEATH it on mobile (flex-col).
-          `empty:hidden` collapses the row (and its stack gap) when nothing
-          in it is active. */}
+      {/* The active mode banner. `empty:hidden` collapses the row (and its
+          stack gap) when nothing in it is active. */}
       {/* The multi-selection toolbar used to sit here; it now floats over the
           selection (Canvas + FloatingToolbar). */}
       <TopCenterRow className="flex-col sm:flex-row empty:hidden">
@@ -148,33 +128,7 @@ export function TopCenterChrome({
             tray={tray}
           />
         ) : null}
-
-        {/* Session timer (docs/specs/012-collaboration/session-tools.md), ticking locally off the tab timer. */}
-        {tabTimer ? (
-          <TimerWidget
-            timer={tabTimer}
-            readOnly={readOnly}
-            onPause={onPauseTimer}
-            onResume={onResumeTimer}
-            onReset={onResetTimer}
-            onClear={onClearTimer}
-          />
-        ) : null}
       </TopCenterRow>
-
-      {/* Vote status (docs/specs/012-collaboration/session-tools.md), stacked below the timer row. While results
-          are under review it becomes the walkthrough bar (Previous / Next /
-          Done over the ordered top picks). */}
-      {tabVote ? (
-        <VoteBanner
-          vote={tabVote}
-          selfId={participantKey(selfParticipant)}
-          review={voteReview}
-          onNext={onNextVoteResult}
-          onPrev={onPrevVoteResult}
-          onDone={onDoneVoteReview}
-        />
-      ) : null}
     </TopCenterStack>
   );
 }

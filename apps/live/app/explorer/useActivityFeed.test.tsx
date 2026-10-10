@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActivityAction, ActivityCard, ActivityThread } from '@livediagram/api-schema';
 
-// The Activity page's one read, split three ways (docs/specs/013-workspace/activity-page.md §1), and the
+// The Inbox's one read, split three ways (docs/specs/013-workspace/inbox.md §1), and the
 // error-vs-empty distinction the inbox depends on.
 
 const apiListActivity = vi.hoisted(() => vi.fn());
@@ -94,7 +94,7 @@ describe('useActivityFeed', () => {
     expect(result.current.error).toBe(false);
   });
 
-  // docs/specs/013-workspace/activity-page.md §1, §2.5: a Plan card's thread lists with the element threads,
+  // docs/specs/013-workspace/inbox.md §1, §2.5: a Plan card's thread lists with the element threads,
   // newest comment first.
   it("merges Plan cards' threads into the threads, newest comment first", async () => {
     apiListActivity.mockResolvedValue({
@@ -115,7 +115,7 @@ describe('useActivityFeed', () => {
     ]);
   });
 
-  // docs/specs/013-workspace/activity-page.md §1, §2.4: Plan cards on the reader share Assigned to You
+  // docs/specs/013-workspace/inbox.md §1, §2.4: Plan cards on the reader share Assigned to You
   // with actions, newest change first, and count toward the sidebar badge through the same list.
   it('merges Plan cards into assigned-to-you, newest first', async () => {
     apiListActivity.mockResolvedValue({

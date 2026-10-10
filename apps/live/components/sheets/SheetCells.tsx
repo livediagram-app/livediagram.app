@@ -5,6 +5,7 @@
 // over empty neighbours to its right; numbers too wide for their column show fewer decimals, then scientific,
 // then ####. Memoised on what it draws, so moving the selection redraws none of it.
 import { memo, type CSSProperties } from 'react';
+import { resolveFontStack } from '@livediagram/document';
 import {
   cellKey,
   displayValue,
@@ -175,6 +176,8 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
             fontSize: px,
             ...(p.padEnd?.has(cols[c]!) ? { paddingRight: DROPDOWN_PAD_PX } : {}),
             lineHeight: `${Math.round(px * 1.3)}px`,
+            // The cell's own font; unset (or one no longer offered), the sheet's.
+            fontFamily: resolveFontStack(f?.ff),
             fontWeight: f?.b ? 700 : undefined,
             fontStyle: f?.i ? 'italic' : undefined,
             textDecoration: deco || undefined,

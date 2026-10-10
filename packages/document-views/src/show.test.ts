@@ -118,6 +118,7 @@ describe('person ids (security)', () => {
     responses: [{ participantId: secret, value: '3', at: 0 }],
     qaNotes: [{ id: 'n', text: 'Q', at: 0, voters: [secret] }],
     commentThread: { comments: [comment], resolved: false },
+    addedBy: secret,
   } as unknown as Element;
 
   it('never leaves through show, in text or JSON, and names every one omitted', () => {

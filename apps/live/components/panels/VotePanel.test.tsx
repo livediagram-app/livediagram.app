@@ -43,9 +43,12 @@ describe('VotePanel results', () => {
         onClearVote={() => {}}
         isHost
         readOnly={false}
-        position={null}
-        onMoveTo={() => {}}
-        onReset={() => {}}
+        onPopoverClose={() => {}}
+        selfId="me"
+        review={null}
+        onNextResult={() => {}}
+        onPrevResult={() => {}}
+        onDoneReview={() => {}}
       />,
     );
     expect(screen.getByText('#12 Ship it')).toBeTruthy();

@@ -9,13 +9,16 @@ export type MapSize = 'short' | 'medium' | 'tall';
 //   - `localStorage` under `livediagram:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
-//     (fire-and-forget PUT). Last-write-wins per device.
+//     (one PUT at a time, latest wins, lib/preferences-sync). Last-write-wins per device.
 //
 // Cross-tab consistency: callers can listen for the native `storage`
 // event on STORAGE_KEY. Same-tab writes also fire a window event
 // `livediagram:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
-// in-memory gate cache) still refresh promptly.
+// in-memory gate cache) still refresh promptly. Every write sends the
+// WHOLE blob, so a change is built on the cache, never on a render's
+// snapshot (see rebaseUserPreferences): another tab's write since that
+// render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
 import type { SkipLocationStep } from './skip-location-step';
@@ -23,9 +26,11 @@ import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
 import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
-import { apiGetPreferences, apiPutPreferences } from './api-client';
+import { apiGetPreferences } from './api-client';
+import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
 import { readLocalStorageSafe, writeLocalStorageSafe } from './local-storage-safe';
+import { debugLog } from './debug-log';
 
 export type UserPreferences = {
   // When `false`, the editor skips the auto-rebind on move
@@ -307,28 +312,59 @@ export function readUserPreferences(): UserPreferences {
 // Write preferences back. Best-effort: a quota / private-window
 // failure is swallowed (the dialog state still applies in-memory
 // for the session; the user just loses the persistence). The
-// network sync to D1 is fire-and-forget when `ownerId` is supplied:
-// the cache write happens synchronously so the UI updates without
-// waiting, and the PUT runs in the background. Callers without an
-// ownerId (e.g. unit tests, the editor before identity resolves)
-// skip the network step. On success a same-tab
+// network sync to D1 runs in the background when `ownerId` is supplied
+// (lib/preferences-sync): the cache write happens synchronously so the
+// UI updates without waiting. Callers without an ownerId (e.g. unit
+// tests, the editor before identity resolves) skip the network step.
+// The blob is first trimmed to fit the api's size cap, so the cache and
+// the server hold the same thing. On success a same-tab
 // `livediagram:preferences-changed` event fires so in-process
 // listeners refresh without polling. The browser handles cross-tab
 // via its native `storage` event.
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
-  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(prefs));
+  const fitted = fitPreferences(prefs);
+  writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(fitted));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
   // The editor in a workbench never writes preferences to the api (docs/specs/013-workspace/
-  // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame.
-  if (ownerId && !getWorkbenchConfinement()) {
-    // Cast to the wider Record shape the api-client expects.
-    // UserPreferences is the typed surface in this app; the wire
-    // is intentionally opaque so adding a flag doesn't need an
-    // api-schema bump.
-    void apiPutPreferences(ownerId, prefs as Record<string, unknown>);
+  // blueprints/workbench-embeds.md, I9): the frame's choices stay in the frame. Nor under the 'self'
+  // placeholder a Local only document opens with before the reader is known
+  // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
+  if (ownerId && ownerId !== 'self' && !getWorkbenchConfinement()) savePreferences(ownerId, fitted);
+}
+
+// A change a caller built on its render's snapshot, moved onto the
+// freshest preferences (the device cache, which every tab writes):
+// only the keys `next` changed from `snapshot` are applied, so a key
+// another tab wrote since that render survives. With no cache yet,
+// the snapshot is the freshest there is.
+export function rebaseUserPreferences(
+  snapshot: UserPreferences,
+  next: UserPreferences,
+): UserPreferences {
+  const latest = readLocalStorageSafe(STORAGE_KEY) === null ? snapshot : readUserPreferences();
+  const rebased: Record<string, unknown> = { ...latest };
+  const before = snapshot as Record<string, unknown>;
+  const after = next as Record<string, unknown>;
+  for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) {
+    if (before[key] === after[key]) continue;
+    if (key in after) rebased[key] = after[key];
+    else delete rebased[key];
   }
+  return rebased as UserPreferences;
+}
+
+// Rebase a change (above), write it, and answer what was written, for a
+// caller that also holds the preferences in React state.
+export function commitUserPreferences(
+  snapshot: UserPreferences,
+  next: UserPreferences,
+  ownerId?: string | null,
+): UserPreferences {
+  const rebased = rebaseUserPreferences(snapshot, next);
+  writeUserPreferences(rebased, ownerId);
+  return rebased;
 }
 
 // Fetch preferences from D1, merge over the localStorage cache, and
@@ -341,18 +377,24 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
 // state across all of this owner's devices, so any key present on
 // both sides takes the server's value. Keys only in the cache (a
 // PUT that hasn't reached the server yet, or a write made offline)
-// are preserved by the spread order below.
+// are preserved by the spread order below. The exception is a device
+// whose last save was never confirmed (lib/preferences-sync): the
+// server's blob is older than the cache there, so the cache wins and
+// is sent again.
 export async function fetchUserPreferences(ownerId: string): Promise<UserPreferences | null> {
   const remote = await apiGetPreferences(ownerId);
   if (remote === null) return null;
   const local = readUserPreferences();
-  const merged: UserPreferences = {
-    ...local,
-    ...(upgradeLegacyPreferences(remote as Record<string, unknown>) as UserPreferences),
-  };
+  const server = upgradeLegacyPreferences(remote as Record<string, unknown>) as UserPreferences;
+  const unsynced = preferencesUnsynced(ownerId);
+  const merged = fitPreferences(unsynced ? { ...server, ...local } : { ...local, ...server });
   writeLocalStorageSafe(STORAGE_KEY, JSON.stringify(merged));
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
+  }
+  if (unsynced) {
+    debugLog('[preferences] device copy kept over the server, resending');
+    if (!getWorkbenchConfinement()) savePreferences(ownerId, merged);
   }
   return merged;
 }

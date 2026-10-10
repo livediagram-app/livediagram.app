@@ -6,7 +6,7 @@ import {
   presetSetup,
   type PlanBoardSetup,
 } from '@livediagram/items';
-import type { Element } from '@livediagram/document';
+import { isValidElement, type Element } from '@livediagram/document';
 import { describe, expect, it } from 'vitest';
 import {
   PLAN_TEMPLATE_KINDS,
@@ -60,6 +60,10 @@ describe('plan templates', () => {
       okrs: ['Objectives', 'Key Results'],
       'product-launch': ['Timeline', 'Checklist', 'Launch Day'],
       'feedback-board': ['Feedback', 'Delivery'],
+      'budget-planner': ['Budget'],
+      timesheet: ['Timesheet'],
+      'contact-list': ['Contacts'],
+      'task-tracker': ['Tracker'],
     });
   });
 
@@ -236,12 +240,41 @@ describe('plan templates', () => {
     expect(buildPlanTab(PLAN_TEMPLATE_TABS['blank-plan'][0]!, 100, -50)).toEqual([]);
   });
 
-  it('gives a dashboard tab views only, and every other tab exactly one board', () => {
+  it('gives a dashboard tab views only, a spreadsheet tab one Sheet, and every other tab exactly one board', () => {
     for (const { spec, label } of everyTab()) {
       const els = buildPlanTab(spec, 0, 0);
       expect(boardsOf(els), label).toHaveLength(spec.board ? 1 : 0);
-      if (!spec.board) expect(spec.charts?.length ?? 0, label).toBeGreaterThan(0);
+      if (!spec.board && !spec.sheet) expect(spec.charts?.length ?? 0, label).toBeGreaterThan(0);
     }
+  });
+
+  // plan-templates.md "Spreadsheet templates": a Sheet naming its start, filling its tab when the sheet is the job.
+  it('builds each spreadsheet template’s Sheet, naming its start, filling its tab or on the canvas', () => {
+    const sheetOf = (kind: Parameters<typeof buildPlanTemplate>[0]) => {
+      const els = buildPlanTemplate(kind, 0, 0);
+      const sheets = els.filter((el) => el.type === 'shape' && el.shape === 'plan-sheet');
+      expect(sheets, kind).toHaveLength(1);
+      return sheets[0] as Extract<Element, { type: 'shape' }>;
+    };
+    expect(sheetOf('budget-planner').planSheet).toMatchObject({
+      start: 'budget-planner',
+      fillTab: true,
+    });
+    expect(sheetOf('timesheet').planSheet).toMatchObject({ start: 'timesheet', fillTab: true });
+    expect(sheetOf('contact-list').planSheet).toMatchObject({
+      start: 'contact-list',
+      fillTab: true,
+    });
+    const tracker = sheetOf('task-tracker');
+    expect(tracker.planSheet?.start).toBe('task-tracker');
+    expect(tracker.planSheet?.fillTab).toBeUndefined();
+    // The tracker keeps its how-to beside it on the canvas.
+    expect(buildPlanTemplate('task-tracker', 0, 0).some((el) => el.type === 'sticky')).toBe(true);
+    // Every build is a fresh sheet.
+    expect(sheetOf('timesheet').planSheet?.sheetId).not.toBe(
+      sheetOf('timesheet').planSheet?.sheetId,
+    );
+    for (const el of buildPlanTemplate('contact-list', 0, 0)) expect(isValidElement(el)).toBe(true);
   });
 
   it('runs the standup with a timer and a picker, and the retro with a check-in', () => {

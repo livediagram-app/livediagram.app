@@ -688,7 +688,7 @@ export const articles: Article[] = [
     title: 'Offline Mode',
     description: 'Save a document only in this browser, and move it to or from your account.',
     keywords:
-      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost',
+      'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -1309,7 +1309,7 @@ export const articles: Article[] = [
     description:
       'Boards of items on any tab: Kanban, sprints, triage, retros and roadmaps, with cards you drag together.',
     keywords:
-      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
+      'plan mode planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo editor mode switch shift+d opens in plan templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types hand tool view only phone',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1360,9 +1360,9 @@ export const articles: Article[] = [
     slug: 'plan-tour',
     title: 'The Plan Tour',
     description:
-      'A guided walkthrough of Plan mode on an example board, offered once and replayable from Settings.',
+      'A guided walkthrough of Plan mode on an example board or sheet, offered once and replayable from Settings.',
     keywords:
-      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards first time learn plan mode kanban board cards replay rerun settings accessibility',
+      'plan tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial example board example cards example sheet first time learn plan mode kanban board cards spreadsheet spreadsheets sheet sheets formulas replay rerun settings accessibility',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -1515,8 +1515,9 @@ export const articles: Article[] = [
   {
     slug: 'tab-cleanup',
     title: 'Cleaning Up a Tab',
-    description: 'Tidy a tab in one click: snap to a grid, or auto-lay-out from the arrows.',
-    keywords: 'tidy auto layout snap grid arrange organise organize align',
+    description:
+      'Tidy a tab from the command palette: snap to a grid, or auto-lay-out from the arrows.',
+    keywords: 'tidy auto layout snap grid arrange organise organize align command palette cleanup',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1615,9 +1616,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'list-and-card-views',
-    title: 'List and Card Views',
-    description: 'Toggle browse views between compact rows and preview cards with live snapshots.',
-    keywords: 'card grid view toggle thumbnail preview snapshot layout rows tiles gallery',
+    title: 'List, Card and Details Views',
+    description:
+      'Toggle browse views between compact rows, preview cards and a sortable details table.',
+    keywords:
+      'card grid view toggle thumbnail preview snapshot layout rows tiles gallery details table columns sort type mode comments access permission size objects created updated date',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
@@ -1625,19 +1628,19 @@ export const articles: Article[] = [
     slug: 'timeline',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view: the documents you use most and last, and what others did.',
+      'The Explorer\u2019s landing view and the Timeline: what you use most and last, and what happened.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see all activity all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see timeline timeline all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
     category: 'Explorer',
     categorySlug: 'explorer',
   },
   {
     slug: 'activity',
-    title: 'Activity',
+    title: 'Inbox',
     description:
       'What is outstanding for you across every document: open actions and comment threads.',
     keywords:
-      'inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams',
     category: 'Explorer',
     categorySlug: 'explorer',
   },

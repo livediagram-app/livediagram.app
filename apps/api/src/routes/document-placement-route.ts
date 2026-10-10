@@ -119,7 +119,9 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
       // reason the delete path resolves its audience first.
       const leavingAudience = movingOutToPersonal ? await audienceForDocument(env, existing) : null;
       const leftTeam = movingOutToPersonal ? await getTeam(env, existing.teamId!) : null;
-      await setDocumentFolder(env, id, folderId, teamId, newOwnerId);
+      // The folder is re-checked inside the write itself: one deleted since the read above files
+      // nothing, and the move answers 404 as if the read had missed it.
+      if (!(await setDocumentFolder(env, id, folderId, teamId, newOwnerId))) return notFound();
       // docs/specs/013-workspace/timeline.md: publishing into a team library is a different event
       // from filing something in a folder — the first tells a whole
       // team a document is theirs to work on, the second is personal

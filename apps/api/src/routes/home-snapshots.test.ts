@@ -51,8 +51,8 @@ beforeEach(() => {
       VALUES ('d1', 'owner', 'Payments', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Tab 1', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at)
-      VALUES ('CODE', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at)
+      VALUES ('CODE', 'd1', 'view', 'participate', NULL, 1);
   `);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
@@ -86,6 +86,82 @@ describe('the tab save', () => {
     expect(snapshots('action_assigned')).toEqual([
       expect.objectContaining({ id: 'act1', assigneeId: 'me', actionName: 'Fix' }),
     ]);
+  });
+});
+
+describe("the tab save's comment authors and deletions", () => {
+  const by = (id: string, authorId?: string) => ({
+    ...comment(id),
+    ...(authorId ? { authorId } : {}),
+  });
+  const actors = () =>
+    db.sql
+      .prepare(
+        "SELECT source_id, actor_id FROM timeline_events WHERE event_type = 'comment_added' ORDER BY source_id",
+      )
+      .all() as { source_id: string; actor_id: string | null }[];
+
+  it("records the saver's own comment as theirs and a peer's as nobody's until its author claims it", async () => {
+    // Priya's save carries her own c1 and Bea's c2, which reached her live (no author id yet).
+    const withBoth = [shape('a', { commentThread: { comments: [by('c1', 'priya'), by('c2')] } })];
+    await recordTabSave(db.env, DOC, 'priya', withBoth, [shape('a')]);
+    expect(actors()).toEqual([
+      { source_id: 'c1', actor_id: 'priya' },
+      { source_id: 'c2', actor_id: null },
+    ]);
+
+    // Bea's own save claims c2: the same row, now hers.
+    const claimed = [
+      shape('a', { commentThread: { comments: [by('c1', 'priya'), by('c2', 'bea')] } }),
+    ];
+    await recordTabSave(db.env, DOC, 'bea', claimed, withBoth);
+    expect(actors()).toEqual([
+      { source_id: 'c1', actor_id: 'priya' },
+      { source_id: 'c2', actor_id: 'bea' },
+    ]);
+  });
+
+  it('never credits a comment to an author id other than the saver', async () => {
+    await recordTabSave(
+      db.env,
+      DOC,
+      'priya',
+      [shape('a', { commentThread: { comments: [by('c1', 'bea')] } })],
+      [shape('a')],
+    );
+    expect(actors()).toEqual([{ source_id: 'c1', actor_id: null }]);
+  });
+
+  it("deletes a dropped comment's events, and the resolved snippet of a thread it opened", async () => {
+    const open = [
+      shape('a', {
+        commentThread: { resolved: false, comments: [by('c1', 'priya'), by('c2', 'priya')] },
+      }),
+      shape('b', { commentThread: { resolved: false, comments: [by('c3', 'priya')] } }),
+    ];
+    await recordTabSave(db.env, DOC, 'priya', open, []);
+    const resolved = open.map((el) => ({
+      ...el,
+      commentThread: { ...(el as { commentThread: object }).commentThread, resolved: true },
+    })) as Element[];
+    await recordTabSave(db.env, DOC, 'priya', resolved, open);
+    const rows = () =>
+      (
+        db.sql
+          .prepare(
+            `SELECT event_type, source_id FROM timeline_events
+              WHERE event_type IN ('comment_added', 'comment_resolved') ORDER BY event_type, source_id`,
+          )
+          .all() as { event_type: string; source_id: string }[]
+      ).map((r) => `${r.event_type}:${r.source_id}`);
+    expect(rows()).toHaveLength(5);
+
+    // c2 (a reply) deleted alone; element b deleted with its thread.
+    const after = [
+      shape('a', { commentThread: { resolved: true, comments: [by('c1', 'priya')] } }),
+    ];
+    await recordTabSave(db.env, DOC, 'priya', after, resolved);
+    expect(rows()).toEqual(['comment_added:c1', 'comment_resolved:d1:a']);
   });
 });
 

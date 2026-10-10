@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { emptyLayout, type SheetJson } from '@livediagram/sheets';
 import type { Element, ShapeElement } from '@livediagram/document';
 import * as api from '@/lib/api/sheets';
+import { requestSheetSelect } from '@/lib/sheet-select-request';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import {
@@ -67,6 +68,7 @@ function bridge(over: Partial<SheetsBridge> = {}) {
     activeTabId: 't1',
     self: by,
     canEdit: true,
+    canShape: true,
     locale: 'en-GB',
     peers: [],
     pushUndo: vi.fn(),
@@ -199,6 +201,15 @@ describe('the grid', () => {
     // Double-clicking a Sheet in Plan mode offers nothing.
     fireEvent.doubleClick(screen.getByText('Budget'));
     expect(screen.queryByRole('dialog', { name: 'Switch to Plan' })).toBeNull();
+  });
+
+  it('selects a cell asked for from outside the Sheet (the Plan tour)', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    draw(element({ sheetId: 'sheetAAAA' }), bridge());
+    await screen.findByText('Budget');
+    expect(document.querySelector('[data-sheet-formula-bar]')).toBeTruthy();
+    act(() => void requestSheetSelect('sheetAAAA', { r: 2, c: 1 }));
+    expect(screen.getByLabelText<HTMLInputElement>('Name box').value).toBe('B3');
   });
 
   it('offers Plan on a double-click outside Plan mode', async () => {

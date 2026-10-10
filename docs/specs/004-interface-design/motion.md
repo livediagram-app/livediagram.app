@@ -148,6 +148,11 @@ Three kinds of content motion were compared against the 250ms budget, and the op
   settling by about 550ms, and the funnel bars take 250ms.
 - **Template-preview hover stories** keep their own pace, 420–1600ms per beat. Compressed into
   250ms, a story becomes a blip.
+- **The logo's hover turn** keeps its own pace ([Brand mark](./brand-mark.md)). The prism opens
+  over 700ms, turns at 60 degrees a second for as long as the pointer stays, and settles home over
+  450ms when it leaves; the wordmark's gleam crosses once in 900ms. Squeezed into 150ms, a slow
+  turn becomes a twitch. It runs on a frame loop only while moving, and reduced motion holds it
+  still.
 
 ## Enforcement
 

@@ -1,20 +1,15 @@
 // The item routes' shared parts (item-routes.ts, item-patches-route.ts, item-comment-routes.ts): who the caller is
-// and what they reach, the refusals, the writer's signature, a field patch's reading, and the room relay.
+// and what they reach, the refusals, the writer's signature and the room relay. A body is read by @livediagram/items'
+// write checks (write-checks.ts), which an offline document runs too.
 import { itemForRoom, itemForViewer } from '@livediagram/document';
 import {
+  isArchived,
   isTrashed,
   itemIdsShownOnTab,
   itemPersonId,
-  itemStatus,
-  TRASHED_FROM_FIELD,
-  typeAllowsStatus,
-  typeIn,
+  statusExcluded,
   typesOf,
-  validateClear,
-  validateFields,
-  isValidItemType,
   type Item,
-  type ItemPatch,
   type ItemPerson,
   type ItemRejection,
   type TabItemElement,
@@ -45,6 +40,8 @@ export type ItemCaller = {
   scope: Set<string> | null;
   // The store as read to work out that scope, so a list does not read it twice.
   items?: Item[];
+  // Whether the caller holds edit, once a write has had to ask (isItemEditor).
+  editor?: boolean;
 };
 
 const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
@@ -56,23 +53,36 @@ export function rejected(error: ItemRejection, field?: string): Response {
 
 export const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
 
-// An item moved into a status its card type leaves out (docs/specs/026-plan/item-types.md "An item type"). Only a
-// change of status into such a one is refused: making a card in any status is allowed (a type that leaves every
-// status out can still be made, it just never moves), a card already in one is never moved out by this, and a type
-// change that keeps its status is let through. Putting a change back is never refused either: a trashed card
-// restored to the status it was trashed from, and an undo or redo (`undo` set: the body's `undo: true`).
+// An item moved into a status its card type leaves out: statusExcluded against the document's types.
 export function excludedStatus(
   caller: ItemCaller,
   next: Item,
   before: Item,
   undo: boolean,
 ): boolean {
-  const status = itemStatus(next);
-  if (undo || !status || itemStatus(before) === status) return false;
-  if (isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
-  const type = typeIn(typesOf(caller.doc?.itemTypes), next.type);
-  return !typeAllowsStatus(type, status);
+  return statusExcluded(typesOf(caller.doc?.itemTypes), next, before, undo);
 }
+// A Participant works with cards but never deletes one (docs/specs/013-workspace/share-roles.md "What a
+// Participant changes"): moving a card into or out of the Trash or the Archive, and restoring one whole (its votes,
+// thread and key, an Editor's undo), needs an Editor. Asked only when a write does that, so an ordinary card edit
+// pays for no second gate.
+export function retiresItem(before: Item, next: Item): boolean {
+  return isTrashed(before) !== isTrashed(next) || isArchived(before) !== isArchived(next);
+}
+
+export async function isItemEditor(ctx: RouteContext, caller: ItemCaller): Promise<boolean> {
+  if (caller.editor !== undefined) return caller.editor;
+  const doc = caller.doc;
+  const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
+  caller.editor =
+    !!doc &&
+    ((await gateEdit(ctx, caller.documentId, doc.ownerId, doc.teamId)) ||
+      (!!tabId && (await gateEdit(ctx, caller.documentId, doc.ownerId, doc.teamId, tabId))));
+  if (!caller.editor)
+    console.info('[items] items.retire.refused', { documentId: caller.documentId });
+  return caller.editor;
+}
+
 export const itemBusy = () => {
   console.warn('[items] items.write.busy');
   return json(
@@ -143,20 +153,3 @@ export function relay(
 // What a caller is answered with: their own comment author ids, nobody else's.
 export const forCaller = (caller: ItemCaller, items: Item[]) =>
   items.map((i) => itemForViewer(i, caller.owner));
-
-export function readPatch(body: Record<string, unknown>): ItemPatch | ItemRejection {
-  const patch: ItemPatch = {};
-  if (body.set !== undefined) {
-    const set = validateFields(body.set, 'patch');
-    if (!set.ok) return set.error;
-    patch.set = set.fields;
-  }
-  const clear = validateClear(body.clear);
-  if (!clear.ok) return clear.error;
-  if (clear.keys.length) patch.clear = clear.keys;
-  if (body.type !== undefined) {
-    if (!isValidItemType(body.type)) return 'type_invalid';
-    patch.type = body.type;
-  }
-  return patch;
-}

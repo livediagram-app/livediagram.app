@@ -96,7 +96,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   and the item's colour shows as a small dot beside them.
 - It is set in the item panel from one compact field showing the colour's swatch and name (or **None**); it opens
   the one colour picker ([Colour picker](../004-interface-design/colour-picker.md)) in a popover: **None** (which
-  clears it), the strong standard colours, Custom colours and **+**. A pick closes it, as does Escape (which leaves
+  clears it), the strong standard colours, Custom colours and **Add a custom colour** (four coloured dots). A pick closes it, as does Escape (which leaves
   the card open and returns focus to the field) and a press outside. A colour from an earlier Plan palette keeps
   its word ("Amber", "Cyan").
 - The picker's keyboard is the colour picker's: one Tab stop (the picked swatch, else None), the arrow keys move
@@ -137,7 +137,8 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   key removed). Its status stays, for when it comes back. It is undoable like any change.
 - It is done from a card's menu (**Archive**), the item panel's header (**Archive**), or by dragging a card onto
   an **Archive board**. **Restore** (the same places on an archived card), or dragging the card off an Archive
-  board onto another, clears the flag; dragged, the card takes the column it lands in.
+  board onto another, clears the flag; dragged, the card takes the column it lands in, in the move itself (one write,
+  one undo step).
 - An ordinary board leaves archived items out altogether: not in its columns, its counts, its widgets or its
   "not on this board" list.
 - An **Archive board** (the Boards category's Archive tile) shows only archived items, every one in its single
@@ -155,6 +156,14 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
 - Flags change nothing else: a flagged card counts, sorts and moves like any other, and keeps its flag when
   archived, trashed or restored.
 - Flag and Remove Flag send `Plan · Toggled · FlagOn` and `Plan · Toggled · FlagOff`.
+
+## The Plan strip
+
+- Plan mode's bottom-right strip (**Trash**, **New Card**, **Find a Card**, **Card Types**, each below) shows only
+  while the open tab has something that shows cards: a board, a view, or a Sheet holding a card table
+  ([Card tables](../029-sheets/sheet.md#card-tables)). On an empty tab, or one of only diagrams, stickies and plain
+  Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
+  placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
 
 ## Trash
 
@@ -225,7 +234,7 @@ author redaction, and the same thread list, composer and resolve control the com
 - **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
 - **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does
   ([Comment mentions](../012-collaboration/comment-mentions.md)): the card's thread lists on the mentioned person's
-  Activity page (with the thread's other readers: whoever commented in it, and the document's owner), and the
+  Inbox (with the thread's other readers: whoever commented in it, and the document's owner), and the
   author's editor asks the api to email them, the email's button opening the card. `Comment · Mentioned` counts
   each mentioning comment, as on the canvas.
 - **Timeline and email**: a new comment records on the document's timeline and emails the owner (when email is
@@ -291,7 +300,7 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its
   picker.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
-  [Activity page](../013-workspace/activity-page.md) (§2.4 there), in every document you can open; a row opens the card on its board.
+  [Inbox](../013-workspace/inbox.md) (§2.4 there), in every document you can open; a row opens the card on its board.
 - **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
 - An agent token acts as its person, and a read-only token reads only.
 
@@ -317,6 +326,8 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 
 - An [offline document](../006-document/offline-mode.md) keeps its item store inside its own record, as an
   `items` array beside its tabs. Every rule above holds, minus the room.
+- Its writes pass the api's own checks (fields, places, what a move may set, a status the card's type leaves out,
+  the size bounds) and are refused by the same names, so the record never holds what **Sync to cloud** would refuse.
 - **Sync to cloud** sends the items with the document; **Take offline** fetches every item first, all or nothing.
 
 ## Copies and exports

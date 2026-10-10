@@ -88,6 +88,6 @@ export async function loadWorkbenchDocument({
   await seed(self.id, fetched, null, firstTab);
   set.setDocumentServerStored(true);
   set.setIsOwner(fetched.ownerId === self.id);
-  set.setSessionRole(level === 'edit' ? 'edit' : 'view');
+  set.setSessionRole(level);
   settle();
 }

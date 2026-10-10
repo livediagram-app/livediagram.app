@@ -46,33 +46,37 @@ licence), "Unsplash".
 
 `useImageSearch` holds one state:
 
-| Field       | Type                                        | Initial  |
-| ----------- | ------------------------------------------- | -------- |
-| `query`     | `string` (the submitted query, trimmed)     | `''`     |
-| `results`   | `OpenverseImage[]`                          | `[]`     |
-| `page`      | `number` (last page loaded)                 | `0`      |
-| `pageCount` | `number`                                    | `0`      |
-| `status`    | `'idle' \| 'loading' \| 'ready' \| 'error'` | `'idle'` |
-| `error`     | `'rate-limited' \| 'failed' \| null`        | `null`   |
-| `pickingId` | `string \| null`                            | `null`   |
-| `pickError` | `string \| null`                            | `null`   |
+| Field       | Type                                                    | Initial                      |
+| ----------- | ------------------------------------------------------- | ---------------------------- |
+| `query`     | `string` (the submitted query, trimmed)                 | `''`                         |
+| `results`   | `OpenverseImage[]`                                      | `[]`                         |
+| `page`      | `number` (last page loaded)                             | `0`                          |
+| `pageCount` | `number`                                                | `0`                          |
+| `status`    | `'idle' \| 'loading' \| 'ready' \| 'error'`             | `'idle'`                     |
+| `error`     | `'rate-limited' \| 'failed' \| null`                    | `null`                       |
+| `pickingId` | `string \| null`                                        | `null`                       |
+| `pickStage` | `'downloading' \| 'saving'`                             | `'downloading'`              |
+| `pending`   | `{ query: string; more: boolean }` (the load in flight) | `{ query: '', more: false }` |
+| `pickError` | `string \| null`                                        | `null`                       |
 
 Transitions:
 
-1. **Submit(q).** `q.trim()` empty: no-op. Else `status = 'loading'`, `error = null`,
+1. **Submit(q).** `q.trim()` empty: no-op. Else `pending = { query: q, more: false }`, `status = 'loading'`, `error = null`,
    `pickError = null`, track `Element / Searched / Image`, request page 1. Success replaces `results`,
    sets `query`, `page = 1`, `pageCount`, `status = 'ready'`. Failure: `status = 'error'`,
    `error = err.kind`; previous results are kept (they stay dimmed only while loading).
-2. **Load more.** Allowed when `status === 'ready'` and `page < pageCount`. Requests `page + 1` of
+2. **Load more.** Allowed when `status === 'ready'` and `page < pageCount`. Sets
+   `pending = { query, more: true }` (exposed as `loadingMore`). Requests `page + 1` of
    `query`; success appends results, dropping any whose `id` is already shown (D148).
 3. **Stale answers.** Each request takes a sequence number; an answer whose number is not the latest
    is dropped, so a slow first search can't overwrite a second.
-4. **Pick(result).** Guard: `pickingId === null`. Sets `pickingId`, clears `pickError`, runs
-   `storeSearchResult`. Success: calls `onPicked({ id, width, height, originalName: title, credit })`
+4. **Pick(result).** Guard: `pickingId === null`. Sets `pickingId`, `pickStage = 'downloading'`,
+   clears `pickError`, runs `storeSearchResult`, whose `onStage` sets `pickStage` while mounted. Success: calls `onPicked({ id, width, height, originalName: title, credit })`
    and tracks `Element / Used / ImageSearch` in the editor's apply step. Failure: `pickError` = the
    copy for the failure; `pickingId = null`.
 
-`storeSearchResult(result, session, fetch)`:
+`storeSearchResult(result, session, fetch, onFallback, onStage)`; `onStage('downloading')` before each
+fetch and `onStage('saving')` before each `session.store`:
 
 1. Fetch `result.url` (`mode: 'cors'`, `credentials: 'omit'`, `referrerPolicy: 'no-referrer'`).
    A network error, a non-2xx answer, or a `Content-Type` that doesn't start with `image/` → step 3.
@@ -182,13 +186,23 @@ Pick failure copy (`pickFailureMessage`):
 - Form: `TextInput` with placeholder "Search openly licensed images" (`type="search"`), `Button`
   "Search". Autofocus when the tab mounts.
 - Idle: "Find openly licensed photos and illustrations from Openverse."
-- Loading: grid at `opacity-50`, `aria-busy`, a "Searching…" line; Search button disabled.
+- Loading (`ImageSearchLoader.tsx`, motion in `app/image-search-loader.css`): a new search swaps the
+  grid for `SKELETON_TILES_FIRST` (8) `SkeletonTiles` (`aria-busy`, `data-image-search-skeleton`), each
+  `skeletonClass(n)` (one of four tints, the `lvd-search-skeleton` glint at phase `n × 0.09s`) over
+  `PlaceholderArt`; `SearchingStatus` "Searching Openverse for “<query>”…" with the orbiting lens.
+  Load more appends `SKELETON_TILES_MORE` (4) with "Loading more…". A result tile wears
+  `skeletonClass` and `PlaceholderArt` until its `img` fires `load` or `error`. Search disabled.
+  Loops are ambient indicators; reduced motion stops them (`:root.reduce-motion` too).
 - Grid: `grid-cols-4 gap-2`, square tiles (`aspect-square`, `object-cover`), max height `max-h-72`
   scrolling, as the Gallery grid. Hover / focus shows an overlay with the creator and licence label.
 - Load more: secondary `Button` "Load more" under the grid.
 - Empty: "No images match “<query>”. Try a broader word."
 - Errors: the two copies in the spec, in the Gallery's rose error box.
-- Picking: a spinner over the picked tile, other tiles disabled.
+- Picking: the picked tile `aria-busy`, `scale-[1.04]`, a brand border and ring, `PickOverlay` (veil,
+  `lvd-pick-ring` arc, the stage's short word `Downloading` / `Adding`) and no credit overlay; other
+  tiles disabled at `opacity-40 grayscale-[60%]`; Search and Load more disabled. `PickStatus`
+  (`role="status"`) under the grid: `PICK_STAGE_COPY[stage].long` over two step bars, done filled,
+  active running (`lvd-pick-bar`).
 - Footer: "Images from Openverse" link (`https://openverse.org`), `text-[11px]` slate.
 - Image panel credit: under the Image tiles, a `ContextMenuDivider` then a row: label "Credit",
   the credit text (wrapping, `text-xs`), then "Source" and "Licence" links.
@@ -225,18 +239,21 @@ dropped as stale sends nothing.
 
 ## Testing
 
-| Rule                                                         | Test file                                       |
-| ------------------------------------------------------------ | ----------------------------------------------- |
-| URL carries q, page, page_size 20, licence filter, mature    | `apps/live/lib/image-search/openverse.test.ts`  |
-| Parse keeps valid results, drops broken ones, rejects junk   | `apps/live/lib/image-search/openverse.test.ts`  |
-| Credit text, licence labels, no landing URL → no credit      | `apps/live/lib/image-search/openverse.test.ts`  |
-| 429 → rate-limited; 500, network, bad JSON → failed          | `apps/live/lib/image-search/search.test.ts`     |
-| Full image stored; CORS / non-image / unsupported → thumb    | `apps/live/lib/image-search/pick.test.ts`       |
-| Gallery-full is final; both downloads fail → download-failed | `apps/live/lib/image-search/pick.test.ts`       |
-| Warning token per search kind and pick failure               | `apps/live/lib/image-search/telemetry.test.ts`  |
-| Thumbnail fallback reported once, not on a direct store      | `apps/live/lib/image-search/pick.test.ts`       |
-| `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`        |
-| Search tab end to end                                        | Browser verification (no e2e: external network) |
+| Rule                                                         | Test file                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------ |
+| URL carries q, page, page_size 20, licence filter, mature    | `apps/live/lib/image-search/openverse.test.ts`         |
+| Parse keeps valid results, drops broken ones, rejects junk   | `apps/live/lib/image-search/openverse.test.ts`         |
+| Credit text, licence labels, no landing URL → no credit      | `apps/live/lib/image-search/openverse.test.ts`         |
+| 429 → rate-limited; 500, network, bad JSON → failed          | `apps/live/lib/image-search/search.test.ts`            |
+| Full image stored; CORS / non-image / unsupported → thumb    | `apps/live/lib/image-search/pick.test.ts`              |
+| Gallery-full is final; both downloads fail → download-failed | `apps/live/lib/image-search/pick.test.ts`              |
+| Warning token per search kind and pick failure               | `apps/live/lib/image-search/telemetry.test.ts`         |
+| Thumbnail fallback reported once, not on a direct store      | `apps/live/lib/image-search/pick.test.ts`              |
+| Stages: downloading, saving; again for the thumbnail         | `apps/live/lib/image-search/pick.test.ts`              |
+| Placeholders while searching; a tile's until it loads        | `apps/live/components/panels/ImageSearchPane.test.tsx` |
+| Picked tile busy, stage copy, others disabled, hand-off      | `apps/live/components/panels/ImageSearchPane.test.tsx` |
+| `credit` validation accepts good, rejects bad text / URLs    | `packages/document/src/validate.test.ts`               |
+| Search tab end to end                                        | Browser verification (no e2e: external network)        |
 
 ## Constants and configuration
 
@@ -247,3 +264,6 @@ dropped as stale sends nothing.
 | `OPENVERSE_LICENSE_TYPE` | `commercial,modification`      | Spec "Which pictures"                     |
 | `IMAGE_CREDIT_TEXT_MAX`  | `300`                          | Spec validation; a credit line, not prose |
 | `IMAGE_CREDIT_URL_MAX`   | `2048`                         | Spec validation; common URL ceiling       |
+| `SKELETON_TILES_FIRST`   | `8`                            | Two rows of the 4-column grid; 4 to 20    |
+| `SKELETON_TILES_MORE`    | `4`                            | One row; 4 to 8                           |
+| `GLINT_STEP_S`           | `0.09`                         | Wave across 8 tiles within one 1.8 s loop |

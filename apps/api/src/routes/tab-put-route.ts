@@ -158,11 +158,11 @@ export async function handleTabPut(
       recordTabSave(env, existing, owner, sanitised.elements, existingTab?.elements ?? []),
     );
     // docs/specs/014-identity/transactional-email.md (#1): an edit-role visitor adding a comment
-    // notifies the owner.
+    // notifies the owner. Their own comment only, read from the authors the server just set.
     if (
       emailEnabled(env) &&
       owner !== existing.ownerId &&
-      hasNewComments(body.elements, existingTab?.elements ?? [])
+      hasNewComments(sanitised.elements, existingTab?.elements ?? [], owner)
     ) {
       ctx.waitUntil?.(
         notifyNewComment(

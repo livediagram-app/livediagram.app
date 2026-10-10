@@ -85,8 +85,9 @@ beforeEach(() => {
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Detail', '{"elements":[]}', 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 't2', 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 'participate', 't2', 1);
+    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
   vi.spyOn(console, 'info').mockImplementation(() => undefined);
 });
@@ -137,8 +138,19 @@ describe('add', () => {
     ).toBe(404);
   });
 
-  it('lets a view link comment, as today, and keeps a tab-scoped link to its tab', async () => {
+  // docs/specs/013-workspace/share-roles.md: commenting is a Participant's; a Viewer only looks.
+  it('lets a Participant link comment, refuses a view link, and keeps a tab-scoped link to its tab', async () => {
     seed([shape('a')], [shape('b')]);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments',
+          body: { elementId: 'a', text: 'x' },
+          owner: 'looker',
+          code: 'LOOK',
+        })
+      ).status,
+    ).toBe(403);
     expect(
       (
         await call({
@@ -216,6 +228,42 @@ describe('delete-own', () => {
     expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(204);
     expect((await threadOf('a'))!.comments.map((c) => c.id)).toEqual(['c2']);
     expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(404);
+  });
+
+  it('takes the comment’s words off the Timeline, with its thread’s resolved snippet', async () => {
+    seed([
+      shape('a', {
+        commentThread: { resolved: false, comments: [comment('c1', { authorId: 'owner' })] },
+      }),
+    ]);
+    // Posted and resolved: two events carrying c1's text.
+    const posted = await call({ path: '/tabs/t1/comments/c1/reply', body: { text: 'reply' } });
+    expect(posted.status).toBe(201);
+    const reply = ((await posted.json()) as { comment: Comment }).comment.id;
+    const insert = sql.sql.prepare(
+      `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
+         description, occurred_at, snapshot, created_at)
+       VALUES (?, 'owner', 'document', ?, ?, 't', 'text c1', 1, ?, 1)`,
+    );
+    insert.run('e-c1', 'c1', 'comment_added', JSON.stringify({ documentId: 'd1' }));
+    insert.run('e-res', 'd1:a', 'comment_resolved', JSON.stringify({ documentId: 'd1' }));
+    // Another document's event under the same comment id is never reached.
+    insert.run('e-other', 'c1', 'comment_resolved', JSON.stringify({ documentId: 'd2' }));
+    await Promise.allSettled(pending);
+    const events = () =>
+      (sql.sql.prepare('SELECT id FROM timeline_events ORDER BY id').all() as { id: string }[]).map(
+        (r) => r.id,
+      );
+    expect(events()).toHaveLength(4);
+
+    // The reply is not the thread's opening comment: only its own event goes.
+    expect((await call({ method: 'DELETE', path: `/tabs/t1/comments/${reply}` })).status).toBe(204);
+    await Promise.allSettled(pending);
+    expect(events()).toEqual(['e-c1', 'e-other', 'e-res']);
+
+    expect((await call({ method: 'DELETE', path: '/tabs/t1/comments/c1' })).status).toBe(204);
+    await Promise.allSettled(pending);
+    expect(events()).toEqual(['e-other']);
   });
 });
 

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Slide, Tab } from '@livediagram/document';
 import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
+import { announce } from '@/lib/announcer';
 import { PresentationOverlay, type PresentationStep } from './PresentationOverlay';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -145,6 +146,57 @@ describe('PresentationOverlay', () => {
     expect(onSetCanvasTool).not.toHaveBeenCalled();
     unmount();
     expect(onSetCanvasTool).toHaveBeenCalledWith('select');
+  });
+
+  it('auto-advances on time while the deck re-renders, whatever onGo it is handed', () => {
+    const onGo = vi.fn();
+    const deck = (n: number) => (
+      <PresentationOverlay
+        steps={[...STEPS]}
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        at={0}
+        // A fresh closure every render, as a parent re-rendering for other reasons hands over.
+        onGo={(next) => onGo(next, n)}
+        onExit={vi.fn()}
+        direction="forward"
+        config={{ ...DEFAULT_PRESENTATION_CONFIG, autoAdvanceSeconds: 2 }}
+        onChangeConfig={vi.fn()}
+      />
+    );
+    const { rerender } = render(deck(0));
+    for (let n = 1; n <= 4; n++) {
+      tick(500);
+      rerender(deck(n));
+    }
+    expect(onGo).toHaveBeenCalledTimes(1);
+    expect(onGo.mock.calls[0]![0]).toBe(1);
+  });
+
+  it('says the slide when it changes, not on every edit to the deck', () => {
+    const say = vi.mocked(announce);
+    say.mockClear();
+    const deck = (steps: PresentationStep[], at = 0) => (
+      <PresentationOverlay
+        steps={steps}
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        at={at}
+        onGo={vi.fn()}
+        onExit={vi.fn()}
+        direction="forward"
+        config={DEFAULT_PRESENTATION_CONFIG}
+        onChangeConfig={vi.fn()}
+      />
+    );
+    const { rerender } = render(deck(STEPS));
+    expect(say).toHaveBeenCalledTimes(1);
+    // An edit somewhere in the deck: a new list, the same slide on screen.
+    rerender(deck(STEPS.map((x) => ({ ...x }))));
+    rerender(deck(STEPS.map((x) => ({ ...x }))));
+    expect(say).toHaveBeenCalledTimes(1);
+    rerender(deck(STEPS, 1));
+    expect(say).toHaveBeenLastCalledWith('Slide 2 of 2');
   });
 
   it('leaves a pointing tool armed at Start in hand on the way out', () => {

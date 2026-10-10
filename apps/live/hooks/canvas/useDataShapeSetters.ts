@@ -270,17 +270,35 @@ export function useDataShapeSetters({
   const setEstimateScaleSelected = (scale: EstimateScale) =>
     setCollabFieldSelected('estimate', { estimateScale: scale }, 'Estimate');
 
-  const setAgendaItemsSelected = (items: AgendaItem[]) =>
-    setCollabFieldSelected(
-      'agenda',
-      {
-        agendaItems: items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
-          label: item.label.slice(0, AGENDA_MAX_TEXT),
-          minutes: item.minutes,
-        })),
-      },
-      'Agenda',
+  // The current segment travels with its row (docs/specs/012-collaboration/agenda.md
+  // "The current segment"): `moveCurrent` says where a reorder or removal put
+  // it, and a current index past the new rows is cleared either way.
+  const setAgendaItemsSelected = (
+    items: AgendaItem[],
+    moveCurrent?: (current: number) => number | undefined,
+  ) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    const agendaItems = items.slice(0, AGENDA_MAX_ITEMS).map((item) => ({
+      label: item.label.slice(0, AGENDA_MAX_TEXT),
+      minutes: item.minutes,
+    }));
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape' || el.shape !== 'agenda') return el;
+        let current = el.agendaCurrent;
+        if (current !== undefined && moveCurrent) current = moveCurrent(current);
+        if (current !== undefined && current >= agendaItems.length) current = undefined;
+        return {
+          ...el,
+          agendaItems,
+          agendaCurrent: current,
+          ...(current === undefined ? { agendaTimerStartedAt: undefined } : {}),
+        };
+      }),
     );
+    track('Element', 'Changed', 'Agenda');
+  };
 
   const setDecisionStatusSelected = (status: DecisionStatus) =>
     setCollabFieldSelected('decision', { decisionStatus: status }, 'Decision');

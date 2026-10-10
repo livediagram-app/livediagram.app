@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { Env } from '../types';
 import { cardsFromRows, readerPersonIds, type CardRow } from './plan-board-index';
 
-// The edges of the Activity page's card read (docs/specs/013-workspace/activity-page.md §2.4) that the
+// The edges of the Inbox's card read (docs/specs/013-workspace/inbox.md §2.4) that the
 // real-SQLite tests in activity-cards.test.ts cannot reach: a D1 answer without results, and a row whose
 // fields hold no title or status.
 

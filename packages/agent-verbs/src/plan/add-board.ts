@@ -91,6 +91,7 @@ export async function addBoard(
       stored: document.itemTypes ?? null,
       hasCards: state.items.length > 0,
       hadBlank: hasBlankBoard(tab.elements),
+      ...(document.itemTypesRev !== undefined ? { rev: document.itemTypesRev } : {}),
     });
     // Named as the document names them, else as the ready-made type it just gained (a board's types are always one
     // or the other).

@@ -11,7 +11,8 @@ import { LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
 import { PanelExplorerTree } from './PanelExplorerTree';
 import type { PanelTree } from './PanelTreeContext';
 
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const { track } = vi.hoisted(() => ({ track: vi.fn() }));
+vi.mock('@/lib/telemetry', () => ({ track }));
 
 const doc = (id: string, name: string, over: Partial<DocumentListItem> = {}) =>
   ({
@@ -80,6 +81,7 @@ const activate = (name: string | RegExp) =>
 const assign = vi.fn();
 beforeEach(() => {
   assign.mockReset();
+  track.mockReset();
   vi.stubGlobal('location', { ...window.location, assign });
 });
 afterEach(() => {
@@ -100,7 +102,7 @@ describe('PanelExplorerTree', () => {
 
   it('keeps Overview, and leaves invites, team creation and the nudge to the Explorer', () => {
     render(<Harness teams={[{ id: 't1', name: 'Design guild' }]} />);
-    expect(topRows('Overview')).toEqual(['Home', 'Activity', 'Shared with me']);
+    expect(topRows('Overview')).toEqual(['Home', 'Inbox', 'Timeline', 'Shared with me']);
     expect(topRows('Spaces')).toEqual(['My documents', 'Design guild']);
     expect(screen.queryByText('New team')).toBeNull();
     expect(screen.queryByText(/Sign in to access Teams/)).toBeNull();
@@ -142,8 +144,21 @@ describe('PanelExplorerTree', () => {
   it('sends rows without documents to their Explorer page', () => {
     render(<Harness />);
     activate('Home');
+    activate('Inbox');
+    activate('Timeline');
     activate('Trash');
-    expect(assign.mock.calls).toEqual([['/explorer/home'], ['/explorer/trash']]);
+    expect(assign.mock.calls).toEqual([
+      ['/explorer/home'],
+      ['/explorer/inbox'],
+      ['/explorer/timeline'],
+      ['/explorer/trash'],
+    ]);
+    expect(track.mock.calls.map((c) => c[2])).toEqual([
+      'ExplorerPanel.Home',
+      'ExplorerPanel.Inbox',
+      'ExplorerPanel.Timeline',
+      'ExplorerPanel.Trash',
+    ]);
   });
 
   it('sends Shared with me to its Explorer page when nothing is shared', () => {

@@ -58,6 +58,8 @@ export function usePlanSlice(opts: {
   itemTypes: ItemTypesSlice;
   editorMode: EditorMode;
   canEdit: boolean;
+  // Cards, not structure (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
+  canEditCards?: boolean;
   // Participate access: anyone who may read may vote.
   canVote: boolean;
   // The members of the teams this person is part of, as items name people (useTeamPeople).
@@ -85,6 +87,7 @@ export function usePlanSlice(opts: {
   readTabElements?: () => readonly Element[];
 }) {
   const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
+  const canEditCards = opts.canEditCards ?? canEdit;
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
   // and the context value, keep their identity and boards re-render only when Plan state changes.
   const commitRef = useLatest(opts.commit);
@@ -457,6 +460,7 @@ export function usePlanSlice(opts: {
       people,
       planInput: hasPlanInput(editorMode),
       canEdit,
+      canEditCards,
       canVote,
       presence,
       retry: planItems.refetch,
@@ -501,6 +505,7 @@ export function usePlanSlice(opts: {
       people,
       editorMode,
       canEdit,
+      canEditCards,
       canVote,
       presence,
       openItem,

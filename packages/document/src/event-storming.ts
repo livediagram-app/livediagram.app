@@ -175,11 +175,12 @@ export function eventStormingNoteSize(kind: EventStormingNoteKind): {
   return ES_NOTE_SIZE_PX[eventStormingNote(kind).size];
 }
 
-// The notation kind of an element, or null if it isn't a workshop note.
-// Prefers the stored `esKind`; falls back to the canonical fill for notes
-// authored before the kind was persisted (the fill IS the notation, and a
-// fixed-size sticky only exists on an event-storming board). An ordinary
-// sticky that merely happens to be blue is not a Command.
+// The notation kind of an element, or null if it isn't a workshop note: its
+// stored `esKind`, and nothing else. Notes authored before the kind was
+// persisted have it stamped from their canonical fill as they load
+// (./legacy-es-kinds), so the colour is never read here: a plain sticky
+// recoloured Lemon is not an Actor, and one that happens to be blue is not a
+// Command.
 export function eventStormingKindOf(el: {
   type: string;
   esKind?: EventStormingNoteKind;
@@ -187,9 +188,7 @@ export function eventStormingKindOf(el: {
   fixedSize?: boolean;
 }): EventStormingNoteKind | null {
   if (el.type !== 'sticky') return null;
-  if (el.esKind) return el.esKind;
-  if (!el.fixedSize || !el.fillColor) return null;
-  return EVENT_STORMING_NOTES.find((n) => n.fill === el.fillColor)?.kind ?? null;
+  return el.esKind ?? null;
 }
 
 // Is this element a workshop note at all? The notation-aware treatments —

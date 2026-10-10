@@ -14,8 +14,10 @@ import { SheetSettingsPanel } from './SheetSettingsPanel';
 import { SettingsCog } from '@/components/plan/SettingsCog';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { FocusElementButton } from '@/components/plan/FocusElementButton';
+import { IN_BOX_TITLE_CLASS, InMenuBox } from '@/components/plan/menu-name-slot';
 import { track } from '@/lib/telemetry';
 import type { SheetActions } from './useSheetActions';
+import { BAND_CONTROLS_CLASS, bandControlsProps } from '@/components/plan/band-controls';
 
 export const HEADER_PX = 40;
 
@@ -45,11 +47,12 @@ export function SheetHeader({
 
   return (
     <div
-      className="flex shrink-0 items-center gap-1.5 border-b px-3"
-      style={{ height: HEADER_PX, borderColor: c.palette.cardBorder }}
+      // In a header band (maximised, MaximisedPlanLayer's --plan-band-*), as tall as the top row, after the menu.
+      className="flex h-[var(--plan-band-h,40px)] shrink-0 items-center gap-1.5 border-b pl-[var(--plan-band-left,0.75rem)] pr-3"
+      style={{ borderColor: c.palette.cardBorder }}
       onDoubleClick={(e) => {
         // As a board's: a double-click on the title or the header's empty space renames, never on its buttons.
-        if (!c.canEdit || renaming) return;
+        if (!c.canShape || renaming) return;
         const t = e.target as HTMLElement;
         if (t !== e.currentTarget && !t.closest('[data-sheet-title]')) return;
         e.stopPropagation();
@@ -57,43 +60,61 @@ export function SheetHeader({
         setRenaming(true);
       }}
     >
-      {/* The Sheet's glyph, so it reads as a spreadsheet at a glance beside the boards. */}
-      <span aria-hidden className="flex shrink-0" style={{ color: c.palette.focus }}>
-        <SheetArt size={15} />
-      </span>
-      {renaming ? (
-        <input
-          autoFocus
-          data-keeps-escape
-          aria-label="Sheet title"
-          maxLength={SHEET_TITLE_MAX}
-          value={draft}
-          onPointerDown={stop}
-          onDoubleClick={stop}
-          onFocus={(e) => e.currentTarget.select()}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={rename}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') rename();
-            if (e.key === 'Escape') setRenaming(false);
-          }}
-          className="min-w-0 flex-1 rounded-md border bg-transparent px-1.5 py-0.5 text-[14px] font-semibold outline-none"
-          style={{ borderColor: c.palette.focus, color: c.palette.text }}
-        />
-      ) : (
-        // A press on the title moves the element, as on the rest of the header; a double-click renames.
-        <div
-          data-sheet-title
-          className="min-w-0 truncate text-[14px] font-semibold"
-          style={{ color: c.palette.text }}
-        >
-          {c.sheet.title}
-        </div>
-      )}
+      {/* The Sheet's glyph and title; in a header band both ride in the menu box (menu-name-slot), in the
+          chrome's ink. */}
+      <InMenuBox
+        render={(inBox) => (
+          <>
+            {/* The glyph, so it reads as a spreadsheet at a glance beside the boards. */}
+            <span aria-hidden className="flex shrink-0" style={{ color: c.palette.focus }}>
+              <SheetArt size={15} />
+            </span>
+            {renaming ? (
+              <input
+                autoFocus
+                data-keeps-escape
+                aria-label="Sheet title"
+                maxLength={SHEET_TITLE_MAX}
+                value={draft}
+                onPointerDown={stop}
+                onDoubleClick={stop}
+                onFocus={(e) => e.currentTarget.select()}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={rename}
+                onKeyDown={(e) => {
+                  e.stopPropagation();
+                  if (e.key === 'Enter') rename();
+                  if (e.key === 'Escape') setRenaming(false);
+                }}
+                className="min-w-0 flex-1 rounded-md border bg-transparent px-1.5 py-0.5 text-[14px] font-semibold outline-none"
+                style={{ borderColor: c.palette.focus, color: inBox ? 'inherit' : c.palette.text }}
+              />
+            ) : (
+              // A press on the title moves the element, as on the rest of the header; a double-click renames.
+              <div
+                data-sheet-title
+                className={
+                  inBox
+                    ? IN_BOX_TITLE_CLASS
+                    : 'min-w-0 max-w-[var(--plan-band-mid,none)] truncate text-[14px] font-semibold'
+                }
+                style={inBox ? undefined : { color: c.palette.text }}
+              >
+                {c.sheet.title}
+              </div>
+            )}
+          </>
+        )}
+      />
       <div className="flex-1" />
       {c.interactive ? (
-        <span className="flex items-center gap-1" onPointerDown={stop} onDoubleClick={stop}>
+        // In a header band, a card like the menu box (band-controls.ts).
+        <span
+          {...bandControlsProps(c.palette)}
+          className={`flex items-center gap-1 ${BAND_CONTROLS_CLASS}`}
+          onPointerDown={stop}
+          onDoubleClick={stop}
+        >
           {bounds && !c.maximised ? (
             <FocusElementButton bounds={bounds} kind="Sheet" palette={c.palette} />
           ) : null}

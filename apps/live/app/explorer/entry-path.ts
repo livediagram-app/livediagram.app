@@ -8,5 +8,5 @@ export const ENTRY_PATH = typeof window === 'undefined' ? '' : window.location.p
 /** The page load started on `/explorer` or on Home (docs/specs/013-workspace/explorer-home.md). */
 export const ARRIVED_ON_HOME = /^\/explorer(\/home)?\/?$/.test(ENTRY_PATH);
 
-/** The page load started on All activity, the Timeline feed (docs/specs/013-workspace/timeline.md §8.1). */
+/** The page load started on the Timeline (docs/specs/013-workspace/timeline.md §8.1). */
 export const ARRIVED_ON_TIMELINE = /^\/explorer\/timeline\/?$/.test(ENTRY_PATH);

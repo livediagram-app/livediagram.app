@@ -1,9 +1,17 @@
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
+  isValidTab,
+  MAX_TABLE_CELLS,
+  MAX_TABLE_COLS,
+  MAX_TABLE_ROWS,
+  type TableElement,
+} from '@livediagram/document';
+import {
   buildTabFromMarkdown,
   cleanInline,
   layoutOutline,
+  MAX_LIST_DEPTH,
   parseMarkdown,
   type MarkdownNode,
 } from './markdown-import';
@@ -209,5 +217,44 @@ describe('cleanInline on hostile input', () => {
     expect(cleanInline('See [the docs](http://x) and ![logo](a.png) <b>now</b>')).toBe(
       'See the docs and logo now',
     );
+  });
+});
+
+// Limits (docs/specs/020-import-export/markdown-import.md "Limits"): a table past what validation
+// accepts is truncated to fit, and a list nests no deeper than MAX_LIST_DEPTH. 12,000 ever-deeper
+// list lines used to recurse the layout past the stack.
+describe('markdown import limits', () => {
+  const depthOf = (node: MarkdownNode): number =>
+    1 + Math.max(0, ...node.children.map((c) => depthOf(c)));
+
+  it('nests a deep list no deeper than MAX_LIST_DEPTH, keeping every item', () => {
+    const md = Array.from({ length: 12_000 }, (_, i) => `${'  '.repeat(i)}- item ${i}`).join('\n');
+    const parsed = parseMarkdown(md);
+    expect(depthOf(parsed.roots[0]!)).toBe(MAX_LIST_DEPTH);
+    const result = buildTabFromMarkdown(md);
+    expect(result.ok).toBe(true);
+  });
+
+  it('truncates a table to the rows validation accepts, and the tab stays valid', () => {
+    const rows = Array.from({ length: 3_000 }, (_, i) => `| r${i} | v${i} |`);
+    const md = ['| a | b |', '| - | - |', ...rows].join('\n');
+    const result = buildTabFromMarkdown(md);
+    if (!result.ok) throw new Error(result.error);
+    const table = result.tab.elements.find((el) => el.type === 'table') as TableElement;
+    expect(table.cells).toHaveLength(MAX_TABLE_ROWS);
+    expect(table.cells[1]).toEqual(['r0', 'v0']);
+    expect(isValidTab(result.tab)).toBe(true);
+  });
+
+  it('truncates a wide table to the cell budget', () => {
+    const header = `|${Array.from({ length: 1_200 }, (_, i) => ` h${i} `).join('|')}|`;
+    const delim = `|${Array.from({ length: 1_200 }, () => ' - ').join('|')}|`;
+    const body = Array.from({ length: 80 }, () => header);
+    const result = buildTabFromMarkdown([header, delim, ...body].join('\n'));
+    if (!result.ok) throw new Error(result.error);
+    const table = result.tab.elements.find((el) => el.type === 'table') as TableElement;
+    expect(table.cells[0]).toHaveLength(MAX_TABLE_COLS);
+    expect(table.cells.length * MAX_TABLE_COLS).toBeLessThanOrEqual(MAX_TABLE_CELLS);
+    expect(isValidTab(result.tab)).toBe(true);
   });
 });

@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 91;
+export const TEMPLATE_COUNT = 95;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -129,7 +129,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -137,11 +137,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the four modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Illustrate lays out designed pages like posters and slides. Plan turns a document into boards of cards with columns, WIP limits and quick add. Modes are personal: you and a teammate can work on the same tab in different modes.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Illustrate lays out designed pages like posters and slides. Plan turns a tab into boards of cards with columns, WIP limits and quick add, beside spreadsheets with formulas. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a document can have its own.',
       },
       {
         q: 'Can I organise a big document?',
-        a: 'Yes. A document holds as many tabs as you need, which you can group into folders and link between. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer.',
+        a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer.',
       },
       {
         q: 'Can I present from it?',
@@ -193,7 +193,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How do share links work?',
-        a: 'From a document you own, create an editor link (full edit access) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+        a: 'From a document you own, create an editor link (full edit access), a participant link (add stickies, write and vote, without reshaping the board) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
       },
       {
         q: 'Can I password-protect a document?',
@@ -201,7 +201,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I embed a diagram in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a read-only, live-updating iframe. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
       },
       {
         q: 'What is the Community?',
@@ -255,7 +255,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Is there a command-line tool?',
-        a: 'One is on the way. The livediagram command-line tool is built and runs from source today: it signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents. An npm release is next.',
+        a: 'Yes. Install it from npm as @livediagram/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents.',
       },
     ],
   },
@@ -275,7 +275,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content in Draw mode. Markdown and JSON import too.',
+        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',
@@ -297,27 +297,29 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Your documents are stored in our database on Cloudflare. There are no tracking pixels,
-            no advertising and no third-party analytics. We do record anonymous, first-party usage
-            (which features get used, never your content or name) and show it openly on our{' '}
+            Documents saved to your account are stored in our database on Cloudflare, and Local only
+            documents stay in your browser. There are no tracking pixels, no advertising and no
+            third-party analytics. We do record anonymous, first-party usage (which features get
+            used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
             <a href="/help/policies/privacy-policy/">privacy policy</a> for the details.
           </>
         ),
         aText:
-          'Your documents are stored in our database on Cloudflare. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Documents saved to your account are stored in our database on Cloudflare, and Local only documents stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
         q: 'Can I keep a document off your servers entirely?',
         a: (
           <>
-            Yes. Offline Mode saves a document only in your browser, never on our servers. You can
-            choose it when you create a document and switch either way later. See{' '}
+            Yes. Offline Mode saves a document only in your browser, never on our servers. Until you
+            sign in, new documents start that way; after, you can choose it when you create one.
+            Either way you can switch later. See{' '}
             <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:
-          'Yes. Offline Mode saves a document only in your browser, never on our servers. You can choose it when you create a document and switch either way later. See Offline Mode.',
+          'Yes. Offline Mode saves a document only in your browser, never on our servers. Until you sign in, new documents start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',

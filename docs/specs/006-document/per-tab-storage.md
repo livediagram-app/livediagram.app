@@ -122,6 +122,17 @@ never flashes a loader and drops straight into the per-tab template
 picker. A tab whose elements a realtime peer already delivered likewise
 renders immediately rather than showing a spinner over real content.
 
+### Saving
+
+- Changes save 600 ms after the last edit (the debounce). A page going to the background saves at once, since a
+  phone may discard it there without another event.
+- What the debounce still holds goes out when the editor goes: on `beforeunload`, on `pagehide` (iOS, a discarded
+  tab, the back-forward cache) and when the editor unmounts for another page of the app. Those writes stay alive
+  past the page while they fit the browser's keepalive budget (64 KB in all, 60 KB used); the rest are sent as
+  plain requests, which land when the page lives on. Two events on the same way out send the content once.
+- A tab's writes land in the order made: a save or delete of a tab waits for that tab's previous one to settle
+  ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)); other tabs never wait.
+
 ### A refused save stops; a failed save doesn't
 
 The autosave used to treat every rejection as one thing: set the status to

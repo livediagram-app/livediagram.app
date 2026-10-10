@@ -25,15 +25,28 @@ import {
 // EVERY copy path must spread this: the set duplication below, and the
 // editor's hand-rolled single / multi duplicate paths. It exists precisely
 // because "the one place copies happen" turned out to be three places.
-export function freshCopyFields(el: Element): { rotation?: number; planSheet?: PlanSheetRef } {
-  if (el.type === 'sticky' && el.fixedSize) return { rotation: eventStormingTilt() };
+//
+// A copy is also nobody's addition (docs/specs/013-workspace/share-roles.md): `addedBy` never rides along, so an
+// Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
+// afresh by the room.
+export function freshCopyFields(el: Element): {
+  rotation?: number;
+  planSheet?: PlanSheetRef;
+  addedBy?: undefined;
+} {
+  const unowned = 'addedBy' in el ? { addedBy: undefined } : {};
+  if (el.type === 'sticky' && el.fixedSize) return { ...unowned, rotation: eventStormingTilt() };
   // A copied Sheet frames a new sheet, made from the original's when it is first drawn
   // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
+  // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from
+  // the same start.
+  if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.start)
+    return { planSheet: { sheetId: newPlanSheetId(), start: el.planSheet.start } };
   if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet?.sheetId)
     return {
       planSheet: { sheetId: newPlanSheetId(), copyOf: el.planSheet.copyOf ?? el.planSheet.sheetId },
     };
-  return {};
+  return unowned;
 }
 
 // Duplicate every element whose id is in `ids`:

@@ -5,6 +5,7 @@
 
 import { fnv1aString } from '@livediagram/document';
 import { randomPick } from './random';
+import type { AccessLevel } from '@livediagram/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
 
@@ -48,7 +49,7 @@ export type Participant = {
   // because guest / private-document sessions don't have a role. The
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
-  role?: 'edit' | 'view';
+  role?: AccessLevel;
   // Their published profile picture (docs/specs/014-identity/profile-picture.md §5), as the room
   // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
   // screen. Our own entry carries our picture whatever the switch says.
@@ -66,6 +67,30 @@ export type Participant = {
 // is a great deal better than crashing the join on an undefined.
 export function participantKey(participant: Participant): string {
   return participant.key ?? participant.id;
+}
+
+// One row per person, by `participantKey`: the same person in two tabs (or
+// re-joined on a new socket) shares a key but not an id, so deduping on `id`
+// counted them twice (docs/specs/012-collaboration/participant-responses.md).
+// The first row for a key wins, so ourselves (listed first) stays ourselves.
+export function uniqueParticipants(participants: readonly Participant[]): Participant[] {
+  const seen = new Set<string>();
+  return participants.filter((p) => {
+    const key = participantKey(p);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// The keys of everyone in the room who CAN answer a per-participant card
+// (docs/specs/012-collaboration/participant-responses.md "Who counts"): one per
+// person, leaving out view-link guests (who can't write) and agent rows (never
+// counted as a person). What a Done check waits on and an Estimate counts.
+export function answeringKeys(participants: readonly Participant[]): string[] {
+  return uniqueParticipants(participants)
+    .filter((p) => p.role !== 'view' && !p.agent)
+    .map(participantKey);
 }
 
 // What a screen reader hears for an avatar: "Webber (Online)", and their agent's status line after it

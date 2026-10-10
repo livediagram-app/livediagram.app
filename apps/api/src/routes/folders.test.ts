@@ -12,10 +12,10 @@ const { db } = vi.hoisted(() => ({
   db: {
     createFolder: vi.fn(),
     deleteFolder: vi.fn(),
-    folderMoveWouldCycle: vi.fn(),
     getFolder: vi.fn(),
     listFoldersByOwner: vi.fn(),
-    updateFolder: vi.fn(),
+    moveFolder: vi.fn(),
+    renameFolder: vi.fn(),
   },
 }));
 vi.mock('../db', () => db);
@@ -104,7 +104,7 @@ describe('handleFolders auth', () => {
     db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'someone-else' });
     const res = await handleFolders(makeCtx('PUT', '/api/folders/f1', { body: { name: 'x' } }));
     expect(res.status).toBe(403);
-    expect(db.updateFolder).not.toHaveBeenCalled();
+    expect(db.renameFolder).not.toHaveBeenCalled();
   });
 
   it('204 when the owner deletes their folder', async () => {
@@ -151,5 +151,62 @@ describe('handleFolders auth', () => {
     const sweep = timeline.markTimelineEventsDeletedBySource.mock.invocationCallOrder[0]!;
     const tombstone = timeline.recordFolderDeleted.mock.invocationCallOrder[0]!;
     expect(sweep).toBeLessThan(tombstone);
+  });
+});
+
+// Untyped bodies (docs/specs/013-workspace/folders.md "API"): a null or numeric name used to reach the
+// NOT NULL column (a 500) or be stored as a number. Each is a 400 before any write.
+describe('handleFolders body validation', () => {
+  it.each([null, 42, {}, ''])('400 on a create whose name is %j', async (name) => {
+    const res = await handleFolders(makeCtx('POST', '/api/folders', { body: { id: 'f2', name } }));
+    expect(res.status).toBe(400);
+    expect(db.createFolder).not.toHaveBeenCalled();
+  });
+
+  it('400 on a create whose id is not a string', async () => {
+    const res = await handleFolders(
+      makeCtx('POST', '/api/folders', { body: { id: 7, name: 'x' } }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it.each([null, 42, ''])('400 on a rename to %j', async (name) => {
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'owner-1', teamId: null });
+    const res = await handleFolders(makeCtx('PUT', '/api/folders/f1', { body: { name } }));
+    expect(res.status).toBe(400);
+    expect(db.renameFolder).not.toHaveBeenCalled();
+  });
+
+  it('400 on a numeric parentId, before the rename lands', async () => {
+    db.getFolder.mockResolvedValue({ id: 'f1', ownerId: 'owner-1', teamId: null });
+    const res = await handleFolders(
+      makeCtx('PUT', '/api/folders/f1', { body: { name: 'ok', parentId: 3 } }),
+    );
+    expect(res.status).toBe(400);
+    expect(db.renameFolder).not.toHaveBeenCalled();
+    expect(db.moveFolder).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleFolders move', () => {
+  const mine = (id: string) => ({ id, ownerId: 'owner-1', teamId: null });
+
+  it('409 when the atomic move refuses (a cycle), with no rename', async () => {
+    db.getFolder.mockImplementation(async (_env: unknown, id: string) => mine(id));
+    db.moveFolder.mockResolvedValue(false);
+    const res = await handleFolders(
+      makeCtx('PUT', '/api/folders/a', { body: { name: 'A', parentId: 'b' } }),
+    );
+    expect(res.status).toBe(409);
+    expect(db.moveFolder).toHaveBeenCalledWith({}, 'a', 'b');
+    expect(db.renameFolder).not.toHaveBeenCalled();
+  });
+
+  it('200 when the move lands, root included', async () => {
+    db.getFolder.mockImplementation(async (_env: unknown, id: string) => mine(id));
+    db.moveFolder.mockResolvedValue(true);
+    const res = await handleFolders(makeCtx('PUT', '/api/folders/a', { body: { parentId: null } }));
+    expect(res.status).toBe(200);
+    expect(db.moveFolder).toHaveBeenCalledWith({}, 'a', null);
   });
 });

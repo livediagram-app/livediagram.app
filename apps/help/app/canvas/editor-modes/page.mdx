@@ -21,7 +21,7 @@ An **editor mode** is how you work on a tab right now. There are four: **Diagram
 
 Three words describe how documents and tabs differ, and they mean different things:
 
-- **Mode** is how a tab is worked on. It is yours: someone else on the same tab can be in a different mode at the same time.
+- **Mode** is how a tab is worked on. It belongs to the tab, so everyone on the tab is in the same mode.
 - **Kind** is what a tab is. Almost every tab is a general tab that works in every mode; the [Event Storming board](/help/canvas/event-storming-boards/) is the one tab with its own kind, its own notation and no modes.
 - **Template** is what a document was made from. A Kanban board or a retrospective is a general tab made from a template, never a kind of tab of its own. See [Templates](/help/canvas/templates/).
 
@@ -30,7 +30,7 @@ Three words describe how documents and tabs differ, and they mean different thin
 - **Diagram**: shapes, arrows, the palette and snapping. The palette opens on **Popular** and offers Shapes, Write, Draw, Build, Icons, Stickers, Tech, Media and Collaborate, and shapes snap into line with alignment guides. This is where every new document starts unless its template says otherwise.
 - **Draw**: pens, the eraser and shape recognition, for sketching by hand. The palette strip gives way to Draw's own tools: Select, three markers, Text, the Path tool, the Eraser (whole strokes or just part of one) and your pinned shapes, in a dock across the top. See [Draw Mode](/help/canvas/draw-mode/).
 - **Illustrate**: pages, for building a finished visual or writing an article. The tab is laid out as sheets in a row, each with a settings cog and a **+** after the last to add another, and the palette trades pens, tech icons and Collaborate for Components, Devices and Data charts. Export from Illustrate saves the pages. See [Illustrate Mode](/help/canvas/illustrate/).
-- **Plan**: boards of items, for running work through columns of cards. The palette holds **Cards**, **Boards**, **Widgets**, **Metrics**, **Visualisations**, **Content** and **Tools**, and opens on Cards. The bottom-right corner gains **Trash**, **Cards** and **Card Types**, while the Layers and Quick Style panels step aside. See [Plan Mode](/help/canvas/plan-mode/).
+- **Plan**: boards of items, for running work through columns of cards. The palette holds **Cards**, **Boards**, **Widgets**, **Metrics**, **Visualisations**, **Content** and **Tools**, and opens on Cards (or Boards, until the tab has a board). The bottom-right corner gains **Trash**, **Cards** and **Card Types**, while the Layers and Quick Style panels step aside. See [Plan Mode](/help/canvas/plan-mode/).
 
 Every mode is on for everyone, with nothing to turn on in Settings.
 
@@ -54,9 +54,9 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
 - **Undo switches back.** Switching is one step in your [undo history](/help/canvas/undo/): **Undo** puts the tab back in the mode it was in, exactly as it was, for everyone, and **Redo** switches again.
 - **The tab pill shows the tab's mode.** Each tab in the tab bar starts with the icon of its mode, the same icon the switch uses.
 - **A tab opens in its mode**, for everyone, Diagram unless something set it otherwise.
-- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab), open **Mode** and choose **Diagram**, **Draw**, **Illustrate** or **Plan**. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
+- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab) and choose **Diagram**, **Draw**, **Illustrate** or **Plan** from the mode rows at the bottom. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
 
-<Figure caption="The tab menu's Mode, open on the four modes with a dot on the tab's current one; the tab pill leads with the same icon.">
+<Figure caption="The tab menu's mode rows, with a dot on the tab's current one; the tab pill leads with the same icon.">
   <TabModeMenuScene />
 </Figure>
 
@@ -65,11 +65,11 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
 
 ## On a Phone
 
-A phone has no mode switch: the top row belongs to the palette's strip, and Shift+D needs a keyboard. To change mode, open the tab menu (the **⋯** on the tab), open **Mode** and choose a mode. That switches the tab for everyone, as the switch does. On a phone every mode starts on the [Hand](/help/selection-modes/hand/) tool, so a drag moves the canvas.
+A phone has no mode switch: the top row belongs to the palette's strip, and Shift+D needs a keyboard. To change mode, open the tab menu (the **⋯** on the tab) and choose a mode from its mode rows. That switches the tab for everyone, as the switch does. On a phone every mode starts on the [Hand](/help/selection-modes/hand/) tool, so a drag moves the canvas.
 
 ## Who Can Switch
 
-- **Editors** of a general tab get the switch, Shift+D and the tab menu's Mode.
+- **Editors** of a general tab get the switch, Shift+D and the tab menu's mode rows.
 - **People who can only view** a tab follow its mode, with no switch, and Shift+D does nothing.
 - On a [locked tab](/help/tabs/locking-tabs/) nobody can switch: the tab stays in its mode until it is unlocked.
 - **Event Storming boards** have no modes: they keep their own tools and notation, show no switch and have no Mode.
@@ -87,7 +87,7 @@ Switching is instant, with no reload, and nothing on the tab moves.
 
 ## Leaving Illustrate
 
-Diagram, Draw and Plan modes do not show pages, so when you can edit a tab that has something on it, switching out of Illustrate (with the switch, Shift+D or the tab menu's Mode) asks first:
+Diagram, Draw and Plan modes do not show pages, so when you can edit a tab that has something on it, switching out of Illustrate (with the switch, Shift+D or the tab menu's mode rows) asks first:
 
 - **A tab with content but no articles** shows a small card beside the switch: **Switch to Diagram?** (or Draw, or Plan). What you change in the other mode may not fit back onto your pages when you return. Press **Switch** to go, or **Cancel** (or Escape) to stay.
 - **A tab with articles** asks **Turn Articles Into Pages?**: **Turn Into Pages**, **Keep as Articles** or **Cancel**. See [Writing Articles](/help/canvas/illustrate/articles/#exporting-presenting-and-leaving).

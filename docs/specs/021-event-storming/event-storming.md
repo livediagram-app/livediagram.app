@@ -95,7 +95,11 @@ semantic colour:
   colour says it visually, but the kind is domain data — it names the
   selection ("Selected Domain Event" rather than "Selected Sticky") and is
   what any later notation-aware feature reads instead of matching hexes.
-  Notes authored before the stamp resolve through their canonical fill.
+  Notes authored before the stamp get it as they load (every stored-tab
+  entry point: a fixed-size sticky in a kind's canonical fill takes that
+  kind). After that only the stored kind counts: the colour is never read
+  live, so a plain sticky recoloured Lemon stays a plain sticky, not an
+  Actor.
 - **A verb menu, not a styling menu.** Right-clicking a note offers Cut /
   Copy / Duplicate / Bring to Front / Send to Back / Remove, and nothing
   else: Colours, Shadow, Animation, Text, Rotation and Layer are hidden,
@@ -360,7 +364,10 @@ board's behaviour changes at all.
   incoming note takes that note's place and everything from there slides
   by `note width + the row's prevailing gap` (the median gap between
   adjacent notes in the hovered row; the template's 72px when the row
-  has no gap to measure). So every gap the author already arranged
+  has no gap to measure). The hovered row is the notes on the cursor's
+  lane: lanes sit closer together than a note is tall, so "near the
+  cursor" would take in the neighbouring lane's notes and open the slot
+  there. So every gap the author already arranged
   survives untouched, and the new note gets the row's own rhythm on its
   right.
 - **Everything to the right moves, not just the row.** A command above
@@ -506,23 +513,23 @@ The rule is about ARRIVING notes. Whatever lands or moves a note puts it on a
 lane; nothing ever moves a note that is already down to make room for one that
 is arriving (the Alt insertion stays the one verb that makes room).
 
-| Way in                                            | Where the note lands                                                                                                                                                                                                                                                                                                       |
-| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Drag, one note or a selection**                 | y: the nearest lane, at any distance (there is no "parked between lanes" any more). x: the placement rules above, unchanged. A selection snaps by the note in hand; when that note is a plain sticky, by the first workshop note in the selection, so every workshop note in it stays on a lane.                           |
-| **Cmd/Ctrl drag**                                 | Exactly where the hand puts it, on a lane or not.                                                                                                                                                                                                                                                                          |
-| **Palette drag, click to place**                  | The nearest lane, the same placement as a drag.                                                                                                                                                                                                                                                                            |
-| **A single note landing on an occupied spot**     | The nearest free rhythm slot along its lane (the "Dropped ON a note in the row" rule, whatever brought the note there).                                                                                                                                                                                                    |
-| **Arrow keys up / down**                          | A whole lane per press, Shift or not: the note's centre moves to the next lane above or below it (a note off-lane goes to the lane on that side). Left / right nudge is unchanged (1px, 10px with Shift). A selection holding a workshop note moves by that note's lane step, every member by the same delta.              |
-| **Paste, the pointer over the canvas**            | At the POINTER. One note: centred on the pointer, then placed exactly as a note dropped there (lane, slot, occupied spot). Several: the block keeps its layout, centred on the pointer, and each row of notes takes its own lane (rows to lanes, below); nothing already on the board moves, and the block may overlap it. |
-| **Paste, the pointer anywhere else**              | STAGGERED on the original: the same lane, 24px to the right. Overlapping the original is fine; it is a copy you are about to move. Over a panel, or with the pointer outside the window, is "anywhere else".                                                                                                               |
-| **Duplicate** (⌘D, the menu, the command palette) | Staggered on the original: the same lane, 24px to the right.                                                                                                                                                                                                                                                               |
-| **Photo import**                                  | Rows of the photograph to lanes, with a cascade; notes above one another share a column. See below.                                                                                                                                                                                                                        |
-| **MCP** (`update_document`)                       | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                 |
-| **File import** (JSON into the tab)               | Every workshop note to its nearest lane, x untouched.                                                                                                                                                                                                                                                                      |
-| **Next-note button**                              | The lane of the note it was added from (that note's nearest lane, when it was free-placed off one).                                                                                                                                                                                                                        |
-| **Alt insertion**                                 | The lane of the row it is inserted into.                                                                                                                                                                                                                                                                                   |
-| **A new board** (template, /new, MCP template)    | The seed "Board Created" note on lane 0, and the board marked settled.                                                                                                                                                                                                                                                     |
-| **An older board** (authored before this rule)    | Settled ONCE, the first time it is opened by someone who can edit it: see below.                                                                                                                                                                                                                                           |
+| Way in                                            | Where the note lands                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Drag, one note or a selection**                 | y: the nearest lane, at any distance (there is no "parked between lanes" any more). x: the placement rules above, unchanged. A selection snaps by the note in hand; when that note is a plain sticky, by the first workshop note in the selection, so every workshop note in it stays on a lane, and anything else in it (a label, a frame) moves by the same delta. |
+| **Cmd/Ctrl drag**                                 | Exactly where the hand puts it, on a lane or not.                                                                                                                                                                                                                                                                                                                    |
+| **Palette drag, click to place**                  | The nearest lane, the same placement as a drag.                                                                                                                                                                                                                                                                                                                      |
+| **A single note landing on an occupied spot**     | The nearest free rhythm slot along its lane (the "Dropped ON a note in the row" rule, whatever brought the note there).                                                                                                                                                                                                                                              |
+| **Arrow keys up / down**                          | A whole lane per press, Shift or not: the note's centre moves to the next lane above or below it (a note off-lane goes to the lane on that side). Left / right nudge is unchanged (1px, 10px with Shift). A selection holding a workshop note moves by that note's lane step, every member by the same delta.                                                        |
+| **Paste, the pointer over the canvas**            | At the POINTER. One note: centred on the pointer, then placed exactly as a note dropped there (lane, slot, occupied spot). Several: the block keeps its layout, centred on the pointer, and each row of notes takes its own lane (rows to lanes, below); nothing already on the board moves, and the block may overlap it.                                           |
+| **Paste, the pointer anywhere else**              | STAGGERED on the original: the same lane, 24px to the right. Overlapping the original is fine; it is a copy you are about to move. Over a panel, or with the pointer outside the window, is "anywhere else".                                                                                                                                                         |
+| **Duplicate** (⌘D, the menu, the command palette) | Staggered on the original: the same lane, 24px to the right.                                                                                                                                                                                                                                                                                                         |
+| **Photo import**                                  | Rows of the photograph to lanes, with a cascade; notes above one another share a column. See below.                                                                                                                                                                                                                                                                  |
+| **MCP** (`update_document`)                       | Every workshop note the call adds or moves is an arriving note: rows to lanes, and a lone arrival landing on an occupied spot takes the nearest free slot.                                                                                                                                                                                                           |
+| **File import** (JSON into the tab)               | Every workshop note to its nearest lane, x untouched.                                                                                                                                                                                                                                                                                                                |
+| **Next-note button**                              | The lane of the note it was added from (that note's nearest lane, when it was free-placed off one).                                                                                                                                                                                                                                                                  |
+| **Alt insertion**                                 | The lane of the row it is inserted into.                                                                                                                                                                                                                                                                                                                             |
+| **A new board** (template, /new, MCP template)    | The seed "Board Created" note on lane 0, and the board marked settled.                                                                                                                                                                                                                                                                                               |
+| **An older board** (authored before this rule)    | Settled ONCE, the first time it is opened by someone who can edit it: see below.                                                                                                                                                                                                                                                                                     |
 
 **Rows to lanes.** Several notes arriving together (a paste, an MCP call)
 keep their layout as a block, and each ROW of them takes its own lane: a row is
@@ -719,8 +726,10 @@ so a photo of a wall with bare paper above the notes landed lanes too low).
   the board draws the SLOT it is offering instead, which says the same thing
   about x and says it where the note is actually going.
 - **Notes only** — one or many. A selection of notes snaps by the note in hand
-  (see the rules table); a shape, an icon, an arrow or an image drags exactly as
-  it does on every other tab. The Alt insertion still wants exactly one
+  (see the rules table); a selection holding a workshop note snaps by it whatever
+  else it holds (a label, a frame and its contents), the rest moving by the same
+  delta; a shape, an icon, an arrow or an image dragged without one drags exactly
+  as it does on every other tab. The Alt insertion still wants exactly one
   note, which is its own rule.
 - **Precedence** (top rung wins): an open insertion slot (Alt, Phase 5) → free
   placement (Cmd/Ctrl, [Snap override (free drag)](../008-canvas/snap-override.md)) → the lane (y) and
@@ -1752,7 +1761,7 @@ truth for what the type IS at any moment.
 
 ## Counts
 
-The catalogue is pinned at **91 templates (11 default + 80 extra)**:
+The catalogue is pinned at **95 templates (11 default + 84 extra)**:
 `templates.test.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), [Marketing assets](../019-marketing/marketing-assets.md), the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

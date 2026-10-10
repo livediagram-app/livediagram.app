@@ -294,7 +294,7 @@ export type Tab = {
   pages?: IllustratePage[];
   // The writing of the tab's article pages, by flow id (docs/specs/007-editor/article-pages.md):
   // each document's blocks and style, shared by its pages (`IllustratePage.flow`). Read via
-  // `articlesOf`; synced block by block (the `doc` room op), never in a `tab-meta` patch.
+  // `articlesOf`; synced block by block (the `article` room op), never in a `tab-meta` patch.
   articles?: Record<string, ArticleFlow>;
   // Legacy: a single page's orientation, from before multiple pages. Read as one page when `pages`
   // is absent; dropped the first time the pages change (`withIllustratePages`).
@@ -382,6 +382,7 @@ export {
 } from './element-types';
 export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
 export * from './editor-mode';
+export * from './tab-stats';
 export * from './illustrate-page';
 export * from './illustrate-page-fit';
 export * from './page-lock';
@@ -402,6 +403,10 @@ export * from './article-zones';
 export * from './article-notes';
 export * from './article-to-page';
 export * from './article-intake';
+export * from './article-markdown';
+export * from './article-markdown-io';
+export * from './illustrate-page-paint';
+export * from './illustrate-edits';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -514,6 +519,7 @@ export * from './chart-source';
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';
 export * from './collab-shapes';
+export * from './agenda-current';
 // Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
 export * from './quiz';
 export * from './shape-geometry';
@@ -582,6 +588,7 @@ export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 // §4.7a): raw elements made safe, graph input capped and laid out, and finished tabs built.
 export * from './element-normalise';
 export * from './graph-input';
+export * from './graph-limits';
 export * from './tab-builders';
 
 // Shared by the editor's text export + import and reusable by the api / MCP.
@@ -604,7 +611,7 @@ export * from './theme-presets';
 export * from './element-kind-label';
 
 // The name a boxed element goes by in a list of elements (the Collaborate
-// Panel's rows, the Activity page's rows): its label, a table's first cell,
+// Panel's rows, the Inbox's rows): its label, a table's first cell,
 // or "Untitled".
 export * from './element-display-label';
 
@@ -652,6 +659,8 @@ export * from './layer-operations';
 // Element-level realtime ops (docs/specs/012-collaboration/realtime-conflict-resolution.md): the ElementOp type + the pure
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
+export * from './participant-content';
+export * from './adder';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once

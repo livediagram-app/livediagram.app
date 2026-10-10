@@ -4,6 +4,7 @@
 // PortalMenu, the colour ones with the shared colour row (theme swatches, your colours, a custom colour).
 import { BORDER_LINES, SheetBordersPicker, type BorderLine } from './SheetBordersPicker';
 import { useState } from 'react';
+import { FONTS } from '@livediagram/document';
 import {
   FONT_SIZE_DEFAULT,
   formatRange,
@@ -32,6 +33,7 @@ export type ToolbarMenuKind =
   | 'number'
   | 'text-colour'
   | 'fill-colour'
+  | 'font'
   | 'font-size'
   | 'borders'
   | 'merge'
@@ -171,6 +173,19 @@ export function SheetToolbarMenu({
                 />
               }
               onClick={act(() => actions.numberFormat(row.nf, row.cur))}
+            />
+          ))
+        : null}
+      {kind === 'font'
+        ? [{ id: null, label: 'Default', stack: undefined }, ...FONTS].map((font) => (
+            <MenuActionRow
+              key={font.id ?? 'default'}
+              plain
+              label={font.label}
+              // Each font named in its own face, so the menu is its own preview.
+              {...(font.stack ? { labelStyle: { fontFamily: font.stack } } : {})}
+              icon={<Check on={(f?.ff ?? null) === font.id} />}
+              onClick={act(() => actions.format({ ff: font.id }))}
             />
           ))
         : null}

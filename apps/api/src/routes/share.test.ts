@@ -356,7 +356,15 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   const notifyDocumentJoinMock = vi.mocked(notifyDocumentJoin);
   const reportServerEventMock = vi.mocked(reportServerEvent);
 
-  function resolveCtx(opts: { code?: string; visitor?: string | null; password?: string } = {}): {
+  function resolveCtx(
+    opts: {
+      code?: string;
+      visitor?: string | null;
+      password?: string;
+      // The visitor proved their id (a Clerk session or token), not just sent X-Owner-Id.
+      signedIn?: boolean;
+    } = {},
+  ): {
     ctx: RouteContext;
     settled: () => Promise<unknown>;
   } {
@@ -370,8 +378,8 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
         env: FAKE_ENV,
         url,
         segments: url.pathname.replace(/^\//, '').split('/'),
-        clerkUserId: null,
-        verifiedUserId: null,
+        clerkUserId: opts.signedIn ? (opts.visitor ?? null) : null,
+        verifiedUserId: opts.signedIn ? (opts.visitor ?? null) : null,
         clerkEmail: null,
         resolveOwner: () => opts.visitor ?? null,
         waitUntil: (p: Promise<unknown>) => {
@@ -453,7 +461,14 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   it('records the visit for an identified non-owner, at the link’s role', async () => {
     const { ctx } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
-    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view', null);
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(
+      FAKE_ENV,
+      'visitor-1',
+      'd1',
+      'view',
+      null,
+      expect.any(String),
+    );
   });
 
   // docs/specs/013-workspace/tab-scoped-share-links.md
@@ -476,7 +491,14 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       ['', true],
       ['Roadmap', undefined],
     ]);
-    expect(recordSharedAccessMock).toHaveBeenCalledWith(FAKE_ENV, 'visitor-1', 'd1', 'view', 't2');
+    expect(recordSharedAccessMock).toHaveBeenCalledWith(
+      FAKE_ENV,
+      'visitor-1',
+      'd1',
+      'view',
+      't2',
+      expect.any(String),
+    );
   });
 
   it('tells an All-tabs visitor they have every tab', async () => {
@@ -500,16 +522,29 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       createdAt: 0,
       pictureUrl: null,
     });
-    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
     expect(notifyDocumentJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), 'Ada');
   });
 
+  it('never emails for a guest visitor, however fresh their id', async () => {
+    // An X-Owner-Id is unproven and free to mint: each new one is a "first visit", so a guest
+    // could otherwise send the owner one email per request, under a name of their choosing.
+    recordSharedAccessMock.mockResolvedValue(true);
+    for (const visitor of ['guest-a', 'guest-b', 'guest-c']) {
+      const { ctx, settled } = resolveCtx({ visitor });
+      expect((await handleShare(ctx)).status).toBe(200);
+      await settled();
+    }
+    expect(recordSharedAccessMock).toHaveBeenCalledTimes(3);
+    expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
+  });
+
   it('stays quiet on a repeat visit', async () => {
     // docs/specs/014-identity/profile-and-email-notifications.md is once per person, not once per reload.
     recordSharedAccessMock.mockResolvedValue(false);
-    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
     expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
@@ -548,7 +583,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   it('still emails when the joiner has no participant record', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     getParticipantMock.mockRejectedValue(new Error('D1 down'));
-    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
     expect(notifyDocumentJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), null);
@@ -567,7 +602,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   it('swallows a failing notification rather than surfacing it', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     notifyDocumentJoinMock.mockRejectedValue(new Error('Resend down'));
-    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
+    const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     expect((await handleShare(ctx)).status).toBe(200);
     await expect(settled()).resolves.toBeDefined();
   });

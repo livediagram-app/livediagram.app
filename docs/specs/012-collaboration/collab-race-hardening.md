@@ -138,7 +138,12 @@ the DO only stores it):
   starts empty, so the deltas are the whole map).
 
 A delta for a new round replaces that element's answers and ideas (ticks
-carry over, since rows have no round). One storage key per element, and
+carry over, since rows have no round) and retires the round it replaced; a
+`vote` op for a new vote round does the same to the dots. The entry keeps the
+last `RETIRED_ROUNDS_MAX` (16) retired rounds, and an op naming one is late
+and dropped: before, a late answer, idea, dot or even a withdraw from the
+previous round flipped the entry back to it and lost the current round's
+answers or dots. One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
@@ -289,3 +294,19 @@ The set-up now moves the way the other multi-writer fields do:
 Residual, stated plainly: two people changing the SAME field of the same column (both renaming To
 do) in the same moment still each see the other's value, exactly as a same-element collision on
 any shape does; the next change to that field from either side settles it.
+
+## Saves
+
+A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding Plan ledger changes waits up to
+`ROOM_SEQUENCE_ACK_TIMEOUT_MS` for the room before its PUT, and a newer save of the same tab used to overtake it, so
+the server kept the older snapshot while the client believed the newer one saved and peers received the older
+element ops last. Each save or delete of a tab now starts only once that tab's previous one has settled, landed or
+failed; different tabs never wait on each other.
+
+## Tab lists
+
+A peer's `document-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
+saved yet (`keepUnsavedTabChanges`, judged against the save baseline as it was before the op): a tab added here and
+not yet saved stays, after the tab it followed, and a tab deleted here and not yet saved stays deleted. Replacing the
+screen with the list dropped a new tab before its first save, and brought a deleted one back as an empty placeholder
+whose next save emptied the real tab for everyone. The baseline takes the list as it is.

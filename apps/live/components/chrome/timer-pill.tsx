@@ -5,15 +5,13 @@ import { Glyph } from '@livediagram/ui';
 
 // The session timer's LOOK, in one place (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
 //
-// Extracted from TimerWidget when the Timer session element became a real
-// timer on the canvas rather than a button that starts one: two surfaces
-// showing the same `TabTimer` should not be two drawings of it that drift.
-// The widget in the top chrome and the element on the canvas now render this,
-// so a change to the clock, the drain, or the controls lands on both.
+// Two surfaces show the same `TabTimer` and should not be two drawings of it
+// that drift: the Timer element on the canvas renders the pill, and the
+// Session strip's Timer button shares its drain (`timerFillStyle`).
 //
 // Presentation only. The timer state, the ticking and the handlers belong to
-// the caller — the widget ticks for the chrome, the element ticks for itself,
-// and neither owns the other's re-render.
+// the caller: each surface ticks for itself, and neither owns the other's
+// re-render.
 
 /** Icon buttons, shared so the two surfaces cannot drift on the glyphs either. */
 export function TimerCloseIcon() {

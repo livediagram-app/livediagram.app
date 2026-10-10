@@ -15,6 +15,7 @@ import {
   selectAllCells,
   selectCols,
   selectRows,
+  selectsSeveral,
   single,
   stepFrom,
   type Grid,
@@ -151,5 +152,26 @@ describe('moves', () => {
       r: 1,
       c: 0,
     });
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Keyboard": a merge is one cell, so Enter and Tab on a clicked merge do not cycle
+// into the cells it covers.
+describe('selectsSeveral', () => {
+  const merged = { r1: 1, c1: 1, r2: 2, c2: 2 };
+  const sel = (range: typeof merged, active = { r: range.r1, c: range.c1 }) => ({
+    ranges: [range],
+    active,
+    anchor: active,
+  });
+
+  it('is one cell for a single cell and for a clicked merge', () => {
+    expect(selectsSeveral(single({ r: 4, c: 4 }), grid())).toBe(false);
+    expect(selectsSeveral(sel(merged), grid([], { merge: true }))).toBe(false);
+  });
+
+  it('is several for a range past the merge, or a merge-sized range with no merge', () => {
+    expect(selectsSeveral(sel({ ...merged, c2: 3 }), grid([], { merge: true }))).toBe(true);
+    expect(selectsSeveral(sel(merged), grid())).toBe(true);
   });
 });

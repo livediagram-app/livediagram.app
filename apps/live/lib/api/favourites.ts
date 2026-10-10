@@ -26,18 +26,23 @@ export async function apiListFavourites(ownerId: string): Promise<string[]> {
   // half down with it, which sharing a try block would do.
   const offline = await offlineListFavouriteIds().catch(() => []);
   try {
-    const res = await apiFetch(`${API_BASE}/favourites`, { headers: await apiHeaders(ownerId) });
-    if (!res.ok) return offline;
-    const body = (await res.json()) as { ids?: unknown };
-    if (!Array.isArray(body.ids)) return offline;
-    const cloud = body.ids.filter((id): id is string => typeof id === 'string');
-    return [...cloud, ...offline];
+    return [...(await fetchCloudFavouriteIds(ownerId)), ...offline];
   } catch {
     // Offline, or a pure-guest self-host with no /api configured. The local
     // stars still stand; the cloud half degrades to "no favourites" rather
     // than breaking the Explorer.
     return offline;
   }
+}
+
+// The account's stars alone, throwing when they could not be read. Take Offline needs to know
+// rather than guess: a failed read taken as "not starred" would drop the star with the server row.
+export async function fetchCloudFavouriteIds(ownerId: string): Promise<string[]> {
+  const res = await apiFetch(`${API_BASE}/favourites`, { headers: await apiHeaders(ownerId) });
+  if (!res.ok) throw new Error(`favourites failed: ${res.status}`);
+  const body = (await res.json()) as { ids?: unknown };
+  if (!Array.isArray(body.ids)) throw new Error('favourites failed: malformed');
+  return body.ids.filter((id): id is string => typeof id === 'string');
 }
 
 // Star / un-star. Fire-and-forget with the same swallow as preferences:

@@ -110,6 +110,8 @@ export type MountOptions = {
   pointRef?: PointRef;
   bridge?: Partial<SheetsBridge> | null;
   title?: string;
+  // The covering Sheet's zoom (sheet-zoom.ts).
+  zoom?: number;
 };
 
 function initialSheet(id: string, o: MountOptions): Sheet {
@@ -215,6 +217,7 @@ export async function mountGrid(o: MountOptions = {}): Promise<MountedGrid> {
         input={input}
         pointRef={pointRef}
         peers={o.peers ?? []}
+        {...(o.zoom ? { zoom: o.zoom } : {})}
       />
     );
   }

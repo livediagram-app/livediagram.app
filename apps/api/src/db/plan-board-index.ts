@@ -1,4 +1,4 @@
-// plan_board_statuses and the Activity page's Plan cards (docs/specs/013-workspace/activity-page.md §2.4).
+// plan_board_statuses and the Inbox's Plan cards (docs/specs/013-workspace/inbox.md §2.4).
 //
 // The table is a per-tab projection of each Plan board's column statuses, written by collabIndexStatements in
 // the tab save's own batch (so every write path in §2.1 keeps it) and copied with a duplicated tab. The read
@@ -9,6 +9,7 @@ import type { Element } from '@livediagram/document';
 import type { ActivityCard } from '@livediagram/api-schema';
 import { itemPersonId } from '@livediagram/items';
 import { planBoardRowsFromElements } from '../collab-index/plan-board-rows';
+import { revGuardAnd, revGuardBinds, revGuardValues, type TabRevGuard } from './tab-rev-guard';
 import type { Env } from '../types';
 
 // ---------- Writes ----------------------------------------------------
@@ -19,17 +20,29 @@ export function planBoardIndexStatements(
   env: Env,
   tabId: string,
   elements: readonly Element[],
+  guard: TabRevGuard = null,
 ): D1PreparedStatement[] {
+  const and = revGuardAnd(guard);
+  const g = revGuardBinds(guard);
   const stmts: D1PreparedStatement[] = [
-    env.DB.prepare('DELETE FROM plan_board_statuses WHERE tab_id = ?').bind(tabId),
+    env.DB.prepare(`DELETE FROM plan_board_statuses WHERE tab_id = ?${and}`).bind(tabId, ...g),
   ];
   for (const r of planBoardRowsFromElements(elements)) {
     stmts.push(
       env.DB.prepare(
         `INSERT INTO plan_board_statuses
            (tab_id, element_id, board_title, status, done, board_order, position)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      ).bind(tabId, r.elementId, r.boardTitle, r.status, r.done ? 1 : 0, r.boardOrder, r.position),
+         ${revGuardValues(7, guard)}`,
+      ).bind(
+        tabId,
+        r.elementId,
+        r.boardTitle,
+        r.status,
+        r.done ? 1 : 0,
+        r.boardOrder,
+        r.position,
+        ...g,
+      ),
     );
   }
   return stmts;
@@ -60,7 +73,7 @@ export async function readerPersonIds(env: Env, ownerId: string): Promise<string
   return Promise.all(ids.map((id) => itemPersonId(id)));
 }
 
-// Placing items on the Activity page (§2.4, §2.5): a `cards` CTE of the matching items in documents the reader can
+// Placing items on the Inbox (§2.4, §2.5): a `cards` CTE of the matching items in documents the reader can
 // open, `top` the newest ?3 of them by `order` (only rows passing `keep`), and `placed` each with the board that
 // shows it. `match` filters the items (it may read `i`, `v` and the read's own CTEs); `cols` adds columns to
 // `cards`. A tab-scoped share sees only what its tab's boards show, so there a board on that tab must hold the

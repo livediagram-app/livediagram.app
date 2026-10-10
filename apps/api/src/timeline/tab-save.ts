@@ -15,8 +15,16 @@ import {
   recordCommentAdded,
   recordCommentResolved,
   recordDocumentEdited,
+  retractComments,
 } from './document-events';
-import { completedActions, newActions, newComments, newlyResolvedThreads } from './tab-diff';
+import {
+  claimedComments,
+  completedActions,
+  newActions,
+  newComments,
+  newlyResolvedThreads,
+  removedComments,
+} from './tab-diff';
 
 type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 
@@ -32,7 +40,11 @@ export async function recordTabSave(
   // forward (docs/specs/013-workspace/timeline.md §4.2).
   await recordDocumentEdited(env, liveDoc, actorId);
 
-  for (const comment of newComments(next, prev)) {
+  // A comment's actor is its author, never simply the saver: a save carries a peer's new comment
+  // when it reached the saver live first, stored without an author id until the author's own save
+  // claims it (rewriteCommentAuthors). Only an author id equal to the saver's is trusted here, so a
+  // client can never credit a comment to somebody else; the claim fills the actor in later.
+  for (const comment of [...newComments(next, prev), ...claimedComments(next, prev)]) {
     await recordCommentAdded(
       env,
       liveDoc,
@@ -43,9 +55,19 @@ export async function recordTabSave(
         authorColor: comment.authorColor,
         reply: comment.reply,
       },
-      actorId,
+      comment.authorId === actorId ? actorId : null,
     );
   }
+
+  // A deleted comment's words leave the feed with it, whether it went alone or with its element.
+  await retractComments(
+    env,
+    liveDoc.id,
+    removedComments(next, prev).map((c) => ({
+      id: c.id,
+      threadKey: c.opening ? `${liveDoc.id}:${c.elementId}` : null,
+    })),
+  );
 
   for (const { elementId, text } of newlyResolvedThreads(next, prev)) {
     // The element id doubles as the thread's identity — a thread has no

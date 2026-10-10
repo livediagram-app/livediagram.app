@@ -29,7 +29,8 @@ import {
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
-import type { LayerInsets } from '@/lib/canvas-layer-insets';
+import type { CanvasLayout } from '@/lib/canvas-layer-insets';
+import { announceHeaderBand } from './menu-name-slot';
 import type { PlanPalette } from './plan-palette';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
@@ -47,16 +48,34 @@ export const CANVAS_LAYER_Z = 'z-[calc(var(--z-panel)-1)]';
 // bottom controls) stays reachable. `data-canvas-cover` also tells the canvas's capture-phase handler to stand down
 // for a press inside it (useCanvasSurfaceGestures). The element sits in it at its insets, `marker` naming which.
 export function CanvasCover({
-  insets,
+  layout,
   marker,
   children,
 }: {
-  insets: LayerInsets;
+  layout: CanvasLayout;
   marker: Record<string, string>;
   children: ReactNode;
 }) {
+  const { insets, band } = layout;
+  // The element's name moves to the menu box while there is a band, and back when it goes (menu-name-slot).
+  const banded = !!band;
+  useLayoutEffect(() => {
+    announceHeaderBand();
+    return announceHeaderBand;
+  }, [banded]);
+  // The palette moves to the header's right end, before its controls (plan-board.md "The header holds the top row"):
+  // set on the canvas the strip sits in, so the strip itself never re-renders for it.
+  const coverRef = useRef<HTMLDivElement>(null);
+  const stripEnd = band?.stripEnd ?? null;
+  useLayoutEffect(() => {
+    const main = coverRef.current?.parentElement;
+    if (!main || stripEnd === null) return;
+    setStripEnd(main, stripEnd);
+    return () => clearStripEnd(main);
+  }, [stripEnd]);
   return (
     <div
+      ref={coverRef}
       data-canvas-cover=""
       className={`absolute inset-0 ${CANVAS_LAYER_Z}`}
       // An opaque backdrop: the canvas's own background (colour and pattern, from the canvas `main` it sits in), so
@@ -70,11 +89,41 @@ export function CanvasCover({
       }}
       onWheel={stop}
     >
-      <div {...marker} className="absolute p-2 sm:p-3" style={insets}>
+      <div
+        {...marker}
+        {...(band ? { 'data-header-band': '' } : {})}
+        className="absolute p-2 sm:p-3"
+        // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
+        // reads these, each with its own size as the fallback, so on the canvas nothing changes.
+        style={{ ...insets, ...(band ? bandVars(band) : {}) } as CSSProperties}
+      >
         {children}
       </div>
     </div>
   );
+}
+
+// The strip's place in a header band, as the properties its root reads (ToolbarPalette): pressed to the right,
+// `stripEnd` screen px from the canvas's right edge, written in the strip's own px (its UI scale zooms it).
+export function setStripEnd(main: HTMLElement, stripEnd: number): void {
+  const strip = main.querySelector<HTMLElement>('[data-toolbar-palette]');
+  const zoom = strip ? parseFloat(getComputedStyle(strip).zoom) || 1 : 1;
+  main.style.setProperty('--plan-strip-align', 'flex-end');
+  main.style.setProperty('--plan-strip-end', `${Math.round(stripEnd / zoom)}px`);
+}
+
+export function clearStripEnd(main: HTMLElement): void {
+  main.style.removeProperty('--plan-strip-align');
+  main.style.removeProperty('--plan-strip-end');
+}
+
+// The header band as the CSS properties a maximised element's header reads (PLAN_BAND_*).
+export function bandVars(band: NonNullable<CanvasLayout['band']>): Record<string, string> {
+  return {
+    '--plan-band-h': `${band.height}px`,
+    '--plan-band-left': `${band.left}px`,
+    '--plan-band-mid': `${band.mid}px`,
+  };
 }
 
 // The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref
@@ -194,7 +243,10 @@ export function MaximisableSlot({
   const over = maximised || fill;
   useLayoutEffect(() => {
     const slot = slotRef.current;
-    if (!over && host && slot && host.parentElement !== slot) slot.appendChild(host);
+    if (!over && host && slot && host.parentElement !== slot) {
+      slot.appendChild(host);
+      announceHeaderBand();
+    }
   }, [over, host]);
   useEffect(() => () => host?.remove(), [host]);
   if (!host) return <>{children}</>;
@@ -234,7 +286,11 @@ export function openBox(box: HTMLElement, id: string, host: HTMLElement): () => 
   const origin = originOf(id);
   box.style.opacity = '';
   const reveal = () => {
-    if (host.parentElement !== box) box.appendChild(host);
+    if (host.parentElement !== box) {
+      box.appendChild(host);
+      // Moved under the band: its name looks again (menu-name-slot).
+      announceHeaderBand();
+    }
   };
   const settle = () => box.classList.remove(...GHOST_CLASSES);
   if (!origin || prefersReducedMotion()) {
@@ -282,7 +338,10 @@ export function openBox(box: HTMLElement, id: string, host: HTMLElement): () => 
 // once without motion). Returns the cancel (maximising again while it shrinks back).
 export function closeBox(box: HTMLElement, id: string, host: HTMLElement): () => void {
   const slot = document.querySelector(`[data-plan-slot="${CSS.escape(id)}"]`);
-  if (slot && host.parentElement !== slot) slot.appendChild(host);
+  if (slot && host.parentElement !== slot) {
+    slot.appendChild(host);
+    announceHeaderBand();
+  }
   const origin = originOf(id);
   if (!origin || prefersReducedMotion()) {
     finishRestore();
@@ -322,8 +381,8 @@ export function MaximisedPlanLayer({
   const boxRef = useRef<HTMLDivElement>(null);
   const closing = useMaximisedPlanClosing();
   const [mark, canvas] = useCanvasRoot();
-  // Clear of the chrome over the canvas: the top row, side panels, the zoom controls.
-  const insets = useCanvasLayerInsets(canvas);
+  // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
+  const layout = useCanvasLayerInsets(canvas);
 
   // One phase at a time, opening or closing, in one effect: when restoring begins (or the layer goes), the opening's
   // cleanup cancels its pending reveal and settle (timers and listener) without running them, so an opening still
@@ -356,7 +415,7 @@ export function MaximisedPlanLayer({
       <span hidden ref={mark} />
       {canvas
         ? createPortal(
-            <CanvasCover insets={insets} marker={{ 'data-maximised-board': '' }}>
+            <CanvasCover layout={layout} marker={{ 'data-maximised-board': '' }}>
               <div
                 ref={boxRef}
                 className="relative h-full w-full origin-top-left will-change-transform"
@@ -373,19 +432,22 @@ export function MaximisedPlanLayer({
 // grow). Presses stop here, as on a maximised board.
 export function FilledTabLayer({ host }: { host: HTMLElement }) {
   const [mark, canvas] = useCanvasRoot();
-  // Clear of the chrome over the canvas: the top row, side panels, the zoom controls.
-  const insets = useCanvasLayerInsets(canvas);
+  // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
+  const layout = useCanvasLayerInsets(canvas);
   const boxRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const box = boxRef.current;
-    if (box && host.parentElement !== box) box.appendChild(host);
+    if (box && host.parentElement !== box) {
+      box.appendChild(host);
+      announceHeaderBand();
+    }
   }, [canvas, host]);
   return (
     <>
       <span hidden ref={mark} />
       {canvas
         ? createPortal(
-            <CanvasCover insets={insets} marker={{ 'data-fill-tab-board': '' }}>
+            <CanvasCover layout={layout} marker={{ 'data-fill-tab-board': '' }}>
               <div ref={boxRef} className="relative h-full w-full" />
             </CanvasCover>,
             canvas,

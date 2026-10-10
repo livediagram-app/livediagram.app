@@ -335,12 +335,12 @@ read a 503 as `null` and `{}`.
   [Image reference index](image-reference-index.md) blueprint.
 - **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Document convert
   ([Offline Mode](../../006-document/offline-mode.md)).
-- **D1 `network_upload_usage`** (`0080_network_upload_usage.sql`): `network_hash` TEXT (keyed
+- **D1 `network_upload_usage`** (`0088_network_upload_usage.sql`): `network_hash` TEXT (keyed
   hash of the caller's network, never the address), `day` INTEGER (UTC days since the epoch),
   `images`, `bytes`; primary key `(network_hash, day)`, index on `day` for the sweep. Holds at
   most two days of rows; not owner data, so account deletion and migration do not touch it.
 - **Migration**: `0014` for `images`; `0050_image_refs.sql` belongs to the index blueprint;
-  `0080` for the network budget.
+  `0088` for the network budget.
 
 ## Errors and edge cases
 

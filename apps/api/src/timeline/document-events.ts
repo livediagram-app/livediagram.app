@@ -8,7 +8,7 @@
 
 import { HOME_OPENED_EVENT_TYPE, TIMELINE_COMMENT_MAX } from '@livediagram/api-schema';
 import type { TimelineScopeRef } from '@livediagram/api-schema';
-import { dedupeKeyForDay, dedupeKeyOnce } from '../db/timeline';
+import { dedupeKeyForDay, dedupeKeyOnce, deleteCommentEvents } from '../db/timeline';
 import type { DocumentDTO, Env } from '../types';
 import { audienceForDocument, mergeScopes, userScope } from './audience';
 import { record, truncate } from './record';
@@ -201,7 +201,8 @@ export async function recordCommentAdded(
   liveDoc: DocumentRef,
   // `reply`: not the first comment of its thread (Explorer Home says "replied").
   comment: { id: string; text: string; authorName: string; authorColor?: string; reply: boolean },
-  actorId: string,
+  // Null for a peer's comment whose author is not yet known (claimedComments, tab-diff.ts).
+  actorId: string | null,
 ): Promise<void> {
   await record(
     env,
@@ -247,6 +248,28 @@ export async function recordCommentResolved(
     },
     await audienceForDocument(env, liveDoc),
   );
+}
+
+// Comments were deleted (docs/specs/013-workspace/timeline.md §4.3): their words leave the feed
+// with them. `threadKey` is set for a comment that opened its thread, whose text the thread's
+// `comment_resolved` event carries. Swallows its failure the way `record` does: the delete it
+// follows has already happened.
+export async function retractComments(
+  env: Env,
+  documentId: string,
+  removed: readonly { id: string; threadKey: string | null }[],
+): Promise<void> {
+  if (removed.length === 0) return;
+  try {
+    await deleteCommentEvents(
+      env,
+      documentId,
+      removed.map((c) => c.id),
+      removed.flatMap((c) => (c.threadKey ? [c.threadKey] : [])),
+    );
+  } catch (err) {
+    console.error('timeline comment retract failed', documentId, err);
+  }
 }
 
 // An action was assigned on an element (docs/specs/012-collaboration/assigned-actions.md). Reaches the assignee

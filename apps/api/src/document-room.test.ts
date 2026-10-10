@@ -496,7 +496,7 @@ describe('DocumentRoom hello frame role forcing', () => {
 describe('DocumentRoom op-role enforcement', () => {
   // Drive a fully-connected session (hello sent) at a given verified
   // role, returning a `sendOp` that pushes an op frame from it.
-  function connect(room: DocumentRoom, id: string, role?: 'edit' | 'view') {
+  function connect(room: DocumentRoom, id: string, role?: 'edit' | 'participate' | 'view') {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), role);
     sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
@@ -558,15 +558,31 @@ describe('DocumentRoom op-role enforcement', () => {
   const ADDRESSED_PRESENCE_KINDS = ['avatar-push'];
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
-  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview'];
+  const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
   // `poll-answer` relays only once the room accepts it for a running poll, under the key the room chose
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
   const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer'];
+  // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
+  const PARTICIPANT_PRESENCE_KINDS = ['reaction'];
+  for (const kind of PARTICIPANT_PRESENCE_KINDS) {
+    it(`drops a '${kind}' from a Viewer and relays a Participant's`, () => {
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const viewer = connect(room, 'viewer', 'view');
+      const participant = connect(room, 'participant', 'participate');
+      editor.ws.sent.length = 0;
+      sendFrame(room, viewer.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      expect(opsReceived(editor.ws)).toHaveLength(0);
+      sendFrame(room, participant.ws, { kind: 'op', op: { kind, tabId: 't', x: 1, y: 2 } });
+      expect(opsReceived(editor.ws)).toHaveLength(1);
+    });
+  }
   for (const kind of [...PRESENCE_OP_KINDS].filter(
     (k) =>
       !ADDRESSED_PRESENCE_KINDS.includes(k) &&
       !EDITOR_ONLY_PRESENCE_KINDS.includes(k) &&
-      !ROOM_DECIDED_PRESENCE_KINDS.includes(k),
+      !ROOM_DECIDED_PRESENCE_KINDS.includes(k) &&
+      !PARTICIPANT_PRESENCE_KINDS.includes(k),
   )) {
     it(`relays a '${kind}' presence op from a view-role session`, () => {
       const { room } = newRoom();
@@ -736,6 +752,24 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(received[0]).not.toHaveProperty('seq');
   });
 
+  // docs/specs/012-collaboration/bring-focus.md + share-roles.md: moving everyone's view runs the session.
+  it("relays an editor's Bring Focus and drops a Viewer's and a Participant's", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const viewer = connect(room, 'viewer', 'view');
+    const participant = connect(room, 'participant', 'participate');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    const op = { kind: 'focus-here', tabId: 't', at: { x: 10, y: 20 }, zoom: 1 };
+
+    sendFrame(room, viewer.ws, { kind: 'op', op });
+    sendFrame(room, participant.ws, { kind: 'op', op });
+    expect(opsReceived(other.ws)).toHaveLength(0);
+
+    sendFrame(room, editor.ws, { kind: 'op', op });
+    expect(opsReceived(other.ws)).toHaveLength(1);
+  });
+
   it('keeps viewports out of the catch-up log entirely', () => {
     // The expensive half. Every ordered op costs a `seq` and a slot in the
     // 256-entry log, and at 10 Hz a scrolling editor filled the whole thing
@@ -791,10 +825,12 @@ describe('DocumentRoom op-role enforcement', () => {
   // Live poll (docs/specs/012-collaboration/live-poll.md): a presenter polling an audience is the main use,
   // and audiences sit on view links — so answering must work at view role
   // while starting / ending a poll stays behind the edit gate.
-  it('relays a poll answer from a view-role session', async () => {
+  // A poll answer is a Participant's (docs/specs/013-workspace/share-roles.md); a Viewer's is dropped.
+  it('relays a poll answer from a Participant, never from a Viewer', async () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
-    const viewer = connect(room, 'viewer', 'view');
+    const viewer = connect(room, 'participant', 'participate');
+    const looker = connect(room, 'looker', 'view');
     sendFrame(room, editor.ws, {
       kind: 'op',
       op: {
@@ -811,6 +847,10 @@ describe('DocumentRoom op-role enforcement', () => {
     });
     editor.ws.sent.length = 0;
 
+    sendFrame(room, looker.ws, {
+      kind: 'op',
+      op: { kind: 'poll-answer', pollId: 'p1', value: 'No', key: 'lk', proof: 'other' },
+    });
     sendFrame(room, viewer.ws, {
       kind: 'op',
       op: { kind: 'poll-answer', pollId: 'p1', value: 'Yes', key: 'vk', proof: 'secret' },
@@ -1719,7 +1759,7 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       poll: { id, question: 'Lunch?', style: 'text', options: [], startedAt, hostKey: 'host' },
     },
   });
-  function join(room: DocumentRoom, id: string, role: 'edit' | 'view' = 'edit') {
+  function join(room: DocumentRoom, id: string, role: 'edit' | 'participate' | 'view' = 'edit') {
     const ws = makeSocket();
     room.acceptSession(asWs(ws), role);
     sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#000' } });
@@ -1734,7 +1774,8 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
   it('replays the running poll and every answer to a late joiner', async () => {
     const { room } = newRoom();
     const host = join(room, 'h');
-    const viewer = join(room, 'v', 'view');
+    // A Participant answers (docs/specs/013-workspace/share-roles.md: a Viewer only looks).
+    const viewer = join(room, 'v', 'participate');
     sendFrame(room, host, pollOp('p1'));
     sendFrame(room, viewer, {
       kind: 'op',
@@ -1782,7 +1823,7 @@ describe('DocumentRoom live poll (docs/specs/012-collaboration/collab-race-harde
       const ws = makeSocket();
       room.acceptSession(
         asWs(ws),
-        'view',
+        'participate',
         false,
         null,
         null,

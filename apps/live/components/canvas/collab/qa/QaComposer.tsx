@@ -13,11 +13,14 @@ import { MaskGlyph, QA_ACCENT, QA_ACCENT_INK, stopPointer } from './qa-parts';
 export function QaComposer({
   textColor,
   selfName,
+  full = false,
   onAdd,
 }: {
   textColor: string;
   selfName: string;
-  onAdd: (text: string, anonymous: boolean) => void;
+  // The board holds QA_MAX_NOTES and takes no more.
+  full?: boolean;
+  onAdd: (text: string, anonymous: boolean) => boolean;
 }) {
   const [anonymous, setAnonymous] = useState(false);
   return (
@@ -27,11 +30,15 @@ export function QaComposer({
       ariaLabel="Add a note to the board"
       sendLabel="Post note"
       maxLength={QA_MAX_TEXT}
+      full={full ? 'Board is full' : undefined}
       onSubmit={(text) => onAdd(text, anonymous)}
       meta={
         <button
           type="button"
           role="switch"
+          // A stable name, the state is aria-checked: a name that flipped
+          // between "As Sam" and "Anonymous" announced as two controls.
+          aria-label="Anonymous"
           aria-checked={anonymous}
           {...stopPointer}
           onClick={(e) => {

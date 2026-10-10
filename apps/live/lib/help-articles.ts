@@ -86,9 +86,11 @@ export const HELP_ARTICLES = {
   minimap: 'user-interface/minimap',
   sessionPolls: 'collaboration/session-tools/polls',
   sessionVoting: 'collaboration/session-tools/voting',
+  sessionTimer: 'collaboration/session-tools/timer',
   imageGallery: 'explorer/image-gallery',
   timeline: 'explorer/timeline',
-  activity: 'explorer/activity',
+  // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
+  inbox: 'explorer/activity',
   recentDocuments: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
@@ -310,16 +312,20 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about voting',
     description: 'Tips for running a quick vote across the elements on the canvas.',
   },
+  sessionTimer: {
+    title: 'Learn about the timer',
+    description: 'Tips for keeping a session to time with a countdown or a stopwatch.',
+  },
   imageGallery: {
     title: 'Learn about the Image Gallery',
     description: 'How uploaded images are stored and reused across documents.',
   },
   timeline: {
-    title: 'Learn about Home',
+    title: 'Learn about Home and the Timeline',
     description: 'Jump back in, what others did while you were away, and your own Timeline.',
   },
-  activity: {
-    title: 'Learn about Activity',
+  inbox: {
+    title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
   recentDocuments: {

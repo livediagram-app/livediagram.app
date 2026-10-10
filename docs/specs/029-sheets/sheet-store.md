@@ -66,6 +66,26 @@ elements, its snapshots, its changesets or its room.
 - **Delete**: removes the sheet and its cells. **Delete when unreferenced** (the editor's, with its element) removes
   them now if nothing references the sheet, or else as soon as nothing does ([Deleting a sheet](#deleting-a-sheet)).
 - Every write answers with what is stored: the changed cells, the layout if it changed, and the sheet rev.
+- A write the server could not take for now (no answer, a timeout, a rate limit, a server error) is kept, still
+  shown and still ahead of the sheet's later writes, and sent again after a wait that doubles from half a second
+  up to 30 seconds, until it lands or the room confirms it. Only a refusal (any other answer) drops it, with a
+  toast, and fetches the sheet again.
+
+## Template starts
+
+A Plan template's Sheet ([Spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)) is built as an
+element naming its **start** (`start`, a template start's id: `budget-planner`, `timesheet`, `contact-list`,
+`task-tracker`) and a fresh `sheetId`, and no sheet yet.
+
+- Whatever makes the tabs makes each such sheet from its start at once: its title the start's, its rows and cells
+  the start's, set up as Setup Sheet would (the Header look, the header row frozen, tints for the tab's canvas, light
+  or dark), dates reckoned from that moment. The element's `start` is then dropped, so a template's tabs are never
+  stored with it: the document is created with the sheets beside the tabs, or Quick Start and `add_tab` make the
+  sheets right after the tabs.
+- An element still carrying `start` with no sheet behind it (a path that missed it) is made from the start by the
+  first editor to draw it, as a copy not yet made is, and the mark dropped; until then it shows its loader, never
+  "no longer in this document". A second editor drawing it at the same moment finds it made and loads it.
+- `start` counts as nothing referenced: the sheet is referenced by its `sheetId` once made.
 
 ## Deleting a sheet
 
@@ -119,6 +139,10 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   changes ([Items](../026-plan/items.md#undo)).
 - An undo writes back the old inputs and formats of exactly the cells its change touched, and the old layout of
   what its layout change touched (a deleted row comes back with its id, place and cells).
+- Undoing a deletion of rows or columns puts back only what the deletion took, into the sheet as it is at the
+  undo: the deleted lines' sizes, hidden state and card-table links and drafts, the merges, filter range and named
+  ranges it shrank or dropped, a card table's deleted columns. What changed since is kept (a row linked or drafted,
+  a merge or a name made), and a merge, filter or name someone changed after the deletion is theirs, not put back.
 - Like canvas undo, an undo writes the old value back even over a later change someone else made to that cell.
 
 ## Offline documents

@@ -25,9 +25,16 @@ import { applyAlwaysSave, useWizardDefaults } from './useWizardDefaults';
 import { useSkipLocationStep } from './useSkipLocationStep';
 import { saveSkipLocationStep } from '@/lib/skip-location-step';
 import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
-import { createFailureCopy, type CreateFailure } from './create-failure';
+import {
+  createFailureCopy,
+  createIdsFor,
+  type CreateFailure,
+  type CreateIds,
+} from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
-import { DEFAULT_SAVE_LOCATION, isOfflineLocation } from '@/lib/save-locations';
+import { withTemplateSheets } from '@/lib/template-sheets';
+import { isOfflineLocation } from '@/lib/save-locations';
+import { useNewDocumentLocation } from './useNewDocumentLocation';
 import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
@@ -137,6 +144,8 @@ export default function NewDocumentPage() {
     themeId: string;
     // The Settings step's choices (docs/specs/006-document/offline-mode.md): document name, placement, offline.
     settings: NewDocumentSettings;
+    // The ids it wrote under, reused by its Retry (createIdsFor).
+    ids: CreateIds;
   } | null>(null);
 
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): the public-page CTA that brought this visit
@@ -176,6 +185,12 @@ export default function NewDocumentPage() {
   // query names one we don't know, the layout effect lifts it before the
   // first post-hydration paint and the wizard shows as normal.
   const bypassKind = useSyncExternalStore(subscribeNever, bypassKindFromUrl, noBypass);
+  // Where a document nobody placed is saved: Local only for a guest (docs/specs/006-document/save-locations.md).
+  const { defaultLocation, resolveBypassLocation } = useNewDocumentLocation({
+    authLoaded,
+    clerkUserId,
+    hasPlacementContext: initialPlacement !== undefined,
+  });
 
   // Where this document can be filed, and the inline New Folder the Settings
   // step offers — see usePlacementOptions.
@@ -323,39 +338,52 @@ export default function NewDocumentPage() {
     name: string,
     themeId: string,
     settings: NewDocumentSettings,
+    // Set by Retry: the failed attempt's ids, so a create that did land is not made twice.
+    retrying: CreateIds | null = null,
   ) => {
     if (submitting) return;
     setSubmitting(true);
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
+    const { documentId, tabId } = createIdsFor(retrying);
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = {
       kind: templateKind,
       name,
       themeId,
       settings: { ...settings, skipLocationStep: undefined },
+      ids: { documentId, tabId },
     };
     // The Settings step's name field wins; fall back to the per-template
     // default when it's left blank (docs/specs/006-document/offline-mode.md).
     // docs/specs/006-document/name-length.md: the wizard's name field goes through the same cap.
     const documentName =
       truncateName(settings.documentName ?? '') || untitledNameForTemplate(templateKind);
-    // Never create as the 'pending' placeholder — see resolveSelf above.
-    const who = await resolveSelf();
-    // Identity persistence first so any subsequent room broadcasts
-    // carry the chosen name + colour.
-    const trimmed = name.trim() || who.name;
-    if (trimmed !== who.name) {
-      const updated: Participant = { ...who, name: trimmed };
-      setSelf(updated);
-      await apiSaveSelf(updated).catch(() => {});
-    }
     markNameConfirmed();
-    // "Always save new documents in <place> and skip this step" (docs/specs/013-workspace/default-folders.md).
-    if (settings.skipLocationStep) saveSkipLocationStep(settings.skipLocationStep, who.id);
+    // Never create as the 'pending' placeholder — see resolveSelf above.
+    const settleIdentity = async () => {
+      const who = await resolveSelf();
+      // Identity persistence first so any subsequent room broadcasts
+      // carry the chosen name + colour.
+      const trimmed = name.trim() || who.name;
+      if (trimmed !== who.name) {
+        const updated: Participant = { ...who, name: trimmed };
+        setSelf(updated);
+        await apiSaveSelf(updated).catch(() => {});
+      }
+      // "Always save new documents in <place> and skip this step" (docs/specs/013-workspace/default-folders.md).
+      if (settings.skipLocationStep) saveSkipLocationStep(settings.skipLocationStep, who.id);
+      return who;
+    };
+    // A Local only document has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+    // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
+    const cloudOwner = offline ? null : await settleIdentity();
+    if (offline) {
+      void settleIdentity().catch((err: unknown) =>
+        debugLog(`[new] background identity failed: ${String(err)}`),
+      );
+    }
 
-    const documentId = crypto.randomUUID();
-    const tabId = crypto.randomUUID();
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
     const tabs = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
     // A Plan template's boards bring their card types (docs/specs/026-plan/plan-templates.md "Card types a template
@@ -388,9 +416,17 @@ export default function NewDocumentPage() {
     try {
       if (offline) {
         // Offline Mode (docs/specs/006-document/offline-mode.md): create the document in IndexedDB only. This
-        // also registers its id so every later load / save routes local.
+        // also registers its id so every later load / save routes local. A template's Sheets are made with it, as
+        // the api's create makes them (docs/specs/029-sheets/sheet-store.md "Template starts").
+        const made = tabs ? await withTemplateSheets(tabs, Date.now()) : null;
         await offlineCreateDocument(
-          { id: documentId, name: documentName, tabs: tabs ?? [tab], itemTypes },
+          {
+            id: documentId,
+            name: documentName,
+            tabs: made?.tabs ?? tabs ?? [tab],
+            itemTypes,
+            ...(made?.sheets.length ? { sheets: made.sheets } : {}),
+          },
           Date.now(),
         );
       } else {
@@ -399,7 +435,8 @@ export default function NewDocumentPage() {
         // Placement rides the create (docs/specs/007-editor/new-document-route.md): the Settings
         // step's picker, pre-seeded from /new?folder= / ?team=, is filed by the same write, or the
         // create is refused by name and nothing is written.
-        await apiCreateDocument(who.id, {
+        const owner = cloudOwner ?? (await settleIdentity());
+        await apiCreateDocument(owner.id, {
           id: documentId,
           name: documentName,
           tabs: tabs ?? [tab],
@@ -466,13 +503,19 @@ export default function NewDocumentPage() {
     // usual Document / Created event the commit fires.)
     track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
     const params = new URLSearchParams(window.location.search);
-    void commitNewDocument(kind, '', 'brand', {
-      saveLocation: DEFAULT_SAVE_LOCATION,
-      // A missing param is no choice, not the root: a bypass link without context leaves room for a
-      // default folder (docs/specs/013-workspace/default-folders.md "Precedence").
-      folderId: params.get('folder') ?? undefined,
-      teamId: params.get('team') ?? undefined,
-    });
+    const folderId = params.get('folder') ?? undefined;
+    const teamId = params.get('team') ?? undefined;
+    void (async () => {
+      // A guest's link makes a Local only document straight away (docs/specs/007-editor/new-document-route.md).
+      const saveLocation = await resolveBypassLocation(!!(folderId || teamId), resolveSelf);
+      await commitNewDocument(kind, '', 'brand', {
+        saveLocation,
+        // A missing param is no choice, not the root: a bypass link without context leaves room for a
+        // default folder (docs/specs/013-workspace/default-folders.md "Precedence").
+        folderId,
+        teamId,
+      });
+    })();
   });
   useEffect(() => {
     if (!bypassKind || bypassFired.current) return;
@@ -518,7 +561,7 @@ export default function NewDocumentPage() {
                   selfRef.current = next;
                   setSelf(next);
                 }
-                void commitNewDocument(a.kind, a.name, a.themeId, a.settings);
+                void commitNewDocument(a.kind, a.name, a.themeId, a.settings, a.ids);
               })();
             }}
           />
@@ -581,6 +624,7 @@ export default function NewDocumentPage() {
               teams={teams}
               teamFolders={teamFolders}
               initialPlacement={initialPlacement}
+              defaultSaveLocation={defaultLocation}
               initialModeChoice={presetMode}
               initialQuery={presetQuery}
               defaults={wizardDefaults}
@@ -597,7 +641,7 @@ export default function NewDocumentPage() {
               // pre-bootstrap 'Guest' placeholder into the account.
               onSkip={() =>
                 void commitNewDocument('blank', '', 'brand', {
-                  saveLocation: DEFAULT_SAVE_LOCATION,
+                  saveLocation: defaultLocation,
                 })
               }
               // Escape backs out to the page that opened /new, creating nothing

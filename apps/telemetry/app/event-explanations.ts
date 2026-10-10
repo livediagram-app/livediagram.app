@@ -107,15 +107,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Resolved|': 'Someone marked an assigned action as done.',
   'Action|Unresolved|': 'Someone reopened an assigned action that had been marked done.',
   'Activity|Loaded|Retry':
-    'Someone clicked "Try again" after the Explorer\'s Activity section failed to load, retrying the read.',
+    'Someone clicked "Try again" after the Explorer\'s Inbox failed to load, retrying the read.',
   'Activity|Opened|':
-    "Someone opened the Explorer's Activity section, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
+    "Someone opened the Explorer's Inbox, which lists open actions and Plan cards assigned to them, actions they assigned to others, and comment threads they're in. Counted once per visit, not on every re-fetch.",
   'Activity|Selected|Action':
-    "Someone clicked an action row in the Explorer's Activity section, jumping to the element it's assigned on.",
+    "Someone clicked an action row in the Explorer's Inbox, jumping to the element it's assigned on.",
   'Activity|Selected|Card':
-    "Someone clicked a Plan card row in the Explorer's Activity section, jumping to the card on its board.",
+    "Someone clicked a Plan card row in the Explorer's Inbox, jumping to the card on its board.",
   'Activity|Selected|Thread':
-    "Someone clicked a comment-thread row in the Explorer's Activity section, jumping to the element it's on.",
+    "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
   'Canvas|Used|AddNextNote':
     'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
   'Canvas|Used|AvatarMode':
@@ -168,6 +168,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Document|Duplicated|Copy': 'A document was duplicated into a new one.',
   'Document|Joined|Edit':
     'Someone came into a document through an edit-role share link. Counted once per person per document, not on every revisit.',
+  'Document|Joined|Participate':
+    'Someone came into a document through a Participant share link. Counted once per person per document, not on every revisit.',
   'Document|Loaded|':
     'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
   'Document|Moved|': 'A document was moved into (or out of) a folder.',
@@ -186,6 +188,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone set a share link to expire after a week, when creating it.',
   'Document|Shared|Extended':
     'Someone re-armed an expiring share link for another full round of its original lifetime.',
+  'Document|Shared|Participate':
+    'Someone generated a Participant share link: people take part and write without reshaping the board.',
   'Document|Shared|PasswordCleared': "Someone removed the password from a document's share link.",
   'Document|Shared|PasswordSet': "Someone set a password on a document's share link.",
   'Document|Shared|View': 'Someone generated a view-role share link for a document.',
@@ -603,10 +607,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
   'Page|View|/explorer/home': "Someone opened the Explorer's Home, its landing section.",
-  'Page|View|/explorer/activity': "Someone navigated to the Explorer's Activity section.",
+  'Page|View|/explorer/activity':
+    "Someone opened the Explorer's old Activity address, which now opens the Inbox. The Inbox was once called Activity; its visits count under /explorer/inbox.",
+  'Page|View|/explorer/inbox': "Someone navigated to the Explorer's Inbox.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline':
-    "Someone navigated to the Explorer's All activity section, the Timeline feed.",
+  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -832,11 +837,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Loaded|Retry':
     'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
   'Timeline|Opened|Landing':
-    'Someone arrived at the Explorer with All activity, the Timeline feed, as the very section that loaded.',
+    'Someone arrived at the Explorer with the Timeline as the very section that loaded.',
   'Timeline|Opened|Menu':
     'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
   'Timeline|Opened|Nav':
-    "Someone went to All activity, the Timeline feed, from elsewhere in the Explorer, usually Home's See all activity link.",
+    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See timeline link.",
   'Timeline|Opened|Stack':
     'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
   'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
@@ -997,6 +1002,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A signed-out visitor opened the "Assign action" dialog and saw the sign-in nudge, since a guest can only assign work to themself. Counted once per dialog open.',
   'UI|Opened|Activity': 'Someone expanded the since-removed Activity panel.',
   'UI|Opened|Collaborate': 'Someone opened the Collaborate panel from its bottom-bar button.',
+  'UI|Opened|SessionTimer':
+    'Someone opened the Timer button in the bottom bar: the set-up while no timer runs, the live timer while one does. A timer shared by countdowns and stopwatches, so it appears under both.',
+  'UI|Opened|SessionVote':
+    'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
+  'UI|Opened|SessionPoll':
+    'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
   'UI|Opened|BehaviourGroup':
     "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements).",
   'UI|Opened|CanvasStyle':
@@ -1062,7 +1073,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|PlanTourOffer':
     'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
   'UI|Opened|activity':
-    "Someone opened the help article about the Explorer's Activity section, from a help link or a search result.",
+    "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
     'Someone opened the help article about API tokens, from a help link or a search result.',
   'UI|Opened|changing-theme':
@@ -1093,6 +1104,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
+  'UI|Selected|PlanTourBoards':
+    "Someone picked Boards on the Plan tour's first card, touring boards and cards on an example board.",
+  'UI|Selected|PlanTourSheets':
+    "Someone picked Spreadsheets on the Plan tour's first card, touring Sheets on an example sheet.",
+  // The Inbox was once the Activity row (docs/specs/013-workspace/explorer-structure.md#telemetry).
+  'UI|Selected|Sidebar.Activity':
+    "Someone picked the Activity row in the Explorer's sidebar, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
+  'UI|Selected|ExplorerPanel.Activity':
+    "Someone picked the Activity row in the editor's Explorer panel, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
   'UI|Selected|LiveImageTab':
     "Someone picked a specific tab from the dropdown in the Share dialog's Live Image menu, pointing the live-updating image at that tab instead of the default.",
   'UI|Selected|SignInBanner':
@@ -1107,7 +1127,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Started|CardTypeTour':
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|PlanTour':
-    "Someone clicked past the Plan tour's first card, beginning its walkthrough on an example board.",
+    "Someone picked a track on the Plan tour's first card, beginning its walkthrough on an example board or sheet.",
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -1121,6 +1141,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|Dark': "Someone set the editor's appearance to Dark.",
   'UI|Toggled|ExplorerViewCard':
     'Someone switched the Explorer to Card view, showing a large preview of each document.',
+  'UI|Toggled|ExplorerViewDetails':
+    'Someone switched the Explorer to Details view, a sortable table of type, comments, access, size and dates.',
   'UI|Toggled|ExplorerViewList':
     'Someone switched the Explorer to List view, showing documents as compact rows.',
   'UI|Toggled|HiddenLayersExport':
@@ -1265,7 +1287,19 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepPalette':
     'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
   'UI|View|PlanTourStepOutro':
-    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board taken away.',
+    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board or sheet taken away.',
+  'UI|View|PlanTourStepSheet':
+    'The Plan tour\'s Spreadsheets track reached its "Your sheet" step, placing its example sheet.',
+  'UI|View|PlanTourStepCells':
+    'The Plan tour\'s Spreadsheets track reached its "Type into cells" step.',
+  'UI|View|PlanTourStepFormulas':
+    'The Plan tour\'s Spreadsheets track reached its "Formulas" step, selecting the example sheet\'s total.',
+  'UI|View|PlanTourStepSheetToolbar':
+    'The Plan tour\'s Spreadsheets track reached its "The toolbar" step.',
+  'UI|View|PlanTourStepSheetSettings':
+    'The Plan tour\'s Spreadsheets track reached its "Sheet Settings" step.',
+  'UI|View|PlanTourStepSheetPalette':
+    'The Plan tour\'s Spreadsheets track reached its "The Plan palette" step, opening the palette\'s categories.',
   'UI|View|TourStepCategories':
     'The welcome tour reached its "Shape categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
@@ -1311,10 +1345,9 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
   'Activity|Loaded':
-    "Something happened while loading the Explorer's Activity section (the list of outstanding actions and comment threads).",
-  'Activity|Opened': "Someone opened or interacted with the Explorer's Activity section.",
-  'Activity|Selected':
-    "Someone clicked a row in the Explorer's Activity section, jumping to what it's about.",
+    "Something happened while loading the Explorer's Inbox (the list of outstanding actions and comment threads).",
+  'Activity|Opened': "Someone opened or interacted with the Explorer's Inbox.",
+  'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',
   'Canvas|Zoomed': 'Someone changed the zoom from the zoom controls.',
   'Comment|Added': 'A comment was added to an element thread.',

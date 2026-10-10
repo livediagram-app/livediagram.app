@@ -5,9 +5,9 @@ import { sqliteD1 } from '../test-sqlite-d1';
 import { readActivity } from './collab-index';
 import { upsertTab } from './tabs';
 
-// A thread @-mentioning somebody lands on THEIR Activity page even when they
+// A thread @-mentioning somebody lands on THEIR Inbox even when they
 // never commented and don't own the document (docs/specs/012-collaboration/comment-mentions.md "The
-// Activity page"), still scoped to documents they can open (docs/specs/013-workspace/activity-page.md §4).
+// Inbox"), still scoped to documents they can open (docs/specs/013-workspace/inbox.md §4).
 
 const T0 = 1_700_000_000_000;
 

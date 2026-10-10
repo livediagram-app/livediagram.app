@@ -5,7 +5,8 @@ import { track } from '@/lib/telemetry';
 // Explorer panel builds the same rows and reports them under its own prefix.
 export type SidebarTelemetryRow =
   | 'Home'
-  | 'Activity'
+  | 'Inbox'
+  | 'Timeline'
   | 'SharedWithMe'
   | 'MyDocuments'
   | 'Folder'

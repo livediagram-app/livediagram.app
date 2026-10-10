@@ -7,7 +7,11 @@ import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import {
   copyTitle,
   emptyLayout,
+  isTemplateStart,
+  templateSheet,
   nextSheetTitle,
+  setupWrite,
+  sheetStarter,
   sheetToJson,
   uniqueSheetTitle,
   type Sheet,
@@ -21,10 +25,13 @@ import {
   rememberSetupStart,
   sheetSeed,
   takePlacedSheet,
+  type PlacedSheet,
 } from '@/lib/sheet-seeds';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
+import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { sheetStoreOf, type SheetStore, type TabStatus } from './sheet-store-client';
 import { sheetPresenceFor } from './sheet-presence-store';
+import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
 
 export type SheetModel = {
@@ -64,6 +71,25 @@ function fillFromCsv(
   if (made.truncated) toast(CSV_TRUNCATED);
 }
 
+// A sheet placed already set up (the Plan tour's example sheet): its start in the Header look, header frozen, as
+// part of placing it (undone by removing it), so never an undo step of its own.
+function setUpNow(
+  store: SheetStore,
+  tabId: string,
+  sheetId: string,
+  start: NonNullable<PlacedSheet['setUp']>,
+  dark: boolean,
+) {
+  const write = setupWrite(store.workbook(tabId), sheetId, {
+    start: sheetStarter(start, Date.now()),
+    look: 'header',
+    freezeHeader: true,
+    size: 'default',
+    dark,
+  });
+  if (write) store.write(sheetId, write, { undoable: false });
+}
+
 export const SHEET_TOO_BIG_TO_PASTE =
   'This sheet is too big to paste into another document; download it as CSV instead';
 
@@ -73,6 +99,7 @@ export function useSheetModel(
   plan: PlanContextValue | undefined,
 ): SheetModel {
   const store = sheetStoreOf(bridge);
+  const dark = useCanvasSurface() === 'dark';
   // The room reaches this document's store once, whichever Sheet draws first.
   useEffect(() => {
     const held = ATTACHED.get(store);
@@ -124,17 +151,46 @@ export function useSheetModel(
     const placed = takePlacedSheet(sheetId);
     if (placed) {
       const title = placed.title ? uniqueSheetTitle(placed.title, titles) : nextSheetTitle(titles);
-      // Placed from the palette, it awaits setup (sheet.md "Setup Sheet"); a dropped CSV fills it instead.
+      // Placed from the palette, it awaits setup (sheet.md "Setup Sheet"); a dropped CSV, or the Plan tour's
+      // example sheet, fills it instead.
       const layout = emptyLayout();
       store.create({
         id: sheetId,
         tabId,
         title,
-        layout: placed.csv ? layout : { ...layout, setupPending: true },
+        layout: placed.csv || placed.setUp ? layout : { ...layout, setupPending: true },
       });
+      if (placed.setUp) setUpNow(store, tabId, sheetId, placed.setUp, dark);
       if (placed.start) rememberSetupStart(sheetId, placed.start);
       // A dropped CSV file: its rows, read as typed, from A1.
       if (placed.csv) fillFromCsv(store, tabId, sheetId, placed.csv, bridge.toast);
+      return;
+    }
+    // A template's Sheet a path left unmade (sheet-store.md "Template starts"): made from its start now, tinted for
+    // this canvas, and the mark dropped quietly (saved and sent, no undo step). Someone else making it at the same
+    // moment wins: their sheet loads.
+    if (ref?.start && isTemplateStart(ref.start)) {
+      const made = templateSheet({ id: sheetId, tabId, start: ref.start, now: Date.now(), dark });
+      if (made) {
+        store.create(
+          { ...made, id: sheetId, title: uniqueSheetTitle(made.title, titles) },
+          undefined,
+          {
+            onRefused: (code) => {
+              if (code !== 'sheet_exists') return false;
+              store.resync();
+              return true;
+            },
+          },
+        );
+      }
+      bridge.tickElements((els) =>
+        els.map((el) =>
+          el.id === element.id && el.type === 'shape' && el.planSheet?.start
+            ? { ...el, planSheet: (({ start: _s, ...rest }) => rest)(el.planSheet) }
+            : el,
+        ),
+      );
       return;
     }
     const from = ref?.copyOf;
@@ -172,7 +228,7 @@ export function useSheetModel(
           : el,
       ),
     );
-  }, [sheetId, status, store, tabId, bridge, ref?.copyOf, element.id]);
+  }, [sheetId, status, store, tabId, bridge, ref?.copyOf, ref?.start, element.id, dark]);
 
   // Plan cards for the card functions (formulas.md "Plan cards"), when a formula on the tab reads them.
   const workbook = store.workbook(tabId);
@@ -185,5 +241,12 @@ export function useSheetModel(
     store.setCards(cardSourceOf(items.values(), types, { statusNames, version: Date.now() }));
   }, [usesCards, items, types, statusNames, store]);
 
-  return { store, sheet: sheetId ? store.sheet(sheetId) : undefined, workbook, status, version };
+  // Tell the main bundle whether this sheet holds a card table (Plan's strip shows for one).
+  const sheet = sheetId ? store.sheet(sheetId) : undefined;
+  const hasCardTable = !!sheet?.layout.cardTables?.length;
+  useEffect(() => {
+    if (sheet) markCardTableSheet(sheetId, hasCardTable);
+  }, [sheet, sheetId, hasCardTable]);
+
+  return { store, sheet, workbook, status, version };
 }

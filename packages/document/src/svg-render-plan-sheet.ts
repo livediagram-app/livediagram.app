@@ -4,6 +4,7 @@
 // package never imports the engine: the model's shape is restated here, structurally.
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
+import { resolveFontStack } from './fonts';
 import { planPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { wrapLines } from './svg-render-face-kit';
@@ -34,6 +35,7 @@ export type SheetRenderModel = {
     strike?: true;
     color?: string;
     fill?: string;
+    font?: string;
     size?: number;
     wrap?: 'o' | 'w' | 'c';
     rowSpan?: number;
@@ -148,9 +150,12 @@ export function svgPlanSheet(
       const deco = [cell.underline ? 'underline' : '', cell.strike ? 'line-through' : '']
         .filter(Boolean)
         .join(' ');
+      // A cell's own font (an id the editor no longer offers draws in the sheet's).
+      const stack = resolveFontStack(cell.font);
+      const face = stack ? ` font-family="${xmlEscape(stack)}"` : '';
       const clip = `${id}-${cell.r}-${cell.c}`;
       out += `<clipPath id="${clip}"><rect x="${r2(cx)}" y="${r2(cy)}" width="${r2(cell.wrap === 'o' || !cell.wrap ? Math.max(cw, right - cx) : cw)}" height="${r2(ch)}"/></clipPath>`;
-      out += `<text clip-path="url(#${clip})" x="${r2(tx)}" y="${r2(ty)}" font-size="${size}"${cell.bold ? ' font-weight="700"' : ''}${
+      out += `<text clip-path="url(#${clip})" x="${r2(tx)}" y="${r2(ty)}" font-size="${size}"${face}${cell.bold ? ' font-weight="700"' : ''}${
         cell.italic ? ' font-style="italic"' : ''
       }${deco ? ` text-decoration="${deco}"` : ''} fill="${cell.error ? ERROR_INK : (cell.color ?? p.text)}"${anchor}>${xmlEscape(cell.text.split('\n')[0]!)}</text>`;
     }

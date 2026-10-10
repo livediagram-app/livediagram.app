@@ -2,8 +2,8 @@
 
 A facilitator-run **poll**: ask the room a question, everyone viewing the
 document gets a prompt, answers tally live, and when the host ends it the whole
-thing evaporates. Sits beside the timer and dot-vote in the tab menu's session
-band ([Session tools (timer + voting)](session-tools.md)) but is deliberately **not** built like them.
+thing evaporates. Sits beside the timer and dot-vote in the bottom bar's
+[Session strip](session-tools.md#the-session-strip) (Diagram mode only) but is deliberately **not** built like them.
 
 ## Why it is NOT a session tool on the Tab
 
@@ -51,7 +51,7 @@ and reads these three to keep the running poll (above).
 - `{ kind: 'poll-end'; pollId: string }` — tear it down everywhere.
 
 None of them touches the document. `poll-answer` relays unordered like cursor /
-select / laser (it is open to view-role); `poll-start` / `poll-end` are
+select / laser (it is open to a Participant, never a Viewer); `poll-start` / `poll-end` are
 edit-role mutations. What a joiner needs comes from the room's replay on
 hello, not from the op log. Two polls started in the same moment converge on
 the newer (`pollSupersedes`): the room and every client apply the same rule,
@@ -62,13 +62,14 @@ since a starter never receives its own poll-start back.
 The room drops non-presence ops from view-role senders ([API app](../015-api/api.md)). Polls split
 across that line:
 
-- **`poll-answer` is allowed from any role.** A presenter pulse-checking an
-  audience is the main use for this, and audiences are usually on view links.
-  `'poll-answer'` therefore joins the room's any-role op allowlist
-  (`PRESENCE_OP_KINDS` in `@livediagram/api-schema`).
+- **`poll-answer` is a Participant's.** A presenter pulse-checking an audience
+  is the main use for this, so an audience is handed a Participant link
+  ([Share roles](../013-workspace/share-roles.md)): a Viewer only looks, and the
+  room drops a Viewer's answer. `'poll-answer'` rides the presence class
+  (`PRESENCE_OP_KINDS` in `@livediagram/api-schema`), checked for level first.
 - **`poll-start` / `poll-end` stay edit-role only**, via the existing gate. An
-  audience member on a view link can answer, but cannot start a poll or end
-  someone else's.
+  audience member on a Participant link can answer, but cannot start a poll or
+  end someone else's.
 
 ## Answer styles
 
@@ -131,8 +132,8 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
 
 ## Lifecycle
 
-1. **Compose.** Tab menu → **Collaborate → Poll** (the Session Studio,
-   [Session tools (timer + voting)](session-tools.md)): question, answer style picked from drawn tiles, answers if the
+1. **Compose.** The Session strip's **Poll** button
+   ([Session tools (timer + voting)](session-tools.md#the-session-strip)), or a poll element's menu: question, answer style picked from drawn tiles, answers if the
    style needs them (Enter moves to the next, making one at the end), then
    **Ask everyone** (or Enter in the question). A **What people see** card
    previews the exact prompt, built from the same `pollStyleTokens` the real
@@ -169,14 +170,10 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
      answer (counted separately) rather than a silent dodge. There is no
      backdrop left to click, so Skip and Escape are the whole of it.
 
-3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, like
-   Collaborate / Layers: draggable, resettable, and dockable
-   into a corner stack, homed **top-right**
-   (the corner the panels you act on live in). It registers as a real
-   `PanelId` rather than floating outside the panel system, but it is the
-   only panel that isn't always present — it joins and leaves its corner
-   stack with the poll, on a desktop and a phone alike. The Vote
-   panel follows the same rule. Shown to the host and to anyone who has responded — so
+3. **Results.** A **`PollPanel`** built on the shared `MovablePanel`, opened as a popover
+   from the **Poll button** of the [Session strip](session-tools.md#the-session-strip) in the
+   bottom-right cluster, on a desktop and a phone alike. While no poll runs the same button
+   opens the poll composer, and the Vote button works the same way. Shown to the host and to anyone who has responded — so
    answering is what buys you the tally, and a participant who hasn't yet
    can't be nudged by the running numbers. The panel updates live and reports
    how many people skipped, separately from the answer counts.
@@ -186,7 +183,7 @@ when an op arrives so a hand-crafted frame can't blow up a peer's panel:
    completely at the end without anyone losing work.
 5. **End.** Host only. Removes the question, the answers, and the panel for
    everyone. Non-hosts additionally get a local **Dismiss** that hides their
-   own panel without ending the poll (and rescues them if the host vanished).
+   own panel and its button without ending the poll (and rescues them if the host vanished).
 
 ## Anonymity — what is and isn't guaranteed
 

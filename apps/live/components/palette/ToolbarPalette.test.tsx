@@ -6,7 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import type { EsBoardControls } from './EventStormingBoardRows';
-import type { EditorMode, Element } from '@livediagram/document';
+import { createShape, type EditorMode, type Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@/lib/toolbar-search-request';
@@ -15,11 +15,13 @@ const mobile = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/ui/useIsMobileViewport', () => ({
   useIsMobileViewport: () => mobile.value,
 }));
-// A Plan board covering the canvas (docs/specs/026-plan/plan-board.md "Maximised board").
+// A Plan board or Sheet filling its tab (docs/specs/026-plan/plan-board.md "The palette follows what fills the screen").
 const covering = vi.hoisted(() => ({ value: false }));
+const sheetFilling = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/plan/plan-cover-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/hooks/plan/plan-cover-store')>()),
-  useBoardCovering: () => covering.value,
+  useBoardFillingTab: () => covering.value,
+  useSheetFillingTab: () => sheetFilling.value,
 }));
 
 beforeAll(() => {
@@ -37,6 +39,7 @@ afterEach(() => {
   localStorage.clear();
   mobile.value = false;
   covering.value = false;
+  sheetFilling.value = false;
 });
 
 function handlers(): PaletteAddHandlers {
@@ -108,9 +111,45 @@ describe('ToolbarPalette', () => {
     expect(h.onAddShape).toHaveBeenCalledWith('square', expect.anything());
   });
 
-  // docs/specs/026-plan/plan-board.md "Maximised board": only Cards while a board covers the canvas, and the
-  // category chosen before comes back when it is restored.
-  it('offers only Cards while a board covers the canvas, then restores the choice', () => {
+  // docs/specs/026-plan/plan-mode.md "The palette": Boards until the tab has a board, then Cards.
+  it('opens a Plan tab without a board on Boards, and moves on to Cards once one lands', () => {
+    const picked = () => screen.getByRole('button', { name: 'Palette category' }).textContent;
+    const board = { ...createShape('plan-board', 0, 0), id: 'b1' } as Element;
+    const view = show({ mode: 'plan', tabElements: [] });
+    expect(picked()).toContain('Boards');
+    const again = (tabElements: Element[]) =>
+      view.rerender(
+        inMode(
+          'plan',
+          <ToolbarPalette
+            canvasTool="select"
+            onSetCanvasTool={vi.fn()}
+            canvasEmpty={false}
+            pendingDraw={null}
+            tabElements={tabElements}
+            {...view.h}
+          />,
+        ),
+      );
+    again([board]);
+    expect(picked()).toContain('Cards');
+    // The last board going takes it back to Boards.
+    again([]);
+    expect(picked()).toContain('Boards');
+    // A category the person picked stays when a board lands.
+    pickCategory('plan-widgets');
+    again([board]);
+    expect(picked()).toContain('Widgets');
+  });
+
+  it('opens a Plan tab with a board on Cards', () => {
+    show({ mode: 'plan', tabElements: [{ ...createShape('plan-board', 0, 0), id: 'b1' }] });
+    expect(screen.getByRole('button', { name: 'Palette category' }).textContent).toContain('Cards');
+  });
+
+  // docs/specs/026-plan/plan-board.md "The palette follows what fills the screen": only Cards while a board fills its
+  // tab, and the category chosen before comes back when it stops.
+  it('offers only Cards while a board fills its tab, then restores the choice', () => {
     const picked = () => screen.getByRole('button', { name: 'Palette category' }).textContent;
     const view = show({ mode: 'plan' });
     pickCategory('plan-boards');
@@ -143,6 +182,38 @@ describe('ToolbarPalette', () => {
       ),
     );
     expect(picked()).toContain('Boards');
+  });
+
+  // docs/specs/026-plan/plan-board.md "The palette follows what fills the screen": a Sheet filling its tab hides the
+  // palette; on a phone the menu beside it stays.
+  it('hides the palette while a Sheet fills its tab', () => {
+    sheetFilling.value = true;
+    show({ mode: 'plan' });
+    const root = document.querySelector('[data-toolbar-palette]')!;
+    expect(root.classList.contains('hidden')).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
+  });
+
+  it('keeps a phone’s menu while a Sheet fills its tab', () => {
+    sheetFilling.value = true;
+    mobile.value = true;
+    render(
+      inMode(
+        'plan',
+        <ToolbarPalette
+          canvasTool="select"
+          onSetCanvasTool={vi.fn()}
+          canvasEmpty={false}
+          pendingDraw={null}
+          leading={<button type="button">Menu</button>}
+          {...handlers()}
+        />,
+      ),
+    );
+    const root = document.querySelector('[data-toolbar-palette]')!;
+    expect(root.classList.contains('hidden')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Menu' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
   });
 
   it('swaps the tiles when the category changes', () => {

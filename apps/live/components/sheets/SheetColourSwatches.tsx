@@ -2,20 +2,19 @@
 
 // The toolbar's Text Colour and Fill Colour (docs/specs/029-sheets/sheet.md "Toolbar"): a quick row of the one colour
 // picker (docs/specs/004-interface-design/colour-picker.md "Quick Style", "The rule for new work"): the Theme
-// Palette's first five colours drawn with the one swatch, the cell's own picked, and a + that opens the full picker.
+// Palette's first five colours drawn with the one swatch, the cell's own picked, and More colours (Quick Style's
+// four-dot glyph) that opens the full picker.
 // One Tab stop, the arrows move through the row (the picker's keyboard).
-import { lucidePlus } from '@livediagram/icons/lucide';
-import { Tooltip, lucideGlyph } from '@livediagram/ui';
+import { Tooltip } from '@livediagram/ui';
 import { ColourSwatch } from '@/components/colour/ColourSwatch';
+import { MoreColoursGlyph } from '@/components/colour/MoreColoursGlyph';
 import { optionMatches, themeOptions } from '@/components/colour/colour-options';
 import { onColourKeys } from '@/components/colour/useColourKeys';
 import { useThemeColours } from '@/components/colour/useThemeColours';
 import { getTheme, themePresetColors } from '@/lib/themes';
 
-const PlusGlyph = lucideGlyph(lucidePlus, 14);
-
 export const TOOLBAR_SWATCHES = 5;
-// Five 24 px swatches, the +, and the 2 px gaps between.
+// Five 24 px swatches, More colours, and the 2 px gaps between.
 export const SWATCHES_PX = (TOOLBAR_SWATCHES + 1) * 24 + TOOLBAR_SWATCHES * 2;
 
 // Outside an editor (a test, a read-only render) the default theme's colours.
@@ -29,7 +28,7 @@ export function SheetColourSwatches({
   onPick,
   onMore,
 }: {
-  // What they colour ("Text Colour"): the group's accessible name, and the + button's.
+  // What they colour ("Text Colour"): the group's accessible name, and More colours'.
   name: string;
   // The cell's own colour, picked when it is one of them.
   value: string | undefined;
@@ -65,10 +64,10 @@ export function SheetColourSwatches({
           aria-haspopup="menu"
           data-colour-key=""
           tabIndex={-1}
-          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md border border-dashed border-slate-400 text-slate-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:border-slate-500 dark:text-slate-300 dark:hover:bg-slate-800"
+          className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:hover:bg-slate-800"
           onClick={(e) => onMore(e.currentTarget)}
         >
-          <PlusGlyph />
+          <MoreColoursGlyph />
         </button>
       </Tooltip>
     </span>

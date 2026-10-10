@@ -5,9 +5,14 @@ import { useIsOfflineDocument } from './useIsOfflineDocument';
 
 const offline = new Set<string>();
 const synced = new Set<string>();
+const listeners = new Set<(id: string) => void>();
 vi.mock('@/lib/offline/offline-store', () => ({
   isOfflineId: async (id: string) => offline.has(id),
   isOfflineIdSync: (id: string) => synced.has(id),
+  subscribeOfflineIds: (l: (id: string) => void) => {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  },
 }));
 
 afterEach(() => {
@@ -38,5 +43,15 @@ describe('useIsOfflineDocument', () => {
     await waitFor(() => expect(result.current).toBe(true));
     rerender({ id: null });
     expect(result.current).toBe(false);
+  });
+
+  // docs/specs/006-document/offline-mode.md "Syncing in place": Sync Document flips it with no reload.
+  it('follows the document leaving the store', async () => {
+    offline.add('c');
+    const { result } = renderHook(() => useIsOfflineDocument('c'));
+    await waitFor(() => expect(result.current).toBe(true));
+    offline.delete('c');
+    listeners.forEach((l) => l('c'));
+    await waitFor(() => expect(result.current).toBe(false));
   });
 });

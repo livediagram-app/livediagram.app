@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Plan Tour',
   description:
-    'Take the Plan tour: a guided walkthrough of boards, cards, the card panel, card types and the Plan palette, offered the first time you work in Plan mode and replayable from Settings.',
+    'Take the Plan tour: a guided walkthrough of boards and cards, or of spreadsheets, offered the first time you work in Plan mode and replayable from Settings.',
   path: '/help/canvas/plan-mode/plan-tour/',
 });
 
@@ -15,15 +15,17 @@ export const metadata = helpMetadata({
   categorySlug="canvas/plan-mode"
 >
 
-The Plan tour shows you how to run work on a board. Like the [Welcome Tour](/help/getting-started/welcome-tour/), it works on the real editor rather than screenshots: it puts an example board on your canvas, adds a few cards, moves one along, opens it, and spotlights each part with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point.
+The Plan tour shows you how to run work on a board, or how to work in a spreadsheet: you pick which. Like the [Welcome Tour](/help/getting-started/welcome-tour/), it works on the real editor rather than screenshots: it puts an example board or sheet on your canvas, works on it in front of you, and spotlights each part with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point.
 
 ## When It's Offered
 
-The first time you work in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit (switching a tab to Plan, opening a document whose tab opens in Plan, or making one from a Plan template), a centred **Welcome to Plan** card asks whether you'd like a look around: **Show me around** starts the tour, **No thanks** dismisses it. If the Welcome Tour is still running, or still to be offered, the Plan tour waits until it has finished. It isn't offered on a locked tab, in an embed, or to someone who can only view.
+The first time you work in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit (switching a tab to Plan, opening a document whose tab opens in Plan, or making one from a Plan template), a centred **Welcome to Plan** card asks which you'd like a look at: **Boards** or **Spreadsheets** starts that tour, **No thanks** dismisses it. If the Welcome Tour is still running, or still to be offered, the Plan tour waits until it has finished. It isn't offered on a locked tab, in an embed, or to someone who can only view.
 
-The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
+The offer appears **once ever**. However you answer (decline, skip midway, or finish either tour), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
 
 ## What It Covers
+
+### Boards
 
 1. **Your board**: the example board, a Kanban board, and where the other boards come from. See [Boards](/help/canvas/plan-mode/boards/).
 2. **Add cards**: the **Add card** button at the foot of each column, and dropping a card from the palette.
@@ -33,14 +35,23 @@ The offer appears **once ever**. However you answer (decline, skip midway, or fi
 6. **Card Types**: the colours and fields of each kind of card. See [Card Types](/help/canvas/plan-mode/card-types/).
 7. **The Plan palette**: cards, boards, widgets, metrics and visualisations.
 
-Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to plan**, links to the [Plan mode](/help/canvas/plan-mode/) article and ends the tour with **Start planning**. The steps are the same on a phone.
+### Spreadsheets
+
+1. **Your sheet**: the example sheet, a small budget, and where sheets come from. See [Sheets](/help/canvas/plan-mode/sheets/).
+2. **Type into cells**: selecting a cell and typing, with **Enter** and **Tab** to move on.
+3. **Formulas**: the total's `=SUM(C2:C5)` in the formula bar, and pointing at cells as you write one. See [Sheet Functions](/help/canvas/plan-mode/sheet-functions/).
+4. **The toolbar**: its category switcher and the tools each category shows.
+5. **Sheet Settings**: the cog with the sheet's title, CSV, gridlines, sizes, freeze and named ranges.
+6. **The Plan palette**: the **Sheet** category, beside boards and cards.
+
+Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to plan**, links to the [Plan mode](/help/canvas/plan-mode/) article (or [Sheets](/help/canvas/plan-mode/sheets/) after the Spreadsheets tour) and ends the tour with **Start planning**. The steps are the same on a phone.
 
 ## Your Work Is Left Alone
 
-- The tour's example board and cards are its own. It never adds cards to your boards or changes them.
+- The tour's example board, cards and sheet are its own. It never adds cards to your boards, or touches your sheets.
 - Everything it made is **taken away** when the tour ends, however it ends. If you close the window mid-tour, it's tidied up the next time you open the document.
 - None of it goes into your undo history, so **Undo** afterwards never brings it back.
-- Anyone else in the document at the time sees the example board, titled **Example Board**, come and go.
+- Anyone else in the document at the time sees the example board or sheet, titled **Example Board** or **Example Sheet**, come and go.
 - The example cards take the next card numbers, so your next card's number skips past them.
 - If you leave Plan mode or switch tab mid-tour, it ends as skipped and tidies up.
 
@@ -51,8 +62,8 @@ Each step has **Next**, **Back** and **Skip tour**. The last card, **You're read
 <Step n={2}>Switch **Show Plan Tour** back on.</Step>
 
 <Step n={3}>
-  Close Settings. If you're in Plan mode the tour starts straight away; otherwise it's offered the
-  next time you work in Plan.
+  Close Settings. If you're in Plan mode the tour's welcome card shows straight away, so you can
+  pick the other tour; otherwise it's offered the next time you work in Plan.
 </Step>
 
 </ArticleLayout>

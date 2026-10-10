@@ -45,6 +45,13 @@ export function headerSegments(facts: HeaderFacts): string {
     `${plural(facts.elements, 'element', 'elements')}${shown.length ? `: ${shown.join(', ')}` : ''}`,
   ];
   if (facts.tab.kind !== 'diagram') segments.push(`kind=${facts.tab.kind}`);
+  if (facts.illustrate) {
+    const { pages, kinds } = facts.illustrate;
+    const byKind = Object.entries(kinds).map(([kind, n]) => `${n} ${kind}`);
+    segments.push(
+      `illustrate ${plural(pages, 'page', 'pages')}: ${byKind.join(', ')} (view pages)`,
+    );
+  }
   if (facts.hidden > 0) segments.push(`${facts.hidden} hidden`);
   if (facts.unknown > 0) segments.push(`${facts.unknown} unknown`);
   if (facts.threads.total > 0)

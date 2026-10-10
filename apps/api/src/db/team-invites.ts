@@ -13,13 +13,20 @@ import { getMembership, JOINED_COUNT, rowToTeam, TEAM_COLS, type TeamRow } from 
 // GET /api/teams so an invitee sees the team on their next Explorer
 // visit whether they signed up before or after the invite. Idempotent
 // and cheap when there's nothing pending (indexed on email).
+//
+// A team the user already belongs to is skipped: an invite sent to their email after they joined
+// by link (or under another address) would otherwise become a second membership row for the same
+// person. The unique (team_id, user_id) index (migration 0083) backs this up, and OR IGNORE keeps a
+// concurrent claim or link join from turning that into an error: the row stays unclaimed instead.
 export async function connectInvitesByEmail(
   env: Env,
   userId: string,
   email: string,
 ): Promise<void> {
   await env.DB.prepare(
-    'UPDATE team_members SET user_id = ?, updated_at = ? WHERE email = ? AND user_id IS NULL',
+    `UPDATE OR IGNORE team_members SET user_id = ?1, updated_at = ?2
+     WHERE email = ?3 AND user_id IS NULL
+       AND team_id NOT IN (SELECT team_id FROM team_members WHERE user_id = ?1)`,
   )
     .bind(userId, Date.now(), email)
     .run();
@@ -47,12 +54,17 @@ export async function listInvitesByUser(env: Env, userId: string): Promise<TeamI
 }
 
 // The explicit yes (docs/specs/013-workspace/teams.md): flips the caller's own invite row to
-// 'joined'. Row-level authorisation (own row, currently invited)
-// happens in the route; this is the plain write.
-export async function acceptTeamMember(env: Env, memberId: string): Promise<void> {
-  await env.DB.prepare(`UPDATE team_members SET status = 'joined', updated_at = ? WHERE id = ?`)
+// 'joined'. Row-level authorisation (own row) happens in the route; the
+// `status = 'invited'` guard lives in the write so two concurrent accepts
+// race on one row and exactly one wins. True only for the winner, which is
+// the one that announces the arrival (Timeline event, admins' email).
+export async function acceptTeamMember(env: Env, memberId: string): Promise<boolean> {
+  const res = await env.DB.prepare(
+    `UPDATE team_members SET status = 'joined', updated_at = ? WHERE id = ? AND status = 'invited'`,
+  )
     .bind(Date.now(), memberId)
     .run();
+  return res.meta.changes === 1;
 }
 
 // --- Shareable team invite link (docs/specs/013-workspace/teams.md) -----------------------------

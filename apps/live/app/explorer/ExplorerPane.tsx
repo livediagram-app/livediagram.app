@@ -6,6 +6,7 @@ import { useExplorer } from './ExplorerContext';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
 import { CardView } from './CardView';
+import { DetailsView } from './details/DetailsView';
 import { useExplorerViewMode } from './useExplorerViewMode';
 import { EmptyPane } from './ExplorerEmptyState';
 import { ViewInfo } from './ViewInfo';
@@ -21,6 +22,9 @@ import { explorerPathFor } from './routes';
 import { VIEW_TITLES } from './view-titles';
 import { paneHeaderActions } from './pane-header-actions';
 
+// The three layouts of a browse section, by the toggle.
+const VIEW_COMPONENTS = { list: ListView, card: CardView, details: DetailsView } as const;
+
 // The browse sections that render a folders + documents grid the List/Card
 // toggle (docs/specs/006-document/document-snapshots.md) can swap. Other sections (gallery, themes,
 // profile, team, invites, shared) have their own fixed layout.
@@ -31,10 +35,10 @@ const BROWSE_KINDS = new Set(['recent', 'all', 'folder', 'search', 'favourites',
 // from HELP_LINK_COPY. Sections without a guide (team, invites) simply omit
 // it.
 const SECTION_HELP: Partial<Record<string, HelpArticleKey>> = {
-  // The Home article covers Home and All activity (docs/specs/013-workspace/explorer-home.md).
+  // The Home article covers Home and the Timeline (docs/specs/013-workspace/explorer-home.md).
   home: 'timeline',
   timeline: 'timeline',
-  activity: 'activity',
+  inbox: 'inbox',
   recent: 'recentDocuments',
   shared: 'sharedWithYou',
   gallery: 'imageGallery',
@@ -258,8 +262,8 @@ export function ExplorerPane() {
           <HomePane
             ownerId={ownerId}
             onSeen={timelineUnread.clear}
-            allActivityHref={explorerPathFor({ kind: 'timeline' })}
-            onSeeAll={() => go({ kind: 'timeline' })}
+            timelineHref={explorerPathFor({ kind: 'timeline' })}
+            onSeeTimeline={() => go({ kind: 'timeline' })}
             recentHref={explorerPathFor({ kind: 'recent' })}
             onSeeMore={() => go({ kind: 'recent' })}
           />
@@ -272,9 +276,9 @@ export function ExplorerPane() {
             onShowHistory={(id, name) => setHistoryFor({ id, name })}
           />
         ) : null
-      ) : selected.kind === 'activity' ? (
+      ) : selected.kind === 'inbox' ? (
         // Like the Timeline, ahead of the document-list `loading` gate: the
-        // section reads its own feed (docs/specs/013-workspace/activity-page.md §5).
+        // section reads its own feed (docs/specs/013-workspace/inbox.md §5).
         <ActivityPane feed={activity} />
       ) : loading ? (
         <SkeletonRows />
@@ -338,9 +342,10 @@ export function ExplorerPane() {
         />
       ) : (
         (() => {
-          // List and Card take the SAME props (docs/specs/006-document/document-snapshots.md), so build them
-          // once and pick the component by the toggle.
-          const ViewComponent = viewMode === 'card' ? CardView : ListView;
+          // List, Card and Details take the SAME props (docs/specs/006-document/document-snapshots.md,
+          // docs/specs/013-workspace/explorer-details-view.md), so build them once and pick the component
+          // by the toggle.
+          const ViewComponent = VIEW_COMPONENTS[viewMode];
           return (
             <ViewComponent
               folders={paneContent.folders}

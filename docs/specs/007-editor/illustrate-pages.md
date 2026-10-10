@@ -80,14 +80,16 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
 - Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
-  page; renamed on Enter, on leaving the field, or on closing the panel), then two tabs, **Page**
-  and **Layouts** (a slide page's Layouts are the slide layouts; an article page: **Page**,
-  **Style** and **Text**, [Article pages](article-pages.md) "Article style"; a logo page: **Page**
-  and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md) "The page panel"), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
-  with tooltips. **Page** holds the **Size** tiles (each drawn to scale), **Orientation**
-  (Portrait / Landscape, absent for a page with no orientation), the **Background** swatches and
-  the **Pattern** tiles; **Layouts** holds the layouts by category. The cog opens it on Page; the
-  layout invite opens it on Layouts. The two tabs, and Portrait / Landscape, are the shared
+  page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs, **Page**,
+  **Background** and **Layouts** (a slide page's Layouts are the slide layouts; an article page:
+  **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
+  a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
+  "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
+  with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
+  (Portrait / Landscape, absent for a page with no orientation); **Background** holds the
+  **Background** swatches and the **Pattern** tiles; **Layouts** holds the layouts by category. The
+  cog opens it on its first tab; the layout invite opens it on Layouts. The tabs, and Portrait /
+  Landscape, are the shared
   segmented control, its highlight sliding between the choices.
 - **Hover previews**: hovering (or focusing) a background swatch or pattern paints it on the page
   at once; leaving the section puts the page back; a press commits.
@@ -199,7 +201,7 @@ the swatches below, then, on Gradient, its **custom** choice last.
 - **Solid**: one colour, from the one colour picker drawn in the panel
   ([Colour picker](../004-interface-design/colour-picker.md)): **Paper** (the default, no
   `background` stored), then the soft standard colours ("Light") and the strong ones ("Dark"), for
-  light paper, then Custom colours and **+**. A page holding an earlier preset (Cream, Mist, Midnight
+  light paper, then Custom colours and **Add a custom colour** (four coloured dots). A page holding an earlier preset (Cream, Mist, Midnight
   and so on) keeps it; it shows as the custom colour in force.
 - **From the theme**, offered first in their own row: drawn from the tab's theme accent (its
   element stroke, else its first palette colour, else the brand blue) and a second colour (a
@@ -220,7 +222,7 @@ the swatches below, then, on Gradient, its **custom** choice last.
   5°, previewed while dragged, one edit on release) and **Swap** (exchanges From and To, one
   edit). The editor closes when another category or a preset is chosen.
 - **Previews**: hovering or focusing any colour (Solid, From, To) previews it on the page; a pick
-  is one edit. **+** opens the custom colour editor (no board warning). **Escape** in a From or To
+  is one edit. **Add a custom colour** (four coloured dots) opens the custom colour editor (no board warning). **Escape** in a From or To
   popover closes the popover only, dropping its preview, and never the panel.
 - **Pattern**, over either: **None** (default), **Dots**, **Grid** or **Lines** (horizontal ruled
   lines), drawn faintly in the page's ink at 24 px pitch.

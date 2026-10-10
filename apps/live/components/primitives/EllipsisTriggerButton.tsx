@@ -24,10 +24,12 @@ const SIZE_CLASS = {
 // forwards its ref because every caller anchors its portal menu to it.
 //
 // - `size`: the square it occupies; the glyph stays 14px.
-// - `reveal`: hidden on desktop until the row (a `group`) is hovered or
-//   the button has keyboard focus. Always visible on touch, where there
-//   is no hover. An open menu (`expanded`) pins it visible, so the
-//   anchor doesn't vanish from under its own menu.
+// - `reveal`: hidden under a fine pointer until the row (a `group`) is
+//   hovered, the button has keyboard focus, or the tree row it sits on
+//   (a focused `li` > row `div`) has keyboard focus. Always visible on a
+//   coarse pointer (touch), where there is no hover. An open menu
+//   (`expanded`) pins it visible, so the anchor doesn't vanish from under
+//   its own menu.
 // - `tuck`: the card variant's corner-tuck margins (DocumentCard /
 //   FolderCard headers).
 // - `onPointerDown`: for triggers inside draggable / pressable rows,
@@ -66,7 +68,7 @@ export const EllipsisTriggerButton = forwardRef<
   const revealClass = reveal
     ? expanded
       ? 'opacity-100'
-      : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100'
+      : 'pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 pointer-fine:focus-visible:opacity-100 pointer-fine:[li:focus-visible>div>&]:opacity-100'
     : '';
   return (
     <button

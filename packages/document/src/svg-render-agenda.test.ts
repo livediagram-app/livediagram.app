@@ -21,6 +21,13 @@ const svgOf = (el: ShapeElement) =>
   renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as unknown as Tab);
 
 describe('Agenda export', () => {
+  it('wraps a long step name over two lines rather than cutting it to one', () => {
+    const name = 'Review the roadmap and agree owners';
+    const svg = svgOf(agenda({ agendaItems: [{ label: name, minutes: 10 }] }));
+    for (const word of name.split(' ')) expect(svg).toContain(word);
+    expect(svg).not.toContain('…');
+  });
+
   it('writes every step with its minutes and the run time', () => {
     const svg = svgOf(agenda());
     for (const s of ['Sprint review', '30M', 'Welcome', 'Demo', 'Metrics', '15m'])

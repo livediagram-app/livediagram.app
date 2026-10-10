@@ -43,7 +43,10 @@ describe('ColourPicker', () => {
       standardColours('strong', 'light').map((c) => c.label),
     );
     const yours = screen.getByRole('group', { name: 'Custom Colours' });
-    expect(within(yours).getByRole('button', { name: 'Add a custom colour' })).toBeTruthy();
+    const add = within(yours).getByRole('button', { name: 'Add a custom colour' });
+    // More colours' four dots, never a +.
+    expect(add.querySelectorAll('.rounded-full')).toHaveLength(4);
+    expect(add.querySelector('svg')).toBeNull();
   });
 
   it('puts the Theme Palette first and leading options at its start', () => {

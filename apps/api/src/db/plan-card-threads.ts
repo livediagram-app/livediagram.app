@@ -1,4 +1,4 @@
-// The Activity page's Plan card comment threads (docs/specs/013-workspace/activity-page.md §2.5). A card's thread
+// The Inbox's Plan card comment threads (docs/specs/013-workspace/inbox.md §2.5). A card's thread
 // lives in its item (`fields.comments`), not in tab JSON, so the read filters `items` directly, as the Plan cards
 // read does (§2.4), and places each card on a board the same way (`itemPlacementCtes`).
 

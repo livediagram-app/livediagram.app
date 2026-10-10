@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, ShapeElement } from '@livediagram/document';
+import {
+  GRAPH_LAYOUT_MAX_EDGES,
+  GRAPH_LAYOUT_MAX_NODES,
+  type ArrowElement,
+  type ShapeElement,
+} from '@livediagram/document';
 import { importDrawio } from './import';
 import { jsonLabelText } from './json-export';
 import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';
@@ -189,5 +194,30 @@ describe('jsonLabelText, as a parser reads it', () => {
     ['5 &lt; 6 &amp;&amp; 7 &gt; 6', '5 < 6 && 7 > 6'],
   ])('reads %j as the text %j', (html, text) => {
     expect(jsonLabelText(html)).toBe(text);
+  });
+});
+
+// A graph-only page is held to the layout's caps before it is laid out (docs/specs/020-import-export/
+// drawio-import.md "The JSON export"): a 12,000-node export laid out whole froze the tab for 58 s.
+describe('a graph-only export past the layout caps', () => {
+  it('keeps the first nodes and connections, counts the rest, and stays fast', async () => {
+    const n = 12_000;
+    const cells: Cell[] = [layer];
+    for (let i = 0; i < n; i++) cells.push(node(`n${i}`, `Node ${i}`));
+    for (let i = 1; i < n; i++) cells.push(edge(`e${i}`, `n${Math.floor((i - 1) / 2)}`, `n${i}`));
+    const started = performance.now();
+    const r = await run(exported([page('Big', cells)]));
+    const ms = performance.now() - started;
+    const elements = r.pages[0]!.elements;
+    const arrows = elements.filter((el) => el.type === 'arrow').length;
+    expect(elements.length - arrows).toBe(GRAPH_LAYOUT_MAX_NODES);
+    expect(arrows).toBeLessThanOrEqual(GRAPH_LAYOUT_MAX_EDGES);
+    // Every node past the cap, and every connection that reached one.
+    const kept = GRAPH_LAYOUT_MAX_NODES - 1;
+    expect(r.report.notes).toContainEqual({
+      kind: 'content-truncated',
+      count: n - GRAPH_LAYOUT_MAX_NODES + (n - 1 - kept),
+    });
+    expect(ms).toBeLessThan(5_000);
   });
 });

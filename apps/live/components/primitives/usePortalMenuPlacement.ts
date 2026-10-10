@@ -59,8 +59,14 @@ export function usePortalMenuPlacement(
     const handler = (e: PointerEvent) => {
       if (!node) return;
       // A MenuFlyoutSection portals its panel outside this menu but marks it
-      // data-menu-flyout, so clicks inside the flyout count as inside the menu.
-      if (e.target instanceof Element && e.target.closest('[data-menu-flyout]')) return;
+      // data-menu-flyout, so clicks inside the flyout count as inside the menu. An AnchoredPopover the menu opened
+      // (the full colour picker of a colour row in it) is the menu's own too: closing here unmounted the picker
+      // before its pick landed.
+      if (
+        e.target instanceof Element &&
+        e.target.closest('[data-menu-flyout], [data-anchored-popover]')
+      )
+        return;
       // Clicks anywhere INSIDE the anchor (including its inner svg / text
       // nodes) are the trigger's own toggle to handle — closing here too
       // made the toggle reopen the menu it had just closed.

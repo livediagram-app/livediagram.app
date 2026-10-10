@@ -124,7 +124,7 @@ export const updateDocumentOutput = {
 
 export const shareDocumentOutput = {
   url: z.string().describe('The share link. Opening it needs no sign-in.'),
-  role: z.enum(['view', 'edit']).describe('What the link grants.'),
+  role: z.enum(['view', 'participate', 'edit']).describe('What the link grants.'),
   expiresAt: z
     .number()
     .nullable()

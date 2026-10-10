@@ -12,6 +12,7 @@ const REQUESTS: Record<TabViewName, ViewRequest> = {
   comments: { view: 'comments' },
   show: { view: 'show', ref: '146b' },
   find: { view: 'find', q: 'pay' },
+  pages: { view: 'pages' },
 };
 // Every element's ref in the checkout tab: the first four characters of its pinned id.
 const ELEMENT_REFS = new Set(checkoutTab().elements.map((el) => el.id.slice(0, 4)));

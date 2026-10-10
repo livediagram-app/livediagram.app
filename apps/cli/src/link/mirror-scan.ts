@@ -6,7 +6,7 @@
 import { posix } from 'node:path';
 import { parseDocumentEnvelope } from '@livediagram/document';
 import type { CliIo } from '../io';
-import { parsePullFile, PULL_FILE_SUFFIX, tabHashes } from '../sync/pull-file';
+import { parsePullFile, PULL_FILE_SUFFIX, sha256, tabHashes } from '../sync/pull-file';
 import { LINK_FILE_NAME } from './constants';
 import { byName, isWalked } from './find-links';
 import { sameHost, type LinkFile } from './link-file';
@@ -14,19 +14,28 @@ import { hasConflictMarkers, type MirrorFile } from './mirror-file';
 
 export type TabHashes = Record<string, { hash: string; settingsHash: string }>;
 
-export type ScannedFile =
+export type ScannedFile = (
   | { class: 'tracked'; path: string; file: MirrorFile; hashes: TabHashes }
   | { class: 'duplicate'; path: string; documentId: string; other: string }
   | { class: 'conflicted'; path: string }
   | { class: 'invalid'; path: string; message: string }
   | { class: 'local-new'; path: string; documentId: string; name: string }
-  | { class: 'foreign-host'; path: string; host: string };
+  | { class: 'foreign-host'; path: string; host: string }
+) & {
+  // The SHA-256 of the bytes the scan read, so a pass can tell a file edited while it ran from the one it judged
+  // (blueprint "One sync pass": a write or removal re-reads the file first). Absent on a hand-built fixture.
+  bytes?: string;
+};
 
 const hasSyncKey = (text: string) =>
   Object.prototype.hasOwnProperty.call(Object(JSON.parse(text)), 'livediagramSync');
 
 async function classify(io: CliIo, path: string, rel: string, host: string): Promise<ScannedFile> {
   const text = (await io.files.read(path)) ?? '';
+  return { ...(await classifyText(text, rel, host)), bytes: await sha256(text) };
+}
+
+async function classifyText(text: string, rel: string, host: string): Promise<ScannedFile> {
   if (hasConflictMarkers(text)) return { class: 'conflicted', path: rel };
   const parsed = parsePullFile(text);
   if (!parsed.ok) {
@@ -74,6 +83,12 @@ export async function scanMirrorDir(
     const paths = byDocument.get(s.file.document.id)!;
     if (paths.length === 1) return s;
     const other = paths.find((p) => p !== s.path)!;
-    return { class: 'duplicate', path: s.path, documentId: s.file.document.id, other };
+    return {
+      class: 'duplicate',
+      path: s.path,
+      documentId: s.file.document.id,
+      other,
+      bytes: s.bytes,
+    };
   });
 }

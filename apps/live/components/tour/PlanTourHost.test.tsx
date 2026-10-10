@@ -14,13 +14,30 @@ import { PlanTourHost } from './PlanTourHost';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-const stage = vi.hoisted(() => ({ engine: null as TourEngine<PlanTourApi> | null }));
+type Choice = { id: string; label: string; onPick: () => void };
+const stage = vi.hoisted(() => ({
+  engine: null as TourEngine<PlanTourApi> | null,
+  choices: [] as readonly Choice[],
+  helpHref: '' as string | undefined,
+}));
 vi.mock('./TourStage', () => ({
-  TourStage: ({ engine }: { engine: TourEngine<PlanTourApi> }) => {
+  TourStage: ({
+    engine,
+    welcomeChoices,
+    copy,
+  }: {
+    engine: TourEngine<PlanTourApi>;
+    welcomeChoices: readonly Choice[];
+    copy: { helpHref?: string };
+  }) => {
     stage.engine = engine;
+    stage.choices = welcomeChoices;
+    stage.helpHref = copy.helpHref;
     return null;
   },
 }));
+const requestSheetSelect = vi.hoisted(() => vi.fn());
+vi.mock('@/lib/sheet-select-request', () => ({ requestSheetSelect }));
 vi.mock('./tour-dom', () => ({
   findTour: () => null,
   clickTour: () => false,
@@ -32,6 +49,9 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ct
 
 const planTour = {
   ensureBoard: vi.fn(() => 'board1'),
+  ensureSheet: vi.fn(() => 'sheetEl1'),
+  sheetElementId: () => 'sheetEl1',
+  sheetId: () => 'sheet1',
   ensureCards: vi.fn(async () => true),
   moveFirstCard: vi.fn(async () => {}),
   removeAll: vi.fn(),
@@ -181,6 +201,45 @@ describe('PlanTourHost end', () => {
     act(() => stage.engine!.skip());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PlanTourSkipped');
     expect(planTour.removeAll).toHaveBeenCalled();
+  });
+
+  it('offers Boards and Spreadsheets on its welcome card', () => {
+    start();
+    expect(stage.choices.map((c) => c.label)).toEqual(['Boards', 'Spreadsheets']);
+  });
+
+  it('picking Spreadsheets runs the sheet track on the example sheet', async () => {
+    start();
+    act(() => stage.choices.find((c) => c.id === 'sheets')!.onPick());
+    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'PlanTourSheets');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'PlanTour');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+    expect(planTour.ensureSheet).toHaveBeenCalled();
+    expect(planTour.ensureBoard).not.toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'PlanTourStepSheet');
+    expect(stage.helpHref).toBe('/help/canvas/plan-mode/sheets/');
+    // Every anchored step finds no target in this harness; the formula step still selects the total.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000);
+    });
+    expect(requestSheetSelect).toHaveBeenCalledWith('sheet1', { r: 5, c: 2 });
+    expect(stage.engine?.step?.id).toBe('outro');
+    act(() => stage.engine!.next());
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PlanTourCompleted');
+  });
+
+  it('picking Boards runs the board track', async () => {
+    start();
+    act(() => stage.choices.find((c) => c.id === 'boards')!.onPick());
+    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'PlanTourBoards');
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+    expect(planTour.ensureBoard).toHaveBeenCalled();
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'PlanTourStepBoard');
+    expect(stage.helpHref).toBe('/help/canvas/plan-mode/');
   });
 
   it('ends as skipped when the person leaves Plan or the tab', () => {

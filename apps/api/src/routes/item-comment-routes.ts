@@ -1,13 +1,13 @@
 // A Plan card's comment writes (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "Comments"):
 // add, delete, resolve and reopen under /api/documents/:id/items/:itemId/comments. The canvas's comment
-// endpoints' rules, on an item: anyone who may comment (participate) adds, resolves and reopens; they delete
+// endpoints' rules, on an item: anyone who may comment (a Participant or an Editor; a Viewer only looks) adds, resolves and reopens; they delete
 // their own comments, and an editor deletes any. Each is an item write (writeItem: the item as stored, guarded by
 // its rev, relayed to the room without author ids), so concurrent comments never lose one another.
 
 import { applyItemComment, itemThread, type ItemCommentChange } from '@livediagram/document';
 import type { Item, ItemPerson } from '@livediagram/items';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
-import { recordCommentResolved } from '../timeline';
+import { recordCommentResolved, retractComments } from '../timeline';
 import { afterCommentPosted, newComment } from './comment-routes';
 import { gateEdit, readBody, type RouteContext } from './context';
 import { itemCaller, type ItemCaller } from './item-route-kit';
@@ -70,13 +70,23 @@ async function remove(
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
   const editor = await gateEdit(ctx, documentId, doc.ownerId, doc.teamId, tabId);
   const change = commentWrite({ kind: 'remove', commentId });
+  let opening = false;
   const res = await writeItem(ctx, caller, itemId, (item, by) => {
-    const target = itemThread(item)?.comments.find((c) => c.id === commentId);
+    const comments = itemThread(item)?.comments;
+    const target = comments?.find((c) => c.id === commentId);
     if (target && !editor && target.authorId !== caller.owner) return forbidden();
+    opening = comments?.[0]?.id === commentId;
     return change(item, by);
   });
-  if (res.ok)
+  if (res.ok) {
+    // Its words leave the feed too, and so does the card thread's resolved event when it opened it.
+    ctx.waitUntil?.(
+      retractComments(ctx.env, documentId, [
+        { id: commentId, threadKey: opening ? `${documentId}:item:${itemId}` : null },
+      ]),
+    );
     console.info('[items] comment deleted', { documentId, editor, agent: ctx.token !== null });
+  }
   return res;
 }
 

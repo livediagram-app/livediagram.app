@@ -7,7 +7,7 @@ import type { CollabDeepLink } from '@/lib/collab-deep-link';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import type { TabLoadState } from './editor-page-helpers';
 
-// Arriving from an Activity row (docs/specs/013-workspace/activity-page.md §1): an element and its popover,
+// Arriving from an Inbox row (docs/specs/013-workspace/inbox.md §1): an element and its popover,
 // or a Plan card on its board (§2.4), or a card no board shows. Consumed once, and only on the right tab.
 
 const board = {

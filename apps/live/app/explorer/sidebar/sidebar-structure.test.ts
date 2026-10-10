@@ -33,9 +33,9 @@ describe('sidebarGroups', () => {
     expect(SIDEBAR_GROUP_TITLES).toEqual({ overview: 'Overview', spaces: 'Spaces', more: 'More' });
   });
 
-  it('shows Home, Activity and Shared with me to everyone', () => {
-    expect(rowsOf(GUEST, 'overview')).toEqual(['home', 'activity', 'shared']);
-    expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'activity', 'shared']);
+  it('shows Home, Inbox, Timeline and Shared with me to everyone', () => {
+    expect(rowsOf(GUEST, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
+    expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
   it('gives a signed-in reader My documents, teams and New team last', () => {
@@ -89,7 +89,7 @@ describe('sidebarGroups in the floating Explorer panel', () => {
 
   it('keeps the same three groups and Overview rows', () => {
     expect(sidebarGroups(PANEL).map((g) => g.id)).toEqual(['overview', 'spaces', 'more']);
-    expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'activity', 'shared']);
+    expect(rowsOf(PANEL, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
   it('shows the spaces but no Invites or New team', () => {

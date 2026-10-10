@@ -11,16 +11,16 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Email Notifications" description="Optional emails for signed-in users, and how to control every kind of them in Settings." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-Email is an optional capability of livediagram. It only does anything when the deployment has been set up to send mail, and only signed-in users ever receive anything, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The canvas itself never needs an account or an email, so this is purely additive.
+Email is an optional capability of livediagram. It only does anything when the deployment has been set up to send mail. Almost everything goes to signed-in users, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The exceptions are mail addressed to someone by email before they have an account: a team invite, and an action assigned to or a mention of a team member who has not signed up yet. The canvas itself never needs an account or an email, so this is purely additive.
 
 ## What we might send
 
 There are four groups:
 
 - **Tips and check-ins.** A short welcome when you first sign in, a nudge a few days later if you have not made a document yet, a couple of getting-started notes over your first two weeks, and a friendly nudge if you have been away for about four weeks. The welcome goes straight away; everything after it can be turned off.
-- **Milestones.** A small celebration when you hit a milestone, like sharing your first document or reaching your tenth.
-- **Notifications about your work.** When someone opens a document you shared for the first time, when someone responds to a team invite you sent (for teams you are an admin of), when someone comments on a document you own, when a teammate assigns you an action on an element, and when a teammate @-mentions you in a comment. Each of these has its own switch.
-- **Account messages.** A team invite when you are invited, a confirmation when you delete your account, and a one-time heads-up a week before an [API token](/help/account-and-data/api-tokens/) expires. These are tied to something you or a teammate did, so they always send.
+- **Milestones.** A small celebration when you hit a milestone, when you first create a share link, and when you reach your tenth document.
+- **Notifications about your work.** When someone opens a document you shared for the first time, when someone accepts or declines an invite to a team you are an admin of, when someone else comments on a document you own (at most one email per document every 15 minutes, however busy the thread), when a teammate assigns you an action on an element, and when a teammate @-mentions you in a comment. Each of these has its own switch.
+- **Account messages.** A team invite when you are invited, a confirmation when you delete your account, and a one-time heads-up in the last week before an [API token](/help/account-and-data/api-tokens/) expires. These are tied to something you or a teammate did, so they always send.
 
 ## What an email contains
 
@@ -30,7 +30,7 @@ Two carry a little more, because the words are addressed to you: a **mention** e
 
 ## Turning them off
 
-Open **Settings**, go to **Account**, then **Notifications** beneath it (the account menu's **Account** gets you there too). The **Email** section has one switch per optional kind: **Someone Joins My Document**, **Someone Responds to a Team Invite**, **Someone Comments on My Document**, **Someone Assigns Me an Action**, **Someone Mentions Me in a Comment**, **Tips and Check-Ins**, and **Milestones**. They are all on until you turn them off. The whole row is the switch, so click anywhere on it.
+Open **Settings**, go to **Account**, then **Notifications** beneath it (the account menu's **Account** opens Settings on **Account**, one step away). The **Email** section has one switch per optional kind: **Someone Joins My Document**, **Someone Responds to a Team Invite**, **Someone Comments on My Document**, **Someone Assigns Me an Action**, **Someone Mentions Me in a Comment**, **Tips and Check-Ins**, and **Milestones**. They are all on until you turn them off. The whole row is the switch, so click anywhere on it.
 
 <Figure
   caption="Settings, Account, Notifications: one switch per kind of optional email, under the in-editor notifications switch."
@@ -40,13 +40,14 @@ Open **Settings**, go to **Account**, then **Notifications** beneath it (the acc
 </Figure>
 
 <Tip>
-  Every optional email also carries a "Manage your notifications" link in its footer that opens
-  these switches, and mail apps that show a native unsubscribe button point at the same place.
+  The notification, milestone and win-back emails carry a "Manage your notifications" link in their
+  footer that opens these switches, and mail apps that show a native unsubscribe button point at the
+  same place. For the getting-started notes, use the **Tips and Check-Ins** switch here.
 </Tip>
 
 The switches are saved to your account, so they apply wherever you are signed in, and the change takes effect before the next email would go out. Account messages (the invite, the deletion confirmation, and the token-expiry reminder) are not on this list, because they confirm something rather than nudge you.
 
-As a guest, the same place shows a short note asking you to sign in instead of the switches. **In-Editor Notifications**, above them, is a different thing: it controls the brief confirmations inside the editor and never sends email.
+As a guest, the same place shows a short note asking you to sign in instead of the switches (on a deployment that sends email). **In-Editor Notifications**, above them, is a different thing: it controls the brief confirmations inside the editor and never sends email.
 
 ## Self-hosting
 

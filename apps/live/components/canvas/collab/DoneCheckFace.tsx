@@ -2,7 +2,7 @@
 
 import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/document';
 
-import { participantKey, type Participant } from '@/lib/identity';
+import { answeringKeys, type Participant } from '@/lib/identity';
 import { CollabPanel } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';
 import { DoneButton } from './done/DoneButton';
@@ -40,6 +40,7 @@ export function DoneCheckFace({
   selfKey,
   participants,
   onToggleMine,
+  canArrange = true,
   onResetAll,
   onOpenSettings,
 }: {
@@ -56,13 +57,17 @@ export function DoneCheckFace({
   // when you send the value you already sent (docs/specs/012-collaboration/participant-responses.md), so there is no
   // separate un-mark path to keep in step.
   onToggleMine?: () => void;
+  // An Editor is told how the card fills (share the document); anyone else, that it fills as people join.
+  canArrange?: boolean;
   // Clear everyone, for the next round. Absent on a surface that can't write,
   // which renders the card readable but inert.
   onResetAll?: () => void;
   /** The way out of the round controls to the element's full menu (docs/specs/008-canvas/canvas-and-palette.md). */
   onOpenSettings?: () => void;
 }) {
-  const keys = participants.map(participantKey);
+  // One per person who can mark: a second tab of yours, or a view-link
+  // guest who can't press the button, would leave the card waiting forever.
+  const keys = answeringKeys(participants);
   const { done, waiting } = doneSplit(element.responses, keys);
   const mine = isDone(element.responses, selfKey);
   const everyone = allDone(element.responses, keys);
@@ -127,7 +132,9 @@ export function DoneCheckFace({
       >
         {keys.length === 0 ? (
           <EmptyRows textColor={textColor} title="Nobody here yet" rows={0}>
-            Share the document and the card fills itself in.
+            {canArrange
+              ? 'Share the document and the card fills itself in.'
+              : 'It fills in as people join the board.'}
           </EmptyRows>
         ) : (
           <div className="flex min-h-0 flex-1 items-center gap-4">

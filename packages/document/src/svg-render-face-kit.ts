@@ -16,6 +16,11 @@ export const PAD_X = 16;
 export const PAD_Y = 14;
 export const TITLE_PX = 13;
 export const BODY_PX = 11;
+// Advance estimates for the header's two marks: the semibold title, and the
+// uppercase aside (caps run wider), plus the gap kept between them.
+const TITLE_EM = 0.56;
+const ASIDE_EM = 0.66;
+const ASIDE_GAP = 8;
 
 // Every text mark below leaves its face to the group the caller wraps these
 // in (see `svgFace`), so the element's own typeface reaches all of them
@@ -85,8 +90,12 @@ export function collabCard(
   // paints edge to edge rather than leaving a band of bare card.
   const w = el.width / scale;
   const h = el.height / scale;
+  // The title takes one line in the room the aside leaves, as the canvas's
+  // header truncates it, rather than running under the aside and off the card.
+  const asideW = aside ? aside.length * 10 * ASIDE_EM + ASIDE_GAP : 0;
+  const titleLine = fitLine(title, w - PAD_X * 2 - asideW, TITLE_PX, TITLE_EM);
   const head =
-    text(PAD_X, PAD_Y + TITLE_PX, title, { size: TITLE_PX, weight: 600, color }) +
+    text(PAD_X, PAD_Y + TITLE_PX, titleLine, { size: TITLE_PX, weight: 600, color }) +
     (aside
       ? text(w - PAD_X, PAD_Y + TITLE_PX, aside, {
           size: 10,
@@ -203,11 +212,24 @@ export function glow(
   );
 }
 
+// The advance estimate the wrapping below works to: a character is about
+// half an em wide in the faces the canvas ships.
+const CHAR_EM = 0.52;
+
+/** `body` on one line that fits `width` at `size`px, cut with an ellipsis when
+ *  it runs on: the export's version of the canvas's `truncate`. `em` is the
+ *  per-character advance, wider for uppercase or bold text. */
+export function fitLine(body: string, width: number, size: number, em = CHAR_EM): string {
+  const fits = Math.max(1, Math.floor(width / (size * em)));
+  const flat = body.replace(/\s+/g, ' ').trim();
+  return flat.length <= fits ? flat : `${flat.slice(0, Math.max(0, fits - 1)).trimEnd()}…`;
+}
+
 /** Break `body` into at most `max` lines that fit `width` at `size`px (an
  *  estimate of the face's advance), the last one ending in an ellipsis when
  *  the text runs on: the export's version of the canvas's line clamp. */
 export function wrapLines(body: string, width: number, size: number, max: number): string[] {
-  const perLine = Math.max(8, Math.floor(width / (size * 0.52)));
+  const perLine = Math.max(8, Math.floor(width / (size * CHAR_EM)));
   const words = body.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let line = '';
@@ -226,7 +248,9 @@ export function wrapLines(body: string, width: number, size: number, max: number
   if (lines.length === max && used < body.trim().length) {
     lines[max - 1] = `${lines[max - 1]!.slice(0, perLine - 1).trimEnd()}…`;
   }
-  return lines;
+  // A single word longer than a line (a URL, a long name) is cut too, rather
+  // than running out of the card.
+  return lines.map((l) => (l.length > perLine ? `${l.slice(0, perLine - 1).trimEnd()}…` : l));
 }
 
 // The accent a modern Collaborate card paints with, resolved the way the

@@ -132,6 +132,28 @@ describe('storeSearchResult', () => {
   });
 });
 
+describe('storeSearchResult stages', () => {
+  it('reports downloading then saving for the full picture', async () => {
+    const onStage = vi.fn();
+    const fetchImpl = fetchFrom({ [result.url]: () => image() });
+    await storeSearchResult(result, storeReturning(stored), fetchImpl, undefined, onStage);
+    expect(onStage.mock.calls.map((c) => c[0])).toEqual(['downloading', 'saving']);
+  });
+
+  it('downloads again for the thumbnail fallback before saving it', async () => {
+    const onStage = vi.fn();
+    const fetchImpl = fetchFrom({ [result.thumbnail]: () => image() });
+    await storeSearchResult(result, storeReturning(stored), fetchImpl, undefined, onStage);
+    expect(onStage.mock.calls.map((c) => c[0])).toEqual(['downloading', 'downloading', 'saving']);
+  });
+
+  it('never reaches saving when nothing downloads', async () => {
+    const onStage = vi.fn();
+    await storeSearchResult(result, storeReturning(), fetchFrom({}), undefined, onStage);
+    expect(onStage.mock.calls.map((c) => c[0])).toEqual(['downloading', 'downloading']);
+  });
+});
+
 describe('pickFailureMessage', () => {
   it('maps failures to the picker copy', () => {
     expect(pickFailureMessage('gallery-full')).toMatch(/gallery is full/);

@@ -101,6 +101,17 @@ question over the closed disc, and would let anyone reword it mid-round.
 Answers sit at even angles starting from the top (12 o'clock) and going
 clockwise, so answer A is always at the top and the order reads like a clock.
 
+### Answers
+
+An answer always shows its whole text (up to `QUIZ_OPTION_MAX_TEXT`
+characters), never cut short. Its pill is the default size at least and as
+tall as its text needs, growing **away from the disc** so it never runs into
+it: an answer above the disc grows up, one below grows down, and one level
+with it grows both ways. Who picked it sits on the pill's outer edge. The
+export draws the same: every answer wrapped whole, its pill grown the same
+way, and the revealed question over two lines (as the revealed canvas shows
+it), ending in an ellipsis only when it runs on.
+
 Reduced motion keeps every state and drops only the motion: the answers are
 simply in place, the right answer is simply green.
 
@@ -127,6 +138,11 @@ Presses that run the round (start, lock, reveal, reset) write through the
 non-history path like the estimate card's Reveal, and `quizStartedAt`,
 `quizLockedAt` and `quizRevealed` are re-grafted onto undo snapshots with the
 other live fields, so one person's Ctrl+Z cannot un-start somebody's round.
+The one exception is **undoing an edit**: when the undo brings back a different
+question, answers or correct answer while the card has picks or a round in play,
+the card returns to `ready` with a new round (`reconcileRestoredElement` in
+`undo-live-reconcile.ts`), exactly as saving the edit did. Otherwise the old
+options came back under picks cast against the new ones.
 
 ## Limits, stated plainly
 

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ItemResponse, ItemsResponse } from '@livediagram/api-schema';
 import { itemPersonId, presetSetup, type Item } from '@livediagram/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
@@ -82,6 +82,7 @@ beforeEach(() => {
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB1', 'd1', 'edit', 't1', 1);
   `);
@@ -183,6 +184,34 @@ describe('creating items', () => {
     expect((await add({ title: 'after' })).body.item.key).toBe(6);
   });
 
+  // A seed or sync of many keyed cards reads the store once per attempt: whether a named key is free comes from
+  // that read, not a query per card (it was one `item_key` query each).
+  it('names keys without a query per card', async () => {
+    const db = sql.env.DB as unknown as { prepare: (q: string) => unknown };
+    const prepare = db.prepare.bind(db);
+    const statementsFor = async (n: number, from: number) => {
+      let count = 0;
+      db.prepare = (q: string) => {
+        count += 1;
+        return prepare(q);
+      };
+      const items = Array.from({ length: n }, (_, i) => ({
+        type: 'bug',
+        key: from + i,
+        fields: { title: `card ${i}`, status: 'new' },
+      }));
+      const res = await call<ItemsResponse>({ path: '/items/bulk', body: { items } });
+      db.prepare = prepare;
+      expect(res.status).toBe(201);
+      expect(res.body.items.map((i) => i.key)).toEqual(items.map((i) => i.key));
+      return count;
+    };
+    const few = await statementsFor(2, 1);
+    const many = await statementsFor(40, 10);
+    // The inserts themselves are one statement per card; nothing else grows with the batch.
+    expect(many - 40).toBe(few - 2);
+  });
+
   it('caps the store', async () => {
     sql.sql.exec('UPDATE documents SET items_next_key = 2001');
     const insert = sql.sql.prepare(
@@ -269,6 +298,40 @@ describe('changing items', () => {
     expect(laned.body.item.fields).toMatchObject({ 'f-stage': 'Won', labels: ['auth'] });
   });
 
+  // docs/specs/026-plan/items.md "Archive": a card dragged off an Archive board is restored by the move itself, and
+  // its undo (a move setting the flag back) is a move too.
+  it('moves an archived card back onto a board, clearing the flag in the same write', async () => {
+    await call({ path: `/items/${item.id}`, body: { set: { archived: true } } });
+    const back = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'done', before: null, clear: ['archived'] },
+    });
+    expect(back.status).toBe(200);
+    expect(back.body.item.fields).toMatchObject({ status: 'done' });
+    expect(back.body.item.fields['archived']).toBeUndefined();
+    const undone = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'todo', before: null, set: { archived: true }, undo: true },
+    });
+    expect(undone.body.item.fields).toMatchObject({ status: 'todo', archived: true });
+  });
+
+  // A move that lost a race ranks against the column as it is on the retry, not as it was first read.
+  it('reads the neighbours again when a move retries', async () => {
+    const b = (await add({ title: 'B', status: 'done' })).body.item;
+    const listed = vi.spyOn(db, 'listItems');
+    const updated = vi.spyOn(db, 'updateItemAtRev').mockResolvedValueOnce(null);
+    const res = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'done', before: b.id },
+    });
+    expect(res.status).toBe(200);
+    expect(updated).toHaveBeenCalledTimes(2);
+    expect(listed.mock.calls.length).toBeGreaterThanOrEqual(2);
+    listed.mockRestore();
+    updated.mockRestore();
+  });
+
   // docs/specs/012-collaboration/session-tools.md "Voting on Plan cards": a card is voted on through the tab's
   // session vote; the per-card vote route is gone.
   it('has no per-card vote route', async () => {
@@ -323,6 +386,89 @@ describe('who may do what', () => {
     expect((await call({ method: 'GET', path: '/items', owner: 'stranger' })).status).toBe(403);
     expect((await call({ method: 'GET', path: '/items', owner: null })).status).toBe(400);
     expect((await call({ method: 'GET', path: '/items', doc: 'nope' })).status).toBe(404);
+  });
+
+  // docs/specs/013-workspace/share-roles.md "What a Participant changes": cards, never their deletion.
+  it('lets a Participant add, edit and move cards, but never trash, archive or delete one', async () => {
+    const as = { owner: 'p', code: 'PART' };
+    const made = await call<ItemResponse>({
+      ...as,
+      path: '/items',
+      body: { type: 'task', fields: { title: 'Idea', status: 'todo' } },
+    });
+    expect(made.status).toBe(201);
+    const id = made.body.item.id;
+    expect(
+      (await call({ ...as, path: `/items/${id}`, body: { set: { title: 'Better idea' } } })).status,
+    ).toBe(200);
+    expect(
+      (await call({ ...as, path: `/items/${id}/move`, body: { status: 'done' } })).status,
+    ).toBe(200);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items/patches',
+          body: { items: [{ id, set: { title: 'Again' } }] },
+        })
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await call({
+          ...as,
+          path: `/items/${id}`,
+          body: { set: { status: 'trash', trashedFrom: 'done' } },
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items/patches',
+          body: { items: [{ id, set: { archived: true } }] },
+        })
+      ).status,
+    ).toBe(403);
+    expect((await call({ ...as, method: 'DELETE', path: `/items/${id}` })).status).toBe(403);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items/bulk',
+          body: { items: [{ type: 'task', fields: { title: 'x' } }] },
+        })
+      ).status,
+    ).toBe(403);
+    // A fresh card only: no forged dots, thread or key.
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items',
+          body: { type: 'task', fields: { title: 'x' }, votes: { p: 3 } },
+        })
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await call({
+          ...as,
+          path: '/items',
+          body: { type: 'task', fields: { title: 'x' }, key: 99 },
+        })
+      ).status,
+    ).toBe(403);
+    // The owner still trashes it.
+    expect(
+      (
+        await call({
+          path: `/items/${id}`,
+          body: { set: { status: 'trash', trashedFrom: 'done' } },
+        })
+      ).status,
+    ).toBe(200);
   });
 
   it('confines a tab-scoped link to the items its tab shows', async () => {
@@ -608,14 +754,14 @@ describe('the type catalogue', () => {
     expect(stored.fields).toEqual(['title', 'status', 'description', 'f-outcome']);
     expect(stored.newTitle).toBe('New customer call');
     expect(relayed).toEqual([
-      { op: { kind: 'item-types', itemTypes: res.body.itemTypes }, ordered: true },
+      { op: { kind: 'item-types', itemTypes: res.body.itemTypes, itemTypesRev: 1 }, ordered: true },
     ]);
     expect((await db.getDocument(sql.env, 'd1'))?.itemTypes).toEqual(res.body.itemTypes);
   });
 
   it('goes back to the built-in types on null', async () => {
     await put(catalogue);
-    expect((await put(null)).body).toEqual({ itemTypes: null });
+    expect((await put(null)).body).toEqual({ itemTypes: null, itemTypesRev: 2 });
     expect((await db.getDocument(sql.env, 'd1'))?.itemTypes).toBeNull();
   });
 
@@ -633,6 +779,47 @@ describe('the type catalogue', () => {
     expect((await put(catalogue, { owner: 'v', code: 'TAB1' })).status).toBe(403);
     expect((await put(catalogue, { owner: 'v', code: 'EDIT' })).status).toBe(200);
     expect((await call({ method: 'GET', path: '/item-types' })).status).toBe(405);
+  });
+
+  // Two editors saving at once (docs/specs/026-plan/item-types.md "Storage and sync"): the one that changed an older
+  // catalogue is refused with what is stored, never overwriting the other's change.
+  it('refuses a write made to a revision that has moved on, answering with the stored one', async () => {
+    expect((await db.getDocument(sql.env, 'd1'))?.itemTypesRev).toBe(0);
+    const first = await call<{ itemTypesRev: number }>({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: catalogue, expectedRev: 0 },
+    });
+    expect(first.status).toBe(200);
+    expect(first.body.itemTypesRev).toBe(1);
+    relayed = [];
+    const late = await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: null, expectedRev: 0 },
+    });
+    expect(late.status).toBe(409);
+    expect(late.body).toMatchObject({ error: 'item_types_stale', itemTypesRev: 1 });
+    expect((late.body as { itemTypes: { types: { id: string }[] } }).itemTypes.types[0]!.id).toBe(
+      'customer-call',
+    );
+    expect(relayed).toEqual([]);
+    expect((await db.getDocument(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
+    const retried = await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: { itemTypes: null, expectedRev: 1 },
+    });
+    expect(retried.body).toEqual({ itemTypes: null, itemTypesRev: 2 });
+    for (const expectedRev of [-1, 1.5, 'x'])
+      expect(
+        (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: null, expectedRev } }))
+          .status,
+      ).toBe(400);
+    // The plan an agent reads carries the revision to name.
+    expect(
+      (await call<{ itemTypesRev: number }>({ method: 'GET', path: '/plan' })).body,
+    ).toMatchObject({ itemTypesRev: 2 });
   });
 
   it('travels with a copy', async () => {
@@ -762,6 +949,36 @@ describe('changing many items at once', () => {
       id: t.id,
     });
     expect((await call({ path: '/items/patches', body: { items, undo: true } })).status).toBe(200);
+  });
+
+  // An item that keeps changing fails the request after the others landed: the refusal names what landed, so the
+  // editor keeps it (and its undo) rather than taking the request as unwritten.
+  it('answers a failure after a partial landing with the items that landed', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    const real = db.updateItemsAtRev;
+    const racing = vi.spyOn(db, 'updateItemsAtRev').mockImplementation((env, doc, writes) =>
+      real(
+        env,
+        doc,
+        writes.filter((w) => w.next.id !== b.id),
+      ),
+    );
+    const res = await call<ItemsResponse & { error: string }>({
+      path: '/items/patches',
+      body: {
+        items: [
+          { id: a.id, ...trash },
+          { id: b.id, ...trash },
+        ],
+      },
+    });
+    racing.mockRestore();
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('item_busy');
+    expect(res.body.items.map((i) => [i.id, i.fields['status']])).toEqual([[a.id, 'trash']]);
+    expect(res.body.rev).toBeGreaterThan(0);
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields['status']).toBe('todo');
   });
 
   it('writes many at the revs read, reporting which landed', async () => {

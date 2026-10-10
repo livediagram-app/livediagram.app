@@ -21,6 +21,7 @@ import {
   type SharePasswordResponse,
   apiFetch,
 } from './core';
+import { parseStoredLevel } from '@livediagram/api-schema';
 
 // Resolve a share code to a full document + the role granted by that
 // code. Visitors landing on `/document/shared?s=<code>` use
@@ -56,7 +57,7 @@ async function _apiLoadShared(
   if (!body) return null;
   return {
     document: body.document,
-    role: body.role === 'view' ? 'view' : 'edit',
+    role: parseStoredLevel(body.role),
     tabId: typeof body.tabId === 'string' ? body.tabId : null,
     community: readCommunityShareInfo(body.community),
   };

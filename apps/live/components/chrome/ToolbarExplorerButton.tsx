@@ -6,6 +6,7 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { MenuNameSlot } from '@/components/plan/menu-name-slot';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -92,6 +93,8 @@ export function ToolbarExplorerButton({
         </HoverCard>
       )}
       {phone ? null : <EditorModeSwitch />}
+      {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
+      {phone || inline ? null : <MenuNameSlot />}
     </div>
   );
 }

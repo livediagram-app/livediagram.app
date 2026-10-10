@@ -17,6 +17,7 @@ import {
   isProfilePictureUrl,
   MAX_COLOR_LEN,
   MAX_PARTICIPANT_NAME_LEN,
+  type AccessLevel,
   type ParticipantPresence,
 } from '@livediagram/api-schema';
 
@@ -44,7 +45,7 @@ export function helloPresence(
   // verifiedRole is optional on the attachment (it is absent for a session
   // that upgraded before the role was stamped), and ParticipantPresence.role
   // is optional for the same reason. Passed straight through, as before.
-  session: { presenceId: string; verifiedRole?: 'edit' | 'view'; account?: boolean },
+  session: { presenceId: string; verifiedRole?: AccessLevel; account?: boolean },
 ): ParticipantPresence {
   const c = claimed ?? ({} as Partial<ParticipantPresence>);
   const presence: ParticipantPresence = {
@@ -136,4 +137,19 @@ export function admitFrame(
   // socket cannot extend its own window by continuing to send.
   if (rate.count >= cap) return { admit: false, rate };
   return { admit: true, rate: { count: rate.count + 1, windowStart: rate.windowStart } };
+}
+
+// A Participant answers only as itself (docs/specs/013-workspace/share-roles.md "Integrity"): a dot names its voter
+// and a response its participant, and both must be the key its own hello published. An idea names nobody. The key
+// is still the one the session claimed at hello (server-derived keys are Later), so this stops a Participant voting
+// in someone else's name in the same room, not one that claimed another's key from the start.
+export function answersAsSelf(op: unknown, key: string | undefined): boolean {
+  if (typeof op !== 'object' || op === null) return false;
+  const o = op as { kind?: unknown; voter?: unknown; delta?: unknown };
+  if (o.kind === 'vote') return key !== undefined && o.voter === key;
+  if (o.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
+  const d = o.delta as { kind?: unknown; participantId?: unknown };
+  if (d.kind === 'idea') return true;
+  if (d.kind === 'response') return key !== undefined && d.participantId === key;
+  return false;
 }

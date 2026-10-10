@@ -3,8 +3,8 @@
 The Timeline is a chronological feed of everything that has happened
 across the user's documents, teams, and account, grouped by day as a
 grid of cards, stacked when a day gets busy, and switchable into a
-calendar month grid. Its page is **All activity**, reached from Home
-([Explorer Home](explorer-home.md), §8).
+calendar month grid. Its page is **Timeline**, with a row of its own in the
+sidebar's Overview group, under the Inbox (§8).
 
 Modelled on the Timeline subsystem in the Manager Toolkit monorepo
 (`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
@@ -355,7 +355,11 @@ implementation, not two.
   disabled. A step is small enough that
   skipping empty periods would hide the shape of a quiet stretch, which
   is often the thing being looked at, and whichever period you land on is
-  fetched on demand.
+  fetched on demand. The fetch follows the month's cursor to its end, page
+  by page (each merged as it arrives), so a month busier than one page of
+  `TIMELINE_PAGE_MAX` shows all its days; it stops at
+  `TIMELINE_PERIOD_PAGES_MAX` (10) pages, logged, and a month left before
+  its last page (a failed page, or paging away) is fetched again on return.
 
   Month paging used to jump to the nearest month that had events and
   disable itself when there was none, tooltipped "No earlier events" —
@@ -1068,7 +1072,12 @@ snapshot's `documentName`), so renaming a document updates every older entry
 about it, and a separate "Renamed" card would only repeat what those now say.
 Nothing records `document_renamed` any more, and the rows written before this
 change are filtered out of every feed and the unread count. A document that no
-longer exists keeps the name it had. Team renames are still events: a team's
+longer exists keeps the name it had, and so does one the reader can no longer
+open: the override applies only to a document in the reader's visible set (the
+documents they own, their joined teams' documents, and live shares, as
+`VISIBLE_DOCUMENTS_CTES` defines it), so leaving a team or losing a link never
+leaks a later rename. A document feed passed that document's own read gate, so
+its live name always shows there. Team renames are still events: a team's
 name is not re-read onto older entries.
 
 | `eventType`                            | Fires when                                                                                                                                       | Title / description                                             |
@@ -1173,6 +1182,22 @@ email notification in [Transactional & lifecycle email (Resend)](../014-identity
 comment text — an email leaves the product's authorisation boundary
 and can sit in an inbox forever; the Timeline is behind the same auth
 as the document itself.)
+
+**A comment event's actor is the comment's author, never simply the saver.** A
+tab save can carry a peer's new comment that reached the saver live before the
+author's own save landed; `rewriteCommentAuthors` stores it without an author
+id, credited by the room's name. Its `comment_added` is recorded with no actor
+then, and the author's own later save, which claims the comment, fills the actor
+in (an emit's conflict update fills a missing actor and never replaces one). An
+author id other than the saver's is never trusted as an actor.
+
+**A deleted comment takes its words with it.** Every path that removes a comment
+deletes its `comment_added` event, and, when it opened its thread, the thread's
+`comment_resolved` event, whose description is that opening comment's text: the
+delete-own comment route, a Plan card's comment delete, and a tab save that drops
+comment ids (one by one, or with their element), diffed by `removedComments`. A
+comment that comes back (an undo) is new again to the next save and is recorded
+afresh.
 
 A `comment_added` snapshot carries `reply: true` when the comment is not the first of its thread, and an
 `action_assigned` snapshot carries the assignee's owner id as `assigneeId` (null for an invited member with no
@@ -1502,7 +1527,7 @@ feed vanishing and coming back.
 
 ## 8. Explorer integration
 
-### 8.1 Home is the landing view; the feed is All activity
+### 8.1 Home is the landing view; the feed is the Timeline
 
 The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. A static export has no single
 entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
@@ -1515,23 +1540,24 @@ entry point, so the landing is applied in several places, all reading one consta
 `apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
 `folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
 
-The feed keeps its route, `/explorer/timeline`, and its page is titled **All activity** (heading, document title and
-breadcrumb, **Home › All activity**). Home says what the person was working on and what others did; All activity is
-the whole record, the person's own doings included, with its filters, calendar and paging.
+The feed keeps its route, `/explorer/timeline`, and its page is titled **Timeline** (heading, document title and
+breadcrumb). Home says what the person was working on and what others did; the Timeline is the whole record, the
+person's own doings included, with its filters, calendar and paging.
 
 **Recent is not removed.** It keeps its route (`/explorer/recent`); it answers a different question ("what did I
 touch last"). It has no sidebar row.
 
 ### 8.2 Sidebar
 
-The feed has **no sidebar row**. It is reached from Home: What happened's quiet **See all activity** link opens it.
-The sidebar's **Home** row ([Explorer structure](explorer-structure.md)) opens Home, and carries this feed's unread
-badge:
+The feed has a **Timeline** row in the sidebar's Overview group ([Explorer structure](explorer-structure.md)), under
+the Inbox, and Home's What happened reaches it too, through its quiet **See timeline** link. The row carries no badge:
+the feed's unread badge sits on the **Home** row, which opens Home:
 
 ```text
 Overview
   ⌂  Home              ← Home, the landing view; badge: unread feed events
-  ◔  Activity
+  ◔  Inbox
+  ┆  Timeline          ← this feed
   ↗  Shared with me
 ```
 
@@ -1583,8 +1609,8 @@ New category `Timeline` in the closed enum in
 `@livediagram/api-schema` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Existing actions cover it:
 
 - `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
-  the page load started on it, `Nav` when reached from elsewhere (Home's
-  See all activity link).
+  the page load started on it, `Nav` when reached from elsewhere (the
+  sidebar's Timeline row, or Home's See timeline link).
 - `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
 - `Timeline`/`Selected` with `type` the source type — a filter chip
   toggled.
@@ -1667,7 +1693,7 @@ Per [Testing](../003-system-architecture/testing.md):
 ## 13. Out of scope for v1
 
 - Favourites / starring, manual entries. (Per-entry removal shipped: §2.9.)
-- An unread badge on the sidebar row.
+- An unread badge on the Timeline row (the count sits on Home, §8.2).
 - Per-document and per-team timeline scopes (the schema is ready; the
   renderers, routes, and UI are not).
 - AI day summaries.

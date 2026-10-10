@@ -8,6 +8,7 @@ import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';
 import { listSharedWith } from './shared';
 import { seedTabs, stampTabElementCount, swapTabData, upsertTab } from './tabs';
+import { tabStatsOfData } from './tab-stats';
 
 const OWNER = 'owner-1';
 const VISITOR = 'visitor-1';
@@ -59,9 +60,16 @@ describe('a document list says which documents are empty', () => {
     await upsertTab(env, 'doc', tab('t1', [rect('a')]), 0);
     expect((await emptiness(env)).doc).toBe(false);
     const { data } = sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get() as { data: string };
-    expect(await swapTabData(env, 'doc', 't1', data, JSON.stringify({ elements: [] }), 0)).toBe(
-      true,
-    );
+    expect(
+      await swapTabData(
+        env,
+        'doc',
+        't1',
+        data,
+        JSON.stringify({ elements: [] }),
+        tabStatsOfData('{"elements":[]}').stats,
+      ),
+    ).toBe(true);
     expect((await emptiness(env)).doc).toBe(true);
   });
 

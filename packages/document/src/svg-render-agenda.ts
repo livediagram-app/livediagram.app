@@ -19,6 +19,8 @@ import {
   type Face,
 } from './svg-render-face-kit';
 
+// A wrapped agenda name's second line, below its first.
+const NAME_LINE_PX = 14;
 const STEP_H = 32.5;
 // The current step's extra: the drain bar and its margin.
 const CURRENT_EXTRA = 10.5;
@@ -90,11 +92,13 @@ export function svgAgenda(el: Face, title: string, color: string, a: CollabAccen
               : i < current
                 ? 'done'
                 : 'ahead';
-        const rowH = state === 'current' ? STEP_H + CURRENT_EXTRA : STEP_H;
+        // A name wraps (two lines, as the canvas wraps it, the second ending in an ellipsis only when it
+        // runs on), and its row grows by the line.
+        const names = wrapLines(item.label || `Segment ${i + 1}`, rightX - nameX - 40, 12, 2);
+        const extra = (names.length - 1) * NAME_LINE_PX;
+        const rowH = (state === 'current' ? STEP_H + CURRENT_EXTRA : STEP_H) + extra;
         if (y + rowH - 4 > h - PAD_Y + 4) return;
         const minutes = clampAgendaMinutes(item.minutes);
-        const name =
-          wrapLines(item.label || `Segment ${i + 1}`, rightX - nameX - 40, 12, 1)[0] ?? '';
         const cy = y + 16;
         // The rail down to the next step.
         if (i < items.length - 1) {
@@ -116,12 +120,14 @@ export function svgAgenda(el: Face, title: string, color: string, a: CollabAccen
           out += `<circle cx="${r2(markerX)}" cy="${r2(cy)}" r="7" fill="none" stroke="${xmlEscape(color)}" stroke-opacity="0.22" stroke-width="2"/>`;
         }
         const base = y + 18.5;
-        out += text(nameX, base, name, {
-          size: 12,
-          weight: state === 'current' ? 600 : 500,
-          color,
-          opacity: state === 'done' ? 0.45 : undefined,
-          strike: state === 'done',
+        names.forEach((name, n) => {
+          out += text(nameX, base + n * NAME_LINE_PX, name, {
+            size: 12,
+            weight: state === 'current' ? 600 : 500,
+            color,
+            opacity: state === 'done' ? 0.45 : undefined,
+            strike: state === 'done',
+          });
         });
         out +=
           state === 'current'
@@ -138,7 +144,7 @@ export function svgAgenda(el: Face, title: string, color: string, a: CollabAccen
                 opacity: state === 'done' ? 0.35 : 0.55,
               });
         if (state === 'current') {
-          const dy = y + 28.5;
+          const dy = y + 28.5 + extra;
           out +=
             rect(nameX, dy, rightX - nameX, 4, 2, a.accent, 0.18) +
             rect(nameX, dy, rightX - nameX, 4, 2, a.accent, 1);

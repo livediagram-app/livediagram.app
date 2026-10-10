@@ -1,4 +1,4 @@
-// The Explorer's Activity page (docs/specs/013-workspace/activity-page.md): what is outstanding for the
+// The Explorer's Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the
 // reader across every document they can open.
 //
 // Read-only: every row links into the editor, where completing /

@@ -86,7 +86,9 @@ export function SiteHeader({
 // The default CTA pair. The Start Blank menu is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex). Beside a centre slot (help's
-// search) it waits for `md`, so the search box keeps room to read on a small tablet.
+// search) it waits for `md`, so the search box keeps room to read on a small tablet. Below 360px
+// (a 320px phone) Brand + dropdown + "Choose Template" overran the bar by ~35px, so the primary
+// drops "Choose " there; the aria-label keeps its full name.
 function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
   return (
     <>
@@ -96,9 +98,14 @@ function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy:
       />
       <a
         href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
+        aria-label="Choose Template"
         className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
       >
-        <ButtonContent>Choose Template</ButtonContent>
+        <ButtonContent>
+          <span className="text-optical-line">
+            <span className="max-[359px]:hidden">Choose </span>Template
+          </span>
+        </ButtonContent>
       </a>
     </>
   );

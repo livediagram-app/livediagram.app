@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The Activity read (docs/specs/013-workspace/activity-page.md §3): a failed read is null, never an empty
+// The Activity read (docs/specs/013-workspace/inbox.md §3): a failed read is null, never an empty
 // inbox, and a body missing a kind (an older api before Plan cards, §2.4, or card threads, §2.5) reads as none of that kind.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -7,7 +7,12 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
-import { DocumentEntryMenu, hrefForDocument, ownerLabelFor } from './document-row-shared';
+import {
+  DocumentEntryMenu,
+  documentDragProps,
+  hrefForDocument,
+  ownerLabelFor,
+} from './document-row-shared';
 import {
   FavouriteMarker,
   FolderChip,
@@ -70,6 +75,7 @@ export function DocumentRow(props: DocumentEntryProps) {
       // Right-click anywhere on the row opens the same actions menu as the
       // ellipsis button (anchored to it).
       onContextMenu={menu.onContextMenu}
+      {...documentDragProps(liveDoc, renaming)}
     >
       <span className="flex min-w-0 items-center gap-2">
         <DocumentThumbnail

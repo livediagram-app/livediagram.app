@@ -28,13 +28,14 @@ One term, one identifier. The left column is the only spelling used in code, tes
 
 | Term          | Identifier                                                 | Meaning                                                            |
 | ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------ |
-| Hint          | `HintKind` (`'tooltip' \| 'hover-card'`)                   | Floating, non-interactive content shown for hover or focus         |
-| Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 1 s or at once on keyboard focus         |
+| Hint          | `HintKind` (`'tooltip' \| 'hover-card' \| 'preview'`)      | Floating, non-interactive content shown for hover or focus         |
+| Tooltip       | `Tooltip`, `data-hint="tooltip"`                           | The control's name, after 500 ms or at once on keyboard focus      |
 | Hover card    | `HoverCard`, `data-hint="hover-card"`                      | Bold title over a description, at once                             |
+| Preview       | `PreviewHint`, `data-hint="preview"`                       | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
 | Open source   | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
-| Warm-up       | `isTooltipWarm(now)`                                       | A tooltip may skip its delay                                       |
+| Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip or a preview may skip its delay                          |
 | Grace         | `HINT_CLOSE_GRACE_MS`                                      | Time the pointer has to cross from trigger to surface              |
 | Dismissed     | `dismissed` (ref in `useHint`)                             | Escape or a press closed it; stays closed until leave or blur      |
 | Placement     | `HintPlacement` (`'top' \| 'bottom' \| 'right' \| 'left'`) | Side of the trigger the surface sits on                            |
@@ -83,17 +84,18 @@ pointer events from bubbling, and the hint must still see them.
 `settle()`: if none of `overTrigger`, `overSurface`, `focused` holds, clear `dismissed` and, when open, close after
 `HINT_CLOSE_GRACE_MS`. A blur with the pointer elsewhere therefore closes after the same grace (D26).
 
-`openDelayMs(kind, now)`: `0` for a hover card; for a tooltip, `0` when `isTooltipWarm(now)`, else
-`TOOLTIP_OPEN_DELAY_MS`.
+`OPEN_DELAY_MS[kind]`: `0` for a hover card, `TOOLTIP_OPEN_DELAY_MS` for a tooltip,
+`PREVIEW_OPEN_DELAY_MS` for a preview; a tooltip or a preview opens at once when `isHintWarm(kind, now)`.
 
 Opening calls `claimHint(token, close, kind)`, which closes the previous holder (T14). Closing calls
 `releaseHint(token, kind, now)`,
-which, for a tooltip, stamps the warm-up clock.
+which, for a tooltip or a preview, stamps that kind's warm-up clock.
 
 ### Invariants
 
 - **I1:** at most one hint is open in a document.
-- **I2:** a tooltip never opens from pointer hover sooner than `TOOLTIP_OPEN_DELAY_MS` unless warm.
+- **I2:** a tooltip (a preview) never opens from pointer hover sooner than `TOOLTIP_OPEN_DELAY_MS`
+  (`PREVIEW_OPEN_DELAY_MS`) unless warm.
 - **I3:** keyboard-visible focus opens either hint in the same task; mouse focus opens nothing.
 - **I4:** Escape never calls `stopPropagation` or `preventDefault`.
 - **I5:** a hint never mounts anything into the trigger's layout; its surface is portalled to `document.body`.
@@ -258,8 +260,10 @@ surface.
 
 | Constant                  | Value | Provenance                                                 | Safe range |
 | ------------------------- | ----- | ---------------------------------------------------------- | ---------- |
-| `TOOLTIP_OPEN_DELAY_MS`   | 1000  | Spec                                                       | 500–1500   |
+| `TOOLTIP_OPEN_DELAY_MS`   | 500   | Spec                                                       | 300–1000   |
 | `TOOLTIP_WARMUP_MS`       | 500   | Spec                                                       | 300–1000   |
+| `PREVIEW_OPEN_DELAY_MS`   | 600   | Spec                                                       | 400–1000   |
+| `PREVIEW_WARMUP_MS`       | 500   | Spec                                                       | 300–800    |
 | `HINT_CLOSE_GRACE_MS`     | 100   | D25: crosses the 6–10px gap at any human speed             | 50–300     |
 | `HINT_LONG_PRESS_MS`      | 500   | Spec; `apps/live/hooks/ui/useLongPress.ts` `LONG_PRESS_MS` | 400–800    |
 | `HINT_LONG_PRESS_SLOP_PX` | 10    | Spec; `useLongPress` `MOVE_SLOP_PX`                        | 6–16       |

@@ -5,6 +5,7 @@ import {
   resolveCatchup,
   MAX_TAB_ID_LEN,
   type LoggedOp,
+  answersAsSelf,
 } from './document-room-rules';
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livediagram/api-schema';
 import { MAX_PARTICIPANT_KEY_LEN } from './limits';
@@ -171,5 +172,23 @@ describe('admitFrame', () => {
   it('treats the boundary as expiry, not as still inside the window', () => {
     expect(admitFrame({ count: 1, windowStart: 1000 }, 1999, CAP).rate.windowStart).toBe(1000);
     expect(admitFrame({ count: 1, windowStart: 1000 }, 2000, CAP).rate.windowStart).toBe(2000);
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md "Integrity": a Participant answers only as itself.
+describe('answersAsSelf', () => {
+  const vote = (voter: unknown) => ({ kind: 'vote', voter });
+  const delta = (d: Record<string, unknown>) => ({ kind: 'el-delta', delta: d });
+  it('admits its own dot and response, and any idea', () => {
+    expect(answersAsSelf(vote('k'), 'k')).toBe(true);
+    expect(answersAsSelf(delta({ kind: 'response', participantId: 'k' }), 'k')).toBe(true);
+    expect(answersAsSelf(delta({ kind: 'idea', text: 'x' }), undefined)).toBe(true);
+  });
+  it("refuses another's key, no key, and anything else", () => {
+    expect(answersAsSelf(vote('other'), 'k')).toBe(false);
+    expect(answersAsSelf(vote('k'), undefined)).toBe(false);
+    expect(answersAsSelf(delta({ kind: 'response', participantId: 'other' }), 'k')).toBe(false);
+    expect(answersAsSelf(delta({ kind: 'check' }), 'k')).toBe(false);
+    expect(answersAsSelf(null, 'k')).toBe(false);
   });
 });

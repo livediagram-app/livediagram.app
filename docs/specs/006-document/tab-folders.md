@@ -42,7 +42,7 @@ Folder membership changes two ways:
 
 **Drop position is deterministic + shown.** While dragging, the tab bar reads the pointer's position within the hovered pill: the left half means "land **before** this tab", the right half means "land **after**", and a vertical **insertion caret** renders in that exact gap so the user can see where the tab will go before releasing. `reorderTabs` takes a `placeBefore` flag (set from that side) and recomputes the target index _after_ removing the source, so the result matches the caret regardless of drag direction. (Dropping onto a folder chip omits the flag and joins at the run's head, as above.) Before this, the only cue was a highlight ring around the whole target and the landing side flipped with drag direction, so the drop was hard to predict.
 
-**2. The tab's right-click / ellipsis menu** — an "Add to Folder" action (Organise category) that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)), replacing the old cramped in-menu sub-view. Picking commits immediately and closes:
+**2. The tab's right-click / ellipsis menu** — an **Add to Folder** row that opens a centred **modal** (`AddTabToFolderDialog`, the same tile-grid language as the shared placement browser, [Folders](../013-workspace/folders.md)), replacing the old cramped in-menu sub-view. Picking commits immediately and closes:
 
 - **A tile per existing folder** in this document → move the active tab into it (the current folder's tile reads "Current" and is a no-op).
 - **A "No Folder" tile** → makes the tab loose on the bar; selected when the tab already is.

@@ -17,7 +17,7 @@ describe('lensViewOf', () => {
   it('gives the views that list no documents no lens', () => {
     for (const kind of [
       'timeline',
-      'activity',
+      'inbox',
       'gallery',
       'themes',
       'shape-libraries',

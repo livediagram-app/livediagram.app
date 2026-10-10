@@ -125,7 +125,7 @@ export function CommentPanelFace({
           {comments.length === 0 ? (
             <EmptyRows
               textColor={textColor}
-              title="Start the Conversation"
+              title={onAddComment ? 'Start the Conversation' : 'No Comments Yet'}
               rows={0}
               glyph={<DiscussGlyph size={14} />}
             >

@@ -1,5 +1,6 @@
 'use client';
 
+import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
@@ -23,6 +24,7 @@ import { useAppearance } from '@/hooks/ui/useAppearance';
 import { Canvas } from '@/components/canvas/Canvas';
 import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
@@ -48,9 +50,6 @@ export function EditorCanvasHost() {
     activeLayerId,
     layerInertIds,
     layerCounts,
-    pollPanelPosition,
-    setPollPanelPosition,
-    votePanelPosition,
     avatarPanelPosition,
     laserPanelPosition,
     spotlightPanelPosition,
@@ -67,7 +66,6 @@ export function EditorCanvasHost() {
     laserConfig,
     onChangeLaserField,
     setLaserPanelPosition,
-    setVotePanelPosition,
     setAvatarPanelPosition,
     toggleRecentExclusion,
     favouriteIds,
@@ -223,6 +221,8 @@ export function EditorCanvasHost() {
     facilitator,
     isPinchingRef,
     isReadOnly,
+    can,
+    participating,
     laserTrailRows,
     livePresence,
     lockedByOther,
@@ -367,6 +367,8 @@ export function EditorCanvasHost() {
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
   const runBlocked = facilitator.sessionToolsBlocked;
+  // The Session strip's tools (docs/specs/012-collaboration/session-tools.md "The Session strip").
+  const sessionTools = useSessionTools();
   // The facilitator's menu on an element somebody else is holding (docs/specs/007-editor/live-app.md).
   // Null when closed. Holders are captured at open time rather than re-read on
   // render: if the holder lets go while the menu is up it closes on the next
@@ -454,25 +456,27 @@ export function EditorCanvasHost() {
     // card that can't show your own avatar is showing the wrong room.
     participants: [selfParticipant, ...livePresence],
     tabTimer: activeTab.timer,
-    respond: isReadOnly ? undefined : collabElements.respond,
+    canArrange: !isReadOnly,
+    // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
+    respond: can.takePart ? collabElements.respond : undefined,
     setResponsesRevealed:
       isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
     clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
     chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
-    addIdea: isReadOnly ? undefined : collabElements.addIdea,
+    addIdea: can.takePart ? collabElements.addIdea : undefined,
     revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
     clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
     scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
     pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
+    resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
     takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting stay live for a
-    // view-role visitor: the server owns the board and gates them on
-    // read access, which is the point of the element. Running it is
-    // the facilitator's, else any editor's.
+    // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
+    // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
+    // gates them. Running it is the facilitator's, else any editor's.
     selfOwnerId: selfParticipant.id,
     selfName: selfParticipant.name,
-    addQaNote: qaBoard.addQaNote,
-    voteQaNote: qaBoard.voteQaNote,
+    addQaNote: can.takePart ? qaBoard.addQaNote : undefined,
+    voteQaNote: can.takePart ? qaBoard.voteQaNote : undefined,
     discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
     closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
     reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
@@ -480,7 +484,7 @@ export function EditorCanvasHost() {
     clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
     // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
     // editing and running the round are the facilitator's, else any editor's.
-    answerQuiz: isReadOnly ? undefined : quiz.answerQuiz,
+    answerQuiz: can.takePart ? quiz.answerQuiz : undefined,
     startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
     lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
     revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
@@ -511,6 +515,11 @@ export function EditorCanvasHost() {
         activeTabLoaded={loadedTabIds.has(activeTab.id)}
         tabLocked={activeTabLocked}
         readOnly={isReadOnly}
+        participantPalette={participating && can.addContent}
+        takePart={can.takePart}
+        canMove={can.move}
+        canWriteText={can.writeText}
+        canResize={can.resize}
         documentName={documentName}
         tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
         tabBackgroundColor={backdrop.backgroundColor}
@@ -565,7 +574,7 @@ export function EditorCanvasHost() {
         // shoves it; their own client decides what to do with the request.
         onAvatarPush={broadcastAvatarPush}
         avatarShove={avatarShove}
-        onFireReaction={isReadOnly ? undefined : fireReaction}
+        onFireReaction={can.takePart ? fireReaction : undefined}
         // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
         // nothing, which makes it the same read-only act as following somebody,
         // and the person who spots the thing worth looking at is often not the
@@ -574,7 +583,7 @@ export function EditorCanvasHost() {
         // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
         // stop and listen". Undefined renders the face inert, which is what a
         // read-only surface already gets.
-        onPressFocusButton={runBlocked ? undefined : pressFocusButton}
+        onPressFocusButton={isReadOnly || runBlocked ? undefined : pressFocusButton}
         reactionBursts={reactionBursts}
         onReactionBurstDone={clearReactionBurst}
         laserTrails={laserTrailRows}
@@ -598,7 +607,13 @@ export function EditorCanvasHost() {
         // the palette, so it goes through the same setter — telemetry, the
         // selection clear, and the empty-canvas guard all included. Pressing it
         // again, while already in that mode, hands you back your previous one.
-        onPressModeButton={(element) => pressModeButton(element.mode ?? DEFAULT_BUTTON_MODE)}
+        // A read-only session presses only the modes it has (PARTICIPANT_CANVAS_TOOLS): a button set to the Eraser or
+        // Format Painter does nothing for it (docs/specs/013-workspace/share-roles.md).
+        onPressModeButton={(element) => {
+          const mode = element.mode ?? DEFAULT_BUTTON_MODE;
+          if (isReadOnly && !PARTICIPANT_CANVAS_TOOLS.includes(mode)) return;
+          pressModeButton(mode);
+        }}
         // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
         // see useBehaviourElements — the press resolves what to do from the
         // element and calls the tool that already exists.
@@ -628,8 +643,9 @@ export function EditorCanvasHost() {
         // Comment panels (docs/specs/012-collaboration/comment-pin.md) drive the SAME thread machinery the anchored
         // popover does — it is all keyed by element id already.
         commentSelfId={selfParticipant.id}
+        // Commenting is a Participant's too (docs/specs/013-workspace/share-roles.md); a Viewer only reads.
         commentPanelActions={
-          isReadOnly
+          !can.takePart
             ? undefined
             : {
                 add: (id, text, mentions) => addComment(id, text, undefined, mentions),
@@ -651,6 +667,7 @@ export function EditorCanvasHost() {
                 reopen: reopenAction,
               }
         }
+        // Everyone sees what a Picker holds; only an Editor spins it (ElementFaceRouter, share-roles.md).
         onRollPicker={pickerFor}
         // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): resolved to a NAME here, where presence lives,
         // so the pill doesn't have to look one up.
@@ -742,6 +759,7 @@ export function EditorCanvasHost() {
         layers={layers}
         activeLayerId={activeLayerId}
         layerCounts={layerCounts}
+        sessionTools={sessionTools}
         pollPanel={
           // Results are for the host and for anyone who has responded
           // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
@@ -760,16 +778,10 @@ export function EditorCanvasHost() {
               }
             : null
         }
-        pollPanelPosition={pollPanelPosition}
-        onMovePollPanel={(x, y) => setPollPanelPosition({ x, y })}
-        onResetPollPanel={() => setPollPanelPosition(null)}
         userPreferences={userPreferences}
         onToggleRecentExclusion={toggleRecentExclusion}
         favouriteIds={favouriteIds}
         onToggleFavourite={toggleFavourite}
-        votePanelPosition={votePanelPosition}
-        onMoveVotePanel={(x, y) => setVotePanelPosition({ x, y })}
-        onResetVotePanel={() => setVotePanelPosition(null)}
         avatarPanelPosition={avatarPanelPosition}
         laserPanelPosition={laserPanelPosition}
         spotlightPanelPosition={spotlightPanelPosition}

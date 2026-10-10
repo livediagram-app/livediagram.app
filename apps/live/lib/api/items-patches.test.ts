@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_BULK_MAX } from '@livediagram/items';
 import { __setOfflineBackend } from '../offline/offline-store';
 import { memBackend } from '../offline/offline-test-utils';
-import { writeItem } from './items';
+import { ItemWritePartlyLanded, writeItem } from './items';
 
 // Blueprint item-store.md "Editor slice": a write of many patches goes to /items/patches in batches of
 // ITEM_BULK_MAX, its answers folded into one.
@@ -55,5 +55,45 @@ describe('writeItem tally', () => {
     expect(url).toContain('/documents/doc-cloud/items/tally');
     expect(JSON.parse(String(init.body))).toEqual({ items: [{ id: 'i1', votes: { p: 2 } }] });
     expect(answer.rev).toBe(3);
+  });
+});
+
+// A many-item change refused after part of it landed (blueprint item-store.md "Interfaces and contracts: REST"):
+// the part that landed comes back with the failure, so the editor keeps it and can undo it.
+describe('writeItem patches refused part way', () => {
+  const patches = Array.from({ length: ITEM_BULK_MAX + 2 }, (_, n) => ({
+    id: `i${n}`,
+    patch: { set: { status: 'trash' } },
+  }));
+
+  it('throws ItemWritePartlyLanded with the earlier batches and the refused one’s landed items', async () => {
+    let call = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init: RequestInit) => {
+        call += 1;
+        const { items } = JSON.parse(String(init.body)) as { items: { id: string }[] };
+        if (call === 1) return Response.json({ items: items.map((i) => ({ id: i.id })), rev: 4 });
+        return Response.json(
+          { error: 'item_busy', items: [{ id: items[0]!.id }], rev: 5 },
+          { status: 409 },
+        );
+      }),
+    );
+    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch((e) => e);
+    expect(failure).toBeInstanceOf(ItemWritePartlyLanded);
+    expect(failure.code).toBe('item_busy');
+    expect(failure.landed.upserts).toHaveLength(ITEM_BULK_MAX + 1);
+    expect(failure.landed.rev).toBe(5);
+  });
+
+  it('throws the plain refusal when nothing landed', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ error: 'item_busy' }, { status: 409 })),
+    );
+    const failure = await writeItem(scope, { kind: 'patches', patches }, by).catch((e) => e);
+    expect(failure).not.toBeInstanceOf(ItemWritePartlyLanded);
+    expect(failure.code).toBe('item_busy');
   });
 });

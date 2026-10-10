@@ -137,6 +137,10 @@ create refused for its **placement** (`team_forbidden`, `folder_not_found`,
 `folder_scope_mismatch`, `placement_invalid`, see
 [Folders → Placement on create](../013-workspace/folders.md#placement-on-create)) will not clear on
 a retry, so the card says why and offers **Choose another place** instead.
+On `/new`, **Retry** re-runs the same create under the same document and tab
+ids it first tried: a create that reached the server but whose answer was lost
+is then taken as the re-commit of an id the caller already owns, never a second
+document.
 
 The distinction is made at every call site that can fail this way —
 the document load and the share-link resolve in `useIdentityBootstrap`,
@@ -407,8 +411,10 @@ sign-in / theme banners (yielding to the sign-in one) and hides while a draw
 tool is armed or Quick Start is open, and in Illustrate mode (an empty page
 invites a layout in its own title bar, [Infographic pages](illustrate-pages.md)). Editors get a **Quick Start** button on
 it; viewers get a passive "nothing here yet" line. **On a phone** (below `sm`) it is a slim
-one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button, riding above the
-bottom-right cluster rather than over it.
+one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button. On every
+viewport it rides **above the bottom-right cluster** rather than in its row: the cluster carries
+the [Session strip](../012-collaboration/session-tools.md#the-session-strip), which reaches the
+banner's centred slot on a laptop-width screen.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via
@@ -462,6 +468,14 @@ default document name) without walking the wizard:
     content under that flag, and React then swaps in the opening screen at
     hydration (detected pre-paint in a layout effect, so the trees always
     match).
+- **Where these links store the document**: the default for who is creating
+  ([Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating),
+  `resolveBypassLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a
+  Local only document, created without waiting for identity at all
+  ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
+  a signed-in person's create still waits for auth to settle. A placement param
+  (`folder` / `team`) names a server place, so it makes the create a cloud one
+  whoever is creating.
 - **`/new?template=<kind>`** — the same bypass for a named template: the
   page commits that template (Default theme, the template's default name)
   the moment identity resolves and lands on the editor, with the same

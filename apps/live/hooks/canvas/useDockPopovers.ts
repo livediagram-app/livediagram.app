@@ -23,6 +23,10 @@ export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'card-types': 544,
   // NewCardPanel's `w-72`.
   'plan-new-card': 288,
+  // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
+  'session-timer': 288,
+  'session-vote': 288,
+  'session-poll': 288,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
@@ -35,7 +39,11 @@ export type DockPanel =
   | 'card-types'
   | 'plan-trash'
   | 'plan-cards'
-  | 'plan-new-card';
+  | 'plan-new-card'
+  // The Session strip's Timer, Vote and Poll (docs/specs/012-collaboration/session-tools.md "The Session strip").
+  | 'session-timer'
+  | 'session-vote'
+  | 'session-poll';
 
 export type { DockAnchor };
 
@@ -49,6 +57,9 @@ function trackDockPanelOpened(id: DockPanel): void {
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
   else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
   else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');
+  else if (id === 'session-timer') track('UI', 'Opened', 'SessionTimer');
+  else if (id === 'session-vote') track('UI', 'Opened', 'SessionVote');
+  else if (id === 'session-poll') track('UI', 'Opened', 'SessionPoll');
 }
 
 export function useDockPopovers(mainRef: Ref<HTMLElement>) {

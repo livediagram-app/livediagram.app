@@ -12,13 +12,19 @@ import { searchTechIcons } from '@/lib/tech-icons';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
-import { withTileActionPreamble } from './palette-tile-actions';
+import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { useLogoMarkerTiles } from './PaletteLogoTab';
-import { coveredPaletteCategories, paletteCategoriesFor } from './palette-layouts';
-import { useBoardCovering } from '@/hooks/plan/plan-cover-store';
+import {
+  coveredPaletteCategories,
+  paletteCategoriesFor,
+  participantPaletteCategories,
+  PARTICIPANT_CANVAS_TOOLS,
+} from './palette-layouts';
+import { useBoardFillingTab } from '@/hooks/plan/plan-cover-store';
+import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -44,7 +50,11 @@ type Deps = Pick<
   | 'logoPages'
   | 'onTileUsed'
 > &
-  PaletteAddHandlers;
+  PaletteAddHandlers & {
+    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
+    // modes only.
+    participant?: boolean;
+  };
 
 export function usePaletteCatalogue({
   canvasTool,
@@ -84,6 +94,7 @@ export function usePaletteCatalogue({
   esBoardControls,
   logoPages,
   onTileUsed,
+  participant = false,
 }: Deps) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
@@ -193,8 +204,11 @@ export function usePaletteCatalogue({
       cancelDraw: onCancelDraw,
       hasImage: !!onAddImage,
     },
-    () => {
+    (action, args) => {
       if (canvasTool === 'avatar') onExitAvatarMode?.();
+      // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
+      // plan-board.md "The palette follows what fills the screen"), so the tool is ready where it lands.
+      if (getMaximisedPlanId() !== null && restoresMaximised(action, args)) restorePlanElement();
     },
   );
   // Icon-picker search query (Icons tab). Filters the catalogue
@@ -234,17 +248,19 @@ export function usePaletteCatalogue({
   // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
   // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  // A board covering the canvas (maximised or filling its tab), not a view: cards land only on a board.
-  const boardCovering = useBoardCovering();
+  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
+  const boardFillingTab = useBoardFillingTab();
   // Logo only while the tab has a logo page (docs/specs/007-editor/logo-pages.md), its markers
   // added as tiles in this person's colours and widths (logoMarkerTiles).
   const markers = useLogoMarkerTiles(!!logoPages);
-  // While a Plan board covers the canvas, only Cards (coveredPaletteCategories); a maximised view keeps the palette.
-  const categories = boardCovering
-    ? coveredPaletteCategories()
-    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
-        .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
-        .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
+  // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
+  const categories = participant
+    ? participantPaletteCategories(editorMode, !!esBoard)
+    : boardFillingTab
+      ? coveredPaletteCategories()
+      : paletteCategoriesFor(editorMode, { esBoard: !!esBoard, logoPages: !!logoPages })
+          .filter((c) => hasLibraryShapes || c.id !== 'my-shapes')
+          .map((c) => (c.id === 'logo' ? { ...c, tiles: [...(c.tiles ?? []), ...markers] } : c));
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -270,12 +286,15 @@ export function usePaletteCatalogue({
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current
   // tool selected (see canvas-tool-options).
-  const canvasToolOptions = buildCanvasToolOptions({
+  const allCanvasToolOptions = buildCanvasToolOptions({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
     planMode: editorMode === 'plan',
   });
+  const canvasToolOptions = participant
+    ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))
+    : allCanvasToolOptions;
   const onCanvasToolChange = (id: string) => {
     if (id === 'zen') onToggleZen?.();
     else onSetCanvasTool(id as CanvasTool);

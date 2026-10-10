@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { Portal } from '@livediagram/ui';
-import { TourPopover, type TourCardCopy } from './TourPopover';
+import { TourPopover, type TourCardCopy, type TourWelcomeChoice } from './TourPopover';
 import type { TourEngine } from './useTourEngine';
 
 // What a running tour draws (docs/specs/007-editor/editor-tour.md "The steps"), shared by every tour:
@@ -13,6 +13,7 @@ export function TourStage<Api>({
   ariaPrefix,
   copy,
   welcomeArt,
+  welcomeChoices,
   layer = 'overlay',
   pad = 6,
 }: {
@@ -21,6 +22,8 @@ export function TourStage<Api>({
   ariaPrefix?: string;
   copy?: Partial<TourCardCopy>;
   welcomeArt?: ReactNode;
+  // The welcome card's ways in, when it has more than one (the Plan tour's tracks).
+  welcomeChoices?: readonly TourWelcomeChoice[];
   // 'modal' draws the ring over a dialog, for a tour of one (the card type editor's Show Me): just above the
   // dialog, just below the menus its controls open (AnchoredPopover), which stay lit.
   layer?: 'overlay' | 'modal';
@@ -76,6 +79,7 @@ export function TourStage<Api>({
         {...(ariaPrefix ? { ariaPrefix } : {})}
         {...(copy ? { copy } : {})}
         {...(welcomeArt ? { welcomeArt } : {})}
+        {...(welcomeChoices ? { welcomeChoices } : {})}
         onBack={stepIndex > (engine.hasWelcome ? 1 : 0) && !step.card ? engine.back : undefined}
         onNext={engine.next}
         onSkip={engine.skip}

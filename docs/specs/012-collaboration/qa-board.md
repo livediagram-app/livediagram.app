@@ -17,7 +17,7 @@ wrong shape in three ways:
   read top-down continuously, while people are still voting. Stickies don't
   sort themselves.
 - **The audience isn't editing.** The people asking questions are usually on a
-  view link ([Per-tab storage](../006-document/per-tab-storage.md)). Every other document write needs edit rights.
+  Participant link ([Share roles](../013-workspace/share-roles.md); a Viewer only looks) ([Per-tab storage](../006-document/per-tab-storage.md)). Every other document write needs edit rights.
 - **It has a lifecycle.** A note goes from asked, to being discussed, to done,
   and a done note should get out of the way without being deleted: the record
   of what the room covered is part of the output.
@@ -49,14 +49,14 @@ note.
 
 ## What each person can do
 
-| Action                      | Who                                             |
-| --------------------------- | ----------------------------------------------- |
-| Add a note                  | Anyone in the session, **including view links** |
-| Upvote / withdraw an upvote | Anyone in the session, including view links     |
-| Pick the note to discuss    | The facilitator, else any editor                |
-| Mark done / reopen          | The facilitator, else any editor                |
-| Remove a note (moderation)  | The facilitator, else any editor                |
-| Empty the board             | The facilitator, else any editor                |
+| Action                      | Who                                      |
+| --------------------------- | ---------------------------------------- |
+| Add a note                  | Participants and editors; never a Viewer |
+| Upvote / withdraw an upvote | Participants and editors; never a Viewer |
+| Pick the note to discuss    | The facilitator, else any editor         |
+| Mark done / reopen          | The facilitator, else any editor         |
+| Remove a note (moderation)  | The facilitator, else any editor         |
+| Empty the board             | The facilitator, else any editor         |
 
 "The facilitator, else any editor" is [Facilitator](facilitator.md)'s rule: while somebody holds the
 baton the controls are theirs; when nobody does, any editor can run the board.
@@ -105,9 +105,9 @@ from every role, goes through one endpoint:
 
 `POST /api/documents/<id>/tabs/<tabId>/qa` with `{ elementId, action }`.
 
-- Participant actions (`add`, `vote`) pass `gateRead`; the rest need
+- Participant actions (`add`, `vote`) pass `gateParticipate`; the rest need
   `gateEdit`. Same shape as the comment endpoint, which is the precedent for a
-  view-role write ([API app](../015-api/api.md)).
+  Participant's REST write ([API app](../015-api/api.md)).
 - The route checks access and derives the actor (voter id, server-stamped
   author), then hands the write to **the document's room** (`POST
 https://room/qa` on the Durable Object).
@@ -198,7 +198,11 @@ theme's text colour where it doesn't (a pale yellow stroke on a cream card).
   (FLIP), and a row that climbs gets a brief glow. The top note wears a small
   crown-rank badge. Motion is off under `prefers-reduced-motion`.
 - **Adding.** A field at the foot with the Anonymous toggle, Enter to post. A
-  freshly posted note drops in with a short settle animation.
+  freshly posted note drops in with a short settle animation. At 200 notes
+  (`QA_MAX_NOTES`) the field reads **Board is full** and is off, and a post
+  refused at the cap keeps its draft. The toggle is a switch named
+  "Anonymous" in both states, its state in `aria-checked`; the visible text
+  still says "As Sam" while off.
 - **Done notes** collapse into a folded "Discussed · N" drawer below the live
   list, most recent first, counts frozen, struck through lightly. The
   facilitator can reopen one from there.

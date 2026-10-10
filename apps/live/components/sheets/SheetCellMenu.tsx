@@ -1,34 +1,51 @@
 'use client';
 
-// The cell menu (docs/specs/029-sheets/sheet.md "Cell menu"), shaped like the element menu: Cut, Copy and Paste as
-// icon buttons along its top, then the rest in categories that open one at a time, each a list of option rows.
-// Someone who may only view gets Copy alone.
-import { useState, type ReactNode } from 'react';
-import { OptionRows } from '@/components/plan/OptionRows';
+// The cell menu (docs/specs/029-sheets/sheet.md "Cell menu"), built from the editor's menu parts as the Explorer's
+// document menu is: a header naming the selection, the clipboard verbs as a toolbar, then icon-left rows in groups,
+// each named for what it does to this selection, with the rarer verbs in side flyouts. Someone who may only view gets
+// the header and Copy alone.
+import { useState } from 'react';
+import { unmergeRange } from '@livediagram/sheets';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { CopyIcon, CutIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
-import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { MenuToolButton, MenuToolbar } from '@/components/primitives/MenuTiles';
+import { keyLabel } from '@/lib/key-label';
 import { useSheetController } from './sheet-controller';
+import { cellMenuLabels } from './sheet-cell-menu-labels';
 import { SheetMergeConfirm } from './SheetMergeConfirm';
 import type { SheetActions } from './useSheetActions';
 import { useSheetClipboard } from './useSheetClipboard';
 import {
   BarChartIcon,
+  ClearContentsIcon,
   ClearFormatIcon,
+  DeleteIcon,
+  FormattingIcon,
+  HideIcon,
+  InsertColumnLeftIcon,
+  InsertColumnRightIcon,
+  InsertRowAboveIcon,
+  InsertRowBelowIcon,
   LineChartIcon,
-  MergeIcon,
+  MergeCellsIcon,
+  PasteValuesIcon,
   PieChartIcon,
+  SortAToZIcon,
   SortIcon,
+  SortZToAIcon,
+  UnmergeCellsIcon,
 } from './sheet-icons';
 
+// A text glyph in a row's icon slot (the row and column header menus' arrows).
 export const Glyph = ({ t }: { t: string }) => (
   <span aria-hidden className="w-4 text-center text-[13px]">
     {t}
   </span>
 );
 
-type Section = 'insert' | 'delete' | 'paste' | 'clear' | 'cells' | 'chart';
+type Flyout = 'sort' | 'shift' | 'hide' | 'paste' | 'chart';
 
 export function SheetCellMenu({
   at,
@@ -41,12 +58,14 @@ export function SheetCellMenu({
 }) {
   const c = useSheetController();
   const clip = useSheetClipboard();
-  const [open, setOpen] = useState<Section | null>(null);
+  const [open, setOpen] = useState<Flyout | null>(null);
   const [askMerge, setAskMerge] = useState(false);
-  const section = (id: Section) => ({
+  const range = c.selection.ranges[c.selection.ranges.length - 1]!;
+  const words = cellMenuLabels(range);
+  const flyout = (id: Flyout) => ({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
-    flush: true,
+    plain: true,
   });
   // Every verb runs, then the menu gets out of the way, as the element menu's do.
   const act = (fn: () => void) => () => {
@@ -62,174 +81,196 @@ export function SheetCellMenu({
     });
     if (!asked) onClose();
   };
+  // Merge for a selection of more than one cell; Unmerge where it touches a merge.
+  // A cheap test: building the merge would walk every cell of a large selection on each render.
+  const canMerge = c.canEdit && (range.r1 !== range.r2 || range.c1 !== range.c2);
+  const canUnmerge = c.canEdit && unmergeRange(c.sheet, range) !== null;
+  const row = (label: string, icon: React.ReactNode, run: () => void) => (
+    <MenuActionRow plain label={label} icon={icon} onClick={run} />
+  );
   return (
     <ContextMenu position={at} label="Cell menu" onClose={onClose} flush>
+      <MenuHeader
+        title={words.title}
+        aside={<span className="text-[11px] text-slate-400">{words.count}</span>}
+      />
       <MenuToolbar>
         {c.canEdit ? (
           <MenuToolButton
             icon={<CutIcon />}
             label="Cut"
-            description="Cut the selected cells."
+            description={`Cut the selected cells (${keyLabel('Mod-X')}).`}
             onClick={act(() => clip.copyNow(true))}
           />
         ) : null}
         <MenuToolButton
           icon={<CopyIcon />}
           label="Copy"
-          description="Copy the selected cells."
+          description={`Copy the selected cells (${keyLabel('Mod-C')}).`}
           onClick={act(() => clip.copyNow(false))}
         />
         {c.canEdit ? (
-          <MenuToolButton
-            icon={<PasteMenuIcon />}
-            label="Paste"
-            description="Paste at the active cell."
-            onClick={act(() => void clip.pasteNow())}
-          />
+          <>
+            <MenuToolButton
+              icon={<PasteMenuIcon />}
+              label="Paste"
+              description={`Paste at the active cell (${keyLabel('Mod-V')}).`}
+              onClick={act(() => void clip.pasteNow())}
+            />
+            <MenuToolButton
+              icon={<PasteValuesIcon />}
+              label="Paste Values"
+              description={`Paste the values only: no formulas, no formats (${keyLabel('Shift-Mod-V')}).`}
+              onClick={act(() => void clip.pasteSpecial('values'))}
+            />
+            <MenuToolButton
+              icon={<ClearContentsIcon />}
+              label="Clear Contents"
+              description="Clear what the cells hold, keeping their formats (Delete)."
+              onClick={act(() => actions.clear('inputs'))}
+            />
+            <MenuToolButton
+              icon={<ClearFormatIcon />}
+              label="Clear Formatting"
+              description="Clear the cells' formats, keeping what they hold."
+              onClick={act(() => actions.clear('formats'))}
+            />
+          </>
         ) : null}
       </MenuToolbar>
-      {c.canEdit ? (
-        askMerge ? (
-          <SheetMergeConfirm
-            range={c.selection.ranges[c.selection.ranges.length - 1]!}
-            onCancel={() => setAskMerge(false)}
-            onMerge={act(() => {
-              setAskMerge(false);
-              actions.merge('all', () => true);
-            })}
-          />
-        ) : (
-          <>
-            <MenuAccordionSection title="Insert" icon={<Glyph t="+" />} {...section('insert')}>
-              <ActionRows
-                rows={[
-                  {
-                    label: 'Row Above',
-                    icon: <Glyph t="↥" />,
-                    run: act(() => actions.insert('r', 'before')),
-                  },
-                  {
-                    label: 'Column Left',
-                    icon: <Glyph t="↤" />,
-                    run: act(() => actions.insert('c', 'before')),
-                  },
-                  {
-                    label: 'Cells, Shift Right',
-                    icon: <Glyph t="→" />,
-                    run: act(() => actions.shift('insertRight')),
-                  },
-                  {
-                    label: 'Cells, Shift Down',
-                    icon: <Glyph t="↓" />,
-                    run: act(() => actions.shift('insertDown')),
-                  },
-                ]}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection title="Delete" icon={<Glyph t="−" />} {...section('delete')}>
-              <ActionRows
-                rows={[
-                  { label: 'Row', icon: <Glyph t="⇕" />, run: act(() => actions.remove('r')) },
-                  { label: 'Column', icon: <Glyph t="⇔" />, run: act(() => actions.remove('c')) },
-                  {
-                    label: 'Cells, Shift Left',
-                    icon: <Glyph t="←" />,
-                    run: act(() => actions.shift('deleteLeft')),
-                  },
-                  {
-                    label: 'Cells, Shift Up',
-                    icon: <Glyph t="↑" />,
-                    run: act(() => actions.shift('deleteUp')),
-                  },
-                ]}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection
-              title="Paste Special"
-              icon={<PasteMenuIcon />}
-              {...section('paste')}
-            >
-              <ActionRows
-                rows={[
-                  {
-                    label: 'Values Only',
-                    icon: <Glyph t="1" />,
-                    run: act(() => void clip.pasteSpecial('values')),
-                  },
-                  {
-                    label: 'Formatting Only',
-                    icon: <Glyph t="B" />,
-                    run: act(() => void clip.pasteSpecial('formats')),
-                  },
-                ]}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection title="Clear" icon={<ClearFormatIcon />} {...section('clear')}>
-              <ActionRows
-                rows={[
-                  {
-                    label: 'Everything',
-                    icon: <Glyph t="⌫" />,
-                    run: act(() => actions.clear('all')),
-                  },
-                  {
-                    label: 'Formatting',
-                    icon: <ClearFormatIcon />,
-                    run: act(() => actions.clear('formats')),
-                  },
-                ]}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection title="Cells" icon={<MergeIcon />} {...section('cells')}>
-              <ActionRows
-                rows={[
-                  {
-                    label: 'Sort Range…',
-                    icon: <SortIcon />,
-                    run: () => c.setMenu({ kind: 'sort' }),
-                  },
-                  { label: 'Merge Cells', icon: <MergeIcon />, run: merge },
-                ]}
-              />
-            </MenuAccordionSection>
-            <MenuAccordionSection title="Chart" icon={<BarChartIcon />} {...section('chart')}>
-              <ActionRows
-                rows={[
-                  {
-                    label: 'Bar',
-                    icon: <BarChartIcon />,
-                    run: act(() => actions.insertChart('bar-chart')),
-                  },
-                  {
-                    label: 'Line',
-                    icon: <LineChartIcon />,
-                    run: act(() => actions.insertChart('line-chart')),
-                  },
-                  {
-                    label: 'Pie',
-                    icon: <PieChartIcon />,
-                    run: act(() => actions.insertChart('pie-chart')),
-                  },
-                ]}
-              />
-            </MenuAccordionSection>
-          </>
-        )
-      ) : null}
+      {!c.canShape ? null : askMerge ? (
+        <SheetMergeConfirm
+          range={range}
+          onCancel={() => setAskMerge(false)}
+          onMerge={act(() => {
+            setAskMerge(false);
+            actions.merge('all', () => true);
+          })}
+        />
+      ) : (
+        <>
+          {row(
+            words.insertAbove,
+            <InsertRowAboveIcon />,
+            act(() => actions.insert('r', 'before')),
+          )}
+          {row(
+            words.insertBelow,
+            <InsertRowBelowIcon />,
+            act(() => actions.insert('r', 'after')),
+          )}
+          {row(
+            words.insertLeft,
+            <InsertColumnLeftIcon />,
+            act(() => actions.insert('c', 'before')),
+          )}
+          {row(
+            words.insertRight,
+            <InsertColumnRightIcon />,
+            act(() => actions.insert('c', 'after')),
+          )}
+          <MenuGroupSeparator />
+          {row(
+            words.deleteRows,
+            <DeleteIcon />,
+            act(() => actions.remove('r')),
+          )}
+          {row(
+            words.deleteCols,
+            <DeleteIcon />,
+            act(() => actions.remove('c')),
+          )}
+          {canMerge ? row('Merge Cells', <MergeCellsIcon />, merge) : null}
+          {canUnmerge
+            ? row(
+                'Unmerge Cells',
+                <UnmergeCellsIcon />,
+                act(() => actions.unmerge()),
+              )
+            : null}
+          <MenuGroupSeparator />
+          <MenuFlyoutSection title="Sort" icon={<SortIcon />} {...flyout('sort')}>
+            {row(
+              'Sort A to Z',
+              <SortAToZIcon />,
+              act(() => actions.sortColumn(true)),
+            )}
+            {row(
+              'Sort Z to A',
+              <SortZToAIcon />,
+              act(() => actions.sortColumn(false)),
+            )}
+            {row('Custom Sort…', <SortIcon />, () => c.setMenu({ kind: 'sort' }))}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection
+            title="Shift Cells"
+            icon={<InsertColumnRightIcon />}
+            {...flyout('shift')}
+          >
+            {row(
+              'Insert Cells, Shift Right',
+              <Glyph t="→" />,
+              act(() => actions.shift('insertRight')),
+            )}
+            {row(
+              'Insert Cells, Shift Down',
+              <Glyph t="↓" />,
+              act(() => actions.shift('insertDown')),
+            )}
+            {row(
+              'Delete Cells, Shift Left',
+              <Glyph t="←" />,
+              act(() => actions.shift('deleteLeft')),
+            )}
+            {row(
+              'Delete Cells, Shift Up',
+              <Glyph t="↑" />,
+              act(() => actions.shift('deleteUp')),
+            )}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection title="Hide" icon={<HideIcon />} {...flyout('hide')}>
+            {row(
+              words.hideRows,
+              <HideIcon />,
+              act(() => actions.hide('r', true)),
+            )}
+            {row(
+              words.hideCols,
+              <HideIcon />,
+              act(() => actions.hide('c', true)),
+            )}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection title="Paste Special" icon={<PasteMenuIcon />} {...flyout('paste')}>
+            {row(
+              'Values Only',
+              <PasteValuesIcon />,
+              act(() => void clip.pasteSpecial('values')),
+            )}
+            {row(
+              'Formatting Only',
+              <FormattingIcon />,
+              act(() => void clip.pasteSpecial('formats')),
+            )}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection title="Insert Chart" icon={<BarChartIcon />} {...flyout('chart')}>
+            {row(
+              'Bar Chart',
+              <BarChartIcon />,
+              act(() => actions.insertChart('bar-chart')),
+            )}
+            {row(
+              'Line Chart',
+              <LineChartIcon />,
+              act(() => actions.insertChart('line-chart')),
+            )}
+            {row(
+              'Pie Chart',
+              <PieChartIcon />,
+              act(() => actions.insertChart('pie-chart')),
+            )}
+          </MenuFlyoutSection>
+        </>
+      )}
     </ContextMenu>
-  );
-}
-
-// A section's actions as an option list (docs/specs/026-plan/plan-board.md "Option lists"): a row each, its glyph then
-// its name, no marker; inside the menu they are its items.
-function ActionRows({ rows }: { rows: { label: string; icon: ReactNode; run: () => void }[] }) {
-  return (
-    <OptionRows
-      kind="action"
-      label="Actions"
-      className="mx-3 my-1.5"
-      rows={rows.map((r) => ({ id: r.label, label: r.label, icon: r.icon }))}
-      onPick={(id) => rows.find((r) => r.label === id)?.run()}
-    />
   );
 }

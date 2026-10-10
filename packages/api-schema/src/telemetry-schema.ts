@@ -107,7 +107,7 @@ export const TELEMETRY_CATEGORIES = [
   // more followed to the Recent page) | 'WhatHappened'; 'Loaded' with 'Retry' (a failed read
   // retried). Never a document name or a person.
   'Home',
-  // Activity page (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox of open
+  // Inbox (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox of open
   // actions, Plan cards + comment threads. 'Opened' once per visit; 'Selected' with
   // `type` 'Action' | 'Thread' | 'Card' on a row click (which kind of row sends
   // people back into a document); 'Loaded'/'Retry' when a failed read is
@@ -264,7 +264,7 @@ export const TELEMETRY_ACTIONS = [
   'Present',
   'Held',
   // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').
+  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' | 'Lint').
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.

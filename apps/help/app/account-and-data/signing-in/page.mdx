@@ -22,7 +22,7 @@ There are two routes:
 
 Where Google sign-in is enabled, as it is on livediagram.app, both pages also offer **Continue with Google** above the email field. If you try to sign in with an email that has no account yet, you are taken to sign-up with that email already filled in.
 
-Accounts are free, with no paid tier and nothing to upgrade. After signing in, a returning user lands on the [Explorer](/explorer) to see their existing documents, while a brand-new sign-up lands on the new-document flow to start building. If you were sent to sign in from somewhere in the app, you go back there instead.
+Accounts are free, with no paid tier and nothing to upgrade. After signing in from the sign-in page you land on the [Explorer](/explorer) to see your documents; after signing up you land on the new-document flow to start building. If you used the **Sign in** link in the editor or the Explorer, you go back to where you were instead.
 
 <Figure
   caption="The sign-in card: Continue with Google where it is enabled, or your email and a 6-digit code."
@@ -31,11 +31,11 @@ Accounts are free, with no paid tier and nothing to upgrade. After signing in, a
   <SignInCard />
 </Figure>
 
-Once you are signed in, your picture (or initials) replaces the **Sign in** link. Click it for the account menu: **Account** opens the Account category of Settings, where your name, email, profile picture switch, [Trash](/help/account-and-data/trash/) and **Delete Account** live, and **Sign out** signs you out and returns you to the home page. Settings shows the name and email your account was created with; it does not edit them.
+Once you are signed in, your picture (or initial) and first name replace the **Sign in** link. Click it for the account menu: **Account** opens the Account category of Settings, where your name, email, profile picture switch, [Google Drive](/help/account-and-data/google-drive/) connection, [Trash](/help/account-and-data/trash/) and **Delete Account** live, and **Sign out** signs you out and returns you to the home page. Settings shows the name and email your account was created with; it does not edit them.
 
 ## Your profile picture
 
-When you sign in with Google, your Google profile picture becomes your avatar. If you uploaded a picture to your account yourself, that one is used instead. If you have no picture, or it cannot load, you see your initials, as before.
+When you sign in with Google, your Google profile picture becomes your avatar. If your account already has a picture of its own, that one is used instead (livediagram itself has no upload). If you have no picture, or it cannot load, you see your initial.
 
 **Who sees it.** You always see your picture: on the account button at the top right and on your card in **Settings > Account**. People you collaborate with who are signed in see it too: on your presence avatar, your cursor, your comments and your team's member list. People who open your share links without signing in always see your initials.
 
@@ -49,17 +49,19 @@ Sign-in is an optional capability of livediagram. On self-hosted instances where
 
 ## Your guest documents come with you
 
-The best part of signing up is that you keep the work you have already done. When you create an account, the documents you built as a guest migrate into it automatically, so nothing is lost.
+The best part of signing up is that you keep the work you have already done. When you create an account, everything you built as a guest comes with it, so nothing is lost.
 
-The migration moves your guest content, including your documents, folders, shared-link records, images, and saved preferences, from your per-browser guest id over to your new account. From then on, that content is owned by your account and follows you to any browser or device where you sign in.
+Before you sign in, new documents start [offline](/help/privacy-and-security/offline-mode/), in this browser only. When you sign in, a **Move Local Documents to Your Account?** dialog lists every Local only document in this browser: every one is ticked, so press **Move** to bring them all across, or untick any you would rather keep in this browser. **Not Now** leaves them offline, and we only ask again when there are more. If one fails to move, it stays in this browser and a follow-up dialog names it. You can also move one any time with **Sync Document** in the Explorer or the Share dialog. Offline documents belong to the browser, not to an account, so after you sign out they are offered to whoever signs in next on it.
+
+Anything you already put on the server as a guest (a document you shared, synced, or saved to **livediagram**) moves automatically. The migration moves your guest content, including those documents, folders, your Shared with me list, favourites, images, custom themes, shape libraries and saved preferences, from your per-browser guest id over to your new account. From then on, that content is owned by your account and follows you to any browser or device where you sign in.
 
 <Figure caption="On sign-up, your guest documents move from the per-browser id over to your new account.">
   <MigrateOnSignUp />
 </Figure>
 
-The process runs the first time you are signed in in a browser that holds guest work, and is safe to repeat: a second attempt simply moves nothing. Once your account syncs everything, the Explorer's sign-in nudge disappears, because there is nothing left to prompt you about.
+The process runs the first time you are signed in in a browser that holds guest work, and is safe to repeat: a second attempt simply moves nothing. Once you are signed in, the Explorer's sign-in nudge disappears.
 
-Only the guest id in **this** browser moves. Guest documents you made in a different browser or on another device belong to that browser's guest id: open livediagram there and sign in with the same account to bring them across too. [Offline documents](/help/privacy-and-security/offline-mode/) stay in the browser either way, because they were never on the server.
+Only the guest id in **this** browser moves. Guest documents you made in a different browser or on another device belong to that browser's guest id: open livediagram there and sign in with the same account to bring them across too. [Offline documents](/help/privacy-and-security/offline-mode/) stay in their browser until you move them, because they were never on the server.
 
 <Tip>
   Build freely as a guest, then sign up when you want your documents everywhere. The hand-off is

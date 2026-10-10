@@ -106,7 +106,8 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         statuses={statuses}
         people={ctx.people}
         labels={allLabels}
-        canEdit={ctx.canEdit}
+        canEdit={ctx.canEditCards}
+        canRetire={ctx.canEdit}
         onSave={(field, value) =>
           ctx.patchItem(
             item.id,

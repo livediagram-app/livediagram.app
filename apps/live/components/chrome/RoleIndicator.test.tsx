@@ -20,6 +20,15 @@ describe('roleOwnerLabel', () => {
 });
 
 describe('RolePill', () => {
+  // docs/specs/013-workspace/share-roles.md: a Participant's pill is static and says so.
+  it('reads Participating, with no toggle, for a Participant', () => {
+    render(<RolePill role="participate" ownerName="Ada" isSelf={false} />);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(document.querySelector('[data-role-pill="participate"]')?.textContent).toContain(
+      'Participating',
+    );
+  });
+
   it('is a toggle for someone who may edit, named by its role then its owner', () => {
     const onToggle = vi.fn();
     render(<RolePill role="edit" ownerName="Ada" isSelf onToggle={onToggle} />);

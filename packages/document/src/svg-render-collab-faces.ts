@@ -16,7 +16,9 @@ import {
   QUIZ_OPTION_HEIGHT,
   QUIZ_OPTION_WIDTH,
   quizCorrectKeys,
+  QUIZ_OPTION_LONG_TEXT,
   quizOptionCentres,
+  quizOptionTop,
   quizTally,
 } from './quiz';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -41,7 +43,24 @@ import {
   type Face,
 } from './svg-render-face-kit';
 
+// A Quiz answer in the export: its text size and line, its padding, and enough lines for the longest answer
+// (QUIZ_OPTION_MAX_TEXT characters at about 11 a line).
+const QUIZ_EXPORT_TEXT_PX = 12;
+const QUIZ_EXPORT_LINE_PX = 14;
+const QUIZ_EXPORT_PAD_X = 10;
+const QUIZ_EXPORT_PAD_Y = 8;
+const QUIZ_EXPORT_LINES_MAX = 9;
+// The revealed question's lines inside the disc: its width (the disc's chord near the middle) and line height.
+const QUIZ_EXPORT_QUESTION_WIDTH = 180;
+const QUIZ_EXPORT_QUESTION_LINE_PX = 16;
+
 // ── Collaborate panels (docs/specs/012-collaboration/estimate-card.md to /129, /137) ─────────────────────────
+
+// A decision driver's rhythm (DecisionFace): 11.5px on a snug line, 6px
+// between drivers, and at most this many lines each in an export.
+const DRIVER_LINES = 3;
+const DRIVER_LINE = 15.8;
+const DRIVER_PITCH = 21.8;
 
 export function svgCollabFace(
   el: Face,
@@ -104,30 +123,50 @@ export function svgCollabFace(
             opacity: 0.85,
           });
         const listTop = headerBottom + 29;
-        const body = drivers.length
-          ? drivers
-              .slice(0, 6)
-              .map((d, i) => {
-                const y = listTop + i * 21.8;
-                return (
-                  `<circle cx="${r2(PAD_X + 7)}" cy="${r2(y + 10)}" r="7" fill="${xmlEscape(hue)}" fill-opacity="0.16"/>` +
-                  text(PAD_X + 7, y + 13, '→', {
-                    size: 9,
-                    weight: 700,
-                    color: ink,
-                    anchor: 'middle',
-                  }) +
-                  text(PAD_X + 22, y + 12, d, { size: 11.5, color, opacity: 0.85 })
-                );
-              })
-              .join('')
-          : text(PAD_X, listTop + 12, '+ Add what drove this from the element’s menu.', {
-              size: 11,
-              color,
-              opacity: 0.5,
-            });
         const dateW = (el.decisionDate?.length ?? 0) * 6 + 32;
         const dateY = h - PAD_Y - 20;
+        // Each driver wraps (up to DRIVER_LINES) as the canvas's list does;
+        // the ones that do not fit above the date are counted in a "+N more"
+        // line rather than dropped without a word.
+        const listEnd = (el.decisionDate ? dateY : h - PAD_Y) - 6;
+        let body = '';
+        let y = listTop;
+        let shown = 0;
+        for (const d of drivers) {
+          const lines = wrapLines(d, w - PAD_X * 2 - 22, 11.5, DRIVER_LINES);
+          const itemH = DRIVER_PITCH + (lines.length - 1) * DRIVER_LINE;
+          const reserve = shown + 1 < drivers.length ? DRIVER_PITCH : 0;
+          if (y + itemH + reserve > listEnd) break;
+          body +=
+            `<circle cx="${r2(PAD_X + 7)}" cy="${r2(y + 10)}" r="7" fill="${xmlEscape(hue)}" fill-opacity="0.16"/>` +
+            text(PAD_X + 7, y + 13, '→', { size: 9, weight: 700, color: ink, anchor: 'middle' }) +
+            lines
+              .map((line, i) =>
+                text(PAD_X + 22, y + 12 + i * DRIVER_LINE, line, {
+                  size: 11.5,
+                  color,
+                  opacity: 0.85,
+                }),
+              )
+              .join('');
+          y += itemH;
+          shown += 1;
+        }
+        if (shown < drivers.length) {
+          body += text(PAD_X + 22, y + 12, `+${drivers.length - shown} more`, {
+            size: 11,
+            weight: 600,
+            color,
+            opacity: 0.55,
+          });
+        }
+        if (drivers.length === 0) {
+          body = text(PAD_X, listTop + 12, '+ Add what drove this from the element’s menu.', {
+            size: 11,
+            color,
+            opacity: 0.5,
+          });
+        }
         const date = el.decisionDate
           ? pill(PAD_X, dateY, dateW, 20, color, 0.07) +
             `<g transform="translate(${r2(PAD_X + 7)} ${r2(dateY + 4.5)}) scale(0.69)" fill="none" stroke="${xmlEscape(color)}" stroke-width="2.2" stroke-linecap="round"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3"/></g>` +
@@ -162,16 +201,24 @@ export function svgCollabFace(
         (el.strokeColor && stroke
           ? `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(stroke)}" stroke-width="3"/>`
           : `<circle cx="${c}" cy="${c}" r="${QUIZ_DISC_RADIUS}" fill="none" stroke="${xmlEscape(color)}" stroke-width="2" opacity="0.3"/>`);
+      // The question over two lines, as the revealed canvas shows it (QuizCentre), the second one ending in an
+      // ellipsis only when it runs on: never cut at a fixed count on one line.
+      const asked = wrapLines(title, QUIZ_EXPORT_QUESTION_WIDTH, 13, 2);
+      const askedTop = c - 6 - ((asked.length - 1) * QUIZ_EXPORT_QUESTION_LINE_PX) / 2;
       const centre = revealed
-        ? text(c, c - 6, title.length > 34 ? `${title.slice(0, 33)}…` : title, {
-            size: 13,
-            weight: 600,
-            color,
-            anchor: 'middle',
-          }) +
+        ? asked
+            .map((line, n) =>
+              text(c, askedTop + n * QUIZ_EXPORT_QUESTION_LINE_PX, line, {
+                size: 13,
+                weight: 600,
+                color,
+                anchor: 'middle',
+              }),
+            )
+            .join('') +
           text(
             c,
-            c + 16,
+            askedTop + (asked.length - 1) * QUIZ_EXPORT_QUESTION_LINE_PX + 22,
             `${quizCorrectKeys(el).length} of ${(el.responses ?? []).length} correct`,
             {
               size: 10,
@@ -187,18 +234,37 @@ export function svgCollabFace(
             .map((p, i) => {
               const right = i === el.quizCorrect;
               const x = p.x - QUIZ_OPTION_WIDTH / 2;
-              const y = p.y - QUIZ_OPTION_HEIGHT / 2;
+              // The whole answer, wrapped, the pill grown away from the disc as the canvas grows it
+              // (docs/specs/012-collaboration/quiz.md "Answers"): never cut short.
               const body = options[i] ?? '';
+              // A long answer a size smaller, as the canvas sets it.
+              const size = body.length > QUIZ_OPTION_LONG_TEXT ? 11 : QUIZ_EXPORT_TEXT_PX;
+              const lines = wrapLines(
+                body,
+                QUIZ_OPTION_WIDTH - QUIZ_EXPORT_PAD_X * 2,
+                size,
+                QUIZ_EXPORT_LINES_MAX,
+              );
+              const h = Math.max(
+                QUIZ_OPTION_HEIGHT,
+                lines.length * QUIZ_EXPORT_LINE_PX + QUIZ_EXPORT_PAD_Y * 2,
+              );
+              const y = quizOptionTop(p, h);
+              const firstBaseline = y + h / 2 - ((lines.length - 1) * QUIZ_EXPORT_LINE_PX) / 2 + 4;
               return (
-                `<rect x="${r2(x)}" y="${r2(y)}" width="${QUIZ_OPTION_WIDTH}" height="${QUIZ_OPTION_HEIGHT}" rx="14"` +
+                `<rect x="${r2(x)}" y="${r2(y)}" width="${QUIZ_OPTION_WIDTH}" height="${r2(h)}" rx="14"` +
                 ` fill="${right ? QUIZ_CORRECT_GREEN : xmlEscape(color)}" opacity="${right ? 1 : 0.1}"/>` +
-                text(p.x, p.y + 4, body.length > 18 ? `${body.slice(0, 17)}…` : body, {
-                  size: 12,
-                  weight: 600,
-                  color: right ? '#ffffff' : color,
-                  anchor: 'middle',
-                }) +
-                text(p.x, y + QUIZ_OPTION_HEIGHT - 6, String(tally[i] ?? 0), {
+                lines
+                  .map((line, n) =>
+                    text(p.x, firstBaseline + n * QUIZ_EXPORT_LINE_PX, line, {
+                      size,
+                      weight: 600,
+                      color: right ? '#ffffff' : color,
+                      anchor: 'middle',
+                    }),
+                  )
+                  .join('') +
+                text(p.x, y + h - 6, String(tally[i] ?? 0), {
                   size: 9,
                   color: right ? '#ffffff' : color,
                   anchor: 'middle',

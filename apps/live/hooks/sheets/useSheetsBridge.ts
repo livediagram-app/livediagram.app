@@ -31,7 +31,9 @@ export type SheetsBridge = {
   // The tab open now: where a placed Sheet's sheet is made.
   activeTabId: string;
   self: SheetPerson | null;
+  // Cells (Editor and Participant), and the Sheet's shape (Editor), docs/specs/013-workspace/share-roles.md.
   canEdit: boolean;
+  canShape: boolean;
   locale: string;
   peers: readonly SheetPeer[];
   pushUndo(step: ItemUndoStep): void;
@@ -67,6 +69,8 @@ export function useSheetsBridge(opts: {
   tabScope: string | null;
   self: SheetPerson | null;
   canEdit: boolean;
+  // Absent: as canEdit.
+  canShape?: boolean;
   peers: readonly SheetPeer[];
   pushUndo: (step: ItemUndoStep) => void;
   toast: (message: string) => void;
@@ -99,12 +103,14 @@ export function useSheetsBridge(opts: {
     };
   }, []);
   const { documentId, ownerId, shareCode, tabScope, self, canEdit, peers, activeTabId } = opts;
+  const canShape = opts.canShape ?? canEdit;
   const bridge = useMemo<SheetsBridge>(
     () => ({
       scope: { documentId, ownerId, shareCode, tabId: tabScope },
       activeTabId,
       self,
       canEdit,
+      canShape,
       locale: typeof navigator === 'undefined' ? 'en-GB' : navigator.language || 'en-GB',
       peers,
       pushUndo: (step) => pushUndo.current(step),
@@ -126,6 +132,7 @@ export function useSheetsBridge(opts: {
       activeTabId,
       self,
       canEdit,
+      canShape,
       peers,
       pushUndo,
       toast,

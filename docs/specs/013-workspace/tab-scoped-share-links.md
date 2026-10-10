@@ -57,10 +57,10 @@ A scoped visitor's copy of the document:
 - `presentation`: `null`. A slide deck spans tabs.
 - The document's name, owner name and colour stay: the visitor sees those when resolving any link.
 
-### Shared with you and Activity
+### Shared with you and the Inbox
 
-- `GET /api/shared` returns, for each row, a live code matching the visitor's recorded role **and scope** (`share_links.tab_id IS shared_with.tab_id`), never one broader than what they were given. It returns `tabId` too.
-- The Activity page ([Activity page](activity-page.md)) picks share codes the same way, and lists a scoped visitor's actions and threads on their tab only.
+- `GET /api/shared` returns, for each row, the link the visitor came in through while it is live and still matches their recorded role **and scope** (`share_links.tab_id IS shared_with.tab_id`), never one broader than what they were given ([Share roles](share-roles.md#share-links): a revoked link ends the visits it granted). It returns `tabId` too.
+- The [Inbox](inbox.md) picks share codes the same way, and lists a scoped visitor's actions and threads on their tab only.
 - Copy's `shared_with` leg honours the recorded scope, as the share-code leg does.
 
 ## Realtime

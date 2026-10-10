@@ -40,7 +40,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 
 The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a whiteboard marker's do ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"). Two rows:
 
-- **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one. The row ends with **More colours**, opening the [colour picker](../004-interface-design/colour-picker.md) with the soft standard colours, Custom colours and **+**.
+- **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one. The row ends with **More colours**, opening the [colour picker](../004-interface-design/colour-picker.md) with the soft standard colours, Custom colours and **Add a custom colour** (four coloured dots).
 - **Highlighter width**: **Thin** (8 px), **Medium** (14 px, the default), **Bold** (22 px), each drawn as a preview of its band.
 
 What the rows style, in the order the panel looks:

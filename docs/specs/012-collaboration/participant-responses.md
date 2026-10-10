@@ -84,6 +84,15 @@ Two consequences worth stating:
   shows its old answers with no avatar beside them, the same as an answer from
   somebody who has left.
 
+### Who counts
+
+A card that counts the room (the Done check's waiting list, the Estimate's
+"n/m answered") counts one entry per person who can answer
+(`answeringKeys` in `apps/live/lib/identity.ts`): presence rows are deduped by
+collab key, so your own second tab (same key, another socket) is one person,
+and view-link guests (role `view`, who can't cast) and agent rows are left out.
+Before this, a viewer or a second tab kept a Done check waiting forever.
+
 `ShapeElement.responsesRevealed?: boolean` is the shared "values are out" flag.
 The estimate card uses it; the temperature check deliberately does not.
 

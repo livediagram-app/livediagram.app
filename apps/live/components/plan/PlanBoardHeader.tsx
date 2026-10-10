@@ -20,8 +20,10 @@ import { lucideGlyph } from '@livediagram/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
 import { BoardTitle } from './BoardTitle';
+import { InMenuBox } from './menu-name-slot';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
+import { BAND_CONTROLS_CLASS, bandControlsProps } from './band-controls';
 
 // The shared six-dot grip (the article zone bar's), a board's move handle.
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -110,7 +112,9 @@ export function PlanBoardHeader({
     <div
       ref={headerRef}
       data-board-header
-      className="relative flex h-[52px] shrink-0 items-center gap-3 px-4"
+      // Maximised with a header band (MaximisedPlanLayer's --plan-band-*), it is as tall as the top row and starts
+      // after the menu; elsewhere 52 px and 16 px in.
+      className="relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4"
       style={{ color: palette.text }}
       onDoubleClick={(e) => {
         if (!canRename || renaming) return;
@@ -133,75 +137,90 @@ export function PlanBoardHeader({
           <GripIcon />
         </span>
       ) : null}
-      <span data-board-title className="contents">
-        <BoardTitle
-          title={setup.title}
-          editing={renaming}
-          selected={selected}
-          palette={palette}
-          onRename={(title) => onSetup({ ...setup, title }, 'Title')}
-          onDone={() => setRenaming(false)}
+      {/* Title and widgets: in a header band, they stop short of the palette strip floating over the header. */}
+      <div className="flex min-w-0 max-w-[var(--plan-band-mid,none)] flex-1 items-center gap-3">
+        {/* In a header band, the title rides in the menu box (menu-name-slot). */}
+        <InMenuBox
+          render={(inBox) => (
+            <span data-board-title className="contents">
+              <BoardTitle
+                title={setup.title}
+                editing={renaming}
+                selected={selected}
+                palette={palette}
+                inBox={inBox}
+                onRename={(title) => onSetup({ ...setup, title }, 'Title')}
+                onDone={() => setRenaming(false)}
+              />
+            </span>
+          )}
         />
-      </span>
-      {/* No press guard here: a press on the zone's empty space selects and moves the board like the
+        {/* No press guard here: a press on the zone's empty space selects and moves the board like the
           rest of the header; each widget keeps its own presses. */}
-      <div className="flex min-w-0 flex-1 items-center">
-        <BoardWidgetZone
-          widgets={widgets}
-          canEdit={canEdit}
-          selected={selected}
-          palette={palette}
-          dropAt={widgetDropAt}
-          flash={flashWidget}
-          onChange={(next) => {
-            // Taking a widget off clears what it narrowed.
-            const kept: QuickFilter = { ...quick };
-            if (!next.includes('filter')) delete kept.text;
-            if (!next.includes('mine')) delete kept.mine;
-            if (!next.includes('types')) delete kept.type;
-            if (!next.includes('due')) delete kept.due;
-            if (!next.includes('priorities')) delete kept.priority;
-            if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
-            if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
-            onWidgets(next);
-          }}
-          render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
-        />
+        <div className="flex min-w-0 flex-1 items-center">
+          <BoardWidgetZone
+            widgets={widgets}
+            canEdit={canEdit}
+            selected={selected}
+            palette={palette}
+            dropAt={widgetDropAt}
+            flash={flashWidget}
+            onChange={(next) => {
+              // Taking a widget off clears what it narrowed.
+              const kept: QuickFilter = { ...quick };
+              if (!next.includes('filter')) delete kept.text;
+              if (!next.includes('mine')) delete kept.mine;
+              if (!next.includes('types')) delete kept.type;
+              if (!next.includes('due')) delete kept.due;
+              if (!next.includes('priorities')) delete kept.priority;
+              if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
+              if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
+              onWidgets(next);
+            }}
+            render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
+          />
+        </div>
       </div>
-      {loadFailed || (setup.hideWriting && canEdit) ? (
-        <div className="flex shrink-0 items-center gap-2" onPointerDown={stop}>
-          {loadFailed ? (
-            <button
-              type="button"
-              className={button}
-              style={{ borderColor: palette.warning, color: palette.warning }}
-              onClick={onRetry}
-            >
-              Couldn&rsquo;t load items · Retry
-            </button>
-          ) : null}
-          {setup.hideWriting && canEdit ? (
-            <button
-              type="button"
-              className={button}
-              style={{ borderColor: palette.focus, color: palette.focus }}
-              onClick={onReveal}
-            >
-              Reveal
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-      {end ? (
-        // Moved left to stay on screen, it takes the board's surface and a shadow, so it reads over the header.
-        <div
-          ref={endRef}
-          className="relative z-10 flex shrink-0 items-center gap-3 rounded-lg data-[shifted]:bg-[var(--keep-bg)] data-[shifted]:shadow-md"
-          style={{ ['--keep-bg' as string]: palette.surface }}
-        >
-          {end}
-        </div>
-      ) : null}
+      {/* In a header band, a card like the menu box (band-controls.ts). */}
+      <div
+        {...bandControlsProps(palette)}
+        className={`ml-auto flex shrink-0 items-center gap-3 ${BAND_CONTROLS_CLASS}`}
+      >
+        {loadFailed || (setup.hideWriting && canEdit) ? (
+          <div className="flex shrink-0 items-center gap-2" onPointerDown={stop}>
+            {loadFailed ? (
+              <button
+                type="button"
+                className={button}
+                style={{ borderColor: palette.warning, color: palette.warning }}
+                onClick={onRetry}
+              >
+                Couldn&rsquo;t load items · Retry
+              </button>
+            ) : null}
+            {setup.hideWriting && canEdit ? (
+              <button
+                type="button"
+                className={button}
+                style={{ borderColor: palette.focus, color: palette.focus }}
+                onClick={onReveal}
+              >
+                Reveal
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+        {end ? (
+          // Moved left to stay on screen, it takes the board's surface and a shadow, so it reads over the header.
+          <div
+            ref={endRef}
+            className="relative z-10 flex shrink-0 items-center gap-3 rounded-lg data-[shifted]:bg-[var(--keep-bg)] data-[shifted]:shadow-md"
+            style={{ ['--keep-bg' as string]: palette.surface }}
+          >
+            {end}
+          </div>
+        ) : null}
+      </div>
       {trayOpen && projection.unplaced.length > 0 ? (
         <div
           className="absolute right-4 top-12 z-10 max-h-72 w-80 overflow-y-auto rounded-lg border p-2 shadow-lg"

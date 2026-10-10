@@ -10,6 +10,10 @@ import { debugLog } from '@/lib/debug-log';
 
 export type PickFailure = ImportImageFailure | 'download-failed';
 
+// Where a pick is up to, shown on its tile: fetching the picture, then the import pipeline
+// resizing and saving it to the gallery.
+export type PickStage = 'downloading' | 'saving';
+
 export type PickOutcome = { ok: true; picked: PickedImage } | { ok: false; failure: PickFailure };
 
 // The slice of an import session a pick needs.
@@ -44,6 +48,8 @@ export async function storeSearchResult(
   fetchImpl: typeof fetch = fetch,
   // Told once when the full picture is given up on for the thumbnail.
   onFallback: (reason: string) => void = () => {},
+  // Told as the pick moves on to each stage.
+  onStage: (stage: PickStage) => void = () => {},
 ): Promise<PickOutcome> {
   const fallBack = (reason: string) => {
     debugLog('[image-search] thumbnail fallback', `reason=${reason}`);
@@ -61,8 +67,10 @@ export async function storeSearchResult(
     },
   });
 
+  onStage('downloading');
   const full = await download(result.url, fetchImpl);
   if (typeof full !== 'string') {
+    onStage('saving');
     const outcome = await store({ kind: 'blob', blob: full, name });
     if (outcome.ok) return done(outcome);
     if (!RETRY_WITH_THUMBNAIL.has(outcome.failure)) return { ok: false, failure: outcome.failure };
@@ -71,8 +79,10 @@ export async function storeSearchResult(
     fallBack(full);
   }
 
+  onStage('downloading');
   const thumb = await download(result.thumbnail, fetchImpl);
   if (typeof thumb === 'string') return { ok: false, failure: 'download-failed' };
+  onStage('saving');
   const outcome = await store({ kind: 'blob', blob: thumb, name });
   return outcome.ok ? done(outcome) : { ok: false, failure: outcome.failure };
 }

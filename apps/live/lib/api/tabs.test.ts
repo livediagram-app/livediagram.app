@@ -87,6 +87,23 @@ describe('flushDocumentSavesBeacon', () => {
     expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
   });
 
+  it('keeps writes alive only while they fit the browser keepalive budget, sending the rest plainly', () => {
+    const big = (id: string) =>
+      makeTab(id, {
+        elements: [
+          { id: 'n', type: 'text', x: 0, y: 0, width: 1, height: 1, label: 'x'.repeat(40_000) },
+        ] as Tab['elements'],
+      });
+    flushDocumentSavesBeacon({
+      ...base,
+      changedTabs: [big('t1'), big('t2'), makeTab('t3')],
+      deletedIds: [],
+      tabs: [],
+    });
+    // 40 KB fits, a second 40 KB would pass 60 KB, the small one after it still fits.
+    expect(calls.map((c) => c.init.keepalive)).toEqual([true, false, true]);
+  });
+
   it('skips the flush for a signed-in owner with no cached token, since every write would 401', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     flushDocumentSavesBeacon({

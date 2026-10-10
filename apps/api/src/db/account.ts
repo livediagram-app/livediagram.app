@@ -163,7 +163,7 @@ export async function deleteAccount(
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
-  // Activity (docs/specs/013-workspace/activity-page.md): the alias rows + the backfill stamp. The index
+  // Activity (docs/specs/013-workspace/inbox.md): the alias rows + the backfill stamp. The index
   // rows themselves went with the tabs documentRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
@@ -228,8 +228,8 @@ export async function migrateOwnerId(
   const sharedInsertRes = await env.DB.prepare(
     // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
     // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
-    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, last_seen, tab_id)
-     SELECT ?, document_id, role, last_seen, tab_id
+    `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id, share_code)
+     SELECT ?, document_id, role, level, last_seen, tab_id, share_code
      FROM shared_with
      WHERE owner_id = ?`,
   )
@@ -320,7 +320,7 @@ export async function migrateOwnerId(
   // backfill would run again against the Clerk id and re-seed what
   // just migrated.
   await migrateTimelineOwner(env, fromOwnerId, toOwnerId);
-  // Activity (docs/specs/013-workspace/activity-page.md §2.2): the ids INSIDE the tab blobs (comment
+  // Activity (docs/specs/013-workspace/inbox.md §2.2): the ids INSIDE the tab blobs (comment
   // authors, self-assigned actions) are not rewritten, so the old
   // identity is recorded as an alias of the new one and the Activity
   // read matches both. Cheaper and safer than touching every tab.

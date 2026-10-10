@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '@/lib/api-client';
-import { createFailureCopy } from './create-failure';
+import { createFailureCopy, createIdsFor } from './create-failure';
 
 // The card a failed create on /new shows (docs/specs/007-editor/new-document-route.md "Placement
 // rides the create"): a refused placement will not clear on a retry, so it says why and offers
@@ -45,5 +45,19 @@ describe('createFailureCopy', () => {
       message,
       actionLabel: 'Choose another place',
     });
+  });
+});
+
+describe('createIdsFor', () => {
+  it('mints fresh ids for a new create', () => {
+    const a = createIdsFor(null);
+    const b = createIdsFor(null);
+    expect(a.documentId).not.toBe(b.documentId);
+    expect(a.tabId).not.toBe(a.documentId);
+  });
+
+  it('keeps the failed attempt’s ids for its Retry, so a create that landed is not made twice', () => {
+    const first = createIdsFor(null);
+    expect(createIdsFor(first)).toEqual(first);
   });
 });

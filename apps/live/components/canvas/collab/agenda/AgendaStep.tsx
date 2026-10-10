@@ -19,6 +19,33 @@ function PlayGlyph() {
   );
 }
 
+// What a screen reader hears for a segment: its state, and what a press does
+// (docs/specs/012-collaboration/agenda.md "The face"). Starting is only promised
+// when a press starts it; the running segment says so and is not restarted.
+export function agendaStepLabel({
+  name,
+  minutes,
+  state,
+  running,
+  pressable,
+}: {
+  name: string;
+  minutes: number;
+  state: StepState;
+  running: boolean;
+  pressable: boolean;
+}): string {
+  const length = `${minutes} minutes`;
+  if (state === 'current' && running) return `${name}, running, ${length}`;
+  if (!pressable) {
+    const status = state === 'done' ? 'done' : state === 'current' ? 'current' : 'not started';
+    return `${name}, ${status}, ${length}`;
+  }
+  if (state === 'done') return `Start ${name} again, done, ${length}`;
+  if (state === 'current') return `Restart ${name}, current, ${length}`;
+  return `Start ${name}, ${length}`;
+}
+
 // "4:12": the time left on the current segment.
 export function formatRemaining(ms: number): string {
   const total = Math.max(0, Math.round(ms / 1000));
@@ -33,6 +60,7 @@ export function AgendaStep({
   minutes,
   state,
   remainingMs,
+  running = false,
   last,
   textColor,
   onPress,
@@ -42,6 +70,9 @@ export function AgendaStep({
   minutes: number;
   state: StepState;
   remainingMs: number | null;
+  // The current segment's own countdown is running: a press would restart it,
+  // so the row is inert and says it is running.
+  running?: boolean;
   // No rail below the last step.
   last: boolean;
   textColor: string;
@@ -85,7 +116,7 @@ export function AgendaStep({
         {...press}
         {...stopPointer}
         disabled={!onPress}
-        aria-label={`Start ${name}, ${minutes} minutes`}
+        aria-label={agendaStepLabel({ name, minutes, state, running, pressable: !!onPress })}
         aria-current={current ? 'step' : undefined}
         className="agenda-step group pointer-events-auto mb-1 flex min-w-0 flex-1 cursor-pointer flex-col rounded-xl px-2.5 py-1.5 text-left disabled:cursor-default"
         style={
@@ -99,7 +130,7 @@ export function AgendaStep({
       >
         <span className="flex items-baseline justify-between gap-2">
           <span
-            className={`min-w-0 truncate text-[12px] leading-snug ${current ? 'font-semibold' : 'font-medium'} ${state === 'done' ? 'line-through opacity-45' : ''}`}
+            className={`min-w-0 break-words text-[12px] leading-snug ${current ? 'font-semibold' : 'font-medium'} ${state === 'done' ? 'line-through opacity-45' : ''}`}
             style={{ color: textColor }}
           >
             {name}

@@ -13,7 +13,7 @@ export function useRoleIndicator(): {
 } {
   const {
     isOwner,
-    isReadOnly,
+    can,
     canToggleRole,
     toggleViewPreview,
     selfParticipant,
@@ -31,7 +31,8 @@ export function useRoleIndicator(): {
     documentOwnerColor,
   });
   return {
-    role: isReadOnly ? 'view' : 'edit',
+    // The level in force (docs/specs/013-workspace/share-roles.md), the view preview included.
+    role: can.level,
     ownerName: owner?.name ?? null,
     isSelf: isOwner,
     onToggle: canToggleRole ? toggleViewPreview : undefined,

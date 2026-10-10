@@ -1,4 +1,4 @@
-// What one tab contributes to the collaboration index (docs/specs/013-workspace/activity-page.md §2).
+// What one tab contributes to the collaboration index (docs/specs/013-workspace/inbox.md §2).
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
 // and `collab_threads` hold: one per element carrying an action, one per
@@ -46,7 +46,7 @@ export type CollabThreadRow = {
   // the thread still indexes, it just can't be attributed to them.
   participantIds: string[];
   // Distinct user ids and team member ids @-mentioned anywhere in the thread
-  // (docs/specs/012-collaboration/comment-mentions.md), so the Activity page lists it for them.
+  // (docs/specs/012-collaboration/comment-mentions.md), so the Inbox lists it for them.
   mentionedIds: string[];
   latestText: string;
   latestAuthorName: string;

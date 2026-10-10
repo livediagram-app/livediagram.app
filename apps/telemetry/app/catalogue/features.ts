@@ -661,7 +661,7 @@ export const EXPLORER_SIDEBAR_PICKS = chart(
   'UI',
   'Selected',
   'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Activity, a space or folder, This browser, the Library pages, or Trash.",
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
   {
     typeIn: (type) =>
       (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
@@ -952,10 +952,38 @@ export const EDITOR_REASONS_OPENED = opened(
   (t) => t === 'SignInReasonsEditor',
 );
 
+// The Session strip's buttons in the bottom-right cluster (docs/specs/012-collaboration/session-tools.md
+// "The Session strip"), each opening its tool: the set-up while idle, the live tool while running.
+export const SESSION_TIMER_OPENED = opened(
+  'Timer Button Opened',
+  'The Timer button in the bottom bar opened, to start a timer or to drive the one running.',
+  (t) => t === 'SessionTimer',
+);
+
+export const SESSION_VOTE_OPENED = opened(
+  'Vote Button Opened',
+  'The Vote button in the bottom bar opened, to start a vote or to follow the one running.',
+  (t) => t === 'SessionVote',
+);
+
+export const SESSION_POLL_OPENED = opened(
+  'Poll Button Opened',
+  'The Poll button in the bottom bar opened, to ask a question or to read the answers.',
+  (t) => t === 'SessionPoll',
+);
+
 export const ACTION_SIGN_IN_NUDGE = opened(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',
   (t) => t === 'ActionSignInNudge',
+);
+
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving Local only
+// documents after signing in"); charted with Offline Mode on the Dashboard.
+export const LOCAL_MOVE_OFFERED = opened(
+  'Move Prompt Shown',
+  'Someone signed in with documents kept only in this browser and was offered to move them to the account.',
+  (t) => t === 'LocalMovePrompt',
 );
 
 OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);

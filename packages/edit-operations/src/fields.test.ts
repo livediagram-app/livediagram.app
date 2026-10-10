@@ -124,6 +124,15 @@ describe('writeFieldsOnto', () => {
     );
   });
 
+  it('takes a known icon id and refuses one that draws a question mark, naming icons like it', () => {
+    const icon = { ...square, id: 'ic', iconId: 'clock' } as Element;
+    expect(nextOf(write(icon, { iconId: 'moon' })).iconId).toBe('moon');
+    const out = refusal(icon, { iconId: 'flame' });
+    expect(out.details).toEqual(['iconId="flame": is not an icon']);
+    expect(out.hint).toContain('emoji-fire');
+    expect(refusal(icon, { iconId: 'qqqqzz' }).hint).toContain('plain words');
+  });
+
   it('coerces an off-vocabulary shape with a warning', () => {
     const out = write(square, { shape: 'rectangle' });
     expect(nextOf(out).shape).toBe('square');
@@ -173,6 +182,7 @@ describe('writeFieldsOnto', () => {
 
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {
     expect(refusal(square, { id: 'x' }).details[0]).toBe('id="x": cannot be changed');
+    expect(refusal(square, { addedBy: 'x' }).details[0]).toBe('addedBy="x": cannot be changed');
     expect(refusal(square, { [LIVE_ELEMENT_FIELDS[0]!]: [] }).code).toBe('invalid_value');
     expect(refusal(square, JSON.parse('{"__proto__":1}')).code).toBe('unknown_field');
     const unknown = refusal(arrow, { fill: 'red' });

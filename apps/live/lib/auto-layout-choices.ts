@@ -1,15 +1,13 @@
 // The editor's Auto Layout style choices (docs/specs/008-canvas/layout-cleanup.md "Layout styles"): the one
 // place the UI ids map to `autoLayoutElements` options, display labels, and
-// telemetry types. Consumed by the Cleanup menu tiles, the command palette,
-// and useTabCanvas so the three surfaces can't drift.
+// telemetry types. Consumed by the command palette and useTabCanvas so the two
+// can't drift.
 
 import type { AutoLayoutOptions } from '@livediagram/document';
 
 export type AutoLayoutChoice = 'smart' | 'flow-down' | 'flow-right' | 'tree' | 'mindmap';
 
 type ChoiceSpec = {
-  // Tile label in the Cleanup menu section.
-  menuLabel: string;
   // Command palette entry name + extra search keywords.
   commandName: string;
   keywords: string;
@@ -21,35 +19,30 @@ type ChoiceSpec = {
 
 export const AUTO_LAYOUT_CHOICES: Record<AutoLayoutChoice, ChoiceSpec> = {
   smart: {
-    menuLabel: 'Auto Layout',
     commandName: 'Auto Layout (tidy up)',
     keywords: 'auto layout tidy arrange clean cleanup organise organize graph',
     options: {},
     telemetryType: 'Smart',
   },
   'flow-down': {
-    menuLabel: 'Flowchart ↓',
     commandName: 'Auto Layout: Flowchart (down)',
     keywords: 'auto layout flowchart flow vertical down top bottom arrange',
     options: { style: 'flow', direction: 'TB' },
     telemetryType: 'FlowchartDown',
   },
   'flow-right': {
-    menuLabel: 'Flowchart →',
     commandName: 'Auto Layout: Flowchart (right)',
     keywords: 'auto layout flowchart flow horizontal right left sideways arrange',
     options: { style: 'flow', direction: 'LR' },
     telemetryType: 'FlowchartRight',
   },
   tree: {
-    menuLabel: 'Tree',
     commandName: 'Auto Layout: Tree',
     keywords: 'auto layout tree org chart hierarchy organogram arrange',
     options: { style: 'tree' },
     telemetryType: 'Tree',
   },
   mindmap: {
-    menuLabel: 'Mindmap',
     commandName: 'Auto Layout: Mindmap',
     keywords: 'auto layout mindmap mind map radial hub spoke brainstorm arrange',
     options: { style: 'mindmap' },

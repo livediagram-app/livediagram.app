@@ -87,6 +87,15 @@ export function isSwimlaneSettable(key: string): boolean {
   );
 }
 
+// The flag an archived item carries (docs/specs/026-plan/items.md "Archive").
+export const ARCHIVED_FIELD = 'archived';
+
+// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), or the archived flag, which a card
+// dragged off an Archive board loses in the move itself (one write, one undo step).
+export function isMoveSettable(key: string): boolean {
+  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD;
+}
+
 export function itemTitle(item: Pick<Item, 'fields'>): string {
   const title = item.fields['title'];
   return typeof title === 'string' ? title : '';

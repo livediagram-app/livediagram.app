@@ -2,14 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { rowToShareLink, type ShareLinkRow } from './share-link-row';
 
 // rowToShareLink is read-side: every list / lookup of share links
-// for a document passes through it. The role column on D1 is typed
-// as a free-form string, but the wire DTO + the client + the api
-// worker's own permission checks all branch on the narrow
-// 'edit' | 'view' union. A regression in the mapper's `=== 'view'`
-// check would either downgrade every edit link to view (locking
-// owners out of their own share links) or upgrade view links to
-// edit (a security-shaped issue, even if upstream validation
-// catches it on write).
+// for a document passes through it. The role and level columns on D1 are
+// typed as free-form strings, but the wire DTO + the client + the api
+// worker's own permission checks all branch on the AccessLevel union
+// (docs/specs/013-workspace/share-roles.md). A regression in the mapper
+// would either downgrade links or, worse, upgrade a Viewer or Participant.
 
 function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
   return {
@@ -21,6 +18,7 @@ function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
     expires_at: null,
     tab_id: null,
     purpose: 'share',
+    level: null,
     ...over,
   };
 }
@@ -66,34 +64,23 @@ describe('rowToShareLink', () => {
     expect(rowToShareLink(row({ role: 'edit' })).role).toBe('edit');
   });
 
-  it('defaults to role "edit" when the column carries an unrecognised string', () => {
-    // The defensive default: any non-'view' value (a future server
-    // role the client doesn't know about yet, a corrupted row, a
-    // typo) lands on 'edit'. docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md: roles are validated
-    // on write, so reading an unexpected value here is the
-    // belt-and-braces path. Edit is the safe default because the
-    // alternative (view-only) would silently lock owners out of
-    // their own share links if the value ever drifted.
-    expect(rowToShareLink(row({ role: 'admin' })).role).toBe('edit');
-    expect(rowToShareLink(row({ role: 'owner' })).role).toBe('edit');
-    expect(rowToShareLink(row({ role: '' })).role).toBe('edit');
+  it('reads the 0080 level column over the legacy role', () => {
+    expect(rowToShareLink(row({ role: 'view', level: 'participate' })).role).toBe('participate');
+    expect(rowToShareLink(row({ role: 'edit', level: null })).role).toBe('edit');
   });
 
-  it('is case-sensitive on the "view" string', () => {
-    // Sanity: the equality check is strict, not normalised. A
-    // database that started inserting 'VIEW' (caps) would slip
-    // through to 'edit' here. The api worker controls writes so
-    // this never happens in practice, but the test pins the
-    // contract so a future "lowercase the input" change is a
-    // deliberate decision, not an accident.
-    expect(rowToShareLink(row({ role: 'VIEW' })).role).toBe('edit');
-    expect(rowToShareLink(row({ role: 'View' })).role).toBe('edit');
+  it('reads an unrecognised value as view, never higher (blueprint I2)', () => {
+    // Fail closed: a value this worker does not know (a future level, a
+    // corrupted row, a typo, a case change) never escalates anyone. The
+    // columns' CHECKs make it unreachable in practice; this pins the posture.
+    for (const role of ['admin', 'owner', '', 'VIEW', 'View', 'EDIT']) {
+      expect(rowToShareLink(row({ role })).role).toBe('view');
+    }
+    expect(rowToShareLink(row({ role: 'edit', level: 'admin' })).role).toBe('view');
   });
 
-  it('preserves edit when the column has trailing whitespace', () => {
-    // Same strictness goes the other way: 'view ' (with a space)
-    // is not 'view', so it lands on the edit default. Pins the
-    // contract.
-    expect(rowToShareLink(row({ role: 'view ' })).role).toBe('edit');
+  it('reads a value with trailing whitespace as view', () => {
+    expect(rowToShareLink(row({ role: 'view ' })).role).toBe('view');
+    expect(rowToShareLink(row({ role: 'edit ' })).role).toBe('view');
   });
 });

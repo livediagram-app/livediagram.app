@@ -12,7 +12,7 @@ const { room } = vi.hoisted(() => ({
   room: { handlers: null as RoomHandlers | null, close: vi.fn() },
 }));
 vi.mock('@/lib/api-client', () => ({
-  apiCreateRoomTicket: vi.fn(async () => 'ticket'),
+  apiCreateRoomTicket: vi.fn(async () => ({ ticket: 'ticket' })),
   connectRoom: vi.fn((_doc: string, _self: unknown, handlers: RoomHandlers) => {
     room.handlers = handlers;
     return { send: vi.fn(), close: room.close, updateSelf: vi.fn() };

@@ -8,15 +8,18 @@
 // itself measure nothing.
 import { useEffect, useState } from 'react';
 import {
-  NO_INSETS,
+  BAND_CONTROLS_SELECTOR,
+  NO_LAYOUT,
   PANEL_SELECTOR,
   TOP_ROW_SELECTOR,
   measureCanvasChrome,
-  sameInsets,
-  type LayerInsets,
+  sameLayout,
+  type CanvasLayout,
 } from '@/lib/canvas-layer-insets';
 
-const OBSERVED = `${TOP_ROW_SELECTOR}, ${PANEL_SELECTOR}, [data-toolbar-palette]`;
+// The strip itself (its root runs the canvas width; its card changes width with the category) for the header band.
+// The covering element's controls card too: the strip stops short of it, so its width matters.
+const OBSERVED = `${TOP_ROW_SELECTOR}, ${PANEL_SELECTOR}, [data-toolbar-palette], [data-toolbar-palette] > *, ${BAND_CONTROLS_SELECTOR}`;
 
 // A child-list change that adds or removes a piece of chrome (or something holding one).
 export function touchesChrome(
@@ -27,8 +30,9 @@ export function touchesChrome(
   return [...record.addedNodes].some(hit) || [...record.removedNodes].some(hit);
 }
 
-export function useCanvasLayerInsets(canvas: HTMLElement | null): LayerInsets {
-  const [insets, setInsets] = useState<LayerInsets>(NO_INSETS);
+// The element's insets, and its header band when the top row leaves room (lib/canvas-layer-insets.ts headerBand).
+export function useCanvasLayerInsets(canvas: HTMLElement | null): CanvasLayout {
+  const [layout, setLayout] = useState<CanvasLayout>(NO_LAYOUT);
   useEffect(() => {
     if (!canvas || canvas === document.body) return;
     let frame = 0;
@@ -66,7 +70,7 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null): LayerInsets {
         }
       }
       const next = measureCanvasChrome(canvas);
-      setInsets((prev) => (sameInsets(prev, next) ? prev : next));
+      setLayout((prev) => (sameLayout(prev, next) ? prev : next));
     };
     function schedule() {
       if (!frame) frame = requestAnimationFrame(measure);
@@ -88,5 +92,5 @@ export function useCanvasLayerInsets(canvas: HTMLElement | null): LayerInsets {
       window.removeEventListener('transitionend', onTransitionEnd, true);
     };
   }, [canvas]);
-  return insets;
+  return layout;
 }

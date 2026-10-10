@@ -549,6 +549,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/illustrate',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Change the Illustrate pages of a tab (add, set, lay out, move, duplicate, delete; up to 50, as one edit) or write an article from Markdown. Switches the tab into Illustrate and reaches everyone with the document open. Answers each page with its rectangle on the canvas.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: ref('IllustrateRequest'),
+    responseSchema: 'IllustrateAnswer',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
     method: 'DELETE',
     path: '/documents/{id}/tabs/{tabId}',
     segment: 'documents',
@@ -683,12 +696,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Items',
     summary:
-      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). Needs edit access to the whole document.",
+      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). expectedRev names the revision (itemTypesRev) the change was made to: when another change landed since, 409 item_types_stale answers with the stored types and revision to re-apply the change to. Needs edit access to the whole document.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'ItemTypesRequest',
     responseSchema: 'ItemTypesResponse',
-    statuses: [200, 400, 401, 403, 404, 405, 410],
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410],
   },
   // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
   {
@@ -1899,7 +1912,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401],
   },
 
-  // ---- Activity (docs/specs/013-workspace/activity-page.md) ----
+  // ---- Activity (docs/specs/013-workspace/inbox.md) ----
   {
     method: 'GET',
     path: '/activity',

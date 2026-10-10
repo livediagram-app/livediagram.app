@@ -1,12 +1,12 @@
 // Relative-time formatting shared by the footer save indicator, the
-// Explorer's "Your documents" list, and the Explorer's Activity page rows.
+// Explorer's "Your documents" list, and the Explorer's Inbox rows.
 // Kept here so every surface reads identically — previously each
 // surface had its own slightly different copy.
 //
 // Four formatters, coarsening as the space they have to fit shrinks:
 //   formatRelativeTime         — verbose ("2 mins ago"), reached through
 //                                relativeSince by every list row.
-//   formatRelativeTimeShort    — compact ("2 min ago"), Activity page rows.
+//   formatRelativeTimeShort    — compact ("2 min ago"), Inbox rows.
 //   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
 //   formatTimeLeftCompact      — the forward-looking countdown ("6d left")
 //                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).

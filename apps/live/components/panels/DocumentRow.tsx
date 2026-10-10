@@ -9,7 +9,8 @@ import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { DocumentActionsMenu } from '@/app/explorer/document-row-shared';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { DOCUMENT_DRAG_MIME } from './explorer-drag-mime';
+import { startDocumentDrag } from './explorer-drag-mime';
+import { isLocalOnly } from '@/lib/document-space';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
 
 export function DocumentRow({
@@ -134,8 +135,7 @@ export function DocumentRow({
   );
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData(DOCUMENT_DRAG_MIME, item.id);
-    e.dataTransfer.effectAllowed = 'move';
+    startDocumentDrag(e.dataTransfer, { id: item.id, localOnly: isLocalOnly(item) });
   };
 
   return (

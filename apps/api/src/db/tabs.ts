@@ -17,6 +17,7 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
 import type { SharedTabsSummary } from '@livediagram/api-schema';
 import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
+import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
 import { imageGrantLinkStatement, imageGrantPlacementStatements } from './image-grants';
 import { collabIndexStatements } from './collab-index';
 import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
@@ -251,9 +252,12 @@ export function tabWriteStatements(
        VALUES (?, ?, ?, ?)
        ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
     ).bind(documentId, id, orderIndex, now),
+    // The Details view's numbers (docs/specs/013-workspace/explorer-details-view.md), from the body
+    // just stored, after the tabs upsert, which the row's FK needs.
+    tabStatsStatement(env, id, tabStatsOf(rest, data), now),
     // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON.
     env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
-    // The collaboration index (docs/specs/013-workspace/activity-page.md §2.1), after the tabs
+    // The collaboration index (docs/specs/013-workspace/inbox.md §2.1), after the tabs
     // upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
@@ -362,6 +366,7 @@ export async function seedTabs(
          VALUES (?, ?, ?, ?)
          ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
       ).bind(documentId, id, idx, now),
+      tabStatsStatement(env, id, tabStatsOf(rest, data), now),
     ];
   });
   stmts.push(
@@ -370,7 +375,7 @@ export async function seedTabs(
       documentId,
     ),
   );
-  // Index rows for every seeded tab (docs/specs/013-workspace/activity-page.md §2.1): a JSON import or a
+  // Index rows for every seeded tab (docs/specs/013-workspace/inbox.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
@@ -566,7 +571,7 @@ export async function reorderTabs(
 //
 // Only `data` and `updated_at` move: a board write never renames, reorders or
 // relinks the tab, and it touches no action or thread, so the collaboration
-// index (docs/specs/013-workspace/activity-page.md) has nothing to mirror. The
+// index (docs/specs/013-workspace/inbox.md) has nothing to mirror. The
 // image reference index is only ever ADDED to here: the swap can lose to a
 // concurrent save, and a delete would then drop references the winner wrote.
 export async function swapTabData(
@@ -575,15 +580,18 @@ export async function swapTabData(
   tabId: string,
   expectedData: string,
   nextData: string,
-  // `nextData`'s element count, from the tab the caller parsed to build it (migration 0059).
-  nextElementCount: number,
+  // `nextData`'s stats (tabStatsOf), from the tab the caller parsed to build it; its element count
+  // is also the tab's element_count (migration 0059).
+  nextStats: TabStats,
 ): Promise<boolean> {
   assertTabDataFits(tabId, nextData, 'swapTabData');
   const now = Date.now();
   const [res] = await env.DB.batch([
     env.DB.prepare(
       'UPDATE tabs SET data = ?, updated_at = ?, element_count = ?, rev = rev + 1 WHERE id = ? AND data = ?',
-    ).bind(nextData, now, nextElementCount, tabId, expectedData),
+    ).bind(nextData, now, nextStats.elementCount, tabId, expectedData),
+    // Only if the swap above won: then the tab stores exactly `nextData`.
+    tabStatsStatement(env, tabId, nextStats, now, nextData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
     ...imageGrantPlacementStatements(env, tabId, imageRefIdsFromData(nextData), now),
   ]);

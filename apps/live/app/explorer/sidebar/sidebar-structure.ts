@@ -16,7 +16,8 @@ export type SidebarGroupId = keyof typeof SIDEBAR_GROUP_TITLES;
 // floating Explorer panel, which names its spaces with the same words.
 export const SIDEBAR_LABELS = {
   home: 'Home',
-  activity: 'Activity',
+  inbox: 'Inbox',
+  timeline: 'Timeline',
   shared: 'Shared with me',
   myDocuments: 'My documents',
   invites: 'Invites',
@@ -32,7 +33,8 @@ export const SIDEBAR_LABELS = {
 // The top-level rows a group may hold; `teams` stands for zero or more team rows.
 export type SidebarRowKind =
   | 'home'
-  | 'activity'
+  | 'inbox'
+  | 'timeline'
   | 'shared'
   | 'myDocuments'
   | 'teams'
@@ -75,7 +77,7 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   if (offlineDocuments > 0 || selected === 'offline') more.push('thisBrowser');
   more.push('library', 'trash');
   return [
-    { id: 'overview', rows: ['home', 'activity', 'shared'] },
+    { id: 'overview', rows: ['home', 'inbox', 'timeline', 'shared'] },
     { id: 'spaces', rows: spaces },
     { id: 'more', rows: more },
   ];

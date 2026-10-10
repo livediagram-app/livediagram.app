@@ -166,6 +166,10 @@ describe('palette layouts', () => {
       'tools:session-stopwatch',
     ]);
     expect(paletteLandingCategory('plan', false)).toBe('plan-cards');
+    // A tab without a board opens on Boards: a card lands on a board.
+    expect(paletteLandingCategory('plan', false, false)).toBe('plan-boards');
+    expect(paletteLandingCategory('diagram', false, false)).toBe('popular');
+    expect(paletteLandingCategory('plan', true, false)).toBe('event-storming');
     for (const mode of ['diagram', 'illustrate'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');

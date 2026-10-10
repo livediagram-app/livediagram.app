@@ -8,7 +8,7 @@
 // level state, no api calls. The page wires them together.
 
 import Link from 'next/link';
-import type { ExplorerViewProps } from '@/app/explorer/explorer-view-props';
+import { documentEntryPropsFor, type ExplorerViewProps } from '@/app/explorer/explorer-view-props';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
 import { EmptyPane } from './ExplorerEmptyState';
 import { DocumentRow } from './explorer-route-document-row';
@@ -18,6 +18,14 @@ import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
 import { HoverCard } from '@livediagram/ui';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
+import type { AccessLevel } from '@livediagram/api-schema';
+
+// The Shared with you chip per level (docs/specs/013-workspace/share-roles.md).
+const SHARED_CHIP: Record<AccessLevel, string> = {
+  edit: 'Edit',
+  participate: 'Participate',
+  view: 'View',
+};
 
 // The pane header lives in its own file now; re-exported so callers keep
 // importing it from the views barrel.
@@ -36,7 +44,7 @@ export { FolderRow };
 //     "Dismiss" action. Mutually exclusive with `team`.
 export type PaneDocument = DocumentListItem & {
   team?: { id: string; name: string };
-  shared?: { ownerName: string | null; role: 'edit' | 'view'; shareCode: string };
+  shared?: { ownerName: string | null; role: AccessLevel; shareCode: string };
 };
 
 // A document shared WITH the viewer, as a pane row. It lives in the
@@ -64,12 +72,12 @@ export type SelectedNode =
   // The landing view (docs/specs/013-workspace/explorer-home.md): Jump back in, What happened and
   // the person's own Timeline.
   | { kind: 'home' }
-  // All activity (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
-  // happened, reached from Home's See all activity.
+  // The Timeline (docs/specs/013-workspace/timeline.md): the day-grouped feed of everything that
+  // happened, with its own sidebar row and Home's See timeline link.
   | { kind: 'timeline' }
-  // What is outstanding for the reader across every document (docs/specs/013-workspace/activity-page.md):
-  // open actions assigned to / by them, unresolved threads they're in.
-  | { kind: 'activity' }
+  // The Inbox (docs/specs/013-workspace/inbox.md): what is outstanding for the reader across every
+  // document, open actions assigned to / by them and unresolved threads they're in.
+  | { kind: 'inbox' }
   | { kind: 'recent' }
   | { kind: 'all' }
   // Every document the reader can open, narrowed by the lens (docs/specs/013-workspace/explorer-filters.md#views).
@@ -95,26 +103,11 @@ export function ListView(props: ExplorerViewProps) {
   const {
     folders,
     documents: liveDocs,
-    ownerId,
     onOpenFolder,
     onCommitRenameFolder,
     onCancelRenameFolder,
     renamingFolderId,
-    renamingDocumentId,
-    onCommitRenameDocument,
-    onCancelRenameDocument,
     folderActions,
-    onStartRenameDocument,
-    onDuplicateDocument,
-    onDeleteDocument,
-    onMoveDocument,
-    onDismissShared,
-    recentExcludedIds,
-    favouriteIds,
-    onToggleFavourite,
-    folderChipFor,
-    onToggleRecentExclusion,
-    onShowHistory,
     childrenCount,
     documentsCount,
     showOwner = false,
@@ -149,28 +142,7 @@ export function ListView(props: ExplorerViewProps) {
           />
         ))}
         {liveDocs.map((d) => (
-          <DocumentRow
-            key={d.id}
-            document={d}
-            ownerId={ownerId}
-            showOwner={showOwner}
-            renaming={renamingDocumentId === d.id}
-            onStartRename={() => onStartRenameDocument(d.id)}
-            onCommitRename={(name) => onCommitRenameDocument(d.id, name)}
-            onCancelRename={onCancelRenameDocument}
-            onDuplicate={() => onDuplicateDocument(d.id)}
-            onDelete={() => onDeleteDocument(d.id)}
-            onMove={(anchor) => onMoveDocument(d.id, anchor)}
-            onDismiss={d.shared && onDismissShared ? () => onDismissShared(d.id) : undefined}
-            folderChip={folderChipFor?.(d) ?? null}
-            favourite={favouriteIds?.has(d.id) === true}
-            onToggleFavourite={onToggleFavourite ? () => onToggleFavourite(d.id) : undefined}
-            recentExcluded={recentExcludedIds?.includes(d.id) === true}
-            onShowHistory={onShowHistory ? () => onShowHistory(d.id) : undefined}
-            onToggleRecentExclusion={
-              onToggleRecentExclusion ? () => onToggleRecentExclusion(d.id) : undefined
-            }
-          />
+          <DocumentRow key={d.id} {...documentEntryPropsFor(props, d)} />
         ))}
       </ul>
     </div>
@@ -223,7 +195,7 @@ export function SharedList({
               {s.ownerName || 'Unknown owner'}
             </span>
             <span className="inline-flex w-fit items-center rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30">
-              {s.role === 'edit' ? 'Edit' : 'View'}
+              {SHARED_CHIP[s.role]}
             </span>
             <RelativeTimeChip at={s.savedAt} />
             <HoverCard title={DISMISS_SHARED.title} description={DISMISS_SHARED.description}>

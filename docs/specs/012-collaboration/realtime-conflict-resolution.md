@@ -138,8 +138,12 @@ by the room itself, one at a time ([Q&A board](qa-board.md)).
 ## Locked decisions
 
 1. **Undo is local, not global.** Undo/redo affects the current user's own
-   changes only — never rolls back a peer's edit. Undo applies the inverse of
-   your own element ops locally and broadcasts them.
+   changes only — never rolls back a peer's edit. Every peer op (and every
+   agent changeset) is applied to each undo and redo snapshot as well as to
+   what is on screen, so a restored snapshot already holds the peer's change:
+   undoing takes back your own edits alone, never a collaborator's element or a
+   tab they added, and the resulting element ops are broadcast as yours. A
+   resync's re-read content replaces only what is on screen.
 2. **D1 is the system of record.** The room holds ordering and collaboration
    state (epoch + seq, the op log, the collaboration ledger, the live poll, the
    facilitator baton), never a copy of the document. REST reads, exports, and

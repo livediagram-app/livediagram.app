@@ -4,6 +4,7 @@
 // the text styles, the lists and indent, alignment, the colours (text and highlight together),
 // the less used formats under More, and the inserts. Each entry runs a command on the writing (or
 // asks the host to insert) and closes its menu.
+import { keyLabel } from '@/lib/key-label';
 import type { ReactNode } from 'react';
 import {
   lucideCode,
@@ -56,13 +57,6 @@ const PanelIcons = {
   codeBlock: I(lucideSquareCode),
   pageBreak: I(lucidePilcrow),
 };
-
-const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
-/** A shortcut as this computer spells it (⌘B, Ctrl+B). */
-export const keyLabel = (k: string) =>
-  mac
-    ? k.replace('Mod-', '⌘').replace('Shift-', '⇧').replace('Alt-', '⌥')
-    : k.replace('Mod-', 'Ctrl+').replace('Shift-', 'Shift+').replace('Alt-', 'Alt+');
 
 const Keys = ({ k }: { k?: string }) =>
   k ? <span className="text-[10px] text-slate-400 dark:text-slate-400">{keyLabel(k)}</span> : null;

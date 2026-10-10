@@ -10,7 +10,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { Frame } from './shared';
 
 // Participant colours, as the editor hands them out: you first, then each teammate.
-export const YOU = '#0ea5e9';
+export { YOU } from '@/components/art-tokens';
 export const JORDAN = '#ec4899';
 export const ALEX = '#8b5cf6';
 export const SAM = '#10b981';

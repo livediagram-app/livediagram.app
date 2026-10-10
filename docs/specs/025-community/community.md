@@ -57,7 +57,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   the public gallery does not already say.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
   storage can still publish).
-- **Where**: the Share dialog carries a **Community** section beneath the share links. Unpublished, it invites the owner
+- **Where**: the Share dialog carries a **Community** tab beside Passes: a short illustrated guide to what publishing means (three steps and four facts: always up to date, anonymous by default, private stays private, yours to take back), then the Community section. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.
 - **The Publish dialog** asks for:

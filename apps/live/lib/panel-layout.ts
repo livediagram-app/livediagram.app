@@ -18,14 +18,13 @@ export type PanelCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-rig
 // shared MovablePanel. The fixed zoom controls are deliberately absent — they
 // are not a MovablePanel and stay pinned bottom-right. The Palette, the
 // Explorer and Layers are not corner panels (the strip, and popovers off
-// their buttons, docs/specs/007-editor/toolbar-layout.md): a stored layout naming them
+// their buttons, docs/specs/007-editor/toolbar-layout.md), nor are Poll and Vote (popovers off the
+// Session strip, docs/specs/012-collaboration/session-tools.md): a stored layout naming them
 // is read like any unknown id.
 export type PanelId =
   | 'collaborate'
   | 'ai'
   | 'minimap'
-  | 'poll'
-  | 'vote'
   | 'avatar'
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, present only while the Laser
   // tool is, exactly like the avatar's.
@@ -50,8 +49,6 @@ export const PANEL_IDS: readonly PanelId[] = [
   'collaborate',
   'ai',
   'minimap',
-  'poll',
-  'vote',
   'avatar',
   'laser',
   'spotlight',
@@ -82,16 +79,8 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   collaborate: 'bottom-right',
   ai: 'top-right',
   minimap: 'bottom-left',
-  // Live poll (docs/specs/012-collaboration/live-poll.md): top-right, where the panels
-  // you act on live. Unlike every other panel it only EXISTS while a poll
-  // is running, so it joins and leaves its corner stack rather than
-  // sitting there.
-  poll: 'top-right',
-  // Live vote (docs/specs/012-collaboration/session-tools.md): beside the poll panel, and like it only present
-  // while a vote is running.
-  vote: 'top-right',
   // Avatar mode (docs/specs/008-canvas/avatar-mode.md): top-right, with the other tool panels.
-  // Like poll / vote it exists only while its mode does.
+  // It exists only while its mode does, so it joins and leaves its corner stack.
   avatar: 'top-right',
   laser: 'top-right',
   spotlight: 'top-right',
@@ -113,7 +102,7 @@ export function defaultPanelLayout(): PanelLayout {
   const corners = emptyCorners();
   // Order within a corner matters (it's the stack order); list them in
   // the order they stacked historically rather than PANEL_IDS order.
-  corners['top-right'] = ['vote', 'poll', 'ai'];
+  corners['top-right'] = ['ai'];
   corners['bottom-left'] = ['minimap'];
   corners['bottom-right'] = ['collaborate'];
   return { corners, free: {} };

@@ -2,17 +2,21 @@
 // "Backgrounds"): the panel's preset catalogue, and the CSS a sheet takes from its background. The
 // export paints the same background onto its own canvas (export-page).
 import {
+  PAGE_GRADIENT_ANGLE,
   isLightColor,
   pageIsDark,
   shade,
   tint,
   type ThemeDefinition,
-  type IllustratePage,
+  sameFill,
   type PageBackground,
   type PageFill,
   type PagePattern,
 } from '@livediagram/document';
 import type { CSSProperties } from 'react';
+
+// The background edit itself is the document's, shared with the agents' page changes.
+export { PAGE_GRADIENT_ANGLE, sameFill, withBackgroundPatch } from '@livediagram/document';
 
 export type GradientPreset = { id: string; label: string; from: string; to: string };
 
@@ -24,9 +28,6 @@ export const PAGE_GRADIENT_PRESETS: readonly GradientPreset[] = [
   { id: 'dusk', label: 'Dusk', from: '#1e1b4b', to: '#4c1d95' },
   { id: 'night', label: 'Night', from: '#0f172a', to: '#1e3a8a' },
 ];
-
-// CSS degrees: 180 runs top to bottom, so 160 leans the run toward the bottom right.
-export const PAGE_GRADIENT_ANGLE = 160;
 
 export const PAGE_PATTERN_LABEL: Record<PagePattern | 'none', string> = {
   none: 'None',
@@ -50,17 +51,6 @@ export function fillCss(fill: PageFill): string {
   return fill.kind === 'solid'
     ? fill.color
     : `linear-gradient(${fill.angle}deg, ${fill.from}, ${fill.to})`;
-}
-
-/** Whether two fills are the same (a preset's swatch shows as chosen). */
-export function sameFill(a: PageFill | undefined, b: PageFill | undefined): boolean {
-  if (!a || !b) return !a && !b;
-  if (a.kind === 'solid' && b.kind === 'solid')
-    return a.color.toLowerCase() === b.color.toLowerCase();
-  if (a.kind === 'gradient' && b.kind === 'gradient') {
-    return a.from === b.from && a.to === b.to && a.angle === b.angle;
-  }
-  return false;
 }
 
 // The pattern's layers, drawn in `currentColor` so the sheet's `color` sets the ink.
@@ -142,18 +132,6 @@ export function pageSheetStyle(
  *  plain paper, whose sheet sets it by class on screen). */
 export function pagePatternInk(background: PageBackground | undefined): string {
   return pageIsDark({ background }) ? 'rgb(255 255 255 / 0.14)' : 'rgb(15 23 42 / 0.1)';
-}
-
-/** The page with `patch` laid over its background (a hover preview, or an edit about to land). */
-export function withBackgroundPatch(
-  page: IllustratePage,
-  patch: Partial<PageBackground> | undefined,
-): PageBackground | undefined {
-  if (!patch) return page.background;
-  const merged: PageBackground = { ...page.background, ...patch };
-  if (!merged.fill) delete merged.fill;
-  if (!merged.pattern) delete merged.pattern;
-  return merged.fill || merged.pattern ? merged : undefined;
 }
 
 export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill };

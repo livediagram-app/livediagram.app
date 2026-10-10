@@ -24,6 +24,8 @@ import {
   ELEMENT_TYPES,
   ENTITY_MAX_FIELDS,
   GRAPH_LABEL_MAX,
+  GRAPH_LAYOUT_MAX_EDGES,
+  GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
   SHAPE_KINDS,
   STICKY_PRESETS,
@@ -198,7 +200,20 @@ makes a document with boards ready to fill. Sheets (spreadsheets on a tab) have
 theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A1
 (inputs, worked-out values and what they show), change_sheet sets, clears and
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
-and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.`;
+and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.
+Illustrate tabs hold pages: infographics, slides, logo artboards and articles
+(documents of text on pages). change_pages adds, changes, lays out (from a
+ready-made layout), moves, copies and deletes infographic, slide and logo pages
+and answers each page's rectangle on the canvas, where update_document puts
+elements; write_article writes an article from Markdown, new or over an existing
+one, and the editor flows it onto pages. Asked to write a document, a report or
+a brief, write an article; asked for a deck, add slide pages; asked for a logo,
+add a logo page. A new document for pages starts with create_document and one
+tab whose template is "blank-illustration" (then write_article or change_pages
+on it); the Illustrate templates (article, slide-deck, logo-design, ...) start
+from ready-made pages. A layout's elements hold sample text: read_document with
+view "pages" lists each page's elements with their refs and text, to replace
+with update_document. It also shows each article as Markdown.`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -280,7 +295,11 @@ const graphField = z
         }),
       )
       .min(1)
-      .describe('The nodes (boxes). Each needs a unique id.'),
+      .max(GRAPH_LAYOUT_MAX_NODES)
+      .describe(
+        `The nodes (boxes), at most ${GRAPH_LAYOUT_MAX_NODES}. Each needs a unique id. ` +
+          'A larger diagram is better split into several.',
+      ),
     edges: z
       .array(
         z.object({
@@ -292,7 +311,11 @@ const graphField = z
             .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
         }),
       )
-      .describe('Directed connections between ids. An edge to an unknown id is dropped.'),
+      .max(GRAPH_LAYOUT_MAX_EDGES)
+      .describe(
+        `Directed connections between ids, at most ${GRAPH_LAYOUT_MAX_EDGES}. An edge to an ` +
+          'unknown id is dropped.',
+      ),
     groups: z
       .array(
         z.object({
@@ -364,7 +387,8 @@ export const readDocumentShape = {
     .describe(
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
         'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
-        'in full. show: one element in full (needs ref). find: elements holding some text (needs q).',
+        'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
+        "pages: an Illustrate tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
     ),
   budget: z
     .number()
@@ -516,12 +540,12 @@ export const updateDocumentShape = {
 export const shareDocumentShape = {
   documentId: z.string().describe('The document to share (from find_documents / read_document).'),
   role: z
-    .enum(['view', 'edit'])
+    .enum(['view', 'participate', 'edit'])
     .optional()
     .describe(
-      'What the link grants. "view" (default) — recipients can open and read but ' +
-        'not change it; safest for just showing your work. "edit" — recipients ' +
-        'can also edit. No sign-in is needed to open either.',
+      'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
+        'but cannot reshape it; right for a retro or a workshop. "view": they only look, ' +
+        'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
     ),
   expiry: z
     .enum(['never', 'week', 'month', 'sixMonths'])

@@ -28,7 +28,7 @@ const db = vi.hoisted(() => ({
   getMembership: vi.fn(async () => ({ status: 'joined' })),
   getParticipant: vi.fn(async () => ({ name: 'Bob' })),
   getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
-  setDocumentFolder: vi.fn(async () => {}),
+  setDocumentFolder: vi.fn(async () => true),
 }));
 vi.mock('../db', () => db);
 
@@ -166,5 +166,22 @@ describe('PUT /documents/:id/folder — moving to a root', () => {
       'Design',
       'alice',
     );
+  });
+});
+
+// The folder is re-checked inside the placement write: one deleted after the route's own read files
+// nothing, and the caller hears 404 rather than a document filed under a folder that is gone.
+describe('placement into a folder deleted meanwhile', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it('404s when the write finds the folder gone, and records nothing', async () => {
+    db.getDocument.mockResolvedValue(inTeam());
+    db.getFolder.mockResolvedValue({ id: 'f2', teamId: 'team-1', ownerId: 'alice' });
+    db.setDocumentFolder.mockResolvedValueOnce(false);
+    const { ctx, settle } = ctxWith({ folderId: 'f2', teamId: 'team-1' });
+    const res = await handleDocumentPlacement(ctx);
+    await settle();
+    expect(res?.status).toBe(404);
+    expect(timeline.recordDocumentMoved).not.toHaveBeenCalled();
   });
 });

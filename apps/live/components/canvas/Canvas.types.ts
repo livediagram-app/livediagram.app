@@ -50,6 +50,17 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only for every structural control, with a
+  // palette of its own holding only what it may add.
+  participantPalette?: boolean;
+  // A read-only session that still takes part (a Participant): it casts dots in a vote (docs/specs/013-workspace/share-roles.md).
+  takePart?: boolean;
+  // Which elements a read-only session may still drag (a Participant's stickies and its own adds); absent, none.
+  canMove?: (el: Element) => boolean;
+  // Which elements' words a read-only session may still write (a Participant's); absent, none.
+  canWriteText?: (el: Element) => boolean;
+  // Which elements a read-only session may still resize (a Participant's); absent, none.
+  canResize?: (el: Element) => boolean;
   documentName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
@@ -475,8 +486,11 @@ export type CanvasProps = {
   layers: Layer[];
   activeLayerId: string;
   layerCounts: Map<string, number>;
-  // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running,
-  // so `poll` null means it isn't rendered at all.
+  // The session tools for the Session strip (docs/specs/012-collaboration/session-tools.md "The Session
+  // strip"): the same bundle the tab menu's Session Studio drives. Absent on a surface without one.
+  sessionTools?: import('@/components/chrome/session-tools-props').SessionToolsProps;
+  // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running
+  // and its results are yours to see, so null means the Poll button opens the composer instead.
   pollPanel: {
     poll: import('@livediagram/api-schema').LivePoll;
     answers: Map<string, string | null>;
@@ -487,9 +501,6 @@ export type CanvasProps = {
     onKeepResults?: () => void;
     onDismiss: () => void;
   } | null;
-  pollPanelPosition: { x: number; y: number } | null;
-  onMovePollPanel: (x: number, y: number) => void;
-  onResetPollPanel: () => void;
   // Live vote panel (docs/specs/012-collaboration/session-tools.md): turnout while casting is open, then the
   // clickable ranked results. Null when no vote is running on this tab.
   // Per-user preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle
@@ -499,9 +510,6 @@ export type CanvasProps = {
   // Per-user stars (docs/specs/013-workspace/favourites.md).
   favouriteIds: Set<string>;
   onToggleFavourite: (documentId: string) => void;
-  votePanelPosition: { x: number; y: number } | null;
-  onMoveVotePanel: (x: number, y: number) => void;
-  onResetVotePanel: () => void;
   voteResults: { id: string; votes: number }[];
   onJumpToVoteResult: (index: number) => void;
   // Whether the local participant started the running vote — the only
@@ -743,8 +751,6 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  // "Auto align" cleanup pass on the current tab's elements. See
-  // the palette's Cleanup accordion + lib/auto-align.ts.
   // Live session tools (docs/specs/012-collaboration/session-tools.md): the active tab's timer / vote state +
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off

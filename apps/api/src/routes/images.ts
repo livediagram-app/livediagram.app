@@ -156,7 +156,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
       return badRequest('missing or invalid X-Image-Width / X-Image-Height');
     }
-    const originalName = request.headers.get('X-Image-Original-Name');
+    const originalName = originalNameOf(request.headers.get('X-Image-Original-Name'));
     const bytes = await request.arrayBuffer();
     if (bytes.byteLength > MAX_IMAGE_BYTES) {
       // Defence-in-depth: Content-Length is client-supplied
@@ -212,21 +212,36 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
         originalName: originalName ?? '',
       },
     });
-    const image = await insertImage(
-      env,
-      {
-        id,
-        ownerId: owner,
-        contentType: sniffed,
-        byteSize: storedBytes.byteLength,
-        width,
-        height,
-        sha256: sha,
-        originalName,
-      },
-      caps,
-    );
+    let image: Awaited<ReturnType<typeof insertImage>>;
+    try {
+      image = await insertImage(
+        env,
+        {
+          id,
+          ownerId: owner,
+          contentType: sniffed,
+          byteSize: storedBytes.byteLength,
+          width,
+          height,
+          sha256: sha,
+          originalName,
+        },
+        caps,
+      );
+    } catch (err) {
+      // No row will ever name these bytes, and the retention sweep only walks rows: never leave them.
+      await env.IMAGES.delete(id);
+      throw err;
+    }
     if (!image) {
+      // The same bytes uploaded at the same moment (the file dropped twice, two tabs): the other upload's
+      // row won. Ours is an orphan; the answer is theirs, as a dedupe.
+      const raced = await findImageBySha(env, owner, sha);
+      if (raced) {
+        await env.IMAGES.delete(id);
+        console.info('[images] racing upload of the same bytes deduped', { owner });
+        return json({ image: raced, deduped: true });
+      }
       // A concurrent upload filled the gallery after the check above; the
       // insert refused atomically, so the bytes just written are an orphan.
       await env.IMAGES.delete(id);
@@ -334,4 +349,21 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
   }
 
   return notFound();
+}
+
+// The longest original name kept, in characters: R2's custom metadata holds 2 KB in all, and a name past it
+// made the store throw. Safe range: 100 to 300.
+export const ORIGINAL_NAME_MAX = 200;
+
+/** The uploaded file's own name: percent-encoded by the editor (a header is Latin-1 only), read raw from an
+ *  older client whose name does not decode, cut to ORIGINAL_NAME_MAX characters. Null when none was sent. */
+export function originalNameOf(header: string | null): string | null {
+  if (header === null) return null;
+  let name = header;
+  try {
+    name = decodeURIComponent(header);
+  } catch {
+    // An older client's raw name (a lone `%`): kept as sent.
+  }
+  return Array.from(name).slice(0, ORIGINAL_NAME_MAX).join('');
 }

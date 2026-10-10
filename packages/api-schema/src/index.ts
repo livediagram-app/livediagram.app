@@ -12,6 +12,7 @@
 // The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
 // new code should prefer the canonical names here.
 
+import type { AccessLevel } from './access-levels';
 import type { DocumentSource } from './document-source';
 import type { DriveMode } from './drive';
 import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@livediagram/document';
@@ -63,6 +64,8 @@ export type LiveDoc = {
   // (or absent, from an older client or record) for the built-in ones. Written only by
   // PUT /documents/:id/item-types.
   itemTypes?: ItemTypeCatalogue | null;
+  // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
+  itemTypesRev?: number;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the
@@ -107,7 +110,19 @@ export type DocumentSummary = {
   // Nothing drawn: the first tab has no elements, or there is no tab
   // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
   empty: boolean;
+  // What the Details view shows (docs/specs/013-workspace/explorer-details-view.md), summed over the
+  // document's tabs; null when it has no tab or one of its tabs is not counted yet.
+  stats: DocumentStats | null;
 } & RecordedIntent;
+
+// A document's tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
+// from"): the mode of the tab written last, and elements, comments and stored bytes over every tab.
+export type DocumentStats = {
+  mode: EditorMode;
+  elements: number;
+  comments: number;
+  bytes: number;
+};
 
 // A document's shared tabs: how many of its tabs are also linked into another
 // document, and how many other documents hold them. What the delete and Take
@@ -359,7 +374,8 @@ export type TeamInviteLinkJoin = {
 // Share links (docs/specs/014-identity/auth-and-guest-access.md, docs/specs/015-api/api.md)
 // ---------------------------------------------------------------------
 
-export type ShareRole = 'edit' | 'view';
+// A share link's access level (docs/specs/013-workspace/share-roles.md): Viewer, Participant or Editor.
+export type ShareRole = AccessLevel;
 
 // What a share link is for (docs/specs/025-community/community.md): an ordinary link the owner manages in the Share
 // dialog, or the community link a Community post owns (never listed, never expires, no room, no comments).
@@ -436,8 +452,9 @@ export type ParticipantPresence = {
   // Object — derived from owner-id match (always 'edit') or the
   // share-code the visitor used to join. Optional so existing
   // hello frames keep parsing while clients catch up; missing value
-  // is treated as "unknown role" by the UI (no badge surfaced).
-  role?: 'edit' | 'view';
+  // is treated as "unknown role" by the UI (no badge surfaced). An access level
+  // (docs/specs/013-workspace/share-roles.md); readers parse it with parseStoredLevel.
+  role?: AccessLevel;
   // Id of the tab this participant is currently focused on. The room
   // remembers it from their `tab-focus` ops and echoes it in the
   // presence list so a LATE joiner learns where everyone already is —
@@ -586,6 +603,7 @@ export type UnfurlResult = {
   favicon?: string;
 };
 
+export * from './access-levels';
 export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
@@ -666,3 +684,6 @@ export * from './oauth-clients';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './workbench';
 export * from './workbench-messages';
+export * from './illustrate';
+export * from './article-frames';
+export * from './illustrate-summary';

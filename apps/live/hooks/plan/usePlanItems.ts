@@ -1,5 +1,6 @@
 'use client';
 
+import { subscribeOfflineIds } from '@/lib/offline/offline-store';
 import { debugLog } from '@/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ItemsRoomOp } from '@livediagram/api-schema';
@@ -21,6 +22,7 @@ import {
   mergeItemChanges,
   refetchedItemStore,
   withCreateIds,
+  writeLimitedTo,
   type Item,
   type ItemPerson,
   type ItemStoreState,
@@ -31,6 +33,7 @@ import {
   writeItem,
   writeItemComment,
   type ItemCommentAction,
+  type ItemWriteAnswer,
   type ItemsScope,
 } from '@/lib/api/items';
 import { track } from '@/lib/telemetry';
@@ -184,6 +187,16 @@ export function usePlanItems(opts: {
     [],
   );
 
+  // The document synced to the server in place (docs/specs/006-document/offline-mode.md "Syncing in
+  // place"): the server's store, and its revision, replace the local one the board was reading.
+  useEffect(
+    () =>
+      subscribeOfflineIds((id) => {
+        if (loadedRef.current && id === scopeRef.current?.documentId) void load();
+      }),
+    [load, scopeRef],
+  );
+
   const receive = useCallback(
     (op: ItemsRoomOp) => {
       const gap = op.rev > serverRevRef.current + 1;
@@ -203,7 +216,8 @@ export function usePlanItems(opts: {
     [refetch],
   );
 
-  // Applies, sends and settles one write; false when it was refused (the store is refetched).
+  // Applies, sends and settles one write; false when it was refused (the store is refetched). `made` is what the api
+  // stored; a write refused after part of it landed (ItemWritePartlyLanded) is not ok, with the part in `made`.
   const send = useCallback(
     async (write: ItemWrite): Promise<{ ok: boolean; made: Item[] }> => {
       const s = scopeRef.current;
@@ -218,9 +232,8 @@ export function usePlanItems(opts: {
       }
       storeRef.current = local.state;
       setStore(local.state);
-      try {
-        const answer = await writeItem(s, write, by);
-        // A room op newer than this answer already landed: an item it removed stays removed.
+      // Folds an api answer in: a room op newer than it already landed, so an item that op removed stays removed.
+      const settle = (answer: ItemWriteAnswer) => {
         const overtaken = answer.rev >= 0 && answer.rev < serverRevRef.current;
         if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
         setStore((prev) => {
@@ -228,10 +241,20 @@ export function usePlanItems(opts: {
           const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
           return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
         });
+      };
+      try {
+        const answer = await writeItem(s, write, by);
+        settle(answer);
         return { ok: true, made: answer.upserts };
       } catch (err) {
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
-        itemIdsOfWrite(write).forEach((id) => unconfirmedRef.current.add(id));
+        // ItemWritePartlyLanded carries what landed before the failure.
+        const landed = (err as { landed?: ItemWriteAnswer } | null)?.landed ?? null;
+        if (landed) settle(landed);
+        const kept = new Set(landed?.upserts.map((u) => u.id));
+        itemIdsOfWrite(write)
+          .filter((id) => !kept.has(id))
+          .forEach((id) => unconfirmedRef.current.add(id));
         const code = (err as { code?: string }).code;
         callbacks.current.onError(
           code === 'items_full'
@@ -241,7 +264,7 @@ export function usePlanItems(opts: {
               : "Couldn't save that change",
         );
         void load();
-        return { ok: false, made: [] };
+        return { ok: false, made: landed?.upserts ?? [] };
       }
     },
     [load, callbacks, scopeRef, selfRef],
@@ -253,26 +276,33 @@ export function usePlanItems(opts: {
       const before = storeRef.current;
       const inverse = inverseItemWrites(before, w);
       const result = await send(w);
-      if (!result.ok || !inverse) return result.ok;
+      if (!inverse) return result.ok;
+      // Refused after part of it landed: the part that landed is still one undo step.
+      const landedIds = new Set(result.made.map((m) => m.id));
+      const undoes = result.ok
+        ? inverse
+        : inverse.flatMap((back) => writeLimitedTo(back, landedIds) ?? []);
+      const done = result.ok ? w : writeLimitedTo(w, landedIds);
+      if (!done || undoes.length === 0) return result.ok;
       // A redo makes the same items again, keys included.
       const redo: ItemWrite =
-        w.kind === 'create'
+        done.kind === 'create'
           ? {
               kind: 'create',
-              creates: w.creates.map((c) => ({
+              creates: done.creates.map((c) => ({
                 ...c,
                 key: result.made.find((m) => m.id === c.id)?.key ?? c.key,
               })),
             }
-          : w;
+          : done;
       // Both sides are marked as an undo, so a card type's left-out statuses never refuse putting a change back.
       callbacks.current.pushUndo({
         undo: () => {
-          for (const back of inverse) void send(asUndoWrite(back));
+          for (const back of undoes) void send(asUndoWrite(back));
         },
         redo: () => void send(asUndoWrite(redo)),
       });
-      return true;
+      return result.ok;
     },
     [send, callbacks],
   );

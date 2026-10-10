@@ -354,8 +354,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     if (member.userId === null || member.userId !== userId) {
       return forbidden('not_your_invite');
     }
-    if (member.status === 'invited') {
-      await acceptTeamMember(env, member.id);
+    // Only the accept that flips the row announces it: a double-click or a
+    // second tab racing this one finds the row already joined and stays quiet.
+    if (member.status === 'invited' && (await acceptTeamMember(env, member.id))) {
       // After the flip, so audienceForTeam already counts the new
       // member and they see their own arrival.
       ctx.waitUntil?.(recordInviteAccepted(env, team, userId, member.email ?? null));
@@ -430,7 +431,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // Guarded in the write, so a concurrent change (two admins removing each other, one leaving while
       // removed) never leaves the team no joined admin. Their work moved first on purpose: a refused removal
       // has only handed it to another member, where a removal before the move could leave it with them.
-      if (!(await removeTeamMemberKeepingAdmin(env, member.id))) return conflict('last_admin');
+      if (!(await removeTeamMemberKeepingAdmin(env, member))) return conflict('last_admin');
       // Their open sessions on the team's documents end too, or a removed member would keep
       // reading (and editing) live until they disconnect (docs/specs/013-workspace/team-shared-documents.md).
       if (member.status === 'joined' && member.userId) {

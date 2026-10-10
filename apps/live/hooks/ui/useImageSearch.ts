@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
 import { OpenverseSearchError, type OpenverseImage } from '@/lib/image-search/openverse';
 import { searchOpenverse } from '@/lib/image-search/search';
-import { pickFailureMessage, storeSearchResult } from '@/lib/image-search/pick';
+import { pickFailureMessage, storeSearchResult, type PickStage } from '@/lib/image-search/pick';
 import type { PickedImage } from '@/lib/upload-image';
 import {
   IMAGE_SEARCH_THUMBNAIL_FALLBACK,
@@ -33,8 +33,14 @@ export function useImageSearch({
   const [page, setPage] = useState(0);
   const [pageCount, setPageCount] = useState(0);
   const [status, setStatus] = useState<ImageSearchStatus>('idle');
+  // The query being searched for (shown while it loads) and whether the load is a further page.
+  const [pending, setPending] = useState<{ query: string; more: boolean }>({
+    query: '',
+    more: false,
+  });
   const [error, setError] = useState<ImageSearchError | null>(null);
   const [pickingId, setPickingId] = useState<string | null>(null);
+  const [pickStage, setPickStage] = useState<PickStage>('downloading');
   const [pickError, setPickError] = useState<string | null>(null);
   // The latest request's number: an older answer arriving late is dropped.
   const seq = useRef(0);
@@ -49,6 +55,7 @@ export function useImageSearch({
 
   const load = useCallback(async (q: string, nextPage: number) => {
     const mine = ++seq.current;
+    setPending({ query: q, more: nextPage > 1 });
     setStatus('loading');
     setError(null);
     setPickError(null);
@@ -97,6 +104,7 @@ export function useImageSearch({
     async (result: OpenverseImage) => {
       if (pickingId) return;
       setPickingId(result.id);
+      setPickStage('downloading');
       setPickError(null);
       let outcome: Awaited<ReturnType<typeof storeSearchResult>>;
       try {
@@ -108,6 +116,9 @@ export function useImageSearch({
           (source) => session.store(source),
           fetch,
           () => track('Error', 'Warning', IMAGE_SEARCH_THUMBNAIL_FALLBACK),
+          (stage) => {
+            if (mounted.current) setPickStage(stage);
+          },
         );
       } catch {
         // A failed chunk load or an unexpected throw must not leave the grid locked.
@@ -128,11 +139,14 @@ export function useImageSearch({
 
   return {
     query,
+    pendingQuery: pending.query,
+    loadingMore: status === 'loading' && pending.more,
     results,
     status,
     error,
     hasMore: status !== 'idle' && page < pageCount,
     pickingId,
+    pickStage,
     pickError,
     submit,
     loadMore,

@@ -18,8 +18,8 @@ import {
   readUserPreferences,
   toggleRecentExcluded,
   writeUserPreferences,
-  type UserPreferences,
 } from '@/lib/user-preferences';
+import { useCachedPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { useFavourites } from '@/hooks/persistence/useFavourites';
 import { useFolders } from '@/hooks/persistence/useFolders';
@@ -57,8 +57,6 @@ import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus
 // Open to both guests and signed-in users (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/folders.md): the
 // owner id resolves to the Clerk userId when signed in, otherwise to
 // the `livediagram:v2:self-id` localStorage UUID.
-// The preferences a hydrating render sees: none.
-const NO_PREFERENCES: UserPreferences = {};
 
 export function useExplorerState() {
   // Full page loads once a newer build is live (docs/specs/016-platform/stale-builds.md).
@@ -78,15 +76,14 @@ export function useExplorerState() {
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the
-  // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md) — two useState copies would drift
-  // the moment one of them wrote. Seeded from the localStorage cache; the
-  // authoritative D1 copy merges in on mount. Exposed only once hydrated: a
-  // build without sign-in prerenders this shell, and the render that
-  // hydrates it must match that HTML (the sidebar's Minimal chrome, the
-  // appearance control's power-user wording), so it sees no preferences.
-  const [storedPrefs, setPrefs] = useState<UserPreferences>(() => readUserPreferences());
+  // hidden-from-Recent list, docs/specs/013-workspace/hide-from-recent.md). Followed live from the
+  // localStorage cache, which every write lands in (this tab's, another tab's, and the
+  // authoritative D1 copy merged in on mount), so a change made in another tab shows here and the
+  // next write builds on it. The hydrating render sees no preferences: a build without sign-in
+  // prerenders this shell, and that render must match the HTML (the sidebar's Minimal chrome, the
+  // appearance control's power-user wording).
+  const prefs = useCachedPreferences();
   const hydrated = useHydrated();
-  const prefs = hydrated ? storedPrefs : NO_PREFERENCES;
   // Owner id resolution mirrors new/page.tsx + editor-page.tsx: a
   // signed-in user is keyed by Clerk userId, a guest is keyed by the
   // localStorage UUID (minted on first visit). Null until Clerk has
@@ -439,7 +436,7 @@ export function useExplorerState() {
 
   const timelineUnread = useTimelineUnread(ownerId);
 
-  // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md). Read once here rather
+  // What's outstanding for the reader (docs/specs/013-workspace/inbox.md). Read once here rather
   // than in the section, because the sidebar badge draws from the same
   // list on every Explorer section.
   const activity = useActivityFeed(ownerId);
@@ -469,16 +466,9 @@ export function useExplorerState() {
     now: lens.now,
   });
 
-  // Merge the authoritative D1 preferences in once the owner is known.
+  // Merge the authoritative D1 preferences in once the owner is known; the merge lands in the cache.
   useEffect(() => {
-    if (!ownerId) return;
-    let cancelled = false;
-    void fetchUserPreferences(ownerId).then((merged) => {
-      if (!cancelled && merged) setPrefs(merged);
-    });
-    return () => {
-      cancelled = true;
-    };
+    if (ownerId) void fetchUserPreferences(ownerId);
   }, [ownerId]);
 
   // Hide / show a document in Recent (docs/specs/013-workspace/hide-from-recent.md). Read-modify-writes from the
@@ -487,12 +477,10 @@ export function useExplorerState() {
   const toggleRecentExclusion = useCallback(
     (documentId: string) => {
       const latest = readUserPreferences();
-      const next: UserPreferences = {
-        ...latest,
-        recentExcludedIds: toggleRecentExcluded(latest, documentId),
-      };
-      setPrefs(next);
-      writeUserPreferences(next, ownerId ?? undefined);
+      writeUserPreferences(
+        { ...latest, recentExcludedIds: toggleRecentExcluded(latest, documentId) },
+        ownerId ?? undefined,
+      );
     },
     [ownerId],
   );
@@ -561,7 +549,7 @@ export function useExplorerState() {
     recentCount,
     // Unread Timeline events (docs/specs/013-workspace/timeline.md §2.5), for the sidebar badge.
     timelineUnread,
-    // What's outstanding for the reader (docs/specs/013-workspace/activity-page.md): the Activity pane's
+    // What's outstanding for the reader (docs/specs/013-workspace/inbox.md): the Activity pane's
     // lists + the sidebar badge's count.
     activity,
     // Per-user document stars (docs/specs/013-workspace/favourites.md).
@@ -569,7 +557,6 @@ export function useExplorerState() {
     toggleFavourite,
     // Preferences (docs/specs/007-editor/user-preferences.md) + the Recent exclusion toggle (docs/specs/013-workspace/hide-from-recent.md).
     prefs,
-    setPrefs,
     toggleRecentExclusion,
     paneTitle,
     paneCrumbs,

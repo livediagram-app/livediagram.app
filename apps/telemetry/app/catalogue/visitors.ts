@@ -203,6 +203,22 @@ export const PLAN_TOURS_STARTED = chart(
   },
 );
 
+export const PLAN_TOUR_BOARDS_PICKED = chart(
+  'UI',
+  'Selected',
+  'Plan Tours: Boards',
+  "Boards picked on the Plan tour's welcome card.",
+  { types: ['PlanTourBoards'] },
+);
+
+export const PLAN_TOUR_SHEETS_PICKED = chart(
+  'UI',
+  'Selected',
+  'Plan Tours: Spreadsheets',
+  "Spreadsheets picked on the Plan tour's welcome card.",
+  { types: ['PlanTourSheets'] },
+);
+
 export const PLAN_TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
@@ -231,11 +247,13 @@ export const PLAN_TOUR: MetricStack = {
   stack: true,
   title: 'Plan Tour',
   blurb:
-    'The first time in Plan mode: the Plan tour offered, started, stepped through, finished or skipped.',
+    'The first time in Plan mode: the Plan tour offered, its track picked (Boards or Spreadsheets), stepped through, finished or skipped.',
   members: [
     PLAN_TOUR_OFFERED,
     PLAN_TOUR_DECLINED,
     PLAN_TOURS_STARTED,
+    PLAN_TOUR_BOARDS_PICKED,
+    PLAN_TOUR_SHEETS_PICKED,
     PLAN_TOUR_STEPS_VIEWED,
     PLAN_TOURS_COMPLETED,
     PLAN_TOURS_SKIPPED,

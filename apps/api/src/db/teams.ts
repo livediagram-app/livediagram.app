@@ -8,6 +8,7 @@
 import type { Team, TeamListItem, TeamMember, TeamRole } from '@livediagram/api-schema';
 import type { Env } from '../types';
 import { getParticipant } from './participants';
+import { imageGrantOwnerChangeStatement } from './image-grants';
 
 // TEAM_COLS / JOINED_COUNT / TeamRow / rowToTeam are shared with the
 // invite machinery in team-invites.ts.
@@ -172,7 +173,7 @@ export async function updateTeam(
   patch: { name?: string; organisation?: string | null },
 ): Promise<void> {
   const now = Date.now();
-  // Partial UPDATE, same semantics as updateFolder: undefined = leave
+  // Partial UPDATE, same semantics as a folder rename: undefined = leave
   // the column alone (organisation may be set to null explicitly).
   if (patch.name !== undefined) {
     await env.DB.prepare('UPDATE teams SET name = ?, updated_at = ? WHERE id = ?')
@@ -213,16 +214,15 @@ export async function updateTeamMemberRole(
     .run();
 }
 
-export async function removeTeamMember(env: Env, memberId: string): Promise<void> {
-  await env.DB.prepare('DELETE FROM team_members WHERE id = ?').bind(memberId).run();
-}
-
 // The last-admin guard inside the write itself (docs/specs/013-workspace/teams.md): a row that is a joined admin
 // changes only while another joined admin remains, checked in the same statement. Counting first and writing
 // after let two admins demoting each other, or one leaving while removed, both pass and leave none.
+// The other admin must be another PERSON, not a second row of the same user, so removing every row a
+// user holds can never take the last admin with it.
 const KEEPS_AN_ADMIN = `(role != 'admin' OR status != 'joined' OR EXISTS (
     SELECT 1 FROM team_members other
      WHERE other.team_id = team_members.team_id AND other.id != team_members.id
+       AND (team_members.user_id IS NULL OR other.user_id IS NOT team_members.user_id)
        AND other.role = 'admin' AND other.status = 'joined'))`;
 
 /** The member's role set, unless that would leave the team no joined admin; whether it changed. */
@@ -240,12 +240,24 @@ export async function updateTeamMemberRoleKeepingAdmin(
   return (res.meta?.changes ?? 0) > 0;
 }
 
-/** The member removed, unless that would leave the team no joined admin; whether it went. */
-export async function removeTeamMemberKeepingAdmin(env: Env, memberId: string): Promise<boolean> {
-  const res = await env.DB.prepare(`DELETE FROM team_members WHERE id = ? AND ${KEEPS_AN_ADMIN}`)
-    .bind(memberId)
-    .run();
-  return (res.meta?.changes ?? 0) > 0;
+/**
+ * The member removed, unless that would leave the team no joined admin; whether it went. Every other
+ * row the same user holds in that team goes with it, in the same batch and only once the guarded row
+ * is gone, so a duplicate left over from before the unique (team_id, user_id) index (migration 0083)
+ * cannot keep a removed person in the team.
+ */
+export async function removeTeamMemberKeepingAdmin(
+  env: Env,
+  member: { id: string; teamId: string; userId: string | null },
+): Promise<boolean> {
+  const [removed] = await env.DB.batch<unknown>([
+    env.DB.prepare(`DELETE FROM team_members WHERE id = ? AND ${KEEPS_AN_ADMIN}`).bind(member.id),
+    env.DB.prepare(
+      `DELETE FROM team_members WHERE team_id = ?1 AND user_id = ?2
+          AND NOT EXISTS (SELECT 1 FROM team_members WHERE id = ?3)`,
+    ).bind(member.teamId, member.userId, member.id),
+  ]);
+  return (removed?.meta.changes ?? 0) > 0;
 }
 
 // The last-admin guard's input (docs/specs/013-workspace/teams.md): how many JOINED admin rows
@@ -299,9 +311,20 @@ export async function listTeamAdminUserIds(env: Env, teamId: string): Promise<st
 // owned by somebody who has gone stays open to them. The folders go too, so
 // no team row is left owned by a departed (or deleted) account.
 async function moveTeamWork(env: Env, teamId: string, fromUserId: string, toUserId: string) {
-  await env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
-    .bind(toUserId, fromUserId, teamId)
-    .run();
+  // Their images in these documents keep serving once the documents are someone else's.
+  await env.DB.batch([
+    imageGrantOwnerChangeStatement(
+      env,
+      'd.owner_id = ?2 AND d.team_id = ?3',
+      [fromUserId, teamId],
+      Date.now(),
+    ),
+    env.DB.prepare('UPDATE documents SET owner_id = ? WHERE owner_id = ? AND team_id = ?').bind(
+      toUserId,
+      fromUserId,
+      teamId,
+    ),
+  ]);
   await env.DB.prepare('UPDATE folders SET owner_id = ? WHERE owner_id = ? AND team_id = ?')
     .bind(toUserId, fromUserId, teamId)
     .run();

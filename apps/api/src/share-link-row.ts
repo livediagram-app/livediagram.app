@@ -1,19 +1,23 @@
-import type {
-  ShareLink as ShareLinkDTO,
-  ShareLinkExpiry,
-  SharePurpose,
+import {
+  parseStoredLevel,
+  type AccessLevel,
+  type ShareLink as ShareLinkDTO,
+  type ShareLinkExpiry,
+  type SharePurpose,
 } from '@livediagram/api-schema';
 
 // share_links row shape as read from D1 (migration 0003 + the expiry
-// columns from 0020, the tab scope from 0048). `role` arrives as a free-form string here, but
-// the wire-format DTO is the narrow union 'edit' | 'view'. The mapper
-// below normalises. `expiry` / `expires_at` are NULL on every
+// columns from 0020, the tab scope from 0048, the level from 0080). `role` and `level` arrive as free-form
+// strings here, but the wire-format DTO carries an AccessLevel. The mapper below normalises. `expiry` / `expires_at` are NULL on every
 // pre-0020 row (= never expires).
 
 export type ShareLinkRow = {
   code: string;
   document_id: string;
   role: string;
+  // The access level (migration 0080, docs/specs/013-workspace/share-roles.md); NULL on a row written before it,
+  // which reads as its `role`.
+  level: string | null;
   created_at: number;
   expiry: string | null;
   expires_at: number | null;
@@ -28,27 +32,14 @@ export type ShareLinkRow = {
 // own without dragging the rest of the D1 module along (same
 // pattern as image-strip.ts, image-sniff.ts, tab-row.ts).
 //
-// The role check is intentionally `=== 'view'`: any other value
-// (including 'edit', any future role added on the server before
-// the client knows about it, or a corrupted row) defaults to
-// 'edit'. This biases towards the more permissive role, which is
-// safe because:
-//   1. The hosted product only ever writes 'edit' or 'view' (see
-//      apps/api/src/index.ts createShareLink body validation).
-//   2. The defaulting is read-side: a regression here can't
-//      escalate a 'view' visitor to 'edit' (the column was 'view'
-//      by hypothesis; we map it to 'view').
-//   3. If a future migration adds e.g. 'admin' as a stored role
-//      AND a still-old client visits the API, the old client
-//      reads it as 'edit', which is the strictly less-privileged
-//      option than admin would imply (admin > edit > view).
-//   4. The api worker validates the role on the WRITE side too,
-//      so 'admin' can't actually be persisted today.
+// The level reads through `parseStoredLevel` (docs/specs/013-workspace/share-roles.md, blueprint I2): `level`
+// when the row has one, else the legacy two-valued `role`, and anything unknown reads as view, so a value this
+// worker does not know never escalates anyone.
 export function rowToShareLink(row: ShareLinkRow): ShareLinkDTO {
   return {
     code: row.code,
     documentId: row.document_id,
-    role: row.role === 'view' ? 'view' : 'edit',
+    role: storedLevelOf(row),
     createdAt: row.created_at,
     expiry: normaliseExpiry(row.expiry),
     expiresAt: row.expires_at ?? null,
@@ -70,4 +61,21 @@ function normalisePurpose(value: string | null | undefined): SharePurpose {
 // expired link live again).
 function normaliseExpiry(value: string | null): ShareLinkExpiry {
   return value === 'week' || value === 'month' || value === 'sixMonths' ? value : 'never';
+}
+
+// A share_links or shared_with row's level: `level` (0080) when set, else the legacy `role`.
+export function storedLevelOf(row: { role: string; level?: string | null }): AccessLevel {
+  return parseStoredLevel(row.level ?? row.role);
+}
+
+// What a level is written as in the legacy two-valued `role` column: anything below edit is 'view', so a reader
+// that predates the `level` column reads a Participant link as a Viewer and fails closed (migration 0080).
+export function legacyRoleColumn(level: AccessLevel): 'edit' | 'view' {
+  return level === 'edit' ? 'edit' : 'view';
+}
+
+// The level as stored in the `level` column: NULL where the legacy role already says it, so a Viewer or Editor
+// row reads exactly as one written before 0080.
+export function levelColumn(level: AccessLevel): AccessLevel | null {
+  return level === 'participate' ? level : null;
 }

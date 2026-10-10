@@ -10,7 +10,7 @@ import { EXPLORER_LANDING_PATH } from '@/lib/explorer-landing';
 const STATIC_NODES: SelectedNode[] = [
   { kind: 'home' },
   { kind: 'timeline' },
-  { kind: 'activity' },
+  { kind: 'inbox' },
   { kind: 'recent' },
   { kind: 'favourites' },
   { kind: 'themes' },
@@ -49,6 +49,18 @@ describe('explorer route mapping', () => {
     });
   });
 
+  // The Inbox was once Activity (docs/specs/013-workspace/inbox.md): its old address reads as the
+  // Inbox while its page replaces itself, so the Inbox row highlights at once.
+  it('reads the retired Activity address as the Inbox', () => {
+    expect(explorerPathFor({ kind: 'inbox' })).toBe('/explorer/inbox');
+    expect(selectedFromRoute('/explorer/activity', new URLSearchParams())).toEqual({
+      kind: 'inbox',
+    });
+    expect(selectedFromRoute('/explorer/activity/', new URLSearchParams())).toEqual({
+      kind: 'inbox',
+    });
+  });
+
   it('URL-encodes ids', () => {
     expect(explorerPathFor({ kind: 'folder', id: 'a/b c' })).toBe('/explorer/folder?id=a%2Fb%20c');
   });
@@ -59,7 +71,7 @@ describe('explorer route mapping', () => {
     });
   });
 
-  it('keeps All activity, the Timeline feed, on its route', () => {
+  it('keeps the Timeline on its route', () => {
     expect(explorerPathFor({ kind: 'timeline' })).toBe('/explorer/timeline');
     expect(explorerPathFor({ kind: 'home' })).toBe('/explorer/home');
   });

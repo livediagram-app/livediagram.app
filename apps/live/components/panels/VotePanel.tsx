@@ -1,8 +1,8 @@
 'use client';
 
 // The live VOTE panel (docs/specs/012-collaboration/session-tools.md): the facilitator's read on a dot-vote in
-// progress, on the same shared MovablePanel as Poll / Collaborate /
-// Layers. Two phases, one panel:
+// progress, a popover over the Session strip's Vote button on the same shared MovablePanel as Poll /
+// Collaborate / Layers. Two phases, one panel:
 //
 //   Casting open  -> TURNOUT. How many dots are spent and how many people
 //                    still hold some, so the host knows when to call it
@@ -11,8 +11,7 @@
 //                    first, each row clickable to jump the results
 //                    walkthrough straight to that element.
 //
-// Like the poll panel it only exists while a vote does, so it joins and
-// leaves its corner stack rather than sitting in it.
+// Like the poll panel it only exists while a vote does.
 //
 // On naming: rows are NOT attributed to people, and can't be. Dots are
 // keyed by the local participant id while the room's presence roster is
@@ -26,12 +25,17 @@ import { itemTitle } from '@livediagram/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
-import type { MovablePanelPlacementProps } from '@/components/primitives/MovablePanel.types';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import type { DockAnchor } from '@/lib/canvas-chrome';
+import type { VoteReview } from '@/hooks/canvas/useVoteReview';
+import { voteRules } from '@/components/panels/session-studio/session-studio';
+import { buttonClassName } from '@livediagram/ui';
 
-const primaryBtn = `flex-1 rounded-md bg-brand-500 px-2 py-1 text-[11px] font-semibold text-white transition hover:bg-brand-600 ${SOLID_BRAND_DARK_CONTROL}`;
-const quietBtn =
-  'flex-1 rounded-md border border-slate-200 px-2 py-1 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 dark:border-slate-700 dark:text-slate-300';
+// A popover never moves.
+const NO_MOVE = () => {};
+
+// The shared Button look (its hover and dark-mode states included), sized to the panel.
+const primaryBtn = buttonClassName({ variant: 'primary', size: 'xs', className: 'flex-1' });
+const quietBtn = buttonClassName({ variant: 'secondary', size: 'xs', className: 'flex-1' });
 
 export function VotePanel({
   vote,
@@ -44,11 +48,16 @@ export function VotePanel({
   onRevealVote,
   onClearVote,
   isHost,
-  position,
-  onMoveTo,
-  onReset,
-  dock,
+  selfId,
+  voteLayers = [],
+  review,
+  onNextResult,
+  onPrevResult,
+  onDoneReview,
+  popoverAnchor,
+  onPopoverClose,
   readOnly,
+  dismissOnOutside = true,
 }: {
   vote: TabVote;
   // The active tab's elements, only to resolve a voted id to a label.
@@ -71,21 +80,64 @@ export function VotePanel({
   isHost: boolean;
   // View-role visitors watch the vote but never drive it (docs/specs/012-collaboration/session-tools.md).
   readOnly: boolean;
-} & MovablePanelPlacementProps) {
+  // Who the vote knows us by (the collab key), for our own dots left while casting is open.
+  selfId: string;
+  // The tab's layers, to name a layer-scoped vote's layer in its rules.
+  voteLayers?: readonly { id: string; name: string }[];
+  // The results walkthrough, while it runs (docs/specs/012-collaboration/session-tools.md): the pick
+  // under review and, for whoever drives it, Previous / Next / Done. It lives here rather than in a
+  // banner over the canvas.
+  review: VoteReview | null;
+  onNextResult: () => void;
+  onPrevResult: () => void;
+  onDoneReview: () => void;
+  // Where the Vote button sits, for the popover's arrow, and how it asks to close.
+  popoverAnchor?: DockAnchor;
+  onPopoverClose: () => void;
+  // False while the activity runs on a desktop: only the button closes it
+  // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+  dismissOnOutside?: boolean;
+}) {
   const showResults = vote.revealed;
 
   return (
     <MovablePanel
       helpArticle="sessionVoting"
       title="Vote"
-      position={position}
-      defaultCorner="top-right-stacked"
-      width="w-auto sm:w-64"
-      onMoveTo={onMoveTo}
-      onReset={onReset}
-      {...dock}
+      position={null}
+      defaultCorner="bottom-right"
+      onMoveTo={NO_MOVE}
+      popoverOpen
+      popoverAnchor={popoverAnchor}
+      asPopover
+      popoverWidth="w-72"
+      dismissOnOutside={dismissOnOutside}
+      onPopoverClose={onPopoverClose}
     >
       <div className="flex flex-col gap-2 px-2 pb-2">
+        {/* What used to float over the canvas as the vote banner: your dots left while casting is
+            open, then the walkthrough of the results. */}
+        {vote.active && !readOnly ? <YourDots vote={vote} selfId={selfId} /> : null}
+        {review ? (
+          <ReviewBar
+            review={review}
+            onNext={onNextResult}
+            onPrev={onPrevResult}
+            onDone={onDoneReview}
+          />
+        ) : null}
+        {/* The rules this vote runs under (budget, one per item, layer, the privacy in force), so
+            nobody has to ask; read-only, since they are fixed once the vote starts. */}
+        <ul className="flex flex-wrap gap-1" aria-label="Vote rules">
+          {voteRules(vote, voteLayers).map((r) => (
+            <li
+              key={r}
+              className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            >
+              {r}
+            </li>
+          ))}
+        </ul>
         {showResults ? (
           <VoteResultsList
             results={results}
@@ -134,6 +186,72 @@ export function VotePanel({
         )}
       </div>
     </MovablePanel>
+  );
+}
+
+// Your own budget while casting is open: the dots you have left, as pips and a count, so the one
+// number each participant needs is the first thing in the panel.
+function YourDots({ vote, selfId }: { vote: TabVote; selfId: string }) {
+  const budget = vote.votesPerPerson;
+  const remaining = Math.max(0, budget - votesSpentBy(vote, selfId));
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md bg-brand-50 px-2 py-1.5 dark:bg-brand-500/15">
+      <span className="text-[11px] font-medium text-brand-700 dark:text-brand-100">
+        {remaining} of {budget} {budget === 1 ? 'dot' : 'dots'} left
+      </span>
+      <span className="flex flex-wrap items-center gap-0.5" aria-hidden>
+        {Array.from({ length: budget }, (_, d) => (
+          <span
+            key={d}
+            className={
+              'h-2 w-2 rounded-full ' +
+              (d < remaining ? 'bg-brand-500' : 'bg-brand-200 dark:bg-brand-500/30')
+            }
+          />
+        ))}
+      </span>
+    </div>
+  );
+}
+
+// The results walkthrough: the pick the room is on (pulsed and centred on the canvas), and for
+// whoever drives it the way through. Followers get the readout alone, never buttons that no-op.
+function ReviewBar({
+  review,
+  onNext,
+  onPrev,
+  onDone,
+}: {
+  review: VoteReview;
+  onNext: () => void;
+  onPrev: () => void;
+  onDone: () => void;
+}) {
+  const isLast = review.index === review.total - 1;
+  return (
+    <div className="flex flex-col gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 dark:bg-amber-500/10">
+      <span className="flex items-center gap-1.5 text-[11px] font-medium text-amber-800 dark:text-amber-200">
+        <span aria-hidden className="h-2 w-2 rounded-full bg-amber-400" />
+        Top result {review.index + 1} of {review.total} &middot; {review.votes}{' '}
+        {review.votes === 1 ? 'vote' : 'votes'}
+      </span>
+      {review.canControl ? (
+        <div className="flex items-center gap-1">
+          <button type="button" onClick={onPrev} disabled={review.index === 0} className={quietBtn}>
+            Previous
+          </button>
+          {isLast ? (
+            <button type="button" onClick={onDone} className={primaryBtn}>
+              Done
+            </button>
+          ) : (
+            <button type="button" onClick={onNext} className={primaryBtn}>
+              Next
+            </button>
+          )}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

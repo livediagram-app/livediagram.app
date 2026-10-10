@@ -129,6 +129,10 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'okrs':
     case 'product-launch':
     case 'feedback-board':
+    case 'budget-planner':
+    case 'timesheet':
+    case 'contact-list':
+    case 'task-tracker':
       return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);

@@ -276,6 +276,44 @@ export async function relayTabRename(
   return false;
 }
 
+// An agent's Illustrate edit (docs/specs/024-agents/illustrate-for-agents.md "The route"), as the ops an
+// editor's own edit sends: a `tab-meta` patch of the pages and mode, then each article's frames, in
+// order. Best-effort and logged, like the tab rename relay; answers how many reached the room.
+export async function relayIllustrate(
+  env: Env,
+  documentId: string,
+  ops: readonly RoomOp[],
+): Promise<number> {
+  let reached = 0;
+  for (const op of ops) {
+    try {
+      const res = await roomFetch(
+        env,
+        documentId,
+        '/mutation',
+        mutationInit(op),
+        ROOM_RELAY_TIMEOUT_MS,
+      );
+      if (res.ok) {
+        reached += 1;
+        continue;
+      }
+      console.warn('[illustrate-agent] relay-missed', {
+        documentId,
+        op: op.kind,
+        error: `status ${res.status}`,
+      });
+    } catch (err) {
+      console.warn('[illustrate-agent] relay-missed', {
+        documentId,
+        op: op.kind,
+        error: String(err),
+      });
+    }
+  }
+  return reached;
+}
+
 // One open editor's selection on a tab, as the room answers it: every selected id, the session's
 // name and colour, and whether it is the agent owner's own session (matched by person tag).
 export type RoomSelection = { elementIds: string[]; name: string; color: string; mine: boolean };

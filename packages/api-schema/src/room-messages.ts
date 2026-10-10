@@ -1,5 +1,5 @@
 import type { AgentPresence } from './agent-presence';
-import type { ArticleOp, ElementDelta, ElementOp, QaNote, Tab } from '@livediagram/document';
+import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { LivePoll } from './poll';
@@ -217,6 +217,22 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
   return typeof kind === 'string' && (PRESENCE_OP_KINDS as readonly string[]).includes(kind);
 }
 
+// A participation act (docs/specs/013-workspace/share-roles.md "Integrity"): a person's own dot, response or idea.
+// A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
+// op, which the room applies through the participant content rule instead of relaying.
+export const PARTICIPATION_OP_KINDS = ['vote'] as const;
+export const PARTICIPATION_DELTA_KINDS = ['response', 'idea'] as const;
+
+export function isParticipationOp(op: unknown): boolean {
+  if (typeof op !== 'object' || op === null) return false;
+  const { kind, delta } = op as { kind?: unknown; delta?: unknown };
+  if ((PARTICIPATION_OP_KINDS as readonly unknown[]).includes(kind)) return true;
+  if (kind !== 'el-delta' || typeof delta !== 'object' || delta === null) return false;
+  return (PARTICIPATION_DELTA_KINDS as readonly unknown[]).includes(
+    (delta as { kind?: unknown }).kind,
+  );
+}
+
 export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[number] {
   return typeof kind === 'string' && (SYSTEM_OP_KINDS as readonly string[]).includes(kind);
 }
@@ -387,7 +403,7 @@ export type RoomOp =
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
   // carries the element payload (see @livediagram/document ElementOp).
-  | { kind: 'el'; tabId: string; op: ElementOp }
+  | { kind: 'el'; tabId: string; op: RoomElementOp }
   // A tab's non-element metadata changed (name, background, font, …) —
   // the element array is untouched, so this rides alongside `el` ops
   // without shipping the whole tab.
@@ -431,8 +447,17 @@ export type RoomOp =
   // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
   // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
   // `created`: the article is new (its first frames): a receiver without it takes it, where puts
-  // for an article it no longer has (removed meanwhile) are dropped.
-  | { kind: 'article'; tabId: string; flow: string; ops: ArticleOp[]; created?: true }
+  // for an article it no longer has (removed meanwhile) are dropped. `agent`: an agent wrote it (set
+  // by the api relay alone), so an editor that is not its writer still grows its pages
+  // (docs/specs/024-agents/illustrate-for-agents.md "Pages for the writing").
+  | {
+      kind: 'article';
+      tabId: string;
+      flow: string;
+      ops: ArticleOp[];
+      created?: true;
+      agent?: true;
+    }
   | { kind: 'article'; tabId: string; flow: string; removed: true }
   | {
       kind: 'vote';

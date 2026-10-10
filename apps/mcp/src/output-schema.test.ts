@@ -75,7 +75,13 @@ const SHEET_ELEMENT = {
   height: 560,
   planSheet: { sheetId: SHEET.id },
 };
-const TAB = { id: 't1', name: 'Tab 1', rev: 3, elements: [BOARD_ELEMENT, SHEET_ELEMENT] };
+const TAB = {
+  id: 't1',
+  name: 'Tab 1',
+  rev: 3,
+  opensIn: 'illustrate',
+  elements: [BOARD_ELEMENT, SHEET_ELEMENT],
+};
 // What the changeset route answers (docs/specs/024-agents/agent-changesets.md).
 const CHANGESET = {
   dryRun: false,
@@ -84,6 +90,31 @@ const CHANGESET = {
   text: 'rev 3→4 · cs_0000000001',
   warnings: [],
   lint: null,
+};
+// What the illustrate route answers (docs/specs/024-agents/illustrate-for-agents.md "The route").
+const ARTICLE = { flow: 'art-1', title: 'Brief', pages: [2], blocks: 3, words: 9, look: null };
+const ILLUSTRATE = {
+  tab: { id: 't1', rev: 4 },
+  switched: false,
+  lines: ['Added page 1 (slide, Slide (16:9)).'],
+  pages: [
+    {
+      place: 1,
+      id: 'page-1',
+      name: null,
+      kind: 'slide',
+      size: 'slide',
+      orientation: null,
+      rect: { x: -960, y: -540, width: 1920, height: 1080 },
+      background: null,
+      locked: false,
+      flow: null,
+      elements: 0,
+    },
+  ],
+  articles: [ARTICLE],
+  article: { ...ARTICLE, created: true },
+  changesetId: null,
 };
 const ITEM = {
   id: 'item123abc',
@@ -169,6 +200,7 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
+  if (path.endsWith('/illustrate')) return json(ILLUSTRATE);
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
@@ -280,6 +312,16 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'addSheetOutput',
     args: { documentId: 'd1', title: 'Costs', csv: 'a,b\n1,2' },
   },
+  {
+    tool: 'change_pages',
+    output: 'changePagesOutput',
+    args: { documentId: 'd1', changes: [{ op: 'add', kind: 'slide', layout: 'slide-title' }] },
+  },
+  {
+    tool: 'write_article',
+    output: 'writeArticleOutput',
+    args: { documentId: 'd1', markdown: '# Brief', look: 'report' },
+  },
 ];
 
 describe('tool output schemas', () => {
@@ -369,5 +411,24 @@ describe('tool parameter descriptions', () => {
     const { tools } = await client.listTools();
     const missing = tools.flatMap((t) => undescribed(t.outputSchema as JsonSchema, t.name));
     expect(missing).toEqual([]);
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md: an agent's link is a Participant link unless it names a level.
+describe('share_document level', () => {
+  it('asks the api for participate by default, and for what the agent names', async () => {
+    const roles: unknown[] = [];
+    const recording = async (request: Request) => {
+      if (new URL(request.url).pathname.endsWith('/share'))
+        roles.push(((await request.clone().json()) as { role: unknown }).role);
+      return api(request);
+    };
+    const client = await connectTestClient(recording);
+    await client.callTool({ name: 'share_document', arguments: { documentId: 'd1' } });
+    await client.callTool({
+      name: 'share_document',
+      arguments: { documentId: 'd1', role: 'view' },
+    });
+    expect(roles).toEqual(['participate', 'view']);
   });
 });

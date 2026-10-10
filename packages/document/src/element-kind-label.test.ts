@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { elementKindLabel } from './element-kind-label';
+import { migrateStoredElements } from './stored-elements';
 import type { Element } from './index';
 
 // Minimal element stubs — elementKindLabel only reads `type` (+ `shape`).
@@ -54,9 +55,13 @@ describe('elementKindLabel — event-storming notes', () => {
     expect(elementKindLabel(note({ esKind: 'hotspot' }))).toBe('Hotspot');
   });
 
-  it('falls back to the canonical fill for notes authored before the stamp', () => {
-    expect(elementKindLabel(note({ fillColor: '#93c5fd', fixedSize: true }))).toBe('Command');
-    expect(elementKindLabel(note({ fillColor: '#d8b4fe', fixedSize: true }))).toBe('Policy');
+  it('names a note authored before the stamp once its load stamps the kind', () => {
+    const [cmd, policy] = migrateStoredElements([
+      note({ fillColor: '#93c5fd', fixedSize: true }),
+      note({ fillColor: '#d8b4fe', fixedSize: true }),
+    ]);
+    expect(elementKindLabel(cmd!)).toBe('Command');
+    expect(elementKindLabel(policy!)).toBe('Policy');
   });
 
   it('stays "Sticky" for an ordinary note', () => {

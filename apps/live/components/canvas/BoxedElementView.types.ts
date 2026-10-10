@@ -281,6 +281,14 @@ export type BoxedElementViewProps = {
   // edits in-component (TableView's own cell double-click + menus), so it
   // needs the flag passed through to stay read-only for viewers.
   readOnly: boolean;
+  // Whether a drag would move it: false in a read-only session unless this element is one a Participant may move
+  // (docs/specs/013-workspace/share-roles.md), so the move cursor never promises a drag that will not start.
+  movable?: boolean;
+  // Whether its words may be written: false in a read-only session unless a Participant may write on it. Opens a
+  // table's cell text, never its rows, columns or styles.
+  writable?: boolean;
+  // Whether its resize handles show: false in a read-only session unless a Participant may resize it.
+  resizable?: boolean;
   // Other participants whose realtime selection is currently on this
   // element. Rendered as a small initial-badge stack at the top-left
   // (opposite the link / comment badges).

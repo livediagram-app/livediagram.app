@@ -22,7 +22,7 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // LIST of assigned actions (docs/specs/012-collaboration/assigned-actions.md) and shows them in place.
 //
 // Like the Comment panel it carries NO action machinery of its own. The Assign
-// Action dialog, complete / reopen, the Collaborate panel, the Activity page
+// Action dialog, complete / reopen, the Collaborate panel, the Inbox
 // and the assignment email all work against the element's actions, read
 // through elementActions and keyed by element id plus action id. This file is
 // a layout and four callbacks.

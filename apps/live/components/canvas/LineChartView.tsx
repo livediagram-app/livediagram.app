@@ -8,6 +8,7 @@
 // animates; the axes + x-labels stay still.
 
 import {
+  chartAxisLabel,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   legendFontPx,
@@ -134,7 +135,7 @@ export function LineChartView({
           );
         })}
       </g>
-      {/* X-axis category labels (truncated; may overlap when very dense). */}
+      {/* X-axis category labels, shortened only past the gap to the next one (chartAxisLabel). */}
       {categories.map((c, i) => (
         <text
           key={i}
@@ -145,7 +146,7 @@ export function LineChartView({
           fill={textColor}
           fontFamily={fontFamily}
         >
-          {c.length > 6 ? `${c.slice(0, 5)}…` : c}
+          {chartAxisLabel(c, plotW, n)}
         </text>
       ))}
     </ChartSurface>

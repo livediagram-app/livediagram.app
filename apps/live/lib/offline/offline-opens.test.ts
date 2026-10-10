@@ -124,6 +124,9 @@ describe('offlineRecordOpen', () => {
       put: async () => {},
       delete: async () => {},
       all: async () => [],
+      update: async () => {
+        throw new Error('quota');
+      },
     });
     await expect(offlineRecordOpen('d1', T0)).resolves.toBeUndefined();
     expect(console.warn).toHaveBeenCalledWith('[home] local-open-failed', expect.any(Error));

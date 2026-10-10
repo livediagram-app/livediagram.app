@@ -29,6 +29,13 @@ describe('claiming a free baton', () => {
     expect(claimBaton(FREE_BATON, viewer('v'), 'new')).toBeNull();
   });
 
+  // docs/specs/013-workspace/share-roles.md: a Participant takes part and never runs.
+  it('refuses a Participant, and nobody can hand it one', () => {
+    const participant: Asker = { presenceId: 'p', role: 'participate', isOwner: false };
+    expect(claimBaton(FREE_BATON, participant, 'new')).toBeNull();
+    expect(grantBaton(FREE_BATON, owner('o'), participant, 'new')).toBeNull();
+  });
+
   it('is a no-op for the person already holding it', () => {
     expect(claimBaton(held('a'), owner('a'), 'new')).toBeNull();
   });

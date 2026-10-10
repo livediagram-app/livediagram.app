@@ -36,7 +36,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                                                                                                                                                                            |
 | More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts`                                                                                                                 |
 | Layout category             | `PageLayoutCategoryId` (`'covers' \| 'data' \| 'steps' \| 'people'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`                                                                                                                                                   |
-| A layout for a page         | `buildPageLayout(layout, page)`, `apps/live/lib/page-layout-build.ts`                                                                                                                                                                                                                      |
+| A layout for a page         | `buildPageLayout(layout, page)`, `packages/templates/src/page-layout-build.ts`                                                                                                                                                                                                             |
 | Background catalogue        | `PAGE_COLOUR_GROUPS` (`page-background-custom.tsx`), `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                                         |
 | Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `sameFill`, `gradientFill`, `withBackgroundPatch`                                                                                                                                                                                           |
 | The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                                                                                                                                |
@@ -46,7 +46,7 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | The strip's +               | `AddPageStripButton` (`components/palette/AddPageStripButton.tsx`), `ToolbarPalette` `onAddPage`                                                                                                                                                                                           |
 | First page's choice card    | `FirstPageChoice` (`components/canvas/FirstPageChoice.tsx`)                                                                                                                                                                                                                                |
 | Page navigator              | `PageNavigator` (`components/canvas/PageNavigator.tsx`)                                                                                                                                                                                                                                    |
-| Page panel                  | `IllustratePagePanel` (`PagePanelTab` `'page' \| 'layouts' \| 'style' \| 'text'`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                                                                                                  |
+| Page panel                  | `IllustratePagePanel` (`PagePanelTab` `'page' \| 'background' \| 'layouts' \| 'style' \| 'text'`, `pagePanelTabs`, `PagePreview`, `NameField`, `PanelTabs`, `PageActions`)                                                                                                                 |
 | Background hover preview    | `setPageBackgroundPreview`, `usePageBackgroundPreview`, `previewedBackground`, `withPreviewedBackgrounds`, `apps/live/lib/page-background-preview.ts`                                                                                                                                      |
 | Theme accent                | `themeAccent(theme)`, `illustrate-page-paint.ts`; `IllustratePagesView.themeAccent`                                                                                                                                                                                                        |
 | Panel sections              | `SizeSection`, `OrientationSection` (`illustrate-page-panel-sections.tsx`), `BackgroundSection` (`page-background-section.tsx`)                                                                                                                                                            |
@@ -307,7 +307,7 @@ kind` radiogroup (the segmented control: `theme` while `themePresets` is non-emp
   Swap (one commit). Pattern follows, not on a logo page. The section drops its preview on pointer
   leave and on a blur whose `relatedTarget` is outside it. The panel's outside-press and Escape
   handling leave a `[data-anchored-popover]` alone.
-- Panel opened from a cog (tab Page) or the invite (tab Layouts); `opened = { id, cog, tab }` in
+- Panel opened from a cog (tab Page, or the page's first) or the invite (tab Layouts); `opened = { id, cog, tab }` in
   `IllustratePages`. Desktop: fixed, beside the cog when it fits (`a.right + GAP + WIDTH + EDGE
 <= innerWidth`), else right-aligned under it; re-placed on resize and `PAGE_EASE_MS + 20` after
   the page's rect changes. Mobile (`useIsMobileViewport`): `BottomSheet`.
@@ -318,9 +318,11 @@ kind` radiogroup (the segmented control: `theme` while `themePresets` is non-emp
   preview covers every page of its flow); `IllustratePageClip` inks elements with
   `withPreviewedBackgrounds`, and the writing takes the previewed ink; `edit.previewInk` shows
   own-coloured elements re-inked; cleared on leave, on commit and on unmount.
-- Panel tabs: an infographic page has **Page** / **Layouts**; an article page **Page** / **Style**
-  / **Text** (`articleStyle(part)` renders `ArticleStyleSection`); an initial tab the kind lacks
-  opens as Page. The page toolbar's Article style opens the panel on Style
+- Panel tabs (`pagePanelTabs(page)`): **Page** while `pageSizeChoices(page).length > 1 ||
+pageHasOrientation(page)`, then **Background**, then an infographic, slide or logo page's
+  **Layouts**, or an article page's **Style** / **Text** (`articleStyle(part)` renders
+  `ArticleStyleSection`); an initial tab the page lacks opens as its first. Leaving Background
+  clears the background preview (`onPreview(null)`); leaving Layouts clears the layout preview. The page toolbar's Article style opens the panel on Style
   (`useStylePanelRequest`). Actions read `Duplicate / Move … / Delete article` on an article page.
   The panel and the cog row carry `data-article-keep-active`.
 - Layout preview: `view.layoutPreview` set on tile pointerenter / focus; the clip drops that page
@@ -512,7 +514,7 @@ out: layouts, icons, charts and media."; **Article**, "A page to write on, flowi
 as it grows."), each over its miniature; the strip +'s HoverCard **Add page**, "A new infographic or
 article page after the last."; the first page's card **What Is This Page For?**, "Choose now: a
 page keeps its kind once you start."; the navigator **Previous page**, "n of m", **Next page**;
-the panel's tabs **Page** / **Layouts** (an article page **Page** / **Style** / **Text**), sections **Size**,
+the panel's tabs **Page** / **Background** / **Layouts** (an article page **Page** / **Background** / **Style** / **Text**; a logo page **Background** / **Layouts**), sections **Size**,
 **Orientation**, **Background**, **Pattern**, **Start From a Layout**; the confirm **Replace this
 page's content?**, "The n elements on it make way for <layout>. Undo brings them back.",
 **Cancel** / **Replace**; actions **Duplicate page**, **Move page left**, **Move page right**,
@@ -573,6 +575,7 @@ for the whole of Illustrate mode.
 | Entering puts the board on a page, toast and telemetry              | `apps/live/hooks/editor/useIllustratePages.into-pages.test.ts`                           |
 | Fit size refused, sides dropped, Split Into Pages                   | `illustrate-page-edits.test.ts` "Fit to Content page edits"                              |
 | The Fit tile and Split Into Pages in the panel                      | `apps/live/components/canvas/IllustratePagePanel.fit.test.tsx`                           |
+| The panel's tabs per kind, Background apart from Page               | `apps/live/components/canvas/IllustratePagePanel.tabs.test.tsx`                          |
 | Page slides resolve and frame                                       | `packages/document/src/slide-deck.test.ts` "page slides"                                 |
 | Edits: rename, size, move, delete, duplicate, paint, layout, re-fit | `apps/live/hooks/editor/illustrate-page-edits.test.ts`                                   |
 | Edits on articles: add by kind, shared reshape and paint, as a unit | `illustrate-page-edits.test.ts` "documents"                                              |

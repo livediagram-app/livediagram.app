@@ -17,6 +17,8 @@ import type { Folder } from '@/lib/api-client';
 import type { FolderActionBundle } from './explorer-view-props';
 import { menuHandlers } from './folder-row';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
+import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { useExplorerDropTarget } from './useExplorerDropTarget';
 
 // The plain folder mark that fills a folder card's preview box when
 // there's nothing inside to preview (docs/specs/013-workspace/folder-content-previews.md). Exported so FolderPreview
@@ -53,8 +55,14 @@ export function FolderCard({
   getActions: (anchor: HTMLElement | null) => FolderActionBundle;
 }) {
   const menu = useRowMenu({ disabled: renaming });
+  // A document dragged onto the card files into this folder (docs/specs/013-workspace/folders.md).
+  const drop = useExplorerDropTarget({ teamId: folder.teamId ?? null, folderId: folder.id });
   return (
-    <div className={cardShell} onContextMenu={menu.onContextMenu}>
+    <div
+      className={`${cardShell} ${drop.isDragOver ? DROP_TARGET_RING : ''}`}
+      onContextMenu={menu.onContextMenu}
+      {...drop.handlers}
+    >
       <button
         type="button"
         onClick={onOpen}

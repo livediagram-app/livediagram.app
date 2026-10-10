@@ -26,6 +26,7 @@ import {
   WriteTabIcon,
   EventStormingTabIcon,
   LogoTabIcon,
+  ParticipateTabIcon,
 } from './palette-tab-icons';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
@@ -61,6 +62,15 @@ export const PALETTE_CATEGORIES: {
     fullWidth: true,
     description: 'The tiles most reached for in this mode, from across its categories.',
     icon: <PopularTabIcon />,
+  },
+  {
+    // Participate (docs/specs/013-workspace/share-roles.md): a Participant's whole palette, what it may add. In no
+    // mode's layout: participantPaletteCategories offers it, and only to a Participant.
+    id: 'participate',
+    label: 'Participate',
+    fullWidth: true,
+    description: 'Add stickies and text to the board.',
+    icon: <ParticipateTabIcon />,
   },
   {
     // Cards and Boards (docs/specs/026-plan/plan-mode.md "The palette"): Plan mode's own band, offered

@@ -1,5 +1,6 @@
 // /api/share/<code> — resolve a share code to its document + role.
 
+import { LEVEL_TELEMETRY_TYPE } from '@livediagram/api-schema';
 import { documentImageSvg } from '../document-image';
 import { rowAuthor } from '../community-row';
 import {
@@ -87,26 +88,33 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
           d.id,
           link.role,
           link.tabId,
+          link.code,
         ).catch(() => false);
         // docs/specs/014-identity/profile-and-email-notifications.md: tell the owner the first time a new person opens
         // their shared document. Best-effort + off the response path; the
         // notify layer no-ops when email is off, the owner is a guest, or
-        // they've opted out. Resolve the joiner's display name (shown to
-        // the owner already in presence) for a friendlier subject.
+        // they've opted out, and throttles per document. Resolve the joiner's
+        // display name (shown to the owner already in presence) for a
+        // friendlier subject.
         if (firstVisit) {
           // docs/specs/017-telemetry/telemetry.md: Document·Joined counts once per (visitor, document), here,
           // because only the server knows a visit is the first. The editor
           // used to emit it on every open of the share URL, so refreshes and
           // return visits inflated the count.
           ctx.waitUntil?.(
-            reportServerEvent(env, 'Document', 'Joined', link.role === 'edit' ? 'Edit' : 'View'),
+            reportServerEvent(env, 'Document', 'Joined', LEVEL_TELEMETRY_TYPE[link.role]),
           );
-          ctx.waitUntil?.(
-            getParticipant(env, visitor)
-              .catch(() => null)
-              .then((p) => notifyDocumentJoin(env, d, p?.name ?? null))
-              .catch(() => {}),
-          );
+          // Only a verified visitor emails: a guest's X-Owner-Id is unproven
+          // and free to mint, so each fresh one would be another "first
+          // visit" and another email carrying a name the visitor chose.
+          if (ctx.verifiedUserId && visitor === ctx.verifiedUserId) {
+            ctx.waitUntil?.(
+              getParticipant(env, visitor)
+                .catch(() => null)
+                .then((p) => notifyDocumentJoin(env, d, p?.name ?? null))
+                .catch(() => {}),
+            );
+          }
         }
       }
       // A tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md) sees its tab; the rest are locked.

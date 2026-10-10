@@ -24,7 +24,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (docs/specs/013-workspace/activity-page.md): the Explorer's cross-document inbox. 'Opened'
+  // Activity (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox. 'Opened'
   // once per visit, 'Selected' with type 'Action' | 'Thread' | 'Card' on a row
   // click, 'Loaded'/'Retry' after a failed read.
   'Activity·Loaded',

@@ -92,6 +92,7 @@ beforeEach(() => {
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
     INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
     INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
   `);
 });
@@ -287,6 +288,50 @@ describe('access', () => {
       ).status,
     ).toBe(404);
     expect((await call({ method: 'GET', path: '/sheets', owner: null })).status).toBe(400);
+  });
+});
+
+describe('a Participant (docs/specs/013-workspace/share-roles.md)', () => {
+  it("writes cells, never the Sheet's shape, its title, or the Sheet itself", async () => {
+    await make();
+    const s = (await call<SheetsResponse>({ method: 'GET', path: '/sheets' })).body.sheets[0]!;
+    const as = { owner: 'p', code: 'PART' };
+    const [r0] = s.layout.rows;
+    const [c0] = s.layout.cols;
+    const cells = await write(
+      'sheetA00',
+      { kind: 'cells', cells: [{ r: r0!, c: c0!, i: { s: 'Went well' } }] },
+      {},
+      as,
+    );
+    expect(cells.status).toBe(200);
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'layout', changes: [{ k: 'deleteRows', ids: [r0!] }] },
+          {},
+          as,
+        )
+      ).status,
+    ).toBe(403);
+    expect((await write('sheetA00', { kind: 'title', title: 'Mine' }, {}, as)).status).toBe(403);
+    expect((await call({ ...as, path: '/sheets', body: { tabId: 't1', title: 'Q' } })).status).toBe(
+      403,
+    );
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'cells', cells: [{ r: r0!, c: c0!, i: { s: 'x' } }] },
+          {},
+          {
+            owner: 'v',
+            code: 'VIEW',
+          },
+        )
+      ).status,
+    ).toBe(403);
   });
 });
 
@@ -559,6 +604,32 @@ describe('deleting, copies and seeds', () => {
       body: { id: 'd7', name: 'Bad', tabs: [], sheets: [{ title: 'x' }] },
     });
     expect(badEntry.status).toBe(400);
+  });
+
+  // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheet is made with the document, from a
+  // template the api compiles or from tabs a client built, and the stored element no longer carries the mark.
+  it('makes a template’s Sheets with the document, the mark dropped', async () => {
+    const res = await call({
+      path: '',
+      doc: '',
+      body: {
+        id: 'd10',
+        name: 'Budget',
+        tabs: [{ id: 'tbudget', name: 'Tab 1', template: 'budget-planner' }],
+      },
+    });
+    expect(res.status).toBeLessThan(300);
+    const made = await db.listSheets(sql.env, 'd10');
+    expect(made).toHaveLength(1);
+    expect(made[0]).toMatchObject({ tabId: 'tbudget', title: 'Budget' });
+    expect(made[0]!.cells.length).toBeGreaterThan(20);
+    const tab = (await db.getTab(sql.env, 'd10', 'tbudget')) as unknown as {
+      elements: { planSheet?: Record<string, unknown> }[];
+    };
+    const ref = tab.elements.find((el) => el.planSheet)!.planSheet!;
+    expect(ref.start).toBeUndefined();
+    expect(ref.sheetId).toBe(made[0]!.id);
+    expect(ref.fillTab).toBe(true);
   });
 });
 

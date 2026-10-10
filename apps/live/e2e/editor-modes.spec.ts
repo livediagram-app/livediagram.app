@@ -176,7 +176,6 @@ test.describe('editor modes', () => {
     await expect(chip(other)).toHaveAccessibleName('Editor mode: Diagram');
 
     await page.getByRole('button', { name: 'Tab menu' }).click();
-    await page.getByRole('button', { name: /^Mode/ }).click();
     // The Tab menu is a control menu, so each mode is a toggle button (docs/specs/004-interface-design/menus.md).
     await page.getByRole('group', { name: 'Mode' }).getByRole('button', { name: /^Draw/ }).click();
     await page.keyboard.press('Escape');

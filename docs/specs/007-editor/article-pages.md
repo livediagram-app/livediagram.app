@@ -177,7 +177,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Colour** (a menu holding two colour pickers,
     [Colour picker](../004-interface-design/colour-picker.md): **Text**, led by **Default colour**
     and the article's **Accent**, then the strong standard colours for paper; **Highlight**, led by
-    **No highlight**, then the soft standard colours; each with Custom colours and **+**);
+    **No highlight**, then the soft standard colours; each with Custom colours and **Add a custom colour** (four coloured dots));
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
@@ -302,7 +302,7 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
 ## Leaving Illustrate
 
 Diagram and Draw draw no pages and no writing. An editor switching a tab with articles out of
-Illustrate (the mode switch, Shift+D or the tab menu's Mode) is asked first, in a dialog **Turn Articles
+Illustrate (the mode switch, Shift+D or the tab menu's mode rows) is asked first, in a dialog **Turn Articles
 Into Pages?**:
 
 - **Turn Into Pages** (the default button): every article page becomes a **Page** element
@@ -327,7 +327,7 @@ A visitor, a locked tab, or a tab with no articles switches straight away.
 ## Article style
 
 Set from the page panel's **Style** and **Text** tabs (an article page's panel has **Page**,
-**Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
+**Background**, **Style** and **Text**; it has no Layouts). **Style** holds Looks, Accent, Headings in the
 Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
 Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.
@@ -343,7 +343,7 @@ a choice is hovered.
   ([Fonts](../004-interface-design/fonts.md)).
 - **Accent**: the colour of headings (when accented), links, quote bars, bullets, rules and to-do
   boxes: **Theme** (the tab theme's accent, the default) or any colour from the colour picker (the strong
-  standard colours, Custom colours, **+**), previewed on hover or focus.
+  standard colours, Custom colours, **Add a custom colour** (four coloured dots)), previewed on hover or focus.
 - **Headings in the Accent**: on or off (off: headings in ink).
 - **Text Size**: Small (14 px), Normal (16 px, default), Large (18 px); headings scale with it.
 - **Line Spacing**: Single (1.3), 1.5 (default 1.5), Double (2.0).
@@ -412,6 +412,10 @@ ink").
   two people's views never fight over them. The writer is whoever changed the article within the
   last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it. Having the
   caret in it is not writing: two people in one article never both add a page for one overflow.
+  The two exceptions, an agent's write and a writer who left before settling, are grown by the
+  first editor to lay the article out ([Illustrate for agents](../024-agents/illustrate-for-agents.md#pages-for-the-writing)).
+- **Agents** read an article as Markdown and write it from Markdown
+  ([Illustrate for agents](../024-agents/illustrate-for-agents.md)); their writing arrives as anyone's.
 
 ## Telemetry
 
@@ -434,4 +438,4 @@ ink").
 - Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
   and tracked changes, find and replace, Word / Google Docs import.
 - Character-level merging of two people typing in the same paragraph at the same moment.
-- The writing in Diagram or Draw mode, and the writing read or written by AI tools (MCP).
+- The writing in Diagram or Draw mode.

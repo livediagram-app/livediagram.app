@@ -58,15 +58,19 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // --- Timer ---------------------------------------------------------------
 
-  const startTimer = (mode: TimerMode, durationMs?: number) => {
-    if (runBlocked) return;
+  // Returns the run's `startedAt`, so a caller that started it (an Agenda
+  // segment, docs/specs/012-collaboration/agenda.md) can recognise it later;
+  // undefined when nothing started.
+  const startTimer = (mode: TimerMode, durationMs?: number): number | undefined => {
+    if (runBlocked) return undefined;
     const now = Date.now();
     const timer =
       mode === 'countdown'
-        ? { mode, running: true, durationMs, anchorAt: now + (durationMs ?? 0) }
-        : { mode, running: true, anchorAt: now };
+        ? { mode, running: true, durationMs, anchorAt: now + (durationMs ?? 0), startedAt: now }
+        : { mode, running: true, anchorAt: now, startedAt: now };
     patchActive((t) => ({ ...t, timer }));
     track('Tab', 'Started', mode === 'countdown' ? 'CountdownTimer' : 'StopwatchTimer');
+    return now;
   };
 
   // Timer telemetry (docs/specs/017-telemetry/telemetry.md) covers the whole lifecycle, not just the

@@ -1,4 +1,5 @@
 import { SHAPE_DEFAULT_SIZE, createShape, type ShapeElement } from '@livediagram/document';
+import { placeNewSheet } from './sheet-seeds';
 import {
   freshBoardSetup,
   newItemId,
@@ -15,8 +16,8 @@ import {
 } from './local-storage-safe';
 
 // The Plan tour's pure parts (docs/specs/026-plan/plan-tour.md, blueprint plan-tour.md): its relaunch
-// signal, the example board and cards it shows Plan working on, and the leftover record that lets a
-// later visit tidy tour content a reload cut short.
+// signal, its tracks, the example board, cards and sheet it shows Plan working on, and the leftover record
+// that lets a later visit tidy tour content a reload cut short.
 
 // Settings → Plan tour: the "Show Plan Tour" row, turned on from off and closed, reruns the tour. A
 // window event keeps the dialog decoupled from PlanTourHost, as the welcome tour's relaunch does.
@@ -27,7 +28,19 @@ export function requestPlanTourRelaunch(): void {
   window.dispatchEvent(new Event(PLAN_TOUR_RELAUNCH_EVENT));
 }
 
+// Which half of Plan the tour shows, picked on its welcome card.
+export const PLAN_TOUR_TRACKS = ['boards', 'sheets'] as const;
+export type PlanTourTrack = (typeof PLAN_TOUR_TRACKS)[number];
+
 export const EXAMPLE_BOARD_TITLE = 'Example Board';
+export const EXAMPLE_SHEET_TITLE = 'Example Sheet';
+
+// The example sheet's frame: room for the Budget start's three columns and six rows under the header, toolbar and
+// formula bar, smaller than a placed Sheet's 960 x 560 so it sits in the view with the tour's card beside it.
+export const EXAMPLE_SHEET_SIZE = { width: 600, height: 400 } as const;
+
+// The cell the Formulas step selects: the Budget start's Total amount, C6.
+export const EXAMPLE_TOTAL_CELL = { r: 5, c: 2 } as const;
 
 // The example board: a Kanban board with statuses of its own (freshBoardSetup), so no card the document
 // has lands on it and no example card lands on another board, centred on a canvas point.
@@ -75,24 +88,53 @@ export function exampleCards(setup: PlanBoardSetup, newId: () => string = newIte
   ];
 }
 
-// What the tour made, kept until it is taken away.
+// The example sheet (spec "Tour content"): a Sheet placed already set up from the Budget start, centred on a canvas
+// point. Its sheet is made when it first draws, as any placed Sheet's.
+export function exampleSheet(centre: { x: number; y: number }): ShapeElement & {
+  planSheet: { sheetId: string };
+} {
+  const { width, height } = EXAMPLE_SHEET_SIZE;
+  return {
+    ...createShape('plan-sheet', 0, 0),
+    planSheet: placeNewSheet({ title: EXAMPLE_SHEET_TITLE, setUp: 'budget' }),
+    width,
+    height,
+    x: centre.x - width / 2,
+    y: centre.y - height / 2,
+  };
+}
+
+// What the tour made, kept until it is taken away: the element it placed (the example board or sheet), the
+// example sheet's sheet, and the example cards.
 export type PlanTourContent = {
   documentId: string;
-  boardId: string;
+  elementId: string;
+  sheetId?: string;
   itemIds: string[];
 };
 
 export const PLAN_TOUR_CONTENT_KEY = 'livediagram:v2:plan-tour-content';
 
-function isContent(value: unknown): value is PlanTourContent {
-  if (!value || typeof value !== 'object') return false;
+// A record written before the Sheets track named the element `boardId`; it reads as the same thing.
+function asContent(value: unknown): PlanTourContent | null {
+  if (!value || typeof value !== 'object') return null;
   const v = value as Record<string, unknown>;
-  return (
-    typeof v['documentId'] === 'string' &&
-    typeof v['boardId'] === 'string' &&
-    Array.isArray(v['itemIds']) &&
-    v['itemIds'].every((id) => typeof id === 'string')
-  );
+  const elementId = v['elementId'] ?? v['boardId'];
+  const sheetId = v['sheetId'];
+  if (
+    typeof v['documentId'] !== 'string' ||
+    typeof elementId !== 'string' ||
+    (sheetId !== undefined && typeof sheetId !== 'string') ||
+    !Array.isArray(v['itemIds']) ||
+    !v['itemIds'].every((id) => typeof id === 'string')
+  )
+    return null;
+  return {
+    documentId: v['documentId'],
+    elementId,
+    ...(sheetId ? { sheetId } : {}),
+    itemIds: v['itemIds'] as string[],
+  };
 }
 
 // The leftover record: what a tour cut short (a reload, a closed window) left behind. Malformed or
@@ -100,8 +142,8 @@ function isContent(value: unknown): value is PlanTourContent {
 export function readLeftover(): PlanTourContent | null {
   const raw = readLocalStorageSafe(PLAN_TOUR_CONTENT_KEY);
   if (!raw) return null;
-  const parsed = safeJson(raw);
-  if (isContent(parsed)) return parsed;
+  const content = asContent(safeJson(raw));
+  if (content) return content;
   removeLocalStorageSafe(PLAN_TOUR_CONTENT_KEY);
   return null;
 }

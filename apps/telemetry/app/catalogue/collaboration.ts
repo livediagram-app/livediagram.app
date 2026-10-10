@@ -2,7 +2,12 @@
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import type { Metric, MetricStack } from '../metric-series';
-import { SLIDE_DECK_OPENED } from './features';
+import {
+  SESSION_POLL_OPENED,
+  SESSION_TIMER_OPENED,
+  SESSION_VOTE_OPENED,
+  SLIDE_DECK_OPENED,
+} from './features';
 import { chart } from './helpers';
 
 export const VOTES_ENDED = chart(
@@ -43,7 +48,7 @@ export const SHARE_SETTINGS = chart(
   'Shared',
   'Share Link Settings',
   'A password or an expiry set on a share link.',
-  { typeIn: (t) => t !== 'Edit' && t !== 'View' },
+  { typeIn: (t) => t !== 'Edit' && t !== 'View' && t !== 'Participate' },
 );
 
 export const SHARE_LINKS_REMOVED = chart(
@@ -79,8 +84,8 @@ export const AVATARS_CUSTOMISED = chart(
 export const FEED_RETRIES = chart(
   'Activity',
   'Loaded',
-  'Activity Feed Retries',
-  'The activity feed retried after failing to load.',
+  'Inbox Retries',
+  "The Explorer's Inbox retried after failing to load.",
   { rising: 'bad' },
 );
 
@@ -231,6 +236,23 @@ export const VIEW_LINKS_SHARED: Metric = {
   action: 'Shared',
   type: 'View',
   title: 'View Links Shared',
+};
+
+// Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
+export const PARTICIPATE_LINKS_SHARED: Metric = {
+  category: 'Document',
+  action: 'Shared',
+  type: 'Participate',
+  title: 'Participant Links Shared',
+};
+
+export const PARTICIPANTS_JOINED: Metric = {
+  category: 'Document',
+  action: 'Joined',
+  type: 'Participate',
+  title: 'Participants Joined',
+  blurb:
+    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
 };
 
 export const COLLABORATORS_JOINED: Metric = {
@@ -483,11 +505,13 @@ export const LIVE_TOGETHER: MetricStack = {
 export const SHARING_AND_JOINING: MetricStack = {
   stack: true,
   title: 'Sharing & Joining',
-  blurb: 'Edit and view links made, and the people who came in through them.',
+  blurb: 'Edit, Participant and view links made, and the people who came in through them.',
   members: [
     EDIT_LINKS_SHARED,
+    PARTICIPATE_LINKS_SHARED,
     VIEW_LINKS_SHARED,
     COLLABORATORS_JOINED,
+    PARTICIPANTS_JOINED,
     VIEWERS_JOINED,
     SHARE_LINKS_COPIED,
     SHARE_SETTINGS,
@@ -496,7 +520,7 @@ export const SHARING_AND_JOINING: MetricStack = {
     WORKBENCH_SESSIONS,
     LIVE_IMAGE_TABS,
   ],
-  headline: [COLLABORATORS_JOINED, VIEWERS_JOINED],
+  headline: [COLLABORATORS_JOINED, PARTICIPANTS_JOINED, VIEWERS_JOINED],
 };
 
 export const DISCUSSION: MetricStack = {
@@ -555,6 +579,7 @@ export const VOTING: MetricStack = {
     VOTES_DISCARDED,
     VOTES_ENDED,
     VOTE_REVIEWS_ENDED,
+    SESSION_VOTE_OPENED,
   ],
   headline: VOTES_STARTED,
 };
@@ -563,7 +588,7 @@ export const POLLS: MetricStack = {
   stack: true,
   title: 'Polls',
   blurb: 'Live pulse-checks opened, answered, and closed.',
-  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED],
+  members: [POLLS_STARTED, POLL_ANSWERS, POLLS_ENDED, SESSION_POLL_OPENED],
   headline: POLLS_STARTED,
 };
 
@@ -582,6 +607,7 @@ export const COUNTDOWNS: MetricStack = {
     TIMERS_PAUSED,
     TIMERS_RESET,
     TIMERS_RESUMED,
+    SESSION_TIMER_OPENED,
   ],
   headline: COUNTDOWNS_STARTED,
 };
@@ -590,11 +616,18 @@ export const STOPWATCHES: MetricStack = {
   stack: true,
   title: 'Stopwatches',
   blurb: 'Count-up timers set running on a tab, and finished.',
-  members: [STOPWATCHES_STARTED, STOPWATCHES_FINISHED, TIMERS_PAUSED, TIMERS_RESET, TIMERS_RESUMED],
+  members: [
+    STOPWATCHES_STARTED,
+    STOPWATCHES_FINISHED,
+    TIMERS_PAUSED,
+    TIMERS_RESET,
+    TIMERS_RESUMED,
+    SESSION_TIMER_OPENED,
+  ],
   headline: STOPWATCHES_STARTED,
 };
 
-// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Activity section (docs/specs/013-workspace/activity-page.md).
+// The Explorer Timeline (docs/specs/013-workspace/timeline.md) and the Explorer's Inbox (docs/specs/013-workspace/inbox.md).
 // Timeline·Opened carries four things by type: two ways of arriving on the
 // feed (Landing, the Explorer's default page, and Nav, a deliberate visit),
 // which is how the landing-page change is measured, and two things done in it
@@ -603,7 +636,7 @@ export const TIMELINE_LANDINGS = chart(
   'Timeline',
   'Opened',
   'Timeline Landings',
-  'A page load that started on All activity, the Timeline feed.',
+  'A page load that started on the Timeline.',
   { types: ['Landing'] },
 );
 
@@ -611,7 +644,7 @@ export const TIMELINE_VISITS = chart(
   'Timeline',
   'Opened',
   'Timeline Visits',
-  "The Timeline opened after starting elsewhere, usually from Home's See all activity.",
+  "The Timeline opened after starting elsewhere: its sidebar row, or Home's See timeline.",
   { types: ['Nav'] },
 );
 
@@ -642,15 +675,15 @@ export const TIMELINE_ENTRIES_REMOVED = chart(
 export const ACTIVITY_OPENED = chart(
   'Activity',
   'Opened',
-  'Activity Opened',
-  "The Explorer's Activity section opened, once per visit.",
+  'Inbox Opened',
+  "The Explorer's Inbox opened, once per visit.",
 );
 
 export const ACTIVITY_THREADS = chart(
   'Activity',
   'Selected',
-  'Activity Items Opened',
-  "An action or a comment thread opened from the Explorer's Activity section.",
+  'Inbox Items Opened',
+  "An action, a Plan card or a comment thread opened from the Explorer's Inbox.",
 );
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
@@ -692,7 +725,7 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Timeline & Activity',
   blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Activity section.",
+    "Keeping up with what changed: Explorer Home, the Explorer Timeline and the Explorer's Inbox.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,

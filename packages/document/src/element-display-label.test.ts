@@ -4,7 +4,7 @@ import type { BoxedElement } from './index';
 import { elementDisplayLabel } from './element-display-label';
 
 // Shared by the Collaborate Panel and the api's collaboration index
-// (docs/specs/013-workspace/activity-page.md §2.1), so a change here changes what BOTH surfaces call a row.
+// (docs/specs/013-workspace/inbox.md §2.1), so a change here changes what BOTH surfaces call a row.
 
 const shape = (label: string | undefined): BoxedElement =>
   ({ id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as never;

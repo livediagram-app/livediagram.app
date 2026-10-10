@@ -2,6 +2,7 @@
 // re-exports this module, and a value-shaped import here is what made that
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
+import { eventStormingKindOf } from './event-storming';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -69,8 +70,9 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   if (el.type === 'shape' && el.shape === 'frame') return 0;
-  if (el.type === 'sticky' && el.esKind === 'actor') return 2;
-  if (el.type === 'sticky' && el.esKind === 'hotspot') return 3;
+  const kind = eventStormingKindOf(el);
+  if (kind === 'actor') return 2;
+  if (kind === 'hotspot') return 3;
   return 1;
 }
 

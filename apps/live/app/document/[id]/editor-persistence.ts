@@ -1,4 +1,4 @@
-import type { ItemTypeCatalogue } from '@livediagram/items';
+import type { SavedItemTypes } from '@/lib/api/item-types';
 import { getOnline } from '@/lib/online-status';
 import { useEffect, useState } from 'react';
 
@@ -36,9 +36,13 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // rather than a parsed Deck so hydration has one obvious moment, and a deck
   // the parser cannot read costs the deck rather than the document.
   const [documentPresentation, setDocumentPresentation] = useState<string | null>(null);
-  // The document's type catalogue (docs/specs/026-plan/item-types.md), null for the default types:
-  // seeded on load, then set by a save here or the room's `item-types` op. See useItemTypes.
-  const [documentItemTypes, setDocumentItemTypes] = useState<ItemTypeCatalogue | null>(null);
+  // The document's type catalogue as stored (docs/specs/026-plan/item-types.md), null for the default
+  // types, with its revision: seeded on load, then set by a save here or the room's `item-types` op.
+  // See useItemTypes, which shows this editor's unsaved changes over it.
+  const [documentItemTypes, setDocumentItemTypes] = useState<SavedItemTypes>({
+    itemTypes: null,
+    itemTypesRev: 0,
+  });
   // Reflect the document name in the browser tab so users with many
   // tabs open can spot the right one. Falls back to the bare brand
   // until hydration lands the real name.

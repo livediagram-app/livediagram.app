@@ -16,13 +16,18 @@ import { Glyph } from '@livediagram/ui';
 export function EmptyCanvasBanner({
   tabName,
   readOnly,
+  participant = false,
   onQuickStart,
-  // On a phone it rides above the bottom-right cluster (16px inset + 44px buttons above the
-  // 48px tab bar) instead of over it.
-  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-16 phone:pb-[7.5rem]',
+  // It rides above the bottom-right cluster (16px inset + 44px buttons above the 48px tab bar)
+  // instead of over it, on every viewport: with the Session strip the cluster reaches the banner's
+  // centred slot on a laptop-width screen too. On a phone the Session strip has a row of its own
+  // above the cluster, so it rides one row (44px + the 8px gap) higher there.
+  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-[7.5rem] phone:pb-[10.75rem]',
 }: {
   tabName: string;
   readOnly: boolean;
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it adds stickies, text and images.
+  participant?: boolean;
   onQuickStart: () => void;
   placementClassName?: string;
 }) {
@@ -44,9 +49,11 @@ export function EmptyCanvasBanner({
             {tabName} is empty
           </p>
           <p className="mt-0.5 truncate text-xs text-slate-500 phone:hidden dark:text-slate-400">
-            {readOnly
-              ? 'Nothing here yet. The owner can build it out, and your view updates live.'
-              : 'Add an element from the Palette, or start from a template.'}
+            {participant
+              ? 'Nothing here yet. Add a sticky, text or an image from the Palette to get it going.'
+              : readOnly
+                ? 'Nothing here yet. The owner can build it out, and your view updates live.'
+                : 'Add an element from the Palette, or start from a template.'}
           </p>
         </div>
         {readOnly ? null : (

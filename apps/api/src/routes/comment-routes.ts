@@ -40,10 +40,11 @@ import {
   payloadTooLarge,
 } from '../responses';
 import { relayElementDelta } from '../room-client';
-import { recordCommentAdded, recordCommentResolved } from '../timeline';
+import { recordCommentAdded, recordCommentResolved, retractComments } from '../timeline';
 import type { TabDTO } from '../types';
 import {
   deniedOnTab,
+  deniedParticipate,
   gateParticipate,
   gateRead,
   missingDocument,
@@ -70,8 +71,9 @@ async function participant(
   if (owner instanceof Response) return owner;
   const doc = await getDocument(ctx.env, id);
   if (!doc) return missingDocument(ctx, id);
+  // Commenting is a Participant's (docs/specs/013-workspace/share-roles.md): a Viewer only looks.
   if (!(await gateParticipate(ctx, id, doc.ownerId, doc.teamId, tabId)))
-    return deniedOnTab(ctx, doc);
+    return deniedParticipate(ctx, doc, tabId);
   return { doc, owner };
 }
 
@@ -211,10 +213,14 @@ async function deleteOwn(
 ): Promise<Response> {
   const caller = await participant(ctx, id, tabId);
   if (caller instanceof Response) return caller;
+  let threadKey: string | null = null;
   const written = await writeTab(ctx, id, tabId, (tab) => {
     const host = findCommentHost(tab.elements, commentId);
     if (!host) return notFound();
     if (host.comment.authorId !== caller.owner) return forbidden();
+    const el = tab.elements.find((e) => e.id === host.elementId)!;
+    // The opening comment's text is what the thread's resolved event says.
+    threadKey = threadOf(el)?.comments[0]?.id === commentId ? `${id}:${host.elementId}` : null;
     return {
       elements: removeComment(tab.elements, commentId),
       elementId: host.elementId,
@@ -222,6 +228,7 @@ async function deleteOwn(
     };
   });
   if (written instanceof Response) return written;
+  ctx.waitUntil?.(retractComments(ctx.env, id, [{ id: commentId, threadKey }]));
   console.info('[comments] deleted', { documentId: id, tabId, agent: ctx.token !== null });
   return noContent();
 }

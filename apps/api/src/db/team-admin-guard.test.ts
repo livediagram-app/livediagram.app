@@ -24,6 +24,8 @@ const admins = (db: ReturnType<typeof team>) =>
       .get() as { n: number }
   ).n;
 
+const row = (id: string, userId: string) => ({ id, teamId: 't', userId });
+
 describe('the last-admin guard in the write', () => {
   it('lets one of two admins be demoted, then refuses the other', async () => {
     const db = team(2);
@@ -36,9 +38,9 @@ describe('the last-admin guard in the write', () => {
 
   it('lets one of two admins go, then refuses the last, and always lets a member go', async () => {
     const db = team(2);
-    expect(await removeTeamMemberKeepingAdmin(db.env, 'a0')).toBe(true);
-    expect(await removeTeamMemberKeepingAdmin(db.env, 'a1')).toBe(false);
+    expect(await removeTeamMemberKeepingAdmin(db.env, row('a0', 'u0'))).toBe(true);
+    expect(await removeTeamMemberKeepingAdmin(db.env, row('a1', 'u1'))).toBe(false);
     expect(admins(db)).toBe(1);
-    expect(await removeTeamMemberKeepingAdmin(db.env, 'm')).toBe(true);
+    expect(await removeTeamMemberKeepingAdmin(db.env, row('m', 'um'))).toBe(true);
   });
 });

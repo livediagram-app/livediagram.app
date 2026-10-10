@@ -1,4 +1,4 @@
-// Plan card comment threads on the Activity page (docs/specs/013-workspace/activity-page.md §2.5, §4), against the
+// Plan card comment threads on the Inbox (docs/specs/013-workspace/inbox.md §2.5, §4), against the
 // real migrations: who a card's thread lists for (mentioned, commented, the document's owner), what drops it
 // (resolved, archived, the Trash, a document the reader cannot open, a tab-scoped share whose boards miss it),
 // and that author ids never leave the worker.
@@ -203,7 +203,7 @@ describe('Activity: Plan card comment threads', () => {
     ]);
   });
 
-  // docs/specs/013-workspace/activity-page.md §2.5: the scope comes first, so the item store is only ever read
+  // docs/specs/013-workspace/inbox.md §2.5: the scope comes first, so the item store is only ever read
   // per visible document (its primary key), never scanned whole.
   it('reads items per visible document, never scanning the store', async () => {
     const { sql } = await setUp();

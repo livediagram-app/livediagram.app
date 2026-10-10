@@ -34,6 +34,7 @@ import {
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
+import { keepUnsavedTabChanges } from './meta-keep-local';
 import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
@@ -91,7 +92,9 @@ export function useRoomConnection(opts: {
   // Merge a peer's tab / document-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).
-  applyRemoteTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // A peer's op into the present and every undo / redo snapshot (historyApplyRemoteOp), so undo
+  // never brings back what the peer changed.
+  applyRemoteOp: (apply: (prev: Tab[]) => Tab[]) => void;
   // The tabs whose content is here (fetched, or made here), and marking one so: a peer's element op
   // for a tab still waiting on its first fetch is left to that fetch.
   loadedTabIdsRef: MutableRefObject<Set<string>>;
@@ -179,6 +182,10 @@ export function useRoomConnection(opts: {
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
+  // A Participant session (docs/specs/013-workspace/share-roles.md): it always joins with a ticket, which
+  // carries the adder key the room stamps on what it adds, and the key comes back for `onAdderKey`.
+  participant?: boolean;
+  onAdderKey?: (key: string | null) => void;
 }) {
   const {
     hydrated,
@@ -196,7 +203,7 @@ export function useRoomConnection(opts: {
     countAppliedOp,
     sessionShareCodeRef,
     roomRef,
-    applyRemoteTabs,
+    applyRemoteOp,
     loadedTabIdsRef,
     markTabLoaded,
     setLivePresence,
@@ -229,6 +236,8 @@ export function useRoomConnection(opts: {
     receiveSheetPresence,
     receivePeerModeSwitch,
     onRoomJoined,
+    participant = false,
+    onAdderKey,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
@@ -250,7 +259,9 @@ export function useRoomConnection(opts: {
     self: selfForRoom(),
     shareCode: sessionShareCode,
     signedIn: isSignedIn,
+    participant,
   }));
+  const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // The switch flipped, or the picture changed: tell the open room, which updates the roster in
   // place (switch off = initials for everyone from this update on).
   const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
@@ -415,7 +426,14 @@ export function useRoomConnection(opts: {
         if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
-        applyRemoteTabs((prev) => applyRoomOpToTabs(prev, op));
+        // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
+        // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
+        const savedBefore = saveBaseline.tabs.current;
+        applyRemoteOp((prev) =>
+          op.kind === 'document-meta'
+            ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
+            : applyRoomOpToTabs(prev, op),
+        );
         foldRemoteOpIntoBaseline(saveBaseline, op);
         const switched = peerModeSwitchOf(op);
         if (switched) {
@@ -647,12 +665,14 @@ export function useRoomConnection(opts: {
     let cancelled = false;
     let openedRoom: ReturnType<typeof connectRoom> | null = null;
     void (async () => {
-      const { self, shareCode, signedIn } = connectAs();
-      const ticket =
-        documentTeamId || signedIn
+      const { self, shareCode, signedIn, participant: asParticipant } = connectAs();
+      const minted =
+        documentTeamId || signedIn || asParticipant
           ? await apiCreateRoomTicket(self.id, documentId, shareCode)
           : null;
       if (cancelled) return;
+      const ticket = minted?.ticket ?? null;
+      announceAdderKey(minted?.adderKey ?? null);
       openedRoom = connectRoom(
         documentId,
         self,
@@ -670,7 +690,12 @@ export function useRoomConnection(opts: {
           // role comes from the code.
           ownerId: self.id,
           // Each reconnect needs its own ticket: the upgrade spends the one it admits.
-          mintTicket: () => apiCreateRoomTicket(self.id, documentId, shareCode),
+          mintTicket: async () => {
+            const again = await apiCreateRoomTicket(self.id, documentId, shareCode);
+            // A Participant's key comes back with every ticket (the same key, derived per document).
+            if (again?.adderKey) announceAdderKey(again.adderKey);
+            return again?.ticket ?? null;
+          },
         },
         roomReadFacilitatorToken,
       );

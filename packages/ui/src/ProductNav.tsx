@@ -167,16 +167,21 @@ export function ProductNav({
 
       {/* pt-2 is a transparent bridge so the pointer can travel from the label
           to the card without crossing a gap that would close the menu. The
-          `open` state mirrors the CSS hover/focus visibility for touch taps. */}
+          `open` state mirrors the CSS hover/focus visibility for touch taps.
+          Below `sm` the trigger sits ~150px in, so a trigger-anchored w-60 card
+          ran past the right edge (cut off when open, and widening the page by a
+          pixel even while hidden). There it pins to the 16px page gutters
+          instead; `top-auto` keeps it at its static spot, straight under the
+          trigger. */}
       <div
-        className={`absolute left-0 top-full z-50 pt-2 transition-all duration-micro group-hover:visible group-hover:opacity-100 ${
+        className={`absolute left-0 top-full z-50 pt-2 max-sm:fixed max-sm:inset-x-4 max-sm:top-auto transition-all duration-micro group-hover:visible group-hover:opacity-100 ${
           open ? 'visible opacity-100' : 'invisible opacity-0'
         }`}
       >
         <div
           ref={attach}
           {...surfaceProps}
-          className="w-60 outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
+          className="w-60 max-sm:w-auto outline-none rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30"
         >
           {items.map((item) => {
             const isCurrent = item.key === current;

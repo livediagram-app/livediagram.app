@@ -22,6 +22,7 @@ import {
   type GraphNode,
 } from './graph-authoring';
 import { parseMermaid } from './mermaid';
+import { graphTooLargeError } from './graph-limits';
 import type { Element } from './index';
 
 export const GRAPH_LABEL_MAX = 40;
@@ -233,7 +234,11 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
   graph?: GraphInput;
   error?: string;
 } {
-  if (args.graph) return { graph: args.graph };
+  if (args.graph) {
+    // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
+    const tooLarge = graphTooLargeError(args.graph.nodes.length, args.graph.edges.length);
+    return tooLarge ? { error: tooLarge } : { graph: args.graph };
+  }
   if (args.mermaid === undefined) return {};
   const parsed = graphFromMermaid(args.mermaid);
   return parsed.ok

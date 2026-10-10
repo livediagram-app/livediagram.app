@@ -11,7 +11,7 @@
 // differ. Hover, readouts and the looping animations are the canvas's alone
 // and have no meaning in a still image.
 
-import { chartFrame, type ChartLegendRect } from './chart-frame';
+import { chartAxisLabel, chartFrame, type ChartLegendRect } from './chart-frame';
 import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './data-shapes';
 import type { BoxedElement, ShapeElement } from './index';
 import { legendFontPx } from './label-font';
@@ -204,7 +204,7 @@ export function svgLineChart(
   const labels = categories
     .map(
       (c, i) =>
-        `<text x="${r2(xAt(i))}" y="${r2(plotY0 + plotH + 13)}" text-anchor="middle"${font} font-size="9" fill="${xmlEscape(textColor)}">${xmlEscape(c.length > 6 ? `${c.slice(0, 5)}…` : c)}</text>`,
+        `<text x="${r2(xAt(i))}" y="${r2(plotY0 + plotH + 13)}" text-anchor="middle"${font} font-size="9" fill="${xmlEscape(textColor)}">${xmlEscape(chartAxisLabel(c, plotW, n))}</text>`,
     )
     .join('');
   const legendItems = series.map((s) => ({ label: s.name, value: 0, color: s.color }));

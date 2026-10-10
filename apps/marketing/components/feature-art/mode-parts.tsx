@@ -4,15 +4,12 @@
 // variants and the canvas palette (--art-*), with the light value restated as the SVG attribute
 // underneath. Motion comes from the fa-f-* loops (app/feature-art-animations.css, the whiteboard, Plan and documents block).
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { FONT } from '@/components/art-tokens';
 import { Frame } from './shared';
 
-export const FONT = 'ui-sans-serif, system-ui, sans-serif';
+export { FONT, YOU, TEAMMATE, at } from '@/components/art-tokens';
 export { SERIF } from './page-kit';
-
-// People on the canvas: you, and a teammate in their own colour.
-export const YOU = '#0ea5e9';
-export const TEAMMATE = '#ec4899';
 
 // A surface in the editor (a card, a panel, a page): white in light, slate in dark, with the
 // soft shadow the editor lifts it on.
@@ -47,9 +44,6 @@ export function Stage({
 }
 
 /** A loop's start, as a style: the --d stagger of the fa-f-* loops. */
-export const at = (d: number, extra: Record<string, string | number> = {}) =>
-  ({ '--d': `${d}s`, ...extra }) as CSSProperties;
-
 /** A person's initials in a filled circle. */
 export function Avatar({
   x,

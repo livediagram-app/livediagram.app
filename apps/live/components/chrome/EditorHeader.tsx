@@ -154,6 +154,7 @@ export function EditorHeader({
                 team={teamDocument}
                 offline={offline}
                 community={community}
+                onManage={showShare ? onOpenShare : undefined}
               />
               {rolePill ? <span className="ml-1 inline-flex">{rolePill}</span> : null}
             </span>

@@ -29,7 +29,7 @@ lifecycle — chosen before the vote, baked in at start, immutable after.
 
 ## The picker
 
-**Tab menu → Collaborate → Vote** (the Session Studio, [Session tools (timer + voting)](session-tools.md)), above the privacy switches, as a row of pills: **All layers** then each layer by name.
+The **Vote** set-up (the [Session strip](session-tools.md#the-session-strip)'s Vote popover, and a vote element's menu), above the privacy switches, as a row of pills: **All layers** then each layer by name.
 
 - **Pre-selected to the layer the editor is on**, which is almost always the
   one the facilitator has just been building.

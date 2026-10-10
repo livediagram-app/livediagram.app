@@ -240,7 +240,63 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
   return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);
 }
 
-/** The category the palette opens on: an event-storming board's notation, or the mode's own. */
-export function paletteLandingCategory(mode: EditorMode, esBoard: boolean): string {
-  return esBoard ? 'event-storming' : paletteLayoutFor(mode).landing;
+// Plan's landing while its tab has no board (docs/specs/026-plan/plan-mode.md "The palette"): a card lands on a
+// board, so a tab without one opens on Boards.
+export const PLAN_NO_BOARD_LANDING = 'plan-boards';
+
+/**
+ * The category the palette opens on: an event-storming board's notation, or the mode's own (Plan's Boards while
+ * the tab has no board).
+ */
+export function paletteLandingCategory(
+  mode: EditorMode,
+  esBoard: boolean,
+  hasPlanBoard = true,
+): string {
+  if (esBoard) return 'event-storming';
+  if (mode === 'plan' && !hasPlanBoard) return PLAN_NO_BOARD_LANDING;
+  return paletteLayoutFor(mode).landing;
 }
+
+// A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
+// Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
+// notation's coloured notes; elsewhere the landing category's sticky and text tiles, else the Sticky and Text tiles;
+// then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
+const PARTICIPANT_FALLBACK_TILES = ['tools:sticky', 'tools:text'] as const;
+const PARTICIPANT_IMAGE_TILE = 'tools:image';
+
+export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
+  const landing = paletteLandingCategory(mode, esBoard);
+  const category = paletteCategoriesFor(mode, { esBoard }).find((c) => c.id === landing);
+  const tiles = (category?.tiles ?? []).filter(
+    (t) => t.action.type === 'sticky' || t.action.type === 'text',
+  );
+  const base =
+    tiles.length > 0
+      ? tiles
+      : PARTICIPANT_FALLBACK_TILES.map(tileById).filter(
+          (t): t is PaletteTileDef => t !== undefined,
+        );
+  const image = tileById(PARTICIPANT_IMAGE_TILE);
+  return image ? [...base, image] : base;
+}
+
+export function participantPaletteCategories(
+  mode: EditorMode,
+  esBoard: boolean,
+): ResolvedPaletteCategory[] {
+  const identity = IDENTITY.get('participate')!;
+  return [{ ...identity, tiles: participantTiles(mode, esBoard) }];
+}
+
+// The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format
+// Painter, Slide Deck).
+export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
+  'select',
+  'pan',
+  'laser',
+  'spotlight',
+  'avatar',
+  'isometric',
+  'zen',
+];

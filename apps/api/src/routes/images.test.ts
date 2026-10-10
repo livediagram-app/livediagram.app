@@ -278,6 +278,26 @@ describe('POST /api/images under a per-owner cap', () => {
     expect(images.delete).toHaveBeenCalledWith(key);
   });
 
+  it('answers a racing upload of the same bytes with the winner, as a dedupe, deleting its own bytes', async () => {
+    db.imageTotalsByOwner.mockResolvedValue({ count: 0, bytes: 0 });
+    db.findImageBySha.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: 'winner' });
+    db.insertImage.mockResolvedValue(null);
+    const images = imagesBinding();
+    const res = await upload(images, {});
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ image: { id: 'winner' }, deduped: true });
+    expect(images.delete).toHaveBeenCalledWith(images.put.mock.calls[0]![0]);
+  });
+
+  it('deletes the bytes it wrote when the insert fails outright', async () => {
+    db.imageTotalsByOwner.mockResolvedValue({ count: 0, bytes: 0 });
+    db.findImageBySha.mockResolvedValue(null);
+    db.insertImage.mockRejectedValue(new Error('D1 down'));
+    const images = imagesBinding();
+    await expect(upload(images, {})).rejects.toThrow('D1 down');
+    expect(images.delete).toHaveBeenCalledWith(images.put.mock.calls[0]![0]);
+  });
+
   it('names the byte cap when that is the one the race crossed', async () => {
     db.imageTotalsByOwner
       .mockResolvedValueOnce({ count: 0, bytes: 980 })
@@ -399,5 +419,20 @@ describe('POST /api/images under a network budget', () => {
     expect(r.status).toBe(200);
     expect(db.networkUploadKey).not.toHaveBeenCalled();
     expect(db.networkUploadUsage).not.toHaveBeenCalled();
+  });
+});
+
+// A file's own name rides a header, percent-encoded by the editor: a header is Latin-1 only.
+describe('originalNameOf', () => {
+  it('decodes an encoded name, keeps an older raw one, and caps the length', async () => {
+    const { originalNameOf, ORIGINAL_NAME_MAX } = await import('./images');
+    const screenshot = 'Screenshot 2026-10-10 at 9.41.02 AM.png';
+    expect(originalNameOf(encodeURIComponent(screenshot))).toBe(screenshot);
+    expect(originalNameOf(encodeURIComponent('diagram 図 😀.png'))).toBe('diagram 図 😀.png');
+    expect(originalNameOf('100% done.png')).toBe('100% done.png');
+    expect(originalNameOf(null)).toBeNull();
+    expect(Array.from(originalNameOf(encodeURIComponent('😀'.repeat(500)))!)).toHaveLength(
+      ORIGINAL_NAME_MAX,
+    );
   });
 });

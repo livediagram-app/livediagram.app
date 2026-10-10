@@ -40,7 +40,7 @@ describe('help', () => {
     expect(view).toContain('Usage: livediagram tab view <doc> [flags]');
     expect(view).toContain('  --budget <n>  Fit the view to about this many tokens');
     expect(view).toContain('  --coarse  layout: rows instead of geometry');
-    expect(view).toContain('  --view <outline|graph|layout|comments|show|find>');
+    expect(view).toContain('  --view <outline|graph|layout|comments|show|find|pages>');
     expect(view).toContain('Prints: the view as the api serves it');
     expect(verbHelp(VERBS.find((v) => v.id === 'guide')!)).toContain(
       'Usage: livediagram guide [topic]',

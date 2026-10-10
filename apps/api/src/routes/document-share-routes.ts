@@ -5,7 +5,7 @@
 // broadcast so hydrated visitors hard-redirect), and re-arming an
 // expiring link.
 
-import type { ShareLinkExpiry } from '@livediagram/api-schema';
+import { DEFAULT_LINK_LEVEL, isAccessLevel, type ShareLinkExpiry } from '@livediagram/api-schema';
 import { communityEnabled } from '../community-enabled';
 import { MAX_PASSWORD_LEN } from '../limits';
 import {
@@ -35,10 +35,10 @@ import { requireOwnedDocument, type RouteContext } from './context';
 // Returns null when the request isn't a share route.
 export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, segments } = ctx;
-  // /api/documents/<id>/share — owner-only.
-  //   GET     — list every share link for this document.
-  //   POST    — mint a new link. Body: { role: 'edit' | 'view' }
-  //   DELETE  — revoke every link (back-compat with the
+  // /api/documents/<id>/share: owner-only.
+  //   GET     : list every share link for this document.
+  //   POST    : mint a new link. Body: { role: 'edit' | 'participate' | 'view' }
+  //   DELETE  : revoke every link (back-compat with the
   //             single-code era).
   if (segments.length === 4 && segments[3] === 'share') {
     const id = segments[2]!;
@@ -54,17 +54,19 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     }
     if (request.method === 'POST') {
       const body = (await request.json().catch(() => ({}))) as {
-        role?: ShareRole;
+        role?: unknown;
         expiry?: ShareLinkExpiry;
         tabId?: unknown;
       };
       // Reject a garbage role rather than silently granting edit (the prior
       // `=== 'view' ? 'view' : 'edit'` turned any typo into an edit link).
-      // An OMITTED role still defaults to 'edit', the documented behaviour.
-      if (body.role !== undefined && body.role !== 'view' && body.role !== 'edit') {
+      // An OMITTED role still defaults to 'edit', the documented behaviour; the three levels are
+      // docs/specs/013-workspace/share-roles.md's.
+      if (body.role !== undefined && !isAccessLevel(body.role)) {
+        console.warn('[access-levels] invalid role', { value: String(body.role).slice(0, 40) });
         return badRequest('invalid role');
       }
-      const role: ShareRole = body.role === 'view' ? 'view' : 'edit';
+      const role: ShareRole = body.role ?? DEFAULT_LINK_LEVEL;
       // Expiry (docs/specs/013-workspace/share-link-expiry.md): unknown / missing value falls back to the
       // pre-expiry behaviour, a link that works until revoked.
       const expiry: ShareLinkExpiry =

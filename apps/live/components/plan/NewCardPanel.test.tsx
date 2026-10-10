@@ -23,6 +23,7 @@ describe('the New Card panel', () => {
       plan,
       {
         canEdit: true,
+        canEditCards: true,
         types: ITEM_TYPES,
         statusNames: new Map([
           ['backlog', 'Backlog'],
@@ -55,8 +56,15 @@ describe('the New Card panel', () => {
     expect(screen.queryByRole('button', { name: 'Add New Card Type' })).toBeNull();
   });
 
+  // docs/specs/013-workspace/share-roles.md: a Participant adds Plan cards from New Card.
+  it('is there for a Participant, who may add cards but not shape the board', () => {
+    setPlan({ canEdit: false, canEditCards: true });
+    render(<NewCardPanel onPopoverClose={vi.fn()} />);
+    expect(screen.getByRole('region', { name: 'New Card' })).toBeTruthy();
+  });
+
   it('is not there for someone who may only view', () => {
-    setPlan({ canEdit: false });
+    setPlan({ canEdit: false, canEditCards: false });
     render(<NewCardPanel onPopoverClose={vi.fn()} />);
     expect(screen.queryByRole('region', { name: 'New Card' })).toBeNull();
   });

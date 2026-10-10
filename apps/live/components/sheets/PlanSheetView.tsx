@@ -11,7 +11,7 @@ import { usePublishSheetSettings } from './sheet-settings-registry';
 import { placeSheetChart } from './sheet-charts';
 import { Button } from '@livediagram/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { formatA1, normaliseRange, formatRange, quoteSheet } from '@livediagram/sheets';
+import { formatA1, normaliseRange, formatRange, quoteSheet, single } from '@livediagram/sheets';
 import type { ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
@@ -40,6 +40,9 @@ import { SheetFace } from './SheetFace';
 import type { PointRef } from './useSheetPointer';
 import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { listenForSheetSelect } from '@/lib/sheet-select-request';
+import { useFillsTab } from '@/hooks/plan/plan-cover-store';
+import { useSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 const RADIUS = 12;
 
@@ -99,23 +102,25 @@ function SheetBody({
   const model = useSheetModel(element, bridge, plan);
   const [hint, setHint] = useState(false);
   if (!model.sheet) {
+    // A copy, or a template's Sheet (sheet-store.md "Template starts"), not made yet is on its way, never gone.
+    const pending = !!element.planSheet?.copyOf || !!element.planSheet?.start;
     const loading = model.status === 'loading' || model.status === undefined;
     return (
       <SheetFace
         palette={palette}
         title="Sheet"
-        loading={model.status !== 'error' && (loading || !!element.planSheet?.copyOf)}
+        loading={model.status !== 'error' && (loading || pending)}
         message={
           model.status === 'error'
             ? "Couldn't load this sheet"
-            : loading || element.planSheet?.copyOf
+            : loading || pending
               ? 'Opening Sheet'
               : 'This sheet is no longer in this document'
         }
         action={
           model.status === 'error'
             ? { label: 'Try Again', run: () => void model.store.loadTab(bridge.activeTabId, true) }
-            : !loading && !element.planSheet?.copyOf && bridge.canEdit
+            : !loading && !pending && bridge.canEdit && bridge.canShape
               ? {
                   label: 'Remove',
                   run: () =>
@@ -210,12 +215,13 @@ function SheetWorkspace({
     palette,
     interactive,
     canEdit,
+    canShape: canEdit && bridge.canShape,
     maximised,
     locale: bridge.locale,
     announce: (m) => plan?.announce(m),
     toast: bridge.toast,
     notify: bridge.notify,
-    placeChart: (kind, range) => placeSheetChart(bridge, element, model.sheet!.id, kind, range),
+    placeChart: (kind, pick) => placeSheetChart(bridge, element, model.sheet!.id, kind, pick),
     onWrote: (before, write) => cardPush.current?.(before, write),
   });
   return (
@@ -307,8 +313,18 @@ function SheetParts({
         { undoable: false },
       );
   }, [filled, c.store, c.sheet.id]);
+  // A cell selected from outside the Sheet (the Plan tour's Formulas step).
+  const { setSelection } = c;
+  useEffect(
+    () => listenForSheetSelect(c.sheet.id, (at) => setSelection(single(at))),
+    [c.sheet.id, setSelection],
+  );
   // The cog's settings for the element menu's Sheet flyout (sheet-settings-registry).
   usePublishSheetSettings(element.id, { controller: c, actions, onImportCsv });
+  // Covering the canvas (maximised, or filling its tab), the zoom controls zoom its cells (sheet-zoom.ts).
+  const fillsTab = useFillsTab(element.id);
+  const sheetZoom = useSheetZoom();
+  const zoom = c.maximised || fillsTab ? sheetZoom : 1;
   const readFile = async (f: File) => {
     const text = await f.text();
     if (c.sheet.cells.size === 0) importCsvText(c, text, 'replace');
@@ -341,7 +357,8 @@ function SheetParts({
         </div>
       ) : (
         <>
-          {canEdit ? <SheetToolbar actions={actions} /> : null}
+          {/* Merge, sort, filter, freeze and charts reshape the Sheet: an Editor's, never a Participant's. */}
+          {c.canShape ? <SheetToolbar actions={actions} /> : null}
           {interactive ? <SheetFormulaBar actions={actions} input={input} /> : null}
           <SheetGrid
             elementId={element.id}
@@ -350,6 +367,7 @@ function SheetParts({
             pointRef={pointRef}
             peers={bridge.peers}
             fontFamily={fontFamily}
+            zoom={zoom}
           />
           {interactive ? <SheetStatusBar /> : null}
         </>

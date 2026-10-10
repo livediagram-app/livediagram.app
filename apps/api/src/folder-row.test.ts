@@ -4,7 +4,7 @@ import { rowToFolder, type FolderRow } from './folder-row';
 // rowToFolder is the read-side contract every folder endpoint goes
 // through: list, get-by-id, the parent-walks the Explorer issues
 // while rendering the nested tree, the cycle-prevention reads
-// createFolder / updateFolder run before INSERT. The mapper itself
+// createFolder / renameFolder run before INSERT. The mapper itself
 // is small (six columns, no nested JSON), but its two security-
 // relevant fields, `owner_id` and `parent_id`, are exactly what
 // ownership gating and the recursive tree render depend on. A
@@ -38,7 +38,7 @@ describe('rowToFolder', () => {
 
   it('preserves a non-null parent_id verbatim (drives the Explorer nested tree)', () => {
     // The Explorer renders folders by walking parent_id, and the
-    // cycle-prevention check in createFolder + updateFolder walks
+    // cycle-prevention check in createFolder + moveFolder walks
     // the same field. A regression that flattened the value or
     // mis-cased the column would silently flatten the tree.
     const dto = rowToFolder(baseRow({ parent_id: 'folder-root' }));

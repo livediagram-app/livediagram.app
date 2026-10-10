@@ -3,7 +3,7 @@
 // the mode switch does (one tab edit, one undo step): the active tab through the editor's own
 // switch, so leaving Illustrate asks first as it does there; another tab directly.
 import { editorModeSwitchable, opensInOf, type EditorMode, type Tab } from '@livediagram/document';
-import type { TabModeChoice } from '@/components/chrome/TabModeMenuSection';
+import type { TabModeChoice } from '@/components/chrome/TabModeMenuRows';
 import { debugLog } from '@/lib/debug-log';
 import { switchedTab, trackModeSwitch } from './useEditorMode';
 

@@ -9,8 +9,6 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import type { AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { Participant } from '@/lib/identity';
 import { TabsLabelIcon, safeInlinePadding, safeInset } from '@livediagram/ui';
 import { TabFolderChip } from '@/components/chrome/TabFolderChip';
@@ -24,22 +22,13 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
-import type { TabModeChoice } from './TabModeMenuSection';
+import type { TabModeChoice } from './TabModeMenuRows';
+import type { AccessLevel } from '@livediagram/api-schema';
 
-// Canvas-scoped actions folded into the unified tab / canvas menu: change
-// theme / background, and tidy the layout. (Add-element actions used to live
-// here too but were removed — the palette + quick-connect cover adding.)
+// Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
+// Cleanup category used to live here too but were removed: the palette and quick-connect cover
+// adding, and the command palette's Actions keep Auto Layout and Auto-align.)
 export type CanvasMenuActions = {
-  // Cleanup category (docs/specs/008-canvas/layout-cleanup.md): Auto-align grid-snaps current positions;
-  // Auto Layout recomputes positions from the arrow graph (Tidy up) in the
-  // chosen style (docs/specs/008-canvas/layout-cleanup.md "Layout styles"; omitted = smart).
-  onAutoAlign: () => void;
-  onAutoLayout: (choice?: AutoLayoutChoice) => void;
-  // Hover-to-preview for those same rows (docs/specs/008-canvas/layout-cleanup.md), desktop pointers only:
-  // lay the tab out live behind the menu, and put it back on the way out.
-  onPreviewCleanup: (kind: CleanupKind) => void;
-  onEndCleanupPreview: () => void;
   // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md); greyed,
   // not hidden, when the buffer is empty.
   onPaste: () => void;
@@ -144,16 +133,14 @@ type TabBarProps = {
   // broadcast role per ParticipantPresence), so the badge only appears
   // when the participant id matches `selfId`.
   selfId: string;
-  // Who the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md), for the tab menu's vote controls.
-  voteSelfId?: string;
-  selfRole: 'edit' | 'view';
+  selfRole: AccessLevel;
   // Who we follow (docs/specs/012-collaboration/follow-me-viewport.md), for the avatar ring, and the Collaborators
   // modal an avatar click opens (docs/specs/012-collaboration/collaborator-enhancements.md; Follow itself lives there).
   // Optional: a surface with no room behind it leaves the avatars as plain
   // presence indicators.
   followingId?: string | null;
   onOpenCollaborators?: (participantId: string | null) => void;
-} & SessionToolsProps;
+};
 
 export function TabBar({
   tabs,
@@ -170,26 +157,6 @@ export function TabBar({
   onClearContent,
   onImportTab,
   onExportTab,
-  facilitatedBy,
-  facilitating,
-  timer,
-  vote,
-  onStartTimer,
-  onPauseTimer,
-  onResumeTimer,
-  onResetTimer,
-  onClearTimer,
-  onExtendTimer,
-  onStartVote,
-  onEndVote,
-  onRevealVote,
-  onClearVote,
-  livePoll,
-  pollHasAudience,
-  onStartPoll,
-  pollCollaborators,
-  voteLayers,
-  activeLayerId,
   otherDocuments,
   onCopyTabTo,
   onToggleLockTab,
@@ -200,7 +167,6 @@ export function TabBar({
   renameActiveNonce = 0,
   participantsByTab,
   selfId,
-  voteSelfId,
   selfRole,
   followingId,
   onOpenCollaborators,
@@ -240,7 +206,7 @@ export function TabBar({
 
   // The tab-menu callbacks for a given tab, shared by the per-tab ellipsis
   // menu and the canvas right-click menu so both drive the exact same
-  // actions (rename / duplicate / folder / session / ...). `close` differs
+  // actions (rename / duplicate / folder / ...). `close` differs
   // per surface — the ellipsis closes via setMenuFor, the canvas menu via
   // onCloseCanvasMenu — so each caller passes its own.
   const tabMenuProps = (tab: Tab, close: () => void) => ({
@@ -252,7 +218,6 @@ export function TabBar({
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
     selfId,
-    voteSelfId,
     otherDocuments,
     folderNames,
     currentFolder: tabFolderName(tab),
@@ -296,26 +261,6 @@ export function TabBar({
       onDelete(tab.id);
       close();
     },
-    facilitatedBy,
-    facilitating,
-    timer,
-    vote,
-    onStartTimer,
-    onPauseTimer,
-    onResumeTimer,
-    onResetTimer,
-    onClearTimer,
-    onExtendTimer,
-    onStartVote,
-    onEndVote,
-    onRevealVote,
-    onClearVote,
-    livePoll,
-    pollHasAudience,
-    onStartPoll,
-    pollCollaborators,
-    voteLayers,
-    activeLayerId,
   });
 
   const activeTab = tabs.find((t) => t.id === activeId);

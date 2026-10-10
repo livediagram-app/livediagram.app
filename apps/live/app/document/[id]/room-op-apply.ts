@@ -6,6 +6,7 @@ import {
   applyElementDelta,
   articlesOf,
   applyElementOp,
+  applyRoomElementOp,
   applyVoteDelta,
   mergeIncomingElement,
   voteDeltaApplies,
@@ -15,6 +16,7 @@ import {
 } from '@livediagram/document';
 import type { RoomOp } from '@livediagram/api-schema';
 import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops';
+import { markArticleGrow } from '@/lib/article/article-grow-store';
 
 // The document-changing room ops, as a pure function over a tab list.
 //
@@ -45,7 +47,8 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         // sender's is a snapshot from their last save (docs/specs/012-collaboration/collab-race-hardening.md).
         const elOp =
           op.op.kind === 'update' || op.op.kind === 'add' ? mergeOpOverLocal(tab, op.op) : op.op;
-        const elements = applyElementOp(tab.elements, elOp);
+        // A patch (a Participant's change, relayed by the room) touches only the fields it names.
+        const elements = applyRoomElementOp(tab.elements, elOp);
         return elements === tab.elements ? tab : { ...tab, elements };
       });
     case 'el-delta':
@@ -121,6 +124,8 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
             illustratePagesOf(tab).some((p) => p.flow === op.flow);
           if (!known) return tab;
           articles[op.flow] = applyArticleOps(articles[op.flow], ops);
+          // An agent's writing has no writer here to add the pages it needs: the next lay-out may.
+          if (op.agent === true) markArticleGrow(op.tabId, op.flow);
         }
         if (Object.keys(articles).length > 0) return { ...tab, articles };
         const { articles: _drop, ...rest } = tab;

@@ -14,7 +14,7 @@ import {
   SLIDE_LAYOUT_CATEGORIES,
   SLIDE_LAYOUTS,
 } from '@livediagram/templates';
-import { buildPageLayout } from './page-layout-build';
+import { buildPageLayout } from '@livediagram/templates';
 
 // docs/specs/007-editor/illustrate-pages.md "Slide layouts": a slide page's own catalogue, every
 // layout fitting a 16:9 and a 4:3 slide inside its margins.

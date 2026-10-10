@@ -1,4 +1,4 @@
-import type { ItemTypeCatalogue } from '@livediagram/items';
+import type { SavedItemTypes } from '@/lib/api/item-types';
 import {
   useLayoutEffect,
   useRef,
@@ -13,9 +13,7 @@ import type { CommunitySession } from './editor-realtime';
 import {
   apiListShareLinks,
   apiLoadDocument,
-  apiLoadSelf,
   apiLoadShared,
-  apiSaveSelf,
   getSessionSharePassword,
   readCachedSharePassword,
   setSessionSharePassword,
@@ -24,10 +22,11 @@ import {
   type SharedWithItem,
   type ShareRole,
 } from '@/lib/api-client';
-import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
-import { randomColor, randomName, type Participant } from '@/lib/identity';
+import { isOfflineId, OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { debugLog } from '@/lib/debug-log';
+import { resolveParticipant } from './resolve-participant';
+import type { Participant } from '@/lib/identity';
 import { ensureCollabKey, hasConfirmedName } from '@/lib/local-identity';
-import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { resolveDocumentSession } from './editor-page-helpers';
 import { makeSeedFetchedDocument } from './seed-fetched-document';
@@ -88,7 +87,7 @@ export function useIdentityBootstrap(opts: {
     setDocumentId: SetState<string | null>;
     setDocumentName: SetState<string>;
     setDocumentPresentation: SetState<string | null>;
-    setDocumentItemTypes: SetState<ItemTypeCatalogue | null>;
+    setDocumentItemTypes: SetState<SavedItemTypes>;
     setDocumentNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The document is in the Trash (docs/specs/013-workspace/trash.md).
@@ -144,14 +143,17 @@ export function useIdentityBootstrap(opts: {
   // The bootstrap runs once auth has settled (and again on a password retry), reading everything else as
   // it is at that moment: an effect event, so the setters and values it reads are never triggers.
   const runRef = useRef(0);
-  const bootstrap = useEffectEvent(() => {
+  // `early`: a Local only document opening before auth has settled (docs/specs/006-document/offline-mode.md
+  // "Instant open"). It has no owner on the server to wait for, so it loads under the placeholder
+  // participant and settleEarlyIdentity resolves who is reading once auth answers.
+  const bootstrap = useEffectEvent((early = false) => {
     if (hydrated) return;
     // Wait for Clerk to determine the auth state before bootstrapping.
     // Otherwise a signed-in user lands here with `clerkUserId === null`
     // briefly, we mint a guest id, and the participant record + every
     // subsequent document load uses the wrong owner. With this gate
     // the effect re-runs once `authLoaded` flips true.
-    if (!authLoaded) return;
+    if (!authLoaded && !early) return;
     // A later run (auth settling twice: Clerk answering after the guest timeout, then a guest migration) supersedes
     // this one: a superseded run's writes are dropped, so a stale guest-identity load never overwrites the newer one.
     const generation = ++runRef.current;
@@ -227,7 +229,7 @@ export function useIdentityBootstrap(opts: {
     // know whether this open is a guest or a signed-in user. Fire-and-
     // forget, gated to once per browser per UTC day inside the helper,
     // so it's safe to run on every editor mount.
-    trackDailyReturn(!!clerkUserId);
+    if (!early) trackDailyReturn(!!clerkUserId);
     // The watchdog (docs/specs/007-editor/load-recovery.md): a load that has not ended in time shows
     // the load-error screen (after one self-healing reload per tab), and a load that lands after it
     // replaces that screen with the editor.
@@ -338,51 +340,24 @@ export function useIdentityBootstrap(opts: {
       // resolved the participant on the first attempt — reuse it rather
       // than hitting /api/participants again on every wrong guess.
       let self: Participant;
-      if (selfParticipant.id !== 'self') {
+      if (early) {
+        // A Local only document reads from this browser whoever is reading: the identity follows.
+        self = selfParticipant;
+      } else if (selfParticipant.id !== 'self') {
         // Already resolved — skip the network round-trip.
         self = selfParticipant;
       } else {
-        // Two ways in (docs/specs/014-identity/auth-and-guest-access.md): when signed in, the Clerk userId becomes
-        // the canonical participant id. When signed out, fall back to the
-        // localStorage guest UUID.
-        // For a guest, resolve a SERVER-SIGNED id (minting one on first
-        // visit, upgrading a legacy unsigned id) so the eventual sign-up
-        // migrate can prove possession. Falls back to a local unsigned id
-        // offline. See docs/specs/014-identity/auth-and-guest-access.md + lib/guest-identity.ts.
-        const selfId = clerkUserId ?? (await ensureSignedGuestIdentity()).id;
-        setLoadStep('participant');
-        const storedSelf = await apiLoadSelf(selfId).catch(() => null);
-        // Signed-in users always use their Clerk-known name on the
-        // participant record. For a brand-new participant (no storedSelf)
-        // this seeds the row; for an existing one we overwrite so it stays
-        // in sync with the user's Clerk profile. Guests keep the existing
-        // random placeholder so their chosen identity isn't blown away.
-        const baseSelf: Participant = storedSelf ?? {
-          id: selfId,
-          name: randomName(),
-          color: randomColor(),
-          status: 'online',
-        };
-        self =
-          clerkUserId && clerkDisplayName
-            ? { ...baseSelf, name: clerkDisplayName, status: 'online' }
-            : { ...baseSelf, status: 'online' };
+        // Two ways in (docs/specs/014-identity/auth-and-guest-access.md): see resolve-participant.ts.
+        self = await resolveParticipant({
+          clerkUserId,
+          clerkDisplayName,
+          onParticipantStep: () => setLoadStep('participant'),
+        });
         // The document-write key (docs/specs/012-collaboration/participant-responses.md) is stamped onto the LOCAL
-        // participant only, never onto `self` as it goes to `apiSaveSelf`
-        // below: it belongs to this browser, not to the account. A second
-        // device signed in as the same person is a second person as far as
-        // a done check is concerned — and it is a second presence entry too,
-        // so that stays consistent.
+        // participant only, never onto `self` as it goes to `apiSaveSelf`: it belongs to this browser,
+        // not to the account. A second device signed in as the same person is a second person as far
+        // as a done check is concerned — and it is a second presence entry too, so that stays consistent.
         setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
-        // Persist on first load, or when a signed-in user's Clerk display
-        // name has drifted from what we have on the server.
-        const nameDrifted = !!(
-          storedSelf &&
-          clerkUserId &&
-          clerkDisplayName &&
-          storedSelf.name !== clerkDisplayName
-        );
-        if (!storedSelf || nameDrifted) await apiSaveSelf(self).catch(() => {});
         // Seed the persistence guard so the post-hydration effect doesn't
         // immediately echo the same name/color back via PUT.
         lastPersistedSelfRef.current = { name: self.name, color: self.color };
@@ -395,6 +370,8 @@ export function useIdentityBootstrap(opts: {
       // path keeps its own calls at the end of this effect (AFTER the
       // share-visit registration, so refreshSharedList sees the new row).
       const seedExplorerLists = () => {
+        // An early open's lists wait for the real participant (settleEarlyIdentity).
+        if (early) return;
         refreshDocumentList(self.id);
         refreshSharedList(self.id);
       };
@@ -481,6 +458,7 @@ export function useIdentityBootstrap(opts: {
             shareRole: role,
             shareCodeParam,
             community: community !== null,
+            embed,
           });
           const codeForVisitor = session.sessionShareCode;
           // Tab seeding + name + owner fields (shared with the owner-URL
@@ -618,14 +596,13 @@ export function useIdentityBootstrap(opts: {
         // settled — skip the identity prompt entirely. Guests fall
         // back to the legacy localStorage gate so they still get the
         // one-time naming nudge.
-        if (!clerkUserId && !hasConfirmedName()) {
+        if (!early && !clerkUserId && !hasConfirmedName()) {
           setTemplatePickerMode('identity');
         }
         setDocumentId(id);
       }
       setNameConfirmed(hasConfirmedName());
-      refreshDocumentList(self.id);
-      refreshSharedList(self.id);
+      seedExplorerLists();
       // Folder list is auto-loaded by the useFolders hook once
       // selfParticipant.id transitions off the placeholder — no
       // manual fetch needed here.
@@ -637,7 +614,43 @@ export function useIdentityBootstrap(opts: {
     };
     run(watchdog, load);
   });
+  // Instant open (docs/specs/006-document/offline-mode.md): before auth settles, a path naming a Local
+  // only document opens straight from this browser. Share links, embeds and workbenches always wait.
+  const earlyOpen = useRef(false);
+  const tryEarlyOpen = useEffectEvent(async () => {
+    if (authLoaded || hydrated || embed || workbench) return;
+    const url = new URL(window.location.href);
+    const { id } = documentIdFromPath(url.pathname);
+    if (!id || url.searchParams.has('s')) return;
+    if (!(await isOfflineId(id))) return;
+    // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
+    if (runRef.current !== 0) return;
+    earlyOpen.current = true;
+    debugLog('[load] early open of a Local only document');
+    bootstrap(true);
+  });
+  // Once auth answers after an early open: who is reading, their lists, and the guest naming nudge,
+  // all in the background of a document already on screen.
+  const settleEarlyIdentity = useEffectEvent(() => {
+    void (async () => {
+      const self = await resolveParticipant({ clerkUserId, clerkDisplayName });
+      opts.set.setSelfParticipant({ ...self, key: ensureCollabKey(), status: 'online' });
+      lastPersistedSelfRef.current = { name: self.name, color: self.color };
+      trackDailyReturn(!!clerkUserId);
+      if (!clerkUserId && !hasConfirmedName()) opts.set.setTemplatePickerMode('identity');
+      opts.set.setNameConfirmed(hasConfirmedName());
+      opts.refreshDocumentList(self.id);
+      opts.refreshSharedList(self.id);
+    })().catch((err: unknown) => console.warn('[load] resolving the reader failed', err));
+  });
   useLayoutEffect(() => {
+    void tryEarlyOpen();
+  }, []);
+  useLayoutEffect(() => {
+    if (earlyOpen.current) {
+      if (authLoaded) settleEarlyIdentity();
+      return;
+    }
     bootstrap();
   }, [authLoaded, passwordRetry]);
 }

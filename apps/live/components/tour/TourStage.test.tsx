@@ -71,6 +71,29 @@ describe('TourStage', () => {
     );
   });
 
+  it('offers each way in on a welcome card with choices, in place of the accept', () => {
+    const e = engine({ id: 'welcome', card: 'welcome', title: 'Welcome to Plan', body: '' });
+    const boards = vi.fn();
+    const sheets = vi.fn();
+    render(
+      <TourStage
+        engine={e}
+        welcomeChoices={[
+          { id: 'boards', label: 'Boards', onPick: boards },
+          { id: 'sheets', label: 'Spreadsheets', onPick: sheets },
+        ]}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Show me around' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Spreadsheets' }));
+    expect(sheets).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Boards' }));
+    expect(boards).toHaveBeenCalled();
+    expect(e.next).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'No thanks' }));
+    expect(e.skip).toHaveBeenCalled();
+  });
+
   it('rings the target and labels the step with the tour', () => {
     const e = engine(
       { id: 'one', title: 'One', body: 'Copy' },

@@ -34,6 +34,7 @@ const COLLAB_HANDLERS = [
   'clearIdeas',
   'scatterIdeas',
   'pressAgendaItem',
+  'resetAgenda',
   'takeRoll',
   'addQaNote',
   'voteQaNote',
@@ -79,9 +80,9 @@ export function useStableCollab(collab: CollabApi): CollabApi {
   const [roster, setRoster] = useState({ signature, participants: collab.participants });
   if (roster.signature !== signature) setRoster({ signature, participants: collab.participants });
   const participants = roster.signature === signature ? roster.participants : collab.participants;
-  const { selfKey, tabTimer, selfOwnerId, selfName } = collab;
+  const { selfKey, tabTimer, selfOwnerId, selfName, canArrange } = collab;
   return useMemo(
-    () => ({ ...handlers, selfKey, participants, tabTimer, selfOwnerId, selfName }),
-    [handlers, selfKey, participants, tabTimer, selfOwnerId, selfName],
+    () => ({ ...handlers, selfKey, participants, tabTimer, selfOwnerId, selfName, canArrange }),
+    [handlers, selfKey, participants, tabTimer, selfOwnerId, selfName, canArrange],
   );
 }

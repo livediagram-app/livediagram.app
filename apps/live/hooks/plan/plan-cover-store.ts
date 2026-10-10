@@ -45,10 +45,21 @@ export function isCanvasCovered(): boolean {
   return getMaximisedPlanId() !== null || cover.fillTabId !== null;
 }
 
-// A board covers it (maximised or filling the tab), not a view: what the palette narrows to Cards for, since cards
-// land only on a board.
-export function isBoardCovering(): boolean {
-  return getMaximisedPlanKind() === 'Board' || cover.fillTabKind === 'Board';
+// A board fills the tab (docs/specs/026-plan/plan-board.md "The palette follows what fills the screen"): the palette
+// narrows to Cards, since cards land only on a board. A maximised board is the person's view for a moment and keeps
+// the mode's palette.
+export function isBoardFillingTab(): boolean {
+  return cover.fillTabKind === 'Board';
+}
+
+// A Sheet fills the tab: the palette is hidden, since nothing it offers lands anywhere.
+export function isSheetFillingTab(): boolean {
+  return cover.fillTabKind === 'Sheet';
+}
+
+// A Sheet covers the canvas (maximised or filling its tab): the zoom controls zoom its cells (sheet-zoom.ts).
+export function isSheetCovering(): boolean {
+  return getMaximisedPlanKind() === 'Sheet' || cover.fillTabKind === 'Sheet';
 }
 
 const serverFalse = () => false;
@@ -56,8 +67,16 @@ export function useCanvasCovered(): boolean {
   return useSyncExternalStore(subscribe, isCanvasCovered, serverFalse);
 }
 
-export function useBoardCovering(): boolean {
-  return useSyncExternalStore(subscribe, isBoardCovering, serverFalse);
+export function useBoardFillingTab(): boolean {
+  return useSyncExternalStore(subscribe, isBoardFillingTab, serverFalse);
+}
+
+export function useSheetCovering(): boolean {
+  return useSyncExternalStore(subscribe, isSheetCovering, serverFalse);
+}
+
+export function useSheetFillingTab(): boolean {
+  return useSyncExternalStore(subscribe, isSheetFillingTab, serverFalse);
 }
 
 // The board or Sheet filling the open tab is `id`.

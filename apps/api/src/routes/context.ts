@@ -9,6 +9,7 @@ import type { WorkbenchRole } from '@livediagram/api-schema';
 
 import {
   canEditDocument,
+  canParticipateDocument,
   canReadDocument,
   resolveDocumentGrant,
   type DocumentGrant,
@@ -142,9 +143,9 @@ export function gateRead(
   );
 }
 
-// The participation gate (docs/specs/024-agents/agent-presence.md "Token levels"): comments, session answers and
-// agent presence. Until share roles are built it names today's rule, read access to the document or tab; a
-// read-only token is refused every write at the choke point. It becomes the Participant check when share roles land.
+// The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
+// Editor (comments, Q&A notes and upvotes, Plan cards, Sheet cells). A Viewer only looks, so it is refused. Agent
+// presence stays on gateRead: an agent acts at its owner's level.
 export function gateParticipate(
   ctx: RouteContext,
   documentId: string,
@@ -152,7 +153,17 @@ export function gateParticipate(
   documentTeamId: string | null = null,
   tabId?: string,
 ): Promise<boolean> {
-  return gateRead(ctx, documentId, documentOwnerId, documentTeamId, tabId);
+  return canParticipateDocument(
+    ctx.env,
+    documentId,
+    ctx.resolveOwner(),
+    shareCodeOf(ctx.request),
+    documentOwnerId,
+    sharePasswordOf(ctx.request),
+    documentTeamId,
+    ctx.verifiedUserId,
+    tabId,
+  );
 }
 
 export function gateEdit(
@@ -316,6 +327,20 @@ export async function deniedOnTab(
 ): Promise<Response> {
   const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
   return grant ? notFound() : forbidden();
+}
+
+// The refusal for a Participant door (docs/specs/013-workspace/share-roles.md): no grant, 403; a grant confined
+// to another tab, 404, as deniedOnTab; a grant whose level is below Participant (a Viewer), 403.
+export async function deniedParticipate(
+  ctx: RouteContext,
+  liveDoc: { id: string; ownerId: string; teamId: string | null },
+  tabId?: string,
+): Promise<Response> {
+  const grant = await gateGrant(ctx, liveDoc.id, liveDoc.ownerId, liveDoc.teamId);
+  if (grant && grant.tabScope !== null && grant.tabScope !== tabId) return notFound();
+  if (grant)
+    console.info('[access-levels] participation refused', { documentId: liveDoc.id, tabId });
+  return forbidden();
 }
 
 // The request's JSON body as an object, or the 400 to return: `invalid json` when it doesn't

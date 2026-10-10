@@ -37,6 +37,7 @@ import {
   tabForWire,
   apiFetch,
 } from './core';
+import type { RoomTicketResponse } from '@livediagram/api-schema';
 
 // The document-list row every list surface renders: the Explorer
 // panel, the /explorer page, /new, and the editor's document-list
@@ -63,6 +64,10 @@ export type DocumentListItem = Pick<
   // Listed in the public Community (docs/specs/025-community/community.md "In the Explorer"): the Public badge.
   // Absent on a synthetic or offline row, which is never listed.
   communityListed?: DocumentSummary['communityListed'];
+  // The Details view's Created column and counted stats (docs/specs/013-workspace/explorer-details-view.md).
+  // Absent on a synthetic row (shared with you), which reads as not counted.
+  createdAt?: DocumentSummary['createdAt'];
+  stats?: DocumentSummary['stats'];
 };
 
 // Deduped on `${ownerId}|${id}`: the editor mounts and React Strict
@@ -243,9 +248,13 @@ async function _apiListDocuments(ownerId: string): Promise<DocumentSummary[]> {
     // unique in every list.
     const offlineIds = new Set(offline.map((o) => o.id));
     const documents = [...offline, ...liveDocs.filter((d) => !offlineIds.has(d.id))];
-    // The landing page's Welcome back reads this (docs/specs/019-marketing/returning-visitor.md).
+    // The landing page's Welcome back reads this (docs/specs/019-marketing/returning-visitor.md). A Local
+    // only document has no server snapshot: its placeholder, never a request that can only 404 (once per
+    // save, since the version is in the key), which matters now a guest's documents start local.
     rememberRecentDiagrams(documents, (id, savedAt) =>
-      apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
+      offlineIds.has(id)
+        ? Promise.resolve(null)
+        : apiFetchDocumentThumbnailSvg(ownerId, id, { version: savedAt }),
     );
     return documents;
   } catch (e) {
@@ -339,7 +348,7 @@ export async function apiCreateRoomTicket(
   ownerId: string,
   documentId: string,
   shareCode: string | null = null,
-): Promise<string | null> {
+): Promise<RoomTicketResponse | null> {
   // Retried with a short backoff: a team member whose mint fails has NO
   // fallback (the legacy query params are personal/share-code only), and the
   // connector mints a fresh one for every reconnect, so one transient blip
@@ -353,8 +362,12 @@ export async function apiCreateRoomTicket(
       });
       if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
       if (!res.ok) continue;
-      const { ticket } = (await res.json()) as { ticket?: string };
-      return typeof ticket === 'string' && ticket.length > 0 ? ticket : null;
+      const { ticket, adderKey } = (await res.json()) as Partial<RoomTicketResponse>;
+      if (typeof ticket !== 'string' || ticket.length === 0) return null;
+      // A Participant's own adder key (docs/specs/013-workspace/share-roles.md): which stickies are its own.
+      return typeof adderKey === 'string' && adderKey.length > 0
+        ? { ticket, adderKey }
+        : { ticket };
     } catch {
       // Network error — retry.
     }
