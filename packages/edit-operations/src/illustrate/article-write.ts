@@ -174,6 +174,10 @@ export function applyArticleWrite(
   lines.push(
     `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the article "${title}" (${flow}): ${append ? `${read.blocks.length} blocks added, ` : ''}${blocks.length} blocks.`,
   );
+  if (read.tables)
+    lines.push(
+      `Wrote ${read.tables} Markdown table${read.tables === 1 ? '' : 's'} as a list: an article's text holds no tables (put a table element on a page with update_document).`,
+    );
   if (gone.length)
     lines.push(
       `Removed ${gone.length} zone${gone.length === 1 ? '' : 's'} and what was in them: ${gone.map((z) => z.id).join(', ')}.`,

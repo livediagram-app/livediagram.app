@@ -17,13 +17,16 @@ import {
   layOutIllustratePages,
   opensInOf,
   PAGE_SIZES,
+  type Element,
   type PageKind,
 } from '@livediagram/document';
 import { layoutCatalogueFor } from '@livediagram/templates';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
+import { isObject } from './fields';
 import { outlineLine } from './outline';
+import { shownFields } from './show';
 import { jsonString } from './text';
 import { depthFirst } from './tree';
 
@@ -40,6 +43,37 @@ const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'land
   const s = PAGE_SIZES[size];
   return orientation === 'landscape' ? s.landscape : s.portrait;
 };
+
+// The most characters one item list prints, and the items it shows (a layout's lists are short).
+const ITEMS_LINE_MAX = 240;
+
+// The text of one item of a list field: its words and numbers, in field order.
+const itemText = (item: unknown): string =>
+  isObject(item)
+    ? Object.values(item)
+        .filter(
+          (v): v is string | number =>
+            (typeof v === 'string' && v.trim() !== '') || typeof v === 'number',
+        )
+        .map(String)
+        .join(' / ')
+    : typeof item === 'string' || typeof item === 'number'
+      ? String(item)
+      : '';
+
+/** What an element's lists hold (process steps, stats, timeline points, chart data), one line each under
+ *  its outline line: the content a layout's sample is replaced in, which the outline only counts. */
+export function itemLines(el: Element): string[] {
+  const out: string[] = [];
+  for (const [key, value] of Object.entries(shownFields(el).fields)) {
+    if (!Array.isArray(value) || value.length === 0) continue;
+    const items = value.map(itemText).filter(Boolean);
+    if (items.length === 0) continue;
+    const line = `    ${key}: ${items.join(' | ')}`;
+    out.push(line.length > ITEMS_LINE_MAX ? `${line.slice(0, ITEMS_LINE_MAX - 1)}…` : line);
+  }
+  return out;
+}
 
 export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewResult<PagesView> {
   const tab = model.tab;
@@ -105,8 +139,15 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
       noun: PAGE,
     });
     // What is on it, one outline line each: the refs and text a layout's sample is replaced by.
-    for (const node of nodes) lines.push({ text: outlineLine(model, node, 1), noun: ELEMENT });
+    for (const node of nodes) {
+      lines.push({ text: outlineLine(model, node, 1), noun: ELEMENT });
+      for (const text of itemLines(node.el)) lines.push({ text, noun: ELEMENT });
+    }
   }
+  if (pages.length)
+    lines.push({
+      text: "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
+    });
   for (const a of articles) {
     const places =
       a.pages.length > 1

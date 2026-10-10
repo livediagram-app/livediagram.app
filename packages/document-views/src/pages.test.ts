@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { PagesView } from '@livediagram/api-schema';
-import { layOutIllustratePages, type IllustratePage, type Tab } from '@livediagram/document';
+import {
+  layOutIllustratePages,
+  type Element,
+  type IllustratePage,
+  type Tab,
+} from '@livediagram/document';
 import { shapeAt } from './__fixtures__/build';
+import { itemLines } from './pages';
 import { renderView } from './render-view';
 
 // docs/specs/024-agents/illustrate-for-agents.md "Reading: the pages view".
@@ -39,6 +45,26 @@ const pagesOf = (tab: Tab, budget?: number) => {
   return out;
 };
 
+describe('the items of an element’s lists', () => {
+  it('prints each list of words and numbers under its element, cut when long', () => {
+    const el = {
+      id: 'p1',
+      type: 'shape',
+      shape: 'process',
+      processSteps: [{ label: 'Plan', note: '' }, { label: 'Build' }, 3, null],
+      stats: [{ value: '99.9%', caption: 'uptime' }],
+      empty: [],
+      blanks: [{ x: true }],
+      long: Array.from({ length: 80 }, (_, i) => `item ${i}`),
+    } as unknown as Element;
+    const lines = itemLines(el);
+    expect(lines[0]).toBe('    processSteps: Plan | Build | 3');
+    expect(lines[1]).toBe('    stats: 99.9% / uptime');
+    expect(lines[2]!.endsWith('…')).toBe(true);
+    expect(lines).toHaveLength(3);
+  });
+});
+
 describe('the pages view', () => {
   it('lists each page with its rectangle and the refs on it, then each article as Markdown', () => {
     const out = pagesOf(illustrateTab());
@@ -56,6 +82,9 @@ describe('the pages view', () => {
     expect(lines[3]).toMatch(/^page 2 page-logo · logo 1024 x 1024 · at .* · locked · empty$/);
     expect(lines[4]).toMatch(
       /^page 3 page-art1 · article A4 · at .* · article art-1 · its writing below$/,
+    );
+    expect(out.text).toContain(
+      "Rectangles and elements' x, y are canvas coordinates (the layout view prints positions from the content's corner).",
     );
     expect(out.text).toContain(
       'article art-1 "Brief" · pages 3-4 · 3 blocks · 4 words · look report',

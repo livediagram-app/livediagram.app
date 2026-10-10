@@ -27,6 +27,8 @@ export type ArticleFromMarkdown =
       // Zones of `current` the text keeps, and those it leaves out (to be removed with their elements).
       keptZones: string[];
       droppedZones: string[];
+      // Markdown tables read as lists: an article's text holds no tables.
+      tables: number;
     }
   | { unknownZone: string }
   // A paragraph (a run of lines with no blank line between) longer than a block holds: refused
@@ -50,6 +52,37 @@ function frontMatterOf(text: string): { title?: string; subtitle?: string; body:
     if (!field) continue;
     const value = unquote(field[2]!);
     if (value) out[field[1]!.toLowerCase() as 'title' | 'subtitle'] = value;
+  }
+  return out;
+}
+
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+const TABLE_RULE = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
+const cellsOf = (row: string) =>
+  row
+    .trim()
+    .replace(/^\||\|$/g, '')
+    .split('|')
+    .map((c) => c.trim());
+
+/** A Markdown table (a header row, a rule, rows) as a list: the header in bold, then a row an item,
+ *  cells joined with ` · `. Lines in a code fence stay as they are. `found` is told of each table. */
+function tablesAsLists(lines: readonly string[], found: () => void): string[] {
+  const out: string[] = [];
+  let fenced = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (/^```/.test(line.trim())) fenced = !fenced;
+    if (fenced || !TABLE_ROW.test(line) || !TABLE_RULE.test(lines[i + 1] ?? '')) {
+      out.push(line);
+      continue;
+    }
+    found();
+    out.push('', `**${cellsOf(line).filter(Boolean).join(' · ')}**`, '');
+    for (i += 2; i < lines.length && TABLE_ROW.test(lines[i]!); i++)
+      out.push(`- ${cellsOf(lines[i]!).join(' · ')}`);
+    out.push('');
+    i -= 1;
   }
   return out;
 }
@@ -86,7 +119,8 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
     stretch = [];
   };
   let paragraph = 0;
-  for (const line of body.split('\n')) {
+  let tables = 0;
+  for (const line of tablesAsLists(body.split('\n'), () => tables++)) {
     paragraph = line.trim() ? paragraph + line.length + 1 : 0;
     if (paragraph > MAX_ARTICLE_BLOCK_TEXT) return { tooLong: true };
     if (/^```/.test(line.trim())) fenced = !fenced;
@@ -114,6 +148,7 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
     blocks,
     keptZones: kept,
     droppedZones: [...zones.keys()].filter((id) => !kept.includes(id)),
+    tables,
   };
 }
 

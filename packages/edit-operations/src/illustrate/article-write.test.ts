@@ -144,6 +144,13 @@ describe('the writing', () => {
     expect(out.lines[0]).toBe('Appended to the article "Untitled" (f): 2 blocks added, 3 blocks.');
   });
 
+  it('says a Markdown table was written as a list', () => {
+    const out = write(tabOf(), { markdown: '| a | b |\n|---|---|\n| 1 | 2 |' });
+    expect(out.lines).toContain(
+      "Wrote 1 Markdown table as a list: an article's text holds no tables (put a table element on a page with update_document).",
+    );
+  });
+
   it('keeps one empty paragraph when replaced by nothing', () => {
     const out = write(withArticle('f', { blocks: [para('1', 'One')] }), { markdown: '' });
     expect(articlesOf(out.tab).f!.blocks).toMatchObject([{ type: 'paragraph', runs: [] }]);

@@ -350,8 +350,10 @@ export const mcpChangePages = mcpTool('change_pages', {
     'Change the pages of a tab in Illustrate mode, in order, as one edit: add {kind, layout, ...} an ' +
     'infographic, slide or logo page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}. A tab in another mode, named by tabId, ' +
-    'is switched into Illustrate. The answer gives every page with its rectangle on the canvas: put elements ' +
-    'on a page with update_document at coordinates inside it. Articles are written with write_article. ' +
+    'is switched into Illustrate. The answer gives every page with its rectangle in canvas coordinates, the ' +
+    "same as an element's x and y in update_document (the layout view prints positions from the content's " +
+    'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
+    "list's items, to replace. Articles are written with write_article. " +
     'Everyone with the document open sees it at once.',
   inputSchema: changePagesShape,
   outputSchema: changePagesOutput,

@@ -186,7 +186,8 @@ export const writeArticleShape = {
       'The text, in Markdown: # ## ### headings, paragraphs, - and 1. lists (indent two spaces a level), ' +
         '- [ ] to-dos, > quotes, ``` code, --- dividers, **bold**, *italic*, ~~strike~~, `code`, [links](https://…). ' +
         'Front matter sets the title and subtitle: a first line ---, then title: …, subtitle: …, then ---. ' +
-        'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there.',
+        'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there. ' +
+        'An article holds no tables: a Markdown table is written as a list.',
     ),
   article: z
     .string()

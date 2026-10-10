@@ -81,6 +81,24 @@ describe('Markdown into an article', () => {
   });
 });
 
+describe('a Markdown table', () => {
+  it('is written as a list, its header in bold, and counted; never inside a code fence', () => {
+    const out = articleFromMarkdown(
+      'Before\n\n| Method | Safe |\n| --- | :---: |\n| GET | yes |\n| POST | no |\n\nAfter\n\n```\n| a | b |\n|---|---|\n```',
+    );
+    if (!('blocks' in out)) throw new Error('refused');
+    expect(out.tables).toBe(1);
+    expect(shape(out.blocks)).toEqual([
+      { type: 'paragraph', runs: [{ text: 'Before' }] },
+      { type: 'paragraph', runs: [{ text: 'Method · Safe', b: true }] },
+      { type: 'list', list: 'bullet', runs: [{ text: 'GET · yes' }] },
+      { type: 'list', list: 'bullet', runs: [{ text: 'POST · no' }] },
+      { type: 'paragraph', runs: [{ text: 'After' }] },
+      { type: 'code', text: '| a | b |\n|---|---|' },
+    ]);
+  });
+});
+
 describe('a paragraph too long for a block', () => {
   it('is refused rather than cut, a blank line resetting the count', () => {
     const half = 'x'.repeat(MAX_ARTICLE_BLOCK_TEXT / 2 + 10);
