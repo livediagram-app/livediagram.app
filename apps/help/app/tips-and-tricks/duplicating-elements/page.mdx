@@ -58,7 +58,8 @@ A few details worth knowing:
 - **Dropping it back where it started** makes no copy.
 - **Connections are copied sensibly**: an arrow linking the dragged set to the rest of the canvas is duplicated too, so the copy arrives wired the same way the original is.
 - **One undo step**: a single undo removes the whole gesture, copy and move together. Escape cancels it entirely.
-- Shift keeps its other jobs: Shift-clicking an unselected element still adds it to the selection, and Shift while resizing still constrains proportions. Only a real drag on an already-selected element duplicates.
+- Shift keeps its other jobs: Shift-clicking an unselected element still adds it to the selection, and Shift while resizing still constrains proportions. Pressing Shift down on an element only changes the selection; the copy comes from Shift held during a drag.
+- It works on shapes, notes and other boxed elements. A lone arrow can't be Shift-dragged into a copy; use `⌘D` for that.
 
 <Tip>
   Building a row or grid of identical elements? Style the first one completely, then Shift-drag
