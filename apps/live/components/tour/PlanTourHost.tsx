@@ -144,7 +144,7 @@ export function PlanTourHost() {
     return () => clearTimeout(t);
   }, [armed, active, seen, inPlan, canWork, otherTour, engineRef]);
 
-  // Settings rerun (the "Show Plan Tour" row, turned on from off + closed): offers again in Plan, and
+  // Settings rerun (the Show Tours › "Plan Tour" row, turned on from off + closed): offers again in Plan, and
   // otherwise the next time the person enters it (the row has cleared `planTourSeen`).
   const inPlanRef = useLatest(inPlan);
   useEffect(() => {

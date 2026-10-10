@@ -7,6 +7,9 @@ import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-prefer
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
+// The switches inside toggle groups (the tours): each its own preference, checked like a toggle row's.
+const GROUP_TOGGLES = ALL_ROWS.flatMap((r) => (r.kind === 'toggleGroup' ? r.toggles : []));
+const SWITCHES = [...TOGGLES, ...GROUP_TOGGLES];
 const CHOICES = ALL_ROWS.filter((r) => r.kind === 'choice');
 const SLIDERS = ALL_ROWS.filter((r) => r.kind === 'slider');
 const BOTH_CONTEXTS = [
@@ -86,7 +89,7 @@ describe('settings catalogue', () => {
     // The row asks "show me the tour?"; `tourSeen` records "already seen".
     // Getting this backwards would re-offer the tour to everyone who has
     // taken it, so it is worth pinning both directions explicitly.
-    const row = TOGGLES.find((r) => r.key === 'tourSeen')!;
+    const row = SWITCHES.find((r) => r.key === 'tourSeen')!;
     expect(row.read({ tourSeen: true })).toBe(false);
     expect(row.read({ tourSeen: false })).toBe(true);
     expect(row.read({})).toBe(true);
@@ -100,30 +103,50 @@ describe('settings catalogue', () => {
 
   it('inverts the Plan tour row the same way, beside the welcome tour in Accessibility', () => {
     // docs/specs/026-plan/plan-tour.md "Where it appears".
-    const row = TOGGLES.find((r) => r.key === 'planTourSeen')!;
+    const row = SWITCHES.find((r) => r.key === 'planTourSeen')!;
     expect(row.read({ planTourSeen: true })).toBe(false);
     expect(row.read({})).toBe(true);
     expect(row.write({}, true).planTourSeen).toBe(false);
     expect(row.write({}, false).planTourSeen).toBe(true);
     expect(row.event.on).toBe('PlanTourSeenOff');
     expect(row.event.off).toBe('PlanTourSeenOn');
-    const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
-    const keys = accessibility.rows.map((r) => ('key' in r ? r.key : null));
-    expect(keys.indexOf('planTourSeen')).toBe(keys.indexOf('tourSeen') + 1);
   });
 
   it('inverts the Facilitate tour row the same way, after the Plan tour row', () => {
     // docs/specs/012-collaboration/facilitate-tour.md "Where it appears".
-    const row = TOGGLES.find((r) => r.key === 'facilitateTourSeen')!;
+    const row = SWITCHES.find((r) => r.key === 'facilitateTourSeen')!;
     expect(row.read({ facilitateTourSeen: true })).toBe(false);
     expect(row.read({})).toBe(true);
     expect(row.write({}, true).facilitateTourSeen).toBe(false);
     expect(row.write({}, false).facilitateTourSeen).toBe(true);
     expect(row.event.on).toBe('FacilitateTourSeenOff');
     expect(row.event.off).toBe('FacilitateTourSeenOn');
+  });
+
+  // docs/specs/007-editor/user-preferences.md "Show Tours": one control in Accessibility, the three switches
+  // in the order the tours come.
+  it('groups the three tour switches into one Show Tours control in Accessibility', () => {
     const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
-    const keys = accessibility.rows.map((r) => ('key' in r ? r.key : null));
-    expect(keys.indexOf('facilitateTourSeen')).toBe(keys.indexOf('planTourSeen') + 1);
+    const group = accessibility.rows.find((r) => r.key === 'tours');
+    expect(group?.kind).toBe('toggleGroup');
+    if (group?.kind !== 'toggleGroup') return;
+    expect(group.label).toBe('Show Tours');
+    expect(group.toggles.map((t) => [t.key, t.label])).toEqual([
+      ['tourSeen', 'Welcome Tour'],
+      ['planTourSeen', 'Plan Tour'],
+      ['facilitateTourSeen', 'Facilitate Tour'],
+    ]);
+    expect(accessibility.rows.some((r) => r.key === 'tourSeen')).toBe(false);
+  });
+
+  it('gives every grouped switch telemetry tokens the schema accepts, and a round trip', () => {
+    for (const toggle of GROUP_TOGGLES) {
+      expect(TELEMETRY_TYPE_PATTERN.test(toggle.event.on), toggle.key).toBe(true);
+      expect(TELEMETRY_TYPE_PATTERN.test(toggle.event.off), toggle.key).toBe(true);
+      for (const value of [true, false]) {
+        expect(toggle.read(toggle.write({} as UserPreferences, value)), toggle.key).toBe(value);
+      }
+    }
   });
 
   it('defaults every slider and choice to a value it actually offers', () => {

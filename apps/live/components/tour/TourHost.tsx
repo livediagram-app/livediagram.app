@@ -149,7 +149,7 @@ export function TourHost() {
     return () => clearTimeout(t);
   }, [active, ready, seen, owedByFacilitate, offerRef]);
 
-  // Settings relaunch (the "Show Welcome Tour" row, turned on + closed):
+  // Settings relaunch (the Show Tours › "Welcome Tour" row, turned on + closed):
   // rerun from the top: the welcome card is always step 1. Also re-marks
   // the pending flag so a reload mid-rerun re-offers, exactly like the
   // first-run path. While the Plan tour runs it waits, offering once that ends.

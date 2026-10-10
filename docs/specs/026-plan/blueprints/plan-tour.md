@@ -145,7 +145,7 @@ the host builds wraps these (`placeBoard` also waits for the board to draw), plu
 - Leftover record: `localStorage['livediagram:v2:plan-tour-content']` = JSON `PlanTourContent`; a malformed value is
   dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its `elementId`.
 - `requestSheetSelect(sheetId, { r, c })`: true when a drawn Sheet took it (selects that one cell, unsaved).
-- Settings row: toggle `planTourSeen`, label **Show Plan Tour**, inverted read / write, help article
+- Settings switch: `planTourSeen`, label **Plan Tour** in the Show Tours `toggleGroup`, inverted read / write, help article
   `planTour`, event `{ on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' }`. `SettingsDialog`'s close relaunches
   when the row is on and was off at open.
 - `POWER_USER_PRESET.planTourSeen = { planTourSeen: true }`.

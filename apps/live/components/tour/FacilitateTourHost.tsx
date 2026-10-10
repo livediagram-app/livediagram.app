@@ -122,7 +122,7 @@ export function FacilitateTourHost() {
     return () => clearTimeout(t);
   }, [armed, active, seen, inFacilitate, canWork, otherTour, welcomeSeen, engineRef]);
 
-  // Settings rerun (the "Show Facilitate Tour" row, turned on from off + closed): offers again in
+  // Settings rerun (the Show Tours › "Facilitate Tour" row, turned on from off + closed): offers again in
   // Facilitate, and otherwise the next time the person enters it (the row has cleared the preference).
   const inFacilitateRef = useLatest(inFacilitate);
   useEffect(() => {

@@ -28,10 +28,28 @@ const SUMMARISED = (Object.keys(POWER_USER_PRESET) as PowerUserPresetSetting[]).
   (s) => s !== 'minimalChrome',
 );
 
-function findRow(key: string) {
+// The row a preset setting is changed in, and what the readout calls it. A switch inside a toggle group
+// (the tours) is reached through its group's row, and named by its own label.
+function findRow(key: string): {
+  category: (typeof SETTINGS_CATEGORIES)[number];
+  rowKey: string;
+  label: string;
+  read: (prefs: UserPreferences) => string;
+} {
   for (const category of SETTINGS_CATEGORIES) {
-    const row = category.rows.find((r) => r.key === key);
-    if (row) return { category, row };
+    for (const row of category.rows) {
+      if (row.key === key)
+        return { category, rowKey: row.key, label: row.label, read: (p) => formatValue(row, p) };
+      if (row.kind !== 'toggleGroup') continue;
+      const toggle = row.toggles.find((t) => t.key === key);
+      if (toggle)
+        return {
+          category,
+          rowKey: row.key,
+          label: toggle.label,
+          read: (p) => (toggle.read(p) ? 'On' : 'Off'),
+        };
+    }
   }
   throw new Error(`No settings row "${key}" for the power user preset`);
 }
@@ -50,18 +68,18 @@ export function presetSummaryLines(
   offered: ReadonlySet<string>,
 ): PresetSummaryLine[] {
   return SUMMARISED.map((setting) => {
-    const { category, row } = findRow(setting);
+    const { category, rowKey, label, read } = findRow(setting);
     const entry = prefs.powerUserBaseline?.[setting];
     return {
       setting,
-      rowKey: row.key,
+      rowKey,
       categoryId: category.id,
       categoryLabel: category.label,
-      label: row.label,
-      value: formatValue(row, prefs),
+      label,
+      value: read(prefs),
       restorable: !!entry,
       changed: entry ? !isUntouched(prefs, entry) : false,
-      reachable: offered.has(row.key),
+      reachable: offered.has(rowKey),
     };
   });
 }

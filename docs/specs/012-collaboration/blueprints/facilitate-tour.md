@@ -5,16 +5,16 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
 
 ## Domain and naming
 
-| Thing             | Identifier                                                                                              |
-| ----------------- | ------------------------------------------------------------------------------------------------------- |
-| The host          | `FacilitateTourHost` in `apps/live/components/tour/FacilitateTourHost.tsx`                              |
-| The steps         | `FACILITATE_TOUR_STEPS`, `facilitateTourSteps({ canShare })` in `facilitate-tour-steps.ts`              |
-| The welcome art   | `FacilitateTourArt` in `apps/live/components/tour/FacilitateTourArt.tsx`                                |
-| The seen-guard    | `UserPreferences.facilitateTourSeen` (synced)                                                           |
-| The rerun signal  | `FACILITATE_TOUR_RELAUNCH_EVENT`, `requestFacilitateTourRelaunch` in `apps/live/lib/facilitate-tour.ts` |
-| The one-tour slot | `ActiveTour` `'facilitate'` in `apps/live/lib/tour-active.ts`                                           |
-| The Settings row  | toggle `facilitateTourSeen`, "Show Facilitate Tour", Accessibility, after Show Plan Tour                |
-| The help article  | `canvas/facilitate-mode/facilitate-tour` (`helpArticle: 'facilitateTour'`)                              |
+| Thing               | Identifier                                                                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------- |
+| The host            | `FacilitateTourHost` in `apps/live/components/tour/FacilitateTourHost.tsx`                              |
+| The steps           | `FACILITATE_TOUR_STEPS`, `facilitateTourSteps({ canShare })` in `facilitate-tour-steps.ts`              |
+| The welcome art     | `FacilitateTourArt` in `apps/live/components/tour/FacilitateTourArt.tsx`                                |
+| The seen-guard      | `UserPreferences.facilitateTourSeen` (synced)                                                           |
+| The rerun signal    | `FACILITATE_TOUR_RELAUNCH_EVENT`, `requestFacilitateTourRelaunch` in `apps/live/lib/facilitate-tour.ts` |
+| The one-tour slot   | `ActiveTour` `'facilitate'` in `apps/live/lib/tour-active.ts`                                           |
+| The Settings switch | `facilitateTourSeen`, "Facilitate Tour", third in the Show Tours `toggleGroup` (Accessibility)          |
+| The help article    | `canvas/facilitate-mode/facilitate-tour` (`helpArticle: 'facilitateTour'`)                              |
 
 ## Behaviour and state
 
@@ -100,7 +100,7 @@ helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and n
 | Decline and completion mark it seen and send telemetry; leaving ends as skipped                   | `FacilitateTourHost.test.tsx`                                                |
 | The welcome tour's closing card offers it; picking it starts it; ending without it answers it     | `TourHost.test.tsx`, `FacilitateTourHost.test.tsx`                           |
 | Step order, anchors, Share filter, telemetry tokens                                               | `facilitate-tour-steps.test.ts`                                              |
-| Settings row inverted, after Show Plan Tour                                                       | `settings-catalogue.test.ts`                                                 |
+| Settings switch inverted, third in Show Tours                                                     | `settings-catalogue.test.ts`                                                 |
 | Power user mode marks it seen                                                                     | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
 | The slot holds `'facilitate'`                                                                     | `lib/tour-active.test.ts`                                                    |
 

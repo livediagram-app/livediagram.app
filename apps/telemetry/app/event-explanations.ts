@@ -1076,11 +1076,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' "Show Welcome Tour".',
+    'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' Show Tours › "Welcome Tour".',
   'UI|Opened|FacilitateTourOffer':
-    'The Facilitate tour was offered: on the welcome tour\'s closing card ("Show me Facilitate") for someone new in Facilitate mode, or as its own card for someone who had already done the welcome tour, or replayed from Settings\' "Show Facilitate Tour".',
+    'The Facilitate tour was offered: on the welcome tour\'s closing card ("Show me Facilitate") for someone new in Facilitate mode, or as its own card for someone who had already done the welcome tour, or replayed from Settings\' Show Tours › "Facilitate Tour".',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' "Show Plan Tour".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' Show Tours › "Plan Tour".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1275,17 +1275,17 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TourSeenOff':
-    'Someone switched on "Show Welcome Tour" in Settings, marking the tour as not yet seen and relaunching it immediately.',
+    'Someone switched on Show Tours › "Welcome Tour" in Settings, marking the tour as not yet seen and relaunching it immediately.',
   'UI|Toggled|TourSeenOn':
-    'Someone switched off "Show Welcome Tour" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+    'Someone switched off Show Tours › "Welcome Tour" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|FacilitateTourSeenOff':
-    'Someone switched on "Show Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
+    'Someone switched on Show Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
-    'Someone switched off "Show Facilitate Tour" in Settings, marking the Facilitate tour as seen.',
+    'Someone switched off Show Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on "Show Plan Tour" in Settings, marking the Plan tour as not yet seen.',
+    'Someone switched on Show Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off "Show Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+    'Someone switched off Show Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",

@@ -1,5 +1,5 @@
 // The Facilitate tour's relaunch signal (docs/specs/012-collaboration/facilitate-tour.md "Where it appears"):
-// the Settings row "Show Facilitate Tour", turned on from off and closed, reruns the tour. A window event
+// the Settings row Show Tours › "Facilitate Tour", turned on from off and closed, reruns the tour. A window event
 // keeps the dialog decoupled from FacilitateTourHost, as the welcome and Plan tours' relaunches do.
 export const FACILITATE_TOUR_RELAUNCH_EVENT = 'livediagram:facilitate-tour-relaunch';
 
