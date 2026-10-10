@@ -9,6 +9,7 @@ import {
   refetchedItemStore,
   storeAsCreates,
   withCreateIds,
+  writeLimitedTo,
   type ItemStoreState,
   type ItemWrite,
 } from './store';
@@ -346,6 +347,61 @@ describe('itemIdsOfWrite', () => {
     expect(itemIdsOfWrite({ kind: 'tally', tallies: [{ id: 't', votes: { p: 1 } }] })).toEqual([
       't',
     ]);
+  });
+});
+
+describe('writeLimitedTo', () => {
+  const ids = new Set(['p', 'x', 't']);
+
+  it('keeps only the items that landed, of every write kind', () => {
+    expect(
+      writeLimitedTo(
+        {
+          kind: 'patches',
+          patches: [
+            { id: 'p', patch: {} },
+            { id: 'q', patch: {} },
+          ],
+        },
+        ids,
+      ),
+    ).toEqual({ kind: 'patches', patches: [{ id: 'p', patch: {} }] });
+    expect(
+      writeLimitedTo(
+        {
+          kind: 'create',
+          creates: [
+            { id: 'x', type: 't', fields: {} },
+            { id: 'y', type: 't', fields: {} },
+            { type: 't', fields: {} },
+          ],
+        },
+        ids,
+      ),
+    ).toEqual({ kind: 'create', creates: [{ id: 'x', type: 't', fields: {} }] });
+    expect(
+      writeLimitedTo(
+        {
+          kind: 'tally',
+          tallies: [
+            { id: 't', votes: { p: 1 } },
+            { id: 'u', votes: { p: 1 } },
+          ],
+        },
+        ids,
+      ),
+    ).toEqual({ kind: 'tally', tallies: [{ id: 't', votes: { p: 1 } }] });
+    expect(writeLimitedTo({ kind: 'delete', id: 'p' }, ids)).toEqual({ kind: 'delete', id: 'p' });
+  });
+
+  it('is null when none of the write is left', () => {
+    const none = new Set<string>();
+    expect(writeLimitedTo({ kind: 'patches', patches: [{ id: 'p', patch: {} }] }, none)).toBeNull();
+    expect(
+      writeLimitedTo({ kind: 'create', creates: [{ id: 'x', type: 't', fields: {} }] }, none),
+    ).toBeNull();
+    expect(writeLimitedTo({ kind: 'tally', tallies: [{ id: 't', votes: {} }] }, none)).toBeNull();
+    expect(writeLimitedTo({ kind: 'delete', id: 'd' }, none)).toBeNull();
   });
 });
 
