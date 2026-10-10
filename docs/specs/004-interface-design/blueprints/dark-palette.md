@@ -36,7 +36,7 @@ Scope, by file:
 | Dark surfaces       | `--color-slate-800/900/950` under `.dark`                | The blue-slate chrome                                         |
 | Solid brand fill    | `SOLID_BRAND_DARK`                                       | `dark:bg-brand-600`, a static fill under white text           |
 | Solid brand control | `SOLID_BRAND_DARK_CONTROL`                               | `dark:bg-brand-600 dark:hover:bg-brand-700`, a clickable fill |
-| Wordmark accent     | `dark:text-sky-400` on the "diagram" span                | The one vivid note in dark chrome                             |
+| Wordmark accent     | `dark:text-sky-400` on the "live" span                   | The one vivid note in dark chrome                             |
 | Dark canvas         | `DARK_CANVAS_BACKGROUND_COLOR`                           | `#0d121a`                                                     |
 | Dark pattern        | `DARK_CANVAS_PATTERN_COLOR`                              | `#1c2735`, the opaque blend of `#2e4057` at 45 %              |
 | Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`, `annotationFill`)  | Unpainted element colours on dark paper                       |

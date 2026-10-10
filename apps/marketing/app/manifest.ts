@@ -21,9 +21,9 @@ export const dynamic = 'force-static';
 // PNGs from public/ (livediagram-icon-{256,512}.png) are listed at
 // explicit sizes because some Android installers + the Lighthouse PWA
 // audit prefer a concrete PNG over an SVG. All are purpose: 'any':
-// the mark is a thin stroke whose parentheses reach close to the
-// edge, so it has no maskable safe-zone; declaring 'maskable' would
-// let an Android circle/squircle mask clip the brackets. An opaque,
+// the Living Prism's corners reach outside the maskable safe zone
+// (the centre 80% circle), so declaring 'maskable' would let an
+// Android circle/squircle mask clip the cube. An opaque,
 // iOS-friendly home-screen tile is handled separately by
 // app/apple-icon.tsx (iOS renders transparency as black, so the
 // transparent PNGs here would tile badly on iOS).

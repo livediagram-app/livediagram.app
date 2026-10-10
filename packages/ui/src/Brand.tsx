@@ -1,12 +1,22 @@
+import { Fragment, useId, useMemo } from 'react';
+import {
+  BRAND_DETAIL,
+  BRAND_FACES,
+  BRAND_GRADIENTS,
+  BRAND_MARK_VIEWBOX,
+  type BrandMarkVariant,
+} from './brand-mark-geometry';
+import { prismPalette } from './brand-prism';
+
 type BrandSize = 'sm' | 'md';
 
 type BrandProps = {
   href?: string;
   size?: BrandSize;
   className?: string;
-  // Override colour for the "diagram" half of the wordmark and the logo
-  // mark. Used by the editor header to tint the logo with the active tab's
-  // theme accent — when unset, falls back to the brand-500 utility.
+  // Override colour for the "live" half of the wordmark and the logo mark.
+  // Used by the editor header to tint the logo with the active tab's theme
+  // accent; when unset, the brand palette and brand-600 / sky-400 show.
   accentColor?: string;
   // Extra classes for the wordmark span ("live" + "diagram"). The editor
   // passes `hidden sm:inline` here so the wordmark drops off the mobile
@@ -20,7 +30,7 @@ const sizeClasses: Record<BrandSize, string> = {
   md: 'text-lg font-semibold tracking-tight',
 };
 
-const BRAND_500 = '#0ea5e9';
+const COLOUR_TRANSITION = 'color var(--transition-duration-micro) ease-out';
 
 export function Brand({
   href,
@@ -31,25 +41,26 @@ export function Brand({
 }: BrandProps) {
   const classes =
     `group inline-flex items-center gap-1.5 ${sizeClasses[size]} text-slate-900 dark:text-slate-100 ${className}`.trim();
-  const accentStyle: React.CSSProperties = accentColor
-    ? { color: accentColor, transition: 'color var(--transition-duration-micro) ease-out' }
-    : { transition: 'color var(--transition-duration-micro) ease-out' };
   const content = (
     <>
       <BrandMark
         className={`${size === 'sm' ? 'h-4 w-4' : 'h-5 w-5'} shrink-0`}
-        style={{
-          color: accentColor ?? BRAND_500,
-          transition: 'color var(--transition-duration-micro) ease-out',
-        }}
+        accentColor={accentColor}
       />
       {/* A logotype: WCAG 1.4.3 sets text that is part of a logo no contrast minimum, and the
           contrast audits skip it by this mark. */}
       <span className={wordmarkClassName} data-logotype="">
-        live
-        <span className={accentColor ? '' : 'text-brand-500 dark:text-sky-400'} style={accentStyle}>
-          diagram
+        <span
+          className={accentColor ? '' : 'text-brand-600 dark:text-sky-400'}
+          style={
+            accentColor
+              ? { color: accentColor, transition: COLOUR_TRANSITION }
+              : { transition: COLOUR_TRANSITION }
+          }
+        >
+          live
         </span>
+        diagram
       </span>
     </>
   );
@@ -64,73 +75,154 @@ export function Brand({
   return <span className={classes}>{content}</span>;
 }
 
-// The mark's geometry on its 24x24 viewBox, shared by the React <BrandMark>
-// below and by raster renders that need it as an SVG string (marketing's
-// app/apple-icon.tsx). The app/icon.svg favicons carry the same shapes as a
-// static file per app, since Next's file convention needs one in each.
-export const BRAND_MARK = {
-  // The rotational sync arc: two thin strokes at 30% opacity.
-  arcs: ['M16.8 3.8 A9.5 9.5 0 0 1 16.8 20.2', 'M7.2 20.2 A9.5 9.5 0 0 1 7.2 3.8'],
-  // The link between the two nodes.
-  link: 'M15 11.6 C15 14.4 10.2 11.4 10 14.2',
-  circle: { cx: 15.2, cy: 9, r: 2.9 },
-  square: { x: 6.6, y: 12.4, size: 5.8, rx: 1.9 },
-} as const;
+// Each stop carries its light and dark colour as custom properties and picks
+// one by the page's `.dark` class; a theme change crossfades the stop colours.
+const STOP_CLASS =
+  '[stop-color:var(--ldm-l)] dark:[stop-color:var(--ldm-d)] transition-[stop-color] duration-micro ease-out motion-reduce:transition-none';
+const BLEND_CLASS = 'mix-blend-multiply dark:mix-blend-screen';
+// Hovering a linked logo lifts the top plate, as if opening the box.
+const LID_CLASS =
+  'transition-transform duration-micro ease-out group-hover:[transform:translateY(-14px)] motion-reduce:transition-none';
 
-// The mark as a standalone SVG document in one flat colour, for renderers that
-// take markup rather than React (next/og's resvg pass via a data URI).
-export function brandMarkSvg(color: string = BRAND_500): string {
-  const { arcs, link, circle, square } = BRAND_MARK;
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">` +
-    `<g stroke="${color}" stroke-width="1.4" stroke-linecap="round" opacity="0.3">` +
-    arcs.map((d) => `<path d="${d}"/>`).join('') +
-    `</g>` +
-    `<path d="${link}" stroke="${color}" stroke-width="2.4" stroke-linecap="round" fill="none"/>` +
-    `<circle cx="${circle.cx}" cy="${circle.cy}" r="${circle.r}" fill="${color}"/>` +
-    `<rect x="${square.x}" y="${square.y}" width="${square.size}" height="${square.size}" rx="${square.rx}" fill="${color}"/>` +
-    `</svg>`
-  );
-}
-
-// The livediagram mark: two connected nodes (a circle joined to a rounded
-// square) ringed by a rotational sync arc. Single-colour via currentColor so
-// it tints with the accent; sized by the caller. The multiplayer cursors from
-// the full logo are dropped here as they'd be illegible at header size.
+// The Living Prism (docs/specs/004-interface-design/brand-mark.md): a glass
+// cube over the brand palette, or tinted from `accentColor`, following the
+// page's light / dark scheme. `full` adds the inner diagram, sheen and pulse
+// for 48px and up. `tone="mono"` draws it in currentColor for a solid tile.
 export function BrandMark({
   className,
   style,
+  accentColor,
+  variant = 'compact',
+  tone = 'colour',
 }: {
   className?: string;
   style?: React.CSSProperties;
+  accentColor?: string;
+  variant?: BrandMarkVariant;
+  tone?: 'colour' | 'mono';
 }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} style={style} fill="none" aria-hidden="true">
-      <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.3">
-        {BRAND_MARK.arcs.map((d) => (
-          <path key={d} d={d} />
+  // Gradient ids are document-global, so each instance prefixes its own.
+  const uid = `ldm${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const light = useMemo(() => prismPalette('light', accentColor), [accentColor]);
+  const dark = useMemo(() => prismPalette('dark', accentColor), [accentColor]);
+
+  if (tone === 'mono') {
+    return (
+      <svg viewBox={BRAND_MARK_VIEWBOX} className={className} style={style} aria-hidden="true">
+        {BRAND_FACES.map((face) => (
+          <path
+            key={face.key}
+            d={face.d}
+            fill="currentColor"
+            opacity={face.monoOpacity}
+            className={face.key === 'top' ? LID_CLASS : undefined}
+          />
         ))}
-      </g>
-      {/* The two connected nodes spin 45° about the icon centre on hover.
-          transform-box:view-box makes `origin-center` resolve to (12,12). */}
-      <g className="origin-center transition-transform duration-micro ease-out [transform-box:view-box] group-hover:[transform:rotate(45deg)] motion-reduce:transition-none">
-        <path
-          d={BRAND_MARK.link}
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          fill="none"
-        />
-        <circle {...BRAND_MARK.circle} fill="currentColor" />
-        <rect
-          x={BRAND_MARK.square.x}
-          y={BRAND_MARK.square.y}
-          width={BRAND_MARK.square.size}
-          height={BRAND_MARK.square.size}
-          rx={BRAND_MARK.square.rx}
-          fill="currentColor"
-        />
-      </g>
+      </svg>
+    );
+  }
+
+  const full = variant === 'full';
+  const { nodes, sheen, pulse } = BRAND_DETAIL;
+  return (
+    <svg
+      viewBox={BRAND_MARK_VIEWBOX}
+      className={`isolate ${className ?? ''}`.trim()}
+      style={style}
+      aria-hidden="true"
+    >
+      <defs>
+        {BRAND_GRADIENTS.map(({ key, vector: v, stops }) => (
+          <linearGradient
+            key={key}
+            id={`${uid}-${key}`}
+            x1={`${v.x1}%`}
+            y1={`${v.y1}%`}
+            x2={`${v.x2}%`}
+            y2={`${v.y2}%`}
+          >
+            {stops.map(([stop, offset, opacity]) => (
+              <stop
+                key={offset}
+                offset={`${offset}%`}
+                stopOpacity={opacity}
+                className={STOP_CLASS}
+                style={{ '--ldm-l': light[stop], '--ldm-d': dark[stop] } as React.CSSProperties}
+              />
+            ))}
+          </linearGradient>
+        ))}
+        {full && (
+          <>
+            <linearGradient id={`${uid}-sheen`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity={0.45} />
+              <stop offset="100%" stopColor="#ffffff" stopOpacity={0.05} />
+            </linearGradient>
+            <filter id={`${uid}-glow`} x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </>
+        )}
+      </defs>
+      {BRAND_FACES.map((face, i) => (
+        <Fragment key={face.key}>
+          <path
+            d={face.d}
+            fill={`url(#${uid}-${face.gradient})`}
+            className={face.key === 'top' ? LID_CLASS : face.blend ? BLEND_CLASS : undefined}
+          />
+          {full && i === 1 && (
+            <g
+              opacity={nodes.opacity}
+              className="[--ldm-n:var(--ldm-nl)] dark:[--ldm-n:var(--ldm-nd)]"
+              style={
+                { '--ldm-nl': light.highlight, '--ldm-nd': dark.highlight } as React.CSSProperties
+              }
+            >
+              <path
+                d={nodes.link}
+                fill="none"
+                style={{ stroke: 'var(--ldm-n)' }}
+                strokeWidth={2.5}
+                strokeDasharray="4 4"
+              />
+              {nodes.circles.map((c) => (
+                <circle
+                  key={c.cx}
+                  {...c}
+                  style={{ fill: 'var(--ldm-n)' }}
+                  filter={`url(#${uid}-glow)`}
+                />
+              ))}
+            </g>
+          )}
+        </Fragment>
+      ))}
+      {full &&
+        sheen.map((s) => (
+          <path
+            key={s.d}
+            d={s.d}
+            stroke={`url(#${uid}-sheen)`}
+            strokeWidth={s.width}
+            strokeLinecap="round"
+            fill="none"
+            opacity={s.opacity}
+          />
+        ))}
+      {full &&
+        pulse.map((p) => (
+          <circle
+            key={p.cx}
+            cx={p.cx}
+            cy={p.cy}
+            r={p.r}
+            fill="#ffffff"
+            opacity={p.opacity}
+            filter={p.glow ? `url(#${uid}-glow)` : undefined}
+          />
+        ))}
     </svg>
   );
 }

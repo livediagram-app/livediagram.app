@@ -9,6 +9,8 @@ import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
 const BRAND = '#0ea5e9';
+// The wordmark's "live" accent: brand-600, as in the site header's light mode.
+const WORDMARK_ACCENT = '#0284c7';
 const INK = '#0f172a';
 const MUTED = '#475569';
 
@@ -113,7 +115,7 @@ function shell(section: Section): string {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden">
       <tr><td style="padding:28px 32px 0">
-        <span style="font-size:18px;font-weight:700;color:${INK}">live<span style="color:${BRAND}">diagram</span></span>
+        <span style="font-size:18px;font-weight:700;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>diagram</span>
       </td></tr>
       <tr><td style="padding:20px 32px 32px">
         <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;color:${INK}">${section.heading}</h1>

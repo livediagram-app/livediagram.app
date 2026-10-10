@@ -1,4 +1,4 @@
-import { SITE_NAME, SITE_PITCH, sentencePitch } from '@livediagram/ui';
+import { SITE_NAME, SITE_PITCH, brandMarkSvg, sentencePitch } from '@livediagram/ui';
 import { ImageResponse } from 'next/og';
 
 // Open Graph + Twitter social card (1200x630). Rendered to a static
@@ -20,6 +20,9 @@ export const dynamic = 'force-static';
 export const alt = `${SITE_NAME}: ${SITE_PITCH}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
+
+// The full mark on the card's light ground, as a data URI for next/og's resvg.
+const MARK_DATA_URI = `data:image/svg+xml,${encodeURIComponent(brandMarkSvg({ variant: 'full', scheme: 'light' }))}`;
 
 export default async function OpenGraphImage() {
   return new ImageResponse(renderSocialCard(), { ...size });
@@ -64,7 +67,8 @@ export function renderSocialCard(opts?: { kicker?: string; title?: string; subti
           justifyContent: 'space-between',
         }}
       >
-        {/* Wordmark. Sky-600 accent matches the marketing Brand. */}
+        {/* The brand lockup: the full Living Prism mark, then the wordmark with
+            "live" in the sky-600 accent the marketing Brand uses. */}
         <div
           style={{
             fontSize: 44,
@@ -76,22 +80,11 @@ export function renderSocialCard(opts?: { kicker?: string; title?: string; subti
             gap: 16,
           }}
         >
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 12,
-              background: '#0284c7',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontSize: 36,
-            }}
-          >
-            ld
+          <img src={MARK_DATA_URI} width={64} height={64} alt="" />
+          <div style={{ display: 'flex' }}>
+            <span style={{ color: '#0284c7' }}>live</span>
+            <span>diagram</span>
           </div>
-          livediagram
         </div>
 
         {/* Headline + sub. Default = the hero copy spine; per-category cards
