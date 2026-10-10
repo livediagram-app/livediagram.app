@@ -236,16 +236,20 @@ summary }`.
 
 ### The device grant (server, `oauth-device.ts`)
 
-| From     | Event                                            | To       | Effect                                                         |
-| -------- | ------------------------------------------------ | -------- | -------------------------------------------------------------- |
-| absent   | `POST /oauth/device_authorization`               | pending  | `device:<deviceCode>` and `usercode:<userCode>`, TTL 600 s     |
-| pending  | `POST /oauth/token` before `interval` has passed | pending  | `slow_down`; the stored interval grows by `DEVICE_SLOW_DOWN_S` |
-| pending  | `POST /oauth/token`                              | pending  | `authorization_pending`; `lastPolledAt` stored                 |
-| pending  | `POST /oauth/device/complete`                    | approved | token and expiry stored; `usercode:` deleted                   |
-| pending  | `POST /oauth/device/deny`                        | denied   | `usercode:` deleted                                            |
-| approved | `POST /oauth/token`                              | absent   | `{ access_token, token_type, expires_in }`; record deleted     |
-| denied   | `POST /oauth/token`                              | absent   | `access_denied`; record deleted                                |
-| any      | TTL passes                                       | absent   | `expired_token` on the next poll                               |
+| From     | Event                                            | To       | Effect                                                              |
+| -------- | ------------------------------------------------ | -------- | ------------------------------------------------------------------- |
+| absent   | `POST /oauth/device_authorization`               | pending  | `device:<deviceCode>` and `usercode:<userCode>`, TTL 600 s          |
+| pending  | `POST /oauth/token` before `interval` has passed | pending  | `slow_down`; `devicepoll:`'s interval grows by `DEVICE_SLOW_DOWN_S` |
+| pending  | `POST /oauth/token`                              | pending  | `authorization_pending`; `lastPolledAt` stored in `devicepoll:`     |
+| pending  | `POST /oauth/device/complete`                    | approved | token and expiry stored; `usercode:` deleted                        |
+| pending  | `POST /oauth/device/deny`                        | denied   | `usercode:` deleted                                                 |
+| approved | `POST /oauth/token`                              | absent   | `{ access_token, token_type, expires_in }`; both keys deleted       |
+| denied   | `POST /oauth/token`                              | absent   | `access_denied`; both keys deleted                                  |
+| any      | TTL passes                                       | absent   | `expired_token` on the next poll                                    |
+
+A poll never writes `device:<deviceCode>`: its `lastPolledAt` and earned interval live in `devicepoll:<deviceCode>`
+(same TTL). Only the page writes `device:` after the start, so a poll that read the record before an approval and
+answers after it cannot write it back as pending, whatever KV's cross-region staleness (E31).
 
 ### The room stream (`wait`, `watch`)
 
@@ -755,7 +759,7 @@ No D1 table, no migration. Local files (CLI5):
 `StoredCredential = { host, token, tokenId, accountName, role, expiresAt }`. `<key hash>` is the first 16 hex of
 SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
 `rename`. An unreadable or wrong-version derived file is ignored and rewritten; a malformed `config.toml` or
-`credentials.json` exits 2 naming the file and the line. Server state: the device grant's two KV keys, TTL 600 s;
+`credentials.json` exits 2 naming the file and the line. Server state: the device grant's three KV keys, TTL 600 s;
 nothing in D1.
 
 ## Errors and edge cases
@@ -803,6 +807,8 @@ LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediag
 - **E28** Unknown keys in `config.toml`: ignored, logged under debug.
 - **E29** A read copy evicted between `wait` printing a revision and `tab diff`: E21.
 - **E30** `comment reply|resolve|reopen` on an element with no thread: exit 3 (CLI78).
+- **E31** A poll reads the pending record, the page approves, then the poll answers: the poll writes only
+  `devicepoll:`, so the approval stands and the next poll receives the token.
 
 ## Security and trust
 
