@@ -23,6 +23,7 @@ export * from './feature-art/structure';
 // fact that presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/room';
+export * from './feature-art/facilitate';
 // Infographic pages (docs/specs/007-editor/illustrate-pages.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';
 export * from './feature-art/logo';

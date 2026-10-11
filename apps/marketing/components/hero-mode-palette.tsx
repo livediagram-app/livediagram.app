@@ -1,15 +1,20 @@
 // What the hero's Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
-// "The palette per mode"): the mode's glyph and name for its switch, then Diagram's and
-// Illustrate's Popular tiles, Draw's own drawing tools in place of the palette, and Plan's card types and boards. At the mock's
+// "The palette per mode"): the mode's glyph and name for its switch, then Diagram's, Illustrate's
+// and Facilitate's Popular tiles, Draw's own drawing tools in place of the palette, and Plan's card
+// types and boards. Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
 
+import type { EditorMode } from '@livediagram/document';
 import {
   lucideChartColumn,
   lucideChartPie,
+  lucideEyeOff,
+  lucideListOrdered,
   lucideListTodo,
   lucideMessageSquare,
   lucideSquareKanban,
+  lucideTimer,
   lucideVote,
 } from '@livediagram/icons/lucide';
 import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
@@ -17,7 +22,7 @@ import { EDITOR_MODE_ICONS, Glyph, MarkerIcon, Prims, type IconProps } from '@li
 import type { ComponentType, ReactNode } from 'react';
 import { Shape } from './hero-illustration-glyphs';
 
-export type HeroMode = 'diagram' | 'draw' | 'illustrate' | 'plan';
+export type HeroMode = EditorMode;
 
 // Each mode's name and its glyph, the editor's own (EDITOR_MODE_ICONS).
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
@@ -25,6 +30,7 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
   draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
   illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
+  facilitate: { label: 'Facilitate', Icon: EDITOR_MODE_ICONS.facilitate },
 };
 
 type Tile = { key: string; glyph: ReactNode; active?: boolean };
@@ -137,9 +143,24 @@ const PLAN_TILES: Tile[] = [
   { key: 'votes', glyph: <Lucide prims={lucideVote} /> },
 ];
 
+// Facilitate's Popular (docs/specs/012-collaboration/facilitate-mode.md "The palette"): the first nine
+// of its twelve, a session's notes and the buttons that run the room.
+const FACILITATE_TILES: Tile[] = [
+  { key: 'sticky', glyph: <Shape kind="note" /> },
+  { key: 'text', glyph: <Shape kind="text" /> },
+  { key: 'frame', glyph: <Shape kind="frame" /> },
+  { key: 'arrow', glyph: <Shape kind="arrow" /> },
+  { key: 'timer', glyph: <Lucide prims={lucideTimer} /> },
+  { key: 'vote', glyph: <Lucide prims={lucideVote} /> },
+  { key: 'poll', glyph: <Lucide prims={lucideChartColumn} /> },
+  { key: 'reveal', glyph: <Lucide prims={lucideEyeOff} /> },
+  { key: 'agenda', glyph: <Lucide prims={lucideListOrdered} /> },
+];
+
 export const MODE_TILES: Record<HeroMode, Tile[]> = {
   diagram: DIAGRAM_TILES,
   draw: DRAW_TILES,
   illustrate: ILLUSTRATE_TILES,
   plan: PLAN_TILES,
+  facilitate: FACILITATE_TILES,
 };

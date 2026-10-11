@@ -142,7 +142,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A whiteboard that grows into more',
         paragraphs: [
           'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
-          'For sessions, there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
+          'For sessions, switch a tab to Facilitate, the mode for running a room: there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
         ],
       },
       {
@@ -223,7 +223,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards and spreadsheets, and Facilitate for running a session with your team.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
+      'Workshop tools built in: Facilitate mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       '96 templates and 26 one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
       'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
@@ -273,7 +273,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can livediagram run workshops the way Miro does?',
-        a: 'Sessions like retros, brainstorms, estimation and planning work well: a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
+        a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Facilitate and a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
       },
       {
         q: 'Can I self-host livediagram?',
@@ -743,7 +743,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Open a link and start, no account needed, even to create a document.',
       'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 26 one-click themes and 96 templates.',
       'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards, and Facilitate for running a session with your team.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
+      'Workshop tools built in: Facilitate mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your documents.',
@@ -766,7 +766,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Workshops built in',
         paragraphs: [
-          'Running a session needs more than sticky notes. livediagram gives one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
+          'Running a session needs more than sticky notes. livediagram gives sessions a mode of their own, Facilitate, and one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
         ],
       },
       {
