@@ -27,7 +27,9 @@ export function EmptyCanvasBanner({
   // The picture is of what the tab's mode makes (Diagram when no mode is known).
   const mode = useEditorModeState()?.mode ?? 'diagram';
   return (
-    <div className="pointer-events-none fixed inset-0 z-[var(--z-overlay)] flex items-center justify-center px-4">
+    // At the canvas's own layer, beneath the toolbars and panels: a palette's More popover or a panel opened over the
+    // middle of the canvas sits in front of the card, never under it.
+    <div className="pointer-events-none fixed inset-0 z-[var(--z-panel)] flex items-center justify-center px-4">
       <div
         role="region"
         aria-label={`${tabName} is empty`}

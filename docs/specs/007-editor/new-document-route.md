@@ -409,7 +409,8 @@ an answer and never close this way.
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), as Start Planning
 and an empty page's own start sit in theirs, shown while the active tab has no elements. It is **not dismissible** (it
 goes once the canvas has content) and takes presses only on itself: the canvas around it still pans and a palette
-tool still places. It hides while a draw tool is armed or Quick Start is open, and in Draw mode (its dock is the hint,
+tool still places. It sits beneath the editor's toolbars and panels, so a palette popover or a panel opened over the
+middle of the canvas is in front of it. It hides while a draw tool is armed or Quick Start is open, and in Draw mode (its dock is the hint,
 [Draw mode](../023-draw-mode/draw-mode.md)), Illustrate mode (an empty page invites a layout in its own title bar,
 [Infographic pages](illustrate-pages.md)) and Plan (Start Planning). The guest sign-in nudge sits at the foot of the
 canvas, clear of it, so the two can show together. The card: a small picture of what the tab's mode makes, in the
