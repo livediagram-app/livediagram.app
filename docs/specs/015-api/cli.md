@@ -70,7 +70,8 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
-element whose thread they act on.
+element whose thread they act on, and `--cell <A1>` on a Sheet for a cell's thread
+([Cell comments](../029-sheets/sheet.md#cell-comments)).
 
 **Files.** `-f <file>` holds edit operations, a graph, Mermaid, or elements, told apart by their content; a file
 that is none of them is refused.

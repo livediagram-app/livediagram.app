@@ -7,6 +7,7 @@ import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
+import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
@@ -413,6 +414,9 @@ export type ShapeElement = {
   planView?: PlanViewRef;
   // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
   planSheet?: PlanSheetRef;
+  // A Sheet's cell comment threads (docs/specs/029-sheets/sheet.md "Cell comments"), keyed `rowId:colId`. Only on
+  // a 'plan-sheet'; written by comment deltas, like `commentThread`.
+  cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.

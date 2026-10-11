@@ -7,6 +7,7 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
 import { SheetCardRows } from './SheetCardRows';
+import { SheetCellComments } from './SheetCellComments';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   cycleInRange,
@@ -428,6 +429,7 @@ export function SheetGrid({
                 />
               ) : null}
               <SheetCardRows />
+              <SheetCellComments hover={pointer.hover} />
               {/* The charts that sit in this Sheet, over its cells (sheet.md "Charts"). */}
               <SheetChartsLayer fontFamily={fontFamily} />
               {pointer.preview?.kind === 'fill' ? (

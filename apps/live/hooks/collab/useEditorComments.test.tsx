@@ -139,3 +139,41 @@ describe('useEditorComments with comments off', () => {
     expect(trackMock).not.toHaveBeenCalled();
   });
 });
+
+// A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): every change names the cell, and opening
+// one is its own toggle beside the element's.
+describe('useEditorComments on a Sheet cell', () => {
+  beforeEach(() => {
+    trackMock.mockReset();
+    applyElementDelta.mockReset();
+  });
+
+  it('opens and toggles a cell thread apart from the element thread', () => {
+    const { result } = setup();
+    act(() => result.current.openComments('sheet', 'r1:c1'));
+    expect([result.current.commentThreadOpenId, result.current.commentThreadOpenCell]).toEqual([
+      'sheet',
+      'r1:c1',
+    ]);
+    act(() => result.current.openComments('sheet'));
+    expect(result.current.commentThreadOpenCell).toBeNull();
+    act(() => result.current.openComments('sheet'));
+    expect(result.current.commentThreadOpenId).toBeNull();
+    expect(trackMock.mock.calls.filter((c) => c[1] === 'Opened')).toHaveLength(2);
+  });
+
+  it('names the cell on an add and a resolve, and on the revert of a refused resolve', async () => {
+    const { result } = setup();
+    act(() => {
+      result.current.addComment('sheet', 'hi', undefined, undefined, 'r1:c1');
+      result.current.resolveThread('sheet', () => Promise.reject(new Error('no')), 'r1:c1');
+    });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await act(flush);
+    expect(applyElementDelta.mock.calls.map((c) => [c[1].kind, c[1].cell, c[1].resolved])).toEqual([
+      ['comment-add', 'r1:c1', undefined],
+      ['comment-resolve', 'r1:c1', true],
+      ['comment-resolve', 'r1:c1', false],
+    ]);
+  });
+});

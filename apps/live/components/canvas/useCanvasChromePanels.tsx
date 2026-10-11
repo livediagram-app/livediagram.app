@@ -314,8 +314,8 @@ export function useCanvasChromePanels({
         onReset={collaborateWiring.onReset}
         // It steps aside once a row takes you somewhere, or on a phone it
         // would cover the card you just went to.
-        onCommentRowClick={(id) => {
-          onOpenCommentsForElement(id);
+        onCommentRowClick={(id, cell) => {
+          onOpenCommentsForElement(id, cell);
           closeDockPanel();
         }}
         onActionRowClick={(id) => {

@@ -11,7 +11,7 @@ import { usePublishSheetSettings } from './sheet-settings-registry';
 import { placeSheetChart, sheetChartsRemoval } from './sheet-charts';
 import { OPEN_TAB_TO_CHART, useSheetCharts } from './sheet-charts-context';
 import { Button } from '@livediagram/ui';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatA1, normaliseRange, formatRange, quoteSheet } from '@livediagram/sheets';
 import type { ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -20,6 +20,7 @@ import { planBandTint, planOwnColours, planPalette } from '@/components/plan/pla
 import { MaximisableSlot } from '@/components/plan/MaximisedPlanLayer';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
+import { SheetCellThreadsProvider } from '@/hooks/sheets/sheet-comments-context';
 import { useSheetModel } from './useSheetModel';
 import {
   SheetControllerProvider,
@@ -206,6 +207,10 @@ function SheetWorkspace({
   const bridge = useSheetsBridgeContext()!;
   const plan = usePlan();
   const charts = useSheetCharts();
+  const cellThreads = useMemo(
+    () => ({ elementId: element.id, threads: element.cellComments }),
+    [element.id, element.cellComments],
+  );
   // Card tables push this person's writes to the cards (useCardTableSync sets it).
   const cardPush = useRef<CardTablePush | null>(null);
   const setCardPush = useCallback((push: CardTablePush | null) => {
@@ -238,13 +243,16 @@ function SheetWorkspace({
   });
   return (
     <SheetControllerProvider value={c}>
-      <SheetParts
-        setCardPush={setCardPush}
-        element={element}
-        canEdit={canEdit}
-        interactive={interactive}
-        fontFamily={fontFamily}
-      />
+      {/* The element's cell threads, for the grid's markers (sheet.md "Cell comments"). */}
+      <SheetCellThreadsProvider value={cellThreads}>
+        <SheetParts
+          setCardPush={setCardPush}
+          element={element}
+          canEdit={canEdit}
+          interactive={interactive}
+          fontFamily={fontFamily}
+        />
+      </SheetCellThreadsProvider>
     </SheetControllerProvider>
   );
 }

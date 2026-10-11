@@ -15,6 +15,7 @@ import { keyLabel } from '@/lib/key-label';
 import { useSheetController } from './sheet-controller';
 import { cellMenuLabels } from './sheet-cell-menu-labels';
 import { SheetMergeConfirm } from './SheetMergeConfirm';
+import { SheetCellCommentRow } from './SheetCellCommentRow';
 import type { SheetActions } from './useSheetActions';
 import { useSheetClipboard } from './useSheetClipboard';
 import {
@@ -138,6 +139,7 @@ export function SheetCellMenu({
           </>
         ) : null}
       </MenuToolbar>
+      <SheetCellCommentRow onDone={onClose} />
       {!c.canShape ? null : askMerge ? (
         <SheetMergeConfirm
           range={range}

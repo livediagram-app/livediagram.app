@@ -19,6 +19,7 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 | card table     | `CardTable` in `layout.cardTables` (sheets-engine blueprint)                                             |
 | Fill Tab       | `planSheet.fillTab: true`; `FillTabKind` `'Sheet'` (`components/plan/fill-tab.ts`)                       |
 | maximised      | `MaximisedKind` `'Sheet'`                                                                                |
+| cell thread    | `cellComments: CellCommentThreads` on the element, keyed `rowId:colId` (`cell-comments.ts`)              |
 
 ## Document model (`packages/document`)
 
@@ -33,7 +34,18 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
   reads the copy); `SheetAnchor` (a chart's `sheetAnchor` `{ x, y }`, 0 to `SHEET_ANCHOR_MAX` 1,000,000, validated by
   `isSheetAnchor` in `validate-shape.ts`), `isSheetAnchoredChart`, `sheetDrawnChartIds` (anchored charts whose Sheet
   is on the tab) and `chartsInSheet`.
-- `element-fields.ts`: known fields `planSheet`, `sheetAnchor` (also in edit-operations' chart kind fields).
+- `element-fields.ts`: known fields `planSheet`, `sheetAnchor` (also in edit-operations' chart kind fields),
+  `cellComments`.
+- `cell-comments.ts` (Cell comments): `CellCommentThreads`, `CELL_THREADS_MAX` 1,000, `CELL_KEY_PATTERN` (two axis
+  ids, the engine's `AXIS_ID_PATTERN` repeated), `isCellKey`, `takesCellThreads` (a `plan-sheet` only), `threadAt` and
+  `withThreadAt` (an element's own thread with no cell, else a cell's), `elementThreads` (own first, then cells in key
+  order), `mapElementThreads`, `threadHolding`. Every thread reader goes through them: the comment deltas
+  (`comment-add` and `comment-resolve` take `cell?`; `comment-remove` and `comment-rekey` find their comment in any
+  thread), `mergeIncomingElement` (keeps the receiver's `cellComments`), `elementChangeIsDeltaOnly`, the room ledger
+  (`adds[id].cell`, `comments.cells[cell]` each cell's latest resolve), `withoutCommentAuthorIds`,
+  `LIVE_ELEMENT_FIELDS` (`cellComments`, so undo keeps them), `tabStatsOf` (counts them) and `freshCopyFields`
+  (a copy carries none). `validate-shape.ts`: rule `cellComments` (an object of at most `CELL_THREADS_MAX` threads,
+  each key `isCellKey`, each `{ comments: isComment[] ≤ COMMENTS_MAX, resolved: boolean }`).
 - `shape-factory.ts`: `SHAPE_DEFAULT_SIZE['plan-sheet'] = { width: 960, height: 560 }`; `createShape` leaves
   `planSheet` to the caller (it needs a store id).
 - `data-shapes.ts` `isPlanShape`, `colors.ts` `SELF_PAINTING_SHAPES`, `session.ts` `NON_VOTABLE_SHAPES`,
@@ -358,6 +370,33 @@ interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props ev
   selection change (throttled `PRESENCE_THROTTLE_MS`) and on edit start and end, `null` on blur or unmount; hears
   others', which `SheetSelectionLayer` draws as outlines and name tags (tag hidden after `PEER_TAG_MS` still). Re-sends on a newcomer and on rejoin as `usePlanPresence` does.
 
+### Cell comments
+
+- Editor wiring (main bundle, `hooks/sheets/sheet-comments-context.tsx`): `SheetsProviders` in `EditorView` holds
+  the sheets bridge and `SheetCommentsProvider` (`open(elementId, cell)` from `useEditorComments.openComments`, the
+  open cell from `commentThreadOpenId` + `commentThreadOpenCell`, `canComment` = `can.takePart`);
+  `cellCommentAnchorSelector` names the anchor (`[data-cell-comment-anchor="<elementId>:<cell>"]`).
+  `hooks/sheets/sheet-cell-refs.ts`: a drawn Sheet registers a namer (cell key to A1, null when gone) and a focuser
+  (select a cell); `useCellRef` re-renders on registration.
+- `SheetWorkspace` (`PlanSheetView.tsx`) provides `SheetCellThreadsProvider` `{ elementId, threads:
+element.cellComments }`.
+- `SheetCellComments` (`SheetGrid`, beside `SheetCardRows`, given `pointer.hover`): `cellMarkers` (`sheet-cell-comments.ts`,
+  kept in a WeakMap on the threads and the layout) gives each open thread's position; a `CELL_MARKER_PX` amber
+  (`CELL_COMMENT_COLOUR`) triangle `button` (`aria-label` "Show Comments on B4", `data-comment-trigger`) at the cell's
+  (or its merge's) top right, hidden out of view, under frozen lines, or on hidden lines; a press opens the thread.
+  The pointer resting `CELL_PREVIEW_DELAY_MS` on a commented cell shows `CellPreview` (`role="tooltip"`: author, the
+  first `CELL_PREVIEW_CHARS` of the first comment, "N more"). The open cell's anchor is drawn over its cell. A
+  `keydown` listener on the grid takes Ctrl/⌘ + Alt + M (`isCommentShortcut`, by `code`) for the active cell (its
+  merge's top-left, `threadCellAt`).
+- `SheetCellCommentRow` in `SheetCellMenu` after the toolbar: **Insert Comment** (Editor, Participant) or **Show
+  Comments** (anyone, where a thread is).
+- `EditorAnchoredPopovers`: with an open cell, `CommentThreadPopover` gets `anchorSelector` and `title` "Cell
+  Comments", the thread `threadAt(target, cell)`, and each add and resolve the cell (`apiAddComment` takes `cell`
+  for a session that may comment but not edit).
+- Comments panel: `commentRowsFromElements` makes a row per thread (`CommentRow.cell`); `useCommentRowLabel` names it
+  `Budget!B4`, `Budget (Deleted Cell)` or `Budget`; a click runs `onOpenCommentsForElement(id, cell)`, which focuses
+  the cell (`focusSheetCell`) and opens its thread.
+
 ### Find
 
 - `SheetFindBar` over the grid's top right: input, count "3 of 12", previous/next, Match Case, Match Entire Cell,
@@ -463,6 +502,10 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Charts in a Sheet: draw, move, resize, delete, roles        | `apps/live/components/sheets/SheetChartsLayer.test.tsx`                                                                                        |
 | Insert Chart: range, region, placement                      | `apps/live/components/sheets/sheet-charts.test.tsx`                                                                                            |
 | End to end: place, type, formula, stored, maximise, restore | `apps/live/e2e/plan-sheet.spec.ts`                                                                                                             |
+| Cell comments: model, deltas, ledger, validation, copies    | `packages/document/src/cell-comments.test.ts`, `packages/document-views/src/cell-comments.test.ts`                                             |
+| Cell comments: markers, preview, menu row, keys, panel      | `components/sheets/SheetCellComments.test.tsx`, `components/panels/collaborate/CollaborateRows.cells.test.tsx`                                 |
+| Cell comments over the api: roles, verbs, listing, trust    | `apps/api/src/routes/comment-routes-cells.test.ts`, `apps/api/src/comments-cells.test.ts`                                                      |
+| Cell comments by agents: `--cell`                           | `packages/agent-verbs/src/verbs/comment-cells.test.ts`                                                                                         |
 
 ## Assets and external resources
 
@@ -501,4 +544,9 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | `SEPARATOR_PX`             | 17                                                                                        | A divider's room (`SheetToolbar.tsx`)           |
 | `CHEVRON_PX`               | 12                                                                                        | A menu button's chevron (`SheetToolbar.tsx`)    |
 | `STATS_MENU_PX`            | 208                                                                                       | Totals pick width (`SheetStatusBar.tsx`)        |
+| `CELL_THREADS_MAX`         | 1000                                                                                      | Default (D24)                                   |
+| `CELL_COMMENT_COLOUR`      | `#f59e0b`                                                                                 | Spec (amber-500)                                |
+| `CELL_MARKER_PX`           | 8                                                                                         | Default (D25)                                   |
+| `CELL_PREVIEW_DELAY_MS`    | 400                                                                                       | Default (D25)                                   |
+| `CELL_PREVIEW_CHARS`       | 140                                                                                       | Default (D25)                                   |
 | `SHEET_FILL_TAB_HINT`      | "The sheet always fills this tab, for everyone, so the rest of the canvas can’t be used." | Spec (`SheetSettingsPanel.tsx`)                 |

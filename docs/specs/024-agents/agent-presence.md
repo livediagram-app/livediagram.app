@@ -43,7 +43,10 @@ person's, and comments are how people and agents talk on the canvas when nobody 
 - An editor that may comment but not edit resolves and reopens through these endpoints, as it adds; an editor that
   may edit keeps the room and its save.
 - `GET /api/documents/:id/comments?status=open|resolved|all` lists threads across tabs with their element's ref and
-  label, so an agent can read the conversation without reading the tab. It is not capped: it reads one tab at a
+  label, so an agent can read the conversation without reading the tab. A Sheet cell's thread
+  ([Cell comments](../029-sheets/sheet.md#cell-comments)) is listed on its own with its `cell` and, where the
+  sheet is stored, its A1 (`cellRef`); add takes a `cell` beside the element, and the thread verbs find a cell's
+  thread by its comment as they find an element's. It is not capped: it reads one tab at a
   time.
 - Agents cannot be mentioned. An agent that answers comments reads new ones as they arrive ([CLI](../015-api/cli.md)
   `wait --for comment`) or on its next read.

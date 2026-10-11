@@ -27,3 +27,5 @@ One row per default applied where a spec is silent or qualitative.
 | D21 | sheet-element | Whether a remounted Sheet keeps its selection  | Yes, per sheet for the session (up to 200 sheets), within the grid         |
 | D22 | sheet-element | How near the frozen edge's bar a press grabs   | 3 px                                                                       |
 | D23 | sheet-store   | How much one agent read answers                | 100,000 characters (`SHEET_READ_CHARS_MAX`), with a note where to read on  |
+| D24 | sheet-element | How many cell threads a Sheet holds            | 1,000 (`CELL_THREADS_MAX`), each up to 500 comments as an element's        |
+| D25 | sheet-element | A cell comment marker's size and its preview   | An 8 px triangle; the preview after 400 ms, the first 140 characters       |
