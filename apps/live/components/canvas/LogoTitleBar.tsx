@@ -100,6 +100,8 @@ export function LogoTitleBar({ pageId, tools }: { pageId: string; tools: LogoToo
   const selection = useHasSelectionStore();
   return (
     <div
+      // Show Me on this page points at its Mirror and Guides (logo-pages.md "Show Me").
+      data-logo-title-bar={pageId}
       className="pointer-events-auto flex items-center gap-1"
       // A press here is the controls', never the canvas's (no marquee, no deselect, no draw).
       onPointerDown={(e) => e.stopPropagation()}

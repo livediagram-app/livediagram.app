@@ -109,6 +109,8 @@ export function DashboardSlotView({
     <div
       ref={cellRef}
       data-dashboard-slot={slot.id}
+      // Show Me (plan-tabs.md "Show Me") points at an empty slot to fill and a filled one to change.
+      data-slot-empty={slot.content ? undefined : ''}
       className={`group/slot relative min-w-0 ${phone ? '' : 'transition-[flex-basis] duration-short ease-out motion-reduce:transition-none'}`}
       style={
         phone ??
@@ -153,7 +155,7 @@ export function DashboardSlotView({
                 ?.focus();
             }}
             // touch-none: a finger on the grip carries the slot rather than scrolling the page under it.
-            className="absolute left-1/2 top-1.5 z-30 flex h-5 w-9 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-slate-900/10 bg-white text-slate-500 opacity-0 shadow-sm scale-75 transition-[opacity,scale,color] duration-micro ease-out hover:text-brand-600 focus-visible:scale-100 focus-visible:opacity-100 active:cursor-grabbing group-hover/slot:scale-100 group-hover/slot:opacity-70 hover:!opacity-100 motion-reduce:scale-100 motion-reduce:transition-none dark:border-white/[0.06] dark:bg-slate-800 dark:text-slate-400 dark:group-hover/slot:opacity-50 dark:hover:text-brand-300"
+            className="absolute left-1/2 top-1.5 z-30 flex h-5 w-9 -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-slate-900/10 bg-white text-slate-500 opacity-0 shadow-sm scale-75 transition-[opacity,scale,color] duration-micro ease-out hover:text-brand-600 focus-visible:scale-100 focus-visible:opacity-100 active:cursor-grabbing group-hover/slot:scale-100 group-hover/slot:opacity-70 group-data-[tour-reveal]/slot:scale-100 group-data-[tour-reveal]/slot:opacity-100 hover:!opacity-100 motion-reduce:scale-100 motion-reduce:transition-none dark:border-white/[0.06] dark:bg-slate-800 dark:text-slate-400 dark:group-hover/slot:opacity-50 dark:hover:text-brand-300"
           >
             <GripGlyph />
           </button>
@@ -185,7 +187,7 @@ export function DashboardSlotView({
         )}
         {settings && !headed ? (
           // Shown on hover or focus; always on a screen with no hover (a phone), where a tap must find it.
-          <div className="absolute right-2 top-2 z-10 origin-top-right scale-90 opacity-0 transition-[opacity,scale] duration-micro ease-out focus-within:scale-100 focus-within:opacity-100 group-hover/slot:scale-100 group-hover/slot:opacity-100 motion-reduce:scale-100 motion-reduce:transition-none [@media(hover:none)]:scale-100 [@media(hover:none)]:opacity-100">
+          <div className="absolute right-2 top-2 z-10 origin-top-right scale-90 opacity-0 transition-[opacity,scale] duration-micro ease-out focus-within:scale-100 focus-within:opacity-100 group-hover/slot:scale-100 group-hover/slot:opacity-100 group-data-[tour-reveal]/slot:scale-100 group-data-[tour-reveal]/slot:opacity-100 motion-reduce:scale-100 motion-reduce:transition-none [@media(hover:none)]:scale-100 [@media(hover:none)]:opacity-100">
             {/* In the slot's settings, so its cog draws the slot's toolbar (SettingsCog). */}
             <SlotSettings.Provider value={settings}>
               <SlotCog

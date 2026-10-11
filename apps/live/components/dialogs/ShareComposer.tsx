@@ -50,7 +50,9 @@ export function ShareComposer({
       </p>
       {/* The role and the fine print share one tinted panel, so the pass being made reads as one thing. */}
       <div className="flex flex-col gap-2.5 rounded-xl bg-slate-50 p-2.5 dark:bg-slate-800/50">
-        <ShareRolePicker role={role} onChange={setRole} />
+        <div data-tour-id="share-role">
+          <ShareRolePicker role={role} onChange={setRole} />
+        </div>
 
         {/* The pass's fine print: one labelled row per term, labels in one
           column so the terms read as a block rather than loose dropdowns.
@@ -67,6 +69,7 @@ export function ShareComposer({
               </label>
               <Select
                 id="share-new-scope"
+                data-tour-id="share-scope"
                 className="sm:col-span-2"
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
@@ -83,6 +86,7 @@ export function ShareComposer({
           <div
             role="radiogroup"
             aria-label="Link lifetime"
+            data-tour-id="share-valid"
             // A ring, not a border, so the selection fills the track: the same height as Create Pass beside it.
             className="relative grid h-9 grid-cols-4 rounded-lg bg-white ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-700"
           >
@@ -121,6 +125,7 @@ export function ShareComposer({
             disabled={busy}
             // The same height as the Valid control beside it, so the row reads as one line.
             variant="solid"
+            data-tour-id="share-create"
             className={`h-9 shadow-sm whitespace-nowrap ${ROLE_PASS[role].button}`}
           >
             Create Pass

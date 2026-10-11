@@ -29,7 +29,11 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { CardTypeTourStage, ShowMeButton, useCardTypeTour } from '@/components/tour/CardTypeTour';
+import {
+  CardTypeShowMeButton,
+  CardTypeTourStage,
+  useCardTypeTour,
+} from '@/components/tour/CardTypeTour';
 import { SheetRow } from './PlanModal';
 import { ItemTypeConfiguration } from './ItemTypeConfiguration';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
@@ -199,7 +203,7 @@ export function ItemTypeEditor({
           {type ? `Edit ${type.label} Card Type` : 'New Card Type'}
         </h2>
         {/* Show Me, Help on card types, and the editor's own close (as Cancel: the draft is dropped). */}
-        <ShowMeButton tour={tour} />
+        <CardTypeShowMeButton tour={tour} />
         <HelpArticleLink article="planCardTypes" variant="labelled" />
         <DialogCloseButton compact onClick={onClose} />
       </div>

@@ -40,6 +40,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
+import { LogoShowMeButton, LogoTourStage, useLogoTour } from '@/components/tour/LogoTour';
 import { AddPageButton } from './AddPageButton';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
@@ -164,6 +165,11 @@ export function IllustratePages({
     [opened],
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
+  // Show Me on a logo page (logo-pages.md "Show Me"): it reopens this page's panel on Layouts, afresh, for its first step.
+  const logoTour = useLogoTour({
+    openLayouts: (id) => setOpened({ id, tab: 'layouts', seq: Date.now() }),
+    closePanel: () => setOpened(null),
+  });
   // The page toolbar's Article Style button opens the page's panel on Style.
   const styleRequest = useStylePanelRequest();
   const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
@@ -440,6 +446,11 @@ export function IllustratePages({
             view.setLayoutPreview(layout ? { pageId: open.id, layout } : null)
           }
           onClose={close}
+          showMe={
+            open.kind === 'logo' ? (
+              <LogoShowMeButton tour={logoTour.tour} onStart={() => logoTour.freeze(open.id)} />
+            ) : undefined
+          }
           articleStyle={(part) =>
             open.flow && articles?.flows[open.flow] ? (
               <ArticleStyleSection
@@ -455,6 +466,7 @@ export function IllustratePages({
           }
         />
       ) : null}
+      <LogoTourStage tour={logoTour.tour} />
     </>
   );
 }

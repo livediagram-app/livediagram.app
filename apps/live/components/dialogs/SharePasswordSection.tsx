@@ -120,7 +120,10 @@ export function SharePasswordSection({
   const canSave = !busy && pw.trim().length > 0;
 
   return (
-    <div className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
+    <div
+      data-tour-id="share-password"
+      className="flex flex-col gap-2 border-t border-slate-100 pt-4 dark:border-slate-800"
+    >
       {/* The Settings dialog's own toggle row, so the switch looks and
           behaves like every other setting in the app. */}
       <SettingsRow

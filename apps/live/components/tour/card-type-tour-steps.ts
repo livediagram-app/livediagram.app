@@ -3,7 +3,7 @@
 // control, which stays usable, so the person builds their type as the tour goes.
 import type { TypeEditorTab } from '@/components/plan/ItemTypeEditorTabs';
 import type { TourStepOf } from './tour-step';
-import { waitForSelector } from './tour-dom';
+import { revealTour, waitForSelector } from './tour-dom';
 
 export type CardTypeTourApi = {
   // Opens a tab of the editor (the draft is kept: switching loses nothing).
@@ -25,9 +25,7 @@ const typeInto = (tab: TypeEditorTab, target: string) => async (api: CardTypeTou
 // (Configuration's Fields, under General) is in view when the ring lands on it.
 const scrollTo = (tab: TypeEditorTab, target: string) => async (api: CardTypeTourApi) => {
   api.showTab(tab);
-  const section = await waitForSelector(`[data-tour-id="${target}"]`, 1000);
-  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-  section?.scrollIntoView?.({ block: 'start', behavior: reduce ? 'auto' : 'smooth' });
+  await revealTour(target, 'start');
 };
 
 export const CARD_TYPE_TOUR_STEPS: CardTypeTourStep[] = [
