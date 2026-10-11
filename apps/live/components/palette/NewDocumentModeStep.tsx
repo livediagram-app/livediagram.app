@@ -101,10 +101,10 @@ function ModeCard({
           ) : null}
           <kbd
             aria-hidden
-            // pt-px: the digits' ink sits high in the line box; a pixel down centres it (optical audit).
-            className="ml-auto hidden h-5 min-w-5 items-center justify-center rounded border pt-px border-slate-200 px-1 text-[10px] font-medium text-slate-400 sm:flex dark:border-slate-700 dark:text-slate-400"
+            className="ml-auto hidden h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 sm:flex dark:border-slate-700 dark:text-slate-400"
           >
-            {index + 1}
+            {/* Trimmed to its cap band, so centring lands on the digit, whatever the face (optical-alignment.md). */}
+            <span className="text-optical-centre">{index + 1}</span>
           </kbd>
         </span>
         <span className="text-[12.5px] leading-snug text-slate-600 dark:text-slate-300">
