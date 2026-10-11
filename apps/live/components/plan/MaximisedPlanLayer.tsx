@@ -30,7 +30,7 @@ import {
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
-import type { CanvasLayout } from '@/lib/canvas-layer-insets';
+import type { CanvasLayout, PhoneRow } from '@/lib/canvas-layer-insets';
 import { announceHeaderBand } from './menu-name-slot';
 import { BAND_CARD_PX } from './band-controls';
 import { useUiScale } from '@/components/providers/ui-scale';
@@ -66,7 +66,7 @@ export function CanvasCover({
   blend?: BandBlend | undefined;
   children: ReactNode;
 }) {
-  const { insets, band } = layout;
+  const { insets, band, row } = layout;
   // The menu box is drawn at the toolbar's UI scale; the band's cards take its height (band-controls BAND_CARD_PX).
   const toolbarScale = useUiScale('toolbar');
   // The element's name moves to the menu box while there is a band, and back when it goes (menu-name-slot).
@@ -93,7 +93,8 @@ export function CanvasCover({
     setBandTint(main, bandTint);
     return () => clearBandTint(main);
   }, [bandTint]);
-  const blendSurface = band && blend ? blend.surface : null;
+  // On a phone's shared row too (canvas-layer-insets phoneRow), so the menu box reads as part of the element.
+  const blendSurface = (band || row) && blend ? blend.surface : null;
   const blendLine = blend?.line ?? null;
   useLayoutEffect(() => {
     const main = coverRef.current?.parentElement;
@@ -129,7 +130,13 @@ export function CanvasCover({
         className="absolute p-2 sm:p-3"
         // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
         // reads these, each with its own size as the fallback, so on the canvas nothing changes.
-        style={{ ...insets, ...(band ? bandVars(band, toolbarScale) : {}) } as CSSProperties}
+        // On a phone, the row it shares with the menu (canvas-layer-insets phoneRow): the same height and start, no more.
+        style={
+          {
+            ...insets,
+            ...(band ? bandVars(band, toolbarScale) : row ? rowVars(row) : {}),
+          } as CSSProperties
+        }
       >
         {children}
       </div>
@@ -178,6 +185,11 @@ export function bandVars(
     '--plan-band-left': `${band.left}px`,
     '--plan-band-mid': `${band.mid}px`,
   };
+}
+
+// A phone's shared top row as the properties the element's header reads: its height and where its content starts.
+export function rowVars(row: PhoneRow): Record<string, string> {
+  return { '--plan-band-h': `${row.height}px`, '--plan-band-left': `${row.left}px` };
 }
 
 // The canvas `main` holding the slot, found from a marker rendered in the slot as it mounts: the marker's ref

@@ -50,11 +50,6 @@ export function registerPlanBoardTarget(boardId: string, target: PlanBoardTarget
   };
 }
 
-// The boards on screen, by element id.
-export function planBoardIds(): string[] {
-  return [...targets.keys()];
-}
-
 export function planBoardTarget(boardId: string): PlanBoardTarget | undefined {
   return targets.get(boardId);
 }

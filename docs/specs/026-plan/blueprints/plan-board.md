@@ -97,6 +97,7 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
                          Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
+phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action) + shownQuick
 AddCardPopover.tsx       Add a Card: the board's types as MenuTiles in the shared PortalMenu (BottomSheet on a phone)
 PlanCardMenu.tsx         a card's right-click menu on the shared ContextMenu (Open, Duplicate, Move to, Delete) and PlanCardMenuHost
 PlanCardFace.tsx         a card face (custom fields as chips where Display places them; its gathered votes read-only)
@@ -218,7 +219,13 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   `transitionend` on chrome, a window `resize`, or a child-list change under the canvas that adds or removes chrome
   (`touchesChrome`; the set is re-observed only when it differs; the strip's children are observed too, as its card
   changes width with the category). No key or press listener.
-  The hook returns `CanvasLayout = { insets, band }`. `headerBand(canvas, insets, menu, strip, nameWidth, endWidth)`
+  The hook returns `CanvasLayout = { insets, band, row? }`. With no band, `phoneRow(canvas, insets, menu)` returns
+  `PhoneRow { height, left }` (px from the element's box inside the cover's `PHONE_COVER_PAD_PX` 8) when the canvas is
+  under `BAND_CANVAS_MIN_PX`, the menu is in the top half and inside the element, and at least `PHONE_ROW_MIN_PX` 160
+  plus `BAND_GAP_PX` is left after it: `height` the menu's bottom less the element's top, `left` the menu's right plus
+  `BAND_GAP_PX`; the insets' top is then 0. `CanvasCover` writes it as `--plan-band-h` and `--plan-band-left` only
+  (`rowVars`; no `data-header-band`, so the name stays in the header and the controls card is not drawn) and sets
+  `data-band-blend` for it as for a band. `sameLayout` compares `row` by value, a missing one as null. `headerBand(canvas, insets, menu, strip, nameWidth, endWidth)`
   (the strip measured as the union of `[data-toolbar-palette]`'s children, only its width and height used; `nameWidth`
   the menu box's `[data-menu-name-slot]`, `MENU_NAME_SLOT_SELECTOR`; `endWidth` the covering element's controls card,
   `BAND_CONTROLS_SELECTOR` `[data-canvas-cover] [data-band-controls]`, `offsetWidth` plus its header's right padding,
@@ -273,10 +280,10 @@ fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePal
   `fillTabElements(elements, id, update)` (the board alone, its set-up `update`d from the one it holds at the commit,
   Fill Tab on).
 - **The Plan cover** (`apps/live/hooks/plan/plan-cover-store.ts`, a module store like `maximised-plan.ts`): `{ fillTabId, fillTabKind,
-tabElementCount }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
+planKind }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
   `fillTabElementOf(activeTab.elements, kind, dashboard)`, and returns `canvasCovered` for the keyboard). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
   (maximised or filled: selection chrome, the Map), `useBoardFillingTab` (a board filling the tab: the palette's Cards alone),
-  `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
+  `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet). `isCanvasCovered()` is the
   one covered check, read at a key press too. Neither value is on `PlanContext`, so adding or moving an element never
   changes the context (guarded by `plan-cover-store.test.tsx`: 40 element adds, 0 re-renders).
 - **Fill Tab's action** on `PlanContext` (`usePlanFillTab`, a stable callback): `fillTab(id, update)` (one `commit`,
@@ -423,30 +430,38 @@ ColumnAdded | ColumnAddedExisting`.
 | Card trail steps, cut-back, cap; children        | `apps/live/components/plan/item-trail.test.ts`                                                                                                                        |
 | Linked as rows, empty state, open                | `apps/live/components/plan/LinkedCards.test.tsx`                                                                                                                      |
 | Breadcrumb crumbs, fold, step back               | `apps/live/components/plan/ItemTrailCrumbs.test.tsx`                                                                                                                  |
+| Phone look: Minimal, no widgets, columns, touch  | `apps/live/components/plan/phone-board.test.ts`, `plan-board-columns.test.ts`                                                                                         |
+| Phone's shared top row                           | `apps/live/lib/canvas-layer-insets.test.ts` (`phoneRow`)                                                                                                              |
+| Empty widget zone keeps its + in a band          | `apps/live/components/plan/widgets/BoardWidgetZone.test.tsx`                                                                                                          |
+| Dashboard Settings steps aside while maximised   | `apps/live/components/plan/dashboard/DashboardSettings.test.tsx`                                                                                                      |
 | Maximise, restore, Escape, unmount ends it       | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                                         |
 | No remount, maximised size, one Escape           | `apps/live/components/plan/MaximisedPlanLayer.test.tsx`                                                                                                               |
 | Drag, Add card, card menu, item panel            | checked by hand against the dev stack (screenshots in the PR)                                                                                                         |
 
 ## Constants and configuration
 
-| Constant                 | Value           | Provenance / safe range                                          |
-| ------------------------ | --------------- | ---------------------------------------------------------------- |
-| `CANVAS_LAYER_Z`         | `--z-panel` − 1 | Over the canvas, under its panels                                |
-| `MAXIMISED_BOARD_SLOTS`  | 5               | DEFAULTS; slots across a maximised board before it scrolls; 3-8  |
-| `EDGE_SCROLL_ZONE_PX`    | 56              | DEFAULTS; capped at a quarter of the viewport; 32-96             |
-| `EDGE_SCROLL_MAX_PX`     | 18              | DEFAULTS; px per frame at the edge; 8-30                         |
-| `EDGE_SCROLL_REDUCED_PX` | 6               | DEFAULTS; constant under reduced motion; 3-10                    |
-| `WIDE_PANEL_SHARE`       | 0.6             | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8 |
-| `MAX_INSET_SHARE`        | 0.45            | The element keeps at least 10% per axis; 0.3-0.45                |
-| `PRESS_DRAG_SLOP_PX`     | 4               | Shared, apps/live/lib/press-gestures.ts                          |
-| `PLAN_COLUMN_MIN_PX`     | 220             | A card's title reads in 3 lines; 180–320                         |
-| `PLAN_COLUMNS_MAX`       | 12              | Spec                                                             |
-| `ITEM_EDIT_DEBOUNCE_MS`  | 400             | One undo step per pause in typing                                |
-| `ITEM_TRAIL_MAX`         | 8               | Spec; bounds the trail's memory; 2–20                            |
-| `ITEM_TRAIL_SHOWN`       | 3               | Earlier crumbs that fit a 60rem header                           |
-| `ITEM_TRAIL_SHOWN_PHONE` | 1               | Spec                                                             |
-| `FIT_GLIDE_MS`           | 420             | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`       |
-| `FOCUS_ZOOM_MAX`         | 1.5             | Spec (150%); `useEditorState.ts`                                 |
+| Constant                 | Value              | Provenance / safe range                                                  |
+| ------------------------ | ------------------ | ------------------------------------------------------------------------ |
+| `CANVAS_LAYER_Z`         | `--z-panel` − 1    | Over the canvas, under its panels                                        |
+| `MAXIMISED_BOARD_SLOTS`  | 5                  | DEFAULTS; slots across a maximised board before it scrolls; 3-8          |
+| `PHONE_COLUMN_PEEK_PX`   | 48                 | DEFAULTS D44; the next column's peek on a phone, gap included; 32-80     |
+| `PHONE_END_CLEARANCE`    | 8.5rem + safe area | DEFAULTS D45; the phone's bottom controls over a covering board; 6-10rem |
+| `PHONE_COVER_PAD_PX`     | 8                  | CanvasCover's p-2 on a phone                                             |
+| `PHONE_ROW_MIN_PX`       | 160                | DEFAULTS D46; a short title and Restore and the cog; 120-220             |
+| `EDGE_SCROLL_ZONE_PX`    | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                     |
+| `EDGE_SCROLL_MAX_PX`     | 18                 | DEFAULTS; px per frame at the edge; 8-30                                 |
+| `EDGE_SCROLL_REDUCED_PX` | 6                  | DEFAULTS; constant under reduced motion; 3-10                            |
+| `WIDE_PANEL_SHARE`       | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8         |
+| `MAX_INSET_SHARE`        | 0.45               | The element keeps at least 10% per axis; 0.3-0.45                        |
+| `PRESS_DRAG_SLOP_PX`     | 4                  | Shared, apps/live/lib/press-gestures.ts                                  |
+| `PLAN_COLUMN_MIN_PX`     | 220                | A card's title reads in 3 lines; 180–320                                 |
+| `PLAN_COLUMNS_MAX`       | 12                 | Spec                                                                     |
+| `ITEM_EDIT_DEBOUNCE_MS`  | 400                | One undo step per pause in typing                                        |
+| `ITEM_TRAIL_MAX`         | 8                  | Spec; bounds the trail's memory; 2–20                                    |
+| `ITEM_TRAIL_SHOWN`       | 3                  | Earlier crumbs that fit a 60rem header                                   |
+| `ITEM_TRAIL_SHOWN_PHONE` | 1                  | Spec                                                                     |
+| `FIT_GLIDE_MS`           | 420                | Spec ("about 420 ms"); `hooks/canvas/useEditorViewport.ts`               |
+| `FOCUS_ZOOM_MAX`         | 1.5                | Spec (150%); `useEditorState.ts`                                         |
 
 - New cards open: `PlanContextValue.openNewItem(id, via?)` (usePlanSlice) opens the card and records it as
   `freshItemId`; `openItem` and `closeItem` clear it. Callers mint the id (`newItemId()`) and pass it to

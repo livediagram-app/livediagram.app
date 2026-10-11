@@ -19,7 +19,7 @@ sees only what starts there.
   among them. Plan templates come with no cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
   [spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)), every tab opening in Plan.
-- Facilitate templates: Blank Session and the nine [Facilitate templates](#facilitate-templates)
+- Facilitate templates: Blank Session and the twelve [Facilitate templates](#facilitate-templates)
   below.
 - Every other template is a Diagram template.
 
@@ -147,10 +147,15 @@ unchanged; only the mode they open in moved from Diagram.
   (`sailboat`). **Team Retro** (`team-retro`) stays in Plan: it is a board of cards.
 - **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
   (`crazy-eights`) and **Meeting Agenda** (`meeting-agenda`).
+- The boards that ship a dot vote: **Affinity map** (`affinity-map`), **Prioritization matrix**
+  (`prioritization-matrix`) and **Risk matrix** (`risk-matrix`). Diagram has no Session strip, so a
+  vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
+  session tool opens in Facilitate.
 
 ## Testing
 
 - Every template's mode equals the mode its overrides open it in (`templates.test.ts`).
+- Every template carrying a session tool (timer, vote, poll) opens in Facilitate (`templates.test.ts`).
 - Every Popular list starts with its mode's blank and holds only that mode's templates (`popular.test.ts`).
 - Every category holds a template in at least one mode (`template-categories.test.ts`).
 - The filter: each option narrows Popular, shelves, tiles, counts and search to its

@@ -12,7 +12,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(() => {
   act(() => {
     releasePlanElement('b');
-    setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 });
+    setPlanCover({ fillTabId: null, fillTabKind: null });
   });
 });
 
@@ -27,7 +27,7 @@ describe('a covering element’s animation', () => {
     expect(result.current.layerAnim).toBeUndefined();
     act(() => releasePlanElement('b'));
     expect(result.current.layerAnim).toBe('pulse');
-    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board' }));
     expect(result.current.layerAnim).toBeUndefined();
   });
 

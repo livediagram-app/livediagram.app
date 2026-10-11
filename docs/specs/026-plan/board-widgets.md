@@ -21,7 +21,11 @@ header; they are not in the palette.
   each led by a picture of what it measures (its glyph, a ring, a split bar, column bars or pips).
 - A board with no widgets shows nothing in the zone. Only while the board is selected does it say, to someone
   who may edit, **Add widgets to this board** in muted type, with an info glyph and the **+**; an unselected board's
-  header stays clean.
+  header stays clean. Maximised or filling its tab (where no selection shows), the widgets' place in the controls
+  card keeps its **+** for someone who may edit, so the hairline before the cog never stands alone; someone who may not
+  edit sees neither the zone nor its hairline there.
+- **Not on a phone**: below 640 px the header shows no widgets and their narrowing stands down
+  ([Plan board](plan-board.md#on-a-phone)).
 - The zone ends in a **+** (for someone who may edit, tooltip-free, named "Add a widget") that opens the widget
   gallery below it.
 - A press on the zone's empty space selects (and moves) the board, as the rest of the header does.

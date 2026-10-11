@@ -122,17 +122,18 @@ function StartCard({
         data-start-card={item.id}
         onClick={onChoose}
         aria-label={`${item.name}${showKind ? ` ${KIND_NAMES[item.kind]}` : ''}: ${item.line}`}
-        className="group flex w-full cursor-pointer flex-col rounded-2xl border p-2 text-left transition duration-micro ease-out hover:-translate-y-0.5 hover:border-[var(--start-accent)] hover:shadow-lg focus-visible:-translate-y-0.5 focus-visible:border-[var(--start-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--start-accent)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+        // On a phone a row: the picture small at the left, the words beside it, so a screen holds several.
+        className="group flex w-full cursor-pointer flex-col rounded-2xl border p-2 text-left max-sm:flex-row max-sm:items-center max-sm:gap-1 max-sm:rounded-xl transition duration-micro ease-out hover:-translate-y-0.5 hover:border-[var(--start-accent)] hover:shadow-lg focus-visible:-translate-y-0.5 focus-visible:border-[var(--start-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--start-accent)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
         style={{ borderColor: palette.border, backgroundColor: palette.surface }}
       >
         {/* The picture, larger than it draws elsewhere, on a soft panel of the board's column colour. */}
         <span
-          className="flex h-28 w-full items-center justify-center overflow-hidden rounded-xl p-3 [&>*]:!h-full"
+          className="flex h-28 w-full items-center justify-center overflow-hidden rounded-xl p-3 max-sm:h-[4.5rem] max-sm:w-24 max-sm:shrink-0 max-sm:rounded-lg max-sm:p-1.5 [&>*]:!h-full"
           style={{ backgroundColor: palette.column }}
         >
           <Picture item={item} palette={palette} />
         </span>
-        <span className="flex min-w-0 flex-col gap-1 px-1.5 pb-1 pt-2.5">
+        <span className="flex min-w-0 flex-col gap-1 px-1.5 pb-1 pt-2.5 max-sm:flex-1 max-sm:py-0.5">
           <span className="flex min-w-0 items-center gap-2">
             <span className="truncate text-[14px] font-semibold" style={{ color: palette.text }}>
               {item.name}
@@ -163,14 +164,14 @@ function StartCard({
             ) : null}
           </span>
           <span
-            // In full: a card's line is short, and cut it misleads.
-            className="text-[12.5px] leading-snug"
+            // In full: a card's line is short, and cut it misleads (on a phone, two lines at most beside the picture).
+            className="text-[12.5px] leading-snug max-sm:line-clamp-2"
             style={{ color: palette.muted }}
           >
             {item.line}
           </span>
           {chips.length || item.typesNote ? (
-            <span className="mt-1 flex flex-wrap gap-1">
+            <span className="mt-1 flex flex-wrap gap-1 max-sm:hidden">
               {item.typesNote ? (
                 <Chip palette={palette}>{item.typesNote}</Chip>
               ) : (
@@ -272,6 +273,8 @@ export function StartPlanning({
   // Ready to type into on a desktop (a fine pointer), so a letter typed finds a board rather than a canvas shortcut; a
   // phone's keyboard is not raised unasked.
   const search = useRef<HTMLInputElement>(null);
+  // The grid's own scroll, back to its top as another category is chosen (it would open part way down otherwise).
+  const gridScroll = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (window.matchMedia?.('(pointer: fine)').matches)
       search.current?.focus({ preventScroll: true });
@@ -290,6 +293,11 @@ export function StartPlanning({
     setSwitched(true);
     setQuery('');
     setCategory(next);
+    gridScroll.current?.scrollTo?.({ top: 0 });
+    // On a phone the rail is a row of chips: the chosen one scrolls fully into view.
+    rail.current?.parentElement
+      ?.querySelector<HTMLElement>(`[data-rail="${next}"]`)
+      ?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
   };
   // Up and Down move along the rail, choosing as they go.
   const onRailKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -337,13 +345,14 @@ export function StartPlanning({
   };
   const cascade = switched ? ' lvd-cascade' : '';
   const shown = START_CATEGORIES.find((c) => c.id === category)!;
-  const grid = 'grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 lg:grid-cols-3';
+  // One a row on a phone (each card a row of its own), two on a narrow panel, three on a wide one.
+  const grid = 'grid grid-cols-1 gap-3 max-sm:gap-2 sm:grid-cols-2 lg:grid-cols-3';
   return (
-    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-24 max-sm:px-3 max-sm:pt-28">
+    <div className="pointer-events-none absolute inset-0 z-[var(--z-panel)] flex items-center justify-center p-4 pb-28 pt-24 max-sm:px-2 max-sm:pt-32">
       <section
         aria-labelledby="start-planning-title"
         // One height whatever the category shows, so the panel never jumps as it changes.
-        className="pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl animate-fade-in flex-col overflow-hidden rounded-3xl border shadow-2xl"
+        className="pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl animate-fade-in flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:rounded-2xl"
         style={
           {
             backgroundColor: palette.card,
@@ -354,19 +363,23 @@ export function StartPlanning({
         }
       >
         <header
-          className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b px-5 py-4 sm:px-6"
+          // On a phone: the title and Help on one line, the search under them, the line left out for room.
+          className="flex flex-wrap items-center gap-x-4 gap-y-3 border-b px-5 py-4 sm:px-6 max-sm:gap-y-2 max-sm:px-4 max-sm:py-3"
           style={{ borderColor: palette.border }}
         >
           <div className="min-w-0 flex-1">
-            <h2 id="start-planning-title" className="text-[20px] font-semibold tracking-tight">
+            <h2
+              id="start-planning-title"
+              className="text-[20px] font-semibold tracking-tight max-sm:text-[18px]"
+            >
               Start Planning
             </h2>
-            <p className="mt-0.5 text-[13px]" style={{ color: palette.muted }}>
+            <p className="mt-0.5 text-[13px] max-sm:hidden" style={{ color: palette.muted }}>
               Pick how to run the work. You can add more boards, sheets and dashboards later.
             </p>
           </div>
           <label
-            className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] sm:w-64"
+            className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] max-sm:order-last sm:w-64"
             style={{
               borderColor: palette.border,
               backgroundColor: palette.surface,
@@ -408,7 +421,7 @@ export function StartPlanning({
         <div className="flex min-h-0 flex-1 max-sm:flex-col">
           <nav
             aria-label="Categories"
-            className="flex shrink-0 gap-1 overflow-x-auto p-3 sm:w-52 sm:flex-col sm:overflow-visible sm:border-r sm:p-4 max-sm:border-b"
+            className="flex shrink-0 gap-1 overflow-x-auto p-3 sm:w-52 sm:flex-col sm:overflow-visible sm:border-r sm:p-4 max-sm:border-b max-sm:px-2 max-sm:py-2 max-sm:[scrollbar-width:none]"
             style={{ borderColor: palette.border }}
           >
             <div ref={rail} className="contents" onKeyDown={onRailKey}>
@@ -446,7 +459,10 @@ export function StartPlanning({
               </>
             ) : null}
           </nav>
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
+          <div
+            ref={gridScroll}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 max-sm:p-3"
+          >
             {searching ? (
               results.length === 0 ? (
                 // The shared empty state in the board's colours (docs/specs/004-interface-design/empty-states.md).
@@ -504,7 +520,7 @@ export function StartPlanning({
             ) : (
               <section key={category} aria-label={shown.name}>
                 <h3 className="text-[16px] font-semibold">{shown.name}</h3>
-                <p className="mb-4 mt-0.5 text-[13px]" style={{ color: palette.muted }}>
+                <p className="mb-4 mt-0.5 text-[13px] max-sm:mb-3" style={{ color: palette.muted }}>
                   {shown.line}
                 </p>
                 <div className={`${grid}${cascade}`}>

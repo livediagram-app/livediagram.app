@@ -10,7 +10,7 @@ import {
 import { tabArticleOps, type RoomOp } from '@livediagram/api-schema';
 
 // The article framing is shared with the api's relay of an agent's write.
-export { ARTICLE_FRAME_CHARS, tabArticleOps } from '@livediagram/api-schema';
+export { tabArticleOps } from '@livediagram/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
 // broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on

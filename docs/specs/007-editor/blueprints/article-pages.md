@@ -72,55 +72,55 @@ is `break-after: column` (`article-pages.css`).
 
 ## Constants and configuration
 
-| Constant                                | Value                                  | Where / provenance                                                       |
-| --------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------ |
-| `MAX_ARTICLE_BLOCKS`                    | 5000                                   | `article-flow.ts`; D34                                                   |
-| `MAX_ARTICLE_RUNS`                      | 400 per block                          | `article-flow.ts`; D34                                                   |
-| `MAX_ARTICLE_BLOCK_TEXT`                | 20,000 characters per block            | `article-flow.ts`; D34                                                   |
-| `MAX_ARTICLE_HREF`                      | 2048 characters                        | `article-flow.ts`; D34                                                   |
-| `ARTICLE_ZONE_MIN`, `ARTICLE_ZONE_MAX`  | 24, 2000 px                            | `article-flow.ts`; D35                                                   |
-| `ARTICLE_LIST_MAX_LEVEL`                | 4 (five levels, 0 to 4)                | `article-flow.ts`; spec "Blocks"                                         |
-| List indent                             | 28 px a level                          | `article-pages.css` (`--article-level`); spec "Blocks"                   |
-| Id length read                          | 1 to 64 characters (block, flow, note) | `isArticleId` (`article-flow.ts`), `parsePage` flow; D33                 |
-| `ARTICLE_TEXT_SIZE_PX`                  | 14 / 16 / 18                           | `article-style.ts`; spec "Article style"                                 |
-| `ARTICLE_LINE_HEIGHT`                   | 1.3 / 1.5 / 2                          | `article-style.ts`; spec                                                 |
-| `ARTICLE_PARAGRAPH_SPACE`               | 0 / 0.75 / 1.5 lines                   | `article-style.ts`; spec                                                 |
-| `ARTICLE_MARGIN_PX`                     | 48 / 96 / 144                          | `article-style.ts`; spec                                                 |
-| `ARTICLE_LOOKS`                         | spec "Looks"                           | `article-style.ts`; Clean is the unstyled default                        |
-| `ARTICLE_TOP_MIN_PX`                    | 72                                     | `article-style.ts`; spec "The page toolbar"                              |
-| Margin cap in the frame                 | 37.5% of the page's width and height   | `flowFrame`; D49                                                         |
-| Accent, text and highlight colours      | the standard colours, light hexes      | `standardGroup` (strong; soft "Highlights"); colour-picker.md            |
-| `UNDO_SETTLE_MS`                        | 400 ms                                 | `ArticleEditor.tsx`; D60                                                 |
-| `ARTICLE_IDLE_COMMIT_MS`                | 600 ms                                 | `ArticleEditor.tsx`; spec "Commits"                                      |
-| `WRITER_WINDOW_MS`                      | 3000 ms                                | `ArticleEditor.tsx`; D36                                                 |
-| `SETTLE_TOLERANCE`                      | 0.75 px                                | `article-zones.ts`; D37                                                  |
-| `ARTICLE_DRAWING_PAD`                   | 24 px                                  | `article-intake.ts`; spec "Zones" (24 px to spare)                       |
-| `ARTICLE_DRAWING_MIN_HEIGHT`            | 200 px                                 | `article-intake.ts`; D38                                                 |
-| `NEW_DRAWING_HEIGHT`                    | 240 px                                 | `useArticles.ts`; spec "Zones" (text width x 240)                        |
-| `ARTICLE_WRAP_MAX_SHARE`                | 2/3 of the text width                  | `article-intake.ts`; spec "Zones"                                        |
-| Wrapped zone gap                        | 14 px                                  | `article-pages.css` (`margin-left/right`); spec "Zones"                  |
-| Object insert offset                    | 30 px under the caret's top            | `useArticles.insertObject`; D39                                          |
-| `ARTICLE_FALLBACK_TEXT_WIDTH`           | 600 px                                 | `article-flow-geometry.ts`; D52                                          |
-| `ARTICLE_NOTE_SIZE`, `ARTICLE_NOTE_GAP` | 32 px, 6 px                            | `article-notes.ts`; spec "Comments and actions"                          |
-| Toolbar `MARGIN_PAD`                    | 4 screen px                            | `page-toolbar-placement.ts`; D41                                         |
-| `TOOLBAR_MIN_SCALE`                     | 0.55                                   | `page-toolbar-placement.ts`; spec "to 55%"                               |
-| `PHONE_GUTTER`                          | 8 screen px                            | `page-toolbar-placement.ts`; D41                                         |
-| `TOUCH_PAN_SLOP`                        | 8 screen px                            | `useTouchPagePan.ts`; spec "A finger on a page", D41                     |
-| `PLACE_TRAILING_FRAMES`                 | 3 frames                               | `page-toolbar-placement.ts`; canvas-performance "At rest"                |
-| `LINK_CARD_GRACE_MS`                    | 250 ms                                 | `useArticleLinkHover.tsx`; as `HOVER_GRACE_MS`                           |
-| Zone grip `GRIP_KEY_STEP`               | 8 px (Shift x10)                       | `ZoneBar.tsx`; D41                                                       |
-| `HOVER_SLACK`, `HOVER_GRACE_MS`         | 12 px, 250 ms                          | `page-toolbar-presence.ts`; spec "a moment's grace", D41                 |
-| `READING_TOP_ROOM`, `READING_SIDE_ROOM` | 104, 32 screen px                      | `lib/viewport.ts`; D50                                                   |
-| `SLASH_QUERY_MAX`                       | 24 characters                          | `article-slash.ts`; D44                                                  |
-| Slash menu `WIDTH`, `MAX_HEIGHT`        | 260, 320 px                            | `SlashMenu.tsx`; D44                                                     |
-| `ARTICLE_PEER_FRESH_MS`                 | 1500 ms                                | `article-carets-store.ts`; D40                                           |
-| `BROADCAST_THROTTLE_MS`                 | 33 ms (the cursor's rate)              | `useEditorBroadcast.ts`; spec "at the cursor's rate"                     |
-| `ARTICLE_CARET_MAX_ID_LEN`              | 256                                    | `packages/api-schema/src/article-caret.ts`; D43                          |
-| `ARTICLE_CARET_MAX_OFFSET`              | 1,000,000                              | `article-caret.ts`; D43                                                  |
-| `ARTICLE_FRAME_CHARS`                   | 200,000 characters per `article` frame | `tab-broadcast-ops.ts`; D42, under the room's `MAX_MESSAGE_CHARS` (256K) |
-| `MAX_ILLUSTRATE_PAGES`                  | 100                                    | `illustrate-page.ts`; spec "Limit"                                       |
-| Page number                             | 12 px, half the bottom margin          | `IllustratePages.tsx`, `pageWriting`; D46                                |
-| Turn Into Pages text colour             | `#1f2937`                              | `articleAsPages`; D54                                                    |
+| Constant                                | Value                                  | Where / provenance                                                                            |
+| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `MAX_ARTICLE_BLOCKS`                    | 5000                                   | `article-flow.ts`; D34                                                                        |
+| `MAX_ARTICLE_RUNS`                      | 400 per block                          | `article-flow.ts`; D34                                                                        |
+| `MAX_ARTICLE_BLOCK_TEXT`                | 20,000 characters per block            | `article-flow.ts`; D34                                                                        |
+| `MAX_ARTICLE_HREF`                      | 2048 characters                        | `article-flow.ts`; D34                                                                        |
+| `ARTICLE_ZONE_MIN`, `ARTICLE_ZONE_MAX`  | 24, 2000 px                            | `article-flow.ts`; D35                                                                        |
+| `ARTICLE_LIST_MAX_LEVEL`                | 4 (five levels, 0 to 4)                | `article-flow.ts`; spec "Blocks"                                                              |
+| List indent                             | 28 px a level                          | `article-pages.css` (`--article-level`); spec "Blocks"                                        |
+| Id length read                          | 1 to 64 characters (block, flow, note) | `isArticleId` (`article-flow.ts`), `parsePage` flow; D33                                      |
+| `ARTICLE_TEXT_SIZE_PX`                  | 14 / 16 / 18                           | `article-style.ts`; spec "Article style"                                                      |
+| `ARTICLE_LINE_HEIGHT`                   | 1.3 / 1.5 / 2                          | `article-style.ts`; spec                                                                      |
+| `ARTICLE_PARAGRAPH_SPACE`               | 0 / 0.75 / 1.5 lines                   | `article-style.ts`; spec                                                                      |
+| `ARTICLE_MARGIN_PX`                     | 48 / 96 / 144                          | `article-style.ts`; spec                                                                      |
+| `ARTICLE_LOOKS`                         | spec "Looks"                           | `article-style.ts`; Clean is the unstyled default                                             |
+| `ARTICLE_TOP_MIN_PX`                    | 72                                     | `article-style.ts`; spec "The page toolbar"                                                   |
+| Margin cap in the frame                 | 37.5% of the page's width and height   | `flowFrame`; D49                                                                              |
+| Accent, text and highlight colours      | the standard colours, light hexes      | `standardGroup` (strong; soft "Highlights"); colour-picker.md                                 |
+| `UNDO_SETTLE_MS`                        | 400 ms                                 | `ArticleEditor.tsx`; D60                                                                      |
+| `ARTICLE_IDLE_COMMIT_MS`                | 600 ms                                 | `ArticleEditor.tsx`; spec "Commits"                                                           |
+| `WRITER_WINDOW_MS`                      | 3000 ms                                | `ArticleEditor.tsx`; D36                                                                      |
+| `SETTLE_TOLERANCE`                      | 0.75 px                                | `article-zones.ts`; D37                                                                       |
+| `ARTICLE_DRAWING_PAD`                   | 24 px                                  | `article-intake.ts`; spec "Zones" (24 px to spare)                                            |
+| `ARTICLE_DRAWING_MIN_HEIGHT`            | 200 px                                 | `article-intake.ts`; D38                                                                      |
+| `NEW_DRAWING_HEIGHT`                    | 240 px                                 | `useArticles.ts`; spec "Zones" (text width x 240)                                             |
+| `ARTICLE_WRAP_MAX_SHARE`                | 2/3 of the text width                  | `article-intake.ts`; spec "Zones"                                                             |
+| Wrapped zone gap                        | 14 px                                  | `article-pages.css` (`margin-left/right`); spec "Zones"                                       |
+| Object insert offset                    | 30 px under the caret's top            | `useArticles.insertObject`; D39                                                               |
+| `ARTICLE_FALLBACK_TEXT_WIDTH`           | 600 px                                 | `article-flow-geometry.ts`; D52                                                               |
+| `ARTICLE_NOTE_SIZE`, `ARTICLE_NOTE_GAP` | 32 px, 6 px                            | `article-notes.ts`; spec "Comments and actions"                                               |
+| Toolbar `MARGIN_PAD`                    | 4 screen px                            | `page-toolbar-placement.ts`; D41                                                              |
+| `TOOLBAR_MIN_SCALE`                     | 0.55                                   | `page-toolbar-placement.ts`; spec "to 55%"                                                    |
+| `PHONE_GUTTER`                          | 8 screen px                            | `page-toolbar-placement.ts`; D41                                                              |
+| `TOUCH_PAN_SLOP`                        | 8 screen px                            | `useTouchPagePan.ts`; spec "A finger on a page", D41                                          |
+| `PLACE_TRAILING_FRAMES`                 | 3 frames                               | `page-toolbar-placement.ts`; canvas-performance "At rest"                                     |
+| `LINK_CARD_GRACE_MS`                    | 250 ms                                 | `useArticleLinkHover.tsx`; as `HOVER_GRACE_MS`                                                |
+| Zone grip `GRIP_KEY_STEP`               | 8 px (Shift x10)                       | `ZoneBar.tsx`; D41                                                                            |
+| `HOVER_SLACK`, `HOVER_GRACE_MS`         | 12 px, 250 ms                          | `page-toolbar-presence.ts`; spec "a moment's grace", D41                                      |
+| `READING_TOP_ROOM`, `READING_SIDE_ROOM` | 104, 32 screen px                      | `lib/viewport.ts`; D50                                                                        |
+| `SLASH_QUERY_MAX`                       | 24 characters                          | `article-slash.ts`; D44                                                                       |
+| Slash menu `WIDTH`, `MAX_HEIGHT`        | 260, 320 px                            | `SlashMenu.tsx`; D44                                                                          |
+| `ARTICLE_PEER_FRESH_MS`                 | 1500 ms                                | `article-carets-store.ts`; D40                                                                |
+| `BROADCAST_THROTTLE_MS`                 | 33 ms (the cursor's rate)              | `useEditorBroadcast.ts`; spec "at the cursor's rate"                                          |
+| `ARTICLE_CARET_MAX_ID_LEN`              | 256                                    | `packages/api-schema/src/article-caret.ts`; D43                                               |
+| `ARTICLE_CARET_MAX_OFFSET`              | 1,000,000                              | `article-caret.ts`; D43                                                                       |
+| `ARTICLE_FRAME_CHARS`                   | 200,000 characters per `article` frame | `packages/api-schema/src/article-frames.ts`; D42, under the room's `MAX_MESSAGE_CHARS` (256K) |
+| `MAX_ILLUSTRATE_PAGES`                  | 100                                    | `illustrate-page.ts`; spec "Limit"                                                            |
+| Page number                             | 12 px, half the bottom margin          | `IllustratePages.tsx`, `pageWriting`; D46                                                     |
+| Turn Into Pages text colour             | `#1f2937`                              | `articleAsPages`; D54                                                                         |
 
 ## Data and persistence
 

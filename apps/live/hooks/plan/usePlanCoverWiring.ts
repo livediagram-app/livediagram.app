@@ -1,8 +1,8 @@
 'use client';
 
 // The editor's side of the Plan cover (plan-cover-store.ts): which board or Sheet fills the open tab (rescanned only when the
-// tab's elements change) and how many elements the tab holds, published to the store before paint, and the read the
-// editor's keyboard takes (the covered check).
+// tab's elements change), published to the store before paint, and the read the editor's keyboard takes (the covered
+// check).
 import { useLayoutEffect, useMemo } from 'react';
 import { isPlanTabKind, type Tab } from '@livediagram/document';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
@@ -25,14 +25,12 @@ export function usePlanCoverWiring({
   );
   const fillTabId = filling?.id ?? null;
   const fillTabKind = filling?.kind ?? null;
-  const tabElementCount = activeTab.elements.length;
   useLayoutEffect(() => {
-    setPlanCover({ fillTabId, fillTabKind, tabElementCount, planKind });
-  }, [fillTabId, fillTabKind, tabElementCount, planKind]);
+    setPlanCover({ fillTabId, fillTabKind, planKind });
+  }, [fillTabId, fillTabKind, planKind]);
   // Gone with the editor: no cover lingers for the next document.
   useLayoutEffect(
-    () => () =>
-      setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0, planKind: null }),
+    () => () => setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null }),
     [],
   );
   useLayoutEffect(() => {

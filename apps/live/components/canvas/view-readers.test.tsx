@@ -12,7 +12,7 @@ vi.mock('@/hooks/canvas/useViewportStore', () => ({ useViewportOf: () => 0.8 }))
 
 afterEach(() => {
   cleanup();
-  act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 }));
+  act(() => setPlanCover({ fillTabId: null, fillTabKind: null }));
   setSheetZoom(1);
 });
 
@@ -34,7 +34,7 @@ describe('ViewZoomControls', () => {
 
   it('zooms a covering Sheet’s cells instead, Fit putting it back to 100%', () => {
     const h = handlers();
-    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet' }));
     render(<ViewZoomControls {...h} />);
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
@@ -46,10 +46,10 @@ describe('ViewZoomControls', () => {
   });
 
   it('goes back to 100% once no Sheet covers the canvas', () => {
-    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet' }));
     render(<ViewZoomControls {...handlers()} />);
     act(() => setSheetZoom(1.5));
-    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board' }));
     expect(getSheetZoom()).toBe(1);
     // A board covering it: off.
     expect(screen.getByRole('button', { name: 'Zoom in' })).toHaveProperty('disabled', true);

@@ -1,14 +1,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { isStickerId } from '@livediagram/icons';
 import {
-  getIconCatalog,
   getLineArtIconCatalog,
   ICON_CATEGORIES,
   PLACEHOLDER_ICON,
   getIcon,
   iconsInCategory,
 } from './icons';
-import { ensureIconCatalogs } from './icon-registry';
+import { ensureIconCatalogs, getLoadedIconCatalog } from './icon-registry';
 
 // The catalogue data lives in an async chunk (lib/icon-registry.ts); load it
 // once up front so these tests exercise the loaded state. The pre-load
@@ -20,14 +19,14 @@ beforeAll(async () => {
 
 describe('icon catalogue', () => {
   it('is non-empty and has unique ids', () => {
-    const catalog = getIconCatalog();
+    const catalog = getLoadedIconCatalog();
     expect(catalog.length).toBeGreaterThan(0);
     const ids = catalog.map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('every icon has a label and at least one primitive', () => {
-    for (const icon of getIconCatalog()) {
+    for (const icon of getLoadedIconCatalog()) {
       expect(icon.label.length).toBeGreaterThan(0);
       expect(icon.prims.length).toBeGreaterThan(0);
     }
@@ -38,7 +37,7 @@ describe('icon catalogue', () => {
   // stickers.test.ts. What matters here is that the line-art half — the only
   // half the Icons tab shows — is the one everything below reasons about.
   it('getLineArtIconCatalog is the catalogue minus the stickers', () => {
-    const all = getIconCatalog();
+    const all = getLoadedIconCatalog();
     const lineArt = getLineArtIconCatalog();
     expect(lineArt.length).toBeGreaterThan(0);
     expect(lineArt.some((i) => isStickerId(i.id))).toBe(false);
@@ -59,7 +58,7 @@ describe('getIcon', () => {
 
 describe('icon categories', () => {
   it('every category id resolves to a catalogue entry', () => {
-    const known = new Set(getIconCatalog().map((i) => i.id));
+    const known = new Set(getLoadedIconCatalog().map((i) => i.id));
     for (const cat of ICON_CATEGORIES) {
       for (const id of cat.iconIds) {
         expect(known.has(id), `category "${cat.id}" references unknown icon "${id}"`).toBe(true);
@@ -88,7 +87,7 @@ describe('icon categories', () => {
   });
 
   it('iconsInCategory returns catalogue entries in catalogue order', () => {
-    const catalog = getIconCatalog();
+    const catalog = getLoadedIconCatalog();
     const tech = iconsInCategory('tech');
     expect(tech.length).toBeGreaterThan(0);
     expect(tech.every((i) => catalog.includes(i))).toBe(true);

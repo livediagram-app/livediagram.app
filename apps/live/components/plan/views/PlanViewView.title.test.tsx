@@ -70,13 +70,12 @@ const fillTab = () =>
   setPlanCover({
     fillTabId: ID,
     fillTabKind: 'View',
-    tabElementCount: 1,
     planKind: 'dashboard',
   });
 
 afterEach(() => {
   cleanup();
-  setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0, planKind: null });
+  setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null });
 });
 
 describe('a chart filling its Visualisation tab', () => {

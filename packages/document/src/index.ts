@@ -619,7 +619,6 @@ export * from './svg-render-table';
 export {
   fitLine as svgFitLine,
   mixHex,
-  personDisc as svgPersonDisc,
   text as svgText,
   wrapLines as svgWrapLines,
 } from './svg-render-face-kit';

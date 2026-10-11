@@ -58,16 +58,22 @@ At `files`, each document gets a `.livediagram.json` snapshot (one element per l
 ```bash
 livediagram sync              # write what changed
 livediagram sync --watch      # keep the files in step until Ctrl-C
+livediagram sync --dry-run    # print what a sync would do, and write nothing
 livediagram link status       # each document and whether it is in step
+livediagram link ls           # the documents the link covers
 ```
 
-A sync writes newer snapshots, adds documents that joined the folder and removes the files of documents that left it or went to the Trash. Git history keeps what was removed. With `--watch`, the files follow within a moment of each change in the editor.
+A sync writes newer snapshots, adds documents that joined the folder and removes the files of documents that left it or went to the Trash. Git history keeps what was removed. With `--watch`, the files follow within a moment of each change in the editor. `--dry-run` cannot be combined with `--watch`, since it writes nothing to keep in step.
+
+A snapshot's file name comes from the document's name when it is first synced, and then stays put, so renaming or moving a document never churns your repository. Instead, a sync names the files whose path would now be different. Run `livediagram sync --relocate` to move them (with `git mv` inside a git repository). A move never overwrites a file livediagram did not write: if one is already at the new path, the document stays where it is and the sync names that file.
 
 Snapshots are for reading. If a snapshot was changed by hand, the sync leaves it alone and names it, so nothing you wrote is lost; send it back with `livediagram push <file>`. If a tab you changed also changed in livediagram since, push refuses that tab as stale and sends the rest. Keep a copy of your change, restore the file (`git checkout -- <file>`, or delete it), sync, then make the change again. A file that git left with conflict markers is held back the same way until you keep one side.
 
 A teammate syncing with their own sign-in only reaches what they can open. A document they cannot open stays exactly as committed.
 
 ## Several Repositories
+
+A command acts on the nearest `livediagram.toml` at or above the directory you run it in. In a monorepo with a link per package, add `--all` to `sync`, `link status` or `link ls` to act on every link below the current directory.
 
 A link can cover a team folder, so several repositories can link the same diagrams, or a single repository can hold your diagrams for everything else. Each repository keeps its own snapshot; livediagram keeps the one document.
 

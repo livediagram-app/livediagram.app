@@ -530,8 +530,10 @@ A board can be maximised to work on it without the rest of the canvas around it.
   controls and inset scaling with it, its hairline not; `--plan-band-card-h`): the controls card and a Sheet's toolbar. The header's own content keeps clear of them: its title, count and widgets
   start after the mode menu and stop short of the palette (truncating, or the widgets scrolling, as they do when
   narrow). It is laid out this way only when there is room: at least 140 px between the mode menu and the palette
-  with the palette at the right (a desktop or a wide tablet). Otherwise (a phone, where the menu sits in the
-  palette's strip, or a narrow window) the element starts below the top row as before. The header follows the row
+  with the palette at the right (a desktop or a wide tablet). On a phone (under 640 px of canvas) it still holds the
+  top row, more simply: its header grows to the menu box's height and its content starts 12 px after the box, the
+  name staying in the header and the controls as they are, with at least 160 px left after the menu (else, as in a
+  narrow window, the element starts below the top row as before). The menu box takes the element's surface there too. The header follows the row
   as it changes (the palette's category switching its width, the window resizing). With no palette in the row (it is
   hidden, below, or the person may not edit) the header holds the menu alone, its content running on to its controls.
   The menu box and the palette in the band wear the element's hue: a 10% mix of it into the chrome's own light or
@@ -553,8 +555,10 @@ A board can be maximised to work on it without the rest of the canvas around it.
   come back the moment it is restored. A Sheet is the exception: covering the canvas, the controls zoom its cells
   instead ([Zoom](../029-sheets/sheet.md#zoom)).
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
-  (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot, so a phone scrolls sooner); a column
-  set wider takes its slots and the gaps between them. A board of five slots or fewer fills the width as on the
+  (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot); a column
+  set wider takes its slots and the gaps between them. On a phone a column takes the board's width less 48 px whatever
+  its width (one column a screen, the next peeking in), and the columns snap into view by their heads as they scroll
+  sideways, except while a card is carried (the edge scroll moves them freely then). A board of five slots or fewer fills the width as on the
   canvas; one of more scrolls its columns (and their swimlanes with them) sideways under a fixed header, by
   scrollbar, trackpad or Shift and the wheel. A card dragged (mouse, pen or finger) near the left or right edge of the
   columns scrolls them sideways, faster the nearer the edge, stopping at the ends; a pointer that only hovers never
@@ -737,6 +741,13 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 ## On a phone
 
+- **Cards are Minimal** on a phone (below 640 px), whatever the board's card size, so a column shows more of them; the
+  size is the board's again on a wider screen. Nothing is saved.
+- **The header has no widgets** on a phone: the title, then the header's controls. The quick filter the widgets set
+  stands down with them, so a filter set on a wider screen never hides cards with nothing on screen saying so.
+- A board that scrolls on its own (maximised, filling its tab, or in a Dashboard slot) shows one column a screen (see
+  "Five slots across"); covering the canvas, its body ends 8.5 rem (and the home indicator's safe area) past its last
+  cards, so they scroll up clear of the bottom controls that run across a phone's screen.
 - A finger on a board's empty space (between and below cards, column backgrounds) pans the canvas, as it does
   anywhere else, whatever the tool: it never selects or moves the board, and holding it opens no menu. Only the
   board's header moves the board, as with a mouse. A finger on a card picks the card up, and buttons and fields
@@ -749,7 +760,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   canvas's right edge (zoomed in on a phone, or panned), they slide left to stay 8 px inside it, on the board's
   surface with a shadow so they read over the header, never past the board's own left edge
   (`useKeepOnScreen`). Elsewhere (a board on a slide) they stay where they are.
-- A board's body does not scroll under a finger (a native scroll would cancel a card's drag); a board with more
+- On the canvas, a board's body does not scroll under a finger (a native scroll would cancel a card's drag); a board with more
   cards than fit is made taller, or scrolled with a mouse or trackpad.
 
 ## Theme and style

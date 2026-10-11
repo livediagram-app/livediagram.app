@@ -1,0 +1,81 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SlidePagesScene } from '@/components/illustrations/slide-pages';
+
+export const metadata = helpMetadata({
+  title: 'Slide Pages',
+  description:
+    'Build a deck in Illustrate mode from slide pages: landscape 16:9 or 4:3 sheets with seventeen slide layouts, a deck button beside each page to add it to the slide deck or hide it, and full-screen presenting.',
+  path: '/help/canvas/illustrate/slide-pages/',
+});
+
+<ArticleLayout
+  title="Slide Pages"
+  description="Landscape pages made for a deck: start each from a slide layout, add it to the slide deck in one press, and present."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: 'Illustrate Mode', slug: 'illustrate' }}
+  subArticles={getSubArticles('illustrate').filter((a) => a.slug !== 'slide-pages')}
+>
+
+A **slide page** is a kind of page in [Illustrate mode](/help/canvas/illustrate/) made for a presentation: one slide of a deck, always landscape, laid out to be read across a room. You build it like any page, from shapes, text, icons, images and charts, and each slide page has a button that puts it in the tab's slide deck, ready to present.
+
+## Adding a Slide Page
+
+- Press the **+** after the last page and choose **Slide** in **Add a Page**, or choose **Slide** when a new tab's first page asks **What Is This Page For?**
+- To start a whole deck at once, the Slide deck template opens a six-slide pitch (title, problem, solution, traction, team and the ask) on slide pages, with speaker notes. Find it in the New Document wizard or Quick Start ([Templates](/help/canvas/templates/)).
+- A slide page is always **landscape**. Its page panel's **Page** tab offers two sizes and no orientation: **Slide** (widescreen 16:9) and **Classic** (the older 4:3). Its label reads, for example, "Page 3 · Slide (16:9) · Slide".
+- It takes a **Background** and a pattern like any page ([Illustrate Mode](/help/canvas/illustrate/#backgrounds-and-patterns)).
+
+## Slide Layouts
+
+An empty slide page shows a card of layouts over it and **Start from a layout** in its title bar, and its page panel has a **Layouts** tab. They offer the **slide layouts** instead of the infographic ones, built for a landscape slide in your tab's theme, with type sized for a room. They are grouped into five categories:
+
+| Category       | Layouts                                                          |
+| -------------- | ---------------------------------------------------------------- |
+| Openers        | Title Slide, Section Header, Agenda                              |
+| Content        | Title and Bullets, Two Columns, Image and Text, Statement, Quote |
+| Data           | Big Number, Key Stats, Chart Story, Comparison                   |
+| Steps and Time | Process, Timeline, Roadmap                                       |
+| Closers        | Thank You, Team                                                  |
+
+That is seventeen in all. A few are worth knowing by name:
+
+- **Title Slide**: a large title, a subtitle, an accent rule, and the presenter and date at the foot.
+- **Section Header**: a big section number, an accent rule, the section's title and a line.
+- **Title and Bullets**: a title over five bullet points.
+- **Two Columns**: a title over two columns, each a heading and three bullet points.
+- **Image and Text**: an image filling the left half, with a title, a line and three bullet points to its right.
+- **Statement**: one sentence set very large and centred, with a line under it.
+- **Thank You**: a large "Thank you", "Questions?" and a contact line.
+
+The rest are the same layouts as the infographic ones of the same name. Hover a layout to preview it on the page, and click to place it; on a page that already has content, you are asked before it is replaced. Every layout is ordinary elements holding sample text, so change anything you like. See [Infographic Layouts](/help/canvas/illustrate/infographic-layouts/) for how the browser works.
+
+## The Deck Button
+
+Beside each slide page's cog, between it and the padlock, is the page's **deck button**. It shows the page's place in the tab's slide deck:
+
+- **Add to slide deck** (the Slide Deck icon) while the deck has no slide of this page. Press it and the page joins the end of the deck as a slide.
+- An **eye** once it is in the deck. Press **Hide from the presentation** (an open eye) to keep the slide in the deck but skip it when presenting; the eye is then crossed and dimmed, and **Show in the presentation** brings it back. It is the same switch as the slide's visibility in the Slide Deck panel.
+
+<Figure caption="Two slide pages: the first already in the deck, its eye ready to hide it from the presentation, and the second not yet, offering Add to slide deck.">
+  <SlidePagesScene />
+</Figure>
+
+Other kinds of page (infographic, article and logo) have no Add to slide deck button; add them from the Slide Deck panel instead. Once one is in the deck, the same eye appears beside its cog too. The deck button is for Editors on a computer: Viewers and Participants see the pages without it, and it is not shown on a phone.
+
+## Building and Presenting the Deck
+
+The **Slides** button in the bottom-right corner opens the Slide Deck panel. There you can add any page with **Add as slide**, rename slides, add speaker notes, hide them and reorder them ([Exporting and Presenting Pages](/help/canvas/illustrate/exporting-pages/#turning-pages-into-slides)).
+
+A slide made from a page **is the page**, live: change the page and the slide changes with it, and reordering or resizing the page never leaves the slide behind. Delete the page and its slide stays, empty, so you can see what happened and fix it.
+
+Press **Present** and each slide page fills the screen edge to edge on its own, with no labels, cogs or neighbouring pages. A 16:9 slide fills a 16:9 screen exactly; any other shape sits between black bars, as a projector shows it. Everything else about presenting works as for any deck: see [Presenting](/help/selection-modes/slide-deck/presenting/).
+
+<Tip>
+  Arrows on a slide stay on that slide: in Illustrate mode an arrow's end only pins to an element on
+  the same page, so nothing on one slide is tied to another.
+</Tip>
+
+</ArticleLayout>

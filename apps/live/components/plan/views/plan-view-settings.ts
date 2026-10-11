@@ -17,8 +17,6 @@ import type { PlanViewRef } from '@livediagram/document';
 import type { PlanContextValue } from '../PlanContext';
 import { track } from '@/lib/telemetry';
 
-export type PlanViewSettingsModel = ReturnType<typeof planViewSettingsModel>;
-
 export function planViewSettingsModel(
   plan: PlanContextValue,
   elementId: string,

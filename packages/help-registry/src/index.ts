@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Developers',
     description:
       'Call the livediagram REST API from your own scripts or the command line: authentication, worked examples, the CLI, repositories and developer tools, errors and limits, and the OpenAPI reference.',
-    articleCount: 7,
+    articleCount: 9,
   },
   {
     slug: 'troubleshooting',
@@ -165,7 +165,7 @@ export const categories: Category[] = [
     title: 'User Interface',
     description:
       'Get your bearings in the editor: the panels, toolbar, context menus, the Map, zoom and tab bars, quick controls, and power user mode.',
-    articleCount: 9,
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -197,7 +197,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
-    articleCount: 29,
+    articleCount: 30,
     kind: 'feature',
   },
   {
@@ -323,6 +323,15 @@ export const articles: Article[] = [
     description: 'Recommended settings in one switch, and Minimal chrome for a quieter interface.',
     keywords:
       'power user expert advanced pro minimal chrome hide labels captions titles icons only declutter preset recommended settings appearance light dark right-click',
+    category: 'User Interface',
+    categorySlug: 'user-interface',
+  },
+  {
+    slug: 'title-bar',
+    title: 'The Title Bar',
+    description: 'Rename the document, see who can see it, preview as a viewer, and Share or Copy.',
+    keywords:
+      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -561,6 +570,16 @@ export const articles: Article[] = [
     categorySlug: 'account-and-data',
   },
   {
+    slug: 'ai-clients',
+    title: 'Connecting AI Tools',
+    description: 'Add livediagram to Claude, Claude Code, Cursor, ChatGPT or any MCP client',
+    keywords:
+      'mcp connector claude desktop claude code cursor chatgpt oauth bearer token setup remote server url',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data/connect-ai-mcp',
+    parentSlug: 'connect-ai-mcp',
+  },
+  {
     slug: 'google-drive',
     title: 'Google Drive',
     description: 'Sync My documents to your own Google Drive, both ways.',
@@ -606,6 +625,26 @@ export const articles: Article[] = [
     categorySlug: 'developers',
   },
   {
+    slug: 'edit-operations',
+    title: 'Edit Operations Reference',
+    description: 'Every changeset operation, selector, placement, flag and lint finding.',
+    keywords:
+      'changeset edit operations ops line form json selector placement flags lint findings vocabulary cli mcp agent',
+    category: 'Developers',
+    categorySlug: 'developers/working-with-documents',
+    parentSlug: 'working-with-documents',
+  },
+  {
+    slug: 'plan-sheets-images',
+    title: 'Plan Items, Sheets and Images',
+    description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
+    keywords:
+      'items cards plan board card types sheets cells spreadsheet images upload illustrate pages article render svg copy shape libraries custom themes api',
+    category: 'Developers',
+    categorySlug: 'developers/working-with-documents',
+    parentSlug: 'working-with-documents',
+  },
+  {
     slug: 'errors-and-rate-limits',
     title: 'Errors and Rate Limits',
     description: 'Status codes, the error response shape, rate limits, and token expiry.',
@@ -640,6 +679,34 @@ export const articles: Article[] = [
       'Draw in a document inside a developer tool beside your agent, and talk about what you select.',
     keywords:
       'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool',
+    category: 'Developers',
+    categorySlug: 'developers',
+  },
+  {
+    slug: 'building-a-workbench',
+    title: 'Building a Workbench',
+    description: 'Pair, frame and message the editor from your own developer tool.',
+    keywords:
+      'workbench integration postmessage post message iframe frame embed ticket pairing pair handshake hello ack renew selection reference reveal theme ended vs code extension protocol origin',
+    category: 'Developers',
+    categorySlug: 'developers/workbenches',
+    parentSlug: 'workbenches',
+  },
+  {
+    slug: 'agent-changes',
+    title: "Reviewing and Undoing an Agent's Changes",
+    description: 'See what an AI tool, the CLI or a script changed, and undo it for 30 days',
+    keywords:
+      'changeset changesets undo revert agent ai mcp cli history review rollback toast kept diff',
+    category: 'Developers',
+    categorySlug: 'developers',
+  },
+  {
+    slug: 'agent-comments-presence',
+    title: 'Comments and Presence for Agents',
+    description: 'Reply to and resolve comments, and show what your agent is doing.',
+    keywords:
+      'agent comments reply resolve reopen threads presence status focus ring card comments api cli bot',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -706,6 +773,16 @@ export const articles: Article[] = [
     parentSlug: 'privacy-and-security',
   },
   {
+    slug: 'telemetry-dashboard',
+    title: 'The Public Telemetry Dashboard',
+    description: 'Every view on /telemetry, its date windows, timings and Web Vitals.',
+    keywords:
+      'telemetry dashboard analytics stats metrics public transparency charts trends timings percentiles p75 median core web vitals lcp inp cls exceptions search anonymous',
+    category: 'Privacy and Security',
+    categorySlug: 'privacy-and-security/what-we-collect',
+    parentSlug: 'what-we-collect',
+  },
+  {
     slug: 'share-link-security',
     title: 'Share Link Security',
     description: 'Passwords and expiry for the links you hand out.',
@@ -754,6 +831,16 @@ export const articles: Article[] = [
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
+  },
+  {
+    slug: 'drive-and-mcp',
+    title: 'Google Drive and MCP on a Self-Hosted Instance',
+    description: 'Set up the Drive mirror and the MCP server on your own deployment.',
+    keywords:
+      'google drive mirror oauth client id secret picker api key drive token key mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
+    category: 'Self-Hosting',
+    categorySlug: 'self-hosting/configuration',
+    parentSlug: 'configuration',
   },
 
   // ---- Troubleshooting ----
@@ -1423,6 +1510,16 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'visualisations',
+    title: 'Charts of Your Cards',
+    description: 'Visualisation tabs: a Gantt chart, calendars and more, live from every card.',
+    keywords:
+      'visualisation visualisations visualization chart charts graph gantt gantt chart timeline roadmap due calendar start calendar calendar cards by field workload priority by status priority matrix card search filter filters swimlanes swimlane lanes row order reorder drag to reorder sort by date chart settings cog card types group by statuses maximise maximize view restore view dashboard slot status breakdown',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'illustrate',
     title: 'Illustrate Mode',
     description:
@@ -1471,6 +1568,16 @@ export const articles: Article[] = [
     description: 'Every page or one page as a PDF or images, and pages as slides.',
     keywords:
       'export download pdf png svg image zip all pages one page import json print printable pages page illustrate infographic slides slide deck present presentation add as slide page slide deck from pages',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'slide-pages',
+    title: 'Slide Pages',
+    description: 'Landscape 16:9 or 4:3 pages with slide layouts, added to the deck in one press.',
+    keywords:
+      'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you add to slide deck hide show eye presenter',
     category: 'Canvas',
     categorySlug: 'canvas/illustrate',
     parentSlug: 'illustrate',
@@ -1989,6 +2096,16 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
   },
+  {
+    slug: 'colours-borders-opacity',
+    title: 'Colours, Borders and Opacity',
+    description:
+      'Recolour text, background and border, style borders and corners, and fade elements.',
+    keywords:
+      'colour color fill background border outline stroke text colour ink reset to theme picker swatch custom colour hex eyedropper pipette strength thickness pattern dashed dotted radius corners rounded pill circle opacity transparency fade see-through',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
 
   // ---- Sub-articles: Canvas ----
   {
@@ -2371,6 +2488,16 @@ export const articles: Article[] = [
     title: 'Choosing Fonts',
     description: 'Set a font per element or a default font for the whole tab.',
     keywords: 'typeface typography font family type text style',
+    category: 'Canvas',
+    categorySlug: 'canvas/text-and-fonts',
+    parentSlug: 'text-and-fonts',
+  },
+  {
+    slug: 'formatting-label-text',
+    title: 'Formatting Label Text',
+    description: 'Bold, headings, lists, alignment and per-word colour in a label, plus padding.',
+    keywords:
+      'bold italic underline strikethrough heading paragraph bullet numbered list block type alignment align vertical centre text colour word colour rich text toolbar padding font size format label',
     category: 'Canvas',
     categorySlug: 'canvas/text-and-fonts',
     parentSlug: 'text-and-fonts',
