@@ -104,6 +104,7 @@ const OVERVIEW_SCENES: OverviewScene[] = CARDS.filter((c) => c.short).map((c) =>
   key: c.key,
   label: c.short!,
   mode: c.mode,
+  viewBox: c.scene?.landscapeViewBox,
 }));
 
 // What the dot navigation says about the first window when it is a returning visitor's Welcome back.
@@ -222,7 +223,7 @@ export function HeroIllustration() {
                   mode={c.mode}
                   playing={playing}
                   document={liveDoc}
-                  viewBox={portrait ? c.scene?.portraitViewBox : undefined}
+                  viewBox={portrait ? c.scene?.portraitViewBox : c.scene?.landscapeViewBox}
                   overlay={c.build ? <BuildYours href={c.build} live={playing} /> : undefined}
                 />
               );

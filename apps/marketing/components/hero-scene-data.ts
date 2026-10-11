@@ -28,6 +28,9 @@ export type HeroSceneData = {
   mode: HeroMode;
   tabs: TabDef[];
   shared: boolean;
+  // The landscape viewBox, when the scene reaches past the shared 600 by 400 one (LANDSCAPE_VIEWBOX):
+  // as tall, so the hero's height-bound canvas draws it at the same scale, only wider.
+  landscapeViewBox?: string;
   // The portrait viewBox a phone draws it in: taller than wide, the pages' scenes taller still so
   // two pages stack.
   portraitViewBox: string;
@@ -94,6 +97,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     mode: 'illustrate',
     tabs: [{ name: 'Infographic', color: '#8b5cf6', active: true }],
     shared: true,
+    landscapeViewBox: '-24 -60 690 400',
     portraitViewBox: PORTRAIT_PAGES,
   },
   {
@@ -136,6 +140,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
       { name: 'Agenda', color: '#0ea5e9' },
     ],
     shared: true,
+    landscapeViewBox: '-28 -60 668 400',
     portraitViewBox: PORTRAIT,
   },
 ];
