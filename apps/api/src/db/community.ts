@@ -15,6 +15,8 @@ import {
   communitySearchTerms,
   type CommunityCategory,
   type CommunityFacetsResponse,
+  type CommunitySitemapEntry,
+  COMMUNITY_SITEMAP_MAX,
   type CommunityListQuery,
   type CommunityPostInput,
 } from '@livediagram/api-schema';
@@ -283,6 +285,20 @@ export async function listRelatedCommunityPosts(
     .bind(category, postId, COMMUNITY_RELATED_POSTS)
     .all<CommunityPostRow>();
   return result.results ?? [];
+}
+
+// The sitemap's posts (docs/specs/025-community/community.md "Search engines"): every public post, newest first, ids
+// and update times only. Ordered by published_at so the read walks idx_community_posts_new, and capped.
+export async function listCommunitySitemap(env: Env): Promise<CommunitySitemapEntry[]> {
+  const result = await env.DB.prepare(
+    `SELECT cp.id AS id, cp.updated_at AS updated_at FROM ${COMMUNITY_POST_FROM}
+      WHERE ${PUBLIC_POST}
+      ORDER BY cp.published_at DESC, cp.id
+      LIMIT ?`,
+  )
+    .bind(COMMUNITY_SITEMAP_MAX)
+    .all<{ id: string; updated_at: number }>();
+  return (result.results ?? []).map((r) => ({ id: r.id, updatedAt: r.updated_at }));
 }
 
 // The filter counts: posts per category and the most used tags, over what the public can see.

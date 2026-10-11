@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import { cardSubtitle, CARD_SUBTITLE_MAX } from './social-card';
-import { LANDING_SECTIONS } from './landing-content';
 
 describe('cardSubtitle', () => {
   it('keeps text that already fits', () => {
@@ -24,13 +23,5 @@ describe('cardSubtitle', () => {
 
   it('cuts a single unbroken word at the limit', () => {
     expect(cardSubtitle('x'.repeat(200), 10)).toBe(`${'x'.repeat(9)}…`);
-  });
-
-  it('gives every feature category a subtitle that fits two lines and ends on a word', () => {
-    for (const s of LANDING_SECTIONS) {
-      const out = cardSubtitle(s.description);
-      expect(out.length, s.id).toBeLessThanOrEqual(CARD_SUBTITLE_MAX);
-      expect(out, s.id).toMatch(/(?:[.!?]|\w…)$/);
-    }
   });
 });

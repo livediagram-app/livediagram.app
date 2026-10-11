@@ -14,6 +14,7 @@ export default function AccountAndDataPage() {
   const articles = getArticlesByCategory('account-and-data');
   return (
     <BrowsePage
+      listing={{ appPath: '/account-and-data/', articles: articles }}
       title="Account and Data"
       lede="How identity works, what an account adds, and how to manage your data."
     >

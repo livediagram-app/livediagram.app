@@ -15,6 +15,7 @@ export default function PrivacyAndSecurityPage() {
   const articles = getArticlesByCategory('privacy-and-security');
   return (
     <BrowsePage
+      listing={{ appPath: '/privacy-and-security/', articles: articles }}
       title="Privacy and Security"
       lede="How your data is handled and how to keep your documents safe."
     >
