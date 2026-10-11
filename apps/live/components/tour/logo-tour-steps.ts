@@ -19,7 +19,7 @@ const titleButton = (name: string) => (api: LogoTourApi) =>
 const LAYOUTS: LogoTourStep = {
   id: 'layouts',
   title: 'Start From a Logo Layout',
-  body: 'Lockups, wordmarks and emblems, each a whole logo in your theme and font, ready to make your own. Pick one now if you like.',
+  body: 'Lockups, wordmarks, emblems and marks, each a whole logo in your theme and font, ready to make your own. Pick one now if you like.',
   selector: () => '[data-page-panel]',
   prepare: (api) => api.openLayouts(api.pageId),
   cleanup: (api) => api.closePanel(),
