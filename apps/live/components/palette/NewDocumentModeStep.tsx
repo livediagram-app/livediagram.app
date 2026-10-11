@@ -101,7 +101,8 @@ function ModeCard({
           ) : null}
           <kbd
             aria-hidden
-            className="ml-auto hidden h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 sm:flex dark:border-slate-700 dark:text-slate-400"
+            // pt-px: the digits' ink sits high in the line box; a pixel down centres it (optical audit).
+            className="ml-auto hidden h-5 min-w-5 items-center justify-center rounded border pt-px border-slate-200 px-1 text-[10px] font-medium text-slate-400 sm:flex dark:border-slate-700 dark:text-slate-400"
           >
             {index + 1}
           </kbd>

@@ -99,7 +99,8 @@ export function ModeMenuChip({
         data-tour-id={labelled ? undefined : 'editor-mode'}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Editor mode: ${label}`}
+        // A start screen's switch is named for the tab it sets, so the top chrome's "Editor mode" stays the one.
+        aria-label={labelled ? `Tab mode: ${label}` : `Editor mode: ${label}`}
         aria-keyshortcuts={EDITOR_MODE_KEYSHORTCUT}
         onClick={() => {
           readZoom();

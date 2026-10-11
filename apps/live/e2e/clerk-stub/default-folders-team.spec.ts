@@ -84,7 +84,8 @@ test('a team folder becomes a member’s default, and new boards land in it', as
     .first()
     .click();
   await expect(page.getByText(/Moved to Boards/)).toBeVisible({ timeout: 20_000 });
-  const documentId = page.url().split('/').pop()!;
+  // The path's last segment: the editor adds the open tab as a fragment (#t=...).
+  const documentId = new URL(page.url()).pathname.split('/').pop()!;
   await expect
     .poll(async () => {
       const library = (await (

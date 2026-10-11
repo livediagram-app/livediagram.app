@@ -18,10 +18,11 @@ import {
 test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('New Document', { exact: false })).toBeVisible();
-  // The template shelf is the client-rendered heart of the wizard; its
-  // Popular heading proves the picker mounted, not just the shell.
-  await expect(page.getByRole('heading', { name: 'Popular' })).toBeVisible();
-  await expect(page.getByText('Blank Diagram', { exact: false })).toBeVisible();
+  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
+  // "Choosing a mode"); its five mode cards prove the picker mounted, not just the shell.
+  const modes = page.getByRole('group', { name: 'What are you making?' });
+  await expect(modes).toBeVisible();
+  await expect(modes.locator('[data-new-mode]')).toHaveCount(5);
   expectNoPageErrors(pageErrors);
 });
 
@@ -30,7 +31,7 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
 // open invisibly behind it.
 test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('Blank Diagram', { exact: false })).toBeVisible();
+  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
 
   const switcher = page.getByRole('button', { name: /^switch section/i });
   await untilHydrated(switcher);

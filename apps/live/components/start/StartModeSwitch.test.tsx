@@ -23,7 +23,7 @@ const mount = (mode: EditorMode, canEdit = true) => {
 describe('StartModeSwitch', () => {
   it('names the mode and opens its menu, switching the tab', () => {
     const setMode = mount('diagram');
-    const chip = screen.getByRole('button', { name: /^Editor mode: Diagram/ });
+    const chip = screen.getByRole('button', { name: /^Tab mode: Diagram/ });
     expect(chip.textContent).toContain('Diagram');
     // Not the tours' anchor: that is the top chrome's chip.
     expect(chip.getAttribute('data-tour-id')).toBeNull();
@@ -35,6 +35,6 @@ describe('StartModeSwitch', () => {
 
   it('shows nothing to someone who cannot edit', () => {
     mount('diagram', false);
-    expect(screen.queryByRole('button', { name: /^Editor mode:/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Tab mode:/ })).toBeNull();
   });
 });
