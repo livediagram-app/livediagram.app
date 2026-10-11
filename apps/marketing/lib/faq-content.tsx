@@ -55,14 +55,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Do I need an account to use livediagram?',
         a: (
           <>
-            No. Open the editor and start drawing straight away, with no sign-up. Your work is saved
-            and shareable as a guest. Signing in (also free) keeps your documents with you across
-            devices and unlocks teams, API tokens and the AI connection. See{' '}
+            No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
+            your browser as you go, and pressing Share puts it online for others to join. Signing in
+            (also free) keeps your documents with you across devices and unlocks teams, API tokens
+            and the AI connection. See{' '}
             <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open the editor and start drawing straight away, with no sign-up. Your work is saved and shareable as a guest. Signing in (also free) keeps your documents with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your documents with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
       },
       {
         q: 'How do I start my first document?',
@@ -134,7 +135,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -204,7 +205,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Illustrate adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. A laser pointer and spotlight help you guide the room.`,
+        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Illustrate adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
       },
       {
         q: 'Can I undo a mistake?',
@@ -240,7 +241,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Is it good for running workshops and retros?',
-        a: 'Very. There are templates for retrospectives, Lean Coffee, town hall Q&A and event storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls and reveals.',
+        a: (
+          <>
+            Very. There are templates for retrospectives, Lean Coffee, town hall Q&amp;A and event
+            storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls
+            and reveals. Estimate cards run planning poker, a temperature check shows how the room
+            feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See{' '}
+            <a href="/help/collaboration/facilitator/">the facilitator</a>.
+          </>
+        ),
+        aText:
+          'Very. There are templates for retrospectives, Lean Coffee, town hall Q&A and event storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See the facilitator.',
       },
     ],
   },
@@ -379,6 +390,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Offline Mode saves a document only in your browser, never on our servers. Until you sign in, new documents start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
+      },
+      {
+        q: 'What happens to my documents if I clear my browser data?',
+        a: (
+          <>
+            A document kept only in your browser goes with it, so share it or sign in first. Share
+            syncs a document online in one step, and after you sign in livediagram offers to move
+            every browser-only document into your account. Documents saved to your account are never
+            touched. See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
+          </>
+        ),
+        aText:
+          'A document kept only in your browser goes with it, so share it or sign in first. Share syncs a document online in one step, and after you sign in livediagram offers to move every browser-only document into your account. Documents saved to your account are never touched. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',

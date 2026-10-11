@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
+import { THEMES } from '@livediagram/document';
 import { LOGO_LAYOUTS, PAGE_LAYOUTS, SLIDE_LAYOUTS, TEMPLATES } from '@livediagram/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
@@ -64,6 +65,23 @@ describe('template counts in marketing copy', () => {
     const counts = [...copy.matchAll(/(\d+) (?:starter )?templates/g)].map((m) => Number(m[1]));
     expect(counts.length).toBeGreaterThan(0);
     for (const n of counts) expect(n).toBe(TEMPLATES.length);
+  });
+});
+
+// Theme counts are written out as digits or words; each must match the theme catalogue.
+describe('theme counts in marketing copy', () => {
+  const WORDS: Record<string, number> = { 'twenty-six': 26 };
+  it('matches the catalogue in the FAQ, the landing page and every comparison page', () => {
+    const copy = JSON.stringify([
+      FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),
+      LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)),
+      ALTERNATIVES,
+    ]);
+    const counts = [
+      ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),
+    ].map((m) => (/^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()]));
+    expect(counts.length).toBeGreaterThan(0);
+    for (const n of counts) expect(n).toBe(THEMES.length);
   });
 });
 
