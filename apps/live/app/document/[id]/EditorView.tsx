@@ -50,13 +50,12 @@ import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHos
 import { TourHost } from '@/components/tour/TourHost';
 import { useEverTrue } from '@/hooks/ui/useEverTrue';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
-import { EditorSearchPanel } from '@/components/panels/EditorSearchPanel';
 import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
 import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
-import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';
-import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-detect';
+import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-accept';
+import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { draftNotesOf, illustratePagesOf, readDashboard } from '@livediagram/document';
 import { templateStartMode } from '@/components/start/template-start-mode';
@@ -86,6 +85,14 @@ import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 // Plan pays nothing for it.
 // The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time
 // an empty tab offers one, never on the editor's first load.
+// Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open, the photo
+// review once a wall photo is picked. The search panel's code is fetched once the editor is idle
+// (EDITOR_SURFACE_CODE), so opening it does not wait.
+const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
+const PhotoReviewOverlay = dynamic(
+  () => import('@/components/chrome/PhotoReviewOverlay').then((m) => m.PhotoReviewOverlay),
+  { ssr: false },
+);
 const StartFromTemplates = dynamic(
   () => import('@/components/start/StartFromTemplates').then((m) => m.StartFromTemplates),
   { ssr: false },
@@ -621,9 +628,11 @@ export function EditorView() {
                                 powerUser={isPowerUserMode(userPreferences)}
                               />
                             </AreaErrorBoundary>
-                            <AreaErrorBoundary area="Search">
-                              <EditorSearchPanel />
-                            </AreaErrorBoundary>
+                            {ctx.searchOpen ? (
+                              <AreaErrorBoundary area="Search">
+                                <EditorSearchPanel />
+                              </AreaErrorBoundary>
+                            ) : null}
                             {/* Live poll (docs/specs/012-collaboration/live-poll.md). The prompt is shown to EVERY participant
           including view-role; the results panel unlocks once you've
           responded (or if you're the host). Both vanish with the poll —

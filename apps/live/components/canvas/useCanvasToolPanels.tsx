@@ -4,13 +4,22 @@ import { pageLabel } from '@livediagram/document';
 import type { DockAnchor } from '@/hooks/canvas/useDockPopovers';
 import type { ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
-import { AvatarPanel } from '@/components/panels/AvatarPanel';
-import { LaserPanel } from '@/components/panels/LaserPanel';
-import { SpotlightPanel } from '@/components/panels/SpotlightPanel';
-import { EraserPanel } from '@/components/panels/EraserPanel';
-import { FormatPanel } from '@/components/panels/FormatPanel';
-import { SlideDeckPanel } from '@/components/panels/SlideDeckPanel';
+import dynamic from 'next/dynamic';
+import { loadToolPanels } from '@/lib/editor-deferred-code';
 import type { CanvasChromeProps } from './CanvasChrome';
+
+// Each panel shows only while its tool is active, so they load on demand, together (./tool-panels); the editor
+// fetches them once idle (lib/editor-deferred-code.ts), so picking a tool does not wait.
+const AvatarPanel = dynamic(() => loadToolPanels().then((m) => m.AvatarPanel), { ssr: false });
+const LaserPanel = dynamic(() => loadToolPanels().then((m) => m.LaserPanel), { ssr: false });
+const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPanel), {
+  ssr: false,
+});
+const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), { ssr: false });
+const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
+const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
+  ssr: false,
+});
 
 // The six tool-config panels (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
 // docs/specs/008-canvas/format-panel.md, docs/specs/012-collaboration/presentation-mode.md), lifted out of useCanvasChromePanels. They are siblings in

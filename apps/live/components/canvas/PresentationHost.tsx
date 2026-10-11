@@ -13,13 +13,16 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 
 import { ITEM_TYPES } from '@livediagram/items';
-import { PresentationOverlay } from '@/components/canvas/PresentationOverlay';
+import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planPalette } from '@/components/plan/plan-palette';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
+
+// Drawn only while presenting; fetched once the editor is idle (lib/editor-deferred-code.ts).
+const PresentationOverlay = dynamic(loadPresentationOverlay, { ssr: false });
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.

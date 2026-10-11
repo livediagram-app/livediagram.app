@@ -1,20 +1,24 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
-import { LayersPanel } from '@/components/panels/LayersPanel';
+import { loadLayersPanel } from '@/lib/editor-deferred-code';
 import { visibleLayerElements } from '@livediagram/document';
 import { CanvasAiPanel } from './CanvasAiPanel';
-import { Explorer } from '@/components/panels/Explorer';
+import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { sessionStripTools } from './SessionClusterStrip';
+
+// Layers is a popover most visits never open: mounted from its first opening on (its code fetched once the
+// editor is idle, lib/editor-deferred-code.ts), and kept mounted after.
+const LayersPanel = dynamic(loadLayersPanel, { ssr: false });
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -259,9 +263,14 @@ export function useCanvasChromePanels({
       : null,
   });
 
+  // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
+  // the folders someone expanded stay expanded.
+  const explorerOpen = activeDockPanel === 'explorer';
+  const [explorerOpened, setExplorerOpened] = useState(explorerOpen);
+  if (explorerOpen && !explorerOpened) setExplorerOpened(true);
   const explorerEl =
-    zenMode || props.explorerHidden ? null : (
-      <Explorer
+    zenMode || props.explorerHidden || !explorerOpened ? null : (
+      <LazyExplorer
         recentExcludedIds={userPreferences.recentExcludedIds ?? []}
         onToggleRecentExclusion={onToggleRecentExclusion}
         favouriteIds={favouriteIds}
@@ -291,7 +300,7 @@ export function useCanvasChromePanels({
         onTeamFolders={onTeamFolders}
         onMoveDocumentToFolder={explorerHandlers.onMoveDocumentToFolder}
         onMoveDocumentTo={onMoveDocumentTo ? explorerHandlers.onMoveDocumentTo : undefined}
-        popoverOpen={activeDockPanel === 'explorer'}
+        popoverOpen={explorerOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         asPopover
         dismissOnOutside
@@ -341,15 +350,18 @@ export function useCanvasChromePanels({
   // path). A popover over its bottom-right cluster button, always mounted so
   // that button can pop it open (popoverOpen gates the actual render).
   // Its Settings switch removes it outright; layers themselves keep applying.
+  const layersOpen = activeDockPanel === 'layers';
+  const [layersOpened, setLayersOpened] = useState(layersOpen);
+  if (layersOpen && !layersOpened) setLayersOpened(true);
   const layersEl =
-    !chromeHidden && !readOnly && panelsOn.layers ? (
+    !chromeHidden && !readOnly && panelsOn.layers && layersOpened ? (
       <LayersPanel
         layers={layers}
         tabFont={props.tabFont}
         activeLayerId={activeLayerId}
         counts={layerCounts}
         elements={elements}
-        popoverOpen={activeDockPanel === 'layers'}
+        popoverOpen={layersOpen}
         popoverAnchor={activeDockAnchor ?? undefined}
         onPopoverClose={closeDockPanel}
         onSelectLayer={onSelectLayer}

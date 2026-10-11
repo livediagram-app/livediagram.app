@@ -69,9 +69,13 @@ import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from './CollaborateClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { WhiteboardDock } from '@/components/canvas/whiteboard/WhiteboardDock';
+import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
+
+// Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
+// fetches it as the editor mounts).
+const WhiteboardDock = dynamic(loadWhiteboardDock, { ssr: false });
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.

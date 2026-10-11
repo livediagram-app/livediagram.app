@@ -5,17 +5,22 @@
 // renders this and the panel, never the editor root that hands it everything else.
 
 import type { ComponentProps } from 'react';
-import { QuickStylePanel } from '@/components/canvas/QuickStylePanel';
+import dynamic from 'next/dynamic';
+import type { QuickStylePanel as QuickStylePanelComponent } from '@/components/canvas/QuickStylePanel';
+import { loadQuickStylePanel } from '@/lib/editor-deferred-code';
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { useQuickStyle, type QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { sameMembers, selectionIds, type Selection } from '@/lib/selection-store';
+
+// Shown once something is selected; its code is fetched once the editor is idle (lib/editor-deferred-code.ts).
+const QuickStylePanel = dynamic(loadQuickStylePanel, { ssr: false });
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 
 export function QuickStyleHost({
   deps,
   ...panel
-}: { deps: QuickStyleDeps } & Omit<ComponentProps<typeof QuickStylePanel>, 'quickStyle'>) {
+}: { deps: QuickStyleDeps } & Omit<ComponentProps<typeof QuickStylePanelComponent>, 'quickStyle'>) {
   const ids = useSelectionOf(selectionSetOf, sameMembers);
   const quickStyle = useQuickStyle({ ...deps, selectionIds: ids });
   return <QuickStylePanel {...panel} quickStyle={quickStyle} />;
