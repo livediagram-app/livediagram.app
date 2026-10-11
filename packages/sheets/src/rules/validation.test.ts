@@ -18,6 +18,7 @@ import {
   scalarAllowed,
   validationRuleAt,
   valueInvalid,
+  writeForRules,
 } from './validation';
 import { resetSheetWrite } from '../sheet-starters';
 
@@ -351,5 +352,42 @@ describe('rules in the layout', () => {
       validateSheetCreate({ ...s, layout: { ...s.layout, rules: [{ ...LIST, opts: [] }] } }).ok,
     ).toBe(false);
     expect(apply(s, resetSheetWrite(s)).layout.rules).toBeUndefined();
+  });
+});
+
+describe('a write as its rules take it', () => {
+  it('saves options in their own spelling and checkbox numbers as TRUE or FALSE, leaving the rest', () => {
+    const s = apply(
+      apply(base(), setRule(LIST)),
+      setRule(rule({ id: 'rule02', is: 'check' }, 1, 2, 5, 2)),
+    );
+    const w: SheetWrite = {
+      kind: 'cells',
+      cells: [
+        { r: R(1), c: C(1), i: { s: 'doing' } },
+        { r: R(1), c: C(2), i: { n: 1 } },
+        { r: R(2), c: C(2), i: { s: 'FALSE ' } },
+        { r: R(1), c: C(3), i: { s: 'free' } },
+        { r: R(2), c: C(1), i: null },
+        { r: 'gone01', c: C(1), i: { s: 'x' } },
+      ],
+    };
+    const out = writeForRules(s.layout, w);
+    expect(out.kind === 'cells' && out.cells.map((ch) => ch.i)).toEqual([
+      { s: 'Doing' },
+      { b: true },
+      { b: false },
+      { s: 'free' },
+      null,
+      { s: 'x' },
+    ]);
+    // Nothing to change: the same write.
+    const same: SheetWrite = { kind: 'cells', cells: [{ r: R(1), c: C(1), i: { s: 'Done' } }] };
+    expect(writeForRules(s.layout, same)).toBe(same);
+    expect(writeForRules(base().layout, w)).toBe(w);
+    expect(writeForRules(s.layout, { kind: 'title', title: 'x' })).toEqual({
+      kind: 'title',
+      title: 'x',
+    });
   });
 });

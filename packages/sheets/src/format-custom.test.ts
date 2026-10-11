@@ -8,6 +8,7 @@ describe('a custom format code', () => {
   it('reads codes people use, and refuses ones that cannot be read', () => {
     for (const code of [
       '0.00',
+      '\\[0\\]',
       '#,##0',
       '0%',
       '£#,##0.00',

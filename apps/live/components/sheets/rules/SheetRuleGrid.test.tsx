@@ -103,13 +103,11 @@ describe('checkboxes', () => {
     fireEvent.pointerUp(window, cellPoint(2, 1));
     expect(at(h, 2, 1)?.input).toEqual({ b: true });
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 1, c1: 1, r2: 2, c2: 1 }],
-          active: { r: 1, c: 1 },
-          anchor: { r: 1, c: 1 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 1, c1: 1, r2: 2, c2: 1 }],
+        active: { r: 1, c: 1 },
+        anchor: { r: 1, c: 1 },
+      }),
     );
     fireEvent.keyDown(h.grid, { key: ' ', code: 'Space' });
     fireEvent.keyUp(h.grid, { key: ' ', code: 'Space' });
@@ -119,13 +117,11 @@ describe('checkboxes', () => {
   it('Space on a cell that is not a box types a space', async () => {
     const h = await mount();
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 5, c1: 5, r2: 5, c2: 5 }],
-          active: { r: 5, c: 5 },
-          anchor: { r: 5, c: 5 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 5, c1: 5, r2: 5, c2: 5 }],
+        active: { r: 5, c: 5 },
+        anchor: { r: 5, c: 5 },
+      }),
     );
     fireEvent.keyDown(h.grid, { key: ' ', code: 'Space' });
     fireEvent.keyUp(h.grid, { key: ' ', code: 'Space' });
@@ -154,13 +150,11 @@ describe('dropdowns', () => {
     expect(at(h, 1, 2)?.input).toEqual({ s: 'Done' });
     expect(h.c().rules.dropdown).toBeNull();
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 2, c1: 2, r2: 2, c2: 2 }],
-          active: { r: 2, c: 2 },
-          anchor: { r: 2, c: 2 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 2, c1: 2, r2: 2, c2: 2 }],
+        active: { r: 2, c: 2 },
+        anchor: { r: 2, c: 2 },
+      }),
     );
     fireEvent.keyDown(h.grid, { key: 'ArrowDown', altKey: true });
     fireEvent.click(await screen.findByRole('button', { name: 'Clear' }));
@@ -175,13 +169,11 @@ describe('dropdowns', () => {
   it('an Arrow or Plain Text dropdown opens from its arrow', async () => {
     const h = await mount({ layout: { rules: [{ ...LIST, show: 'plain' }] } });
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 1, c1: 2, r2: 1, c2: 2 }],
-          active: { r: 1, c: 2 },
-          anchor: { r: 1, c: 2 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 1, c1: 2, r2: 1, c2: 2 }],
+        active: { r: 1, c: 2 },
+        anchor: { r: 1, c: 2 },
+      }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'Options for C2' }));
     expect(h.c().rules.dropdown).toEqual({ r: 1, c: 2 });
@@ -192,13 +184,11 @@ describe('typing in a ruled cell', () => {
   it('refuses a value a Reject rule does not allow, keeping the edit and saying why', async () => {
     const h = await mount();
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
-          active: { r: 4, c: 2 },
-          anchor: { r: 4, c: 2 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
+        active: { r: 4, c: 2 },
+        anchor: { r: 4, c: 2 },
+      }),
     );
     act(() => h.actions().startEdit('type', 'Blocked'));
     let r: ReturnType<ReturnType<typeof h.actions>['commitEdit']> | undefined;
@@ -211,13 +201,11 @@ describe('typing in a ruled cell', () => {
   it('offers the matching options under the editor; Enter saves the one highlighted', async () => {
     const h = await mount();
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
-          active: { r: 4, c: 2 },
-          anchor: { r: 4, c: 2 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
+        active: { r: 4, c: 2 },
+        anchor: { r: 4, c: 2 },
+      }),
     );
     act(() => h.actions().startEdit('type', 'do'));
     const list = await screen.findByRole('listbox', { name: 'Options' });
@@ -234,13 +222,11 @@ describe('typing in a ruled cell', () => {
   it('Escape closes the options and keeps the typing', async () => {
     const h = await mount();
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
-          active: { r: 4, c: 2 },
-          anchor: { r: 4, c: 2 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
+        active: { r: 4, c: 2 },
+        anchor: { r: 4, c: 2 },
+      }),
     );
     act(() => h.actions().startEdit('type', 'do'));
     const editor = await screen.findByRole('textbox', { name: 'Edit cell C5' });
@@ -251,13 +237,11 @@ describe('typing in a ruled cell', () => {
   it('saves a typed option in its own spelling, and a paste a rule refuses says so', async () => {
     const h = await mount();
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
-          active: { r: 4, c: 2 },
-          anchor: { r: 4, c: 2 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 4, c1: 2, r2: 4, c2: 2 }],
+        active: { r: 4, c: 2 },
+        anchor: { r: 4, c: 2 },
+      }),
     );
     act(() => h.actions().startEdit('type', 'done'));
     act(() => {
@@ -280,13 +264,11 @@ describe('Paint Format', () => {
   it('paints the held formats onto the next selection, then lets go; kept, it stays on', async () => {
     const h = await mount({ layout: {}, formats: { A1: { b: true, bg: '#00ff00' } } });
     act(() =>
-      h
-        .c()
-        .setSelection({
-          ranges: [{ r1: 0, c1: 0, r2: 0, c2: 0 }],
-          active: { r: 0, c: 0 },
-          anchor: { r: 0, c: 0 },
-        }),
+      h.c().setSelection({
+        ranges: [{ r1: 0, c1: 0, r2: 0, c2: 0 }],
+        active: { r: 0, c: 0 },
+        anchor: { r: 0, c: 0 },
+      }),
     );
     act(() => h.actions().paintStart(false));
     expect(h.c().rules.paint).not.toBeNull();
@@ -300,5 +282,37 @@ describe('Paint Format', () => {
     expect(h.c().rules.paint).not.toBeNull();
     fireEvent.keyDown(h.grid, { key: 'Escape' });
     expect(h.c().rules.paint).toBeNull();
+  });
+});
+
+describe('long and arrow dropdowns', () => {
+  const MANY: ValidationRule = {
+    ...LIST,
+    show: 'arrow',
+    opts: Array.from({ length: 10 }, (_, i) => ({ v: `Option ${i + 1}` })),
+  };
+  it('an Arrow dropdown keeps room for its arrow and opens from it; over 8 options, a search filters them', async () => {
+    const h = await mount({ layout: { rules: [MANY] }, cells: { C2: 'Option 3' } });
+    // The arrow sits in the cell's right edge: a press there opens the list.
+    const p = cellPoint(1, 2);
+    fireEvent.pointerDown(h.viewport, { button: 0, clientX: p.clientX + 45, clientY: p.clientY });
+    const list = await screen.findByRole('dialog', { name: 'Options for C2' });
+    const search = within(list).getByLabelText('Search options');
+    fireEvent.change(search, { target: { value: '1' } });
+    expect(within(list).getByText('Option 1')).toBeTruthy();
+    expect(within(list).getByText('Option 10')).toBeTruthy();
+    expect(within(list).queryByText('Option 2')).toBeNull();
+    fireEvent.change(search, { target: { value: 'zzz' } });
+    expect(within(list).getByText('No options match “zzz”')).toBeTruthy();
+    fireEvent.change(search, { target: { value: '10' } });
+    fireEvent.keyDown(search, { key: 'Enter' });
+    expect(at(h, 1, 2)?.input).toEqual({ s: 'Option 10' });
+  });
+  it('a press on the left of an Arrow dropdown cell just selects it', async () => {
+    const h = await mount({ layout: { rules: [MANY] } });
+    const p = cellPoint(1, 2);
+    fireEvent.pointerDown(h.viewport, { button: 0, clientX: p.clientX - 40, clientY: p.clientY });
+    fireEvent.pointerUp(window, p);
+    expect(h.c().rules.dropdown).toBeNull();
   });
 });
