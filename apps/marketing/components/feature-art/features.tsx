@@ -30,7 +30,7 @@ import {
   STRONG,
   SUBTLE,
 } from './features-parts';
-import { Frame, PINK, SKY } from './shared';
+import { AMBER, EMERALD, Frame, PINK, ROSE, SKY, VIOLET } from './shared';
 
 // Every scene in this file is drawn on a 300 by 96 stage, the card's art frame at its usual width.
 const VIEW = '0 0 300 96';
@@ -41,17 +41,13 @@ const to = (x: number, y: number, extra?: Record<string, string>) =>
 
 // The tab accents the editor's colour-coded tabs take, legible on its light and dark bars.
 const TAB = {
-  sky: '#0ea5e9',
-  violet: '#8b5cf6',
-  emerald: '#10b981',
-  amber: '#f59e0b',
-  rose: '#f43f5e',
+  sky: SKY,
+  violet: VIOLET,
+  emerald: EMERALD,
+  amber: AMBER,
+  rose: ROSE,
   indigo: '#6366f1',
 };
-
-const VIOLET = '#8b5cf6';
-const AMBER = '#f59e0b';
-const EMERALD = '#10b981';
 
 /** The tab bar: colour-coded tabs, the people on the active one, and a new tab added with +. */
 export function UnlimitedTabsArt() {

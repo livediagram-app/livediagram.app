@@ -21,6 +21,7 @@ import {
   Menu,
 } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
+import { ModeMark } from './mode-mark';
 
 // --- Shared bits -------------------------------------------------------------------------------
 
@@ -186,46 +187,65 @@ function LookAndFeelShell({
 
 /** The canvas with the menu button and mode switch top-left, the palette strip across the top
  *  (the canvas-tool and category dropdowns, the tiles, More and Search) and the bottom-right
- *  dock (the Theme & canvas paintbrush beside the zoom controls). */
+ *  cluster (Undo and Redo, Layers beside the Theme & canvas paintbrush, then the zoom controls). */
 export function CanvasPaletteOverview() {
+  const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (
     <Scene w={420} h={240}>
       <MenuCard x={8} y={14} />
       <Strip x={78} y={14} category="Popular" />
-      <Shape x={60} y={84} w={76} h={42} label="Start" />
-      <Shape x={176} y={78} w={60} h={54} kind="diamond" />
-      <Shape x={168} y={170} w={76} h={40} accent label="Done" />
-      <Arrow from={[136, 105]} to={[176, 105]} />
-      <Arrow from={[206, 132]} to={[206, 170]} />
-      {/* Bottom-right dock: the paintbrush, then the zoom controls. */}
+      <Shape x={60} y={72} w={76} h={42} label="Start" />
+      <Shape x={176} y={66} w={60} h={54} kind="diamond" />
+      <Shape x={168} y={146} w={76} h={36} accent label="Done" />
+      <Arrow from={[136, 93]} to={[176, 93]} />
+      <Arrow from={[206, 120]} to={[206, 146]} />
+      {/* Bottom-right cluster: Undo and Redo, Layers and the paintbrush, then the zoom controls. */}
       <rect
-        x={262}
+        x={150}
         y={198}
-        width={30}
+        width={60}
         height={30}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
+      <line x1={180} y1={204} x2={180} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
+      <path d="M170 209 h-8 l3 -3 M162 209 l3 3 M162 209 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
+      <path d="M190 209 h8 l-3 -3 M198 209 l-3 3 M198 209 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
+      <rect
+        x={218}
+        y={198}
+        width={66}
+        height={30}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <line x1={251} y1={204} x2={251} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
       <path
-        d="M272 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
+        d="M228 211 L235 208 L242 211 L235 214 Z M228 215 L235 218 L242 215"
+        {...ink}
+        strokeLinejoin="round"
+      />
+      <path
+        d="M260 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
         className="fill-brand-400 stroke-slate-500"
         strokeWidth={1.2}
         strokeLinejoin="round"
       />
       <rect
-        x={298}
+        x={292}
         y={198}
-        width={108}
+        width={114}
         height={30}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={316} y={214} anchor="middle" size={14} weight={700} tone="muted">
+      <Label x={310} y={214} anchor="middle" size={14} weight={700} tone="muted">
         −
       </Label>
-      <Label x={352} y={214} anchor="middle" size={11} weight={600} tone="body">
+      <Label x={349} y={214} anchor="middle" size={11} weight={600} tone="body">
         100%
       </Label>
       <Label x={388} y={214} anchor="middle" size={14} weight={700} tone="muted">
@@ -325,13 +345,16 @@ export function MultiSelectionBar() {
 
 // --- Templates ---------------------------------------------------------------------------------
 
+const MODE_NAME = { diagram: 'Diagram', draw: 'Draw', illustrate: 'Illustrate' } as const;
+
 /** The New Document wizard's template step: the mode filter beside the search box, the
- *  Popular shelf with a mode glyph before each title, and Next. */
+ *  Popular shelf with the mode's mark before each title, and Next. */
 export function NewDocumentTemplates() {
-  const cards: { title: string; mode: 'diagram' | 'draw'; on?: boolean }[] = [
+  // The shelf's first three: the blanks lead Popular (Blank Plan follows, off the edge here).
+  const cards: { title: string; mode: 'diagram' | 'draw' | 'illustrate'; on?: boolean }[] = [
     { title: 'Blank Diagram', mode: 'diagram', on: true },
-    { title: 'Mind map', mode: 'diagram' },
-    { title: 'Sketchnote', mode: 'draw' },
+    { title: 'Blank Whiteboard', mode: 'draw' },
+    { title: 'Blank Illustration', mode: 'illustrate' },
   ];
   return (
     <Scene w={420} h={250} bg="plain">
@@ -400,7 +423,7 @@ export function NewDocumentTemplates() {
                     strokeWidth={2}
                   />
                 </g>
-              ) : (
+              ) : c.mode === 'draw' ? (
                 <path
                   d={`M${x + 22} ${y + 36} c8 -14 16 10 24 -2 s14 -12 22 2 s10 8 18 -4`}
                   fill="none"
@@ -408,28 +431,22 @@ export function NewDocumentTemplates() {
                   strokeWidth={2}
                   strokeLinecap="round"
                 />
-              )}
-              {/* The mode glyph before the title. */}
-              {c.mode === 'diagram' ? (
-                <rect
-                  x={x + 9}
-                  y={y + 63}
-                  width={9}
-                  height={9}
-                  rx={2}
-                  className="fill-none stroke-slate-400"
-                  strokeWidth={1.5}
-                />
               ) : (
-                <path
-                  d={`M${x + 9} ${y + 70} q3 -6 6 0 t5 -2`}
-                  fill="none"
-                  className="stroke-slate-400"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
+                <rect
+                  x={x + 41}
+                  y={y + 13}
+                  width={28}
+                  height={36}
+                  rx={2}
+                  className="fill-white stroke-slate-300"
+                  strokeWidth={1.2}
                 />
               )}
-              <Label x={x + 24} y={y + 68} size={10} weight={600} tone="strong">
+              {/* The mode's mark before the title. */}
+              <g transform={`translate(${x + 14} ${y + 67})`}>
+                <ModeMark mode={MODE_NAME[c.mode]} className="stroke-slate-400" scale={0.45} />
+              </g>
+              <Label x={x + 23} y={y + 68} size={9} weight={600} tone="strong">
                 {c.title}
               </Label>
             </g>
@@ -450,15 +467,8 @@ export function ElementFontMenu() {
     <Scene w={420} h={230}>
       <Shape x={22} y={92} w={104} h={52} label="Step one" />
       <SelectionBox x={22} y={92} w={104} h={52} />
-      <Menu
-        x={142}
-        y={40}
-        w={108}
-        items={['Colours', 'Border', 'Style', 'Text']}
-        active={3}
-        rowH={24}
-      />
-      <Label x={238} y={129} anchor="end" size={11} weight={600} tone="accent">
+      <Menu x={142} y={40} w={108} items={['Style', 'Text']} active={1} rowH={24} />
+      <Label x={238} y={81} anchor="end" size={11} weight={600} tone="accent">
         ›
       </Label>
       <rect
@@ -706,9 +716,9 @@ export function LookAndFeelCanvas() {
   );
 }
 
-/** The custom-theme builder, opened from New theme in the Custom category: the live
- *  preview, the name, the four base colours, the Pattern and Per-shape colours sections,
- *  and Save theme. */
+/** The custom-theme builder, opened from New theme in the Custom category: the tab strip
+ *  stays on top, then the live preview, the name, the four base colours, the Pattern section
+ *  (open to start with) and the Per-shape colours section stacked beneath it, and Save theme. */
 export function CustomThemeBuilderScene() {
   const bases: [string, string][] = [
     ['Background', 'fill-brand-50'],
@@ -716,102 +726,114 @@ export function CustomThemeBuilderScene() {
     ['Stroke', 'fill-brand-600'],
     ['Text', 'fill-slate-800'],
   ];
+  const chevron = { className: 'stroke-slate-400', strokeWidth: 1.4, fill: 'none' } as const;
   return (
-    <Scene w={420} h={300} bg="plain">
-      <Dialog
-        x={50}
-        y={10}
-        w={320}
-        h={282}
-        title="Tab Look & Feel"
-        sceneW={420}
-        sceneH={300}
-        scrim={false}
-      >
-        <Label x={66} y={60} size={10} weight={600} tone="muted">
-          ‹ Back
-        </Label>
-        <Label x={108} y={60} size={10} weight={700} tone="strong">
-          New theme
-        </Label>
-        {/* Live preview of the in-progress theme. */}
-        <g className="help-art-as-drawn">
-          <rect x={66} y={72} width={288} height={40} rx={6} className="fill-brand-50" />
-          <rect
-            x={100}
-            y={82}
-            width={52}
-            height={20}
-            rx={4}
-            className="fill-brand-200 stroke-brand-600"
-            strokeWidth={1.5}
-          />
-          <rect
-            x={196}
-            y={82}
-            width={52}
-            height={20}
-            rx={4}
-            className="fill-brand-200 stroke-brand-600"
-            strokeWidth={1.5}
-          />
-          <path d="M152 92 H194" className="stroke-brand-600" strokeWidth={1.5} />
-        </g>
-        <Caption x={66} y={126}>
-          Name
-        </Caption>
+    <LookAndFeelShell active={0} h={378} sceneH={402}>
+      <Label x={60} y={98} size={10} weight={600} tone="muted">
+        ‹ Back
+      </Label>
+      <Label x={102} y={98} size={10} weight={700} tone="strong">
+        New theme
+      </Label>
+      {/* Live preview of the in-progress theme. */}
+      <g className="help-art-as-drawn">
+        <rect x={60} y={110} width={300} height={40} rx={6} className="fill-brand-50" />
         <rect
-          x={66}
-          y={134}
-          width={288}
-          height={22}
-          rx={5}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.3}
+          x={110}
+          y={120}
+          width={52}
+          height={20}
+          rx={4}
+          className="fill-brand-200 stroke-brand-600"
+          strokeWidth={1.5}
         />
-        <Label x={76} y={145} size={10} tone="muted">
-          My theme
-        </Label>
-        <Caption x={66} y={170}>
-          Base colours
-        </Caption>
-        {bases.map(([name, cls], i) => (
-          <g key={name}>
+        <rect
+          x={258}
+          y={120}
+          width={52}
+          height={20}
+          rx={4}
+          className="fill-brand-200 stroke-brand-600"
+          strokeWidth={1.5}
+        />
+        <path d="M162 130 H256" className="stroke-brand-600" strokeWidth={1.5} />
+      </g>
+      <Caption x={60} y={164}>
+        Name
+      </Caption>
+      <rect
+        x={60}
+        y={172}
+        width={300}
+        height={22}
+        rx={5}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.3}
+      />
+      <Label x={70} y={183} size={10} tone="muted">
+        My theme
+      </Label>
+      <Caption x={60} y={208}>
+        Base colours
+      </Caption>
+      {bases.map(([name, cls], i) => (
+        <g key={name}>
+          <rect
+            x={60 + i * 77}
+            y={216}
+            width={69}
+            height={40}
+            rx={6}
+            className="fill-white stroke-slate-200"
+            strokeWidth={1.3}
+          />
+          <g className="help-art-as-drawn">
             <rect
-              x={66 + i * 74}
-              y={178}
-              width={66}
-              height={40}
-              rx={6}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.3}
+              x={67 + i * 77}
+              y={221}
+              width={55}
+              height={16}
+              rx={3}
+              className={`${cls} stroke-slate-300`}
+              strokeWidth={1}
             />
-            <g className="help-art-as-drawn">
-              <rect
-                x={72 + i * 74}
-                y={183}
-                width={54}
-                height={16}
-                rx={3}
-                className={`${cls} stroke-slate-300`}
-                strokeWidth={1}
-              />
-            </g>
-            <Label x={99 + i * 74} y={209} anchor="middle" size={10} tone="body">
-              {name}
-            </Label>
           </g>
-        ))}
-        <line x1={66} y1={228} x2={354} y2={228} className="stroke-slate-100" strokeWidth={1.5} />
-        <Label x={66} y={238} size={10} weight={600} tone="body">
-          Pattern
-        </Label>
-        <Label x={190} y={238} size={10} weight={600} tone="body">
-          Per-shape colours
-        </Label>
-        <Button x={212} y={256} w={64} h={24} label="Cancel" />
-        <Button x={282} y={256} w={72} h={24} label="Save theme" variant="primary" />
-      </Dialog>
-    </Scene>
+          <Label x={94.5 + i * 77} y={247} anchor="middle" size={10} tone="body">
+            {name}
+          </Label>
+        </g>
+      ))}
+      {/* Pattern: open to start with, a row of pattern tiles inside. */}
+      <line x1={60} y1={266} x2={360} y2={266} className="stroke-slate-100" strokeWidth={1.5} />
+      <Label x={60} y={278} size={10} weight={600} tone="body">
+        Pattern
+      </Label>
+      <path d="M350 275 L354 280 L358 275" {...chevron} />
+      {Array.from({ length: 6 }, (_, i) => (
+        <g key={i}>
+          <rect
+            x={60 + i * 51}
+            y={290}
+            width={45}
+            height={22}
+            rx={4}
+            className={i === 0 ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
+            strokeWidth={1.3}
+          />
+          {i === 0 &&
+            [0, 1, 2, 3].map((d) => (
+              <circle key={d} cx={71 + d * 8} cy={301} r={1.4} className="fill-brand-400" />
+            ))}
+        </g>
+      ))}
+      {/* Per-shape colours: an advanced section, closed until opened. */}
+      <line x1={60} y1={322} x2={360} y2={322} className="stroke-slate-100" strokeWidth={1.5} />
+      <Label x={60} y={334} size={10} weight={600} tone="body">
+        Per-shape colours
+      </Label>
+      <path d="M352 330 L357 334 L352 338" {...chevron} />
+      <Button x={208} y={350} w={64} h={24} label="Cancel" />
+      <Button x={280} y={350} w={80} h={24} label="Save theme" variant="primary" />
+    </LookAndFeelShell>
   );
 }

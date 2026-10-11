@@ -35,7 +35,7 @@ The palette is a single strip pinned to the top centre of the canvas. From left 
 
 In the top-left corner, in a card of their own, sit the **menu button** and the **editor mode switch** (Diagram, Draw, Illustrate, Plan or Facilitate; **Shift+D** moves to the next mode). The menu button opens the [Explorer](/help/explorer/explorer-panel/) as a popover under it, and clicking it again closes it.
 
-**Layers** and **Collaborate** open just above their buttons in the bottom row, and close when you click the button again. Every other panel (the AI assistant, the Map, polls, votes and the tool panels) docks in a corner of the canvas, and you can drag it to another (see [Panel Layout](/help/user-interface/panel-layout/)). Undo and Redo stay in the bottom-right corner.
+**Layers**, **Collaborate** and the Session buttons' **Poll** and **Vote** open just above their buttons in the bottom row, and close when you click the button again. Every other panel (the AI assistant, the Map and the tool panels) docks in a corner of the canvas, and you can drag it to another (see [Panel Layout](/help/user-interface/panel-layout/)). Undo and Redo stay in the bottom-right corner.
 
 <Figure caption="The editor: the menu button and mode switch top-left, the strip across the top, and the usual bottom row.">
   <ToolbarLayoutOverview />
@@ -45,7 +45,7 @@ Only one of the strip's menus is open at a time: opening the selection mode, cat
 
 ## More
 
-**More** opens the whole category under the button: its search box, its groups and every tile. Adding a tile from it closes it again, so the canvas is clear to draw on, and switching category closes it too. Icons, Stickers, Tech and Collaborate always have a More, since their search and groups only live there.
+**More** opens the whole category under the button: its search box, its groups and every tile. Adding a tile from it closes it again, so the canvas is clear to draw on, and switching category closes it too. Icons, Stickers, Tech, Collaborate and My shapes always have a More, since their search and groups only live there.
 
 <Figure caption="More hangs from its button with the whole category: its search box and every tile.">
   <ToolbarMorePopover />
@@ -53,19 +53,19 @@ Only one of the strip's menus is open at a time: opening the selection mode, cat
 
 ## Search
 
-**Search** finds an element without knowing which category holds it. Before you type, it shows the kinds of element already on your tab, so the ones you are using are one click away. Type a name, or a word you would use for it ("database" finds the cylinder, a database icon and the database brands), and the tiles your current editor mode offers appear first, then matching icons, stickers and technology marks. The × at the end of the box clears it. Click one to add it, or press Enter to add the best match.
+**Search** finds an element without knowing which category holds it. Before you type, it shows the kinds of element already on your tab, so the ones you are using are one click away. Type a name, or a word you would use for it ("database" finds the cylinder, a database icon and the database brands), and matching tiles, icons, stickers and technology marks appear in one list, the best name matches first; where two match equally well, the tiles your current editor mode offers lead. The × at the end of the box clears it. Click one to add it, or press Enter to add the best match.
 
 Each editor mode keeps its palette to the tools that suit it, so a Diagram has no charts and an Illustrate page has no pens. Search still finds those: they wait below, under **Not in Diagram Mode** (or whichever mode you are in), closed until you open it. Every element works in every mode. That includes Draw mode's **Marker 1, 2 and 3**, in the colours and widths you gave them there: pick one and draw, and press Escape to put it down.
 
-Search is not on an Event Storming board, where the notation is the palette, and Draw mode shows its own dock instead of the strip. Wherever the strip's Search isn't shown, **S** keeps its old meaning and picks the Select tool.
+Search is not on an Event Storming board, where the notation is the palette, nor for a Participant, whose strip holds only the Participate tiles, and Draw mode shows its own dock instead of the strip. Wherever the strip's Search isn't shown, **S** keeps its old meaning and picks the Select tool.
 
 ## The order of the tiles
 
-Each category keeps its own order on the strip: adding something never moves it. Thin dividers split a category into groups of related tiles, such as the desktop and the mobile devices, or the charts and the meters. The strip opens on the mode's [Popular](/help/palette/popular/) each time a document loads.
+Each category keeps its own order on the strip: adding something never moves it. Thin dividers split a category into groups of related tiles, such as the desktop and the mobile devices, or the charts and the meters. Each time a document loads the strip opens on the mode's [Popular](/help/palette/popular/) in Diagram and Illustrate, on **Cards** in Plan (or **Boards** while the tab has none), on the notation on an Event Storming board, and on **Participate** for a Participant.
 
 ## What else the strip shows
 
-- **Plan mode** adds an **Edit Cards** button to the strip, and **Illustrate** an **Add Page** button (a **+**).
+- **Plan mode** adds an **Edit Cards** button to the strip on the Cards category, for someone who can edit, and **Illustrate** an **Add Page** button (a **+**). Neither shows on a phone.
 - **On an Event Storming board** the strip shows the notation's tiles instead of the two pickers, led by **Add from Photo** where it is available.
 - **Viewers** who can't edit have no strip, since there is nothing to add; the menu button still shows.
 - **Zen mode** hides the strip and the menu button with the rest of the editor's chrome.

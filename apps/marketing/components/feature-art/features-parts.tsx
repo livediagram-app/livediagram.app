@@ -8,10 +8,7 @@
 // colour constants), and none of these are wanted elsewhere.
 
 import type { ReactNode } from 'react';
-import { SKY } from './shared';
-
-const VIOLET = '#8b5cf6';
-const EMERALD = '#10b981';
+import { Cursor, EMERALD, SKY, VIOLET } from './shared';
 
 // Panel chrome in an SVG scene: the white of the editor's panels, slate-900 in dark.
 export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700';
@@ -62,25 +59,7 @@ export function Pointer({
   name?: string;
   flip?: boolean;
 }) {
-  return (
-    <g>
-      <path
-        d="M0 0 L0 11.5 L3.1 8.8 L5.4 13.6 L7.4 12.7 L5.1 8 L9.2 7.7 Z"
-        fill={color}
-        stroke="#fff"
-        strokeWidth="1"
-        strokeLinejoin="round"
-      />
-      {name ? (
-        <g transform={flip ? `translate(${-(name.length * 4.4 + 9)} -9)` : 'translate(8 11)'}>
-          <rect width={name.length * 4.4 + 7} height="9" rx="4.5" fill={color} />
-          <text x="3.5" y="6.5" fontSize="6" fontWeight="700" fill="#fff">
-            {name}
-          </text>
-        </g>
-      ) : null}
-    </g>
-  );
+  return <Cursor color={color} name={name} size={11.5} flip={flip} />;
 }
 
 // A node on the canvas in the Default scheme: the ink fill and stroke, and an optional label.

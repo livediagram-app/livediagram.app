@@ -12,14 +12,15 @@ export function BringFocusInvite() {
       <rect x={24} y={28} width={86} height={46} rx={8} className="fill-white stroke-slate-300" />
       <rect x={290} y={130} width={90} height={50} rx={8} className="fill-white stroke-slate-300" />
       <Dialog x={70} y={46} w={260} h={118} sceneW={400} sceneH={210}>
-        <Avatar cx={98} cy={78} r={13} initial="S" colour="violet" />
-        <Label x={120} y={74} size={12} weight={700} tone="strong">
-          Sam wants you to look
+        <Label x={88} y={64} size={9} weight={700} tone="accent">
+          BRING FOCUS
         </Label>
-        <Label x={120} y={90} size={12} weight={700} tone="strong">
-          at something
+        <Label x={88} y={82} size={12} weight={700} tone="strong">
+          Sam wants you to look at something
         </Label>
-        <TextBar x={88} y={110} w={200} tone="faint" />
+        {/* The fixed sentence about moving your view, drawn as text lines. */}
+        <TextBar x={88} y={100} w={220} tone="faint" />
+        <TextBar x={88} y={111} w={150} tone="faint" />
         <Button x={150} y={128} w={72} h={24} label="Not now" variant="ghost" />
         <Button x={230} y={128} w={88} h={24} label="Take me there" variant="primary" />
       </Dialog>
@@ -46,9 +47,6 @@ function Chair({
   const rotate = { down: 0, left: 90, up: 180, right: 270 }[facing];
   return (
     <g>
-      {sitter ? (
-        <circle cx={x} cy={y} r={27} className="fill-none stroke-emerald-500" strokeWidth={3} />
-      ) : null}
       <g transform={`translate(${x} ${y}) rotate(${rotate})`}>
         <ellipse cx={0} cy={14} rx={17} ry={4} className="fill-slate-200" />
         <rect x={-15} y={-16} width={30} height={9} rx={4} className="fill-brand-300" />
@@ -60,6 +58,18 @@ function Chair({
           rx={5}
           className="fill-brand-100 stroke-brand-300"
         />
+        {/* Taken: a soft ring in the sitter's colour on the seat, where their feet land. */}
+        {sitter ? (
+          <ellipse
+            cx={0}
+            cy={3}
+            rx={21}
+            ry={13}
+            className="fill-none stroke-emerald-500"
+            strokeWidth={3}
+            strokeOpacity={0.85}
+          />
+        ) : null}
       </g>
       {sitter ? (
         <g>

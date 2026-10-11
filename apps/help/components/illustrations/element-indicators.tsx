@@ -12,7 +12,7 @@ type GlyphKind = 'link' | 'note' | 'action' | 'comment' | 'outline' | 'tidy';
 
 /** One indicator glyph, drawn in a 14-unit box centred on (cx, cy). `strength` is the opacity:
  *  0.5 at rest, 0.85 while the element is hovered, 1 under the pointer. */
-function Glyph({
+export function Glyph({
   kind,
   cx,
   cy,
@@ -199,8 +199,8 @@ export function IndicatorPlacementScene() {
       <Label x={76} y={92} anchor="middle" size={12} weight={500} tone="strong">
         Orders
       </Label>
-      <Glyph kind="note" cx={100} cy={64} />
-      <CommentCount cx={116} cy={64} count={1} />
+      <Glyph kind="note" cx={96} cy={64} />
+      <CommentCount cx={112} cy={64} count={1} />
       {/* A round shape: centred along the top */}
       <Shape x={158} y={42} w={112} h={88} kind="circle" />
       <Label x={214} y={94} anchor="middle" size={12} weight={500} tone="strong">

@@ -385,7 +385,7 @@ export function TechGrid() {
   return (
     <Scene w={420} h={262} bg="plain">
       <PaletteFrame category="Tech" h={244}>
-        <SearchField y={76} text="Search technology" />
+        <SearchField y={76} text="Search tech" />
         <Label x={76} y={116} size={10} weight={600} tone="accent">
           Tech
         </Label>

@@ -25,9 +25,9 @@ The Image tool drops an image element you then attach a file to.
 </Step>
 
 <Step n={2}>
-  The empty placeholder shows a "Double-click to upload" prompt. Double-click it to open the
-  **Image** picker. A single click selects the placeholder instead, so you can move and resize it
-  without the picker opening every time.
+  The **Image** picker opens straight away. If you close it without choosing, the empty placeholder
+  shows a "Double-click to upload" prompt: double-click it to reopen the picker. A single click just
+  selects the placeholder, so you can move and resize it.
 </Step>
 
 <Step n={3}>
@@ -71,7 +71,7 @@ The picker accepts the formats that display reliably in every browser:
 - **PNG**, **JPEG**, **WebP**, and **GIF** (animated GIFs play automatically).
 - The per-file limit is **10 MB**, comfortably above a typical phone photo or 4K screenshot.
 
-Some formats are turned away with a helpful hint, including SVG (for safety) and HEIC from iPhones (save as JPEG and re-upload). For privacy, identifying metadata such as GPS location and camera details is stripped from JPEG uploads before the file is stored, so it never reaches anyone you share the document with.
+Other formats are turned away with a message listing the accepted ones. SVG is refused for safety; for an iPhone HEIC photo, save or export it as JPEG first. For privacy, identifying metadata such as GPS location and camera details is stripped from JPEG uploads before the file is stored, so it never reaches anyone you share the document with.
 
 ## Avatars
 
@@ -87,7 +87,7 @@ Every image you upload is indexed in a personal gallery, shared across all your 
 
 - **Reuse, no re-upload.** The **Gallery** tab in the image picker shows everything you have uploaded. Pick a tile to reuse it. If you upload the same file twice, livediagram recognises it and reuses the existing copy rather than storing it again.
 - **A gallery has a limit.** On livediagram.app each person's gallery holds up to 100 images and 100 MB in total. Once either is reached, a new upload is turned away with "Your image gallery is full", and deleting images you no longer use makes room. A self-hosted deployment has no limit unless its operator sets one.
-- **Manage it from the Explorer.** The Explorer's Image Gallery lists every image with its size and dimensions, a "Used in N documents" badge, and a delete action, so you can spot unused files and clean them up.
+- **Manage it from the Explorer.** The Explorer's [Image gallery](/help/explorer/image-gallery/) lists every image with its size and dimensions, a "Used in N documents" badge, and a delete action, so you can spot unused files and clean them up.
 - Deleting an image from the gallery removes the stored file. Any element still pointing at it shows a broken-image fallback, so delete only what you are sure is unused.
 - **Unused uploads are cleared automatically.** Once a day, livediagram removes images that are both more than 30 days old and used in no document, so abandoned uploads do not pile up. An image any document still uses is kept no matter its age, and recent uploads are left alone until the 30-day window passes.
 

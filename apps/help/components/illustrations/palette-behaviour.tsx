@@ -57,32 +57,72 @@ const glyph = { className: 'stroke-brand-600', strokeWidth: 1.8, fill: 'none' } 
 function SelectGlyph() {
   return <path d="M-5 -7 L5 2 L0 2.6 L3 8 L0.6 9 L-2 3.6 L-5.4 6.6 Z" className="fill-brand-600" />;
 }
-/** A clock, the Timer glyph. */
-function ClockGlyph() {
+/** A 24-unit editor glyph, scaled down onto a chip. */
+function Lucide({ children }: { children: ReactNode }) {
   return (
-    <g {...glyph}>
-      <circle r={7.5} />
-      <path d="M0 -4 V0 L3 2.5" strokeLinecap="round" />
+    <g
+      transform="scale(0.68) translate(-12 -12)"
+      className="stroke-brand-600"
+      strokeWidth={2.6}
+      fill="none"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
     </g>
   );
 }
-/** Three dots in a row, the Dot vote glyph. */
-function DotsGlyph() {
+/** A question mark in a bubble, the Ask group glyph. */
+function AskGlyph() {
   return (
-    <g className="fill-brand-600">
-      <circle cx={-6} cy={0} r={2.4} />
-      <circle cx={0} cy={0} r={2.4} />
-      <circle cx={6} cy={0} r={2.4} />
-    </g>
+    <Lucide>
+      <path d="M20.5 11.6c0 3.8-3.8 6.9-8.5 6.9-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.5 6.5 0 0 1 3.5 11.6c0-3.8 3.8-6.9 8.5-6.9s8.5 3.1 8.5 6.9z" />
+      <path d="M10.2 9.4a1.9 1.9 0 1 1 2.4 2.2c-.5.2-.8.6-.8 1.1M12 15h.01" />
+    </Lucide>
   );
 }
-/** Two answer bars, the Poll glyph. */
+/** A raised hand over a card, the Tools group glyph. */
+function FacilitateGlyph() {
+  return (
+    <Lucide>
+      <rect x="3" y="4" width="18" height="12.5" rx="2" />
+      <path d="M8 20h8M12 16.5V20M9 11.5V8.2M12 11.5V7M15 11.5v-2.6" />
+    </Lucide>
+  );
+}
+/** A smile, the React group glyph. */
+function SmileGlyph() {
+  return (
+    <Lucide>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />
+    </Lucide>
+  );
+}
+/** An arrow through a doorway, the Navigate group glyph. */
+function DoorGlyph() {
+  return (
+    <Lucide>
+      <path d="M4 20V6.5a1 1 0 0 1 .8-1l7-1.4a1 1 0 0 1 1.2 1V20" />
+      <path d="M2.6 20h12.8M17 9.5h4.4M19.2 7.3l2.2 2.2-2.2 2.2" />
+    </Lucide>
+  );
+}
+/** A ticked circle, the Dot vote glyph. */
+function VoteGlyph() {
+  return (
+    <Lucide>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </Lucide>
+  );
+}
+/** Three rising columns, the Poll glyph. */
 function PollGlyph() {
   return (
-    <g className="fill-brand-600">
-      <rect x={-7} y={-6} width={14} height={4} rx={2} />
-      <rect x={-7} y={2} width={9} height={4} rx={2} />
-    </g>
+    <Lucide>
+      <path d="M6 20v-4M12 20V10M18 20V4" />
+    </Lucide>
   );
 }
 /** A laser dot with a trail. */
@@ -119,18 +159,6 @@ function RecordGlyph() {
     </g>
   );
 }
-/** A four-point spark, the React group glyph. */
-function SparkGlyph() {
-  return <path d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2 Z" className="fill-brand-600" />;
-}
-/** An hourglass, the Timer glyph (it runs down). */
-function HourglassGlyph() {
-  return (
-    <g {...glyph} strokeLinejoin="round">
-      <path d="M-5 -8 H5 M-5 8 H5 M-4 -8 C-4 -3 4 -2 4 0 C4 2 -4 3 -4 8 M4 -8 C4 -3 -4 -2 -4 0 C-4 2 4 3 4 8" />
-    </g>
-  );
-}
 /** A stopwatch, the Stopwatch glyph (it counts up). */
 function StopwatchGlyph() {
   return (
@@ -144,17 +172,18 @@ function StopwatchGlyph() {
 // --- Scenes ----------------------------------------------------------------
 
 /** The Collaborate elements in the palette's category picker: Facilitate mode's Collaborate band, six
- *  categories ordered room-first, with the labels and order PALETTE_CATEGORIES gives them. */
-export function CollaborateCategories() {
+ *  categories ordered room-first, with the labels and order PALETTE_CATEGORIES gives them. `lit` picks
+ *  out the categories an article is about. */
+export function CollaborateCategories({ lit = [] }: { lit?: readonly string[] }) {
   const px = 52;
   const py = 12;
   const groups: { label: string; icon: ReactNode }[] = [
-    { label: 'Ask', icon: <PollGlyph /> },
-    { label: 'Tools', icon: <ClockGlyph /> },
+    { label: 'Ask', icon: <AskGlyph /> },
+    { label: 'Tools', icon: <FacilitateGlyph /> },
     { label: 'Record', icon: <RecordGlyph /> },
-    { label: 'React', icon: <SparkGlyph /> },
+    { label: 'React', icon: <SmileGlyph /> },
     { label: 'Selection Mode', icon: <SelectGlyph /> },
-    { label: 'Navigate', icon: <AvatarGlyph /> },
+    { label: 'Navigate', icon: <DoorGlyph /> },
   ];
   return (
     <Scene w={420} h={196} bg="plain">
@@ -162,6 +191,7 @@ export function CollaborateCategories() {
         {groups.map((g, i) => {
           const gx = px + 12 + (i % 3) * 102;
           const gy = py + 32 + Math.floor(i / 3) * 66;
+          const on = lit.includes(g.label);
           return (
             <g key={g.label}>
               <rect
@@ -170,13 +200,20 @@ export function CollaborateCategories() {
                 width={88}
                 height={56}
                 rx={9}
-                className="fill-white stroke-slate-200"
+                className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
                 strokeWidth={1.5}
               />
               <Chip x={gx + 44} y={gy + 20} r={13}>
                 {g.icon}
               </Chip>
-              <Label x={gx + 44} y={gy + 45} anchor="middle" size={10} weight={600} tone="body">
+              <Label
+                x={gx + 44}
+                y={gy + 45}
+                anchor="middle"
+                size={10}
+                weight={600}
+                tone={on ? 'accent' : 'body'}
+              >
                 {g.label}
               </Label>
             </g>
@@ -190,47 +227,50 @@ export function CollaborateCategories() {
 /** A control bar of Selection Mode buttons across the top of a canvas: two
  *  offering a mode, one offering the way back out. */
 export function ModeButtonBar() {
-  const buttons: { label: string; icon: ReactNode; leaving?: boolean }[] = [
-    { label: 'Switch to Select', icon: <SelectGlyph /> },
-    { label: 'Switch to Laser', icon: <LaserGlyph /> },
-    { label: 'Leave Avatar', icon: <AvatarGlyph />, leaving: true },
+  // The face: the icon chip that is the button, a small capitalised kicker,
+  // then the mode in bold. A button for the mode you are in says LEAVE.
+  const buttons: { kicker: string; mode: string; icon: ReactNode }[] = [
+    { kicker: 'SWITCH TO', mode: 'Select', icon: <SelectGlyph /> },
+    { kicker: 'SWITCH TO', mode: 'Laser', icon: <LaserGlyph /> },
+    { kicker: 'LEAVE', mode: 'Avatar', icon: <AvatarGlyph /> },
   ];
   return (
-    <Scene w={420} h={210}>
+    <Scene w={420} h={218}>
       {buttons.map((b, i) => {
         const bx = 26 + i * 126;
         return (
-          <g key={b.label}>
+          <g key={b.mode}>
             <rect
               x={bx}
               y={20}
               width={112}
-              height={72}
+              height={80}
               rx={10}
-              className={
-                b.leaving ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-300'
-              }
+              className="fill-white stroke-slate-300"
               strokeWidth={2}
             />
             <Chip x={bx + 56} y={45}>
               {b.icon}
             </Chip>
-            <Label x={bx + 56} y={78} anchor="middle" size={10} weight={600} tone="body">
-              {b.label}
+            <Label x={bx + 56} y={74} anchor="middle" size={8} weight={600} tone="muted">
+              {b.kicker}
+            </Label>
+            <Label x={bx + 56} y={88} anchor="middle" size={11} weight={700} tone="strong">
+              {b.mode}
             </Label>
           </g>
         );
       })}
-      <Label x={26} y={124} size={10} weight={700} tone="muted">
+      <Label x={26} y={132} size={10} weight={700} tone="muted">
         THE MODE CHANGES FOR WHOEVER PRESSED IT
       </Label>
-      <Avatar cx={44} cy={166} r={14} initial="A" colour="brand" />
-      <Avatar cx={80} cy={166} r={14} initial="R" colour="emerald" />
-      <Avatar cx={116} cy={166} r={14} initial="P" colour="violet" />
-      <Label x={140} y={166} size={11} tone="muted">
+      <Avatar cx={44} cy={174} r={14} initial="A" colour="brand" />
+      <Avatar cx={80} cy={174} r={14} initial="R" colour="emerald" />
+      <Avatar cx={116} cy={174} r={14} initial="P" colour="violet" />
+      <Label x={140} y={174} size={11} tone="muted">
         everyone else stays where they were
       </Label>
-      <Cursor x={196} y={70} name="You" />
+      <Cursor x={216} y={44} name="You" />
     </Scene>
   );
 }
@@ -240,7 +280,7 @@ export function ModeButtonBar() {
 export function SessionButtons() {
   const cards: { kicker: string; action: string; icon: ReactNode }[] = [
     { kicker: 'START', action: 'a stopwatch', icon: <StopwatchGlyph /> },
-    { kicker: 'START VOTE', action: '3 dots each', icon: <DotsGlyph /> },
+    { kicker: 'START VOTE', action: '3 dots each', icon: <VoteGlyph /> },
     { kicker: 'ASK', action: 'Ready to ship?', icon: <PollGlyph /> },
   ];
   return (
@@ -258,9 +298,12 @@ export function SessionButtons() {
       <Label x={114} y={40} size={13} weight={700} tone="muted">
         …
       </Label>
-      <Chip x={146} y={39} r={13}>
-        <HourglassGlyph />
-      </Chip>
+      {/* The idle face's dial: ticks round the edge, no chip. */}
+      <g className="stroke-brand-300" strokeWidth={1.5} strokeLinecap="round">
+        {Array.from({ length: 12 }, (_, i) => (
+          <path key={i} d="M0 -12 V-9" transform={`translate(146 39) rotate(${i * 30})`} />
+        ))}
+      </g>
       <Label x={168} y={40} size={10} weight={600} tone="muted">
         TIMER
       </Label>
@@ -369,6 +412,10 @@ export function DoneCheckCard() {
 }
 
 /** The five Reaction pads, with a burst going off over one of them. */
+const PAD_LEFT = 9;
+const PAD_GAP = 10;
+const pillWidth = (label: string) => label.length * 6 + 16;
+
 export function ReactionPads() {
   const pads: { label: string; icon: ReactNode }[] = [
     {
@@ -428,7 +475,7 @@ export function ReactionPads() {
       icon: (
         <path
           d="M0 8 C-9 1 -11 -3 -8.5 -6 C-6 -9 -1.5 -7.5 0 -4 C1.5 -7.5 6 -9 8.5 -6 C11 -3 9 1 0 8 Z"
-          className="fill-rose-500"
+          className="fill-violet-500"
         />
       ),
     },
@@ -461,21 +508,38 @@ export function ReactionPads() {
       ),
     },
   ];
+  // Each pill sized to its own label, so the longest never runs into its neighbours.
+  const centres = pads.map(
+    (_, i) =>
+      pads.slice(0, i).reduce((x, q) => x + pillWidth(q.label) + PAD_GAP, PAD_LEFT) +
+      pillWidth(pads[i]!.label) / 2,
+  );
+  const lit = 2;
   return (
     <Scene w={420} h={200}>
-      {/* The burst: a moment over the pad, saved nowhere. */}
-      <g className="fill-brand-300">
-        <circle cx={122} cy={54} r={3} />
-        <circle cx={158} cy={40} r={4} className="fill-amber-400" />
-        <circle cx={196} cy={50} r={3} className="fill-rose-400" />
-        <circle cx={230} cy={38} r={4} className="fill-emerald-400" />
-        <circle cx={264} cy={56} r={3} className="fill-violet-400" />
-        <circle cx={186} cy={26} r={2.5} className="fill-brand-400" />
-      </g>
+      {/* The burst: the lit pad's own emoji thrown up over it, saved nowhere. */}
+      {(
+        [
+          [-34, 66, 0.7, -18],
+          [-14, 44, 0.9, -8],
+          [10, 36, 1, 10],
+          [30, 58, 0.75, 20],
+          [-2, 70, 0.6, 4],
+        ] as const
+      ).map(([dx, y, k, turn]) => (
+        <path
+          key={`${dx}-${y}`}
+          d="M0 8 C-9 1 -11 -3 -8.5 -6 C-6 -9 -1.5 -7.5 0 -4 C1.5 -7.5 6 -9 8.5 -6 C11 -3 9 1 0 8 Z"
+          transform={`translate(${centres[lit]! + dx} ${y}) rotate(${turn}) scale(${k})`}
+          className="fill-violet-400"
+          fillOpacity={0.85}
+        />
+      ))}
       {pads.map((p, i) => {
         // Each pad: the emoji over a glowing spot to stand on, its caption in a pill below.
-        const cx = 50 + i * 80;
-        const lit = i === 2;
+        const w = pillWidth(p.label);
+        const cx = centres[i]!;
+        const on = i === lit;
         return (
           <g key={p.label}>
             <ellipse
@@ -483,13 +547,13 @@ export function ReactionPads() {
               cy={122}
               rx={28}
               ry={9}
-              className={lit ? 'fill-brand-200' : 'fill-brand-100'}
+              className={on ? 'fill-brand-200' : 'fill-brand-100'}
             />
             <g transform={`translate(${cx} 100)`}>{p.icon}</g>
             <rect
-              x={cx - 38}
+              x={cx - w / 2}
               y={134}
-              width={76}
+              width={w}
               height={16}
               rx={8}
               className="fill-white stroke-slate-200"
@@ -603,7 +667,7 @@ export function PickerCard() {
         strokeWidth={2}
       />
       <Label x={200} y={76} anchor="middle" size={10} weight={600} tone="muted">
-        Who demos?
+        WHO DEMOS?
       </Label>
       <Avatar cx={158} cy={102} r={13} initial="P" colour="violet" />
       <Label x={182} y={103} size={16} weight={700} tone="strong">

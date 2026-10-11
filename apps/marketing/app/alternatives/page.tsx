@@ -10,14 +10,16 @@ import { JsonLd, pageMetadata, SITE_URL } from '@livediagram/ui';
 
 // Hub page for the comparison set (see docs/specs/019-marketing/comparison-pages.md): a
 // crawlable parent that links to every /alternatives/<slug> page.
-// Every competitor by name, read from the data so a new comparison updates the hub's descriptions too.
+// Every competitor by name, read from the data so a new comparison updates the hub's ItemList too. The meta
+// description stays a fixed sentence: listing every name would outgrow a search result's 160 characters.
 const COMPETITORS = new Intl.ListFormat('en-GB', { type: 'conjunction' }).format(
   ALTERNATIVES.map((alt) => alt.name),
 );
 
 export const metadata = pageMetadata({
   title: 'How livediagram compares · alternatives',
-  description: `How livediagram stacks up against ${COMPETITORS}. Honest, side-by-side comparisons.`,
+  description:
+    'Honest, side-by-side comparisons of livediagram with Miro, FigJam, Lucidchart, draw.io, Google Slides and more, including where each is the better pick.',
   path: '/alternatives',
   modifiedTime: ALTERNATIVES_LAST_UPDATED,
 });

@@ -7,6 +7,7 @@
 // dark: half, never bare hex, so a card is right in both appearances.
 
 import type { CSSProperties, ReactNode } from 'react';
+import { Cursor, PINK } from './shared';
 
 export type Tone = 'sky' | 'violet' | 'emerald' | 'amber' | 'pink' | 'slate';
 
@@ -153,7 +154,7 @@ export function Pointer({
   x,
   y,
   name,
-  color = '#ec4899',
+  color = PINK,
 }: {
   x: number;
   y: number;
@@ -162,21 +163,7 @@ export function Pointer({
 }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <path
-        d="M0 0 L0 10 L2.8 7.4 L4.6 11.4 L6.2 10.7 L4.4 6.8 L8.2 6.6 Z"
-        fill={color}
-        stroke="#fff"
-        strokeWidth="0.9"
-        strokeLinejoin="round"
-      />
-      {name ? (
-        <g transform="translate(7 10)">
-          <rect width={name.length * 4.2 + 6} height="8.5" rx="2.5" fill={color} />
-          <text x="3" y="6.1" fontSize="5.8" fontWeight="700" fill="#fff">
-            {name}
-          </text>
-        </g>
-      ) : null}
+      <Cursor color={color} name={name} />
     </g>
   );
 }
@@ -239,7 +226,7 @@ export const PANEL = 'fill-white stroke-slate-200 dark:fill-slate-900 dark:strok
 export const PANEL_TEXT = 'fill-slate-700 dark:fill-slate-200';
 export const HAIRLINE = 'stroke-slate-200 dark:stroke-slate-700';
 export const INK = 'stroke-slate-800 dark:stroke-slate-100';
-export const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+export { MONO } from './shared';
 
 // The card stage: the full width of a card's frame (about 304 by 96 px), drawn at one scale.
 export const STAGE = '0 0 300 96';

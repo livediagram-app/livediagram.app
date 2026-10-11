@@ -17,7 +17,7 @@ import {
   TEXT_MUTED,
   TEXT_STRONG,
 } from './canvas-marks';
-import { Frame } from './shared';
+import { Frame, MONO } from './shared';
 
 // A branch colour of a multi-colour theme, tinted for the node behind its words.
 const BRANCHES = [
@@ -312,7 +312,7 @@ function Entity({
               x={x + w - 6}
               y={ry}
               fontSize="5.8"
-              fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+              fontFamily={MONO}
               textAnchor="end"
             >
               {type}

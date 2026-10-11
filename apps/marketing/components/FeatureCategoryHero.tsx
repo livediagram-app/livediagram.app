@@ -1,4 +1,5 @@
 import { ctaHref } from '@livediagram/api-schema';
+import { RAIL_CLEAR_PADDING } from '@livediagram/ui';
 import type { CSSProperties } from 'react';
 import { CtaLink } from '@/components/CtaLink';
 import type { LandingSection } from '@/lib/landing-content';
@@ -20,7 +21,9 @@ const delay = (index: number) =>
 export function FeatureCategoryHero({ section }: { section: LandingSection }) {
   return (
     <section className="border-b border-slate-200/70 bg-gradient-to-b from-brand-50/70 to-white dark:from-brand-500/15 dark:to-slate-950 dark:border-slate-800/70">
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 sm:py-20 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-14 xl:grid-cols-[26rem_minmax(0,1fr)]">
+      <div
+        className={`mx-auto grid max-w-7xl items-center gap-10 ${RAIL_CLEAR_PADDING} py-16 sm:py-20 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-14 xl:grid-cols-[26rem_minmax(0,1fr)]`}
+      >
         {/* Centred while the hero is one column, as the landing beats are. */}
         <div className="text-center lg:text-left">
           <p className={`enter ${EYEBROW}`} style={delay(0)}>

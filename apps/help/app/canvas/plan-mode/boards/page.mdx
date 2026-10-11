@@ -24,7 +24,7 @@ A **board** is where [Plan mode](/help/canvas/plan-mode/) work happens: columns 
 
 ## Pick a Board
 
-An empty Plan tab shows **Start Planning** in the middle, with a **Boards** tab and a **Spreadsheets** tab (an **Empty Sheet**). Each board is a small picture of the board over its name and what it is for; pick one and it is placed, empty, in the middle of your view. Every board, the Archive board included, is also in the palette's **Boards** category: press one and click the canvas, or drag it out to the size you want. People who can only view the document don't see the picker.
+An empty Plan tab shows **Start Planning** in the middle, with a **Boards** tab and a **Spreadsheets** tab (an **Empty Sheet**, a **Card Table** once the document has cards, a **Budget** and a **Tracker**). Each board is a small picture of the board over its name and what it is for; pick one and it is placed, empty, in the middle of your view. Every board, the Archive board included, is also in the palette's **Boards** category: press one and click the canvas, or drag it out to the size you want. Participants and Viewers don't see the picker.
 
 <Figure caption="Start Planning, on an empty Plan tab: each tile is a picture of the board it places.">
   <PlanBoardPickerScene />
@@ -43,7 +43,7 @@ An empty Plan tab shows **Start Planning** in the middle, with a **Boards** tab 
 | **All Cards**                                | Every card in the document, a row per status, so nothing gets lost.       |
 | **Archive** (palette only)                   | Every archived card, out of the way, ready to restore.                    |
 
-A board placed from the palette or the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. Boards from a [Plan template](/help/canvas/plan-mode/#plan-templates) are set up for their job, share columns between tabs where the work hands over, and come with no cards either.
+A board placed from the palette or the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. The exception is a column named like a status the tab already has (a second Kanban's **Done**, say): it takes that status, so its cards show on the new board too. Boards from a [Plan template](/help/canvas/plan-mode/#plan-templates) are set up for their job, share columns between tabs where the work hands over, and come with no cards either.
 
 ## Columns
 
@@ -55,7 +55,7 @@ When you add a column with a column's **+ Add Column After**, the picker lists u
 
 Hover a column's head and press its cog (always there on a touch screen) to:
 
-- **Rename** it and give it a **colour** (none, or one of eight).
+- **Rename** it and give it a **colour** (none, one of ten, or a custom colour).
 - Set a **WIP Limit**: the count turns amber when the column holds more. It warns; it never refuses a card.
 - Make it **Counts as Done**, so its cards fill the board's Completion and count as done in charts.
 - Set its **Width**: one, two or three slots across the board.
@@ -63,15 +63,15 @@ Hover a column's head and press its cog (always there on a touch screen) to:
 - **Remove Column** takes the column off this board only: the state and its cards stay, so another board's column for it still shows them.
 - **Delete Status** deletes the state itself: when it holds cards, it asks where they go (to another column, or to the **Trash**, where you can restore them), then the state's column comes off every board. A board's last column can't be removed or deleted.
 
-A board holds 1 to 12 columns. A new Blank board shows **Setup Board**: first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want, then its **Layout**: its **Swimlanes**, its **Card Display** and **Fill Tab**. The Layout step starts as the board is now, so you can press straight through it. **Create Board** sets it all up in one step, and everything can change later from the board's cog.
+A board holds up to 12 columns. A new Blank board shows **Setup Board**: first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want, then its **Layout**: its **Swimlanes**, its **Card Display** and **Fill Tab**. The Layout step starts as the board is now, so you can press straight through it. **Create Board** sets it all up in one step, and everything can change later from the board's cog.
 
 ## The Board's Own Settings
 
-Press the cog at the top right of the board (**Board Settings**), or right-click the board (or select it and press **⋯**) and open **Board**. Both show four sections, one open at a time:
+Press the cog at the top right of the board (**Board Settings**), or right-click the board (or select it and press **⋯**) and open **Board**. Both show four sections, one open at a time (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board**):
 
 - **Board Setup:** the board's name, **Setup Board**, which opens the setup screen again filled in with the board as it is, so you can change its card types, columns and layout in one go (**Save Board** keeps each kept column's settings), and **Fill Tab** (below). To put the whole board in the [Slide Deck](/help/selection-modes/slide-deck/), use **Add to Slides** in the board's **⋯** menu at its top right.
 - **Swimlanes:** **Group Rows By**, one list: **None**, **Assignee**, **Type** or **Priority**, then a row per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. There is no Status row grouping on a board, since its columns already are its statuses (an All Cards board, which has one column, groups its rows by status).
-- **Supported Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Tasks and Actions; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again). You can turn them all off, then add one with **Add New Card Type** under any column's **+ Add card**. A board whose chosen types have all since been deleted shows every type again.
+- **Supported Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Stories, Tasks and Bugs; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again). You can turn them all off, then add one with **Add New Card Type** under any column's **+ Add card**. A board whose chosen types have all since been deleted shows every type again.
 - **Card Layout:** the **Card Size** (**Minimal**, **Compact** or **Detailed**). What a card shows at each size is set per card type, in its [Display](/help/canvas/plan-mode/card-types/) tab.
 
 ## Fill Tab
@@ -91,9 +91,9 @@ While a board is selected, the grip beside its title is where to take hold of it
 </Figure>
 
 - **Every board shows every card whose status is one of its columns and whose type is one of its Card Types.** There is no per-board filter by label; a card of a type the board doesn't show is hidden there, never moved.
-- **Not on this board:** cards whose status no column holds are counted in the header ("3 not on this board"); open the count to move each to a column.
+- **Not on this board:** add the **Not on Board** widget and the header counts the cards whose status no column holds ("3 not on board"); open the count to move each to a column.
 - **Columns fill the board:** make a board taller and its columns run to the bottom edge. A column with more cards than fit scrolls inside itself; the board never grows on its own.
-- **Card sizes:** **Minimal** shows the title alone; **Compact** the title over a line of number, priority, due date, votes and assignee; **Detailed** (the default) everything, down to a description excerpt, custom fields shown on cards and checklist progress.
+- **Card sizes:** **Minimal** is the smallest face, **Compact** adds a line of details, and **Detailed** (the default) shows the most, down to a description excerpt and checklist progress. Exactly which fields each size shows is set per card type, in its [Display](/help/canvas/plan-mode/card-types/) tab: a built-in type's Minimal card is its title alone, your own types' Minimal cards add the number and assignee, and a Compact Note or Idea shows its votes and comments.
 
 ## Widgets
 
@@ -118,7 +118,7 @@ On a board that hides writing, everyone else's cards show face down (and take no
 
 ## Focus
 
-Press **Focus** (left of Maximise in a board's header) to glide the view so the board fits the screen. Press it again to zoom back out to the whole tab.
+Press **Focus Board** (left of Maximise in a board's header) to glide the view so the board fits the screen. Press it again to zoom back out to the whole tab.
 
 ## Maximise
 

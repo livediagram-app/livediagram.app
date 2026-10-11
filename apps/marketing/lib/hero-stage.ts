@@ -8,7 +8,7 @@
 
 export type StageBox = { width: number; left: number };
 
-export type SnappedStage = { cardPx: number; gapPx: number; translatePx: number };
+type SnappedStage = { cardPx: number; gapPx: number; translatePx: number };
 
 export function snapStage(
   box: StageBox,

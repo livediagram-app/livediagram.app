@@ -73,13 +73,7 @@ function UndoRedoControls({ active }: { active: 'undo' | 'redo' }) {
         strokeWidth={1.5}
       />
       <ArrowButton x={336} y={200} dir="undo" pressed={active === 'undo'} />
-      <ArrowButton
-        x={364}
-        y={200}
-        dir="redo"
-        muted={active === 'undo'}
-        pressed={active === 'redo'}
-      />
+      <ArrowButton x={364} y={200} dir="redo" pressed={active === 'redo'} />
     </g>
   );
 }

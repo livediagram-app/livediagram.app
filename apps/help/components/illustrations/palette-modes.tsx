@@ -219,9 +219,10 @@ export function PanelOpacity() {
     <Scene w={400} h={240}>
       {/* Canvas content the panel floats over. */}
       <Shape x={54} y={104} w={86} h={52} accent label="A" />
-      <Shape x={150} y={158} w={86} h={52} kind="circle" label="B" />
-      <Shape x={252} y={150} w={92} h={52} label="C" />
-      {/* The panel at ~60% opacity: the shapes behind it stay
+      <Shape x={54} y={170} w={86} h={52} kind="circle" label="B" />
+      {/* C sits wholly under the panel, in the space below its tiles. */}
+      <Shape x={226} y={140} w={96} h={46} label="C" />
+      {/* The panel at ~60% opacity: the shape behind it stays
           visible through it. */}
       <g opacity={0.6}>
         <Panel x={196} y={42} w={156} h={150} title="AI ASSISTANT">
@@ -229,8 +230,6 @@ export function PanelOpacity() {
           <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
           <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
           <rect x={294} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={210} y={144} width={128} height={10} rx={5} className="fill-slate-200" />
-          <rect x={210} y={162} width={86} height={10} rx={5} className="fill-slate-200" />
         </Panel>
       </g>
     </Scene>

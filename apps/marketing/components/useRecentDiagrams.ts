@@ -36,7 +36,7 @@ export function useRecentDiagrams(): RecentDiagram[] | null {
   return diagrams;
 }
 
-export type RecentThumb =
+type RecentThumb =
   | { status: 'loading' }
   | { status: 'none' }
   | { status: 'ready'; url: string; backgroundColor: string | null };

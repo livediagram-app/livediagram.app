@@ -109,9 +109,9 @@ export function SideBySideDrag() {
   return (
     <Scene w={W} h={H}>
       <Header title="Launch plan" />
-      <Shape x={60} y={70} w={70} h={34} label="Goals" />
-      <Shape x={150} y={110} w={70} h={34} label="Risks" />
-      <Arrow from={[130, 87]} to={[150, 120]} tone="muted" width={1.5} />
+      <Shape x={40} y={50} w={70} h={34} label="Goals" />
+      <Shape x={40} y={112} w={70} h={34} label="Risks" />
+      <Arrow from={[75, 84]} to={[75, 112]} tone="muted" width={1.5} />
       {/* The ghost of the pane, at the width it will open. */}
       <rect
         x={ghostX}
@@ -128,9 +128,9 @@ export function SideBySideDrag() {
       <Shape x={ghostX + 30} y={HEADER + 50} w={60} h={28} label="Q1" />
       <Shape x={ghostX + 110} y={HEADER + 50} w={60} h={28} label="Q2" />
       <rect
-        x={ghostX + (W - ghostX) / 2 - 38}
+        x={ghostX + (W - ghostX) / 2 - 44}
         y={H - FOOTER - 32}
-        width={76}
+        width={88}
         height={18}
         rx={9}
         className="fill-brand-600"
@@ -154,13 +154,13 @@ export function SideBySideDrag() {
       {/* The pill on its way, under the pointer. */}
       <Arrow
         from={[96, H - FOOTER - 8]}
-        to={[ghostX + 70, 140]}
+        to={[ghostX + 96, 140]}
         kind="curved"
         tone="muted"
         dashed
         width={1.5}
       />
-      <Cursor x={ghostX + 74} y={136} />
+      <Cursor x={ghostX + 100} y={136} />
     </Scene>
   );
 }
