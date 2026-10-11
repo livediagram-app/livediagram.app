@@ -79,7 +79,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
 - Opens beside the page, to the right of its cog, so the sheet stays in view; where the window has
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
-- Top to bottom: the **name** field (placeholder `Page n`, or `Untitled page` while there is one
+- Top to bottom: on a logo page, **Show Me** and **Help** ([Logo pages](logo-pages.md) "Show Me"); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs, **Page**,
   **Background** and **Layouts** (a slide page's Layouts are the slide layouts; an article page:
   **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";

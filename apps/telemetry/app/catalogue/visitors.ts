@@ -342,6 +342,7 @@ const SHOW_ME_SURFACES = [
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
   { token: 'PhotoReviewTour', title: 'Photo Review', where: 'the photo import review' },
+  { token: 'LogoTour', title: 'Logo', where: 'a logo page’s panel' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(

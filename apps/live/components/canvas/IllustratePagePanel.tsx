@@ -37,6 +37,7 @@ import type { PageLayoutId } from '@livediagram/templates';
 import { LayoutsSection } from './infographic-page-layouts-section';
 import { OrientationSection, SizeSection } from './illustrate-page-panel-sections';
 import { BackgroundSection } from './page-background-section';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 
 const WIDTH = 304;
 const GAP = 6;
@@ -77,8 +78,11 @@ export function IllustratePagePanel({
   onLayoutPreview,
   onClose,
   articleStyle,
+  showMe,
 }: {
   page: LaidOutPage;
+  // A logo page's Show Me, which heads the panel beside Help (docs/specs/007-editor/logo-pages.md "Show Me").
+  showMe?: ReactNode;
   // An article page's Style and Text tabs (docs/specs/007-editor/article-pages.md "Article style").
   articleStyle?: (part: 'style' | 'text') => ReactNode;
   count: number;
@@ -193,6 +197,12 @@ export function IllustratePagePanel({
             ? 'This page is locked. Unlock it beside the cog to change it.'
             : "A page of this article is locked. Unlock it to change the article's pages."}
         </p>
+      ) : null}
+      {showMe ? (
+        <div className="flex items-center justify-end gap-0.5 px-2 pt-1.5">
+          {showMe}
+          <HelpArticleLink article="logoPages" variant="labelled" />
+        </div>
       ) : null}
       <div inert={selfLocked} className={selfLocked ? 'opacity-50' : undefined}>
         <NameField

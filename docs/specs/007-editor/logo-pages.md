@@ -108,6 +108,18 @@ cog).
   Card Type** (a full-width dashed row with a plus, quiet until hovered): it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
 - The cog opens the panel on Page; the layout invite on Layouts.
 
+### Show Me
+
+The panel is headed by **Show Me** ([Show Me](show-me.md)) and **Help** (the labelled Help link, to the Logo Pages
+article), above the name, on a logo page only. Show Me runs a guided tour of the logo tools, on the page it was
+pressed for; it is never offered or started on its own. Each step rings a real control of that page, which stays
+usable. The steps: **Start From a Logo Layout** (the panel, reopened on Layouts; closed again on leaving the step),
+**Draw on Guides** (the Guides button), **Mirror As You Draw** (the Mirror button), **Combine Shapes** (the
+selection toolbar's Combine when two or more shapes were selected as it started, otherwise a centred card saying
+where Combine appears), then a closing card, **That Is a Logo Page**, which points at Export's Logo Kit and links
+the Logo Pages article. Only someone who may edit the page has its cog, so only they see Show Me. Telemetry:
+`UI` · `Started` · `LogoTour`, and `UI` · `Ended` · `LogoTourCompleted` or `LogoTourSkipped`.
+
 ## Logo layouts
 
 A logo page's Layouts are the **logo layouts**, built for the safe area in the tab's theme. Each
@@ -354,7 +366,8 @@ clean, as one edit:
 `LogoMirrorOff`; `UI · Changed · LogoGuideStrength<Faint|Medium|Strong>`,
 `LogoMirrorAxis<Vertical|Horizontal|Both|Radial>`, `LogoMirrorCopies<3|4|5|6|8>`,
 `LogoMirrorMergeOn` / `LogoMirrorMergeOff`;
-`Document · Exported · LogoKit`. Never a colour, name or text.
+`Document · Exported · LogoKit`; `UI · Started · LogoTour`, `UI · Ended · LogoTourCompleted` / `LogoTourSkipped`
+([Show Me](#show-me)). Never a colour, name or text.
 
 ## Non-goals
 
