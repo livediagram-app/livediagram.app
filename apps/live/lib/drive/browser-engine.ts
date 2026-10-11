@@ -2,19 +2,13 @@
 // document visibility and the canvas rasteriser, with telemetry mapped onto
 // the closed `Drive` enums (docs/specs/022-drive-mirror/drive-mirror.md, "Telemetry").
 
-import type { DriveMode } from '@livediagram/api-schema';
-import { apiDriveToken } from '../api-client';
 import { track } from '../telemetry';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus } from './engine';
 import { createApiLivediagramPort } from './livediagram-port';
 import { rasteriseSvgToPng } from './thumbnail';
 import { localSeenStore } from './tombstones';
-import {
-  createBrokerTokenSource,
-  createBrowserTokenSource,
-  type TokenSource,
-} from './token-source';
+import type { TokenSource } from './token-source';
 
 const DEVICE_KEY = 'livediagram:v2:drive-device';
 const FIRST_MIRROR_KEY = 'livediagram:v2:drive-first-mirror';
@@ -30,20 +24,6 @@ export function driveDeviceId(
     storage.setItem(DEVICE_KEY, id);
   }
   return id;
-}
-
-export type BrowserTokens =
-  | { mode: 'broker'; source: TokenSource & { clear(): void } }
-  | { mode: 'browser'; source: ReturnType<typeof createBrowserTokenSource> };
-
-export function createBrowserTokens(
-  mode: Exclude<DriveMode, 'off'>,
-  ownerId: string,
-): BrowserTokens {
-  const now = () => Date.now();
-  return mode === 'broker'
-    ? { mode, source: createBrokerTokenSource({ fetchToken: () => apiDriveToken(ownerId), now }) }
-    : { mode, source: createBrowserTokenSource({ now }) };
 }
 
 export function createBrowserEngine(input: {

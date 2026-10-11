@@ -11,8 +11,6 @@ import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
 import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
-import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
-import { SettingsDialog } from '@/components/dialogs/SettingsDialog';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
@@ -35,6 +33,17 @@ import { searchPanelSources } from '@/components/panels/search-panel-sources';
 // on the first paint of the dashboard.
 const SearchPanel = dynamic(
   () => import('@/components/panels/SearchPanel').then((m) => m.SearchPanel),
+  { ssr: false },
+);
+
+// Settings and the move picker mount only while open, so they load on first open rather than
+// with every Explorer page: Settings alone carries every category's panes.
+const SettingsDialog = dynamic(
+  () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
+  { ssr: false },
+);
+const MoveToFolderDialog = dynamic(
+  () => import('@/components/dialogs/MoveToFolderDialog').then((m) => m.MoveToFolderDialog),
   { ssr: false },
 );
 

@@ -66,9 +66,11 @@ and yields to an explicit `element.font`, which is a deliberate choice.
 Auto-fitting labels (`textSize: 'scale'` on a sticky) **measure in the face
 they paint** — `labelMeasure(size, bold, italic, fontFamily)` — since faces
 differ in width at the same px. Webfonts arrive after first paint
-(`display=swap`), so the canvas re-renders once `document.fonts.ready`
-settles (`useFontsReady`) and the fit re-measures in the real face instead of
-keeping a size taken from the swap fallback.
+(`display=swap`, from a stylesheet that does not block it), so the canvas
+re-renders each time a batch of faces lands (`useFontEpoch`: every
+`loadingdone`, plus `document.fonts.ready` for loads settled before it
+listened) and the fit re-measures in the real face instead of keeping a
+size taken from the swap fallback.
 
 Applies to every text surface: shape / text / sticky labels (committed +
 live editor), table cells, and arrow labels (arrows have no per-element
@@ -92,6 +94,13 @@ A single Google Fonts stylesheet (`googleFontsHref()`) is linked in the
 live app's root layout, with `preconnect` hints. One request defines
 every `@font-face`; browsers only download a family once it's actually
 applied to an element, so listing all eleven is cheap.
+
+The stylesheet never holds up first paint: it is linked as
+`media="print"` (fetched at low priority, not render-blocking) and an
+inline script right after it (`WEBFONTS_SWAP_SCRIPT`) switches it to
+`all` once it has loaded. It is cross-origin and about 60 KB, so on a
+cold visit blocking on it delayed every editor route's first paint,
+sign-in and the Explorer included, by a full round trip to Google.
 
 Both pickers **preview each face**: the per-element font menu shows an
 `Aa` glyph in the font beside its name, and the per-tab picker

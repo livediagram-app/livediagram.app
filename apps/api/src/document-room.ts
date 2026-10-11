@@ -581,9 +581,17 @@ export class DocumentRoom implements DurableObject {
   }
 
   // A socket's tab scope. Read from the attachment, so it survives
-  // hibernation; fixed for the life of the session.
+  // hibernation; fixed for the life of the session (a rescoped link closes
+  // its sessions), so it is read once per socket and kept here: every op
+  // frame asks it of every recipient, and a cursor stream in a full room
+  // made that a structured-clone read per peer per packet. Lost with the
+  // object when the room hibernates, and read again on the next frame.
+  private readonly scopes = new WeakMap<WebSocket, string | null>();
   private scopeOf(ws: WebSocket): string | null {
-    return this.readSession(ws)?.tabScope ?? null;
+    if (this.scopes.has(ws)) return this.scopes.get(ws) ?? null;
+    const scope = this.readSession(ws)?.tabScope ?? null;
+    this.scopes.set(ws, scope);
+    return scope;
   }
 
   // After a share-revoked / share-rescoped op has gone out, close every socket
