@@ -15,6 +15,7 @@ export default function DevelopersPage() {
   const articles = getArticlesByCategory('developers');
   return (
     <BrowsePage
+      listing={{ appPath: '/developers/', articles: articles }}
       title="Developers"
       lede="Drive livediagram from your own scripts and integrations. The same REST API the editor uses, callable with an API token, or from a terminal with the livediagram CLI."
     >

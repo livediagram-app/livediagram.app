@@ -49,6 +49,9 @@ export type PageMetadataInput = {
   // twitter-image (marketing's /features/<id> cards): the shared brand card
   // is then left off so it doesn't override the page's own.
   ownOgImage?: boolean;
+  // A card of the page's own at a known absolute URL, used for both Open Graph and Twitter in place
+  // of the brand card (the help centre's per-article cards, docs/specs/018-help/help-app.md "SEO").
+  image?: { url: string; alt: string };
   // The OG type. `article` suits a content page; a hub or dashboard that is
   // the app's own front page (the Community gallery, the Telemetry
   // dashboard) is a `website`.
@@ -62,6 +65,7 @@ export function pageMetadata({
   siteName = SITE_NAME,
   modifiedTime,
   ownOgImage = false,
+  image,
   type = 'article',
 }: PageMetadataInput): Metadata {
   return {
@@ -75,14 +79,16 @@ export function pageMetadata({
       title,
       description,
       locale: LOCALE,
-      ...(ownOgImage ? {} : { images: [OG_IMAGE] }),
+      ...(ownOgImage
+        ? {}
+        : { images: [image ? { ...image, width: 1200, height: 630 } : OG_IMAGE] }),
       ...(modifiedTime ? { modifiedTime: modifiedTime.toISOString() } : {}),
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      ...(ownOgImage ? {} : { images: [TWITTER_IMAGE] }),
+      ...(ownOgImage ? {} : { images: [image ? image.url : TWITTER_IMAGE] }),
     },
   };
 }

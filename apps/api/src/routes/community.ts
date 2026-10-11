@@ -22,6 +22,7 @@ import {
   getPublicCommunityPost,
   likedPostIds,
   listCommunityPosts,
+  listCommunitySitemap,
   listFeaturedCommunityPosts,
   listRelatedCommunityPosts,
   recordCommunityReport,
@@ -55,6 +56,8 @@ function listCacheHeaders(key: string | null): HeadersInit {
   return { 'Cache-Control': key ? 'private, no-store' : `public, max-age=${LIST_MAX_AGE_S}` };
 }
 const LIST_MAX_AGE_S = 30;
+// The sitemap source: crawlers fetch the sitemap rarely, and a new post can wait an hour to be listed.
+const SITEMAP_MAX_AGE_S = 3600;
 const FEATURED_MAX_AGE_S = 60;
 
 export async function handleCommunity(ctx: RouteContext): Promise<Response> {
@@ -106,6 +109,15 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
       const rows = await listFeaturedCommunityPosts(env);
       return json({ posts: rows.map((row) => rowToCommunityPost(row, false)) });
     });
+  }
+
+  // GET /api/community/sitemap: what the Community app's /community/sitemap.xml lists (docs/specs/025-community/
+  // community.md "Search engines"). Crawlers read it a few times a day at most, so an hour at the edge is plenty
+  // and D1 answers it at most once an hour per location.
+  if (segments.length === 3 && segments[2] === 'sitemap' && method === 'GET') {
+    return edgeCached(url, SITEMAP_MAX_AGE_S, async () =>
+      json({ posts: await listCommunitySitemap(env) }),
+    );
   }
 
   // GET /api/community/facets: the same for everyone.

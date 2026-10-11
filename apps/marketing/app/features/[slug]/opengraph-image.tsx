@@ -1,8 +1,7 @@
 import { ImageResponse } from 'next/og';
 
-import { renderSocialCard } from '@/app/opengraph-image';
+import { cardSubtitle, renderSocialCard } from '@livediagram/ui';
 import { getLandingSection, LANDING_SECTION_IDS } from '@/lib/landing-content';
-import { cardSubtitle } from '@/lib/social-card';
 
 // Per-category social card for /features/<id>: the same branded shell as the
 // homepage OG card (renderSocialCard), but with the category's own headline so

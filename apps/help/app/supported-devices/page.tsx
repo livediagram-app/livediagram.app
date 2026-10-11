@@ -15,6 +15,7 @@ export default function SupportedDevicesPage() {
   const articles = getArticlesByCategory('supported-devices');
   return (
     <BrowsePage
+      listing={{ appPath: '/supported-devices/', articles: articles }}
       title="Supported Devices"
       lede="livediagram runs in the browser on any device. Pick yours to see what works and what to expect."
     >

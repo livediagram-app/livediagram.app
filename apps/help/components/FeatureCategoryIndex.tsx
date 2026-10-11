@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { FeatureArticleCard } from '@/components/FeatureArticleCard';
-import { categories, getCategoryGroups } from '@/lib/articles';
+import { articleHref, categories, categoryHref, getCategoryGroups } from '@/lib/articles';
+import { collectionJsonLd } from '@/lib/structured-data';
+import { JsonLd } from '@livediagram/ui';
 import { helpMetadata } from '@/lib/seo';
 
 // Shared index page for a feature-guide category (User Interface, Explorer,
@@ -26,6 +28,16 @@ export function FeatureCategoryIndex({ slug }: { slug: string }) {
   const groups = getCategoryGroups(slug);
   return (
     <div>
+      <JsonLd
+        data={collectionJsonLd({
+          title: cat.title,
+          description: cat.description,
+          appPath: categoryHref(slug),
+          items: groups.flatMap(({ articles }) =>
+            articles.map((a) => ({ name: a.title, appPath: articleHref(a) })),
+          ),
+        })}
+      />
       <Breadcrumb items={[{ label: cat.title }]} />
       <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">
         <h1 className="mb-2 text-3xl font-bold text-slate-900 md:text-4xl dark:text-slate-100">
