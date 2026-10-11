@@ -142,7 +142,7 @@ export function EditorWindow({
         </div>
 
         {/* Canvas surface. */}
-        <div className={`@container relative ${canvasClassName} ${CANVAS}`}>
+        <div className={`hero-glyph-ink @container relative ${canvasClassName} ${CANVAS}`}>
           {/* The Toolbar panel layout (docs/specs/007-editor/toolbar-layout.md): the Palette is a
               strip at the top centre and a menu button stands where the Explorer would float. */}
           <ToolbarMenuButton mode={mode} tab={tabs.find((t) => t.active)?.name ?? tabs[0]!.name} />
