@@ -280,28 +280,12 @@ export function describeVariant(
         },
       };
     }
-    case 'link-card': {
-      // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded.
-      // The favicon / title / image render as the child content
-      // (LinkCardView); overflow-hidden clips the image to the rounded box.
-      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
-      return {
-        className: `overflow-hidden shadow-sm ${ring}`,
-        style: {
-          ...boxShadow,
-          borderRadius: '10px',
-          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
-          borderColor:
-            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : 1,
-          borderStyle: 'solid',
-        },
-      };
-    }
+    // A bookmark card (docs/specs/009-elements/link-cards.md): fill background + 1px border, rounded; the favicon,
+    // title and image render as the child content (LinkCardView). A video
+    // (docs/specs/009-elements/youtube-video.md): the poster or player fills the box edge to edge, so the same
+    // frame reads as a dark rounded one with a hairline, not a padded card. overflow-hidden clips either to the radius.
+    case 'link-card':
     case 'video': {
-      // A video (docs/specs/009-elements/youtube-video.md): the poster / player fills the box edge to edge, so
-      // this is a dark rounded frame with a hairline, not a padded card.
-      // overflow-hidden clips the poster and the iframe to the radius.
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       return {
         className: `overflow-hidden shadow-sm ${ring}`,

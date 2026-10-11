@@ -18,6 +18,7 @@ import {
   type TextRun,
 } from '@livediagram/document';
 import {
+  matrixAxes,
   CONTENT,
   MUTED,
   SCAFFOLD,
@@ -212,52 +213,13 @@ export function buildStakeholderMap(cx: number, cy: number): Element[] {
     ...CONTENT,
   });
 
-  // Axes: power up the left, interest along the bottom, each arrowed toward
-  // "more", with Low / High at the ends and the axis name in the middle.
-  const axis = (x1: number, y1: number, x2: number, y2: number): Element => ({
-    ...createArrow(x1, y1, x2, y2),
-    strokeColor: '#64748b',
-    strokeWidth: 3,
-    ...SCAFFOLD,
-  });
-  const axisX = plotX - 20;
-  const axisY = plotY + plotH + 20;
-  elements.push(axis(axisX, plotY + plotH, axisX, plotY), axis(plotX, axisY, plotX + plotW, axisY));
-  const axisText = (
-    x: number,
-    y: number,
-    w: number,
-    label: string,
-    bold: boolean,
-    alignX: 'left' | 'center' | 'right',
-    rotation?: number,
-  ): Element => ({
-    ...createText(x, y),
-    width: w,
-    height: 28,
-    label,
-    textSize: 'sm',
-    textBold: bold,
-    textColor: MUTED,
-    textAlignX: alignX,
-    ...(rotation ? { rotation } : {}),
-    ...SCAFFOLD,
-  });
-  // Rotated labels: an unrotated w x 28 box centred on the gutter, turned -90.
-  const vertical = (
-    centreY: number,
-    w: number,
-    label: string,
-    bold: boolean,
-    align: 'left' | 'center' | 'right',
-  ) => axisText(axisX - 22 - w / 2, centreY - 14, w, label, bold, align, -90);
+  // Axes: power up the left, interest along the bottom.
   elements.push(
-    vertical(plotY + plotH / 2, 200, 'Power', true, 'center'),
-    vertical(plotY + 40, 80, 'High', false, 'right'),
-    vertical(plotY + plotH - 40, 80, 'Low', false, 'left'),
-    axisText(plotX + plotW / 2 - 100, axisY + 6, 200, 'Interest', true, 'center'),
-    axisText(plotX, axisY + 6, 80, 'Low', false, 'left'),
-    axisText(plotX + plotW - 80, axisY + 6, 80, 'High', false, 'right'),
+    ...matrixAxes({ x: plotX, y: plotY, w: plotW, h: plotH }, 'Power', 'Interest', {
+      stroke: MUTED,
+      bold: MUTED,
+      muted: MUTED,
+    }),
   );
 
   // The engagement plan: one row per key stakeholder, the name tinted by

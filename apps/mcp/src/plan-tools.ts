@@ -21,11 +21,14 @@ import {
 import { clientFor } from './api';
 import type { Env } from './env';
 import { registerTool } from './tool-annotations';
-import { deepLink, errorResult, requireToken, textResult, type Extra } from './tool-helpers';
-
-// A refusal after some changes went through says which did.
-const stopped = (message: string, applied: readonly string[]) =>
-  errorResult(applied.length ? `${message} Applied before it: ${applied.join('; ')}.` : message);
+import {
+  deepLink,
+  errorResult,
+  requireToken,
+  stopped,
+  textResult,
+  type Extra,
+} from './tool-helpers';
 
 export function registerPlanTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListItems, async (args, extra) => {

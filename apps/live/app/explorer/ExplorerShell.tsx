@@ -27,7 +27,7 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
 import { useExplorerState } from './useExplorerState';
-import { isLocalOnly } from '@/lib/document-space';
+import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
 // Lazy-load SearchPanel — same rationale as the editor route: it's
 // gated on `searchOpen`, never default-rendered, and dropping ~375
@@ -305,17 +305,8 @@ function ShellChrome({ children }: { children: ReactNode }) {
       />
       {searchOpen ? (
         <SearchPanel
-          documents={liveDocs.map((d) => ({ id: d.id, name: d.name, localOnly: isLocalOnly(d) }))}
-          folders={folders.map((f) => ({ id: f.id, name: f.name }))}
-          shared={shared.map((s) => ({ id: s.id, name: s.name, shareCode: s.shareCode }))}
-          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+          {...searchPanelSources({ documents: liveDocs, folders, shared, teams, teamDocuments })}
           teamFolders={teamFolders}
-          teamDocuments={teamDocuments.map((d) => ({
-            id: d.id,
-            name: d.name,
-            teamId: d.team.id,
-            teamName: d.team.name,
-          }))}
           onSelectDocument={(id) => {
             window.location.assign(`/document/${id}`);
           }}

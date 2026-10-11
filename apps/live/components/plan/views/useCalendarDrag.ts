@@ -16,6 +16,7 @@ import {
 } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { swallowNextClick } from './gantt-drag';
+import { followWindowDrag } from '@/lib/window-drag';
 
 // How far the pointer travels before a press counts as a drag (and no longer opens the card), as on a Gantt bar.
 export const CALENDAR_DRAG_SLOP_PX = 3;
@@ -127,11 +128,7 @@ export function useCalendarDrag({
         last = { itemId, fromDay, overDay, width: entry.offsetWidth };
         setDrag(last);
       };
-      const end = (commit: boolean) => {
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('pointerup', onUp);
-        window.removeEventListener('pointercancel', onCancel);
-        window.removeEventListener('keydown', onKey, true);
+      stop.current = followWindowDrag(onPointerMove, (commit) => {
         stop.current = null;
         setDrag(null);
         if (!moved) return;
@@ -139,19 +136,7 @@ export function useCalendarDrag({
         swallowNextClick();
         if (commit && last?.overDay !== undefined && last.overDay !== fromDay)
           moveRef.current(itemId, last.overDay);
-      };
-      const onUp = () => end(true);
-      const onCancel = () => end(false);
-      const onKey = (ev: KeyboardEvent) => {
-        if (ev.key !== 'Escape') return;
-        ev.stopPropagation();
-        end(false);
-      };
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onUp);
-      window.addEventListener('pointercancel', onCancel);
-      window.addEventListener('keydown', onKey, true);
-      stop.current = () => end(false);
+      });
     },
     [enabled, gridRef, firstDay, weeks, moveRef],
   );

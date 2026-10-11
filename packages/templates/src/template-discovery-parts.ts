@@ -4,7 +4,13 @@
 //
 // Pure: every helper returns fresh elements.
 
-import { createShape, createText, type Element, type ShapeElement } from '@livediagram/document';
+import {
+  createArrow,
+  createShape,
+  createText,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 export const SCAFFOLD = { layerId: TEMPLATE_SCAFFOLD_LAYER_ID } as const;
@@ -74,4 +80,61 @@ export function chip(
     themeLockFill: true,
     ...CONTENT,
   };
+}
+
+// A 2x2 matrix's axes (the prioritisation and stakeholder grids): the vertical one up the left gutter, the
+// horizontal one along the bottom, each arrowed toward "more", with Low / High at the ends and the axis name in the
+// middle (the vertical's labels turned -90 on the gutter). Scaffold, so a template's content sits above them.
+export function matrixAxes(
+  plot: { x: number; y: number; w: number; h: number },
+  vertical: string,
+  horizontal: string,
+  colours: { stroke: string; bold: string; muted: string },
+): Element[] {
+  const axis = (x1: number, y1: number, x2: number, y2: number): Element => ({
+    ...createArrow(x1, y1, x2, y2),
+    strokeColor: colours.stroke,
+    strokeWidth: 3,
+    ...SCAFFOLD,
+  });
+  const axisX = plot.x - 20;
+  const axisY = plot.y + plot.h + 20;
+  const axisText = (
+    x: number,
+    y: number,
+    w: number,
+    label: string,
+    bold: boolean,
+    alignX: 'left' | 'center' | 'right',
+    rotation?: number,
+  ): Element => ({
+    ...createText(x, y),
+    width: w,
+    height: 28,
+    label,
+    textSize: 'sm',
+    textBold: bold,
+    textColor: bold ? colours.bold : colours.muted,
+    textAlignX: alignX,
+    ...(rotation ? { rotation } : {}),
+    ...SCAFFOLD,
+  });
+  // Rotated labels: an unrotated w x 28 box centred on the gutter, turned -90.
+  const turned = (
+    centreY: number,
+    w: number,
+    label: string,
+    bold: boolean,
+    align: 'left' | 'center' | 'right',
+  ) => axisText(axisX - 22 - w / 2, centreY - 14, w, label, bold, align, -90);
+  return [
+    axis(axisX, plot.y + plot.h, axisX, plot.y),
+    axis(plot.x, axisY, plot.x + plot.w, axisY),
+    turned(plot.y + plot.h / 2, 200, vertical, true, 'center'),
+    turned(plot.y + 40, 80, 'High', false, 'right'),
+    turned(plot.y + plot.h - 40, 80, 'Low', false, 'left'),
+    axisText(plot.x + plot.w / 2 - 100, axisY + 6, 200, horizontal, true, 'center'),
+    axisText(plot.x, axisY + 6, 80, 'Low', false, 'left'),
+    axisText(plot.x + plot.w - 80, axisY + 6, 80, 'High', false, 'right'),
+  ];
 }
