@@ -56,7 +56,8 @@ A post shows every tab of the document. A document that is empty (its first tab 
   document lists carry only whether the post is listed, never a hidden post's state, so a team member learns nothing
   the public gallery does not already say.
 - **Something to show**: the document's first tab must have at least one element (counted, so a deploy without image
-  storage can still publish).
+  storage can still publish). It is the first tab because that tab is the post's card picture; a document with content
+  only on later tabs is refused too, and the refusal names the first tab so the owner knows where to add something.
 - **Where**: the Share dialog carries a **Community** tab beside Passes: a short illustrated guide to what publishing means (three steps and four facts: always up to date, anonymous by default, private stays private, yours to take back), then the Community section. Unpublished, it invites the owner
   to share the document with the Community; published, it shows the post (title, category, likes, copies), a link to it,
   **Edit Listing** and **Remove From Community**.

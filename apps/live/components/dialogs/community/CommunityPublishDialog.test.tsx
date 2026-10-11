@@ -89,7 +89,7 @@ describe('CommunityPublishDialog validation', () => {
     submit();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
-      'Add something to your document before sharing it.',
+      'Add something to your first tab before sharing: it is the picture on your Community card.',
     );
   });
 });

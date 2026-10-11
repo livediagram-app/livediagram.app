@@ -19,7 +19,8 @@ const MESSAGES: Record<string, string> = {
   team_document: "Team library documents can't be shared to the Community.",
   share_password_set:
     'This document has a share password. Remove the password to share it to the Community.',
-  empty_document: 'Add something to your document before sharing it.',
+  empty_document:
+    'Add something to your first tab before sharing: it is the picture on your Community card.',
   post_limit: `You have ${COMMUNITY_POSTS_PER_AUTHOR} documents in the Community already, counting any hidden after reports. Remove a listed one to share another.`,
   already_published: 'This document is already in the Community. Reopen Share to see it.',
   post_hidden: 'This post was hidden after reports, so it can no longer be changed or removed.',

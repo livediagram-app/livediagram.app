@@ -340,7 +340,7 @@ Community app (`apps/community`):
 | --------------------------------------- | ------------------------------------------------------------------------------------ |
 | Publish on a document with a password   | 409 `share_password_set`; the section disables Share to Community and says why       |
 | Password set on a published document    | 409 `community_published`; Share dialog explains                                     |
-| Empty document                          | 409 `empty_document`; "Add something to your document before sharing it."            |
+| Empty document                          | 409 `empty_document`; "Add something to your first tab before sharing: it is the picture on your Community card."            |
 | 51st post                               | 409 `post_limit`                                                                     |
 | Two first publishes at once             | 409 `already_published` (the one-post-per-document `UNIQUE`)                         |
 | A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                  |
