@@ -580,6 +580,49 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   keeps its names (they are its own).
 - Telemetry: `Sheet · Changed · Name`.
 
+## Cell comments
+
+A cell can carry a **comment thread**: the same thread every element carries ([Comments](../008-canvas/canvas-and-palette.md#comments)),
+with its replies, @-mentions, resolve and reopen, read and written the same way, about one cell rather than the
+whole Sheet.
+
+- **Where it lives**: on the Sheet element, `cellComments`, a thread per cell keyed by the cell's row and column ids
+  (`rowId:colId`, as the sheet store names a cell). The thread follows its cell through inserted, moved and sorted
+  rows and columns, since its ids do. Up to 1,000 threads a Sheet (`CELL_THREADS_MAX`), each up to 500 comments as
+  an element's. The Sheet element's own `commentThread` stays, about the Sheet as a whole.
+- **Opening one**: the cell menu's **Comment** row, **Insert Comment** on a cell without one, **Show Comments** on a
+  cell with one, and **Ctrl + Alt + M** (⌘ ⌥ M) with the grid focused, open the thread popover
+  (`CommentThreadPopover`, the one the canvas opens) anchored beside the active cell. A merged cell's thread is its
+  top-left cell's.
+- **The marker**: a cell with an open (unresolved) thread shows a small triangle in its top-right corner, in the
+  comment colour (amber, `#f59e0b`). Hovering the cell for a moment shows a preview card: the first comment's author
+  and text and "N more" when there are more. A press on the marker opens the thread. A resolved thread shows no
+  marker, as a resolved element thread shows no indicator.
+- **The cell goes**: a thread whose row or column was deleted is kept, hidden in the grid, and listed in the Comments
+  panel as "(Deleted Cell)"; undoing the deletion brings the row back with the same id, and the marker with it.
+  Clearing a cell's input or formats leaves its thread.
+- **Who may**: as on an element ([Share roles](../013-workspace/share-roles.md)). An Editor and a Participant open,
+  add to, resolve and reopen a cell's thread, and delete their own comments (an Editor anyone's); a Viewer reads the
+  marker, the preview and the thread with no composer. The cell menu offers a Viewer **Show Comments** only where
+  a thread exists.
+- **Live**: each change travels as the element's comment delta naming the cell (`cell`), so two people commenting on
+  different cells, or the same cell, at once never lose one; it rides the room ledger and the comment endpoints as an
+  element's thread does, and survives undo the same way (`cellComments` is a live field).
+- **Comments panel**: the Collaborate panel lists each cell thread as its own row, named by the Sheet's label and the
+  cell (`Budget!B4`) once the Sheet is drawn ("Budget (Deleted Cell)" when its row or column is gone, "Budget" alone
+  before it is drawn), opening the popover on that cell, the cell selected and scrolled into view first. The document's thread listing (`GET /api/documents/:id/comments`) gives each cell thread its
+  `cell` and, where the sheet is stored, its A1 (`cellRef`).
+- **Copies**: a Sheet copied and pasted, or duplicated, never carries its cell threads: the copy frames a new sheet,
+  and a thread is a conversation about the original's cells (`freshCopyFields`, as a pasted element leaves its own
+  thread behind).
+- **Agents**: the comment commands take a cell (`--cell B4`, A1 on the Sheet the ref names), so an agent adds to,
+  replies to, resolves and reopens a cell's thread as it does an element's; `comment ls` and the views name each cell
+  thread (`cell B4`).
+- Telemetry: the comment events (`Comment · Opened`, `Added`, `Deleted`, `Resolved`, `Unresolved`), as on an element.
+- **Cost**: the markers (each open thread's cell and position) are worked out once per change to `cellComments` or
+  the layout and kept; a scroll frame or a hover reads the kept list, one step per open thread (at most 1,000), and
+  draws only those in view. A Sheet without cell threads draws nothing for them.
+
 ## Card tables
 
 - A sheet set up from Plan Cards holds a **card table** (`layout.cardTables`): its header row, each column's card

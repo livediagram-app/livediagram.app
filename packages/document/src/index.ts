@@ -503,6 +503,7 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';
 // The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the

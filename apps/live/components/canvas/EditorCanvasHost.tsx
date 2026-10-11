@@ -13,6 +13,7 @@ import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
 import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
+import { focusSheetCell } from '@/hooks/sheets/sheet-cell-refs';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
@@ -877,8 +878,14 @@ export function EditorCanvasHost() {
         commentsPanelPosition={commentsPanelPosition}
         onMoveCommentsPanel={(x, y) => setCommentsPanelPosition({ x, y })}
         onResetCommentsPanel={() => setCommentsPanelPosition(null)}
-        onOpenCommentsForElement={(id) => {
+        onOpenCommentsForElement={(id, cell) => {
           setSelectedId(id);
+          // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell selected, so the
+          // popover sits beside it.
+          if (cell !== undefined) {
+            focusSheetCell(id, cell);
+            return openComments(id, cell);
+          }
           // A Comment panel IS the thread (docs/specs/012-collaboration/assigned-actions.md §5): go to it
           // rather than open a popover repeating it beside the card.
           if (!jumpToCard(id, 'comment-pin')) openComments(id);

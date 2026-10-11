@@ -31,3 +31,5 @@ One row per default applied where a spec is silent or qualitative.
 | D25 | sheet-rules   | What a Dropdown from a Range reads                                       | The range's distinct shown values, empty aside, the first 500                          |
 | D26 | sheet-rules   | How a colour scale blends                                                | Linear in sRGB                                                                         |
 | D27 | sheet-rules   | Custom format codes in other locales                                     | Drawn as `TEXT` writes them (en), the same for everyone                                |
+| D28 | sheet-element | How many cell threads a Sheet holds                                      | 1,000 (`CELL_THREADS_MAX`), each up to 500 comments as an element's                    |
+| D29 | sheet-element | A cell comment marker's size and its preview                             | An 8 px triangle; the preview after 400 ms, the first 140 characters                   |

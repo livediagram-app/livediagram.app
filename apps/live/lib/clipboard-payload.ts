@@ -69,11 +69,14 @@ export type ClipboardEnvelope = {
 export function stripIdentity(el: Element): Element {
   const out = { ...el } as Element & {
     commentThread?: unknown;
+    cellComments?: unknown;
     responses?: unknown;
     action?: unknown;
     actions?: unknown;
   };
   delete out.commentThread;
+  // A Sheet's cell threads go the same way (docs/specs/029-sheets/sheet.md "Cell comments").
+  delete out.cellComments;
   delete out.responses;
   delete out.action;
   delete out.actions;

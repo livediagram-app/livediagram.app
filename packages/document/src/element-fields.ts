@@ -142,6 +142,7 @@ export const ELEMENT_FIELD_NAMES = {
     'planCard',
     'planView',
     'planSheet',
+    'cellComments',
     'marker',
     'markerSize',
     'aspectLocked',

@@ -1878,6 +1878,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CellCommentThreads": {
+    "additionalProperties": {
+      "$ref": "#/components/schemas/CommentThread"
+    },
+    "type": "object"
+  },
   "CellFormat": {
     "additionalProperties": false,
     "properties": {
@@ -2511,6 +2517,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "cell": {
+              "type": "string"
+            },
             "comments": {
               "items": {
                 "additionalProperties": false,
@@ -4946,6 +4955,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "DocumentCommentThread": {
     "additionalProperties": false,
     "properties": {
+      "cell": {
+        "type": "string"
+      },
+      "cellRef": {
+        "type": "string"
+      },
       "comments": {
         "items": {
           "additionalProperties": false,
@@ -11172,6 +11187,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "borderRadius": {
         "$ref": "#/components/schemas/BorderRadius"
+      },
+      "cellComments": {
+        "$ref": "#/components/schemas/CellCommentThreads"
       },
       "chairFacing": {
         "$ref": "#/components/schemas/ChairFacing"

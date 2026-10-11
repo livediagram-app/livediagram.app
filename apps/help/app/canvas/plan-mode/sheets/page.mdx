@@ -88,6 +88,12 @@ Scroll as usual, or drag the cells around: with the middle mouse button, the rig
 
 Give a cell or a range a name, so a formula reads it by name and keeps reading the same cells however far you fill it: select the cells, type a name such as `TaxRate` in the name box (left of **fx**), and press Enter. Then `=B2*TaxRate` works in any row. Typing a name there later selects its cells. Names start with a letter or `_`, can't look like a cell reference (`AB12`), and are listed in **Sheet Settings** › **Named Ranges**, where you can go to one or remove it. A formula can also use a name from another sheet on the same tab, as long as only one sheet has it.
 
+## Comment on a Cell
+
+A cell can carry its own comment thread, about that cell rather than the whole Sheet. Right-click the cell and choose **Insert Comment** (or press Ctrl+Alt+M, ⌘⌥M on a Mac), type your note and press **Comment**. The cell shows a small amber triangle in its top-right corner while the thread is open; rest the pointer on the cell to read the first comment, and press the triangle (or **Show Comments** in the cell menu) to open the whole thread, reply, or **Resolve** it. A comment stays with its cell when rows and columns are inserted, moved or sorted.
+
+Each cell's thread is listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) by the Sheet and the cell, such as `Budget!B4`. Editors and Participants can comment on cells; Viewers can read the threads. A copy of the Sheet starts without them. See [Comments](/help/collaboration/comments/).
+
 ## Rows and Columns
 
 Right-click a column letter or row number to insert, delete, clear or hide, fit it to its contents, set its exact size with **Resize…**, or sort by a column. Drag a header's edge to resize it, or drag selected headers to move them. Right-click a cell (or a selection) for the cell menu. Its top names the selection and how many cells it covers, with **Cut**, **Copy**, **Paste**, **Paste Values**, **Clear Contents** and **Clear Formatting** as buttons along it. Below, each row says exactly what it will do: **Insert 3 Rows Above** (or Below), **Insert 2 Columns Left** (or Right), **Delete Rows 2 to 4**, **Delete Column B**, and **Merge Cells** or **Unmerge Cells**. The rarer actions open to the side: **Sort** (A to Z, Z to A, Custom Sort…), **Shift Cells** (insert or delete cells, moving their neighbours), **Hide**, **Paste Special** and **Insert Chart**. Formulas follow their cells: inserting, deleting, moving or sorting rows never breaks them.
@@ -182,6 +188,7 @@ Everyone on the document sees each change as it is made, and each person's selec
 | Ctrl/⌘ + ;                | Today's date                                    |
 | Ctrl/⌘ + Shift + 1, 4, 5  | Number, Currency, Percent                       |
 | Ctrl/⌘ + F; Ctrl + H, ⌘⇧H | Find; Find and Replace                          |
+| Ctrl/⌘ + Alt + M          | Comment on the cell                             |
 | Escape                    | Leave the grid                                  |
 
 </ArticleLayout>

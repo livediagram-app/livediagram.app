@@ -174,6 +174,8 @@ export type CommentsView = {
     ref: string;
     kind: string;
     label: string | null;
+    // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell key, `rowId:colId`.
+    cell?: string;
     resolved: boolean;
     comments: { authorName: string; createdAt: number; text: string }[];
   }[];

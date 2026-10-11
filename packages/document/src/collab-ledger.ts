@@ -38,6 +38,7 @@ import {
   type ElementDelta,
 } from './element-deltas';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
+import { isCellKey } from './cell-comments';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
@@ -71,9 +72,12 @@ export type ElementLedger = {
   ticks?: Record<string, { done: boolean; seq: number }>;
   // The thread's changes. Comments have no round: a clear doesn't touch them.
   comments?: {
-    adds: Record<string, { comment: Comment; seq: number }>;
+    // `cell` names the Sheet cell whose thread took it (docs/specs/029-sheets/sheet.md "Cell comments").
+    adds: Record<string, { comment: Comment; seq: number; cell?: string }>;
     removes: Record<string, number>;
     resolved?: { value: boolean; seq: number };
+    // Each cell thread's latest resolve, by cell key.
+    cells?: Record<string, { value: boolean; seq: number }>;
   };
   board?: BoardLedger;
 };
@@ -235,14 +239,18 @@ function recordElement(
     case 'comment-resolve': {
       const comments = prev?.comments ?? { adds: {}, removes: {} };
       const events = Object.keys(comments.adds).length + Object.keys(comments.removes).length;
+      // A cell names a Sheet cell's thread; anything else there is malformed.
+      if (d.cell !== undefined && !isCellKey(d.cell)) return null;
+      const cell = d.cell as string | undefined;
       if (d.kind === 'comment-add') {
         if (!isComment(d.comment)) return null;
         const id = d.comment.id;
         if (id in comments.removes || id in comments.adds) return null;
         if (events >= COMMENT_EVENTS_MAX) return null;
+        const add = { comment: d.comment, seq, ...(cell !== undefined ? { cell } : {}) };
         return {
           ...(prev ?? {}),
-          comments: { ...comments, adds: { ...comments.adds, [id]: { comment: d.comment, seq } } },
+          comments: { ...comments, adds: { ...comments.adds, [id]: add } },
         };
       }
       if (d.kind === 'comment-remove') {
@@ -255,6 +263,14 @@ function recordElement(
         };
       }
       if (typeof d.resolved !== 'boolean') return null;
+      if (cell !== undefined) {
+        const cells = comments.cells ?? {};
+        if (!(cell in cells) && Object.keys(cells).length >= COMMENT_EVENTS_MAX) return null;
+        return {
+          ...(prev ?? {}),
+          comments: { ...comments, cells: { ...cells, [cell]: { value: d.resolved, seq } } },
+        };
+      }
       return {
         ...(prev ?? {}),
         comments: { ...comments, resolved: { value: d.resolved, seq } },
@@ -469,8 +485,12 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
   const c = entry.comments;
   if (!c) return el;
   const events: { seq: number; delta: ElementDelta }[] = [];
-  for (const { comment, seq } of Object.values(c.adds)) {
-    if (seq > since) events.push({ seq, delta: { kind: 'comment-add', comment } });
+  for (const { comment, seq, cell } of Object.values(c.adds)) {
+    if (seq > since)
+      events.push({
+        seq,
+        delta: { kind: 'comment-add', comment, ...(cell !== undefined ? { cell } : {}) },
+      });
   }
   for (const [commentId, seq] of Object.entries(c.removes)) {
     if (seq > since) events.push({ seq, delta: { kind: 'comment-remove', commentId } });
@@ -480,6 +500,10 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
       seq: c.resolved.seq,
       delta: { kind: 'comment-resolve', resolved: c.resolved.value },
     });
+  }
+  for (const [cell, r] of Object.entries(c.cells ?? {})) {
+    if (r.seq > since)
+      events.push({ seq: r.seq, delta: { kind: 'comment-resolve', resolved: r.value, cell } });
   }
   events.sort((a, b) => a.seq - b.seq);
   return events.reduce<E>((acc, e) => applyElementDelta(acc, e.delta) as E, el);

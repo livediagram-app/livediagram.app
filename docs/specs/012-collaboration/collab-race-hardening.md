@@ -88,7 +88,11 @@ applied by the sender and every receiver through the same pure
   row is named by index AND text; a peer who moved or retitled rows gets the
   row with that text, or nothing. A tick is no longer undoable.
 - `comment-add` / `comment-remove` / `comment-rekey` / `comment-resolve`:
-  one change to a thread, by comment id, so a replay is a no-op.
+  one change to a thread, by comment id, so a replay is a no-op. An add and a
+  resolve may name a Sheet cell (`cell`), for that cell's thread
+  ([Cell comments](../029-sheets/sheet.md#cell-comments)); a remove and a rekey
+  find their comment in whichever thread holds it. The ledger keeps an add's
+  cell and each cell's latest resolve.
 
 Every delta is idempotent or order-free, so concurrent presses commute, and
 a malformed frame is dropped rather than applied.

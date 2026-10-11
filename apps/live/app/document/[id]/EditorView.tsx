@@ -22,7 +22,7 @@ import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
-import { SheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
+import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
@@ -450,7 +450,15 @@ export function EditorView() {
           {/* Plan boards and cards, and the dialogs that draw them (exports), read the items and
               their actions here (docs/specs/026-plan/plan-board.md). */}
           <PlanProvider value={ctx.plan.context}>
-            <SheetsBridgeContext.Provider value={ctx.sheetsBridge}>
+            {/* The sheets bridge, and cell comments (docs/specs/029-sheets/sheet.md "Cell comments"): every Sheet
+                opens its cells' threads through the editor's one comment popover. */}
+            <SheetsProviders
+              bridge={ctx.sheetsBridge}
+              openComments={ctx.openComments}
+              openId={ctx.commentThreadOpenId}
+              openCell={ctx.commentThreadOpenCell}
+              canComment={ctx.can.takePart}
+            >
               <CanvasFocusProvider value={ctx.focusBounds}>
                 <MinimalChromeProvider
                   value={minimalChrome}
@@ -802,7 +810,7 @@ export function EditorView() {
                   </UiScaleProvider>
                 </MinimalChromeProvider>
               </CanvasFocusProvider>
-            </SheetsBridgeContext.Provider>
+            </SheetsProviders>
           </PlanProvider>
         </CanvasSurfaceProvider>
       </ViewportStoreProvider>

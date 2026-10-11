@@ -10,7 +10,8 @@ import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
-import { COLLAB_ROUND_MAX } from './element-deltas';
+import { COLLAB_ROUND_MAX, COMMENTS_MAX, isComment } from './element-deltas';
+import { CELL_THREADS_MAX, isCellKey } from './cell-comments';
 import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
 import {
   AGENDA_MAX_ITEMS,
@@ -109,6 +110,23 @@ const isQaNote = (n: unknown) =>
   (n.state === undefined || n.state === 'discussing' || n.state === 'done') &&
   (n.doneAt === undefined || isNum(n.doneAt)) &&
   (n.author === undefined || isQaAuthor(n.author));
+
+// A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): at most CELL_THREADS_MAX, each keyed
+// by a cell key and holding a thread as an element's.
+const isCellCommentThreads = (v: unknown): boolean => {
+  if (!isObj(v) || Array.isArray(v)) return false;
+  const entries = Object.entries(v);
+  return (
+    entries.length <= CELL_THREADS_MAX &&
+    entries.every(
+      ([key, t]) =>
+        isCellKey(key) &&
+        isObj(t) &&
+        isBool(t.resolved) &&
+        rowsOf(COMMENTS_MAX, isComment)(t.comments),
+    )
+  );
+};
 
 // Agenda (docs/specs/012-collaboration/agenda.md): minutes are clamped where read
 // (clampAgendaMinutes), not rejected here.
@@ -299,6 +317,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'planSheet',
     valid: (v: unknown) => isPlanSheetRef(v),
     rule: 'an object { sheetId } naming a sheet of the document',
+  },
+  {
+    field: 'cellComments',
+    valid: isCellCommentThreads,
+    rule: `an object of at most ${CELL_THREADS_MAX} comment threads keyed by cell (rowId:colId)`,
   },
   {
     field: 'legendItems',

@@ -14,6 +14,7 @@ import {
   stringField,
   textField,
   threadOf,
+  cellThreadsOf,
 } from './fields';
 import { headerLine, viewHeader } from './header';
 import { layoutEndText } from './layout';
@@ -39,7 +40,7 @@ const SHOWN_ELSEWHERE = new Set([
   'from',
   'to',
 ]);
-const BLOCK_FIELDS = new Set(['cells', 'entityFields', 'commentThread']);
+const BLOCK_FIELDS = new Set(['cells', 'entityFields', 'commentThread', 'cellComments']);
 // Plain-text mirrors' runs and packed geometry: noise beside the fields they mirror.
 const MIRROR_FIELDS = ['richText', 'noteRich', 'packedPoints'];
 
@@ -48,6 +49,10 @@ export const PERSON_ID_FIELDS = [
   'commentThread.comments[].authorId',
   'commentThread.comments[].mentions[].userId',
   'commentThread.comments[].mentions[].memberId',
+  // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): `{}` is each value of a record.
+  'cellComments{}.comments[].authorId',
+  'cellComments{}.comments[].mentions[].userId',
+  'cellComments{}.comments[].mentions[].memberId',
   'action.assignerId',
   'action.assignee.userId',
   'action.assignee.memberId',
@@ -63,15 +68,18 @@ export const PERSON_ID_FIELDS = [
   'addedBy',
 ] as const;
 
-type Segment = { key: string; each: boolean };
+// `each`: every item of a list (`[]`); `values`: every value of a record (`{}`).
+type Segment = { key: string; each: boolean; values?: boolean };
 type Path = readonly [Segment, ...Segment[]];
 type Stripped<T> = { value: T; removed: boolean };
 
 // `qaNotes[].voters` → [{ qaNotes, each }, { voters }].
 function pathOf(field: string): Path {
-  const [first, ...rest] = field
-    .split('.')
-    .map((part) => ({ key: part.replace(/\[\]$/, ''), each: part.endsWith('[]') }));
+  const [first, ...rest] = field.split('.').map((part) => ({
+    key: part.replace(/(\[\]|\{\})$/, ''),
+    each: part.endsWith('[]'),
+    values: part.endsWith('{}'),
+  }));
   return [first!, ...rest];
 }
 
@@ -96,6 +104,12 @@ function stripRecord(
     return { value: copy, removed: true };
   }
   const child = copy[segment.key];
+  if (segment.values) {
+    if (!isObject(child) || Array.isArray(child)) return { value: copy, removed: false };
+    const entries = Object.entries(child).map(([k, v]) => [k, stripValue(v, rest)] as const);
+    copy[segment.key] = Object.fromEntries(entries.map(([k, v]) => [k, v.value]));
+    return { value: copy, removed: entries.some(([, v]) => v.removed) };
+  }
   if (segment.each) {
     if (!Array.isArray(child)) return { value: copy, removed: false };
     const items = child.map((item: unknown) => stripValue(item, rest));
@@ -210,6 +224,15 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
       noun: LINE,
     });
     for (const c of thread.comments) {
+      lines.push({ text: `    ${commentText(readComment(c))}`, noun: LINE });
+    }
+  }
+  for (const cell of cellThreadsOf(el)) {
+    lines.push({
+      text: `  cell ${cell.cell} comments: ${cell.resolved ? 'resolved' : 'open'} · ${cell.comments.length}`,
+      noun: LINE,
+    });
+    for (const c of cell.comments) {
       lines.push({ text: `    ${commentText(readComment(c))}`, noun: LINE });
     }
   }

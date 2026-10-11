@@ -10,6 +10,7 @@ import { SheetCardRows } from './SheetCardRows';
 import { SheetRuleLayer } from './rules/SheetRuleLayer';
 import { invalidWhy } from './rules/sheet-rule-hover';
 import { previewFormatRules } from './rules/useSheetRulesState';
+import { SheetCellComments } from './SheetCellComments';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   cycleInRange,
@@ -453,6 +454,7 @@ export function SheetGrid({
               <SheetCardRows />
               {/* Dropdowns, checkboxes and the rule panels (data-validation.md, conditional-formatting.md). */}
               <SheetRuleLayer actions={actions} />
+              <SheetCellComments hover={pointer.hover} />
               {/* The charts that sit in this Sheet, over its cells (sheet.md "Charts"). */}
               <SheetChartsLayer fontFamily={fontFamily} />
               {pointer.preview?.kind === 'fill' ? (

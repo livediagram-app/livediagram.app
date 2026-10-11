@@ -66,7 +66,8 @@ export async function getTab(env: Env, documentId: string, tabId: string): Promi
 export async function tabIdsWithComments(env: Env, documentId: string): Promise<string[]> {
   const { results } = await env.DB.prepare(
     `SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ? AND instr(t.data, '"commentThread"') > 0
+      WHERE dt.document_id = ?
+        AND (instr(t.data, '"commentThread"') > 0 OR instr(t.data, '"cellComments"') > 0)
       ORDER BY dt.order_index, dt.tab_id`,
   )
     .bind(documentId)
