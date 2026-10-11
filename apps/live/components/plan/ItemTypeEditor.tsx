@@ -29,7 +29,11 @@ import { Dialog } from '@/components/dialogs/Dialog';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
-import { CardTypeShowMeButton, CardTypeTourStage, useCardTypeTour } from '@/components/tour/CardTypeTour';
+import {
+  CardTypeShowMeButton,
+  CardTypeTourStage,
+  useCardTypeTour,
+} from '@/components/tour/CardTypeTour';
 import { SheetRow } from './PlanModal';
 import { ItemTypeConfiguration } from './ItemTypeConfiguration';
 import { ItemTypeEditorTabs, type TypeEditorTab } from './ItemTypeEditorTabs';
