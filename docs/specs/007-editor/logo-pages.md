@@ -10,19 +10,19 @@ of infographic pages applies to a logo page except where this spec says otherwis
 
 ## Domain language
 
-| Term                    | Means                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **logo page**           | A page of kind `logo` (`IllustratePage.kind`).                                                                                 |
-| **artboard**            | The logo page's sheet: always the `logo` size, 1024 x 1024 px.                                                                 |
-| **safe area**           | The square inside the artboard, inset 10% from each edge, that the mark should stay within. It is the logo page's margin.      |
-| **construction guides** | The lines and keyline shapes drawn over a logo page to build on (below). A view, never elements.                               |
-| **keyline**             | One of the construction guides' reference shapes: the keyline circle, the inner circle and the keyline square.                 |
-| **mirror**              | Drawing with a reflected twin across the artboard's vertical centre line. Per person, for the session.                         |
-| **twin**                | A copy mirror makes of a drawing under its page's axis (or **Mirror Copy** reflects).                                          |
-| **wordmark type**       | A text element's tracking (`letterSpacing`), weight (`fontWeight`), case (`textCase`) and arc (`textArc`).                     |
-| **combine**             | Turning two or more selected shapes into one path by a boolean operation: **Unite**, **Subtract**, **Intersect**, **Exclude**. |
-| **contour**             | One closed outline of a path. A combined path may have several (`PathElement.subpaths`): islands and holes.                    |
-| **logo kit**            | The export of a logo page as one .zip: an SVG, PNGs at the standard icon sizes and a `favicon.ico`.                            |
+| Term                    | Means                                                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **logo page**           | A page of kind `logo` (`IllustratePage.kind`).                                                                                                             |
+| **artboard**            | The logo page's sheet: always the `logo` size, 1024 x 1024 px.                                                                                             |
+| **safe area**           | The square inside the artboard, inset 10% from each edge, that the mark should stay within. It is the logo page's margin.                                  |
+| **construction guides** | The lines and keyline shapes drawn over a logo page to build on (below). A view, never elements.                                                           |
+| **keyline**             | One of the construction guides' reference shapes: the keyline circle, the inner circle and the keyline square.                                             |
+| **mirror**              | Drawing with twins made under the page's mirror axis (vertical, horizontal, both, or radial about the centre). Per person, per page, for the session.      |
+| **twin**                | A copy mirror makes of a drawing under its page's axis (or **Mirror Copy** reflects).                                                                      |
+| **wordmark type**       | A text element's tracking (`letterSpacing`), weight (`fontWeight`), case (`textCase`) and arc (`textArc`).                                                 |
+| **combine**             | Turning two or more selected shapes into one path by a boolean operation: **Unite**, **Subtract**, **Intersect**, **Exclude**.                             |
+| **contour**             | One outline of a path. A combined path may have several closed ones (`PathElement.subpaths`): islands and holes; a merged mirrored line several open ones. |
+| **logo kit**            | The export of a logo page as one .zip: an SVG, PNGs at the standard icon sizes and a `favicon.ico`.                                                        |
 
 ## A logo page
 
@@ -63,7 +63,7 @@ held marker pressed again opens Draw mode's own flyout for it below its tile (co
 
 The palette follows the page someone moves to: **Logo** on a logo page, **Popular** on any other.
 They move to a page by going to it with its label or the page navigator, or by pressing on a page
-other than the one they were last on; a logo page added turns it to Logo too. On opening, a logo
+other than the one they were last on (a press on chrome floating over a page, such as the palette or a popover, is not a press on the page); a logo page added turns it to Logo too. On opening, a logo
 page in view (the one under the canvas's centre, else the first) turns it to Logo, and any other
 page leaves the category the person last chose. Staying on the same page never turns it again, so
 another category chosen meanwhile is kept, and a press on the bare canvas between pages changes
@@ -106,7 +106,7 @@ cog).
   outside an editor). An empty logo page shows them inside itself (**Start From a Layout**) as an empty
   infographic page does, with **Start From Scratch** at the card's foot, in the look of Plan's **Add New
   Card Type** (a full-width dashed row with a plus, quiet until hovered): it puts the card away for good on that page (the page is marked started blank, for everyone, in the same undoable edit), leaving the artboard to start from nothing. Hide puts it away until the tab is next opened. Either way the page's layouts stay in its panel's Layouts tab.
-- The cog opens the panel on Page; the layout invite on Layouts.
+- The cog opens the panel on Background (a logo page has no Page tab); the layout invite on Layouts.
 
 ### Show Me
 
@@ -256,7 +256,7 @@ Layout card is open. In screen px at any zoom; they take no presses.
   - Text, images, stickies, tables, arrows and every other element are placed singly.
 - A twin left as its own element is ordinary: editing one afterwards leaves the other as it is.
 - **Mirror Copy** (the selection's context menu on a logo page, and the command
-  palette) adds a twin of each selected element whose centre is on a logo page, reflected across
+  palette) adds a twin of each selected stroke, path, shape, text or image whose centre is on a logo page, reflected across
   that page's centre line, by the same rules, as one edit; text and images are copied to the
   reflected position unflipped. Arrows are not copied. The twins become the selection.
 
@@ -323,7 +323,8 @@ clean, as one edit:
 - **What it takes**: a pencil or marker stroke (not a highlighter, not rotated) and an open path of
   corners alone (a mirrored stroke merged into one); locked elements are left as they are.
 - **What it makes**: a path of straight segments, keeping the element's id (so the selection
-  stays), its place in the stacking order, its stroke colour and style; a marker's width in px
+  stays), its place in the stacking order, its stroke colour and style, and what it carries besides
+  its look (its comments, note, link, action and animation); a marker's width in px
   becomes the nearest stroke width. Each line is cut to the corners that shape it (they stray no
   more than 5% of the element's size, 2 px at least, from what was drawn). While the page shows
   its guides, Tidy Up aligns to them within 16 screen px (further than drawing does): a corner near
@@ -340,6 +341,7 @@ clean, as one edit:
 
 - A logo page on **plain paper** exports with a **transparent** background in PNG and SVG (a logo
   is placed over other things); its PDF page stays white. A page background is exported as itself.
+  The Export dialog's PNG and SVG preview shows such a page see-through, over a checkerboard.
 - **Logo Kit**: the Export dialog offers a **Logo Kit** card while the tab has a logo page, and
   only then. Its panel asks which logo page when there are several, shows it over a checkerboard,
   and downloads `<document> - <page name> - Logo Kit.zip` (the page by its name, else "Page n",
@@ -372,7 +374,8 @@ clean, as one edit:
 ## Non-goals
 
 - Text converted to outlines (it needs a font parser; wordmarks stay live text).
-- Editing a combined path's points one by one; a mirror axis other than the vertical centre line;
+- Editing a combined path's points one by one; a mirror axis or centre anywhere but the artboard's
+  centre lines and centre; Mirror Copy across any line but the vertical centre line;
   linked twins that follow each other's edits.
 - Combining on pages other than logo pages, or outside Illustrate mode.
 - A brand palette or colour generator; the tab's theme and the colour pickers do this job.
