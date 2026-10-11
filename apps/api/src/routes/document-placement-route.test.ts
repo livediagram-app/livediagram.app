@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeTestRouteContext } from './test-route-context';
 import type { DocumentDTO } from '../types';
 
@@ -25,7 +25,9 @@ vi.mock('../timeline', () => timeline);
 const db = vi.hoisted(() => ({
   getDocument: vi.fn(),
   getFolder: vi.fn(),
-  getMembership: vi.fn(async () => ({ status: 'joined' })),
+  getMembership: vi.fn(async (..._args: unknown[]): Promise<{ status: string } | null> => ({
+    status: 'joined',
+  })),
   getParticipant: vi.fn(async () => ({ name: 'Bob' })),
   getTeam: vi.fn(async () => ({ id: 'team-1', name: 'Design' })),
   setDocumentFolder: vi.fn(async () => true),
@@ -183,5 +185,51 @@ describe('placement into a folder deleted meanwhile', () => {
     await settle();
     expect(res?.status).toBe(404);
     expect(timeline.recordDocumentMoved).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/013-workspace/team-shared-documents.md: a team document moved to another team never stays owned by
+// someone outside it, so the mover takes ownership when the owner isn't a joined member of the destination.
+describe('PUT /documents/:id/folder — between teams', () => {
+  const joinedIn =
+    (pairs: string[]) =>
+    async (...args: unknown[]) =>
+      pairs.includes(`${String(args[1])}:${String(args[2])}`) ? { status: 'joined' } : null;
+
+  afterEach(() => db.getMembership.mockImplementation(async () => ({ status: 'joined' })));
+
+  it("hands ownership to the mover when the owner isn't in the destination team", async () => {
+    db.getMembership.mockImplementation(joinedIn(['team-1:bob', 'team-2:bob', 'team-1:alice']));
+    db.getDocument.mockResolvedValue(inTeam({ folderId: null }));
+    db.setDocumentFolder.mockClear();
+    const { ctx, settle } = ctxWith({ folderId: null, teamId: 'team-2' });
+    const res = await handleDocumentPlacement(ctx);
+    await settle();
+    expect(res?.ok).toBe(true);
+    expect(db.setDocumentFolder).toHaveBeenCalledWith(
+      expect.anything(),
+      'd1',
+      null,
+      'team-2',
+      'bob',
+    );
+  });
+
+  it('keeps the owner when they are in the destination team too', async () => {
+    db.getMembership.mockImplementation(
+      joinedIn(['team-1:bob', 'team-2:bob', 'team-1:alice', 'team-2:alice']),
+    );
+    db.getDocument.mockResolvedValue(inTeam({ folderId: null }));
+    db.setDocumentFolder.mockClear();
+    const { ctx, settle } = ctxWith({ folderId: null, teamId: 'team-2' });
+    await handleDocumentPlacement(ctx);
+    await settle();
+    expect(db.setDocumentFolder).toHaveBeenCalledWith(
+      expect.anything(),
+      'd1',
+      null,
+      'team-2',
+      undefined,
+    );
   });
 });
