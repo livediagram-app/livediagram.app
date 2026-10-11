@@ -68,9 +68,7 @@ const CATEGORY_OF: Record<string, string> = {
   Sort: 'Data',
   Filter: 'Data',
   Freeze: 'Cells',
-  'Bar Chart': 'Data',
-  'Line Chart': 'Data',
-  'Pie Chart': 'Data',
+  'Insert Chart': 'Data',
   'Maths Functions': 'Functions',
   'Statistics Functions': 'Functions',
   'All Functions': 'Functions',
@@ -103,18 +101,25 @@ describe('the sheet toolbar', () => {
   it('makes a chart from the selection, or the data around the cell, and says so when there is none', () => {
     show(h);
     act(() => h.select('A1:A2'));
-    fireEvent.click(btn('Bar Chart'));
+    open('Insert Chart');
+    // The seven chart types, each its glyph and name (docs/specs/009-elements/pie-chart.md "Chart types").
+    for (const name of ['Column', 'Bar', 'Line', 'Area', 'Scatter', 'Pie', 'Doughnut'])
+      expect(row(`${name} Chart`)).toBeTruthy();
+    fireEvent.click(row('Column Chart'));
     const [kind, pick] = h.placeChart.mock.calls[0]!;
-    expect(kind).toBe('bar-chart');
+    expect(kind).toBe('column');
     const { rows, cols } = h.store.sheet(SHEET_ID)!.layout;
     expect(pick).toEqual({ range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[0] } });
     act(() => h.select('A1'));
-    fireEvent.click(btn('Pie Chart'));
+    open('Insert Chart');
+    fireEvent.click(row('Doughnut Chart'));
+    expect(h.placeChart.mock.calls[1]![0]).toBe('doughnut');
     expect(h.placeChart.mock.calls[1]![1]).toEqual({
       range: { r1: rows[0], c1: cols[0], r2: rows[1], c2: cols[1] },
     });
     act(() => h.select('F9'));
-    fireEvent.click(btn('Line Chart'));
+    open('Insert Chart');
+    fireEvent.click(row('Scatter Chart'));
     expect(h.toast).toHaveBeenCalledWith('Select the cells to chart first');
     expect(h.placeChart).toHaveBeenCalledTimes(2);
   });
@@ -359,10 +364,10 @@ describe('the sheet toolbar', () => {
     pickCategory('Data');
     pickCategory('Cells');
     expect(btn('Align Left').closest('.lvd-cascade')).toBeTruthy();
-    // Fill, borders, the horizontal and vertical alignments, merge, wrap and freeze, then Clear Formatting; and the
-    // one before Search, at the far right.
+    // Paint Format, fill, borders, the horizontal and vertical alignments, merge, wrap and freeze, then Clear
+    // Formatting; and the one before Search, at the far right.
     const toolbar = btn('Align Left').closest('[role=toolbar]')!;
-    expect(toolbar.querySelectorAll('span[aria-hidden].w-px')).toHaveLength(6);
+    expect(toolbar.querySelectorAll('span[aria-hidden].w-px')).toHaveLength(7);
   });
 
   it('offers every function, a menu per family, each starting its function in the active cell', () => {

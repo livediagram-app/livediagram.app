@@ -178,7 +178,7 @@ describe('placing a chart', () => {
   it('puts it in the Sheet at its anchor, over the Sheet top right on the canvas, linked to the range', () => {
     const b = bridge();
     const sheetEl = { x: 100, y: 50, width: 900, height: 500 } as ShapeElement;
-    placeSheetChart(b, sheetEl, 'sheetAAAA', 'line-chart', { range }, anchor);
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'line', { range }, anchor);
     const [at, make, opts] = vi.mocked(b.placeElement).mock.calls[0]!;
     expect(at).toEqual({ x: 100 + 900 - 24 - 150, y: 50 + 120 + 120 });
     // Selected in its Sheet, not on the canvas.
@@ -189,20 +189,21 @@ describe('placing a chart', () => {
       chartSource: { sheetId: 'sheetAAAA', range },
       sheetAnchor: anchor,
     });
+    expect(made).not.toHaveProperty('chartVariant');
     // The Sheet selects the chart this person placed, once.
     expect(takePlacedChart(made.id)).toBe(true);
     expect(takePlacedChart(made.id)).toBe(false);
     // A Sheet narrower than the chart takes it at its left edge.
-    placeSheetChart(b, { ...sheetEl, width: 100 }, 'sheetAAAA', 'pie-chart', { range }, anchor);
+    placeSheetChart(b, { ...sheetEl, width: 100 }, 'sheetAAAA', 'pie', { range }, anchor);
     expect(vi.mocked(b.placeElement).mock.calls[1]![0].x).toBe(100 + 130);
     // Only some columns picked: the source names them.
-    placeSheetChart(b, sheetEl, 'sheetAAAA', 'bar-chart', { range, cols: [C[0]!, C[2]!] }, anchor);
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'column', { range, cols: [C[0]!, C[2]!] }, anchor);
     expect(vi.mocked(b.placeElement).mock.calls[2]![1](0, 0)).toMatchObject({
       chartSource: { sheetId: 'sheetAAAA', range, cols: [C[0], C[2]] },
     });
     // A template's chart: its own size and palette, never selected, never counted as Insert Chart.
     vi.mocked(track).mockClear();
-    placeSheetChart(b, sheetEl, 'sheetAAAA', 'pie-chart', { range }, anchor, {
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'pie', { range }, anchor, {
       size: { width: 420, height: 240 },
       palette: 'forest',
       template: true,
@@ -211,6 +212,12 @@ describe('placing a chart', () => {
     expect(tpl).toMatchObject({ width: 420, height: 240, chartPalette: 'forest' });
     expect(takePlacedChart(tpl.id)).toBe(false);
     expect(track).not.toHaveBeenCalled();
+    // A variant type is its kind and its variant (docs/specs/009-elements/pie-chart.md "Chart types").
+    placeSheetChart(b, sheetEl, 'sheetAAAA', 'bar', { range }, anchor);
+    expect(vi.mocked(b.placeElement).mock.calls[4]![1](0, 0)).toMatchObject({
+      shape: 'bar-chart',
+      chartVariant: 'horizontal',
+    });
   });
 
   it('anchors it right of the range, level with its top row, inside the cells in view', async () => {
@@ -249,7 +256,8 @@ describe('placing a chart', () => {
     // A range no longer in the sheet: the view's corner.
     const gone = { r1: 'zzzz', c1: 'zzzz', r2: 'zzzz', c2: 'zzzz' };
     expect(newChartAnchor(g, s, { range: gone }, size, none, big)).toEqual({ x: 24, y: 24 });
-    expect(chartSizeOf('bar-chart')).toEqual({ width: 260, height: 220 });
+    expect(chartSizeOf('column')).toEqual({ width: 260, height: 220 });
+    expect(chartSizeOf('scatter')).toEqual(chartSizeOf('line'));
   });
 
   it('moves within the sheet and resizes no smaller than the least chart', () => {

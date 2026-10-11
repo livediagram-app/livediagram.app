@@ -1,9 +1,12 @@
 import type { CommentListStatus, DocumentCommentThread } from '@livediagram/api-schema';
 import {
+  elementThreads,
+  mapElementThreads,
   sanitizeMentions,
+  threadHolding,
+  withThreadAt,
   type Comment,
   type CommentMention,
-  type CommentThread,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -50,8 +53,9 @@ export function rewriteCommentAuthors(
       mentions?: CommentMention[];
     }
   >();
-  for (const el of prevElements) {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
+  // Every thread an element holds: its own and, on a Sheet, its cells' (docs/specs/029-sheets/sheet.md "Cell
+  // comments"), so a cell comment's author locks the same way.
+  for (const { thread } of prevElements.flatMap(elementThreads)) {
     if (!thread?.comments) continue;
     for (const c of thread.comments) {
       existingComments.set(c.id, {
@@ -65,69 +69,70 @@ export function rewriteCommentAuthors(
       });
     }
   }
-  return nextElements.map((el) => {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
-    if (!thread?.comments?.length) return el;
-    const sanitised = thread.comments.map((c) => {
-      const prior = existingComments.get(c.id);
-      if (prior) {
-        // Existing comment: lock author fields (incl. the author id
-        // used for delete-own checks) to whatever was stored. Stops a
-        // malicious edit-role visitor from mutating someone else's
-        // already-posted comment author or reassigning its ownership.
-        //
-        // The one opening: a comment stored WITHOUT an author id (credited
-        // from the room, above) is claimed by the save that carries the
-        // writer's own id on it, which only the author's copy does. What it
-        // grants is delete-own over REST, and an edit-role writer can already
-        // delete any comment through this very PUT.
-        // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
-        // someone else's mention after it was sent.
-        const claimed = prior.authorId === undefined && c.authorId === writer.id;
-        // The words and the time lock the same way for anyone but the comment's author: an
-        // edit-role writer may delete someone else's comment, never put words in their mouth.
-        const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
-        // The token id locks the same way (agent-presence I7): only the server stamps it.
-        const { mentions: _sent, tokenId: _token, ...body } = c;
+  return nextElements.map((el) =>
+    mapElementThreads(el, (thread) => {
+      if (!thread?.comments?.length) return thread;
+      const sanitised = thread.comments.map((c) => {
+        const prior = existingComments.get(c.id);
+        if (prior) {
+          // Existing comment: lock author fields (incl. the author id
+          // used for delete-own checks) to whatever was stored. Stops a
+          // malicious edit-role visitor from mutating someone else's
+          // already-posted comment author or reassigning its ownership.
+          //
+          // The one opening: a comment stored WITHOUT an author id (credited
+          // from the room, above) is claimed by the save that carries the
+          // writer's own id on it, which only the author's copy does. What it
+          // grants is delete-own over REST, and an edit-role writer can already
+          // delete any comment through this very PUT.
+          // Mentions (docs/specs/012-collaboration/comment-mentions.md) lock the same way: nobody retargets
+          // someone else's mention after it was sent.
+          const claimed = prior.authorId === undefined && c.authorId === writer.id;
+          // The words and the time lock the same way for anyone but the comment's author: an
+          // edit-role writer may delete someone else's comment, never put words in their mouth.
+          const own = claimed || (prior.authorId !== undefined && prior.authorId === writer.id);
+          // The token id locks the same way (agent-presence I7): only the server stamps it.
+          const { mentions: _sent, tokenId: _token, ...body } = c;
+          return {
+            ...body,
+            ...(own ? {} : { text: prior.text, createdAt: prior.createdAt }),
+            authorName: prior.authorName,
+            authorColor: prior.authorColor,
+            authorId: claimed ? writer.id : prior.authorId,
+            ...(prior.tokenId ? { tokenId: prior.tokenId } : {}),
+            ...(prior.mentions ? { mentions: prior.mentions } : {}),
+          };
+        }
+        // Somebody else's comment, arriving in this writer's save before
+        // their own: credited as the room saw it posted.
+        // A new comment's mentions arrive from a client: cleaned, never trusted.
+        // A token id a client sends on a new comment is dropped: only the comment routes stamp one.
+        const { mentions: raw, tokenId: _sentToken, ...fresh } = c;
+        const mentions = sanitizeMentions(raw);
+        const withMentions = mentions ? { mentions } : {};
+        const posted = roomAuthors.get(c.id);
+        if (posted && c.authorId !== writer.id) {
+          const { authorId: _none, ...rest } = fresh;
+          return {
+            ...rest,
+            authorName: posted.authorName,
+            authorColor: posted.authorColor,
+            ...withMentions,
+          };
+        }
+        // New comment: server-authoritative author (name, colour, and the
+        // stable id that later authorises delete-own).
         return {
-          ...body,
-          ...(own ? {} : { text: prior.text, createdAt: prior.createdAt }),
-          authorName: prior.authorName,
-          authorColor: prior.authorColor,
-          authorId: claimed ? writer.id : prior.authorId,
-          ...(prior.tokenId ? { tokenId: prior.tokenId } : {}),
-          ...(prior.mentions ? { mentions: prior.mentions } : {}),
-        };
-      }
-      // Somebody else's comment, arriving in this writer's save before
-      // their own: credited as the room saw it posted.
-      // A new comment's mentions arrive from a client: cleaned, never trusted.
-      // A token id a client sends on a new comment is dropped: only the comment routes stamp one.
-      const { mentions: raw, tokenId: _sentToken, ...fresh } = c;
-      const mentions = sanitizeMentions(raw);
-      const withMentions = mentions ? { mentions } : {};
-      const posted = roomAuthors.get(c.id);
-      if (posted && c.authorId !== writer.id) {
-        const { authorId: _none, ...rest } = fresh;
-        return {
-          ...rest,
-          authorName: posted.authorName,
-          authorColor: posted.authorColor,
+          ...fresh,
+          authorName: writer.name,
+          authorColor: writer.color,
+          authorId: writer.id,
           ...withMentions,
         };
-      }
-      // New comment: server-authoritative author (name, colour, and the
-      // stable id that later authorises delete-own).
-      return {
-        ...fresh,
-        authorName: writer.name,
-        authorColor: writer.color,
-        authorId: writer.id,
-        ...withMentions,
-      };
-    });
-    return { ...el, commentThread: { ...thread, comments: sanitised } } as Element;
-  });
+      });
+      return { ...thread, comments: sanitised };
+    }),
+  );
 }
 
 // Remove a single comment by id from whichever element's thread holds
@@ -136,28 +141,31 @@ export function rewriteCommentAuthors(
 // Returns the elements unchanged when the id isn't present.
 export function removeComment(elements: Element[], commentId: string): Element[] {
   return elements.map((el) => {
-    const thread = (el as { commentThread?: { comments?: Comment[]; resolved: boolean } })
-      .commentThread;
-    if (!thread?.comments?.length) return el;
-    const remaining = thread.comments.filter((c) => c.id !== commentId);
-    if (remaining.length === thread.comments.length) return el;
-    if (remaining.length === 0) {
-      const { commentThread: _drop, ...rest } = el as { commentThread?: unknown };
-      return rest as Element;
-    }
-    return { ...el, commentThread: { ...thread, comments: remaining } } as Element;
+    const holder = threadHolding(el, commentId);
+    if (!holder) return el;
+    const remaining = holder.thread.comments.filter((c) => c.id !== commentId);
+    return withThreadAt(
+      el,
+      holder.cell,
+      remaining.length ? { ...holder.thread, comments: remaining } : undefined,
+    );
   });
 }
 
-// The comment and the element whose thread holds it.
+// The comment, the element whose thread holds it, and the cell when it is a Sheet cell's thread.
 export function findCommentHost(
   elements: Element[],
   commentId: string,
-): { comment: Comment; elementId: string } | null {
+): { comment: Comment; elementId: string; cell?: string } | null {
   for (const el of elements) {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
-    const hit = thread?.comments?.find((c) => c.id === commentId);
-    if (hit) return { comment: hit, elementId: el.id };
+    const holder = threadHolding(el, commentId);
+    if (!holder) continue;
+    const comment = holder.thread.comments.find((c) => c.id === commentId)!;
+    return {
+      comment,
+      elementId: el.id,
+      ...(holder.cell !== undefined ? { cell: holder.cell } : {}),
+    };
   }
   return null;
 }
@@ -171,14 +179,17 @@ export function findCommentHost(
 // the client can light up a delete button on their own comments. Pass
 // the document owner's id as `viewerId` to no-op (the owner sees all).
 export function redactCommentAuthorIds(elements: Element[], viewerId: string | null): Element[] {
-  return elements.map((el) => {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
-    if (!thread?.comments?.length) return el;
-    const comments = thread.comments.map((c) =>
-      c.authorId && c.authorId === viewerId ? c : { ...c, authorId: undefined, tokenId: undefined },
-    );
-    return { ...el, commentThread: { ...thread, comments } } as Element;
-  });
+  return elements.map((el) =>
+    mapElementThreads(el, (thread) => {
+      if (!thread?.comments?.length) return thread;
+      const comments = thread.comments.map((c) =>
+        c.authorId && c.authorId === viewerId
+          ? c
+          : { ...c, authorId: undefined, tokenId: undefined },
+      );
+      return { ...thread, comments };
+    }),
+  );
 }
 
 // A stored tab's data (JSON) with its comments' author ids redacted for `viewerId`, as
@@ -210,12 +221,10 @@ export function hasNewComments(
   authorId: string,
 ): boolean {
   const seen = new Set<string>();
-  for (const el of prevElements) {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
+  for (const { thread } of prevElements.flatMap(elementThreads)) {
     for (const c of thread?.comments ?? []) seen.add(c.id);
   }
-  for (const el of nextElements) {
-    const thread = (el as { commentThread?: { comments?: Comment[] } }).commentThread;
+  for (const { thread } of nextElements.flatMap(elementThreads)) {
     for (const c of thread?.comments ?? []) {
       if (!seen.has(c.id) && c.authorId === authorId) return true;
     }
@@ -225,37 +234,45 @@ export function hasNewComments(
 
 // One tab's threads as the document listing serves them (agent-presence blueprint "REST"): in the outline's order,
 // with each element's ref and label, author ids redacted for everyone but their author, and threads filtered by
-// status. A thread on a hidden layer is left out, as the views leave its element out.
+// status. A thread on a hidden layer is left out, as the views leave its element out. A Sheet's cell threads
+// (docs/specs/029-sheets/sheet.md "Cell comments") follow its own, each with its cell and, from `cellRefOf` (the
+// sheet's layout, when the caller read it), its A1.
 export function threadsOfTab(
   tab: Tab & { name: string },
   status: CommentListStatus,
   viewerId: string | null,
+  cellRefOf: (el: Element, cell: string) => string | null = () => null,
 ): DocumentCommentThread[] {
   const elements = redactCommentAuthorIds(tab.elements, viewerId);
   const byId = new Map(elements.map((el) => [el.id, el]));
   return commentHosts(buildViewModel({ ...tab, elements })).flatMap(({ el, ref, label }) => {
-    const thread = (byId.get(el.id) as { commentThread?: CommentThread }).commentThread!;
-    if (thread.comments.length === 0) return [];
-    if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
-    return [
-      {
-        tabId: tab.id,
-        tabName: tab.name,
-        elementId: el.id,
-        ref,
-        label,
-        resolved: thread.resolved,
-        comments: thread.comments.map((c) => ({
-          id: c.id,
-          text: c.text,
-          createdAt: c.createdAt,
-          authorName: c.authorName,
-          authorColor: c.authorColor,
-          ...(c.mentions ? { mentions: c.mentions } : {}),
-          ...(c.authorId ? { authorId: c.authorId } : {}),
-          ...(c.tokenId ? { tokenId: c.tokenId } : {}),
-        })),
-      },
-    ];
+    const host = byId.get(el.id)!;
+    return elementThreads(host).flatMap(({ cell, thread }) => {
+      if (thread.comments.length === 0) return [];
+      if (status !== 'all' && thread.resolved !== (status === 'resolved')) return [];
+      const cellRef = cell === undefined ? null : cellRefOf(host, cell);
+      return [
+        {
+          tabId: tab.id,
+          tabName: tab.name,
+          elementId: el.id,
+          ref,
+          label,
+          ...(cell !== undefined ? { cell } : {}),
+          ...(cellRef ? { cellRef } : {}),
+          resolved: thread.resolved,
+          comments: thread.comments.map((c) => ({
+            id: c.id,
+            text: c.text,
+            createdAt: c.createdAt,
+            authorName: c.authorName,
+            authorColor: c.authorColor,
+            ...(c.mentions ? { mentions: c.mentions } : {}),
+            ...(c.authorId ? { authorId: c.authorId } : {}),
+            ...(c.tokenId ? { tokenId: c.tokenId } : {}),
+          })),
+        },
+      ];
+    });
   });
 }

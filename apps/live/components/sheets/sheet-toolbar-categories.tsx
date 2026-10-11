@@ -23,8 +23,12 @@ import {
 import type { SheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 import {
-  BarChartIcon,
   BordersIcon,
+  CheckboxIcon,
+  ConditionalFormatIcon,
+  DropdownIcon,
+  PaintFormatIcon,
+  ValidationIcon,
   ClearFormatIcon,
   DecimalsIcon,
   FillColourIcon,
@@ -33,10 +37,8 @@ import {
   FontSizeIcon,
   FreezeIcon,
   HAlignIcon,
-  LineChartIcon,
   MergeIcon,
   NumberFormatIcon,
-  PieChartIcon,
   SigmaIcon,
   FUNCTION_FAMILY_ICONS,
   SortIcon,
@@ -45,6 +47,7 @@ import {
   WrapIcon,
 } from './sheet-icons';
 import { type ToolbarMenuKind } from './SheetToolbarMenus';
+import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
 
 export type ToolbarButton = {
@@ -55,7 +58,8 @@ export type ToolbarButton = {
   text?: string;
   pressed?: boolean;
   menu?: ToolbarMenuKind;
-  run?: () => void;
+  // `anchor`: the button pressed (a panel opens against it; absent when run from More); `clicks`: a double-click's 2.
+  run?: (anchor?: HTMLElement, clicks?: number) => void;
   // Drawn in place of a button while it fits (Font Size's − 12 +), `controlPx` wide; folded into More, the `menu`.
   // Given a way to open the button's menu (Text Colour's +).
   control?: (openMenu: (anchor: HTMLElement) => void) => React.ReactNode;
@@ -171,8 +175,24 @@ export function toolbarCategories(
       icon: <FillColourIcon />,
       buttons: [
         {
+          // Paint Format (sheet.md "Paint Format"): a press holds the selection's formats for the next selection; a
+          // double-click keeps it on; pressed again, it lets go.
+          id: 'paint',
+          label: 'Paint Format',
+          icon: <PaintFormatIcon />,
+          glyphOnly: true,
+          pressed: !!c.rules.paint,
+          run: (_anchor, clicks) =>
+            clicks === 2
+              ? actions.paintStart(true)
+              : c.rules.paint
+                ? actions.paintStop()
+                : actions.paintStart(false),
+        },
+        {
           // As Text Colour: the theme's first colours on the toolbar, + for the full picker (folded, the menu).
           id: 'bg',
+          separatorBefore: true,
           label: 'Fill Colour',
           icon: <FillColourIcon />,
           menu: 'fill-colour',
@@ -264,25 +284,40 @@ export function toolbarCategories(
           pressed: !!c.sheet.layout.filter,
           run: () => actions.toggleFilter(),
         },
-        // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts").
+        // Validation rules (data-validation.md "Making and changing rules").
         {
-          id: 'bar-chart',
-          label: 'Bar Chart',
-          icon: <BarChartIcon />,
+          id: 'dropdown',
+          label: 'Dropdown',
+          icon: <DropdownIcon />,
           separatorBefore: true,
-          run: () => actions.insertChart('bar-chart'),
+          run: (anchor) => actions.openValidation(anchor ?? 'cell', { start: 'list' }),
         },
         {
-          id: 'line-chart',
-          label: 'Line Chart',
-          icon: <LineChartIcon />,
-          run: () => actions.insertChart('line-chart'),
+          id: 'checkbox',
+          label: 'Checkbox',
+          icon: <CheckboxIcon />,
+          run: () => actions.addCheckbox(),
         },
         {
-          id: 'pie-chart',
-          label: 'Pie Chart',
-          icon: <PieChartIcon />,
-          run: () => actions.insertChart('pie-chart'),
+          id: 'validation',
+          label: 'Data Validation',
+          icon: <ValidationIcon />,
+          run: (anchor) => actions.openValidation(anchor ?? 'cell'),
+        },
+        {
+          id: 'conditional',
+          label: 'Conditional Formatting',
+          icon: <ConditionalFormatIcon />,
+          run: (anchor) => actions.openFormatRules(anchor ?? 'cell'),
+        },
+        // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts"): one menu of the seven
+        // chart types.
+        {
+          id: 'chart',
+          label: 'Insert Chart',
+          icon: <ChartTypeIcon type="column" />,
+          separatorBefore: true,
+          menu: 'chart',
         },
       ],
     },

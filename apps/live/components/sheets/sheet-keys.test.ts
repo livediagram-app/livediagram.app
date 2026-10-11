@@ -24,6 +24,8 @@ describe('the grid keys (sheet.md "Keyboard")', () => {
     [k('Enter'), { kind: 'enter', back: false }],
     [k('Enter', { shiftKey: true }), { kind: 'enter', back: true }],
     [k('F2'), { kind: 'edit' }],
+    // data-validation.md "Using a dropdown": Alt+Down opens the active cell's dropdown.
+    [k('ArrowDown', { altKey: true }), { kind: 'dropdown' }],
     [k('Home'), { kind: 'home', toSheet: false }],
     [k('End', { ctrlKey: true }), { kind: 'end', toSheet: true }],
     [k('PageUp'), { kind: 'page', up: true }],

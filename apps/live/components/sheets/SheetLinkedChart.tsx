@@ -39,14 +39,15 @@ function LiveChart({ element, bridge, children }: Props & { bridge: SheetsBridge
     const kept = sheetChartTable(wb, source, AGENT_LOCALE);
     return { kept, shown: locale === AGENT_LOCALE ? kept : sheetChartTable(wb, source, locale) };
   }, [store, tabId, source, locale, version]); // eslint-disable-line react-hooks/exhaustive-deps
-  // The fields those tables give this chart: its type and its slices' or series' colours (by position) decide them.
-  const { shape, pieSlices, lineSeries, lineCategories } = element;
+  // The fields those tables give this chart: its type (a Scatter takes a numbered read's first column as its x) and
+  // its slices' or series' colours (by position) decide them.
+  const { shape, chartVariant, pieSlices, lineSeries, lineCategories } = element;
   const { shown, kept } = useMemo(() => {
     const fields = (t: typeof tables.kept) =>
-      t ? chartFieldsFromTable({ shape, pieSlices, lineSeries }, t) : null;
+      t ? chartFieldsFromTable({ shape, chartVariant, pieSlices, lineSeries }, t) : null;
     const kept = fields(tables.kept);
     return { kept, shown: tables.shown === tables.kept ? kept : fields(tables.shown) };
-  }, [tables, shape, pieSlices, lineSeries]);
+  }, [tables, shape, chartVariant, pieSlices, lineSeries]);
   // The element keeps the last read (quietly, no undo step), so an export, a thumbnail or an agent sees it too.
   const stale = useMemo(
     () => kept !== null && !sameData({ pieSlices, lineSeries, lineCategories }, kept),

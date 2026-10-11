@@ -13,6 +13,9 @@ import {
   selectCols,
   selectRows,
   single,
+  cellKey,
+  displayValue,
+  validationRuleAt,
   type GridRange,
   SHEET_FREEZE_COLS_MAX,
   SHEET_FREEZE_ROWS_MAX,
@@ -20,7 +23,9 @@ import {
 import { useAssignRef, useLatest } from '@/hooks/ui/useLatest';
 import { pointingTargetFor } from './sheet-pointing';
 import { useSheetController } from './sheet-controller';
-import { hitTest, totalSize, type Hit } from './sheet-geometry';
+import { cellBox, hitTest, mergeAt, totalSize, type Hit } from './sheet-geometry';
+import { fontPx } from './SheetCells';
+import { ruleHitAt } from './rules/sheet-rule-draw';
 import { FILL_HANDLE_PX, fillHandleAt } from './SheetSelectionLayer';
 import type { SheetActions } from './useSheetActions';
 import { useSheetPan } from './useSheetPan';
@@ -137,6 +142,32 @@ export function useSheetPointer(
     for (let i = 0; i < offs.length; i++)
       if (Math.abs(offs[i]! - at) < Math.abs(offs[best]! - at)) best = i;
     return Math.min(best, FREEZE_MAX[axis]);
+  };
+
+  // What a press on a cell hits of its validation rule's drawing (a box, a chip, an arrow), if anything.
+  const ruleAtPress = (r: number, col: number, x: number, y: number) => {
+    const cc = latest.current;
+    if (!cc.sheet.layout.rules?.length) return null;
+    const rule = validationRuleAt(cc.sheet.layout, r, col);
+    if (!rule) return null;
+    const g = cc.geometry;
+    const m = mergeAt(g, r, col);
+    const rowId = cc.sheet.layout.rows[r]!;
+    const colId = cc.sheet.layout.cols[col]!;
+    const f = cc.sheet.cells.get(cellKey(rowId, colId))?.format;
+    const shown = displayValue(cc.workbook.value(cc.sheet.id, r, col), f, cc.locale).text;
+    const active = cc.selectionNow().active;
+    return ruleHitAt(
+      {
+        rule,
+        box: cellBox(g, r, col, cc.scroll, m),
+        shown,
+        px: fontPx(f),
+        active: active.r === r && active.c === col,
+      },
+      x - g.headW,
+      y - g.headH,
+    );
   };
 
   // The cell under a point, clamped to the grid (a drag past the edge keeps the edge's cell).
@@ -261,6 +292,11 @@ export function useSheetPointer(
     window.removeEventListener('pointerup', listeners.up);
     const cc = latest.current;
     if (!d) return;
+    // Paint Format: the range just selected takes the held formats (sheet.md "Paint Format").
+    if (d.kind === 'select' && cc.rules.paint) {
+      const ranges = cc.selectionNow().ranges;
+      actions.paintApply(ranges[ranges.length - 1]!);
+    }
     // Pointing leaves the caret in the formula being written (this sheet's, or another's).
     if (d.kind === 'point') {
       if (d.sheet) pointingTargetFor(cc.sheet.id, cc.sheet.tabId)?.refocus();
@@ -372,6 +408,16 @@ export function useSheetPointer(
       }
       e.preventDefault();
       cc.focusGrid();
+      // A press on a checkbox's box toggles it; on a chip or a dropdown's arrow, opens its options
+      // (data-validation.md "Using a dropdown", "Using a checkbox"). Paint Format paints instead.
+      const ruleHit =
+        e.shiftKey || e.metaKey || e.ctrlKey || cc.rules.paint ? null : ruleAtPress(h.r, h.c, x, y);
+      if (ruleHit) {
+        cc.setSelection(single({ r: h.r, c: h.c }));
+        if (ruleHit === 'box') actions.toggleCheckboxes([{ r1: h.r, c1: h.c, r2: h.r, c2: h.c }]);
+        else actions.openDropdown({ r: h.r, c: h.c });
+        return;
+      }
       if (e.shiftKey) cc.setSelection(extendTo(cc.selectionNow(), { r: h.r, c: h.c }, cc.grid));
       else if (e.metaKey || e.ctrlKey)
         cc.setSelection(addRange(cc.selectionNow(), { r: h.r, c: h.c }, cc.grid));
@@ -449,7 +495,9 @@ export function useSheetPointer(
         : h.kind === 'row' && h.edge && latest.current.canEdit
           ? 'row-resize'
           : h.kind === 'cell'
-            ? 'cell'
+            ? latest.current.rules.paint
+              ? 'copy'
+              : 'cell'
             : 'default',
     );
     setHover(h.kind === 'cell' ? { r: h.r, c: h.c } : null);

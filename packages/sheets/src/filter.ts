@@ -64,55 +64,71 @@ export function conditionMatches(
   // `cond.values` as a set, built once per filter rather than scanned per row.
   valueSet?: ReadonlySet<string>,
 ): boolean {
-  if (cond.values && !(valueSet ? valueSet.has(shown) : cond.values.includes(shown))) return false;
-  if (!cond.op) return true;
-  const empty = value === null || value === '';
-  const text = shown.toLowerCase();
+  return conditionMatcher(cond, locale, valueSet)(value, shown);
+}
+
+// A condition read once (its operands parsed, its text lowered), for checking many cells: a format rule's condition
+// is checked for every drawn cell it covers (conditional-formatting.md "Performance").
+export function conditionMatcher(
+  cond: FilterCondition,
+  locale: string,
+  valueSet?: ReadonlySet<string>,
+): (value: Scalar, shown: string) => boolean {
   const a = (cond.a ?? '').toLowerCase();
-  const num = typeof value === 'number' ? value : null;
   const na = asNumber(cond.a, locale);
   const nb = asNumber(cond.b, locale);
-  switch (cond.op) {
-    case 'empty':
-      return empty;
-    case 'notEmpty':
-      return !empty;
-    case 'contains':
-      return text.includes(a);
-    case 'notContains':
-      return !text.includes(a);
-    case 'startsWith':
-      return text.startsWith(a);
-    case 'endsWith':
-      return text.endsWith(a);
-    case 'exactly':
-      return text === a;
-    case 'dateBefore':
-    case 'lt':
-      return num !== null && na !== null && num < (cond.op === 'dateBefore' ? Math.floor(na) : na);
-    case 'dateAfter':
-      return num !== null && na !== null && Math.floor(num) > Math.floor(na);
-    case 'dateOn':
-      return num !== null && na !== null && Math.floor(num) === Math.floor(na);
-    case 'gt':
-      return num !== null && na !== null && num > na;
-    case 'gte':
-      return num !== null && na !== null && num >= na;
-    case 'lte':
-      return num !== null && na !== null && num <= na;
-    case 'between':
-      return (
-        num !== null &&
-        na !== null &&
-        nb !== null &&
-        num >= Math.min(na, nb) &&
-        num <= Math.max(na, nb)
-      );
-    case 'eq':
-      return na !== null ? num === na : text === a;
-    case 'neq':
-      return na !== null ? num !== na : text !== a;
-  }
+  const values = cond.values;
+  const kept = values ? (valueSet ?? new Set(values)) : null;
+  return (value, shown) => {
+    if (kept && !kept.has(shown)) return false;
+    if (!cond.op) return true;
+    const empty = value === null || value === '';
+    const text = shown.toLowerCase();
+    const num = typeof value === 'number' ? value : null;
+    switch (cond.op) {
+      case 'empty':
+        return empty;
+      case 'notEmpty':
+        return !empty;
+      case 'contains':
+        return text.includes(a);
+      case 'notContains':
+        return !text.includes(a);
+      case 'startsWith':
+        return text.startsWith(a);
+      case 'endsWith':
+        return text.endsWith(a);
+      case 'exactly':
+        return text === a;
+      case 'dateBefore':
+      case 'lt':
+        return (
+          num !== null && na !== null && num < (cond.op === 'dateBefore' ? Math.floor(na) : na)
+        );
+      case 'dateAfter':
+        return num !== null && na !== null && Math.floor(num) > Math.floor(na);
+      case 'dateOn':
+        return num !== null && na !== null && Math.floor(num) === Math.floor(na);
+      case 'gt':
+        return num !== null && na !== null && num > na;
+      case 'gte':
+        return num !== null && na !== null && num >= na;
+      case 'lte':
+        return num !== null && na !== null && num <= na;
+      case 'between':
+        return (
+          num !== null &&
+          na !== null &&
+          nb !== null &&
+          num >= Math.min(na, nb) &&
+          num <= Math.max(na, nb)
+        );
+      case 'eq':
+        return na !== null ? num === na : text === a;
+      case 'neq':
+        return na !== null ? num !== na : text !== a;
+    }
+  };
 }
 
 // The row ids the sheet's filter hides (its header row never).
@@ -132,14 +148,14 @@ export function filteredOutRows(wb: Workbook, sheetId: string): Set<string> {
       (x): x is { c: number; col: string; cond: FilterCondition } =>
         x.c !== undefined && isFilterCondition(x.cond),
     )
-    .map((x) => ({ ...x, values: x.cond.values ? new Set(x.cond.values) : undefined }));
+    .map((x) => ({ ...x, matches: conditionMatcher(x.cond, wb.locale) }));
   if (conds.length === 0) return out;
   for (let r = box.r1 + 1; r <= box.r2; r++) {
     const rowId = sheet.layout.rows[r]!;
-    for (const { c, col, cond, values } of conds) {
+    for (const { c, col, matches } of conds) {
       const v = wb.value(sheetId, r, c);
       const shown = displayValue(v, sheet.cells.get(cellKey(rowId, col))?.format, wb.locale).text;
-      if (!conditionMatches(cond, isError(v) ? v : (v as Scalar), shown, wb.locale, values)) {
+      if (!matches(isError(v) ? v : (v as Scalar), shown)) {
         out.add(rowId);
         break;
       }

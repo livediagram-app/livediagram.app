@@ -7,6 +7,7 @@ import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
 import type { CommentThread } from './comments';
+import type { CellCommentThreads } from './cell-comments';
 import type { ElementAction } from './element-action';
 import type { BorderStroke, BorderStyle, BorderRadius } from './border-style';
 import type { ElementShadow } from './shadow';
@@ -16,6 +17,7 @@ import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
+import type { ChartVariant } from './chart-types';
 import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
@@ -334,6 +336,10 @@ export type ShapeElement = {
   // Legend placement (docs/specs/009-elements/pie-chart.md); ignored when `chartLegend` is false. Missing /
   // undefined === 'right', the historical default.
   chartLegendPosition?: ChartLegendPosition;
+  // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): which of its kind's types a chart draws as
+  // (bar-chart `horizontal`, line-chart `area` / `scatter`, pie-chart `doughnut`); absent, or one its kind does not
+  // take, is the kind's first (Column, Line, Pie).
+  chartVariant?: ChartVariant;
   // Line chart (docs/specs/009-elements/pie-chart.md): the shared x-axis categories + one or more named
   // series (CSV-importable). Only meaningful on the 'line-chart' kind.
   lineCategories?: string[];
@@ -413,6 +419,9 @@ export type ShapeElement = {
   planView?: PlanViewRef;
   // Sheet (docs/specs/029-sheets/sheet.md): which sheet of the document's sheet store a 'plan-sheet' frames.
   planSheet?: PlanSheetRef;
+  // A Sheet's cell comment threads (docs/specs/029-sheets/sheet.md "Cell comments"), keyed `rowId:colId`. Only on
+  // a 'plan-sheet'; written by comment deltas, like `commentThread`.
+  cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
   // is a TextSize bucket where 'scale' tracks the element's text size.

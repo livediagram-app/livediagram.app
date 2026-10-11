@@ -546,7 +546,8 @@ export type CanvasProps = {
   onMoveCommentsPanel: (x: number, y: number) => void;
   onResetCommentsPanel: () => void;
   // Row click: editor selects the element + opens its thread popover.
-  onOpenCommentsForElement: (elementId: string) => void;
+  // `cell` names a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments").
+  onOpenCommentsForElement: (elementId: string, cell?: string) => void;
   // Floating Actions panel (docs/specs/012-collaboration/assigned-actions.md). Mirrors the Comments panel: only
   // mounted when actionRows is non-empty (at least one OPEN action on
   // the active tab).

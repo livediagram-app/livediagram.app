@@ -19,7 +19,6 @@ import {
   lucideEllipsis,
   lucideArrowUpDown,
   lucideBaseline,
-  lucideChartPie,
   lucideMerge,
   lucideRemoveFormatting,
   lucideTextAlignCenter,
@@ -35,6 +34,12 @@ import {
   lucideInfo,
   lucideSearch,
   lucideSquareKanban,
+  lucidePaintRoller,
+  lucideSquareCheck,
+  lucideSquareChevronDown,
+  lucideShieldCheck,
+  lucideHighlighter,
+  lucideHash,
 } from '@livediagram/icons/lucide';
 import type { FunctionFamily } from '@livediagram/sheets';
 
@@ -186,24 +191,6 @@ export const ChevronIcon = () => (
 );
 
 // Charts (sheet.md "Charts"): Lucide's pie, and a bar and a line drawn to match it.
-export const PieChartIcon = () => (
-  <G>
-    <Prims prims={lucideChartPie} />
-  </G>
-);
-export const BarChartIcon = () => (
-  <G>
-    <path d="M3 3v18h18" />
-    <path d="M8 17v-5M13 17V8M18 17v-8" />
-  </G>
-);
-export const LineChartIcon = () => (
-  <G>
-    <path d="M3 3v18h18" />
-    <path d="m7 15 4-5 3 3 5-6" />
-  </G>
-);
-
 // The cell menu's rows (docs/specs/029-sheets/sheet.md "Cell menu").
 const prims = (p: Parameters<typeof Prims>[0]['prims']) =>
   function CellMenuGlyph() {
@@ -242,3 +229,10 @@ export const FUNCTION_FAMILY_ICONS: Record<FunctionFamily, () => React.JSX.Eleme
   'Plan cards': prims(lucideSquareKanban),
 };
 export const SearchIcon = prims(lucideSearch);
+// Rules (data-validation.md, conditional-formatting.md, sheet.md "Paint Format", the Custom number format).
+export const PaintFormatIcon = prims(lucidePaintRoller);
+export const CheckboxIcon = prims(lucideSquareCheck);
+export const DropdownIcon = prims(lucideSquareChevronDown);
+export const ValidationIcon = prims(lucideShieldCheck);
+export const ConditionalFormatIcon = prims(lucideHighlighter);
+export const CustomFormatIcon = prims(lucideHash);

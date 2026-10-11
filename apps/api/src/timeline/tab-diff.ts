@@ -18,13 +18,23 @@
 
 import {
   elementActions,
+  elementThreads,
   type Comment,
   type Element,
   type ElementAction,
 } from '@livediagram/document';
 
-function threadOf(el: Element): { comments?: Comment[]; resolved?: boolean } | undefined {
-  return (el as { commentThread?: { comments?: Comment[]; resolved?: boolean } }).commentThread;
+type ThreadView = { comments?: Comment[]; resolved?: boolean };
+
+// Every thread of the elements: each element's own and its cells' (docs/specs/029-sheets/sheet.md "Cell
+// comments"), each with the id the timeline keys it by: the element's id, or `<elementId>#<cell>` for a cell's.
+function threadsOf(elements: Element[]): { key: string; thread: ThreadView }[] {
+  return elements.flatMap((el) =>
+    elementThreads(el).map(({ cell, thread }) => ({
+      key: cell === undefined ? el.id : `${el.id}#${cell}`,
+      thread: thread as ThreadView,
+    })),
+  );
 }
 
 // Every action on an element: an Action panel's list, or an ordinary
@@ -39,12 +49,12 @@ function actionsOf(el: Element): ElementAction[] {
 // Explorer Home's What happened calls "replied" (docs/specs/013-workspace/explorer-home.md).
 export function newComments(next: Element[], prev: Element[]): (Comment & { reply: boolean })[] {
   const seen = new Set<string>();
-  for (const el of prev) {
-    for (const c of threadOf(el)?.comments ?? []) seen.add(c.id);
+  for (const { thread } of threadsOf(prev)) {
+    for (const c of thread.comments ?? []) seen.add(c.id);
   }
   const added: (Comment & { reply: boolean })[] = [];
-  for (const el of next) {
-    (threadOf(el)?.comments ?? []).forEach((c, i) => {
+  for (const { thread } of threadsOf(next)) {
+    (thread.comments ?? []).forEach((c, i) => {
       if (!seen.has(c.id)) added.push({ ...c, reply: i > 0 });
     });
   }
@@ -60,13 +70,13 @@ export function claimedComments(
   prev: Element[],
 ): (Comment & { reply: boolean })[] {
   const unclaimed = new Set<string>();
-  for (const el of prev) {
-    for (const c of threadOf(el)?.comments ?? []) if (c.authorId === undefined) unclaimed.add(c.id);
+  for (const { thread } of threadsOf(prev)) {
+    for (const c of thread.comments ?? []) if (c.authorId === undefined) unclaimed.add(c.id);
   }
   if (unclaimed.size === 0) return [];
   const claimed: (Comment & { reply: boolean })[] = [];
-  for (const el of next) {
-    (threadOf(el)?.comments ?? []).forEach((c, i) => {
+  for (const { thread } of threadsOf(next)) {
+    (thread.comments ?? []).forEach((c, i) => {
       if (unclaimed.has(c.id) && c.authorId !== undefined) claimed.push({ ...c, reply: i > 0 });
     });
   }
@@ -81,13 +91,13 @@ export function removedComments(
   prev: Element[],
 ): { id: string; elementId: string; opening: boolean }[] {
   const kept = new Set<string>();
-  for (const el of next) {
-    for (const c of threadOf(el)?.comments ?? []) kept.add(c.id);
+  for (const { thread } of threadsOf(next)) {
+    for (const c of thread.comments ?? []) kept.add(c.id);
   }
   const removed: { id: string; elementId: string; opening: boolean }[] = [];
-  for (const el of prev) {
-    (threadOf(el)?.comments ?? []).forEach((c, i) => {
-      if (!kept.has(c.id)) removed.push({ id: c.id, elementId: el.id, opening: i === 0 });
+  for (const { key, thread } of threadsOf(prev)) {
+    (thread.comments ?? []).forEach((c, i) => {
+      if (!kept.has(c.id)) removed.push({ id: c.id, elementId: key, opening: i === 0 });
     });
   }
   return removed;
@@ -103,19 +113,15 @@ export function newlyResolvedThreads(
   prev: Element[],
 ): { elementId: string; text: string | null }[] {
   const wasResolved = new Map<string, boolean>();
-  for (const el of prev) {
-    const thread = threadOf(el);
-    if (thread) wasResolved.set(el.id, thread.resolved === true);
-  }
+  for (const { key, thread } of threadsOf(prev)) wasResolved.set(key, thread.resolved === true);
   const flipped: { elementId: string; text: string | null }[] = [];
-  for (const el of next) {
-    const thread = threadOf(el);
-    if (!thread?.resolved) continue;
+  for (const { key, thread } of threadsOf(next)) {
+    if (!thread.resolved) continue;
     // `false` (was open) flips; `undefined` (no thread before) means
     // the whole thread arrived resolved in one save, which is not a
     // resolution moment anyone watched happen.
-    if (wasResolved.get(el.id) === false) {
-      flipped.push({ elementId: el.id, text: thread.comments?.[0]?.text ?? null });
+    if (wasResolved.get(key) === false) {
+      flipped.push({ elementId: key, text: thread.comments?.[0]?.text ?? null });
     }
   }
   return flipped;

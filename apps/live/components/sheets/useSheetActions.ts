@@ -3,14 +3,9 @@
 // Everything a Sheet's keys, toolbar and menus do (docs/specs/029-sheets/sheet.md "Editing", "Keyboard",
 // "Formatting", "Rows and columns", "Sort", "Filter", "Freeze"), built from the engine's command builders and sent
 // through the controller's write. One place, so a toolbar button and its shortcut can never differ.
-import {
-  chartRangeOf,
-  chartSizeOf,
-  newChartAnchor,
-  NOTHING_TO_CHART,
-  type SheetChartKind,
-} from './sheet-charts';
+import { chartRangeOf, chartSizeOf, newChartAnchor, NOTHING_TO_CHART } from './sheet-charts';
 import { useMemo } from 'react';
+import type { ChartType } from '@livediagram/document';
 import {
   PARSE_FAILURE_COPY,
   appendAxis,
@@ -59,10 +54,15 @@ import {
   type ShiftMode,
   SHEET_FREEZE_COLS_MAX,
   SHEET_FREEZE_ROWS_MAX,
+  rangeOptions,
+  validateWrite,
+  writeForRules,
+  type SheetWrite,
 } from '@livediagram/sheets';
 import { track } from '@/lib/telemetry';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { fontPx, roughWidth } from './SheetCells';
+import { sheetRuleActions } from './rules/sheet-rule-actions';
 
 export type EditResult = { ok: true } | { ok: false; message: string; at: number };
 
@@ -84,6 +84,17 @@ export function inputTextAt(c: SheetController, r: number, col: number): string 
   const colId = c.sheet.layout.cols[col];
   const input = rowId && colId ? c.sheet.cells.get(cellKey(rowId, colId))?.input : undefined;
   return inputAsText(input, c.workbook.ctxFor(c.sheet.id));
+}
+
+// What the first value a Reject rule refuses in a typed write says (the rule's Help Text, else its line), or null.
+function ruleRefusal(c: SheetController, write: SheetWrite): string | null {
+  const layout = c.sheet.layout;
+  if (!layout.rules?.length) return null;
+  const check = validateWrite(c.sheet, writeForRules(layout, write), {
+    locale: c.locale,
+    rangeValues: (rule) => rangeOptions(c.workbook, c.sheet.id, rule),
+  });
+  return !check.ok && check.error === 'value_invalid' ? (check.line ?? null) : null;
 }
 
 function firstUse(text: string): void {
@@ -119,8 +130,9 @@ export function useSheetActions() {
         c.focusGrid();
       },
       // Save the draft, then move (Enter down, Tab right, ...). `all` is Ctrl+Enter: into every selected cell.
-      commitEdit(move: Dir | 'none', all = false): EditResult {
-        const e = c.editing;
+      // `draft`: what to save in place of the editor's draft (a dropdown option picked while typing).
+      commitEdit(move: Dir | 'none', all = false, draft?: string): EditResult {
+        const e = c.editing && draft !== undefined ? { ...c.editing, draft } : c.editing;
         if (!e) return { ok: true };
         const result = all
           ? typeIntoRanges(c.workbook, c.sheet.id, { r: e.r, c: e.c }, ranges(), e.draft)
@@ -137,6 +149,9 @@ export function useSheetActions() {
           };
         }
         if (result?.ok) {
+          // A value the cell's Reject rule refuses keeps the edit open and says why (data-validation.md).
+          const refused = ruleRefusal(c, result.write);
+          if (refused) return { ok: false, message: refused, at: 0 };
           // An edit ends the copied range's marquee, as in Sheets and Excel (what the clipboard holds stays).
           c.setMarquee(null);
           const formula = e.draft.startsWith('=');
@@ -185,7 +200,7 @@ export function useSheetActions() {
         fmt({ [flag]: activeFormat(c)?.[flag] ? null : true });
       },
       numberFormat(nf: NumberFormatKind, cur?: string) {
-        fmt({ nf: nf === 'auto' ? null : nf, dp: null, ...(cur ? { cur } : {}) });
+        fmt({ nf: nf === 'auto' ? null : nf, dp: null, nc: null, ...(cur ? { cur } : {}) });
       },
       decimals(delta: 1 | -1) {
         const f = activeFormat(c);
@@ -323,7 +338,7 @@ export function useSheetActions() {
         c.write(setFilterCondition(colId, cond), 'Filter');
       },
       // Insert Chart: the selection (or the data around the cell) as a chart in the Sheet, beside it, in view.
-      insertChart(kind: SheetChartKind) {
+      insertChart(type: ChartType) {
         const pick = chartRangeOf(c.workbook, c.sheet, c.selectionNow());
         if (!pick) return c.toast(NOTHING_TO_CHART);
         const view = {
@@ -331,9 +346,9 @@ export function useSheetActions() {
           height: Math.max(0, c.view.height - c.geometry.headH),
         };
         c.placeChart?.(
-          kind,
+          type,
           pick,
-          newChartAnchor(c.geometry, c.sheet, pick, chartSizeOf(kind), c.scroll, view),
+          newChartAnchor(c.geometry, c.sheet, pick, chartSizeOf(type), c.scroll, view),
         );
       },
       // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), its charts taken with it (a
@@ -376,6 +391,12 @@ export function useSheetActions() {
           'Cell',
         );
       },
+      // ---- Custom number format (sheet.md "Formatting") ----
+      customFormat(code: string) {
+        fmt({ nf: 'custom', nc: code, dp: null });
+      },
+      // ---- Rules: dropdowns, checkboxes, validation and format rules, Paint Format ----
+      ...sheetRuleActions(c),
     };
   }, [c]);
 }

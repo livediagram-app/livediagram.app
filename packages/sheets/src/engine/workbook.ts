@@ -12,6 +12,7 @@ import { cellKey, type Sheet } from '../sheet';
 import { CARD_FUNCTION_NAMES } from '../formula/registry';
 import { callsOf } from '../formula/ast';
 import { storedAst, type SheetHandle, type SheetsCtx } from '../formula/stored';
+import type { StoredFormula } from '../sheet';
 import {
   dims,
   err,
@@ -149,6 +150,32 @@ export class Workbook {
       try {
         if (this.depth === 0) this.startRead();
         return scalarCell(this.cellValue(sheetId, r, c, null));
+      } catch (e) {
+        if (!(e instanceof Deep)) throw e;
+        this.settle(e.id);
+      }
+    }
+  }
+
+  // A stored formula worked out as if it sat in (r, c), keeping no value and no dependency: a format rule's Custom
+  // Formula Is (docs/specs/029-sheets/conditional-formatting.md). Its reads count against the read budget.
+  evaluateAt(sheetId: string, r: number, c: number, stored: StoredFormula): Value {
+    const ast = storedAst(stored);
+    if (!ast) return err('#ERROR!');
+    const id = `${sheetId}|~rule`;
+    for (;;) {
+      try {
+        if (this.depth === 0) this.startRead();
+        this.depth++;
+        try {
+          const frame = this.frame(id, sheetId, r, c);
+          return scalarCell(deref(evaluate(ast, stored.r, frame), frame));
+        } finally {
+          this.depth--;
+          this.deps.clear(id);
+          this.volatileCells.delete(id);
+          this.cardReaders.delete(id);
+        }
       } catch (e) {
         if (!(e instanceof Deep)) throw e;
         this.settle(e.id);

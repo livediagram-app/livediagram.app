@@ -9,14 +9,23 @@ import { cellColours, isLightColor, resolveFontStack } from '@livediagram/docume
 import {
   cellKey,
   displayValue,
+  formatRuleStyle,
   isPending,
   numberText,
+  rangeOptions,
+  ruleIndex,
+  rulesAt,
+  validationRuleAt,
   type Border,
   type CellFormat,
+  type FormatRule,
+  type RangeOption,
+  type RuleCtx,
   type Sheet,
   type Value,
   type Workbook,
 } from '@livediagram/sheets';
+import { RULE_ARROW_PX, ruleCellDraw } from './rules/sheet-rule-draw';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { cellBox, mergeAt, type Geometry, type GridWindow } from './sheet-geometry';
 
@@ -72,6 +81,8 @@ type CellsProps = {
   fontFamily?: string;
   // Columns whose cells keep room at their right for a dropdown arrow (a card table's set-value columns).
   padEnd?: ReadonlySet<string>;
+  // The format rules as the person editing one sees them (its preview, conditional-formatting.md); else the sheet's.
+  formatRules?: readonly FormatRule[];
 };
 
 // The room a dropdown column keeps at its cells' right, so its arrow never covers the value.
@@ -95,6 +106,21 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
   const { rows, cols } = sheet.layout;
   const showGrid = sheet.layout.showGrid !== false;
   const out: React.ReactNode[] = [];
+  // Format and validation rules (conditional-formatting.md, data-validation.md): looked up per drawn cell only when
+  // the sheet has any; a Dropdown from a Range's options worked out once per draw.
+  const fRules = p.formatRules ?? sheet.layout.formatRules;
+  const fIndex = fRules?.length ? ruleIndex(sheet.layout, fRules) : null;
+  const ranged = new Map<string, readonly RangeOption[]>();
+  const ruleCtx: RuleCtx = {
+    locale,
+    layout: sheet.layout,
+    rangeValues: (rule) => {
+      let known = ranged.get(rule.id);
+      if (!known) ranged.set(rule.id, (known = rangeOptions(workbook, sheet.id, rule)));
+      return known;
+    },
+  };
+  const hasRules = !!sheet.layout.rules?.length;
   for (let r = region.r1; r <= region.r2; r++) {
     if (g.hiddenRow(r)) continue;
     // Each row's text runs right over empty cells; `width` is how far the current run reaches.
@@ -104,21 +130,45 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
       if (m && (m.r1 !== r || m.c1 !== c)) continue;
       const key = cellKey(rows[r]!, cols[c]!);
       const cell = sheet.cells.get(key);
-      const f = cell?.format;
       const value = workbook.value(sheet.id, r, c);
       const box = cellBox(g, r, c, scroll, m);
-      const shown = displayValue(value, f, locale);
+      const shown = displayValue(value, cell?.format, locale);
+      // A met format rule's style draws over the cell's own.
+      const met = fIndex
+        ? formatRuleStyle(workbook, sheet.id, r, c, value, shown.text, rulesAt(fIndex, r, c))
+        : null;
+      const f: CellFormat | undefined = met ? { ...cell?.format, ...met } : cell?.format;
+      const vRule = hasRules ? validationRuleAt(sheet.layout, r, c) : null;
       const pending = shownValue(value);
       const px = fontPx(f);
       let text = pending.pending ? pending.text : shown.text;
+      const colours = cellColours(f, surface);
+      const deco = [f?.u ? 'underline' : '', f?.st ? 'line-through' : ''].filter(Boolean).join(' ');
+      const textStyle: CSSProperties = {
+        fontSize: px,
+        fontFamily: resolveFontStack(f?.ff),
+        fontWeight: f?.b ? 700 : undefined,
+        fontStyle: f?.i ? 'italic' : undefined,
+        textDecoration: deco || undefined,
+      };
+      const ruled = vRule
+        ? ruleCellDraw({
+            cellKey: key,
+            rule: vRule,
+            value,
+            shown: text,
+            textWidth: roughWidth(text, px),
+            box,
+            px,
+            palette,
+            ink: colours.ink,
+            ctx: ruleCtx,
+            textStyle,
+          })
+        : null;
+      const padEnd = p.padEnd?.has(cols[c]!) ? DROPDOWN_PAD_PX : ruled?.padEnd ? RULE_ARROW_PX : 0;
       if (shown.kind === 'number' && typeof value === 'number')
-        text = fitNumber(
-          text,
-          value,
-          f,
-          box.w - (p.padEnd?.has(cols[c]!) ? DROPDOWN_PAD_PX : 0),
-          px,
-        );
+        text = fitNumber(text, value, f, box.w - padEnd, px);
       const align = f?.ha ?? (pending.pending ? 'l' : shown.align);
       const wrap = f?.wr ?? 'o';
       // Overflow: left-aligned text with empty cells to its right runs into them (not past the window).
@@ -132,7 +182,6 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
           width += g.cols[k + 1]! - g.cols[k]!;
         }
       }
-      const colours = cellColours(f, surface);
       const style: CSSProperties = {
         left: box.x,
         top: box.y,
@@ -166,8 +215,8 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
             }}
           />,
         );
-      if (!text) continue;
-      const deco = [f?.u ? 'underline' : '', f?.st ? 'line-through' : ''].filter(Boolean).join(' ');
+      if (ruled) out.push(...ruled.nodes);
+      if (!text || ruled?.hideText) continue;
       out.push(
         <div
           key={`${key}t`}
@@ -181,14 +230,10 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
             width,
             height: box.h,
             zIndex: 1,
-            fontSize: px,
-            ...(p.padEnd?.has(cols[c]!) ? { paddingRight: DROPDOWN_PAD_PX } : {}),
+            ...(padEnd ? { paddingRight: padEnd } : {}),
             lineHeight: `${Math.round(px * 1.3)}px`,
             // The cell's own font; unset (or one no longer offered), the sheet's.
-            fontFamily: resolveFontStack(f?.ff),
-            fontWeight: f?.b ? 700 : undefined,
-            fontStyle: f?.i ? 'italic' : undefined,
-            textDecoration: deco || undefined,
+            ...textStyle,
             // A value still waiting on the cards reads quietly, never as an error.
             color: pending.pending
               ? palette.muted

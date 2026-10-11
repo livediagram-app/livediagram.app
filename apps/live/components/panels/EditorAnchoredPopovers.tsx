@@ -2,12 +2,13 @@
 
 import dynamic from 'next/dynamic';
 import { apiSetDocumentFolder } from '@/lib/api-client';
-import { elementActions, isBoxed } from '@livediagram/document';
+import { elementActions, isBoxed, threadAt } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';
 import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { cellCommentAnchorSelector } from '@/hooks/sheets/sheet-comments-context';
 
 const CommentThreadPopover = dynamic(
   () => import('@/components/panels/CommentThreadPopover').then((m) => m.CommentThreadPopover),
@@ -34,6 +35,7 @@ const AssignActionDialog = dynamic(
 export function EditorAnchoredPopovers() {
   const {
     commentThreadOpenId,
+    commentThreadOpenCell,
     activeTab,
     addComment,
     isReadOnly,
@@ -73,10 +75,10 @@ export function EditorAnchoredPopovers() {
   // A read-only session has no autosave, so its resolve or reopen goes through the comment endpoints; an editor's
   // rides the room and its save.
   const persistThreadState = (
-    target: { commentThread?: { comments: { id: string }[] } },
+    thread: { comments: { id: string }[] } | undefined,
     resolved: boolean,
   ) => {
-    const first = target.commentThread?.comments[0]?.id;
+    const first = thread?.comments[0]?.id;
     if (!isReadOnly || !documentId || !first) return undefined;
     return () =>
       apiSetThreadResolved(
@@ -97,10 +99,20 @@ export function EditorAnchoredPopovers() {
               (el) => el.id === commentThreadOpenId && isBoxed(el),
             );
             if (!target || !isBoxed(target)) return null;
+            // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): anchored to its cell, every
+            // change naming the cell.
+            const cell = commentThreadOpenCell ?? undefined;
+            const thread = threadAt(target, cell);
             return (
               <CommentThreadPopover
                 elementId={target.id}
-                thread={target.commentThread}
+                {...(cell !== undefined
+                  ? {
+                      anchorSelector: cellCommentAnchorSelector(target.id, cell),
+                      title: 'Cell Comments',
+                    }
+                  : {})}
+                thread={thread}
                 onAddComment={(text, mentions) => {
                   // View-role visitors don't autosave the tab, so
                   // their addComment via the local commit alone
@@ -125,9 +137,11 @@ export function EditorAnchoredPopovers() {
                             text,
                             sessionShareCode,
                             mentions,
+                            cell,
                           )
                       : undefined,
                     mentions,
+                    cell,
                   );
                 }}
                 onDeleteComment={(cid) => {
@@ -154,8 +168,10 @@ export function EditorAnchoredPopovers() {
                 }}
                 // A session that may comment but not edit resolves and reopens through the comment endpoints, as it
                 // adds (docs/specs/024-agents/agent-presence.md "Comments"); the thread is named by its first comment.
-                onResolve={() => resolveThread(target.id, persistThreadState(target, true))}
-                onUnresolve={() => unresolveThread(target.id, persistThreadState(target, false))}
+                onResolve={() => resolveThread(target.id, persistThreadState(thread, true), cell)}
+                onUnresolve={() =>
+                  unresolveThread(target.id, persistThreadState(thread, false), cell)
+                }
                 onClose={closeComments}
                 readOnly={isReadOnly}
                 canComment={can.takePart}

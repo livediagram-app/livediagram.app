@@ -503,6 +503,7 @@ export * from './behaviour-skin';
 // stored config below and by @livediagram/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
+export * from './cell-comments';
 export * from './comment-thread';
 export * from './item-comments';
 // The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the
@@ -525,6 +526,8 @@ export * from './entity-geometry';
 export * from './code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
+export * from './chart-types';
+export * from './chart-marks';
 export * from './chart-source';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.

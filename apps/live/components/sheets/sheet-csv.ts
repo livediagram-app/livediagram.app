@@ -83,6 +83,8 @@ export function importCsvText(c: SheetController, text: string, mode: 'replace' 
     !c.writeAll(
       writes.map((write) => ({ sheetId: c.sheet.id, write })),
       'Paste',
+      // An import is stored as it is; values its rules do not allow are marked (data-validation.md).
+      { unchecked: true },
     )
   )
     return;

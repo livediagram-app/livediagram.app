@@ -73,7 +73,7 @@ describe('a Sheet Chart in a slot', () => {
     show(false);
     expect(screen.getByTestId('drawn').textContent).toBe('bar-chart 400x300');
     expect(sheetRead).toHaveBeenCalledWith('sheetAAAA');
-    expect(screen.getByRole('group', { name: 'Bar chart' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Column chart' })).toBeTruthy();
   });
 
   it('has no Change Chart of its own: it is in the slot’s cog (SlotSection)', () => {

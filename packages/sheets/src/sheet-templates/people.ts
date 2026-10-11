@@ -286,8 +286,9 @@ export function gradesDesign(): SheetDesign {
   };
 }
 
-// The tick a habit's day takes (any text counts).
-export const TICK = '✓';
+// A habit's day is a checkbox (data-validation.md): ticked is TRUE.
+export const TICK = 'TRUE';
+const UNTICKED = 'FALSE';
 
 export function habitsDesign(): SheetDesign {
   // Each habit's weekly goal and the days ticked so far (Monday first).
@@ -304,7 +305,8 @@ export function habitsDesign(): SheetDesign {
   // Body rows 5 to 10, each day's count on 11.
   return {
     heading: 'Habit Tracker',
-    subtitle: `Tick a day with ${TICK} (or anything) as you go; progress against each weekly goal follows. Clear the ticks to start a new week.`,
+    subtitle:
+      'Tick a day’s box as you go; progress against each weekly goal follows. Untick the boxes to start a new week.',
     span: 14,
     accent: 'fuchsia',
     widths: [180, 48, 48, 48, 48, 48, 48, 48, 70, 70, 90, 28, 150, 100],
@@ -318,15 +320,15 @@ export function habitsDesign(): SheetDesign {
           const r = i + 5;
           return [
             habit,
-            ...[...ticks].map((t) => (t === '1' ? TICK : null)),
-            `=COUNTA(B${r}:H${r})`,
+            ...[...ticks].map((t) => (t === '1' ? TICK : UNTICKED)),
+            `=COUNTIF(B${r}:H${r},TRUE)`,
             String(goal),
             `=IF(J${r}=0,"",MIN(1,I${r}/J${r}))`,
           ];
         }),
         total: [
           'Each Day',
-          ...cols.map((c) => `=COUNTA(${c}5:${c}10)`),
+          ...cols.map((c) => `=COUNTIF(${c}5:${c}10,TRUE)`),
           '=SUM(I5:I10)',
           '=SUM(J5:J10)',
           '=IF(J11=0,"",I11/J11)',
@@ -347,5 +349,7 @@ export function habitsDesign(): SheetDesign {
       },
     ],
     charts: [{ kind: 'bar-chart', table: 0, cols: [0, 10], at: [12, 0], width: 460, height: 220 }],
+    // Monday to Sunday of every habit.
+    checkboxes: [[HEAD_ROW + 1, 1, HEAD_ROW + habits.length, 7]],
   };
 }

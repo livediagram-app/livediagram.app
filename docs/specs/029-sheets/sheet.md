@@ -142,7 +142,7 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 | People and Life | Contacts        | Contacts        | indigo  | Name, Company, Role, Email, Phone, Stage, Last Contacted, Days Since, Follow Up, Notes | `=TODAY()-Last`, `=IF(Days>14,"Follow Up","")`; counts in the total row      | None                                                                                      | None                                 |
 | People and Life | Guest List      | Guest List      | rose    | Guest, Party, RSVP, Dietary Needs, Table, Notes; 10 guests                             | `SUM`, `SUMIF` by RSVP                                                       | Invitations, Guests Invited, Attending (result), Maybe, Awaiting a Reply, Replied         | Pie: guests by RSVP                  |
 | People and Life | Grade Book      | Grade Book      | purple  | Student, Essay, Quiz, Midterm, Project, Final, Average, Grade; 8 students              | `AVERAGE`, `IFS` grade (A 90, B 80, C 70, D 60, else F); grade `COUNTIF`     | Students, Class Average (result), Highest, Lowest, Passing (60 and over)                  | Bar: students by grade               |
-| People and Life | Habit Tracker   | Habit Tracker   | fuchsia | Habit, Mon to Sun (inputs, ticked ✓), Done, Goal, Progress; 6 habits; Each Day         | `COUNTA` ticks, `=MIN(1,Done/Goal)`; `INDEX`/`MATCH` best day                | Ticks, Goals Met, Best Day, Overall (result)                                              | Bar: progress by habit               |
+| People and Life | Habit Tracker   | Habit Tracker   | fuchsia | Habit, Mon to Sun (checkboxes), Done, Goal, Progress; 6 habits; Each Day               | `COUNTIF(…,TRUE)` ticks, `=MIN(1,Done/Goal)`; `INDEX`/`MATCH` best day       | Ticks, Goals Met, Best Day, Overall (result)                                              | Bar: progress by habit               |
 
 - Dates are reckoned from the moment it is made (the Tracker's start and due dates, the Timesheet's Monday to
   Friday, Contacts' last contacted, the Invoice's issue date). The example figures are chosen so every total, count
@@ -207,14 +207,16 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 
 ### Sheet Settings
 
-| Section       | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sheet Setup   | **Title** (as a rename), **Import CSV…**, **Download CSV** (both in the tab menu instead on a Sheet tab, [plan-tabs.md](../026-plan/plan-tabs.md#board-tab-and-sheet-tab)), **Setup Sheet** (an empty sheet only: its setup card again), **Clear Sheet** (a sheet with cells; asks first, in a popover beside its button (Escape or Cancel keeps the sheet and Sheet Settings open): "Start Sheet 1 over? Every cell, chart, format and setting goes, and Setup Sheet shows again. You can undo this.": every cell and format, the charts anchored in it, sizes, hidden lines, freeze, merges, filter, card tables and the look back to the defaults, awaiting setup again, one change and one undo step) |
-| Sheet Options | **Gridlines** and **Row and Column Headers**, each a switch, both on by default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| Cells         | **Cell Size** (Setup Sheet's option list: **Compact** 100 × 24, **Default** 120 × 28, **Roomy** 160 × 36; picking one sets both defaults as one change, chosen while the defaults match it and none chosen once set by hand; lines sized on their own keep their size), then **Column Width** and **Row Height** for lines not sized on their own (120 and 28 by default), **Reset to Default**                                                                                                                                                                                                                                                                                                           |
-| Freeze        | **Frozen Rows** and **Frozen Columns** (someone who may only view does not see it)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| Calculations  | Which totals the status bar shows (Sum, Average, Count, Min, Max)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Named Ranges  | Each name with its range, **Go To** and **Remove** ([Named ranges](#named-ranges))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Section                | Holds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sheet Setup            | **Title** (as a rename), **Import CSV…**, **Download CSV** (both in the tab menu instead on a Sheet tab, [plan-tabs.md](../026-plan/plan-tabs.md#board-tab-and-sheet-tab)), **Setup Sheet** (an empty sheet only: its setup card again), **Clear Sheet** (a sheet with cells; asks first, in a popover beside its button (Escape or Cancel keeps the sheet and Sheet Settings open): "Start Sheet 1 over? Every cell, chart, format and setting goes, and Setup Sheet shows again. You can undo this.": every cell and format, the charts anchored in it, sizes, hidden lines, freeze, merges, filter, card tables, validation and format rules and the look back to the defaults, awaiting setup again, one change and one undo step) |
+| Sheet Options          | **Gridlines** and **Row and Column Headers**, each a switch, both on by default                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Cells                  | **Cell Size** (Setup Sheet's option list: **Compact** 100 × 24, **Default** 120 × 28, **Roomy** 160 × 36; picking one sets both defaults as one change, chosen while the defaults match it and none chosen once set by hand; lines sized on their own keep their size), then **Column Width** and **Row Height** for lines not sized on their own (120 and 28 by default), **Reset to Default**                                                                                                                                                                                                                                                                                                                                        |
+| Freeze                 | **Frozen Rows** and **Frozen Columns** (someone who may only view does not see it)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Calculations           | Which totals the status bar shows (Sum, Average, Count, Min, Max)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Named Ranges           | Each name with its range, **Go To** and **Remove** ([Named ranges](#named-ranges))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Data Validation        | Each validation rule with its range and line, **Edit**, **Go To** and **Remove** ([Data validation](data-validation.md#making-and-changing-rules))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Conditional Formatting | Each format rule in list order with its swatch and range, **Edit**, **Go To** and **Remove** ([Conditional formatting](conditional-formatting.md#making-and-changing-rules))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |     |
 
 - Sheet Setup opens first. The same sections are the element menu's **Sheet** flyout (right-click the Sheet), as a board's
   settings are its Board flyout, acting on the same sheet. Numbers apply on Enter or leaving the field, kept within the limits (a column
@@ -233,9 +235,9 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 | Category  | Buttons                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Text      | **Bold**, **Italic**, **Underline**, **Strikethrough** · **Text Colour** (a quick row of the one [colour picker](../004-interface-design/colour-picker.md): the Theme Palette's first five, the cell's picked, and **More Text Colours** (the four-dot glyph) for the full picker) · **Font**, **Font Size** (· a divider)                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Cells     | **Fill Colour**, **Borders** · **Align Left**, **Align Centre**, **Align Right** · **Align Top**, **Align Middle**, **Align Bottom** · **Merge Cells**, **Wrap Text**, **Freeze** (rows, columns) · **Clear Formatting**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Numbers   | **Number Format** (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text), **Fewer Decimals**, **More Decimals**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Data      | **Sort** (A to Z, Z to A, Custom Sort…), **Filter** (on or off) · **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Cells     | **Paint Format** · **Fill Colour**, **Borders** · **Align Left**, **Align Centre**, **Align Right** · **Align Top**, **Align Middle**, **Align Bottom** · **Merge Cells**, **Wrap Text**, **Freeze** (rows, columns) · **Clear Formatting**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Numbers   | **Number Format** (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text, **Custom…**), **Fewer Decimals**, **More Decimals**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Data      | **Sort** (A to Z, Z to A, Custom Sort…), **Filter** (on or off) · **Dropdown**, **Checkbox**, **Data Validation**, **Conditional Formatting** ([Data validation](data-validation.md), [Conditional formatting](conditional-formatting.md)) · **Insert Chart** (a menu of the seven chart types, each its glyph and name: Column, Bar, Line, Area, Scatter, Pie, Doughnut; [Charts](#charts))                                                                                                                                                                                                                                                                                                                                                                            |
 | Functions | A menu per family of functions, each its glyph beside its name (Maths a calculator, Statistics a rising column chart, Logic a fork, Information an info circle, Lookup a magnifier, Text a T, Date and Time a calendar, Arrays a grid, Finance coins, Plan Cards a kanban square), **Maths**, **Statistics**, **Logic**, **Information**, **Lookup**, **Text**, **Date and Time**, **Arrays**, **Finance**, **Plan Cards** (named "Maths Functions" and so on: every function of the family the engine knows, each with its arguments and summary from the engine's catalogue, scrolling; a pick with several cells selected writes it over them into the cell below, `=SUM(B2:B6)`, else starts it in the active cell) · **All Functions** (shown as "All Functions…") |
 
 - **Search**, at the toolbar's far right after a divider (a magnifier and the word, tooltip "Search for a function"),
@@ -250,10 +252,10 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 - On a desktop, a mouse resting on the switcher (about 120 ms) opens its menu, which stays open while the pointer
   moves into it and closes a moment (250 ms) after it leaves both; hovering never changes the category, only a pick
   does. Touch and the keyboard open it with a press, as before.
-- `·` is a divider: each category sets its logical groups apart (Numbers: the format · the decimals; Cells: the colours · the alignments · Merge, Wrap and Freeze · Clear Formatting; Data: Sort and Filter · the charts; Functions: the five · All Functions). The everyday actions are buttons (the six alignments, pressed
+- `·` is a divider: each category sets its logical groups apart (Numbers: the format · the decimals; Cells: Paint Format · the colours · the alignments · Merge, Wrap and Freeze · Clear Formatting; Data: Sort and Filter · the rules · Insert Chart; Functions: the five · All Functions). The everyday actions are buttons (the six alignments, pressed
   for the active cell, glyphs alone; a pressed horizontal alignment pressed again goes back to automatic, Align Middle
-  is the default); only the rarer ones (Fill Colour, Borders, Merge Cells, Wrap Text, Number Format, Sort, Freeze)
-  open a menu.
+  is the default); only the rarer ones (Fill Colour, Borders, Merge Cells, Wrap Text, Number Format, Sort, Freeze, Insert Chart)
+  open a menu, and Conditional Formatting, Dropdown and Data Validation open their popovers.
 - Switching category cascades the new buttons in (the shared cascade, a small rise and fade a beat apart, within the
   motion budget; still under reduced motion); the toolbar's first paint does not animate.
 - Buttons are glyphs with the shared Tooltip (never a native title); when every button of the category fits with
@@ -345,26 +347,28 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 
 ### Keyboard
 
-| Keys                                | Does                                                                                                  |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Arrows                              | Move the active cell                                                                                  |
-| Shift + arrows                      | Grow or shrink the selection                                                                          |
-| Ctrl/⌘ + arrows                     | Jump to the edge of the filled run, or the next filled cell                                           |
-| Ctrl/⌘ + Shift + arrows             | Select to that edge                                                                                   |
-| Home / End                          | First / last column of the row                                                                        |
-| Ctrl/⌘ + Home / End                 | `A1` / the last filled cell                                                                           |
-| Page Up / Page Down                 | A screen up / down                                                                                    |
-| Ctrl/⌘ + A                          | The filled run around the active cell, then the whole sheet                                           |
-| Shift + Space / Ctrl + Space        | The whole row / column                                                                                |
-| Ctrl/⌘ + C, X, V                    | Copy, cut, paste                                                                                      |
-| Ctrl/⌘ + Shift + V                  | Paste values only                                                                                     |
-| Ctrl/⌘ + D / R                      | Fill down / right from the selection's first row / column                                             |
-| Ctrl/⌘ + B, I, U, Shift + X         | Bold, italic, underline, strikethrough                                                                |
-| Ctrl/⌘ + ; and Ctrl/⌘ + Shift + ;   | Today's date / the time now                                                                           |
-| Ctrl/⌘ + F; Ctrl + H, ⌘ + Shift + H | Find; Find and Replace (⌘ + H hides the browser on a Mac)                                             |
-| Ctrl/⌘ + Z, Shift + Z, Y            | Undo, redo (the canvas's)                                                                             |
-| Ctrl/⌘ + Shift + 1, 4, 5            | Number, Currency, Percent format                                                                      |
-| Escape (nothing in edit)            | Ends the copy's marquee, then Find; then leaves the grid: the Sheet element is selected on the canvas |
+| Keys                                | Does                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Arrows                              | Move the active cell                                                                                                     |
+| Shift + arrows                      | Grow or shrink the selection                                                                                             |
+| Ctrl/⌘ + arrows                     | Jump to the edge of the filled run, or the next filled cell                                                              |
+| Ctrl/⌘ + Shift + arrows             | Select to that edge                                                                                                      |
+| Home / End                          | First / last column of the row                                                                                           |
+| Ctrl/⌘ + Home / End                 | `A1` / the last filled cell                                                                                              |
+| Page Up / Page Down                 | A screen up / down                                                                                                       |
+| Ctrl/⌘ + A                          | The filled run around the active cell, then the whole sheet                                                              |
+| Shift + Space / Ctrl + Space        | The whole row / column                                                                                                   |
+| Ctrl/⌘ + C, X, V                    | Copy, cut, paste                                                                                                         |
+| Ctrl/⌘ + Shift + V                  | Paste values only                                                                                                        |
+| Ctrl/⌘ + D / R                      | Fill down / right from the selection's first row / column                                                                |
+| Ctrl/⌘ + B, I, U, Shift + X         | Bold, italic, underline, strikethrough                                                                                   |
+| Ctrl/⌘ + ; and Ctrl/⌘ + Shift + ;   | Today's date / the time now                                                                                              |
+| Ctrl/⌘ + F; Ctrl + H, ⌘ + Shift + H | Find; Find and Replace (⌘ + H hides the browser on a Mac)                                                                |
+| Ctrl/⌘ + Z, Shift + Z, Y            | Undo, redo (the canvas's)                                                                                                |
+| Ctrl/⌘ + Shift + 1, 4, 5            | Number, Currency, Percent format                                                                                         |
+| Alt/⌥ + Down                        | Opens the active cell's dropdown ([Data validation](data-validation.md#using-a-dropdown))                                |
+| Space (on checkbox cells)           | Toggles the selection's checkboxes ([Data validation](data-validation.md#using-a-checkbox))                              |
+| Escape (nothing in edit)            | Ends Paint Format, then the copy's marquee, then Find; then leaves the grid: the Sheet element is selected on the canvas |
 
 - With more than one cell selected, **Enter** and **Tab** (and their Shift forms) walk the active cell through the
   selection and wrap. A merged cell is one cell: a clicked merge is a single cell, so Enter edits it and Tab moves
@@ -429,15 +433,17 @@ named in full and on show, the rarer ones in side flyouts, short enough to fit a
   **Delete Column B** or **Delete Columns B to C**.
 - **Merge Cells** (a selection of more than one cell; asking first when it would drop values) or **Unmerge Cells**
   (a selection touching a merge).
+- **Conditional Formatting…** (an Editor's; [Conditional formatting](conditional-formatting.md)).
 - **Flyouts**, each a side panel of rows:
 
-| Flyout        | Rows                                                                                                                  |
-| ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Sort          | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**     |
-| Shift Cells   | **Insert Cells, Shift Right**, **Insert Cells, Shift Down**, **Delete Cells, Shift Left**, **Delete Cells, Shift Up** |
-| Hide          | **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**                                    |
-| Paste Special | **Values Only**, **Formatting Only**                                                                                  |
-| Insert Chart  | **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))                                                      |
+| Flyout          | Rows                                                                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sort            | **Sort A to Z**, **Sort Z to A** (the sheet by the active cell's column, as the toolbar's Sort), **Custom Sort…**                              |
+| Shift Cells     | **Insert Cells, Shift Right**, **Insert Cells, Shift Down**, **Delete Cells, Shift Left**, **Delete Cells, Shift Up**                          |
+| Hide            | **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**                                                             |
+| Paste Special   | **Values Only**, **Formatting Only**                                                                                                           |
+| Data Validation | **Dropdown**, **Checkbox**, **Data Validation…**, **Remove Validation** (the selection touches a rule) ([Data validation](data-validation.md)) |
+| Insert Chart    | **Column Chart**, **Bar Chart**, **Line Chart**, **Area Chart**, **Scatter Chart**, **Pie Chart**, **Doughnut Chart**                          |
 
 Every row closes the menu once it has acted. A merge that would drop values asks the same thing from here and
 from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only
@@ -452,7 +458,8 @@ view gets the header and **Copy** alone.
   offers draws in the tab's font), font size (any whole size from 6 to 96 points, 10 by default; the toolbar's Font Size is a number between − and +
   that step through 8, 9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 28, 36, 48 and 72, and takes a typed size, kept within the
   limits; folded into More it is a menu of those sizes), horizontal alignment, vertical alignment (top, middle,
-  bottom; middle when unset), wrap (overflow, wrap, clip) and a border on each side (thin, medium, thick, dashed or dotted, in a colour).
+  bottom; middle when unset), wrap (overflow, wrap, clip), a border on each side (thin, medium, thick, dashed or dotted, in a colour) and,
+  for the Custom number format, its format code.
 - Colours are picked from the one [colour picker](../004-interface-design/colour-picker.md): the toolbar's quick rows draw its swatch and follow its keyboard, and their last button (four coloured dots, as Quick Style's More colours) opens it in full (Theme Palette,
   Standard Colours, Custom Colours).
 - Number formats:
@@ -470,7 +477,17 @@ view gets the header and **Copy** alone.
 | Date Time  | `18/05/1903 12:00` |                                                          |
 | Duration   | `29628:00:00`      | Hours past 24 keep counting                              |
 | Plain Text | `1234.5`           | Typed inputs stay text, never read as numbers            |
+| Custom     | as its code        | A format code, as `TEXT` reads one (below)               |
 
+- **Custom…** opens a popover anchored to the Number Format button, titled **Custom Number Format**: a **Format
+  Code** field (the active cell's code when Custom, else `#,##0.00`), a live **Preview** of the active cell's value in
+  it (or of `1234.5` when the cell holds no number), and the codes people use most as rows to pick (`0.00`, `#,##0`,
+  `0%`, `0.00%`, `£#,##0.00`, `$#,##0.00`, `0.00E+00`, `dd/mm/yyyy`, `d mmm yyyy`, `mmm yyyy`, `dddd`, `hh:mm`,
+  `[h]:mm:ss`, `@`), then **Cancel** and **Apply** (one change, one undo step). A code takes what
+  [`TEXT`](formulas.md#functions) reads: digits (`0`, `#`, `,`, `.`), percent, scientific, literal text in quotes, a
+  currency symbol, the date and time parts, elapsed hours, `@` for text, and up to four `;` sections (positive,
+  negative, zero, text). A code up to 64 characters (`FORMAT_CODE_MAX`); one that cannot be read is not applied ("That
+  format code can't be read"). A custom code is drawn the same in every locale, as `TEXT` writes it.
 - Number formats are drawn in the viewer's locale (separators, date order), so two people may see `1,234.50` and
   `1.234,50` for the same value.
 - A number too large or too small to be a date (a phone number in a Date column) is drawn as Automatic would draw
@@ -478,6 +495,19 @@ view gets the header and **Copy** alone.
 - **Merge Cells** joins a range into one cell, keeping the top-left input (others are cleared, after asking if
   they hold anything). A merged cell is selected, typed into and formatted as one. **Merge Across** merges each row
   of the range on its own.
+
+### Paint Format
+
+- **Paint Format** (a paint roller glyph, the Cells category's first button; tooltip "Paint Format: Copy the
+  formatting of these cells onto others") takes the selection's formats (its last range, as Copy does), and is shown
+  pressed while it holds them; the cursor over the cells becomes the copy cursor.
+- The next range selected (a click or a drag) takes them, as **Paste Formatting Only** would: the copied pattern
+  repeated to fill the range, inputs untouched; one change, one undo step (`Sheet · Changed · Format`). Paint Format
+  then lets go.
+- **Double-clicking** it keeps it on: every range selected takes the formats until it is pressed again or Escape.
+- Pressed again, or **Escape**, lets go without painting. Starting an edit, or the Sheet losing the grid's keys,
+  lets go too.
+- An Editor's, as the toolbar is.
 
 ### Readable cells
 
@@ -550,6 +580,49 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   keeps its names (they are its own).
 - Telemetry: `Sheet · Changed · Name`.
 
+## Cell comments
+
+A cell can carry a **comment thread**: the same thread every element carries ([Comments](../008-canvas/canvas-and-palette.md#comments)),
+with its replies, @-mentions, resolve and reopen, read and written the same way, about one cell rather than the
+whole Sheet.
+
+- **Where it lives**: on the Sheet element, `cellComments`, a thread per cell keyed by the cell's row and column ids
+  (`rowId:colId`, as the sheet store names a cell). The thread follows its cell through inserted, moved and sorted
+  rows and columns, since its ids do. Up to 1,000 threads a Sheet (`CELL_THREADS_MAX`), each up to 500 comments as
+  an element's. The Sheet element's own `commentThread` stays, about the Sheet as a whole.
+- **Opening one**: the cell menu's **Comment** row, **Insert Comment** on a cell without one, **Show Comments** on a
+  cell with one, and **Ctrl + Alt + M** (⌘ ⌥ M) with the grid focused, open the thread popover
+  (`CommentThreadPopover`, the one the canvas opens) anchored beside the active cell. A merged cell's thread is its
+  top-left cell's.
+- **The marker**: a cell with an open (unresolved) thread shows a small triangle in its top-right corner, in the
+  comment colour (amber, `#f59e0b`). Hovering the cell for a moment shows a preview card: the first comment's author
+  and text and "N more" when there are more. A press on the marker opens the thread. A resolved thread shows no
+  marker, as a resolved element thread shows no indicator.
+- **The cell goes**: a thread whose row or column was deleted is kept, hidden in the grid, and listed in the Comments
+  panel as "(Deleted Cell)"; undoing the deletion brings the row back with the same id, and the marker with it.
+  Clearing a cell's input or formats leaves its thread.
+- **Who may**: as on an element ([Share roles](../013-workspace/share-roles.md)). An Editor and a Participant open,
+  add to, resolve and reopen a cell's thread, and delete their own comments (an Editor anyone's); a Viewer reads the
+  marker, the preview and the thread with no composer. The cell menu offers a Viewer **Show Comments** only where
+  a thread exists.
+- **Live**: each change travels as the element's comment delta naming the cell (`cell`), so two people commenting on
+  different cells, or the same cell, at once never lose one; it rides the room ledger and the comment endpoints as an
+  element's thread does, and survives undo the same way (`cellComments` is a live field).
+- **Comments panel**: the Collaborate panel lists each cell thread as its own row, named by the Sheet's label and the
+  cell (`Budget!B4`) once the Sheet is drawn ("Budget (Deleted Cell)" when its row or column is gone, "Budget" alone
+  before it is drawn), opening the popover on that cell, the cell selected and scrolled into view first. The document's thread listing (`GET /api/documents/:id/comments`) gives each cell thread its
+  `cell` and, where the sheet is stored, its A1 (`cellRef`).
+- **Copies**: a Sheet copied and pasted, or duplicated, never carries its cell threads: the copy frames a new sheet,
+  and a thread is a conversation about the original's cells (`freshCopyFields`, as a pasted element leaves its own
+  thread behind).
+- **Agents**: the comment commands take a cell (`--cell B4`, A1 on the Sheet the ref names), so an agent adds to,
+  replies to, resolves and reopens a cell's thread as it does an element's; `comment ls` and the views name each cell
+  thread (`cell B4`).
+- Telemetry: the comment events (`Comment · Opened`, `Added`, `Deleted`, `Resolved`, `Unresolved`), as on an element.
+- **Cost**: the markers (each open thread's cell and position) are worked out once per change to `cellComments` or
+  the layout and kept; a scroll frame or a hover reads the kept list, one step per open thread (at most 1,000), and
+  draws only those in view. A Sheet without cell threads draws nothing for them.
+
 ## Card tables
 
 - A sheet set up from Plan Cards holds a **card table** (`layout.cardTables`): its header row, each column's card
@@ -602,17 +675,18 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
 
 ## Charts
 
-- **Insert Chart** makes a pie, bar or line chart ([Pie chart](../009-elements/pie-chart.md)) from the sheet's cells:
-  the toolbar's **Data** category (**Bar Chart**, **Line Chart**, **Pie Chart**) and the cell menu's **Chart**
-  section. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
+- **Insert Chart** makes a chart of any of the seven chart types (Column, Bar, Line, Area, Scatter, Pie, Doughnut;
+  [Chart types](../009-elements/pie-chart.md#chart-types)) from the sheet's cells: the toolbar's **Data** category
+  (its **Insert Chart** menu) and the cell menu's **Insert Chart** flyout. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
   region). A single empty cell with nothing around it says "Select the cells to chart first".
 - Several ranges picked together (Ctrl or ⌘ and a drag: the labels in A2:A5 and the amounts in C2:C5) chart as one:
   the rows they span, and only the columns picked, in the sheet's order, so a column between them (Category in B) is
   left out.
 - The range is read as a spreadsheet does: a first row with no numbers among the values names the series; a first
   column of text or dates labels the categories (numbered 1, 2, … without one); every other column is a series
-  ("Column B" when unnamed). A pie or bar chart shows the first series (a pie never below zero); a line chart shows
-  them all. Rows a filter hides are left out. At most 500 categories and 12 series are read.
+  ("Column B" when unnamed). A pie, doughnut, column or bar chart shows the first series (a pie or doughnut never
+  below zero); a line, area or scatter chart shows them all. A scatter chart whose first column holds numbers takes
+  that column as its x. Rows a filter hides are left out. At most 500 categories and 12 series are read.
 - The chart is an ordinary chart element whose `chartSource` names the sheet and the range by stable row and
   column ids, and, when only some of its columns were picked, those columns (`cols`), so it grows with rows inserted
   inside the range and follows moves. Its data is read live: change
@@ -747,7 +821,9 @@ not in Sheet Settings, not anywhere.
 ## Who may do what
 
 - **Read** with any access: open the sheet, scroll, select, copy, find, Download CSV.
-- **Edit** with edit access: everything else.
+- **Write cells** (a Participant and an Editor): type, paste, pick from a [dropdown](data-validation.md), tick a
+  checkbox, each checked by the sheet's validation rules.
+- **Edit** with edit access: everything else, the sheet's validation and format rules included.
 - Someone who may only view sees no toolbar, the formula bar read-only, and no menus that change anything.
 
 ## Other modes
@@ -807,7 +883,8 @@ not in Sheet Settings, not anywhere.
 - `Element · Added · PlanSheet` (placed from the palette or a CSV drop).
 - `Plan · Toggled · SheetMaximised` / `SheetRestored`, `SheetFillTabOn` / `SheetFillTabOff`, `SheetFocused`.
 - The `Sheet` category: `Changed` with the kind of change (`Cell`, `Formula`, `Format`, `Rows`, `Columns`, `Merge`,
-  `Freeze`, `Sort`, `Filter`, `Replace`, `Fill`, `Paste`, `Title`, `Clear`, `Shift`, `Settings`, `Setup`: the closed
+  `Freeze`, `Sort`, `Filter`, `Replace`, `Fill`, `Paste`, `Title`, `Clear`, `Shift`, `Settings`, `Setup`, `Validation`,
+  `ConditionalFormat`: the closed
   `SHEET_CHANGE_KINDS`), sent once per change, never content; `Imported · Csv`, `Exported · Csv`; `Opened · Find`,
   `Opened · Settings`; `Searched · Function` (the toolbar's Search took someone to a function); `Created` with how a sheet was set up (`Blank`, `Cards`, `Csv`, or a
   template's name without spaces, Setup Sheet above) or `Chart` (Insert Chart only, never a template's chart);
@@ -816,5 +893,6 @@ not in Sheet Settings, not anywhere.
 
 ## Help
 
-- A help article **Sheets** (placing a sheet, editing, formulas, formatting, sort, filter, maximise, CSV, keyboard),
+- A help article **Sheets** (placing a sheet, editing, formulas, formatting, Paint Format, custom number formats,
+  dropdowns and checkboxes, conditional formatting, sort, filter, maximise, CSV, keyboard),
   registered with the help centre, and a **Sheet Functions** article listing every function with an example.

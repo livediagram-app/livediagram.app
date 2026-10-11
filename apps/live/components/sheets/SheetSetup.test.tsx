@@ -82,7 +82,7 @@ describe('Setup Sheet', () => {
     expect(track).toHaveBeenCalledWith('Sheet', 'Created', 'Tracker');
     // Its chart, over its cells, in its accent's palette, not counted as Insert Chart.
     expect(h.placeChart).toHaveBeenCalledWith(
-      'bar-chart',
+      'column',
       expect.objectContaining({ range: expect.any(Object) }),
       expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
       expect.objectContaining({ palette: 'berry', template: true }),

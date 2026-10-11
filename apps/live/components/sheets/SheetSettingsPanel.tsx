@@ -33,6 +33,8 @@ import {
 } from '@livediagram/sheets';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { SheetNamedRanges } from './SheetNamedRanges';
+import { SheetFormatRuleList, SheetValidationRules } from './rules/SheetRuleSettings';
+import { ConditionalFormatIcon, ValidationIcon } from './sheet-icons';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SigmaIcon } from './sheet-icons';
 import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
@@ -62,7 +64,7 @@ const DownloadGlyph = lucideGlyph(lucideFileDown, 18);
 const ClearGlyph = lucideGlyph(lucideTrash2, 18);
 const ResetGlyph = lucideGlyph(lucideRotateCcw, 12);
 
-type Section = 'data' | 'view' | 'sizes' | 'freeze' | 'calc' | 'names';
+type Section = 'data' | 'view' | 'sizes' | 'freeze' | 'calc' | 'names' | 'validation' | 'formats';
 
 // A Settings dialog row's presentational half.
 const row = (key: string, label: string, description: string) => ({
@@ -327,6 +329,24 @@ export function SheetSettingsPanel({
       <BoardSettingsSection title="Named Ranges" icon={<NamesGlyph />} {...section('names')}>
         <SettingsBody>
           <SheetNamedRanges actions={actions} onClose={onClose} />
+        </SettingsBody>
+      </BoardSettingsSection>
+      <BoardSettingsSection
+        title="Data Validation"
+        icon={<ValidationIcon />}
+        {...section('validation')}
+      >
+        <SettingsBody>
+          <SheetValidationRules actions={actions} onClose={onClose} />
+        </SettingsBody>
+      </BoardSettingsSection>
+      <BoardSettingsSection
+        title="Conditional Formatting"
+        icon={<ConditionalFormatIcon />}
+        {...section('formats')}
+      >
+        <SettingsBody>
+          <SheetFormatRuleList actions={actions} onClose={onClose} />
         </SettingsBody>
       </BoardSettingsSection>
       {more?.(section)}

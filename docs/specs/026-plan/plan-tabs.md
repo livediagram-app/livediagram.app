@@ -401,11 +401,12 @@ leaves it out of a smaller slot and names charts in its line.
   Sheets (as a figure's picker lists them, each its title and its tab's name; "No sheets in this document yet."),
   then, for the Sheet picked:
   - **Its Charts**: the charts drawn from that Sheet on the document's other tabs (in the Sheet, or floating on a
-    tab), each its type and range ("Bar Chart · A1:C6"); "No charts from this sheet yet." when it has none. Picking
+    tab), each its type and range ("Column Chart · A1:C6"); "No charts from this sheet yet." when it has none. Picking
     one puts a copy of it in the slot: the same type, range, columns, style, legend and palette, reading the same
     cells.
   - **New Chart**: a **Range** typed as A1 ("A1:C6"; anything that is not a range of the sheet says "Not a range on
-    this sheet"), a **Type** (**Bar**, **Line**, **Pie**; Bar to start) and **Add Chart**.
+    this sheet"), a **Type** (the seven chart types, [Chart types](../009-elements/pie-chart.md#chart-types): **Column**, **Bar**,
+    **Line**, **Area**, **Scatter**, **Pie**, **Doughnut**; Column to start) and **Add Chart**.
     Either fills the slot at once and closes the picker, one step. Closing it without a choice leaves the slot empty.
 - **What it is**: a chart element on the dashboard tab, its `chartSource` naming the sheet and range (no
   `sheetAnchor`: it sits in the slot, not in a Sheet), drawn at the slot's size and read live: an edit to the cells,

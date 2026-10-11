@@ -299,6 +299,8 @@ export async function apiAddComment(
   shareCode: string | null = null,
   // Teammates the comment @-tags (docs/specs/012-collaboration/comment-mentions.md); cleaned server-side.
   mentions?: CommentMention[],
+  // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"), by its cell key.
+  cell?: string,
 ): Promise<{
   id: string;
   text: string;
@@ -311,7 +313,12 @@ export async function apiAddComment(
     {
       method: 'POST',
       headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-      body: JSON.stringify({ elementId, text, ...(mentions?.length ? { mentions } : {}) }),
+      body: JSON.stringify({
+        elementId,
+        text,
+        ...(mentions?.length ? { mentions } : {}),
+        ...(cell !== undefined ? { cell } : {}),
+      }),
     },
   );
   return expectOk<{

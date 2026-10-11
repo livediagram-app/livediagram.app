@@ -612,6 +612,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // apps/live/hooks/collab/useEditorComments.ts.
   const {
     commentThreadOpenId,
+    commentThreadOpenCell,
     openComments,
     closeComments,
     addComment,
@@ -3129,6 +3130,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
     resetShapeStyleSelected,
@@ -3910,6 +3912,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     closeNote,
     commentRows,
     commentThreadOpenId,
+    commentThreadOpenCell,
     commitDraw,
     commitFreehand,
     commitPolygon,
@@ -4184,6 +4187,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
     resetShapeStyleSelected,

@@ -4,7 +4,7 @@
 import type { Border, IdRange } from '../sheet';
 import type { CellChange, SheetWrite } from '../store';
 import type { FormatPatch } from '../format';
-import type { Rand } from '../ids';
+import { makeAxisIds, type Rand } from '../ids';
 import type { Workbook } from '../engine/workbook';
 import type { StarterCell } from '../sheet-starters';
 import {
@@ -203,6 +203,16 @@ export function designWrite(
   }
 
   changes.push(setupOptions(setup.look, setup.size));
+  // Checkbox ranges (the Habit Tracker's days): a Checkbox rule each.
+  const ruleIds = makeAxisIds((design.checkboxes ?? []).length, rand);
+  (design.checkboxes ?? []).forEach(([r1, c1, r2, c2], i) => {
+    const id = ruleIds[i]!;
+    changes.push({
+      k: 'vrule',
+      id,
+      rule: { id, r1: rowIds[r1]!, c1: colIds[c1]!, r2: rowIds[r2]!, c2: colIds[c2]!, is: 'check' },
+    });
+  });
   if (setup.freezeHeader && design.freeze > 0) changes.push({ k: 'freeze', rows: design.freeze });
   // The title and subtitle span the design's width.
   const spanEnd = colIds[design.span - 1]!;

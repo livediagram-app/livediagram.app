@@ -90,6 +90,12 @@ const sideArg = z
   .describe('Before (the default) or after it.');
 const countArg = z.number().int().min(1).max(1000).optional().describe('How many (default 1).');
 
+const scalePoint = z.object({
+  color: z.string().describe('#rrggbb'),
+  type: z.enum(['min', 'max', 'number', 'percent', 'percentile']),
+  value: z.number().optional().describe('For number, percent and percentile.'),
+});
+
 const sheetChange = z.discriminatedUnion('op', [
   z.object({
     op: z.literal('set').describe('Write rows of values from a cell.'),
@@ -148,6 +154,119 @@ const sheetChange = z.discriminatedUnion('op', [
     op: z.literal('freeze').describe('Freeze rows and columns at the top and left.'),
     rows: z.number().int().min(0).max(100).optional().describe('Rows to freeze; 0 unfreezes.'),
     cols: z.number().int().min(0).max(26).optional().describe('Columns to freeze; 0 unfreezes.'),
+  }),
+  z.object({
+    op: z
+      .literal('validate')
+      .describe(
+        'Set what a range may hold (a dropdown, a checkbox, a number, date or text rule); it replaces the rules ' +
+          'the range covered.',
+      ),
+    range: rangeArg,
+    rule: z
+      .discriminatedUnion('type', [
+        z.object({
+          type: z.literal('dropdown'),
+          options: z.array(z.string()).min(1).max(500).describe('The values offered, in order.'),
+          colors: z
+            .array(z.string().nullable())
+            .optional()
+            .describe('A colour per option, #rrggbb, or null.'),
+          display: z
+            .enum(['chip', 'arrow', 'plain'])
+            .optional()
+            .describe('How it shows (default chip).'),
+        }),
+        z.object({
+          type: z.literal('dropdown_range'),
+          source: rangeArg.describe(
+            'The cells (on this sheet) whose values are offered, "A2:A20".',
+          ),
+          display: z.enum(['chip', 'arrow', 'plain']).optional(),
+        }),
+        z.object({ type: z.literal('checkbox') }),
+        z.object({
+          type: z.enum(['number', 'date', 'text']),
+          condition: z
+            .string()
+            .describe(
+              'number: between, not_between, greater_than, greater_than_or_equal, less_than, less_than_or_equal, ' +
+                'equal, not_equal. date: valid, before, on_or_before, after, on_or_after, on, between, ' +
+                'not_between. text: contains, not_contains, exactly, email, url.',
+            ),
+          value: z
+            .union([z.number(), z.string()])
+            .optional()
+            .describe('A number, a date (YYYY-MM-DD) or text.'),
+          value2: z
+            .union([z.number(), z.string()])
+            .optional()
+            .describe('The second value of between.'),
+        }),
+      ])
+      .describe('The rule.'),
+    reject: z
+      .boolean()
+      .optional()
+      .describe('Refuse a value it does not allow (default true); false keeps it and marks it.'),
+    help: z.string().max(255).optional().describe('Said when a value is refused.'),
+  }),
+  z.object({
+    op: z.literal('clear_validation').describe('Take a range out of every validation rule.'),
+    range: rangeArg,
+  }),
+  z.object({
+    op: z
+      .literal('conditional_format')
+      .describe(
+        'Add a format rule (last in the list): a condition and a style, or a colour scale.',
+      ),
+    range: rangeArg,
+    when: z
+      .object({
+        condition: z
+          .string()
+          .describe(
+            'empty, not_empty, contains, not_contains, starts_with, ends_with, exactly, date_before, ' +
+              'date_after, date_on, greater_than, greater_than_or_equal, less_than, less_than_or_equal, ' +
+              'between, equal, not_equal, or formula.',
+          ),
+        value: z.union([z.string(), z.number()]).optional(),
+        value2: z
+          .union([z.string(), z.number()])
+          .optional()
+          .describe('The second value of between.'),
+        formula: z
+          .string()
+          .optional()
+          .describe("formula's: written for the range's top-left cell, like =$C2>100."),
+      })
+      .optional(),
+    style: z
+      .object({
+        bold: z.boolean().optional(),
+        italic: z.boolean().optional(),
+        underline: z.boolean().optional(),
+        strikethrough: z.boolean().optional(),
+        color: z.string().optional().describe('#rrggbb'),
+        background: z.string().optional().describe('#rrggbb'),
+      })
+      .optional()
+      .describe("when's style."),
+    scale: z
+      .object({
+        min: scalePoint,
+        mid: scalePoint.optional(),
+        max: scalePoint,
+      })
+      .optional()
+      .describe('A colour scale instead of when: each number shaded between the points.'),
+  }),
+  z.object({
+    op: z
+      .literal('clear_conditional_formats')
+      .describe('Remove the format rules touching a range, or every one.'),
+    range: rangeArg.optional(),
   }),
 ]);
 
@@ -229,6 +348,10 @@ const readCell = z.object({
       'The worked-out value: a number (dates and times as serial numbers), text, a boolean, or an error as text (#REF!).',
     ),
   display: z.string().describe('What the cell shows, in its number format.'),
+  invalid: z
+    .string()
+    .optional()
+    .describe('Set when its validation rule does not allow the value: what the rule allows.'),
 });
 
 export const readSheetOutput = {
@@ -251,6 +374,14 @@ export const readSheetOutput = {
     .array(z.string())
     .describe('Merged ranges, in A1 form; a merge shows its top-left cell.'),
   filter: z.string().nullable().describe('The filtered range, in A1 form; null when none.'),
+  validation: z
+    .array(z.record(z.string(), z.unknown()))
+    .describe('Validation rules: range, type, options or condition, what it allows, reject, help.'),
+  conditionalFormats: z
+    .array(z.record(z.string(), z.unknown()))
+    .describe(
+      'Format rules in list order (the first met draws a cell): range, rule, style or scale.',
+    ),
   url,
 };
 

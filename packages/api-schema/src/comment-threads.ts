@@ -19,6 +19,10 @@ export type DocumentCommentThread = {
   elementId: string;
   ref: string;
   label: string | null;
+  // A Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): its cell key (`rowId:colId`), and its
+  // A1 when the sheet is stored and the cell still on it.
+  cell?: string;
+  cellRef?: string;
   resolved: boolean;
   comments: {
     id: string;

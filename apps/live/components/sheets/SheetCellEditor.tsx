@@ -48,6 +48,37 @@ export function FunctionAssist({
 }) {
   const c = useSheetController();
   const arg = argumentAt(draft, input.caret);
+  // A dropdown cell's options matching the typing (data-validation.md "Using a dropdown").
+  if (input.options)
+    return (
+      <ul
+        role="listbox"
+        aria-label="Options"
+        className="absolute left-0 top-full z-20 mt-1 max-h-64 w-56 overflow-auto rounded-lg border py-1 text-[12px] shadow-lg"
+        style={{
+          backgroundColor: c.palette.surface,
+          borderColor: c.palette.border,
+          color: c.palette.text,
+        }}
+      >
+        {input.options.map((value, i) => (
+          <li
+            key={value}
+            role="option"
+            aria-selected={i === input.pick}
+            className="cursor-pointer px-2.5 py-1.5"
+            style={i === input.pick ? { backgroundColor: c.palette.column } : undefined}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              input.pickOption(value);
+            }}
+          >
+            {value}
+          </li>
+        ))}
+      </ul>
+    );
   if (input.matches)
     return (
       <ul

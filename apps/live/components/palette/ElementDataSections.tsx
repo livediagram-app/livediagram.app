@@ -19,6 +19,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   LINE_DEFAULT_SERIES,
   chartPaletteColors,
+  chartTypeOf,
   PIE_DEFAULT_SLICES,
   PIE_PALETTE,
   PROGRESS_LOOPING_ANIMS,
@@ -65,6 +66,7 @@ import {
 } from '@/components/palette/BehaviourMenuSections';
 
 import { LegendPositionTiles } from '@/components/palette/context-menu-tiles';
+import { ChartTypeTiles } from '@/components/palette/ChartTypeTiles';
 import {
   hasWebRowsSection,
   WebRowsMenuSection,
@@ -325,6 +327,20 @@ export function ElementDataSections({
                 onSet={props.onSetRatingAnim}
                 onSetSpeed={props.onSetRatingAnimSpeed}
                 onSetRepeat={props.onSetRatingAnimRepeat}
+              />
+            </MenuAccordionSection>
+          ) : null}
+          {/* Chart Type (docs/specs/009-elements/pie-chart.md "Chart types"): first, as how the chart draws comes
+              before what it draws. */}
+          {isChart ? (
+            <MenuAccordionSection
+              title="Chart Type"
+              icon={<ChartMenuGlyph />}
+              {...sectionProps('chart-type')}
+            >
+              <ChartTypeTiles
+                current={shapeTarget ? chartTypeOf(shapeTarget) : null}
+                onSet={props.onSetChartType}
               />
             </MenuAccordionSection>
           ) : null}

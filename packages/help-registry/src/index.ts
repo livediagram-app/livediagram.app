@@ -1492,9 +1492,9 @@ export const articles: Article[] = [
     slug: 'sheets',
     title: 'Sheets',
     description:
-      'A spreadsheet tab on the canvas: setup and templates, cells, formulas, formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
+      'A spreadsheet tab on the canvas: setup and templates, cells, formulas, formatting, dropdowns, checkboxes, conditional formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
     keywords:
-      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy',
+      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy dropdown drop down select picklist pick list list chip chips checkbox check box tick box tickbox validation data validation rule rules conditional formatting conditional format highlight colour scale color scale heat map paint format format painter custom number format format code',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -2760,8 +2760,9 @@ export const articles: Article[] = [
     slug: 'bar-and-line-charts',
     title: 'Bar and Line Charts',
     description:
-      'Bar charts from label and value rows, and multi-series line charts from a grid or a CSV import.',
-    keywords: 'graph series csv data plot axis columns trends bar chart line chart',
+      'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
+    keywords:
+      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',

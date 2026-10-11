@@ -7,6 +7,10 @@
 import { usePlan } from '@/components/plan/PlanContext';
 import { cardFieldChoice } from './card-field-options';
 import { SheetCardRows } from './SheetCardRows';
+import { SheetRuleLayer } from './rules/SheetRuleLayer';
+import { invalidWhy } from './rules/sheet-rule-hover';
+import { previewFormatRules } from './rules/useSheetRulesState';
+import { SheetCellComments } from './SheetCellComments';
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   cycleInRange,
@@ -224,6 +228,12 @@ export function SheetGrid({
     return out;
   }, [tables, plan, c.interactive, c.canEdit]);
 
+  // The format rules as drawn: with the one being edited in its place, for its editor alone.
+  const formatRules = useMemo(
+    () => previewFormatRules(c.sheet.layout.formatRules, c.rules.formatPreview),
+    [c.sheet.layout.formatRules, c.rules.formatPreview],
+  );
+
   const filter = useMemo(() => {
     const f = c.sheet.layout.filter;
     const p = f ? posRangeOf(c.sheet.layout, f) : null;
@@ -315,7 +325,12 @@ export function SheetGrid({
           });
         return;
       }
+      case 'dropdown':
+        actions.openDropdown();
+        return;
       case 'escape':
+        // Paint Format lets go first (sheet.md "Paint Format").
+        if (c.rules.paint) return actions.paintStop();
         if (c.marquee) return c.setMarquee(null);
         if (c.findOpen) return c.setFindOpen(null);
         if (c.maximised) return restorePlanElement();
@@ -326,11 +341,16 @@ export function SheetGrid({
     }
   };
 
-  // The error under the pointer says why (sheet.md "The grid").
+  // The error under the pointer says why (sheet.md "The grid"); so does a value its validation rule does not allow
+  // (data-validation.md "Drawing").
   const hovered = pointer.hover;
   const hoverValue = hovered ? c.workbook.value(c.sheet.id, hovered.r, hovered.c) : null;
   const hoverError =
-    hovered && isError(hoverValue) ? displayValue(hoverValue, undefined, c.locale).error : null;
+    hovered && isError(hoverValue)
+      ? displayValue(hoverValue, undefined, c.locale).error
+      : hovered
+        ? invalidWhy(c, hovered.r, hovered.c)
+        : null;
   const hoverBox =
     hovered && hoverError ? cellBox(c.geometry, hovered.r, hovered.c, c.scroll) : null;
 
@@ -355,7 +375,7 @@ export function SheetGrid({
               }
         }
         // Escape first ends an edit, the copied range's marquee or Find; only then does it restore a maximised sheet.
-        data-keeps-escape={c.editing || c.marquee || c.findOpen ? '' : undefined}
+        data-keeps-escape={c.editing || c.marquee || c.findOpen || c.rules.paint ? '' : undefined}
         role="grid"
         tabIndex={c.interactive ? 0 : -1}
         aria-label={`${c.sheet.title} grid`}
@@ -372,7 +392,10 @@ export function SheetGrid({
         onBlur={() => pointer.pan.releaseSpace()}
         onKeyUp={(e) => {
           if (!c.editing && e.target === e.currentTarget)
-            pointer.pan.onKeyUp(e, () => actions.startEdit('type', ' '));
+            // Space on checkbox cells toggles them (data-validation.md "Using a checkbox"); else it types a space.
+            pointer.pan.onKeyUp(e, () => {
+              if (!actions.toggleCheckboxes()) actions.startEdit('type', ' ');
+            });
         }}
         onCopy={clipboard.onCopy}
         onCut={clipboard.onCut}
@@ -401,6 +424,7 @@ export function SheetGrid({
             >
               <SheetCells
                 padEnd={dropdownCols}
+                formatRules={formatRules}
                 sheet={c.sheet}
                 workbook={c.workbook}
                 version={c.version}
@@ -428,6 +452,9 @@ export function SheetGrid({
                 />
               ) : null}
               <SheetCardRows />
+              {/* Dropdowns, checkboxes and the rule panels (data-validation.md, conditional-formatting.md). */}
+              <SheetRuleLayer actions={actions} />
+              <SheetCellComments hover={pointer.hover} />
               {/* The charts that sit in this Sheet, over its cells (sheet.md "Charts"). */}
               <SheetChartsLayer fontFamily={fontFamily} />
               {pointer.preview?.kind === 'fill' ? (

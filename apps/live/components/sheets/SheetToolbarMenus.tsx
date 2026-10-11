@@ -4,7 +4,8 @@
 // PortalMenu, the colour ones with the shared colour row (theme swatches, your colours, a custom colour).
 import { BORDER_LINES, SheetBordersPicker, type BorderLine } from './SheetBordersPicker';
 import { useState } from 'react';
-import { FONTS } from '@livediagram/document';
+import { CHART_TYPE_LABELS, CHART_TYPES, FONTS } from '@livediagram/document';
+import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import {
   FONT_SIZE_DEFAULT,
   formatRange,
@@ -39,6 +40,7 @@ export type ToolbarMenuKind =
   | 'merge'
   | 'wrap'
   | 'sort'
+  | 'chart'
   | 'freeze'
   | 'more'
   // A family of functions (SheetFunctionMenu).
@@ -66,7 +68,7 @@ let lastLine: BorderLine = BORDER_LINES[0]!;
 type FoldedButton = {
   label: string;
   icon: React.ReactNode;
-  run?: () => void;
+  run?: (anchor?: HTMLElement, clicks?: number) => void;
   menu?: ToolbarMenuKind;
 };
 
@@ -180,6 +182,15 @@ export function SheetToolbarMenu({
             />
           ))
         : null}
+      {kind === 'number' ? (
+        // A format code of the person's own (sheet.md "Formatting"), in a popover against the same button.
+        <MenuActionRow
+          plain
+          label="Custom…"
+          icon={<Check on={f?.nf === 'custom'} />}
+          onClick={act(() => actions.openCustomFormat(anchor))}
+        />
+      ) : null}
       {kind === 'font'
         ? [{ id: null, label: 'Default', stack: undefined }, ...FONTS].map((font) => (
             <MenuActionRow
@@ -288,6 +299,17 @@ export function SheetToolbarMenu({
           />
         </>
       ) : null}
+      {kind === 'chart'
+        ? CHART_TYPES.map((type) => (
+            <MenuActionRow
+              key={type}
+              plain
+              label={`${CHART_TYPE_LABELS[type]} Chart`}
+              icon={<ChartTypeIcon type={type} />}
+              onClick={act(() => actions.insertChart(type))}
+            />
+          ))
+        : null}
       {kind === 'freeze' ? <SheetFreezeRows actions={actions} onDone={onClose} /> : null}
       {kind === 'more'
         ? folded.map((b) => (

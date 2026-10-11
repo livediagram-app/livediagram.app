@@ -25,6 +25,16 @@
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
 import { threadResolved, threadWithComment, threadWithoutComment } from './comment-thread';
+import {
+  CELL_THREADS_MAX,
+  cellThreadsOf,
+  isCellKey,
+  takesCellThreads,
+  threadAt,
+  threadHolding,
+  withThreadAt,
+  type CellCommentThreads,
+} from './cell-comments';
 import type { ChecklistItem } from './data-shapes';
 import {
   RESPONSES_MAX,
@@ -42,7 +52,7 @@ export const COLLAB_ROUND_MAX = 64;
 // Bounds on a comment arriving in a delta. Generous: the editor's own limits
 // are tighter, this only stops a hand-crafted frame from bloating a peer.
 const COMMENT_MAX_TEXT = 5000;
-const COMMENTS_MAX = 500;
+export const COMMENTS_MAX = 500;
 
 export type ElementDelta =
   // Cast (value) or withdraw (null) ONE participant's answer (docs/specs/012-collaboration/participant-responses.md).
@@ -61,11 +71,12 @@ export type ElementDelta =
   // rows meanwhile gets the row with that text, or nothing.
   | { kind: 'check'; index: number; text: string; done: boolean }
   // Comment threads (docs/specs/008-canvas/canvas-and-palette.md): append, delete, the server's id replacing the
-  // local one, and resolve / unresolve.
-  | { kind: 'comment-add'; comment: Comment }
+  // local one, and resolve / unresolve. `cell` names a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell
+  // comments") instead of the element's own; a remove or a rekey finds its comment in whichever thread holds it.
+  | { kind: 'comment-add'; comment: Comment; cell?: string }
   | { kind: 'comment-remove'; commentId: string }
   | { kind: 'comment-rekey'; from: string; to: string }
-  | { kind: 'comment-resolve'; resolved: boolean }
+  | { kind: 'comment-resolve'; resolved: boolean; cell?: string }
   // A Plan board's set-up change, as only what changed (docs/specs/012-collaboration/collab-race-hardening.md,
   // phase 6): column cogs and the Board flyout edit it without selecting the board, so two people set one
   // board up at once.
@@ -91,9 +102,11 @@ export function isComment(value: unknown): value is Comment {
   );
 }
 
-function withThread(el: Element, thread: CommentThread | undefined): Element {
-  const { commentThread: _drop, ...rest } = el as Element & { commentThread?: CommentThread };
-  return (thread ? { ...rest, commentThread: thread } : rest) as Element;
+// A delta's cell: absent for the element's own thread, else a cell key on an element that takes cell threads. A
+// malformed one (or one on any other element) is refused as a whole (`false`).
+function deltaCell(el: Element, cell: unknown): string | undefined | false {
+  if (cell === undefined) return undefined;
+  return isCellKey(cell) && takesCellThreads(el) ? cell : false;
 }
 
 // Apply one delta. Returns the SAME element when nothing changes (a delta for
@@ -152,19 +165,27 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
     }
     case 'comment-add': {
       if (!isComment(delta.comment)) return el;
-      const thread = (el as { commentThread?: CommentThread }).commentThread;
+      const cell = deltaCell(el, delta.cell);
+      if (cell === false) return el;
+      const thread = threadAt(el, cell);
+      // A new cell thread past the Sheet's bound is refused; an existing one takes replies.
+      if (cell !== undefined && !thread) {
+        if (Object.keys(cellThreadsOf(el) ?? {}).length >= CELL_THREADS_MAX) return el;
+      }
       const next = threadWithComment(thread, delta.comment, COMMENTS_MAX);
-      return next === thread ? el : withThread(el, next);
+      return next === thread ? el : withThreadAt(el, cell, next);
     }
     case 'comment-remove': {
-      const thread = (el as { commentThread?: CommentThread }).commentThread;
-      const next = threadWithoutComment(thread, delta.commentId);
-      return next === thread ? el : withThread(el, next);
+      const holder = threadHolding(el, delta.commentId);
+      if (!holder) return el;
+      const next = threadWithoutComment(holder.thread, delta.commentId);
+      return next === holder.thread ? el : withThreadAt(el, holder.cell, next);
     }
     case 'comment-rekey': {
-      const thread = (el as { commentThread?: CommentThread }).commentThread;
-      if (!thread || typeof delta.to !== 'string') return el;
-      if (!thread.comments.some((c) => c.id === delta.from)) return el;
+      if (typeof delta.to !== 'string') return el;
+      const holder = threadHolding(el, delta.from);
+      if (!holder) return el;
+      const { thread, cell } = holder;
       // The server's copy under the new id may have arrived first (the api
       // relays a view-role comment to the room, docs/specs/012-collaboration/collab-race-hardening.md): then the local copy
       // is the duplicate, and goes. The relayed copy carries no author id
@@ -172,7 +193,7 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       // author keeps their own delete button.
       const local = thread.comments.find((c) => c.id === delta.from)!;
       if (thread.comments.some((c) => c.id === delta.to)) {
-        return withThread(el, {
+        return withThreadAt(el, cell, {
           ...thread,
           comments: thread.comments
             .filter((c) => c.id !== delta.from)
@@ -183,15 +204,17 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
             ),
         });
       }
-      return withThread(el, {
+      return withThreadAt(el, cell, {
         ...thread,
         comments: thread.comments.map((c) => (c.id === delta.from ? { ...c, id: delta.to } : c)),
       });
     }
     case 'comment-resolve': {
-      const thread = (el as { commentThread?: CommentThread }).commentThread;
+      const cell = deltaCell(el, delta.cell);
+      if (cell === false) return el;
+      const thread = threadAt(el, cell);
       const next = threadResolved(thread, delta.resolved);
-      return next === thread ? el : withThread(el, next);
+      return next === thread ? el : withThreadAt(el, cell, next);
     }
     case 'board': {
       if (el.type !== 'shape' || !el.planBoard) return el;
@@ -271,7 +294,10 @@ export function mergeIncomingElement(
   let next = incoming;
   const localThread = (local as { commentThread?: CommentThread }).commentThread;
   const incomingThread = (incoming as { commentThread?: CommentThread }).commentThread;
-  if (localThread !== incomingThread) next = withThread(next, localThread);
+  if (localThread !== incomingThread) next = withThreadAt(next, undefined, localThread);
+  // A Sheet's cell threads travel as deltas too: ours is the merged copy.
+  const localCells = cellThreadsOf(local);
+  if (localCells !== cellThreadsOf(next)) next = withCellThreads(next, localCells);
   if (local.type === 'shape' && next.type === 'shape') {
     const shape: ShapeElement = next;
     let patched = shape;
@@ -297,6 +323,11 @@ export function mergeIncomingElement(
   return next;
 }
 
+function withCellThreads(el: Element, cells: CellCommentThreads | undefined): Element {
+  const { cellComments: _drop, ...rest } = el as Element & { cellComments?: CellCommentThreads };
+  return (cells ? { ...rest, cellComments: cells } : rest) as Element;
+}
+
 function keepField<K extends 'responses' | 'ideaCards' | 'ideaCardIds'>(
   el: ShapeElement,
   key: K,
@@ -309,7 +340,11 @@ function keepField<K extends 'responses' | 'ideaCards' | 'ideaCardIds'>(
 
 // Everything about an element EXCEPT what deltas carry, for comparing.
 function withoutDeltaFields(el: Element): unknown {
-  const { commentThread: _t, ...rest } = el as Element & { commentThread?: CommentThread };
+  const {
+    commentThread: _t,
+    cellComments: _cells,
+    ...rest
+  } = el as Element & { commentThread?: CommentThread; cellComments?: CellCommentThreads };
   if (rest.type !== 'shape') return rest;
   const {
     responses: _r,

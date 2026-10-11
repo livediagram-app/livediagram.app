@@ -104,10 +104,25 @@ export const SHAPE_COMMON_FIELDS = [
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
   entity: ['entityFields'],
-  'pie-chart': ['pieSlices', 'chartLegend', 'chartPalette', 'chartSource', 'sheetAnchor'],
-  'bar-chart': ['pieSlices', 'chartLegend', 'chartPalette', 'chartSource', 'sheetAnchor'],
+  'pie-chart': [
+    'pieSlices',
+    'chartVariant',
+    'chartLegend',
+    'chartPalette',
+    'chartSource',
+    'sheetAnchor',
+  ],
+  'bar-chart': [
+    'pieSlices',
+    'chartVariant',
+    'chartLegend',
+    'chartPalette',
+    'chartSource',
+    'sheetAnchor',
+  ],
   'line-chart': [
     'lineCategories',
+    'chartVariant',
     'lineSeries',
     'chartLegend',
     'chartPalette',

@@ -4,7 +4,7 @@ import type { CommentsView, ViewDoor } from '@livediagram/api-schema';
 import type { Element } from '@livediagram/document';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';
-import { numberField, stringField, textField, threadOf } from './fields';
+import { cellThreadsOf, numberField, stringField, textField, threadOf } from './fields';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';
 import { attrValue, jsonString } from './text';
@@ -38,24 +38,37 @@ export function commentText(c: ThreadComment): string {
   return `${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`;
 }
 
-function threadOfElement(model: ViewModel, el: Element): Thread | null {
-  const thread = threadOf(el);
-  if (thread === null) return null;
-  return {
+// An element's threads: its own, then (on a Sheet) each cell's, named by its cell key
+// (docs/specs/029-sheets/sheet.md "Cell comments").
+function threadsOfElement(model: ViewModel, el: Element): Thread[] {
+  const base = {
     ref: model.refs.refOf(el.id),
     kind: model.kindOf(el),
     label: textField(el, 'label'),
-    resolved: thread.resolved,
-    comments: thread.comments.map(readComment),
   };
+  const thread = threadOf(el);
+  const own: Thread[] =
+    thread === null
+      ? []
+      : [{ ...base, resolved: thread.resolved, comments: thread.comments.map(readComment) }];
+  return [
+    ...own,
+    ...cellThreadsOf(el).map((t) => ({
+      ...base,
+      cell: t.cell,
+      resolved: t.resolved,
+      comments: t.comments.map(readComment),
+    })),
+  ];
 }
 
 function threadLines(thread: Thread): ViewLine[] {
   const label = thread.label === null ? '' : ` ${jsonString(thread.label, LABEL_CUT_CHARS)}`;
   const state = thread.resolved ? 'resolved' : 'open';
+  const cell = thread.cell === undefined ? '' : ` · cell ${thread.cell}`;
   return [
     {
-      text: `${thread.kind} ${thread.ref}${label} · ${state} · ${thread.comments.length}`,
+      text: `${thread.kind} ${thread.ref}${label}${cell} · ${state} · ${thread.comments.length}`,
       noun: THREAD,
     },
     ...thread.comments.map((c) => ({
@@ -72,12 +85,17 @@ export function threadListingLines(thread: {
   label: string | null;
   resolved: boolean;
   tabName: string;
+  // A Sheet cell's thread: its A1 when the listing knows it, else its cell key.
+  cell?: string;
+  cellRef?: string;
   comments: readonly ThreadComment[];
 }): string[] {
   const label = thread.label === null ? '' : ` ${jsonString(thread.label, LABEL_CUT_CHARS)}`;
   const state = thread.resolved ? 'resolved' : 'open';
+  const where = thread.cellRef ?? thread.cell;
+  const cell = where === undefined ? '' : ` · cell ${where}`;
   return [
-    `${thread.ref}${label} · ${state} · ${thread.comments.length} · tab ${jsonString(thread.tabName)}`,
+    `${thread.ref}${label}${cell} · ${state} · ${thread.comments.length} · tab ${jsonString(thread.tabName)}`,
     ...thread.comments.map((c) => `  ${commentText(c)}`),
   ];
 }
@@ -89,7 +107,7 @@ export function commentHosts(
 ): { el: Element; ref: string; label: string | null }[] {
   return depthFirst(model.tree.roots)
     .map((n) => n.el)
-    .filter((el) => threadOf(el) !== null)
+    .filter((el) => threadOf(el) !== null || cellThreadsOf(el).length > 0)
     .map((el) => ({ el, ref: model.refs.refOf(el.id), label: textField(el, 'label') }));
 }
 
@@ -98,10 +116,7 @@ export function commentsView(
   options: CommentsOptions = {},
 ): ViewResult<CommentsView> {
   const elements = depthFirst(model.tree.roots).map((n) => n.el);
-  const threads = elements.flatMap((el) => {
-    const thread = threadOfElement(model, el);
-    return thread === null ? [] : [thread];
-  });
+  const threads = elements.flatMap((el) => threadsOfElement(model, el));
   const shown = threads.filter((t) => options.all || !t.resolved);
   const resolved = threads.length - shown.length;
   const owned = shown.flatMap((thread) => threadLines(thread).map((line) => ({ line, thread })));

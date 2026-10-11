@@ -22,6 +22,7 @@ import {
   referenceSlot,
 } from './formula-assist';
 import { useSheetController } from './sheet-controller';
+import { dropdownMatches } from './rules/dropdown-assist';
 import type { SheetActions } from './useSheetActions';
 
 const ARROWS: Record<string, Dir> = {
@@ -36,6 +37,9 @@ export type FormulaInput = {
   pick: number;
   setPick: (i: number) => void;
   matches: ReturnType<typeof functionMatches>;
+  // A dropdown cell's options matching what is typed (data-validation.md "Using a dropdown"), or null.
+  options: string[] | null;
+  pickOption: (value: string) => void;
   caret: number;
   setCaret: (n: number) => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -58,6 +62,12 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
   const draft = editing?.draft ?? '';
   const rangeNames = (c.sheet.layout.names ?? []).map((x) => x.name);
   const matches = editing ? functionMatches(draft, caret, 8, rangeNames) : null;
+  // Escape closes the options and keeps the typing, until the next change.
+  const [optionsClosed, setOptionsClosed] = useState(false);
+  const options =
+    editing && !optionsClosed && !matches
+      ? dropdownMatches(c.workbook, c.sheet.id, { r: editing.r, c: editing.c }, draft)
+      : null;
 
   const setDraft = useCallback(
     (next: string, nextCaret: number, el?: HTMLTextAreaElement | null) => {
@@ -70,8 +80,8 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
     [c],
   );
 
-  const commit = (move: Dir | 'none', all = false) => {
-    const r = actions.commitEdit(move, all);
+  const commit = (move: Dir | 'none', all = false, override?: string) => {
+    const r = actions.commitEdit(move, all, override);
     if (!r.ok) setError({ message: r.message, at: r.at });
     else {
       setPoint(null);
@@ -86,11 +96,38 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
     setPick(0);
   };
 
+  // A picked option is the cell's value: saved as the edit, then the active cell moves down.
+  const pickOption = (value: string, move: Dir | 'none' = 'down') => {
+    if (!c.editing) return;
+    commit(move, false, value);
+  };
+
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     e.stopPropagation();
     if (!editing) return;
     const el = e.currentTarget;
     const at = el.selectionStart ?? draft.length;
+    if (options && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      setPick((p) => (p + (e.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length);
+      return;
+    }
+    if (
+      options &&
+      (e.key === 'Tab' || (e.key === 'Enter' && !e.altKey && !e.metaKey && !e.ctrlKey))
+    ) {
+      e.preventDefault();
+      pickOption(
+        options[Math.min(pick, options.length - 1)]!,
+        e.key === 'Tab' ? (e.shiftKey ? 'left' : 'right') : e.shiftKey ? 'up' : 'down',
+      );
+      return;
+    }
+    if (options && e.key === 'Escape') {
+      e.preventDefault();
+      setOptionsClosed(true);
+      return;
+    }
     if (matches && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
       e.preventDefault();
       setPick(
@@ -166,7 +203,20 @@ export function useFormulaInput(actions: SheetActions): FormulaInput {
     setPoint(null);
     setPick(0);
     setError(null);
+    setOptionsClosed(false);
   };
 
-  return { error, pick, setPick, matches, caret, setCaret, onKeyDown, onChange, accept };
+  return {
+    error,
+    pick,
+    setPick,
+    matches,
+    options,
+    pickOption: (value: string) => pickOption(value),
+    caret,
+    setCaret,
+    onKeyDown,
+    onChange,
+    accept,
+  };
 }

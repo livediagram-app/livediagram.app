@@ -5,11 +5,13 @@
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { isPlanSheetRef } from './element-types';
 import { isChartSource, isSheetAnchor } from './chart-source';
+import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { QA_MAX_ID, QA_MAX_NAME, QA_MAX_NOTES, QA_MAX_TEXT, QA_MAX_VOTERS } from './qa-board';
-import { COLLAB_ROUND_MAX } from './element-deltas';
+import { COLLAB_ROUND_MAX, COMMENTS_MAX, isComment } from './element-deltas';
+import { CELL_THREADS_MAX, isCellKey } from './cell-comments';
 import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
 import {
   AGENDA_MAX_ITEMS,
@@ -109,6 +111,23 @@ const isQaNote = (n: unknown) =>
   (n.doneAt === undefined || isNum(n.doneAt)) &&
   (n.author === undefined || isQaAuthor(n.author));
 
+// A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): at most CELL_THREADS_MAX, each keyed
+// by a cell key and holding a thread as an element's.
+const isCellCommentThreads = (v: unknown): boolean => {
+  if (!isRecord(v)) return false;
+  const entries = Object.entries(v);
+  return (
+    entries.length <= CELL_THREADS_MAX &&
+    entries.every(
+      ([key, t]) =>
+        isCellKey(key) &&
+        isRecord(t) &&
+        isBool(t.resolved) &&
+        rowsOf(COMMENTS_MAX, isComment)(t.comments),
+    )
+  );
+};
+
 // Agenda (docs/specs/012-collaboration/agenda.md): minutes are clamped where read
 // (clampAgendaMinutes), not rejected here.
 const isAgendaItem = (item: unknown) =>
@@ -158,6 +177,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   { field: 'codeTheme', valid: (v) => isCodeThemeId(v as string), rule: 'a code theme id' },
   { field: 'mindFlow', valid: (v) => isMindFlow(v as string), rule: 'a mind flow' },
+  {
+    field: 'chartVariant',
+    valid: isChartVariant,
+    rule: oneOfRule(CHART_VARIANTS),
+  },
   {
     field: 'chartPalette',
     valid: (v) => isChartPaletteId(v as string),
@@ -296,6 +320,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     field: 'planSheet',
     valid: (v: unknown) => isPlanSheetRef(v),
     rule: 'an object { sheetId } naming a sheet of the document',
+  },
+  {
+    field: 'cellComments',
+    valid: isCellCommentThreads,
+    rule: `an object of at most ${CELL_THREADS_MAX} comment threads keyed by cell (rowId:colId)`,
   },
   {
     field: 'legendItems',

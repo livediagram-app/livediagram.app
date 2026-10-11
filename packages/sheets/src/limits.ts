@@ -56,3 +56,13 @@ export const CARD_CONTROLS_COL_PX = 72;
 
 // Decimals a number format may show.
 export const DECIMALS_MAX = 10;
+
+// Validation and format rules (docs/specs/029-sheets/blueprints/sheet-rules.md "Constants and configuration").
+export const VALIDATION_RULES_MAX = 200;
+export const FORMAT_RULES_MAX = 100;
+export const DROPDOWN_OPTIONS_MAX = 500;
+export const DROPDOWN_OPTION_MAX = 255;
+export const VALIDATION_HELP_MAX = 255;
+export const FORMAT_RULE_FORMULA_MAX = 1_000;
+// A Custom number format's code.
+export const FORMAT_CODE_MAX = 64;

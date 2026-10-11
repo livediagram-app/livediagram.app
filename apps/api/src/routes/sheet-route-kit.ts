@@ -45,9 +45,15 @@ export const SHEET_WRITE_RETRIES = 3;
 
 const GATES = { read: gateRead, participate: gateParticipate, edit: gateEdit } as const;
 
-export function sheetRejected(error: SheetError, status = 400, at?: string): Response {
-  console.info('[sheets] sheets.rejected', { error });
-  return json({ error, ...(at ? { at } : {}) }, { status });
+export function sheetRejected(
+  error: SheetError,
+  status = 400,
+  at?: string,
+  // What a refusing validation rule allows (value_invalid), for agents and other clients to say.
+  line?: string,
+): Response {
+  console.info('[sheets] sheets.rejected', { error, ...(at ? { at } : {}) });
+  return json({ error, ...(at ? { at } : {}), ...(line ? { line } : {}) }, { status });
 }
 
 export const sheetNotFound = () => sheetRejected('sheet_not_found', 404);

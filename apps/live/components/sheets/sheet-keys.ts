@@ -30,6 +30,8 @@ export type SheetKeyCommand =
   | { kind: 'fill'; dir: 'down' | 'right' }
   | { kind: 'numberFormat'; nf: 'number' | 'currency' | 'percent' }
   | { kind: 'escape' }
+  // Alt+Down: the active cell's dropdown (data-validation.md "Using a dropdown").
+  | { kind: 'dropdown' }
   | { kind: 'menu' };
 
 const ARROWS: Record<string, Dir> = {
@@ -43,6 +45,7 @@ export function sheetKey(e: KeyLike): SheetKeyCommand | null {
   const mod = e.ctrlKey || e.metaKey;
   const dir = ARROWS[e.key];
   if (dir && !e.altKey) return { kind: 'move', dir, jump: mod, extend: e.shiftKey };
+  if (e.key === 'ArrowDown' && e.altKey && !mod && !e.shiftKey) return { kind: 'dropdown' };
   if (e.key === 'Tab') return { kind: 'tab', back: e.shiftKey };
   if (e.key === 'Enter' && !mod && !e.altKey) return { kind: 'enter', back: e.shiftKey };
   if (e.key === 'F2') return { kind: 'edit' };
