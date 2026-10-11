@@ -174,7 +174,9 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   the Trash), its count tucked into its corner; with a grey badge of how many cards
   it holds. While a card is dragged the button opens out into a dashed **Drop to Trash** target, and while the
   card is over it fills with the brand colour, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
-  colours still change); a card let go there is trashed and the move is announced.
+  colours still change); a card let go there is trashed and the move is announced. That holds wherever the board is:
+  a maximised or tab-filling board runs under the bottom-right controls, so the target floats over the board, and
+  a card over it is over the Trash, not over a column (no slot opens beneath it).
 - **Every way of deleting a card trashes it**: **Trash** in its menu and in the item panel's ⋯ menu (named
   **Trash**, not Delete), the Delete key on a focused card, and the drop on the Trash button. Each closes an open
   panel and is announced ("Card moved to the Trash"). A card leaves the store for good only from the Trash popover
