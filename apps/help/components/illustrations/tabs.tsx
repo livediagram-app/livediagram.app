@@ -926,8 +926,9 @@ export function CleanupBeforeAfter() {
       <Shape x={108} y={64} w={56} h={30} kind="rect" />
       <Shape x={44} y={104} w={56} h={30} kind="rect" />
       <Shape x={128} y={132} w={56} h={30} kind="rect" />
-      <Arrow from={[76, 55]} to={[108, 79]} tone="muted" />
-      <Arrow from={[72, 79]} to={[72, 104]} tone="muted" />
+      <Arrow from={[76, 55]} to={[108, 75]} tone="muted" />
+      <Arrow from={[60, 70]} to={[60, 104]} tone="muted" />
+      <Arrow from={[142, 94]} to={[152, 132]} tone="muted" />
 
       {/* Divider arrow */}
       <Arrow from={[196, 105]} to={[226, 105]} kind="straight" />

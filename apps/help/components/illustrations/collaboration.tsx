@@ -94,29 +94,62 @@ export function CommentThread() {
 /** A shared canvas with several live cursors carrying name tags, plus a
  *  presence avatar stack in the corner. */
 export function LiveCursors() {
+  // A tab pill with the initials of who is on that tab at its right.
+  const pill = (x: number, w: number, label: string, on: boolean, people: Person[]) => (
+    <g>
+      <rect
+        x={x}
+        y={206}
+        width={w}
+        height={24}
+        rx={7}
+        className={on ? 'fill-white stroke-brand-400' : 'fill-slate-100 stroke-slate-200'}
+        strokeWidth={1.4}
+      />
+      <Label x={x + 10} y={219} size={10} weight={on ? 700 : 500} tone={on ? 'accent' : 'body'}>
+        {label}
+      </Label>
+      {people.map((p, i) => (
+        <Avatar
+          key={p.initial}
+          cx={x + w - 12 - (people.length - 1 - i) * 11}
+          cy={218}
+          r={7}
+          initial={p.initial}
+          colour={p.colour}
+        />
+      ))}
+    </g>
+  );
   return (
-    <Scene w={420} h={240}>
-      <Shape x={60} y={64} w={92} h={48} kind="rect" label="Idea" />
-      <Shape x={236} y={150} w={92} h={48} kind="circle" label="Review" />
-      {/* Presence avatar stack, top-right */}
-      <g>
-        <Avatar cx={336} cy={28} r={13} initial="A" colour="brand" />
-        <Avatar cx={358} cy={28} r={13} initial="J" colour="violet" />
-        <Avatar cx={380} cy={28} r={13} initial="M" colour="emerald" />
-      </g>
+    <Scene w={420} h={246}>
+      <Shape x={60} y={48} w={92} h={48} kind="rect" label="Idea" />
+      <Shape x={236} y={116} w={92} h={48} kind="circle" label="Review" />
       {/* Live cursors with name tags */}
-      <Cursor x={120} y={120} name="Aria" colour="brand" />
-      <Cursor x={250} y={86} name="Jae" colour="violet" />
-      <Cursor x={184} y={184} name="Mara" colour="emerald" />
+      <Cursor x={120} y={104} name="Aria" colour="brand" />
+      <Cursor x={250} y={60} name="Jae" colour="violet" />
+      <Cursor x={170} y={158} name="Mara" colour="emerald" />
+      {/* The tab bar: each tab carries the initials of who is on it. */}
+      <rect x={0} y={198} width={420} height={40} className="fill-slate-50" />
+      <line x1={0} y1={198} x2={420} y2={198} className="stroke-slate-200" strokeWidth={1} />
+      {pill(16, 118, 'Overview', true, [
+        { initial: 'A', colour: 'brand' },
+        { initial: 'J', colour: 'violet' },
+        { initial: 'M', colour: 'emerald' },
+      ])}
+      {pill(142, 96, 'Backlog', false, [{ initial: 'R', colour: 'amber' }])}
+      {pill(246, 72, 'Notes', false, [])}
     </Scene>
   );
 }
 
-/** An element a teammate has selected: their initials sit on its top-left corner, and hovering
- *  them explains the lock. */
+type Person = { initial: string; colour: 'brand' | 'violet' | 'emerald' | 'amber' };
+
+/** An element a teammate has selected: their initials sit on its top-left corner, and the
+ *  selection outline in their colour shows it is theirs while they hold it. */
 export function PresenceSelection() {
   return (
-    <Scene w={420} h={210}>
+    <Scene w={420} h={170}>
       <Shape x={70} y={62} w={112} h={56} kind="rect" label="Schema" />
       {/* Selection outline in the collaborator's colour */}
       <rect
@@ -130,23 +163,7 @@ export function PresenceSelection() {
         strokeDasharray="4 3"
       />
       <Avatar cx={68} cy={60} r={10} initial="J" colour="violet" />
-      {/* The hover card on the initials. */}
-      <g transform="translate(92 136)">
-        <rect
-          width={250}
-          height={46}
-          rx={8}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={12} y={15} size={11} weight={700} tone="strong">
-          Locked to Jae
-        </Label>
-        <Label x={12} y={32} size={10} tone="muted">
-          Selected by them; you can&apos;t edit it right now.
-        </Label>
-      </g>
-      <path d="M72 72 L92 136" className="stroke-slate-300" strokeWidth={1} strokeDasharray="3 3" />
+      <Cursor x={196} y={124} name="Jae" colour="violet" />
       <Shape x={262} y={56} w={104} h={48} kind="circle" label="API" />
     </Scene>
   );
@@ -380,31 +397,108 @@ function RoleBadge({ x, y, role }: { x: number; y: number; role: 'Admin' | 'Memb
   );
 }
 
-/** A team panel with a member list and Admin / Member role badges. */
+/** A role picker as an Admin sees it on another member's row: the role with a caret. */
+function RoleSelect({ x, y, role }: { x: number; y: number; role: 'Admin' | 'Member' }) {
+  return (
+    <g>
+      <Label x={x} y={y + 11} size={10} weight={600} tone="body">
+        {role}
+      </Label>
+      <path
+        d={`M${x + role.length * 6.2 + 6} ${y + 8} l3.5 3.5 l3.5 -3.5`}
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
+
+/** One member row: avatar, name (with an Invited pill while pending), the email under it, and the
+ *  role at the right. */
+function MemberRow({
+  y,
+  left,
+  right,
+  m,
+  email,
+  invited = false,
+  select = false,
+}: {
+  y: number;
+  left: number;
+  right: number;
+  m: Member;
+  email: string;
+  invited?: boolean;
+  select?: boolean;
+}) {
+  return (
+    <g>
+      <Avatar cx={left + 12} cy={y} r={12} initial={m.initial} colour={m.colour} />
+      <Label x={left + 32} y={y - 5} size={11} weight={600} tone="strong">
+        {m.name}
+      </Label>
+      {invited ? (
+        <g>
+          <rect
+            x={left + 38 + m.name.length * 6.6}
+            y={y - 13}
+            width={42}
+            height={15}
+            rx={7.5}
+            className="fill-amber-100 stroke-amber-200"
+            strokeWidth={1}
+          />
+          <Label
+            x={left + 59 + m.name.length * 6.6}
+            y={y - 5}
+            anchor="middle"
+            size={9}
+            weight={500}
+            className="fill-amber-700"
+          >
+            Invited
+          </Label>
+        </g>
+      ) : null}
+      <Label x={left + 32} y={y + 9} size={9.5} tone="muted">
+        {email}
+      </Label>
+      {select ? (
+        <RoleSelect x={right - 58} y={y - 10} role={m.role} />
+      ) : (
+        <RoleBadge x={right - (m.role === 'Admin' ? 50 : 58)} y={y - 10} role={m.role} />
+      )}
+    </g>
+  );
+}
+
+/** A team's card with its member list and Admin / Member role badges, as a Member sees it. */
 export function TeamMembers() {
-  const members: Member[] = [
-    { initial: 'A', name: 'Aria', role: 'Admin', colour: 'brand' },
-    { initial: 'J', name: 'Jae', role: 'Member', colour: 'violet' },
-    { initial: 'M', name: 'Mara', role: 'Member', colour: 'emerald' },
+  const members: (Member & { email: string })[] = [
+    { initial: 'A', name: 'Aria', role: 'Admin', colour: 'brand', email: 'aria@acme.com' },
+    { initial: 'J', name: 'Jae', role: 'Member', colour: 'violet', email: 'jae@acme.com' },
+    { initial: 'M', name: 'Mara', role: 'Member', colour: 'emerald', email: 'mara@acme.com' },
   ];
   return (
     <Scene w={420} h={210} bg="plain">
-      <Panel x={70} y={20} w={280} h={172} title="Design team">
+      <Panel x={70} y={16} w={280} h={180}>
+        <Label x={86} y={36} size={10} tone="muted">
+          Acme · 3 members
+        </Label>
         {members.map((m, i) => {
-          const ry = 52 + i * 44;
+          const ry = 70 + i * 42;
           return (
             <g key={m.name}>
-              <Avatar cx={92} cy={ry} r={13} initial={m.initial} colour={m.colour} />
-              <Label x={114} y={ry} size={10} weight={600} tone="strong">
-                {m.name}
-              </Label>
-              <RoleBadge x={272} y={ry - 10} role={m.role} />
+              <MemberRow y={ry} left={84} right={336} m={m} email={m.email} />
               {i < members.length - 1 && (
                 <line
-                  x1={80}
-                  y1={ry + 22}
-                  x2={340}
-                  y2={ry + 22}
+                  x1={84}
+                  y1={ry + 21}
+                  x2={336}
+                  y2={ry + 21}
                   className="stroke-slate-100"
                   strokeWidth={1.5}
                 />
@@ -417,45 +511,41 @@ export function TeamMembers() {
   );
 }
 
-/** An admin's view of the members: role badges, a pending invite, and the invite-by-email row
- *  with its Invite button at the foot of the list. */
+/** An Admin's view of the members: the only Admin's fixed badge, a role picker on every other
+ *  row, a pending invite, and the invite-by-email row at the foot of the list. */
 export function RolesAndInvites() {
   return (
     <Scene w={420} h={236} bg="plain">
-      <Panel x={46} y={12} w={328} h={214} title="Design team">
-        <Label x={62} y={46} size={10} tone="muted">
+      <Panel x={46} y={12} w={328} h={214}>
+        <Label x={62} y={32} size={10} tone="muted">
           Acme · 2 members · 1 invited
         </Label>
-        {/* Member rows */}
-        <Avatar cx={74} cy={74} r={12} initial="A" colour="brand" />
-        <Label x={94} y={74} size={11} weight={600} tone="strong">
-          Aria
-        </Label>
-        <RoleBadge x={300} y={64} role="Admin" />
-        <line x1={62} y1={94} x2={358} y2={94} className="stroke-slate-100" strokeWidth={1.5} />
-        <Avatar cx={74} cy={114} r={12} initial="J" colour="violet" />
-        <Label x={94} y={114} size={11} weight={600} tone="strong">
-          Jae
-        </Label>
-        <RoleBadge x={300} y={104} role="Member" />
-        <line x1={62} y1={134} x2={358} y2={134} className="stroke-slate-100" strokeWidth={1.5} />
-        <Avatar cx={74} cy={154} r={12} initial="M" colour="slate" />
-        <Label x={94} y={154} size={11} weight={600} tone="strong">
-          mara@acme.com
-        </Label>
-        <rect
-          x={232}
-          y={145}
-          width={56}
-          height={18}
-          rx={6}
-          className="fill-amber-50 stroke-amber-400"
-          strokeWidth={1}
+        <MemberRow
+          y={64}
+          left={60}
+          right={358}
+          m={{ initial: 'A', name: 'Aria', role: 'Admin', colour: 'brand' }}
+          email="aria@acme.com"
         />
-        <Label x={260} y={155} anchor="middle" size={10} weight={600} className="fill-amber-500">
-          Invited
-        </Label>
-        <RoleBadge x={300} y={144} role="Member" />
+        <line x1={62} y1={86} x2={358} y2={86} className="stroke-slate-100" strokeWidth={1.5} />
+        <MemberRow
+          y={108}
+          left={60}
+          right={358}
+          m={{ initial: 'J', name: 'Jae', role: 'Member', colour: 'violet' }}
+          email="jae@acme.com"
+          select
+        />
+        <line x1={62} y1={130} x2={358} y2={130} className="stroke-slate-100" strokeWidth={1.5} />
+        <MemberRow
+          y={152}
+          left={60}
+          right={358}
+          m={{ initial: 'M', name: 'Mara', role: 'Member', colour: 'amber' }}
+          email="mara@acme.com"
+          invited
+          select
+        />
         {/* Invite-by-email row */}
         <line x1={46} y1={178} x2={374} y2={178} className="stroke-slate-200" strokeWidth={1.5} />
         <Label x={66} y={201} anchor="middle" size={14} weight={600} tone="muted">
@@ -470,63 +560,81 @@ export function RolesAndInvites() {
   );
 }
 
-/** A per-team shared folder tree. */
+/** A team's shared library: the Team documents breadcrumb with the view toggle and Create, above
+ *  the folders and documents of the level you are in. */
 export function TeamSharedTree() {
-  const rows: { label: string; depth: number; folder: boolean; badge?: boolean }[] = [
-    { label: 'Design Team', depth: 0, folder: true },
-    { label: 'Architecture', depth: 1, folder: true },
-    { label: 'System overview', depth: 2, folder: false, badge: true },
-    { label: 'Data flow', depth: 2, folder: false, badge: true },
-    { label: 'Onboarding', depth: 1, folder: true },
-    { label: 'Retro notes', depth: 1, folder: false, badge: true },
+  const rows: { label: string; folder: boolean; meta: string }[] = [
+    { label: 'Architecture', folder: true, meta: '4 documents' },
+    { label: 'Onboarding', folder: true, meta: '2 documents' },
+    { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
+    { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
   ];
   return (
     <Scene w={420} h={230} bg="plain">
-      <Panel x={70} y={16} w={280} h={198} title="Team documents">
+      <Panel x={50} y={16} w={320} h={198}>
+        <rect x={51} y={17} width={318} height={32} rx={9} className="fill-slate-50" />
+        <line x1={51} y1={49} x2={369} y2={49} className="stroke-slate-200" strokeWidth={1} />
+        <Label x={66} y={34} size={9.5} weight={700} tone="muted">
+          TEAM DOCUMENTS
+        </Label>
+        {/* View toggle: list and grid. */}
+        <rect
+          x={256}
+          y={24}
+          width={40}
+          height={18}
+          rx={5}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        <rect x={258} y={26} width={18} height={14} rx={3} className="fill-brand-100" />
+        <path
+          d="M262 30 h10 M262 33 h10 M262 36 h10"
+          className="stroke-brand-600"
+          strokeWidth={1}
+        />
+        <path
+          d="M281 29 h4 v4 h-4 Z M287 29 h4 v4 h-4 Z M281 35 h4 v4 h-4 Z M287 35 h4 v4 h-4 Z"
+          className="fill-none stroke-slate-400"
+          strokeWidth={0.9}
+        />
+        <Button x={302} y={23} w={56} h={20} label="Create" variant="primary" />
         {rows.map((r, i) => {
-          const ry = 48 + i * 28;
-          const tx = 88 + r.depth * 22;
+          const ry = 72 + i * 36;
           return (
             <g key={r.label}>
               {r.folder ? (
                 <path
-                  d={`M${tx} ${ry - 4} h7 l2 3 h7 v9 h-16 Z`}
+                  d={`M68 ${ry - 6} h7 l2 3 h8 v10 h-17 Z`}
                   className="fill-brand-200 stroke-brand-400"
                   strokeWidth={1.5}
                 />
               ) : (
                 <rect
-                  x={tx}
-                  y={ry - 5}
+                  x={70}
+                  y={ry - 7}
                   width={13}
-                  height={15}
+                  height={16}
                   rx={2}
                   className="fill-white stroke-slate-300"
                   strokeWidth={1.5}
                 />
               )}
-              <Label
-                x={tx + 20}
-                y={ry + 2}
-                size={11}
-                weight={r.depth === 0 ? 700 : 500}
-                tone={r.depth === 0 ? 'strong' : 'body'}
-              >
+              <Label x={94} y={ry + 1} size={11} weight={500} tone="strong">
                 {r.label}
               </Label>
-              {r.badge && (
-                <g transform={`translate(${296} ${ry - 7})`}>
-                  <rect
-                    width={42}
-                    height={18}
-                    rx={5}
-                    className="fill-brand-100 stroke-brand-300"
-                    strokeWidth={1}
-                  />
-                  <Label x={21} y={10} anchor="middle" size={10} weight={600} tone="accent">
-                    Team
-                  </Label>
-                </g>
+              <Label x={352} y={ry + 1} anchor="end" size={9.5} tone="muted">
+                {r.meta}
+              </Label>
+              {i < rows.length - 1 && (
+                <line
+                  x1={64}
+                  y1={ry + 18}
+                  x2={356}
+                  y2={ry + 18}
+                  className="stroke-slate-100"
+                  strokeWidth={1.2}
+                />
               )}
             </g>
           );
