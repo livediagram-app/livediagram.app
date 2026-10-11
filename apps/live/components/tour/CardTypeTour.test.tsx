@@ -32,6 +32,8 @@ describe('Show Me', () => {
     section.dataset.tourId = 'card-type-fields';
     const scrollIntoView = vi.fn();
     section.scrollIntoView = scrollIntoView;
+    // jsdom lays nothing out: give the section a box so the reveal sees it rendered.
+    section.getClientRects = () => [{}] as unknown as DOMRectList;
     document.body.append(section);
     const showTab = vi.fn();
     await CARD_TYPE_TOUR_STEPS.find((s) => s.id === 'fields')!.prepare!({ showTab });

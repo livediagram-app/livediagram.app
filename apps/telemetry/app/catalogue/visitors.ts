@@ -335,38 +335,54 @@ export const FACILITATE_TOUR: MetricStack = {
   headline: FACILITATE_TOURS_STARTED,
 };
 
-// Show Me in the card type editor (docs/specs/026-plan/item-types.md "Editing a type"): never offered, so it starts
-// only when pressed.
-export const CARD_TYPE_TOURS_STARTED = chart(
+// Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts
+// only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
+const SHOW_ME_SURFACES = [
+  { token: 'CardTypeTour', title: 'Card Type', where: 'the card type editor' },
+  { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
+] as const;
+
+export const SHOW_ME_TOURS_STARTED = chart(
   'UI',
   'Started',
-  'Card Type Tours Started',
-  'Show Me pressed in the card type editor.',
-  { types: ['CardTypeTour'] },
+  'Show Me Tours Started',
+  'Show Me pressed, on any surface.',
+  { types: SHOW_ME_SURFACES.map((s) => s.token) },
 );
 
-export const CARD_TYPE_TOURS_COMPLETED = chart(
+export const SHOW_ME_TOURS_BY_SURFACE: Metric[] = SHOW_ME_SURFACES.map((s) =>
+  chart('UI', 'Started', `${s.title} Tours Started`, `Show Me pressed in ${s.where}.`, {
+    types: [s.token],
+  }),
+);
+
+export const SHOW_ME_TOURS_COMPLETED = chart(
   'UI',
   'Ended',
-  'Card Type Tours Completed',
-  'The card type tour run to its end.',
-  { types: ['CardTypeTourCompleted'] },
+  'Show Me Tours Completed',
+  'A Show Me tour run to its end.',
+  { types: SHOW_ME_SURFACES.map((s) => `${s.token}Completed`) },
 );
 
-export const CARD_TYPE_TOURS_SKIPPED = chart(
+export const SHOW_ME_TOURS_SKIPPED = chart(
   'UI',
   'Ended',
-  'Card Type Tours Skipped',
-  'The card type tour closed before its end.',
-  { types: ['CardTypeTourSkipped'], rising: 'neutral' },
+  'Show Me Tours Skipped',
+  'A Show Me tour closed before its end.',
+  { types: SHOW_ME_SURFACES.map((s) => `${s.token}Skipped`), rising: 'neutral' },
 );
 
-export const CARD_TYPE_TOUR: MetricStack = {
+export const SHOW_ME_TOURS: MetricStack = {
   stack: true,
-  title: 'Card Type Tour',
-  blurb: "The card type editor's Show Me: started, finished or skipped.",
-  members: [CARD_TYPE_TOURS_STARTED, CARD_TYPE_TOURS_COMPLETED, CARD_TYPE_TOURS_SKIPPED],
-  headline: CARD_TYPE_TOURS_STARTED,
+  title: 'Show Me Tours',
+  blurb: 'Show Me, on every surface that has one: started, finished or skipped.',
+  members: [
+    SHOW_ME_TOURS_STARTED,
+    ...SHOW_ME_TOURS_BY_SURFACE,
+    SHOW_ME_TOURS_COMPLETED,
+    SHOW_ME_TOURS_SKIPPED,
+  ],
+  headline: SHOW_ME_TOURS_STARTED,
 };
 
 // The once-ever power user mode offer (docs/specs/007-editor/power-user-mode.md), as a funnel.

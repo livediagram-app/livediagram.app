@@ -21,6 +21,7 @@ import { ShareTabs, shareTabId, sharePanelId, type ShareTab } from './ShareTabs'
 import { CommunityGuide } from './community/CommunityGuide';
 import { ShareStatus } from './ShareStatus';
 import { SECTION_LABEL } from './share-dialog-parts';
+import { ShareShowMeButton, ShareTourStage, useShareTour } from '@/components/tour/ShareTour';
 
 // How long a just-issued pass wears its highlight ring before it fades.
 const PASS_HIGHLIGHT_MS = 1400;
@@ -70,6 +71,8 @@ export function ShareDialog({
   const highlightTimer = useRef<number | undefined>(undefined);
   useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
   const multiTab = tabs.length > 1;
+  // Show Me: the tour of issuing and managing passes, run on this dialog (docs/specs/007-editor/live-app.md).
+  const tour = useShareTour(multiTab, () => setTab('passes'));
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
   // `?tab=`. Document-wide: the same choice applies to every pass's image.
@@ -158,6 +161,8 @@ export function ShareDialog({
       open
       onClose={close}
       ariaLabel="Share this document"
+      // While Show Me runs, Escape is the tour's, never the dialog's.
+      closeOnEscape={!tour.active}
       size="lg"
       className="max-h-[calc(100%-2rem)]"
     >
@@ -171,7 +176,8 @@ export function ShareDialog({
           />
         }
       >
-        <HelpArticleLink article="sharing" size="md" />
+        <ShareShowMeButton tour={tour} />
+        <HelpArticleLink article="sharing" variant="labelled" />
         <DialogCloseButton onClick={close} />
       </DialogHeader>
 
@@ -199,6 +205,7 @@ export function ShareDialog({
           <section
             className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
             aria-labelledby="share-passes-heading"
+            data-tour-id="share-passes"
           >
             <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
               Passes
@@ -284,6 +291,7 @@ export function ShareDialog({
           Done
         </Button>
       </DialogFooter>
+      <ShareTourStage tour={tour} />
     </Dialog>
   );
 }

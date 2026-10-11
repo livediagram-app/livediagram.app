@@ -1036,6 +1036,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the card type editor's Show Me tour.",
   'UI|Ended|CardTypeTourSkipped':
     "Someone left the card type editor's Show Me tour before its end.",
+  'UI|Ended|ShareTourCompleted': "Someone reached the end of the Share dialog's Show Me tour.",
+  'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
   'UI|Ended|FacilitateTourCompleted':
     "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
@@ -1179,6 +1181,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked past the Diagram tour's first card (the welcome tour's, until October 2026), beginning the step-by-step walkthrough.",
   'UI|Started|CardTypeTour':
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
+  'UI|Started|ShareTour':
+    'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|FacilitateTour':
     "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':

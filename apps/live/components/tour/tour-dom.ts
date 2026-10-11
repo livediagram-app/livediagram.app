@@ -57,3 +57,16 @@ export function waitForSelector(selector: string, timeoutMs = 3000): Promise<HTM
 export function waitForTour(tourId: string, timeoutMs = 3000): Promise<HTMLElement | null> {
   return waitForSelector(tourSelector(tourId), timeoutMs);
 }
+
+// Wait for a tour anchor, then scroll it into view inside its scrolling panel (a dialog's body, a tab's section
+// list), smoothly unless motion is reduced, so a step about something further down is on screen when the ring lands.
+export async function revealTour(
+  tourId: string,
+  block: ScrollLogicalPosition = 'nearest',
+  timeoutMs = 1000,
+): Promise<HTMLElement | null> {
+  const el = await waitForTour(tourId, timeoutMs);
+  const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  el?.scrollIntoView?.({ block, behavior: reduce ? 'auto' : 'smooth' });
+  return el;
+}
