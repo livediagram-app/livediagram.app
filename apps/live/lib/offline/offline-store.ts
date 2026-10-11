@@ -222,7 +222,6 @@ export function removeTab(
 
 export {
   OFFLINE_STORE_OPEN_TIMEOUT_MS,
-  OfflineStoreUnavailableError,
   offlineBackend,
   type OfflineBackend,
   type OfflineRecordChange,

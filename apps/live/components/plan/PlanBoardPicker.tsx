@@ -30,7 +30,7 @@ const PREVIEW_COLUMNS = 5;
 const CARD_PATTERN = [3, 2, 3, 1, 2];
 
 // The Spreadsheets pictures live in sheet-previews.tsx; Start Planning and Add to Slot read them from here too.
-export { SHEET_TILES, SheetPreview, type SheetTile } from './sheet-previews';
+export { SHEET_TILES, SheetPreview } from './sheet-previews';
 
 export function BoardPreview({
   preset,

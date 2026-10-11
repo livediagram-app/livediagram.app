@@ -165,8 +165,6 @@ export function planTourSteps(
   return [WELCOMES[offer], ...steps];
 }
 
-export const PLAN_TOUR_STEPS: PlanTourStep[] = planTourSteps('boards');
-
 // Telemetry `type` token for a step-viewed event: 'add-cards' → 'PlanTourStepAddCards'.
 export function planTourStepTelemetryType(stepId: string): string {
   return stepTelemetryType('PlanTourStep', stepId);

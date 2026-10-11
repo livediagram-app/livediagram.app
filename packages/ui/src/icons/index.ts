@@ -49,7 +49,6 @@ export {
   PlanIcon,
   FlipchartIcon,
   MarkerIcon,
-  MindmapIcon,
 } from './drawing-kinds';
 export { LayersStackIcon, RedoIcon, SettingsIcon, ThemeBrushIcon, UndoIcon } from './editor-chrome';
 export { HeartIcon } from './community';

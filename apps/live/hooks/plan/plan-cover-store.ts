@@ -3,7 +3,7 @@
 // Whether a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board", "Fill Tab"),
 // kept out of PlanContext so the chrome that asks (the selection toolbars, the Map, the palette, the keyboard) and
 // the boards re-render only when the answer changes, never on an element added or moved. A module store, like
-// maximised-plan.ts: the open tab's board filling it and its element count, published by usePlanCoverWiring; the
+// maximised-plan.ts: the open tab's board filling it, published by usePlanCoverWiring; the
 // maximised element comes from maximised-plan.ts.
 import { useSyncExternalStore } from 'react';
 import type { PlanTabKind } from '@livediagram/document';
@@ -13,13 +13,11 @@ export type PlanCover = {
   // The board or Sheet filling the open tab, or null, and which it is.
   fillTabId: string | null;
   fillTabKind: 'Board' | 'Sheet' | 'View' | null;
-  // How many elements the open tab holds (Setup Board's Fill Tab warning).
-  tabElementCount: number;
   // The open tab's Plan kind (docs/specs/026-plan/plan-tabs.md): on a Board or Sheet tab the element always fills it.
   planKind?: PlanTabKind | null;
 };
 
-let cover: PlanCover = { fillTabId: null, fillTabKind: null, tabElementCount: 0, planKind: null };
+let cover: PlanCover = { fillTabId: null, fillTabKind: null, planKind: null };
 const listeners = new Set<() => void>();
 
 // Publishes the open tab's cover; listeners hear only a real change.
@@ -27,7 +25,6 @@ export function setPlanCover(next: PlanCover): void {
   if (
     next.fillTabId === cover.fillTabId &&
     next.fillTabKind === cover.fillTabKind &&
-    next.tabElementCount === cover.tabElementCount &&
     (next.planKind ?? null) === (cover.planKind ?? null)
   )
     return;
@@ -117,9 +114,4 @@ export function useFillsTab(id: string): boolean {
 // The open tab's Plan kind, or null for any other tab.
 export function usePlanTabKind(): PlanTabKind | null {
   return useSyncExternalStore(subscribe, () => cover.planKind ?? null, serverNull);
-}
-
-const zero = () => 0;
-export function useTabElementCount(): number {
-  return useSyncExternalStore(subscribe, () => cover.tabElementCount, zero);
 }

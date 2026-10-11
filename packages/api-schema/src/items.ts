@@ -91,8 +91,6 @@ export type ItemTypesRoomOp = {
   itemTypesRev?: number;
 };
 
-export const ITEM_ERRORS = ['item_not_found', 'item_exists', 'item_busy', 'items_full'] as const;
-
 // GET /api/documents/:id/plan (docs/specs/026-plan/plan-agents.md "Reading the plan"): the document's Plan boards
 // with their columns, the statuses they name (each once) and the card types, for agents. A tab-scoped link passes
 // tabId and gets that tab's boards.

@@ -243,14 +243,14 @@ describe('the sheet header', () => {
   });
 
   it('leaves Import CSV and Download CSV to the tab menu on a Sheet tab', () => {
-    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet', tabElementCount: 1, planKind: 'sheet' });
+    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet', planKind: 'sheet' });
     try {
       show(h);
       openSettings();
       expect(screen.queryByRole('button', { name: 'Download CSV' })).toBeNull();
       expect(screen.queryByRole('button', { name: 'Import CSV…' })).toBeNull();
     } finally {
-      setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0, planKind: null });
+      setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null });
     }
   });
 

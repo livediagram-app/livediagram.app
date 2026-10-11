@@ -87,57 +87,6 @@ export function polygonPerimeterPoint(pts: Pt[], center: Pt, point: Pt): Pt | nu
   return min ? min.p : null;
 }
 
-/** mxUtils.ptSegDistSq */
-export function ptSegDistSq(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  px: number,
-  py: number,
-): number {
-  x2 -= x1;
-  y2 -= y1;
-  px -= x1;
-  py -= y1;
-  let dotprod = px * x2 + py * y2;
-  let projlenSq: number;
-  if (dotprod <= 0) {
-    projlenSq = 0;
-  } else {
-    px = x2 - px;
-    py = y2 - py;
-    dotprod = px * x2 + py * y2;
-    projlenSq = dotprod <= 0 ? 0 : (dotprod * dotprod) / (x2 * x2 + y2 * y2);
-  }
-  return Math.max(0, px * px + py * py - projlenSq);
-}
-
-/** mxUtils.relativeCcw */
-export function relativeCcw(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  px: number,
-  py: number,
-): -1 | 0 | 1 {
-  x2 -= x1;
-  y2 -= y1;
-  px -= x1;
-  py -= y1;
-  let ccw = px * y2 - py * x2;
-  if (ccw === 0) {
-    ccw = px * x2 + py * y2;
-    if (ccw > 0) {
-      px -= x2;
-      py -= y2;
-      ccw = Math.max(0, px * x2 + py * y2);
-    }
-  }
-  return ccw < 0 ? -1 : ccw > 0 ? 1 : 0;
-}
-
 /** mxUtils.reversePortConstraints */
 export function reversePortConstraints(constraint: number): number {
   let result = (constraint & MASK_WEST) << 3;
