@@ -16,7 +16,7 @@
 // merging (an automatic rule would instead RENAME an existing article's
 // series the day a colliding article was added).
 
-import { articles, type Article } from './index';
+import type { Article } from './index';
 
 /**
  * Explicit tokens for articles whose slug another article already uses,
@@ -44,10 +44,13 @@ export function articleTelemetryId(article: Pick<Article, 'categorySlug' | 'slug
  * {@link articleTelemetryId}; anything else (a category landing page such as
  * `palette`) falls back to its last segment. The editor's help-link test
  * checks every path it links still resolves to a distinct id.
+ *
+ * Worked out from the path alone, never by finding the article: an article's
+ * path ends in its slug, so its override or last segment IS its id (a test in
+ * apps/help holds that for every article). Every help page sends this id, and
+ * a registry lookup put the whole catalogue in each page's JavaScript.
  */
 export function helpPathTelemetryId(path: string): string {
   const clean = path.split('/').filter(Boolean).join('/');
-  const article = articles.find((a) => articlePath(a) === clean);
-  if (article) return articleTelemetryId(article);
-  return clean.slice(clean.lastIndexOf('/') + 1);
+  return TELEMETRY_ID_OVERRIDES[clean] ?? clean.slice(clean.lastIndexOf('/') + 1);
 }

@@ -56,6 +56,7 @@ import { EXPLORER_HOME_HREF, HeroRecent } from './hero-recent';
 import { useRecentDiagrams } from './useRecentDiagrams';
 import { EditorWindow, type TabDef } from './hero-editor-window';
 import { useStageBox } from './useStageBox';
+import { initialReach, widenReach } from '@/lib/hero-reach';
 
 // Geometry: each window is `card`% of the stage with a GAP% gutter, so the
 // centred window sits at translateX = (100 - card) / 2 - i * (card + GAP).
@@ -119,7 +120,14 @@ const PHONE = '(max-width: 639px)';
 
 export function HeroIllustration() {
   const [active, setActive] = useState(0);
+  // Which windows draw their board: the centred one and its neighbours to start with, growing to
+  // every window a slide passes over (a jump from the first dot to the fifth slides past the three
+  // between), so a window never comes into view empty. Each board is a large animated SVG, and a
+  // window out at the edge of the stage is masked away, so drawing all seven up front put most of
+  // the home page's markup, and its hydration, behind boards nobody could see yet.
+  const [reach, setReach] = useState(() => initialReach(0, CARDS.length));
   const show = (i: number) => {
+    setReach((r) => widenReach(r, active, i, CARDS.length));
     setActive(i);
   };
   const portrait = useMediaQuery(PHONE);
@@ -144,7 +152,11 @@ export function HeroIllustration() {
     if (reduceMotion || held || stay) return;
     const card = CARDS[active];
     const dwell = card?.overview ? OVERVIEW_DWELL_MS : CYCLE_MS;
-    const id = window.setTimeout(() => show((active + 1) % CARDS.length), dwell);
+    const next = (active + 1) % CARDS.length;
+    const id = window.setTimeout(() => {
+      setReach((r) => widenReach(r, active, next, CARDS.length));
+      setActive(next);
+    }, dwell);
     return () => window.clearTimeout(id);
   }, [active, reduceMotion, held, stay]);
 
@@ -200,7 +212,8 @@ export function HeroIllustration() {
             {CARDS.map((c, i) => {
               const playing = i === active;
               const Board = c.scene?.Board;
-              const liveDoc = Board ? <Board portrait={portrait} /> : null;
+              const drawn = i >= reach.lo && i <= reach.hi;
+              const liveDoc = Board && drawn ? <Board portrait={portrait} /> : null;
               const frame = (
                 <EditorWindow
                   title={c.title}

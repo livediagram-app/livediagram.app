@@ -50,6 +50,14 @@ describe('article telemetry ids', () => {
     expect(helpPathTelemetryId('/tips-and-tricks/command-palette/')).toBe('tips-command-palette');
   });
 
+  it('resolves every article’s path to its id without looking the article up', () => {
+    // helpPathTelemetryId works from the path alone so help pages need not bundle the registry.
+    for (const article of articles) {
+      expect(article.slug).not.toContain('/');
+      expect(helpPathTelemetryId(`/${articlePath(article)}/`)).toBe(articleTelemetryId(article));
+    }
+  });
+
   it('falls back to the last segment for a path that is not an article', () => {
     expect(helpPathTelemetryId('/palette/')).toBe('palette');
     expect(helpPathTelemetryId('')).toBe('');

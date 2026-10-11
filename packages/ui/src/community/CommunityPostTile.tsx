@@ -32,6 +32,7 @@ export function CommunityPostTile({
   categoryLabel,
   LinkComponent,
   now,
+  priority = false,
 }: {
   post: CommunityPost;
   href?: string;
@@ -47,6 +48,9 @@ export function CommunityPostTile({
   // The instant "2 days ago" is measured from, read once by the list (useState(Date.now)) so every card agrees
   // and render stays pure.
   now: number;
+  // A card in the first row on screen: its image is likely the page's largest paint, so it loads at
+  // once and ahead of the rest rather than waiting for the lazy-loading distance check.
+  priority?: boolean;
 }) {
   const Anchor: ComponentType<LinkProps> = LinkComponent ?? PlainLink;
   const tags = post.tags.slice(0, TILE_TAGS);
@@ -62,7 +66,8 @@ export function CommunityPostTile({
             <img
               src={imageUrl}
               alt={post.title}
-              loading="lazy"
+              loading={priority ? 'eager' : 'lazy'}
+              fetchPriority={priority ? 'high' : undefined}
               decoding="async"
               className="absolute inset-0 h-full w-full object-contain p-5 transition-transform duration-micro ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
             />

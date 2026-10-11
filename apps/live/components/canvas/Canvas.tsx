@@ -99,7 +99,7 @@ import { PathEditToolbar } from '@/components/canvas/path/PathEditToolbar';
 import { useCanvasSurfaceGestures } from '@/hooks/canvas/useCanvasSurfaceGestures';
 import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers';
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
-import { useFontsReady } from '@/components/canvas/useFontsReady';
+import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { IllustratePages } from '@/components/canvas/IllustratePages';
 import { ArticleFlows } from '@/components/canvas/article/ArticleFlows';
@@ -252,8 +252,8 @@ function CanvasView(props: CanvasProps) {
   // Every arrow label laid out once per element change, avoiding each other
   // (docs/specs/008-canvas/arrow-labels.md). Laid out here, not in the element
   // layer, because the selection toolbars clear a label as part of its arrow.
-  const fontsReady = useFontsReady();
-  const arrowLabels = useArrowLabelLayouts(elements, hasArrows, props.tabFont, fontsReady);
+  const fontEpoch = useFontEpoch();
+  const arrowLabels = useArrowLabelLayouts(elements, hasArrows, props.tabFont, fontEpoch);
 
   // Selection-display derivation (primary element, bounds, and every
   // "show this chrome?" predicate) lives in lib/canvas-selection.ts so

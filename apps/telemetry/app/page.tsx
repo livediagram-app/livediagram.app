@@ -21,20 +21,51 @@ import {
 import { WindowPanel } from './WindowPanel';
 import { StickyWindowBar } from './StickyWindowBar';
 import { ViewTabs } from './ViewTabs';
+import dynamic from 'next/dynamic';
 import { DashboardView } from './DashboardView';
 import type { ViewKey } from './view-keys';
-import { ModesView } from './ModesView';
-import { PagesView } from './PagesView';
-import { SettingsView } from './SettingsView';
-import { LookAndFeelView } from './LookAndFeelView';
-import { PaletteView } from './PaletteView';
-import { HelpView } from './HelpView';
-import { CommunityView } from './CommunityView';
-import { EditingView } from './EditingView';
-import { ExceptionsView } from './ExceptionsView';
-import { TimingsView } from './TimingsView';
-import { MetricSearch } from './MetricSearch';
 import { dropRetiredEvents } from './retired-events';
+
+// Only the Dashboard shows on arrival, so only it ships with the page. Every other view (each with
+// its catalogue of event names and explanations) loads on its own, fetched while the browser is idle
+// once the summary is in, so switching to one is still instant.
+const VIEW_LOADERS = {
+  modes: () => import('./ModesView').then((m) => m.ModesView),
+  pages: () => import('./PagesView').then((m) => m.PagesView),
+  settings: () => import('./SettingsView').then((m) => m.SettingsView),
+  lookfeel: () => import('./LookAndFeelView').then((m) => m.LookAndFeelView),
+  palette: () => import('./PaletteView').then((m) => m.PaletteView),
+  help: () => import('./HelpView').then((m) => m.HelpView),
+  community: () => import('./CommunityView').then((m) => m.CommunityView),
+  editing: () => import('./EditingView').then((m) => m.EditingView),
+  exceptions: () => import('./ExceptionsView').then((m) => m.ExceptionsView),
+  timings: () => import('./TimingsView').then((m) => m.TimingsView),
+  search: () => import('./MetricSearch').then((m) => m.MetricSearch),
+};
+const ModesView = dynamic(VIEW_LOADERS.modes, { ssr: false });
+const PagesView = dynamic(VIEW_LOADERS.pages, { ssr: false });
+const SettingsView = dynamic(VIEW_LOADERS.settings, { ssr: false });
+const LookAndFeelView = dynamic(VIEW_LOADERS.lookfeel, { ssr: false });
+const PaletteView = dynamic(VIEW_LOADERS.palette, { ssr: false });
+const HelpView = dynamic(VIEW_LOADERS.help, { ssr: false });
+const CommunityView = dynamic(VIEW_LOADERS.community, { ssr: false });
+const EditingView = dynamic(VIEW_LOADERS.editing, { ssr: false });
+const ExceptionsView = dynamic(VIEW_LOADERS.exceptions, { ssr: false });
+const TimingsView = dynamic(VIEW_LOADERS.timings, { ssr: false });
+const MetricSearch = dynamic(VIEW_LOADERS.search, { ssr: false });
+
+// Fetch every other view's code once the page is idle (a timeout where requestIdleCallback is missing).
+function prefetchViews(): () => void {
+  const run = () => {
+    for (const load of Object.values(VIEW_LOADERS)) void load().catch(() => {});
+  };
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(run, { timeout: 4000 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(run, 1000);
+  return () => window.clearTimeout(id);
+}
 
 // Same origin as the editor + api under the router (livediagram.app).
 // An origin-relative '/api' is correct even though this app is served
@@ -101,6 +132,8 @@ export default function TelemetryDashboard() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => (status === 'ready' ? prefetchViews() : undefined), [status]);
 
   return (
     <>

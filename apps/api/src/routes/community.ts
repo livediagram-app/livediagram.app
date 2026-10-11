@@ -12,6 +12,7 @@ import {
   type CommunityPost,
 } from '@livediagram/api-schema';
 import { communityEnabled } from '../community-enabled';
+import { edgeCached } from '../edge-cache';
 import { clientIp } from '../client-ip';
 import { rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {
@@ -51,8 +52,10 @@ async function withLikes(
 // Anonymous reads are the same for everyone, so a CDN and the browser may keep them briefly; with a key the
 // answer carries that browser's likes and must not be shared.
 function listCacheHeaders(key: string | null): HeadersInit {
-  return { 'Cache-Control': key ? 'private, no-store' : 'public, max-age=30' };
+  return { 'Cache-Control': key ? 'private, no-store' : `public, max-age=${LIST_MAX_AGE_S}` };
 }
+const LIST_MAX_AGE_S = 30;
+const FEATURED_MAX_AGE_S = 60;
 
 export async function handleCommunity(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, url } = ctx;
@@ -97,18 +100,17 @@ export async function handleCommunity(ctx: RouteContext): Promise<Response> {
 
   // GET /api/community/featured: the landing page's six (docs/specs/025-community/community.md "Featured on
   // the home page"). The same for everyone, so cacheable a little longer, but only for a minute: a post
-  // hidden after reports must not linger on the home page.
+  // hidden after reports must not linger on the home page. Every home page visit asks, so the edge answers.
   if (segments.length === 3 && segments[2] === 'featured' && method === 'GET') {
-    const rows = await listFeaturedCommunityPosts(env);
-    return json(
-      { posts: rows.map((row) => rowToCommunityPost(row, false)) },
-      { headers: { 'Cache-Control': 'public, max-age=60' } },
-    );
+    return edgeCached(url, FEATURED_MAX_AGE_S, async () => {
+      const rows = await listFeaturedCommunityPosts(env);
+      return json({ posts: rows.map((row) => rowToCommunityPost(row, false)) });
+    });
   }
 
-  // GET /api/community/facets
+  // GET /api/community/facets: the same for everyone.
   if (segments.length === 3 && segments[2] === 'facets' && method === 'GET') {
-    return json(await communityFacets(env), { headers: listCacheHeaders(null) });
+    return edgeCached(url, LIST_MAX_AGE_S, async () => json(await communityFacets(env)));
   }
 
   if (segments[2] !== 'posts' || segments.length < 4) return notFound();

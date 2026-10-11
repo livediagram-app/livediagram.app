@@ -5,7 +5,7 @@ import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { affectedArrows, buildArrowLinks, previewArrowGeometry } from './drag-affected-arrows';
 import { useDragPreview } from '@/lib/drag-preview';
-import { useFontsReady } from './useFontsReady';
+import { useFontEpoch } from './useFontEpoch';
 import {
   eventStormingNoteFont,
   resolveFontStack,
@@ -313,8 +313,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   }, [h]);
   // Auto-fit measures the face it paints, and webfonts land after first
   // paint — re-render this layer once they are in so every fitted label
-  // re-measures in its real face (see useFontsReady).
-  useFontsReady();
+  // re-measures in its real face (see useFontEpoch).
+  useFontEpoch();
   // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
   const tabFontStack = resolveFontStack(tabFont);
   // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's

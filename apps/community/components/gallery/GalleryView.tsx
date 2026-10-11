@@ -25,6 +25,9 @@ const SKELETON_MORE = 4;
 
 // The gallery below the hero (docs/specs/025-community/community.md "Gallery"; blueprint §5): the
 // filters, then the grid in whichever state it is in.
+// The gallery's top row at its widest (4 columns), whose images load at once: the first thing seen.
+const GALLERY_PRIORITY_CARDS = 4;
+
 export function GalleryView() {
   // Who is signed in, known only once My Shares has loaded Clerk.
   const [session, setSession] = useState<CommunitySession | null>(null);
@@ -100,6 +103,7 @@ export function GalleryView() {
           <>
             <PostGrid
               posts={posts}
+              priorityCount={GALLERY_PRIORITY_CARDS}
               skeletons={
                 status === 'loading' ? SKELETON_CARDS : gallery.loadingMore ? SKELETON_MORE : 0
               }

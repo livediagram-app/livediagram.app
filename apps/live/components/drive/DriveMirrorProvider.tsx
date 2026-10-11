@@ -20,11 +20,7 @@ import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { track } from '@/lib/telemetry';
-import {
-  createBrowserEngine,
-  createBrowserTokens,
-  type BrowserTokens,
-} from '@/lib/drive/browser-engine';
+import { createBrowserTokens, type BrowserTokens } from '@/lib/drive/browser-tokens';
 import { driveUiMode, googleClientId, googlePickerApiKey } from '@/lib/drive/config';
 import {
   driveRedirectUri,
@@ -262,22 +258,40 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     };
     const channel = openDriveTabChannel(onMessage);
     runtime.current = { tokens, channel, engine: null, check };
+    // The engine's code loads only in the tab elected to run it: every other tab, and every
+    // page of someone without Drive, never downloads it. `term` counts elections, so an engine
+    // that finishes loading after this tab lost the sync (or left the page) is never started.
+    let term = 0;
+    let disposed = false;
     const onElected = () => {
-      const engine = createBrowserEngine({
-        ownerId: clerkUserId,
-        tokens: tokens.source,
-        onStatus: publish,
-        onInboundApplied: () => {
-          notifyApiWrite({ drive: true });
-          channel.post({ type: 'drive-applied' });
-        },
-      });
-      if (runtime.current) runtime.current.engine = engine;
-      clearAnswerTimer();
-      void engine.start();
+      const elected = ++term;
+      void import('@/lib/drive/browser-engine')
+        .then(({ createBrowserEngine }) => {
+          if (disposed || elected !== term) return;
+          const engine = createBrowserEngine({
+            ownerId: clerkUserId,
+            tokens: tokens.source,
+            onStatus: publish,
+            onInboundApplied: () => {
+              notifyApiWrite({ drive: true });
+              channel.post({ type: 'drive-applied' });
+            },
+          });
+          if (runtime.current) runtime.current.engine = engine;
+          clearAnswerTimer();
+          void engine.start();
+        })
+        .catch((err: unknown) => {
+          // Offline, or a deploy removed the chunk: another visible tab takes the sync over
+          // when this one leaves its checks unanswered.
+          driveWarn('engine-load-failed', {
+            error: err instanceof Error ? err.message : String(err),
+          });
+        });
     };
     // Another tab took the sync over: stop, and wait for it again.
     const onLost = () => {
+      term += 1;
       driveWarn('election-lost', {});
       runtime.current?.engine?.stop();
       if (runtime.current) runtime.current.engine = null;
@@ -338,6 +352,7 @@ export function DriveMirrorProvider({ children }: { children: ReactNode }) {
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('focus', onFocus);
     return () => {
+      disposed = true;
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('focus', onFocus);
       window.clearInterval(pollTimer);

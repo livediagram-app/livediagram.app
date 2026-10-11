@@ -11,7 +11,11 @@ import { DriveMirrorProvider } from '@/components/drive/DriveMirrorProvider';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@livediagram/document';
 import { APPEARANCE_BOOT_SCRIPT, BRAND_ICONS, DARK_READER_LOCK } from '@livediagram/ui';
-import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
+import {
+  REDUCE_MOTION_BOOT_SCRIPT,
+  WEBFONTS_STYLESHEET_ID,
+  WEBFONTS_SWAP_SCRIPT,
+} from './pre-hydration-scripts';
 import { EDITOR_BUILD_ID } from '@/lib/server-release';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from '@/lib/stale-html-guard';
 import './globals.css';
@@ -102,10 +106,21 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
             while a face loads — so the editor still works if these are
-            blocked (self-host / offline). preconnect trims the round-trip. */}
+            blocked (self-host / offline). preconnect trims the round-trip.
+            Linked as print media and switched to all once loaded, so a
+            cross-origin stylesheet never holds up first paint on any route;
+            suppressHydrationWarning because that switch happens before
+            hydration. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href={googleFontsHref()} />
+        <link
+          id={WEBFONTS_STYLESHEET_ID}
+          rel="stylesheet"
+          href={googleFontsHref()}
+          media="print"
+          suppressHydrationWarning
+        />
+        <script dangerouslySetInnerHTML={{ __html: WEBFONTS_SWAP_SCRIPT }} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
         {/* Apply the persisted appearance before first paint, so EVERY route

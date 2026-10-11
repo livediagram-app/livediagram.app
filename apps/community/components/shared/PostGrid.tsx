@@ -9,8 +9,12 @@ const POST_GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-
 export function PostGrid({
   posts,
   skeletons = 0,
+  priorityCount = 0,
 }: {
   posts: readonly GalleryPost[];
+  // How many leading cards load their image at once and first: the grid's top row when it opens the
+  // page (4 columns at its widest), none for a grid further down.
+  priorityCount?: number;
   // Placeholder cards after the posts (the first load, or the next page loading).
   skeletons?: number;
 }) {
@@ -21,9 +25,9 @@ export function PostGrid({
     // fades in one beat after the last when it mounts, so a new set of results settles in rather than snapping.
     // A card that re-renders (a like) keeps still; only new results and Load More's page animate.
     <ul className={`${POST_GRID} lvd-cascade`} aria-busy={skeletons > 0 || undefined}>
-      {posts.map((post) => (
+      {posts.map((post, i) => (
         <li key={post.id} className="flex flex-col">
-          <PostCard post={post} now={now} />
+          <PostCard post={post} now={now} priority={i < priorityCount} />
         </li>
       ))}
       {Array.from({ length: skeletons }, (_, i) => (
