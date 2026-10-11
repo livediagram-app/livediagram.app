@@ -9,6 +9,7 @@ import { Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideSettings } from '@livediagram/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import type { PlanPalette } from './plan-palette';
+import { useSlotSettings } from './dashboard/slot-menu';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const POPOVER_PX = 360;
@@ -41,6 +42,7 @@ export function SettingsCog({
 }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
+  const slot = useSlotSettings();
   return (
     <>
       <Tooltip label={label}>
@@ -74,6 +76,8 @@ export function SettingsCog({
             className="flex flex-col rounded-lg border border-slate-200 bg-white py-1 text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             onPointerDown={stop}
           >
+            {/* Inside a Dashboard slot, the slot's toolbar first, above the sections (slot-menu.ts). */}
+            {slot?.toolbar(close)}
             {children(close)}
           </div>
         </AnchoredPopover>

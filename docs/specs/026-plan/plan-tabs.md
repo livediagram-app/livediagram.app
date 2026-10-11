@@ -114,11 +114,18 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
   colour as the new slot and its arrow bounces the way it points (3 px, looping while hovered; still with reduced
   motion). No line of description: a side that cannot be used stays dashed and dimmed, its tooltip (and its accessible
   description) saying why (the row holds four slots, the dashboard twelve rows, or what is here would be too small:
-  What fits), and the cog closes once one is added; then a row of compact action buttons (icon left of label, wrapping): **Open Tab** (a slot showing a tab,
-  for anyone), an Editor's **Change Chart** or **Change Source** (a chart or a figure from a Sheet), **Clear Slot** and
-  **Remove Slot** (its span goes to its neighbour; a row's last slot takes the row with it). Where clearing or removing asks what goes with it, the question replaces the tiles in the section, with
-  **Cancel** under its two answers. A Participant or a Viewer sees the Slot section with Open Tab alone, and no cog at
-  all on a slot showing no tab. A row has no tools of its own, only its resize handle. A slot's grip, its floating cog, a row's dividers and its
+  What fits), and the cog closes once one is added; then an Editor's **Change Chart** or **Change Source** (a chart or
+  a figure from a Sheet) as compact action buttons. The slot's own actions are a **toolbar** of icon buttons (each named
+  in its tooltip) across the top of whichever cog the slot shows, above every section: **Open Tab** (a slot showing a
+  tab, for anyone), then an Editor's **Duplicate Slot**, **Clear Slot** and **Remove Slot** (its span goes to its
+  neighbour; a row's last slot takes the row with it). **Duplicate Slot** puts a copy just right of the slot, its
+  space split as Add Slot to the Right splits it, or in a new row of one below its row when the row is full (or the
+  slot too narrow to split); dimmed, its tooltip saying why, for an empty slot and for a Sheet that lives on the
+  dashboard (two slots would share its cells); dimmed with nothing said when neither fits. The copy is the slot's
+  content, one step: a board, chart or utility copied with its settings, a tab shown again. Clear Slot is dimmed on an
+  empty slot. Where clearing or removing asks what goes with it, the question shows under the toolbar, with **Cancel**
+  under its two answers. A Participant or a Viewer sees the toolbar with Open Tab alone and no Slot section, and no
+  cog at all on a slot showing no tab. A row has no tools of its own, only its resize handle. A slot's grip, its floating cog, a row's dividers and its
   resize handle come in and go out softly with the pointer (micro, easing out): the grip and cog grow from 75% and 90% as
   they fade, a divider's or handle's bar from half its length. Resizing is eased too: on a wide page a row's slots
   change width (a divider dragged a span at a time, a slot added or removed) over the short motion token, and a row's

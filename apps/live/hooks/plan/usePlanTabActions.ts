@@ -13,6 +13,7 @@ import {
   dashboardFromPreset,
   insertDashboardRow,
   insertDashboardSlot,
+  placeDashboardDuplicate,
   isDefaultTabName,
   newDashboardCard,
   newDashboard,
@@ -71,6 +72,10 @@ export type PlanTabActions = {
   placeItem: (item: DashboardItem, zone: DashboardZone | null) => void;
   // A slot removed with whatever element it held, one step (the row too when it was the row's last slot).
   removeSlot: (rowId: string, slotId: string) => void;
+  // A copy of the slot beside it (else in a row below), its content copied, one step (plan-tabs.md "Editing"). A
+  // board, chart or utility is copied; a tab is shown again; a Sheet element is not offered (two would share one
+  // sheet).
+  duplicateSlot: (rowId: string, slotId: string) => void;
 };
 
 // The dashboard of `tab`, read safely; a new one when it has none.
@@ -400,6 +405,34 @@ export function usePlanTabActions({
     },
     [commitTabs, onActive],
   );
+  const duplicateSlot = useCallback<PlanTabActions['duplicateSlot']>(
+    (rowId, slotId) => {
+      commitTabs(
+        onActive((t) => {
+          const layout = dashboardOf(t);
+          const content = layout.rows.flatMap((r) => r.slots).find((s) => s.id === slotId)?.content;
+          if (!content) return t;
+          const placed = placeDashboardDuplicate(layout, rowId, slotId, newId);
+          if (!placed) return t;
+          let copy: DashboardContent = content;
+          let add: Element | undefined;
+          if (content.type === 'element') {
+            const el = t.elements.find((e) => e.id === content.elementId);
+            if (!el || (el.type === 'shape' && el.shape === 'plan-sheet')) return t;
+            add = { ...structuredClone(el), id: newId() } as Element;
+            copy = { ...content, elementId: add.id };
+          }
+          return {
+            ...t,
+            elements: add ? [...t.elements, add] : t.elements,
+            dashboard: setDashboardContent(placed.layout, placed.slotId, copy),
+          };
+        }),
+      );
+      track('Plan', 'Changed', 'DashboardSlot');
+    },
+    [commitTabs, onActive],
+  );
   return useMemo(
     () => ({
       startElementTab,
@@ -410,6 +443,7 @@ export function usePlanTabActions({
       setSlotContent,
       placeItem,
       removeSlot,
+      duplicateSlot,
     }),
     [
       startElementTab,
@@ -420,6 +454,7 @@ export function usePlanTabActions({
       setSlotContent,
       placeItem,
       removeSlot,
+      duplicateSlot,
     ],
   );
 }

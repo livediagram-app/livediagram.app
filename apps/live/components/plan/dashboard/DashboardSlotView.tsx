@@ -13,6 +13,7 @@ import { DASHBOARD_GAP_PX } from '@/hooks/plan/slot-fit';
 import { useDashboard } from './dashboard-context';
 import { SLOT_SECTION, SlotSettings, type SlotSettingsValue } from './slot-menu';
 import { SlotSection } from './SlotSection';
+import { SlotToolbar } from './SlotToolbar';
 import { SlotCog } from './SlotCog';
 import { DashboardSlotContent } from './DashboardSlotContent';
 import { SlotFillPicker } from './SlotFillPicker';
@@ -98,7 +99,10 @@ export function DashboardSlotView({
         onClose={close}
       />
     );
-    return { sections, cog: <SlotCog sections={sections} /> };
+    const toolbar: SlotSettingsValue['toolbar'] = (close) => (
+      <SlotToolbar rowId={rowId} slot={slot} onClose={close} />
+    );
+    return { sections, toolbar, cog: <SlotCog sections={sections} /> };
   }, [hasMenu, rowId, slot, atSlot, atRow, atSlots]);
   return (
     // The grid cell: the card inside it, and the edge markers on its edges (outside the card, which clips).
@@ -173,15 +177,18 @@ export function DashboardSlotView({
         {settings && !headed ? (
           // Shown on hover or focus; always on a screen with no hover (a phone), where a tap must find it.
           <div className="absolute right-2 top-2 z-10 origin-top-right scale-90 opacity-0 transition-[opacity,scale] duration-micro ease-out focus-within:scale-100 focus-within:opacity-100 group-hover/slot:scale-100 group-hover/slot:opacity-100 motion-reduce:scale-100 motion-reduce:transition-none [@media(hover:none)]:scale-100 [@media(hover:none)]:opacity-100">
-            <SlotCog
-              floating
-              sections={settings.sections}
-              head={
-                canEdit && styledType
-                  ? (close) => <CardStyleSections type={styledType} card={card} onClose={close} />
-                  : undefined
-              }
-            />
+            {/* In the slot's settings, so its cog draws the slot's toolbar (SettingsCog). */}
+            <SlotSettings.Provider value={settings}>
+              <SlotCog
+                floating
+                sections={settings.sections}
+                head={
+                  canEdit && styledType
+                    ? (close) => <CardStyleSections type={styledType} card={card} onClose={close} />
+                    : undefined
+                }
+              />
+            </SlotSettings.Provider>
           </div>
         ) : null}
       </div>

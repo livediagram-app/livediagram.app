@@ -15,6 +15,9 @@ export interface SlotSettingsValue {
   sections: (section: SectionToggle, close: () => void) => ReactNode;
   // The slot's own cog (Slot Settings), for a header with no cog of its own.
   cog: ReactNode;
+  // The slot's toolbar (Open Tab, Duplicate, Clear, Remove), drawn by any cog inside the slot above its sections
+  // (SettingsCog), given a way to close the popover.
+  toolbar: (close: () => void) => ReactNode;
 }
 
 export const SlotSettings = createContext<SlotSettingsValue | null>(null);

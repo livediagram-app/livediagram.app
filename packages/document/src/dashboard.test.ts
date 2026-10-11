@@ -4,11 +4,15 @@ import {
   DASHBOARD_ROWS_MAX,
   DASHBOARD_ROW_H_MAX,
   DASHBOARD_ROW_H_MIN,
+  DASHBOARD_SLOTS_MAX,
   addDashboardRow,
   addDashboardSlot,
   dashboardElementIds,
+  dashboardFromPreset,
   evenSpans,
+  insertDashboardRow,
   moveDashboardDivider,
+  placeDashboardDuplicate,
   newDashboard,
   readDashboard,
   remapDashboardElements,
@@ -438,5 +442,42 @@ describe('a Dashboard’s settings', () => {
     const next = d.relayoutDashboard(tinted, 'focus', id);
     expect(next.rows.map((r) => r.slots.map((s) => s.span))).toEqual([[8, 4]]);
     expect(next.background).toBe('tint');
+  });
+});
+
+describe('placeDashboardDuplicate', () => {
+  // docs/specs/026-plan/plan-tabs.md "Editing": Duplicate puts the copy beside the slot, else in a row below.
+  let n = 0;
+  const id = () => `n${n++}`;
+  it('puts the copy just right of the slot while its row has room', () => {
+    const l = dashboardFromPreset('two-by-two', id);
+    const row = l.rows[0]!;
+    const out = placeDashboardDuplicate(l, row.id, row.slots[0]!.id, id)!;
+    expect(out.layout.rows[0]!.slots.map((s) => s.id)).toEqual([
+      row.slots[0]!.id,
+      out.slotId,
+      row.slots[1]!.id,
+    ]);
+  });
+
+  it('puts it in a new row below once the row is full, and nowhere on a full dashboard', () => {
+    // A row of the most slots it takes.
+    const rowId = 'r';
+    let l: DashboardLayout = {
+      rows: [
+        {
+          id: rowId,
+          height: 200,
+          slots: evenSpans(DASHBOARD_SLOTS_MAX).map((span, i) => ({ id: `s${i}`, span })),
+        },
+      ],
+    };
+    const full = l.rows[0]!.slots[0]!.id;
+    const out = placeDashboardDuplicate(l, rowId, full, id)!;
+    expect(out.layout.rows).toHaveLength(l.rows.length + 1);
+    expect(out.layout.rows[1]!.slots.map((s) => s.id)).toEqual([out.slotId]);
+    while (l.rows.length < DASHBOARD_ROWS_MAX) l = insertDashboardRow(l, l.rows.length, 200, 1, id);
+    expect(placeDashboardDuplicate(l, rowId, full, id)).toBeNull();
+    expect(placeDashboardDuplicate(l, 'gone', full, id)).toBeNull();
   });
 });

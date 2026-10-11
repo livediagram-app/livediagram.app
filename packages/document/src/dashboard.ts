@@ -275,6 +275,30 @@ export function insertDashboardRow(
   return { ...layout, rows };
 }
 
+// A copy of a slot's place for Duplicate (docs/specs/026-plan/plan-tabs.md "Editing"): a new empty slot just right of
+// `slotId` in its row while the row has room (the space split as Add Slot to the Right does), else a new row of one
+// slot below its row; with the new slot's id. Null when neither fits (a full row on a full dashboard, or a slot too
+// narrow to split with no room for a row).
+export function placeDashboardDuplicate(
+  layout: DashboardLayout,
+  rowId: string,
+  slotId: string,
+  id: IdMaker,
+): { layout: DashboardLayout; slotId: string } | null {
+  const rowAt = layout.rows.findIndex((r) => r.id === rowId);
+  const row = layout.rows[rowAt];
+  const at = row?.slots.findIndex((s) => s.id === slotId) ?? -1;
+  if (!row || at < 0) return null;
+  const beside = insertDashboardSlot(layout, rowId, at + 1, id);
+  if (beside !== layout) {
+    const made = beside.rows[rowAt]!.slots[at + 1];
+    if (made) return { layout: beside, slotId: made.id };
+  }
+  const below = insertDashboardRow(layout, rowAt + 1, row.height, 1, id);
+  if (below === layout) return null;
+  return { layout: below, slotId: below.rows[rowAt + 1]!.slots[0]!.id };
+}
+
 // A slot removed: its span goes to its left neighbour (its right one when first); the last slot removes its row.
 export function removeDashboardSlot(
   layout: DashboardLayout,
