@@ -22,7 +22,7 @@ Once part of the canvas is the way you want it, locking keeps it that way. A loc
 
 Select an element and click the **Lock** button in its floating toolbar, or press `Cmd+Shift+L` (`Ctrl+Shift+L` on Windows and Linux). The button reads **Unlock** while it's locked, so the same control toggles it back, and so does the shortcut. Select several elements first and the button locks or unlocks the whole selection at once. Locking is a normal edit: it syncs to collaborators and **Undo** reverses it.
 
-A locked element shows a small **padlock** badge on its top-left corner, selected or not, so it's clear at a glance which parts of the canvas are protected. People who can only view a document get no Lock button.
+A locked element shows a small **padlock** badge on its top-left corner, selected or not, so it's clear at a glance which parts of the canvas are protected (arrows show no badge, and the badge hides when you zoom far out). Only Editors get the Lock button; Viewers and Participants don't.
 
 ## What Locking Protects
 
@@ -34,7 +34,7 @@ A locked element:
 - **Can't be deleted**: the toolbar's Delete is disabled, Delete and Backspace skip it, the [eraser](/help/selection-modes/eraser/) passes over it, and a multi-select delete keeps the locked members while removing the rest. Deleting a shape that an arrow connects to also leaves a locked arrow in place.
 - **Can still be labelled**: double-click to edit its text. Locking protects an element's position and existence, not its content.
 
-The same applies to **arrows**: a locked arrow's endpoint handles can't be dragged, and it can't be moved or deleted until you unlock it.
+**Arrows** lock the same way: a locked arrow's endpoint handles can't be dragged, and it can't be moved or deleted until you unlock it. Double-clicking a locked arrow doesn't open its label; use **Edit Text** on its selection toolbar instead.
 
 <Note>
   This per-element lock is different from the brief lock you see in a live session, where an element

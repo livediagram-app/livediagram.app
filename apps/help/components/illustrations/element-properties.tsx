@@ -10,7 +10,7 @@ export function LayerOrder() {
   return (
     <Scene w={400} h={240}>
       {/* Back card */}
-      <Shape x={96} y={78} w={120} h={74} kind="rect" label="Back" labelTone="strong" />
+      <Shape x={66} y={58} w={120} h={74} kind="rect" label="Back" labelTone="strong" />
       {/* Front card, brought forward and selected */}
       <Shape x={150} y={108} w={120} h={74} kind="rect" accent label="Front" />
       <rect
@@ -34,8 +34,8 @@ export function LayerOrder() {
   );
 }
 
-/** An upright dashed outline with a solid square rotated 45° over it, a curved
- *  handle arc, and the snapped angle, illustrating the Rotation category. */
+/** An upright dashed outline with a solid square rotated 45° over it, an angle
+ *  arc clear of both, and the chosen angle, illustrating the Rotation category. */
 export function Rotation() {
   const cx = 200;
   const cy = 128;
@@ -66,13 +66,13 @@ export function Rotation() {
       </g>
       {/* Snap-angle arc + readout */}
       <path
-        d={`M${cx + 40} ${cy - 40} A 56 56 0 0 1 ${cx + 56} ${cy}`}
+        d={`M${cx + 56.6} ${cy - 56.6} A 80 80 0 0 1 ${cx + 80} ${cy}`}
         fill="none"
         className="stroke-brand-400"
         strokeWidth={2}
         strokeLinecap="round"
       />
-      <Label x={cx + 78} y={cy - 18} anchor="middle" size={13} weight={600} tone="accent">
+      <Label x={cx + 104} y={cy - 30} anchor="middle" size={13} weight={600} tone="accent">
         45°
       </Label>
     </Scene>
@@ -86,14 +86,28 @@ export function ElementAnimation() {
   const cy = 120;
   return (
     <Scene w={400} h={240}>
-      {/* Pulse rings */}
-      <circle cx={cx} cy={cy} r={52} className="fill-none stroke-brand-200" strokeWidth={2} />
-      <circle cx={cx} cy={cy} r={68} className="fill-none stroke-brand-100" strokeWidth={2} />
+      {/* Pulse rings, following the oval's own outline */}
+      <ellipse
+        cx={cx}
+        cy={cy}
+        rx={54}
+        ry={40}
+        className="fill-none stroke-brand-200"
+        strokeWidth={2}
+      />
+      <ellipse
+        cx={cx}
+        cy={cy}
+        rx={68}
+        ry={54}
+        className="fill-none stroke-brand-100"
+        strokeWidth={2}
+      />
       <Shape x={cx - 40} y={cy - 28} w={80} h={56} kind="circle" accent label="Pulse" />
       {/* Flowing arrow */}
       <Arrow from={[222, 120]} to={[330, 120]} kind="straight" tone="accent" dashed width={3} />
       <Label x={276} y={150} anchor="middle" size={11} tone="muted">
-        Flow
+        Arrow flow
       </Label>
     </Scene>
   );

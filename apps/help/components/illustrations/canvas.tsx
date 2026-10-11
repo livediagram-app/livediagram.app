@@ -332,9 +332,9 @@ export function SnappingGuides() {
       {/* The faint dashed guide, in the theme's element stroke as the app draws it, marks the
           shared top edge A and B aligned to. */}
       <line
-        x1={40}
+        x1={64}
         y1={66}
-        x2={344}
+        x2={320}
         y2={66}
         className="stroke-slate-600"
         strokeWidth={1.2}
@@ -343,8 +343,8 @@ export function SnappingGuides() {
       />
       <Shape x={64} y={66} w={84} h={60} label="A" />
       {/* The dragged element, snapped flush to A's top edge. */}
-      <Shape x={236} y={66} w={84} h={60} accent label="B" />
-      <Cursor x={300} y={104} />
+      <Shape x={236} y={66} w={84} h={44} accent label="B" />
+      <Cursor x={288} y={84} />
     </Scene>
   );
 }

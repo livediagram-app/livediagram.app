@@ -6,6 +6,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Label, Shape, Avatar, Cursor, TextBar, Dialog, Tabs, Button } from './primitives';
+import { Glyph } from './element-indicators';
 
 // --- Following someone -------------------------------------------------------------------------
 
@@ -63,40 +64,56 @@ export function FollowingScene() {
 
 // --- Notes -------------------------------------------------------------------------------------
 
-/** The note popover beside its element: the toolbar (Bold, Italic, Underline, the block type,
+/** The note popover centred below its element: the toolbar (Bold, Italic, Underline, the block type,
  *  Link) over the writing, then the save hint and Delete note. */
 export function NotePopoverScene() {
-  const px = 168;
-  const py = 22;
   const pw = 236;
+  const px = 210 - pw / 2;
+  // Content origin: the popover's top edge sits 16 above it, room for the NOTE heading.
+  const py = 98;
   return (
-    <Scene w={420} h={222}>
-      <Shape x={22} y={82} w={104} h={56} kind="rect" label="Payments API" />
-      {/* The element's note badge */}
-      <g transform="translate(126 82)">
-        <circle r={10} className="fill-white stroke-slate-300" strokeWidth={1.3} />
-        <path
-          d="M-4 -5 h6 l3 3 v7 h-9 Z M-2 -1 h4 M-2 2 h4"
-          fill="none"
-          className="stroke-slate-500"
-          strokeWidth={1.2}
-          strokeLinejoin="round"
-        />
-      </g>
-      <path
-        d={`M138 96 L${px} 104`}
-        className="stroke-slate-200"
-        strokeWidth={1}
-        strokeDasharray="3 3"
-      />
+    <Scene w={420} h={302}>
+      {/* The element, with its note indicator along the top */}
+      <Shape x={158} y={14} w={104} h={60} kind="rect" label="Payments API" />
+      <Glyph kind="note" cx={248} cy={26} />
+      {/* The popover, centred below the element */}
       <rect
         x={px}
-        y={py}
+        y={py - 16}
         width={pw}
-        height={180}
+        height={196}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
+      />
+      <Label x={px + 12} y={py - 4} size={9} weight={700} tone="muted">
+        NOTE
+      </Label>
+      {/* The toolbar strip, with dividers after B I U and after the block picker */}
+      <rect
+        x={px + 8}
+        y={py + 4}
+        width={pw - 16}
+        height={28}
+        rx={6}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1}
+      />
+      <line
+        x1={px + 60}
+        y1={py + 9}
+        x2={px + 60}
+        y2={py + 27}
+        className="stroke-slate-200"
+        strokeWidth={1}
+      />
+      <line
+        x1={px + 162}
+        y1={py + 9}
+        x2={px + 162}
+        y2={py + 27}
+        className="stroke-slate-200"
+        strokeWidth={1}
       />
       {/* Toolbar */}
       <Label x={px + 14} y={py + 18} size={12} weight={800} tone="strong">
@@ -163,14 +180,7 @@ export function NotePopoverScene() {
       <Label x={px + 12} y={py + 160} size={10} tone="muted">
         Cmd-Enter saves, Esc cancels.
       </Label>
-      <Label
-        x={px + pw - 12}
-        y={py + 160}
-        anchor="end"
-        size={10}
-        weight={600}
-        className="fill-rose-600"
-      >
+      <Label x={px + pw - 12} y={py + 160} anchor="end" size={10} weight={600} tone="muted">
         Delete note
       </Label>
     </Scene>

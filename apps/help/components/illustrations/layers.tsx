@@ -58,7 +58,7 @@ function Ellipsis({ cx, cy }: { cx: number; cy: number }) {
 
 /** A quiet chip beside a layer's name: its element count, or the Empty tag. */
 function Chip({ x, cy, text }: { x: number; cy: number; text: string }) {
-  const w = text.length * 6 + 8;
+  const w = text.length * (text === text.toLowerCase() ? 6 : 7) + 8;
   return (
     <g>
       <rect x={x - w} y={cy - 7} width={w} height={14} rx={3} className="fill-slate-100" />
@@ -111,7 +111,7 @@ function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] }) {
               className="fill-white stroke-slate-200"
               strokeWidth={1}
             />
-            <g opacity={r.hidden ? 0.45 : 1}>{r.thumb}</g>
+            {r.thumb}
             <Label
               x={x + 76}
               y={cy + 0.5}
@@ -122,7 +122,7 @@ function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] }) {
               {r.name}
             </Label>
             {r.count === undefined ? (
-              <Chip x={x + w - 42} cy={cy} text="Empty" />
+              <Chip x={x + w - 42} cy={cy} text="EMPTY" />
             ) : (
               <Chip x={x + w - (r.locked ? 42 : 28)} cy={cy} text={String(r.count)} />
             )}
@@ -150,14 +150,17 @@ function LayersPanel({ x, y, rows }: { x: number; y: number; rows: Row[] }) {
         {/* Merge Up / Merge Down */}
         <path d={`M${x + 14} ${y + h - 10} v-10 m-4 4 l4 -4 l4 4`} />
         <path d={`M${x + 36} ${y + h - 20} v10 m-4 -4 l4 4 l4 -4`} />
-        {/* Add */}
-        <path d={`M${x + w - 46} ${y + h - 21} v11 M${x + w - 51.5} ${y + h - 15.5} h11`} />
+        {/* + Add */}
+        <path d={`M${x + w - 78} ${y + h - 19} v7 M${x + w - 81.5} ${y + h - 15.5} h7`} />
       </g>
-      {/* Delete Layer, in red */}
+      <Label x={x + w - 72} y={y + h - 15} size={10} weight={600} tone="body">
+        Add
+      </Label>
+      {/* Delete Layer */}
       <path
         d={`M${x + w - 26} ${y + h - 20} h11 M${x + w - 24} ${y + h - 20} v9 h7 v-9 M${x + w - 22} ${y + h - 22} h3`}
         fill="none"
-        className="stroke-rose-500"
+        className="stroke-slate-500"
         strokeWidth={1.3}
         strokeLinecap="round"
       />
@@ -484,14 +487,14 @@ export function ElementLayerMenuScene() {
   const my = 16;
   const mw = 236;
   return (
-    <Scene w={420} h={248}>
-      <Shape x={32} y={84} w={96} h={56} kind="rect" accent label="Pay" />
-      <SelectionBox x={32} y={84} w={96} h={56} />
+    <Scene w={420} h={298}>
+      <Shape x={32} y={112} w={96} h={56} kind="rect" accent label="Pay" />
+      <SelectionBox x={32} y={112} w={96} h={56} />
       <rect
         x={mx}
         y={my}
         width={mw}
-        height={218}
+        height={268}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -524,14 +527,15 @@ export function ElementLayerMenuScene() {
         Move to layer
       </Label>
       {['Notes', 'Flow', 'Layer 1'].map((name, i) => {
-        const tx = mx + 10 + i * 74;
+        // A two-column grid of 105-wide tiles, the third tile wrapping to a second row.
+        const tx = mx + 10 + 18.5;
         const on = i === 1;
         return (
-          <g key={name}>
+          <g key={name} transform={`translate(${(i % 2) * 111} ${Math.floor(i / 2) * 50})`}>
             <rect
-              x={tx}
+              x={tx - 18.5}
               y={my + 108}
-              width={68}
+              width={105}
               height={44}
               rx={6}
               className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-slate-50 stroke-slate-200'}
@@ -603,13 +607,13 @@ export function ElementLayerMenuScene() {
       })}
       <line
         x1={mx + 10}
-        y1={my + 166}
+        y1={my + 216}
         x2={mx + mw - 10}
-        y2={my + 166}
+        y2={my + 216}
         className="stroke-slate-100"
         strokeWidth={1.2}
       />
-      <OpacitySlider x={mx + 12} y={my + 190} w={mw - 24} value={100} />
+      <OpacitySlider x={mx + 12} y={my + 240} w={mw - 24} value={100} />
     </Scene>
   );
 }
