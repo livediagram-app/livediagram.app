@@ -163,7 +163,16 @@ export function DashboardSlotView({
         // A translucent card over the canvas (plan-tabs.md "Look"): no backdrop blur, which every slot would recomposite
         // on scroll. A board or Sheet draws its own frame, so its card is bare: the board's corners are the slot's.
         className={`relative h-full transition-opacity duration-micro motion-reduce:transition-none ${framed ? '' : SLOT_CARD} ${movingSlotId === slot.id ? 'opacity-40' : ''}`}
-        style={framed ? undefined : cardFrameStyle(card.look)}
+        // The card's border in the Dashboard tab's theme (its stroke colour), under any style of its own; the
+        // Default scheme, with none, keeps the soft neutral line.
+        style={
+          framed
+            ? undefined
+            : {
+                ...(card.theme.elementStroke ? { borderColor: card.theme.elementStroke } : {}),
+                ...cardFrameStyle(card.look),
+              }
+        }
       >
         {slot.content ? (
           <SlotSettings.Provider value={headed ? settings : null}>

@@ -90,6 +90,10 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 - The tab's `dashboard` holds its **rows**, top to bottom; each row its **slots**, left to right. Drawn over the
   canvas area as a page (the canvas is not panned, zoomed or drawn on), it scrolls vertically when taller than the
   window. The page is 24 px in from the canvas edges with 12 px between rows and slots.
+- **Theme**: the Dashboard tab's theme draws everything on it. A slot card's border is the theme's stroke colour (the
+  Default scheme, with none, keeps the soft neutral line), under a card style of its own. A Board or Sheet tab shown
+  in a slot is drawn in the Dashboard's theme, its colours switched from its own tab's theme as a theme switch would
+  (any it was given kept); only there: its own tab, and the element itself, keep their own.
 - **Rows**: 1 to 12. A row's height is 120 to 1200 px (320 to start), changed by dragging the handle under the row.
 - **Slots**: 1 to 4 per row. Spans are whole twelfths, at least 2, and a row's spans add to 12. Dragging the divider
   between two slots moves span from one to the other in twelfths; new rows start as two slots of 6.

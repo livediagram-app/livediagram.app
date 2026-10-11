@@ -3,9 +3,16 @@
 // A Board or Sheet tab in a Dashboard slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): the tab's board or Sheet
 // itself, live and worked on in place as on its own tab (cards moved, added and opened, cells edited), at the slot's
 // size. Its changes are the board's or Sheet's own, so they land on its tab (usePlanSlice commitOn). The slot's menu
-// opens the tab.
+// opens the tab. It is drawn in the Dashboard tab's theme (its colours switched from its own tab's theme as a theme
+// switch would, keeping any it was given), only here: its own tab keeps its own.
 import { useRef } from 'react';
-import { tabKindOf, type DashboardTabOf, type ShapeElement } from '@livediagram/document';
+import {
+  switchThemeElement,
+  tabKindOf,
+  type DashboardTabOf,
+  type ShapeElement,
+} from '@livediagram/document';
+import { getTheme } from '@/lib/themes';
 import { PlanBoardView } from '@/components/plan/PlanBoardView';
 import { PlanSheetView } from '@/components/sheets/PlanSheetView';
 import { SheetChartsContext, useSheetCharts } from '@/components/sheets/sheet-charts-context';
@@ -14,6 +21,7 @@ import { useDashboard } from './dashboard-context';
 import { Missing, useBoxSize } from './DashboardSlotContent';
 import { DashboardDiagramView } from './DashboardDiagramView';
 import { TabWaiting } from './TabWaiting';
+import { useCardTheme, useViewerAppearance } from './useCardStyle';
 
 export function DashboardTabPreview({
   slotId,
@@ -30,6 +38,8 @@ export function DashboardTabPreview({
   const size = useBoxSize(bodyRef);
   // The canvas's chart view, so the Sheet's charts look here as they do on its tab (sheet.md "Charts").
   const renderChart = useSheetCharts()?.renderChart;
+  const dashboardTheme = useCardTheme();
+  const appearance = useViewerAppearance();
   const tab = tabs.find((t) => t.id === tabId);
   // One box, measured whatever it shows first: a tab whose content is still on its way reads as a Diagram (no kind
   // yet), so a box only drawn once it is a Board or Sheet would never be measured, and the board never drawn.
@@ -65,8 +75,11 @@ export function DashboardTabPreview({
         />
       );
     const shape = tab.kind === 'sheet' ? 'plan-sheet' : 'plan-board';
-    const el = tab.elements.find((e) => e.type === 'shape' && e.shape === shape) as
+    const own = tab.elements.find((e) => e.type === 'shape' && e.shape === shape) as
       ShapeElement | undefined;
+    const el = own
+      ? (switchThemeElement(own, getTheme(tab.theme, appearance), dashboardTheme) as ShapeElement)
+      : undefined;
     return (
       <>
         {!el ? (
