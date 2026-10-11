@@ -1127,8 +1127,10 @@ everything else even with stacking.
   edit goes through.
 - `dedupe_key = "<actorId>:<YYYY-MM-DD>"` in UTC. The first save of the
   day inserts; every later save that day hits the `UNIQUE` constraint
-  and **updates** `occurred_at` to now and bumps a `saves` counter in
-  the snapshot. One row per person per document per day.
+  and **updates** `occurred_at` to now (with the title, description and
+  snapshot, so a rename shows). One row per person per document per day.
+  The upsert and its scope rows are one D1 batch: the scopes attach to
+  whichever row survived the upsert, found by its unique key.
 - Description is actor-relative at render time: "You worked on X" for
   your own, "Priya edited your document X" for someone else's. The row
   stores the actor id; the renderer resolves the pronoun.

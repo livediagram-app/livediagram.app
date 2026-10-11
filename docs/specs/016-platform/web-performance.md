@@ -24,6 +24,13 @@ Measured 2026-10-11 (gzip level 9), before and after the changes that set these 
 | Telemetry: the dashboard                     | 287 KiB   | 280 KiB   |
 | Marketing: `/` (HTML, gzipped)               | 114 KiB   | 93 KiB    |
 
+Then the document page's own first load (measured 2026-10-11 the same way, on top of the above):
+
+| Page                          | Before    | After     |
+| ----------------------------- | --------- | --------- |
+| Editor: `/document/<id>`      | 1,489 KiB | 1,240 KiB |
+| Marketing: a `/features` page | 221 KiB   | 207 KiB   |
+
 ## Rules
 
 ### Nothing heavy in what every route ships
@@ -49,6 +56,36 @@ A dialog, panel or view that renders only behind an open flag or a tab is loaded
 The Explorer's Settings and move picker, and every telemetry dashboard view but the first, load
 this way. Where switching to one must stay instant, its code is fetched once the page is idle
 (the telemetry dashboard).
+
+### The document page loads what a board may not need on demand
+
+`apps/live/lib/editor-deferred-code.ts` names every module the editor loads on demand, so a surface's
+`next/dynamic` and the prefetch below share one import:
+
+- **Content a board may draw on open**: Illustrate's pages and their writing, the Draw dock, tables
+  and facilitation panels. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the document
+  request, so a board that has one finds its code already in, while the first load does not carry it.
+- **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
+  then kept, so their state survives), search, the quick style panel, the tool panels, presenting and
+  session settings. Fetched once the opened document has rendered and the page is idle.
+- **At the press**: the photo import's detection pipeline (and the sticky detector in it) loads when a
+  photo is picked; a template's canvas overrides load with its builders when one is applied.
+- A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
+  throwing into the screen around it.
+- `apps/live/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static
+  imports again.
+
+### A page loads only the scene it shows
+
+A features page plays one hero scene; the scene catalogue keeps its data apart from the boards
+(`hero-scene-data.ts`), so the page loads that scene's board alone.
+
+### Rendering server-side is not free in a static export
+
+Next writes a server component's output into the page's RSC payload as well as its HTML, so moving
+content from a client component to a server one moves its bytes from the JavaScript into the HTML
+rather than removing them. Measured on the FAQ: 9 KiB less JavaScript, 15 KiB more HTML. Such a move
+is made only where it measurably wins.
 
 ### A catalogue a page only searches loads when the search does
 
@@ -99,6 +136,16 @@ A timer that re-renders a large tree (the editor's presence clock) skips its tic
 is hidden, catching up when it returns, and while it has nothing to update (nobody else has been
 seen on the document).
 
+### Per keystroke, the least work
+
+- The Explorer's rows narrow a beat behind the lens field (a deferred value), its shared list is
+  filtered through a set (it was quadratic), and the address bar follows the field at most every
+  250 ms ([Explorer filters](../013-workspace/explorer-filters.md) "URL and carry-over").
+- The rich-text editor keeps its toolbar state object while nothing in it changed, so a keystroke
+  renders the editor once.
+- The autosave compares a tab's metadata key by key, identity first, never the whole tab serialised.
+- Requests several surfaces make at once (a team's library) share one in-flight request.
+
 ## The api
 
 - A query that serves one person starts from that person's rows (their visible documents, their
@@ -112,3 +159,6 @@ seen on the document).
   is answered from the edge cache for its stated lifetime (`apps/api/src/edge-cache.ts`).
 - A check that needs only a document's owner and team reads that row, not the full document.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
+- The tab save reads its document in one query and fetches the room's ledger alongside its other
+  reads ([API](../015-api/api.md) "Tab save"); the timeline's event and its scopes are one batch; the
+  guest-to-account migration moves its rows in one batch.
