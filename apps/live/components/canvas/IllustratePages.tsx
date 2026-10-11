@@ -166,10 +166,13 @@ export function IllustratePages({
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
   // Show Me on a logo page (logo-pages.md "Show Me"): it reopens this page's panel on Layouts, afresh, for its first step.
-  const logoTour = useLogoTour({
-    openLayouts: (id) => setOpened({ id, tab: 'layouts', seq: Date.now() }),
-    closePanel: () => setOpened(null),
-  });
+  const logoTour = useLogoTour(
+    {
+      openLayouts: (id) => setOpened({ id, tab: 'layouts', seq: Date.now() }),
+      closePanel: () => setOpened(null),
+    },
+    (id) => !!edit && pages.some((p) => p.id === id),
+  );
   // The page toolbar's Article Style button opens the page's panel on Style.
   const styleRequest = useStylePanelRequest();
   const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);

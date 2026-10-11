@@ -54,9 +54,11 @@ targetRect, countableSteps, start, next, back, skip, stop }`. Behaviour is the w
 2. On each step entry: `onStepView(step)` (not for `card: 'welcome'`); then `prepare(api)` runs for every
    step, anchored or not; an
    anchorless step then shows centred; an anchored step awaits its target (`selector(api)` when set, else the
-   `data-tour-id` of `target`) for 3500 ms. No target: the step's cleanup runs and the tour moves on, or
-   finishes from the last step.
-3. Every 150 ms the target is re-measured; a detached target re-runs prepare and re-awaits (healing).
+   `data-tour-id` of `target`) for 3500 ms. No target: the step's cleanup runs and the tour moves on in the
+   direction it was going (`stepDirRef`): backward to the step before unless that is index 0's welcome card or
+   there is none, else forward (direction set `forward`), or finishes from the last step.
+3. Every 150 ms the target is re-measured; a detached target re-runs prepare and re-awaits (healing); a heal that
+   finds nothing clears the rect, so the ring lets go and the popover centres.
 4. `next()`, `back()`, `skip()` run the current step's cleanup first; `next()` from the welcome card calls
    `onStart`. `next()` on the last step and `skip()`
    call `onFinish(outcome)` with `'completed'`, or `'skipped'` / `'declined'` (declined from the welcome card).

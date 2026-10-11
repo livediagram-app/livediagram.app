@@ -2,17 +2,18 @@
 
 // Show Me in Dashboard Settings (docs/specs/026-plan/plan-tabs.md "Show Me"; docs/specs/007-editor/show-me.md): the
 // tour of arranging and filling a dashboard, drawn over the page. Never offered: only the button runs it.
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { track } from '@/lib/telemetry';
-import { dashboardTourSteps, type DashboardTourApi } from './dashboard-tour-steps';
+import { dashboardTourSteps, hideSlot, type DashboardTourApi } from './dashboard-tour-steps';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
 type SlotsNow = { hasEmpty: boolean; hasFilled: boolean };
 
 // The tour, and `freeze`, which fixes its steps from the dashboard as it is when Show Me is pressed: filling the empty
-// slot mid-tour must not pull the Fill step out from under the person.
-export function useDashboardTour(): {
+// slot mid-tour must not pull the Fill step out from under the person. `hidden`: the page is covered (a slot
+// maximised) or no longer editable; the tour ends with it, as it does with any surface closed under it.
+export function useDashboardTour(hidden: boolean): {
   tour: TourEngine<DashboardTourApi>;
   freeze: (slots: SlotsNow) => void;
 } {
@@ -29,6 +30,12 @@ export function useDashboardTour(): {
         outcome === 'completed' ? 'DashboardTourCompleted' : 'DashboardTourSkipped',
       ),
   });
+  const { active, stop } = tour;
+  useEffect(() => {
+    if (!hidden || !active) return;
+    stop();
+    hideSlot();
+  }, [hidden, active, stop]);
   return { tour, freeze: (slots) => setSteps(dashboardTourSteps(slots)) };
 }
 

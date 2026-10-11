@@ -52,7 +52,9 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   the photo review): it never closes the surface under it. The surface stops closing on Escape for the duration;
   the tour's own Skip ends it. A tour on the page itself (a dashboard, a logo page) leaves Escape to the page.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
-  ends the tour with it and sends no Ended event. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
+  ends the tour with it and sends no Ended event. So does losing it while it stays mounted: a dashboard covered by
+  a maximised slot or no longer editable, a logo page deleted or no longer editable; whatever a step was showing
+  (a slot's grip and cog) is put back. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
 - **Layer.** Over a dialog the ring draws just above the dialog and below the menus its controls open, so those
   stay lit (`layer` `modal`); over the editor's own chrome it draws at the overlay layer.
 

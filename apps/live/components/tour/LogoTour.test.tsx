@@ -36,15 +36,26 @@ const edits = (): IllustratePageEdits =>
   }) as unknown as IllustratePageEdits;
 
 // IllustratePages' wiring, cut down: the page's panel, its title bar's Guides and Mirror, and the tour.
-function Page({ page, combine = false }: { page: IllustratePage; combine?: boolean }) {
+function Page({
+  page,
+  combine = false,
+  deleted = false,
+}: {
+  page: IllustratePage;
+  combine?: boolean;
+  deleted?: boolean;
+}) {
   const [opened, setOpened] = useState<{ tab: PagePanelTab; seq: number } | null>({
     tab: 'background',
     seq: 0,
   });
-  const { tour, freeze } = useLogoTour({
-    openLayouts: () => setOpened({ tab: 'layouts', seq: Date.now() }),
-    closePanel: () => setOpened(null),
-  });
+  const { tour, freeze } = useLogoTour(
+    {
+      openLayouts: () => setOpened({ tab: 'layouts', seq: Date.now() }),
+      closePanel: () => setOpened(null),
+    },
+    (id) => id === page.id && !deleted,
+  );
   const laid = layOutIllustratePages([page])[0]!;
   return (
     <div>
@@ -53,7 +64,7 @@ function Page({ page, combine = false }: { page: IllustratePage; combine?: boole
         <button type="button" aria-label="Guides" />
       </div>
       {combine ? <button type="button" aria-label="Combine shapes" /> : null}
-      {opened ? (
+      {opened && !deleted ? (
         <IllustratePagePanel
           key={opened.seq}
           page={laid}
@@ -131,5 +142,17 @@ describe('Logo page Show Me', () => {
     await next();
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'LogoTourCompleted');
+  });
+
+  it('ends with its page, sending no Ended event', async () => {
+    const { rerender } = render(<Page page={LOGO} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
+    await settle();
+    await next(); // Guides
+    expect(screen.getByRole('dialog', { name: /Draw on Guides/ })).toBeTruthy();
+    rerender(<Page page={LOGO} deleted />);
+    await settle();
+    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
   });
 });

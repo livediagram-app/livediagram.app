@@ -120,8 +120,10 @@ menu alone.
   `setContextMenu`), then anchors the popover to the resulting DOM node found via `data-tour-id` attributes
   (plus the existing `data-palette-dropdown-menu` / `data-element-id` hooks).
 - Targets are awaited (poll with timeout) because several menus are lazy-loaded chunks. A step whose target
-  never appears is skipped rather than wedging the tour; if an open menu is dismissed mid-step (outside click),
-  the step re-prepares itself.
+  never appears is skipped rather than wedging the tour, the way the person was going: going Back, past it to the
+  step before (never onto the welcome card); otherwise forward. If an open menu is dismissed mid-step (outside
+  click), the step re-prepares itself; a target that still does not come back lets go of its ring, and the card
+  waits centred.
 - **A target has to render to count.** Chrome a surface hides can stay in the DOM (`display:none`), so an
   anchor with no client rects is treated as absent: it is never clicked and never measured. That is the safety
   net; the step list itself is filtered up front (`tourStepsFor`, by viewport and tab kind) so the "N of M"
