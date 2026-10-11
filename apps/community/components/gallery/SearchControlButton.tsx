@@ -26,7 +26,7 @@ export function SearchControlButton({
     <button
       type="button"
       {...props}
-      className={`inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 sm:px-2.5 ${
+      className={`relative inline-flex h-8 items-center gap-1.5 rounded-lg px-2 text-sm touch-target-y pointer-coarse:px-2.5 font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 sm:px-2.5 ${
         active
           ? 'bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-500/15 dark:text-brand-200 dark:hover:bg-brand-500/25'
           : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'

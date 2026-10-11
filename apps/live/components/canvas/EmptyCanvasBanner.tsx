@@ -49,7 +49,7 @@ export function EmptyCanvasBanner({
           <button
             type="button"
             aria-label="Close"
-            className="absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="touch-target absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             onClick={() => {
               dismissEmptyCard(tabId);
               setClosed(true);
@@ -58,7 +58,11 @@ export function EmptyCanvasBanner({
             <CloseGlyph />
           </button>
         </Tooltip>
-        <EmptyCanvasArt mode={mode} />
+        {/* A short screen (a phone on its side, 390px tall) drops the art, so the card clears the
+            toolbars above and below it instead of sliding under the Palette strip. */}
+        <div className="[@media(max-height:480px)]:hidden">
+          <EmptyCanvasArt mode={mode} />
+        </div>
         <div className="flex flex-col gap-1">
           <p className="text-[15px] font-semibold text-slate-800 dark:text-slate-100">
             {tabName} is empty

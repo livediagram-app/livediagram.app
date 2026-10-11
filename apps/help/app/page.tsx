@@ -35,7 +35,7 @@ export default function HelpHome() {
           <SearchInput large />
           <a
             href="/help/contact/"
-            className="mt-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
+            className="relative mt-6 inline-flex items-center gap-2 text-sm text-slate-500 touch-target-y transition-colors hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100"
           >
             <MailIcon className="h-4 w-4" />
             Can&apos;t find what you need? Contact us

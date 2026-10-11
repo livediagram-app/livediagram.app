@@ -132,7 +132,7 @@ export function SearchBox({
         maxLength={COMMUNITY_SEARCH_MAX}
         spellCheck={false}
         enterKeyHint="search"
-        className="min-w-0 flex-1 bg-transparent py-3 pl-2 text-[15px] text-slate-900 outline-none placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400 [&::-webkit-search-cancel-button]:hidden"
+        className="min-w-0 flex-1 bg-transparent py-3 pl-2 text-[15px] text-slate-900 outline-none pointer-coarse:text-base placeholder:text-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400 [&::-webkit-search-cancel-button]:hidden"
       />
       <div className="flex shrink-0 items-center gap-1">
         {draft ? (

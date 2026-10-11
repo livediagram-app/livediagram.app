@@ -11,7 +11,10 @@ import { REPO_URL } from './site';
 // Community. Brand + tagline on top, the site links grouped into titled columns below, and a thin legal/credits
 // strip at the bottom crediting the human contributors by their avatars. Only the key links carry an icon (the
 // first action, AI, help and the source); the rest stay plain text so the columns read quietly.
-const LINK = 'inline-flex items-center gap-2 hover:text-slate-900 dark:hover:text-slate-100';
+// On a touch screen each link is a 44px-tall row (touch-targets.md) and the column drops its gap, so
+// the rows abut and every tap lands on a link; a mouse keeps the compact 28px rhythm.
+const LINK =
+  'inline-flex items-center gap-2 hover:text-slate-900 pointer-coarse:py-3 dark:hover:text-slate-100';
 const ICON_SIZE = 16;
 
 type FooterLink = { href: string; label: string; icon?: ReturnType<typeof lucideGlyph> };
@@ -67,7 +70,7 @@ export function SiteFooter() {
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <div className="mx-auto max-w-6xl px-6 py-10">
         <div>
-          <Brand href="/" size="lg" />
+          <Brand href="/" size="lg" className="relative touch-target-y" />
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
             Free diagrams, whiteboards and pages for teams who think together.
           </p>
@@ -81,7 +84,7 @@ export function SiteFooter() {
               <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-900 dark:text-slate-100">
                 {column.title}
               </h2>
-              <div className="mt-3 flex flex-col items-start gap-2">
+              <div className="mt-3 flex flex-col items-start gap-2 pointer-coarse:mt-0.5 pointer-coarse:gap-0">
                 {column.links.map((link) => {
                   if (link === COMMUNITY)
                     return <CommunityFooterLink key={link} className={LINK} />;
@@ -126,7 +129,7 @@ export function SiteFooter() {
                     href={`https://github.com/${c.login}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-200"
+                    className="inline-flex items-center gap-1 font-medium text-slate-500 hover:text-brand-600 pointer-coarse:py-3 dark:text-slate-400 dark:hover:text-brand-200"
                   >
                     {/* Decorative: the name beside it carries the link's meaning. */}
                     <img

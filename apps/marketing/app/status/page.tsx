@@ -116,11 +116,15 @@ export default function StatusPage() {
         <ul className="mt-8 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
           {COMPONENTS.map((c) => (
             <li key={c.name} className="flex items-center justify-between gap-4 px-5 py-4">
-              <div>
+              {/* min-w-0 + break-words: a long host in a description wraps instead of pushing the
+                  badge off a 320px phone. */}
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{c.name}</p>
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{c.description}</p>
+                <p className="mt-0.5 break-words text-xs text-slate-500 dark:text-slate-400">
+                  {c.description}
+                </p>
               </div>
-              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
+              <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-500/15 dark:text-emerald-200">
                 <span className="h-2 w-2 rounded-full bg-emerald-500" />
                 Operational
               </span>

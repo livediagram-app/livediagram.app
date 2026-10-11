@@ -8,6 +8,7 @@ import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
 import { BAND_BLEND, BAND_TINT } from './toolbar-surface';
+import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -77,7 +78,7 @@ export function ToolbarExplorerButton({
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND}`
+          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${PHONE_TOOLBAR_ITEMS}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

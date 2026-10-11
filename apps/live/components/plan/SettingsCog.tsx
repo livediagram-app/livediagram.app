@@ -14,10 +14,11 @@ import { useSlotSettings } from './dashboard/slot-menu';
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const POPOVER_PX = 360;
 
+// Both reach a 44px tap area on a touch screen (touch-targets.md).
 const HEADER_CLASS =
-  'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10';
+  'touch-target relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10';
 const FLOATING_CLASS =
-  'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800';
+  'touch-target relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 

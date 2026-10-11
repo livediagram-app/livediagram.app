@@ -67,7 +67,7 @@ export function RolePill({
       aria-label={owner ? `${word}. ${owner}` : word}
       aria-describedby={hintId}
       data-role-pill={role}
-      className={`${PILL} ${PILL_TONE[role]} ${PILL_TOGGLE_TONE[role]}`}
+      className={`${PILL} ${PILL_TONE[role]} ${PILL_TOGGLE_TONE[role]} relative touch-target-y`}
     >
       <span className="text-optical-line text-optical-caps">{word}</span>
       <span id={hintId} className="sr-only">
