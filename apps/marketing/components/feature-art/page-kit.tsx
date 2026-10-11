@@ -199,3 +199,12 @@ export function Cursor({
 
 // The serif an article or report headline is set in (Illustrate's Classic and Report looks).
 export const SERIF = 'ui-serif, Georgia, Cambria, "Times New Roman", serif';
+
+// The small caption over a page, as the editor labels its pages.
+export function PageLabel({ x, y, children }: { x: number; y: number; children: string }) {
+  return (
+    <text x={x} y={y} fontSize="4.6" fontWeight="600" className={INK_SOFT} fill="#64748b">
+      {children}
+    </text>
+  );
+}
