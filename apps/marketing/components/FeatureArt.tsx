@@ -39,6 +39,7 @@ export * from './feature-art/whiteboard';
 export * from './feature-art/whiteboard-pen';
 export * from './feature-art/plan';
 export * from './feature-art/plan-views';
+export * from './feature-art/plan-dashboard';
 export * from './feature-art/documents';
 export * from './feature-art/article-looks';
 export * from './feature-art/slide-layouts';
