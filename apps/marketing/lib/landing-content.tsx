@@ -21,6 +21,7 @@ import {
   CommentsArt,
   ComponentsArt,
   CustomThemesArt,
+  DashboardArt,
   DragDuplicateArt,
   EmbedArt,
   EntityArt,
@@ -955,14 +956,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore plans and boards',
     title: 'Plan the work, then watch it move',
     description:
-      'Switch a tab to Plan and the work moves onto boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and live charts of every card, right beside the diagram that explains it.',
+      'Switch a tab to Plan and the work moves onto boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, live charts of every card, and dashboards that bring it all onto one page, right beside the diagram that explains it.',
     metaDescription:
-      'Plan mode puts the work on boards of cards: WIP limits, swimlanes, card types with your own fields, live charts and Sheets with real formulas.',
+      'Plan mode puts the work on boards of cards: WIP limits, swimlanes, your own card types, live charts, Sheets with real formulas and dashboards.',
     highlights: [
       'Boards with WIP limits',
       'One card, every board',
       'Card types and fields of your own',
-      'Live charts of every card',
+      'Dashboards on one page',
     ],
     items: [
       {
@@ -991,14 +992,21 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/plan-mode/#metrics-and-visualisations',
         title: 'Live charts of every card',
         description:
-          'A Gantt chart, a due-date calendar, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date.',
+          'A Gantt chart, due and start calendars you can drag cards across, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date. Give one a tab of its own and it fills the page, with a Chart Settings cog for which cards it shows and how it groups them.',
+      },
+      {
+        art: <DashboardArt />,
+        href: '/help/canvas/plan-mode/dashboards/',
+        title: 'Dashboards on one page',
+        description:
+          'Lay a tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, a diagram from another tab, or a note, a checklist or a key date. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
       },
       {
         art: <SheetsArt />,
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Sheets with real formulas',
         description:
-          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and the cells zoom from 50% to 200%.',
+          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells. Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and cells come Compact, Default or Roomy and zoom from 50% to 200%.',
       },
       {
         art: <BoardWidgetsArt />,
@@ -1017,9 +1025,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
       {
         art: <TemplatesArt />,
         href: '/help/canvas/plan-mode/#plan-templates',
-        title: 'Ten plans, ready to go',
+        title: 'Ten plans, twelve spreadsheets',
         description:
-          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; a Budget Planner, Timesheet, Contact List or Task Tracker spreadsheet; or start from a blank plan.',
+          'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. Start Planning lays them out by kind, with search.',
       },
       {
         art: <McpArt />,

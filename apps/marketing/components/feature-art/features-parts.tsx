@@ -7,7 +7,7 @@
 // Feature-specific on purpose: ./shared holds what every feature-art file uses (Frame and the
 // colour constants), and none of these are wanted elsewhere.
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Cursor, EMERALD, SKY, VIOLET } from './shared';
 
 // Panel chrome in an SVG scene: the white of the editor's panels, slate-900 in dark.
@@ -573,3 +573,10 @@ export function VoteSticky({
     </g>
   );
 }
+
+// Every features scene is drawn on a 300 by 96 stage, the card's art frame at its usual width.
+export const VIEW = '0 0 300 96';
+
+// A CSS custom property set for a moving piece's destination (fa-b-go, fa-b-drag, fa-b-carry).
+export const to = (x: number, y: number, extra?: Record<string, string>) =>
+  ({ '--tx': `${x}px`, '--ty': `${y}px`, ...extra }) as CSSProperties;

@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livediagram?',
-        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards, and Facilitate for running a session with your team. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Facilitate for running a session with your team, Illustrate for designed pages, and Plan for boards of cards. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livediagram?',
@@ -192,13 +192,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits.
-            Card types carry your own fields, the same card can sit on two boards, and widgets add a
-            Gantt chart, a due-date calendar and counts by person or priority. See{' '}
+            Card types carry your own fields, the same card can sit on two boards, and charts of the
+            cards (a Gantt chart, due and start calendars, counts by person or priority) can fill a
+            tab of their own. A Dashboard puts boards, Sheets, charts and figures side by side. See{' '}
             <a href="/help/canvas/plan-mode/">Plan mode</a>.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits. Card types carry your own fields, the same card can sit on two boards, and widgets add a Gantt chart, a due-date calendar and counts by person or priority. See Plan mode.',
+          'Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits. Card types carry your own fields, the same card can sit on two boards, and charts of the cards (a Gantt chart, due and start calendars, counts by person or priority) can fill a tab of their own. A Dashboard puts boards, Sheets, charts and figures side by side. See Plan mode.',
       },
       {
         q: 'Can I add pictures?',
@@ -306,13 +307,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort,
             filter and freeze, edited live by everyone on the tab. Formulas can read the cards on
-            the board, or list the cards as rows that stay linked both ways. CSV files come in and
-            go out, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you
-            off. See <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
+            the board, or list the cards as rows that stay linked both ways. Select some cells to
+            chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files
+            come in and go out, and twelve templates start you off, from a Budget Planner and an
+            Invoice to a Loan Calculator and a Habit Tracker. See{' '}
+            <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
           </>
         ),
         aText:
-          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. CSV files come in and go out, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you off. See Sheets.',
+          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Select some cells to chart them in a bar, line or pie chart that sits in the Sheet over its cells. CSV files come in and go out, and twelve templates start you off, from a Budget Planner and an Invoice to a Loan Calculator and a Habit Tracker. See Sheets.',
       },
       {
         q: 'Can I present from it?',

@@ -4,13 +4,16 @@
 // with the shared fa-pop and features' fa-b-* loops, which settle to the finished frame under
 // reduced motion.
 
+import { EDITOR_MODES, editorModeLabel } from '@livediagram/document';
+
 import { PANEL, PanelShadow, STRONG, SUBTLE, VoteSticky } from './features-parts';
 import { Frame } from './shared';
 
 // sky-700: white text on it reads at AA, where sky-500 does not.
 const PICKED = '#0369a1';
 const VIEW = '0 0 300 96';
-const MODES = ['Diagram', 'Draw', 'Illustrate', 'Plan', 'Facilitate'] as const;
+// The editor's own modes, in its order (Facilitate after Draw), so the menu never drifts from the app.
+const MODES = EDITOR_MODES.map(editorModeLabel);
 const ROW = 14.4;
 
 /** The tab's mode menu, Facilitate picked; the stickies and the Session strip it brings. */
@@ -18,7 +21,7 @@ export function FacilitateModeArt() {
   return (
     <Frame canvas>
       <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
-        {/* The mode menu: five modes, the last one picked. */}
+        {/* The mode menu: the five modes, Facilitate picked. */}
         <PanelShadow x={14} y={10} w={84} h={76} r={6} />
         <rect className={PANEL} x="14" y="10" width="84" height="76" rx="6" strokeWidth="1" />
         {MODES.map((name, i) => {

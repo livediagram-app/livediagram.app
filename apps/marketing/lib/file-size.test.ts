@@ -4,13 +4,13 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // AGENTS.md "No god files": a source file past ~1000 lines is doing too much and must be broken up.
-// Pure data is exempt, however long it grows: the landing copy and the comparison set are flat
-// catalogues. Feature art splits by card family (components/feature-art/*), re-exported by the
+// Pure data is exempt, however long it grows: the landing copy, the comparison set and the FAQ are
+// flat catalogues. Feature art splits by card family (components/feature-art/*), re-exported by the
 // FeatureArt barrel. The limit is a ratchet: it sits a little above the largest code file and
-// comes down as files split (1000 until the October 2026 art split took every file under 700).
+// comes down as files split (1000, then 750 after the first October 2026 art split, then 650 after the second).
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const LIMIT = 750;
-const DATA = new Set(['lib/landing-content.tsx', 'lib/alternatives.ts']);
+const LIMIT = 650;
+const DATA = new Set(['lib/landing-content.tsx', 'lib/alternatives.ts', 'lib/faq-content.tsx']);
 
 function sources(dir: string): string[] {
   return readdirSync(join(ROOT, dir), { withFileTypes: true }).flatMap((e) =>

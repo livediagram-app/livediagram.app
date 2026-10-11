@@ -28,9 +28,9 @@ export type HeroMode = EditorMode;
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
   diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
   draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
+  facilitate: { label: 'Facilitate', Icon: EDITOR_MODE_ICONS.facilitate },
   illustrate: { label: 'Illustrate', Icon: EDITOR_MODE_ICONS.illustrate },
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
-  facilitate: { label: 'Facilitate', Icon: EDITOR_MODE_ICONS.facilitate },
 };
 
 type Tile = { key: string; glyph: ReactNode; active?: boolean };
