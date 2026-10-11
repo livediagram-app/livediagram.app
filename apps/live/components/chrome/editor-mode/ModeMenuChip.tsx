@@ -37,7 +37,16 @@ import { useConfirm } from '@/hooks/ui/useConfirm';
 // are `menuitemradio`, and the shared hooks give it the menu keyboard: opening focuses the checked
 // row, choosing or Escape returns focus to the chip, Tab closes it. An outside press closes it.
 
-export function ModeMenuChip({ mode, onChange, lockedReason, newTabIn }: EditorModeSwitchProps) {
+// `labelled` shows the mode's name beside its glyph, where the chip has room and no top chrome around it to explain it
+// (a start panel's rail).
+export function ModeMenuChip({
+  mode,
+  onChange,
+  lockedReason,
+  newTabIn,
+  crossPlan = false,
+  labelled = false,
+}: EditorModeSwitchProps & { labelled?: boolean }) {
   const confirm = useConfirm();
   // On a tab that keeps its mode, another mode is a new tab in it, asked first (docs/specs/026-plan/plan-tabs.md).
   const pickLocked = async (next: EditorModeSwitchProps['mode']) => {
@@ -66,7 +75,7 @@ export function ModeMenuChip({ mode, onChange, lockedReason, newTabIn }: EditorM
   const Icon = EDITOR_MODE_ICONS[mode];
   const label = editorModeLabel(mode);
   const modes = EDITOR_MODES;
-  const besides = modesBesidePlanRule(mode);
+  const besides = crossPlan ? modes : modesBesidePlanRule(mode);
   const keyLeadsTo = besides.length > 1 ? nextEditorMode(mode, 1, besides) : null;
 
   // The zoom the chip's host draws at (the toolbar or panel UI scale, docs/specs/007-editor/ui-scale.md),
@@ -86,10 +95,12 @@ export function ModeMenuChip({ mode, onChange, lockedReason, newTabIn }: EditorM
       <button
         ref={setTrigger}
         type="button"
-        data-tour-id="editor-mode"
+        // The tours' anchor is the top chrome's chip, never a start panel's.
+        data-tour-id={labelled ? undefined : 'editor-mode'}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Editor mode: ${label}`}
+        // A start screen's switch is named for the tab it sets, so the top chrome's "Editor mode" stays the one.
+        aria-label={labelled ? `Tab mode: ${label}` : `Editor mode: ${label}`}
         aria-keyshortcuts={EDITOR_MODE_KEYSHORTCUT}
         onClick={() => {
           readZoom();
@@ -99,9 +110,16 @@ export function ModeMenuChip({ mode, onChange, lockedReason, newTabIn }: EditorM
           if (!open) readZoom();
           onTriggerKeyDown(event);
         }}
-        className={`flex w-full items-center gap-1 rounded-md px-1.5 transition-colors h-9 justify-center ${TOOLBAR_TRIGGER_TONE} ${MODE_SWITCH_FOCUS}`}
+        // Labelled, it is a full-bleed row filling the edge it sits on (a start panel's rail top): square, taller,
+        // its focus ring drawn inside so the panel's edge never clips it.
+        className={`flex w-full items-center transition-colors ${
+          labelled
+            ? 'h-12 justify-start gap-2.5 rounded-none px-5 text-[13px] font-medium focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 dark:focus-visible:outline-brand-400'
+            : `h-9 justify-center gap-1 rounded-md px-1.5 ${MODE_SWITCH_FOCUS}`
+        } ${TOOLBAR_TRIGGER_TONE}`}
       >
         <Icon aria-hidden />
+        {labelled ? <span className="flex-1 text-left">{label}</span> : null}
         <ChevronDownIcon
           aria-hidden
           className={`transition-transform duration-micro motion-reduce:transition-none ${
@@ -119,6 +137,7 @@ export function ModeMenuChip({ mode, onChange, lockedReason, newTabIn }: EditorM
           hostZoom={hostZoom}
           onChange={onChange}
           onClose={close}
+          crossPlan={crossPlan}
           lockedReason={lockedReason}
           // No new tab to offer (a session that cannot add tabs, such as a tab-scoped link): the
           // locked rows are inert.
@@ -140,9 +159,11 @@ function ModeMenu({
   hostZoom,
   onChange,
   onClose,
+  crossPlan,
   lockedReason,
   onLockedPick,
 }: {
+  crossPlan: boolean;
   mode: EditorModeSwitchProps['mode'];
   modes: readonly EditorModeSwitchProps['mode'][];
   keyLeadsTo: EditorModeSwitchProps['mode'] | null;
@@ -170,7 +191,7 @@ function ModeMenu({
     >
       {modes.map((option) => {
         const checked = option === mode;
-        const locked = (!!lockedReason && !checked) || crossesPlan(mode, option);
+        const locked = (!!lockedReason && !checked) || (!crossPlan && crossesPlan(mode, option));
         // A locked row with no new tab to offer does nothing.
         const inert = locked && !onLockedPick;
         const RowIcon = EDITOR_MODE_ICONS[option];

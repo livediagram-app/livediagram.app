@@ -103,7 +103,7 @@ describe('the Location step switch', () => {
     renderWizard();
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     fireEvent.click(checkbox());
-    fireEvent.click(screen.getByRole('button', { name: /Template/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Mode/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(checkbox().getAttribute('aria-checked')).toBe('false');
   });
@@ -135,20 +135,16 @@ describe('the wizard with the Location step skipped', () => {
       documentName: 'Untitled document',
       teamId: 't',
       folderId: 's',
+      placementChosen: true,
     });
   });
 
-  it('creates at once when a template card is chosen', () => {
+  it('creates at once when a mode is chosen, on its blank', () => {
     const onPick = renderWizard({ ...saved, placement: 'unsorted', placeName: 'My documents' });
-    fireEvent.change(screen.getByRole('searchbox', { name: 'Search templates' }), {
-      target: { value: 'kanban' },
-    });
-    return vi.waitFor(() => {
-      fireEvent.click(screen.getAllByRole('button', { name: /Kanban/ })[0]!);
-      expect(onPick).toHaveBeenCalledTimes(1);
-      expect(onPick.mock.calls[0]![0]).toMatch(/kanban/i);
-      expect(settingsOf(onPick)).toMatchObject({ teamId: null, folderId: null });
-    });
+    fireEvent.click(screen.getByRole('button', { name: /^Plan:/ }));
+    expect(onPick).toHaveBeenCalledTimes(1);
+    expect(onPick.mock.calls[0]![0]).toBe('blank-plan');
+    expect(settingsOf(onPick)).toMatchObject({ teamId: null, folderId: null });
   });
 
   it('saves Local Browser documents with no placement', () => {
@@ -161,6 +157,7 @@ describe('the wizard with the Location step skipped', () => {
     expect(settingsOf(onPick)).toEqual({
       saveLocation: 'browser',
       documentName: 'Untitled document',
+      placementChosen: true,
     });
   });
 
@@ -172,7 +169,7 @@ describe('the wizard with the Location step skipped', () => {
       'true',
     );
     // Back on the template step the visit stays two steps.
-    fireEvent.click(screen.getByRole('button', { name: /Template/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Mode/ }));
     expect(screen.getByRole('button', { name: /^Next/ })).toBeTruthy();
     expect(onPick).not.toHaveBeenCalled();
   });

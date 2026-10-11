@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  boardRoot,
   firstCardOn,
+  needsReveal,
+  sheetRoot,
+  visiblePlanWork,
   planTourSteps,
   planTourStepTelemetryType,
   type PlanTourApi,
@@ -16,6 +20,7 @@ const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
   firstCardId: () => 'card1',
   openCard: vi.fn(),
   closeCard: vi.fn(),
+  reveal: vi.fn(),
   ...over,
 });
 const PLAN_TOUR_STEPS = planTourSteps('boards');
@@ -62,17 +67,20 @@ describe('PLAN_TOUR_STEPS', () => {
         expect(word.charAt(0), s.id).toBe(word.charAt(0).toUpperCase());
   });
 
-  it("points the board steps at the person's board, its first column, card and header", () => {
+  // Spec "The tour subject": the board as drawn (its body), never its canvas node, hidden under a maximised or
+  // tab-filling body.
+  it("points the board steps at the person's drawn board, its first column, card and header", () => {
     const a = api();
-    expect(step('board').selector!(a)).toBe('[data-element-id="board1"]');
-    expect(step('add-cards').selector!(a)).toBe('[data-element-id="board1"] [data-plan-status]');
+    expect(step('board').selector!(a)).toBe('[data-plan-board="board1"]');
+    expect(step('add-cards').selector!(a)).toBe('[data-plan-board="board1"] [data-plan-status]');
     expect(step('move-card').selector!(a)).toBe(
-      '[data-element-id="board1"] [data-plan-card="card1"]',
+      '[data-plan-board="board1"] [data-plan-card="card1"]',
     );
     expect(step('card-panel').selector!(a)).toBe('[role="dialog"][aria-label^="Item #"]');
     expect(step('board-header').selector!(a)).toBe(
-      '[data-element-id="board1"] [data-board-header]',
+      '[data-plan-board="board1"] [data-board-header]',
     );
+    for (const s of PLAN_TOUR_STEPS) expect(s.selector?.(a) ?? '').not.toContain('data-element-id');
   });
 
   it('has no anchor without a board or a card', () => {
@@ -84,10 +92,12 @@ describe('PLAN_TOUR_STEPS', () => {
   });
 
   // Spec "Tour subject": it changes nothing; the only step that prepares anything opens a card's panel.
-  it('changes nothing on the board: only the card panel step opens anything, and closes it after', async () => {
+  it('changes nothing on the board: it brings the board into view, and only the card panel step opens anything', async () => {
     const a = api();
     const preparing = PLAN_TOUR_STEPS.filter((s) => s.prepare).map((s) => s.id);
-    expect(preparing).toEqual(['card-panel', 'board-header']);
+    expect(preparing).toEqual(['board', 'card-panel', 'board-header']);
+    await step('board').prepare!(a);
+    expect(a.reveal).toHaveBeenCalledWith('boards');
     await step('card-panel').prepare!(a);
     expect(a.openCard).toHaveBeenCalledTimes(1);
     step('card-panel').cleanup!(a);
@@ -142,7 +152,7 @@ describe("planTourSteps('sheets')", () => {
 
   it("points each step at a part of the person's sheet", () => {
     const a = api();
-    const on = '[data-element-id="sheet1"]';
+    const on = '[data-plan-sheet="sheet1"]';
     expect(sheetStep('sheet').selector!(a)).toBe(on);
     expect(sheetStep('cells').selector!(a)).toBe(`${on} [role="grid"]`);
     expect(sheetStep('formulas').selector!(a)).toBe(`${on} [data-sheet-formula-bar]`);
@@ -155,19 +165,79 @@ describe("planTourSteps('sheets')", () => {
       expect(sheetStep(id).selector!(none), id).toBeNull();
   });
 
-  it('prepares nothing: no step selects a cell or places anything', () => {
-    expect(SHEET_STEPS.filter((s) => s.prepare || s.cleanup)).toEqual([]);
+  it('prepares nothing but bringing the sheet into view: no step selects a cell or places anything', async () => {
+    expect(SHEET_STEPS.filter((s) => s.prepare || s.cleanup).map((s) => s.id)).toEqual(['sheet']);
+    const a = api();
+    await sheetStep('sheet').prepare!(a);
+    expect(a.reveal).toHaveBeenCalledWith('sheets');
   });
 });
 
 describe('firstCardOn', () => {
   it("reads the board's first drawn card", () => {
     document.body.innerHTML =
-      '<div data-element-id="b1"><div data-plan-card="c1"></div><div data-plan-card="c2"></div></div>' +
-      '<div data-element-id="b2"></div>';
+      '<div data-plan-board="b1"><div data-plan-card="c1"></div><div data-plan-card="c2"></div></div>' +
+      '<div data-plan-board="b2"></div>';
     expect(firstCardOn('b1')).toBe('c1');
     expect(firstCardOn('b2')).toBeNull();
     expect(firstCardOn(null)).toBeNull();
+  });
+});
+
+// Spec "The tour subject": the board or Sheet the person sees.
+describe('visiblePlanWork', () => {
+  const box = (el: Element, r: Partial<DOMRect>) =>
+    vi.spyOn(el, 'getBoundingClientRect').mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 100,
+      bottom: 100,
+      width: 100,
+      height: 100,
+      ...r,
+    } as DOMRect);
+
+  it('is null with nothing on the tab', () => {
+    expect(visiblePlanWork([], boardRoot)).toBeNull();
+  });
+
+  it('takes the one maximised or filling the tab first', () => {
+    document.body.innerHTML =
+      '<div data-plan-board="b1"></div><div data-canvas-cover><div><div data-plan-board="b2"></div></div></div>';
+    expect(visiblePlanWork(['b1', 'b2'], boardRoot)).toBe('b2');
+  });
+
+  it('then one on screen, then the first', () => {
+    document.body.innerHTML = '<div data-plan-sheet="s1"></div><div data-plan-sheet="s2"></div>';
+    box(document.querySelector(sheetRoot('s1'))!, { left: -500, right: -400 });
+    box(document.querySelector(sheetRoot('s2'))!, {});
+    expect(visiblePlanWork(['s1', 's2'], sheetRoot)).toBe('s2');
+    box(document.querySelector(sheetRoot('s2'))!, { top: 5000, bottom: 5100 });
+    expect(visiblePlanWork(['s1', 's2'], sheetRoot)).toBe('s1');
+  });
+});
+
+describe('needsReveal', () => {
+  it('leaves a maximised or tab-filling body alone, and asks for one off the window', () => {
+    document.body.innerHTML =
+      '<div data-canvas-cover><div data-plan-board="b1"></div></div><div data-plan-board="b2"></div>';
+    expect(needsReveal(boardRoot('b1'))).toBe(false);
+    const b2 = document.querySelector(boardRoot('b2'))!;
+    vi.spyOn(b2, 'getBoundingClientRect').mockReturnValue({
+      left: 10,
+      top: 10,
+      right: 110,
+      bottom: 110,
+    } as DOMRect);
+    expect(needsReveal(boardRoot('b2'))).toBe(false);
+    vi.spyOn(b2, 'getBoundingClientRect').mockReturnValue({
+      left: -300,
+      top: 10,
+      right: -200,
+      bottom: 110,
+    } as DOMRect);
+    expect(needsReveal(boardRoot('b2'))).toBe(true);
+    expect(needsReveal(null)).toBe(false);
   });
 });
 

@@ -1605,7 +1605,7 @@ kind, kept current every session. Each should stay true on its own.
   dropdowns are hidden, because a chooser you never need is a distraction.
 - Removing chrome is safe only when another path survives: hidden tool
   pickers still leave keyboard shortcuts and the command palette.
-- Hiding chrome has a second audience: the Diagram tour ([Diagram tour ("Show me around")](../007-editor/editor-tour.md))
+- Hiding chrome has a second audience: the Diagram tour ([Diagram tour ("Getting started with Diagrams?")](../007-editor/editor-tour.md))
   pointed at the hidden header until it learned to drop those steps on a
   board — anything that teaches the UI has to be told when the UI shrinks.
 - Next App Router hydrates React on `document`, so React handlers are
@@ -1777,7 +1777,7 @@ truth for what the type IS at any moment.
 
 ## Counts
 
-The catalogue is pinned at **104 templates (11 default + 93 extra)**:
+The catalogue is pinned at **105 templates (11 default + 94 extra)**:
 `templates.test.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), [Marketing assets](../019-marketing/marketing-assets.md), the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

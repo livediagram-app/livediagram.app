@@ -32,6 +32,9 @@ export type EditorModeState = {
   // The tab keeps its mode, for this reason (resolveEditorMode): picking another offers a new tab in it instead.
   lockedReason?: string;
   newTabIn?: (mode: EditorMode) => void;
+  // The tab is empty, so it may cross into or out of Plan: with nothing on it there is nothing either side's tools
+  // could not hold (docs/specs/007-editor/editor-modes.md "Plan stands apart").
+  crossPlan?: boolean;
 };
 
 // The telemetry type a switch into each mode fires.
@@ -72,10 +75,11 @@ export function useEditorMode(
   const { canEdit, commitTabs, toastInfo } = deps;
   const tabId = tab?.id;
   const { mode, canSwitch, lockedReason } = resolveEditorMode({ tab, canEdit });
+  const crossPlan = canSwitch && (tab?.elements.length ?? 0) === 0;
   const setMode = useCallback(
     (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => {
-      // Never into or out of Plan (crossesPlan): the mode menu offers a new tab in it instead.
-      if (!canSwitch || !tabId || next === mode || crossesPlan(mode, next)) return;
+      // Never into or out of Plan (crossesPlan) unless the tab is empty: the mode menu offers a new tab in it instead.
+      if (!canSwitch || !tabId || next === mode || (crossesPlan(mode, next) && !crossPlan)) return;
       trackModeSwitch(next);
       let paged = false;
       commitTabs((ts) =>
@@ -92,7 +96,7 @@ export function useEditorMode(
       }
       debugLog('[editor-mode] switched', { tabId, from: mode, to: next, paged });
     },
-    [canSwitch, tabId, mode, commitTabs, toastInfo],
+    [canSwitch, crossPlan, tabId, mode, commitTabs, toastInfo],
   );
   return {
     mode,
@@ -100,6 +104,7 @@ export function useEditorMode(
     canSwitch,
     canEdit,
     ...(lockedReason ? { lockedReason } : {}),
+    ...(crossPlan ? { crossPlan } : {}),
     ...(deps.newTabIn ? { newTabIn: deps.newTabIn } : {}),
   };
 }

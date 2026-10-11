@@ -303,6 +303,8 @@ export function IllustratePages({
               >
                 <button
                   type="button"
+                  // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md); the first page's leads.
+                  data-tour-id="page-name"
                   {...drag.handlers(page.id)}
                   onClick={() => {
                     if (!drag.endsDrag()) goToPage(page);
@@ -389,7 +391,12 @@ export function IllustratePages({
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage ? (
-        <AddPageButton lastRight={last.rect.x + last.rect.width} zoom={zoom} onAdd={edit.addPage} />
+        <AddPageButton
+          lastRight={last.rect.x + last.rect.width}
+          lastMiddle={last.rect.y + last.rect.height / 2}
+          zoom={zoom}
+          onAdd={edit.addPage}
+        />
       ) : null}
       {previewed && view.layoutPreview ? (
         <InfographicLayoutPreview
@@ -498,6 +505,8 @@ function PageCog({
           aria-haspopup="dialog"
           aria-expanded={open}
           data-page-panel-trigger
+          // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md); the first page's leads.
+          data-tour-id="page-cog"
           onClick={() => onToggle()}
           className={`touch-target-y relative flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
             open ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-800 dark:text-slate-100' : ''

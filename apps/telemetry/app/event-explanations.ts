@@ -1008,6 +1008,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
   'UI|Closed|TourOffer':
     "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
+  'UI|Closed|IllustrateTourOffer':
+    'Someone turned the Illustrate tour down with No on its own card.',
+  'UI|Closed|DrawTourOffer': 'Someone turned the Draw tour down with No on its own card.',
   'UI|Closed|FacilitateTourOffer':
     'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
@@ -1046,6 +1049,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of the photo import review's Show Me tour.",
   'UI|Ended|PhotoReviewTourSkipped':
     "Someone left the photo import review's Show Me tour before its end.",
+  'UI|Ended|IllustrateTourCompleted':
+    "Someone reached the end of the Illustrate tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|IllustrateTourSkipped': 'Someone closed the Illustrate tour before its end.',
+  'UI|Ended|DrawTourCompleted':
+    "Someone reached the end of the Draw tour, or a step's target never appeared and the tour finished early.",
+  'UI|Ended|DrawTourSkipped': 'Someone closed the Draw tour before its end.',
   'UI|Ended|FacilitateTourCompleted':
     "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
@@ -1128,11 +1137,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Show Tours › "Diagram" ("Welcome", when it was the welcome tour, until October 2026).',
+    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Onboarding Tutorials › "Diagram" ("Welcome", when it was the welcome tour, until October 2026).',
+  'UI|Opened|IllustrateTourOffer':
+    'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Onboarding Tutorials › "Illustrate".',
+  'UI|Opened|DrawTourOffer':
+    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Onboarding Tutorials › "Draw".',
   'UI|Opened|FacilitateTourOffer':
-    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Show Tours › "Facilitate". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
+    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Onboarding Tutorials › "Facilitate". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Show Tours › "Plan".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Onboarding Tutorials › "Plan".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1197,6 +1210,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
   'UI|Started|ShareTour':
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
+  'UI|Started|IllustrateTour':
+    "Someone pressed Yes on the Illustrate tour's first card, beginning its walkthrough of the pages.",
+  'UI|Started|DrawTour':
+    "Someone pressed Yes on the Draw tour's first card, beginning its walkthrough of the dock.",
   'UI|Started|FacilitateTour':
     "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
@@ -1335,17 +1352,25 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TourSeenOff':
-    'Someone switched on Show Tours › "Diagram" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
+    'Someone switched on Onboarding Tutorials › "Diagram" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
   'UI|Toggled|TourSeenOn':
-    'Someone switched off Show Tours › "Diagram" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+    'Someone switched off Onboarding Tutorials › "Diagram" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+  'UI|Toggled|IllustrateTourSeenOff':
+    'Someone switched on Onboarding Tutorials › "Illustrate" in Settings, marking the Illustrate tour as not yet seen.',
+  'UI|Toggled|IllustrateTourSeenOn':
+    'Someone switched off Onboarding Tutorials › "Illustrate" in Settings, marking the Illustrate tour as seen.',
+  'UI|Toggled|DrawTourSeenOff':
+    'Someone switched on Onboarding Tutorials › "Draw" in Settings, marking the Draw tour as not yet seen.',
+  'UI|Toggled|DrawTourSeenOn':
+    'Someone switched off Onboarding Tutorials › "Draw" in Settings, marking the Draw tour as seen.',
   'UI|Toggled|FacilitateTourSeenOff':
-    'Someone switched on Show Tours › "Facilitate" in Settings, marking the Facilitate tour as not yet seen.',
+    'Someone switched on Onboarding Tutorials › "Facilitate" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
-    'Someone switched off Show Tours › "Facilitate" in Settings, marking the Facilitate tour as seen.',
+    'Someone switched off Onboarding Tutorials › "Facilitate" in Settings, marking the Facilitate tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on Show Tours › "Plan" in Settings, marking the Plan tour as not yet seen.',
+    'Someone switched on Onboarding Tutorials › "Plan" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off Show Tours › "Plan" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+    'Someone switched off Onboarding Tutorials › "Plan" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
@@ -1353,6 +1378,25 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
   'UI|Used|TemplateLink':
     'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+  'UI|View|IllustrateTourStepPageName':
+    'The Illustrate tour reached its "Your Pages" step, on the first page\'s name.',
+  'UI|View|IllustrateTourStepPageSettings':
+    'The Illustrate tour reached its "Page Settings" step, on the first page\'s cog.',
+  'UI|View|IllustrateTourStepAddPage':
+    'The Illustrate tour reached its "Add a Page" step, on the + after the last page.',
+  'UI|View|IllustrateTourStepSlides':
+    'The Illustrate tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
+  'UI|View|IllustrateTourStepOutro':
+    'The Illustrate tour reached its closing "You\'re ready to illustrate" card.',
+  'UI|View|DrawTourStepDrawingTools':
+    'The Draw tour reached its "Pens and Tools" step, on the dock\'s Drawing tools group.',
+  'UI|View|DrawTourStepQuickStyle':
+    'The Draw tour reached its "Quick Style" step, on the Quick style panel.',
+  'UI|View|DrawTourStepShapes':
+    'The Draw tour reached its "Shapes" step, on the dock\'s Shapes group.',
+  'UI|View|DrawTourStepSettings':
+    'The Draw tour reached its "Board Settings" step, on the dock\'s Settings cog.',
+  'UI|View|DrawTourStepOutro': 'The Draw tour reached its closing "You\'re ready to draw" card.',
   'UI|View|FacilitateTourStepCollaborate':
     'The Facilitate tour reached its "Collaborate" step, ringing the Collaborate band of the palette\'s category picker.',
   'UI|View|FacilitateTourStepSessionStrip':
@@ -1391,7 +1435,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|TourStepContextMenu':
     'The Diagram tour (the welcome tour until October 2026) reached its "The Element Menu" step, showing the right-click menu on an element.',
   'UI|View|TourStepEditorMode':
-    'The Diagram tour (the welcome tour until October 2026) reached its "Tab Mode" step ("Change Tab Mode" before), pointing out the switch for the tab\'s editor mode.',
+    'The Diagram tour (the welcome tour until October 2026) reached its "Tab Mode" step ("Change Tab Mode" before), pointing out the switch for the tab\'s editor mode (step removed October 2026).',
   'UI|View|TourStepExplorer':
     'The welcome tour reached its "The Explorer" step (retired in October 2026, when the welcome tour became the Diagram tour).',
   'UI|View|TourStepOutro':

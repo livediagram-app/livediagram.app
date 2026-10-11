@@ -26,6 +26,7 @@ export function EditorModeSwitch({ className = '' }: { className?: string }) {
         onChange={editorMode.setMode}
         // A new tab in another mode: what a locked tab offers, and what Plan offers across its line (crossesPlan).
         newTabIn={editorMode.newTabIn}
+        crossPlan={editorMode.crossPlan}
         {...(editorMode.canSwitch ? {} : { lockedReason: editorMode.lockedReason })}
       />
     </div>

@@ -85,12 +85,19 @@ A tab never switches **into Plan** from another mode, nor **out of Plan** into a
 boards, sheets and dashboards, which need tabs of their own, and the other modes on a canvas. In the mode switch the
 mode across that line is still listed; picking it asks **Open a New <Mode> Tab?** ("Plan works in tabs of its own.",
 or on a Plan tab "A Plan tab stays in Plan.", then "Its mode can’t change, but you can carry on in a new <Mode>
-tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: the Quick Start for Diagram, Draw
-and Facilitate, What Is This Page For? for Illustrate (no Quick Start over it), Start Planning for Plan. A session that cannot add
+tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: Start Diagramming, Start
+Facilitating or Start Illustrating ([Template starts](start-diagramming.md)), Start Planning for Plan, and a pen in
+hand for Draw, with no Quick Start over any of them. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
 own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing), and the tab menu's Mode lists only those
 (none on a Plan tab).
+
+**Except on an empty tab.** A general tab with no elements has nothing either side's tools could not hold, so it
+crosses the line freely, into Plan and out of it, as one plain switch (`crossPlan` on `useEditorMode`): the mode
+switch lists every mode unlocked, the start's own switch does the same, and Shift+D steps through all five. The
+first element closes the line again. A Board, Sheet or Dashboard tab keeps its kind's lock (`lockedReason`). See
+[Template starts](start-diagramming.md) "Changing mode".
 
 ## Where the mode lives
 
@@ -124,9 +131,11 @@ own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing), and 
 - **New documents and new tabs open in Diagram.** Whatever mode its creator
   is in, a new document or a tab added from the tab bar (or Quick Start)
   opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
-  (its mode is Plan, for everyone) with no Quick Start, showing Plan's own **Start Planning**
-  picker ([Plan mode](../026-plan/plan-mode.md#starting-a-board)), whose **Other** tile
-  brings the Quick Start back for another kind of tab. Only the template chosen for it changes that: the
+  (its mode is Plan, for everyone), showing Plan's own **Start Planning**
+  ([Plan mode](../026-plan/plan-mode.md#starting-a-board)). A new tab never opens the Quick Start: it opens on its
+  mode's start (Start Diagramming in Diagram, [Template starts](start-diagramming.md); `newTabOpening`,
+  `modeHasOwnStart` in `apps/live/lib/new-tab-seed.ts`), whose **Something Else** brings the Quick Start for another
+  kind of tab. Only the template chosen for it changes that: the
   **Whiteboard** opens in Draw, an **Event Storming** board is always Diagram, and every other
   template, Blank included, opens in Diagram. An import that sets its own mode wins.
 - **Mode in the tab menu:** the tab menu holds a **Mode** submenu for editors, listing every

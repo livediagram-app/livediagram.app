@@ -16,6 +16,7 @@ import type { TemplateStartId } from '@livediagram/sheets';
 
 export const PLAN_TEMPLATE_KINDS = [
   'blank-plan',
+  'blank-spreadsheet',
   'project-planner',
   'kanban',
   'bug-triage',
@@ -132,6 +133,13 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
   // One tab, so it keeps the name the caller gives a new tab, and empty: the tab shows Plan's own Start with a
   // Board picker (docs/specs/026-plan/plan-mode.md "Starting a board").
   'blank-plan': [{ name: 'Board' }],
+  // An empty Sheet filling its tab: the blank start makes an empty grid, ready to type into.
+  'blank-spreadsheet': [
+    {
+      name: 'Sheet',
+      sheet: { start: 'blank-spreadsheet', width: 880, height: 560, fillTab: true },
+    },
+  ],
 
   'project-planner': [
     {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { clamp } from '@livediagram/document';
-import { Button } from '@livediagram/ui';
+import { clamp, type PlanPalette } from '@livediagram/document';
+import { tourColourVars } from './tour-colours';
 import { placeTourPopover } from './tour-position';
 import { TourHelpArt } from './TourHelpArt';
 import { TourWelcomeArt } from './TourWelcomeArt';
@@ -26,8 +26,8 @@ export type TourWelcomeChoice = { id: string; label: string; onPick: () => void 
 
 export const WELCOME_TOUR_COPY: TourCardCopy = {
   welcomeEyebrow: 'Diagram tour',
-  accept: 'Show me around',
-  decline: 'No thanks',
+  accept: 'Yes',
+  decline: 'No',
   outroEyebrow: 'Tour complete',
   helpHref: '/help',
   helpLabel: 'Visit Help Centre',
@@ -35,7 +35,7 @@ export const WELCOME_TOUR_COPY: TourCardCopy = {
 };
 
 // The tour's step card (docs/specs/007-editor/editor-tour.md). Two faces:
-// - welcome: the centred offer card ("Show me around" / "No thanks"),
+// - welcome: the centred offer card ("Yes" / "No"),
 //   no step count, dots, or Back — declining must be one obvious click.
 // - step: step count, title, copy, dots, Back / Next / Skip, anchored to
 //   the highlighted target.
@@ -61,6 +61,7 @@ export function TourPopover({
   copy: copyOverrides,
   welcomeArt,
   welcomeChoices,
+  palette,
   onBack,
   onNext,
   onSkip,
@@ -86,6 +87,8 @@ export function TourPopover({
   // The welcome card's illustration; the Diagram tour's own by default.
   welcomeArt?: ReactNode;
   welcomeChoices?: readonly TourWelcomeChoice[];
+  // The active tab's colours (tour-colours.ts): the card, its text and its accent wear them.
+  palette: PlanPalette;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -150,16 +153,17 @@ export function TourPopover({
       role="dialog"
       aria-label={card ? title : `${ariaPrefix} step ${stepNumber} of ${stepCount}: ${title}`}
       onPointerDown={(e) => e.stopPropagation()}
-      className={`pointer-events-auto fixed z-[var(--z-toast)] flex max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-900/20 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40 ${
+      className={`pointer-events-auto fixed z-[var(--z-toast)] flex max-w-[calc(100vw-1.5rem)] flex-col gap-2 rounded-xl border border-[var(--tour-border)] bg-[var(--tour-card)] p-4 text-[var(--tour-text)] shadow-2xl shadow-slate-900/20 dark:shadow-black/40 ${
         card ? 'w-[21rem]' : 'w-80'
       } ${animatePos ? 'transition-[left,top] duration-long ease-out' : ''}`}
-      style={
-        pos
+      style={{
+        ...tourColourVars(palette),
+        ...(pos
           ? { left: pos.left, top: pos.top }
           : // First paint before measurement: park off-screen so the
             // two-pass placement never flashes at 0,0.
-            { left: -9999, top: -9999 }
-      }
+            { left: -9999, top: -9999 }),
+      }}
     >
       {/* The caret: a rotated square on the edge facing the target (the
           MovablePanel dock-popover arrow recipe), so the card visibly
@@ -167,7 +171,7 @@ export function TourPopover({
       {pos?.caret ? (
         <span
           aria-hidden
-          className={`absolute h-3.5 w-3.5 rotate-45 bg-white dark:bg-slate-900 ${
+          className={`absolute h-3.5 w-3.5 rotate-45 bg-[var(--tour-card)] ${
             pos.caret.edge === 'top'
               ? '-top-[7px] rounded-tl-sm border-l border-t'
               : pos.caret.edge === 'bottom'
@@ -175,7 +179,7 @@ export function TourPopover({
                 : pos.caret.edge === 'left'
                   ? '-left-[7px] rounded-bl-sm border-b border-l'
                   : '-right-[7px] rounded-tr-sm border-r border-t'
-          } border-slate-200 dark:border-slate-700`}
+          } border-[var(--tour-border)]`}
           style={
             pos.caret.edge === 'top' || pos.caret.edge === 'bottom'
               ? { left: pos.caret.offset - 7 }
@@ -195,11 +199,11 @@ export function TourPopover({
         {card ? (
           <>
             {card === 'welcome' ? (welcomeArt ?? <TourWelcomeArt />) : <TourHelpArt />}
-            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+            <span className="mt-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
               {card === 'welcome' ? copy.welcomeEyebrow : copy.outroEyebrow}
             </span>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
-            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
+            <h3 className="text-base font-semibold">{title}</h3>
+            <p className="text-xs leading-relaxed text-[var(--tour-muted)]">{body}</p>
             {card === 'welcome' ? (
               <div className="mt-2 flex items-center justify-end gap-2">
                 {/* Declining is a first-class, same-weight choice — the offer
@@ -207,20 +211,18 @@ export function TourPopover({
                 <button
                   type="button"
                   onClick={onSkip}
-                  className="rounded-md px-3 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                  className="rounded-md px-3 py-1.5 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
                 >
                   {copy.decline}
                 </button>
                 {welcomeChoices ? (
                   welcomeChoices.map((choice) => (
-                    <Button key={choice.id} size="xs" onClick={choice.onPick}>
+                    <AccentButton key={choice.id} onClick={choice.onPick}>
                       {choice.label}
-                    </Button>
+                    </AccentButton>
                   ))
                 ) : (
-                  <Button size="xs" onClick={onNext}>
-                    {copy.accept}
-                  </Button>
+                  <AccentButton onClick={onNext}>{copy.accept}</AccentButton>
                 )}
               </div>
             ) : (
@@ -231,14 +233,12 @@ export function TourPopover({
                   href={copy.helpHref}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs font-medium text-brand-600 underline-offset-2 transition hover:underline dark:text-brand-300"
+                  className="text-xs font-medium text-[var(--tour-accent)] underline-offset-2 transition hover:underline"
                 >
                   {copy.helpLabel}
                 </a>
                 <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
-                  <Button size="xs" onClick={onNext}>
-                    {copy.finish}
-                  </Button>
+                  <AccentButton onClick={onNext}>{copy.finish}</AccentButton>
                 </div>
               </div>
             )}
@@ -246,19 +246,19 @@ export function TourPopover({
         ) : (
           <>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-300">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--tour-accent)]">
                 {stepNumber} of {stepCount}
               </span>
               <button
                 type="button"
                 onClick={onSkip}
-                className="text-[11px] font-medium text-slate-400 transition hover:text-slate-600 dark:hover:text-slate-300"
+                className="text-[11px] font-medium text-[var(--tour-muted)] transition hover:text-[var(--tour-text)]"
               >
                 Skip tour
               </button>
             </div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">{title}</h3>
-            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{body}</p>
+            <h3 className="text-sm font-semibold">{title}</h3>
+            <p className="text-xs leading-relaxed text-[var(--tour-muted)]">{body}</p>
             <div className="mt-1 flex items-center justify-between gap-2">
               {/* Progress dots keep place without reading like pagination. */}
               <div className="flex items-center gap-1" aria-hidden>
@@ -266,7 +266,9 @@ export function TourPopover({
                   <span
                     key={i}
                     className={`h-1.5 w-1.5 rounded-full ${
-                      i < stepNumber ? 'bg-brand-500' : 'bg-slate-200 dark:bg-slate-700'
+                      i < stepNumber
+                        ? 'bg-[var(--tour-accent)]'
+                        : 'bg-[var(--tour-border)] opacity-50'
                     }`}
                   />
                 ))}
@@ -276,21 +278,32 @@ export function TourPopover({
                   <button
                     type="button"
                     onClick={onBack}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    className="rounded-md px-2 py-1 text-xs font-medium text-[var(--tour-muted)] transition hover:bg-[var(--tour-hover)] hover:text-[var(--tour-text)]"
                   >
                     Back
                   </button>
                 ) : null}
                 {/* The outro card always follows the counted steps, so a
                     counted step never ends the tour — no 'Done' state. */}
-                <Button size="xs" onClick={onNext}>
-                  Next
-                </Button>
+                <AccentButton onClick={onNext}>Next</AccentButton>
               </div>
             </div>
           </>
         )}
       </div>
     </div>
+  );
+}
+
+// The primary button in the tab's accent, its label in the ink that reads on it (tour-colours inkOn).
+function AccentButton({ onClick, children }: { onClick: () => void; children: ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-7 cursor-pointer items-center justify-center rounded-md bg-[var(--tour-accent)] px-2.5 text-xs font-medium text-[var(--tour-on-accent)] transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tour-accent)]"
+    >
+      {children}
+    </button>
   );
 }

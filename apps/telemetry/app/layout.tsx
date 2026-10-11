@@ -6,6 +6,7 @@ import {
   BRAND_ICONS,
   DARK_READER_LOCK,
   PageViewBoot,
+  pageMetadata,
   PUBLIC_VIEWPORT,
   SITE_URL,
   WebVitalsBoot,
@@ -15,10 +16,15 @@ import {
 // the open, "here's exactly what we measure" story, not a private app.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Telemetry · livediagram',
-  description:
-    'Anonymous, first-party product usage for livediagram, in the open. No third-party vendors; data is never sold or shared beyond this page.',
-  alternates: { canonical: '/telemetry' },
+  // Canonical, Open Graph and Twitter card from the shared factory, so a link
+  // to the dashboard previews with the brand card like every other public page.
+  ...pageMetadata({
+    title: 'Telemetry · livediagram',
+    description:
+      'Anonymous, first-party product usage for livediagram, in the open. No third-party vendors; data is never sold or shared beyond this page.',
+    path: '/telemetry',
+    type: 'website',
+  }),
   robots: { index: true, follow: true },
   // The origin-root brand favicons (literal hrefs, so Next leaves them
   // un-prefixed by the `/telemetry` basePath and the router resolves them to

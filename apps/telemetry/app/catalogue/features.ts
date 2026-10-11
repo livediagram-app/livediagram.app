@@ -926,6 +926,20 @@ export const FACILITATE_TOUR_OFFERED = opened(
   (t) => t === 'FacilitateTourOffer',
 );
 
+// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
+export const DRAW_TOUR_OFFERED = opened(
+  'Draw Tour Offered',
+  'The Draw tour offered, the first time someone works in Draw mode.',
+  (t) => t === 'DrawTourOffer',
+);
+
+// The Illustrate tour's offer (docs/specs/007-editor/illustrate-tour.md); charted in its funnel on the Visitors tab.
+export const ILLUSTRATE_TOUR_OFFERED = opened(
+  'Illustrate Tour Offered',
+  'The Illustrate tour offered, the first time someone works in Illustrate mode.',
+  (t) => t === 'IllustrateTourOffer',
+);
+
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on
 // the Visitors tab.
 export const POWER_USER_OFFERED = opened(

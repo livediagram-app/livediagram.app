@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  POPULAR_PER_MODE,
-  POPULAR_TEMPLATE_KINDS,
-  TEMPLATES,
-  isBlankTemplate,
-  templateEditorMode,
-} from '@livediagram/templates';
+import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@livediagram/templates';
 import {
   byMode,
   filterGallery,
@@ -68,14 +62,14 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'kanban'));
-    expect(groups.map((g) => g.label)).toEqual(['Plan and Track']);
+    expect(groups.map((g) => g.label)).toEqual(['Planning']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['kanban']);
   });
 
-  it('runs the categories alphabetically by name, under every mode, Popular first', () => {
+  it('runs the categories alphabetically by name, under every mode, Blank Slate first', () => {
     for (const mode of ['all', 'diagram', 'draw', 'illustrate', 'plan', 'facilitate'] as const) {
       const shelves = galleryShelves(mode);
-      expect(shelves[0]!.label, mode).toBe('Popular');
+      expect(shelves[0]!.label, mode).toBe('Blank Slate');
       const names = shelves.slice(1).map((g) => g.label);
       expect(names, mode).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
     }
@@ -101,15 +95,18 @@ describe('groupGallery', () => {
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
 // structure, Popular first, and its mode filter.
 describe('the shelves, as the template step lays them out', () => {
-  it('opens on Popular, the blanks first in mode order, then every category in catalogue order', () => {
+  it('opens on Blank Slate, only the blanks in mode order, then every category in catalogue order', () => {
     const shelves = galleryShelves('all');
     expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([...POPULAR_TEMPLATE_KINDS]);
-    expect(
-      popularTemplates()
-        .slice(0, 3)
-        .map((t) => t.kind),
-    ).toEqual(['blank', 'whiteboard', 'blank-session']);
+    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
+      'blank',
+      'whiteboard',
+      'blank-session',
+      'blank-illustration',
+      'blank-plan',
+      'blank-spreadsheet',
+    ]);
+    for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),
     );
@@ -168,23 +165,16 @@ describe('the shelf order', () => {
   });
 });
 
-describe('Popular under a mode', () => {
-  it('holds at least five of the mode, its blank first', () => {
-    const blanks = {
-      diagram: 'blank',
-      draw: 'whiteboard',
-      illustrate: 'blank-illustration',
-    } as const;
-    for (const mode of ['diagram', 'draw', 'illustrate'] as const) {
-      const kinds = popularFor(mode).map((t) => t.kind);
-      expect(kinds.length, mode).toBeGreaterThanOrEqual(POPULAR_PER_MODE);
-      expect(kinds[0], mode).toBe(blanks[mode]);
-      expect(new Set(kinds).size).toBe(kinds.length);
-      for (const t of popularFor(mode)) expect(t.mode, `${mode} ${t.kind}`).toBe(mode);
-    }
+describe('Blank Slate under a mode', () => {
+  it("holds only that mode's blanks", () => {
+    expect(popularFor('diagram').map((t) => t.kind)).toEqual(['blank']);
+    expect(popularFor('draw').map((t) => t.kind)).toEqual(['whiteboard']);
+    expect(popularFor('illustrate').map((t) => t.kind)).toEqual(['blank-illustration']);
+    expect(popularFor('facilitate').map((t) => t.kind)).toEqual(['blank-session']);
+    expect(popularFor('plan').map((t) => t.kind)).toEqual(['blank-plan', 'blank-spreadsheet']);
   });
 
-  it('leaves Everything as the catalogue lists it', () => {
-    expect(popularFor('all').map((t) => t.kind)).toEqual([...POPULAR_TEMPLATE_KINDS]);
+  it('holds every blank under Everything', () => {
+    expect(popularFor('all')).toEqual(popularTemplates());
   });
 });

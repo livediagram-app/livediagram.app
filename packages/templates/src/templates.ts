@@ -200,6 +200,9 @@ export type TemplateKind =
   // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
   // Blank Plan is the mode's blank.
   | 'blank-plan'
+  // A blank of Plan's beside Blank Plan: one tab holding an empty Sheet (docs/specs/007-editor/templates-by-mode.md
+  // "The blanks").
+  | 'blank-spreadsheet'
   | 'project-planner'
   | 'bug-triage'
   | 'team-retro'
@@ -266,6 +269,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-plan',
     title: 'Blank Plan',
     description: 'An empty Plan tab: pick the board that fits the work, or build your own.',
+    extra: true,
+  },
+  {
+    kind: 'blank-spreadsheet',
+    title: 'Blank Spreadsheet',
+    description: 'An empty spreadsheet: cells, formulas and charts, ready to type into.',
     extra: true,
   },
   {
@@ -1002,6 +1011,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // Plan boards (docs/specs/026-plan/plan-mode.md) sit on the quiet dot grid: the board is the structure.
   kanban: 'grid',
   'blank-plan': 'grid',
+  'blank-spreadsheet': 'grid',
   'project-planner': 'grid',
   'bug-triage': 'grid',
   'team-retro': 'grid',

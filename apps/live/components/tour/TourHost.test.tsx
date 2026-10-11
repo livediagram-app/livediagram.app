@@ -198,7 +198,7 @@ describe('TourHost running', () => {
     editor();
     render(<TourHost />);
     act(() => requestTourRelaunch());
-    expect(popover.props!.title).toBe('Welcome to Diagram');
+    expect(popover.props!.title).toBe('Getting started with Diagrams?');
     act(() => popover.props!.onNext());
     await act(async () => {
       await vi.advanceTimersByTimeAsync(60000);

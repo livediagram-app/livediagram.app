@@ -12,6 +12,14 @@ import { breadcrumbJsonLd, pageMetadata } from './seo';
 // social cards on every subpage at once.
 
 describe('pageMetadata', () => {
+  it('takes a `website` OG type for an app front page, defaulting to `article`', () => {
+    const md = pageMetadata({ title: 't', description: 'd', path: '/community/', type: 'website' });
+    expect(md.openGraph).toMatchObject({ type: 'website', url: '/community/' });
+    expect(pageMetadata({ title: 't', description: 'd', path: '/x' }).openGraph).toMatchObject({
+      type: 'article',
+    });
+  });
+
   it('passes title + description through to the top-level fields', () => {
     const md = pageMetadata({
       title: 'FAQ | livediagram',

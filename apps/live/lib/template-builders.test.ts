@@ -117,6 +117,7 @@ const ALL_KINDS = [
   'pre-mortem',
   'idea-garden',
   'blank-plan',
+  'blank-spreadsheet',
   'blank-session',
   'project-planner',
   'bug-triage',

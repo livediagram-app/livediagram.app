@@ -17,6 +17,7 @@ import {
 import { FacilitateTourArt } from './FacilitateTourArt';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
+import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
 // The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
@@ -59,8 +60,12 @@ export function FacilitateTourHost() {
 
   const inFacilitate = ctx.editorMode.mode === 'facilitate';
   const seen = ctx.userPreferences?.facilitateTourSeen === true;
+  // Start Facilitating on screen holds the offer until a template is picked or the panel closed
+  // (docs/specs/007-editor/start-diagramming.md "The tours wait").
+  const startPanelOpen = useStartPanelOpen();
   const canWork =
     ctx.hydrated &&
+    !startPanelOpen &&
     // The synced preferences are in, so an answer given on another device holds here too.
     ctx.prefsSettled &&
     !ctx.anyWelcomeOpen &&
@@ -114,7 +119,7 @@ export function FacilitateTourHost() {
     return () => clearTimeout(t);
   }, [armed, active, seen, inFacilitate, canWork, otherTour, engineRef]);
 
-  // Settings rerun (the Show Tours › "Facilitate" row, turned on from off + closed): offers again in
+  // Settings rerun (the Onboarding Tutorials › "Facilitate" row, turned on from off + closed): offers again in
   // Facilitate, and otherwise the next time the person enters it (the row has cleared the preference).
   const inFacilitateRef = useLatest(inFacilitate);
   useEffect(() => {

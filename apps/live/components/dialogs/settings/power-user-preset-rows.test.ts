@@ -7,7 +7,7 @@ import { setPowerUserMode } from '@/lib/power-user-mode';
 const ALL = new Set([
   'alignmentGuides',
   'autoRebindArrows',
-  // The tours' switches live in one Show Tours control.
+  // The tours' switches live in one Onboarding Tutorials control.
   'tours',
   'aiSuggestedPrompts',
 ]);
@@ -19,9 +19,11 @@ describe('presetSummaryLines', () => {
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
-      ['Show Tours: Diagram', 'Off', 'Accessibility'],
-      ['Show Tours: Plan', 'Off', 'Accessibility'],
-      ['Show Tours: Facilitate', 'Off', 'Accessibility'],
+      ['Onboarding Tutorials: Diagram', 'Off', 'Accessibility'],
+      ['Onboarding Tutorials: Plan', 'Off', 'Accessibility'],
+      ['Onboarding Tutorials: Facilitate', 'Off', 'Accessibility'],
+      ['Onboarding Tutorials: Draw', 'Off', 'Accessibility'],
+      ['Onboarding Tutorials: Illustrate', 'Off', 'Accessibility'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

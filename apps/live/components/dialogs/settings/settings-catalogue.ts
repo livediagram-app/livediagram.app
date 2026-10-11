@@ -830,16 +830,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
       },
       {
-        // The three guided tours as one control (docs/specs/007-editor/user-preferences.md "Show Tours"):
+        // The three guided tours as one control (docs/specs/007-editor/user-preferences.md "Onboarding Tutorials"):
         // a heading and one description over a grid of their switches, rather than three near-identical
         // rows and paragraphs. Each switch is still its own preference with its own telemetry.
         kind: 'toggleGroup',
         key: 'tours',
         keywords:
-          'tour tours walkthrough onboarding intro show me around getting started welcome diagram shapes arrows palette plan board kanban cards sheet spreadsheet facilitate session retro workshop replay rerun',
-        label: 'Show Tours',
+          'tour tours walkthrough onboarding intro show me around getting started welcome diagram shapes arrows palette plan board kanban cards sheet spreadsheet facilitate session retro workshop draw whiteboard pen sketch illustrate pages slides infographic replay rerun',
+        label: 'Onboarding Tutorials',
         description:
-          'Each tour offers itself once, in its own mode: the Diagram Tour on a Diagram tab, the Plan Tour once a board or sheet is open in Plan, and the Facilitate Tour the first time you work in Facilitate. A switch turns itself off once you have taken or dismissed its tour. Turn one back on and close Settings to run it again: straight away if you are where it starts, otherwise the next time you are.',
+          'Each tour offers itself once, in its own mode: the Diagram Tour on a Diagram tab, the Plan Tour once a board or sheet is open in Plan, the Facilitate Tour the first time you work in Facilitate, the Draw Tour the first time you work in Draw, and the Illustrate Tour the first time you work in Illustrate. A switch turns itself off once you have taken or dismissed its tour. Turn one back on and close Settings to run it again: straight away if you are where it starts, otherwise the next time you are.',
         toggles: [
           {
             key: 'tourSeen',
@@ -872,6 +872,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
             read: (p) => p.facilitateTourSeen !== true,
             write: (p, v) => ({ ...p, facilitateTourSeen: !v }),
             event: { category: 'UI', on: 'FacilitateTourSeenOff', off: 'FacilitateTourSeenOn' },
+          },
+          {
+            key: 'drawTourSeen',
+            label: 'Draw',
+            helpArticle: 'drawTour',
+            // Inverted the same way (docs/specs/023-draw-mode/draw-tour.md).
+            read: (p) => p.drawTourSeen !== true,
+            write: (p, v) => ({ ...p, drawTourSeen: !v }),
+            event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
+          },
+          {
+            key: 'illustrateTourSeen',
+            label: 'Illustrate',
+            helpArticle: 'illustrateTour',
+            // Inverted the same way (docs/specs/007-editor/illustrate-tour.md).
+            read: (p) => p.illustrateTourSeen !== true,
+            write: (p, v) => ({ ...p, illustrateTourSeen: !v }),
+            event: { category: 'UI', on: 'IllustrateTourSeenOff', off: 'IllustrateTourSeenOn' },
           },
         ],
       },
