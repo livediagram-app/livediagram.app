@@ -122,7 +122,7 @@ export function SheetSettingsPanel({
             />
           </SettingsField>
           {
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {c.canShape && !csvInTabMenu ? (
                 <SettingsActionTile
                   icon={<ImportGlyph />}

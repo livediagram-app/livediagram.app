@@ -134,7 +134,7 @@ export function SlotSection({
           {canEdit ? <AddSlotSides rowId={rowId} at={at} onAdded={onClose} /> : null}
           {tabId || canEdit ? (
             <SettingsBody>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {tabId ? (
                   <SettingsActionTile
                     icon={<OpenGlyph />}
