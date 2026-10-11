@@ -159,7 +159,7 @@ test.describe('editor modes', () => {
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
     await page.keyboard.press('Shift+D');
     // Leaving Illustrate with content on the tab asks first (docs/specs/007-editor/illustrate-pages.md).
-    await page.getByRole('button', { name: 'Switch' }).click();
+    await page.getByRole('button', { name: 'Switch', exact: true }).click();
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
