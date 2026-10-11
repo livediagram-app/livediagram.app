@@ -123,6 +123,29 @@ describe('what each rule allows', () => {
     expect(isUrl('not a url')).toBe(false);
     expect(scalarAllowed(rule({ is: 'text', op: 'url' }), 'nope', x)).toBe(false);
   });
+  it('reads an email by its one @ and a dot inside the domain, in linear time', () => {
+    expect(['a@b.c', ' a@b.co.uk ', 'a@.b.c', 'a@b..c'].map(isEmail)).toEqual([
+      true,
+      true,
+      true,
+      true,
+    ]);
+    expect(['@b.c', 'a@b.', 'a@.b', 'a@bc', 'a@b@c.d', 'a@b.c d', 'a@', ''].map(isEmail)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    // A dotted run the old pattern backtracked over quadratically (seconds at this length).
+    const text = `!@!.${'!.'.repeat(20_000)}@`;
+    const t0 = performance.now();
+    expect(isEmail(text)).toBe(false);
+    expect(performance.now() - t0).toBeLessThan(50);
+  });
   it('a formula, an empty value and an error are never refused as typed', () => {
     expect(inputAllowed(LIST, { f: { t: '1', r: [] } }, x)).toBe(true);
     expect(inputAllowed(LIST, { s: '' }, x)).toBe(true);
