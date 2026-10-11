@@ -20,6 +20,7 @@ export function FacilitatorButton({
   isSelf,
   name,
   canHold,
+  iCanHold,
   theyHoldIt,
   batonFree,
   iHoldIt,
@@ -30,6 +31,8 @@ export function FacilitatorButton({
   name: string;
   /** Editors only: everything the baton governs writes to the document. */
   canHold: boolean;
+  /** Can WE hold it (are we an Editor)? A free baton is only ours to hand out if so. */
+  iCanHold: boolean;
   /** Does the person on THIS row hold it? */
   theyHoldIt: boolean;
   batonFree: boolean;
@@ -41,8 +44,9 @@ export function FacilitatorButton({
 }) {
   // Their row says "Facilitating" in its badges; a button would repeat it.
   if (!isSelf && theyHoldIt) return null;
-  // Handing it out is the owner's, the holder's, or anybody's when it is free.
-  const mayMove = isOwner || iHoldIt || batonFree;
+  // Handing it out is the owner's, the holder's, or any Editor's when it is free. A Participant or Viewer
+  // gets no verb on somebody else's row: the room would refuse it (apps/api/src/facilitator.ts canHold).
+  const mayMove = isOwner || iHoldIt || (batonFree && iCanHold);
   if (!isSelf && !mayMove) return null;
   // Our own row, while somebody else runs the session: only the owner has a
   // move here, and it is the one that makes "the document can always take back
@@ -65,14 +69,14 @@ export function FacilitatorButton({
         : 'Take the session back from whoever is running it.'
     : `Let ${name} run the timer, votes and polls.`;
 
-  // Disabled rather than hidden for a viewer, so the rule is learnable: a
-  // button that vanishes teaches nothing about why.
+  // Disabled rather than hidden for a Participant or Viewer, so the rule is
+  // learnable: a button that vanishes teaches nothing about why.
   const blocked = !canHold;
   return (
     <HoverCard
       title={label}
       description={
-        blocked ? 'Viewers cannot run a session: the tools write to the document.' : description
+        blocked ? 'Only Editors can run a session: the tools write to the document.' : description
       }
     >
       <span>

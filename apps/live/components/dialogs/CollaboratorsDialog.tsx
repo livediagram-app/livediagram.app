@@ -176,6 +176,7 @@ export function CollaboratorsDialog({
                           isSelf={isSelf}
                           name={p.name}
                           canHold={(isSelf ? selfRole : (p.role ?? 'edit')) === 'edit'}
+                          iCanHold={selfRole === 'edit'}
                           theyHoldIt={isSelf ? isFacilitator : p.id === facilitatorId}
                           batonFree={facilitatorId === null && !isFacilitator}
                           iHoldIt={isFacilitator}
