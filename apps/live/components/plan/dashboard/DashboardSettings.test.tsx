@@ -96,6 +96,9 @@ describe('Dashboard Settings', () => {
     openCog();
     fireEvent.click(screen.getByRole('button', { name: 'Add Row' }));
     expect(s.now().rows).toHaveLength(3);
+    // Add Row closes the cog so the page can scroll to the new row (reveal-new-row.ts).
+    expect(screen.queryByRole('button', { name: 'Add Row' })).toBeNull();
+    openCog();
     openSection('Layouts');
     fireEvent.click(screen.getByRole('button', { name: /^Focus/ }));
     expect(s.now().rows.map((r) => r.slots.map((x) => x.span))).toEqual([[8, 4]]);

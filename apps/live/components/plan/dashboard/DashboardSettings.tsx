@@ -37,6 +37,7 @@ import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { SettingsActionTile, SettingsBody, SettingsField } from '../settings-panel-parts';
 import { planPalette } from '../plan-palette';
 import { SettingsCog } from '../SettingsCog';
+import { dashboardRowCount, revealNewRow } from './reveal-new-row';
 import { useSlotDraft } from './useSlotDraft';
 
 const SetupGlyph = lucideGlyph(lucideLayoutGrid, 14);
@@ -154,14 +155,18 @@ export function DashboardSettingsPanel({
               <NameField name={name} onRename={onRename} />
             </SettingsField>
           ) : null}
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-1.5">
             <SettingsActionTile
               icon={<AddRowGlyph />}
               label="Add Row"
               disabled={full}
-              onClick={() =>
-                actions.changeDashboard((l) => addDashboardRow(l, newId), 'DashboardRow')
-              }
+              onClick={() => {
+                // The new row lands at the foot: close the cog and scroll it into view once drawn.
+                const before = dashboardRowCount();
+                actions.changeDashboard((l) => addDashboardRow(l, newId), 'DashboardRow');
+                onClose();
+                revealNewRow(before);
+              }}
             />
             <SettingsActionTile
               icon={<ClearGlyph />}
