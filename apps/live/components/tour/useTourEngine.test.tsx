@@ -164,4 +164,57 @@ describe('useTourEngine', () => {
     expect(t.api.log).toEqual(['prepare one', 'prepare one']);
     vi.useRealTimers();
   });
+
+  it('skips a missing target backwards when going back, never onto the welcome card', async () => {
+    vi.useFakeTimers();
+    const steps: TourStepOf<Api>[] = [
+      STEPS[0]!,
+      { id: 'a', title: 'A', body: '', selector: () => '#a' },
+      { id: 'b', title: 'B', body: '', selector: () => '#b' },
+      { id: 'c', title: 'C', body: '', selector: () => '#c' },
+    ];
+    found.selectors.add('#a');
+    found.selectors.add('#b');
+    found.selectors.add('#c');
+    const t = run(steps);
+    const settle = () => act(async () => void (await vi.advanceTimersByTimeAsync(10)));
+    act(() => t.hook.result.current.start());
+    for (let i = 0; i < 3; i++) {
+      act(() => t.hook.result.current.next());
+      await settle();
+    }
+    expect(t.hook.result.current.step?.id).toBe('c');
+    // b is gone: Back passes over it to a.
+    found.selectors.delete('#b');
+    act(() => t.hook.result.current.back());
+    await settle();
+    await settle();
+    expect(t.hook.result.current.step?.id).toBe('a');
+    // a is gone too: Back from c lands on c again, not on the welcome card.
+    found.selectors.delete('#a');
+    act(() => t.hook.result.current.next());
+    await settle();
+    await settle();
+    act(() => t.hook.result.current.back());
+    for (let i = 0; i < 4; i++) await settle();
+    expect(t.hook.result.current.step?.id).toBe('c');
+    expect(t.onStart).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('lets the ring go when a taken-away target cannot be brought back', async () => {
+    vi.useFakeTimers();
+    found.selectors.add('#one');
+    const t = run(STEPS);
+    act(() => t.hook.result.current.start());
+    act(() => t.hook.result.current.next());
+    await act(async () => void (await vi.advanceTimersByTimeAsync(10)));
+    expect(t.hook.result.current.targetRect).not.toBeNull();
+    found.selectors.delete('#one');
+    (document.body.lastElementChild as HTMLElement).remove();
+    await act(async () => void (await vi.advanceTimersByTimeAsync(160)));
+    expect(t.hook.result.current.step?.id).toBe('one');
+    expect(t.hook.result.current.targetRect).toBeNull();
+    vi.useRealTimers();
+  });
 });

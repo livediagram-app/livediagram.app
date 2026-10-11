@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { track } from '@/lib/telemetry';
 import { ShareDialog } from '@/components/dialogs/ShareDialog';
@@ -40,8 +41,12 @@ function renderDialog(over: Partial<ShareDialogProps> = {}) {
     onClose: vi.fn(),
     ...over,
   };
-  render(<ShareDialog {...props} />);
-  return props;
+  const { rerender } = render(<ShareDialog {...props} />);
+  return {
+    ...props,
+    rerender: (next: Partial<ShareDialogProps>): void =>
+      rerender((<ShareDialog {...props} {...next} />) as ReactElement),
+  };
 }
 
 const settle = () => act(async () => new Promise((r) => setTimeout(r, 30)));
@@ -83,6 +88,28 @@ describe('Share dialog Show Me', () => {
     renderDialog({ tabs: [TABS[0]!] });
     await startShowMe();
     expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 5:/ })).toBeTruthy();
+  });
+
+  it('keeps its steps when a tab is added mid-tour', async () => {
+    const { rerender } = renderDialog({ tabs: [TABS[0]!] });
+    await startShowMe();
+    fireEvent.click(screen.getByRole('button', { name: /next/i }));
+    await settle();
+    expect(
+      screen.getByRole('dialog', { name: /^Show Me step 2 of 5: Set How Long It Lasts/ }),
+    ).toBeTruthy();
+    rerender({ tabs: TABS });
+    await settle();
+    expect(
+      screen.getByRole('dialog', { name: /^Show Me step 2 of 5: Set How Long It Lasts/ }),
+    ).toBeTruthy();
+  });
+
+  it('counts the document as it is when pressed', async () => {
+    const { rerender } = renderDialog({ tabs: [TABS[0]!] });
+    rerender({ tabs: TABS });
+    await startShowMe();
+    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 6:/ })).toBeTruthy();
   });
 
   it('keeps Escape from closing the dialog while it runs', async () => {

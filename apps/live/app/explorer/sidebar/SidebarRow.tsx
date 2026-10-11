@@ -89,6 +89,8 @@ export function SidebarRow({
           {description}
         </span>
       ) : null}
+      {/* On a touch screen the row is 44px tall and its chevron takes the row's full height
+          (touch-targets.md), so a thumb lands on the row it means. */}
       <div
         data-tree-row
         {...rowProps}
@@ -108,7 +110,7 @@ export function SidebarRow({
             e.stopPropagation();
             if (expandable) onToggleExpand?.();
           }}
-          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition ${
+          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition pointer-coarse:h-auto pointer-coarse:w-7 pointer-coarse:self-stretch ${
             expandable ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200' : ''
           }`}
         >
@@ -117,7 +119,7 @@ export function SidebarRow({
         <span
           data-tree-activate
           onClick={renaming ? undefined : onActivate}
-          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs ${
+          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs pointer-coarse:py-3.5 ${
             renaming ? '' : 'cursor-pointer'
           } ${
             selected

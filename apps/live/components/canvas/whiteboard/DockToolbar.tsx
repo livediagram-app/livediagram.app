@@ -18,6 +18,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
+import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CONTROL_REST, TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Roving = { focusKey: string; setFocusKey: (key: string) => void };
@@ -79,8 +80,9 @@ export function DockToolbar({
         // The Draw tour's anchors (docs/specs/023-draw-mode/draw-tour.md): dock-drawing, dock-shapes, dock-settings.
         data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
-        // A run of the dock's card (DockBody draws the card and the hairlines between groups).
-        className="relative flex shrink-0 items-center gap-0.5"
+        // A run of the dock's card (DockBody draws the card and the hairlines between groups), its items 44px-tall
+        // tap areas on a touch screen.
+        className={`relative flex shrink-0 items-center gap-0.5 ${PHONE_TOOLBAR_ITEMS}`}
       >
         {children}
       </div>
@@ -160,7 +162,7 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
             // learn the keys. Slate-500 / -400 keep 4.5:1.
             <span
               aria-hidden
-              className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400"
+              className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
             >
               {o.shortcut}
             </span>

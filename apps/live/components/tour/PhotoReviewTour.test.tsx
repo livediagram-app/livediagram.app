@@ -113,6 +113,19 @@ describe('Photo review Show Me', () => {
     expect(screen.queryByRole('toolbar', { name: 'Correct this box' })).toBeNull();
   });
 
+  it('lets go of a selected first box so the tick step finds its tick', async () => {
+    show([sticky(0), sticky(1)]);
+    fireEvent.pointerDown(screen.getByTestId('note-body-0'));
+    expect(screen.getByRole('toolbar', { name: 'Correct this box' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
+    await settle();
+    await next(); // Tick
+    expect(
+      screen.getByRole('dialog', { name: /^Show Me step 2 of 6: Tick What to Keep/ }),
+    ).toBeTruthy();
+    expect(screen.queryByRole('toolbar', { name: 'Correct this box' })).toBeNull();
+  });
+
   it('counts only drawing and adding when nothing was found', async () => {
     show([]);
     fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));

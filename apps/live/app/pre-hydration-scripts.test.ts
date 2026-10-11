@@ -2,7 +2,11 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
-import { REDUCE_MOTION_BOOT_SCRIPT } from './pre-hydration-scripts';
+import {
+  REDUCE_MOTION_BOOT_SCRIPT,
+  WEBFONTS_STYLESHEET_ID,
+  WEBFONTS_SWAP_SCRIPT,
+} from './pre-hydration-scripts';
 
 // The editor's root layout inlines a reduce-motion `<script>` that runs before
 // hydration (docs/specs/007-editor/user-preferences.md), interpolating a localStorage key
@@ -48,5 +52,46 @@ describe('the reduce-motion pre-hydration script', () => {
     expect(run(null)).toEqual([]);
     expect(run('{not json')).toEqual([]);
     expect(() => run(null, true)).not.toThrow();
+  });
+});
+
+describe('the webfonts stylesheet', () => {
+  it('is linked so it never blocks first paint, with the swap script right after it', () => {
+    expect(LAYOUT).toMatch(/id=\{WEBFONTS_STYLESHEET_ID\}[\s\S]*?media="print"/);
+    expect(LAYOUT).toMatch(
+      /media="print"[\s\S]*?\/>\s*<script dangerouslySetInnerHTML=\{\{ __html: WEBFONTS_SWAP_SCRIPT \}\} \/>/,
+    );
+  });
+
+  const run = (link: unknown) => {
+    const document = {
+      getElementById: (id: string) => (id === WEBFONTS_STYLESHEET_ID ? link : null),
+    };
+    new Function('document', WEBFONTS_SWAP_SCRIPT)(document);
+  };
+
+  it('switches the stylesheet to every medium once it loads', () => {
+    let onLoad: () => void = () => {};
+    const link = {
+      media: 'print',
+      sheet: null,
+      addEventListener: (type: string, fn: () => void) => {
+        if (type === 'load') onLoad = fn;
+      },
+    };
+    run(link);
+    expect(link.media).toBe('print');
+    onLoad();
+    expect(link.media).toBe('all');
+  });
+
+  it('switches at once when the stylesheet loaded before the script ran', () => {
+    const link = { media: 'print', sheet: {}, addEventListener: () => {} };
+    run(link);
+    expect(link.media).toBe('all');
+  });
+
+  it('does nothing, and throws nothing, without the link', () => {
+    expect(() => run(null)).not.toThrow();
   });
 });

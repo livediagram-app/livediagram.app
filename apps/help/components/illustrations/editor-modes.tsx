@@ -14,7 +14,7 @@ import { ModeMark, type Mode } from './mode-mark';
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
   { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
-  { mode: 'Illustrate', lines: ['Pages: infographics to lay out, and', 'articles to write.'] },
+  { mode: 'Illustrate', lines: ['Pages: infographics, slides, articles', 'and logos.'] },
   { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
   {
     mode: 'Facilitate',

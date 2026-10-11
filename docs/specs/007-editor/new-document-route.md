@@ -443,7 +443,8 @@ this browser (a per-browser list of the last 200 closed keys, `livediagram:v2:em
 shared with the starts' own close). It takes presses only on itself: the canvas around it still pans. It hides while
 a draw tool is armed or Quick Start is open. The card: a small picture of what the tab's mode makes, in the brand's
 tints on a soft panel (`EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), then its one line, in full. **On a
-phone** it is the same card, narrower (18rem).
+phone** it is the same card, narrower (18rem). On a **short screen** (480px tall or less, a phone on its side) the card
+drops its picture, so it clears the toolbars above and below instead of sliding under the Palette strip.
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via

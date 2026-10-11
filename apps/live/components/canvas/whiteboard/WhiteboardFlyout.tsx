@@ -246,7 +246,7 @@ export function FlyoutOption({
         {shortcut ? (
           <span
             aria-hidden
-            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400"
+            className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
           >
             {shortcut}
           </span>

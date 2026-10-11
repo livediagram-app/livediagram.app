@@ -77,3 +77,13 @@ describe('LikeButton', () => {
     expect(button().disabled).toBe(true);
   });
 });
+
+// docs/specs/004-interface-design/touch-targets.md: the card's compact heart reaches a 44px tap area on
+// a touch screen.
+describe('LikeButton tap area', () => {
+  it('carries the touch pad on its positioned button', () => {
+    act(() => root.render(<Harness />));
+    expect(button().className).toMatch(/\btouch-target\b/);
+    expect(button().className).toMatch(/\brelative\b/);
+  });
+});

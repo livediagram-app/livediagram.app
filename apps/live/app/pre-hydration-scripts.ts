@@ -21,3 +21,11 @@ import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferen
 // The OS prefers-reduced-motion query in globals.css needs no JS; this only
 // covers the user's own override.
 export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getItem('${USER_PREFERENCES_STORAGE_KEY}')||'{}');if(p&&p.reduceMotion===true)document.documentElement.classList.add('reduce-motion')}catch(e){}`;
+
+// Webfonts without holding up first paint (docs/specs/004-interface-design/fonts.md "Loading"). The
+// Google Fonts stylesheet is linked as `media="print"`, which the browser fetches at low priority
+// without blocking render; this snippet, inlined right after the link, switches it to every medium
+// once it has loaded. Text paints in the fallback face until then, exactly as `display=swap`
+// already paints it while a face downloads, and useFontEpoch re-measures as the faces land.
+export const WEBFONTS_STYLESHEET_ID = 'livediagram-webfonts';
+export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;

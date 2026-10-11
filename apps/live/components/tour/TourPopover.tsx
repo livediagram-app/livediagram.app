@@ -190,9 +190,11 @@ export function TourPopover({
       {/* Keyed on the step so each phase slides in directionally (forward
           from the right, back from the left) — the same motion the New
           Document wizard uses between its phases. */}
+      {/* Its buttons are small (xs), so on a touch screen each reaches a 44px-tall tap area
+          (touch-targets.md); vertical only, as they sit side by side 8px apart. */}
       <div
         key={stepId}
-        className={`flex flex-col gap-2 ${stepDir === 'forward' ? 'animate-tip-next' : 'animate-tip-prev'}`}
+        className={`flex flex-col gap-2 [&_button]:relative [&_button]:touch-target-y ${stepDir === 'forward' ? 'animate-tip-next' : 'animate-tip-prev'}`}
       >
         {card ? (
           <>

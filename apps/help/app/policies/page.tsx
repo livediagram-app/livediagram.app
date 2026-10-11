@@ -15,6 +15,7 @@ export default function PoliciesPage() {
   const articles = getArticlesByCategory('policies');
   return (
     <BrowsePage
+      listing={{ appPath: '/policies/', articles: articles }}
       title="Policies"
       lede="The terms that govern the hosted service, and how your data is handled. They cover only livediagram.app; a copy you self-host is yours to run."
     >

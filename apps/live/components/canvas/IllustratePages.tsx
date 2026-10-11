@@ -166,10 +166,13 @@ export function IllustratePages({
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
   // Show Me on a logo page (logo-pages.md "Show Me"): it reopens this page's panel on Layouts, afresh, for its first step.
-  const logoTour = useLogoTour({
-    openLayouts: (id) => setOpened({ id, tab: 'layouts', seq: Date.now() }),
-    closePanel: () => setOpened(null),
-  });
+  const logoTour = useLogoTour(
+    {
+      openLayouts: (id) => setOpened({ id, tab: 'layouts', seq: Date.now() }),
+      closePanel: () => setOpened(null),
+    },
+    (id) => !!edit && pages.some((p) => p.id === id),
+  );
   // The page toolbar's Article Style button opens the page's panel on Style.
   const styleRequest = useStylePanelRequest();
   const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
@@ -508,7 +511,7 @@ function PageCog({
           // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md); the first page's leads.
           data-tour-id="page-cog"
           onClick={() => onToggle()}
-          className={`flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
+          className={`touch-target-y relative flex h-6 w-6 items-center justify-center rounded-md text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 ${
             open ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-800 dark:text-slate-100' : ''
           }`}
         >

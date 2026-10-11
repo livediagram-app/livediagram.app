@@ -72,7 +72,7 @@ export function ShareDialog({
   useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
   const multiTab = tabs.length > 1;
   // Show Me: the tour of issuing and managing passes, run on this dialog (docs/specs/007-editor/live-app.md).
-  const tour = useShareTour(multiTab, () => setTab('passes'));
+  const { tour, freeze: freezeTour } = useShareTour(multiTab, () => setTab('passes'));
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
   // `?tab=`. Document-wide: the same choice applies to every pass's image.
@@ -176,7 +176,7 @@ export function ShareDialog({
           />
         }
       >
-        <ShareShowMeButton tour={tour} />
+        <ShareShowMeButton tour={tour} onStart={freezeTour} />
         <HelpArticleLink article="sharing" variant="labelled" />
         <DialogCloseButton onClick={close} />
       </DialogHeader>

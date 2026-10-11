@@ -137,3 +137,15 @@ describe('EditorHeader rename requests', () => {
     expect(editing()).toBeNull();
   });
 });
+
+// docs/specs/004-interface-design/touch-targets.md: the document title is a 44px-tall tap target on a
+// touch screen, by padding, since `truncate` would clip a ::before pad.
+describe('EditorHeader title on a touch screen', () => {
+  it('pads the rename button to 44px tall without a clipped pad', () => {
+    renderHeader();
+    const title = screen.getByRole('button', { name: 'Untitled document' });
+    expect(title.className).toMatch(/\bpointer-coarse:py-3\b/);
+    expect(title.className).toMatch(/\btruncate\b/);
+    expect(title.className).not.toMatch(/\btouch-target/);
+  });
+});

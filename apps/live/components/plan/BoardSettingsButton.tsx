@@ -30,7 +30,7 @@ export function BoardSettingsButton({
         aria-haspopup="menu"
         // A menu trigger: the open menu's outside-press close leaves this press to the cog (a toggle).
         data-context-menu-trigger
-        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10"
+        className="touch-target relative flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10"
         style={{ color: palette.muted }}
         onPointerDown={stop}
         onContextMenu={stop}

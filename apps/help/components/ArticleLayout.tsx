@@ -6,7 +6,10 @@ import Link from 'next/link';
 import { Breadcrumb } from './Breadcrumb';
 import { SectionedContent } from './SectionedContent';
 import { TableOfContents } from './TableOfContents';
-import { articleHref, categoryHref, type Article } from '@/lib/articles';
+// The hrefs alone, not lib/articles: that would bundle the whole article registry (about 300 articles with their
+// descriptions and keywords) into every article's JavaScript.
+import { articleHref, categoryHref } from '@livediagram/help-registry/hrefs';
+import type { Article } from '@/lib/articles';
 import { parentRouteHref, routeHref } from '@/lib/article-route';
 import { articleJsonLd } from '@/lib/structured-data';
 import { track } from '@/lib/telemetry';
@@ -30,12 +33,12 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
             Learn More
           </h3>
           <p className="mb-3 text-[11px] text-slate-400">Related guides on this topic</p>
-          <ul className="space-y-1.5">
+          <ul className="space-y-1.5 pointer-coarse:space-y-0">
             {subArticles!.map((a, i) => (
               <li key={a.slug}>
                 <Link
                   href={articleHref(a)}
-                  className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
+                  className="flex items-center gap-2.5 py-1 text-sm text-slate-600 transition-colors pointer-coarse:min-h-11 hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200"
                 >
                   <GlyphDisc
                     size={20}
@@ -145,7 +148,7 @@ export function ArticleLayout({
           </div>
           <button
             onClick={() => setMobileSidebarOpen(true)}
-            className="mt-5 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            className="relative mt-5 inline-flex items-center gap-2 rounded-lg border touch-target-y border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900 lg:hidden dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <ContentsIcon className="h-4 w-4" />
             Contents and guides

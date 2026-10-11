@@ -63,8 +63,10 @@ export function SiteHeader({
             wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
           }`}
         >
+          {/* The bar's controls are under 44px tall; on a touch screen each tap area reaches to 44px
+              vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
           <div className="flex shrink-0 items-center gap-2.5">
-            <Brand href="/" size="md" />
+            <Brand href="/" size="md" className="relative touch-target-y" />
             {productNav ? <ProductNav current={productNav} showOnMobile /> : null}
           </div>
           {center ? (
@@ -86,9 +88,9 @@ export function SiteHeader({
 // The default CTA pair. The Start Blank menu is hidden on mobile: Brand + dropdown + the
 // primary already fill a narrow bar, and the wizard's own Skip covers the
 // escape. `max-sm:hidden` (a variant, so it wins over the base inline-flex). Beside a centre slot (help's
-// search) it waits for `md`, so the search box keeps room to read on a small tablet. Below 360px
-// (a 320px phone) Brand + dropdown + "Choose Template" overran the bar by ~35px, so the primary
-// drops "Choose " there; the aria-label keeps its full name.
+// search) it waits for `md`, so the search box keeps room to read on a small tablet. Brand + dropdown +
+// "Choose Template" need about 367px, so below 380px (a 360px Android phone ran 7px past its screen,
+// a 320px one ~35px) the primary drops "Choose "; the aria-label keeps its full name.
 function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy: boolean }) {
   return (
     <>
@@ -99,11 +101,14 @@ function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: CtaSurface; roomy:
       <a
         href={ctaSurface ? ctaHref('/new', `${ctaSurface}.Header`) : '/new'}
         aria-label="Choose Template"
-        className={buttonClassName({ size: 'md', className: 'shrink-0 shadow-sm' })}
+        className={buttonClassName({
+          size: 'md',
+          className: 'relative shrink-0 shadow-sm touch-target-y',
+        })}
       >
         <ButtonContent>
           <span className="text-optical-line">
-            <span className="max-[359px]:hidden">Choose </span>Template
+            <span className="max-[379px]:hidden">Choose </span>Template
           </span>
         </ButtonContent>
       </a>

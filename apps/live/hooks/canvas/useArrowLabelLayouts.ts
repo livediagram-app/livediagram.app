@@ -53,9 +53,9 @@ export function useArrowLabelLayouts(
   elements: Element[],
   hasArrows: boolean,
   tabFont: string | undefined,
-  // Re-lay out once webfonts land: labels measured in a fallback face wrap
-  // differently to the real one.
-  fontsReady: boolean,
+  // Re-lay out whenever webfonts land (useFontEpoch): labels measured in a
+  // fallback face wrap differently to the real one.
+  fontEpoch: number,
   options: Partial<ArrowLabelLayoutOptions> = {},
 ) {
   // `options` arrives as a fresh object every render. Hold one per value (by
@@ -72,7 +72,7 @@ export function useArrowLabelLayouts(
     const pass = arrowLabelPass(elements, {
       ...stableOptions,
       fontFamilyOf,
-      fontEpoch: fontsReady ? 1 : 0,
+      fontEpoch,
     });
     for (const el of elements) {
       if (el.type !== 'arrow') continue;
@@ -81,7 +81,7 @@ export function useArrowLabelLayouts(
       if (layout || knockouts.length > 0) next.set(el.id, { layout, knockouts });
     }
     return next;
-  }, [elements, hasArrows, tabFont, fontsReady, stableOptions]);
+  }, [elements, hasArrows, tabFont, fontEpoch, stableOptions]);
 
   // Lays out an arrow's label for text being typed, against the other labels
   // as placed, so the editor sits and wraps where the label will land.
@@ -100,10 +100,10 @@ export function useArrowLabelLayouts(
           ...DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
           ...stableOptions,
           fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
-          fontEpoch: fontsReady ? 1 : 0,
+          fontEpoch,
         },
       });
-  }, [renders, elements, tabFont, stableOptions, fontsReady]);
+  }, [renders, elements, tabFont, stableOptions, fontEpoch]);
   // One identity for the editor's lifetime, laying out against the newest pass, so every ArrowView's
   // memo holds across element changes (docs/specs/008-canvas/canvas-performance.md).
   const { draftLayout } = useStableHandlers({ draftLayout: latestDraftLayout });

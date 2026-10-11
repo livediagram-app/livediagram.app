@@ -135,7 +135,7 @@ semantic colour:
   than a diagram, and capitals are its home register. The auto-fit measures
   IN that face (`labelMeasure`'s `fontFamily`), because a marker is far
   wider than the UI sans at the same px — and the canvas re-renders once the
-  webfont lands (`useFontsReady`), or a board nobody has touched keeps a size
+  webfont lands (`useFontEpoch`), or a board nobody has touched keeps a size
   measured against the swap fallback.
 - **Notes are WRITTEN IN CAPITALS.** A marker on paper produces caps, and a
   wall of them reads as one hand: capitals stay legible from across the
@@ -1516,7 +1516,7 @@ the review itself; it is never offered or started on its own. It sits with **Hel
 Event Storming Boards article) in a small card on the photo's top-left corner (the zoom has the other), shown once the
 detector has answered; a press on the card never draws a box. The box steps point at the first box on the photo when
 the tour starts, and every control stays usable, so the author can untick, retype or redraw while a step is up. The
-steps: **Each Box Is a Note** (that box), **Tick What to Keep** (its tick), **Fix the Words** (its words),
+steps: **Each Box Is a Note** (that box), **Tick What to Keep** (its tick; a selected box is let go of first, since its tick then sits in its toolbar), **Fix the Words** (its words),
 **Correct a Box** (that box selected, its correcting toolbar ringed; let go again on leaving the step), **Draw One It
 Missed** (the count pill, which says to drag the photo), **Add Them to the Board** (Add N notes), then a closing card,
 **That Is the Review**, with a link to the Event Storming Boards article. When nothing was found the four box steps

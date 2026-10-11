@@ -1,6 +1,5 @@
-import { SITE_NAME, SITE_PITCH } from '@livediagram/ui';
+import { SITE_NAME, SITE_PITCH, renderSocialCard } from '@livediagram/ui';
 import { ImageResponse } from 'next/og';
-import { renderSocialCard } from './opengraph-image';
 
 // Twitter Card image. Mirrors opengraph-image.tsx; the shared
 // `renderSocialCard()` template keeps the two byte-identical so a

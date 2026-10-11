@@ -3093,6 +3093,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunitySitemapEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunitySitemapResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunitySitemapEntry"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "posts"
+    ],
+    "type": "object"
+  },
   "ConditionOp": {
     "enum": [
       "empty",

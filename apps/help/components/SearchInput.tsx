@@ -3,11 +3,29 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { SearchIcon, useClickOutside } from '@livediagram/ui';
-import { articleHref, searchArticles } from '@/lib/articles';
+import { articleHref } from '@livediagram/help-registry/hrefs';
+import type { Article } from '@/lib/articles';
 import { reportHelpSearch, SEARCH_SETTLE_MS } from '@/lib/search-telemetry';
 
 // Below this many characters a query is treated as too short to search.
 const MIN_QUERY = 2;
+
+type Search = (query: string) => Article[];
+
+// The search runs over the whole article registry (about 300 articles with their descriptions
+// and keywords), which every help page would otherwise download to show a search box. It loads
+// on the reader's first focus or keystroke instead, well before a query is long enough to search.
+let searchModule: Promise<Search> | null = null;
+function loadSearch(): Promise<Search> {
+  searchModule ??= import('@/lib/articles').then(
+    (m) => m.searchArticles,
+    (err: unknown) => {
+      searchModule = null;
+      throw err;
+    },
+  );
+  return searchModule;
+}
 
 export function SearchInput({ large = false }: { large?: boolean }) {
   const [query, setQuery] = useState('');
@@ -17,21 +35,34 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   // `query` instead of copied into state by an effect, which is what made
   // every keystroke cost two renders.
   const [dismissed, setDismissed] = useState(false);
+  const [search, setSearch] = useState<Search | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const prepareSearch = () => {
+    if (search) return;
+    loadSearch().then(
+      (fn) => setSearch(() => fn),
+      (err: unknown) =>
+        console.warn('[help-search] search unavailable; retrying on next focus', err),
+    );
+  };
 
   const trimmed = query.trim();
   const hasQuery = trimmed.length >= MIN_QUERY;
-  const results = useMemo(() => (hasQuery ? searchArticles(query) : []), [hasQuery, query]);
-  const isOpen = hasQuery && !dismissed;
+  const results = useMemo(
+    () => (hasQuery && search ? search(query) : []),
+    [hasQuery, query, search],
+  );
+  // Until the search has loaded there is no answer yet, so neither results nor "No articles found".
+  const isOpen = hasQuery && !dismissed && search !== null;
 
   // Report the SETTLED query's outcome, not every keystroke (docs/specs/017-telemetry/telemetry.md). The
   // timer restarts on each change, so only the query the reader stopped on is
   // counted, and the emitter dedupes repeats of it.
   useEffect(() => {
-    if (!hasQuery) return;
+    if (!hasQuery || !search) return;
     const timer = setTimeout(() => reportHelpSearch(trimmed, results.length), SEARCH_SETTLE_MS);
     return () => clearTimeout(timer);
-  }, [hasQuery, trimmed, results.length]);
+  }, [hasQuery, search, trimmed, results.length]);
 
   // A press outside dismisses the open dropdown. Only listening while it's
   // open is equivalent: typing or focusing clears `dismissed` anyway.
@@ -49,10 +80,15 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           placeholder="Search help articles..."
           value={query}
           onChange={(e) => {
+            prepareSearch();
             setQuery(e.target.value);
             setDismissed(false);
           }}
-          onFocus={() => setDismissed(false)}
+          onFocus={() => {
+            prepareSearch();
+            setDismissed(false);
+          }}
+          onPointerEnter={prepareSearch}
           aria-label="Search help articles"
           className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-micro focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${
             large ? 'py-4 pl-12 pr-4 text-lg' : 'py-2.5 pl-10 pr-4 text-sm'

@@ -97,7 +97,7 @@ export function PlanColumnHeader({
             aria-haspopup="dialog"
             aria-expanded={open}
             // Always shown, so a column's settings are found without hunting for them.
-            className={`-mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10 ${
+            className={`touch-target relative -mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10 ${
               open ? 'bg-black/5 dark:bg-white/10' : ''
             }`}
             style={{ color: palette.muted }}
