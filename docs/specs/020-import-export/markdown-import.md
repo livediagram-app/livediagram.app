@@ -1,7 +1,7 @@
 # Markdown import
 
-Import a Markdown document and turn it into a real, themed diagram on a
-new tab. The goal is to ingest outlines exported from other tools (XMind
+Import a Markdown document and turn it into a real, themed diagram on the
+current tab, replacing its contents (one undo step puts them back). The goal is to ingest outlines exported from other tools (XMind
 mind-map → Markdown, Obsidian/Logseq outlines, any heading/bullet notes)
 and produce a high-quality node-link diagram, **without assuming a fixed
 shape** — the parser is tolerant of whatever structure the file has.

@@ -100,7 +100,7 @@ export default function StatusPage() {
 
         <div className="mt-8 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-5 dark:border-emerald-500/30 dark:bg-emerald-500/10">
           <span className="relative inline-flex">
-            <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-emerald-400 opacity-60" />
+            <span className="absolute inline-flex h-3 w-3 motion-safe:animate-ping rounded-full bg-emerald-400 opacity-60" />
             <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500" />
           </span>
           <div>

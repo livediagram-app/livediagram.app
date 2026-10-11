@@ -72,6 +72,6 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucideNetwork, 22),
     panel: 'from-emerald-100 to-teal-50 dark:from-emerald-500/15 dark:to-teal-500/5',
     glyph: 'text-emerald-600 dark:text-emerald-300',
-    highlights: ['No shape limits', 'No sign-up', 'Open source'],
+    highlights: ['No plan limits', 'No sign-up', 'Open source'],
   },
 };
