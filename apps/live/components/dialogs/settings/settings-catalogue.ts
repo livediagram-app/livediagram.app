@@ -1,6 +1,6 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import type { TelemetryCategory } from '@livediagram/api-schema';
+import { titleCase, type TelemetryCategory } from '@livediagram/api-schema';
 import {
   autoRebindArrowsEnabled,
   showProfilePictureEnabled,
@@ -941,6 +941,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: `placementDefault-${entry.key}`,
         placementKey: entry.key,
         section: 'Where New Documents Go',
+        // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
         label: titleCase(entry.label),
         keywords:
           'default folder where new documents go save location place file automatically always save placement',
@@ -1169,11 +1170,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
 ];
-
-// Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
-function titleCase(label: string): string {
-  return label.replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 // A section's target id: "Cloud Sync" → "cloud-sync". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).

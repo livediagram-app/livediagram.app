@@ -2,7 +2,7 @@
 // as a pure function of the theme's accent. The rules are written `html:root` and `html.dark`,
 // one element-type step more specific than the dark palette's `.dark` tokens
 // (docs/specs/004-interface-design/color-scheme.md), so the tint wins by selector, not by load order.
-import { isLightColor, shade, tint } from '@livediagram/document';
+import { isLightColor, mixHex, shade, tint } from '@livediagram/document';
 
 const BRAND_STOPS = [
   '50',
@@ -21,18 +21,6 @@ const BRAND_STOPS = [
 // backgrounds). Lighter stops (50..500) stay neutral so dark-mode TEXT, which
 // uses them, keeps its readable greys.
 const DARK_SURFACE_STOPS = ['600', '700', '800', '900', '950'] as const;
-
-// Blend two #rrggbb hexes; t=0 -> a, t=1 -> b.
-function mixHex(a: string, b: string, t: number): string {
-  const pa = parseInt(a.slice(1), 16);
-  const pb = parseInt(b.slice(1), 16);
-  const ch = (shift: number) => {
-    const av = (pa >> shift) & 255;
-    const bv = (pb >> shift) & 255;
-    return Math.round(av + (bv - av) * t);
-  };
-  return '#' + [ch(16), ch(8), ch(0)].map((n) => n.toString(16).padStart(2, '0')).join('');
-}
 
 // Spin a single theme accent into an 11-stop brand ramp anchored at 600. A pale
 // accent (dark-theme strokes are light) is darkened first so white-on-600 keeps
@@ -58,7 +46,7 @@ function brandScale(accent: string): Record<(typeof BRAND_STOPS)[number], string
 // tint, not a garish saturated dark) then shade it down. Keeps dark mode dark
 // while carrying the theme's hue.
 function darkSurfaceScale(accent: string): Record<(typeof DARK_SURFACE_STOPS)[number], string> {
-  const muted = mixHex(accent, '#64748b', 0.6); // slate-500 as the neutral anchor
+  const muted = mixHex('#64748b', accent, 0.6); // 60% slate-500, the neutral anchor
   return {
     '600': shade(muted, 0.42),
     '700': shade(muted, 0.56),
