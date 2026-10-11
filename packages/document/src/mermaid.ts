@@ -25,6 +25,7 @@ import {
   cleanLine,
   decodeLabel,
   directionOf,
+  framedClusters,
   readId,
   type MermaidDirection,
   type ParseMermaidResult,
@@ -462,18 +463,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     return { ok: false, error: UNSUPPORTED_ERROR };
   }
 
-  // An edge may reference a subgraph id (the arrow pins to the frame). The
-  // mention auto-created a node with that id — remove it so the id resolves
-  // to the cluster, unless a real node def claimed it.
-  for (const c of clusters) {
-    if (implicit.has(c.id) && nodes.has(c.id)) {
-      nodes.delete(c.id);
-      for (const other of clusters) {
-        other.members = other.members.filter((m) => m !== c.id);
-      }
-    }
-  }
-  const realClusters = clusters.filter((c) => c.members.length > 0);
+  // An edge to a subgraph id pins to its frame.
+  const realClusters = framedClusters(clusters, implicit, nodes);
 
   // A flowchart needs either the header or at least one connection — a bare
   // word (or a stray line of prose) is not a diagram.

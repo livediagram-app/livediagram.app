@@ -11,7 +11,7 @@ import {
   bytesToBase64Url,
   randomBase64Url,
   DRIVE_STATE_TTL_MS,
-  isLoopbackHostname,
+  oauthRedirectUrl,
 } from '@livediagram/api-schema';
 import { timingSafeEqual } from '../auth/timing-safe';
 import { driveKeyBytes } from './crypto';
@@ -48,15 +48,8 @@ async function signature(key: CryptoKey, payload: string): Promise<string> {
 // a loopback host (local development), with no query or fragment.
 export function isAllowedRedirectUri(value: unknown): value is string {
   if (typeof value !== 'string') return false;
-  let url: URL;
-  try {
-    url = new URL(value);
-  } catch {
-    return false;
-  }
-  if (url.pathname !== REDIRECT_PATH || url.search !== '' || url.hash !== '') return false;
-  if (url.protocol === 'https:') return true;
-  return url.protocol === 'http:' && isLoopbackHostname(url.hostname);
+  const url = oauthRedirectUrl(value);
+  return !!url && url.pathname === REDIRECT_PATH && url.search === '';
 }
 
 export async function signDriveState(

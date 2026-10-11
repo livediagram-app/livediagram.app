@@ -88,23 +88,24 @@ async function landedOf(res: Response): Promise<ItemsResponse | null> {
 
 // Sends a change of many items, a request per ITEM_BULK_MAX of them. A failure after any of them landed (an earlier
 // request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
-async function postPatches(
+async function postInChunks(
   scope: ItemsScope,
-  write: Extract<ItemWrite, { kind: 'patches' }>,
+  path: '/patches' | '/tally',
+  entries: readonly object[],
+  action: string,
+  undo?: true,
 ): Promise<ItemWriteAnswer> {
   const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-  for (let i = 0; i < write.patches.length; i += ITEM_BULK_MAX) {
-    const items = write.patches
-      .slice(i, i + ITEM_BULK_MAX)
-      .map(({ id: itemId, patch }) => ({ id: itemId, ...patch }));
-    const res = await apiFetch(itemsUrl(scope, '/patches'), {
+  for (let i = 0; i < entries.length; i += ITEM_BULK_MAX) {
+    const items = entries.slice(i, i + ITEM_BULK_MAX);
+    const res = await apiFetch(itemsUrl(scope, path), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
-      body: JSON.stringify(undoBody({ items }, write.undo)),
+      body: JSON.stringify(undoBody({ items }, undo)),
     });
     const partial = res.ok ? null : await landedOf(res);
     try {
-      const r = await expectOk<ItemsResponse>(res, 'items change');
+      const r = await expectOk<ItemsResponse>(res, action);
       answer.upserts.push(...r.items);
       answer.rev = r.rev;
     } catch (err) {
@@ -154,24 +155,18 @@ export async function writeItem(
     }
     case 'patch':
       return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
-    case 'tally': {
-      // One request per ITEM_BULK_MAX cards (a session vote's tally, as its host ends it).
-      const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-      for (let i = 0; i < write.tallies.length; i += ITEM_BULK_MAX) {
-        const r = await post<ItemsResponse>(
-          scope,
-          '/tally',
-          { items: write.tallies.slice(i, i + ITEM_BULK_MAX) },
-          'items tally',
-        );
-        answer.upserts.push(...r.items);
-        answer.rev = r.rev;
-      }
-      return answer;
-    }
+    case 'tally':
+      // A session vote's tally, as its host ends it.
+      return postInChunks(scope, '/tally', write.tallies, 'items tally');
     case 'patches':
       // A type's or a removed column's cards to the Trash.
-      return postPatches(scope, write);
+      return postInChunks(
+        scope,
+        '/patches',
+        write.patches.map(({ id: itemId, patch }) => ({ id: itemId, ...patch })),
+        'items change',
+        write.undo,
+      );
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
     case 'delete': {

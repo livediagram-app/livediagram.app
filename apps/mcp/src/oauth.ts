@@ -5,7 +5,12 @@
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
 import { appBase } from './tool-helpers';
-import { DEVICE_CODE_GRANT, isLoopbackHostname, pkceChallenge } from '@livediagram/api-schema';
+import {
+  DEVICE_CODE_GRANT,
+  isLoopbackHostname,
+  oauthRedirectUrl,
+  pkceChallenge,
+} from '@livediagram/api-schema';
 import type { Hono } from 'hono';
 import type { Env } from './env';
 import { lookupClient, type ClientReg } from './oauth-clients';
@@ -58,18 +63,9 @@ function randomId(): string {
   return crypto.randomUUID().replace(/-/g, '');
 }
 
-// A redirect target is https anywhere, or plain http on a loopback host (a
-// local CLI client). The scheme is checked on its own: a loopback host must
-// never let another scheme through, or `javascript://localhost/...` would
-// register and run as script on the consent page when it navigates there.
+// A redirect target a client may register (oauthRedirectUrl: https, or http on loopback, no fragment).
 export function isAllowedRedirectUri(uri: string): boolean {
-  try {
-    const u = new URL(uri);
-    if (u.protocol === 'https:') return true;
-    return u.protocol === 'http:' && isLoopbackHostname(u.hostname);
-  } catch {
-    return false;
-  }
+  return oauthRedirectUrl(uri) !== null;
 }
 
 // The MCP's own public origin, derived from the request so it's host-agnostic
