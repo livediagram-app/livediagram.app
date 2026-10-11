@@ -492,6 +492,9 @@ canvas, part of the palette's catalogue, not a setting).
 
 ## Maximised board
 
+A right-click on a maximised board's empty space, or a board filling its tab (a Sheet's likewise), opens the tab's
+menu, the one the canvas opens, never the browser's; a card's own right-click keeps its card menu.
+
 A board can be maximised to work on it without the rest of the canvas around it.
 
 - In Plan mode, the board's header ends with **Maximise Board** (a maximise icon, with a tooltip) at its top

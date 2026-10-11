@@ -7,6 +7,7 @@
 // (a Gantt keeps its scale, window and collapsed lanes; a drag in flight survives), and PlanContext and the canvas
 // surface still reach it. While maximised, its presses stop at the slot so the canvas never selects or moves the
 // element underneath.
+import { useCanvasMenu } from '@/components/canvas/canvas-menu-context';
 import {
   useCallback,
   useEffect,
@@ -303,6 +304,7 @@ export function MaximisableSlot({
     return el;
   });
   const slotRef = useRef<HTMLDivElement>(null);
+  const openCanvasMenu = useCanvasMenu();
   // On the canvas: the host back in its slot (the overlay puts it in its box while maximised).
   const over = maximised || fill;
   useLayoutEffect(() => {
@@ -324,7 +326,18 @@ export function MaximisableSlot({
       // element underneath is never selected, moved or menu'd from the overlay.
       onPointerDown={over ? stop : undefined}
       onDoubleClick={over ? stop : undefined}
-      onContextMenu={over ? stop : undefined}
+      // A right-click on the body's empty space (a card's own menu stops it first) opens the tab's menu, as the
+      // canvas's does, never the browser's.
+      onContextMenu={
+        over
+          ? (e) => {
+              e.stopPropagation();
+              if (e.defaultPrevented || !openCanvasMenu) return;
+              e.preventDefault();
+              openCanvasMenu(e.clientX, e.clientY);
+            }
+          : undefined
+      }
       onWheel={over ? stop : undefined}
     >
       {createPortal(children, host)}
