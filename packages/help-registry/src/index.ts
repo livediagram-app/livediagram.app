@@ -196,7 +196,7 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas where diagrams come together: placing, selecting, linking, annotating, noting, layering, rotating, animating, shadowing, locking, undoing, theming, and templating.',
+      'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
     articleCount: 30,
     kind: 'feature',
   },
@@ -1533,7 +1533,7 @@ export const articles: Article[] = [
     slug: 'infographic-layouts',
     title: 'Infographic Layouts',
     description:
-      'Twenty-one ready-made pages in four categories, previewed on your page as you hover.',
+      'Thirty-one ready-made pages in six categories, previewed on your page as you hover.',
     keywords:
       'layout layouts template templates page template start from a layout ready made starter preview hover replace title page big number key stats statistics process steps timeline milestones comparison before after chart story top tips quote testimonial team people facts grid checklist event invitation poster',
     category: 'Canvas',
