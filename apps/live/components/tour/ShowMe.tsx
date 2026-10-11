@@ -13,13 +13,14 @@ import type { TourEngine } from './useTourEngine';
 const FootprintsIcon = lucideGlyph(lucideFootprints, 14);
 
 // The header's Show Me, left of Help and drawn as it is (HelpArticleLink's labelled variant). `onStart` sends the
-// surface's own Started event; a press while the tour runs does nothing.
+// surface's own Started event, and may return a promise (steps loaded at the press) that the tour waits for; a press
+// while the tour runs does nothing.
 export function ShowMeButton<Api>({
   tour,
   onStart,
 }: {
   tour: TourEngine<Api>;
-  onStart: () => void;
+  onStart: () => void | Promise<void>;
 }) {
   return (
     <button
@@ -28,8 +29,9 @@ export function ShowMeButton<Api>({
       className="relative touch-target inline-flex h-8 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
       onClick={() => {
         if (tour.active) return;
-        onStart();
-        tour.start();
+        const ready = onStart();
+        if (ready) void ready.then(tour.start);
+        else tour.start();
       }}
     >
       <FootprintsIcon />

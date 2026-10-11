@@ -5,17 +5,19 @@
 import { useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
-import { logoTourSteps, type LogoTourApi } from './logo-tour-steps';
+import type { LogoTourApi } from './logo-tour-steps';
+import type { TourStepOf } from './tour-step';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
-// The tour, and `freeze`, which fixes its page and its steps when Show Me is pressed.
+// The tour, and `freeze`, which fixes its page and its steps when Show Me is pressed. The steps load at the press, so
+// their copy stays out of the editor's first load.
 export function useLogoTour(panel: Pick<LogoTourApi, 'openLayouts' | 'closePanel'>): {
   tour: TourEngine<LogoTourApi>;
-  freeze: (pageId: string) => void;
+  freeze: (pageId: string) => Promise<void>;
 } {
   const [pageId, setPageId] = useState('');
-  const [steps, setSteps] = useState(() => logoTourSteps(false));
+  const [steps, setSteps] = useState<TourStepOf<LogoTourApi>[]>([]);
   const apiRef = useLatest<LogoTourApi>({ pageId, ...panel });
   const tour = useTourEngine<LogoTourApi>({
     steps,
@@ -24,7 +26,8 @@ export function useLogoTour(panel: Pick<LogoTourApi, 'openLayouts' | 'closePanel
     onFinish: (outcome) =>
       track('UI', 'Ended', outcome === 'completed' ? 'LogoTourCompleted' : 'LogoTourSkipped'),
   });
-  const freeze = (id: string) => {
+  const freeze = async (id: string) => {
+    const { logoTourSteps } = await import('./logo-tour-steps');
     setPageId(id);
     setSteps(logoTourSteps(document.querySelector('[aria-label="Combine shapes"]') !== null));
   };
@@ -36,14 +39,14 @@ export function LogoShowMeButton({
   onStart,
 }: {
   tour: TourEngine<LogoTourApi>;
-  onStart: () => void;
+  onStart: () => Promise<void>;
 }) {
   return (
     <ShowMeButton
       tour={tour}
       onStart={() => {
         track('UI', 'Started', 'LogoTour');
-        onStart();
+        return onStart();
       }}
     />
   );

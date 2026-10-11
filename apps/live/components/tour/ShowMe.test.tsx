@@ -19,7 +19,13 @@ const STEPS: TourStepOf<null>[] = [
 
 // docs/specs/007-editor/show-me.md: the button starts the tour once, straight on its first step, and the closing
 // card links the surface's help article under its own label.
-function Surface({ onStart, onFinish }: { onStart: () => void; onFinish: (o: string) => void }) {
+function Surface({
+  onStart,
+  onFinish,
+}: {
+  onStart: () => void | Promise<void>;
+  onFinish: (o: string) => void;
+}) {
   const apiRef = useRef(null);
   const tour = useTourEngine<null>({ steps: STEPS, apiRef, onStepView: () => {}, onFinish });
   return (
@@ -58,5 +64,17 @@ describe('Show Me', () => {
     expect(link.getAttribute('href')).toBe('/help/collaboration/sharing/');
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onFinish).toHaveBeenCalledWith('completed');
+  });
+
+  it('waits for steps loaded at the press before it starts', async () => {
+    let loaded!: () => void;
+    const onStart = () => new Promise<void>((resolve) => (loaded = resolve));
+    render(<Surface onStart={onStart} onFinish={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Show Me' }));
+    await settle();
+    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    await act(async () => loaded());
+    await settle();
+    expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 1: First/ })).toBeTruthy();
   });
 });

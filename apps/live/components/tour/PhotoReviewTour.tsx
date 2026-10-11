@@ -7,18 +7,20 @@ import { useState } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { track } from '@/lib/telemetry';
-import { photoReviewTourSteps, type PhotoReviewTourApi } from './photo-review-tour-steps';
+import type { PhotoReviewTourApi } from './photo-review-tour-steps';
+import type { TourStepOf } from './tour-step';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
 // The tour over the review. Its box, and so its steps, are fixed when Show Me is pressed (`freeze`): deleting that
-// box mid-tour must not swap the steps out from under the person.
+// box mid-tour must not swap the steps out from under the person. The steps load at the press, so their copy stays
+// out of the editor's first load.
 export function usePhotoReviewTour(select: (id: number | null) => void): {
   tour: TourEngine<PhotoReviewTourApi>;
-  freeze: (firstBoxId: number | null) => void;
+  freeze: (firstBoxId: number | null) => Promise<void>;
 } {
   const [boxId, setBoxId] = useState<number | null>(null);
-  const [steps, setSteps] = useState(() => photoReviewTourSteps(true));
+  const [steps, setSteps] = useState<TourStepOf<PhotoReviewTourApi>[]>([]);
   const apiRef = useLatest<PhotoReviewTourApi>({ boxId, select });
   const tour = useTourEngine<PhotoReviewTourApi>({
     steps,
@@ -31,7 +33,8 @@ export function usePhotoReviewTour(select: (id: number | null) => void): {
         outcome === 'completed' ? 'PhotoReviewTourCompleted' : 'PhotoReviewTourSkipped',
       ),
   });
-  const freeze = (firstBoxId: number | null) => {
+  const freeze = async (firstBoxId: number | null) => {
+    const { photoReviewTourSteps } = await import('./photo-review-tour-steps');
     setBoxId(firstBoxId);
     setSteps(photoReviewTourSteps(firstBoxId !== null));
   };
@@ -45,7 +48,7 @@ export function PhotoReviewShowMe({
   onStart,
 }: {
   tour: TourEngine<PhotoReviewTourApi>;
-  onStart: () => void;
+  onStart: () => Promise<void>;
 }) {
   return (
     <div
@@ -56,7 +59,7 @@ export function PhotoReviewShowMe({
         tour={tour}
         onStart={() => {
           track('UI', 'Started', 'PhotoReviewTour');
-          onStart();
+          return onStart();
         }}
       />
       <HelpArticleLink article="eventStormingBoards" variant="labelled" />
