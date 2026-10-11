@@ -169,3 +169,36 @@ describe('widgetSlotAt', () => {
     expect(widgetSlotAt(zone, 150, 'a')).toBe(2);
   });
 });
+
+// docs/specs/026-plan/board-widgets.md "The header": an empty zone in a header band keeps its +, so the controls card
+// never shows a hairline before the cog with nothing beside it.
+describe('BoardWidgetZone, empty', () => {
+  const empty = (props: { selected?: boolean; offerAdd?: boolean; canEdit?: boolean }) =>
+    render(
+      <BoardWidgetZone
+        widgets={[]}
+        canEdit={props.canEdit ?? true}
+        selected={props.selected ?? false}
+        offerAdd={props.offerAdd ?? false}
+        palette={planPalette('light', {})}
+        onChange={vi.fn()}
+        render={(kind) => <span>{kind}</span>}
+      />,
+    );
+
+  it('stays clean on an unselected canvas board', () => {
+    empty({});
+    expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
+  });
+
+  it('offers the + alone in a header band, unselected', () => {
+    empty({ offerAdd: true });
+    expect(screen.getByRole('button', { name: 'Add a widget' })).toBeTruthy();
+    expect(screen.queryByText('Add widgets to this board')).toBeNull();
+  });
+
+  it('offers nothing to someone who may not edit', () => {
+    empty({ offerAdd: true, canEdit: false });
+    expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
+  });
+});

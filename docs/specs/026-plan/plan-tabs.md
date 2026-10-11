@@ -423,7 +423,9 @@ leaves it out of a smaller slot and names charts in its line.
 ## Dashboard Settings
 
 An Editor's **Dashboard Settings** cog sits in a card of its own at the page's top right, 12 px from the corner at the
-toolbar's UI scale, as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). It
+toolbar's UI scale, as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). While a
+board, view or Sheet maximised from a slot covers the page, the cog is not shown (the covering element's own cog sits
+in that corner); it is back the moment it is restored. It
 opens the settings popover boards and Sheets use, built from the same parts as Sheet Settings (a labelled field,
 compact action buttons with their icon left of their label, picture choices), its sections collapsible, one open at a time (Dashboard Setup when it opens):
 
@@ -465,7 +467,9 @@ row's:
   than 168 px;
 - a figure (a metric tile, a figure from a Sheet) a 176 px tile, and an empty slot 176 px (its Add to Slot);
 - something worked in (a board, a Sheet, a visualisation or chart, a shown tab of any kind) two thirds of the screen
-  (66 `svh`, never under 360 px), scrolling inside itself, so the next slot peeks in below.
+  (66 `svh`, never under 360 px), scrolling inside itself, so the next slot peeks in below. A finger on a board's empty
+  space scrolls the board, and past its end the page, so a page of boards always scrolls (a finger on a card still
+  picks it up); the board shows one column a screen ([Plan board](plan-board.md#on-a-phone)).
 
 Only the drawing changes: the stored rows, spans and heights stay, and the same dashboard on a wide screen is as it was
 laid out. Nothing is resized or carried there: no dividers, no row handle and no grip (the stack is only a way of
