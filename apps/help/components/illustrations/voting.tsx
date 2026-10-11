@@ -42,103 +42,157 @@ function Pips({ x, y, spent, budget }: { x: number; y: number; spent: number; bu
   );
 }
 
-/** Setting a vote up: the dot budget, drawn as the dots, over Start vote. */
+/** Setting a vote up, as the Vote popover lays it out (VotePane): the dot budget drawn as the dots,
+ *  Dots per item, and the two Privacy cards, over Start vote. */
 export function VoteSetup() {
-  const x = 96;
-  const y = 16;
+  const x = 86;
+  const y = 12;
+  const card = (cy: number, title: string, hint: string, on: boolean) => (
+    <g>
+      <rect
+        x={x + 14}
+        y={cy}
+        width={220}
+        height={38}
+        rx={8}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.2}
+      />
+      <Label x={x + 26} y={cy + 15} size={10} weight={600} tone="strong">
+        {title}
+      </Label>
+      <Label x={x + 26} y={cy + 29} size={8.5} tone="muted">
+        {hint}
+      </Label>
+      {/* The switch sits on the title's line, clear of the hint below. */}
+      <Switch x={x + 196} y={cy + 5} on={on} />
+    </g>
+  );
   return (
-    <Scene w={420} h={208} bg="plain">
-      <Panel x={x} y={y} w={228} h={176} title="COLLABORATE · VOTE">
-        <Label x={x + 16} y={y + 44} size={10} weight={600} tone="body">
+    <Scene w={420} h={300} bg="plain">
+      <Panel x={x} y={y} w={248} h={278} title="Vote">
+        <Label x={x + 14} y={y + 42} size={10} weight={600} tone="body">
           Dots per person
+        </Label>
+        <Label x={x + 234} y={y + 42} anchor="end" size={9} tone="muted">
+          3 each
         </Label>
         {/* The budget as the dots themselves: three of ten filled. */}
         {Array.from({ length: 10 }, (_, i) => (
           <circle
             key={i}
-            cx={x + 22 + i * 20}
-            cy={y + 60}
+            cx={x + 22 + i * 22}
+            cy={y + 58}
             r={i < 3 ? 6 : 4}
             className={i < 3 ? 'fill-brand-500' : 'fill-white stroke-slate-300'}
             strokeWidth={1.2}
           />
         ))}
-        <Label x={x + 16} y={y + 88} size={10} weight={600} tone="body">
-          Hide cursors
+        <Label x={x + 14} y={y + 84} size={10} weight={600} tone="body">
+          Dots per item
         </Label>
-        <Switch x={x + 184} y={y + 80} on />
-        <Label x={x + 16} y={y + 114} size={10} weight={600} tone="body">
-          Hide running counts
+        <rect x={x + 14} y={y + 92} width={220} height={22} rx={6} className="fill-slate-100" />
+        <rect
+          x={x + 16}
+          y={y + 94}
+          width={108}
+          height={18}
+          rx={5}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        <Label x={x + 70} y={y + 104} anchor="middle" size={9.5} weight={600} tone="accent">
+          Any number
         </Label>
-        <Switch x={x + 184} y={y + 106} />
-        <Button x={x + 16} y={y + 132} w={196} h={26} label="Start vote" variant="primary" />
+        <Label x={x + 179} y={y + 104} anchor="middle" size={9.5} tone="muted">
+          One each
+        </Label>
+        <Label x={x + 14} y={y + 136} size={10} weight={600} tone="body">
+          Privacy
+        </Label>
+        {card(y + 144, 'Hide cursors', 'Nobody can watch where others are pointing.', true)}
+        {card(y + 188, 'Hide running counts', 'Totals stay secret until you reveal them.', false)}
+        <Button x={x + 14} y={y + 238} w={220} h={26} label="Start vote" variant="primary" />
       </Panel>
     </Scene>
   );
 }
 
-/** Only one layer takes dots: its elements are ringed, everything else is
- *  dimmed but still readable. */
+/** Only one layer takes dots: the Votable layer choice in the Vote set-up (All layers, then one
+ *  button per layer), its elements ringed, everything else dimmed but still readable. */
 export function VoteLayerPicker() {
+  const opts = ['All layers', 'Ideas', 'Notes'];
   return (
-    <Scene w={420} h={210}>
+    <Scene w={420} h={190}>
       {/* Off-layer, dimmed but still on the canvas */}
       <g opacity={0.35}>
-        <Shape x={24} y={122} w={104} h={44} kind="rect" label="Frame" />
-        <Shape x={150} y={122} w={104} h={44} kind="rect" label="Notes" />
+        <Shape x={24} y={118} w={104} h={44} kind="rect" label="Frame" />
+        <Shape x={150} y={118} w={104} h={44} kind="rect" label="Notes" />
       </g>
       {/* The votable layer: ringed, so there is no guessing where to click */}
-      <g>
-        <rect
-          x={20}
-          y={46}
-          width={112}
-          height={52}
-          rx={11}
-          className="fill-none stroke-brand-400"
-          strokeWidth={2}
-          strokeDasharray="5 4"
-        />
-        <Shape x={24} y={50} w={104} h={44} kind="rect" label="Reduce WIP" />
-        <rect
-          x={146}
-          y={46}
-          width={112}
-          height={52}
-          rx={11}
-          className="fill-none stroke-brand-400"
-          strokeWidth={2}
-          strokeDasharray="5 4"
-        />
-        <Shape x={150} y={50} w={104} h={44} kind="rect" label="Pair more" />
-      </g>
-      <Panel x={276} y={30} w={128} h={92} title="VOTE">
-        <Label x={288} y={64} size={9} weight={600} tone="body">
+      {[24, 150].map((sx, i) => (
+        <g key={sx}>
+          <rect
+            x={sx - 4}
+            y={36}
+            width={112}
+            height={52}
+            rx={10}
+            className="fill-none stroke-brand-400"
+            strokeWidth={2}
+          />
+          <Shape
+            x={sx}
+            y={40}
+            w={104}
+            h={44}
+            kind="rect"
+            label={i === 0 ? 'Reduce WIP' : 'Pair more'}
+          />
+        </g>
+      ))}
+      <Panel x={270} y={24} w={140} h={112} title="Vote">
+        <Label x={280} y={58} size={9} weight={600} tone="body">
           Votable layer
         </Label>
-        <rect
-          x={288}
-          y={76}
-          width={104}
-          height={22}
-          rx={7}
-          className="fill-white stroke-slate-300"
-          strokeWidth={1.5}
-        />
-        <Label x={298} y={87} size={10} weight={600} tone="accent">
-          Ideas
+        <rect x={280} y={66} width={120} height={22} rx={6} className="fill-slate-100" />
+        {opts.map((o, i) => {
+          const segW = 40;
+          const sx = 280 + i * segW;
+          const on = i === 1;
+          return (
+            <g key={o}>
+              {on ? (
+                <rect
+                  x={sx + 2}
+                  y={68}
+                  width={segW - 4}
+                  height={18}
+                  rx={5}
+                  className="fill-white stroke-slate-200"
+                  strokeWidth={1}
+                />
+              ) : null}
+              <Label
+                x={sx + segW / 2}
+                y={78}
+                anchor="middle"
+                size={o === 'All layers' ? 7.5 : 9}
+                weight={on ? 700 : 500}
+                tone={on ? 'accent' : 'muted'}
+              >
+                {o}
+              </Label>
+            </g>
+          );
+        })}
+        <Label x={280} y={104} size={8} tone="muted">
+          Only this layer takes dots.
         </Label>
-        <path
-          d="M0 0 L4 4 L8 0"
-          transform="translate(372 85)"
-          className="stroke-slate-400"
-          strokeWidth={1.5}
-          fill="none"
-        />
+        <Label x={280} y={116} size={8} tone="muted">
+          The rest stay visible, dimmed.
+        </Label>
       </Panel>
-      <Label x={210} y={192} anchor="middle" size={10} tone="muted">
-        Other layers stay on the canvas, dimmed, so you can see what you are voting against.
-      </Label>
     </Scene>
   );
 }
@@ -158,23 +212,33 @@ export function VoteBlindTally() {
         const sx = 22 + i * 134;
         return (
           <g key={s.label}>
-            <Shape x={sx} y={58} w={116} h={56} kind="rect" label={s.label} />
+            <Shape x={sx} y={50} w={116} h={78} kind="rect" label={s.label} />
             <rect
-              x={sx + 62}
+              x={sx + 56}
               y={102}
               width={54}
               height={22}
               rx={11}
-              className="fill-white stroke-brand-300"
+              className={
+                s.mine > 0 ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-300'
+              }
               strokeWidth={1.5}
             />
-            <Label x={sx + 74} y={113} anchor="middle" size={11} weight={700} tone="muted">
+            <Label
+              x={sx + 68}
+              y={113}
+              anchor="middle"
+              size={11}
+              weight={700}
+              tone="muted"
+              className={s.mine > 0 ? undefined : 'opacity-40'}
+            >
               −
             </Label>
-            <Label x={sx + 89} y={113} anchor="middle" size={11} weight={700} tone="accent">
+            <Label x={sx + 83} y={113} anchor="middle" size={11} weight={700} tone="accent">
               {s.mine}
             </Label>
-            <Label x={sx + 104} y={113} anchor="middle" size={11} weight={700} tone="muted">
+            <Label x={sx + 98} y={113} anchor="middle" size={11} weight={700} tone="muted">
               +
             </Label>
           </g>
@@ -203,7 +267,7 @@ export function VotePanelProgress() {
         </Label>
         <rect x={x + 14} y={y + 54} width={172} height={6} rx={3} className="fill-slate-100" />
         <rect x={x + 14} y={y + 54} width={103} height={6} rx={3} className="fill-brand-500" />
-        {[3, 3, 2, 1, 0].map((spent, i) => (
+        {[3, 3, 2, 1].map((spent, i) => (
           <g key={i}>
             <Pips x={x + 20} y={y + 78 + i * 18} spent={spent} budget={3} />
             <Label x={x + 186} y={y + 78 + i * 18} anchor="end" size={9} tone="muted">
@@ -212,7 +276,7 @@ export function VotePanelProgress() {
           </g>
         ))}
         <Label x={x + 14} y={y + 176} size={9} tone="muted">
-          3 people haven’t voted yet
+          1 person hasn’t voted yet
         </Label>
       </Panel>
     </Scene>
@@ -235,9 +299,7 @@ export function VoteResultsWalkthrough() {
         strokeWidth={3}
       />
       <Shape x={26} y={70} w={120} h={50} kind="rect" label="Reduce WIP" />
-      <g opacity={0.5}>
-        <Shape x={26} y={146} w={120} h={44} kind="rect" label="Pair more" />
-      </g>
+      <Shape x={26} y={146} w={120} h={44} kind="rect" label="Pair more" />
       <Avatar cx={168} cy={95} r={12} initial="R" colour="emerald" />
       <Avatar cx={168} cy={124} r={12} initial="P" colour="violet" />
       <Panel x={196} y={8} w={212} h={204} title="VOTE">

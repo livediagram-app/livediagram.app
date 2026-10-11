@@ -23,13 +23,13 @@ Your document is treated as a hierarchical outline, and the importer is tolerant
 - **Tables** (pipe tables with a header row) become a table element.
 - **Plain prose lines** become leaf nodes so nothing is silently dropped.
 
-Code blocks, horizontal rules, and blockquote markers are skipped, and inline formatting such as bold, italic, code, and links is flattened to plain text in the labels. Very long lines are shortened to 120 characters. An import keeps the first 2,000 headings, list items, lines and tables; anything after that is left out, and the dialog tells you how many. If the file has a single top-level item it becomes the root; otherwise a root named from the file holds the top-level items so you always get one connected diagram.
+Fenced code blocks and horizontal rules are skipped, a leading `>` is dropped from quoted lines, and inline formatting such as bold, italic, code, and links is flattened to plain text in the labels. Very long lines are shortened to 120 characters. An import keeps the first 2,000 headings, list items, lines and tables; anything after that is left out, and the dialog tells you how many. If the file has a single top-level item it becomes the root; otherwise a root named after the tab holds the top-level items so you always get one connected diagram.
 
 ## What you get
 
 The result is a **tidy left-to-right tree**: the root on the left, each level in its own column, children stacked and centred on their parent so nothing overlaps. Boxes are sized to their labels, deeper levels use smaller text, and parents connect to children with curved arrows. Any tables are placed in a column below the tree.
 
-Everything is recoloured to a theme (the active tab's theme, or Brand as a fallback) and the new tab takes on that theme's background, so the import looks native rather than pasted in. It is ordinary elements afterwards, not a locked block, so you can rearrange and restyle it freely.
+Everything is recoloured to a theme (the active tab's theme, or Default if it has none) and the tab takes on that theme's background, so the import looks native rather than pasted in. It is ordinary elements afterwards, not a locked block, so you can rearrange and restyle it freely.
 
 <Figure caption="A Markdown outline becomes a tidy left-to-right tree, themed and connected with curved arrows.">
   <MarkdownToTree />
