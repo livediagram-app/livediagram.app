@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { createShape, type PlanViewRef, type ShapeElement } from '@livediagram/document';
 import { ITEM_TYPES, type Item, type PlanViewId } from '@livediagram/items';
@@ -61,7 +61,17 @@ function draw(
   );
 }
 
-afterEach(cleanup);
+// The fixtures' dates sit around early October 2026: pin today there, so a due date never turns
+// overdue (drawn red) just because the calendar moved on. Only Date is faked; React's timers stay real.
+const TODAY = new Date('2026-10-05T12:00:00Z');
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(TODAY);
+});
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe('plan views', () => {
   it('say so while the cards load, and show their empty state without any', () => {
