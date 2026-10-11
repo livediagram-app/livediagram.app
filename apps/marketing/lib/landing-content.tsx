@@ -209,7 +209,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Undo and redo',
         description:
-          "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo never reaches into anyone else's work.",
+          "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo rewinds your own edits, not a teammate's.",
       },
       {
         art: <SessionToolsArt />,
@@ -252,6 +252,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, your zoom, the thing you mean. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
+        art: <FacilitatorArt />,
+        href: '/help/palette/collaborate/agendas/',
+        group: 'Present & facilitate',
+        title: 'Keep the record of the meeting',
+        description:
+          'An agenda holds the run of the session, and pressing a segment starts the timer for it. A roll call freezes who was in the room, a picker chooses someone at random so nobody has to volunteer, and a decision record keeps what was decided, why and when, beside the thing it decided.',
+      },
+      {
         art: <SpotlightArt />,
         href: '/help/selection-modes/spotlight/',
         group: 'Present & facilitate',
@@ -281,7 +289,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Celebrate on the canvas',
         description:
-          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas.',
+          'Reaction pads throw confetti, sparkles, hearts, applause or fireworks over the canvas for everyone in the room. Press one, or walk an Avatar-mode character onto it. Nothing is saved: a reaction is a moment, not a mark on the canvas. For a mark that stays, drop one of around 190 emoji stickers or 32 word badges like APPROVED and BLOCKED.',
       },
       {
         art: <ShareLinksArt />,
@@ -289,7 +297,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Editor, participant or view-only links',
         description:
-          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog.',
+          'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the document private. Any link also embeds in your wiki, Notion, or docs: copy the iframe snippet from the Share dialog. Where iframes are blocked, like a GitHub README, a live image shows the latest version as a plain picture.',
       },
       {
         art: <TeamsArt />,
@@ -340,7 +348,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'A shape for everything',
         description:
-          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next.',
+          'Fourteen core shapes (flowchart blocks plus an actor, cloud, triangle, star, and speech bubble), a section frame that carries whatever you draw inside it, and seven device frames (browser, monitor, laptop, phone, tablet, foldable, smartwatch). Click to drop one, or drag to draw it at the exact size you want, snapped to line up with its neighbours. A flowchart one minute, a screen the next. Import a draw.io library and its shapes join the palette as a shape library of your own, under My shapes.',
       },
       {
         art: <ArrowsArt />,
@@ -380,7 +388,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'More than boxes and arrows',
         title: 'Mind maps from the keyboard',
         description:
-          'Type a thought, press Tab for a child or Enter for a sibling, and keep typing. Every node arrives already connected, already selected, and ready for the next word, so a whole branch goes down at the speed you can say it. Nothing re-flows underneath you; tidy it with Auto Layout when you are done.',
+          'Type a thought, press Tab for a child or Enter for a sibling, and keep typing. Every node arrives already connected, already selected, and ready for the next word, so a whole branch goes down at the speed you can say it. Nothing re-flows underneath you; tidy it with Auto Layout when you are done, or open Edit Outline to rename, nest and reorder the whole map as an indented list and save it back in one step.',
       },
       {
         art: <LanesArt />,
@@ -564,7 +572,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Neat without trying',
         title: 'Keyboard shortcuts',
         description:
-          'The moves you repeat have keys: undo and redo, delete, switch tools, and drop a shape, arrow, sticky, or text without reaching for the palette. Hold Cmd and the palette shows each key. A built-in cheat sheet lists them all, and you can switch them off per device.',
+          'The moves you repeat have keys: undo and redo, delete, switch tools, and drop a shape, arrow, sticky, or text without reaching for the palette. Hold Cmd and the palette shows each key. A built-in cheat sheet lists them all, and you can switch them off per device. The canvas itself is a stop in the Tab order: move through its elements from the keyboard, with the selection announced to screen readers.',
       },
       {
         art: <UnlimitedTabsArt />,
@@ -676,7 +684,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Import a Markdown outline',
         description:
-          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it builds onto the current tab, and one undo takes it back.',
+          'Bring an outline in from XMind, Obsidian, or any notes: headings and nested bullets become a tidy, themed node-link tree. Pick Markdown in the import dialog: it replaces the current tab’s contents, and one undo puts them back.',
       },
       {
         art: <BoardImportArt />,
@@ -692,7 +700,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Export as PNG, SVG, or PDF',
         description:
-          'Take any tab out as an image for a doc, a PDF to print, or JSON, Markdown and Excalidraw to move it elsewhere. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
+          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown or Excalidraw. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
       },
       {
         art: <ApiArt />,
@@ -700,7 +708,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export documents from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your documents and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
       },
     ],
   },
@@ -928,7 +936,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present',
         title: 'Your screen, not everyone else’s',
         description:
-          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe.',
+          'Presenting shows the deck on your screen and nowhere else. Nobody is dragged into your slide, nobody’s view moves, and collaborators with the document open carry on working. You share your screen the way you already do. Nothing on a slide can be changed by a stray click, so a projector is safe. To leave a deck running on a screen, set it to advance every 5 to 60 seconds and loop back to the start.',
       },
       {
         art: <ZenModeArt />,

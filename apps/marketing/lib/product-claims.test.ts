@@ -31,6 +31,18 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'Illustrate tabs export PDF, PNG, SVG and JSON only',
   },
   {
+    pattern: /any tab (?:out )?as[^.]*(?:markdown|excalidraw)/i,
+    why: 'Illustrate tabs export PDF, PNG, SVG and JSON only',
+  },
+  {
+    pattern: /undo never reaches|only rewinds your own changes, never/i,
+    why: 'undo puts back an element you both changed as you had it (help: canvas/undo)',
+  },
+  {
+    pattern: /builds onto the current tab/i,
+    why: 'Markdown import replaces the current tab, it does not add to it',
+  },
+  {
     pattern: /live state of every part of the service/i,
     why: 'the status page is a static snapshot, not a live probe',
   },
