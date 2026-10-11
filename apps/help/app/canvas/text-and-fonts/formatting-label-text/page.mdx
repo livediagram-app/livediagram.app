@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LabelEditingToolbar } from '@/components/illustrations/label-formatting';
+
+export const metadata = helpMetadata({
+  title: 'Formatting Label Text',
+  description:
+    'Format the words in a label while you edit it: bold, italic, underline and strikethrough, headings and lists, alignment and per-word colour, then set the font, size, alignment and padding for the whole label from the Text section of its menu.',
+  path: '/help/canvas/text-and-fonts/formatting-label-text/',
+});
+
+<ArticleLayout
+  title="Formatting Label Text"
+  description="Bold a word, turn lines into a list, align the label and colour single words, or style the whole label at once."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: "Text and Fonts", slug: "text-and-fonts" }}
+  subArticles={getSubArticles("text-and-fonts").filter((a) => a.slug !== "formatting-label-text")}
+>
+
+A label can be more than one line of plain text: a heading over a few bullet points, one word in bold, a warning in red. There are two places to format it. While you edit a label, a small **editing toolbar** floats above the element and formats the words you select. For the label as a whole (its font, size, alignment and padding) use the **Text** section of the element's right-click menu.
+
+Formatting works on the labels of shapes, text elements and sticky notes. Arrow captions and table cells keep to whole-label formatting. Like all editing, it is for Editors: Viewers and Participants see the formatting but can't change it.
+
+## The Editing Toolbar
+
+Start editing a label (double-click the element, or select it and press `Space` or just start typing) and the toolbar appears above it. It stays the same size on screen at any zoom, and moves below the element when the element is near the top of the screen. From left to right:
+
+<Figure caption="The editing toolbar above a label: Bold pressed for the selected word, the block type menu open on its six choices, then Alignment and the text colour.">
+  <LabelEditingToolbar />
+</Figure>
+
+### Bold, Italic, Underline and Strikethrough
+
+The first four buttons, **Bold**, **Italic**, **Underline** and **Strikethrough**, switch their style on and off for the selected text. A button shows pressed when the selection already has that style. With nothing selected (just a caret), they apply to the whole label. The shortcuts `Cmd+B`, `Cmd+I` and `Cmd+U` (`Ctrl` on Windows and Linux) do the same as the first three.
+
+### Paragraph, Headings and Lists
+
+The next control is the **Block type** dropdown, showing what the current line is. Choose from:
+
+- **Paragraph**: plain body text.
+- **Heading 1**, **Heading 2** and **Heading 3**: the largest heading, a section heading and a sub-section heading. Headings size themselves to the label, so they always read larger than the body text around them.
+- **Bullet point** and **Numbered point**: an unordered or an ordered list item.
+
+It applies to the selected lines, or to the whole label when nothing is selected. A line is one of these at a time: choosing a heading turns a bullet back into a plain line first, and choosing a bullet clears a heading, so to remove a list, choose **Paragraph**. When a selection covers several kinds of line, the dropdown shows the kind of the first.
+
+### Alignment
+
+The **Alignment** dropdown (its icon is a few lines of text whose ends follow the current alignment) opens a 3 x 3 grid. Each cell puts the label in one position inside the element, so it sets both directions at once: left, centre or right across, and top, middle or bottom down. Hover a cell for its name, such as "Top left" or "Middle centre". Alignment always applies to the whole label. Shapes and text elements start in the middle centre, sticky notes at the top left, where handwriting on a note would start.
+
+### Text Colour
+
+The last button is a colour swatch showing the colour of the selected text. Press it to open the colour picker and colour just the selected words, or the whole label when nothing is selected. It offers the same groups as every colour picker in the editor (the theme's colours, the standard colours and your custom colours); see [Colours, Borders and Opacity](/help/canvas/colours-borders-opacity/#the-colour-picker). The label's own colour, under **Style**, then **Colours**, stays the colour for every word you haven't coloured separately.
+
+Clicking the toolbar never loses your selection, so you can make a word bold and then colour it without selecting it again. Click outside the element to finish, or press `Escape` to cancel the edit. Each finished edit is one step you can undo.
+
+## The Text Section of the Menu
+
+Right-click the element (or press **⋯** on its selection toolbar) and open **Text**. It appears once the element has a label, or while you are typing one: when you start editing a shape or a text element on a computer, the menu opens beside it by itself, so these settings are one click away. (Sticky notes don't open it, so writing notes stays quick; right-click one to reach it.)
+
+Each part is a collapsible section, and hovering an option previews it on the element:
+
+- **Font**: the eleven typefaces, each tile written in its own face. See [Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/).
+- **Size**: **Scale** fits the text to the element as it grows and shrinks; **Small**, **Medium** and **Large** fix it.
+- **Padding**: the space between the label and the element's edges: **None**, **Small**, **Medium** or **Large**.
+- **Alignment**: the same 3 x 3 grid as the toolbar's, here too so you can find it without editing. On a lane whose title runs down its side, the **Upright Title** switch below the grid turns the title to read bottom to top.
+- **Markers** (shapes only): a small status mark beside the label.
+
+These apply to the whole label. Words you formatted on the toolbar keep their own style on top: a word you coloured keeps its colour when you change the label's colour under **Style**, and a bold word stays bold whatever font you pick.
+
+Select several elements and the menu's **Text** section applies each setting to every selected element that has a label.
+
+## Good to Know
+
+- Leading and trailing blank lines and spaces are trimmed when you finish editing, so a label never ends on an empty line. Blank lines inside it are kept.
+- While you edit, right-clicking the label opens your browser's own text menu (cut, copy, paste, select all), so it acts on the words.
+- Formatting travels with the label: PNG and SVG exports draw it word by word, as the canvas does.
+
+</ArticleLayout>

@@ -1719,6 +1719,41 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M21 12.8A8 8 0 1 1 11.2 3a6 6 0 0 0 9.8 9.8z" />
     </Glyph>
   ),
+  'title-bar': (
+    <Glyph>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18M6 6.5h5" />
+      <rect x="13" y="5.5" width="5" height="2" rx="1" />
+    </Glyph>
+  ),
+  visualisations: (
+    <Glyph>
+      <rect x="2.5" y="3.5" width="19" height="17" rx="1.5" />
+      <path d="M5 8h7M8 12h8M6.5 16h6" />
+      <path d="M14.5 5.5v13" strokeDasharray="1.5 1.5" />
+    </Glyph>
+  ),
+  'colours-borders-opacity': (
+    <Glyph>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4" strokeDasharray="3 2" />
+      <path d="M7 17L17 7v10z" fill="currentColor" stroke="none" opacity="0.35" />
+    </Glyph>
+  ),
+  'formatting-label-text': (
+    <Glyph>
+      <path d="M4 3.5h4.5a2.5 2.5 0 010 5H4zM4 8.5h5a2.75 2.75 0 010 5.5H4z" />
+      <path d="M14 5h7M14 9h7M14 13h5" />
+      <circle cx="5" cy="18.5" r="1" fill="currentColor" stroke="none" />
+      <path d="M8 18.5h13" />
+    </Glyph>
+  ),
+  'slide-pages': (
+    <Glyph>
+      <rect x="2.5" y="5" width="19" height="13" rx="1.5" />
+      <path d="M5.5 8.5h8" />
+      <path d="M5.5 11.5h1M8 11.5h6M5.5 14.5h1M8 14.5h5" />
+    </Glyph>
+  ),
 };
 
 /** Top-level feature category → glyph.

@@ -233,6 +233,11 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'search-create-tab': '#14b8a6',
   'the-search-panel': '#6366f1',
   'dark-mode': '#475569',
+  'title-bar': '#6366f1',
+  visualisations: '#6366f1',
+  'colours-borders-opacity': '#9333ea',
+  'formatting-label-text': '#0e7490',
+  'slide-pages': '#f97316',
 };
 
 /** Top-level feature category → accent hue, the fallback for a landing with no

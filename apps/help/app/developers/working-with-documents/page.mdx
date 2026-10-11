@@ -1,4 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
@@ -13,6 +14,7 @@ export const metadata = helpMetadata({
   description="Copy-pasteable examples for the calls you will reach for most."
   categoryTitle="Developers"
   categorySlug="developers"
+  subArticles={getSubArticles("working-with-documents")}
 >
 
 These examples use `curl` against the hosted service. Each request carries your [API token](/help/developers/authentication/); the examples assume you have put it in a shell variable:
@@ -166,7 +168,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
   }'
 ```
 
-Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames and lanes), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
+Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames and lanes), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
 
 ```text
 ~ n2  label "API"→"Orders API"
@@ -186,6 +188,8 @@ To rebuild a whole tab, send `"replace"` instead of `"operations"`, with `elemen
 To rename a tab, `PUT` its name: `PUT /documents/$DOC/tabs/$TAB/name` with `{ "name": "Overview" }`. The whole-tab `PUT` the editor saves with is not open to tokens; it answers `405 use_changesets`.
 
 `GET /documents/$DOC/changesets` lists the recent changesets, and `POST /documents/$DOC/changesets/<id>/revert` undoes one, leaving any element somebody changed since.
+
+Plan cards, Sheet cells, images and Illustrate pages have endpoints of their own: see [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/).
 
 ## Organise into folders
 
