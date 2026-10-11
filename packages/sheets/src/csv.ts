@@ -76,7 +76,9 @@ function quote(field: string): string {
 // A field a spreadsheet would run as a formula when the file is opened (CSV injection): one starting with = + - @, a
 // tab or a carriage return. A number as shown ("-1,200.50", "-£45", "+3%") is left as it is.
 const FORMULA_START = /^[=+\-@\t\r]/;
-const SHOWN_NUMBER = /^[+-]?\s*\p{Sc}?\s*[\d.,]+\s*\p{Sc}?%?$/u;
+// Each run of spaces has one place to match (after the sign, after a leading currency sign, before a trailing one), so
+// a long run of spaces is read once, never backtracked over (a field is user input).
+const SHOWN_NUMBER = /^[+-]?\s*(?:\p{Sc}\s*)?[\d.,]+(?:\s*\p{Sc})?%?$/u;
 
 // A field made inert for a download: prefixed with ' so a spreadsheet opening the file shows it as text.
 export function csvSafeField(field: string): string {
