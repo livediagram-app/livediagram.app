@@ -11,6 +11,7 @@ import {
   deleteTabRow,
   documentsContainingTab,
   getDocument,
+  getDocumentForSave,
   getParticipant,
   getTab,
   linkTabToDocument,
@@ -98,6 +99,16 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     }
     const owner = requireOwner(ctx);
     if (owner instanceof Response) return owner;
+    // A save reads only what it needs of the document, in one query (getDocumentForSave): it runs on
+    // every autosave.
+    if (request.method === 'PUT') {
+      const saving = await getDocumentForSave(env, id);
+      if (!saving) return missingDocument(ctx, id);
+      // Owner or edit-role share visitor only, and a tab-scoped visitor on their own tab only.
+      const allowed = await gateEdit(ctx, id, saving.ownerId, saving.teamId, tabId);
+      if (!allowed) return forbidden();
+      return handleTabPut(ctx, saving, tabId, owner);
+    }
     const existing = await getDocument(env, id);
     if (!existing) return missingDocument(ctx, id);
 
@@ -173,7 +184,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
     // visitor on their own tab only.
     const allowed = await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
     if (!allowed) return forbidden();
-    if (request.method === 'PUT') return handleTabPut(ctx, existing, tabId, owner);
     if (request.method === 'DELETE') {
       // A tab-scoped link can't delete the tab it is scoped to: that would
       // end its own link, and the document's structure isn't the visitor's.

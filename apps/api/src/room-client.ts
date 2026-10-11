@@ -105,22 +105,39 @@ export async function mergeRoomLedger(
   tab: Tab,
   cursorHeader: string | null,
 ): Promise<RoomMerge> {
-  const unmerged: RoomMerge = { tab, commentAuthors: new Map() };
+  return applyRoomLedger(tab, await fetchRoomLedger(env, documentId, tab.id, cursorHeader));
+}
+
+// The ledger fetch alone: it needs only the tab's id and the cursor, so a save asks for it alongside
+// its own reads instead of after them (applyRoomLedger merges it once the tab is ready).
+export type FetchedRoomLedger = { ledger: TabLedger; seq: number } | null;
+
+export async function fetchRoomLedger(
+  env: Env,
+  documentId: string,
+  tabId: string,
+  cursorHeader: string | null,
+): Promise<FetchedRoomLedger> {
   const cursor = parseRoomCursor(cursorHeader);
-  if (!cursor) return unmerged;
+  if (!cursor) return null;
   try {
-    const query = `tab=${encodeURIComponent(tab.id)}&epoch=${encodeURIComponent(cursor.epoch)}`;
+    const query = `tab=${encodeURIComponent(tabId)}&epoch=${encodeURIComponent(cursor.epoch)}`;
     const res = await roomStubFor(env, documentId).fetch(`https://room/ledger?${query}`);
-    if (!res.ok) return unmerged;
+    if (!res.ok) return null;
     const ledger = (await res.json()) as TabLedger;
-    if (!ledger || typeof ledger !== 'object' || !ledger.elements) return unmerged;
-    return {
-      tab: mergeLedgerIntoTab(tab, ledger, cursor.seq),
-      commentAuthors: ledgerCommentAuthors(ledger),
-    };
+    if (!ledger || typeof ledger !== 'object' || !ledger.elements) return null;
+    return { ledger, seq: cursor.seq };
   } catch {
-    return unmerged;
+    return null;
   }
+}
+
+export function applyRoomLedger(tab: Tab, fetched: FetchedRoomLedger): RoomMerge {
+  if (!fetched) return { tab, commentAuthors: new Map() };
+  return {
+    tab: mergeLedgerIntoTab(tab, fetched.ledger, fetched.seq),
+    commentAuthors: ledgerCommentAuthors(fetched.ledger),
+  };
 }
 
 // `<epoch>:<seq>`, as the editor sends it. Null for anything else.
