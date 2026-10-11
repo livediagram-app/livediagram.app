@@ -135,7 +135,7 @@ semantic colour:
   than a diagram, and capitals are its home register. The auto-fit measures
   IN that face (`labelMeasure`'s `fontFamily`), because a marker is far
   wider than the UI sans at the same px — and the canvas re-renders once the
-  webfont lands (`useFontsReady`), or a board nobody has touched keeps a size
+  webfont lands (`useFontEpoch`), or a board nobody has touched keeps a size
   measured against the swap fallback.
 - **Notes are WRITTEN IN CAPITALS.** A marker on paper produces caps, and a
   wall of them reads as one hand: capitals stay legible from across the
