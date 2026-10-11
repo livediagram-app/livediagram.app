@@ -48,12 +48,8 @@ function targetOf(ref: { sheet: PosRef['sheet'] }, ctx: SheetsCtx): SheetHandle 
   return ctx.byTitle(ref.sheet.title);
 }
 
-function a1ToPos(ref: A1Ref, ctx: SheetsCtx): PosRef {
-  let sheet: PosRef['sheet'] = null;
-  if (ref.sheet !== undefined) {
-    const h = ctx.byTitle(ref.sheet);
-    sheet = h ? (h.id === ctx.own.id ? null : { id: h.id }) : { title: ref.sheet };
-  }
+// An A1 reference's position parts on the sheet it names (each a reader resolves its own way).
+export function posRefOf(ref: A1Ref, sheet: PosRef['sheet']): PosRef {
   const out: PosRef = { sheet, a: ref.a };
   if (ref.r1 !== undefined) out.r1 = ref.r1;
   if (ref.c1 !== undefined) out.c1 = ref.c1;
@@ -62,6 +58,15 @@ function a1ToPos(ref: A1Ref, ctx: SheetsCtx): PosRef {
   if (ref.open) out.open = ref.open;
   if (ref.spill) out.spill = true;
   return out;
+}
+
+function a1ToPos(ref: A1Ref, ctx: SheetsCtx): PosRef {
+  let sheet: PosRef['sheet'] = null;
+  if (ref.sheet !== undefined) {
+    const h = ctx.byTitle(ref.sheet);
+    sheet = h ? (h.id === ctx.own.id ? null : { id: h.id }) : { title: ref.sheet };
+  }
+  return posRefOf(ref, sheet);
 }
 
 // Positions to ids in the target's layout; null when a part lies past the grid (it becomes #REF!).

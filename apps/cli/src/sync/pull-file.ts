@@ -4,6 +4,7 @@
 // `settingsHash` covers everything else, which push names as not pushed.
 
 import {
+  canonicalJson,
   isRecord,
   isValidTab,
   parseDocumentEnvelope,
@@ -20,21 +21,6 @@ export type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
 export const PULL_FILE_SUFFIX = '.livediagram.json';
 const SLUG_MAX = 60;
 const ID_SLUG_LENGTH = 8;
-
-function sorted(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sorted);
-  if (typeof value !== 'object' || value === null) return value;
-  return Object.fromEntries(
-    Object.keys(value)
-      .sort()
-      .map((key) => [key, sorted(Reflect.get(value, key))]),
-  );
-}
-
-// JSON with every object's keys sorted, so equal content hashes equally whatever order it was written in.
-export function canonicalJson(value: unknown): string {
-  return JSON.stringify(sorted(value));
-}
 
 export async function sha256(text: string): Promise<string> {
   return sha256Hex(new TextEncoder().encode(text));

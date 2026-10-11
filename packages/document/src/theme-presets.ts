@@ -12,14 +12,8 @@ const DEFAULT_SHAPE_FILL = '#f0f9ff';
 const DEFAULT_SHAPE_STROKE = '#0ea5e9';
 const DEFAULT_SHAPE_TEXT = '#075985';
 
-// Preset colour swatches that relate to a theme — used by the context-menu
-// colour pickers so the offered presets match the active theme rather than a
-// fixed rainbow. The accent hue (and, for multi-colour themes, every branch
-// hue) is spun into a light → base → dark RAMP so the user has several
-// on-theme versions of the same colour one click away, not just the single
-// theme colour. Pads with a neutral ramp so there's always a usable spread.
-// Deduped (case-insensitive), capped for a tidy (free-wrapping) grid.
-export function themePresetColors(theme: ThemeDefinition): string[] {
+// Colours gathered in order, each once (case-insensitive), the empty ones skipped.
+function colourCollector(): { out: string[]; push: (c: string | null | undefined) => void } {
   const out: string[] = [];
   const seen = new Set<string>();
   const push = (c: string | null | undefined) => {
@@ -29,6 +23,18 @@ export function themePresetColors(theme: ThemeDefinition): string[] {
     seen.add(key);
     out.push(c);
   };
+  return { out, push };
+}
+
+// Preset colour swatches that relate to a theme — used by the context-menu
+// colour pickers so the offered presets match the active theme rather than a
+// fixed rainbow. The accent hue (and, for multi-colour themes, every branch
+// hue) is spun into a light → base → dark RAMP so the user has several
+// on-theme versions of the same colour one click away, not just the single
+// theme colour. Pads with a neutral ramp so there's always a usable spread.
+// Deduped (case-insensitive), capped for a tidy (free-wrapping) grid.
+export function themePresetColors(theme: ThemeDefinition): string[] {
+  const { out, push } = colourCollector();
   // A hue → 4-step ramp (two tints, base, one shade): lighter versions
   // suit fills, the base + shade suit strokes / text.
   const ramp = (hex: string) => {
@@ -381,15 +387,7 @@ export function rederiveColorPresetForTheme(el: Element, theme: ThemeDefinition)
 // tints) so the slices still read as "shades of the theme". Deduped
 // (case-insensitive); always non-empty.
 export function themeChartPalette(theme: ThemeDefinition): string[] {
-  const out: string[] = [];
-  const seen = new Set<string>();
-  const push = (c: string | null | undefined) => {
-    if (!c) return;
-    const key = c.toLowerCase();
-    if (seen.has(key)) return;
-    seen.add(key);
-    out.push(c);
-  };
+  const { out, push } = colourCollector();
   if (theme.palette && theme.palette.length > 0) {
     for (const entry of theme.palette) push(entry.stroke);
   }

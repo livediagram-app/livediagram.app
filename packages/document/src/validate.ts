@@ -43,10 +43,10 @@ import {
   isBool,
   isNonEmptyStr,
   isNum,
-  isObj,
   issue,
   oneOfRule,
 } from './validate-primitives';
+import { isRecord } from './is-record';
 
 export type { ElementValidationIssue } from './validate-primitives';
 
@@ -217,7 +217,7 @@ const PINNED_RULE = `a pinned end: an elementId and an anchor (${ALL_ANCHORS.joi
 
 // The rule an arrow end breaks, or null when it is well formed.
 function endpointRule(ep: unknown): string | null {
-  if (!isObj(ep)) return 'an end: free { x, y }, pinned { elementId, anchor } or on-arrow';
+  if (!isRecord(ep)) return 'an end: free { x, y }, pinned { elementId, anchor } or on-arrow';
   switch (ep.kind) {
     case 'free':
       return isNum(ep.x) && isNum(ep.y) ? null : 'a free end: finite x and y';
@@ -280,7 +280,7 @@ const IMAGE_FIELD_CHECKS: readonly FieldCheck[] = [
   // single-line strings.
   {
     field: 'heroCaption',
-    valid: (c) => isObj(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
+    valid: (c) => isRecord(c) && isHeadingStr(c.title) && isHeadingStr(c.subtitle),
     rule: `{ title, subtitle } of at most ${PAGE_HEADING_MAX} characters each`,
   },
   // Image search credit (docs/specs/009-elements/image-search.md).
@@ -347,7 +347,7 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
 // A path's normalised coordinate pair: finite, and never absurdly far outside its box.
 function isPathPoint(p: unknown): boolean {
   return (
-    isObj(p) &&
+    isRecord(p) &&
     isNum(p.nx) &&
     isNum(p.ny) &&
     Math.abs(p.nx) <= PATH_COORD_MAX &&
@@ -423,7 +423,7 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
 // any element the renderer can safely handle (docs/specs/024-agents/blueprints/edit-operations.md
 // "invalid_result").
 export function elementValidationIssue(el: unknown): ElementValidationIssue | null {
-  if (!isObj(el)) return issue('element', 'an object');
+  if (!isRecord(el)) return issue('element', 'an object');
   if (!isNonEmptyStr(el.id)) return issue('id', 'a non-empty string');
   if (typeof el.type !== 'string' || !ELEMENT_TYPES.has(el.type))
     return issue('type', oneOfRule([...ELEMENT_TYPES]));
@@ -443,7 +443,7 @@ export function isValidElement(el: unknown): el is Element {
 // references downstream, so it's rejected). Other tab fields (theme, font,
 // background) are cosmetic and left unchecked.
 export function isValidTab(tab: unknown): tab is Tab {
-  if (!isObj(tab) || !isNonEmptyStr(tab.id) || typeof tab.name !== 'string') return false;
+  if (!isRecord(tab) || !isNonEmptyStr(tab.id) || typeof tab.name !== 'string') return false;
   if (!boundedArray(tab.elements, MAX_ELEMENTS_PER_TAB)) return false;
   const ids = new Set<string>();
   for (const el of tab.elements) {

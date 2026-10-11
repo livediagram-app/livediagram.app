@@ -262,7 +262,8 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   is read again and retried (`ITEM_WRITE_RETRIES`), the rest kept. One room op relays every changed item. Logs
   `[items] patched` with the count. Every attempt checks all its items before writing its batch; a retry that then
   fails (an item refused as read again, or `item_busy` after the retries) answers its refusal with the items that
-  already landed added (`items`, `rev`, as `ItemsResponse`), logging `[items] items.patches.partial`. The editor's
+  already landed added (`items`, `rev`, as `ItemsResponse`), logging `[items] items.write.partial`. `/items/tally` shares
+  the same loop (`routes/item-write-loop.ts`), so a busy tally names the cards already tallied and they are never resent. The editor's
   client (`lib/api/items.ts`) throws `ItemWritePartlyLanded { landed, code }` for that, or for a later request of
   a many-item write failing after earlier ones landed; `usePlanItems` keeps what landed and pushes one undo step for
   it alone (`writeLimitedTo`).
@@ -441,7 +442,7 @@ replays the write with the keys the first write was given. Votes push nothing.
 ## Observability
 
 Log fingerprints (console, `[items]`): `items.write.retry`, `items.write.busy`, `items.rejected <error>`,
-`items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.patches.partial` (api),
+`items.refetch.gap`, `items.offline.write`, `items.offline.rejected`, `items.offline.comment`, `items.comment.failed` (editor), `items.write.partial` (api),
 `comment added`, `comment deleted`, `comments resolved|reopened|unchanged`, `comments.full` (api). Api logs never
 include `fields` or comment text.
 

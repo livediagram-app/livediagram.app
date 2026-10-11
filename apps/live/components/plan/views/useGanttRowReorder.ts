@@ -6,6 +6,7 @@
 // Alt+Arrow on a row's name moves it one place. The order maths is ganttReorder (packages/items).
 import { useEffect, useRef, useState } from 'react';
 import { ganttReorder } from '@livediagram/items';
+import { followWindowDrag } from '@/lib/window-drag';
 
 export type GanttRowDrag = {
   itemId: string;
@@ -57,30 +58,13 @@ export function useGanttRowReorder({
         last = { ...last, dy, to };
         setDrag(last);
       };
-      const end = (commit: boolean) => {
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
-        window.removeEventListener('pointercancel', onCancel);
-        window.removeEventListener('keydown', onKey, true);
+      stop.current = followWindowDrag(onMove, (commit) => {
         stop.current = null;
         setDrag(null);
         if (!commit || last.to === last.from) return;
         const next = ganttReorder(rowIdsAtStart, laneIds, itemId, last.to);
         if (next) onCommit(next);
-      };
-      const onUp = () => end(true);
-      const onCancel = () => end(false);
-      const onKey = (ev: KeyboardEvent) => {
-        if (ev.key !== 'Escape') return;
-        ev.stopPropagation();
-        ev.preventDefault();
-        end(false);
-      };
-      window.addEventListener('pointermove', onMove);
-      window.addEventListener('pointerup', onUp);
-      window.addEventListener('pointercancel', onCancel);
-      window.addEventListener('keydown', onKey, true);
-      stop.current = () => end(false);
+      });
     };
 
   // A keyboard move one place up or down its lane: the new place (0-based), or null when it cannot move.

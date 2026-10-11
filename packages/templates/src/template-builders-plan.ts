@@ -5,6 +5,7 @@
 // Pure: takes a centre (cx, cy), returns fresh Element[] per tab.
 
 import {
+  dashboardRowsOf,
   DASHBOARD_ROWS_MAX,
   createShape,
   newPlanSheetId,
@@ -110,28 +111,6 @@ const DASH_NOTE_ROW_H = 240;
 
 type DashRow = { height: number; slots: { span: number; content?: DashboardContent }[] };
 
-// Rows of `items`, `per` to a row, each the row's share of twelfths.
-function rowsOf<T>(
-  items: readonly T[],
-  per: number,
-  height: number,
-  content: (t: T) => DashboardContent,
-): DashRow[] {
-  const out: DashRow[] = [];
-  for (let i = 0; i < items.length; i += per) {
-    const chunk = items.slice(i, i + per);
-    const span = Math.floor(12 / chunk.length);
-    out.push({
-      height,
-      slots: chunk.map((t, k) => ({
-        span: k === chunk.length - 1 ? 12 - span * (chunk.length - 1) : span,
-        content: content(t),
-      })),
-    });
-  }
-  return out;
-}
-
 // A note from a rail sticky: its first line the heading, the rest the text.
 function noteOf(text: string): DashboardContent {
   const [title = '', ...rest] = text.split('\n');
@@ -180,11 +159,24 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
     const gantts = chartEls.filter((el) => el.planView?.view === 'gantt');
     const others = chartEls.filter((el) => el.planView?.view !== 'gantt');
     const rows: DashRow[] = [
-      ...rowsOf(work, 2, DASH_TAB_ROW_H, (w) => ({ type: 'tab', tabId: w.tabId, of: w.of })),
-      ...rowsOf(metricEls, 4, DASH_METRIC_ROW_H, (el) => ({ type: 'element', elementId: el.id })),
-      ...rowsOf(gantts, 1, DASH_GANTT_ROW_H, (el) => ({ type: 'element', elementId: el.id })),
-      ...rowsOf(others, 2, DASH_CHART_ROW_H, (el) => ({ type: 'element', elementId: el.id })),
-      ...rowsOf(notes, 3, DASH_NOTE_ROW_H, noteOf),
+      ...dashboardRowsOf(work, 2, DASH_TAB_ROW_H, (w) => ({
+        type: 'tab',
+        tabId: w.tabId,
+        of: w.of,
+      })),
+      ...dashboardRowsOf(metricEls, 4, DASH_METRIC_ROW_H, (el) => ({
+        type: 'element',
+        elementId: el.id,
+      })),
+      ...dashboardRowsOf(gantts, 1, DASH_GANTT_ROW_H, (el) => ({
+        type: 'element',
+        elementId: el.id,
+      })),
+      ...dashboardRowsOf(others, 2, DASH_CHART_ROW_H, (el) => ({
+        type: 'element',
+        elementId: el.id,
+      })),
+      ...dashboardRowsOf(notes, 3, DASH_NOTE_ROW_H, noteOf),
     ].slice(0, DASHBOARD_ROWS_MAX);
     let n = 0;
     const id = () => `${ids[0] ?? 't'}-d${++n}`;

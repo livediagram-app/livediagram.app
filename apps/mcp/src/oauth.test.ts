@@ -438,6 +438,11 @@ describe('isAllowedRedirectUri', () => {
     expect(isAllowedRedirectUri('javascript://localhost/%0Aalert(1)//')).toBe(false);
     expect(isAllowedRedirectUri('not a url')).toBe(false);
   });
+  // RFC 6749 §3.1.2: a redirection endpoint URI must not include a fragment (the api's Drive check already refused one).
+  it('refuses a fragment, even an empty one', () => {
+    expect(isAllowedRedirectUri('https://claude.ai/cb#x')).toBe(false);
+    expect(isAllowedRedirectUri('https://claude.ai/cb#')).toBe(false);
+  });
 });
 
 describe('the CLI client (docs/specs/015-api/blueprints/cli.md "OAuth server", CLI35, CLI77)', () => {

@@ -4,6 +4,7 @@
 // and its views. Pure: the hook (usePlanTabConversion) decides when, and commits the result as one step.
 import {
   DASHBOARD_ROWS_MAX,
+  dashboardRowsOf,
   isPlanTabKind,
   opensInOf,
   readDashboard,
@@ -27,34 +28,13 @@ export function isConvertiblePlanTab(tab: Tab): boolean {
 const readingOrder = (a: Element, b: Element) =>
   'y' in a && 'y' in b ? a.y - b.y || a.x - b.x : 0;
 
+type Row = ReturnType<typeof dashboardRowsOf>[number];
+
 const titleOf = (el: Element): string | null => {
   const board = (el as { planBoard?: { title?: unknown } }).planBoard;
   if (typeof board?.title === 'string' && board.title.trim()) return board.title.trim();
   return null;
 };
-
-type Row = { height: number; slots: { span: number; content: DashboardContent }[] };
-
-function rowsOf<T>(
-  items: readonly T[],
-  per: number,
-  height: number,
-  content: (t: T) => DashboardContent,
-): Row[] {
-  const out: Row[] = [];
-  for (let i = 0; i < items.length; i += per) {
-    const chunk = items.slice(i, i + per);
-    const span = Math.floor(12 / chunk.length);
-    out.push({
-      height,
-      slots: chunk.map((t, k) => ({
-        span: k === chunk.length - 1 ? 12 - span * (chunk.length - 1) : span,
-        content: content(t),
-      })),
-    });
-  }
-  return out;
-}
 
 // `tab` converted: the tabs to put in its place (itself first, then any new ones), or null when it does not convert.
 export function convertPlanTab(
@@ -98,14 +78,14 @@ export function convertPlanTab(
     (el as { planView?: { view?: string } }).planView?.view === 'gantt';
   const element = (el: Element): DashboardContent => ({ type: 'element', elementId: el.id });
   const rows: Row[] = [
-    ...rowsOf(made, 2, 480, (t) => ({
+    ...dashboardRowsOf(made, 2, 480, (t) => ({
       type: 'tab',
       tabId: t.id,
       of: t.kind === 'sheet' ? 'sheet' : 'board',
     })),
-    ...rowsOf(views.filter(isMetric), 4, 160, element),
-    ...rowsOf(views.filter(isGantt), 1, 440, element),
-    ...rowsOf(
+    ...dashboardRowsOf(views.filter(isMetric), 4, 160, element),
+    ...dashboardRowsOf(views.filter(isGantt), 1, 440, element),
+    ...dashboardRowsOf(
       views.filter((v) => !isMetric(v) && !isGantt(v)),
       2,
       360,

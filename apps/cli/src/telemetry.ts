@@ -3,7 +3,7 @@
 // the active profile's api with no credential, awaited at most TELEMETRY_FLUSH_TIMEOUT_MS. Off by environment or
 // config; the first send prints what is counted, once.
 
-import { pascalToken } from '@livediagram/api-schema';
+import { errorTypeToken, pascalToken } from '@livediagram/api-schema';
 import { ApiError, postEvents } from '@livediagram/api-client';
 import type { ConfigFile } from './config/config-file';
 import { cacheDir } from './config/paths';
@@ -82,10 +82,13 @@ export async function reportApiFailure(
   config: ConfigFile,
 ): Promise<void> {
   if (telemetryOffReason(sink.io, config)) return;
+  // errorTypeToken, as the mcp builds it, so a long verb is clipped to the ingest's type limit, never refused there.
+  // The dotted verb id is one part (`document.ls` → DocumentLs).
   const verb = pascalToken(verbId);
   if (err instanceof ApiError && err.status >= 500)
-    await report('Error', 'Api', `Http${err.status}.${verb}`, sink);
-  else if (isNetworkFailure(err)) await report('Error', 'Api', `Internal.${verb}`, sink);
+    await report('Error', 'Api', errorTypeToken(`Http${err.status}`, verb), sink);
+  else if (isNetworkFailure(err))
+    await report('Error', 'Api', errorTypeToken('Internal', verb), sink);
 }
 
 // `telemetry on|off` (blueprint "Telemetry"): off tells the host first, then writes the setting; on writes it, then

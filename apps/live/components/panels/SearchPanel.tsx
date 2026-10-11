@@ -16,6 +16,14 @@ import {
 } from '@/lib/search';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
+import type {
+  SearchPanelDocument,
+  SearchPanelFolder,
+  SearchPanelShared,
+  SearchPanelTeam,
+  SearchPanelTeamDocument,
+  SearchPanelTeamFolder,
+} from './search-panel-sources';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is
@@ -27,13 +35,6 @@ import { SearchResultIcon } from './search-panel-icons';
 // Selection navigates to the right surface (open the document /
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
-
-type SearchPanelDocument = { id: string; name: string; localOnly?: boolean };
-type SearchPanelFolder = { id: string; name: string };
-type SearchPanelShared = { id: string; name: string; shareCode: string };
-type SearchPanelTeam = { id: string; name: string };
-type SearchPanelTeamFolder = { id: string; path: string; teamId: string; teamName: string };
-type SearchPanelTeamDocument = { id: string; name: string; teamId: string; teamName: string };
 
 type SearchPanelProps = {
   documents: SearchPanelDocument[];

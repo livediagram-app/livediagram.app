@@ -44,6 +44,7 @@ import { usePlan } from '../PlanContext';
 import { planPalette, type PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
+import { tint } from '../plan-card-parts';
 import { VisualisationPreview } from '../dashboard/slot-previews';
 import type { PlanVisualisation } from '@livediagram/items';
 import {
@@ -71,9 +72,6 @@ const ClearGlyph = lucideGlyph(lucideX, 13);
 
 // The most card types a board's card shows as chips; the rest are counted.
 const CHIPS_MAX = 3;
-
-const tint = (palette: PlanPalette, pct: number) =>
-  `color-mix(in srgb, ${palette.focus} ${pct}%, transparent)`;
 
 function Picture({ item, palette }: { item: StartItem; palette: PlanPalette }) {
   if (item.kind === 'board') return <BoardPreview preset={item.preset} palette={palette} />;
@@ -142,14 +140,14 @@ function StartCard({
             {item.kind === 'dashboard' && item.suggestion ? (
               <span
                 className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: tint(palette, 14), color: palette.focus }}
+                style={{ backgroundColor: tint(palette.focus, 14), color: palette.focus }}
               >
                 For You
               </span>
             ) : showKind ? (
               <span
                 className="shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide"
-                style={{ backgroundColor: tint(palette, 14), color: palette.focus }}
+                style={{ backgroundColor: tint(palette.focus, 14), color: palette.focus }}
               >
                 {KIND_NAMES[item.kind]}
               </span>
@@ -325,9 +323,9 @@ export function StartPlanning({
         className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium transition duration-micro hover:bg-[var(--start-hover)] motion-reduce:transition-none"
         style={
           {
-            backgroundColor: on ? tint(palette, 14) : undefined,
+            backgroundColor: on ? tint(palette.focus, 14) : undefined,
             color: on ? palette.focus : palette.text,
-            '--start-hover': on ? tint(palette, 18) : tint(palette, 7),
+            '--start-hover': on ? tint(palette.focus, 18) : tint(palette.focus, 7),
           } as CSSProperties
         }
       >
@@ -337,7 +335,7 @@ export function StartPlanning({
         <CountBadge
           count={itemsIn(items, c.id).length}
           className="max-sm:hidden"
-          background={on ? tint(palette, 22) : palette.column}
+          background={on ? tint(palette.focus, 22) : palette.column}
           color={on ? palette.focus : palette.muted}
         />
       </button>
@@ -447,7 +445,10 @@ export function StartPlanning({
                   onClick={onQuickStart}
                   className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] font-medium transition duration-micro hover:bg-[var(--start-hover)] motion-reduce:transition-none"
                   style={
-                    { color: palette.text, '--start-hover': tint(palette, 7) } as CSSProperties
+                    {
+                      color: palette.text,
+                      '--start-hover': tint(palette.focus, 7),
+                    } as CSSProperties
                   }
                 >
                   <TemplatesGlyph />

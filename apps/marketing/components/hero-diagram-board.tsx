@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { cursorRide, type Point } from '@/lib/hero-motion';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
+import { CursorMark } from '@/components/hero-cursor';
 
 // The hero's Diagram window (docs/specs/019-marketing/marketing-site.md "Hero"): two people map a
 // sign-up flow together in Diagram mode. Inside a frame, you drop three steps from the strip (each
@@ -121,24 +122,7 @@ function Cursor({
 }) {
   return (
     <g className={className} style={cursorRide(ride) as CSSProperties} aria-hidden>
-      <path
-        d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
-        fill={color}
-        stroke="white"
-        strokeWidth="1"
-      />
-      <rect x="10" y="12" width="22" height="13" rx="3" fill={color} />
-      <text
-        x="21"
-        y="21.5"
-        textAnchor="middle"
-        fontFamily={FONT}
-        fontSize="8"
-        fontWeight="700"
-        fill="white"
-      >
-        {name}
-      </text>
+      <CursorMark colour={color} label={name} badge="name" />
     </g>
   );
 }

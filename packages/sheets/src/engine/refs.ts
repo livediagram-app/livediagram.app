@@ -1,7 +1,7 @@
 // References as rectangles (blueprint sheets-engine.md "Workbook and recalculation"): a resolved reference, or one
 // typed as A1 text (INDIRECT), to the positions it reads on its sheet.
 import type { A1Ref } from '../formula/ast';
-import type { PosRef } from '../formula/stored';
+import { posRefOf, type PosRef } from '../formula/stored';
 import type { Frame, RangeRef } from './frame';
 
 // A resolved reference as a rectangle on its sheet: whole columns and rows, and open ends, run to the filled
@@ -63,12 +63,5 @@ export function a1ToPos(ref: A1Ref, f: Frame): PosRef | null {
     if (!h) return null;
     sheet = h.id === f.sheetId ? null : { id: h.id };
   }
-  const out: PosRef = { sheet, a: ref.a };
-  if (ref.r1 !== undefined) out.r1 = ref.r1;
-  if (ref.c1 !== undefined) out.c1 = ref.c1;
-  if (ref.r2 !== undefined) out.r2 = ref.r2;
-  if (ref.c2 !== undefined) out.c2 = ref.c2;
-  if (ref.open) out.open = ref.open;
-  if (ref.spill) out.spill = true;
-  return out;
+  return posRefOf(ref, sheet);
 }
