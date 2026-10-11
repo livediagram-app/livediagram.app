@@ -114,14 +114,14 @@ const isQaNote = (n: unknown) =>
 // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments"): at most CELL_THREADS_MAX, each keyed
 // by a cell key and holding a thread as an element's.
 const isCellCommentThreads = (v: unknown): boolean => {
-  if (!isObj(v) || Array.isArray(v)) return false;
+  if (!isRecord(v)) return false;
   const entries = Object.entries(v);
   return (
     entries.length <= CELL_THREADS_MAX &&
     entries.every(
       ([key, t]) =>
         isCellKey(key) &&
-        isObj(t) &&
+        isRecord(t) &&
         isBool(t.resolved) &&
         rowsOf(COMMENTS_MAX, isComment)(t.comments),
     )
