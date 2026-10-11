@@ -115,7 +115,7 @@ export function SignInCard() {
         {/* divider */}
         <line x1={114} y1={128} x2={196} y2={128} className="stroke-slate-200" strokeWidth={1.5} />
         <Label x={210} y={129} anchor="middle" size={10} tone="muted">
-          or
+          OR
         </Label>
         <line x1={224} y1={128} x2={306} y2={128} className="stroke-slate-200" strokeWidth={1.5} />
         <Label x={114} y={150} size={10} weight={600} tone="body">
@@ -229,18 +229,8 @@ export function DeleteDialog() {
         Its share links stop working.
       </Label>
       <Button x={256} y={156} w={62} h={24} label="Cancel" />
-      <rect
-        x={324}
-        y={156}
-        width={60}
-        height={24}
-        rx={7}
-        className="fill-amber-100 stroke-amber-400"
-        strokeWidth={1.5}
-      />
-      <Label x={354} y={169} anchor="middle" size={11} weight={600} tone="strong">
-        Delete
-      </Label>
+      {/* The ordinary blue primary: a delete is never painted red or yellow. */}
+      <Button x={324} y={156} w={60} h={24} label="Delete" variant="primary" />
     </Scene>
   );
 }

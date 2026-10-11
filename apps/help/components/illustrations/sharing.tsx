@@ -163,8 +163,16 @@ function ActivePass({
           </Label>
         </g>
       ) : null}
-      <MenuButton x={m.embed} y={rowY} label="Embed" active={open === 'embed'} />
-      <MenuButton x={m.image} y={rowY} label="Live image" active={open === 'image'} />
+      <MenuButton
+        x={password ? m.image + menuButtonWidth('Live image') - menuButtonWidth('Embed') : m.embed}
+        y={rowY}
+        label="Embed"
+        active={open === 'embed'}
+      />
+      {/* A password hides Live image (ActiveSharePass): it can't serve a protected document. */}
+      {password ? null : (
+        <MenuButton x={m.image} y={rowY} label="Live image" active={open === 'image'} />
+      )}
       <Bin x={m.bin} y={rowY + 4} />
     </Pass>
   );

@@ -11,7 +11,7 @@ import { Switch } from './settings-dialog';
 export function TrashView() {
   const rows: [string, string][] = [
     ['Service map', 'Deleted 2 Oct · 25 days left'],
-    ['Untitled document', 'Moved here 1 Oct because it was empty'],
+    ['Untitled document', 'Moved here 1 Oct because it was empty · 24 days left'],
   ];
   return (
     <Scene w={420} h={230} bg="plain">
@@ -24,24 +24,21 @@ export function TrashView() {
         </Label>
         <line x1={14} y1={52} x2={406} y2={52} className="stroke-slate-200" strokeWidth={1.5} />
         {rows.map(([name, meta], i) => {
-          const y = 60 + i * 40;
+          const y = 58 + i * 42;
           return (
             <g key={name}>
               <rect x={28} y={y + 6} width={22} height={22} rx={5} className="fill-slate-100" />
-              <Label x={60} y={y + 12} size={11} weight={600} tone="strong">
+              <Label x={60} y={y + 11} size={11} weight={600} tone="strong">
                 {name}
               </Label>
-              <Label x={60} y={y + 26} size={10} tone="muted">
+              <Label x={60} y={y + 31} size={10} tone="muted">
                 {meta}
               </Label>
-              {i === 0 ? (
-                <>
-                  <Button x={260} y={y + 6} w={58} h={22} label="Restore" />
-                  <Label x={392} y={y + 18} anchor="end" size={10} weight={600} tone="muted">
-                    Delete permanently
-                  </Label>
-                </>
-              ) : null}
+              {/* Restore and Delete permanently sit together at the right, on the name's line. */}
+              <Button x={220} y={y} w={58} h={18} label="Restore" />
+              <Label x={392} y={y + 10} anchor="end" size={10} weight={600} tone="muted">
+                Delete permanently
+              </Label>
             </g>
           );
         })}
@@ -50,8 +47,8 @@ export function TrashView() {
         <Label x={30} y={176} size={11} weight={700} tone="strong">
           This browser only
         </Label>
-        <Label x={30} y={196} size={10} tone="muted">
-          Offline documents, kept only in this browser.
+        <Label x={30} y={198} size={10} tone="muted">
+          Offline sketch · Deleted 3 Oct · 26 days left
         </Label>
         <Label x={392} y={176} anchor="end" size={10} weight={600} tone="muted">
           Empty Trash
@@ -75,14 +72,18 @@ export function ApiTokensList() {
         {Array.from({ length: 10 }, (_, i) => (
           <rect
             key={i}
-            x={48 + i * 32}
+            x={48 + i * 26}
             y={60}
-            width={28}
+            width={22}
             height={6}
             rx={3}
             className={i < 2 ? 'fill-brand-500' : 'fill-slate-200'}
           />
         ))}
+        {/* The count to the right of the pips. */}
+        <Label x={372} y={64} anchor="end" size={10} weight={600} tone="muted">
+          2 of 10
+        </Label>
         {/* One token card */}
         <rect
           x={48}
@@ -119,7 +120,7 @@ export function ApiTokensList() {
         </Label>
         {/* Lifetime bar */}
         <rect x={64} y={146} width={292} height={6} rx={3} className="fill-slate-100" />
-        <rect x={64} y={146} width={36} height={6} rx={3} className="fill-brand-500" />
+        <rect x={64} y={146} width={36} height={6} rx={3} className="fill-emerald-500" />
         <Label x={64} y={170} size={10} weight={600} className="fill-emerald-600">
           Active
         </Label>
@@ -168,7 +169,7 @@ export function ConsentCard({
           Read-only access
         </Label>
         <Label x={72} y={126} size={10} tone="muted">
-          Find and view, but not change anything
+          Find and view, but not create, edit, delete or share
         </Label>
         <Switch x={316} y={106} on={false} size="md" />
         {/* Redirect host */}

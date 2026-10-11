@@ -175,15 +175,18 @@ export function GuestFallback() {
 
       {/* Configured path */}
       <Shape x={28} y={104} w={132} h={40} kind="rect" label="Signed-in" labelTone="strong" />
-      <Arrow from={[164, 56]} to={[94, 104]} kind="curved" />
-      <Label x={60} y={86} anchor="middle" size={10} tone="accent">
+      {/* Elbow connectors: out of each side vertex, down into each path. */}
+      <path d="M148 40 H94 V96" className="fill-none stroke-brand-400" strokeWidth={2} />
+      <Arrow from={[94, 94]} to={[94, 104]} tone="accent" />
+      <Label x={112} y={34} anchor="middle" size={10} tone="accent">
         yes
       </Label>
 
       {/* Guest fallback path */}
       <Shape x={258} y={104} w={132} h={40} kind="rect" accent label="Guest path" />
-      <Arrow from={[256, 56]} to={[324, 104]} kind="curved" />
-      <Label x={360} y={86} anchor="middle" size={10} tone="muted">
+      <path d="M272 40 H324 V96" className="fill-none stroke-brand-400" strokeWidth={2} />
+      <Arrow from={[324, 94]} to={[324, 104]} tone="accent" />
+      <Label x={304} y={34} anchor="middle" size={10} tone="muted">
         unset
       </Label>
 
@@ -197,8 +200,10 @@ export function GuestFallback() {
         label="Editor works"
         labelTone="strong"
       />
-      <Arrow from={[94, 144]} to={[170, 176]} kind="curved" tone="muted" />
-      <Arrow from={[324, 144]} to={[250, 176]} kind="curved" tone="muted" />
+      <path d="M94 144 V160 H170 V168" className="fill-none stroke-slate-300" strokeWidth={2} />
+      <Arrow from={[170, 166]} to={[170, 176]} tone="muted" />
+      <path d="M324 144 V160 H250 V168" className="fill-none stroke-slate-300" strokeWidth={2} />
+      <Arrow from={[250, 166]} to={[250, 176]} tone="muted" />
       <TextBar x={140} y={226} w={140} tone="faint" />
     </Scene>
   );

@@ -103,7 +103,7 @@ Other views answer other questions:
 W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
 ```
 
-Every changeset's answer ends with the same verdict, `lint clean` or `lint 1 warning`.
+Every changeset's last line carries the same verdict, such as `lint clean` or `lint 1 warning`, beside the new revision and the revert command. A changeset that changes nothing answers `nothing changed`.
 
 Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view then leaves out detail in a fixed order, and its last line says what it left out and how to see it. Add `json=1` for the same view as JSON. To see every tab of a document at a glance, ask the document itself: `GET /documents/abc123?view=overview`.
 
