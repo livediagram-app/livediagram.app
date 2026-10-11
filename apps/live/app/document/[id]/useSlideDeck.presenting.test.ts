@@ -8,6 +8,10 @@ import { useSlideDeck } from './useSlideDeck';
 // changes the deck's tabs.
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
+const overlayCode = vi.hoisted(() => ({ load: vi.fn(() => Promise.resolve()) }));
+vi.mock('@/lib/editor-deferred-code', () => ({
+  loadPresentationOverlay: () => overlayCode.load(),
+}));
 
 const tab = (id: string) => ({ id, name: id, elements: [] }) as unknown as Tab;
 
@@ -72,5 +76,29 @@ describe('useSlideDeck presenting', () => {
     expect(result.current.setPresentingAt).toBe(first);
     act(() => result.current.exitPresentation());
     expect(result.current.presentingAt).toBeNull();
+  });
+
+  // The overlay holds the deck's keys and loads on demand (lib/editor-deferred-code.ts): the first slide
+  // waits for it, so an arrow pressed the moment it shows is never dropped.
+  it('starts only once the overlay code is in, and still starts when that load fails', async () => {
+    let arrive!: () => void;
+    overlayCode.load.mockImplementationOnce(() => new Promise<void>((r) => (arrive = r)));
+    const { result } = presenting([tab('a'), tab('b'), tab('c')]);
+    let started!: Promise<void>;
+    act(() => {
+      started = result.current.start();
+    });
+    await act(async () => {});
+    expect(result.current.presentingAt).toBeNull();
+    await act(async () => {
+      arrive();
+      await started;
+    });
+    expect(result.current.presentingAt).toBe(0);
+    act(() => result.current.exitPresentation());
+
+    overlayCode.load.mockImplementationOnce(() => Promise.reject(new Error('ChunkLoadError')));
+    await act(() => result.current.start());
+    expect(result.current.presentingAt).toBe(0);
   });
 });

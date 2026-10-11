@@ -3,7 +3,7 @@ import type { EditorMode, Tab } from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livediagram/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -160,7 +160,7 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing document never download it.
-    const { templateTabs } = await import('@/lib/template-builders');
+    const { templateTabs, templateCanvasOverrides } = await import('@/lib/template-builders');
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md): the first lands here.
     const [first, ...rest] = templateTabs(kind);
     const rawElements = first!.build(centre.x, centre.y);

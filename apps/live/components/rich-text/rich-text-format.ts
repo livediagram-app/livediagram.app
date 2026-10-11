@@ -47,6 +47,19 @@ export type ActiveFormat = {
   link: string | null;
 };
 
+// Whether two toolbar states show the same thing (every field is a primitive).
+export function sameActiveFormat(a: ActiveFormat, b: ActiveFormat): boolean {
+  return (
+    a.bold === b.bold &&
+    a.italic === b.italic &&
+    a.underline === b.underline &&
+    a.strikethrough === b.strikethrough &&
+    a.color === b.color &&
+    a.heading === b.heading &&
+    a.link === b.link
+  );
+}
+
 export function applyCss(target: CSSStyleDeclaration, props: React.CSSProperties): void {
   for (const [k, v] of Object.entries(props)) {
     if (v == null) continue;

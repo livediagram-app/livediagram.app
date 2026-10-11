@@ -317,6 +317,13 @@ export type CommunityFacetsResponse = {
   tags: { tag: string; count: number }[];
 };
 export type CommunityPostResponse = { post: CommunityPost; related: CommunityPost[] };
+// The Community sitemap's source (docs/specs/025-community/community.md "Search engines"): every post the public can
+// see, newest first, up to COMMUNITY_SITEMAP_MAX, as just what a sitemap entry needs. `updatedAt` is epoch ms.
+export type CommunitySitemapEntry = { id: string; updatedAt: number };
+export type CommunitySitemapResponse = { posts: CommunitySitemapEntry[] };
+// One sitemap file holds at most 50,000 URLs; this stays far below it so the query and the XML stay small (about
+// 0.6 MB at the cap). Past it the oldest posts drop off the sitemap, never out of the Community.
+export const COMMUNITY_SITEMAP_MAX = 5000;
 export type CommunityFeaturedResponse = { posts: CommunityPost[] };
 export type CommunityOwnPostResponse = { post: CommunityOwnPost | null };
 export type CommunityLikeResponse = { likeCount: number; liked: boolean };

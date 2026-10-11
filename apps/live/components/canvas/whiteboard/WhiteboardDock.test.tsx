@@ -52,6 +52,23 @@ describe('WhiteboardDock groups', () => {
     expect(bars[bars.length - 1]!.getAttribute('aria-label')).toBe('Settings');
   });
 
+  // docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows": one card, the other modes'
+  // palette's, the groups between hairlines, a tool in hand marked as the palette marks one.
+  it('draws the three groups in one card, a hairline between each, like the palette', () => {
+    renderDock();
+    const card = document.querySelector<HTMLElement>('[data-dock-scroller]')!;
+    expect(card.className).toContain('rounded-xl');
+    expect(card.className).toContain('border');
+    const groups = screen.getAllByRole('toolbar');
+    expect(groups.every((g) => card.contains(g))).toBe(true);
+    expect(groups.some((g) => g.className.includes('border'))).toBe(false);
+    expect(card.querySelectorAll(':scope > [data-dock-group-divider]')).toHaveLength(2);
+    const pressed = screen.getByRole('button', { name: 'Marker 1, medium' });
+    expect(pressed.getAttribute('aria-pressed')).toBe('true');
+    expect(pressed.className).toContain('bg-brand-100');
+    expect(pressed.className).toContain('ring-1');
+  });
+
   it('lays out the shapes bar as the pinned shapes, a separator and Shapes', () => {
     renderDock(model('select', { pinnedShapes: ['star'] }));
     expect(itemsOf('shapes')).toEqual(['pinned:star', '|', 'shapes']);
@@ -176,13 +193,13 @@ describe('WhiteboardDock drawing tools', () => {
 
   // docs/specs/023-draw-mode/draw-mode.md "Pens": each width reads apart, drawn as the quick style
   // panel draws it (PenWidthIcon), not to scale, where 1 and 1.5 px looked the same.
-  it('draws the three widths apart in the flyout, as the quick style panel does', () => {
+  it('draws the six widths apart in the flyout, as the quick style panel does', () => {
     renderDock();
     fireEvent.click(screen.getByRole('button', { name: 'Marker 1, medium' }));
-    const pictures = ['Fine', 'Medium', 'Bold'].map(
+    const pictures = ['Fine', 'Medium', 'Bold', 'Thick', 'Heavy', 'Broad'].map(
       (name) => screen.getByRole('button', { name }).querySelector('svg')!.outerHTML,
     );
-    expect(new Set(pictures).size).toBe(3);
+    expect(new Set(pictures).size).toBe(6);
     const { container } = render(<PenWidthIcon width="fine" />);
     expect(container.querySelector('svg')!.outerHTML).toBe(pictures[0]);
   });
@@ -409,8 +426,8 @@ describe('WhiteboardDock position', () => {
     const cls = dock().className.split(' ');
     expect(cls).toEqual(
       expect.arrayContaining([
-        'left-[8.25rem]',
-        'max-w-[calc(100%-9rem)]',
+        'left-[7.5rem]',
+        'max-w-[calc(100%-8.25rem)]',
         'lg:left-1/2',
         'lg:-translate-x-1/2',
         'lg:max-w-[calc(100%-15rem)]',
@@ -460,5 +477,24 @@ describe('offDock', () => {
     const at = offDock(dockBox, { left: 10, width: 36 }, flyout, true, { width: 1280 });
     expect(at.left).toBe(12);
     expect(at.tipLeft).toBe(28 - 12);
+  });
+});
+
+// Its code loads on demand, so the top corners measure against it only once it is in the page
+// (CanvasChrome, docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+describe('WhiteboardDock drawn', () => {
+  it('says so in the commit it is first in the page, and only then', () => {
+    let inPage: boolean[] = [];
+    const onDrawn = vi.fn(() => {
+      inPage.push(document.querySelector('[data-whiteboard-dock]') !== null);
+    });
+    const m = model();
+    const view = render(<WhiteboardDock model={m} ink="#1c1917" onDrawn={onDrawn} />);
+    expect(inPage).toEqual([true]);
+    view.rerender(<WhiteboardDock model={m} ink="#1c1917" onDrawn={onDrawn} />);
+    expect(onDrawn).toHaveBeenCalledTimes(1);
+    inPage = [];
+    view.unmount();
+    expect(inPage).toEqual([]);
   });
 });

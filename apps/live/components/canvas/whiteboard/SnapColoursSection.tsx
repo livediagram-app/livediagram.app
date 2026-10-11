@@ -6,8 +6,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { SnapColoursApi } from '@/hooks/canvas/useSnapColours';
-import { TAB_CUSTOM_COLOURS_MAX } from '@/lib/quick-style-pen';
 import { FlyoutHeading } from './WhiteboardFlyout';
+
+// How many of the board's custom colours the section previews.
+const SNAP_PREVIEW_MAX = 8;
 
 const customColours = (n: number) => `${n} custom colour${n === 1 ? '' : 's'}`;
 
@@ -39,7 +41,7 @@ export function SnapColoursSection({ snap }: { snap: SnapColoursApi }) {
               {customColours(colours.length)}
             </span>
             <span className="flex gap-1">
-              {colours.slice(0, TAB_CUSTOM_COLOURS_MAX).map((hex) => (
+              {colours.slice(0, SNAP_PREVIEW_MAX).map((hex) => (
                 <span
                   key={hex}
                   data-snap-swatch={hex}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   LENS_DIMENSIONS,
   normaliseInput,
@@ -49,6 +49,9 @@ function describe(parsed: ParsedLens): string {
   return `terms=${parsed.terms.length} applied=${applied.join(',') || 'none'} issues=${issues.join(',') || 'none'}`;
 }
 
+// How often, at most, typing in the field rewrites the address bar (a trailing write; blur writes at once).
+export const LENS_URL_WRITE_MS = 250;
+
 export function useExplorerLens({
   selected,
   teams,
@@ -75,6 +78,30 @@ export function useExplorerLens({
   const [sync, setSync] = useState<Sync>({ seen: urlLens, pending: [] });
   // Search results is being opened from a view with no lens: later keystrokes replace that entry.
   const [openingSearch, setOpeningSearch] = useState(false);
+  // The address bar follows the field at most every LENS_URL_WRITE_MS (a trailing write), and at once on blur:
+  // a write per keystroke made held Backspace exceed Safari's 100 history writes in 10 s, which throws.
+  const urlWrite = useRef<{ timer: number | null; href: string | null }>({
+    timer: null,
+    href: null,
+  });
+  const flushUrl = useCallback(() => {
+    const pending = urlWrite.current;
+    if (pending.timer !== null) window.clearTimeout(pending.timer);
+    pending.timer = null;
+    if (pending.href === null) return;
+    window.history.replaceState(window.history.state, '', pending.href);
+    pending.href = null;
+  }, []);
+  // Leaving the view drops a write still waiting: it would land on the next page's address.
+  useEffect(
+    () => () => {
+      const pending = urlWrite.current;
+      if (pending.timer !== null) window.clearTimeout(pending.timer);
+      pending.timer = null;
+      pending.href = null;
+    },
+    [],
+  );
   if (openingSearch && view !== null) setOpeningSearch(false);
 
   // The address bar moved. Our own write arriving is only bookkeeping; anything else is adopted.
@@ -106,7 +133,11 @@ export function useExplorerLens({
       setNow(Date.now());
       const written = normaliseInput(next);
       const latest = sync.pending.at(-1) ?? sync.seen;
-      if (written === latest) return;
+      if (written === latest) {
+        // Nothing new to write, but leaving the field sends a write still waiting.
+        if (nextCaret === null) flushUrl();
+        return;
+      }
       if (view === null) {
         if (written === '') return;
         setSync((s) => ({ ...s, pending: [...s.pending, written] }));
@@ -122,15 +153,14 @@ export function useExplorerLens({
       }
       setSync((s) => ({ ...s, pending: [...s.pending, written] }));
       const url = new URL(window.location.href);
-      window.history.replaceState(
-        window.history.state,
-        '',
-        lensHref(`${url.pathname}${url.search}`, written) + url.hash,
-      );
+      urlWrite.current.href = lensHref(`${url.pathname}${url.search}`, written) + url.hash;
+      if (nextCaret === null) flushUrl();
+      else if (urlWrite.current.timer === null)
+        urlWrite.current.timer = window.setTimeout(flushUrl, LENS_URL_WRITE_MS);
       debugLog(`[explorer-lens] url replaced view=${view} empty=${written === ''}`);
       debugLog(`[explorer-lens] parsed ${describe(nextParsed)}`);
     },
-    [context, parsed.lens, sync, view, selected.kind, router, openingSearch],
+    [context, parsed.lens, sync, view, selected.kind, router, openingSearch, flushUrl],
   );
 
   const setField = useCallback((next: string, at: number) => commit(next, at), [commit]);

@@ -14,6 +14,7 @@ export default function TipsAndTricksPage() {
   const articles = getArticlesByCategory('tips-and-tricks');
   return (
     <BrowsePage
+      listing={{ appPath: '/tips-and-tricks/', articles: articles }}
       title="Tips and Tricks"
       lede="Work faster with these shortcuts and hidden features."
     >

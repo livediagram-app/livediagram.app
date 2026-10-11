@@ -1,7 +1,7 @@
 // What the hero's Palette strip offers in each editor mode (docs/specs/007-editor/editor-modes.md
 // "The palette per mode"): the mode's glyph and name for its switch, then Diagram's, Illustrate's
-// and Facilitate's Popular tiles, Draw's own drawing tools in place of the palette, and Plan's card
-// types and boards. Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
+// and Facilitate's Popular tiles with their shortcuts, Draw's dock in place of the palette, and
+// none for Plan, whose board brings its own bar. Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
 
@@ -11,9 +11,7 @@ import {
   lucideChartPie,
   lucideEyeOff,
   lucideListOrdered,
-  lucideListTodo,
   lucideMessageSquare,
-  lucideSquareKanban,
   lucideTimer,
   lucideVote,
 } from '@livediagram/icons/lucide';
@@ -33,7 +31,14 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
   plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
 };
 
-type Tile = { key: string; glyph: ReactNode; active?: boolean };
+// `hint` is the shortcut the editor prints under the tile; `group` starts a new group in Draw's dock.
+export type Tile = {
+  key: string;
+  glyph: ReactNode;
+  active?: boolean;
+  hint?: string;
+  group?: boolean;
+};
 
 function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
   return (
@@ -44,8 +49,9 @@ function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
 }
 
 // A marker in its ink, as the Draw dock shows Marker 1, 2 and 3.
-function Marker({ color }: { color: string }) {
-  return <MarkerIcon size={14} style={{ color }} />;
+// The black marker reads as near-white on the dark strip, as the editor lifts dark ink there.
+function Marker({ color, className }: { color?: string; className?: string }) {
+  return <MarkerIcon size={14} style={color ? { color } : undefined} className={className} />;
 }
 
 function SelectGlyph() {
@@ -84,36 +90,37 @@ function Highlighter() {
 
 // Diagram's Popular: the first nine of its twelve.
 const DIAGRAM_TILES: Tile[] = [
-  { key: 'rect', glyph: <Shape kind="rect" /> },
-  { key: 'circle', glyph: <Shape kind="circle" /> },
-  { key: 'diamond', glyph: <Shape kind="diamond" /> },
-  { key: 'text', glyph: <Shape kind="text" /> },
-  { key: 'arrow', glyph: <Shape kind="arrow" /> },
-  { key: 'frame', glyph: <Shape kind="frame" /> },
-  { key: 'note', glyph: <Shape kind="note" /> },
-  { key: 'image', glyph: <Shape kind="image" /> },
-  { key: 'pen', glyph: <Shape kind="pen" /> },
+  { key: 'rect', glyph: <Shape kind="rect" />, hint: 'R' },
+  { key: 'circle', glyph: <Shape kind="circle" />, hint: 'O' },
+  { key: 'diamond', glyph: <Shape kind="diamond" />, hint: 'D' },
+  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
+  { key: 'arrow', glyph: <Shape kind="arrow" />, hint: 'A' },
+  { key: 'frame', glyph: <Shape kind="frame" />, hint: 'F' },
+  { key: 'note', glyph: <Shape kind="note" />, hint: 'N' },
+  { key: 'image', glyph: <Shape kind="image" />, hint: '9' },
+  { key: 'pen', glyph: <Shape kind="pen" />, hint: '6' },
 ];
 
-// Draw's dock: its drawing tools, the blue marker in hand.
+// Draw's dock: its drawing tools, the blue marker in hand, then its shapes in a group of their own.
 const DRAW_TILES: Tile[] = [
-  { key: 'select', glyph: <SelectGlyph /> },
-  { key: 'm1', glyph: <Marker color="#1c1917" /> },
-  { key: 'm2', glyph: <Marker color="#2563eb" />, active: true },
-  { key: 'm3', glyph: <Marker color="#dc2626" /> },
-  { key: 'text', glyph: <Shape kind="text" /> },
-  { key: 'note', glyph: <Shape kind="note" /> },
-  { key: 'hl', glyph: <Highlighter /> },
-  { key: 'arrow', glyph: <Shape kind="arrow" /> },
-  { key: 'eraser', glyph: <Eraser /> },
+  { key: 'select', glyph: <SelectGlyph />, hint: 'V' },
+  { key: 'm1', glyph: <Marker className="text-stone-900 dark:text-stone-100" />, hint: '1' },
+  { key: 'm2', glyph: <Marker color="#2563eb" />, active: true, hint: '2' },
+  { key: 'm3', glyph: <Marker color="#dc2626" />, hint: '3' },
+  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
+  { key: 'hl', glyph: <Highlighter />, hint: 'P' },
+  { key: 'eraser', glyph: <Eraser />, hint: 'E' },
+  { key: 'arrow', glyph: <Shape kind="arrow" />, hint: 'A', group: true },
+  { key: 'rect', glyph: <Shape kind="rect" />, hint: 'R' },
+  { key: 'note', glyph: <Shape kind="note" />, hint: 'N' },
 ];
 
 // Illustrate's Popular: the first nine of its twelve.
 const ILLUSTRATE_TILES: Tile[] = [
-  { key: 'text', glyph: <Shape kind="text" /> },
-  { key: 'rect', glyph: <Shape kind="rect" /> },
-  { key: 'circle', glyph: <Shape kind="circle" /> },
-  { key: 'image', glyph: <Shape kind="image" /> },
+  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
+  { key: 'rect', glyph: <Shape kind="rect" />, hint: 'R' },
+  { key: 'circle', glyph: <Shape kind="circle" />, hint: 'O' },
+  { key: 'image', glyph: <Shape kind="image" />, hint: '9' },
   { key: 'bubble', glyph: <Lucide prims={lucideMessageSquare} /> },
   { key: 'pie', glyph: <Lucide prims={lucideChartPie} /> },
   { key: 'bar', glyph: <Lucide prims={lucideChartColumn} /> },
@@ -121,35 +128,13 @@ const ILLUSTRATE_TILES: Tile[] = [
   { key: 'stat', glyph: <Shape kind="pill" /> },
 ];
 
-// A card type's tile: a card with its type's colour stripe.
-function CardTile({ colour }: { colour: string }) {
-  return (
-    <Glyph size={14}>
-      <rect x="2" y="4" width="12" height="8" rx="1.5" />
-      <path d="M3.25 4.75v6.5" stroke={colour} strokeWidth="2" />
-    </Glyph>
-  );
-}
-
-// Plan's Cards category (docs/specs/026-plan/plan-mode.md "The palette"): one tile per card type, then the
-// boards. Plan has no Popular; its strip opens on Cards.
-const PLAN_TILES: Tile[] = [
-  { key: 'task', glyph: <CardTile colour="#0ea5e9" />, active: true },
-  { key: 'bug', glyph: <CardTile colour="#ef4444" /> },
-  { key: 'idea', glyph: <CardTile colour="#f59e0b" /> },
-  { key: 'project', glyph: <CardTile colour="#8b5cf6" /> },
-  { key: 'kanban', glyph: <Lucide prims={lucideSquareKanban} /> },
-  { key: 'list', glyph: <Lucide prims={lucideListTodo} /> },
-  { key: 'votes', glyph: <Lucide prims={lucideVote} /> },
-];
-
 // Facilitate's Popular (docs/specs/012-collaboration/facilitate-mode.md "The palette"): the first nine
 // of its twelve, a session's notes and the buttons that run the room.
 const FACILITATE_TILES: Tile[] = [
-  { key: 'sticky', glyph: <Shape kind="note" /> },
-  { key: 'text', glyph: <Shape kind="text" /> },
-  { key: 'frame', glyph: <Shape kind="frame" /> },
-  { key: 'arrow', glyph: <Shape kind="arrow" /> },
+  { key: 'sticky', glyph: <Shape kind="note" />, hint: 'N' },
+  { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
+  { key: 'frame', glyph: <Shape kind="frame" />, hint: 'F' },
+  { key: 'arrow', glyph: <Shape kind="arrow" />, hint: 'A' },
   { key: 'timer', glyph: <Lucide prims={lucideTimer} /> },
   { key: 'vote', glyph: <Lucide prims={lucideVote} /> },
   { key: 'poll', glyph: <Lucide prims={lucideChartColumn} /> },
@@ -161,6 +146,7 @@ export const MODE_TILES: Record<HeroMode, Tile[]> = {
   diagram: DIAGRAM_TILES,
   draw: DRAW_TILES,
   illustrate: ILLUSTRATE_TILES,
-  plan: PLAN_TILES,
+  // A Plan board fills its tab, so the strip gives way to the board's own bar (PlanBoardBar).
+  plan: [],
   facilitate: FACILITATE_TILES,
 };

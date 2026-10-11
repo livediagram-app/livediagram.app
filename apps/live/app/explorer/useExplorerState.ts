@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
@@ -376,10 +376,15 @@ export function useExplorerState() {
   // these actions are wired against the personal `liveDocs` list, so a
   // team document in Recent (which lives in the sweep, not `liveDocs`)
   // wouldn't otherwise repaint after the action lands (docs/specs/013-workspace/team-shared-documents.md).
+  // Only for a team document: the sweep is a request per team, and a personal
+  // document's action changes no team library.
+  const refreshIfTeamDocument = (id: string) => {
+    if (teamDocuments.some((d) => d.id === id)) refreshTeamLibraries();
+  };
   const renameDocument = (id: string, name: string) => {
     setRenamingDocumentId(null);
     listRenameDocument(id, name);
-    refreshTeamLibraries();
+    refreshIfTeamDocument(id);
   };
 
   const deleteDocument = async (
@@ -388,12 +393,12 @@ export function useExplorerState() {
     opts?: { skipConfirm?: boolean },
   ) => {
     await listDeleteDocument(id, beforeRemove, opts);
-    refreshTeamLibraries();
+    refreshIfTeamDocument(id);
   };
 
   const duplicateDocument = async (id: string) => {
     await listDuplicateDocument(id);
-    refreshTeamLibraries();
+    refreshIfTeamDocument(id);
   };
 
   // The unified move picker's state, handlers, and destination trees
@@ -441,6 +446,9 @@ export function useExplorerState() {
   // list on every Explorer section.
   const activity = useActivityFeed(ownerId);
 
+  // The rows follow the lens a beat behind the field: narrowing every row, and rendering the list, on each
+  // keystroke held up the field itself on a long list. React drops the stale pass when typing continues.
+  const shownLens = useDeferredValue(lens.parsed.lens);
   const {
     documentsByFolder,
     offlineDocuments,
@@ -461,7 +469,7 @@ export function useExplorerState() {
     go,
     recentExcludedIds: prefs.recentExcludedIds ?? [],
     favouriteIds,
-    lens: lens.parsed.lens,
+    lens: shownLens,
     viewerId: ownerId ?? '',
     now: lens.now,
   });

@@ -733,7 +733,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - A card's state belongs to the columns that name it. When the last board or column naming a state goes, its
   cards read as **No status** everywhere: their board rows and lanes, the Card Search and Cards panel, a card's
-  linked and child cards, its slide, the Gantt chart's state, the plan views' counts and the card's own
+  Card field values and Linked as sections, its slide, the Gantt chart's state, the plan views' counts and the card's own
   **Status** picker (which never offers a raw state id). The card keeps the state itself, so undoing the
   board's or column's removal puts every card straight back; picking a state in the card's panel settles it, and an empty board still offers the
   state (by its name) for its first column, which brings its cards back (`namedStatus`). The Trash says where a card came from only while

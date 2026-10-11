@@ -86,8 +86,8 @@ boards, sheets and dashboards, which need tabs of their own, and the other modes
 mode across that line is still listed; picking it asks **Open a New <Mode> Tab?** ("Plan works in tabs of its own.",
 or on a Plan tab "A Plan tab stays in Plan.", then "Its mode can’t change, but you can carry on in a new <Mode>
 tab.") and **New <Mode> Tab** opens one after the others, with its mode's own start: Start Diagramming, Start
-Facilitating or Start Illustrating ([Template starts](start-diagramming.md)), Start Planning for Plan, and a pen in
-hand for Draw, with no Quick Start over any of them. A session that cannot add
+Facilitating, Start Illustrating or Start Drawing (a pen in hand) ([Template starts](start-diagramming.md)), and
+Start Planning for Plan, with no Quick Start over any of them. A session that cannot add
 tabs (a tab-scoped link, docs/specs/013-workspace/tab-scoped-share-links.md) is offered no new tab: those rows show,
 inert (`aria-disabled`), and ask nothing. **Shift+D** steps only through the modes beside the tab's
 own (Diagram, Draw, Facilitate, Illustrate; on a Plan tab it does nothing), and the tab menu's Mode lists only those
@@ -133,14 +133,17 @@ first element closes the line again. A Board, Sheet or Dashboard tab keeps its k
   opens in Diagram, **except from Plan**: a tab added while its maker is in Plan mode opens in Plan
   (its mode is Plan, for everyone), showing Plan's own **Start Planning**
   ([Plan mode](../026-plan/plan-mode.md#starting-a-board)). A new tab never opens the Quick Start: it opens on its
-  mode's start (Start Diagramming in Diagram, [Template starts](start-diagramming.md); `newTabOpening`,
-  `modeHasOwnStart` in `apps/live/lib/new-tab-seed.ts`), whose **Something Else** brings the Quick Start for another
-  kind of tab. Only the template chosen for it changes that: the
-  **Whiteboard** opens in Draw, an **Event Storming** board is always Diagram, and every other
-  template, Blank included, opens in Diagram. An import that sets its own mode wins.
-- **Mode in the tab menu:** the tab menu holds a **Mode** submenu for editors, listing every
-  editor mode (Diagram, Draw, Facilitate, Illustrate, Plan) as a radio choice with the tab's mode checked, each its glyph and
-  name only (no description line, so the menu stays short).
+  mode's start (Start Diagramming in Diagram, [Template starts](start-diagramming.md); `newTabOpening` in
+  `apps/live/lib/new-tab-seed.ts`), whose **Something Else** brings the Quick Start for another
+  kind of tab. Only the template chosen for it changes that: every template opens in its own mode
+  ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw, Blank in Diagram, and an
+  **Event Storming** board is always Diagram. A new document's Mode step on `/new` picks its mode's
+  blank, so the document opens in that mode ([New document route](new-document-route.md)). An
+  import that sets its own mode wins.
+- **Mode in the tab menu:** the tab menu holds a **Mode** group of full-width rows for editors (straight in the menu,
+  not behind a submenu), listing every editor mode beside the tab's own (Diagram, Draw, Facilitate, Illustrate; Plan
+  alone on a Plan tab, so no rows there: "Plan stands apart") as a radio choice with the tab's mode checked, each its
+  glyph and name only (no description line, so the menu stays short).
   Choosing one switches the tab, exactly as the switch does (one tab edit, one undo step).
   Choosing the checked mode does nothing. It is a phone's way to switch. The submenu lists modes
   from one catalogue, so a further mode joins it as one entry. Not offered on event-storming
@@ -231,8 +234,8 @@ element in the same colour.
   and Stickers categories, which Diagram does not offer) and the Session strip's three tools
   ([Facilitate mode](../012-collaboration/facilitate-mode.md)).
 - **Each mode's mark**: Diagram a flowchart (two steps joined), Draw a marker,
-  Illustrate a page with a little chart above two lines of writing (its two
-  page kinds), Plan a board of three columns with a raised card, Facilitate a flipchart on an easel; the same glyph on the switch, the tab menu's Mode and the tab pill.
+  Illustrate a page with a little chart above two lines of writing (its first two
+  page kinds, infographic and article), Plan a board of three columns with a raised card, Facilitate a flipchart on an easel; the same glyph on the switch, the tab menu's Mode and the tab pill.
 - **No further cue:** the dock (in place of the palette) and the switch's
   own label say which mode is on; no tint, accent or notice is added.
 - **Leaving a mode puts its tool down**, as leaving a whiteboard did: a pen,
@@ -370,8 +373,8 @@ actions, snapping, export, putting content onto a page, page slides) is
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
 - **Adding a page:** a round **+** (tooltip **Add Page**) sits in the gap's
-  width to the right of the last page, on the row's axis. It opens **Add a
-  page**, choosing the new page's kind ([Illustrate pages](illustrate-pages.md)
+  width to the right of the last page, level with its middle. It opens **Add a
+  Page**, choosing the new page's kind ([Illustrate pages](illustrate-pages.md)
   "Page kinds"); the page goes after the last; the + is gone at the limit,
   and the view then frames the new page.
 - **Content moves with its page.** Turning, resizing, moving or deleting a page
@@ -429,9 +432,10 @@ something on it asks first:
 
 ## Every mode, always offered
 
-Every mode of the catalogue is offered to everyone: the mode switch, the tab menu's Mode,
-Shift+D and the template picker's mode filter always list all five, and a tab
-always opens in its stored mode.
+Every mode of the catalogue is offered to everyone: the mode switch and the template picker's
+mode filter always list all five, and a tab always opens in its stored mode. The tab menu's Mode
+and Shift+D keep to the modes beside the tab's own ("Plan stands apart"), all five on an empty
+tab for Shift+D.
 
 Illustrate and Plan each had a switch in **Settings › Experimental** while they
 were new. Both graduated on 2026-10-06, and the **Experimental** category went
@@ -460,8 +464,9 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 - `Tab` · `Changed` · `OpensInDiagram` / `OpensInDraw` / `OpensInIllustrate` / `OpensInPlan` were
   fired by the retired Opens in submenu; the tab menu's Mode fires the switch's events instead.
 - `Tab` · `Changed` · `PagePortrait` / `PageLandscape`, fired by a page's
-  orientation in Illustrate mode, and `PageAdded` / `PageRemoved` by its add
-  button and Delete Page.
+  orientation in Illustrate mode, `PageAdded` (an infographic page; `SlidePageAdded`,
+  `ArticleAdded` and `LogoPageAdded` for the other kinds) by its add button, and `PageRemoved` by
+  Delete Page.
 - Draw mode's own events are the **`Draw`** category (pens, shapes, eraser,
   recognition, background, snap colours,
   [Draw mode](../023-draw-mode/draw-mode.md#telemetry-telemetry--public-transparency-dashboard)).
@@ -497,7 +502,7 @@ dashboard ([Telemetry](../017-telemetry/telemetry.md) "Retired features").
 
 ## Non-goals
 
-- Further editor modes beyond Illustrate until use asks for one.
+- Further editor modes beyond these five until use asks for one.
 - A mode per element or per layer.
 - Converting content between modes (a stroke into a shape on switching).
 

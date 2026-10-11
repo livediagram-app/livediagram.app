@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 import type { View } from '@/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
 import { Portal } from '@livediagram/ui';
@@ -101,9 +102,13 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { IllustratePages } from '@/components/canvas/IllustratePages';
-import { ArticleFlows } from '@/components/canvas/article/ArticleFlows';
+import { loadArticleFlows, loadIllustratePages } from '@/lib/editor-deferred-code';
 import { pressIsOffPage } from '@/hooks/canvas/illustrate-page-guard';
+
+// Illustrate's pages and their writing draw only on a tab that has pages, so their code loads on demand
+// (lib/editor-deferred-code.ts fetches it as the editor mounts).
+const IllustratePages = dynamic(loadIllustratePages, { ssr: false });
+const ArticleFlows = dynamic(loadArticleFlows, { ssr: false });
 
 // The canvas boundary (docs/specs/008-canvas/canvas-performance.md "The canvas re-renders only for what it
 // shows"): memoised, its `on…` props stable, so an editor render that changes nothing it shows stops here.

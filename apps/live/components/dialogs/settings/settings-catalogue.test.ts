@@ -29,6 +29,13 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
+  it("points the logo guide rows at a logo page's Guides button, where they live, not its panel", () => {
+    // docs/specs/007-editor/logo-pages.md: the guides moved out of the page panel into the Guides popover.
+    const logo = ALL_ROWS.filter((r) => r.key === 'logoGuides' || r.key.startsWith('logoGuide'));
+    expect(logo.length).toBeGreaterThan(2);
+    for (const row of logo) expect(row.alsoIn).toBe("a logo page's Guides button");
+  });
+
   it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
     // A fresh profile has the feature OFF; the switch has to say so, or the
     // first click flips a switch that looked on to the off it already was.

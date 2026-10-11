@@ -2,7 +2,6 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { DetectedSticky } from '@livediagram/sticky-vision';
-import { cropBoxes } from '@/lib/photo-detect';
 import type { CropReader, ReadOptions, ReadText } from '@/lib/reading/types';
 import { debugLog } from '@/lib/debug-log';
 
@@ -47,6 +46,7 @@ export function usePhotoReread(deps: {
       controllers.current.add(controller);
       try {
         if (!live.current.isCurrent(run)) return;
+        const { cropBoxes } = await import('@/lib/photo-detect');
         const crops = await cropBoxes(file, boxes, imageSize);
         if (crops.length === 0 || !live.current.isCurrent(run)) return;
         debugLog(`[photo] reading ${crops.length} changed notes again`);

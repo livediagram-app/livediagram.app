@@ -63,7 +63,7 @@ Scope, by file:
 | Ink              | `PEN_INK` / `WHITEBOARD_INK`, by name `'ink'`    | The drawing colour; unpainted strokes and text draw in it     |
 | Background       | `WhiteboardBackground` (`plain/dots/grid`)       | The person's Draw pattern, the synced `drawPattern`           |
 | Pen              | `WhiteboardPen`                                  | Main, second or third: id, colour (`null` = ink), width in px |
-| Pen width        | `WHITEBOARD_PEN_WIDTHS` (`fine/medium/bold`)     | 1, 1.5, 2.5 px, recorded as `penWidth`; stored by name        |
+| Pen width        | `WHITEBOARD_PEN_WIDTHS` (`PenWidthId`, 6 names)  | 1, 1.5, 2.5, 4, 6, 9 px, as `penWidth`; stored by name        |
 | Pen intent       | `PendingDraw` freehand `variant: 'whiteboard'`   | The held pen, with its colour, width and recognition          |
 | Dock             | `WhiteboardDock`                                 | Top- or bottom-centre tool groups (whiteboard-dock.md)        |
 | Dock tool        | `WhiteboardTool`                                 | `select/pen/eraser/sticky/text/shape`                         |
@@ -833,7 +833,7 @@ and `{ type: 'arrow'; ends?: ArrowEnds }`.
 Parsing rejects: a non-object or unparseable prefs value → defaults; a pen whose id is unknown →
 dropped and refilled from defaults; a colour that is neither a `PenColourName` nor a `#rrggbb` (an old
 fixed colour reads as its name), or any colour on the main pen → the pen's default colour (the ink
-is a valid colour for any pen); a width that is not a preset NAME (`fine`, `medium`, `bold`; widths are stored
+is a valid colour for any pen); a width that is not a preset NAME (`fine`, `medium`, `bold`, `thick`, `heavy`, `broad`; widths are stored
 by name so the px can be retuned) → Medium; an unknown `activePenId` or
 `eraserMode` → default; `recognise` not a boolean → `false`.
 
@@ -920,7 +920,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   layout size before paint, since the pop-in starts at `scale(0)`): `offDock` in
   [whiteboard-dock](whiteboard-dock.md).
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
-- Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold"; eraser flyout
+- Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold", "Thick", "Heavy", "Broad"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
   "Background" with "Plain", "Dots", "Grid"; Quick Start card "Whiteboard", "Free drawing without distractions"
 - Recognition chip: a pill 44 px tall and at least 44 px wide, `px-4`, `text-sm` medium, full

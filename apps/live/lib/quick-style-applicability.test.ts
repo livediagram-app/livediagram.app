@@ -69,9 +69,7 @@ describe('a mixed selection', () => {
     expect(Object.keys(view.sections).sort()).toEqual(
       ['background', 'stroke', 'style', 'textAlign', 'textColour', 'width'].sort(),
     );
-    expect(
-      strokesPenStyle(mixed, { board: 'light', ink: '#000', custom: [] })!.subject,
-    ).toMatchObject({
+    expect(strokesPenStyle(mixed, { board: 'light', ink: '#000' })!.subject).toMatchObject({
       ids: ['stroke-1', 'stroke-2'],
     });
   });

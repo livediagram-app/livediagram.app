@@ -8,41 +8,41 @@ as `Dn`.
 
 Scope, by file (all under `apps/live/` unless stated):
 
-| File                                                 | Role                                                                                  |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `components/canvas/whiteboard/WhiteboardDock.tsx`    | Orchestrates the groups, the one open flyout, the pins-full hint                      |
-| `components/canvas/whiteboard/DockToolbar.tsx`       | `DockToolbar` (a group: one pill; roving tab stop), `DockButton`, `DockDivider`       |
-| `components/canvas/whiteboard/DrawingToolsGroup.tsx` | Select, Markers 1 to 3, Text, Sticky note, Path tool, Eraser                          |
-| `components/canvas/whiteboard/ShapesGroup.tsx`       | The pinned shapes, a separator, Shapes                                                |
-| `components/canvas/whiteboard/SettingsGroup.tsx`     | The cog, alone                                                                        |
-| `components/canvas/whiteboard/useDockFlyout.ts`      | Which flyout is open, where, hover open, delayed close, re-anchoring                  |
-| `components/canvas/whiteboard/dock-flyouts.tsx`      | Flyout bodies: pen, eraser, Settings, slot menu                                       |
-| `components/canvas/whiteboard/ShapesFlyout.tsx`      | The Shapes flyout: the field over the six slots or six results                        |
-| `components/canvas/whiteboard/useShapeSearch.ts`     | The query, what it shows, the active entry, arrow keys and Enter                      |
-| `components/canvas/whiteboard/ShapePreview.tsx`      | A catalogue shape's own preview                                                       |
-| `components/canvas/whiteboard/useShapeSlotDrag.ts`   | Dragging a flyout shape onto the pinned side, or a pinned one off it                  |
-| `components/canvas/whiteboard/SlotGhost.tsx`         | The dragged shape under the pointer                                                   |
-| `components/canvas/whiteboard/WhiteboardFlyout.tsx`  | A flyout: portalled, `offDock`, its tip, focus in, `restoreFocus` on close            |
-| `lib/whiteboard-shape-catalogue.ts`                  | The whiteboard shape catalogue, derived from the palette's shape tiles                |
-| `lib/whiteboard-shape-search.ts`                     | Ranked search (at most six) and grid movement (pure)                                  |
-| `lib/whiteboard-shape-slots.ts`                      | Default pins, the six slots, pick record, drops, outcomes (pure)                      |
-| `lib/whiteboard-dock-prefs.ts`                       | The dock's synced preferences: parse and write, the dock position                     |
-| `components/canvas/CanvasChrome.tsx`                 | The dock; top corners and stack clear a top dock                                      |
-| `hooks/ui/useStripCrowdsCorners.ts`                  | Whether a top bar (the strip or a top dock) reaches a top corner                      |
-| `components/chrome/TopCenter.tsx`                    | `TopCenterStack` `below`: under the strip or under a top dock                         |
-| `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                                     |
-| `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference                      |
-| `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                     |
-| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livediagram/icons`, shared |
-| `lib/user-preferences.ts`                            | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                      |
-| `components/primitives/SearchInput.tsx`              | `listboxId`: the box as a combobox over an always-shown listbox                       |
-| `apps/telemetry/app/event-explanations.ts`           | Sentences for the new tokens                                                          |
+| File                                                 | Role                                                                                     |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `components/canvas/whiteboard/WhiteboardDock.tsx`    | Orchestrates the groups, the one open flyout, the pins-full hint                         |
+| `components/canvas/whiteboard/DockToolbar.tsx`       | `DockToolbar` (a group: a run of the card; roving tab stop), `DockButton`, `DockDivider` |
+| `components/canvas/whiteboard/DrawingToolsGroup.tsx` | Select, Markers 1 to 3, Text, Sticky note, Path tool, Eraser                             |
+| `components/canvas/whiteboard/ShapesGroup.tsx`       | The pinned shapes, a separator, Shapes                                                   |
+| `components/canvas/whiteboard/SettingsGroup.tsx`     | The cog, alone                                                                           |
+| `components/canvas/whiteboard/useDockFlyout.ts`      | Which flyout is open, where, hover open, delayed close, re-anchoring                     |
+| `components/canvas/whiteboard/dock-flyouts.tsx`      | Flyout bodies: pen, eraser, Settings, slot menu                                          |
+| `components/canvas/whiteboard/ShapesFlyout.tsx`      | The Shapes flyout: the field over the six slots or six results                           |
+| `components/canvas/whiteboard/useShapeSearch.ts`     | The query, what it shows, the active entry, arrow keys and Enter                         |
+| `components/canvas/whiteboard/ShapePreview.tsx`      | A catalogue shape's own preview                                                          |
+| `components/canvas/whiteboard/useShapeSlotDrag.ts`   | Dragging a flyout shape onto the pinned side, or a pinned one off it                     |
+| `components/canvas/whiteboard/SlotGhost.tsx`         | The dragged shape under the pointer                                                      |
+| `components/canvas/whiteboard/WhiteboardFlyout.tsx`  | A flyout: portalled, `offDock`, its tip, focus in, `restoreFocus` on close               |
+| `lib/whiteboard-shape-catalogue.ts`                  | The whiteboard shape catalogue, derived from the palette's shape tiles                   |
+| `lib/whiteboard-shape-search.ts`                     | Ranked search (at most six) and grid movement (pure)                                     |
+| `lib/whiteboard-shape-slots.ts`                      | Default pins, the six slots, pick record, drops, outcomes (pure)                         |
+| `lib/whiteboard-dock-prefs.ts`                       | The dock's synced preferences: parse and write, the dock position                        |
+| `components/canvas/CanvasChrome.tsx`                 | The dock; top corners and stack clear a top dock                                         |
+| `hooks/ui/useStripCrowdsCorners.ts`                  | Whether a top bar (the strip or a top dock) reaches a top corner                         |
+| `components/chrome/TopCenter.tsx`                    | `TopCenterStack` `below`: under the strip or under a top dock                            |
+| `components/dialogs/settings/settings-catalogue.ts`  | Editor › Draw sub-category: the Dock Position row                                        |
+| `hooks/canvas/useWhiteboardDockPrefs.ts`             | Those preferences as state, written like every synced preference                         |
+| `hooks/canvas/useWhiteboard.ts`                      | `pickShape`, `pickSearchedShape`, `openShapes` and the dock prefs                        |
+| `lib/palette-search.ts`, `lib/search.ts`             | `SHAPE_TILES`, `shapeTileSearchItem`; `paletteRank` from `@livediagram/icons`, shared    |
+| `lib/user-preferences.ts`                            | `whiteboardPinnedShapes`, `whiteboardShapePicks`                                         |
+| `components/primitives/SearchInput.tsx`              | `listboxId`: the box as a combobox over an always-shown listbox                          |
+| `apps/telemetry/app/event-explanations.ts`           | Sentences for the new tokens                                                             |
 
 ## Domain and naming
 
 | Term            | Identifier                                           | Meaning                                                              |
 | --------------- | ---------------------------------------------------- | -------------------------------------------------------------------- |
-| Group           | `DockToolbar`, `data-dock-group`                     | One pill: `drawing`, `shapes`, `settings`                            |
+| Group           | `DockToolbar`, `data-dock-group`                     | A run of the card: `drawing`, `shapes`, `settings`                   |
 | Shape catalogue | `WHITEBOARD_SHAPE_CATALOGUE`                         | Every shape a whiteboard arms, keyed by `WhiteboardShapeKey`         |
 | Shape key       | `WhiteboardShapeKey`                                 | A dock shape id, a shape kind, or `kind:choice`                      |
 | Pinned shape    | `pinnedShapes`, `data-pinned-slot`                   | A kind on the bar's pinned side, before the separator (up to seven)  |
@@ -383,11 +383,13 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
   68 px when it reaches them (D34); the top-centre stack starts at `top-[4.25rem]`, as under the strip.
 - Wrapper at the **bottom**: bottom centre, `bottom-4` from 1760 px wide (D9), lifted above the
   bottom-right cluster below it.
-- Either way: groups `gap-3` (12 px) apart inside one horizontal scroller (`-m-3 p-3`, so shadows are
-  not clipped), each group a pill on the editor's panel surface (`rounded-xl border p-1
-shadow-md shadow-slate-900/5`, the strip card's), buttons (`DockButton`) 36 × 36 px (`h-9
-w-9`, the strip's tile size) with `DOCK_ICON_PX` (18 px) glyphs, so the dock is the strip's
-  height (spec "What a whiteboard shows"). The drag's `SlotGhost` is the same 36 px.
+- Either way: one card, the strip's (`TOOLBAR_CARD`), that is also the horizontal scroller
+  (`data-dock-scroller`, `overflow-x-auto`, no bleed), the groups inside it with a `DockDivider`
+  (`TOOLBAR_DIVIDER`) between each; buttons (`DockButton`) 36 × 36 px (`h-9 w-9 rounded-md`, the
+  strip's tile) with `DOCK_ICON_PX` (18 px) glyphs, so the dock is the strip's height, resting in
+  `TOOLBAR_CONTROL_REST` and pressed in `DOCK_PRESSED` (`PaletteIconButton`'s active tone,
+  `bg-brand-100 ring-1 ring-brand-300`) (spec "What a whiteboard shows"). The drag's `SlotGhost`
+  is the same 36 px.
 - Flyouts sit on the board side of their opener in whichever group, centred on it
   `OFF_DOCK_GAP_PX` off the dock: below a top dock, above a bottom one; so does the pins-full
   hint. Each is a `fixed` card (`rounded-xl
@@ -470,27 +472,27 @@ to measure` (warn).
 
 ## Constants and configuration
 
-| Constant                      | Value   | Provenance                | Safe range    |
-| ----------------------------- | ------- | ------------------------- | ------------- |
-| `PINNED_SHAPES_MAX`           | 7       | spec                      | 7             |
-| `DEFAULT_PINNED_SHAPES`       | 2 kinds | spec                      |               |
-| `SLOTS_PER_ROW`               | 3       | spec                      | 3             |
-| `SHAPE_PICKS_PROTECTED`       | 5       | D16                       | 3 to 8        |
-| `SLOT_BAR_REACH_PX`           | 44      | D22                       | 24 to 64      |
-| `DockButton` size             | 36 px   | spec (the strip's tile)   | 36            |
-| `DOCK_ICON_PX`                | 18 px   | the strip's glyph size    | 18            |
-| `OFF_DOCK_GAP_PX`             | 8 px    | D36                       | 4 to 12       |
-| `VIEWPORT_MARGIN_PX`          | 12 px   | the flyouts' clamp margin | 8 to 16       |
-| `TIP_INSET_PX`                | 14 px   | D37 (card radius 12 + 2)  | 12 to 20      |
-| Tip size                      | 10 px   | D37                       | 8 to 12       |
-| `SHAPE_SEARCH_LIMIT`          | 6       | spec                      | 6             |
-| `SHAPE_GRID_COLUMNS`          | 3       | six as two rows of three  | 3             |
-| `SHAPE_PICKS_KEPT`            | 20      | spec (e.g. 20), D16       | 12 to 30      |
-| `SHAPE_SLOT_DRAG_PX`          | 6       | spec                      | 4 to 10       |
-| `HINT_MS`                     | 4000    | D17                       | 3000 to 6000  |
-| Group gap                     | 12 px   | D18                       | 8 to 16       |
-| Dock drops beside the cluster | 1760 px | D9 (widest dock 858 px)   | at least 1720 |
-| Top dock's side clearance     | 4.25rem | D33 (menu button 12 + 46) | at least 4rem |
+| Constant                      | Value    | Provenance                | Safe range        |
+| ----------------------------- | -------- | ------------------------- | ----------------- |
+| `PINNED_SHAPES_MAX`           | 7        | spec                      | 7                 |
+| `DEFAULT_PINNED_SHAPES`       | 2 kinds  | spec                      |                   |
+| `SLOTS_PER_ROW`               | 3        | spec                      | 3                 |
+| `SHAPE_PICKS_PROTECTED`       | 5        | D16                       | 3 to 8            |
+| `SLOT_BAR_REACH_PX`           | 44       | D22                       | 24 to 64          |
+| `DockButton` size             | 36 px    | spec (the strip's tile)   | 36                |
+| `DOCK_ICON_PX`                | 18 px    | the strip's glyph size    | 18                |
+| `OFF_DOCK_GAP_PX`             | 8 px     | D36                       | 4 to 12           |
+| `VIEWPORT_MARGIN_PX`          | 12 px    | the flyouts' clamp margin | 8 to 16           |
+| `TIP_INSET_PX`                | 14 px    | D37 (card radius 12 + 2)  | 12 to 20          |
+| Tip size                      | 10 px    | D37                       | 8 to 12           |
+| `SHAPE_SEARCH_LIMIT`          | 6        | spec                      | 6                 |
+| `SHAPE_GRID_COLUMNS`          | 3        | six as two rows of three  | 3                 |
+| `SHAPE_PICKS_KEPT`            | 20       | spec (e.g. 20), D16       | 12 to 30          |
+| `SHAPE_SLOT_DRAG_PX`          | 6        | spec                      | 4 to 10           |
+| `HINT_MS`                     | 4000     | D17                       | 3000 to 6000      |
+| Group separator               | hairline | D18                       | `TOOLBAR_DIVIDER` |
+| Dock drops beside the cluster | 1760 px  | D9 (widest dock 858 px)   | at least 1720     |
+| Top dock's side clearance     | 4.25rem  | D33 (menu button 12 + 46) | at least 4rem     |
 
 ## Defaults ledger
 

@@ -91,7 +91,7 @@ export function MarkersArt() {
   ];
   return (
     <Stage>
-      {/* The Draw tools: the three markers (Marker 2 in hand) and the width: Fine, Medium, Bold. */}
+      {/* The Draw tools: the three markers (Marker 2 in hand) and the widths, Fine to Broad. */}
       <ToolStrip x={92} y={4} w={116}>
         {markers.map((m, i) => (
           <g key={m.key}>

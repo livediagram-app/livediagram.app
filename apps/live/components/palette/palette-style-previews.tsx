@@ -39,16 +39,20 @@ export function BorderStrokeIcon({ value }: { value: BorderStroke }) {
   // Reuse the renderer's canonical stroke-weight scale so the preview line
   // can't drift from the real border widths. `value` is never 'none' here
   // (handled above), so the px is always defined.
-  const sw = BORDER_STROKE_PX[value];
+  return <StrokeWeightIcon px={BORDER_STROKE_PX[value]} />;
+}
+
+/** A line at a stroke weight, the picture every width choice wears (borders, marker widths). */
+export function StrokeWeightIcon({ px, inset = 2 }: { px: number; inset?: number }) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden>
       <line
-        x1="2"
+        x1={inset}
         y1="9"
-        x2="16"
+        x2={18 - inset}
         y2="9"
         stroke="currentColor"
-        strokeWidth={sw}
+        strokeWidth={px}
         strokeLinecap="round"
       />
     </svg>

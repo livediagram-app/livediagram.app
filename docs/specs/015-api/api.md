@@ -266,6 +266,15 @@ The same run moves live documents with no element on any tab, unsaved for 30
 days, into the Trash with `reason: 'empty'` (`trashEmptyDocuments`, at most
 2,000 a run; [Empty document clean-up](../013-workspace/empty-document-cleanup.md)).
 
+### Tab save
+
+The whole-tab autosave (`PUT /api/documents/<id>/tabs/<tabId>`, about every 600 ms while someone edits) reads
+only what it needs of the document, in one query (`getDocumentForSave`: owner, team, name, the owner's participant
+name and colour, and the tab count), where it ran the full document read (the row with its share-code and
+Community subqueries, then the owner's participant and the tab summaries) as two sequential round trips. The stored
+tab, the changesets the editor had not seen and the realtime room's ledger are then read together; the ledger is
+merged after the changesets, as before. A denied save still answers 403.
+
 ### Tab size
 
 A tab is stored as one text value in one D1 row (`tabs.data`, the tab's
@@ -448,7 +457,7 @@ Document-store hybrid: meta + folder + share state lives in real columns; elemen
 
 ### Owner-keyed data
 
-This is the one list of columns that hold an owner id (a guest id or a Clerk userId), and what the two owner-wide operations do with each: **account deletion** (`deleteAccount`, `DELETE /api/account`) and the **owner migration** (`migrateOwnerId`, `POST /api/migrate`: guest → account at sign-up, and legacy guest → signed guest). Both live in `apps/api/src/db/account.ts`. Each table here is keyed by owner first; the statements that find rows by document (a document delete's cascades into `favourites`, `document_opens`, `workbench_tickets` and `workbench_sessions`) or by author (`agent_changesets`) seek an index of their own (migration 0091, `apps/api/src/db/lookup-plans.test.ts`), so they never read the whole table. A column holding an owner id is named `owner_id` (`user_id` on `team_members`); `apps/api/src/db/account-owner-columns.test.ts` finds every such column in the migrated schema, fails until it is listed here, and proves each row below against a real SQLite database.
+This is the one list of columns that hold an owner id (a guest id or a Clerk userId), and what the two owner-wide operations do with each: **account deletion** (`deleteAccount`, `DELETE /api/account`) and the **owner migration** (`migrateOwnerId`, `POST /api/migrate`: guest → account at sign-up, and legacy guest → signed guest). Both live in `apps/api/src/db/account.ts`. The owner migration moves its table rows in **one D1 batch** (one round trip, and all or nothing: a failure part-way no longer leaves a half-moved account); no foreign key reads an owner column, so only each table's own order matters, which the batch keeps (the image grant before the documents move, each copy before its delete, the Community copy counts after the copies). The timeline, alias, document-open and shape-library steps follow it. A column holding an owner id is named `owner_id` (`user_id` on `team_members`); `apps/api/src/db/account-owner-columns.test.ts` finds every such column in the migrated schema, fails until it is listed here, and proves each row below against a real SQLite database. Each table here is keyed by owner first; the statements that find rows by document (a document delete's cascades into `favourites`, `document_opens`, `workbench_tickets` and `workbench_sessions`) or by author (`agent_changesets`) seek an index of their own (migration 0091, `apps/api/src/db/lookup-plans.test.ts`), so they never read the whole table.
 
 | Column                                    | Account deletion                                                                                                                                         | Owner migration                                                                                                                                                                                            |
 | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

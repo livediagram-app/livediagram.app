@@ -18,7 +18,7 @@ export const EDITOR_MODE_CATALOGUE = [
   {
     id: 'illustrate',
     label: 'Illustrate',
-    description: 'Pages: infographics to lay out, and articles to write.',
+    description: 'Pages: infographics, slides, articles and logos.',
   },
   {
     id: 'plan',

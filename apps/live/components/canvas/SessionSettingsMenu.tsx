@@ -1,5 +1,4 @@
 'use client';
-
 // The `…` quick settings on a vote / poll session element (docs/specs/012-collaboration/session-button.md).
 //
 // A thin wrapper now. It used to carry its OWN forms — a list of dot presets
@@ -13,12 +12,22 @@
 // where the trigger lives: they have their own face (SessionTimerFace), whose
 // `…` renders the very same body.
 
+import dynamic from 'next/dynamic';
 import type { SessionButtonConfig } from '@livediagram/document';
 import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
-import { SessionElementSettings } from '@/components/canvas/SessionElementSettings';
+import { loadSessionElementSettings } from '@/lib/editor-deferred-code';
+
+// The settings open from the element's options menu only; fetched once the editor is idle
+// (lib/editor-deferred-code.ts).
+const SessionElementSettings = dynamic(
+  () => loadSessionElementSettings().then((m) => m.SessionElementSettings),
+  {
+    ssr: false,
+  },
+);
 
 export function SessionSettingsMenu({
   config,

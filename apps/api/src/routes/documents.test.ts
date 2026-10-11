@@ -25,6 +25,8 @@ const { db, canReadDocument, canEditDocument, resolveDocumentGrant } = vi.hoiste
   db: {
     listDocumentsByOwner: vi.fn(),
     getDocument: vi.fn(),
+    // The save's own one-query read (db/tab-save-document.ts); answered from getDocument's mock below.
+    getDocumentForSave: vi.fn(),
     // Community link check on the tab read (docs/specs/025-community/community.md): an ordinary link here.
     getShareLink: vi.fn(async () => null),
     // The thumbnail route's one-query gate + freshness read.
@@ -126,6 +128,10 @@ function fakeDocument(ownerId: string, teamId: string | null = null): DocumentDT
 beforeEach(() => {
   for (const fn of Object.values(db)) fn.mockReset();
   db.setDocumentFolder.mockResolvedValue(true);
+  db.getDocumentForSave.mockImplementation(async (...args: unknown[]) => {
+    const doc = (await db.getDocument(...args)) as DocumentDTO | null;
+    return doc ? { ...doc, tabCount: doc.tabs?.length ?? 0 } : null;
+  });
   canReadDocument.mockReset();
   canEditDocument.mockReset();
   resolveDocumentGrant.mockReset();

@@ -65,7 +65,7 @@ test.describe('swatch rows', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('a whiteboard’s Marker colour rows: nine stock colours, More colours and eight customs, one line each', async ({
+  test('a whiteboard’s Marker colour row: nine stock colours and More colours on one line, no second row of customs', async ({
     page,
     pageErrors,
   }) => {
@@ -92,7 +92,8 @@ test.describe('swatch rows', () => {
     await expect(panel(page).getByText('Marker stroke')).toBeVisible();
     const rows = await rowsFit(page);
     expect(rows.find((r) => r.name === 'Marker colour')?.count).toBe(10);
-    expect(rows.find((r) => r.name === 'Custom colours')?.count).toBe(8);
+    // Custom colours live in the colour picker behind More colours, never a second quick row.
+    expect(rows.find((r) => r.name === 'Custom colours')).toBeUndefined();
     expectFit(rows);
     expectNoPageErrors(pageErrors);
   });

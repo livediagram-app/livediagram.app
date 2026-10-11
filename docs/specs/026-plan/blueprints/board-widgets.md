@@ -11,7 +11,6 @@ Derived from [Board widgets](../board-widgets.md).
 | default set   | `DEFAULT_BOARD_WIDGETS` (+ `votes` when `voting.on`)              |
 | widget zone   | `BoardWidgetZone` (`data-widget-zone`), in `[data-board-header]`  |
 | widget        | `BoardWidgetView` inside a `[data-widget=<kind>]` wrapper         |
-| Widgets tile  | `PaletteTileDef` with `action: { type: 'plan-widget', widget }`   |
 
 ## Files
 
@@ -27,7 +26,6 @@ apps/live/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_
 apps/live/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
 apps/live/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
 apps/live/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
-apps/live/hooks/plan/usePlanBoardDrop.ts              registers them; returns widgetSlot
 apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widgets the board lacks, a row each
 ```
 
@@ -40,12 +38,8 @@ apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widg
   `widgetSlotAt(zone, x, kind)` gives the slot; pointerup commits `placeWidget` when the order changed, and the
   click that follows is swallowed. Pointercancel drops it.
 - Keys on a focused wrapper: Alt+←/→ `nudgeWidget`; Delete/Backspace `removeWidget`.
-- Palette drag: `usePaletteDrop` calls `planWidgetDragOver` (the board under the point via
-  `otherPlanBoardAt`, inside its header's vertical span, editable) which sets that board's `widgetSlot`;
-  `dropEffect` is `copy` there and `none` elsewhere. Drop calls `dropPlanWidgetFromPalette`. Any `dragend` clears
-  the marker.
-- Tap: `addPlanWidgetToBoard(kind)`: the selected element when it is a registered board, else the only
-  registered board, else the notice; places at the end.
+- Add: widgets are not in the palette; the zone's + opens `BoardWidgetPicker` and a pick places at the end (see
+  below).
 - Taking Filter off clears `quick.text`; taking Only Mine off clears `quick.mine`.
 
 ## Narrowing and feedback
@@ -74,15 +68,13 @@ apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widg
 
 ## Errors and edge cases
 
-| Case                               | Handling                                                    |
-| ---------------------------------- | ----------------------------------------------------------- |
-| Dropped off any header             | Nothing placed; toast "Drop a widget into a board’s header" |
-| Tapped with no board to choose     | Toast "Select a board to add the widget to"                 |
-| A viewer who may not edit          | Zone has no ×, no drag, no keys; drops are refused          |
-| Kind the board already has         | Moves to the drop place (tap: to the end)                   |
-| Completion with no done column     | "No done column"                                            |
-| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`)              |
-| More widgets than fit              | The zone scrolls sideways                                   |
+| Case                               | Handling                                       |
+| ---------------------------------- | ---------------------------------------------- |
+| A viewer who may not edit          | Zone has no +, no ×, no drag, no keys          |
+| Kind the board already has         | Left out of the + picker                       |
+| Completion with no done column     | "No done column"                               |
+| Items of a type the catalogue lost | Counted under the type they read as (`typeIn`) |
+| More widgets than fit              | The zone scrolls sideways                      |
 
 ## Presentation and UX
 

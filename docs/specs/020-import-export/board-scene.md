@@ -107,7 +107,7 @@ colours can be snapped afterwards, in one press, if wanted.
 
 ## Widths
 
-- **Ink** takes the nearest marker width (Fine, Medium, Bold), nearest by ratio.
+- **Ink** takes the nearest marker width (Fine, Medium, Bold, Thick, Heavy, Broad), nearest by ratio.
 - **Shapes and frames** take the nearest border width
   (`nearestBorderStroke`); a shape with no stroke has no border.
 - **Lines, paths and arrows** take the nearest border width, an arrow stored as

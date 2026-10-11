@@ -10,6 +10,10 @@ import { checkMotionBudget, formatViolations } from '@livediagram/tailwind-confi
 const CONTENT_STYLESHEETS = [
   'app/hero-animations.css',
   'app/hero-mode-animations.css',
+  // Each hero scene's own keyframes, one stylesheet per scene.
+  ...readdirSync(fileURLToPath(new URL('app/hero-scenes/', import.meta.url)))
+    .filter((f) => f.endsWith('.css'))
+    .map((f) => `app/hero-scenes/${f}`),
   'app/promises.css',
   // The card illustrations' loops, one stylesheet per art group.
   ...readdirSync(fileURLToPath(new URL('app/feature-art/', import.meta.url)))
