@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Configuration and Optional Auth" description="The environment variables that shape a self-hosted instance, and how sign-in degrades gracefully to pure-guest mode." categoryTitle="Self-Hosting" categorySlug="self-hosting">
 
-A self-hosted livediagram is configured through environment variables, secrets and each Worker's `wrangler.toml`, not application code. A few `wrangler.toml` values ship with livediagram.app's own settings (the database and KV ids, the allowed AI origins, the MCP issuer), so a fork replaces those with its own. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
+A self-hosted livediagram is configured through environment variables, secrets and each Worker's `wrangler.toml`, not application code. A few `wrangler.toml` values ship with livediagram.app's own settings (the database and KV ids, the allowed AI origins, the MCP issuer and consent URL, and the guest-signing date), so a fork replaces those with its own. The most important thing to understand is that the optional features are genuinely optional: leave them unset and the editor still works perfectly, just in a simpler mode. This page covers how configuration is supplied and the main toggles you will care about.
 
 ## How configuration is supplied
 
@@ -59,7 +59,10 @@ Every other optional feature follows the same pattern: unset means off, and the 
 | Google Drive mirror        | `GOOGLE_CLIENT_ID` on the api Worker and `NEXT_PUBLIC_GOOGLE_CLIENT_ID` on the live build; `GOOGLE_CLIENT_SECRET` and `DRIVE_TOKEN_KEY` keep it syncing (needs sign-in)                                                                                        |
 | MCP server for AI tools    | Deploy the mcp Worker with its own KV namespace and hostname, then point `CONSENT_BASE_URL` (mcp Worker) at your editor's origin, and `NEXT_PUBLIC_MCP_ORIGIN` (live build) and `OAUTH_ISSUER` (api Worker) at your MCP host (needs sign-in)                   |
 | Telemetry                  | `TELEMETRY_ENABLED` on the api Worker and `NEXT_PUBLIC_TELEMETRY_ENABLED` on every frontend build                                                                                                                                                              |
+| Workbenches                | Nothing extra beyond sign-in, but set `APP_BASE_URL` on the api Worker to the origin that serves the app, or pairing and frame links point at livediagram.app (needs sign-in)                                                                                  |
 | Continue with Google       | `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED` on the live build, with Google enabled in Clerk. The bundled deploy workflow already sets it, so enable Google in Clerk or remove that line                                                                                 |
+
+The `NEXT_PUBLIC_*` values above are baked in at build time. When you deploy through the bundled GitHub Actions workflow, add them to the workflow's build step (or set `mcp_origin` in `deploy.yml`); they are not read from repository secrets.
 
 The Community is the one feature that is on by default; set `COMMUNITY_ENABLED` to `false` on the api Worker to switch it off.
 

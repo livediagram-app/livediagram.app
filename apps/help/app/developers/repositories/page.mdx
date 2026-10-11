@@ -63,7 +63,7 @@ livediagram link status       # each document and whether it is in step
 
 A sync writes newer snapshots, adds documents that joined the folder and removes the files of documents that left it or went to the Trash. Git history keeps what was removed. With `--watch`, the files follow within a moment of each change in the editor.
 
-Snapshots are for reading. If a snapshot was changed by hand, the sync leaves it alone and names it, so nothing you wrote is lost; send it back with `livediagram push <file>`. If the document also changed in livediagram since, the push is refused as stale; keep a copy of your change, sync, then make it again. A file that git left with conflict markers is held back the same way until you keep one side.
+Snapshots are for reading. If a snapshot was changed by hand, the sync leaves it alone and names it, so nothing you wrote is lost; send it back with `livediagram push <file>`. If a tab you changed also changed in livediagram since, push refuses that tab as stale and sends the rest. Keep a copy of your change, restore the file (`git checkout -- <file>`, or delete it), sync, then make the change again. A file that git left with conflict markers is held back the same way until you keep one side.
 
 A teammate syncing with their own sign-in only reaches what they can open. A document they cannot open stays exactly as committed.
 

@@ -58,9 +58,16 @@ export function DocumentStorage() {
       <Shape x={284} y={54} w={100} h={30} kind="cylinder" label="D1" labelTone="strong" />
       <Shape x={284} y={94} w={100} h={30} kind="rect" label="Room" labelTone="strong" />
       <Shape x={284} y={134} w={100} h={30} kind="rect" label="Images (R2)" labelTone="strong" />
-      <Arrow from={[228, 110]} to={[284, 75]} kind="curved" tone="muted" />
-      <Arrow from={[228, 124]} to={[284, 109]} tone="muted" />
-      <Arrow from={[228, 134]} to={[284, 149]} kind="curved" tone="muted" />
+      {/* One bus out of the API, one level arrowhead per store. */}
+      <path
+        d="M228 120 H252 M252 69 V149"
+        className="fill-none stroke-slate-300"
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <Arrow from={[252, 69]} to={[284, 69]} tone="muted" />
+      <Arrow from={[252, 109]} to={[284, 109]} tone="muted" />
+      <Arrow from={[252, 149]} to={[284, 149]} tone="muted" />
 
       <Shield x={296} y={190} scale={0.7} />
     </Scene>
@@ -94,11 +101,11 @@ export function AccessControl() {
       <Arrow from={[60, 80]} to={[150, 92]} tone="accent" />
 
       {/* Stranger, refused */}
-      <Label x={20} y={150} size={10} weight={600} tone="body">
-        Not the owner
+      <Label x={20} y={178} size={10} weight={600} tone="body">
+        No access
       </Label>
-      <Arrow from={[88, 150]} to={[150, 128]} tone="muted" dashed head={false} />
-      <g transform="translate(118 138)">
+      <Arrow from={[60, 166]} to={[150, 128]} tone="muted" dashed head={false} />
+      <g transform="translate(104 148)">
         <circle r={12} className="fill-rose-50 stroke-rose-400" strokeWidth={2} />
         <path d="M-5 -5 l10 10 M5 -5 l-10 10" className="stroke-rose-400" strokeWidth={2} />
       </g>
@@ -159,7 +166,7 @@ export function TelemetryToggle() {
         <line x1={154} y1={54} x2={154} y2={192} className="stroke-slate-200" strokeWidth={1.5} />
 
         {/* The one Privacy row */}
-        <Label x={170} y={72} size={11} weight={600} tone="strong">
+        <Label x={170} y={72} size={10} weight={600} tone="strong">
           Send Anonymous Usage Events
         </Label>
         <g transform="translate(336 60)">
