@@ -300,6 +300,14 @@ describe('shareable invite link (docs/specs/013-workspace/teams.md)', () => {
     expect(await res.json()).toMatchObject({ alreadyMember: true });
   });
 
+  it('resolve offers Join to someone whose email invite is still pending', async () => {
+    db.getTeamByInviteToken.mockResolvedValue(team);
+    db.countJoinedMembers.mockResolvedValue(2);
+    db.getMembership.mockResolvedValue({ ...member(), status: 'invited' });
+    const res = await handleTeams(makeCtx('GET', '/api/teams/invite-link/tok-123'));
+    expect(await res.json()).toMatchObject({ alreadyMember: false });
+  });
+
   it('404 on an unknown / expired token', async () => {
     db.getTeamByInviteToken.mockResolvedValue(null);
     const res = await handleTeams(
