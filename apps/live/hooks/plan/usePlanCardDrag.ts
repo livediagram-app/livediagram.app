@@ -39,11 +39,28 @@ export type PlanDragState = {
   overTrash?: boolean;
 };
 
-// Whether a screen point is over the Trash button.
-export function trashAt(clientX: number, clientY: number): boolean {
-  return document
-    .elementsFromPoint(clientX, clientY)
-    .some((el) => el instanceof HTMLElement && el.closest('[data-plan-trash]'));
+type Rect = { left: number; top: number; right: number; bottom: number };
+const inRect = (x: number, y: number, r: Rect) =>
+  x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+
+// Where a carried card's pointer is: over the Trash, else inside its board or outside it. The Trash is asked first:
+// a maximised or tab-filling board runs under the bottom-right controls (canvas-layer-insets.ts), so the drop target
+// floats over the board, and a pointer on it is over the Trash, not over the board (no slot opens under it).
+export function dragPlace(
+  x: number,
+  y: number,
+  board: Rect,
+  trash: readonly Rect[],
+): { outside: boolean; overTrash: boolean } {
+  const overTrash = trash.some((r) => inRect(x, y, r));
+  return { overTrash, outside: overTrash || !inRect(x, y, board) };
+}
+
+// The Trash drop targets on screen (one while a card is dragged, in the bottom-right strip).
+function trashRects(): Rect[] {
+  return [...document.querySelectorAll<HTMLElement>('[data-plan-trash]')].map((el) =>
+    el.getBoundingClientRect(),
+  );
 }
 
 // The pointer's place while a card is dragged, apart from the drag state: the floating copy follows it
@@ -179,12 +196,16 @@ export function usePlanCardDrag(opts: {
       // A press that has not travelled the shared slop is still a click.
       if (!dragRef.current && !isDragTravel(e.clientX - p.startX, e.clientY - p.startY)) return;
       if (!dragRef.current) optsRef.current.onDragging(p.itemId);
-      const b = board.getBoundingClientRect();
-      const outside =
-        e.clientX < b.left || e.clientX > b.right || e.clientY < b.top || e.clientY > b.bottom;
-      const other = outside
-        ? otherPlanBoardAt(e.clientX, e.clientY, optsRef.current.boardId)
-        : null;
+      const { outside, overTrash } = dragPlace(
+        e.clientX,
+        e.clientY,
+        board.getBoundingClientRect(),
+        trashRects(),
+      );
+      const other =
+        outside && !overTrash
+          ? otherPlanBoardAt(e.clientX, e.clientY, optsRef.current.boardId)
+          : null;
       const accepts = !!other && !!planBoardTarget(other.id)?.accepts(p.itemId);
       const otherSlot =
         other && accepts ? dropSlotAt(other.el, e.clientX, e.clientY, p.itemId) : null;
@@ -216,7 +237,7 @@ export function usePlanCardDrag(opts: {
         outside,
         target: other ? { boardId: other.id, accepts } : null,
         ...(refused ? { refused } : {}),
-        ...(outside && trashAt(e.clientX, e.clientY) ? { overTrash: true } : {}),
+        ...(overTrash ? { overTrash: true } : {}),
       };
       pointer.set({ clientX: e.clientX, clientY: e.clientY });
       const changed = !samePlanDragTarget(dragRef.current, next);
