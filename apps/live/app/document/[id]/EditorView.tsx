@@ -22,7 +22,6 @@ import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
-import { DashboardPage } from '@/components/plan/dashboard/DashboardPage';
 import { SheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -84,6 +83,11 @@ import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
 // Plan pays nothing for it.
 const PlanBoardPicker = dynamic(
   () => import('@/components/plan/PlanBoardPicker').then((m) => m.PlanBoardPicker),
+  { ssr: false },
+);
+// A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): only a Dashboard tab draws it.
+const DashboardPage = dynamic(
+  () => import('@/components/plan/dashboard/DashboardPage').then((m) => m.DashboardPage),
   { ssr: false },
 );
 const PlanSheetsHost = dynamic(

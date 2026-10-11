@@ -9,11 +9,8 @@ import { applySheetWrite } from './store';
 import { Workbook } from './engine/workbook';
 import { sheetChartTable, type SheetChartTable } from './chart-data';
 import { designWrite, type TemplateChart } from './sheet-templates/compile';
-import {
-  sheetTemplate,
-  sheetTemplateInfo,
-  type SheetTemplateId,
-} from './sheet-templates/catalogue';
+import { sheetTemplateInfo, type SheetTemplateId } from './sheet-templates/catalogue';
+import { sheetTemplate } from './sheet-templates/template-design';
 import type { SheetLook } from './sheet-starters';
 import type { Rand } from './ids';
 import type { SheetJson } from './sheet-json';

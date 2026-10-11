@@ -10,7 +10,8 @@ import {
   TEMPLATE_START_SHEETS,
   TEMPLATE_STARTS,
 } from './template-starts';
-import { sheetTemplate, sheetTemplateInfo } from './sheet-templates/catalogue';
+import { sheetTemplateInfo } from './sheet-templates/catalogue';
+import { sheetTemplate } from './sheet-templates/template-design';
 
 const NOW = Date.UTC(2026, 9, 8, 15);
 let seed = 1;

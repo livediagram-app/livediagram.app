@@ -52,6 +52,12 @@ Plan must cost nothing to a document that does not use it:
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
   [Plan tour](plan-tour.md) loads the first time the person enters Plan and stays loaded for the session, so
   leaving Plan mid-tour still ends it (closing a card panel it opened).
+- **Dashboards, Start Planning and the Sheet templates load when drawn too**: a Dashboard tab's page loads only for a
+  Dashboard tab, Start Planning with the board picker, the Sheet templates' designs only when one is set up or drawn
+  in a preview (the catalogue a menu names them from carries names and lines alone), and the tab menu's CSV writer
+  at the press. Measured on the document page's first load (gzipped JS, the static export): 1,463 KiB on main before
+  Dashboards and the new templates, 1,860 KiB with them loaded up front, 1,485 KiB once lazy (+22 KiB).
+  `plan-lazy-load.test.ts` keeps them out of the first load.
 - **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
   holds, so boards and cards re-render only when items, types, presence or the board change.
 - **Other tabs load once**: statuses are the document's ([Plan templates](plan-templates.md#hand-offs)), so a

@@ -1,12 +1,8 @@
 // The sheet templates (docs/specs/029-sheets/sheet.md "Sheet templates"): every designed sheet a person can start
 // from, in Setup Sheet's and Start Planning's order, each with its name, line, group and accent, and its design dated
 // from now. One catalogue: Setup Sheet, Start Planning, a Dashboard slot and the Plan templates all draw from it.
-import { localMs, serialFromMs } from '../dates';
+// Names and lines only, so the main bundle can name a template without carrying its design (template-design.ts).
 import type { SheetAccent } from './accents';
-import type { SheetDesign } from './design';
-import { budgetDesign, expensesDesign, invoiceDesign, loanDesign } from './money';
-import { contactsDesign, gradesDesign, guestsDesign, habitsDesign } from './people';
-import { inventoryDesign, pipelineDesign, timesheetDesign, trackerDesign } from './work';
 
 export const SHEET_TEMPLATE_IDS = [
   'budget',
@@ -217,38 +213,4 @@ export const SHEET_TEMPLATES: readonly SheetTemplateInfo[] = [
 
 export function sheetTemplateInfo(id: SheetTemplateId): SheetTemplateInfo {
   return SHEET_TEMPLATES.find((t) => t.id === id)!;
-}
-
-// A template's design, dated from `now` (the Timesheet's week, the Tracker's and Contacts' dates, the Invoice's day):
-// the instant `now` in this person's time zone, so its today is TODAY()'s (a template made just after midnight is
-// dated that day, not the day before).
-export function sheetTemplate(id: SheetTemplateId, nowMs: number): SheetDesign {
-  const now = localMs(nowMs);
-  const today = Math.floor(serialFromMs(now));
-  switch (id) {
-    case 'budget':
-      return budgetDesign();
-    case 'tracker':
-      return trackerDesign(today);
-    case 'timesheet':
-      return timesheetDesign(now);
-    case 'contacts':
-      return contactsDesign(today);
-    case 'invoice':
-      return invoiceDesign(today);
-    case 'expenses':
-      return expensesDesign(today);
-    case 'pipeline':
-      return pipelineDesign(today);
-    case 'inventory':
-      return inventoryDesign();
-    case 'guests':
-      return guestsDesign();
-    case 'grades':
-      return gradesDesign();
-    case 'habits':
-      return habitsDesign();
-    case 'loan':
-      return loanDesign();
-  }
 }

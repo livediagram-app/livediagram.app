@@ -27,12 +27,14 @@ const sheetTab = {
 };
 
 describe('a tab menu’s Import and Download CSV', () => {
-  it('is the Sheet’s own CSV on a Sheet tab', () => {
+  it('is the Sheet’s own CSV on a Sheet tab', async () => {
     const rows = tabDataRows(sheetTab)!;
     expect([rows.importLabel, rows.downloadLabel]).toEqual(['Import CSV…', 'Download CSV']);
     rows.onImport!();
     expect(entry.onImportCsv).toHaveBeenCalledOnce();
     rows.onDownload();
+    // The writer loads at the press.
+    await vi.waitFor(() => expect(downloadSheetCsv).toHaveBeenCalled());
     expect(downloadSheetCsv).toHaveBeenCalledWith(
       entry.controller.workbook,
       entry.controller.sheet,

@@ -14,10 +14,10 @@ import {
   SHEET_TEMPLATE_IDS,
   SHEET_TEMPLATES,
   isSheetTemplateId,
-  sheetTemplate,
   sheetTemplateInfo,
   type SheetTemplateId,
 } from './catalogue';
+import { sheetTemplate } from './template-design';
 import { mixHex, templateTints, SHEET_ACCENTS } from './accents';
 import { mondayOf } from './work';
 import { localMs, serialFromDate } from '../dates';

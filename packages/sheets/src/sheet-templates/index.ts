@@ -3,3 +3,4 @@ export * from './accents';
 export * from './design';
 export * from './compile';
 export * from './catalogue';
+export * from './template-design';

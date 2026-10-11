@@ -5,7 +5,6 @@
 // (Sheet Settings' registry), a Board tab through its board's (board-csv-registry.ts); any other tab keeps the
 // document's Import dialog. Export opens the Export dialog on every tab, with the formats that suit its kind.
 import type { Tab } from '@livediagram/document';
-import { downloadSheetCsv } from '@/components/sheets/sheet-csv';
 import { sheetSettingsEntryOf } from '@/components/sheets/sheet-settings-registry';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 
@@ -32,7 +31,11 @@ export function tabDataRows(tab: Pick<Tab, 'kind' | 'elements'>): TabDataRows | 
     ...(now?.controller.canShape ? { onImport: () => entry()?.onImportCsv() } : {}),
     onDownload: () => {
       const e = entry();
-      if (e) downloadSheetCsv(e.controller.workbook, e.controller.sheet);
+      // The CSV writer loads at the press, so the tab menu (in every editor's first load) never carries it.
+      if (e)
+        void import('@/components/sheets/sheet-csv').then(({ downloadSheetCsv }) =>
+          downloadSheetCsv(e.controller.workbook, e.controller.sheet),
+        );
     },
   };
 }
