@@ -340,6 +340,7 @@ export const FACILITATE_TOUR: MetricStack = {
 const SHOW_ME_SURFACES = [
   { token: 'CardTypeTour', title: 'Card Type', where: 'the card type editor' },
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
+  { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(

@@ -74,6 +74,7 @@ export const HELP_ARTICLES = {
   planBoards: 'canvas/plan-mode/boards',
   planCards: 'canvas/plan-mode/cards',
   planSheets: 'canvas/plan-mode/sheets',
+  planDashboards: 'canvas/plan-mode/dashboards',
   planTour: 'canvas/plan-mode/plan-tour',
   facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
   links: 'canvas/links',
@@ -139,6 +140,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planSheets: {
     title: 'Learn about sheets',
     description: 'Cells, formulas, charts, setup and settings.',
+  },
+  planDashboards: {
+    title: 'Learn about dashboards',
+    description: 'Rows of slots, what a slot can show, and arranging them.',
   },
   planTour: {
     title: 'Learn about the Plan Tour',

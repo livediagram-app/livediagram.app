@@ -5,7 +5,7 @@
 // Dashboard Setup (its name, Add Row, Clear Dashboard), Background (plain or tinted, as two swatches) and Layouts
 // (start over from one, drawn small), built from the same parts as a Sheet's Sheet Settings; each change one undo
 // step; starting over and clearing ask first.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   DASHBOARD_PRESETS,
@@ -40,6 +40,12 @@ import { SettingsCog } from '../SettingsCog';
 import { dashboardRowCount, revealNewRow } from './reveal-new-row';
 import { useSlotDraft } from './useSlotDraft';
 import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import {
+  DashboardShowMeButton,
+  DashboardTourStage,
+  useDashboardTour,
+} from '@/components/tour/DashboardTour';
 
 const SetupGlyph = lucideGlyph(lucideLayoutGrid, 14);
 const LookGlyph = lucideGlyph(lucidePaintbrush, 14);
@@ -75,6 +81,8 @@ export function DashboardSettings({
   // A board, view or Sheet maximised from a slot covers the page and puts its own cog in this corner: the
   // dashboard's steps aside until it is restored (plan-tabs.md "Dashboard Settings").
   const covered = useMaximisedPlanId() !== null;
+  // Show Me: the tour of arranging and filling this dashboard, run on the page (plan-tabs.md "Show Me").
+  const { tour, freeze } = useDashboardTour();
   if (!canEdit || covered) return null;
   return createPortal(
     <div
@@ -99,9 +107,19 @@ export function DashboardSettings({
             actions={actions}
             onRename={onRename}
             onClose={close}
+            showMe={
+              <DashboardShowMeButton
+                tour={tour}
+                onStart={() => {
+                  freeze(slotsNow(layout));
+                  close();
+                }}
+              />
+            }
           />
         )}
       </SettingsCog>
+      <DashboardTourStage tour={tour} />
     </div>,
     canvas,
   );
@@ -113,12 +131,15 @@ export function DashboardSettingsPanel({
   actions,
   onRename,
   onClose,
+  showMe,
 }: {
   name: string;
   layout: DashboardLayout;
   actions: PlanTabActions;
   onRename?: ((name: string) => void) | undefined;
   onClose: () => void;
+  // The title row's Show Me, beside Help (docs/specs/007-editor/show-me.md).
+  showMe?: ReactNode;
 }) {
   const palette = planPalette(useCanvasSurface(), {});
   const [open, setOpen] = useState<Section | null>('setup');
@@ -152,6 +173,11 @@ export function DashboardSettingsPanel({
   };
   return (
     <>
+      {/* The title row: Show Me, then Help on dashboards. */}
+      <div className="flex items-center justify-end gap-0.5 border-b border-slate-100 px-1.5 pb-1 dark:border-slate-800">
+        {showMe}
+        <HelpArticleLink article="planDashboards" variant="labelled" />
+      </div>
       <BoardSettingsSection title="Dashboard Setup" icon={<SetupGlyph />} {...section('setup')}>
         <SettingsBody>
           {onRename ? (
@@ -308,4 +334,10 @@ function NameField({ name, onRename }: { name: string; onRename: (name: string) 
       onBlur={save}
     />
   );
+}
+
+// What Show Me can point at on this dashboard, as it is now.
+function slotsNow(layout: DashboardLayout): { hasEmpty: boolean; hasFilled: boolean } {
+  const slots = layout.rows.flatMap((r) => r.slots);
+  return { hasEmpty: slots.some((s) => !s.content), hasFilled: slots.some((s) => !!s.content) };
 }

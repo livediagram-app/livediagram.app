@@ -428,7 +428,7 @@ toolbar's UI scale, as the menu box sits at the top left (and as a board's or Sh
 board, view or Sheet maximised from a slot covers the page, the cog is not shown (the covering element's own cog sits
 in that corner); it is back the moment it is restored. It
 opens the settings popover boards and Sheets use, built from the same parts as Sheet Settings (a labelled field,
-compact action buttons with their icon left of their label, picture choices), its sections collapsible, one open at a time (Dashboard Setup when it opens):
+compact action buttons with their icon left of their label, picture choices), its sections collapsible, one open at a time (Dashboard Setup when it opens), under a slim title row holding **Show Me** (below) and **Help** (the labelled Help link, to the Dashboards article):
 
 - **Dashboard Setup**: **Name**, the tab's name typed in place (Enter or leaving saves it trimmed, up to 80
   characters; Escape puts it back; the tab bar and the menu box follow; untouched, it follows a rename made
@@ -448,6 +448,19 @@ compact action buttons with their icon left of their label, picture choices), it
   slots' elements leave the tab with them (a Sheet's cells stay in the document).
 
 Each change is one undo step. A Participant and a Viewer have no cog (the dashboard is an Editor's to change).
+
+### Show Me
+
+**Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of arranging and filling the dashboard, on the
+page itself; it is never offered or started on its own. Pressing it closes the settings popover, then each step rings
+a real part of the page, which stays usable (the Editor can fill a slot or drag a divider while the step is up). The
+steps: **Rows of Slots** (the first row: dividers and the bottom edge), **Fill a Slot** (the first empty slot: Add to
+Slot or a palette tile; only when a slot is empty), **Change or Move a Slot** (the first filled slot, its grip and cog
+shown as on hover while the step is up; only when a slot holds something), **Dashboard Settings** (the cog), then a
+closing card, **That Is a Dashboard**, with a link to the Dashboards article. Which steps it has is fixed when it
+starts, so filling the empty slot mid-tour keeps the count. Only an Editor has the cog, so only an Editor sees Show
+Me; a locked tab has no cog, so none. Telemetry: `UI` · `Started` · `DashboardTour`, and `UI` · `Ended` ·
+`DashboardTourCompleted` or `DashboardTourSkipped`.
 
 ## A row that fills the page
 
@@ -590,11 +603,11 @@ next time the document is opened:
 
 ## Share roles
 
-| Role        | Board and Sheet tabs                 | Dashboard tab                                          |
-| ----------- | ------------------------------------ | ------------------------------------------------------ |
-| Editor      | Everything the board or Sheet offers | Rows, slots, spans, heights, content, card style; Open |
-| Participant | What the board or Sheet lets them do | Looks, and Open; changes nothing on the dashboard      |
-| Viewer      | Looks                                | Looks, and Open                                        |
+| Role        | Board and Sheet tabs                 | Dashboard tab                                                   |
+| ----------- | ------------------------------------ | --------------------------------------------------------------- |
+| Editor      | Everything the board or Sheet offers | Rows, slots, spans, heights, content, card style; Open; Show Me |
+| Participant | What the board or Sheet lets them do | Looks, and Open; changes nothing on the dashboard               |
+| Viewer      | Looks                                | Looks, and Open                                                 |
 
 A Dashboard's layout is tab metadata; only an Editor's change to it is accepted. Gated on the session's `can.level === 'edit'`,
 never on `isReadOnly`.

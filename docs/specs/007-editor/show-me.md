@@ -9,21 +9,21 @@ wrong moment.
 
 ## Domain language
 
-| Term                | Means                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                     |
-| **Show Me surface** | A surface that carries a Show Me button (the list below)                                       |
-| **mode tour**       | One of the tours that offer themselves once, in a mode (Diagram, Plan, Facilitate); not this   |
+| Term                | Means                                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                   |
+| **Show Me surface** | A surface that carries a Show Me button (the list below)                                     |
+| **mode tour**       | One of the tours that offer themselves once, in a mode (Diagram, Plan, Facilitate); not this |
 
 ## Where it lives
 
-| Surface                                                                            | Where the button sits                                       | Who sees it                                  |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------- |
-| [Card type editor](../026-plan/item-types.md#editing-a-type)                       | The editor's title row                                      | Whoever can open the editor (an Editor)      |
-| [Share dialog](live-app.md#share-dialog)                                           | The dialog's title row (not on the offline gate)            | The owner (only the owner can open it)       |
-| [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)                  | The settings panel's title row                              | An Editor (only an Editor sees the settings) |
-| [Photo import review](../021-event-storming/event-storming.md#show-me)             | The review's top-left corner, once the stickies are found   | Whoever reaches the review (edit access)     |
-| [Logo page panel](logo-pages.md#show-me)                                           | The page panel's title row, on a logo page                  | An Editor (only an Editor has the panel)     |
+| Surface                                                                | Where the button sits                                     | Who sees it                                  |
+| ---------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------- |
+| [Card type editor](../026-plan/item-types.md#editing-a-type)           | The editor's title row                                    | Whoever can open the editor (an Editor)      |
+| [Share dialog](live-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
+| [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
+| [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
+| [Logo page panel](logo-pages.md#show-me)                               | The page panel's title row, on a logo page                | An Editor (only an Editor has the panel)     |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
 
