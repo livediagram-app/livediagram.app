@@ -19,7 +19,7 @@ const classOf = (html: string, marker: RegExp): string => {
 describe('touch targets on the public sites', () => {
   it('pads the header brand, apps menu and primary CTA vertically', () => {
     const html = renderToStaticMarkup(
-      <SiteHeader ctaSurface="Home" productNav="Welcome" shareRail={false} />,
+      <SiteHeader ctaSurface="Home" productNav="home" shareRail={false} />,
     );
     expect(classOf(html, /<a [^>]*href="\/"[^>]*>/)).toMatch(/\btouch-target-y\b/);
     expect(classOf(html, /<a [^>]*aria-label="Choose Template"[^>]*>/)).toMatch(
@@ -28,7 +28,7 @@ describe('touch targets on the public sites', () => {
   });
 
   it('pads the apps menu trigger vertically', () => {
-    const html = renderToStaticMarkup(<ProductNav current="Welcome" showOnMobile />);
+    const html = renderToStaticMarkup(<ProductNav current="home" showOnMobile />);
     expect(classOf(html, /<button [^>]*aria-haspopup[^>]*>/)).toMatch(/\btouch-target-y\b/);
   });
 

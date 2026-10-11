@@ -78,7 +78,13 @@ describe('IconButton hint', () => {
 describe('IconButton shortcut letter', () => {
   it('hides the corner letter on a coarse pointer', () => {
     render(
-      <IconButton label="Add square" onClick={noop} shortcut="R" shortcutAlwaysVisible>
+      <IconButton
+        label="Add square"
+        description="Drop a square."
+        onClick={noop}
+        shortcut="R"
+        shortcutAlwaysVisible
+      >
         <svg />
       </IconButton>,
     );
