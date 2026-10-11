@@ -19,8 +19,10 @@ node (growing re-lays the map) or to a Viewer. A Participant grows a map too, fr
 Add child and Add sibling ([Share roles](../013-workspace/share-roles.md)); the quick-connect ring stays an Editor's.
 
 Each new node is placed in the map, connected to its parent with a pinned
-arrow, selected, and put straight into label editing, so a whole branch is
-typed without touching the mouse.
+arrow, and selected. It is **not** put into label editing: the selection stays on
+the canvas, so Tab and Enter keep growing from it and the toolbar stays in reach. Typing
+on it opens its label editor with that first character (type-to-edit), so a whole branch
+is still typed without touching the mouse.
 
 ## Why this is the gap
 
@@ -192,7 +194,7 @@ out blank, and a Tab pressed during the gap grows from the wrong node,
 stacking two nodes on one spot.
 
 So a growth opens a **handoff** (`apps/live/lib/mind-handoff.ts`): until the new
-node's label editor has mounted and taken focus, every keystroke is captured
+node is on screen, selected, every keystroke is captured
 for it, as a queue of segments (the text for one node and the key that left
 it). Characters and Backspace edit the open segment, which the editor types in
 the moment it opens. A segment already ended by Tab or Enter never needs the
@@ -200,7 +202,9 @@ editor: it closes without committing, and a task later the editor state writes
 that text as the node's label and grows the next node **in one commit**, while
 the capture carries on collecting the rest of the burst for it. So a burst of
 several nodes lands exactly as typed. Escape ends the typing: the text is kept,
-or an empty node is removed as below.
+or an empty node is removed as below. Once the node is on screen, a handoff that
+caught nothing lets go and no editor opens; one that caught keys opens the node's
+label editor to take them.
 
 Finishing the node from the editor state rather than replaying the key inside
 the new editor is deliberate. A replay races the editor's own mount: its
@@ -226,7 +230,10 @@ An **empty** node that was empty when the edit began, has a parent and has no
 children is not something anybody meant to keep: it is the Tab pressed one time
 too many. Escape removes it with its connector and selects its parent, so the
 keys carry on from there. If the map was tidy, it is laid out again without the
-node, closing the gap its growth opened, so it stays tidy.
+node, closing the gap its growth opened, so it stays tidy. Since a growth leaves
+the new node selected rather than in its editor, the same holds for Escape on the
+canvas: pressed on the node a growth just made, still selected and still empty, it
+removes that node the same way instead of only deselecting it.
 
 ## Following the growth
 

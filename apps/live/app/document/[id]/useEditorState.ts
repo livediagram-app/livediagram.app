@@ -2801,7 +2801,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
 
   // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
-  const { canGrowMindNode, growMindNode, abandonMindNode } = useMindGrowth({
+  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = useMindGrowth({
     // A Participant grows a mind map (docs/specs/013-workspace/share-roles.md): branches are content.
     editsBlocked: participant.participating
       ? createBlocked || !participant.can.addContent
@@ -3495,6 +3495,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onBeginFreehand: beginFreehand,
     canGrowMindNode,
     onGrowMindNode: growMindNode,
+    onEscapeMindNode: escapeGrownMindNode,
     onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,

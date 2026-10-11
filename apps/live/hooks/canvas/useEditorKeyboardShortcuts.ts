@@ -222,6 +222,20 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
+      // --- Escape drops an empty, just-grown mind node ---
+      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
+      if (
+        key === 'Escape' &&
+        !inText &&
+        live.editingId === null &&
+        selectedId !== null &&
+        multiSelectedIds.size === 0 &&
+        live.onEscapeMindNode(selectedId)
+      ) {
+        e.preventDefault();
+        return;
+      }
+
       // --- Escape clears the selection ---
       // When Escape has no transient mode to cancel (the narrow first
       // effect above owns format / pending-draw / Format /

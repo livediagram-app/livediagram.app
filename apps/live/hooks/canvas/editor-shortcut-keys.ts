@@ -93,6 +93,10 @@ export type EditorKeyboardShortcutsDeps = {
   // it can't go stale against the selection.
   canGrowMindNode: (id: string) => boolean;
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Escape on the empty node a growth just made (the Tab one time too many):
+  // removes it and selects its parent. False when that is not the case, so
+  // Escape deselects as usual.
+  onEscapeMindNode: (id: string) => boolean;
   // S arms the shape pen — the same gesture as the pencil, but the stroke is
   // run through shape recognition on release (docs/specs/008-canvas/two-pens.md).
   onBeginShapePen: () => void;

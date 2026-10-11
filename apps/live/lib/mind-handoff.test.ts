@@ -4,6 +4,7 @@ import {
   applyHandoffKey,
   beginMindHandoff,
   claimMindHandoff,
+  landMindHandoff,
   MIND_HANDOFF_TIMEOUT_MS,
   resetMindHandoff,
   type HandoffActions,
@@ -146,5 +147,34 @@ describe('beginMindHandoff / claimMindHandoff', () => {
     beginMindHandoff('n2', a);
     expect(a.calls).toEqual(['settle n1 Kept']);
     expect(claimMindHandoff('n2')).toEqual({ type: 'text', text: '' });
+  });
+});
+
+describe('landMindHandoff', () => {
+  it('lets go of the keyboard when nothing was typed, so no editor opens', () => {
+    beginMindHandoff('n1', actions());
+    expect(landMindHandoff('n1')).toBe(false);
+    // Released: the canvas gets the next key (type-to-edit).
+    expect(press('x').defaultPrevented).toBe(false);
+    expect(claimMindHandoff('n1')).toBeNull();
+  });
+
+  it('asks for the editor when keys arrived before the node landed', () => {
+    beginMindHandoff('n1', actions());
+    type('Hi');
+    expect(landMindHandoff('n1')).toBe(true);
+    expect(claimMindHandoff('n1')).toEqual({ type: 'text', text: 'Hi' });
+  });
+
+  it('asks for the editor when a Tab ended the node before it landed', () => {
+    beginMindHandoff('n1', actions());
+    press('Tab');
+    expect(landMindHandoff('n1')).toBe(true);
+  });
+
+  it('ignores a node no handoff is waiting on', () => {
+    beginMindHandoff('n1', actions());
+    expect(landMindHandoff('other')).toBe(false);
+    expect(press('x').defaultPrevented).toBe(true);
   });
 });
