@@ -47,6 +47,7 @@ import {
   LinkCardArt,
   LivingBackgroundArt,
   LockArt,
+  LogoPageArt,
   MarginCommentsArt,
   MarkdownImportArt,
   MarkersArt,
@@ -767,15 +768,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Infographics',
     scene: 'infographic',
     cta: 'Explore infographics',
-    title: 'Posters, one-pagers and social posts',
+    title: 'Posters, social posts and logos',
     description:
-      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it.',
+      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
     metaDescription:
-      'Lay out posters, one-pagers and social posts from ready-made layouts, painted from your theme, then export them print-ready or post them.',
+      'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
     highlights: [
       'Pages for print and social',
       'Start a page from a layout',
-      'Turn any diagram into pages',
+      'Design a logo',
       'Every page, print-ready',
     ],
     items: [
@@ -784,7 +785,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/illustrate/',
         title: 'Pages for print and social',
         description:
-          'A4, US Letter and A3 for print; square, portrait post and story or slide for social. Each page has its own size and orientation, and everything on it moves with it.',
+          'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
       },
       {
         art: <InfographicLayoutArt />,
@@ -806,6 +807,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Turn any diagram into pages',
         description:
           'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
+      },
+      {
+        art: <LogoPageArt />,
+        href: '/help/canvas/illustrate/logo-pages/',
+        title: 'Design a logo',
+        description:
+          'A logo page is a square artboard with construction guides to build on. Start from twenty-five logo layouts or a blank board, draw with Mirror for a symmetrical mark, combine shapes into one, set the name in wordmark type, then download a logo kit: SVG, PNGs from 16 to 1024 pixels and a favicon.',
       },
       {
         art: <IllustrateExportArt />,
@@ -973,7 +981,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Sheets with real formulas',
         description:
-          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, copy and paste works with Google Sheets and Excel, and the cells zoom from 50% to 200%.',
+          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and the cells zoom from 50% to 200%.',
       },
       {
         art: <BoardWidgetsArt />,

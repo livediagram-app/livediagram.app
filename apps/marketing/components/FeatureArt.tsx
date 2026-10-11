@@ -24,6 +24,7 @@ export * from './feature-art/present';
 export * from './feature-art/room';
 // Infographic pages (docs/specs/007-editor/illustrate-pages.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';
+export * from './feature-art/logo';
 export * from './feature-art/article';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
 // erasers, Plan's boards, and the writing and slides of Illustrate's articles and slide pages.

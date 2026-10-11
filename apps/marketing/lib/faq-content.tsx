@@ -194,12 +194,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort,
             filter and freeze, edited live by everyone on the tab. Formulas can read the cards on
-            the board, and Budget Planner, Timesheet, Contact List and Task Tracker templates start
-            you off. See <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
+            the board, or list the cards as rows that stay linked both ways. CSV files come in and
+            go out, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you
+            off. See <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
           </>
         ),
         aText:
-          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you off. See Sheets.',
+          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. CSV files come in and go out, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you off. See Sheets.',
       },
       {
         q: 'Can I present from it?',
@@ -325,7 +326,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as one print-ready PDF, and a logo page as a logo kit. Hidden layers stay out of exports.',
+        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of exports.',
       },
       {
         q: 'Does it work with Mermaid?',
@@ -333,7 +334,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
+        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too, and a CSV file dropped on a Plan tab becomes a Sheet.',
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',

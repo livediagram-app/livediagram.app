@@ -8,6 +8,7 @@ import { LOGO_LAYOUTS, PAGE_LAYOUTS, SLIDE_LAYOUTS, TEMPLATES } from '@livediagr
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
 import { ALTERNATIVES } from './alternatives';
+import { LANDING_SECTIONS } from './landing-content';
 import {
   FAQ_CATEGORIES,
   faqAnswerText,
@@ -81,6 +82,14 @@ describe('slide layout counts in marketing copy', () => {
   it('matches the infographic and logo catalogues in the FAQ', () => {
     expect(PAGE_LAYOUT_COUNT).toBe(PAGE_LAYOUTS.length);
     expect(LOGO_LAYOUT_COUNT).toBe(LOGO_LAYOUTS.length);
+  });
+
+  it('matches the infographic and logo catalogues on the landing page', () => {
+    // Written as words in the cards; a catalogue change fails here until the copy follows it.
+    const WORD: Record<number, string> = { 25: 'twenty-five', 31: 'Thirty-one' };
+    const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
+    expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
+    expect(copy).toContain(`${WORD[LOGO_LAYOUTS.length]} logo layouts`);
   });
 
   it('matches the catalogue on every comparison page', () => {
