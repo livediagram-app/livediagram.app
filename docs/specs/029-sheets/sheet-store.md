@@ -58,9 +58,14 @@ elements, its snapshots, its changesets or its room.
   other; the same input or format key resolves to the last write.
 - **Layout write**: insert rows or columns (new ids, made by the client, at a place given as "after this id"),
   delete them, move them (after an id), resize them, hide or show them, set the freeze, merge or unmerge a range,
-  set or clear the filter and its conditions. A layout write naming an id that is gone does what still makes
+  set or clear the filter and its conditions, set or remove a [validation rule](data-validation.md) or a
+  [format rule](conditional-formatting.md), or reorder the format rules. A layout write naming an id that is gone does what still makes
   sense (deleting a deleted row is nothing; inserting after a deleted row inserts at its old neighbour, else the
   end).
+- A cell write is checked against the sheet's validation rules ([Where values are checked](data-validation.md#where-values-are-checked)):
+  a value a Reject rule refuses is refused (`value_invalid`, naming the cell), nothing of the write stored. A write
+  sent with `undo` (an undo or redo) or `unchecked` (an import, a card table's sync, a template's start) skips that
+  check, and only that check.
 - **Sort** is a layout write of the rows (their new order) for a whole-sheet sort, and a cell write for a range.
 - **Rename**: a new title; refused when another sheet on its tab has it (`sheet_title_taken`).
 - **Delete**: removes the sheet and its cells. **Delete when unreferenced** (the editor's, with its element) removes
@@ -172,8 +177,9 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   title (or id) and A1 references, never ids of rows and columns:
   - MCP **`list_sheets`** (a document's sheets: title, tab, size, filled range, the Sheet element framing it),
     **`read_sheet`** (a range's non-empty cells by A1: input, value and what it shows; plus freeze, merges and
-    filter), **`change_sheet`** (changes in order: set cells by A1 from rows of inputs; clear or format a range;
-    insert or delete rows and columns; sort; freeze; rename) and **`add_sheet`** (place a Sheet element on a tab,
+    filter, validation rules and format rules), **`change_sheet`** (changes in order: set cells by A1 from rows of
+    inputs; clear or format a range; insert or delete rows and columns; sort; freeze; rename; set or clear validation
+    rules and format rules) and **`add_sheet`** (place a Sheet element on a tab,
     optionally filled from rows or CSV text).
   - CLI: `sheet ls <doc>`, `sheet get <doc> <sheet> [range]`, `sheet set <doc> <sheet> <A1> <value…>` (or `--csv`
     from a file or stdin), `sheet add <doc> [--tab] [--title] [--csv]`, `sheet insert-rows`, `sheet insert-cols`,
@@ -200,6 +206,7 @@ Sheets follow the document's access ([Auth and guest access](../014-identity/aut
   refused (`sheet_full`, "This sheet holds the most cells it can").
 - Up to 200,000 such cells per document across its sheets (`sheets_full`).
 - An input is up to 10,000 characters; a formula up to 8,000 (`input_too_long`).
-- Up to 1,000 merged ranges and 5,000 rows or columns with their own size per sheet.
+- Up to 1,000 merged ranges and 5,000 rows or columns with their own size per sheet; up to 200 validation rules and
+  100 format rules per sheet.
 - A write changes up to 5,000 cells; the editor sends a larger paste, fill or import as several writes, one undo
   step. Writes count against the write rate limit.
