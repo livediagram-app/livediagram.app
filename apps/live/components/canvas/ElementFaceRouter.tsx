@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import type { CSSProperties, ReactNode } from 'react';
 import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
 import {
@@ -22,7 +23,6 @@ import {
 } from '@livediagram/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
-import { CollabFaceRouter } from '@/components/canvas/collab/CollabFaceRouter';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';
 import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
@@ -44,12 +44,17 @@ import { SessionTimerFace } from '@/components/canvas/SessionTimerFace';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
-import { TableView } from '@/components/canvas/TableView';
+import { loadCollabFaceRouter, loadTableView } from '@/lib/editor-deferred-code';
 import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+
+// Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
+// as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
+const TableView = dynamic(loadTableView, { ssr: false });
+const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
 
 // WHAT AN ELEMENT SHOWS IN PLACE OF A PLAIN LABEL.
 //

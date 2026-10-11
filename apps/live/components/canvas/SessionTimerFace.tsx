@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { DialTicks } from '@/components/canvas/paper-kit';
 
 import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/document';
@@ -14,8 +15,17 @@ import {
   ElementEllipsisMenu,
   ElementMenuSettingsRow,
 } from '@/components/canvas/ElementEllipsisMenu';
-import { SessionTimerSettings } from '@/components/canvas/SessionElementSettings';
+import { loadSessionElementSettings } from '@/lib/editor-deferred-code';
 import { useNow } from '@/hooks/ui/useNow';
+
+// The settings open from the element's options menu only; fetched once the editor is idle
+// (lib/editor-deferred-code.ts).
+const SessionTimerSettings = dynamic(
+  () => loadSessionElementSettings().then((m) => m.SessionTimerSettings),
+  {
+    ssr: false,
+  },
+);
 
 // The face of a Timer session element (docs/specs/012-collaboration/session-button.md) once it is a real timer
 // rather than a button that starts one somewhere else.

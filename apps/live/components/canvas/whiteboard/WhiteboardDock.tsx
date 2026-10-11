@@ -7,7 +7,7 @@
 // flyouts open on its board side; on a narrow screen the groups scroll sideways together. One
 // flyout at a time, and nothing moves under the pointer when a tool is picked.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
@@ -61,9 +61,15 @@ export type WhiteboardDockProps = {
   model: WhiteboardDockModel;
   // The board's ink for this appearance: what the main pen draws with.
   ink: string;
+  // Called in the commit the dock is first in the page: its code loads on demand, so whatever
+  // measures against it (the top corners giving way, CanvasChrome) waits for it.
+  onDrawn?: () => void;
 };
 
-export function WhiteboardDock({ model, ink }: WhiteboardDockProps) {
+export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
+  useLayoutEffect(() => {
+    onDrawn?.();
+  }, [onDrawn]);
   // The dock is the Toolbar layout strip's twin, so it draws at the toolbar UI scale
   // (docs/specs/007-editor/ui-scale.md).
   const scale = useUiScale('toolbar');
