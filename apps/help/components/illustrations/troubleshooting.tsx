@@ -6,23 +6,46 @@
 import { useId } from 'react';
 import { Scene, Shape, Panel, Button, Label } from './primitives';
 
-/** A blank canvas stuck mid-load: a brand spinner ring over the dot grid with a
- *  reload button, the surface you see when a document will not open. */
+/** A document stuck mid-load, as DocumentLoading draws it: the diagram building itself, the title
+ *  and detail line over the loading sweep, and, after 10 seconds, the "taking longer" line with
+ *  a small secondary Refresh. */
 export function StuckCanvas() {
   return (
     <Scene w={420} h={220}>
-      {/* Spinner: a faint full ring plus a brand arc */}
-      <circle cx={210} cy={84} r={20} className="fill-none stroke-slate-200" strokeWidth={5} />
-      <path
-        d="M210 64 a20 20 0 0 1 20 20"
-        className="fill-none stroke-brand-500"
-        strokeWidth={5}
-        strokeLinecap="round"
+      {/* The build animation: a little diagram drawing itself in. */}
+      <rect
+        x={170}
+        y={28}
+        width={30}
+        height={20}
+        rx={4}
+        className="fill-white stroke-brand-300"
+        strokeWidth={1.6}
       />
-      <Label x={210} y={126} anchor="middle" size={12} weight={600} tone="muted">
+      <path d="M200 38 H216" className="stroke-brand-300" strokeWidth={1.6} />
+      <rect
+        x={220}
+        y={28}
+        width={30}
+        height={20}
+        rx={4}
+        className="fill-brand-100 stroke-brand-400"
+        strokeWidth={1.6}
+        strokeDasharray="4 3"
+      />
+      <Label x={210} y={78} anchor="middle" size={12} weight={600} tone="strong">
         Opening your document
       </Label>
-      <Button x={172} y={148} w={76} label="Refresh" variant="primary" />
+      <Label x={210} y={96} anchor="middle" size={10} tone="muted">
+        Getting everything in place
+      </Label>
+      {/* The loading sweep. */}
+      <rect x={150} y={108} width={120} height={4} rx={2} className="fill-slate-200" />
+      <rect x={176} y={108} width={44} height={4} rx={2} className="fill-brand-400" />
+      <Label x={210} y={146} anchor="middle" size={10} tone="muted">
+        This is taking longer than usual.
+      </Label>
+      <Button x={178} y={158} w={64} h={24} label="Refresh" />
     </Scene>
   );
 }
@@ -61,7 +84,7 @@ export function SignInError() {
           We sent a verification code to
         </Label>
         <Label x={210} y={100} anchor="middle" size={10} weight={600} tone="body">
-          you@example.com
+          you@example.com. Enter it below.
         </Label>
         {digits.map((d, i) => (
           <g key={i}>
@@ -80,7 +103,7 @@ export function SignInError() {
           </g>
         ))}
         <Button x={114} y={156} w={192} h={28} label="Verify" variant="primary" />
-        <Label x={160} y={210} anchor="middle" size={10} weight={600} tone="accent">
+        <Label x={160} y={210} anchor="middle" size={10} weight={600} tone="muted">
           Resend code
         </Label>
         <Label x={262} y={210} anchor="middle" size={10} weight={600} tone="muted">
@@ -184,7 +207,7 @@ export function RenderGlitch() {
       <Label x={314} y={36} anchor="middle" size={10} weight={700} tone="accent">
         FIXED
       </Label>
-      <Shape x={264} y={56} w={100} h={60} kind="rect" accent label="Server" />
+      <Shape x={264} y={56} w={100} h={60} kind="rect" accent label="Idea" />
     </Scene>
   );
 }

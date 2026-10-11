@@ -292,53 +292,59 @@ export function QuickControls() {
 export function TabBar() {
   const y = 96;
   return (
-    <Scene w={420} h={140}>
-      <Shape x={150} y={22} w={110} h={46} label="Checkout" />
-      <rect x={0} y={y} width={420} height={36} className="fill-white" />
-      <line x1={0} y1={y} x2={420} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
+    <Scene w={500} h={140}>
+      <Shape x={195} y={22} w={110} h={46} label="Checkout" />
+      <rect x={0} y={y} width={500} height={36} className="fill-white" />
+      <line x1={0} y1={y} x2={500} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
       <Label x={10} y={y + 19} size={10} weight={700} tone="muted">
         TABS
       </Label>
       {/* Active tab, with a presence avatar and its ⋯ menu button. */}
       <rect
-        x={46}
+        x={40}
         y={y + 7}
-        width={100}
+        width={92}
         height={22}
         rx={6}
         className="fill-white stroke-brand-400"
         strokeWidth={1.2}
       />
-      <Label x={55} y={y + 19} size={10} weight={700} tone="strong">
+      <Label x={47} y={y + 19} size={9.5} weight={700} tone="strong">
         Overview
       </Label>
-      <circle cx={117} cy={y + 18} r={6} className="fill-emerald-400" />
-      <DotsGlyph x={134} y={y + 18} />
-      <TabPill x={150} y={y + 8} w={44} label="Flow" />
-      {/* A collapsed tab folder. */}
+      <circle cx={108} cy={y + 18} r={5} className="fill-emerald-400" />
+      <DotsGlyph x={122} y={y + 18} />
+      <TabPill x={140} y={y + 8} w={40} label="Flow" />
+      {/* A collapsed tab folder, as TabFolderChip draws it: dashed slate, folder glyph, the name in
+          capitals and a count. */}
       <rect
-        x={198}
+        x={188}
         y={y + 8}
-        width={58}
+        width={60}
         height={20}
         rx={6}
-        className="fill-brand-50 stroke-brand-200"
+        className="fill-slate-50 stroke-slate-300"
         strokeWidth={1.2}
+        strokeDasharray="3 2"
       />
       <path
-        d={`M206 ${y + 14} l4 4 l-4 4`}
-        className="stroke-brand-500"
-        strokeWidth={1.5}
-        fill="none"
-        strokeLinecap="round"
+        d={`M193 ${y + 14} h4 l1.5 2 h4.5 v6 h-10 Z`}
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.1}
+        strokeLinejoin="round"
       />
-      <Label x={215} y={y + 19} size={10} weight={600} tone="accent">
-        Ideas
+      <Label x={207} y={y + 19} size={8.5} weight={700} tone="muted">
+        IDEAS
       </Label>
-      <Label x={270} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
+      <circle cx={240} cy={y + 18} r={5} className="fill-slate-200" />
+      <Label x={240} y={y + 19} anchor="middle" size={7.5} weight={700} tone="body">
+        2
+      </Label>
+      <Label x={262} y={y + 19} size={15} weight={600} tone="muted" anchor="middle">
         +
       </Label>
-      <QuickControlsRow x={340} y={y + 18} labelled={false} />
+      {/* On a computer the quick controls carry their words, beside the TABS label. */}
+      <QuickControlsRow x={310} y={y + 18} />
     </Scene>
   );
 }
@@ -479,6 +485,7 @@ export function ElementContextMenu() {
     { label: 'Shape' },
     { label: 'Rotation' },
     { label: 'Style', flyout: true },
+    { label: 'Animation', flyout: true },
     { label: 'Text', flyout: true },
     { label: 'Collaborate' },
     { label: 'Resources' },
@@ -486,7 +493,7 @@ export function ElementContextMenu() {
   const mx = 214;
   const my = 16;
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={256}>
       <Shape x={56} y={60} w={112} h={56} accent label="Order" />
       <SelectionBox x={56} y={60} w={112} h={56} />
       <Panel x={mx} y={my} w={160} h={8 + sections.length * 25}>
@@ -535,17 +542,36 @@ export function Minimap() {
       <Shape x={196} y={26} w={68} h={38} label="A" />
       <Shape x={176} y={116} w={62} h={36} accent label="B" />
       <Shape x={300} y={116} w={62} h={36} kind="circle" label="C" />
-      <Arrow from={[230, 64]} to={[207, 116]} kind="elbow" />
-      <Arrow from={[230, 64]} to={[331, 116]} kind="elbow" />
+      {/* Elbow connectors down out of A, splitting to B and C, one level arrowhead each. */}
+      <path
+        d="M230 64 V88 H207 V108 M230 88 H331 V108"
+        className="fill-none stroke-brand-400"
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Arrow from={[207, 106]} to={[207, 116]} tone="accent" />
+      <Arrow from={[331, 106]} to={[331, 116]} tone="accent" />
       {/* The Map panel, bottom-left, with the current-view box. */}
       <Panel x={20} y={110} w={136} h={88} title="MAP">
         <rect x={26} y={136} width={124} height={56} rx={4} className="fill-slate-100" />
         <rect x={52} y={146} width={70} height={40} rx={3} className="fill-white" />
-        <rect x={80} y={150} width={20} height={10} rx={2} className="fill-slate-300" />
-        <rect x={68} y={172} width={17} height={9} rx={2} className="fill-slate-300" />
-        <circle cx={112} cy={176} r={5} className="fill-slate-300" />
-        <line x1={90} y1={160} x2={76} y2={172} className="stroke-slate-300" strokeWidth={1.2} />
-        <line x1={90} y1={160} x2={110} y2={171} className="stroke-slate-300" strokeWidth={1.2} />
+        {/* The miniature in the shapes' own colours, labels left out. */}
+        <rect
+          x={80}
+          y={150}
+          width={20}
+          height={10}
+          rx={2}
+          className="fill-white stroke-brand-300"
+          strokeWidth={1}
+        />
+        <rect x={68} y={172} width={17} height={9} rx={2} className="fill-brand-500" />
+        <circle cx={112} cy={176} r={5} className="fill-white stroke-brand-300" strokeWidth={1} />
+        <path
+          d="M90 160 V166 H76 V172 M90 166 H112 V171"
+          className="fill-none stroke-brand-300"
+          strokeWidth={1}
+        />
         <rect
           x={52}
           y={146}

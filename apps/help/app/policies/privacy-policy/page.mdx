@@ -16,7 +16,7 @@ livediagram is built to need as little of your data as possible, and the whole c
 
 ## What we store
 
-- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you ask the AI assistant about it (see **AI features**).
+- **Your documents.** The content you create is saved so it is there when you come back, and so the people you share it with can see it. It is stored in our database on Cloudflare. A document you create in [Offline Mode](/help/privacy-and-security/offline-mode/) is the exception: it stays in your browser and never reaches our servers, unless you ask the AI assistant about it, read sticky notes from a photo (see **AI features**), or add a web link to it (our server fetches the link's preview).
 - **Images you upload.** Images placed in a document are kept in Cloudflare object storage and served back through the same API. Before a JPEG is stored, identifying metadata such as GPS location and camera details is stripped from it, so it never reaches anyone you share the document with.
 - **A browser id.** If you use livediagram without an account, we keep a random identifier in your browser's local storage to link documents to your browser. It is not tied to your name or email.
 - **Your display name and colour.** The name and cursor colour collaborators see are stored on our server against your browser id or account.
@@ -47,7 +47,7 @@ livediagram's use and transfer of information received from Google APIs adheres 
 
 The AI features run only when you use them, and only on a deployment that has an AI provider configured.
 
-- **The AI assistant.** When you ask the assistant something, your prompt and the elements on the current tab (their text, shapes and positions) are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant can be switched off in Settings.
+- **The AI assistant.** When you ask the assistant something, your prompt, the tab's name, the elements on the current tab (their text, shapes and positions) and your last few messages in that conversation are sent through our API to **OpenAI**, which writes the answer. Nothing is sent until you ask, and the assistant is off until you turn it on in Settings.
 - **Reading sticky notes from a photo.** When you import a photo of sticky notes, the notes are found in your browser, and crops of them are sent through our API to **Google** (Gemini) to read the handwriting. We do not store the crops.
 - **Connected AI tools.** If you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) such as Claude, that tool reads and changes your documents through our API using the token you approved. What the tool does with what it reads is governed by that tool's own terms and privacy policy, not this one.
 
@@ -63,7 +63,7 @@ To understand which features actually help, we record anonymous, first-party pro
 
 To count sign-ups and sign-ins once each, our server also remembers which sign-in sessions it has already counted, for 90 days, and that an account has been seen before (deleted when you delete your account). These records are never published; only the totals are.
 
-We collect this ourselves, store it in our own database, and use no third-party analytics vendors. The data is never sold or shared, and the only place it goes beyond our own use is our public [telemetry dashboard](/telemetry), where you can see exactly the same anonymous totals we do. You can turn it off for your browser at any time from Settings (see [What We Collect](/help/privacy-and-security/what-we-collect/)).
+We collect this ourselves, store it in our own database, and use no third-party analytics vendors. The data is never sold or shared, and the only place it goes beyond our own use is our public [telemetry dashboard](/telemetry), where you can see exactly the same anonymous totals we do. You can turn off the events your browser sends at any time from Settings (see [What We Collect](/help/privacy-and-security/what-we-collect/)). A few anonymous totals are counted by our server and can't be turned off: sign-ups and sign-ins, first visits to a share link, multiplayer sessions, emails sent, and server errors.
 
 ## Cookies and local storage
 
@@ -86,14 +86,14 @@ We rely on a small number of providers to run the service:
 - **Cloudflare**, for hosting, database storage, and image storage.
 - **Clerk**, for authentication (its script loads for every visitor; it holds account data only if you sign in).
 - **Google**, for the Google Drive mirror (only if you connect it); your browser talks to Google directly.
-- **Resend**, for delivering the emails described above (only if you have an account).
+- **Resend**, for delivering the emails described above (to account holders, and to addresses a teammate invites).
 - **OpenAI**, for the AI assistant, and **Google** (Gemini), for reading sticky notes from a photo (only when you use them; see **AI features** above).
 
 These providers process data on our behalf so that we can run the service.
 
 One more service is involved only when you use it: **Openverse**, run by the WordPress Foundation, answers searches in the image picker's Search tab. Your browser sends your search words to Openverse directly, so Openverse sees them and your IP address under its own privacy policy; our servers never see the search. A picture you pick is downloaded from its original host and then stored like any image you upload.
 
-Your browser also loads the editor's fonts from **Google Fonts**. When a document contains a video or embed (YouTube, Vimeo, Loom, Figma) or a link card, the browser of anyone viewing it loads that content, the link's icon, or its thumbnail from the provider, which sees their IP address. Link previews are fetched by our server from the linked site.
+Your browser also loads the editor's fonts from **Google Fonts**. A YouTube video's poster image, and a link card's icon and image, load from the provider when a document is viewed; other embeds (Vimeo, Loom, Figma, Google Docs, any website) load only when a viewer presses Load. Either way the provider sees the viewer's IP address. Link previews are fetched by our server from the linked site.
 
 ## Sharing and visibility
 
@@ -103,9 +103,9 @@ Anything you put in a document you share becomes visible to people who have the 
 
 ## Keeping and deleting your data
 
-You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. A document left empty and untouched for 30 days moves to the Trash on its own.
+You can delete any document you own at any time. A deleted document waits in the [Trash](/help/account-and-data/trash/) for 30 days, so you can restore it, and is then removed for good; you can also delete it permanently from the Trash sooner. Comments, answers, ideas and votes that passed through a live collaboration session are also kept in that session's own storage on Cloudflare, and that copy is not currently removed when the document is deleted. A document left empty and untouched for 30 days moves to the Trash on its own.
 
-You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash included), folders, images, themes, preferences and API tokens straight away, revokes the Google Drive connection, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+You can delete your account, and the data associated with it, yourself: open **Settings**, then **Account**, then **Delete Account**. This removes your documents (the Trash included, apart from the collaboration-session copy described above), folders, images, themes, preferences and API tokens straight away, revokes the Google Drive connection, and deletes your account at Clerk. Documents in a team's shared library pass to another member of that team rather than being deleted. See [Deleting Your Data](/help/account-and-data/deleting-your-data/).
 
 Other things are kept only as long as they are useful: anonymous product events for 60 days, Timeline activity for a year, changes made by connected AI tools for 30 days (so they can be undone), and an uploaded image that no document uses is removed once it is more than 30 days old. A guest's documents have no account to delete: remove them from the Explorer, or ask us.
 
