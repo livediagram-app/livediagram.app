@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 
 import { ITEM_TYPES } from '@livediagram/items';
-import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
+import { loadedPresentationOverlay, loadPresentationOverlay } from '@/lib/editor-deferred-code';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planPalette } from '@/components/plan/plan-palette';
@@ -21,8 +21,10 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { slideDurationMs } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-// Drawn only while presenting; fetched once the editor is idle (lib/editor-deferred-code.ts).
-const PresentationOverlay = dynamic(loadPresentationOverlay, { ssr: false });
+// Drawn only while presenting; fetched once the editor is idle (lib/editor-deferred-code.ts), and a deck
+// starts only once it is in (useSlideDeck). This lazy wrapper is the fallback for a presentation entered
+// before the code loaded.
+const LazyPresentationOverlay = dynamic(loadPresentationOverlay, { ssr: false });
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -52,6 +54,13 @@ export function PresentationHost() {
   // the camera reads them too.
   const config = slideDeck?.config;
   const configRef = useLatest(config);
+  // The overlay holds the deck's keys, so it draws in the very commit the first slide does: the loaded
+  // component itself when its code is in, never a lazy wrapper that waits a frame (and drops a key pressed
+  // in it). Chosen once per presentation, so it never swaps (and remounts) mid-deck.
+  const [Overlay, setOverlay] = useState<typeof LazyPresentationOverlay | null>(null);
+  if (at !== null && Overlay === null)
+    setOverlay(() => loadedPresentationOverlay() ?? LazyPresentationOverlay);
+  if (at === null && Overlay !== null) setOverlay(null);
 
   // Drive the canvas's transition class. The canvas underneath is the thing
   // that actually moves — one transform on one layer, so a hundred-element
@@ -127,7 +136,7 @@ export function PresentationHost() {
     [],
   );
 
-  if (!slideDeck || at === null || !config) return null;
+  if (!slideDeck || at === null || !config || !Overlay) return null;
   // An item slide is the card itself, drawn over the canvas (docs/specs/012-collaboration/presentation-mode.md
   // "Item slides").
   const itemId = slideDeck.runnable[at]?.slide.itemId;
@@ -141,7 +150,7 @@ export function PresentationHost() {
           palette={planPalette(surface, {})}
         />
       ) : null}
-      <PresentationOverlay
+      <Overlay
         canvasTool={canvasTool}
         onSetCanvasTool={setCanvasTool}
         steps={slideDeck.runnable}

@@ -462,3 +462,22 @@ describe('offDock', () => {
     expect(at.tipLeft).toBe(28 - 12);
   });
 });
+
+// Its code loads on demand, so the top corners measure against it only once it is in the page
+// (CanvasChrome, docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
+describe('WhiteboardDock drawn', () => {
+  it('says so in the commit it is first in the page, and only then', () => {
+    let inPage: boolean[] = [];
+    const onDrawn = vi.fn(() => {
+      inPage.push(document.querySelector('[data-whiteboard-dock]') !== null);
+    });
+    const m = model();
+    const view = render(<WhiteboardDock model={m} ink="#1c1917" onDrawn={onDrawn} />);
+    expect(inPage).toEqual([true]);
+    view.rerender(<WhiteboardDock model={m} ink="#1c1917" onDrawn={onDrawn} />);
+    expect(onDrawn).toHaveBeenCalledTimes(1);
+    inPage = [];
+    view.unmount();
+    expect(inPage).toEqual([]);
+  });
+});

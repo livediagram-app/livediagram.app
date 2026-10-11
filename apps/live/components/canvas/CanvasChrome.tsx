@@ -49,6 +49,7 @@ import {
   Fragment,
   useCallback,
   useMemo,
+  useState,
   type Dispatch,
   type RefObject,
   type SetStateAction,
@@ -410,12 +411,17 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
+  // The dock's code loads on demand, so it is drawn a moment after the chrome: the top corners
+  // measure against it from the commit it is first drawn in (its onDrawn), never before, when there
+  // is nothing on the page to measure. Once drawn its code is in, so a later mount is immediate.
+  const [dockDrawn, setDockDrawn] = useState(false);
+  const markDockDrawn = useCallback(() => setDockDrawn(true), []);
   // The bar across the top that the top corners give way to: the strip, or a dock at the top.
   const topBar = isMobile
     ? null
     : stripShown
       ? STRIP_SELECTOR
-      : dockOnTop
+      : dockOnTop && dockDrawn
         ? WHITEBOARD_DOCK_SELECTOR
         : null;
   const topBarCrowds = useStripCrowdsCorners(
@@ -584,7 +590,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
           of the palette. */}
       {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock model={props.whiteboardDock} ink={props.whiteboardInk ?? '#1c1917'} />
+        <WhiteboardDock
+          model={props.whiteboardDock}
+          ink={props.whiteboardInk ?? '#1c1917'}
+          onDrawn={markDockDrawn}
+        />
       ) : null}
 
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack

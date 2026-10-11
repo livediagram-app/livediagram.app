@@ -41,6 +41,7 @@ import {
 } from '@/lib/presentation-config';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { positionAt, presentingIndex, type PresentingPosition } from '@/lib/presenting-position';
+import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
 
 // How long after the last deck edit the save fires. Deck edits arrive in
 // bursts (drag a row through four positions, type a sentence of notes), and
@@ -445,9 +446,11 @@ export function useSlideDeck({
     if (runnable.length === 0) return;
     // A deck reaching into a tab nobody has visited would stall mid-show, so
     // pull every unloaded tab before the first slide paints (docs/specs/006-document/per-tab-storage.md).
+    // The overlay's code too (it loads on demand, lib/editor-deferred-code.ts), so its keys listen from the
+    // first slide. A failed load is left to the overlay's own render, which recovers a stale build.
     setStartingDeck(true);
     try {
-      await loadAllTabs?.();
+      await Promise.all([loadAllTabs?.(), loadPresentationOverlay().catch(() => {})]);
     } finally {
       setStartingDeck(false);
     }
