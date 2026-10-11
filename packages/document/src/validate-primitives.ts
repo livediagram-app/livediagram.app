@@ -11,10 +11,6 @@ export type FieldCheck = {
   rule: string;
 };
 
-export function isObj(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null && !Array.isArray(v);
-}
-
 export function isNum(v: unknown): v is number {
   return typeof v === 'number' && Number.isFinite(v);
 }

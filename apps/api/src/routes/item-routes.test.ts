@@ -1016,6 +1016,36 @@ describe('a vote’s tally', () => {
     expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
   });
 
+  // A card that keeps changing fails the tally after the others landed: the refusal names the cards tallied, so the
+  // host never sends their dots again (a resent tally would add them twice).
+  it('answers a busy tally with the cards already tallied', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    const b = (await add({ title: 'B' })).body.item;
+    const real = db.updateItemsAtRev;
+    const racing = vi.spyOn(db, 'updateItemsAtRev').mockImplementation((env, doc, writes) =>
+      real(
+        env,
+        doc,
+        writes.filter((w) => w.next.id !== b.id),
+      ),
+    );
+    const res = await call<ItemsResponse & { error: string }>({
+      path: '/items/tally',
+      body: {
+        items: [
+          { id: a.id, votes: { p1: 2 } },
+          { id: b.id, votes: { p1: 1 } },
+        ],
+      },
+    });
+    racing.mockRestore();
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('item_busy');
+    expect(res.body.items.map((i) => [i.id, i.fields['votes']])).toEqual([[a.id, { p1: 2 }]]);
+    expect(res.body.rev).toBeGreaterThan(0);
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields['votes']).toBeUndefined();
+  });
+
   it('refuses a malformed tally, and needs edit access', async () => {
     const a = (await add({ title: 'A' })).body.item;
     for (const items of [

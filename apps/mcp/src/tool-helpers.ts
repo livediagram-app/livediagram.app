@@ -79,6 +79,10 @@ export function errorResult(message: string): ToolResult {
   return { content: [{ type: 'text', text: message }], isError: true };
 }
 
+// A refusal after some changes went through says which did (the Plan and Sheet tools' many-change writes).
+export const stopped = (message: string, applied: readonly string[]) =>
+  errorResult(applied.length ? `${message} Applied before it: ${applied.join('; ')}.` : message);
+
 // An input the caller can correct, thrown from deep in a handler and answered as a tool error by registerTool.
 export class ToolInputError extends Error {}
 

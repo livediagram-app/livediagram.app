@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
+import { CursorMark } from '@/components/hero-cursor';
 
 // The hero's Plan window (docs/specs/019-marketing/marketing-site.md "Hero"): a launch board in Plan mode
 // (docs/specs/026-plan/plan-board.md). Three columns of cards land, Doing showing its WIP limit as `2 / 3`. A
@@ -204,28 +205,7 @@ function Count({
 }
 
 function Pointer({ colour, name }: { colour: string; name: string }) {
-  return (
-    <>
-      <path
-        d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
-        fill={colour}
-        stroke="white"
-        strokeWidth="1"
-      />
-      <rect x="10" y="12" width="24" height="13" rx="3" fill={colour} />
-      <text
-        x="22"
-        y="21.5"
-        textAnchor="middle"
-        fontFamily={FONT}
-        fontSize="8"
-        fontWeight="700"
-        fill="white"
-      >
-        {name}
-      </text>
-    </>
-  );
+  return <CursorMark colour={colour} label={name} badge="wide-name" />;
 }
 
 // A card someone carries: their pointer arrives on it, then card and pointer travel together by (dx, dy) to

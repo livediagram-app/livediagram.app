@@ -113,3 +113,22 @@ export function computeActiveFormat(
     link: uniform((r) => r.link, null),
   };
 }
+
+// The run toggle a Cmd/Ctrl+B, I or U press means, or null. Every runs-backed editor routes these to the SAME
+// run-based toggle as its toolbar buttons: left to the browser, contentEditable runs its native
+// execCommand('bold'…), which wraps the DOM in <b>/<i>/<u> tags the run model never sees, so the formatting
+// vanished on commit. The caller preventDefaults a hit so the native command never fires.
+const FORMAT_SHORTCUTS: Readonly<Record<string, RunBoolKey>> = {
+  b: 'bold',
+  i: 'italic',
+  u: 'underline',
+};
+export function formatShortcut(e: {
+  key: string;
+  metaKey: boolean;
+  ctrlKey: boolean;
+  altKey: boolean;
+}): RunBoolKey | null {
+  if (!(e.metaKey || e.ctrlKey) || e.altKey) return null;
+  return FORMAT_SHORTCUTS[e.key.toLowerCase()] ?? null;
+}

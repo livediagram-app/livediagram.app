@@ -12,6 +12,7 @@ import {
   type PageChange,
 } from '@livediagram/api-schema';
 import {
+  isRecord,
   ARTICLE_LOOK_IDS,
   ARTICLE_MARKDOWN_MAX,
   isArticleHex,
@@ -24,7 +25,6 @@ import {
 const PAGE_KINDS = ['infographic', 'article', 'slide', 'logo'] as const;
 
 type Raw = Record<string, unknown>;
-const isRecord = (v: unknown): v is Raw => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 class Refused extends Error {
   readonly code: IllustrateRefusal['code'];

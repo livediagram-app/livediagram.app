@@ -9,8 +9,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CLI_CLIENT_ID } from '@livediagram/api-schema';
-import { OAUTH_PRIMARY, OauthHelpLink, OauthShell } from '../oauth-shell';
-import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { apiExchangeOauthToken, apiRevokeToken } from '@/lib/api-client';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { MCP_ORIGIN } from '@/lib/mcp-config';
@@ -206,24 +205,7 @@ function Consent() {
         access your livediagram documents on your behalf. Approving creates an API token, which you
         can revoke any time from Settings, under Account › API Tokens.
       </p>
-      {/* Whole-row toggle with the shared presentational switch (the same
-          pattern as ProfilePane / SettingsDialog rows) — this was the last
-          native checkbox in the live app. */}
-      <button
-        type="button"
-        onClick={() => setReadOnly(!readOnly)}
-        aria-pressed={readOnly}
-        className="mt-4 flex w-full cursor-pointer items-start justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2.5 text-left text-sm dark:border-slate-700"
-      >
-        <span className="min-w-0 text-slate-600 dark:text-slate-300">
-          <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
-          let it find and view your documents, but not create, edit, delete, or share them. Leave
-          off for full read + write.
-        </span>
-        <span className="mt-0.5 shrink-0">
-          <ToggleSwitch presentational checked={readOnly} label="Read-only access" />
-        </span>
-      </button>
+      <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
       {/* The one fact worth checking before approving, and now the server's
           answer rather than the URL's: the host the authorization code is
           delivered to, read off the redirect URI this client registered. */}

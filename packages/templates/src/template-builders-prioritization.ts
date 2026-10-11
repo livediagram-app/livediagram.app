@@ -4,14 +4,9 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import {
-  createArrow,
-  createShape,
-  createSticky,
-  createText,
-  type Element,
-} from '@livediagram/document';
+import { createShape, createSticky, createText, type Element } from '@livediagram/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
+import { matrixAxes } from './template-discovery-parts';
 
 // An impact / effort matrix a team has just run. The plot is four tinted
 // quadrants named for what you do with the work in them, the names every
@@ -222,52 +217,13 @@ export function buildPrioritizationMatrix(cx: number, cy: number): Element[] {
     }
   });
 
-  // Axes: impact up the left, effort along the bottom, each arrowed toward
-  // "more", with Low / High at the ends and the axis name in the middle.
-  const axis = (x1: number, y1: number, x2: number, y2: number): Element => ({
-    ...createArrow(x1, y1, x2, y2),
-    strokeColor: '#475569',
-    strokeWidth: 3,
-    ...scaffold,
-  });
-  const axisX = plotX - 20;
-  const axisY = plotY + plotH + 20;
-  elements.push(axis(axisX, plotY + plotH, axisX, plotY), axis(plotX, axisY, plotX + plotW, axisY));
-  const axisText = (
-    x: number,
-    y: number,
-    w: number,
-    label: string,
-    bold: boolean,
-    alignX: 'left' | 'center' | 'right',
-    rotation?: number,
-  ): Element => ({
-    ...createText(x, y),
-    width: w,
-    height: 28,
-    label,
-    textSize: 'sm',
-    textBold: bold,
-    textColor: bold ? '#334155' : muted,
-    textAlignX: alignX,
-    ...(rotation ? { rotation } : {}),
-    ...scaffold,
-  });
-  // Rotated labels: an unrotated w x 28 box centred on the gutter, turned -90.
-  const vertical = (
-    centreY: number,
-    w: number,
-    label: string,
-    bold: boolean,
-    align: 'left' | 'center' | 'right',
-  ) => axisText(axisX - 22 - w / 2, centreY - 14, w, label, bold, align, -90);
+  // Axes: impact up the left, effort along the bottom.
   elements.push(
-    vertical(plotY + plotH / 2, 200, 'Impact', true, 'center'),
-    vertical(plotY + 40, 80, 'High', false, 'right'),
-    vertical(plotY + plotH - 40, 80, 'Low', false, 'left'),
-    axisText(plotX + plotW / 2 - 100, axisY + 6, 200, 'Effort', true, 'center'),
-    axisText(plotX, axisY + 6, 80, 'Low', false, 'left'),
-    axisText(plotX + plotW - 80, axisY + 6, 80, 'High', false, 'right'),
+    ...matrixAxes({ x: plotX, y: plotY, w: plotW, h: plotH }, 'Impact', 'Effort', {
+      stroke: '#475569',
+      bold: '#334155',
+      muted,
+    }),
   );
 
   // The rail runs the session in order: vote, size, commit.

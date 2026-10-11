@@ -4,7 +4,7 @@
 // diff and `rg` lands on the element's line.
 
 import type { PullFile, PullSync } from '../sync/pull-file';
-import { canonicalJson } from '../sync/pull-file';
+import { canonicalJson } from '@livediagram/document';
 import { isRecord } from '@livediagram/document';
 
 export type MirrorFile = Omit<PullFile, 'exportedAt' | 'livediagramSync'> & {

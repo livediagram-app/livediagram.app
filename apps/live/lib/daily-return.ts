@@ -24,16 +24,13 @@
 
 import { getLastActiveDay, setLastActiveDay } from './local-identity';
 import { track } from './telemetry';
-
-// UTC day (YYYY-MM-DD) so the gate rolls at 00:00 UTC, matching the
-// dashboard's `date(ts/1000,'unixepoch')` day bucketing (docs/specs/017-telemetry/telemetry.md).
-function utcDay(): string {
-  return new Date().toISOString().slice(0, 10);
-}
+import { utcDay } from '@livediagram/api-schema';
 
 export function trackDailyReturn(authenticated: boolean): void {
   if (typeof window === 'undefined') return;
-  const today = utcDay();
+  // The UTC day, so the gate rolls at 00:00 UTC, matching the dashboard's `date(ts/1000,'unixepoch')` day
+  // bucketing (docs/specs/017-telemetry/telemetry.md).
+  const today = utcDay(Date.now());
   const last = getLastActiveDay();
   // Already counted this browser today — nothing to do.
   if (last === today) return;

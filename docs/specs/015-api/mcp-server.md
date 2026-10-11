@@ -92,7 +92,9 @@ This implements the OAuth flow Manager Toolkit uses:
 2. **Dynamic client registration** — `POST /oauth/register` issues a `client_id`
    (validates redirect URIs: `https:` anywhere, or `http:` on a loopback host for
    local clients; the scheme is checked on its own, so a loopback host never
-   admits another scheme such as `javascript:`), stored in KV with a TTL.
+   admits another scheme such as `javascript:`, and never with a fragment, per RFC 6749
+   §3.1.2; one rule shared with the api's Drive redirect, `oauthRedirectUrl` in
+   `@livediagram/api-schema`), stored in KV with a TTL.
    Rate-limited per IP. Authorize re-checks the scheme of the requested
    redirect URI, and the consent page only ever navigates to an http(s) URL.
    The token endpoint refuses a code presented with another `client_id`.

@@ -60,6 +60,29 @@ export function evenSpans(n: number): number[] {
   return Array.from({ length: count }, (_, i) => base + (i < extra ? 1 : 0));
 }
 
+// Rows of `items`, `per` to a row, each slot the row's share of twelfths (the remainder to the last), each item's
+// content from `content`; rows and slots without ids, for a builder that ids them later (a template, a conversion).
+export function dashboardRowsOf<T>(
+  items: readonly T[],
+  per: number,
+  height: number,
+  content: (t: T) => DashboardContent,
+): { height: number; slots: { span: number; content: DashboardContent }[] }[] {
+  const out: { height: number; slots: { span: number; content: DashboardContent }[] }[] = [];
+  for (let i = 0; i < items.length; i += per) {
+    const chunk = items.slice(i, i + per);
+    const span = Math.floor(DASHBOARD_SPANS / chunk.length);
+    out.push({
+      height,
+      slots: chunk.map((t, k) => ({
+        span: k === chunk.length - 1 ? DASHBOARD_SPANS - span * (chunk.length - 1) : span,
+        content: content(t),
+      })),
+    });
+  }
+  return out;
+}
+
 function newRow(id: IdMaker, slots = 2): DashboardRow {
   return {
     id: id(),

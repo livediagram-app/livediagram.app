@@ -16,16 +16,14 @@ import {
   type ItemRejection,
 } from './fields';
 import { ITEM_STATUS_MAX } from './limits';
+import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
 import { typeAllowsStatus, typeIn } from './type-catalogue';
 import type { ItemWrite } from './store';
 
-const isRecord = (v: unknown): v is Record<string, unknown> =>
-  typeof v === 'object' && v !== null && !Array.isArray(v);
-
 export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
   if (raw === undefined) return {};
-  if (!isRecord(raw)) return 'place_invalid';
+  if (!isObj(raw)) return 'place_invalid';
   const place: ItemPlace = {};
   if (raw.status !== undefined) {
     if (typeof raw.status !== 'string' || !raw.status.trim() || raw.status.length > ITEM_STATUS_MAX)
@@ -44,7 +42,7 @@ export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
 // A create as the api reads it, but for its comment thread, which the api checks itself (it keeps author ids on
 // the caller's own comments only) and an offline document keeps as it is.
 export function readItemCreate(raw: unknown): Omit<ItemCreate, 'comments'> | ItemRejection {
-  if (!isRecord(raw)) return 'field_value_invalid';
+  if (!isObj(raw)) return 'field_value_invalid';
   if (!isValidItemType(raw.type)) return 'type_invalid';
   if (raw.id !== undefined && !isValidItemId(raw.id)) return 'id_invalid';
   const fields = validateFields(raw.fields, 'create');

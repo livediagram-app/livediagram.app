@@ -52,11 +52,11 @@ import {
   isBool,
   isNonEmptyStr,
   isNum,
-  isObj,
   issue,
   oneOfRule,
   stringRule,
 } from './validate-primitives';
+import { isRecord } from './is-record';
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
@@ -85,13 +85,13 @@ const finite = (field: string): FieldCheck => ({ field, valid: isNum, rule: 'a f
 
 // Record (docs/specs/009-elements/entity.md): rows of { name, type? }.
 const isEntityField = (f: unknown) =>
-  isObj(f) && isStrUpTo(ENTITY_MAX_TEXT)(f.name) && isOptionalStrUpTo(f.type, ENTITY_MAX_TEXT);
+  isRecord(f) && isStrUpTo(ENTITY_MAX_TEXT)(f.name) && isOptionalStrUpTo(f.type, ENTITY_MAX_TEXT);
 
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md). The
 // one-per-participant rule is `setResponse`'s on write, not a load check: a duplicate from an older
 // client renders as the first entry rather than failing the tab.
 const isResponse = (r: unknown) =>
-  isObj(r) &&
+  isRecord(r) &&
   typeof r.participantId === 'string' &&
   isStrUpTo(RESPONSE_VALUE_MAX)(r.value) &&
   isNum(r.at);
@@ -99,9 +99,9 @@ const isResponse = (r: unknown) =>
 // Q&A board (docs/specs/012-collaboration/qa-board.md): bounded notes, each with bounded voters.
 // The one-vote-per-person rule is the reducer's (applyQaAction), not a load check.
 const isQaAuthor = (a: unknown) =>
-  isObj(a) && isStrUpTo(QA_MAX_NAME)(a.name) && isStrUpTo(32)(a.color);
+  isRecord(a) && isStrUpTo(QA_MAX_NAME)(a.name) && isStrUpTo(32)(a.color);
 const isQaNote = (n: unknown) =>
-  isObj(n) &&
+  isRecord(n) &&
   isNonEmptyStr(n.id) &&
   n.id.length <= QA_MAX_ID &&
   isStrUpTo(QA_MAX_TEXT)(n.text) &&
@@ -131,19 +131,19 @@ const isCellCommentThreads = (v: unknown): boolean => {
 // Agenda (docs/specs/012-collaboration/agenda.md): minutes are clamped where read
 // (clampAgendaMinutes), not rejected here.
 const isAgendaItem = (item: unknown) =>
-  isObj(item) && isStrUpTo(AGENDA_MAX_TEXT)(item.label) && isNum(item.minutes);
+  isRecord(item) && isStrUpTo(AGENDA_MAX_TEXT)(item.label) && isNum(item.minutes);
 
 const isRollCallEntry = (entry: unknown) =>
-  isObj(entry) &&
+  isRecord(entry) &&
   isStrUpTo(ROLL_CALL_MAX_TEXT)(entry.name) &&
   isStrUpTo(ROLL_CALL_MAX_TEXT)(entry.color) &&
   isNum(entry.at);
 
 const isChecklistItem = (item: unknown) =>
-  isObj(item) && isStrUpTo(CHECKLIST_MAX_TEXT)(item.text) && isBool(item.done);
+  isRecord(item) && isStrUpTo(CHECKLIST_MAX_TEXT)(item.text) && isBool(item.done);
 
 const isLegendItem = (item: unknown) =>
-  isObj(item) &&
+  isRecord(item) &&
   isStrUpTo(LEGEND_MAX_TEXT)(item.label) &&
   (item.color === undefined || typeof item.color === 'string');
 
@@ -151,7 +151,7 @@ const isLegendItem = (item: unknown) =>
 // options. Durations are clamped where read (sessionButtonPlan), and the poll's answer shape falls
 // back to the default style, so neither is a load check.
 const isSession = (v: unknown) =>
-  isObj(v) &&
+  isRecord(v) &&
   isSessionTool(v.tool) &&
   (v.options === undefined || boundedArray(v.options, MAX_DATA_ARRAY));
 
@@ -202,7 +202,10 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   {
     field: 'stats',
-    valid: rowsOf(STATS_MAX, (s) => isObj(s) && isBoundedStr(s.value) && isBoundedStr(s.caption)),
+    valid: rowsOf(
+      STATS_MAX,
+      (s) => isRecord(s) && isBoundedStr(s.value) && isBoundedStr(s.caption),
+    ),
     rule: arrayRule(STATS_MAX, `{ value, caption } rows of ${WEB_TEXT_MAX} characters`),
   },
   {

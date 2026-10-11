@@ -1,6 +1,7 @@
 import { useId } from 'react';
 import { PAGE, secondPageAt } from './hero-illustrate-page';
 import { TEAMMATE, at } from '@/components/art-tokens';
+import { CursorMark } from '@/components/hero-cursor';
 
 // The hero's Article window (docs/specs/019-marketing/marketing-site.md "Hero"): a long read written
 // in Illustrate mode (docs/specs/007-editor/article-pages.md). Page 1 opens like a magazine
@@ -336,24 +337,7 @@ export function ArticlePage({ portrait = false }: { portrait?: boolean }) {
       </g>
       <Toolbar x={left + 22} y={body + 2 * LEADING - 30} />
       <g className="hm-cursor" style={at(9.1, CURSOR(left, body + 2 * LEADING))} aria-hidden>
-        <path
-          d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
-          fill={TEAMMATE}
-          stroke="white"
-          strokeWidth="1"
-        />
-        <rect x="10" y="12" width="20" height="12" rx="3" fill={TEAMMATE} />
-        <text
-          x="20"
-          y="21"
-          textAnchor="middle"
-          fontFamily={SANS}
-          fontSize="7.5"
-          fontWeight="700"
-          fill="white"
-        >
-          JR
-        </text>
+        <CursorMark colour={TEAMMATE} label="JR" />
       </g>
     </>
   );

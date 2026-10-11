@@ -1,4 +1,5 @@
 import { FONT, at } from '@/components/art-tokens';
+import { CursorMark } from '@/components/hero-cursor';
 
 // The hero's Infographic window (docs/specs/019-marketing/marketing-site.md "Hero"): a two-page
 // year-in-review laid out in Illustrate mode (docs/specs/007-editor/editor-modes.md "The pages"),
@@ -356,24 +357,7 @@ export function InfographicPages({ portrait = false }: { portrait?: boolean }) {
         })}
         aria-hidden
       >
-        <path
-          d="M0 0 L12 7 L7 8 L9.5 12.5 L7.5 13.5 L5 9 L1.5 12.5 Z"
-          fill="#ec4899"
-          stroke="white"
-          strokeWidth="1"
-        />
-        <rect x="10" y="12" width="20" height="12" rx="3" fill="#ec4899" />
-        <text
-          x="20"
-          y="21"
-          textAnchor="middle"
-          fontFamily={FONT}
-          fontSize="7.5"
-          fontWeight="700"
-          fill="white"
-        >
-          JR
-        </text>
+        <CursorMark colour="#ec4899" label="JR" />
       </g>
 
       <SecondPage {...secondPageAt(portrait)} />
