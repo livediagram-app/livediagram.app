@@ -45,6 +45,26 @@ describe('CommunityPostTile', () => {
     expect(screen.getByRole('article').className).toContain('hover:-translate-y-[3px]');
   });
 
+  it('loads a first-row image at once and first, every other lazily', () => {
+    const { container, rerender } = render(
+      <CommunityPostTile post={post} href="/post/?id=post1" imageUrl="/img.svg" now={NOW} />,
+    );
+    const img = () => container.querySelector('img')!;
+    expect(img().getAttribute('loading')).toBe('lazy');
+    expect(img().getAttribute('fetchpriority')).toBeNull();
+    rerender(
+      <CommunityPostTile
+        post={post}
+        href="/post/?id=post1"
+        imageUrl="/img.svg"
+        now={NOW}
+        priority
+      />,
+    );
+    expect(img().getAttribute('loading')).toBe('eager');
+    expect(img().getAttribute('fetchpriority')).toBe('high');
+  });
+
   it('is a still preview without a link: its own image, no lift, an override label', () => {
     render(
       <CommunityPostTile
