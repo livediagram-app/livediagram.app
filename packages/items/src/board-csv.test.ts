@@ -134,6 +134,15 @@ describe('boardCsvRows', () => {
     ]);
   });
 
+  it('joins a custom field holding several values with commas', () => {
+    const many = item(
+      { title: 'Both', status: 'todo', 'f-team': ['Web', 'Mobile'] },
+      { rank: 'c' },
+    );
+    const rows = boardCsvRows(setup, mapOf([many]), types);
+    expect(rows[1]).toContain('Web, Mobile');
+  });
+
   it('writes the cards the board shows, column by column in rank order', () => {
     const rows = boardCsvRows(setup, items, types);
     expect(rows.slice(1).map((r) => r[1])).toEqual(['Earlier', 'Ship it, "now"', 'Epic', 'Crash']);

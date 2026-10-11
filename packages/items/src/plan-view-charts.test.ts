@@ -176,5 +176,10 @@ describe('the card types a view shows', () => {
     expect(viewChosenTypes('gantt', undefined, types)).toEqual(
       types.filter((t) => t.fields.includes('start') && t.fields.includes('due')).map((t) => t.id),
     );
+    // A type given a Start joins the Gantt chart's default at once.
+    const dated = types.map((t) =>
+      t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
+    );
+    expect(viewChosenTypes('gantt', undefined, dated)).toEqual(['task']);
   });
 });
