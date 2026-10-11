@@ -1,5 +1,5 @@
 import type { Browser, Page } from '@playwright/test';
-import { presetSetup } from '@livediagram/items';
+import { defaultCatalogue, presetSetup } from '@livediagram/items';
 import {
   dismissQuickTour,
   expect,
@@ -51,11 +51,6 @@ const heads = (page: Page) =>
       ns.map((n) => (n.getAttribute('aria-label') ?? '').replace(' column settings', '')),
     );
 
-async function toPlan(page: Page) {
-  await page.getByRole('button', { name: /^Editor mode: / }).click();
-  await page.getByRole('menuitemradio', { name: /^Plan/ }).click();
-}
-
 async function startRename(page: Page, from: string, to: string) {
   await page
     .locator('[data-plan-board]')
@@ -81,10 +76,15 @@ test('two people renaming different columns of one board both keep their rename'
     data: {
       id,
       name: 'Board room',
+      // A document starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
+      itemTypes: defaultCatalogue(),
       tabs: [
         {
           id: tabId,
           name: 'Board',
+          // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
+          kind: 'board',
+          opensIn: 'plan',
           elements: [
             {
               id: 'board',
@@ -115,8 +115,6 @@ test('two people renaming different columns of one board both keep their rename'
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(a);
   await dismissQuickTour(b);
-  await toPlan(a);
-  await toPlan(b);
   await expect.poll(() => heads(b)).toContain('Review');
 
   // Both rename at once, each a different column.
@@ -136,7 +134,6 @@ test('two people renaming different columns of one board both keep their rename'
     .poll(async () => {
       await a.reload();
       await a.locator('[data-plan-board]').first().waitFor();
-      await toPlan(a);
       return heads(a);
     })
     .toEqual(['Backlog', 'Ready', 'In Progress', 'Checking', 'Done']);
@@ -162,10 +159,15 @@ test('someone who joins after a card was opened sees it held', async ({
     data: {
       id,
       name: 'Held card',
+      // A document starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
+      itemTypes: defaultCatalogue(),
       tabs: [
         {
           id: crypto.randomUUID(),
           name: 'Board',
+          // A Board tab: always in Plan (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab").
+          kind: 'board',
+          opensIn: 'plan',
           elements: [
             {
               id: 'board',
@@ -193,7 +195,6 @@ test('someone who joins after a card was opened sees it held', async ({
   const a = await openAs(browser, baseURL!, `/document/${id}`, owner);
   await a.locator(CANVAS).waitFor();
   await dismissQuickTour(a);
-  await toPlan(a);
   const boardA = a.locator('[data-plan-board]').first();
   await boardA
     .getByRole('button', { name: /add card/i })
@@ -209,7 +210,6 @@ test('someone who joins after a card was opened sees it held', async ({
   await b.getByRole('button', { name: /^join$/i }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(b);
-  await toPlan(b);
   const cardB = b.locator('[data-plan-board] [data-plan-card]').filter({ hasText: 'New task' });
   await expect(cardB.locator('[data-presence-tag]')).toBeVisible({ timeout: 10_000 });
 

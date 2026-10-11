@@ -254,15 +254,19 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 [Plan templates](../plan-templates.md#ready-made-card-types)) is those five then the ten more. Presets set the types
 a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug Triage: Bugs, Roadmap: Projects).
 
-- `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`, or `ITEM_TYPES`' ids for one that names none (Blank);
-  nothing for Archive or All Cards.
+- `boardTypeIdsOf(elements)`: each `plan-board`'s `addTypes`; nothing for one that names none (Blank), Archive or
+  All Cards.
 - `broughtTypesToAdd(named, types)`: the ready-made types named that `types` lacks, each once, in order;
   `boardTypesToAdd(elements, types)` the same off the elements; `defaultTypesToAdd(types)` the missing defaults.
-- `catalogueWithBoardTypes(stored, elements, hasCards = false)`: with `stored` null and no cards, exactly the types
-  the boards bring (null when none, or when they are the five defaults in order: already what it reads as);
-  otherwise `typesOf(stored)` with the missing ones after, capped at `ITEM_TYPES_MAX`; null when nothing changes.
+- `catalogueWithBoardTypes(stored, elements)`: `typesOf(stored)` (empty for null) with the missing ones after,
+  capped at `ITEM_TYPES_MAX`; null when nothing changes.
+- `typesOf(null)` is `[]`; `validateItemTypeCatalogue` takes 0 to `ITEM_TYPES_MAX` types. `legacyCatalogue(stored,
+hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline records in `recordToDocument` and
+  `offline-items`, exported tabs in `parseImportedTab`, and the api's create with carried items); migration
+  `0090_card_types_start_empty.sql` stores the same for D1 documents with items and a null catalogue (its JSON is
+  guarded by `apps/api/src/card-types-migration.test.ts`).
 - `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
-- The editor: `usePresetCardTypes({ catalogue, hasCards, itemsReady, saveCatalogue, ... })` applies it to boards
+- The editor: `usePresetCardTypes({ catalogue, itemsReady, saveCatalogue, ... })` applies it to boards
   that appear on the open tab once the items are read, and `bring(elements)` (Quick Start) at once, or held until
   they are. Nothing in the interface sets a type apart: `CardTypesPanel` is one list (`aria-label` "Card Types").
 

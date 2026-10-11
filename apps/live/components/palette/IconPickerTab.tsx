@@ -99,7 +99,7 @@ export function IconPickerTab({
         clearDescription: 'Clear the icon search query.',
       }}
       telemetry={{ openedType: 'IconGroup', searchedType: 'IconSearch' }}
-      emptyMessage={(q) => `No icons match “${q}”.`}
+      things="icons"
       loading={loading}
       loadingMessage="Loading icons…"
     />

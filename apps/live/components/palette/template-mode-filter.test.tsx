@@ -6,7 +6,8 @@ import {
   POPULAR_TEMPLATE_KINDS,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
-  templateCategory,
+  isInTemplateCategory,
+  templateCategories,
   templateEditorMode,
   type TemplateCategory,
   type TemplateKind,
@@ -35,8 +36,7 @@ function Step({ initial = null, query = '' }: { initial?: ShelfCategory | null; 
   const filter = useTemplateModeFilter({ selected: kind, onSelect: setKind });
   const listed = TEMPLATES.filter(filter.shows);
   const popular = POPULAR_TEMPLATE_KINDS.flatMap((k) => listed.filter((t) => t.kind === k));
-  const inCategory = (c: TemplateCategory) =>
-    listed.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
+  const inCategory = (c: TemplateCategory) => listed.filter((t) => isInTemplateCategory(t.kind, c));
   const matching = (t: (typeof TEMPLATES)[number]) => t.title.toLowerCase().includes(query);
   const matches = query ? listed.filter(matching) : [];
   const everywhere = query ? TEMPLATES.filter(matching).length : 0;
@@ -91,9 +91,9 @@ describe('the mode filter', () => {
       'Everything',
       'Diagram',
       'Draw',
+      'Facilitate',
       'Illustrate',
       'Plan',
-      'Facilitate',
     ]);
     expect(rows[0]!.getAttribute('aria-checked')).toBe('true');
     const draw = TEMPLATES.filter((t) => templateEditorMode(t.kind) === 'draw').length;
@@ -105,8 +105,8 @@ describe('the mode filter', () => {
     choose('Draw');
     expect(cardModes().every((m) => m === 'Opens in Draw')).toBe(true);
     const drawCategories = new Set(
-      TEMPLATES.filter((t) => templateEditorMode(t.kind) === 'draw' && t.kind !== 'whiteboard').map(
-        (t) => templateCategory(t.kind),
+      TEMPLATES.filter((t) => templateEditorMode(t.kind) === 'draw').flatMap((t) =>
+        templateCategories(t.kind),
       ),
     );
     expect(tiles()).toHaveLength(drawCategories.size);
@@ -117,10 +117,7 @@ describe('the mode filter', () => {
           .includes(TEMPLATE_CATEGORIES.find((x) => x.id === c)!.label),
       )!;
       const inCategory = TEMPLATES.filter(
-        (t) =>
-          templateEditorMode(t.kind) === 'draw' &&
-          t.kind !== 'whiteboard' &&
-          templateCategory(t.kind) === category,
+        (t) => templateEditorMode(t.kind) === 'draw' && isInTemplateCategory(t.kind, category),
       ).length;
       expect(tile.textContent).toMatch(new RegExp(`${inCategory}$`));
     }
@@ -147,7 +144,7 @@ describe('the mode filter', () => {
   it('names the mode when a search finds nothing', () => {
     render(<Step query="zzz" />);
     choose('Draw');
-    expect(screen.getByText(/No Draw/).textContent).toContain('templates match');
+    expect(screen.getByText('No Draw templates match “zzz”')).toBeTruthy();
   });
 
   it('offers Everything when a search finds nothing in the mode but does elsewhere', () => {
@@ -193,10 +190,11 @@ describe('the mode on a card', () => {
     expect(screen.getAllByRole('button', { pressed: true })[0]!.textContent).toMatch(
       /^Blank Diagram, Opens in Diagram/,
     );
+    // The blanks lead in mode order (EDITOR_MODES).
     expect(cardModes().slice(0, 3)).toEqual([
       'Opens in Diagram',
       'Opens in Draw',
-      'Opens in Illustrate',
+      'Opens in Facilitate',
     ]);
     expect(stage()).toBeTruthy();
   });

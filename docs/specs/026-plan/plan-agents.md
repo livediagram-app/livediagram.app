@@ -25,7 +25,7 @@ never told a change worked when it shows on no board.
     limit);
   - **statuses**: each status the boards name, once, with its column name, the first board's name winning (the
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
-  - **types**: the document's card types (its catalogue, or the default types), each with its id, name and fields,
+  - **types**: the document's card types (its catalogue; none while not chosen), each with its id, name and fields,
     custom fields by id, name and kind (and a Choice's options).
 - Each board's card types are part of what it shows: a card is on a board only when its column is there and the
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
@@ -108,7 +108,7 @@ Every write takes what a person would say, and stores the ids:
   - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, removeCustom?, defaultStatus?,
 excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes values.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the
-    Trash; the answer says how many. The catalogue's last type cannot be deleted.
+    Trash; the answer says how many. The catalogue's last type can go too, leaving none.
   - `add_default_types`: as Add Default Types: any of Project, Task, Note, Idea and Action the document lacks, after
     its types; nothing it has changes. `restore_built_ins`, its older name, does the same.
 - The tool reads the catalogue, applies every change, checks the whole result with the editor's rules

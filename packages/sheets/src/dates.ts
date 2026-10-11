@@ -189,9 +189,15 @@ export function parseDateText(text: string, dayFirst: boolean): ParsedDate | nul
   return null;
 }
 
-// Today's serial in UTC for `now` (ms), as TODAY() reads it.
+// The serial of the instant `ms` (UTC ms) as a date serial; for today's date where this person is, pass localMs(ms).
 export function serialFromMs(ms: number): number {
   return (ms - EPOCH_MS) / MS_PER_DAY;
+}
+
+// The instant `ms` moved to this person's wall clock (their time zone), so its UTC date and weekday are the local
+// ones: what TODAY() reads, and what a template is dated from (its today, its week's Monday).
+export function localMs(ms: number): number {
+  return ms - new Date(ms).getTimezoneOffset() * 60_000;
 }
 
 // A serial's date as YYYY-MM-DD (a Plan card's date field): its whole day, the time of day dropped.

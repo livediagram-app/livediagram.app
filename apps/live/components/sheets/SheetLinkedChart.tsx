@@ -31,17 +31,27 @@ function LiveChart({ element, bridge, children }: Props & { bridge: SheetsBridge
   }, [store, tabId]);
   // Drawn in this person's locale; kept on the element in one fixed locale (AGENT_LOCALE), so two people in different
   // locales never rewrite each other's copy (a date label reads differently in each).
-  const { shown, kept } = useMemo(() => {
+  // The range is read only when it can have changed: the store moving on (`version`), the source or the locale. A
+  // re-render for anything else (a scroll frame, a canvas drag, a resize of the chart) reads nothing again.
+  const locale = bridge.locale;
+  const tables = useMemo(() => {
     const wb = store.workbook(tabId);
-    const read = (locale: string) => {
-      const table = sheetChartTable(wb, source, locale);
-      return table ? chartFieldsFromTable(element, table) : null;
-    };
-    const kept = read(AGENT_LOCALE);
-    return { kept, shown: bridge.locale === AGENT_LOCALE ? kept : read(bridge.locale) };
-  }, [store, tabId, source, bridge.locale, element, version]); // eslint-disable-line react-hooks/exhaustive-deps
+    const kept = sheetChartTable(wb, source, AGENT_LOCALE);
+    return { kept, shown: locale === AGENT_LOCALE ? kept : sheetChartTable(wb, source, locale) };
+  }, [store, tabId, source, locale, version]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The fields those tables give this chart: its type and its slices' or series' colours (by position) decide them.
+  const { shape, pieSlices, lineSeries, lineCategories } = element;
+  const { shown, kept } = useMemo(() => {
+    const fields = (t: typeof tables.kept) =>
+      t ? chartFieldsFromTable({ shape, pieSlices, lineSeries }, t) : null;
+    const kept = fields(tables.kept);
+    return { kept, shown: tables.shown === tables.kept ? kept : fields(tables.shown) };
+  }, [tables, shape, pieSlices, lineSeries]);
   // The element keeps the last read (quietly, no undo step), so an export, a thumbnail or an agent sees it too.
-  const stale = kept !== null && !sameData(element, kept);
+  const stale = useMemo(
+    () => kept !== null && !sameData({ pieSlices, lineSeries, lineCategories }, kept),
+    [kept, pieSlices, lineSeries, lineCategories],
+  );
   const id = element.id;
   useEffect(() => {
     if (!stale || !bridge.canEdit || !kept) return;
@@ -50,8 +60,10 @@ function LiveChart({ element, bridge, children }: Props & { bridge: SheetsBridge
   return <>{children(shown ? { ...element, ...shown } : element)}</>;
 }
 
-function sameData(el: ShapeElement, fields: ReturnType<typeof chartFieldsFromTable>): boolean {
+type DataFields = Pick<ShapeElement, 'pieSlices' | 'lineSeries' | 'lineCategories'>;
+
+function sameData(el: DataFields, fields: ReturnType<typeof chartFieldsFromTable>): boolean {
   return Object.entries(fields).every(
-    ([k, v]) => JSON.stringify(el[k as keyof ShapeElement]) === JSON.stringify(v),
+    ([k, v]) => JSON.stringify(el[k as keyof DataFields]) === JSON.stringify(v),
   );
 }

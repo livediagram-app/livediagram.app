@@ -24,10 +24,12 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // "Search panel"): element search walks local tab state, so unvisited
 // placeholders would silently miss; opening search pulls every
 // remaining tab's content in one parallel sweep.
-// A tab the user has already drawn on (or picked a template for) keeps its
-// local content over a late fetch.
+// A tab the user has already drawn on keeps its local content over a late fetch. An empty placeholder has nothing to
+// keep: a dismissed Quick Start (`templateChosen`) on it once kept the fetched content out while the tab still counted
+// as loaded, and the autosave then saved the empty placeholder over the stored tab
+// (docs/specs/006-document/per-tab-storage.md).
 function userHasEdited(t: Tab): boolean {
-  return t.elements.length > 0 || t.templateChosen === true;
+  return t.elements.length > 0;
 }
 
 export function usePerTabLoad(opts: {
@@ -95,8 +97,11 @@ export function usePerTabLoad(opts: {
   // content fetch. The baseline decision reads the last render (tabsRef), not
   // the state updater, which React may run late or twice.
   // Reads only refs, so it is stable and both loaders below can list it.
+  // Returns whether the tab now counts as loaded: its fetched content landed, or what is on screen already holds
+  // content of its own. A placeholder that only looks edited (Quick Start chosen, nothing drawn) and so kept itself over
+  // the fetched content is NOT loaded: counting it would let the autosave save it, empty, over the stored tab.
   const adoptLoadedTab = useCallback(
-    ({ tab, rev }: { tab: Tab; rev: number }) => {
+    ({ tab, rev }: { tab: Tab; rev: number }): boolean => {
       const onScreen = tabsRef.current.find((t) => t.id === tab.id);
       if (onScreen && !userHasEdited(onScreen)) {
         lastSavedTabsRef.current = lastSavedTabsRef.current.map((t) =>
@@ -107,6 +112,7 @@ export function usePerTabLoad(opts: {
       resetTabsRef.current((prev) =>
         prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
       );
+      return !onScreen || !userHasEdited(onScreen) || onScreen.elements.length > 0;
     },
     [tabsRef, lastSavedTabsRef, resetTabsRef, noteChangesetSeen],
   );
@@ -118,6 +124,12 @@ export function usePerTabLoad(opts: {
   // an unstable dep can never again turn a failure into a refetch loop.
   const failedAttemptRef = useRef<string | null>(null);
 
+  // The tabs whose fetch is in flight, kept apart from the loaded-set: a tab joins `loadedTabIdsRef` only once its
+  // content is in place. The loaded-set is what lets the autosave save a tab (computeTabSaveDiff) and send it empty
+  // (X-Allow-Empty), so claiming a tab there before its GET answered let a commit that touched every tab (the kind
+  // stamp in commitTabs) save the empty placeholder over the real row while the Plan sweep was in flight.
+  const fetchingTabIdsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     if (!hydrated || !documentId) return;
     const attemptKey = JSON.stringify([documentId, activeId, selfId, sessionShareCode, retryNonce]);
@@ -125,9 +137,10 @@ export function usePerTabLoad(opts: {
     // Any other key forgets the failure, even when this run then bails on an
     // already-loaded tab: switching away and back to the failed tab retries.
     failedAttemptRef.current = null;
-    if (loadedTabIdsRef.current.has(activeId)) return;
+    if (loadedTabIdsRef.current.has(activeId) || fetchingTabIdsRef.current.has(activeId)) return;
     let cancelled = false;
-    loadedTabIdsRef.current.add(activeId);
+    const fetching = fetchingTabIdsRef.current;
+    fetching.add(activeId);
     // Track whether we actually consumed the API response. Cleanup
     // checks this flag — if the effect was torn down before it could
     // merge (StrictMode double-invoke, fast activeId switch, etc.),
@@ -135,7 +148,8 @@ export function usePerTabLoad(opts: {
     // can retry instead of skipping forever. Without this, Tab 2
     // reliably loaded as empty: first effect added the id, then the
     // cleanup cancelled the in-flight fetch, then the second effect
-    // saw the id in the set and bailed.
+    // saw the id in the set and bailed. The id is in the fetching-set
+    // until then, and joins the loaded-set only with its content.
     let merged = false;
     const targetId = activeId;
     // Capture the ref value at effect-run time so the cleanup uses
@@ -172,7 +186,7 @@ export function usePerTabLoad(opts: {
           // [] }`. Route it to the same blocking retry overlay as a 5xx so
           // a wrong 404 can never wipe content; merged stays false so the
           // cleanup drops the optimistic id and Retry refetches.
-          loadedTabIds.delete(targetId);
+          fetching.delete(targetId);
           failedAttemptRef.current = attemptKey;
           setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
           return;
@@ -185,7 +199,8 @@ export function usePerTabLoad(opts: {
         // The search prefetch (loadAllTabs below) deliberately doesn't
         // emit: it's a background sweep, not a user viewing a tab.
         track('Tab', 'Loaded');
-        adoptLoadedTab(loaded);
+        if (adoptLoadedTab(loaded)) loadedTabIds.add(targetId);
+        fetching.delete(targetId);
         timing.endAfterPaint();
         // Either way the load is now committed — local state has been
         // consulted. Keep the id in the loaded-set so subsequent
@@ -207,7 +222,7 @@ export function usePerTabLoad(opts: {
         // flag it so the canvas shows the blocking error overlay instead
         // of an editable blank canvas. Only those refetch: the attempt
         // key below stops a mere re-render from retrying.
-        loadedTabIds.delete(targetId);
+        fetching.delete(targetId);
         failedAttemptRef.current = attemptKey;
         setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
       });
@@ -220,7 +235,7 @@ export function usePerTabLoad(opts: {
       // response arrived; the second run saw the id in the set and
       // bailed; the user never saw the real content. Drop the id
       // here so the next run actually fetches.
-      if (!merged) loadedTabIds.delete(targetId);
+      if (!merged) fetching.delete(targetId);
     };
     // resetTabs is read through resetTabsRef on purpose (see above); the refs and setters listed are stable.
   }, [
@@ -250,6 +265,7 @@ export function usePerTabLoad(opts: {
     async (only?: readonly string[]): Promise<string[]> => {
       if (!hydrated || !documentId) return [];
       const loadedTabIds = loadedTabIdsRef.current;
+      const fetching = fetchingTabIdsRef.current;
       // A failed sweep fetch is silent for a tab nobody is looking at. But if
       // the user switched to it while the sweep was in flight, the visit-time
       // effect saw the id already claimed and did nothing, and won't run again
@@ -259,16 +275,19 @@ export function usePerTabLoad(opts: {
       const failures: string[] = [];
       const failed = (targetId: string) => {
         failures.push(targetId);
-        loadedTabIds.delete(targetId);
+        fetching.delete(targetId);
         if (targetId !== activeIdRef.current) return;
         setTabLoadErrors((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
       };
       const pending = tabsRef.current
         .map((t) => t.id)
         .filter((id) => !only || only.includes(id))
-        .filter((id) => !loadedTabIds.has(id) && !isTabOutOfScope(id, sessionTabScope));
+        .filter(
+          (id) =>
+            !loadedTabIds.has(id) && !fetching.has(id) && !isTabOutOfScope(id, sessionTabScope),
+        );
       if (pending.length === 0) return failures;
-      pending.forEach((id) => loadedTabIds.add(id));
+      pending.forEach((id) => fetching.add(id));
       await Promise.all(
         pending.map(async (targetId) => {
           try {
@@ -289,7 +308,8 @@ export function usePerTabLoad(opts: {
               failed(targetId);
               return;
             }
-            adoptLoadedTab(loaded);
+            if (adoptLoadedTab(loaded)) loadedTabIds.add(targetId);
+            fetching.delete(targetId);
             setLoadedTabIds((prev) => (prev.has(targetId) ? prev : new Set(prev).add(targetId)));
           } catch {
             failed(targetId);

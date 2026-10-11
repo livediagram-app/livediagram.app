@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement } from '@livediagram/document';
+import { isFixedSizeElement, sheetDrawnChartIds } from '@livediagram/document';
 import {
   elementBounds,
   isBoxed,
@@ -120,7 +120,7 @@ export function deriveCanvasSelection(input: {
     elementMenuOpen,
     labelRectOf,
     plusBlocked,
-    canvasCovered = false,
+    canvasCovered: covered = false,
   } = input;
 
   // An element's selection extent (docs/specs/008-canvas/arrow-labels.md): an arrow spans
@@ -143,6 +143,9 @@ export function deriveCanvasSelection(input: {
   const selectedIsBoxed = selected ? isBoxed(selected) : false;
   const selectionBounds: Bounds | null = selected ? selectionExtent(selected) : null;
 
+  // A chart that sits in a Sheet is drawn and worked in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): selected
+  // there to open its element menu, it has no box on the canvas to float chrome over.
+  const canvasCovered = covered || (!!selected && sheetDrawnChartIds(elements).has(selected.id));
   const selectedLocked = selected ? selected.locked === true : false;
   const showPopover = !!(
     selected &&

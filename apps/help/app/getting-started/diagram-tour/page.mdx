@@ -1,0 +1,76 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { DiagramTourCard } from '@/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'The Diagram Tour',
+  description:
+    'Take the interactive Diagram tour: a guided walkthrough of the Palette, the element menu, tabs and themes on a Diagram tab, offered on your first document and replayable any time from Settings.',
+  path: '/help/getting-started/diagram-tour/',
+});
+
+<ArticleLayout
+  title="The Diagram Tour"
+  description="A short interactive walkthrough of diagramming, offered on your first document and replayable from Settings."
+  categoryTitle="Getting Started"
+  categorySlug="getting-started"
+>
+
+The Diagram tour is a guided, interactive introduction to [Diagram mode](/help/canvas/editor-modes/): building a diagram from shapes, arrows and the palette. Rather than showing screenshots, it opens the real panels and menus one at a time, spotlighting each with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point. (It was called the Welcome Tour until October 2026.)
+
+## When It's Offered
+
+When you create your first document from the [New Document wizard](/help/getting-started/your-first-diagram/), it opens with a centred **Welcome to Diagram** card: **Show me around** starts the tour, **No thanks** dismisses it. (A document opened through **Start Blank**, a share link or an embed does not offer it, and nor does a view-only document.)
+
+The tour only appears on a **Diagram tab**. If your first document opens in Draw, Facilitate, Illustrate or Plan, the card waits until you work on a tab in Diagram mode. Those modes have tours of their own: see [The Plan Tour](/help/canvas/plan-mode/plan-tour/) and [The Facilitate Tour](/help/canvas/facilitate-mode/facilitate-tour/). Switching the tab to another mode partway through ends the tour.
+
+The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own; the answer is saved with your other settings, so if you're signed in it follows you to every device. You can always [replay it from Settings](#replaying-the-tour).
+
+<Figure caption="The welcome card: take the tour or decline it.">
+  <DiagramTourCard />
+</Figure>
+
+## What It Covers
+
+The tour walks the diagramming chrome in a natural order:
+
+1. **The Palette**: the strip across the top that every shape, arrow, and icon comes from.
+2. **Selection Modes**: the dropdown that changes what your pointer does (Select, Hand, Eraser, and friends). See [Selection Modes](/help/selection-modes/).
+3. **Palette Categories**: the Palette's category dropdown, with Popular first and the rest grouped into bands such as Common, Structure and Decorate.
+4. **Tab Mode**: the editor mode switch. The tab you're on is a diagram; the switch (or **Shift+D**) moves it to another mode. See [Editor Modes](/help/canvas/editor-modes/).
+5. **The Element Menu**: the right-click menu (long-press on touch) where styling, links, notes, comments, and actions live. On an empty tab the tour adds a square to show it on, and takes it away again when the tour ends.
+6. **Tabs**: one document holds many diagrams, one per tab, plus the **+** button and the tab menu.
+7. **Theme & Canvas**: the paintbrush button in the bottom-right corner that restyles the whole tab.
+
+A closing **You're ready to diagram** card then offers **Visit Help Centre** or **Start diagramming**.
+
+On a phone the tour is shorter: it skips the Tab Mode and Theme & Canvas steps. On an [Event Storming board](/help/canvas/event-storming-boards/) it skips Selection Modes, Palette Categories and Tab Mode, since the board offers none of them.
+
+## During the Tour
+
+- Each step shows a **step counter** ("2 of 7") with progress dots, a title, a sentence or two of copy, and a **Next** button (with **Back** from the second step on), with **Skip tour** always available.
+- The highlight ring **never blocks your pointer**: you're free to poke at whatever is highlighted while the step is up. The tour opens real menus, so what you see is exactly what you'll use afterwards.
+- Finishing (or skipping) closes anything the tour opened and returns you to a quiet editor, ready to work.
+
+## Replaying the Tour
+
+You can rerun the tour whenever you like:
+
+<Step n={1}>Open **Settings** from the editor and go to **Accessibility**.</Step>
+
+<Step n={2}>Under **Show Tours**, switch **Diagram** back on.</Step>
+
+<Step n={3}>
+  Close Settings. On a Diagram tab the tour relaunches from the welcome card, exactly like the first
+  run; on a tab in another mode, it waits until you're on a Diagram tab.
+</Step>
+
+Finishing (or skipping) the rerun switches **Diagram** off again. Plan and Facilitate modes have tours of their own, replayed the same way from **Plan** and **Facilitate**: see [The Plan Tour](/help/canvas/plan-mode/plan-tour/) and [The Facilitate Tour](/help/canvas/facilitate-mode/facilitate-tour/).
+
+<Tip>
+  Prefer learning by doing? [Your First Diagram](/help/getting-started/your-first-diagram/) builds a
+  small connected flow from scratch, and [Keyboard
+  Essentials](/help/getting-started/keyboard-essentials/) covers the shortcuts that make it fast.
+</Tip>
+
+</ArticleLayout>

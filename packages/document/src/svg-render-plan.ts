@@ -4,7 +4,13 @@
 // columns with their counts and WIP limits, and the card faces, without the
 // interactive controls. Without items the columns draw empty.
 
-import { FLAG_COLOUR, PRIORITY_COLOURS, planPalette, type PlanPalette } from './plan-palette';
+import {
+  FLAG_COLOUR,
+  PRIORITY_COLOURS,
+  planOwnColoursOf,
+  planPalette,
+  type PlanPalette,
+} from './plan-palette';
 import {
   itemAssignee,
   itemTitle,
@@ -35,11 +41,7 @@ const PAD = PLAN_BOARD_PAD;
 type Palette = PlanPalette;
 
 // The element's own colours (theme, Quick Style, pickers), for planPalette.
-const ownColours = (el: Shape) => ({
-  fill: el.fillColor,
-  stroke: el.strokeColor,
-  text: el.textColor,
-});
+const ownColours = (el: Shape) => planOwnColoursOf(el);
 
 // The face kit's text marks leave the typeface to their group; every Plan drawing sets it once here.
 const inFont = (body: string) => `<g font-family="${FONT}">${body}</g>`;

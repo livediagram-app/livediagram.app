@@ -11,7 +11,6 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileDragStart } from './palette-tile-drag';
-import { addPlanWidgetToBoard } from '@/hooks/plan/plan-widget-drop';
 import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import { MarkerPaletteTile } from './MarkerPaletteTile';
@@ -126,8 +125,6 @@ export function tileHandler(
       return () => actions.addIcon(a.iconId);
     case 'tech-icon':
       return () => actions.addTechIcon(a.iconId);
-    case 'plan-widget':
-      return () => addPlanWidgetToBoard(a.widget);
     case 'marker':
       return () => (a.once ? actions.beginMarker(a.penId, true) : actions.beginMarker(a.penId));
   }
@@ -187,7 +184,6 @@ export function tileActive(
     case 'sticker':
     case 'icon':
     case 'tech-icon':
-    case 'plan-widget':
       return false;
     // A marker in hand: the whiteboard pen intent in this pen's colour and width.
     case 'marker':

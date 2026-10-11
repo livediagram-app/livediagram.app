@@ -83,8 +83,9 @@ describe('the cell editor', () => {
     expect(editor().style.fontWeight).toBe('700');
     expect(editor().style.fontStyle).toBe('italic');
     expect(editor().style.fontSize).toBe(`${Math.round((14 * 4) / 3)}px`);
-    expect(editor().style.caretColor).toBe('rgb(255, 0, 0)');
-    expect(overlay().style.color).toBe('rgb(255, 0, 0)');
+    // Its red ink deepened to read on its lime fill, as the cell draws it.
+    expect(editor().style.caretColor).toBe('rgb(179, 0, 0)');
+    expect(overlay().style.color).toBe('rgb(179, 0, 0)');
     expect(frame().style.backgroundColor).toBe('rgb(0, 255, 0)');
     // Each reference in its colour.
     const refs = [...overlay().querySelectorAll('span')].map((s) => s.textContent);

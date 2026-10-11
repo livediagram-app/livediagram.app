@@ -72,11 +72,12 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           {...(template ? { template } : {})}
           types={ctx.types}
           itemCount={ofType.length}
-          canDelete={ctx.types.length > 1}
           onSave={(next) => {
             ctx.itemTypes.saveType(next);
             // Made from a board's Add a Card menu: that board takes it.
-            if (forBoard) plan.addTypeToBoard(forBoard.boardId, next.id);
+            if (forBoard?.boardId) plan.addTypeToBoard(forBoard.boardId, next.id);
+            // Made from a Gantt chart's: the chart takes it, where it names its own types.
+            if (forBoard?.viewId) plan.addTypeToView(forBoard.viewId, next.id);
             track('Plan', editing ? 'Changed' : from ? 'Duplicated' : 'Added', 'CardType');
             plan.closeTypeEditor();
           }}

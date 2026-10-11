@@ -33,7 +33,12 @@ export type ImportOutcome =
 // when we bump the schema we add a `migrate(version, tab)` branch in
 // parseImportedTab that walks old shapes forward.
 
-import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
+import {
+  legacyCatalogue,
+  readItemTypeCatalogue,
+  type Item,
+  type ItemTypeCatalogue,
+} from '@livediagram/items';
 import {
   isItemLike,
   isValidElement,
@@ -102,7 +107,8 @@ export function parseImportedTab(text: string): ImportResult {
   return {
     ok: true,
     tab: { ...tab, elements },
-    plan: { items, itemTypes: readItemTypeCatalogue(env.itemTypes) },
+    // A tab exported before card types started empty carries cards and no catalogue: the default types.
+    plan: { items, itemTypes: legacyCatalogue(readItemTypeCatalogue(env.itemTypes), true) },
   };
 }
 
@@ -118,10 +124,12 @@ export function parseImportedTab(text: string): ImportResult {
 // is stuck "busy" with its buttons disabled.
 // The picked file's text, plus the File itself for a format that may be
 // binary (an Excalidraw PNG export).
-export type PickedTabFile = { name: string; text: string; file: File };
+// `tooBig` (its text then empty, never read) when the file is past the `maxBytes` the caller allows.
+export type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
 export function pickTabFile(
   accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
+  opts: { maxBytes?: number } = {},
 ): Promise<PickedTabFile | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
@@ -154,6 +162,11 @@ export function pickTabFile(
       const file = input.files?.[0] ?? null;
       if (!file) {
         finish(null);
+        return;
+      }
+      // Past the caller's limit the file is never read: reading a huge file would hang the tab before it is refused.
+      if (opts.maxBytes !== undefined && file.size > opts.maxBytes) {
+        finish({ name: file.name, text: '', file, tooBig: true });
         return;
       }
       try {

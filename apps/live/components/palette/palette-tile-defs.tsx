@@ -1,5 +1,4 @@
 import { headlineCase } from '@livediagram/api-schema';
-import type { BoardWidgetKind } from '@livediagram/items';
 import type { PenColour } from '@livediagram/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
@@ -104,10 +103,14 @@ export type PaletteTileSection =
   // cards by item type.
   | 'plan-boards'
   | 'plan-cards'
-  | 'plan-widgets'
   // Plan views (docs/specs/026-plan/plan-views.md): metrics and visualisations.
   | 'plan-metrics'
   | 'plan-visualisations'
+  // A Dashboard's rows and slots (docs/specs/026-plan/plan-tabs.md), on a Dashboard tab alone.
+  | 'dashboard-layout'
+  | 'dashboard-tabs'
+  // A Dashboard's written cards (Status, Checklist, Key Date, Links), on a Dashboard tab alone.
+  | 'dashboard-cards'
   // A logo page's drawing tools (docs/specs/007-editor/logo-pages.md "The Logo palette").
   | 'logo'
   | 'plan-sheets'
@@ -178,7 +181,6 @@ type PaletteTileAction =
   | { type: 'tech-icon'; iconId: string }
   // A Plan board's header widget (docs/specs/026-plan/board-widgets.md): placed in a board's header,
   // never on the canvas.
-  | { type: 'plan-widget'; widget: BoardWidgetKind }
   // One of Draw mode's markers (docs/specs/023-draw-mode/draw-mode.md "Pens"), offered by the
   // Toolbar strip's Search in the other modes (palette-marker-tiles.tsx): picked up as the dock
   // picks it up, in its colour and width. Never in PALETTE_TILES: a marker's colour and width are

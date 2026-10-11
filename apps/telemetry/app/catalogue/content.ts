@@ -855,11 +855,59 @@ export const PLAN_SETUP_CHANGED = chart(
   "A Plan board's set-up changed: columns, WIP limits, rows, scope, card fields, voting or hide writing.",
 );
 
+export const PLAN_CALENDAR_MOVES = chart(
+  'Plan',
+  'Changed',
+  'Cards Moved on a Calendar',
+  "A card's date moved on a Due Calendar or a Start Calendar, dragged to another day or moved with Alt and the arrow keys.",
+  { types: ['CalendarDue', 'CalendarStart'] },
+);
+
+export const PLAN_TABS_CREATED = chart(
+  'Plan',
+  'Created',
+  'Plan Tabs Started',
+  'A Board, Sheet, Dashboard or Visualisation tab started from Start Planning, or a dashboard it suggested.',
+  { types: ['BoardTab', 'SheetTab', 'DashboardTab', 'VisualisationTab', 'SuggestedDashboard'] },
+);
+
 export const PLAN_REVEALED = chart(
   'Plan',
   'Revealed',
   'Boards Revealed',
   'Reveal pressed on a board hiding writing, turning every card face up.',
+);
+
+export const PLAN_CSV_IMPORTED = chart(
+  'Plan',
+  'Imported',
+  'Boards From CSV',
+  "A CSV file read into a board's cards from a Board tab's Import CSV (each row a new card).",
+  { types: ['Csv'] },
+);
+
+export const PLAN_CSV_EXPORTED = chart(
+  'Plan',
+  'Exported',
+  'Boards Downloaded as CSV',
+  "A board's cards downloaded as a CSV file from a Board tab's Download CSV.",
+  { types: ['Csv'] },
+);
+
+export const PLAN_VIEW_STATUSES = chart(
+  'Plan',
+  'Changed',
+  'Chart Statuses Chosen',
+  'The statuses a chart of the cards counts were chosen from its settings cog (Cards by Field, Priority by Status).',
+  { types: ['ViewStatuses'] },
+);
+
+export const PLAN_CARD_STYLES = chart(
+  'Plan',
+  'Changed',
+  'Dashboard Cards Styled',
+  "A card on a Dashboard tab styled from its Slot Options' Style row: a preset, a colour, its border or its shadow. One per change.",
+  { types: ['DashboardCardStyle'] },
 );
 
 export const SHEET_CHANGES = chart(
@@ -877,6 +925,14 @@ export const SHEET_FUNCTIONS = chart(
   'A function used in a Sheet formula for the first time in that formula, by name.',
 );
 
+export const SHEET_FUNCTIONS_SEARCHED = chart(
+  'Sheet',
+  'Searched',
+  'Sheet Function Searches',
+  "A search of the functions a Sheet formula can use, from the toolbar's function picker. Never what was typed.",
+  { types: ['Function'] },
+);
+
 export const SHEET_FIND = chart(
   'Sheet',
   'Opened',
@@ -889,8 +945,27 @@ export const SHEET_CREATED = chart(
   'Sheet',
   'Created',
   'Sheets Set Up and Charts Made',
-  'A Sheet set up from Setup Sheet (by how it started), or a chart made from its cells.',
-  { types: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv', 'Chart'] },
+  'A Sheet set up from Setup Sheet (by how it started: blank, a template, cards or a CSV), or a chart made from its cells.',
+  {
+    types: [
+      'Blank',
+      'Budget',
+      'Tracker',
+      'Timesheet',
+      'Contacts',
+      'Invoice',
+      'ExpenseReport',
+      'SalesPipeline',
+      'Inventory',
+      'GuestList',
+      'GradeBook',
+      'HabitTracker',
+      'LoanCalculator',
+      'Cards',
+      'Csv',
+      'Chart',
+    ],
+  },
 );
 
 export const SHEET_CSV_IMPORTED = chart(
@@ -926,6 +1001,7 @@ export const SHEETS: MetricStack = {
     SHEET_CREATED,
     SHEET_CHANGES,
     SHEET_FUNCTIONS,
+    SHEET_FUNCTIONS_SEARCHED,
     SHEET_FIND,
     SHEET_CSV_IMPORTED,
     SHEET_CSV_EXPORTED,
@@ -933,23 +1009,36 @@ export const SHEETS: MetricStack = {
   ],
 };
 
+const PLAN_BOARDS_MEMBERS = [
+  PLAN_TABS_CREATED,
+  PLAN_ITEMS_ADDED,
+  PLAN_ITEMS_MOVED,
+  PLAN_ITEMS_OPENED,
+  PLAN_ITEMS_DELETED,
+  PLAN_ITEMS_RESTORED,
+  PLAN_REMOVED,
+  PLAN_FLAGS,
+  PLAN_MAXIMISED,
+  PLAN_FOCUSED,
+  PLAN_FILL_TAB,
+  PLAN_SETUP_CHANGED,
+  PLAN_CALENDAR_MOVES,
+  PLAN_VIEW_STATUSES,
+  PLAN_CARD_STYLES,
+  PLAN_CARD_TYPES_DUPLICATED,
+  PLAN_REVEALED,
+  PLAN_CSV_IMPORTED,
+  PLAN_CSV_EXPORTED,
+];
+
 export const PLAN_BOARDS: MetricStack = {
   stack: true,
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
-  members: [
-    PLAN_ITEMS_ADDED,
-    PLAN_ITEMS_MOVED,
-    PLAN_ITEMS_OPENED,
-    PLAN_ITEMS_DELETED,
-    PLAN_ITEMS_RESTORED,
-    PLAN_REMOVED,
-    PLAN_FLAGS,
-    PLAN_MAXIMISED,
-    PLAN_FOCUSED,
-    PLAN_FILL_TAB,
-    PLAN_SETUP_CHANGED,
-    PLAN_CARD_TYPES_DUPLICATED,
-    PLAN_REVEALED,
-  ],
+  members: PLAN_BOARDS_MEMBERS,
+  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), so the head
+  // counts them once.
+  headline: PLAN_BOARDS_MEMBERS.filter(
+    (m) => m !== PLAN_CALENDAR_MOVES && m !== PLAN_VIEW_STATUSES && m !== PLAN_CARD_STYLES,
+  ),
 };

@@ -181,7 +181,7 @@ which the autosave retries as today; the unload flush sends the same ops at once
 
 Hooks that write a tab's structure, or write without passing `commit`, take `structureBlocked`
 (`editsBlocked || isReadOnly`) or `structureCreateBlocked` (`createBlocked || isReadOnly`), never the opened
-`editsBlocked`: layers, lane settling, the Plan tour's content, element helpers, tab canvas, images, paths, mind maps,
+`editsBlocked`: layers, lane settling, the old Plan tour content's sweep, element helpers, tab canvas, images, paths, mind maps,
 snap colours, the whiteboard, the eraser, swatch overrides, the cleanup preview, board scenes and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 

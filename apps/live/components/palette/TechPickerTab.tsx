@@ -95,7 +95,7 @@ export function TechPickerTab({
         clearDescription: 'Clear the technology search query.',
       }}
       telemetry={{ openedType: 'TechGroup', searchedType: 'TechSearch' }}
-      emptyMessage={(q) => `No technology icons match “${q}”.`}
+      things="technology icons"
       loading={loading}
       loadingMessage="Loading icons…"
     />

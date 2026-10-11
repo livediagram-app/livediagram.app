@@ -188,14 +188,15 @@ export type UserPreferences = {
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
   showProfilePicture?: boolean;
-  // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
+  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
+  // until October 2026, so earlier answers still hold). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
   // the account across devices like every other preference. Surfaced in
-  // Settings as "I've seen the editor tour"; unchecking it there and
+  // Settings as Show Tours › "Diagram" (inverted); turning it on there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome tour's:
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the Diagram tour's:
   // true once its offer has been answered, so it never offers itself again on any device. Surfaced in
   // Settings as Show Tours › "Plan" (inverted). Missing / undefined === not seen.
   planTourSeen?: boolean;

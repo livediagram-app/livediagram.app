@@ -23,6 +23,9 @@ export function resetElementColours(el: Element, theme: ThemeDefinition): Elemen
       fillSwatch: undefined,
       penColour: undefined,
       penTextColour: undefined,
+      // A chart's palette is its colours (docs/specs/009-elements/pie-chart.md): Reset to Default under its
+      // Presets grid hands it back to the theme's ramp.
+      chartPalette: undefined,
     };
   }
   if (el.type === 'text') {

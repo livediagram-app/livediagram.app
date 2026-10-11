@@ -35,6 +35,13 @@ import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import { SessionClusterStrip, sessionStripTools } from '@/components/canvas/SessionClusterStrip';
 import { useCardTypesOpener } from '@/hooks/plan/useCardTypesOpener';
 import { usePublishCardTypesTaken } from '@/hooks/plan/card-types-taken';
+import { usePlanVoting } from '@/hooks/plan/usePlanVoting';
+import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
+
+// How far the bottom-right cluster moves in and up over a covering board or Sheet: the cover's padding (12 px) and a
+// little more in, and past the element's bottom scrollbar up.
+const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
+const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -325,8 +332,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
     handleDockButtonClick,
   });
   // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
-  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock.
-  const paletteShown = (!readOnly && !whiteboard) || !!props.participantPalette;
+  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock. Never in Plan, whose boards, sheets
+  // and dashboards carry their own tools (docs/specs/026-plan/plan-mode.md "No palette").
+  const paletteShown =
+    props.editorMode !== 'plan' && ((!readOnly && !whiteboard) || !!props.participantPalette);
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
@@ -352,6 +361,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
     () => elements.some((e) => e.type === 'shape' && e.shape === 'plan-board'),
     [elements],
   );
+  // A board or Sheet covering the canvas (maximised or filling its tab, not a Dashboard's page): the bottom-right
+  // cluster moves inside its frame.
+  const canvasCovered = useCanvasCovered();
+  const tabPlanKind = usePlanTabKind();
+  const elementCovers = canvasCovered && tabPlanKind !== 'dashboard';
+  const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
+  // Plan's Timer and Vote, only for a board made for voting (or a session running), never on a Dashboard.
+  const planVoting = usePlanVoting(elements, !!props.tabVote || !!props.sessionTools?.timer);
   // Plan's card strip shows only while the tab has something that shows cards (items.md "The Plan strip").
   const tabShowsCards = useTabShowsCards(elements);
   // The card types the tab's boards take, so the palette greys out a card tile none would take (plan-mode.md).
@@ -371,6 +388,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     paletteTint,
   } = useCanvasChromePanels({
     props,
+    planVoting,
     chromeHidden,
     isMobile,
     panelWiringFor,
@@ -596,13 +614,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // zoom to offer.
         data-zoom-cluster=""
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
+        // Over a maximised or tab-filling board or Sheet it sits inside the element's frame, clear of its edge and its
+        // scrollbar: in by the cover's padding and up past the scrollbar (docs/specs/026-plan/plan-board.md "Maximised
+        // board").
         style={
           cornerScale === 1
-            ? { right: atLeastInset('1rem', 'right') }
+            ? {
+                right: atLeastInset(`${16 + clusterInset.x}px`, 'right'),
+                ...(clusterInset.y ? { bottom: 16 + clusterInset.y } : {}),
+              }
             : {
                 ...uiScaleStyle(cornerScale),
-                right: atLeastInset(`${toSurfacePx(16, cornerScale)}px`, 'right'),
-                bottom: toSurfacePx(16, cornerScale),
+                right: atLeastInset(`${toSurfacePx(16 + clusterInset.x, cornerScale)}px`, 'right'),
+                bottom: toSurfacePx(16 + clusterInset.y, cornerScale),
               }
         }
         // On a phone the cluster stays one row (docs/specs/012-collaboration/session-tools.md "The Session
@@ -629,7 +653,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 Layers, or of the mode's own strip. Kept in Zen: a running session is the one piece of
                 chrome a facilitator still needs there. Diagram has all three, Plan its Timer and
                 Vote; Draw and Illustrate keep their bottom bar to their own tools. */}
-            {props.sessionTools && sessionStripTools(props.editorMode, props.esBoard === true) ? (
+            {props.sessionTools &&
+            sessionStripTools(props.editorMode, props.esBoard === true, planVoting) ? (
               <div className="contents">
                 <SessionClusterStrip
                   timer={props.sessionTools.timer}
@@ -647,7 +672,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   voteButtonRef={voteButtonRef}
                   pollRunning={!!props.pollPanel}
                   canStart={!readOnly}
-                  offersPoll={!!sessionStripTools(props.editorMode, props.esBoard === true)?.poll}
+                  offersPoll={
+                    !!sessionStripTools(props.editorMode, props.esBoard === true, planVoting)?.poll
+                  }
                   open={
                     activeDockPanel === 'session-timer' ||
                     activeDockPanel === 'session-vote' ||

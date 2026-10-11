@@ -4,6 +4,8 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
+import { SlotBoardCog } from './SlotBoardCog';
 import { isCardVotableInVote } from '@livediagram/document';
 import { useCardVote } from './CardVoteContext';
 import { useViewportStoreIfAny } from '@/hooks/canvas/useViewportStore';
@@ -31,6 +33,7 @@ import {
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
+import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
 import { cellStatus, laneMove } from './plan-board-moves';
 import { DropGap, LaneRow, PlanBoardCard, PlanDragGhost } from './PlanBoardCells';
 import {
@@ -45,18 +48,17 @@ import { PlanSetupBoard } from './PlanSetupBoard';
 import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
 import { boardItems } from './widgets/widget-stats';
-import { trackFillTab, trackSetup } from './track-board-setup';
+import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
-import { BoardMoreMenu } from './BoardMoreMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
-import { planOwnColours, planPalette } from './plan-palette';
+import { planBandTint, planOwnColours, planPalette } from './plan-palette';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
 import { FocusElementButton } from './FocusElementButton';
@@ -97,6 +99,8 @@ export function PlanBoardView({
   const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
   const types = plan?.types ?? ITEM_TYPES;
   const setup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
+  // Its Board tab's Import CSV… and Download CSV (docs/specs/026-plan/plan-board.md "CSV").
+  useBoardCsv(element.id, setup);
   const [quick, setQuick] = useState<QuickFilter>({});
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
@@ -134,6 +138,7 @@ export function PlanBoardView({
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.
   const { maximised, filled } = useBoardMaximised(element.id, interactive);
+  const slot = useSlotSettings();
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
   const cardVote =
@@ -151,7 +156,7 @@ export function PlanBoardView({
         }
       : null;
 
-  const { drag, incoming, widgetSlot, flashWidget } = usePlanBoardDrop({
+  const { drag, incoming } = usePlanBoardDrop({
     element,
     boardRef,
     plan,
@@ -305,9 +310,8 @@ export function PlanBoardView({
         items={shownItems}
         types={types}
         palette={palette}
-        widgetDropAt={widgetSlot}
-        flashWidget={flashWidget}
         selected={selected}
+        movable={!maximised && !filled}
         canRename={canEdit && interactive}
         onOpenItem={(id) => plan?.openItem(id)}
         onSetup={(next, part) => {
@@ -338,17 +342,25 @@ export function PlanBoardView({
         end={
           interactive ? (
             <>
-              {/* The board's settings, the same as its element menu's Board and Cards, for an editor. */}
-              <BoardMoreMenu boardId={element.id} title={setup.title} />
-              {/* Focus glides the view to fit the board; not while it already fills the view. */}
+              {/* Focus glides the view to fit the board; not while it fills the view. */}
               {maximised || filled ? null : (
                 <FocusElementButton bounds={element} kind="Board" palette={palette} />
               )}
               {filled ? null : (
                 <MaximisePlanButton id={element.id} maximised={maximised} palette={palette} />
               )}
-              {/* The cog last, at the header's far right. */}
-              {canEdit ? <BoardSettingsButton element={element} palette={palette} /> : null}
+              {/* The cog last, at the header's far right: the board's one menu (its element menu). In a Dashboard
+                  slot, Board Settings with the slot's own section folded in, or the slot's cog for someone who may
+                  not edit the board (slot-menu.ts). */}
+              {slot ? (
+                canEdit ? (
+                  <SlotBoardCog element={element} palette={palette} slot={slot} />
+                ) : (
+                  slot.cog
+                )
+              ) : canEdit ? (
+                <BoardSettingsButton element={element} palette={palette} />
+              ) : null}
             </>
           ) : null
         }
@@ -390,12 +402,8 @@ export function PlanBoardView({
               const all = plan.types.map((t) => t.id);
               const build = (from: PlanBoardSetup) =>
                 withSetupLayout(setUpBoard(from, columns, typeIds, all), layout);
-              const fillTab = layout.fillTab;
-              // Fill Tab turned on deletes the rest of the canvas in the same change (one undo step), built from the
-              // board as it is at that commit.
-              if (fillTab !== (setup.fillTab === true)) trackFillTab(fillTab);
-              if (fillTab && !setup.fillTab) plan.fillTab(element.id, build);
-              else plan.updateBoard(element.id, build(setup));
+              // No Fill Tab to change (plan-board.md "Fill Tab"): an old board's stored flag rides through the layout.
+              plan.updateBoard(element.id, build(setup));
               trackSetup('BoardSetUp');
               if (settingUp) plan.openBoardSetup(null);
             }}
@@ -619,6 +627,8 @@ export function PlanBoardView({
     <MaximisableSlot
       id={element.id}
       maximised={maximised}
+      tint={planBandTint(element)}
+      blend={{ surface: palette.surface, line: palette.border }}
       fill={filled}
       placeholder={{
         backgroundColor: palette.surface,

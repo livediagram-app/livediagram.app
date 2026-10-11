@@ -214,9 +214,9 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
 ([Spec](../sheet-store.md#template-starts).) `PlanSheetRef.start` (validated by `isPlanSheetRef`:
 `PLAN_SHEET_START_PATTERN`, kebab-case) names a template start. `@livediagram/sheets` `template-starts.ts`:
 `TEMPLATE_STARTS` (`budget-planner`, `timesheet`, `contact-list`, `task-tracker`), `isTemplateStart`,
-`templateStart(id, now)` (title and `SheetStarter`, dates from `now`) and `templateSheet({ id, tabId, start, now, dark,
+`templateStart(id, now)` (title and `SheetStarter`, dates from `now`) and `templateSheetWithCharts({ id, tabId, start, now, dark,
 rand })` (an `emptySheet`, `setupWrite` with the Header look, the header frozen and the default size, applied with
-`applySheetWrite`, as `{ id, tabId, title, layout, cells }`). `@livediagram/templates`: `hasTemplateSheets(tabs)`
+`applySheetWrite`, as `{ sheet: { id, tabId, title, layout, cells }, charts }`, each chart with its first read). `@livediagram/templates`: `hasTemplateSheets(tabs)`
 (engine-free, in the index) and, at the `@livediagram/templates/template-sheets` subpath so only a caller making sheets
 bundles the engine, `materialiseTemplateSheets(tabs, now, rand)` (`{ tabs, sheets: SheetCreateRequest[] }`, tinted dark
 when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from each Sheet made). Callers:
@@ -230,7 +230,7 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
 - The wizard's Local only create (`apps/live/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
   only when `hasTemplateSheets`), stored as the record's `sheets` by `offlineCreateDocument`.
 - The editor (`useSheetModel`): a Sheet still carrying a known `start`, its sheet absent once the tab is `ready`, for
-  someone who may edit: `templateSheet` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
+  someone who may edit: `templateSheetWithCharts` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
   then `tickElements` drops the mark (no undo step). `PlanSheetView` shows Opening Sheet, never "no longer in this
   document", while `start` (as `copyOf`) is set.
 - `freshCopyFields` copies a Sheet with `start` as `{ sheetId: new, start }`.

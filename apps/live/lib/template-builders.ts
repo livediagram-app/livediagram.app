@@ -27,7 +27,7 @@ export function buildTemplatedTab(
   tabId: string,
   tabName: string,
 ): Tab {
-  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName);
+  return themedTab(templateTabs(kind)[0]!, kind, themeId, tabId, tabName, [tabId]);
 }
 
 // Every tab a template makes (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"):
@@ -40,9 +40,9 @@ export function buildTemplatedTabs(
   tabName: string,
   newId: () => string = () => crypto.randomUUID(),
 ): Tab[] {
-  return templateTabs(kind).map((def, i) =>
-    themedTab(def, kind, themeId, i === 0 ? tabId : newId(), def.name ?? tabName),
-  );
+  const defs = templateTabs(kind);
+  const ids = defs.map((_, i) => (i === 0 ? tabId : newId()));
+  return defs.map((def, i) => themedTab(def, kind, themeId, ids[i]!, def.name ?? tabName, ids));
 }
 
 function themedTab(
@@ -51,6 +51,8 @@ function themedTab(
   themeId: string,
   tabId: string,
   tabName: string,
+  // Every tab's id in order, for a template whose tabs name each other (a Plan Dashboard's slots).
+  ids: readonly string[],
 ): Tab {
   const theme = getTheme(themeId);
   // Graph-aware recolour so multi-colour themes (docs/specs/011-theme/multicolour-themes.md) can tint each
@@ -68,5 +70,6 @@ function themedTab(
     ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
     templateChosen: true,
     ...templateCanvasOverrides(kind),
+    ...def.tab?.(ids),
   };
 }

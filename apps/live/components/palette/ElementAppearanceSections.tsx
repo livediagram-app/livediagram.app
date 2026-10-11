@@ -101,7 +101,12 @@ export function ElementAppearanceSections({
   headerFillHandlers,
   arrowheadColorHandlers,
   strokeColorHandlers,
-}: ElementAppearanceSectionsProps) {
+  afterGroup = true,
+}: ElementAppearanceSectionsProps & {
+  // A group sits above (Layer, Size, Rotation): the appearance group is set apart from it. Not on an element covering
+  // the canvas, whose menu has none of them.
+  afterGroup?: boolean;
+}) {
   const boxed = isBoxed(target);
   const isIcon = target.type === 'shape' && target.shape === 'icon';
   // Border controls apply only where a wrapper border actually renders
@@ -177,7 +182,7 @@ export function ElementAppearanceSections({
     (borderable && !isChart);
   return (
     <>
-      {showAppearanceGroup ? <MenuGroupSeparator /> : null}
+      {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}
       {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets (docs/specs/010-palette/style-presets.md) + Colours + Border,
             grouped under one "Style" row that opens them in a side flyout —
             the same fold the Text band uses — so the three style categories

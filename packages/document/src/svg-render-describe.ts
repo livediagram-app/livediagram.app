@@ -120,7 +120,13 @@ export type BoxedExportOptions = {
   itemTypes?: readonly ItemTypeDef[];
   // Sheet windows by sheet id (docs/specs/029-sheets/sheet.md "Exports and images").
   sheets?: ReadonlyMap<string, SheetRenderModel>;
+  // A plan view's picture at its box (docs/specs/026-plan/plan-tabs.md "Export"), from a caller that has the charts'
+  // models (the editor); undefined, or no resolver, draws the labelled box.
+  resolvePlanArt?: ResolvePlanArt;
 };
+
+// The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
+export type ResolvePlanArt = (el: BoxedElement & { type: 'shape' }) => string | undefined;
 
 // The face a label paints in: the author's own choice, else the notation's
 // (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The

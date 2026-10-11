@@ -11,6 +11,8 @@ import {
   isEventStormingNote,
   isEventStormingTab,
   landArrivals,
+  sheetDrawnChartIds,
+  withSheetCharts,
   type ElementId,
   type ArrowElement,
   type BoxedElement,
@@ -59,11 +61,14 @@ export function useElementDuplication(deps: {
     const { multiSelectedIds } = readSelection();
     if (multiSelectedIds.size === 0) return;
     const { dx, dy, lanes } = duplicateOffset(activeTab, multiSelectedIds);
-    const { newElements: copies } = duplicateElements(activeTab.elements, multiSelectedIds, dx, dy);
+    // A Sheet's copy takes the charts it draws (docs/specs/029-sheets/sheet.md "Charts"), which are never selected.
+    const ids = withSheetCharts(activeTab.elements, multiSelectedIds);
+    const { newElements: copies } = duplicateElements(activeTab.elements, ids, dx, dy);
     if (copies.length === 0) return;
     commit((els) => landCopies(els, copies, lanes));
     trackDuplicated(copies);
-    setMultiSelectedIds(new Set(copies.map((c) => c.id)));
+    const drawn = sheetDrawnChartIds(copies);
+    setMultiSelectedIds(new Set(copies.filter((c) => !drawn.has(c.id)).map((c) => c.id)));
   };
 
   const duplicateSelected = () => {
@@ -74,6 +79,23 @@ export function useElementDuplication(deps: {
     // Element-only duplicate: clones just this element (not arrows attached
     // to it), offset diagonally so it's visible next to the original.
     const offset = PASTE_OFFSET;
+    // A Sheet drawing charts copies with them, through duplicateElements, so they read the Sheet's copy.
+    const withCharts = withSheetCharts(activeTab.elements, new Set([source.id]));
+    if (withCharts.size > 1) {
+      const { dx, dy, lanes } = duplicateOffset(activeTab, withCharts);
+      const { newElements: copies, idMap } = duplicateElements(
+        activeTab.elements,
+        withCharts,
+        dx,
+        dy,
+      );
+      const copyId = idMap.get(source.id);
+      if (!copyId) return;
+      commit((els) => landCopies(els, copies, lanes));
+      trackDuplicated(copies);
+      setSelectedId(copyId);
+      return;
+    }
     if (isBoxed(source)) {
       const { dx, dy, lanes } = duplicateOffset(activeTab, new Set([source.id]));
       const copy: BoxedElement = {

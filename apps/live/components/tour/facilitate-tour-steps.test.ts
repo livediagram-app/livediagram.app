@@ -36,8 +36,9 @@ describe('Facilitate tour steps', () => {
     expect(facilitateTourSteps({ canShare: true })).toHaveLength(FACILITATE_TOUR_STEPS.length);
   });
 
-  it('starts at its first step when the welcome tour started it', () => {
-    expect(facilitateTourSteps({ canShare: true, withWelcome: false })[0]!.id).toBe('collaborate');
+  it('always opens on its own welcome card', () => {
+    expect(facilitateTourSteps({ canShare: true })[0]!.card).toBe('welcome');
+    expect(facilitateTourSteps({ canShare: false })[0]!.card).toBe('welcome');
   });
 
   it('names its telemetry by step', () => {

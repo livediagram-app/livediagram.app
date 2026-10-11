@@ -527,8 +527,8 @@ export function KeyboardEssentials() {
   );
 }
 
-/** The welcome tour's offer card: a short welcome, then No thanks or Show me around. */
-export function WelcomeTourCard() {
+/** The Diagram tour's offer card: a short welcome, then No thanks or Show me around. */
+export function DiagramTourCard() {
   return (
     <Scene w={420} h={170} bg="plain">
       <rect
@@ -541,10 +541,10 @@ export function WelcomeTourCard() {
         strokeWidth={2}
       />
       <Label x={210} y={34} anchor="middle" size={10} weight={700} tone="accent">
-        QUICK TOUR
+        DIAGRAM TOUR
       </Label>
       <Label x={210} y={54} anchor="middle" size={14} weight={700} tone="strong">
-        Welcome to livediagram
+        Welcome to Diagram
       </Label>
       <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
       <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />

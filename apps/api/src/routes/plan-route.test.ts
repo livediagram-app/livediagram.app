@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { PlanResponse } from '@livediagram/api-schema';
-import { ITEM_TYPES, presetSetup } from '@livediagram/items';
+import { presetSetup } from '@livediagram/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
@@ -57,7 +57,7 @@ beforeEach(() => {
 });
 
 describe('GET /documents/:id/plan', () => {
-  it('answers boards in tab order, each status once and the built-in types', async () => {
+  it('answers boards in tab order, each status once and no types until chosen', async () => {
     const res = await get();
     expect(res.status).toBe(200);
     expect(res.body.boards.map((b) => [b.tabId, b.elementId])).toEqual([
@@ -69,7 +69,7 @@ describe('GET /documents/:id/plan', () => {
     );
     const ids = res.body.statuses.map((s) => s.status);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(res.body.types.map((t) => t.id)).toEqual(ITEM_TYPES.map((t) => t.id));
+    expect(res.body.types).toEqual([]);
   });
 
   it('answers a view link, and only its tab to a tab-scoped one', async () => {

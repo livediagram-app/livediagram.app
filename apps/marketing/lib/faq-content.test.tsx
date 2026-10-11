@@ -4,7 +4,13 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { THEMES } from '@livediagram/document';
-import { LOGO_LAYOUTS, PAGE_LAYOUTS, SLIDE_LAYOUTS, TEMPLATES } from '@livediagram/templates';
+import {
+  LOGO_LAYOUTS,
+  PAGE_LAYOUTS,
+  SLIDE_LAYOUTS,
+  TEMPLATE_CATEGORIES,
+  TEMPLATES,
+} from '@livediagram/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
@@ -16,6 +22,7 @@ import {
   LOGO_LAYOUT_COUNT,
   PAGE_LAYOUT_COUNT,
   SLIDE_LAYOUT_COUNT,
+  TEMPLATE_CATEGORY_COUNT,
   TEMPLATE_COUNT,
 } from './faq-content';
 import { filterFaq } from './faq-filter';
@@ -55,6 +62,7 @@ describe('FAQ content', () => {
 describe('template counts in marketing copy', () => {
   it('matches the catalogue in the FAQ', () => {
     expect(TEMPLATE_COUNT).toBe(TEMPLATES.length);
+    expect(TEMPLATE_CATEGORY_COUNT).toBe(TEMPLATE_CATEGORIES.length);
   });
 
   it('matches the catalogue on every comparison page and card', () => {

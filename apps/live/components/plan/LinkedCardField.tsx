@@ -19,6 +19,7 @@ import {
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  NoMatches,
   Tooltip,
   useEscape,
   useClickOutside,
@@ -263,8 +264,8 @@ export function LinkedCardField({
               );
             })}
             {options.length === 1 && query ? (
-              <li className="px-2 py-1.5 text-[12px] text-slate-500 dark:text-slate-400">
-                No cards match
+              <li role="presentation">
+                <NoMatches things="cards" query={query} />
               </li>
             ) : null}
           </ul>

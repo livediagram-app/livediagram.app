@@ -12,7 +12,12 @@ import {
   useMaximisedPlanId,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@livediagram/tailwind-config/motion';
-import { CanvasCover, MaximisableSlot, useMaximisedPlanLifetime } from './MaximisedPlanLayer';
+import {
+  CanvasCover,
+  MaximisableSlot,
+  originOf,
+  useMaximisedPlanLifetime,
+} from './MaximisedPlanLayer';
 
 // docs/specs/026-plan/plan-board.md "Maximised board" and plan-views.md "Maximised view": maximising moves the body,
 // never remounts it; a view lays out at the overlay's size; one Escape restores, whatever else listens for it.
@@ -209,6 +214,43 @@ describe('restoring while it is still growing', () => {
   });
 });
 
+// docs/specs/026-plan/plan-tabs.md "Slot content": in a Dashboard slot the element is drawn in the slot, its canvas node
+// out of sight under the page, so the grow and the shrink measure the slot where it is drawn, at that moment.
+describe('where a maximised element grows from and shrinks to', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+    vi.restoreAllMocks();
+  });
+
+  const boxed = (attrs: Record<string, string>, rect: DOMRect | null) => {
+    const node = document.createElement('div');
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    node.getBoundingClientRect = () => rect ?? new DOMRect(0, 0, 0, 0);
+    document.body.appendChild(node);
+    return node;
+  };
+
+  it('measures the slot the element is drawn in, never its canvas node under the page', () => {
+    boxed({ 'data-element-id': 'el' }, new DOMRect(-4000, -3000, 900, 600));
+    boxed({ 'data-plan-slot': 'el' }, new DOMRect(40, 220, 500, 320));
+    expect(originOf('el')).toEqual(new DOMRect(40, 220, 500, 320));
+  });
+
+  it('reads the slot afresh each time (the page scrolled or the row resized while maximised)', () => {
+    const slot = boxed({ 'data-plan-slot': 'el' }, new DOMRect(40, 220, 500, 320));
+    expect(originOf('el')?.top).toBe(220);
+    slot.getBoundingClientRect = () => new DOMRect(40, 80, 500, 320);
+    expect(originOf('el')?.top).toBe(80);
+  });
+
+  it('falls back to the canvas node while the slot has no box, and to nothing at all', () => {
+    boxed({ 'data-plan-slot': 'el' }, null);
+    expect(originOf('el')).toBeNull();
+    boxed({ 'data-element-id': 'el' }, new DOMRect(10, 20, 300, 200));
+    expect(originOf('el')).toEqual(new DOMRect(10, 20, 300, 200));
+  });
+});
+
 // docs/specs/026-plan/plan-board.md "The header holds the top row": the cover hands the band to the element's header.
 describe('the canvas cover', () => {
   const insets = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -242,6 +284,29 @@ describe('the canvas cover', () => {
     expect(plain.style.getPropertyValue('--plan-band-h')).toBe('');
     // No band: the strip is centred again.
     expect(main.style.getPropertyValue('--plan-strip-end')).toBe('');
+    main.remove();
+  });
+
+  it("lends the element's hue to the chrome in its band, and takes it back", () => {
+    const main = document.createElement('main');
+    document.body.appendChild(main);
+    const band = { height: 53, left: 124, mid: 349, stripEnd: 300 };
+    const { rerender } = render(
+      <CanvasCover layout={{ insets, band }} marker={{}} tint="#0284c7">
+        <span />
+      </CanvasCover>,
+      { container: main },
+    );
+    expect(main.dataset.bandTint).toBe('');
+    expect(main.style.getPropertyValue('--band-tint')).toBe('#0284c7');
+    // No band (the top row has no room for it): the chrome keeps its own colours.
+    rerender(
+      <CanvasCover layout={{ insets, band: null }} marker={{}} tint="#0284c7">
+        <span />
+      </CanvasCover>,
+    );
+    expect(main.dataset.bandTint).toBeUndefined();
+    expect(main.style.getPropertyValue('--band-tint')).toBe('');
     main.remove();
   });
 });

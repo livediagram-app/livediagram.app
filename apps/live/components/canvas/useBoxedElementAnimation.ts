@@ -14,6 +14,7 @@ import { bodySetClass } from '@/lib/animation-classes';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useCanvasStill } from '@/components/canvas/CanvasStillContext';
 import { useArrivesWithBoard } from '@/components/canvas/CanvasArrivalContext';
+import { COVERING_SHAPES, useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 
 // The looping-animation slice (docs/specs/008-canvas/canvas-and-palette.md), lifted out of BoxedElementView:
 // which surface each animation kind rides (the wrapper box, the rendered
@@ -52,7 +53,12 @@ export function wrapperShapeAnimation(element: BoxedElement): ShapeAnimation | u
 }
 
 export function useBoxedElementAnimation(element: BoxedElement, textColor: string) {
-  const animation = wrapperShapeAnimation(element);
+  // A board, view or Sheet filling the canvas (maximised, or Fill Tab) holds still: its animation plays only in
+  // its place on the canvas (docs/specs/028-animation/element-animations.md).
+  const covering = useCoversCanvas(
+    element.type === 'shape' && COVERING_SHAPES.has(element.shape) ? element.id : null,
+  );
+  const animation = covering ? undefined : wrapperShapeAnimation(element);
   // The gradient animation blends the element's fill, which falls back to the
   // canvas's own ink when the element carries none (docs/specs/007-editor/live-app.md).
   const surface = useElementSurface(element.id);

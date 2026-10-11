@@ -27,6 +27,8 @@ const phases = new Map([
   ['done', 'done' as const],
 ]);
 const NOW = new Date(2026, 9, 5, 12);
+// A chart of projects alone.
+const PROJECT = ['project'];
 
 describe('plan view dates', () => {
   it('reads YYYY-MM-DD as a day number, and nothing else', () => {
@@ -52,7 +54,7 @@ describe('gantt model', () => {
       item({ title: 'k2', parent: bar.id }),
       item({ title: 'not a project' }),
     ];
-    const m = ganttModel([none, start, bar, due, gone, ...kids], phases, NOW);
+    const m = ganttModel([none, start, bar, due, gone, ...kids], phases, NOW, PROJECT);
     expect(m.rows.map((r) => r.item.fields['title'])).toEqual(['Due', 'Bar', 'Start', 'None']);
     const [d, b, s, n] = m.rows;
     expect(b).toMatchObject({ mark: 'bar', done: 1, total: 2, overdue: false });
@@ -71,13 +73,13 @@ describe('gantt model', () => {
       { title: 'P', start: '2026-09-10', due: '2026-09-01', status: 'done' },
       { type: 'project' },
     );
-    const [row] = ganttModel([p], phases, NOW).rows;
+    const [row] = ganttModel([p], phases, NOW, PROJECT).rows;
     expect(row).toMatchObject({ mark: 'bar', isDone: true, overdue: false });
     expect(row!.from).toBe(dayNumber('2026-09-01'));
   });
 
   it('keeps the axis at least four weeks, ticking Mondays', () => {
-    const m = ganttModel([], phases, NOW);
+    const m = ganttModel([], phases, NOW, PROJECT);
     expect(m.rows).toEqual([]);
     expect(m.to - m.from + 1).toBe(GANTT_MIN_DAYS);
     expect(m.ticks.length).toBeGreaterThanOrEqual(4);
@@ -89,7 +91,7 @@ describe('gantt model', () => {
 
   it('ticks months on a long axis, the first and each January with the year', () => {
     const p = item({ title: 'P', start: '2026-10-10', due: '2027-04-01' }, { type: 'project' });
-    const m = ganttModel([p], phases, NOW);
+    const m = ganttModel([p], phases, NOW, PROJECT);
     expect(m.ticks.map((t) => t.label)).toEqual([
       'Oct 2026',
       'Nov',
@@ -104,7 +106,8 @@ describe('gantt model', () => {
 
 describe('dragging Gantt dates (docs/specs/026-plan/plan-views.md "Dragging dates")', () => {
   const rowOf = (fields: Record<string, string>) =>
-    ganttModel([item({ title: 'P', ...fields }, { type: 'project' })], phases, NOW).rows[0]!;
+    ganttModel([item({ title: 'P', ...fields }, { type: 'project' })], phases, NOW, PROJECT)
+      .rows[0]!;
 
   it('turns pixels into whole days along the axis', () => {
     const m = { from: 0, to: 27 };
@@ -199,7 +202,7 @@ describe('Gantt swimlanes (docs/specs/026-plan/plan-views.md "Swimlanes")', () =
   const b = item({ title: 'B', priority: 'urgent', start: '2026-10-02' }, { type: 'project' });
   const c = item({ title: 'C', start: '2026-10-03' }, { type: 'project' });
   const items = new Map([a, b, c].map((i) => [i.id, i]));
-  const rows = ganttModel(items.values(), phases, NOW).rows;
+  const rows = ganttModel(items.values(), phases, NOW, PROJECT).rows;
 
   it('is one unnamed lane of every row without swimlanes', () => {
     expect(ganttLanes(rows, 'none', undefined, items)).toEqual([{ lane: null, rows }]);
@@ -249,13 +252,13 @@ describe('the Gantt names column width', () => {
 
 // docs/specs/026-plan/plan-views.md "Gantt Chart": the card types a chart draws.
 describe('the Gantt chart’s card types', () => {
-  it('draws Projects by default, and any types the chart names instead', () => {
+  it('draws only the card types it is given', () => {
     const p = item({ title: 'P' }, { type: 'project' });
     const t = item({ title: 'T', start: '2026-10-01', due: '2026-10-05' }, { type: 'task' });
     const c = item({ title: 'C' }, { type: 'campaign' });
-    expect(ganttModel([p, t, c], phases, NOW).rows.map((r) => r.item.fields['title'])).toEqual([
-      'P',
-    ]);
+    expect(
+      ganttModel([p, t, c], phases, NOW, PROJECT).rows.map((r) => r.item.fields['title']),
+    ).toEqual(['P']);
     const named = ganttModel([p, t, c], phases, NOW, ['task', 'campaign']).rows;
     expect(named.map((r) => r.item.fields['title'])).toEqual(['T', 'C']);
     expect(named[0]).toMatchObject({ mark: 'bar' });

@@ -48,6 +48,13 @@ const BLANKS: {
     Icon: MarkerIcon,
   },
   {
+    label: 'Blank Session',
+    desc: 'Run a retro or workshop with your team',
+    href: '/new?template=blank-session',
+    slot: 'HeaderSession',
+    Icon: FlipchartIcon,
+  },
+  {
     label: 'Blank Illustration',
     desc: 'Pages for infographics and articles',
     href: '/new?template=blank-illustration',
@@ -60,13 +67,6 @@ const BLANKS: {
     href: '/new?template=blank-plan',
     slot: 'HeaderPlan',
     Icon: PlanIcon,
-  },
-  {
-    label: 'Blank Session',
-    desc: 'Run a retro or workshop with your team',
-    href: '/new?template=blank-session',
-    slot: 'HeaderSession',
-    Icon: FlipchartIcon,
   },
 ];
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
 import { TOUR_STEPS, tourStepsFor, tourStepTelemetryType } from './tour-steps';
 
-// The tour's stage-view telemetry (docs/specs/007-editor/editor-tour.md + docs/specs/017-telemetry/telemetry.md): every step id must
+// The Diagram tour's stage-view telemetry (docs/specs/007-editor/editor-tour.md + docs/specs/017-telemetry/telemetry.md): every step id must
 // derive a valid preset `type` token, and the funnel only reads cleanly if
 // ids stay unique and the bookends stay at the ends.
 
@@ -34,8 +34,8 @@ describe('tourStepsFor', () => {
     expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
-  // docs/specs/007-editor/editor-tour.md "The steps": Change Tab Mode follows Palette Categories.
-  it('shows the Change Tab Mode step after Palette Categories, opening the switch menu', () => {
+  // docs/specs/007-editor/editor-tour.md "The steps": Tab Mode follows Palette Categories.
+  it('shows the Tab Mode step after Palette Categories, opening the switch menu', () => {
     const desktop = ids({ mobile: false, esBoard: false });
     expect(desktop.indexOf('editor-mode')).toBe(desktop.indexOf('categories') + 1);
     const step = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
@@ -56,22 +56,17 @@ describe('tourStepsFor', () => {
     expect(board).not.toContain('categories');
     // Nor a mode switch: a board is always Diagram.
     expect(board).not.toContain('editor-mode');
-    // The rest of the tour still applies: the board has a palette, an
-    // explorer, elements, tabs, and a paintbrush.
-    expect(board).toContain('palette');
-    expect(board).toContain('explorer');
-    expect(board).toContain('theme-canvas');
+    // The rest of the tour still applies: the board has a palette, elements,
+    // tabs, and a paintbrush.
+    expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
   });
 
-  // The Explorer lives behind the top-left menu button (docs/specs/007-editor/toolbar-layout.md), so its
-  // step opens it there and rings the button too.
-  it('points the Explorer step at the menu button', () => {
-    const explorer = tourStepsFor({ mobile: false, esBoard: false }).find(
-      (s) => s.id === 'explorer',
-    )!;
-    expect(explorer.target).toBe('explorer');
-    expect(explorer.alsoHighlight).toBe('dock-explorer');
-    expect(explorer.body).toMatch(/menu button/);
+  it('counts seven steps on a desktop diagram, five on a phone and three on a phone board', () => {
+    const count = (opts: { mobile: boolean; esBoard: boolean }) =>
+      tourStepsFor(opts).filter((s) => !s.card).length;
+    expect(count({ mobile: false, esBoard: false })).toBe(7);
+    expect(count({ mobile: true, esBoard: false })).toBe(5);
+    expect(count({ mobile: true, esBoard: true })).toBe(3);
   });
 
   it('keeps the bookend cards on every surface', () => {
@@ -85,5 +80,31 @@ describe('tourStepsFor', () => {
       expect(steps[0]!.card).toBe('welcome');
       expect(steps[steps.length - 1]!.card).toBe('outro');
     }
+  });
+});
+
+// docs/specs/007-editor/editor-tour.md: the tour is about diagramming, named for Diagram mode, and leaves the
+// app-wide Explorer to its own help article.
+describe('the Diagram tour copy', () => {
+  it('welcomes the person to Diagram and sends them off to diagram', () => {
+    const welcome = TOUR_STEPS[0]!;
+    const outro = TOUR_STEPS[TOUR_STEPS.length - 1]!;
+    expect(welcome.title).toBe('Welcome to Diagram');
+    expect(welcome.body).toMatch(/Diagram mode/);
+    expect(outro.title).toBe("You're ready to diagram");
+  });
+
+  it('has no Explorer step, and its Tab Mode step names no other mode', () => {
+    expect(TOUR_STEPS.map((s) => s.id)).not.toContain('explorer');
+    const mode = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
+    expect(mode.title).toBe('Tab Mode');
+    for (const other of ['Draw', 'Illustrate', 'Plan', 'Facilitate'])
+      expect(mode.body).not.toContain(other);
+  });
+
+  it('titles every step in Title Case', () => {
+    for (const step of TOUR_STEPS.filter((s) => !s.card))
+      for (const word of step.title.split(' ').filter((w) => w !== '&' && w !== 'the'))
+        expect(word.charAt(0)).toBe(word.charAt(0).toUpperCase());
   });
 });

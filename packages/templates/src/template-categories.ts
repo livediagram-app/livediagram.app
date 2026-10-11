@@ -1,0 +1,281 @@
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): twelve,
+// grouped by the job a person is getting done rather than the artefact a template is. Every template but the five
+// blanks has exactly one primary category and may be cross-listed in others where people would genuinely look for it.
+// Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
+// three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
+import type { TemplateKind } from './templates';
+
+export type TemplateCategory =
+  | 'planning'
+  | 'finance'
+  | 'spreadsheets'
+  | 'meetings'
+  | 'mindmaps'
+  | 'timelines'
+  | 'flowcharts'
+  | 'strategy'
+  | 'hierarchies'
+  | 'design'
+  | 'presentations'
+  | 'technical';
+
+// Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
+// category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
+// them): `planning` was Agile, `mindmaps` was Mind maps, `hierarchies` was Hierarchies.
+type CategoryInfo = { id: TemplateCategory; label: string; description: string };
+
+const CATEGORY_LIST: readonly CategoryInfo[] = [
+  {
+    id: 'planning',
+    label: 'Plan and Track',
+    description: 'Boards and trackers for projects and teams.',
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    description: 'Budgets, invoices, loans and sales forecasts.',
+  },
+  {
+    id: 'spreadsheets',
+    label: 'Spreadsheets',
+    description: 'Ready-made sheets with formulas and charts.',
+  },
+  {
+    id: 'meetings',
+    label: 'Meetings and Workshops',
+    description: 'Agendas, retros, Q&A and workshop formats.',
+  },
+  {
+    id: 'mindmaps',
+    label: 'Brainstorm',
+    description: 'Mind maps and sketches for getting ideas out.',
+  },
+  {
+    id: 'timelines',
+    label: 'Timelines and Roadmaps',
+    description: 'Timelines, Gantt charts, roadmaps and goals.',
+  },
+  {
+    id: 'flowcharts',
+    label: 'Flowcharts and Processes',
+    description: 'Step-by-step processes, flows and decisions.',
+  },
+  {
+    id: 'strategy',
+    label: 'Strategy and Decisions',
+    description: 'Frameworks for analysis, priorities and risk.',
+  },
+  {
+    id: 'hierarchies',
+    label: 'Org and Structure',
+    description: 'Org charts, goal trees, sitemaps and pyramids.',
+  },
+  {
+    id: 'design',
+    label: 'Design and UX',
+    description: 'Wireframes, prototypes, personas and journeys.',
+  },
+  {
+    id: 'presentations',
+    label: 'Presentations and Content',
+    description: 'Slides, articles, posters and social posts.',
+  },
+  {
+    id: 'technical',
+    label: 'Technical',
+    description: 'Architecture, schema and sequence diagrams.',
+  },
+];
+
+// The categories in the order every picker shows them (the Quick Start, /new and the marketing gallery): alphabetical
+// by label, locale-aware, derived rather than hand-ordered (docs/specs/008-canvas/canvas-and-palette.md "Template
+// categories"). Popular is no category: it stays a shelf above them.
+export const TEMPLATE_CATEGORIES: readonly CategoryInfo[] = [...CATEGORY_LIST].sort((a, b) =>
+  a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }),
+);
+
+// The five blanks: in no category, reached only from Popular (docs/specs/007-editor/templates-by-mode.md "Five
+// blanks"). Mirrors BLANK_TEMPLATE_FOR_MODE; the categories test pins the two together.
+type BlankKind = 'blank' | 'whiteboard' | 'blank-illustration' | 'blank-plan' | 'blank-session';
+
+// Every non-blank template's primary category.
+const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
+  // Plan and Track: the Plan boards that run real work.
+  'project-planner': 'planning',
+  kanban: 'planning',
+  'task-tracker': 'planning',
+  'bug-triage': 'planning',
+  'weekly-planner': 'planning',
+  'content-calendar': 'planning',
+  'product-launch': 'planning',
+  'hiring-pipeline': 'planning',
+  okrs: 'planning',
+  // Finance: a topic across modes, money in and out.
+  'budget-planner': 'finance',
+  timesheet: 'finance',
+  invoice: 'finance',
+  'expense-report': 'finance',
+  'loan-calculator': 'finance',
+  'sales-pipeline': 'finance',
+  // Spreadsheets: the ready-made sheets that are not about money.
+  'contact-list': 'spreadsheets',
+  inventory: 'spreadsheets',
+  'guest-list': 'spreadsheets',
+  'grade-book': 'spreadsheets',
+  'habit-tracker': 'spreadsheets',
+  // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
+  'meeting-agenda': 'meetings',
+  'lean-coffee': 'meetings',
+  'town-hall': 'meetings',
+  retrospective: 'meetings',
+  'start-stop-continue': 'meetings',
+  'mad-sad-glad': 'meetings',
+  'four-ls': 'meetings',
+  sailboat: 'meetings',
+  'team-retro': 'meetings',
+  'pre-mortem': 'meetings',
+  'feedback-board': 'meetings',
+  // Brainstorm: getting ideas out of heads.
+  mindmap: 'mindmaps',
+  'mindmap-tree': 'mindmaps',
+  'mindmap-bubble': 'mindmaps',
+  sketchnote: 'mindmaps',
+  'idea-garden': 'mindmaps',
+  'affinity-map': 'mindmaps',
+  'crazy-eights': 'mindmaps',
+  'doodle-warmup': 'mindmaps',
+  // Timelines and Roadmaps: work laid out in time, and who owns it.
+  timeline: 'timelines',
+  'milestone-timeline': 'timelines',
+  'milestone-timeline-vertical': 'timelines',
+  gantt: 'timelines',
+  roadmap: 'timelines',
+  'objectives-planner': 'timelines',
+  'raci-matrix': 'timelines',
+  // Flowcharts and Processes.
+  flowchart: 'flowcharts',
+  swimlane: 'flowcharts',
+  'decision-tree': 'flowcharts',
+  'approval-workflow': 'flowcharts',
+  'data-flow': 'flowcharts',
+  // Strategy and Decisions: analysis frameworks, priorities and risk.
+  swot: 'strategy',
+  'business-model-canvas': 'strategy',
+  'prioritization-matrix': 'strategy',
+  'risk-matrix': 'strategy',
+  fishbone: 'strategy',
+  venn: 'strategy',
+  flywheel: 'strategy',
+  funnel: 'strategy',
+  'comparison-table': 'strategy',
+  'stakeholder-map': 'strategy',
+  'rich-picture': 'strategy',
+  // Org and Structure: top-down structure.
+  orgchart: 'hierarchies',
+  pyramid: 'hierarchies',
+  'okr-tree': 'hierarchies',
+  sitemap: 'hierarchies',
+  'opportunity-solution-tree': 'hierarchies',
+  // Design and UX: screens, research and the spaces people move through.
+  'mobile-wireframe': 'design',
+  'laptop-wireframe': 'design',
+  'browser-wireframe': 'design',
+  'paper-prototype': 'design',
+  storyboard: 'design',
+  journey: 'design',
+  'journey-doodle': 'design',
+  'user-persona': 'design',
+  'empathy-map': 'design',
+  'user-story-map': 'design',
+  'floor-plan': 'design',
+  // Presentations and Content: pages made to be read or shared.
+  'slide-deck': 'presentations',
+  article: 'presentations',
+  'how-it-works': 'presentations',
+  'data-story': 'presentations',
+  'year-in-review': 'presentations',
+  versus: 'presentations',
+  'social-carousel': 'presentations',
+  'event-poster': 'presentations',
+  'logo-design': 'presentations',
+  resume: 'presentations',
+  'recipe-card': 'presentations',
+  'live-card': 'presentations',
+  'comic-strip': 'presentations',
+  // Technical: developer diagrams.
+  'system-architecture': 'technical',
+  'cloud-architecture': 'technical',
+  'er-diagram': 'technical',
+  'sequence-diagram': 'technical',
+  'uml-class': 'technical',
+  'state-machine': 'technical',
+  'event-storming': 'technical',
+  'incident-postmortem': 'technical',
+};
+
+// Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
+// Never its primary, never a category twice (the categories test pins both).
+export const TEMPLATE_ALSO_IN: Readonly<
+  Partial<Record<TemplateKind, readonly TemplateCategory[]>>
+> = {
+  // Run as a meeting, tracked as a board.
+  'team-retro': ['planning'],
+  'feedback-board': ['planning'],
+  // Goals are strategy as much as tracking.
+  okrs: ['strategy'],
+  'okr-tree': ['strategy'],
+  roadmap: ['strategy'],
+  'pre-mortem': ['strategy'],
+  // A sheet is a spreadsheet whatever it is for.
+  'task-tracker': ['spreadsheets'],
+  'budget-planner': ['spreadsheets'],
+  timesheet: ['spreadsheets'],
+  invoice: ['spreadsheets'],
+  'expense-report': ['spreadsheets'],
+  'loan-calculator': ['spreadsheets'],
+  'sales-pipeline': ['spreadsheets'],
+  // About money, though drawn as diagrams.
+  funnel: ['finance'],
+  'business-model-canvas': ['finance'],
+  // Diagrams a team plans its work with.
+  gantt: ['planning'],
+  'user-story-map': ['planning'],
+  'prioritization-matrix': ['planning'],
+  // Workshop formats.
+  'crazy-eights': ['meetings', 'design'],
+  'doodle-warmup': ['meetings'],
+  'event-storming': ['meetings'],
+  'incident-postmortem': ['meetings'],
+  // Research synthesis and site structure are design work too.
+  'affinity-map': ['design'],
+  sitemap: ['design'],
+  // Who does what is structure.
+  'raci-matrix': ['hierarchies'],
+  // A data-flow diagram is a developer's diagram.
+  'data-flow': ['technical'],
+};
+
+/** A template's primary category; null for the five blanks, which are in none. */
+export function templateCategory(kind: TemplateKind): TemplateCategory | null {
+  return (TEMPLATE_CATEGORY as Partial<Record<TemplateKind, TemplateCategory>>)[kind] ?? null;
+}
+
+/** Every category a template is shown in: its primary, then its cross-listings. Empty for a blank. */
+export function templateCategories(kind: TemplateKind): readonly TemplateCategory[] {
+  const primary = templateCategory(kind);
+  return primary ? [primary, ...(TEMPLATE_ALSO_IN[kind] ?? [])] : [];
+}
+
+/** True when the template is shown in the category, as its primary or cross-listed. */
+export function isInTemplateCategory(kind: TemplateKind, category: TemplateCategory): boolean {
+  return templateCategories(kind).includes(category);
+}
+
+const LABELS: ReadonlyMap<TemplateCategory, string> = new Map(
+  TEMPLATE_CATEGORIES.map((c) => [c.id, c.label]),
+);
+
+/** A category's label. */
+export function templateCategoryLabel(category: TemplateCategory): string {
+  return LABELS.get(category) ?? category;
+}

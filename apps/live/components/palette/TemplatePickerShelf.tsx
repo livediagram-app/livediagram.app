@@ -79,10 +79,15 @@ export function TemplatePickerShelf({
   }, [openId, userOpened]);
 
   // Popular only repeats templates the categories already hold, so it is left
-  // out of the "more templates" sum.
-  const foldedCount = folded
-    .filter((shelf) => shelf.id !== 'popular')
-    .reduce((n, shelf) => n + shelf.items.length, 0);
+  // out of the "more templates" sum; a template cross-listed in several folded
+  // categories counts once, and one the open shelf already shows is no more.
+  const shown = new Set((open?.items ?? []).map((t) => t.kind));
+  const foldedCount = new Set(
+    folded
+      .filter((shelf) => shelf.id !== 'popular')
+      .flatMap((shelf) => shelf.items.map((t) => t.kind))
+      .filter((kind) => !shown.has(kind)),
+  ).size;
 
   // What the last layout change revealed, so only that cascades in and the
   // change reads as cards arriving rather than a jump. A toggle flip reveals
@@ -236,7 +241,8 @@ export function TemplatePickerShelf({
             {moreHeading}
             {moreSummary}
           </div>
-          {/* Three across, so the eight categories and Whiteboard fill three even rows. */}
+          {/* Three across: the folded shelves (Popular and the other categories, or every category while Popular is
+              open) are twelve, so they fill four even rows. */}
           <ul className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">{tiles}</ul>
         </>
       )}

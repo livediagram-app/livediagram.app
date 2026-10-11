@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES } from './item-types';
 import { NEW_ITEM_TYPE, applyCardTypeChanges } from './type-changes';
-import { ITEM_TYPE_CATALOGUE_VERSION, validateItemTypeCatalogue } from './type-catalogue';
+import {
+  ITEM_TYPE_CATALOGUE_VERSION,
+  defaultCatalogue,
+  validateItemTypeCatalogue,
+} from './type-catalogue';
 
 const statuses = [
   { status: 'todo~a1', name: 'To Do' },
   { status: 'done~a1', name: 'Done' },
 ];
+
+// A document with the default types, as one made before card types started empty reads.
+const DEFAULTS = defaultCatalogue();
 
 const ok = (r: ReturnType<typeof applyCardTypeChanges>) => {
   if (!r.ok) throw new Error(r.message);
@@ -17,7 +24,7 @@ describe('applyCardTypeChanges: add', () => {
   it('adds a type as Add Type starts one, with custom fields by name', () => {
     const r = ok(
       applyCardTypeChanges(
-        null,
+        DEFAULTS,
         [
           {
             op: 'add',
@@ -61,7 +68,7 @@ describe('applyCardTypeChanges: add', () => {
   it('takes built-in fields, a colour and a glyph', () => {
     const r = ok(
       applyCardTypeChanges(
-        null,
+        DEFAULTS,
         [
           {
             op: 'add',
@@ -83,7 +90,7 @@ describe('applyCardTypeChanges: add', () => {
 
   it('refuses a taken name, a bad colour, glyph, kind, status or link', () => {
     const refusal = (change: Parameters<typeof applyCardTypeChanges>[1][number]) =>
-      applyCardTypeChanges(null, [change], statuses);
+      applyCardTypeChanges(DEFAULTS, [change], statuses);
     expect(refusal({ op: 'add', name: 'task' })).toMatchObject({
       ok: false,
       code: 'type_change_invalid',
@@ -122,7 +129,7 @@ describe('applyCardTypeChanges: add', () => {
 describe('applyCardTypeChanges: set, delete, restore', () => {
   const withBug = ok(
     applyCardTypeChanges(
-      null,
+      DEFAULTS,
       [{ op: 'add', name: 'Bug', custom: [{ name: 'Severity', kind: 'text' }] }],
       statuses,
     ),
@@ -164,26 +171,34 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
 
   it('never removes a field a type must keep', () => {
     expect(
-      applyCardTypeChanges(null, [{ op: 'set', type: 'project', removeFields: ['due'] }], statuses),
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'project', removeFields: ['due'] }],
+        statuses,
+      ),
     ).toMatchObject({
       ok: false,
       message: expect.stringContaining('cannot be removed'),
     });
     expect(
-      applyCardTypeChanges(null, [{ op: 'set', type: 'task', removeFields: ['title'] }], statuses),
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'task', removeFields: ['title'] }],
+        statuses,
+      ),
     ).toMatchObject({
       ok: false,
     });
   });
 
-  it('deletes a type, naming it for its cards to go to the Trash, but never the last', () => {
+  it('deletes a type, naming it for its cards to go to the Trash, the last one too', () => {
     const r = ok(applyCardTypeChanges(withBug, [{ op: 'delete', type: 'Bug' }], statuses));
     expect(r.deleted).toEqual(['bug']);
     expect(r.catalogue!.types.some((t) => t.id === 'bug')).toBe(false);
     const one = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [ITEM_TYPES[1]] };
-    expect(applyCardTypeChanges(one, [{ op: 'delete', type: 'task' }], statuses)).toMatchObject({
-      ok: false,
-    });
+    expect(
+      ok(applyCardTypeChanges(one, [{ op: 'delete', type: 'task' }], statuses)).catalogue?.types,
+    ).toEqual([]);
   });
 
   // docs/specs/026-plan/plan-agents.md "Changing card types": Add Default Types adds what is missing, changes nothing.
@@ -215,23 +230,25 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     );
   });
 
-  it('stores nothing for a document whose card types are not chosen, unless something else changes', () => {
-    expect(
-      ok(applyCardTypeChanges(null, [{ op: 'add_default_types' }], statuses)).catalogue,
-    ).toBeNull();
-    const after = ok(
+  it('stores the default types for a document whose card types are not chosen, nothing when none are left', () => {
+    const added = ok(applyCardTypeChanges(null, [{ op: 'add_default_types' }], statuses));
+    expect(added.catalogue?.types.map((t) => t.id)).toEqual(ITEM_TYPES.map((t) => t.id));
+    const none = ok(
       applyCardTypeChanges(
         null,
-        [{ op: 'add_default_types' }, { op: 'add', name: 'Risk' }],
+        [
+          { op: 'add', name: 'Risk' },
+          { op: 'delete', type: 'Risk' },
+        ],
         statuses,
       ),
     );
-    expect(after.catalogue).not.toBeNull();
+    expect(none.catalogue).toBeNull();
   });
 
   it('reports what applied before a refusal, saving nothing', () => {
     const r = applyCardTypeChanges(
-      null,
+      DEFAULTS,
       [
         { op: 'add', name: 'Risk' },
         { op: 'delete', type: 'Epic' },
@@ -320,7 +337,11 @@ describe('applyCardTypeChanges: every edit path', () => {
 
   it('lets a mistake that is not a refusal throw', () => {
     expect(() =>
-      applyCardTypeChanges(null, [{ op: 'add', name: undefined as unknown as string }], statuses),
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'add', name: undefined as unknown as string }],
+        statuses,
+      ),
     ).toThrow(TypeError);
   });
 });

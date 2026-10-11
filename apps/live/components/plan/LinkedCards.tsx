@@ -14,7 +14,7 @@ import {
   type ItemTypeDef,
   namedStatus,
 } from '@livediagram/items';
-import { Button, ChevronRightIcon, PlusIcon, Select } from '@livediagram/ui';
+import { ChevronRightIcon, NoMatches, PlusIcon, Select } from '@livediagram/ui';
 import type { LinkedGroup } from '@livediagram/items';
 import { PersonDisc } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
@@ -99,19 +99,14 @@ export function FilteredCards({
         </div>
       ) : null}
       {shown.length === 0 ? (
-        <p className="flex items-center gap-2 text-[13px] text-slate-500 dark:text-slate-400">
-          No cards match.
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={() => {
-              setTypeId(ALL);
-              setStatus(ALL);
-            }}
-          >
-            Clear Filters
-          </Button>
-        </p>
+        <NoMatches
+          things="cards"
+          filters={(typeId !== ALL ? 1 : 0) + (status !== ALL ? 1 : 0)}
+          onClear={() => {
+            setTypeId(ALL);
+            setStatus(ALL);
+          }}
+        />
       ) : (
         <ul className="divide-y divide-slate-100 overflow-hidden rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900/40">
           {shown.map((child) => (

@@ -20,7 +20,7 @@ Every [item](/help/canvas/plan-mode/items/) has a **type**: Project, Task, Note,
 
 ## Open Card Types
 
-In [Plan mode](/help/canvas/plan-mode/), press the **Card Types** button in the bottom-right corner, where Layers sits in the other modes (the strip shows once the tab has a board or Sheet that shows cards), or **Edit Cards** at the end of the palette strip. The panel lists every card type in one list, each with its colour, its glyph and how many fields it has; a type no card has yet is drawn a little grey. Whether a template or a board brought a type or you made it yourself, it works the same way: you can rename, change or delete any of them.
+In [Plan mode](/help/canvas/plan-mode/), press the **Card Types** button in the bottom-right corner, where Layers sits in the other modes (the strip shows once the tab has a board or Sheet that shows cards). The panel lists every card type in one list, each with its colour, its glyph and how many fields it has; a type no card has yet is drawn a little grey. Whether a template or a board brought a type or you made it yourself, it works the same way: you can rename, change or delete any of them.
 
 <Figure caption="The Card Types panel opens above its button: a row per type, then Add New Card Type.">
   <PlanCardTypesScene />
@@ -28,9 +28,9 @@ In [Plan mode](/help/canvas/plan-mode/), press the **Card Types** button in the 
 
 - **Add New Card Type** makes a new one; press a type to edit it.
 - **Duplicate** (the copy button on a type, or **Duplicate** in its editor) starts a new type from that one: same colour, glyph, fields and tabs, named "… copy" for you to rename. Nothing is added until you press **Save**.
-- **Which types a document starts with** depends on its first boards. A template, or a board picked from **Start Planning**, gives the document just the card types it needs: a Hiring Pipeline has **Role**, **Candidate** and **Onboarding Task**, a Kanban board **Task** and **Action**. A **Blank** board gives the five everyday types, **Project**, **Task**, **Note**, **Idea** and **Action**. Boards you add later bring any of their types the document doesn't have yet.
-- The types keep their order: the order the boards brought them in, then yours in the order you added them. The palette's **Cards** list follows the same order.
-- **Add Default Types** adds any of Project, Task, Note, Idea and Action the document doesn't have, without changing the types it has. It asks first, naming the types it will add: press **Add Types** to go ahead, or **Cancel**. It shows only while one of them is missing.
+- **A new document has no card types.** A template, or a board picked from **Start Planning**, gives the document just the card types it needs: a Hiring Pipeline has **Role**, **Candidate** and **Onboarding Task**, a Kanban board **Task** and **Action**. A **Blank** board brings none, so make your own or use **Add Default Types**. Boards you add later bring any of their types the document doesn't have yet.
+- The types keep their order: the order the boards brought them in, then yours in the order you added them. A board's **Add a Card** follows the same order.
+- **Add Default Types** adds any of Project, Task, Note, Idea and Action the document doesn't have, without changing the types it has. It asks first, naming the types it will add: press **Add Types** to go ahead, or **Cancel**. It shows only while one of them is missing. The five never appear unless you ask for them.
 
 Only an Editor can change the types: a Participant or a Viewer sees the list but can't change it.
 
@@ -56,16 +56,15 @@ A document holds up to 32 card types. Each type holds up to 24 fields, 12 of the
 
 ## Delete a Type
 
-Open the type and press **Delete** (the last type can't be deleted), then confirm. Any cards of that type move to the **Trash** with it, so you can restore them there; a restored card shows as a plain Item card, keeping its fields. If a board showed that type alone, it shows and takes every type again; pick the ones it should show in its menu's **Supported Cards**.
+Open the type and press **Delete**, then confirm (the last type can go too). Any cards of that type move to the **Trash** with it, so you can restore them there; a restored card shows as a plain Item card, keeping its fields. If a board showed that type alone, it shows and takes every type again; pick the ones it should show in its menu's **Supported Cards**.
 
 ## Where Your Types Show
 
-- The palette's **Cards** category has a card for each type ("Customer call Card"), ready to drag into a board's column.
 - **+ Add card** on a board offers the types that board shows, set in its menu's **Supported Cards**.
 - **Add New Card Type** at the bottom of **Add a Card** makes a new type right from the board: only that board's states start switched on, and once you save, the board offers it.
 - A card's panel lets you change its type from the picker at the top.
 - A board's rows can be one per type (**Type** under **Swimlanes**), in this panel's order.
 
-When someone saves a change, everyone with the document open sees their cards, panels and palette update at once. If two people save the same type at the same moment, the later save wins.
+When someone saves a change, everyone with the document open sees their cards and panels update at once. If two people save the same type at the same moment, the later save wins.
 
 </ArticleLayout>

@@ -14,7 +14,7 @@
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { lucideGrid3x3 } from '@livediagram/icons/lucide';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { BackgroundPattern } from '@livediagram/document';
 import {
   Glyph,
@@ -98,6 +98,10 @@ export function CanvasThemeDialog({
   useModalGuard(true);
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
+  // A popover flying out of the paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): on a screen wider than a
+  // phone, the panel's bottom-right corner sits just above the brush and it grows from there. Without the brush (a
+  // whiteboard, an embed) or on a phone, it is the centred (phone: full-screen) dialog it always was.
+  const anchor = useBrushAnchor();
   useEscape(onClose);
 
   return (
@@ -116,7 +120,7 @@ export function CanvasThemeDialog({
         // dialog as they click (docs/specs/011-theme/canvas-and-theme-dialog.md). The full-screen layer stays as a
         // transparent click-catcher (click-outside / right-click guard) so an
         // accidental edit doesn't leak to the canvas while it's open.
-        className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center"
+        className={`fixed inset-0 z-[var(--z-modal)] flex ${anchor ? '' : 'items-center justify-center'}`}
       >
         <div
           ref={dialogRef}
@@ -129,7 +133,17 @@ export function CanvasThemeDialog({
           // portal + backdrop, so it repeats the classes rather than inheriting
           // them — the theme grid is exactly the kind of content that wants the
           // whole screen.
-          className="flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0 dark:border-slate-700 dark:bg-slate-900"
+          className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0 dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
+          style={
+            anchor
+              ? {
+                  right: anchor.right,
+                  bottom: anchor.bottom,
+                  maxHeight: `calc(100% - ${anchor.bottom + 16}px)`,
+                  transformOrigin: 'bottom right',
+                }
+              : undefined
+          }
         >
           {/* Header + the full-width tab bar live in one band so the modal
               reads as a single unit rather than two stacked divider rows. */}
@@ -365,4 +379,22 @@ function ThemeTabIcon() {
       <circle cx="8" cy="5.2" r="0.7" fill="currentColor" stroke="none" />
     </Glyph>
   );
+}
+
+// The paintbrush's place: how far the panel's right edge and bottom sit from the window's, so its corner is just above
+// the brush, right edges aligned. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.
+const BRUSH_GAP_PX = 8;
+function useBrushAnchor(): { right: number; bottom: number } | null {
+  // Read once as it opens (the dialog is client-only, loaded with ssr off): the brush does not move while it is open.
+  const [anchor] = useState<{ right: number; bottom: number } | null>(() => {
+    if (typeof window === 'undefined' || window.innerWidth < 640) return null;
+    const brush = document.querySelector<HTMLElement>('[data-tour-id="canvas-theme"]');
+    const box = brush?.getBoundingClientRect();
+    if (!box || box.width === 0) return null;
+    return {
+      right: Math.max(8, Math.round(window.innerWidth - box.right)),
+      bottom: Math.round(window.innerHeight - box.top + BRUSH_GAP_PX),
+    };
+  });
+  return anchor;
 }

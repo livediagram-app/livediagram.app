@@ -81,7 +81,7 @@ export type TypeChangeRefusal = NameRefusal | { code: 'type_change_invalid'; mes
 export type TypeChangesResult =
   | {
       ok: true;
-      // The catalogue to store: null leaves the document's card types not chosen (the default types).
+      // The catalogue to store: null leaves the document's card types not chosen (none).
       catalogue: ItemTypeCatalogue | null;
       // One line per change applied.
       applied: string[];
@@ -167,8 +167,6 @@ export function applyCardTypeChanges(
   statuses: readonly PlanStatusName[],
 ): TypeChangesResult {
   let types: ItemTypeDef[] = [...typesOf(stored)];
-  // Only defaults added to a document whose card types are not chosen: nothing to store.
-  let unchosen = stored == null;
   const applied: string[] = [];
   const deleted: string[] = [];
   const replace = (next: ItemTypeDef) => {
@@ -176,8 +174,6 @@ export function applyCardTypeChanges(
   };
   try {
     for (const c of changes) {
-      const addsDefaults = c.op === 'add_default_types' || c.op === 'restore_built_ins';
-      if (!addsDefaults) unchosen = false;
       if (c.op === 'add') {
         const name = c.name.trim();
         if (types.some((t) => statusKey(t.label) === statusKey(name)))
@@ -265,7 +261,6 @@ export function applyCardTypeChanges(
         applied.push(`~ ${type.label} (${type.id})`);
       } else if (c.op === 'delete') {
         const type = must(resolveType(c.type, types)).type;
-        if (types.length === 1) throw invalid('The last card type cannot be deleted.');
         types = types.filter((t) => t.id !== type.id);
         deleted.push(type.id);
         applied.push(`- ${type.label} (${type.id})`);
@@ -291,5 +286,7 @@ export function applyCardTypeChanges(
       code: 'type_change_invalid',
       message: `The card types would break a rule (${checked.reason}); nothing was saved.`,
     };
-  return { ok: true, catalogue: unchosen ? null : checked.catalogue, applied, deleted };
+  // A document whose card types are not chosen, left with none: nothing to store.
+  const none = stored == null && types.length === 0;
+  return { ok: true, catalogue: none ? null : checked.catalogue, applied, deleted };
 }

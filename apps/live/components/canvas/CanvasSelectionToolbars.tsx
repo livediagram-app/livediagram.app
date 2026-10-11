@@ -9,6 +9,7 @@ import {
   isBoxed,
   isCompoundPath,
   isMindNode,
+  takesAttachments,
 } from '@livediagram/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import {
@@ -176,7 +177,10 @@ export function CanvasSelectionToolbars({
             // so the toolbar stays their only way into a thread.
             // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
             onOpenComments={
-              readOnly && selected && commentsShown ? () => onOpenComments(selected.id) : undefined
+              // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
+              readOnly && selected && commentsShown && takesAttachments(selected)
+                ? () => onOpenComments(selected.id)
+                : undefined
             }
             onOpenContextMenu={
               readOnly

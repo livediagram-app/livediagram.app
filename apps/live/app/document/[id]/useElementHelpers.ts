@@ -83,6 +83,8 @@ export function useElementHelpers(opts: {
       edit?: boolean;
       insertion?: InsertionSlot | null;
       style?: <E extends BoxedElement>(el: E) => E;
+      // false: added without selecting it on the canvas (a chart that sits in a Sheet, selected there instead).
+      select?: boolean;
     },
   ) => {
     placeBoxed(
@@ -92,6 +94,7 @@ export function useElementHelpers(opts: {
       opts?.edit === true,
       opts?.insertion ?? null,
       opts?.style,
+      opts?.select !== false,
     );
   };
 
@@ -102,6 +105,7 @@ export function useElementHelpers(opts: {
     edit = false,
     insertion: InsertionSlot | null = null,
     style: <E extends BoxedElement>(el: E) => E = (el) => el,
+    select = true,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
@@ -157,7 +161,7 @@ export function useElementHelpers(opts: {
           )
         : patchTab(ts, activeId, { elements: after, templateChosen: true }),
     );
-    setSelectedId(el.id);
+    if (select) setSelectedId(el.id);
     // Only kinds that take typed text: a sticker or a session button renders
     // its own face from its setting, so a caret there edits nothing.
     if (edit && takesTypedLabel(el)) setEditingId(el.id);

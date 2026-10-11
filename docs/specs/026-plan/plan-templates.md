@@ -48,18 +48,18 @@ views and facilitation tools are ready, and the team adds its own work.
 
 ## Layout of a template tab
 
-- The board sits top left. Plan views sit under it: metrics in a row, then charts two to a row (the Gantt
-  across the full width).
-- A **rail** to the board's right holds the tab's sticky ("How this works" or "How we run it": the steps of
-  the session or the flow) and its facilitation tools (a timer, a picker, a temperature check), top to bottom.
-- A **dashboard tab** has no board: a row of metrics over a two-by-two grid of charts.
+A template's tabs are made in the Plan kinds ([Plan tabs](plan-tabs.md#templates)): each tab of the catalogue that
+names a board is a **Board tab** of that board alone, each that names a Sheet a **Sheet tab**, and the views and notes
+the catalogue lists are gathered on the template's **Dashboard** (its own dashboard tab, or an **Overview** added last).
+The catalogue below still lists, per tab, the metrics, charts and rail it brings: they are what that Dashboard holds.
+
 - Every board is wide enough that each column fits at its narrowest without scrolling sideways.
 
 ## Card types a template uses
 
 - **Every board takes only the card types its work is made of.** A board of a template names its card types
-  (its **Card Types**), never "every type": a Pipeline takes Candidates, a Retro Notes and Ideas. The palette's
-  card tiles a tab's boards would not take are greyed out ([Plan mode](plan-mode.md#the-palette)).
+  (its **Card Types**), never "every type": a Pipeline takes Candidates, a Retro Notes and Ideas. A board's Add card
+  offers only those types ([Plan mode](plan-mode.md#no-palette)).
 - **A template uses only the card types its work is made of.** Where none of the five default types fits the
   work, the template uses a card type of its own, with the fields that work needs: a Role, a Candidate, an
   Objective. Every card type a board can bring is a **ready-made type**: one catalogue in code
@@ -73,7 +73,7 @@ views and facilitation tools are ready, and the team adds its own work.
   Either way it is one change, on every path that makes the tabs: the New Document wizard (the document is created
   with them), Quick Start (every tab it adds, not only the one it lands on), and agents (the MCP's
   `create_document` and `add_tab`, the api's seeded create). A document that already has a type of that id keeps
-  its own. The [Plan mode](plan-mode.md#the-palette) rule holds: only a board being made brings types, so a type
+  its own. The [Plan mode](plan-mode.md#no-palette) rule holds: only a board being made brings types, so a type
   someone deleted stays deleted.
 - **Hand-offs carry the type**: a board receiving a hand-off takes every type the board handing off takes, so a
   card moved on is shown where it lands.
@@ -247,22 +247,31 @@ Requests from users, voted on and reviewed, and the ones planned followed to shi
 
 ## Spreadsheet templates
 
-Four Plan templates are a spreadsheet rather than boards: each makes its tabs with a **Sheet** already filled from a
-template start (the Header look, the header row frozen, the canvas's light or dark tints), and no board, so the tab
+Twelve Plan templates are a spreadsheet rather than boards: each makes its tabs with a **Sheet** already filled from one
+of the [sheet templates](../029-sheets/sheet.md#sheet-templates) (the Banded look, the header frozen, the canvas's
+light or dark tints, its chart beside it), and no board, so the tab
 opens on the sheet, not on Start Planning. They sit in the template picker's Plan section beside the board
 templates, and bring no card types. Whether the Sheet fills its tab is decided per template:
 
-- **Fill Tab** when the sheet is the whole job (a budget, a timesheet, a contact list): nothing else belongs on the
+- **Fill Tab** when the sheet is the whole job (a budget, a timesheet, a contact list, an invoice, a guest list...): nothing else belongs on the
   tab, so the sheet takes it, as a spreadsheet file would ([Fill Tab](../029-sheets/sheet.md#fill-tab)).
 - **On Canvas** when the sheet is one piece of a working space: the tracker sits on the canvas with its How this
   works sticky beside it, and room around it for notes, a diagram or a board.
 
-| Template       | Kind             | Sheet         | Fills its tab | Holds                                                                                                                                                                                                                                                                                                  |
-| -------------- | ---------------- | ------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Budget Planner | `budget-planner` | **Budget**    | Yes           | Category, Item, Planned, Actual, Difference (`=Planned-Actual`); seven rows (Home, Food, Travel, Leisure, Savings, Other); a **Total** row summing the three amounts; amounts to two decimals                                                                                                          |
-| Timesheet      | `timesheet`      | **Timesheet** | Yes           | Day, Date, Project, Task, Hours; Monday to Friday of the week it is made, dated; a **Total** row summing the hours                                                                                                                                                                                     |
-| Contact List   | `contact-list`   | **Contacts**  | Yes           | Name, Company, Role, Email, Phone, Last Contacted (dates), Notes; four people                                                                                                                                                                                                                          |
-| Task Tracker   | `task-tracker`   | **Tracker**   | No            | Task, Owner, Status, Priority, Start, Due, Done (a whole percentage); five tasks dated from the day it is made; on the canvas with a How this works sticky beside it ("Add a row for each task"; "Set its Status and how much is Done"; "Sort or filter by Owner, Status or Due from a column's menu") |
+| Template        | Kind              | Sheet               | Fills its tab | Holds                                                                                                                                                                                                                                                                               |
+| --------------- | ----------------- | ------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Budget Planner  | `budget-planner`  | **Budget**          | Yes           | The Budget sheet template: planned against actual by category, a summary and a spending pie chart                                                                                                                                                                                   |
+| Timesheet       | `timesheet`       | **Timesheet**       | Yes           | The Timesheet sheet template: this week's hours Monday to Friday, billable time and the amount to bill                                                                                                                                                                              |
+| Contact List    | `contact-list`    | **Contacts**        | Yes           | The Contacts sheet template: six people with stages, days since contact and who is due a follow-up                                                                                                                                                                                  |
+| Task Tracker    | `task-tracker`    | **Tracker**         | No            | The Tracker sheet template: eight tasks with progress, days left, counts and a status chart; on the canvas with a How this works sticky beside it ("Add a row for each task"; "Set its Status and how much is Done"; "Sort or filter by Owner, Status or Due from a column's menu") |
+| Invoice         | `invoice`         | **Invoice**         | Yes           | The Invoice sheet template: who it is from and to, line items, tax and the amount due, ready to send                                                                                                                                                                                |
+| Expense Report  | `expense-report`  | **Expense Report**  | Yes           | The Expense Report sheet template: claims with receipts, what is reimbursable, a summary and a pie chart by category                                                                                                                                                                |
+| Loan Calculator | `loan-calculator` | **Loan Calculator** | Yes           | The Loan Calculator sheet template: the loan's amount, rate and term, the monthly payment and a year-by-year schedule on a line chart                                                                                                                                               |
+| Sales Pipeline  | `sales-pipeline`  | **Sales Pipeline**  | Yes           | The Sales Pipeline sheet template: deals by stage weighted by probability, a forecast and a bar chart                                                                                                                                                                               |
+| Inventory       | `inventory`       | **Inventory**       | Yes           | The Inventory sheet template: stock, its value, what to reorder and a bar chart                                                                                                                                                                                                     |
+| Guest List      | `guest-list`      | **Guest List**      | Yes           | The Guest List sheet template: invitations, RSVPs, dietary needs, the headcount and a pie chart                                                                                                                                                                                     |
+| Grade Book      | `grade-book`      | **Grade Book**      | Yes           | The Grade Book sheet template: scores, averages, grades and a bar chart of how the class is doing                                                                                                                                                                                   |
+| Habit Tracker   | `habit-tracker`   | **Habit Tracker**   | Yes           | The Habit Tracker sheet template: a week of ticks against each habit's goal and a bar chart                                                                                                                                                                                         |
 
 - Each makes one tab, which keeps the name it would have had, as any template of one tab; the Sheet is titled as the
   table says.
@@ -271,6 +280,14 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
   from it there and then: the New Document wizard (stored with the document, cloud or Local only), Quick Start (as
   it adds the tabs), and agents (the MCP's `create_document` and `add_tab`, the api's seeded create). So the sheet
   is there for everyone, an agent's `read_sheet` included, the moment the document is.
+- The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,
+  Inventory, Guest List, Grade Book, Habit Tracker) each make the sheet template of the same name, filling its tab;
+  the four Money sheets and the Sales Pipeline sit in the picker's **Finance** category, the rest in
+  **Spreadsheets** ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
+- Start Planning's **Inspiration** leaves out the spreadsheet templates that make one tab: each is one Sheet that
+  Start Planning's **Spreadsheets** already offers as a sheet template, so it would show the same thing twice. One
+  that sets up more tabs (Task Tracker, its Sheet and an Overview) stays in it
+  ([Plan mode](plan-mode.md#starting-a-board)).
 - Telemetry as any template: `Template` · `Used` with its kind.
 
 ## Telemetry

@@ -66,7 +66,7 @@ describe('PaletteMyShapesTab', () => {
     fireEvent.change(screen.getByLabelText('Search my shapes'), {
       target: { value: 'zzz' },
     });
-    expect(screen.getByText('No shapes match')).toBeTruthy();
+    expect(screen.getByText('No shapes match “zzz”')).toBeTruthy();
   });
 
   it('carries the library and shape on a drag', () => {

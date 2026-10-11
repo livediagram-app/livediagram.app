@@ -38,6 +38,9 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
+  // False when the single selection is a Plan item, which takes no note or comment (docs/specs/026-plan/plan-mode.md
+  // "Nothing attached to Plan items"); absent reads as true.
+  singleTakesAttachments?: boolean;
   // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
   // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
   singleRotates: boolean;

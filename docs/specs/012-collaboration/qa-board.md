@@ -224,7 +224,7 @@ readable on a projector, zoom the canvas.
 
 ## Templates
 
-Two templates in the Agile category are built around the board
+Two templates in the Meetings and Workshops category are built around the board
 (`template-builders-sessions.ts`), the first templates to seat a Collaborate
 element:
 

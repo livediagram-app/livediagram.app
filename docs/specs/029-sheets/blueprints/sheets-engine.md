@@ -84,10 +84,17 @@ src/cards.ts               CardSource (structural), card rows for the card funct
 src/a1-io.ts               agents: readRange, writeRows; AGENT_LOCALE (en-GB)
 src/range-names.ts         Named ranges: rangeNameProblem (the name rules and their toasts), findRangeName, sameName,
                            nameHome (own sheet, else the one other sheet with it); RANGE_NAME_MAX 60, RANGE_NAMES_MAX 100
-src/sheet-starters.ts      Setup Sheet: SHEET_STARTS / SheetStartId, SHEET_LOOKS / SheetLook, SHEET_CELL_SIZES,
-                           SETUP_CARDS_MAX, SheetStarter, sheetStarter(id, now) (Blank, Budget, Tracker, Timesheet,
-                           Contacts), SheetSetup, setupWrite (a starter with the look, freeze and sizes as one write),
+src/sheet-starters.ts      Setup Sheet: SHEET_LOOKS / SheetLook, SHEET_CELL_SIZES, cellSizeDefaults / cellSizeOf,
+                           SETUP_CARDS_MAX, SheetStarter, SheetSetup, setupWrite (a starter with the look, freeze and
+                           sizes as one write), setupOptions, grownFor (rows grown and a starter-cell reader),
                            cardsStarter (Plan Cards' header and rows), resetSheetWrite (Clear Sheet)
+src/sheet-templates/       Sheet templates (sheet.md "Sheet templates"): accents.ts (SHEET_ACCENTS, templateTints,
+                           accentChartPalette), design.ts (SheetDesign: blocks of tables, fields and notes; charts),
+                           compile.ts (designWrite: one write and the charts by id), catalogue.ts (SHEET_TEMPLATE_IDS,
+                           SHEET_STARTS / SheetStartId, SHEET_TEMPLATES, sheetTemplate(id, now)), money.ts, work.ts,
+                           people.ts (the designs: pure data and their formulas)
+src/template-starts.ts     Plan templates' starts: TEMPLATE_STARTS, TEMPLATE_START_SHEETS, TEMPLATE_LOOK,
+                           sheetFromTemplate, templateSheetWithCharts
 src/testing/book.ts        test harness: book(spec), calc(formula)
 src/index.ts
 ```

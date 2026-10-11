@@ -174,11 +174,13 @@ export function containerContents(
 }
 
 // A Sheet carries the charts drawn from its own sheet that sit on it (docs/specs/029-sheets/sheet.md "Charts"): a
-// chart whose centre is inside a moved Sheet's box moves with it; one dragged off onto the canvas stays put. `ids`
-// unchanged when no Sheet is among them.
+// chart anchored in it always, and a floating chart whose centre is inside a moved Sheet's box; one dragged off onto
+// the canvas stays put. `ids` unchanged when no Sheet is among them. `anchoredOnly` takes only the charts anchored in
+// a Sheet (a delete or a Clear Sheet): a floating chart that merely sits over a deleted Sheet stays on the canvas.
 export function withSheetCharts(
   elements: readonly Element[],
   ids: ReadonlySet<ElementId>,
+  opts: { anchoredOnly?: boolean } = {},
 ): ReadonlySet<ElementId> {
   const sheets = elements.filter(
     (el): el is Boxed & { type: 'shape'; planSheet?: { sheetId: string } } =>
@@ -188,6 +190,11 @@ export function withSheetCharts(
   const out = new Set(ids);
   for (const el of elements) {
     if (out.has(el.id) || el.type !== 'shape' || !el.chartSource || !hasGeometry(el)) continue;
+    if (el.sheetAnchor && sheets.some((s) => s.planSheet?.sheetId === el.chartSource!.sheetId)) {
+      out.add(el.id);
+      continue;
+    }
+    if (opts.anchoredOnly) continue;
     const cx = el.x + el.width / 2;
     const cy = el.y + el.height / 2;
     if (

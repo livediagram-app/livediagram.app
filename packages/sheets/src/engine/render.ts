@@ -161,18 +161,24 @@ export function renderModelsForTab(
   });
   for (const f of frames) {
     if (out.has(f.sheetId)) continue;
-    const model = renderWindow(
-      wb,
-      f.sheetId,
-      {
-        width: Math.max(1, f.width - STATIC_ROW_HEAD_W),
-        height: Math.max(1, f.height - STATIC_HEADER_H),
-      },
-      wb.locale,
-    );
+    const model = renderFrameWindow(wb, f);
     if (model) out.set(f.sheetId, model);
   }
   return out;
+}
+
+// One Sheet element's window, from a workbook already holding its sheet (the editor's sheet store, for its images:
+// docs/specs/026-plan/plan-tabs.md "Export"): the cells that fit its grid area, inside the static render's chrome.
+export function renderFrameWindow(wb: Workbook, frame: SheetFrame): SheetRenderModel | undefined {
+  return renderWindow(
+    wb,
+    frame.sheetId,
+    {
+      width: Math.max(1, frame.width - STATIC_ROW_HEAD_W),
+      height: Math.max(1, frame.height - STATIC_HEADER_H),
+    },
+    wb.locale,
+  );
 }
 
 // The Sheet elements of a tab, as frames (structural: any element list).

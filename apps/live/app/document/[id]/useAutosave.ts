@@ -268,6 +268,9 @@ export function useAutosave(opts: {
       // 3): the api merges in only the answers and ticks it hadn't.
       const roomCursor = roomRef.current?.cursor() ?? null;
       const writes: Promise<unknown>[] = [];
+      // The saves of tabs the last save did not have: the tab order waits for them (below).
+      const newTabWrites: Promise<unknown>[] = [];
+      const savedIds = new Set(lastSavedTabsRef.current.map((t) => t.id));
       for (const t of changedTabs) {
         // Granular ops (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0), derived from the last state
         // peers saw, so concurrent different-element edits merge instead of the whole tab clobbering.
@@ -276,30 +279,30 @@ export function useAutosave(opts: {
           writes.push(relayParticipantChanges(before, t, () => roomRef.current));
           continue;
         }
-        writes.push(
-          saveQueueRef
-            .current!.run(t.id, () =>
-              saveTabAndRelay(
-                before,
-                t,
-                () => roomRef.current,
-                () =>
-                  apiSaveTab(selfId, documentId, t, sessionShareCode, {
-                    // A loaded tab's content is authoritative, so an empty body is
-                    // an intentional clear (reset-canvas / delete-all) the server
-                    // backstop should accept; an unloaded placeholder is never in
-                    // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
-                    allowEmpty: loadedTabIdsRef.current.has(t.id),
-                    roomCursor,
-                    // From the same render as `t`, never ahead of it (useChangesetSeen).
-                    ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
-                  }),
-              ),
-            )
-            .then((rev) => {
-              if (rev !== null) noteRevision(t.id, rev);
-            }),
-        );
+        const write = saveQueueRef
+          .current!.run(t.id, () =>
+            saveTabAndRelay(
+              before,
+              t,
+              () => roomRef.current,
+              () =>
+                apiSaveTab(selfId, documentId, t, sessionShareCode, {
+                  // A loaded tab's content is authoritative, so an empty body is
+                  // an intentional clear (reset-canvas / delete-all) the server
+                  // backstop should accept; an unloaded placeholder is never in
+                  // the set, so it can't authorise its own wipe (docs/specs/006-document/per-tab-storage.md).
+                  allowEmpty: loadedTabIdsRef.current.has(t.id),
+                  roomCursor,
+                  // From the same render as `t`, never ahead of it (useChangesetSeen).
+                  ...(changesetSeen.has(t.id) ? { changesetSeen: changesetSeen.get(t.id) } : {}),
+                }),
+            ),
+          )
+          .then((rev) => {
+            if (rev !== null) noteRevision(t.id, rev);
+          });
+        writes.push(write);
+        if (!savedIds.has(t.id)) newTabWrites.push(write);
       }
       // A Participant never deletes a tab or changes the document's metadata.
       for (const tabId of participant ? [] : deletedIds) {
@@ -310,30 +313,38 @@ export function useAutosave(opts: {
         );
       }
       if (!participant && (orderChanged || nameChanged)) {
+        // The order only places tab rows that exist (docs/specs/006-document/per-tab-storage.md "New tabs and the
+        // tab order"): written beside the saves that create them, as a template's several tabs are, it could land
+        // first, and the new tabs then sat at the end in id order. Settled, not succeeded: a failed new tab is
+        // retried with the next save, which writes the order again.
         writes.push(
-          apiSaveDocumentMeta(
-            selfId,
-            {
-              id: documentId,
-              name: documentName,
-              tabs: tabs.map((t) => ({ id: t.id, folder: t.folder })),
-            },
-            sessionShareCode,
-          ).then(() => {
-            roomRef.current?.send({
-              kind: 'op',
-              op: {
-                kind: 'document-meta',
-                name: documentName,
-                tabs: tabs.map((t, i) => ({
-                  id: t.id,
-                  name: t.name,
-                  orderIndex: i,
-                  folder: t.folder,
-                })),
-              },
-            });
-          }),
+          Promise.allSettled(newTabWrites)
+            .then(() =>
+              apiSaveDocumentMeta(
+                selfId,
+                {
+                  id: documentId,
+                  name: documentName,
+                  tabs: tabs.map((t) => ({ id: t.id, folder: t.folder })),
+                },
+                sessionShareCode,
+              ),
+            )
+            .then(() => {
+              roomRef.current?.send({
+                kind: 'op',
+                op: {
+                  kind: 'document-meta',
+                  name: documentName,
+                  tabs: tabs.map((t, i) => ({
+                    id: t.id,
+                    name: t.name,
+                    orderIndex: i,
+                    folder: t.folder,
+                  })),
+                },
+              });
+            }),
         );
       }
       Promise.all(writes)

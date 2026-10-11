@@ -110,7 +110,7 @@ describe('AddColumnPicker', () => {
     expect(screen.queryByRole('button', { name: 'Add All' })).toBeNull();
     fireEvent.change(field(), { target: { value: 'Shipped' } });
     expect(screen.queryAllByRole('option')).toHaveLength(0);
-    expect(screen.getByText('No existing status matches “Shipped”.')).toBeTruthy();
+    expect(screen.getByText('No states match “Shipped”')).toBeTruthy();
   });
 
   it('uses the existing status a typed name matches, and says so', () => {

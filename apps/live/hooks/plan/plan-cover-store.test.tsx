@@ -4,10 +4,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { maximisePlanElement, releasePlanElement } from './maximised-plan';
 import {
   isBoardFillingTab,
-  isSheetFillingTab,
+  isSheetCovering,
   isCanvasCovered,
   setPlanCover,
   useCanvasCovered,
+  useCoversCanvas,
   useFillsTab,
   useTabElementCount,
 } from './plan-cover-store';
@@ -31,6 +32,20 @@ function Probe({ onRender }: { onRender: () => void }) {
 }
 
 describe('plan-cover-store', () => {
+  it('names the element covering the canvas, maximised or filling the tab, and nothing for null', async () => {
+    const { renderHook } = await import('@testing-library/react');
+    const covers = (id: string | null) => renderHook(() => useCoversCanvas(id)).result;
+    const b = covers('b');
+    const other = covers('x');
+    const none = covers(null);
+    expect(b.current).toBe(false);
+    act(() => maximisePlanElement('b'));
+    expect([b.current, other.current, none.current]).toEqual([true, false, false]);
+    act(() => releasePlanElement('b'));
+    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board', tabElementCount: 1 }));
+    expect([b.current, other.current]).toEqual([true, false]);
+  });
+
   it('re-renders the covered chrome only when coverage changes, never per element added', () => {
     const renders = vi.fn();
     render(<Probe onRender={renders} />);
@@ -57,10 +72,20 @@ describe('plan-cover-store', () => {
     act(() => releasePlanElement('b'));
     act(() => setPlanCover({ fillTabId: 'x', fillTabKind: 'Board', tabElementCount: 1 }));
     expect(isBoardFillingTab()).toBe(true);
-    expect(isSheetFillingTab()).toBe(false);
+    expect(isSheetCovering()).toBe(false);
     act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet', tabElementCount: 1 }));
     expect(isBoardFillingTab()).toBe(false);
-    expect(isSheetFillingTab()).toBe(true);
+    expect(isSheetCovering()).toBe(true);
+  });
+
+  // A Sheet covering the canvas hides the palette, maximised or filling its tab; a board keeps it.
+  it('counts a maximised Sheet as covering, a maximised board not', () => {
+    act(() => maximisePlanElement('s', 'Sheet'));
+    expect(isSheetCovering()).toBe(true);
+    act(() => releasePlanElement('s'));
+    act(() => maximisePlanElement('b', 'Board'));
+    expect(isSheetCovering()).toBe(false);
+    act(() => releasePlanElement('b'));
   });
 
   it('gives the tab’s element count to whoever asks', () => {

@@ -226,7 +226,6 @@ describe('palette layouts', () => {
     expect(ids('plan')).toEqual([
       'plan-cards',
       'plan-boards',
-      'plan-widgets',
       'plan-metrics',
       'plan-visualisations',
       'plan-sheets',
@@ -255,7 +254,6 @@ describe('palette layouts', () => {
     for (const mode of ['diagram', 'illustrate'] as const) {
       expect(ids(mode)).not.toContain('plan-boards');
       expect(ids(mode)).not.toContain('plan-cards');
-      expect(ids(mode)).not.toContain('plan-widgets');
       expect(ids(mode)).not.toContain('plan-visualisations');
       expect(ids(mode)).not.toContain('plan-sheets');
     }
@@ -278,6 +276,7 @@ describe('palette layouts', () => {
     expect(charts.tiles!.map((t) => t.caption)).toEqual([
       'Gantt Chart',
       'Due Calendar',
+      'Start Calendar',
       'Cards by Field',
       'Priority Matrix',
       'Card Search',
@@ -311,5 +310,36 @@ describe('coveredPaletteCategories', () => {
   it('is Plan’s Cards alone', () => {
     expect(coveredPaletteCategories().map((c) => c.id)).toEqual([COVERED_PALETTE_CATEGORY]);
     expect(COVERED_PALETTE_CATEGORY).toBe('plan-cards');
+  });
+});
+
+// docs/specs/026-plan/plan-tabs.md "Dashboard tab": a Dashboard's own palette.
+describe('the Dashboard palette', () => {
+  it('opens on Popular, every tile of it a real one, then what a slot takes', async () => {
+    const { dashboardPaletteCategories, DASHBOARD_PALETTE_LANDING } =
+      await import('./palette-layouts');
+    const cats = dashboardPaletteCategories();
+    expect(DASHBOARD_PALETTE_LANDING).toBe('popular');
+    expect(cats.map((c) => c.id)).toEqual([
+      'popular',
+      'dashboard-layout',
+      'dashboard-tabs',
+      'plan-boards',
+      'plan-metrics',
+      'plan-visualisations',
+      'plan-sheets',
+      'plan-content',
+    ]);
+    expect(cats[0]!.tiles).toHaveLength(13);
+    expect(cats.at(-1)!.tiles?.map((t) => t.id)).toEqual([
+      'tools:sticky',
+      'dashboard:card-title',
+      'dashboard:card-status',
+      'dashboard:card-checklist',
+      'dashboard:card-key-date',
+      'dashboard:card-links',
+    ]);
+    // Layout is a Dashboard's alone.
+    expect(paletteCategoriesFor('plan').some((c) => c.id === 'dashboard-layout')).toBe(false);
   });
 });

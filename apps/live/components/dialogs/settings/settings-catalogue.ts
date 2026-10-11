@@ -454,7 +454,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Facilitate tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the Diagram, Plan and Facilitate tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -836,15 +836,16 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'toggleGroup',
         key: 'tours',
         keywords:
-          'tour tours walkthrough onboarding intro show me around getting started welcome plan board kanban cards facilitate session retro workshop replay rerun',
+          'tour tours walkthrough onboarding intro show me around getting started welcome diagram shapes arrows palette plan board kanban cards sheet spreadsheet facilitate session retro workshop replay rerun',
         label: 'Show Tours',
         description:
-          'Each tour offers itself once: the Welcome Tour the next time you open a document, the Plan and Facilitate tours the first time you work in those modes. A switch turns itself off once you have taken or dismissed its tour. Turn one back on and close Settings to run it again: straight away if you are where it starts, otherwise the next time you are.',
+          'Each tour offers itself once, in its own mode: the Diagram Tour on a Diagram tab, the Plan Tour once a board or sheet is open in Plan, and the Facilitate Tour the first time you work in Facilitate. A switch turns itself off once you have taken or dismissed its tour. Turn one back on and close Settings to run it again: straight away if you are where it starts, otherwise the next time you are.',
         toggles: [
           {
             key: 'tourSeen',
-            label: 'Welcome',
-            helpArticle: 'welcomeTour',
+            // The Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
+            label: 'Diagram',
+            helpArticle: 'diagramTour',
             // INVERTED against the stored preference: the switch asks "show me the
             // tour?", `tourSeen` records "already seen". Switch on === not seen.
             read: (p) => p.tourSeen !== true,

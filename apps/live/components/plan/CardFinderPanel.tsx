@@ -17,7 +17,14 @@ import {
   type CardFinderShow,
   type Item,
 } from '@livediagram/items';
-import { CountBadge, EmptyState, PlanCardsIcon, Tooltip, TrashIcon } from '@livediagram/ui';
+import {
+  CountBadge,
+  EmptyState,
+  PlanCardsIcon,
+  Tooltip,
+  TrashIcon,
+  noMatchTitle,
+} from '@livediagram/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { usePlan, type PlanContextValue } from './PlanContext';
@@ -229,11 +236,14 @@ export function emptyCopy(
         : 'Cards added to this document will show here.',
     };
   if (query.trim())
-    return { title: 'No cards match', description: 'Try another word, a number or a card type.' };
+    return {
+      title: noMatchTitle('cards', query),
+      description: 'Try another word, a number or a card type.',
+    };
   if (filters > 0)
     return {
-      title: 'No cards match these filters',
+      title: noMatchTitle('cards', '', filters),
       description: 'Remove a filter, or clear the search, to see more.',
     };
-  return { title: 'Every card is on a board', description: 'None of them sits off a board here.' };
+  return { title: 'No cards off a board', description: 'Every card here is on a board.' };
 }

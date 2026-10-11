@@ -73,7 +73,7 @@ Named constants, checked by the api and before any upload by the client:
   as an inert image (pictures inside show as their placeholder), drawn when the category first
   opens; until then, and when drawing fails, the tile shows its title alone in the same box, so
   nothing shifts. A search box at the top filters by library name and item title, case-insensitive;
-  no match reads "No shapes match".
+  no match reads "No shapes match “<words>”" (the shared empty state, with Clear Search).
 - **Placing an item** works like pasting: a click places it at the centre of the view, a drag at the
   drop point; its elements get fresh ids (connections follow), land in **one undo step**, and are
   **selected**.

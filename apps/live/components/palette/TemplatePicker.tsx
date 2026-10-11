@@ -3,11 +3,11 @@ import { useClickOutside, useEscape } from '@livediagram/ui';
 import { shufflePinned } from '@/lib/shuffle';
 import type { TemplateCategory, TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import {
-  TEMPLATE_CATEGORIES,
   TEMPLATES,
   BLANK_TEMPLATE_FOR_MODE,
+  isInTemplateCategory,
   popularKindsFor,
-  templateCategory,
+  templateMatchesQuery,
   untitledNameForTemplate,
 } from '@livediagram/templates';
 import {
@@ -243,20 +243,14 @@ export function TemplatePicker({
   const templates = (hydrated ? shuffled : LISTED_TEMPLATES).filter(modeFilter.shows);
   const trimmedName = name.trim();
   const effectiveName = trimmedName || participant.name;
-  // Keyword filter over the shuffled catalogue. Matches title /
-  // description / kind / category label so "design", "uml", "wireframe"
-  // etc. all narrow the grid; empty query passes everything through.
+  // Keyword filter over the shuffled catalogue: every word typed must hit the title, description, kind, a category
+  // label or the template's search words (templateMatchesQuery, the marketing gallery's too), so "sprint", "erd" or
+  // "mortgage" find their templates; empty query passes everything through.
   // A `?q=` preset filters at once (the pre-paint guard lifts on it); only typing is debounced.
   const templateFilter = (typedQuery === undefined ? templateQuery : debouncedQuery)
     .trim()
     .toLowerCase();
-  const matchesQuery = (t: TemplateDescriptor) => {
-    const catLabel =
-      TEMPLATE_CATEGORIES.find((c) => c.id === templateCategory(t.kind))?.label ?? '';
-    return [t.title, t.description, t.kind, catLabel].some((field) =>
-      field.toLowerCase().includes(templateFilter),
-    );
-  };
+  const matchesQuery = (t: TemplateDescriptor) => templateMatchesQuery(t, templateFilter);
   const filteredTemplates = templateFilter ? templates.filter(matchesQuery) : templates;
   // A search that finds nothing in the chosen mode: how many it finds in every mode, so the empty
   // state can offer Everything (docs/specs/007-editor/templates-by-mode.md).
@@ -268,12 +262,13 @@ export function TemplatePicker({
   // needs no card of its own); `categoryTemplates` returns a category's
   // templates with Blank excluded (it keeps the shuffled order so the
   // preview fans rotate on each open).
-  // Under a mode, topped up from the mode's best (popularKindsFor, as the marketing gallery does).
+  // Each mode filter has its own curated list (popularKindsFor, as the marketing gallery does).
   const popularTemplates = popularKindsFor(modeFilter.choice).flatMap((kind) =>
     TEMPLATES.filter((t) => t.kind === kind && modeFilter.shows(t)),
   );
+  // A category's templates: its own and those cross-listed in it (the blanks are in none).
   const categoryTemplates = (category: TemplateCategory) =>
-    templates.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === category);
+    templates.filter((t) => isInTemplateCategory(t.kind, category));
 
   // Section visibility. In wizard mode only the active step's section
   // shows; identity mode shows neither.

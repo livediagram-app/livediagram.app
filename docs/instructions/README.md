@@ -8,3 +8,4 @@ Instruction sets are reusable process memory: how a process is done, step by ste
 - ./gate-a-feature-by-share-role.md - when specifying or building anything a shared document can reach (Editor, Participant, Viewer)
 - ./register-a-help-article.md - when adding, removing, or renaming a help-centre article
 - ./trace-a-canvas-gesture.md - when measuring what a click, drag or pan costs on a large board
+- ./verify-a-tab-export.md - when checking what Export really produces for a tab kind or element (images, JSON, Markdown)

@@ -75,7 +75,7 @@ describe('filtering linked cards', () => {
     fireEvent.change(screen.getByLabelText('Linked as Parent: State'), {
       target: { value: 'done' },
     });
-    expect(screen.getByText('No cards match.')).toBeTruthy();
+    expect(screen.getByText('No cards match these filters')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
     expect(rows()).toHaveLength(3);
   });

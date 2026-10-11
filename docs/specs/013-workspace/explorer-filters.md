@@ -211,7 +211,7 @@ Keyboard:
 | State          | Shows                                                                                                  |
 | -------------- | ------------------------------------------------------------------------------------------------------ |
 | Empty          | The view's own empty copy, unchanged: there is nothing here at all                                     |
-| Filtered empty | "No documents match these filters", the reported reasons under it, and **Clear filters** (empties `q`) |
+| Filtered empty | "No documents match these filters", the reported reasons under it, and **Clear Filters** (empties `q`) |
 | Failed         | "Couldn’t load documents" and **Try again**; the lens stays as it was                                  |
 
 - **Failed** replaces the list when the view's last read failed: the reader's own documents for their own views,

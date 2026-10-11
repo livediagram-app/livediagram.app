@@ -102,7 +102,7 @@ export function StickerPickerTab({
         clearDescription: 'Clear the sticker search query.',
       }}
       telemetry={{ openedType: 'StickerGroup', searchedType: 'StickerSearch' }}
-      emptyMessage={(q) => `No stickers match “${q}”.`}
+      things="stickers"
       loading={loading}
       loadingMessage="Loading stickers…"
     />

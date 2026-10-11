@@ -10,7 +10,7 @@ import {
   monthStart,
   todayNumber,
 } from './plan-view-dates';
-import { GANTT_DEFAULT_TYPES, liveCards, phaseOf, type StatusPhase } from './plan-views';
+import { liveCards, phaseOf, type StatusPhase } from './plan-views';
 import { laneGroups, type LaneHead, type SwimlaneBy } from './board';
 import type { ItemTypeDef } from './item-types';
 
@@ -97,8 +97,8 @@ export function ganttModel(
   items: Iterable<Item>,
   phases: ReadonlyMap<string, StatusPhase>,
   now: Date,
-  // The card types the chart draws (ganttTypesOf): Project unless the chart names others.
-  types: readonly string[] = GANTT_DEFAULT_TYPES,
+  // The card types the chart draws (ganttShownTypes: every type with a start and a due date unless it names others).
+  types: readonly string[],
 ): GanttModel {
   const accepted = new Set(types);
   const live = liveCards(items);

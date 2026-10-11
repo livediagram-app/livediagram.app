@@ -8,13 +8,20 @@
 import { useLayoutEffect } from 'react';
 import type { SelectionStore } from '@/lib/selection-store';
 
-export function usePruneInertSelection(inertIds: ReadonlySet<string>, selection: SelectionStore) {
+// `kept`: inert ids that are selected another way and stay selected (a chart its Sheet draws, selected there to open
+// its element menu: docs/specs/029-sheets/sheet.md "Charts").
+export function usePruneInertSelection(
+  inertIds: ReadonlySet<string>,
+  selection: SelectionStore,
+  kept?: ReadonlySet<string>,
+) {
   useLayoutEffect(() => {
     const { selectedId, multiSelectedIds } = selection.get();
-    const single = selectedId !== null && inertIds.has(selectedId) ? null : selectedId;
-    const multi = [...multiSelectedIds].some((id) => inertIds.has(id))
-      ? new Set([...multiSelectedIds].filter((id) => !inertIds.has(id)))
+    const drops = (id: string) => inertIds.has(id) && !kept?.has(id);
+    const single = selectedId !== null && drops(selectedId) ? null : selectedId;
+    const multi = [...multiSelectedIds].some(drops)
+      ? new Set([...multiSelectedIds].filter((id) => !drops(id)))
       : multiSelectedIds;
     selection.setSelection({ selectedId: single, multiSelectedIds: multi });
-  }, [inertIds, selection]);
+  }, [inertIds, selection, kept]);
 }

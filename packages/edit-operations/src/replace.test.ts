@@ -135,8 +135,9 @@ describe('applyReplace for a new tab', () => {
   });
 
   it('builds a template tab whole, with its canvas and kind', () => {
+    // Kanban's first tab is a Board tab (docs/specs/026-plan/plan-tabs.md "Templates").
     const { tab } = applied(applyReplace(null, { template: 'kanban' }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'diagram' });
+    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'board' });
   });
 
   it('builds an elements tab as add_tab does, themed', () => {

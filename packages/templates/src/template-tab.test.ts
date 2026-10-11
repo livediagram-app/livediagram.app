@@ -61,7 +61,10 @@ describe('buildTemplateTabs', () => {
       ['first', 'Mine'],
       ['t1', 'Actions'],
       ['t2', 'Archive'],
+      ['t3', 'Overview'],
     ]);
+    // A Board tab per board and a Dashboard showing them (docs/specs/026-plan/plan-tabs.md "Templates").
+    expect(tabs.map((t) => t.kind)).toEqual(['board', 'board', 'board', 'dashboard']);
     for (const tab of tabs) {
       expect(isValidTab(tab), tab.name).toBe(true);
       expect(tab.opensIn).toBe('plan');

@@ -21,6 +21,8 @@ export type SheetsHandlers = {
   title(sheetId: string): string | undefined;
   // Delete sheets with their elements, kept for Undo (sheet-store.md "Deleting a sheet").
   release(sheetIds: readonly string[]): void;
+  // Renames each of `sheetIds` still titled `from` to `to` (a tab renamed from its default name).
+  retitle(sheetIds: readonly string[], from: string, to: string): void;
   presence(from: string, op: SheetPresenceOp): void;
   resync(): void;
   reannounce(): void;
@@ -45,13 +47,20 @@ export type SheetsBridge = {
   commitElements(map: (els: Element[]) => Element[]): void;
   // Change the open tab's elements quietly: saved and sent, but no undo step (a chart keeping its last read).
   tickElements(map: (els: Element[]) => Element[]): void;
-  // Place a new element centred on a canvas point, styled by the theme and selected, as a palette drop is (a chart
-  // made from a sheet's cells).
-  placeElement(at: { x: number; y: number }, make: (x: number, y: number) => BoxedElement): void;
+  // Place a new element centred on a canvas point, styled by the theme and selected (unless `select` is false), as a
+  // palette drop is (a chart made from a sheet's cells, selected in its Sheet instead). One undo step.
+  placeElement(
+    at: { x: number; y: number },
+    make: (x: number, y: number) => BoxedElement,
+    opts?: { select?: boolean },
+  ): void;
   // Switch this person to Plan mode (a Sheet double-clicked in another mode offers it).
   switchToPlan(): void;
   // Select an element on the canvas (Escape out of a Sheet's grid selects the Sheet).
   selectElement(id: string): void;
+  // A sheet's title changed (renamed here, by a collaborator, an agent or an undo): a Sheet tab it fills takes the
+  // same name (docs/specs/026-plan/plan-tabs.md "Names").
+  sheetRetitled(sheetId: string, title: string): void;
   // The sheet chunk attaches its handlers; the returned function detaches them.
   attach(handlers: SheetsHandlers): () => void;
 };
@@ -78,13 +87,11 @@ export function useSheetsBridge(opts: {
   send: (op: RoomOp) => void;
   activeTabId: string;
   commitElements: (map: (els: Element[]) => Element[]) => void;
-  placeElement: (
-    at: { x: number; y: number },
-    make: (x: number, y: number) => BoxedElement,
-  ) => void;
+  placeElement: SheetsBridge['placeElement'];
   tickElements: (map: (els: Element[]) => Element[]) => void;
   switchToPlan: () => void;
   selectElement: (id: string) => void;
+  sheetRetitled: (sheetId: string, title: string) => void;
 }) {
   const handlers = useRef<SheetsHandlers | null>(null);
   const pushUndo = useLatest(opts.pushUndo);
@@ -96,6 +103,7 @@ export function useSheetsBridge(opts: {
   const tickElements = useLatest(opts.tickElements);
   const switchToPlan = useLatest(opts.switchToPlan);
   const selectElement = useLatest(opts.selectElement);
+  const sheetRetitled = useLatest(opts.sheetRetitled);
   const attach = useCallback((h: SheetsHandlers) => {
     handlers.current = h;
     return () => {
@@ -118,10 +126,11 @@ export function useSheetsBridge(opts: {
       notify: (m) => notify.current(m),
       sendPresence: (op) => send.current(op as RoomOp),
       commitElements: (map) => commitElements.current(map),
-      placeElement: (at, make) => placeElement.current(at, make),
+      placeElement: (at, make, opts) => placeElement.current(at, make, opts),
       tickElements: (map) => tickElements.current(map),
       switchToPlan: () => switchToPlan.current(),
       selectElement: (id) => selectElement.current(id),
+      sheetRetitled: (sheetId, title) => sheetRetitled.current(sheetId, title),
       attach,
     }),
     [
@@ -143,6 +152,7 @@ export function useSheetsBridge(opts: {
       tickElements,
       switchToPlan,
       selectElement,
+      sheetRetitled,
       attach,
     ],
   );
@@ -162,6 +172,12 @@ export function useSheetsBridge(opts: {
       return true;
     }, []),
     sheetsAttached: useCallback(() => handlers.current !== null, []),
+    // Before a Sheet has drawn nothing is loaded to rename.
+    retitleSheets: useCallback(
+      (ids: readonly string[], from: string, to: string) =>
+        handlers.current?.retitle(ids, from, to),
+      [],
+    ),
     reannounce: useCallback(() => handlers.current?.reannounce(), []),
   };
 }

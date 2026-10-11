@@ -18,7 +18,7 @@ and its templates.
 items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
 - Every `Record<EditorMode, …>` the compiler flags: `MODE_EVENT` (`ModePlan`), `OPENS_IN_EVENT` (`OpensInPlan`),
   template filter (`TemplateModePlan`), `BLANK_TEMPLATE_FOR_MODE` (`blank-plan`), `MODE_WORDS` (Plan, "Plan
-  boards"), marketing `MODE_BEST`, `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
+  boards"), `POPULAR_BY_MODE` (was `MODE_BEST`), `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
 - By hand: explorer lens `VALUE_LABELS['opens-in'].plan`, `paletteLayoutFor` (switch on mode), OpenAPI
   regeneration, marketing hero/gallery mode unions, telemetry explanations and catalogue `types`.
 

@@ -9,7 +9,12 @@ import { PaletteDropdown } from '@/components/palette/PaletteDropdown';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
-import { ChevronIcon } from './sheet-icons';
+import { ChevronIcon, SearchIcon } from './sheet-icons';
+import { SheetFunctionSearch, type FunctionMatch } from './SheetFunctionSearch';
+import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
+import { track } from '@/lib/telemetry';
+import { BAND_CARD_PX } from '@/components/plan/band-controls';
+import { useSheetToolbarEnd } from './sheet-toolbar-end';
 import { SheetToolbarMenu, type ToolbarMenuKind } from './SheetToolbarMenus';
 import {
   toolbarCategories,
@@ -20,8 +25,9 @@ import {
 export const TOOLBAR_PX = 44;
 // A button's square, and its glyph and letters (the shared 16 px glyphs and 13 px letters, drawn larger here).
 const BUTTON_PX = 36;
-// A word button's rough width per character (a function's name).
+// A word button's rough width per character (a function's name), and its glyph beside the word.
 const WORD_CHAR_PX = 8;
+const WORD_GLYPH_PX = 22;
 // The space between two buttons (the toolbar breathes rather than packing them).
 const GAP_PX = 8;
 // Room kept for More when some buttons fold.
@@ -33,6 +39,8 @@ const LABEL_GAP_PX = 10;
 const SEPARATOR_PX = 17;
 // A menu button's chevron: 10 px and the gap before it.
 const CHEVRON_PX = 12;
+// Search at the far right: its glyph, its word and a divider before it, kept out of the room the buttons share.
+const SEARCH_PX = 112;
 
 // The category last picked, for this session: every Sheet opens on it.
 let lastCategory: ToolbarCategoryId = 'text';
@@ -45,12 +53,20 @@ const widthOf = (b: ToolbarButton, labelled = false) =>
   (b.control
     ? (b.controlPx ?? BUTTON_PX)
     : b.text
-      ? Math.max(BUTTON_PX, b.text.length * WORD_CHAR_PX + 16)
+      ? Math.max(BUTTON_PX, b.text.length * WORD_CHAR_PX + 16 + (b.icon ? WORD_GLYPH_PX : 0))
       : BUTTON_PX + (labelled && !b.glyphOnly ? b.label.length * LABEL_CHAR_PX + LABEL_GAP_PX : 0));
 
 // Undo and Redo are the canvas's own (the zoom cluster and the keys), never repeated here.
-export function SheetToolbar({ actions }: { actions: SheetActions }) {
+export function SheetToolbar({
+  actions,
+  inBand = false,
+}: {
+  actions: SheetActions;
+  // In the header band (maximised or filling its tab): a card of its own in the top row, like the menu box.
+  inBand?: boolean;
+}) {
   const c = useSheetController();
+  const end = useSheetToolbarEnd();
   const categories = toolbarCategories(c, actions, actions.activeFormat());
   const [categoryId, setCategoryId] = useState<ToolbarCategoryId>(lastCategory);
   const category = categories.find((k) => k.id === categoryId) ?? categories[0]!;
@@ -63,20 +79,31 @@ export function SheetToolbar({ actions }: { actions: SheetActions }) {
     setMenu(null);
   };
 
-  // How many buttons fit: measured from the toolbar's width less the switcher's.
+  // How many buttons fit: measured from the toolbar's width less the switcher's, Search's and, in a header band, the
+  // header's own controls at the end (Maximise or Restore, the cog), which must never be clipped.
   const ref = useRef<HTMLDivElement | null>(null);
   const switcher = useRef<HTMLDivElement | null>(null);
+  const endRef = useRef<HTMLSpanElement | null>(null);
   const [room, setRoom] = useState(1000);
+  const hasEnd = !!end;
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const measure = () => setRoom(el.clientWidth - (switcher.current?.offsetWidth ?? 0) - 16);
+    const measure = () =>
+      setRoom(
+        el.clientWidth -
+          (switcher.current?.offsetWidth ?? 0) -
+          (endRef.current?.offsetWidth ?? 0) -
+          16 -
+          SEARCH_PX,
+      );
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     if (switcher.current) ro.observe(switcher.current);
+    if (endRef.current) ro.observe(endRef.current);
     return () => ro.disconnect();
-  }, []);
+  }, [hasEnd]);
   const all = category.buttons;
   // Labels beside the glyphs when the whole category fits with them (a wide Sheet on a desktop); on a phone, or
   // when they would not all fit, glyphs alone with tooltips, folding into More as needed.
@@ -92,7 +119,33 @@ export function SheetToolbar({ actions }: { actions: SheetActions }) {
   }
   const shown = all.slice(0, fits);
   const folded = all.slice(fits);
-  const [menu, setMenu] = useState<{ kind: ToolbarMenuKind; anchor: HTMLElement } | null>(null);
+  const [menu, setMenu] = useState<{
+    kind: ToolbarMenuKind;
+    anchor: HTMLElement;
+    highlight?: string;
+  } | null>(null);
+  // Search (docs/specs/029-sheets/sheet.md "Toolbar"): its popover's anchor while open, and a function it found,
+  // waiting for the Functions category to draw so its family's menu opens on it.
+  const [searchAt, setSearchAt] = useState<HTMLElement | null>(null);
+  const [found, setFound] = useState<FunctionMatch | null>(null);
+  const searchButton = useRef<HTMLButtonElement | null>(null);
+  const goTo = (match: FunctionMatch) => {
+    track('Sheet', 'Searched', 'Function');
+    setSearchAt(null);
+    pick('functions');
+    setFound(match);
+  };
+  useLayoutEffect(() => {
+    if (!found || category.id !== 'functions') return;
+    const label = `${FUNCTION_FAMILY_LABELS[found.family]} Functions`;
+    // The family's own button, else More when it folded there, else Search itself.
+    const anchor =
+      ref.current?.querySelector<HTMLElement>(`[aria-label="${label}"]`) ??
+      ref.current?.querySelector<HTMLElement>('[aria-label="More"]') ??
+      searchButton.current;
+    if (anchor) setMenu({ kind: `fn:${found.family}`, anchor, highlight: found.name });
+    setFound(null);
+  }, [found, category.id]);
 
   const button = (b: ToolbarButton) =>
     b.control ? (
@@ -121,7 +174,14 @@ export function SheetToolbar({ actions }: { actions: SheetActions }) {
           }}
         >
           {b.text ? (
-            <span className="whitespace-nowrap text-[13px] font-semibold">{b.text}</span>
+            <span className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold">
+              {b.icon ? (
+                <span aria-hidden className="flex items-center [&_svg]:size-4">
+                  {b.icon}
+                </span>
+              ) : null}
+              {b.text}
+            </span>
           ) : (
             <span className="flex items-center [&_svg]:size-5 [&>span]:text-[17px]">{b.icon}</span>
           )}
@@ -138,16 +198,28 @@ export function SheetToolbar({ actions }: { actions: SheetActions }) {
       ref={ref}
       role="toolbar"
       aria-label="Sheet formatting"
-      className="flex shrink-0 items-center gap-0 overflow-hidden border-b px-1"
-      style={{ height: TOOLBAR_PX, borderColor: c.palette.cardBorder, color: c.palette.text }}
+      className={
+        inBand
+          ? 'flex min-w-0 max-w-full flex-1 items-center gap-0 overflow-hidden rounded-xl border p-1 shadow-md shadow-slate-900/5'
+          : 'flex shrink-0 items-center gap-0 overflow-hidden border-b px-1'
+      }
+      style={
+        inBand
+          ? // In the Sheet's own colours, as its controls card is (band-controls.ts), so its ink always reads.
+            {
+              height: `var(--plan-band-card-h, ${BAND_CARD_PX}px)`,
+              color: c.palette.text,
+              backgroundColor: c.palette.surface,
+              borderColor: c.palette.border,
+            }
+          : { height: TOOLBAR_PX, borderColor: c.palette.cardBorder, color: c.palette.text }
+      }
       onPointerDown={stop}
       onDoubleClick={stop}
     >
       <div ref={switcher} className="flex shrink-0 items-center pr-1.5">
         <PaletteDropdown
           ariaLabel="Toolbar category"
-          hoverCardTitle="Toolbar Category"
-          hoverCardDescription="Pick which tools show: Text, Cells, Numbers, Data, Charts or Functions."
           value={category.id}
           variant="toolbar"
           // On a desktop a resting mouse opens it: the categories are the toolbar's own tabs.
@@ -192,10 +264,59 @@ export function SheetToolbar({ actions }: { actions: SheetActions }) {
           </button>
         </Tooltip>
       ) : null}
+      <span
+        aria-hidden
+        className={`${folded.length ? '' : 'ml-auto '}mx-1 h-5 w-px shrink-0`}
+        style={{ backgroundColor: c.palette.cardBorder }}
+      />
+      <Tooltip label="Search for a function">
+        <button
+          ref={searchButton}
+          type="button"
+          aria-label="Search"
+          aria-haspopup="menu"
+          aria-expanded={searchAt !== null}
+          className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+          onClick={(e) => setSearchAt(e.currentTarget)}
+        >
+          <span aria-hidden className="flex items-center [&_svg]:size-4">
+            <SearchIcon />
+          </span>
+          Search
+        </button>
+      </Tooltip>
+      {end ? (
+        // The header's controls, the cog last, after Search (sheet-toolbar-end.ts).
+        <span
+          ref={endRef}
+          data-sheet-toolbar-end
+          className="flex shrink-0 items-center gap-1 [&_button]:h-9 [&_button]:w-9"
+          onPointerDown={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+        >
+          <span
+            aria-hidden
+            className="mx-1 h-5 w-px shrink-0"
+            style={{ backgroundColor: c.palette.cardBorder }}
+          />
+          {end}
+        </span>
+      ) : null}
+      {searchAt ? (
+        <SheetFunctionSearch
+          anchor={searchAt}
+          onPick={goTo}
+          onClose={() => {
+            setSearchAt(null);
+            c.focusGrid();
+          }}
+        />
+      ) : null}
       {menu ? (
         <SheetToolbarMenu
           kind={menu.kind}
           anchor={menu.anchor}
+          highlight={menu.highlight}
           actions={actions}
           folded={folded.map((b) => ({ label: b.label, icon: b.icon, run: b.run, menu: b.menu }))}
           onOpen={(kind, anchor) => setMenu({ kind, anchor })}

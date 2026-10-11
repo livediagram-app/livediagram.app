@@ -163,6 +163,7 @@ export function IconButton({
           width,
           height,
           ...(dragKind === 'plan-card' && dragChoice ? { planType: dragChoice } : {}),
+          ...(dragChoice ? { choice: dragChoice } : {}),
         });
       }
     : onDragStart;

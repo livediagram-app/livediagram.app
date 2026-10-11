@@ -6,6 +6,7 @@ import { createShape, type ShapeElement } from '@livediagram/document';
 import { ITEM_TYPES, presetSetup } from '@livediagram/items';
 import {
   PlanBoardMenuSections,
+  PlanBoardSectionsPanel,
   PlanSupportedCardsSettings,
   PlanSwimlaneSettings,
 } from './PlanBoardMenuSection';
@@ -199,5 +200,36 @@ describe('Setup Board under the title', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Setup Board' }));
     expect(onClose).toHaveBeenCalled();
     expect(openBoardSetup).toHaveBeenCalledWith('board');
+  });
+});
+
+// docs/specs/026-plan/plan-tabs.md "Editing": in a Dashboard slot the board's cog holds the slot's Slot section after
+// the board's own, one section open at a time across both.
+describe('the board panel with a slot’s section', () => {
+  it('adds the section last, opening it closes Board Setup', () => {
+    Object.assign(plan, { canEdit: true, types: ITEM_TYPES, updateBoard: vi.fn() });
+    render(
+      <PlanBoardSectionsPanel
+        element={board}
+        more={(section) => {
+          const { open, onToggle } = section('slot');
+          return (
+            <button type="button" aria-expanded={open} onClick={onToggle}>
+              Slot
+            </button>
+          );
+        }}
+      />,
+    );
+    const slot = screen.getByRole('button', { name: 'Slot' });
+    expect(slot.getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByRole('button', { name: /Board Setup/ }).getAttribute('aria-expanded')).toBe(
+      'true',
+    );
+    fireEvent.click(slot);
+    expect(slot.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByRole('button', { name: /Board Setup/ }).getAttribute('aria-expanded')).toBe(
+      'false',
+    );
   });
 });

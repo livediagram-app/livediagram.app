@@ -38,6 +38,11 @@ import {
 } from './palette-group-icons';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
+import { lucideGlyph } from '@livediagram/ui';
+import { lucidePanelTop, lucideRows2 } from '@livediagram/icons/lucide';
+
+const DashboardLayoutIcon = lucideGlyph(lucideRows2, 18);
+const TabsIcon = lucideGlyph(lucidePanelTop, 18);
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,
@@ -100,15 +105,6 @@ export const PALETTE_CATEGORIES: {
     icon: <PlanIcon size={18} />,
   },
   {
-    // A board header's widgets (docs/specs/026-plan/board-widgets.md), after Boards.
-    id: 'plan-widgets',
-    label: 'Widgets',
-    group: 4,
-    description:
-      'Read-outs and controls for a board’s header: completion, a filter, people and more.',
-    icon: <BoardWidgetArt kind="progress" size={18} />,
-  },
-  {
     // Plan views (docs/specs/026-plan/plan-views.md): the read-out widgets free on the canvas, then charts
     // of every card.
     id: 'plan-metrics',
@@ -119,11 +115,28 @@ export const PALETTE_CATEGORIES: {
     icon: <BoardWidgetArt kind="count" size={18} />,
   },
   {
+    // A Dashboard's rows and slots (docs/specs/026-plan/plan-tabs.md), on a Dashboard tab alone.
+    id: 'dashboard-layout',
+    label: 'Layout',
+    group: 4,
+    description: 'Rows, slots and section titles for the dashboard: drag one onto the page.',
+    icon: <DashboardLayoutIcon />,
+  },
+  {
+    // The document's Board and Sheet tabs, each shown in a slot (docs/specs/026-plan/plan-tabs.md "The Tabs
+    // category"), on a Dashboard tab alone, while the document has one.
+    id: 'dashboard-tabs',
+    label: 'Tabs',
+    group: 4,
+    description: 'This document’s board and sheet tabs: drop one in a slot to show it there, live.',
+    icon: <TabsIcon />,
+  },
+  {
     id: 'plan-visualisations',
     label: 'Visualisations',
     group: 4,
     description:
-      'Charts of the cards: a project Gantt chart, a due calendar, cards by any field, priority by status and a card search.',
+      'Charts of the cards: a project Gantt chart, due and start calendars, cards by any field, priority by status and a card search.',
     icon: <PlanViewArt view="gantt" size={18} />,
   },
   {

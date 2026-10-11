@@ -1,4 +1,3 @@
-import type { Page } from '@playwright/test';
 import {
   dismissQuickTour,
   expect,
@@ -20,12 +19,9 @@ const COL_HEADER_PX = 22;
 const ids = (prefix: string, n: number) =>
   Array.from({ length: n }, (_, i) => `${prefix}${String(i).padStart(4, '0')}`);
 
-async function toPlan(page: Page) {
-  await page.getByRole('button', { name: /^Editor mode: / }).click();
-  await page.getByRole('menuitemradio', { name: /^Plan/ }).click();
-}
-
-test('a Sheet takes a formula, works it out, keeps it, and maximises like a board', async ({
+// A Sheet tab (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab"): its one Sheet fills the tab, takes a
+// formula, works it out and keeps it as typed; filling the tab already, it offers no Maximise.
+test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', async ({
   page,
   baseURL,
 }) => {
@@ -44,6 +40,8 @@ test('a Sheet takes a formula, works it out, keeps it, and maximises like a boar
         {
           id: tabId,
           name: 'Budget',
+          kind: 'sheet',
+          opensIn: 'plan',
           elements: [
             {
               id: 'sheet',
@@ -92,7 +90,9 @@ test('a Sheet takes a formula, works it out, keeps it, and maximises like a boar
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
-  await toPlan(page);
+  await expect(page.getByRole('button', { name: /^Editor mode: / })).toHaveAccessibleName(
+    'Editor mode: Plan',
+  );
 
   const grid = page.getByRole('grid', { name: 'Budget grid' });
   await expect(grid).toBeVisible();
@@ -111,10 +111,7 @@ test('a Sheet takes a formula, works it out, keeps it, and maximises like a boar
     })
     .toContain('6*7');
 
-  // Maximise fills the canvas; Escape with nothing in edit puts it back.
-  await page.getByRole('button', { name: 'Maximise Sheet' }).click();
-  await expect(page.getByRole('button', { name: 'Restore Sheet' })).toBeVisible();
-  await grid.focus();
-  await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'Maximise Sheet' })).toBeVisible();
+  // The Sheet fills the tab for everyone: no Maximise or Restore to offer.
+  await expect(page.getByRole('button', { name: 'Maximise Sheet' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Restore Sheet' })).toHaveCount(0);
 });

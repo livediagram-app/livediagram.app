@@ -46,7 +46,7 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 
 | Constant                   | Value                                       | Where / provenance                               |
 | -------------------------- | ------------------------------------------- | ------------------------------------------------ |
-| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Illustrate, Plan, Facilitate | `editor-mode.ts`; spec "The mode switch"         |
+| `EDITOR_MODE_CATALOGUE`    | Diagram, Draw, Facilitate, Illustrate, Plan | `editor-mode.ts`; spec "The mode switch"         |
 | `LEGACY_EDITOR_MODES`      | `{ infographic: 'illustrate' }`             | `editor-mode.ts`; spec "Naming in the interface" |
 | Legacy default-folder key  | `'mode:infographic'` → `'mode:illustrate'`  | `LEGACY_PLACEMENT_DEFAULT_KEYS`; spec            |
 | `DEFAULT_EDITOR_MODE`      | `'diagram'`                                 | Spec: `opensIn` absent = Diagram                 |

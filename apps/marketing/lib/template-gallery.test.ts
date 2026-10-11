@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  POPULAR_PER_MODE,
   POPULAR_TEMPLATE_KINDS,
   TEMPLATES,
   isBlankTemplate,
@@ -14,7 +15,6 @@ import {
   modeCounts,
   popularFor,
   popularTemplates,
-  POPULAR_PER_MODE,
   searchShelves,
 } from './template-gallery';
 
@@ -68,15 +68,40 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'kanban'));
-    expect(groups.map((g) => g.label)).toEqual(['Agile']);
+    expect(groups.map((g) => g.label)).toEqual(['Plan and Track']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['kanban']);
+  });
+
+  it('runs the categories alphabetically by name, under every mode, Popular first', () => {
+    for (const mode of ['all', 'diagram', 'draw', 'illustrate', 'plan', 'facilitate'] as const) {
+      const shelves = galleryShelves(mode);
+      expect(shelves[0]!.label, mode).toBe('Popular');
+      const names = shelves.slice(1).map((g) => g.label);
+      expect(names, mode).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
+    }
+  });
+
+  it('shows a cross-listed template on each of its categories, a search on its primary only', () => {
+    const browse = groupGallery(galleryTemplates());
+    const holding = (kind: string, gs: typeof browse) =>
+      gs.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
+    expect(holding('invoice', browse)).toEqual(['finance', 'spreadsheets']);
+    const found = groupGallery(filterGallery(galleryTemplates(), 'invoice'), { primaryOnly: true });
+    expect(holding('invoice', found)).toEqual(['finance']);
+  });
+
+  it('finds a template by its search words, as the editor does', () => {
+    expect(filterGallery(galleryTemplates(), 'mortgage').map((t) => t.kind)).toContain(
+      'loan-calculator',
+    );
+    expect(filterGallery(galleryTemplates(), 'erd').map((t) => t.kind)).toContain('er-diagram');
   });
 });
 
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
 // structure, Popular first, and its mode filter.
 describe('the shelves, as the template step lays them out', () => {
-  it('opens on Popular, the three blanks first, then every category in catalogue order', () => {
+  it('opens on Popular, the blanks first in mode order, then every category in catalogue order', () => {
     const shelves = galleryShelves('all');
     expect(shelves[0]?.id).toBe('popular');
     expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([...POPULAR_TEMPLATE_KINDS]);
@@ -84,7 +109,7 @@ describe('the shelves, as the template step lays them out', () => {
       popularTemplates()
         .slice(0, 3)
         .map((t) => t.kind),
-    ).toEqual(['blank', 'whiteboard', 'blank-illustration']);
+    ).toEqual(['blank', 'whiteboard', 'blank-session']);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),
     );
@@ -125,9 +150,9 @@ describe('the shelf order', () => {
     expect(again.map((g) => g.templates.map((t) => t.kind))).toEqual(
       first.map((g) => g.templates.map((t) => t.kind)),
     );
-    // Every category keeps exactly its own templates...
+    // Every category keeps exactly its own templates, cross-listed ones included...
     for (const g of first) {
-      const catalogue = galleryTemplates().filter((t) => t.category === g.id);
+      const catalogue = galleryTemplates().filter((t) => t.categories.includes(g.id as never));
       expect(new Set(g.templates.map((t) => t.kind))).toEqual(
         new Set(catalogue.map((t) => t.kind)),
       );
@@ -135,7 +160,7 @@ describe('the shelf order', () => {
     // ...but not in the order they were added.
     const shuffled = first.filter((g) => {
       const catalogue = galleryTemplates()
-        .filter((t) => t.category === g.id)
+        .filter((t) => t.categories.includes(g.id as never))
         .map((t) => t.kind);
       return g.templates.map((t) => t.kind).join() !== catalogue.join();
     });

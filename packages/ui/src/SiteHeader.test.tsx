@@ -26,9 +26,9 @@ describe('SiteHeader', () => {
     expect(rows).toEqual([
       'Blank Diagram',
       'Blank Whiteboard',
+      'Blank Session',
       'Blank Illustration',
       'Blank Plan',
-      'Blank Session',
     ]);
   });
 

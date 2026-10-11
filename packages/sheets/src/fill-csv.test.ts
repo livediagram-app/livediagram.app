@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fillSeries } from './fill';
-import { parseCsv, toCsv } from './csv';
+import { csvSafeField, parseCsv, toCsv } from './csv';
 import { serialFromDate } from './dates';
 
 const n = (x: number) => ({ n: x });
@@ -84,5 +84,28 @@ describe('CSV', () => {
       ]),
     ).toBe('a,"b,c"\r\n"""q""","l\nm"\r\n');
     expect(toCsv([])).toBe('');
+  });
+  // docs/specs/029-sheets/sheet.md "CSV": a download never carries a live formula into another spreadsheet.
+  it('makes a field a spreadsheet would run as a formula inert in a safe download, numbers as shown kept', () => {
+    const rows = [
+      ['=HYPERLINK("http://x","y")', '+cmd', '-2+3+cmd|calc', '@SUM(A1)', '\tx', '\rx'],
+      ['-1,200.50', '-£45', '+3%', '-7', 'plain', ''],
+    ];
+    expect(parseCsv(toCsv(rows, { safe: true }), ',').rows).toEqual([
+      ['\'=HYPERLINK("http://x","y")', "'+cmd", "'-2+3+cmd|calc", "'@SUM(A1)", "'\tx", "'\rx"],
+      ['-1,200.50', '-£45', '+3%', '-7', 'plain', ''],
+    ]);
+    // A sheet's own round trip is untouched.
+    expect(toCsv([['=1+1']])).toBe('=1+1\r\n');
+    expect(parseCsv(toCsv(rows), ',').rows).toEqual(rows);
+  });
+  it('keeps spaced numbers as shown and reads a long run of spaces in linear time', () => {
+    expect(['- £ 45', '£ 45', '-45 £%'].map(csvSafeField)).toEqual(['- £ 45', '£ 45', '-45 £%']);
+    expect(csvSafeField('- x')).toBe("'- x");
+    // A field that is a sign then 100,000 spaces backtracked quadratically before (seconds); now well under a budget.
+    const field = `-${' '.repeat(100_000)}x`;
+    const t0 = performance.now();
+    expect(csvSafeField(field)).toBe(`'${field}`);
+    expect(performance.now() - t0).toBeLessThan(50);
   });
 });

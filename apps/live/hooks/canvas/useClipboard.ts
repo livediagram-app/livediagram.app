@@ -31,7 +31,13 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { duplicateElements, type Element, type Tab } from '@livediagram/document';
+import {
+  duplicateElements,
+  sheetDrawnChartIds,
+  withSheetCharts,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
@@ -165,8 +171,11 @@ export function useClipboard(deps: ClipboardDeps) {
           ? new Set([selectedId])
           : null;
     if (!idSet || idSet.size === 0) return;
+    // A Sheet carries the charts it draws (docs/specs/029-sheets/sheet.md "Charts"): they are never selectable on
+    // the canvas, so the copy takes them here, and the paste relinks them to the Sheet's copy.
+    const withCharts = withSheetCharts(activeTab.elements, idSet);
     const snapshot = activeTab.elements
-      .filter((el) => idSet.has(el.id))
+      .filter((el) => withCharts.has(el.id))
       // Deep clone so a later edit to the originals doesn't bleed
       // into a future paste.
       .map((el) => JSON.parse(JSON.stringify(el)) as Element)
@@ -229,12 +238,15 @@ export function useClipboard(deps: ClipboardDeps) {
     if (newElements.length === 0) return;
     const copyIds = new Set(newElements.map((el) => el.id));
     commit((els) => landPastedCopies([...els, ...newElements], copyIds, atPointer));
-    if (newElements.length === 1) {
-      setSelectedId(newElements[0]!.id);
+    // The charts a pasted Sheet draws are its, not the canvas's to select.
+    const drawn = sheetDrawnChartIds(newElements);
+    const selectable = newElements.filter((el) => !drawn.has(el.id));
+    if (selectable.length === 1) {
+      setSelectedId(selectable[0]!.id);
       setMultiSelectedIds(new Set());
     } else {
       setSelectedId(null);
-      setMultiSelectedIds(new Set(newElements.map((el) => el.id)));
+      setMultiSelectedIds(new Set(selectable.map((el) => el.id)));
     }
     trackDuplicated(newElements);
   };

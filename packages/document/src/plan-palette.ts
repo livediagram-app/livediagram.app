@@ -6,6 +6,7 @@
 // that would not read on the fill is swapped for a readable one.
 import { contrastRatio, hexToRgb, isLightColor, type CanvasSurface } from './colors';
 import { mixHex } from './svg-render-face-kit';
+import { planPresetColours } from './plan-presets';
 
 // A card's priority dot and tint, the same on the canvas and in the export: they read as urgency, not
 // as theme.
@@ -32,12 +33,27 @@ export type PlanPalette = {
   focus: string;
 };
 
-// What the element itself says: its fill, stroke and text colours, each absent when unset.
+// What the element itself says: its fill, stroke and text colours, each absent when unset, and its style preset
+// (`colorPreset`): a board or sheet preset (plan-presets.ts) is drawn for the surface, over the colours it wrote.
 export type PlanOwnColours = {
   fill?: string | null;
   stroke?: string | null;
   text?: string | null;
+  preset?: string | null;
 };
+
+// A board's, view's, card's or sheet's own colours, as planPalette reads them.
+export const planOwnColoursOf = (el: {
+  fillColor?: string;
+  strokeColor?: string;
+  textColor?: string;
+  colorPreset?: string;
+}): PlanOwnColours => ({
+  fill: el.fillColor,
+  stroke: el.strokeColor,
+  text: el.textColor,
+  preset: el.colorPreset,
+});
 
 const DARK: PlanPalette = {
   surface: '#111827',
@@ -73,9 +89,10 @@ const hex = (v: string | null | undefined): string | undefined =>
 
 export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): PlanPalette {
   const base = surface === 'dark' ? DARK : LIGHT;
-  const fill = hex(own.fill);
-  const stroke = hex(own.stroke);
-  const ink = hex(own.text);
+  const preset = planPresetColours(own.preset, surface);
+  const fill = preset?.fill ?? hex(own.fill);
+  const stroke = preset?.stroke ?? hex(own.stroke);
+  const ink = preset?.text ?? hex(own.text);
   if (!fill && !stroke && !ink) return base;
   const paper = fill ?? base.surface;
   const light = isLightColor(paper);

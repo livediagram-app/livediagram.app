@@ -4,7 +4,16 @@
 // MCP worker so the two can't drift.
 export * from './templates';
 export * from './template-modes';
-export { MODE_BEST, POPULAR_PER_MODE, popularKindsFor } from './popular';
+export * from './template-categories';
+export { templateKeywords } from './template-keywords';
+export { templateMatchesQuery, templateQueryWords } from './template-search';
+export {
+  POPULAR_BY_MODE,
+  POPULAR_PER_MODE,
+  POPULAR_TEMPLATE_KINDS,
+  popularKindsFor,
+  type PopularChoice,
+} from './popular';
 export { isUntitledDocumentName } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
@@ -14,6 +23,7 @@ export {
   isPlanTemplateKind,
   type PlanTemplateKind,
 } from './template-builders-plan';
+export { isSpreadsheetPlanTemplate, planTemplateTabCount } from './plan-template-catalogue';
 export * from './page-layouts';
 export * from './slide-layouts';
 export * from './logo-layouts';

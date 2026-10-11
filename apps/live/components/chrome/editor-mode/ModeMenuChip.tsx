@@ -1,5 +1,11 @@
 import { useRef, useState } from 'react';
-import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livediagram/document';
+import {
+  EDITOR_MODES,
+  crossesPlan,
+  editorModeLabel,
+  modesBesidePlanRule,
+  nextEditorMode,
+} from '@livediagram/document';
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -17,6 +23,7 @@ import {
   type EditorModeSwitchProps,
 } from './editor-mode-copy';
 import { ModeKeyHint } from './ModeKeyHint';
+import { useConfirm } from '@/hooks/ui/useConfirm';
 
 // The mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"): a dropdown chip
 // showing the current mode's glyph and a chevron, that opens a menu DOWNWARD (it sits in
@@ -30,7 +37,22 @@ import { ModeKeyHint } from './ModeKeyHint';
 // are `menuitemradio`, and the shared hooks give it the menu keyboard: opening focuses the checked
 // row, choosing or Escape returns focus to the chip, Tab closes it. An outside press closes it.
 
-export function ModeMenuChip({ mode, onChange }: EditorModeSwitchProps) {
+export function ModeMenuChip({ mode, onChange, lockedReason, newTabIn }: EditorModeSwitchProps) {
+  const confirm = useConfirm();
+  // On a tab that keeps its mode, another mode is a new tab in it, asked first (docs/specs/026-plan/plan-tabs.md).
+  const pickLocked = async (next: EditorModeSwitchProps['mode']) => {
+    const name = editorModeLabel(next);
+    // Plan stands apart (crossesPlan): a tab never switches into or out of it.
+    const why =
+      lockedReason ??
+      (mode === 'plan' ? 'A Plan tab stays in Plan.' : 'Plan works in tabs of its own.');
+    const ok = await confirm({
+      title: `Open a New ${name} Tab?`,
+      message: `${why} Its mode can’t change, but you can carry on in a new ${name} tab.`,
+      confirmLabel: `New ${name} Tab`,
+    });
+    if (ok) newTabIn?.(next);
+  };
   const {
     open,
     close,
@@ -44,7 +66,8 @@ export function ModeMenuChip({ mode, onChange }: EditorModeSwitchProps) {
   const Icon = EDITOR_MODE_ICONS[mode];
   const label = editorModeLabel(mode);
   const modes = EDITOR_MODES;
-  const keyLeadsTo = nextEditorMode(mode, 1);
+  const besides = modesBesidePlanRule(mode);
+  const keyLeadsTo = besides.length > 1 ? nextEditorMode(mode, 1, besides) : null;
 
   // The zoom the chip's host draws at (the toolbar or panel UI scale, docs/specs/007-editor/ui-scale.md),
   // read when the menu opens; the menu undoes it, so it opens at design size like every menu
@@ -96,6 +119,12 @@ export function ModeMenuChip({ mode, onChange }: EditorModeSwitchProps) {
           hostZoom={hostZoom}
           onChange={onChange}
           onClose={close}
+          lockedReason={lockedReason}
+          // No new tab to offer (a session that cannot add tabs, such as a tab-scoped link): the
+          // locked rows are inert.
+          {...(newTabIn
+            ? { onLockedPick: (next: EditorModeSwitchProps['mode']) => void pickLocked(next) }
+            : {})}
         />
       ) : null}
     </div>
@@ -111,15 +140,19 @@ function ModeMenu({
   hostZoom,
   onChange,
   onClose,
+  lockedReason,
+  onLockedPick,
 }: {
   mode: EditorModeSwitchProps['mode'];
   modes: readonly EditorModeSwitchProps['mode'][];
-  keyLeadsTo: EditorModeSwitchProps['mode'];
+  keyLeadsTo: EditorModeSwitchProps['mode'] | null;
   chip: HTMLElement | null;
   initialFocus: MenuInitialFocus;
   hostZoom: number;
   onChange: EditorModeSwitchProps['onChange'];
   onClose: () => void;
+  lockedReason?: string | undefined;
+  onLockedPick?: (mode: EditorModeSwitchProps['mode']) => void;
 }) {
   const { attach, surfaceProps } = useMenu({
     onClose,
@@ -137,6 +170,9 @@ function ModeMenu({
     >
       {modes.map((option) => {
         const checked = option === mode;
+        const locked = (!!lockedReason && !checked) || crossesPlan(mode, option);
+        // A locked row with no new tab to offer does nothing.
+        const inert = locked && !onLockedPick;
         const RowIcon = EDITOR_MODE_ICONS[option];
         return (
           <button
@@ -144,22 +180,27 @@ function ModeMenu({
             type="button"
             role="menuitemradio"
             aria-checked={checked}
+            aria-disabled={inert || undefined}
             tabIndex={-1}
             onClick={() => {
-              if (!checked) onChange(option);
+              if (inert) return;
               onClose();
+              if (locked) onLockedPick?.(option);
+              else if (!checked) onChange(option);
             }}
             className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs font-medium transition-colors ${MODE_SWITCH_FOCUS} ${
               checked
                 ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-                : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                : inert
+                  ? 'cursor-not-allowed text-slate-600 opacity-50 dark:text-slate-300'
+                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
             }`}
           >
             <RowIcon size={16} aria-hidden className="shrink-0" />
             <span className="flex-1">{editorModeLabel(option)}</span>
             <span className="flex w-7 shrink-0 justify-end">
               {checked ? <CheckIcon aria-hidden /> : null}
-              {option === keyLeadsTo && !checked ? <ModeKeyHint /> : null}
+              {option === keyLeadsTo && !checked && !lockedReason ? <ModeKeyHint /> : null}
             </span>
           </button>
         );

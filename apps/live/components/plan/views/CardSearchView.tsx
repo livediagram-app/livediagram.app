@@ -1,14 +1,15 @@
 'use client';
 
 // Card Search (docs/specs/026-plan/plan-views.md "Card Search"): filters in a bar along the top, each a chip
-// ("Card Type: Project", with a cross), and the cards matching them all listed below, a row each that opens its
-// card. Add Filter picks a field, then a value: only the fields the matching cards' types offer and the values some
-// matching card has (each with its count), so no pick ever leaves nothing. The filters are the view's own, saved with
-// it, so everyone sees the same search; someone who may only view sees them but cannot change them.
+// ("Card Type: Project", with a cross), and the cards matching them all below, each drawn as a board draws it
+// (Detailed where the view has room, in as many columns as fit) and opening its card when pressed. Add Filter picks
+// a field, then a value: only the fields the matching cards' types offer and the values some matching card has
+// (each with its count), so no pick ever leaves nothing. The filters are the view's own, saved with it, so everyone
+// sees the same search; someone who may only view sees them but cannot change them.
 import { useMemo } from 'react';
 import {
+  CARD_FIELDS,
   CARD_SEARCH_FILTERS_MAX,
-  itemAssignee,
   itemTitle,
   searchCards,
   searchFields,
@@ -18,13 +19,13 @@ import {
   type CardSearchFilter,
   type SwimlaneBy,
   namedStatus,
+  phaseOf,
 } from '@livediagram/items';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon, CompactEmptyState, NoMatches, PlanCardsIcon } from '@livediagram/ui';
 import { AddFilterPicker } from '../AddFilterPicker';
 import { track } from '@/lib/telemetry';
-import { PersonDisc } from '../PersonDisc';
-import { PlanTypeGlyph } from '../plan-type-glyph';
-import { ACCENT_TEXT, accentVars } from '../plan-palette';
+import { PlanCardFace } from '../PlanCardFace';
+import { CARD_SEARCH_GAP_PX, CARD_SEARCH_SHOWN_MAX, cardSearchLayout } from './view-layout';
 import { ViewFrame, openProps, viewState } from './view-frame';
 import type { PlanViewProps } from './PlanViewView';
 
@@ -40,9 +41,12 @@ export function CardSearchView({
   items,
   palette,
   fontFamily,
+  width,
+  height,
   elementId,
   settings,
 }: PlanViewProps) {
+  const layout = cardSearchLayout(width, height);
   const filters = settings.filters ?? NO_FILTERS;
   const types = plan?.types;
   const statusNames = plan?.statusNames ?? NO_STATUSES;
@@ -135,47 +139,65 @@ export function CardSearchView({
           ) : null}
         </div>
         {total === 0 ? (
-          <p className="px-3 py-4 text-[13px]" style={{ color: palette.muted }}>
-            {filters.length
-              ? 'No cards match these filters.'
-              : 'No cards yet. Add cards to a board.'}
-          </p>
+          // The shared empty state in the board's own colours (docs/specs/004-interface-design/empty-states.md).
+          filters.length ? (
+            <NoMatches
+              size="regular"
+              className="flex-1"
+              ink={palette}
+              things="cards"
+              filters={filters.length}
+              onClear={canEdit ? () => save([]) : undefined}
+            />
+          ) : (
+            <CompactEmptyState
+              className="flex-1"
+              ink={palette}
+              icon={<PlanCardsIcon size={18} />}
+              title="No cards yet"
+              description="Add cards to a board."
+            />
+          )
         ) : (
           <ul
-            className="min-h-0 flex-1 divide-y overflow-y-auto"
-            style={{ borderColor: palette.border }}
+            aria-label="Matching cards"
+            className="grid min-h-0 flex-1 content-start overflow-y-auto p-3"
+            style={{
+              gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
+              gap: CARD_SEARCH_GAP_PX,
+            }}
           >
-            {matching.map((card) => {
+            {matching.slice(0, CARD_SEARCH_SHOWN_MAX).map((card) => {
               const type = typeIn(types ?? [], card.type);
               const status = namedStatus(card, statusNames);
-              const assignee = itemAssignee(card);
               return (
-                <li key={card.id} style={{ borderColor: palette.border }}>
+                <li key={card.id} className="min-w-0">
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-1.5 text-left text-[13px] transition hover:bg-black/[0.03] dark:hover:bg-white/5"
+                    aria-label={`Open ${itemTitle(card) || 'Untitled'}, ${type.label} #${card.key}, ${status ? statusNames.get(status) : 'No status'}`}
+                    className="block w-full cursor-pointer rounded-xl text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                     {...openProps(plan, card.id)}
                   >
-                    <span className={`shrink-0 ${ACCENT_TEXT}`} style={accentVars(type.color)}>
-                      <PlanTypeGlyph glyph={type.glyph} size={14} />
-                    </span>
-                    <span
-                      className="shrink-0 text-[12px] tabular-nums"
-                      style={{ color: palette.muted }}
-                    >
-                      #{card.key}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate" style={{ color: palette.text }}>
-                      {itemTitle(card)}
-                    </span>
-                    <span className="shrink-0 text-[11px]" style={{ color: palette.muted }}>
-                      {status ? statusNames.get(status) : 'No status'}
-                    </span>
-                    {assignee ? <PersonDisc person={assignee} /> : null}
+                    {/* The card as a board draws it, at Detailed size where there is room. */}
+                    <PlanCardFace
+                      item={card}
+                      palette={palette}
+                      fields={CARD_FIELDS}
+                      size={layout.size}
+                      muted={!!plan?.statusPhases && phaseOf(card, plan.statusPhases) === 'done'}
+                    />
                   </button>
                 </li>
               );
             })}
+            {total > CARD_SEARCH_SHOWN_MAX ? (
+              <li
+                className="py-2 text-[12px]"
+                style={{ gridColumn: '1 / -1', color: palette.muted }}
+              >
+                {`Showing ${CARD_SEARCH_SHOWN_MAX} of ${total}. Add a filter to narrow the search.`}
+              </li>
+            ) : null}
           </ul>
         )}
       </div>

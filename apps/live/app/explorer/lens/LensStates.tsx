@@ -85,7 +85,7 @@ export function FilteredEmpty({
       <div className="flex flex-col items-center gap-3">
         <LensIssues issues={issues} />
         <Button size="sm" variant="secondary" onClick={onClear}>
-          Clear filters
+          Clear Filters
         </Button>
       </div>
     </EmptyState>

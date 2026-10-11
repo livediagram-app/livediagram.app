@@ -1,5 +1,12 @@
 import { useState } from 'react';
-import { Button, TextInput, Glyph, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import {
+  Button,
+  CompactEmptyState,
+  TextInput,
+  Glyph,
+  DialogCloseButton,
+  DialogHeader,
+} from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@/lib/url-safety';
@@ -175,10 +182,12 @@ export function LinkPickerDialog({
           </ul>
         ) : mode === 'document' ? (
           recentDocuments.length === 0 ? (
-            <div className="flex flex-col items-center gap-1 py-10 text-center">
-              <DocumentGlyph muted />
-              <p className="text-xs text-slate-400 dark:text-slate-400">No other documents yet.</p>
-            </div>
+            <CompactEmptyState
+              className="py-10"
+              icon={<DocumentGlyph />}
+              title="No other documents yet"
+              description="Make another document to link to it."
+            />
           ) : (
             <ul className="flex flex-col gap-1">
               {recentDocuments.map((d) => (
@@ -301,14 +310,9 @@ function TabGlyph() {
   );
 }
 
-function DocumentGlyph({ muted }: { muted?: boolean }) {
+function DocumentGlyph() {
   return (
-    <Glyph
-      size={muted ? 28 : 14}
-      units={16}
-      className={muted ? 'text-slate-300 dark:text-slate-400' : undefined}
-      strokeLinecap="butt"
-    >
+    <Glyph size={14} units={16} strokeLinecap="butt">
       <rect x="2" y="2.5" width="5" height="4" rx="1" />
       <rect x="9" y="9.5" width="5" height="4" rx="1" />
       <path d="M4.5 6.5v3.5a1 1 0 0 0 1 1H9" />

@@ -30,16 +30,18 @@ import { track } from '@/lib/telemetry';
 import { ganttPreviewLabel, useGanttDrag } from './gantt-drag';
 import { useGanttWindow } from './useGanttWindow';
 import { GanttDrawRow } from './gantt-draw';
+import { GanttAddCard } from './GanttAddCard';
 import { GanttScaleControls } from './GanttScaleControls';
 import { Mark } from './gantt-mark';
 import { GANTT_PILL_MIN_COLUMN_PX, GanttLaneHead, GanttNameRow, rowStatus } from './gantt-rows';
 import { GanttNamesResizer } from './gantt-names-resize';
 import { useGanttRowReorder } from './useGanttRowReorder';
 
-const ROW_H = 30;
+// A card's row: room for a 20 px bar and a two-line name pill.
+const ROW_H = 40;
 // A swimlane's header row.
-const LANE_H = 24;
-const AXIS_H = 22;
+const LANE_H = 30;
+const AXIS_H = 24;
 const TICK_LABEL_PX = 52;
 const NO_PHASES = new Map();
 
@@ -59,10 +61,14 @@ export function GanttView({
   const types = plan?.types ?? ITEM_TYPES;
   const now = new Date();
   const dayKey = now.toDateString();
-  // The card types the chart draws: its own (else Project), of those offering Start and Due (plan-views.md
+  // The card types the chart draws: its own (else every one), of those offering Start and Due (plan-views.md
   // "Card types").
   const accepted = ganttShownTypes(settings, types);
   const acceptedKey = accepted.join(',');
+  // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
+  // An Editor gets it with no type to draw yet too, for Add New Card Type.
+  const canAdd =
+    !!plan?.planInput && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
     () => ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(',')),
@@ -172,11 +178,10 @@ export function GanttView({
   return (
     <ViewFrame
       title="Gantt Chart"
-      count={n}
-      countLabel={`${n} ${n === 1 ? 'card' : 'cards'}`}
       palette={palette}
       fontFamily={fontFamily}
-      state={viewState(plan, n > 0)}
+      // Someone who may add cards sees the empty chart with its Add Card row, not the empty note.
+      state={viewState(plan, n > 0 || canAdd)}
       empty="No cards of these types yet."
       aside={
         plan?.planInput ? <GanttScaleControls timeline={timeline} palette={palette} /> : undefined
@@ -217,6 +222,17 @@ export function GanttView({
             ),
           )}
           {dropLine !== null ? <DropLine top={dropLine} colour={palette.focus} /> : null}
+          {canAdd && plan ? (
+            <GanttAddCard
+              plan={plan}
+              types={types}
+              shown={acceptedKey}
+              palette={palette}
+              top={AXIS_H + layout.height}
+              height={ROW_H}
+              viewId={elementId}
+            />
+          ) : null}
         </div>
         <div
           ref={trackRef}

@@ -97,7 +97,8 @@ describe('seeds', () => {
 describe('a sheet type placed from Start Planning', () => {
   it('carries its start to the new sheet, which its Setup Sheet reads until it forgets it', () => {
     expect(isPlacedSheetStart('budget')).toBe(true);
-    expect(isPlacedSheetStart('timesheet')).toBe(false);
+    expect(isPlacedSheetStart('loan')).toBe(true);
+    expect(isPlacedSheetStart('budget-planner')).toBe(false);
     expect(isPlacedSheetStart(undefined)).toBe(false);
     const { sheetId } = placeNewSheet({ start: 'cards' });
     expect(takePlacedSheet(sheetId)).toEqual({ start: 'cards' });

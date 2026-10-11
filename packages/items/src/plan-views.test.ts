@@ -9,7 +9,6 @@ import {
   GANTT_TYPES_MAX,
   ganttEligibleTypes,
   ganttShownTypes,
-  ganttTypesOf,
   liveCards,
   phaseOf,
   planViewSize,
@@ -143,8 +142,6 @@ describe('plan view settings', () => {
         types: Array.from({ length: GANTT_TYPES_MAX + 1 }, (_, i) => `t${i}`),
       }),
     ).toBe(false);
-    expect(ganttTypesOf(undefined)).toEqual(['project']);
-    expect(ganttTypesOf({ types: ['task'] })).toEqual(['task']);
   });
 
   it('draws only card types offering Start and Due (docs/specs/026-plan/plan-views.md "Card types")', () => {

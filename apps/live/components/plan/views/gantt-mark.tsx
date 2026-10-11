@@ -32,7 +32,7 @@ export function Mark({
       <>
         <span
           aria-hidden
-          className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[2px] border-2"
+          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rotate-45 rounded-[3px] border-2"
           style={{
             left: `${centre}%`,
             borderColor: edge,
@@ -58,7 +58,7 @@ export function Mark({
     <>
       <span
         aria-hidden
-        className="absolute top-1/2 h-3.5 -translate-y-1/2 overflow-hidden rounded-full border"
+        className="absolute top-1/2 h-5 -translate-y-1/2 overflow-hidden rounded-full border"
         style={{
           left: `${left}%`,
           width: `max(${width}%, 6px)`,

@@ -20,7 +20,6 @@ import {
 } from 'react';
 import type { ItemTypesRoomOp } from '@livediagram/api-schema';
 import {
-  defaultCatalogue,
   inverseCatalogueChange,
   readItemTypeCatalogue,
   rebaseCatalogueChange,
@@ -42,7 +41,7 @@ export const ITEM_TYPES_SAVE_ATTEMPTS = 3;
 
 export type ItemTypesSlice = {
   // The catalogue shown (stored, with this editor's unsaved changes), or null while the document's card types are
-  // not chosen (the default types).
+  // not chosen (none).
   catalogue: ItemTypeCatalogue | null;
   types: readonly ItemTypeDef[];
   // Adds or replaces a type (matched by id), keeping its place.
@@ -177,7 +176,7 @@ export function useItemTypes(opts: {
     (edit: (types: readonly ItemTypeDef[]) => readonly ItemTypeDef[]) =>
       change((shown) => ({
         version: ITEM_TYPE_CATALOGUE_VERSION,
-        types: edit((shown ?? defaultCatalogue()).types),
+        types: edit(typesOf(shown)),
       })),
     [change],
   );
@@ -192,7 +191,7 @@ export function useItemTypes(opts: {
     [withTypes],
   );
   const deleteType = useCallback(
-    (typeId: string) => withTypes((ts) => (ts.length > 1 ? ts.filter((t) => t.id !== typeId) : ts)),
+    (typeId: string) => withTypes((ts) => ts.filter((t) => t.id !== typeId)),
     [withTypes],
   );
   const addTypes = useCallback(

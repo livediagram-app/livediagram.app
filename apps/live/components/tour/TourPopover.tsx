@@ -9,7 +9,7 @@ import { TourWelcomeArt } from './TourWelcomeArt';
 import type { TourTargetRect } from './useTourEngine';
 
 // The bookend cards' words, so a second tour (the Plan tour, docs/specs/026-plan/plan-tour.md) wears the
-// same card with its own eyebrow, finish button and help link. The defaults are the welcome tour's.
+// same card with its own eyebrow, finish button and help link. The defaults are the Diagram tour's.
 export type TourCardCopy = {
   welcomeEyebrow: string;
   accept: string;
@@ -24,18 +24,14 @@ export type TourCardCopy = {
 // its own way, in place of the single accept button.
 export type TourWelcomeChoice = { id: string; label: string; onPick: () => void };
 
-// The closing card's offer of another tour (the welcome tour's "Show Me Facilitate",
-// docs/specs/012-collaboration/facilitate-tour.md): the primary button, with the finish button beside it.
-export type TourOutroChoice = { label: string; onPick: () => void };
-
 export const WELCOME_TOUR_COPY: TourCardCopy = {
-  welcomeEyebrow: 'Quick tour',
+  welcomeEyebrow: 'Diagram tour',
   accept: 'Show me around',
   decline: 'No thanks',
   outroEyebrow: 'Tour complete',
   helpHref: '/help',
   helpLabel: 'Visit Help Centre',
-  finish: 'Start creating',
+  finish: 'Start diagramming',
 };
 
 // The tour's step card (docs/specs/007-editor/editor-tour.md). Two faces:
@@ -65,7 +61,6 @@ export function TourPopover({
   copy: copyOverrides,
   welcomeArt,
   welcomeChoices,
-  outroChoice,
   onBack,
   onNext,
   onSkip,
@@ -88,10 +83,9 @@ export function TourPopover({
   // The dialog label's lead ("Tour step 2 of 7: ...").
   ariaPrefix?: string;
   copy?: Partial<TourCardCopy>;
-  // The welcome card's illustration; the welcome tour's own by default.
+  // The welcome card's illustration; the Diagram tour's own by default.
   welcomeArt?: ReactNode;
   welcomeChoices?: readonly TourWelcomeChoice[];
-  outroChoice?: TourOutroChoice;
   onBack?: () => void;
   onNext: () => void;
   onSkip: () => void;
@@ -228,8 +222,8 @@ export function TourPopover({
                 )}
               </div>
             ) : (
-              // The buttons never break mid-label: with a second tour on offer the pair takes its own
-              // right-aligned row under the help link when the card is too narrow for all three.
+              // The finish button never breaks mid-label: it takes its own right-aligned row under the help
+              // link when the card is too narrow for both.
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 <a
                   href={copy.helpHref}
@@ -240,18 +234,9 @@ export function TourPopover({
                   {copy.helpLabel}
                 </a>
                 <div className="ml-auto flex items-center gap-2 whitespace-nowrap">
-                  <Button
-                    size="xs"
-                    variant={outroChoice ? 'secondary' : 'primary'}
-                    onClick={onNext}
-                  >
+                  <Button size="xs" onClick={onNext}>
                     {copy.finish}
                   </Button>
-                  {outroChoice ? (
-                    <Button size="xs" onClick={outroChoice.onPick}>
-                      {outroChoice.label}
-                    </Button>
-                  ) : null}
                 </div>
               </div>
             )}

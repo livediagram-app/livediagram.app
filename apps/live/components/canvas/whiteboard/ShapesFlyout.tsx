@@ -9,7 +9,7 @@
 // the flyout; the slots are taken as it opens, so they never change under the pointer.
 
 import { useEffect, useId, useRef, useState } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { NoMatches, Tooltip } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import type { WhiteboardShapeEntry, WhiteboardShapeKey } from '@/lib/whiteboard-shape-catalogue';
@@ -110,9 +110,12 @@ export function ShapesFlyout({
         style={{ height: `${idleRows * 2.5 + (idleRows - 1) * 0.25}rem` }}
       >
         {flat.length === 0 ? (
-          <p className="px-1 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-            No shapes match
-          </p>
+          <NoMatches
+            className="h-full"
+            things="shapes"
+            query={query}
+            onClear={() => setQuery('')}
+          />
         ) : (
           groups.map((group) => (
             <div

@@ -72,6 +72,15 @@ export function ZoomControls({
 }: ZoomControlsProps) {
   const copy = ZOOM_COPY[zoomScope];
   const why = (description: string) => (zoomOff ? ZOOM_OFF_REASON : description);
+  // On a touch screen (pinch zooms) with zoom off (a Dashboard, a covering board) all that is left is a disabled Fit:
+  // nothing to offer, so the cluster goes rather than sit over the page (plan-tabs.md "On a phone").
+  if (
+    pinchOnly &&
+    zoomOff &&
+    !(onIsoOrbit && onIsoReset) &&
+    !(onToggleZen && (zenActive || zenEnterHere))
+  )
+    return null;
   return (
     <div
       data-zoom-controls

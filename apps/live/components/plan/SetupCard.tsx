@@ -27,6 +27,7 @@ export function SetupCard({
   onStep,
   footer,
   children,
+  wide = false,
 }: {
   titleId: string;
   title: string;
@@ -40,6 +41,8 @@ export function SetupCard({
   onStep?: (i: number) => void;
   footer?: ReactNode;
   children?: ReactNode;
+  // Up to 52 rem rather than 36 on a wide screen (Setup Sheet: its looks and sizes side by side).
+  wide?: boolean;
 }) {
   return (
     <div
@@ -52,14 +55,14 @@ export function SetupCard({
       <ScaleCapped className="flex h-full min-h-0 w-full p-4 sm:p-6">
         <section
           aria-labelledby={titleId}
-          className="m-auto flex max-h-full w-full max-w-[36rem] flex-col rounded-2xl border shadow-sm"
+          className={`m-auto flex max-h-full w-full flex-col rounded-2xl border shadow-sm ${wide ? 'max-w-[36rem] lg:max-w-[52rem]' : 'max-w-[36rem]'}`}
           style={{
             backgroundColor: palette.surface,
             borderColor: palette.border,
             color: palette.text,
           }}
         >
-          <header className="flex shrink-0 items-start gap-3 px-5 pt-5">
+          <header className="flex shrink-0 items-start gap-3.5 px-6 pt-6">
             <span
               aria-hidden
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300"
@@ -70,7 +73,7 @@ export function SetupCard({
               <h2 id={titleId} className="text-[16px] font-semibold">
                 {title}
               </h2>
-              <p className="text-[13px]" style={{ color: palette.muted }}>
+              <p className="mt-1 text-[13px] leading-snug" style={{ color: palette.muted }}>
                 {line}
               </p>
             </div>
@@ -80,7 +83,7 @@ export function SetupCard({
             <>
               {/* The steps as a wizard stepper; a hairline under it sets it apart from the step itself. */}
               <div
-                className="mt-4 shrink-0 border-b px-5 pb-4"
+                className="mt-6 shrink-0 border-b px-6 pb-5"
                 style={{ borderColor: palette.border }}
               >
                 <SetupStepper
@@ -91,12 +94,12 @@ export function SetupCard({
                 />
               </div>
               {/* Keyed by the step, so each step opens at its top. */}
-              <div key={at} className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              <div key={at} className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
                 {children}
               </div>
               {footer ? (
                 <footer
-                  className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t px-5 py-3"
+                  className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t px-6 py-4"
                   style={{ borderColor: palette.border }}
                 >
                   {footer}
@@ -104,7 +107,7 @@ export function SetupCard({
               ) : null}
             </>
           ) : (
-            <div className="h-5" />
+            <div className="h-6" />
           )}
         </section>
       </ScaleCapped>

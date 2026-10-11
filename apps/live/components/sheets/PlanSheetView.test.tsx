@@ -8,7 +8,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { emptyLayout, type SheetJson } from '@livediagram/sheets';
 import type { Element, ShapeElement } from '@livediagram/document';
 import * as api from '@/lib/api/sheets';
-import { requestSheetSelect } from '@/lib/sheet-select-request';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import {
@@ -18,9 +17,10 @@ import {
   releasePlanElement,
 } from '@/hooks/plan/maximised-plan';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
-import { forgetSheetStores } from './sheet-store-client';
+import { forgetSheetStores, sheetStoreOf } from './sheet-store-client';
 import { pointingTargetFor } from './sheet-pointing';
 import { PlanSheetView } from './PlanSheetView';
+import { SheetChartsContext } from './sheet-charts-context';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/api/sheets', () => ({
@@ -80,6 +80,7 @@ function bridge(over: Partial<SheetsBridge> = {}) {
     tickElements: vi.fn(),
     switchToPlan: vi.fn(),
     selectElement: vi.fn(),
+    sheetRetitled: vi.fn(),
     attach: vi.fn(() => () => {}),
     ...over,
   } satisfies SheetsBridge;
@@ -201,15 +202,6 @@ describe('the grid', () => {
     // Double-clicking a Sheet in Plan mode offers nothing.
     fireEvent.doubleClick(screen.getByText('Budget'));
     expect(screen.queryByRole('dialog', { name: 'Switch to Plan' })).toBeNull();
-  });
-
-  it('selects a cell asked for from outside the Sheet (the Plan tour)', async () => {
-    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
-    draw(element({ sheetId: 'sheetAAAA' }), bridge());
-    await screen.findByText('Budget');
-    expect(document.querySelector('[data-sheet-formula-bar]')).toBeTruthy();
-    act(() => void requestSheetSelect('sheetAAAA', { r: 2, c: 1 }));
-    expect(screen.getByLabelText<HTMLInputElement>('Name box').value).toBe('B3');
   });
 
   it('offers Plan on a double-click outside Plan mode', async () => {
@@ -471,5 +463,63 @@ describe('maximising', () => {
       </CanvasSurfaceProvider>,
     );
     expect(getMaximisedPlanId()).toBeNull();
+  });
+});
+
+describe('a Sheet tab’s name', () => {
+  // docs/specs/026-plan/plan-tabs.md "Names": a Sheet tab and its sheet share one name.
+  it('follows the sheet’s title when it changes, not when the sheet first draws', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    const b = bridge();
+    draw(element({ sheetId: 'sheetAAAA' }), b);
+    await screen.findByText('Budget');
+    expect(b.sheetRetitled).not.toHaveBeenCalled();
+    act(() => {
+      sheetStoreOf(b).write('sheetAAAA', { kind: 'title', title: 'Costs' });
+    });
+    await waitFor(() => expect(b.sheetRetitled).toHaveBeenCalledWith('sheetAAAA', 'Costs'));
+  });
+
+  it('is left alone by someone who may not shape the Sheet', async () => {
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
+    const b = bridge({ canShape: false });
+    draw(element({ sheetId: 'sheetAAAA' }), b);
+    await screen.findByText('Budget');
+    act(() => {
+      sheetStoreOf(b).write('sheetAAAA', { kind: 'title', title: 'Costs' });
+    });
+    await act(async () => {});
+    expect(b.sheetRetitled).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/029-sheets/sheet.md "Sheet templates": a template set up in a Dashboard slot showing another tab's Sheet
+// has no chart, and says nothing about it (only Insert Chart there says to open the Sheet's tab).
+describe('a template set up in a slot showing another tab’s Sheet', () => {
+  it('sets the sheet up with no chart and no toast', async () => {
+    const layout = { ...emptyLayout(rand), setupPending: true as const };
+    fetchSheets.mockResolvedValue([sheetJson('sheetAAAA', { layout })]);
+    const b = bridge();
+    const el = element({ sheetId: 'sheetAAAA' });
+    render(
+      <CanvasSurfaceProvider surface="light">
+        <PlanProvider value={plan()}>
+          <SheetsBridgeContext.Provider value={b}>
+            <SheetChartsContext.Provider value={{ elements: [], editable: false }}>
+              <div data-element-id={el.id}>
+                <PlanSheetView element={el} fontFamily="Inter" />
+              </div>
+            </SheetChartsContext.Provider>
+          </SheetsBridgeContext.Provider>
+        </PlanProvider>
+      </CanvasSurfaceProvider>,
+    );
+    await screen.findByRole('heading', { name: 'Setup Sheet' });
+    fireEvent.click(screen.getByRole('radio', { name: /^Budget/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next: Style' }));
+    fireEvent.click(screen.getByRole('button', { name: /Create Sheet/ }));
+    await waitFor(() => expect(sheetStoreOf(b).sheet('sheetAAAA')!.cells.size).toBeGreaterThan(0));
+    expect(b.toast).not.toHaveBeenCalled();
+    expect(b.placeElement).not.toHaveBeenCalled();
   });
 });

@@ -8,14 +8,15 @@
 import { useCardTableSync, type CardTablePush } from './useCardTableSync';
 import { SheetSetup } from './SheetSetup';
 import { usePublishSheetSettings } from './sheet-settings-registry';
-import { placeSheetChart } from './sheet-charts';
+import { placeSheetChart, sheetChartsRemoval } from './sheet-charts';
+import { OPEN_TAB_TO_CHART, useSheetCharts } from './sheet-charts-context';
 import { Button } from '@livediagram/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { formatA1, normaliseRange, formatRange, quoteSheet, single } from '@livediagram/sheets';
+import { formatA1, normaliseRange, formatRange, quoteSheet } from '@livediagram/sheets';
 import type { ShapeElement } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
-import { planOwnColours, planPalette } from '@/components/plan/plan-palette';
+import { planBandTint, planOwnColours, planPalette } from '@/components/plan/plan-palette';
 import { MaximisableSlot } from '@/components/plan/MaximisedPlanLayer';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
@@ -27,6 +28,7 @@ import {
 } from './sheet-controller';
 import { SheetHeader } from './SheetHeader';
 import { SheetToolbar } from './SheetToolbar';
+import { useInHeaderBand } from '@/components/plan/menu-name-slot';
 import { SheetFormulaBar } from './SheetFormulaBar';
 import { SheetGrid } from './SheetGrid';
 import { SheetStatusBar } from './SheetStatusBar';
@@ -40,7 +42,6 @@ import { SheetFace } from './SheetFace';
 import type { PointRef } from './useSheetPointer';
 import { clearPointingTarget, setPointingTarget } from './sheet-pointing';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { listenForSheetSelect } from '@/lib/sheet-select-request';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { useSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
@@ -65,6 +66,8 @@ export function PlanSheetView({
     <MaximisableSlot
       id={element.id}
       maximised={maximised}
+      tint={planBandTint(element)}
+      blend={{ surface: palette.surface, line: palette.border }}
       fill={filled}
       placeholder={{
         backgroundColor: palette.surface,
@@ -202,6 +205,7 @@ function SheetWorkspace({
 }) {
   const bridge = useSheetsBridgeContext()!;
   const plan = usePlan();
+  const charts = useSheetCharts();
   // Card tables push this person's writes to the cards (useCardTableSync sets it).
   const cardPush = useRef<CardTablePush | null>(null);
   const setCardPush = useCallback((push: CardTablePush | null) => {
@@ -221,7 +225,15 @@ function SheetWorkspace({
     announce: (m) => plan?.announce(m),
     toast: bridge.toast,
     notify: bridge.notify,
-    placeChart: (kind, pick) => placeSheetChart(bridge, element, model.sheet!.id, kind, pick),
+    // On another tab's Sheet (a Dashboard slot) a chart would land on the open tab: Insert Chart says to open the
+    // Sheet's tab; a template set up there simply has no chart (sheet.md "Sheet templates").
+    placeChart: (kind, pick, anchor, opts) => {
+      if (!charts || charts.editable)
+        placeSheetChart(bridge, element, model.sheet!.id, kind, pick, anchor, opts);
+      else if (!opts?.template) bridge.toast(OPEN_TAB_TO_CHART);
+    },
+    chartsRemoval: () =>
+      charts?.editable ? sheetChartsRemoval(bridge, charts.elements, model.sheet!.id) : null,
     onWrote: (before, write) => cardPush.current?.(before, write),
   });
   return (
@@ -304,6 +316,9 @@ function SheetParts({
   // arriving any other way (a peer, an agent, an import) end setup, so a sheet cleared later never shows it again.
   const pending = c.sheet.layout.setupPending === true;
   const settingUp = pending && c.sheet.cells.size === 0 && canEdit && interactive;
+  // The header holds the top row (menu-name-slot): the toolbar joins it rather than sitting under it.
+  const [bandMarker, inBand] = useInHeaderBand();
+  const toolbarInBand = inBand && c.canShape && !settingUp;
   const filled = pending && c.sheet.cells.size > 0 && canEdit;
   useEffect(() => {
     if (filled)
@@ -313,12 +328,6 @@ function SheetParts({
         { undoable: false },
       );
   }, [filled, c.store, c.sheet.id]);
-  // A cell selected from outside the Sheet (the Plan tour's Formulas step).
-  const { setSelection } = c;
-  useEffect(
-    () => listenForSheetSelect(c.sheet.id, (at) => setSelection(single(at))),
-    [c.sheet.id, setSelection],
-  );
   // The cog's settings for the element menu's Sheet flyout (sheet-settings-registry).
   usePublishSheetSettings(element.id, { controller: c, actions, onImportCsv });
   // Covering the canvas (maximised, or filling its tab), the zoom controls zoom its cells (sheet-zoom.ts).
@@ -345,11 +354,14 @@ function SheetParts({
         c.setFocused(false);
       }}
     >
+      <span ref={bandMarker} hidden />
       <SheetHeader
         elementId={element.id}
         bounds={element}
         actions={actions}
         onImportCsv={onImportCsv}
+        // Maximised or filling its tab, with the top row in its header: the toolbar rides there, in a card.
+        toolbar={toolbarInBand ? <SheetToolbar actions={actions} inBand /> : undefined}
       />
       {settingUp ? (
         <div className="min-h-0 flex-1">
@@ -358,7 +370,7 @@ function SheetParts({
       ) : (
         <>
           {/* Merge, sort, filter, freeze and charts reshape the Sheet: an Editor's, never a Participant's. */}
-          {c.canShape ? <SheetToolbar actions={actions} /> : null}
+          {c.canShape && !toolbarInBand ? <SheetToolbar actions={actions} /> : null}
           {interactive ? <SheetFormulaBar actions={actions} input={input} /> : null}
           <SheetGrid
             elementId={element.id}

@@ -99,8 +99,8 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // Every mode is always offered, so Shift+D steps through all five and wraps
-  // (docs/specs/007-editor/editor-modes.md "The mode switch", "Every mode, always offered").
+  // Shift+D steps through the modes beside the tab's own and wraps: Plan stands apart, so a canvas tab
+  // cycles Diagram, Draw, Facilitate and Illustrate (docs/specs/007-editor/editor-modes.md "Plan stands apart").
   test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
     page,
     pageErrors,
@@ -116,44 +116,34 @@ test.describe('editor modes', () => {
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
 
     await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
-    await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
-    // Plan moves on like any mode (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-    await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
+    await page.keyboard.press('Shift+D');
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
 
-  // A board placed in Plan stays through Facilitate, Diagram and Draw, and works again back in Plan
-  // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
-  test('a board placed in Plan stays on the tab in every mode', async ({ page, pageErrors }) => {
+  // Plan stands apart (docs/specs/007-editor/editor-modes.md "Plan stands apart"): picking Plan on a canvas tab
+  // offers a new Plan tab instead of switching this one, and on the Plan tab Shift+D does nothing.
+  test('Plan opens in a tab of its own, and a Plan tab keeps its mode', async ({
+    page,
+    pageErrors,
+  }) => {
     await openBlank(page);
     await chooseMode(page, 'Plan');
-    await page.getByRole('button', { name: /^Kanban/ }).click();
-    await expect(boards(page)).toHaveCount(1);
+    await expect(page.getByRole('dialog', { name: 'Open a New Plan Tab?' })).toBeVisible();
+    await page.getByRole('button', { name: 'New Plan Tab' }).click();
+    await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
+    await expect(page.getByRole('heading', { name: 'Start Planning' })).toBeVisible();
 
-    // The new board is selected, and a key on a selection types into it: a press on empty canvas,
-    // right of the board, lets it go and gives the canvas the keys.
-    await page.locator(CANVAS).click({ position: { x: 1500, y: 600 } });
+    // A board from Start Planning fills the tab; Shift+D then leaves the Plan tab in Plan.
+    await page.getByRole('button', { name: /^Kanban Board/ }).click();
+    await expect(boards(page)).toHaveCount(1);
+    await page.keyboard.press('Escape');
     await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Facilitate');
-    await expect(boards(page)).toHaveCount(1);
-    await page.keyboard.press('Shift+D');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(boards(page)).toHaveCount(1);
-
-    await chooseMode(page, 'Draw');
-    await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
-    await expect(boards(page)).toHaveCount(1);
-
-    await chooseMode(page, 'Plan');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Plan');
     await expect(boards(page)).toHaveCount(1);
-    await expect(page.getByRole('heading', { name: 'Start Planning' })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 

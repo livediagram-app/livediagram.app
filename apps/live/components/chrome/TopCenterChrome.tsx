@@ -7,6 +7,7 @@ import { ModeBanner } from '@/components/chrome/ModeBanner';
 import { OfflineBanner } from '@/components/chrome/OfflineBanner';
 import { usePaletteStripBox } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner, TopCenterRow, TopCenterStack } from '@/components/chrome/TopCenter';
+import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 
 // Everything that floats at the top of the canvas: the follow-me pill,
 // the active editor-mode banner. (The session timer and the vote's status and
@@ -59,6 +60,8 @@ export function TopCenterChrome({
   // either way the stack starts beneath it, or the timer and banners sit on the palette.
   const stripShown = !readOnly || participantPalette;
   const tray = stripShown && !dockOnTop ? strip : null;
+  // A board, view or Sheet covering the canvas: the draw hint moves to the bottom.
+  const covered = useCanvasCovered();
   return (
     <TopCenterStack
       below={
@@ -120,7 +123,7 @@ export function TopCenterChrome({
             drag one out", with a Cancel because the intent is transient. A
             held pen (a whiteboard pen, the Path tool) is excluded: a tool in
             the hand does not need telling you it is on every time you look up. */}
-        {pendingDraw && drawBanner ? (
+        {pendingDraw && drawBanner && !covered ? (
           <ModeBanner
             icon={<DrawIcon />}
             message={drawBannerMessage(pendingDraw, isMobileViewportSync(), { hasPlanBoard })}
@@ -129,6 +132,17 @@ export function TopCenterChrome({
           />
         ) : null}
       </TopCenterRow>
+      {/* A board covering the canvas fills the top with its header: the hint sits at the bottom instead, clear of
+          the columns' headers (docs/specs/026-plan/plan-board.md "Maximised board"). */}
+      {pendingDraw && drawBanner && covered ? (
+        <div className="pointer-events-none fixed inset-x-0 bottom-24 z-[var(--z-toolbar)] flex justify-center [&>*]:pointer-events-auto">
+          <ModeBanner
+            icon={<DrawIcon />}
+            message={drawBannerMessage(pendingDraw, isMobileViewportSync(), { hasPlanBoard })}
+            onAction={onCancelDraw}
+          />
+        </div>
+      ) : null}
     </TopCenterStack>
   );
 }

@@ -107,6 +107,15 @@ describe('sheetCsvText', () => {
     const text = sheetCsvText(store.workbook('t1'), store.sheet(ID)!);
     expect(text).toBe('2,6,\r\n,,"a, ""b"""\r\n50.00%,,\r\n');
   });
+
+  // sheet.md "CSV": a download never carries a live formula into another spreadsheet; a negative number stays one.
+  it('makes text a spreadsheet would run as a formula inert, keeping negative numbers', async () => {
+    const store = await makeStore();
+    type(store, 0, 0, "'=1+1");
+    type(store, 0, 1, '-5');
+    type(store, 0, 2, "'@cmd");
+    expect(sheetCsvText(store.workbook('t1'), store.sheet(ID)!)).toBe("'=1+1,-5,'@cmd\r\n");
+  });
 });
 
 describe('downloadSheetCsv', () => {

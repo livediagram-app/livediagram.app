@@ -1,14 +1,20 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw, Illustrate, Plan or Facilitate. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Draw, Facilitate, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
+import { isPlanTabKind } from './tab-kind';
 
 // Every editor mode, in the order the interface lists them (the mode switch, the tab menu's Opens
 // in). The one place a mode is declared: a further mode is one entry here.
 export const EDITOR_MODE_CATALOGUE = [
   { id: 'diagram', label: 'Diagram', description: 'Shapes, arrows, the palette and snapping.' },
   { id: 'draw', label: 'Draw', description: 'Pens, the eraser and shape recognition.' },
+  {
+    id: 'facilitate',
+    label: 'Facilitate',
+    description: 'Run a session with your team: timers, votes, polls and reveals.',
+  },
   {
     id: 'illustrate',
     label: 'Illustrate',
@@ -18,11 +24,6 @@ export const EDITOR_MODE_CATALOGUE = [
     id: 'plan',
     label: 'Plan',
     description: 'Boards of items: columns, cards and the work moving through them.',
-  },
-  {
-    id: 'facilitate',
-    label: 'Facilitate',
-    description: 'Run a session with your team: timers, votes, polls and reveals.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 
@@ -53,6 +54,17 @@ export function nextEditorMode(
   return modes[(modes.indexOf(mode) + step + count) % count]!;
 }
 
+// Plan stands apart (docs/specs/007-editor/editor-modes.md "Plan stands apart"): a tab never switches into Plan from
+// another mode, nor out of it; another mode is a new tab in it instead.
+export function crossesPlan(from: EditorMode, to: EditorMode): boolean {
+  return (from === 'plan') !== (to === 'plan');
+}
+
+// The modes a tab in `mode` may switch between, in order: Plan alone, or every mode but Plan.
+export function modesBesidePlanRule(mode: EditorMode): EditorMode[] {
+  return EDITOR_MODES.filter((m) => !crossesPlan(mode, m));
+}
+
 export function isEditorMode(v: unknown): v is EditorMode {
   return EDITOR_MODES.includes(v as EditorMode);
 }
@@ -71,15 +83,17 @@ export function parseEditorMode(v: unknown): EditorMode | undefined {
 type ModeTab = { kind?: string; opensIn?: string; layers?: Layer[] };
 
 // An event-storming board keeps its own tools and notation, so it is worked on in Diagram mode and
-// offers no switch, whatever a forged or stale `opensIn` says.
+// offers no switch, whatever a forged or stale `opensIn` says; a Board, Sheet or Dashboard tab is always in Plan
+// (docs/specs/026-plan/plan-tabs.md).
 export function editorModeSwitchable(tab: ModeTab | undefined): boolean {
-  return !isEventStormingTab(tab);
+  return !isEventStormingTab(tab) && !isPlanTabKind(tab?.kind);
 }
 
 /** The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md "Where
  *  the mode lives"): its stored mode, Diagram when absent or unreadable, always Diagram on an
  *  event-storming board. */
 export function opensInOf(tab: ModeTab | undefined): EditorMode {
+  if (isPlanTabKind(tab?.kind)) return 'plan';
   if (!editorModeSwitchable(tab)) return DEFAULT_EDITOR_MODE;
   return parseEditorMode(tab?.opensIn) ?? DEFAULT_EDITOR_MODE;
 }

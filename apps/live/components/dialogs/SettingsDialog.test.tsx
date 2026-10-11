@@ -169,7 +169,7 @@ describe('SettingsDialog', () => {
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
   });
 
-  it('arms the welcome tour it promises when the row is left on', () => {
+  it('arms the Diagram tour it promises when the row is left on', () => {
     // The row reads `tourSeen !== true` and says the tour will be offered
     // next time, but TourHost also needs the per-tab pending flag, which
     // only /new sets. Without arming it here the row sat on, promising a

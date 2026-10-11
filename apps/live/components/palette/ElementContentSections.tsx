@@ -264,9 +264,10 @@ export function ElementContentSections({
       {/* ── Collaboration group (docs/specs/012-collaboration/assigned-actions.md): two categories — Collaborate
             (the people tiles: Assign Action + Comments) then Resources
             (the attached-material tiles: Link + Note). Both boxed-only:
-            arrows can't be linked, noted, commented on, or assigned. */}
+            arrows can't be linked, noted, commented on, or assigned, and nor can a Plan item
+            (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items"). */}
       {showCollaborateGroup ? <MenuGroupSeparator /> : null}
-      {boxed ? (
+      {boxed && showCollaborateGroup ? (
         <MenuAccordionSection
           title="Collaborate"
           icon={<CommentMenuIcon />}
@@ -297,7 +298,7 @@ export function ElementContentSections({
           </MenuTileGrid>
         </MenuAccordionSection>
       ) : null}
-      {boxed ? (
+      {boxed && showCollaborateGroup ? (
         <MenuAccordionSection
           title="Resources"
           icon={<LinkMenuIcon />}

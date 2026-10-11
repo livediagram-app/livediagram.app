@@ -5,7 +5,7 @@
 import type { BoxedElement } from './index';
 import type { CanvasSurface } from './colors';
 import { resolveFontStack } from './fonts';
-import { planPalette } from './plan-palette';
+import { planOwnColoursOf, planPalette } from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { wrapLines } from './svg-render-face-kit';
 
@@ -72,11 +72,7 @@ export function svgPlanSheet(
   model: SheetRenderModel | undefined,
   surface: CanvasSurface,
 ): string {
-  const p = planPalette(surface, {
-    fill: el.fillColor,
-    stroke: el.strokeColor,
-    text: el.textColor,
-  });
+  const p = planPalette(surface, planOwnColoursOf(el));
   const { x, y, width: w, height: h } = el;
   const id = `ps-${el.id.replace(/[^A-Za-z0-9_-]/g, '')}`;
   let out = `<clipPath id="${id}"><rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${r2(h)}" rx="12"/></clipPath>`;

@@ -16,6 +16,7 @@ import {
   lucideTableCellsMerge,
   lucideTableCellsSplit,
   lucideTrash2,
+  lucideEllipsis,
   lucideArrowUpDown,
   lucideBaseline,
   lucideChartPie,
@@ -25,7 +26,17 @@ import {
   lucideTextAlignEnd,
   lucideTextAlignStart,
   lucideType,
+  lucideCalculator,
+  lucideCalendar,
+  lucideChartNoAxesColumnIncreasing,
+  lucideCoins,
+  lucideGitFork,
+  lucideGrid3x3,
+  lucideInfo,
+  lucideSearch,
+  lucideSquareKanban,
 } from '@livediagram/icons/lucide';
+import type { FunctionFamily } from '@livediagram/sheets';
 
 const SIZE = 16;
 
@@ -207,6 +218,7 @@ export const InsertRowBelowIcon = prims(lucideBetweenHorizontalEnd);
 export const InsertColumnLeftIcon = prims(lucideBetweenVerticalStart);
 export const InsertColumnRightIcon = prims(lucideBetweenVerticalEnd);
 export const DeleteIcon = prims(lucideTrash2);
+export const MoreIcon = prims(lucideEllipsis);
 export const ClearContentsIcon = prims(lucideEraser);
 export const SortAToZIcon = prims(lucideArrowDownAZ);
 export const SortZToAIcon = prims(lucideArrowUpZA);
@@ -215,3 +227,18 @@ export const UnmergeCellsIcon = prims(lucideTableCellsSplit);
 export const HideIcon = prims(lucideEyeOff);
 export const PasteValuesIcon = prims(lucideClipboardType);
 export const FormattingIcon = prims(lucidePaintbrush);
+
+// Each function family's glyph (docs/specs/029-sheets/sheet.md "Toolbar"), beside its name in the Functions category.
+export const FUNCTION_FAMILY_ICONS: Record<FunctionFamily, () => React.JSX.Element> = {
+  Maths: prims(lucideCalculator),
+  Statistics: prims(lucideChartNoAxesColumnIncreasing),
+  Logic: prims(lucideGitFork),
+  Information: prims(lucideInfo),
+  Lookup: prims(lucideSearch),
+  Text: prims(lucideType),
+  'Date and time': prims(lucideCalendar),
+  Arrays: prims(lucideGrid3x3),
+  Finance: prims(lucideCoins),
+  'Plan cards': prims(lucideSquareKanban),
+};
+export const SearchIcon = prims(lucideSearch);

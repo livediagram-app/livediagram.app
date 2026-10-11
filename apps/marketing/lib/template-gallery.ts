@@ -1,13 +1,15 @@
 import type { EditorMode } from '@livediagram/document';
 import {
-  POPULAR_PER_MODE,
   POPULAR_TEMPLATE_KINDS,
   popularKindsFor,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
-  templateCategory,
+  templateCategories,
+  templateCategoryLabel,
   templateEditorMode,
+  templateMatchesQuery,
+  templateQueryWords,
   type TemplateCategory,
   type TemplateDescriptor,
 } from '@livediagram/templates';
@@ -20,7 +22,10 @@ import {
 // so the lists and the filters can be tested without rendering the section.
 
 type GalleryTemplate = TemplateDescriptor & {
-  category: TemplateCategory;
+  // Its primary category (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), then any it is
+  // cross-listed in; a blank has none.
+  category: TemplateCategory | null;
+  categories: readonly TemplateCategory[];
   categoryLabel: string;
   // The editor mode the template opens in (docs/specs/007-editor/templates-by-mode.md).
   mode: EditorMode;
@@ -36,15 +41,16 @@ export type ModeChoice = 'all' | EditorMode;
 
 const POPULAR_LABEL = 'Popular';
 
-const LABELS = new Map(TEMPLATE_CATEGORIES.map((c) => [c.id, c.label]));
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
 function toGallery(t: TemplateDescriptor): GalleryTemplate {
-  const category = templateCategory(t.kind);
+  const categories = templateCategories(t.kind);
+  const category = categories[0] ?? null;
   return {
     ...t,
     category,
-    categoryLabel: LABELS.get(category) ?? category,
+    categories,
+    categoryLabel: category ? templateCategoryLabel(category) : '',
     mode: templateEditorMode(t.kind),
   };
 }
@@ -64,16 +70,12 @@ export function popularTemplates(): GalleryTemplate[] {
   });
 }
 
-// Case-insensitive word match over the title, the description and the category name, every typed
-// word having to hit somewhere ("agile board" finds Kanban through its category and description).
-// An empty query is the whole list.
+// The editor's own search (templateMatchesQuery): every typed word has to hit the title, the description, the
+// kind, a category name or the template's search words ("plan board" finds Kanban through its category, "mortgage"
+// the Loan Calculator through its words). An empty query is the whole list.
 export function filterGallery(items: GalleryTemplate[], query: string): GalleryTemplate[] {
-  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return items;
-  return items.filter((t) => {
-    const haystack = `${t.title} ${t.description} ${t.categoryLabel}`.toLowerCase();
-    return words.every((w) => haystack.includes(w));
-  });
+  if (templateQueryWords(query).length === 0) return items;
+  return items.filter((t) => templateMatchesQuery(t, query));
 }
 
 // Only the templates of one mode; Everything keeps them all.
@@ -133,19 +135,23 @@ const byShelfRank = (a: GalleryTemplate, b: GalleryTemplate) =>
   (SHELF_RANK.get(a.kind) ?? 0) - (SHELF_RANK.get(b.kind) ?? 0);
 
 // Group in catalogue category order, each shelf in its dealt order, dropping categories the
-// filters emptied.
-export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
+// filters emptied. Browsing shows a template on every category it is shown in (cross-listing); a
+// search groups each match under its primary only, so no result shows twice.
+export function groupGallery(
+  items: GalleryTemplate[],
+  { primaryOnly = false }: { primaryOnly?: boolean } = {},
+): GalleryShelf[] {
   return TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id as ShelfId,
     label: c.label,
-    templates: items.filter((t) => t.category === c.id).sort(byShelfRank),
+    templates: items
+      .filter((t) => (primaryOnly ? t.category === c.id : t.categories.includes(c.id)))
+      .sort(byShelfRank),
   })).filter((g) => g.templates.length > 0);
 }
 
-// Popular under a mode filter, topped up from the mode's best (popularKindsFor, shared with the editor's
+// Popular under a mode filter: that mode's curated list (popularKindsFor, shared with the editor's
 // template step).
-export { POPULAR_PER_MODE };
-
 export function popularFor(choice: ModeChoice): GalleryTemplate[] {
   return popularKindsFor(choice).flatMap((kind) => {
     const t = BY_KIND.get(kind);
@@ -178,6 +184,8 @@ export function searchShelves(query: string, choice: ModeChoice): GalleryShelf[]
     ...(blanks.length > 0
       ? [{ id: 'popular' as const, label: POPULAR_LABEL, templates: blanks }]
       : []),
-    ...groupGallery(byMode(filterGallery(galleryTemplates(), query), choice)),
+    ...groupGallery(byMode(filterGallery(galleryTemplates(), query), choice), {
+      primaryOnly: true,
+    }),
   ];
 }

@@ -51,8 +51,8 @@ export function SetupTypesStep({
 }) {
   const all = types.every((t) => chosen.includes(t.id));
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-3">
         <p className="text-[13px]" style={{ color: palette.muted }}>
           Which cards belong on this board? Only these can be added to it.
         </p>
@@ -154,14 +154,14 @@ export function SetupColumnsStep({
     setName('');
   };
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <p className="text-[13px]" style={{ color: palette.muted }}>
         The stages your cards move through. Drag to reorder: top to bottom is left to right on the
         board.
       </p>
 
       {/* The columns so far, as the board will show them. */}
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2.5">
         <p className={`${HEADING} flex items-center gap-1.5`} style={{ color: palette.muted }}>
           Columns
           <CountBadge size="sm" background="#64748b26" color="#64748b">
@@ -180,7 +180,7 @@ export function SetupColumnsStep({
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2.5">
         <label htmlFor={inputId} className={HEADING} style={{ color: palette.muted }}>
           Add a New State
         </label>
@@ -228,7 +228,7 @@ export function SetupColumnsStep({
       </div>
 
       {existing.length > 0 ? (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between">
             <p className={HEADING} style={{ color: palette.muted }}>
               Use an Existing State

@@ -53,9 +53,8 @@ plan-board-columns.ts    the board's column tracks: `minmax(220px·w, w fr)` on 
 fill-tab.ts              Fill Tab's pure parts (which board or Sheet fills the tab, what turning it on deletes,
                          the copy)
 FocusElementButton.tsx   Focus in a board's or Sheet's header (Focus, below)
-SetupFillTabOption.tsx   Setup Board's Fill Tab switch row and its deletion warning (in SetupLayoutStep)
 SetupLayoutStep.tsx      Setup Board's step 3, Layout: SwimlaneOptions and CardSizeOptions (shared with the menu,
-                         plan-menu-parts.tsx), then SetupFillTabOption; state is a `SetupLayout` (setup-board.ts
+                         plan-menu-parts.tsx); state is a `SetupLayout` (setup-board.ts
                          `setupLayoutOf` / `withSetupLayout`), started from the board so skipping keeps it
 OptionRows.tsx           Plan's option list (spec "Option lists"): `kind` single (radiogroup/radio, a tick), multiple
                          (group/checkbox, a box) or action (buttons); `useMenuKind() === 'command'` makes rows
@@ -74,7 +73,7 @@ ExistingStatusList.tsx   the picker's Existing Statuses: heading + count, Add Al
                          role=listbox `ul` (max-h-56, scrolls, the highlighted row kept in view) of role=option rows
                          (`data-status`; swatch, name, `usedOn`, `cardCount` pill); a row's mousedown is prevented so
                          the field keeps focus, mousemove highlights, click adds; colour transitions off under
-                         motion-reduce. Without rows: "No existing status matches "{text}"."
+                         motion-reduce. Without rows: `NoMatches`, "No states match “{text}”".
 AddColumnPickerPopover.tsx the picker hung from + Add Column After (304px wide): a portal at z-popover (`data-add-column-picker`), placed by
                          @livediagram/ui `placeHint` with order right, left, bottom, top (8px gap, 8px margin) and an
                          arrow at its `arrowOffset`; its own capture Escape and outside press close it and refocus the
@@ -266,33 +265,29 @@ fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePal
   but `cancelDraw` and `addShape('plan-card', …)`; `withTileActionPreamble` hands the preamble the action and its
   arguments)) to `deriveCanvasSelection`, which then shows no popover, plus or multi-selection toolbar.
 - **Fill Tab** (`setup.fillTab: true`, normalised exactly-true by `normaliseBoardSetup`, carried by
-  `planBoardPatch` as a set-up key): `fill-tab.ts` (pure) gives `fillTabElementOf(elements)` (`{ id, kind: FillTabKind }`
-  or null: the first board whose raw `planBoard.fillTab === true`, or Sheet whose `planSheet.fillTab === true`, in
-  element order; [Sheet element blueprint](../../029-sheets/blueprints/sheet-element.md#fill-tab)),
-  `fillTabSheetElements(elements, id)` / `unfillSheetElements(elements, id)` (a Sheet's Fill Tab on, the rest gone /
-  off), `fillTabOthers(elements, id)` (`{ count, locked }`),
+  `planBoardPatch` as a set-up key): `fill-tab.ts` (pure) gives `fillTabElementOf(elements, tabKind?, dashboard?)`
+  (`{ id, kind: FillTabKind }` or null: on a Board or Sheet tab its first board or Sheet; on a Dashboard its one
+  filling visualisation, the stored layout read through `readDashboard`; otherwise the first board whose raw
+  `planBoard.fillTab === true`, or Sheet whose `planSheet.fillTab === true`, in element order;
+  [Sheet element blueprint](../../029-sheets/blueprints/sheet-element.md#fill-tab)) and
   `fillTabElements(elements, id, update)` (the board alone, its set-up `update`d from the one it holds at the commit,
-  Fill Tab on), `withFillTab(setup, on)` and the copy (`fillTabWarning`, `fillTabConfirm`).
+  Fill Tab on).
 - **The Plan cover** (`apps/live/hooks/plan/plan-cover-store.ts`, a module store like `maximised-plan.ts`): `{ fillTabId, fillTabKind,
 tabElementCount }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
-  `fillTabElementOf(activeTab.elements)`, and returns `canvasCovered` for the keyboard and `readTabElements` for the
-  Plan slice). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
+  `fillTabElementOf(activeTab.elements, kind, dashboard)`, and returns `canvasCovered` for the keyboard). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
   (maximised or filled: selection chrome, the Map), `useBoardFillingTab` (a board filling the tab: the palette's Cards alone),
   `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
   one covered check, read at a key press too. Neither value is on `PlanContext`, so adding or moving an element never
   changes the context (guarded by `plan-cover-store.test.tsx`: 40 element adds, 0 re-renders).
-- **Fill Tab's actions** on `PlanContext` (`usePlanFillTab`, stable callbacks): `tabOthers(id)` (read at a press) and
-  `fillTab(id, update)` (one `commit`, so one undo step); `fillTabSheet(sheetElementId, on)` likewise for a Sheet. `PlanBoardView` calls `useBoardMaximised(id, interactive)`:
+- **Fill Tab's action** on `PlanContext` (`usePlanFillTab`, a stable callback): `fillTab(id, update)` (one `commit`,
+  so one undo step). `PlanBoardView` calls `useBoardMaximised(id, interactive)`:
   `filled` from `useFillsTab(id)`; a store maximise on it is released (`releasePlanElement`, no telemetry) and the
   lifetime hook (Escape) runs only for a store maximise. A filled board hides `MaximisePlanButton` and passes `fill` to
   `MaximisableSlot`, which moves the host into `FilledTabLayer` (the same `CanvasCover` as the maximised layer, at the
-  same insets, no grow animation). In any mode (`interactive` only decides what the board itself allows). The menu's
-  `PlanFillTabSetting` (Board Setup section, after the title group) offers On Canvas / Fill Tab rows; on: `tabOthers`
-  → the menu closes → `useConfirm(fillTabConfirm)` when `count > 0` → `trackFillTab(true)` → `fillTab(id, (current) =>
-withFillTab(current, true))`; off: `trackFillTab(false)` → `updateBoard`. The wizard's `SetupFillTabOption` (end of
-  the Layout step, `SwitchRow`, a `role="alert"` notice when on and the tab holds others: `useTabElementCount()` − 1)
-  feeds `onSetUp(columns, typeIds, layout)`; `PlanBoardView` writes `withSetupLayout(setUpBoard(current, …), layout)`
-  through `fillTab` when Fill Tab turns on (from the board at that commit), else `updateBoard`.
+  same insets, no grow animation). In any mode (`interactive` only decides what the board itself allows). Nothing in the menu or the wizard sets Fill Tab any more: a Board
+  tab's board always fills it (`fillTabElementOf(elements, kind)`, plan-tabs.md), and the wizard's Layout step ends at
+  card size; `onSetUp(columns, typeIds, layout)` writes `withSetupLayout(setUpBoard(current, …), layout)` through
+  `updateBoard`.
 - **Reveal**: sets `planBoard.hideWriting = false` (element commit).
 - **Set-up edits**: element commits via `updateElement`; removing a column with items opens a choice "Move
   N items to …" (another column) before the commit, the moves pushed with it.
@@ -375,7 +370,7 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 | Column statuses duplicated by an agent    | Validation rejects; normalise keeps the first   |
 | Board narrower than columns × 220         | Columns scroll horizontally inside the board    |
 | Picker: board already has every status    | Plain field, no list, as before                 |
-| Picker: typed text matches no row         | "No existing status matches" line; Add Column   |
+| Picker: typed text matches no row         | "No states match" empty state; Add Column       |
 | Fill Tab: two boards set to fill          | The first in element order fills; others hidden |
 | Fill Tab: element added while on          | Kept under the board, hidden; counted next time |
 | Fill Tab: board deleted                   | `fillTabElementOf` is null; canvas is back      |
@@ -395,7 +390,6 @@ ColumnAdded | ColumnAddedExisting`.
 | Set-up edits                                     | `apps/live/components/plan/board-setup-edits.test.ts`                                                                                                                 |
 | Column picker statuses, counts, boards           | `packages/items/src/board-status-picks.test.ts`                                                                                                                       |
 | Fill Tab: which board, deletion, copy            | `apps/live/components/plan/fill-tab.test.ts`                                                                                                                          |
-| Fill Tab tiles, confirm, telemetry               | `apps/live/components/palette/PlanFillTabSetting.test.tsx`                                                                                                            |
 | Setup Board Layout step, stepper, Fill Tab       | `apps/live/components/plan/PlanSetupBoard.test.tsx`                                                                                                                   |
 | Layout read from and written to the board        | `apps/live/components/plan/setup-board.test.ts`                                                                                                                       |
 | Maximised/filled insets from the chrome          | `apps/live/lib/canvas-layer-insets.test.ts`, `apps/live/hooks/ui/useCanvasLayerInsets.test.ts`                                                                        |

@@ -122,6 +122,7 @@ export const ELEMENT_FIELD_NAMES = {
     'legendItems',
     'chartPalette',
     'chartSource',
+    'sheetAnchor',
     'code',
     'codeLanguage',
     'codeTheme',

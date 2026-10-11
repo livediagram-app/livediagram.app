@@ -21,6 +21,8 @@ import {
   type ShapeKind,
 } from '@livediagram/document';
 import dynamic from 'next/dynamic';
+import type { ReactNode } from 'react';
+import { useFillsTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
@@ -62,6 +64,15 @@ const PlanSheetView = dynamic(
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
+// A Dashboard's boards, views and Sheets live in its slots (docs/specs/026-plan/plan-tabs.md "Slot content"): their
+// copies on the canvas under the page draw nothing, so a maximised one has one header, one title and one set of
+// controls, never a second from the copy underneath.
+function OffDashboard({ id, children }: { id: string; children: ReactNode }) {
+  // A Visualisation tab's chart fills the tab from here, as a Board tab's board does (fill-tab.ts).
+  const fills = useFillsTab(id);
+  return usePlanTabKind() === 'dashboard' && !fills ? null : <>{children}</>;
+}
+
 const PlanBoardView = dynamic(
   () => import('@/components/plan/PlanBoardView').then((m) => m.PlanBoardView),
   { ssr: false },
@@ -198,17 +209,20 @@ export function ShapeContentRouter({
     // Rating (docs/specs/009-elements/rating.md): a row of stars showing element.rating.
     <RatingView element={element} accent={accent} />
   ) : element.type === 'shape' && element.chartSource && isChartShape(element.shape) ? (
-    // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data read live.
-    <SheetLinkedChart element={element}>
-      {(el) => (
-        <DataChartView
-          element={el}
-          fontFamily={fontFamily}
-          textColor={textColor}
-          palette={chartPalette}
-        />
-      )}
-    </SheetLinkedChart>
+    // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data read live. On a Dashboard
+    // it is a slot's Sheet Chart, drawn there (docs/specs/026-plan/plan-tabs.md "Sheet Chart").
+    <OffDashboard id={element.id}>
+      <SheetLinkedChart element={element}>
+        {(el) => (
+          <DataChartView
+            element={el}
+            fontFamily={fontFamily}
+            textColor={textColor}
+            palette={chartPalette}
+          />
+        )}
+      </SheetLinkedChart>
+    </OffDashboard>
   ) : element.type === 'shape' && isPieShape(element.shape) ? (
     // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
     <PieChartView
@@ -242,16 +256,22 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && element.shape === 'plan-board' ? (
     // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's
     // items, through PlanContext.
-    <PlanBoardView element={element} fontFamily={fontFamily} />
+    <OffDashboard id={element.id}>
+      <PlanBoardView element={element} fontFamily={fontFamily} />
+    </OffDashboard>
   ) : element.type === 'shape' && element.shape === 'plan-card' ? (
     // Plan card (docs/specs/026-plan/plan-board.md "The Plan card"): one item's card face.
     <PlanCardView element={element} fontFamily={fontFamily} />
   ) : element.type === 'shape' && element.shape === 'plan-view' ? (
     // Plan view (docs/specs/026-plan/plan-views.md): a metric or a visualisation of every card.
-    <PlanViewView element={element} fontFamily={fontFamily} chartPalette={chartPalette} />
+    <OffDashboard id={element.id}>
+      <PlanViewView element={element} fontFamily={fontFamily} chartPalette={chartPalette} />
+    </OffDashboard>
   ) : element.type === 'shape' && element.shape === 'plan-sheet' ? (
     // Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab of the document's sheet store.
-    <PlanSheetView element={element} fontFamily={fontFamily} />
+    <OffDashboard id={element.id}>
+      <PlanSheetView element={element} fontFamily={fontFamily} />
+    </OffDashboard>
   ) : element.type === 'shape' && isChecklistShape(element.shape) ? (
     // Checklist (docs/specs/009-elements/checklist.md): themed card of checkbox rows; boxes toggle
     // on-canvas for anyone with edit access (no select-first required).

@@ -1,38 +1,30 @@
 # Facilitate tour
 
 A short, optional guided tour of [Facilitate mode](facilitate-mode.md), offered the first time a person works in
-Facilitate. It is the [welcome tour](../007-editor/editor-tour.md)'s sibling, as the
+Facilitate. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
 [Plan tour](../026-plan/plan-tour.md) is: the same welcome card, anchored step cards, glide, dimming ring, Skip,
 Back and outro card, driven by the same engine. Where this spec is silent, the Plan tour's rules hold.
 
 ## Domain language
 
-| Term                | Means                                                                                       |
-| ------------------- | ------------------------------------------------------------------------------------------- |
-| **Facilitate tour** | This tour                                                                                   |
-| **welcome tour**    | The editor tour ("Show me around"), [Interactive editor tour](../007-editor/editor-tour.md) |
+| Term                | Means                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| **Facilitate tour** | This tour                                                                              |
+| **Diagram tour**    | The Diagram mode tour ("Show me around"), [Diagram tour](../007-editor/editor-tour.md) |
 
 ## Where it appears
 
 - **The first time a person is in Facilitate mode** on a tab they may edit: switching a tab to Facilitate,
   opening a document whose tab opens in Facilitate, or creating one from a Facilitate template (a retro, Blank
-  Session). The editor has to be usable, as for the welcome tour (hydrated, no welcome overlay, not read-only,
+  Session). The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, not read-only,
   not an embed), and the tab not locked.
-- **On the welcome tour's closing card, not after it.** Someone in Facilitate who has not done the welcome
-  tour (`tourSeen` not set) and not answered this one is offered the **welcome tour first**, even when nothing
-  else owed it to them (a Blank Session link skips the `/new` handoff). Only on their **own** document and an
-  unlocked tab: an Editor joining someone else's live session is never shown it (its element step would put a
-  square on the room's board), and a locked tab could not start the Facilitate tour after it. Its closing card, **You're ready to go**,
-  then carries this tour's offer: **Show me Facilitate** (the primary button) starts it straight at its first
-  step, with no welcome card of its own, and the welcome tour's **Start creating** beside it declines it.
-  However the welcome tour ends there (finished, skipped or declined), this tour counts as answered, so no
-  second card pops up afterwards.
-- **Not before the synced preferences are in.** Neither offer fires until this person's preferences have
+- **Not before the synced preferences are in.** The offer does not fire until this person's preferences have
   arrived from the server (or failed to), so an answer given on another device holds on a new one.
-- **Its own welcome card** is for someone who did the welcome tour before: the first time they are in
-  Facilitate it offers itself, never at the same time as another tour.
-- **Optional.** The offer is the opt-in: **Show me around** (or **Show me Facilitate**) starts it, **No
-  thanks** (or **Start creating**) declines it.
+- **On its own, whatever other tours the person has seen.** Until October 2026 a newcomer in Facilitate was
+  offered the welcome tour first, with this tour's offer (**Show me Facilitate**) on its closing card. The
+  welcome tour is now the Diagram tour and never runs in Facilitate, so this tour no longer waits for it: the
+  first time someone is in Facilitate it offers itself, never at the same time as another tour.
+- **Optional.** The offer is the opt-in: **Show me around** starts it, **No thanks** declines it.
 - **Once ever per person**, through the synced `facilitateTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
@@ -47,9 +39,8 @@ and nothing in the document's history.
 
 ## The steps
 
-A welcome card (left out when the welcome tour's closing card started it), three steps, then an outro card.
-The bookend cards sit outside the step count. The palette itself is the welcome tour's, so this tour does not
-repeat it. The exact strings live in `apps/live/components/tour/facilitate-tour-steps.ts`.
+A welcome card, three steps, then an outro card. The bookend cards sit outside the step count. The palette
+itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/live/components/tour/facilitate-tour-steps.ts`.
 
 0. **Welcome to Facilitate** (the offer): centred card with its own illustration (a flipchart with two sticky
    notes and a timer), saying Facilitate is for running a session with a team and offering a quick look, then
@@ -66,7 +57,7 @@ repeat it. The exact strings live in `apps/live/components/tour/facilitate-tour-
 
 - Back from a step goes to the step before. Leaving a step closes what it opened (the category picker).
 - A step whose target is missing on this surface (no Share button for this person, a phone layout without it) is
-  left out up front, so the count stays honest; one that never appears is skipped, as in the welcome tour.
+  left out up front, so the count stays honest; one that never appears is skipped, as in the Diagram tour.
 - If the tour can no longer run where it started (the person's edit rights go, they leave Facilitate, or they
   open another tab) it ends as skipped.
 
@@ -80,11 +71,10 @@ not theirs to use.
 
 The Plan tour's funnel, with its own tokens:
 
-- **Offer**: `UI` · `Opened` · `FacilitateTourOffer` when its welcome card shows, or the welcome tour's closing
-  card shows with Show me Facilitate; `UI` · `Closed` · `FacilitateTourOffer` on No thanks, or on finishing the
-  welcome tour without it.
-- **Start**: `UI` · `Started` · `FacilitateTour`; from the welcome tour's closing card, `UI` · `Selected` ·
-  `FacilitateTourFromWelcome` too.
+- **Offer**: `UI` · `Opened` · `FacilitateTourOffer` when its welcome card shows; `UI` · `Closed` ·
+  `FacilitateTourOffer` on No thanks.
+- **Start**: `UI` · `Started` · `FacilitateTour`. (`UI` · `Selected` · `FacilitateTourFromWelcome`, sent when the
+  welcome tour's closing card started it, is retired with that card's offer and stays explained for the history.)
 - **Stage views**: `UI` · `View` · `FacilitateTourStep<Id>` once per step entry (`FacilitateTourStepCollaborate`, `FacilitateTourStepSessionStrip`, `FacilitateTourStepShare`,
   `FacilitateTourStepOutro`).
 - **End**: `UI` · `Ended` · `FacilitateTourCompleted` | `FacilitateTourSkipped`.
@@ -92,5 +82,5 @@ The Plan tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Facilitate tour seen alongside the welcome and Plan
+[Power user mode](../007-editor/power-user-mode.md) marks the Facilitate tour seen alongside the Diagram and Plan
 tours.

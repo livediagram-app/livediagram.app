@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
   BLANK_TEMPLATE_FOR_MODE,
+  isBlankTemplate,
   templateEditorMode,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
@@ -25,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "81 templates (11 default + 70 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "104 templates (11 default + 93 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -131,24 +132,32 @@ describe('TEMPLATES catalogue', () => {
     'timesheet',
     'contact-list',
     'task-tracker',
+    'invoice',
+    'expense-report',
+    'loan-calculator',
+    'sales-pipeline',
+    'inventory',
+    'guest-list',
+    'grade-book',
+    'habit-tracker',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "96 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "104 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 96 templates (11 default + 85 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(96);
+  it('lists exactly 104 templates (11 default + 93 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(104);
   });
 
-  it('splits cleanly into 11 default + 85 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 93 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(85);
+    expect(extras).toHaveLength(93);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -160,10 +169,12 @@ describe('TEMPLATES catalogue', () => {
     expect(new Set(kinds).size).toBe(kinds.length);
   });
 
-  it('assigns every template to a known category (the picker groups templates by category)', () => {
+  it('assigns every template but the five blanks to a known category (the picker groups templates by category)', () => {
     const known = new Set(TEMPLATE_CATEGORIES.map((c) => c.id));
     for (const t of TEMPLATES) {
-      expect(known.has(templateCategory(t.kind))).toBe(true);
+      const category = templateCategory(t.kind);
+      if (isBlankTemplate(t.kind)) expect(category, t.kind).toBeNull();
+      else expect(category !== null && known.has(category), t.kind).toBe(true);
     }
   });
 

@@ -488,16 +488,17 @@ popover is clipped no matter its z-index.
   the empty state. The feed popping in after a fetch reads as a layout
   jump.
 - **Empty (new user)**: the shared `EmptyState` from `@livediagram/ui`,
-  copy "Nothing has happened yet — create a document and it'll show up
-  here", with a New Document action. In practice a signed-up user is
+  copy "No activity yet" ("Create a document, comment on one, or join a
+  team, and it will show up here."), with a New Document action. In practice a signed-up user is
   rarely empty because of the backfill (§5) — which is exactly why this
   CTA can't be the page's only route to a new document, and why the
   header carries one too (§2.3).
-- **Empty (all filtered out)**: "No events match these filters", with a
-  Clear filters action. Distinct copy from the new-user case, so the
+- **Empty (all filtered out)**: the shared empty state
+  ([Empty states](../004-interface-design/empty-states.md)), "No events match these filters", with a
+  **Clear Filters** action. Distinct copy from the new-user case, so the
   user isn't told they have no history when they do. The filters run on
   the loaded pages only, so while the read still returns a cursor the
-  copy is "No matches in the events loaded so far" instead, and Show
+  copy is "No loaded events match these filters" ("Show more to look further back, or remove a filter.") instead, and Show
   more (§2.3) stays under it: claiming nothing matches while older
   pages are unread is the same lie in a smaller voice.
 - **Failed**: "Couldn't load your timeline", with a Try again action.

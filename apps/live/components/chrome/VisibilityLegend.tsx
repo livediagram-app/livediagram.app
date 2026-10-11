@@ -117,7 +117,6 @@ function ReachRings({ state }: { state: ShareState }) {
 }
 
 function Hero({ state, current }: { state: ShareState; current: boolean }) {
-  const m = SHARE_STATE_META[state];
   const look = LOOK[state];
   return (
     <div
@@ -125,18 +124,46 @@ function Hero({ state, current }: { state: ShareState; current: boolean }) {
       className={`flex items-center gap-3 rounded-t-xl bg-gradient-to-b px-4 pb-3 pt-4 transition-colors duration-short ${look.hero}`}
     >
       <ReachRings state={state} />
-      <div className="min-w-0 flex-1">
-        <p className={`text-[10.5px] font-semibold uppercase tracking-wide ${look.eyebrow}`}>
-          {current ? 'Who Can See This' : 'If It Were'}
-        </p>
-        <p className="mt-0.5 flex items-center gap-1.5 text-base font-semibold leading-tight text-slate-900 dark:text-slate-50">
-          <span className={look.ink}>{look.icon}</span>
-          {m.label}
-        </p>
-        <p className="mt-1 text-[12px] leading-snug text-slate-600 dark:text-slate-300">
-          {m.description}
-        </p>
+      {/* Every state's words share one grid cell, only the shown one visible, so the hero keeps the tallest's
+          height and the popover never changes size as the stops are hovered; each is centred in it, so a shorter
+          one sits level with the rings rather than at the top. */}
+      <div className="grid min-w-0 flex-1">
+        {HERO_STATES.map((s) => (
+          <HeroText key={s} state={s} current={current} shown={s === state} />
+        ))}
       </div>
+    </div>
+  );
+}
+
+const HERO_STATES: readonly ShareState[] = [...LADDER, 'offline'];
+
+function HeroText({
+  state,
+  current,
+  shown,
+}: {
+  state: ShareState;
+  current: boolean;
+  shown: boolean;
+}) {
+  const m = SHARE_STATE_META[state];
+  const look = LOOK[state];
+  return (
+    <div
+      className={`min-w-0 self-center [grid-area:1/1] ${shown ? '' : 'invisible'}`}
+      aria-hidden={shown ? undefined : true}
+    >
+      <p className={`text-[10.5px] font-semibold uppercase tracking-wide ${look.eyebrow}`}>
+        {current ? 'Who Can See This' : 'If It Were'}
+      </p>
+      <p className="mt-0.5 flex items-center gap-1.5 text-base font-semibold leading-tight text-slate-900 dark:text-slate-50">
+        <span className={look.ink}>{look.icon}</span>
+        {m.label}
+      </p>
+      <p className="mt-1 text-[12px] leading-snug text-slate-600 dark:text-slate-300">
+        {m.description}
+      </p>
     </div>
   );
 }

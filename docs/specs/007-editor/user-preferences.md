@@ -247,13 +247,14 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The interactive editor tour's seen-guard (docs/specs/007-editor/editor-tour.md). True once the
+  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it
+  // was until October 2026, so earlier answers still hold). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user on any device. Surfaced
-  // in Settings as "Welcome Tour Completed"; unchecking it and closing
+  // in Settings as Show Tours › "Diagram" (inverted); turning it on and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the welcome
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the Diagram
   // tour's. Surfaced in Settings as Show Tours › "Plan" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
@@ -703,18 +704,20 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken.
 
   **Show Tours** is one control for the three guided tours: a heading and one description over a grid of
-  switches, **Welcome**, **Plan** and **Facilitate**, each its own preference with its own
+  switches, **Diagram**, **Plan** and **Facilitate**, each its own preference with its own
   telemetry, and a **Learn more** link per tour after the description (a `toggleGroup` row: three
   near-identical rows each repeating the same paragraph read as clutter). Every switch is inverted: on
   means "show me the tour", the preference records "already seen".
 
-  **Welcome** is inverted against the stored `tourSeen`. Because `tourSeen !== true` is necessary but
-  NOT sufficient for the offer (TourHost also needs the per-tab pending flag, which only `/new` sets),
-  closing the dialog with the switch on **marks that flag**, so its promise is true for a reader who had
-  simply never taken the tour. Turning it on from off additionally relaunches in place. Its telemetry
+  **Diagram** (the [Diagram tour](editor-tour.md), labelled **Welcome** until October 2026) is inverted
+  against the stored `tourSeen`. Because `tourSeen !== true` is necessary but NOT sufficient for the offer
+  (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
+  on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
+  on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
+  for a Diagram tab. Its telemetry
   tokens still describe the PREFERENCE, so the dashboard series keeps its meaning. **Plan** is
-  inverted against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself on
-  entering Plan), so closing the dialog only reruns it, when it was turned on from off
+  inverted against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself in
+  Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate** works the same way against
   `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)).
 

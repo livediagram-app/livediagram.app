@@ -16,7 +16,12 @@ import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@live
 import { utcDay } from '@livediagram/api-schema';
 import { migrateStoredTab, stampTabKind } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
-import { readItemTypeCatalogue, type Item, type ItemTypeCatalogue } from '@livediagram/items';
+import {
+  legacyCatalogue,
+  readItemTypeCatalogue,
+  type Item,
+  type ItemTypeCatalogue,
+} from '@livediagram/items';
 import { DocumentTrashedError } from '../document-trashed';
 import {
   offlineBackend,
@@ -118,7 +123,10 @@ export function recordToDocument(rec: OfflineDocumentRecord): LiveDoc {
     name: rec.name,
     tabs: rec.tabs.map((t, i) => tabToSummary(t, rec.id, i, rec.savedAt)),
     presentation: rec.presentation ?? null,
-    itemTypes: readItemTypeCatalogue(rec.itemTypes ?? null),
+    itemTypes: legacyCatalogue(
+      readItemTypeCatalogue(rec.itemTypes ?? null),
+      (rec.items?.length ?? 0) > 0,
+    ),
     shareable: false,
     shareCode: null,
     folderId: rec.folderId,

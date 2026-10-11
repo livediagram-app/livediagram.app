@@ -8,7 +8,14 @@
 // tile is named "{Name} glyph".
 import { useEffect, useId, useRef, useState } from 'react';
 import { PLAN_GLYPH_CATEGORIES, glyphMatches, planGlyphLabel } from '@livediagram/items';
-import { ChevronDownIcon, SearchIcon, Select, TextInput, Tooltip } from '@livediagram/ui';
+import {
+  ChevronDownIcon,
+  NoMatches,
+  SearchIcon,
+  Select,
+  TextInput,
+  Tooltip,
+} from '@livediagram/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
@@ -159,9 +166,7 @@ export function GlyphGrid({
         className="grid max-h-[8.5rem] grid-cols-[repeat(auto-fill,2rem)] content-start justify-between gap-0.5 overflow-y-auto overscroll-contain"
       >
         {glyphs.length === 0 ? (
-          <p className="col-span-full px-1 py-3 text-[12px] text-slate-500 dark:text-slate-400">
-            No glyphs match “{query.trim()}”.
-          </p>
+          <NoMatches className="col-span-full" things="glyphs" query={query} />
         ) : (
           glyphs.map((g) => {
             const chosen = value === g;

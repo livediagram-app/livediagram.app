@@ -1,9 +1,15 @@
 // Sheets riding the clipboard (docs/specs/029-sheets/sheet.md "Copying a Sheet element"): a copied Sheet element
 // carries its sheet's cells on the clipboard, so a paste into another document, which cannot copy a sheet it does
 // not have, still makes the copy. The sheet chunk registers what it can read; a paste stashes what arrived; the
-// pasted Sheet takes its seed when it first draws. Main bundle, and tiny: types only from the engine.
-import { newPlanSheetId } from '@livediagram/document';
-import type { SheetJson, SheetStartId } from '@livediagram/sheets';
+// pasted Sheet takes its seed when it first draws. Main bundle, and tiny: from the engine, types and the template
+// catalogue's ids and names only.
+import { isDefaultTabName, newPlanSheetId } from '@livediagram/document';
+import {
+  SHEET_TEMPLATE_IDS,
+  SHEET_TEMPLATES,
+  type SheetJson,
+  type SheetTemplateId,
+} from '@livediagram/sheets';
 
 // The clipboard's limit for one sheet (the sheet store's write limit): a larger one pastes only within its
 // document, where the copy is made on the server.
@@ -40,11 +46,16 @@ export type PlacedSheet = {
   start?: PlacedSheetStart;
   // The Plan tour's example sheet (docs/specs/026-plan/plan-tour.md "Tour content"): made already set up from this
   // start, in the Header look with its header frozen, never awaiting setup and never an undo step.
-  setUp?: Exclude<SheetStartId, 'blank'>;
+  setUp?: SheetTemplateId;
+  // Start Planning's Empty Sheet: a blank grid ready to type into, never awaiting setup.
+  blank?: true;
 };
 
-// The starts Start Planning offers beyond the empty sheet (SheetSetupStart's ids).
-export const PLACED_SHEET_STARTS = ['cards', 'budget', 'tracker'] as const;
+// The choice Start Planning's Empty Sheet places a Sheet with.
+export const BLANK_SHEET_CHOICE = 'blank';
+
+// The starts Start Planning offers beyond the empty sheet (SheetSetupStart's ids): a card table, or a template.
+export const PLACED_SHEET_STARTS = ['cards', ...SHEET_TEMPLATE_IDS] as const;
 export type PlacedSheetStart = (typeof PLACED_SHEET_STARTS)[number];
 export const isPlacedSheetStart = (v: unknown): v is PlacedSheetStart =>
   (PLACED_SHEET_STARTS as readonly unknown[]).includes(v);
@@ -63,6 +74,20 @@ export function forgetSetupStart(sheetId: string): void {
 }
 
 const placed = new Map<string, PlacedSheet>();
+
+// What a Sheet placed on a tab still on its default name is called (that name names nothing): its start's name, as
+// Start Planning shows it, or "Sheet" (docs/specs/026-plan/plan-tabs.md "Names").
+export function sheetTitleForTab(tabName: string, start?: unknown): string {
+  const name = tabName.trim();
+  if (name && !isDefaultTabName(name)) return name;
+  if (start === 'cards') return 'Card Table';
+  return SHEET_TEMPLATES.find((t) => t.id === start)?.name ?? 'Sheet';
+}
+
+// The title `sheetId` was placed with, while it waits to be made (a new Sheet tab takes it).
+export function placedSheetTitle(sheetId: string): string | undefined {
+  return placed.get(sheetId)?.title;
+}
 
 export function placeNewSheet(from: PlacedSheet = {}): { sheetId: string } {
   const sheetId = newPlanSheetId();

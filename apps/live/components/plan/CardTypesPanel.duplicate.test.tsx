@@ -67,7 +67,6 @@ describe('duplicating a card type', () => {
         template={duplicateItemType(task, ITEM_TYPES)}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete
         onSave={onSave}
         onDelete={() => {}}
         onClose={() => {}}
@@ -90,7 +89,6 @@ describe('duplicating a card type', () => {
         type={ITEM_TYPES[1]!}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete
         onSave={() => {}}
         onDelete={() => {}}
         onClose={() => {}}

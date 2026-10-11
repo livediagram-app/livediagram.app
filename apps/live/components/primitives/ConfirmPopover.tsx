@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Button, clampIntoRange, Portal } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { usePopoverLayer } from './popover-stack';
 
 // A small confirmation popover anchored beside a trigger element, with an
 // arrow pointing back at it. The lightweight alternative to the full-
@@ -69,19 +70,17 @@ export function ConfirmPopover({
     };
   }, [anchor]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onCancel();
-      } else if (e.key === 'Enter') {
-        e.preventDefault();
-        onConfirm();
-      }
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => document.removeEventListener('keydown', onKey, true);
-  }, [onCancel, onConfirm]);
+  // It is the top popover while it is up (popover-stack.ts), so Escape cancels it alone, never the popover or menu
+  // it was opened from.
+  usePopoverLayer(ref, (e) => {
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      onCancel();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      onConfirm();
+    }
+  });
 
   return (
     <Portal>

@@ -5,7 +5,7 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import type { Element } from '@livediagram/document';
+import type { Element, Tab } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 import {
   buildBrowserWireframe,
@@ -133,6 +133,14 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'timesheet':
     case 'contact-list':
     case 'task-tracker':
+    case 'invoice':
+    case 'expense-report':
+    case 'loan-calculator':
+    case 'sales-pipeline':
+    case 'inventory':
+    case 'guest-list':
+    case 'grade-book':
+    case 'habit-tracker':
       return buildPlanTemplate(kind, cx, cy);
     case 'swot':
       return buildSwot(cx, cy);
@@ -291,6 +299,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 export type TemplateTabDef = {
   name: string | null;
   build: (cx: number, cy: number) => Element[];
+  // The tab's own fields, given every tab's id in order: a Plan template's kind and Dashboard
+  // (docs/specs/026-plan/plan-tabs.md "Templates").
+  tab?: (ids: readonly string[]) => Partial<Tab>;
 };
 
 export function templateTabs(kind: TemplateKind): TemplateTabDef[] {

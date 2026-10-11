@@ -1,55 +1,69 @@
 'use client';
 
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { Glyph } from '@livediagram/ui';
+import { useState } from 'react';
+import { Button, Tooltip, lucideGlyph } from '@livediagram/ui';
+import { lucideX } from '@livediagram/icons/lucide';
+import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
+import { EmptyCanvasArt } from './EmptyCanvasArt';
+import { dismissEmptyCard, emptyCardDismissed } from './empty-card-dismissed';
 
-// Empty-canvas hint (docs/specs/007-editor/new-document-route.md). A subdued bottom banner shown while the active
-// tab has no elements — replacing the old centre-of-canvas card so the hint
-// stays unobtrusive (a truly blank document reads as blank, not as a
-// half-finished modal). Not dismissible: it simply goes away once the canvas
-// has content (or a draw tool / Quick Start is engaged). Sits in the same
-// bottom slot as the sign-in / theme banners; the host (EditorView) decides
-// visibility + which banner wins the slot. For editors it offers a Quick Start
-// (template grid) button; viewers get a passive "nothing here yet" line instead
-// (they can't add content).
+const CloseGlyph = lucideGlyph(lucideX, 16);
+
+// The empty-canvas card (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"), shown while the active
+// tab has no elements: a calm card in the middle of the canvas, as Start Planning and an empty page's own start sit
+// in theirs, saying the tab is empty and offering Quick Start (an Editor's) and Help. Only the card takes presses: the
+// canvas around it still pans, and a palette tool still places. It goes once the tab has content (or a draw tool or
+// Quick Start is engaged), and its × closes it for good on that tab, for this person (empty-card-dismissed.ts). A
+// viewer reads a passive line instead; a Participant is pointed at what they may add.
 
 export function EmptyCanvasBanner({
+  tabId,
   tabName,
   readOnly,
   participant = false,
   onQuickStart,
-  // It rides above the bottom-right cluster (16px inset + 44px buttons above the 48px tab bar)
-  // instead of over it, on every viewport: with the Session strip the cluster reaches the banner's
-  // centred slot on a laptop-width screen too. On a phone the Session strip shares the cluster's one
-  // row (docs/specs/012-collaboration/session-tools.md "The Session strip"), so the same height holds
-  // there; a row higher would sit where the strip's Timer, Vote and Poll open and cover them.
-  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-[7.5rem]',
 }: {
+  tabId: string;
   tabName: string;
   readOnly: boolean;
   // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it adds stickies, text and images.
   participant?: boolean;
   onQuickStart: () => void;
-  placementClassName?: string;
 }) {
+  // The picture is of what the tab's mode makes (Diagram when no mode is known).
+  const mode = useEditorModeState()?.mode ?? 'diagram';
+  // Read once: the card is keyed by its tab, so another tab reads afresh.
+  const [closed, setClosed] = useState(() => emptyCardDismissed(tabId));
+  if (closed) return null;
   return (
-    <div
-      className={`pointer-events-none fixed inset-x-0 flex justify-center px-4 ${placementClassName}`}
-    >
-      {/* A phone gets a slim one-line chip: the name and Quick Start, no blurb or Help (the help
-          centre is a tap away in the Explorer), so it costs the canvas one short row. */}
-      <div className="pointer-events-auto flex w-full max-w-xl animate-fly-up-in items-center gap-3 rounded-xl border border-slate-200 bg-white/95 px-4 py-2.5 phone:w-auto phone:gap-2 phone:rounded-full phone:py-1 phone:pl-3.5 phone:pr-1 shadow-lg shadow-slate-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95">
-        <span className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 sm:flex dark:bg-brand-500/15 dark:text-brand-400">
-          <Glyph size={18} units={24}>
-            <rect x="3" y="6" width="10" height="10" rx="1.5" />
-            <circle cx="16" cy="14" r="5" />
-          </Glyph>
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
+    // At the canvas's own layer, beneath the toolbars and panels: a palette's More popover or a panel opened over the
+    // middle of the canvas sits in front of the card, never under it.
+    <div className="pointer-events-none fixed inset-0 z-[var(--z-panel)] flex items-center justify-center px-4">
+      <div
+        role="region"
+        aria-label={`${tabName} is empty`}
+        className="pointer-events-auto relative flex w-full max-w-sm animate-fly-up-in flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white/95 px-6 py-6 text-center shadow-lg shadow-slate-900/5 backdrop-blur phone:max-w-[18rem] phone:gap-2.5 phone:px-5 phone:py-5 dark:border-slate-700 dark:bg-slate-900/95"
+      >
+        <Tooltip label="Close">
+          <button
+            type="button"
+            aria-label="Close"
+            className="absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            onClick={() => {
+              dismissEmptyCard(tabId);
+              setClosed(true);
+            }}
+          >
+            <CloseGlyph />
+          </button>
+        </Tooltip>
+        <EmptyCanvasArt mode={mode} />
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] font-semibold text-slate-800 dark:text-slate-100">
             {tabName} is empty
           </p>
-          <p className="mt-0.5 truncate text-xs text-slate-500 phone:hidden dark:text-slate-400">
+          <p className="text-[13px] leading-snug text-slate-500 dark:text-slate-400">
             {participant
               ? 'Nothing here yet. Add a sticky, text or an image from the Palette to get it going.'
               : readOnly
@@ -58,22 +72,14 @@ export function EmptyCanvasBanner({
           </p>
         </div>
         {readOnly ? null : (
-          <div className="flex shrink-0 items-center gap-2">
-            {/* Same button language as Quick Start beside it (icon + label),
-                not a bare ? — the pair reads as two peer actions. */}
+          <div className="mt-1 flex items-center gap-2">
+            <Button variant="primary" size="sm" onClick={onQuickStart}>
+              Quick Start
+            </Button>
+            {/* Help is a desktop's: on a phone the help centre is a tap away in the Explorer. */}
             <span className="contents phone:hidden">
               <HelpArticleLink article="yourFirstDiagram" variant="button" />
             </span>
-            <button
-              type="button"
-              onClick={onQuickStart}
-              // The Help button's exact styling beside it (HelpArticleLink, variant "button"): the
-              // pair are peers. Its own brand hover had no dark text colour, so on a dark canvas
-              // hovering turned the label dark brand on dark slate.
-              className="optical-edges inline-flex items-center rounded-lg border phone:rounded-full border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white"
-            >
-              <span className="text-optical-line">Quick Start</span>
-            </button>
           </div>
         )}
       </div>

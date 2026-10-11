@@ -297,7 +297,9 @@ panes are disabled under a note naming them.
 **Which tools a mode offers** (`sessionStripTools`): **Facilitate** has all three
 ([Facilitate mode](facilitate-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
 workshop that is always Diagram; **Plan** has Timer and
-Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) but no Poll; **Diagram**,
+Vote (cards take the dots, [Voting on Plan cards](#voting-on-plan-cards)) only on a tab with a board made for voting,
+one taking a card type with a **Votes** field (a Retro's Notes and Ideas, or a type someone gave Votes), and never on
+a Dashboard tab, a timer or vote already running keeping its button so it can be stopped; Plan has no Poll; **Diagram**,
 **Draw** and **Illustrate** have no strip, keeping their bottom bar to their own tools, even while a
 tool runs (a session button on the canvas still starts one there). A popover whose button
 leaves (a mode switch) closes.

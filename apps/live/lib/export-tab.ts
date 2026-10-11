@@ -28,6 +28,8 @@ import {
   type Element,
   type LaidOutPage,
   type PageRect,
+  type ResolvePlanArt,
+  type SheetRenderModel,
   type Tab,
 } from '@livediagram/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
@@ -96,6 +98,12 @@ export type ImageExportOpts = {
   items?: ReadonlyMap<string, Item>;
   // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
   itemTypes?: readonly ItemTypeDef[];
+  // Each Sheet's window of cells by sheet id (docs/specs/029-sheets/sheet.md "Exports and images"), from the sheet
+  // store (plan-export-sheets.ts). Without it a Sheet draws its frame and headers alone.
+  sheets?: ReadonlyMap<string, SheetRenderModel>;
+  // A plan view's picture (docs/specs/026-plan/plan-tabs.md "Export"), drawn by the editor, which has the charts'
+  // models; without it a plan view draws as its labelled box.
+  resolvePlanArt?: ResolvePlanArt;
 };
 
 // Re-export so callers (the export dialog) get the loader from the same
@@ -328,7 +336,8 @@ export async function renderTabToCanvas(
   // an <img>, which blocks external resources outright — so a marker note
   // would come back in the fallback face unless the font travels INSIDE the
   // markup. Fetched once here and inlined into every fragment below.
-  const fontCss = opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font)));
+  const fontCss =
+    opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets)));
   // The canvas drawers paint through the DOM's own font set, so wait for it
   // to settle — rasterising mid-swap bakes the fallback face into the PNG.
   await document.fonts?.ready;
@@ -358,6 +367,8 @@ export async function renderTabToCanvas(
         surface,
         items: opts.items,
         itemTypes: opts.itemTypes,
+        sheets: opts.sheets,
+        resolvePlanArt: opts.resolvePlanArt,
       })}</svg>`;
     try {
       rasterImages.set(el.id, { image: await svgToImage(svg), pad });
@@ -550,7 +561,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font), writing));
+    : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font, opts.sheets), writing));
   if (fontDefs) parts.push(fontDefs);
   // The writing, over the page and under every element.
   if (writing) parts.push(articleOpsToSvg(writing.ops));
@@ -599,6 +610,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               surface,
               items: opts.items,
               itemTypes: opts.itemTypes,
+              sheets: opts.sheets,
+              resolvePlanArt: opts.resolvePlanArt,
             }),
             clips,
           ),
@@ -629,7 +642,9 @@ export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Prom
   const writing = opts.page ? { fonts: pageWritingFonts(tab, opts.page) } : null;
   const fontCss =
     opts.fontCss ??
-    (await embeddedFontFaceCss(withWritingFonts(exportFontIds(els, tab.font), writing)));
+    (await embeddedFontFaceCss(
+      withWritingFonts(exportFontIds(els, tab.font, opts.sheets), writing),
+    ));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }
 

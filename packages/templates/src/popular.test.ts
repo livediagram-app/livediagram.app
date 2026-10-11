@@ -1,27 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { POPULAR_PER_MODE, popularKindsFor } from './popular';
-import { templateEditorMode } from './template-modes';
-import { POPULAR_TEMPLATE_KINDS } from './templates';
+import { EDITOR_MODES } from '@livediagram/document';
+import {
+  POPULAR_BY_MODE,
+  POPULAR_PER_MODE,
+  POPULAR_TEMPLATE_KINDS,
+  popularKindsFor,
+} from './popular';
+import { BLANK_TEMPLATE_FOR_MODE, templateEditorMode } from './template-modes';
+import { TEMPLATES } from './templates';
 
-// docs/specs/007-editor/templates-by-mode.md "The mode filter": Popular under a mode is topped up.
-describe('popularKindsFor', () => {
-  it('keeps Popular as listed for Everything', () => {
+// docs/specs/008-canvas/canvas-and-palette.md "Template categories": Popular is a curated list per mode filter.
+describe('Popular', () => {
+  const kinds = new Set(TEMPLATES.map((t) => t.kind));
+
+  it('leads Everything with the five blanks, in mode order', () => {
     expect(popularKindsFor('all')).toEqual([...POPULAR_TEMPLATE_KINDS]);
+    expect(POPULAR_TEMPLATE_KINDS.slice(0, EDITOR_MODES.length)).toEqual(
+      EDITOR_MODES.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]),
+    );
   });
 
-  it('gives every mode at least five of its own, its blank first, each once', () => {
-    for (const mode of ['diagram', 'draw', 'illustrate', 'plan'] as const) {
-      const kinds = popularKindsFor(mode);
-      expect(kinds.length, mode).toBeGreaterThanOrEqual(POPULAR_PER_MODE);
-      expect(new Set(kinds).size, mode).toBe(kinds.length);
-      for (const k of kinds) expect(templateEditorMode(k), k).toBe(mode);
+  it('gives every mode a short list of its own, its blank first, each once, every kind real', () => {
+    for (const [choice, list] of Object.entries(POPULAR_BY_MODE)) {
+      expect(list.length, choice).toBeGreaterThanOrEqual(POPULAR_PER_MODE);
+      expect(list.length, choice).toBeLessThanOrEqual(13);
+      expect(new Set(list).size, choice).toBe(list.length);
+      for (const k of list) expect(kinds.has(k), k).toBe(true);
+      if (choice === 'all') continue;
+      const mode = choice as keyof typeof BLANK_TEMPLATE_FOR_MODE;
+      expect(list[0], choice).toBe(BLANK_TEMPLATE_FOR_MODE[mode]);
+      for (const k of list) expect(templateEditorMode(k), k).toBe(mode);
     }
-    expect(popularKindsFor('plan')).toEqual([
-      'blank-plan',
-      'project-planner',
-      'kanban',
-      'team-retro',
-      'bug-triage',
-    ]);
   });
 });

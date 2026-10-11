@@ -19,7 +19,7 @@ describe('presetSummaryLines', () => {
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
-      ['Show Tours: Welcome', 'Off', 'Accessibility'],
+      ['Show Tours: Diagram', 'Off', 'Accessibility'],
       ['Show Tours: Plan', 'Off', 'Accessibility'],
       ['Show Tours: Facilitate', 'Off', 'Accessibility'],
       ['Suggested Prompts', 'Off', 'AI Tools'],

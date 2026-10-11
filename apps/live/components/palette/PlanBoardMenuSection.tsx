@@ -21,7 +21,6 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
-import { PlanFillTabSetting } from './PlanFillTabSetting';
 
 type FlyoutProps = Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 
@@ -92,20 +91,12 @@ export function PlanBoardSettings({
   );
 }
 
-// Board Setup's body: the title group, then Fill Tab.
+// Board Setup's body: the title group (a Board tab's board always fills it: no Fill Tab, plan-tabs.md).
 function PlanBoardSetupSection(props: {
   element: ShapeElement;
   onClose?: (() => void) | undefined;
 }) {
-  const setup = normaliseBoardSetup(props.element.planBoard);
-  return (
-    <>
-      <PlanBoardSettings {...props} />
-      {setup ? (
-        <PlanFillTabSetting boardId={props.element.id} setup={setup} onClose={props.onClose} />
-      ) : null}
-    </>
-  );
+  return <PlanBoardSettings {...props} />;
 }
 
 // The Swimlanes section: built in, then any field the document's types offer (docs/specs/026-plan/plan-board.md
@@ -231,10 +222,14 @@ export const PLAN_BOARD_SECTIONS: readonly {
 export function PlanBoardSectionsPanel({
   element,
   onClose,
+  more,
 }: {
   element: ShapeElement;
   // Closes whatever holds the panel (the cog's popover, the element menu).
   onClose?: (() => void) | undefined;
+  // Sections after the board's own, sharing its one-open-at-a-time (a Dashboard slot's Slot section).
+  more?:
+    ((section: (id: string) => { open: boolean; onToggle: () => void }) => ReactNode) | undefined;
 }) {
   const [open, setOpen] = useState<string | null>('board-setup');
   const setup = normaliseBoardSetup(element.planBoard);
@@ -253,6 +248,7 @@ export function PlanBoardSectionsPanel({
           </BoardSettingsSection>
         ),
       )}
+      {more?.((id) => ({ open: open === id, onToggle: () => setOpen(open === id ? null : id) }))}
     </>
   );
 }

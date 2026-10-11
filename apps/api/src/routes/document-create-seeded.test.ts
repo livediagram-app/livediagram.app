@@ -86,7 +86,13 @@ describe('seeded tabs compiled on create', () => {
       ).status,
     ).toBe(201);
     const doc = await getDocument(db.env, 'd1');
-    expect(doc?.tabs.map((t) => t.name)).toEqual(['Retro', 'Actions', 'Archive', 'Notes']);
+    expect(doc?.tabs.map((t) => t.name)).toEqual([
+      'Retro',
+      'Actions',
+      'Archive',
+      'Overview',
+      'Notes',
+    ]);
     const actions = await getTab(db.env, 'd1', doc!.tabs[1]!.id);
     expect(actions?.opensIn).toBe('plan');
     expect(actions?.elements.some((e) => e.type === 'shape' && e.shape === 'plan-board')).toBe(

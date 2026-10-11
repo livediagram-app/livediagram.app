@@ -256,6 +256,21 @@ describe('the sheet store client', () => {
     await s.settle();
     expect(steps).toHaveLength(1);
   });
+  it('undoes and redoes a change made alongside a write in the same step', async () => {
+    const steps: { undo: () => void; redo: () => void }[] = [];
+    s = store(srv.api, { pushUndo: (st) => steps.push(st as never) });
+    await s.loadTab('t1');
+    const alongside = { undo: vi.fn(), redo: vi.fn() };
+    s.write('sheet0001', set(0, 0, 3), { alongside });
+    expect(steps).toHaveLength(1);
+    expect(alongside.redo).not.toHaveBeenCalled();
+    steps[0]!.undo();
+    expect(value(0, 0)).toBeNull();
+    expect(alongside.undo).toHaveBeenCalledTimes(1);
+    steps[0]!.redo();
+    expect(value(0, 0)).toBe(3);
+    expect(alongside.redo).toHaveBeenCalledTimes(1);
+  });
   it("undoes a row deletion into the sheet as it is then, keeping a card table's later links", async () => {
     const steps: { undo: () => void; redo: () => void }[] = [];
     s = store(srv.api, { pushUndo: (st) => steps.push(st as never) });
@@ -368,6 +383,21 @@ describe('the sheet store client', () => {
     expect(onRefused).toHaveBeenCalledWith('sheet_not_found');
     expect(toast).not.toHaveBeenCalled();
     expect(own.sheet('sheet0004')).toBeUndefined();
+  });
+  it('makes a second load while one is in flight wait for it, never settling on the empty tab', async () => {
+    let answer!: (sheets: SheetJson[]) => void;
+    const slow = store({
+      ...srv.api,
+      fetchSheets: vi.fn(() => new Promise<SheetJson[]>((resolve) => (answer = resolve))),
+    } as never);
+    const first = slow.loadTab('t1');
+    let secondDone = false;
+    const second = slow.loadTab('t1').then(() => (secondDone = true));
+    await flush();
+    expect(secondDone).toBe(false);
+    answer([sheetToJson(srv.sheet)]);
+    await Promise.all([first, second]);
+    expect(slow.sheet('sheet0001')).toBeDefined();
   });
   it('fails a tab load quietly and resyncs', async () => {
     const bad = store({

@@ -3,7 +3,7 @@
 // another. The board under the pointer is read from the DOM (`data-plan-board`), as the drop slot
 // is, so the hit test can never disagree with what is drawn. Only the active tab's boards are on
 // screen, so the registry never holds a board the pointer could not reach.
-import type { BoardWidgetKind, Item } from '@livediagram/items';
+import type { Item } from '@livediagram/items';
 import type { PlanDropSlot } from './usePlanCardDrag';
 
 // What a board under a dragged card shows: the slot it would land in, with the gap's height. `refused` is a palette
@@ -25,8 +25,6 @@ export function sameIncoming(a: PlanIncoming | null, b: PlanIncoming | null): bo
   );
 }
 
-export type WidgetPlaced = 'added' | 'moved' | 'already' | 'refused';
-
 export type PlanBoardTarget = {
   // Whether the board shows this item at all (its scope); a card it would hide is refused.
   accepts: (itemId: string) => boolean;
@@ -41,12 +39,6 @@ export type PlanBoardTarget = {
   // A card moved to `slot`: the refusal when its type (or the type its swimlane gives it) leaves the slot's status
   // out (docs/specs/026-plan/item-types.md "An item type"), else null. Never a refusal for the status it is in.
   refuseAt: (item: Pick<Item, 'type' | 'fields'>, slot: PlanDropSlot) => string | null;
-  // A widget from the palette (docs/specs/026-plan/board-widgets.md): whether this viewer may arrange
-  // the board's widgets, the place a dragged one would land (null: none), and one placed there.
-  canEditWidgets: () => boolean;
-  widgetHover: (slot: number | null) => void;
-  // What happened: added, moved (the board had it), or already there (a tap, which never moves one).
-  placeWidget: (kind: BoardWidgetKind, slot: number, opts?: { tap?: boolean }) => WidgetPlaced;
 };
 
 const targets = new Map<string, PlanBoardTarget>();

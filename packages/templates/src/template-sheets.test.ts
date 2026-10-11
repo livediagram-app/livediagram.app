@@ -29,6 +29,23 @@ describe('materialiseTemplateSheets', () => {
     expect(out[1]).toBe(tabs[1]);
   });
 
+  it('places the charts a template’s sheet has, anchored in its Sheet with their first read', () => {
+    const { tabs: out, sheets } = materialiseTemplateSheets(
+      [tab('t', buildPlanTemplate('budget-planner', 0, 0))],
+      NOW,
+    );
+    const chart = out[0]!.elements.find((el) => el.type === 'shape' && el.shape === 'pie-chart') as
+      | (Element & {
+          chartSource?: { sheetId: string };
+          sheetAnchor?: unknown;
+          pieSlices?: unknown[];
+        })
+      | undefined;
+    expect(chart?.chartSource?.sheetId).toBe(sheets[0]!.id);
+    expect(chart?.sheetAnchor).toBeDefined();
+    expect(chart?.pieSlices).toHaveLength(5);
+  });
+
   it('keeps Fill Tab and tints the header for a dark canvas', () => {
     const light = materialiseTemplateSheets([tab('t', buildPlanTemplate('timesheet', 0, 0))], NOW);
     const dark = materialiseTemplateSheets(
@@ -38,7 +55,7 @@ describe('materialiseTemplateSheets', () => {
     const el = light.tabs[0]!.elements[0] as { planSheet: { fillTab?: true } };
     expect(el.planSheet.fillTab).toBe(true);
     const headBg = (s: (typeof light.sheets)[number]) =>
-      s.cells!.find((c) => c.r === s.layout!.rows[0] && c.c === s.layout!.cols[0])?.f?.bg;
+      s.cells!.find((c) => c.r === s.layout!.rows[3] && c.c === s.layout!.cols[0])?.f?.bg;
     expect(headBg(light.sheets[0]!)).not.toBe(headBg(dark.sheets[0]!));
   });
 

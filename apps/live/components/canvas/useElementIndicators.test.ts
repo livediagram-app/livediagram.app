@@ -41,6 +41,18 @@ const kinds = (el: BoxedElement, mind?: { editOutline: () => void; tidy: () => v
   elementIndicatorItems(el, handlers(), mind).map((i) => i.kind);
 
 describe('elementIndicatorItems', () => {
+  // docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items": kept in the document, never shown.
+  it('shows nothing a Plan item carries from before', () => {
+    const el = {
+      ...createShape('plan-board', 0, 0),
+      link: { kind: 'url', url: 'https://example.com' },
+      note: 'A note',
+      action: action('open'),
+      commentThread: thread(2),
+    } as BoxedElement;
+    expect(kinds(el)).toEqual([]);
+  });
+
   it('lists everything a shape carries, with a mind root’s commands first', () => {
     const el = {
       ...createShape('square', 0, 0),

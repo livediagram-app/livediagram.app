@@ -2,11 +2,16 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
-import { ITEM_TYPES, presetSetup, type ItemTypeCatalogue } from '@livediagram/items';
+import {
+  ITEM_TYPES,
+  defaultCatalogue,
+  presetSetup,
+  type ItemTypeCatalogue,
+} from '@livediagram/items';
 import { usePresetCardTypes } from './usePresetCardTypes';
 
-// docs/specs/026-plan/item-types.md "The type catalogue": the first boards choose a document's card types, later ones
-// add what is missing; only a board that appears while the document is open counts.
+// docs/specs/026-plan/item-types.md "The type catalogue": a board adds the card types it names that the document
+// lacks (a Blank board none); only a board that appears while the document is open counts.
 const board = (id: string, preset: 'bug-triage' | 'kanban' | 'sprint' | 'blank') => ({
   id,
   type: 'shape',
@@ -30,7 +35,6 @@ function setup(over: Partial<Props> = {}) {
     enabled: true,
     canBring: true,
     itemsReady: true,
-    hasCards: false,
     catalogue: null,
     saveCatalogue,
     ...over,
@@ -48,16 +52,16 @@ describe('usePresetCardTypes', () => {
     expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['task', 'action']);
   });
 
-  it('adds only what is missing after a Blank board, never dropping the default types', () => {
+  it('brings nothing for a Blank board: a later board brings only its own', () => {
     const { rerender, base, saveCatalogue } = setup();
     rerender({ ...base, tabs: [tab([board('a', 'blank')])] });
     expect(saveCatalogue).not.toHaveBeenCalled();
     rerender({ ...base, tabs: [tab([board('a', 'blank'), board('b', 'bug-triage')])] });
-    expect(ids(saveCatalogue.mock.lastCall![0])).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
+    expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['bug']);
   });
 
-  it('adds only what is missing once the document has cards, and nothing for a Blank board', () => {
-    const { rerender, base, saveCatalogue } = setup({ hasCards: true });
+  it('adds only what is missing to the card types a document has, and nothing for a Blank board', () => {
+    const { rerender, base, saveCatalogue } = setup({ catalogue: defaultCatalogue() });
     rerender({ ...base, tabs: [tab([board('a', 'blank')])] });
     expect(saveCatalogue).not.toHaveBeenCalled();
     rerender({ ...base, tabs: [tab([board('a', 'blank'), board('b', 'bug-triage')])] });
@@ -78,8 +82,8 @@ describe('usePresetCardTypes', () => {
     result.current.bring(els(board('a', 'kanban')));
     result.current.bring(els(board('b', 'bug-triage')));
     expect(saveCatalogue).not.toHaveBeenCalled();
-    rerender({ ...base, enabled: false, itemsReady: true, hasCards: true });
+    rerender({ ...base, enabled: false, itemsReady: true });
     expect(saveCatalogue).toHaveBeenCalledTimes(1);
-    expect(ids(saveCatalogue.mock.lastCall![0])).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
+    expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['task', 'action', 'bug']);
   });
 });

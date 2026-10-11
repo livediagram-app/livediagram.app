@@ -136,19 +136,25 @@ export const TOUR_OFFER_DISMISSED = chart(
   'UI',
   'Closed',
   'Tours Declined',
-  'The tour turned down on its welcome card, before it started. (The editor records this decline as closing the offer.)',
+  'The Diagram tour (the welcome tour until October 2026) turned down on its welcome card, before it started. (The editor records this decline as closing the offer.)',
   { types: ['TourOffer'], rising: 'neutral' },
 );
 
-export const TOURS_STARTED = chart('UI', 'Started', 'Tours Started', 'The welcome tour started.', {
-  types: ['Tour'],
-});
+export const TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Tours Started',
+  'The Diagram tour (the welcome tour until October 2026) started.',
+  {
+    types: ['Tour'],
+  },
+);
 
 export const TOUR_STEPS_VIEWED = chart(
   'UI',
   'View',
   'Tour Steps Viewed',
-  'A step of the tour shown.',
+  'A step of the Diagram tour shown.',
   { typeIn: (t) => (t ?? '').startsWith('TourStep') },
 );
 
@@ -156,7 +162,7 @@ export const TOURS_COMPLETED = chart(
   'UI',
   'Ended',
   'Tours Completed',
-  'The tour run to its last step.',
+  'The Diagram tour run to its last step.',
   { types: ['TourCompleted'] },
 );
 
@@ -164,7 +170,7 @@ export const TOURS_SKIPPED = chart(
   'UI',
   'Ended',
   'Tours Skipped',
-  'The tour closed before its end.',
+  'The Diagram tour closed before its end, or ended by leaving Diagram mode.',
   { types: ['TourSkipped'], rising: 'neutral' },
 );
 
@@ -172,7 +178,7 @@ export const WELCOME_TOUR: MetricStack = {
   stack: true,
   title: 'Welcome & Tour',
   blurb:
-    'A first visit: the welcome dialog, then the tour offered, started, stepped through, finished or skipped.',
+    'A first visit: the welcome dialog, then the Diagram tour (the welcome tour until October 2026) offered, started, stepped through, finished or skipped.',
   members: [
     WELCOME_DIALOG_CLOSED,
     TOUR_OFFERED,
@@ -185,7 +191,7 @@ export const WELCOME_TOUR: MetricStack = {
   headline: TOURS_STARTED,
 };
 
-// The Plan tour (docs/specs/026-plan/plan-tour.md): its own funnel, beside the welcome tour's.
+// The Plan tour (docs/specs/026-plan/plan-tour.md): its own funnel, beside the Diagram tour's.
 export const PLAN_TOUR_DECLINED = chart(
   'UI',
   'Closed',
@@ -284,7 +290,7 @@ export const FACILITATE_TOURS_FROM_WELCOME = chart(
   'UI',
   'Selected',
   'Facilitate Tours from the Welcome Tour',
-  "Show me Facilitate pressed on the welcome tour's closing card.",
+  "Show me Facilitate pressed on the welcome tour's closing card (retired October 2026, when the welcome tour became the Diagram tour).",
   { types: ['FacilitateTourFromWelcome'] },
 );
 
@@ -316,7 +322,7 @@ export const FACILITATE_TOUR: MetricStack = {
   stack: true,
   title: 'Facilitate Tour',
   blurb:
-    "The first time in Facilitate mode: the Facilitate tour offered (on the welcome tour's closing card, or its own), stepped through, finished or skipped.",
+    "The first time in Facilitate mode: the Facilitate tour offered (on its own card; on the welcome tour's closing card until October 2026), stepped through, finished or skipped.",
   members: [
     FACILITATE_TOUR_OFFERED,
     FACILITATE_TOUR_DECLINED,

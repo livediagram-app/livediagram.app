@@ -4,7 +4,7 @@
 
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { isPlanSheetRef } from './element-types';
-import { isChartSource } from './chart-source';
+import { isChartSource, isSheetAnchor } from './chart-source';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -277,12 +277,17 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     // Called, not referenced: @livediagram/items imports this package too, so at module load the binding
     // may not be initialised yet (a ReferenceError in the browser).
     valid: (v: unknown) => isPlanViewSettings(v),
-    rule: 'an object { view } naming a plan view, with an optional swimlaneBy, swimlaneField, namesWidth (120 to 2000) and rowOrder (up to 2000 card ids)',
+    rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids) and title (up to 80 characters)',
   },
   {
     field: 'chartSource',
     valid: (v: unknown) => isChartSource(v),
     rule: 'an object { sheetId, range: { r1, c1, r2, c2 } } naming a sheet of the document and row and column ids',
+  },
+  {
+    field: 'sheetAnchor',
+    valid: (v: unknown) => isSheetAnchor(v),
+    rule: 'an object { x, y }, each 0 to 1000000: where the chart sits in its Sheet, in px from the corner of its cells',
   },
   {
     field: 'planSheet',

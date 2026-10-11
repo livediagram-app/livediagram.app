@@ -39,6 +39,10 @@ import {
 } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 
+// How a write is made: `undoable` false for an undo or redo itself (`undo` true then); `alongside`, a change outside
+// the sheet made with it (Clear Sheet taking the Sheet's charts), undone and redone with it as one step.
+type WriteOpts = { undoable?: boolean; undo?: boolean; alongside?: ItemUndoStep };
+
 export type SheetStoreDeps = {
   scope: SheetsScope;
   self: () => SheetPerson | null;
@@ -95,6 +99,8 @@ export class SheetStore {
   private readonly tabStatus = new Map<string, TabStatus>();
   private readonly workbooks = new Map<string, Workbook>();
   private readonly queues = new Map<string, Promise<void>>();
+  // Each tab's load in flight (loadTab).
+  private readonly loads = new Map<string, Promise<void>>();
   private readonly listeners = new Set<() => void>();
   private readonly refetchTimers = new Map<string, ReturnType<typeof setTimeout>>();
   // Sheets this person deleted with their elements, as they were: Undo puts the element back and its sheet with it
@@ -175,9 +181,21 @@ export class SheetStore {
 
   // ---- Loading -----------------------------------------------------------------------------------------
 
-  async loadTab(tabId: string, force = false): Promise<void> {
-    const status = this.tabStatus.get(tabId);
-    if (!force && (status === 'loading' || status === 'ready')) return;
+  // Settles once the tab's sheets are in (or the load failed, never rejecting): a second caller while a load is in
+  // flight waits for that same load, so what it reads next is the loaded tab, never the empty one.
+  loadTab(tabId: string, force = false): Promise<void> {
+    const inFlight = this.loads.get(tabId);
+    if (!force && inFlight) return inFlight;
+    if (!force && this.tabStatus.get(tabId) === 'ready') return Promise.resolve();
+    const load = this.fetchTab(tabId);
+    this.loads.set(tabId, load);
+    void load.finally(() => {
+      if (this.loads.get(tabId) === load) this.loads.delete(tabId);
+    });
+    return load;
+  }
+
+  private async fetchTab(tabId: string): Promise<void> {
     this.tabStatus.set(tabId, 'loading');
     this.notify();
     try {
@@ -271,7 +289,7 @@ export class SheetStore {
   create(
     create: SheetCreateRequest & { id: string },
     seed?: SheetJson,
-    opts: { onRefused?: (code: string | null) => boolean } = {},
+    opts: { onRefused?: (code: string | null) => boolean; onCreated?: () => void } = {},
   ): void {
     const now = Date.now();
     const json: SheetJson = seed ?? {
@@ -292,6 +310,7 @@ export class SheetStore {
         const stored = await this.api.createSheet(this.deps.scope, create, this.by());
         this.adopt(stored);
         this.notify();
+        opts.onCreated?.();
       } catch (e) {
         const code = e instanceof ApiError ? e.code : null;
         if (!opts.onRefused?.(code)) this.refused(e, create.id);
@@ -303,11 +322,7 @@ export class SheetStore {
 
   // One change to a sheet, as the person made it: applied now, sent in order, undoable unless `undoable` is false
   // (an undo or redo itself). Refused at once (with the reason) when it breaks a limit.
-  write(
-    sheetId: string,
-    write: SheetWrite,
-    opts: { undoable?: boolean; undo?: boolean } = {},
-  ): SheetRejection | null {
+  write(sheetId: string, write: SheetWrite, opts: WriteOpts = {}): SheetRejection | null {
     return this.writeAll([{ sheetId, write }], opts);
   }
 
@@ -317,7 +332,7 @@ export class SheetStore {
   // before it leave it, so the per-write cap never refuses what the sheet allows.
   writeAll(
     edits: readonly { sheetId: string; write: SheetWrite }[],
-    opts: { undoable?: boolean; undo?: boolean } = {},
+    opts: WriteOpts = {},
   ): SheetRejection | null {
     const now = Date.now();
     const states = new Map<string, Sheet>();
@@ -364,9 +379,16 @@ export class SheetStore {
       );
     }
     if (opts.undoable !== false) {
+      const alongside = opts.alongside;
       this.deps.pushUndo({
-        undo: () => void this.writeAll(this.undoWrites(inverses), { undoable: false, undo: true }),
-        redo: () => void this.writeAll(edits, { undoable: false, undo: true }),
+        undo: () => {
+          this.writeAll(this.undoWrites(inverses), { undoable: false, undo: true });
+          alongside?.undo();
+        },
+        redo: () => {
+          this.writeAll(edits, { undoable: false, undo: true });
+          alongside?.redo();
+        },
       });
     }
     this.notify();

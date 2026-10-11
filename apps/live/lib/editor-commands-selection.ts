@@ -107,8 +107,8 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
-  // Note / comment / animation are single boxed-element actions.
-  if (isSingle && ctx.singleIsBoxed) {
+  // Note / comment are single boxed-element actions, never on a Plan item.
+  if (isSingle && ctx.singleIsBoxed && ctx.singleTakesAttachments !== false) {
     out.push({
       id: 'note',
       name: 'Add / Edit Note',

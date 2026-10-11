@@ -145,7 +145,7 @@ pointing at the button that opened it, on the edge facing the dock, over its but
      - **No full list**: with the field empty only the six slots show;
        typing replaces them with **at most six results**, the best matches
        first, as the shapes' own previews in the board's ink. No match says
-       "No shapes match".
+       "No shapes match “<words>”" (the shared empty state, with Clear Search).
      - Arrow keys move through the slots or the results, **Enter** or a press
        picks one, which arms it like a dock shape (plain ink, the tool style
        of its kind, drawn with a drag or dropped with a click) and closes the

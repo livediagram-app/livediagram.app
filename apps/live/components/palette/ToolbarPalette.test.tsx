@@ -22,7 +22,7 @@ const sheetFilling = vi.hoisted(() => ({ value: false }));
 vi.mock('@/hooks/plan/plan-cover-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/hooks/plan/plan-cover-store')>()),
   useBoardFillingTab: () => covering.value,
-  useSheetFillingTab: () => sheetFilling.value,
+  useSheetCovering: () => sheetFilling.value,
 }));
 
 beforeAll(() => {
@@ -140,9 +140,9 @@ describe('ToolbarPalette', () => {
     again([]);
     expect(picked()).toContain('Boards');
     // A category the person picked stays when a board lands.
-    pickCategory('plan-widgets');
+    pickCategory('plan-metrics');
     again([board]);
-    expect(picked()).toContain('Widgets');
+    expect(picked()).toContain('Metrics');
   });
 
   it('opens a Plan tab with a board on Cards', () => {
@@ -436,7 +436,8 @@ describe('ToolbarPalette', () => {
       const popover = openSearch();
       type(popover, 'pie chart');
       expect(within(popover).queryByRole('button', { name: 'Add Pie Chart' })).toBeNull();
-      expect(popover.textContent).toContain('No Diagram elements match');
+      expect(popover.textContent).toContain('No Diagram elements match “pie chart”');
+      expect(popover.textContent).toContain('Other modes have');
       const accordion = within(popover).getByRole('button', { name: /Not in Diagram Mode/ });
       expect(accordion.getAttribute('aria-expanded')).toBe('false');
       fireEvent.click(accordion);
@@ -460,7 +461,7 @@ describe('ToolbarPalette', () => {
       ).toEqual(['Add Diamond']);
       cleanup();
       show();
-      expect(openSearch().textContent).toContain('Nothing on this tab yet');
+      expect(openSearch().textContent).toContain('No elements on this tab yet');
     });
 
     it("picks up Draw mode's markers from the other modes' section", () => {
@@ -501,7 +502,7 @@ describe('ToolbarPalette', () => {
       show();
       const popover = openSearch();
       type(popover, 'zzqqxx');
-      expect(popover.textContent).toContain('No elements match');
+      expect(popover.textContent).toContain('No elements match “zzqqxx”');
       expect(within(popover).queryByRole('button', { name: /Not in/ })).toBeNull();
     });
 

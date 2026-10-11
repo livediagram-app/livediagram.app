@@ -43,7 +43,7 @@ describe('due calendar', () => {
     ]);
     // A spill-over day shows its cards but the month counts only its own.
     expect(m.weeks[0]![0]!.cards).toHaveLength(1);
-    expect(m.due).toBe(2);
+    expect(m.count).toBe(2);
   });
 
   it('steps months across a year', () => {
@@ -169,10 +169,17 @@ describe('the card types a view shows', () => {
     expect(viewEligibleTypes('metric:count', types).map((t) => t.id)).toEqual(['task', 'note']);
   });
 
-  it('shows every type it can until it names some, and the Gantt chart keeps Project', () => {
+  it('shows every type it can until it names some, a Gantt chart every type with dates', () => {
     expect(viewShownTypes('metric:count', undefined, types)).toEqual(['task', 'note']);
     expect(viewShownTypes('metric:count', { types: ['note'] }, types)).toEqual(['note']);
     expect(viewShownTypes('calendar', { types: ['note', 'task'] }, types)).toEqual(['task']);
-    expect(viewChosenTypes('gantt', undefined, types)).toEqual(['project']);
+    expect(viewChosenTypes('gantt', undefined, types)).toEqual(
+      types.filter((t) => t.fields.includes('start') && t.fields.includes('due')).map((t) => t.id),
+    );
+    // A type given a Start joins the Gantt chart's default at once.
+    const dated = types.map((t) =>
+      t.id === 'task' ? { ...t, fields: [...t.fields, 'start'] } : t,
+    );
+    expect(viewChosenTypes('gantt', undefined, dated)).toEqual(['task']);
   });
 });

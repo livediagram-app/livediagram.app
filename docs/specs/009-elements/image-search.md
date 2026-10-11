@@ -64,7 +64,7 @@ The user's search terms and IP address reach Openverse. The hosted service's
 - **Results.** A 4-column grid of square thumbnails, 20 per page. Each tile names its creator and
   licence on hover and focus. **Load more** under the grid fetches the next page and appends it, until
   Openverse reports no more pages.
-- **No results.** "No images match “<query>”. Try a broader word."
+- **No results.** The shared empty state, "No images match “<query>”" ("Try a broader word.")
 - **Errors.**
   - Rate limited (HTTP 429): "Too many searches for now. Wait a minute and try again."
   - Anything else (network, Openverse down, a malformed answer): "Couldn't reach Openverse. Check

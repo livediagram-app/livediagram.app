@@ -5,7 +5,6 @@
 // and key over its title, a row of facts (status, assignee, priority, due, estimate, labels), then its
 // description with its formatting and its checklist. Fields without a value are left out.
 import {
-  ITEM_TYPES,
   PRIORITY_LABELS,
   isFlagged,
   isPriority,
@@ -68,7 +67,7 @@ export function ItemSlideView({
       </p>,
     );
   }
-  const type = typeIn(types.length ? types : ITEM_TYPES, item.type);
+  const type = typeIn(types, item.type);
   const accent = accentOn(type.color, palette);
   const status = namedStatus(item, statusNames);
   const assignee = itemAssignee(item);

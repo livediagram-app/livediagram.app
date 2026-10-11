@@ -3,7 +3,7 @@
 // the volatile ones. Long chains of references never overflow the stack: past a depth the deep cell is worked
 // out first, from the top, and the read is tried again.
 import type { CardSource } from '../cards';
-import { serialFromMs } from '../dates';
+import { localMs, serialFromMs } from '../dates';
 import { formatA1 } from '../address';
 import { layoutIndex, posRangeOf } from '../layout';
 import { nameHome } from '../range-names';
@@ -46,8 +46,7 @@ class Deep {
 }
 
 function localNow(): number {
-  const now = new Date();
-  return serialFromMs(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return serialFromMs(localMs(Date.now()));
 }
 
 type Claim = { sheetId: string; r1: number; c1: number; r2: number; c2: number };

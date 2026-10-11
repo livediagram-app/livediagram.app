@@ -124,7 +124,7 @@ export function SetupColumnList({
 
   return (
     <>
-      <ol ref={listRef} aria-label="Columns" className="flex flex-col gap-1.5">
+      <ol ref={listRef} aria-label="Columns" className="flex flex-col gap-2">
         {shown.map((c, i) =>
           c === 'slot' ? (
             <li
@@ -138,7 +138,7 @@ export function SetupColumnList({
             <li
               key={setupColumnKey(c)}
               data-setup-column
-              className="flex items-center gap-2 rounded-lg border px-2 py-1.5"
+              className="flex items-center gap-2.5 rounded-lg border px-2.5 py-2"
               style={{ borderColor: palette.cardBorder, backgroundColor: palette.card }}
             >
               <ColumnRow

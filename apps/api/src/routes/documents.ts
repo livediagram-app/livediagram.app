@@ -7,6 +7,7 @@ import { readSeedItems, seedItems } from './item-routes';
 import { readSeedSheets, seedSheets } from './sheet-routes';
 import {
   catalogueWithBoardTypes,
+  legacyCatalogue,
   validateItemTypeCatalogue,
   type ItemTypeCatalogue,
 } from '@livediagram/items';
@@ -257,12 +258,10 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         itemTypes = checked.catalogue;
       }
       // A seeded Plan template's boards bring their card types (docs/specs/026-plan/item-types.md "The type
-      // catalogue"): with no catalogue given and no cards, they are its card types; else they join the one given.
-      const brought = catalogueWithBoardTypes(
-        itemTypes,
-        templateElements,
-        (seedItemCreates?.length ?? 0) > 0,
-      );
+      // catalogue"): they join the catalogue given (none: they are its card types). Cards carried with no catalogue
+      // come from a document made before card types started empty: they keep the default types (legacyCatalogue).
+      itemTypes = legacyCatalogue(itemTypes, (seedItemCreates?.length ?? 0) > 0);
+      const brought = catalogueWithBoardTypes(itemTypes, templateElements);
       // Checked as a catalogue the item-types route takes; one that would break a rule (its size) keeps the given one.
       if (brought && !validateItemTypeCatalogue(brought).ok) {
         console.warn('[item-types] brought invalid', { documentId: body.id });

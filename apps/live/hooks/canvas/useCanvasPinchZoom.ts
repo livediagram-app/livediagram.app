@@ -6,6 +6,8 @@ import { clamp } from '@livediagram/document';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { isCanvasCovered, isSheetCovering } from '@/hooks/plan/plan-cover-store';
+import { getSheetZoom, setSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 // Wheel + touch viewport gestures on the canvas:
 //   - Pinch-to-zoom on touch screens + trackpad pinch / Ctrl- or
@@ -184,6 +186,19 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // Linux zoom modifier; Cmd (metaKey) is the Mac mouse-wheel modifier. Checked before the scrollable
       // bail below: a Ctrl or Cmd wheel never scrolls an element (a Sheet's grid, a board's body), so it
       // zooms the canvas wherever the cursor is.
+      // A board, view or Sheet covering the canvas (maximised, or Fill Tab): the canvas behind it never moves, so the
+      // view it gives back is the one it covered (docs/specs/026-plan/plan-board.md "Nothing under it moves"). A
+      // Ctrl or Cmd wheel zooms a covering Sheet's cells instead (docs/specs/029-sheets/sheet.md "Zoom"); a plain wheel
+      // scrolls whatever it is over, never panning the canvas.
+      if (isCanvasCovered()) {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          if (isSheetCovering()) setSheetZoom(getSheetZoom() * Math.exp(-e.deltaY / 200));
+          return;
+        }
+        if (!scrollsItself(e.target as Element | null, canvasEl)) e.preventDefault();
+        return;
+      }
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         noteWheel('zoom');
@@ -197,13 +212,7 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       // Belt-and-braces: also bail if the cursor is over ANY element that
       // can scroll on its own (a panel's icon list, a dropdown, a menu),
       // so the wheel scrolls THAT rather than panning the canvas behind it.
-      for (let node = e.target as Element | null; node && node !== canvasEl;) {
-        if (node.scrollHeight > node.clientHeight) {
-          const oy = getComputedStyle(node).overflowY;
-          if (oy === 'auto' || oy === 'scroll') return;
-        }
-        node = node.parentElement;
-      }
+      if (scrollsItself(e.target as Element | null, canvasEl)) return;
       // No modifier: a two-finger trackpad drag (or wheel scroll) pans.
       // Translate the viewport opposite the scroll delta so content
       // follows the fingers. Offset is canvas-coords, delta is screen px,
@@ -239,4 +248,15 @@ export function useCanvasPinchZoom(deps: Deps): Api {
   }, [depsRef]); // stable — all mutable state read through depsRef at call time
 
   return { isPinchingRef };
+}
+
+// Whether `target`, or an element between it and the canvas, scrolls on its own: the wheel is its.
+function scrollsItself(target: Element | null, canvasEl: Element): boolean {
+  for (let node = target; node && node !== canvasEl; node = node.parentElement) {
+    if (node.scrollHeight > node.clientHeight) {
+      const oy = getComputedStyle(node).overflowY;
+      if (oy === 'auto' || oy === 'scroll') return true;
+    }
+  }
+  return false;
 }

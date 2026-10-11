@@ -144,26 +144,21 @@ describe('Setup Board', () => {
           columns: [{ kind: 'existing', status: 'todo', name: 'To Do' }],
           typeIds: ['task'],
         }}
-        otherElements={2}
         onCancel={onCancel}
       />,
     );
     expect(screen.getByText(`1 of ${ITEM_TYPES.length} card types`)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Next: Columns' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Layout' }));
-    // The layout starts from the board as it is: its grouping, its card size, Fill Tab on and what saving deletes.
+    // The layout starts from the board as it is: its grouping and its card size (a stored Fill Tab is kept).
     expect(screen.getByRole('radio', { name: 'Assignee' }).getAttribute('aria-checked')).toBe(
       'true',
     );
     expect(screen.getByRole('radio', { name: 'Compact' }).getAttribute('aria-checked')).toBe(
       'true',
     );
-    expect(screen.getByRole('switch', { name: /Fill Tab/ }).getAttribute('aria-checked')).toBe(
-      'true',
-    );
-    expect(screen.getByRole('alert').textContent).toMatch(
-      /2 other elements will be deleted when you save/,
-    );
+    // No Fill Tab: a Board tab's board always fills it (docs/specs/026-plan/plan-tabs.md).
+    expect(screen.queryByRole('switch', { name: /Fill Tab/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Save Board' }));
     expect(onSetUp).toHaveBeenCalledWith(
       [{ kind: 'existing', status: 'todo', name: 'To Do' }],
@@ -174,7 +169,7 @@ describe('Setup Board', () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
-  // docs/specs/026-plan/plan-board.md "Setup Board": a third, skippable step for the layout, Fill Tab last in it.
+  // docs/specs/026-plan/plan-board.md "Setup Board": a third, skippable step for the layout.
   it('lays the board out in a third step, which can be skipped', () => {
     const onSetUp = vi.fn();
     const props = {
@@ -185,7 +180,7 @@ describe('Setup Board', () => {
       onSetUp,
       layout: LAYOUT,
     };
-    const { rerender } = render(<PlanSetupBoard {...props} otherElements={0} />);
+    render(<PlanSetupBoard {...props} />);
     expect(screen.getByText('Step 1 of 3')).toBeTruthy();
     toColumns();
     const next = screen.getByRole('button', { name: 'Next: Layout' }) as HTMLButtonElement;
@@ -200,18 +195,10 @@ describe('Setup Board', () => {
     expect(screen.queryByRole('radio', { name: 'Status' })).toBeNull();
     fireEvent.click(screen.getByRole('radio', { name: 'Priority' }));
     fireEvent.click(screen.getByRole('radio', { name: 'Minimal' }));
-    const fill = screen.getByRole('switch', { name: /Fill Tab/ });
-    expect(fill.getAttribute('aria-checked')).toBe('false');
-    fireEvent.click(fill);
-    expect(screen.queryByRole('alert')).toBeNull();
-    rerender(<PlanSetupBoard {...props} otherElements={1} />);
-    expect(screen.getByRole('alert').textContent).toBe(
-      'The rest of this canvas becomes unusable, and its 1 other element will be deleted when you create the board.',
-    );
     // Back keeps the choices.
     fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     fireEvent.click(screen.getByRole('button', { name: 'Next: Layout' }));
-    expect(screen.getByRole('switch', { name: /Fill Tab/ }).getAttribute('aria-checked')).toBe(
+    expect(screen.getByRole('radio', { name: 'Minimal' }).getAttribute('aria-checked')).toBe(
       'true',
     );
     fireEvent.click(screen.getByRole('button', { name: 'Create Board' }));
@@ -219,7 +206,7 @@ describe('Setup Board', () => {
       swimlaneBy: 'priority',
       swimlaneField: undefined,
       cardSize: 'minimal',
-      fillTab: true,
+      fillTab: false,
     });
   });
 

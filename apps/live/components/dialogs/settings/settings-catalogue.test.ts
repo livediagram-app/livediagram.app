@@ -85,7 +85,7 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the welcome-tour row against the stored preference', () => {
+  it('inverts the Diagram tour row against the stored preference', () => {
     // The row asks "show me the tour?"; `tourSeen` records "already seen".
     // Getting this backwards would re-offer the tour to everyone who has
     // taken it, so it is worth pinning both directions explicitly.
@@ -101,7 +101,7 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('TourSeenOn');
   });
 
-  it('inverts the Plan tour row the same way, beside the welcome tour in Accessibility', () => {
+  it('inverts the Plan tour row the same way, beside the Diagram tour in Accessibility', () => {
     // docs/specs/026-plan/plan-tour.md "Where it appears".
     const row = SWITCHES.find((r) => r.key === 'planTourSeen')!;
     expect(row.read({ planTourSeen: true })).toBe(false);
@@ -132,7 +132,7 @@ describe('settings catalogue', () => {
     if (group?.kind !== 'toggleGroup') return;
     expect(group.label).toBe('Show Tours');
     expect(group.toggles.map((t) => [t.key, t.label])).toEqual([
-      ['tourSeen', 'Welcome'],
+      ['tourSeen', 'Diagram'],
       ['planTourSeen', 'Plan'],
       ['facilitateTourSeen', 'Facilitate'],
     ]);

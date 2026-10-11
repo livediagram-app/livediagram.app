@@ -147,6 +147,18 @@ describe('buildEditorCommands — selection commands', () => {
     expect(out).not.toContain('rotate-0');
   });
 
+  // docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items".
+  it('offers no note or comment for a Plan item', () => {
+    const out = ids({
+      ...base,
+      selectionCount: 1,
+      singleIsBoxed: true,
+      singleTakesAttachments: false,
+    });
+    expect(out).not.toContain('note');
+    expect(out).not.toContain('comment');
+  });
+
   it('does not offer boxed-only commands for a single arrow (not boxed)', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: false });
     expect(out).not.toContain('rotate-90');

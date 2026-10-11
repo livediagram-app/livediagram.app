@@ -72,9 +72,9 @@ export const VALUE_LABELS = {
   'opens-in': {
     diagram: 'Diagram',
     draw: 'Draw',
+    facilitate: 'Facilitate',
     illustrate: 'Illustrate',
     plan: 'Plan',
-    facilitate: 'Facilitate',
   },
   kind: { 'event-storming': 'Event Storming' },
   template: { retrospective: 'Retrospective', kanban: 'Kanban' },

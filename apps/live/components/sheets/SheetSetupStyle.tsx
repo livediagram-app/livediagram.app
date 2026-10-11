@@ -5,6 +5,7 @@
 import type { SheetCellSize, SheetLook } from '@livediagram/sheets';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { OptionRows } from '@/components/plan/OptionRows';
+import { CELL_SIZE_OPTIONS } from './sheet-cell-sizes';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 
 export const LOOKS: readonly { id: SheetLook; label: string; hint: string }[] = [
@@ -13,12 +14,6 @@ export const LOOKS: readonly { id: SheetLook; label: string; hint: string }[] = 
   { id: 'boxed', label: 'Boxed', hint: 'And a border round each cell' },
   { id: 'minimal', label: 'Minimal', hint: 'Bold first row, no gridlines' },
   { id: 'plain', label: 'Plain', hint: 'No fills or borders' },
-];
-
-const SIZES: readonly { id: SheetCellSize; label: string; hint: string }[] = [
-  { id: 'compact', label: 'Compact', hint: '100 by 24, to see more at once' },
-  { id: 'default', label: 'Default', hint: '120 by 28' },
-  { id: 'roomy', label: 'Roomy', hint: '160 by 36, easier to read and tap' },
 ];
 
 const HEADING = 'text-[11px] font-semibold uppercase tracking-wider';
@@ -131,8 +126,9 @@ export function SheetSetupStyle({
   hasRows: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-1.5" aria-labelledby="setup-sheet-look">
+    // On a wide screen (Setup Sheet's wide card): Look on the left, Cell Size and Freeze on the right.
+    <div className="grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-x-6">
+      <section className="flex flex-col gap-1.5 lg:row-span-2" aria-labelledby="setup-sheet-look">
         <h3 id="setup-sheet-look" className={HEADING} style={{ color: palette.muted }}>
           Look
         </h3>
@@ -167,11 +163,14 @@ export function SheetSetupStyle({
           palette={palette}
           selected={size}
           onPick={(id) => onSize(id as SheetCellSize)}
-          rows={SIZES.map((x) => ({ id: x.id, label: x.label, detail: x.hint }))}
+          rows={CELL_SIZE_OPTIONS.map((x) => ({ id: x.id, label: x.label, detail: x.hint }))}
         />
       </section>
       {hasRows ? (
-        <div className="flex flex-col gap-2 border-t pt-4" style={{ borderColor: palette.border }}>
+        <div
+          className="flex flex-col gap-2 border-t pt-4 lg:col-start-2"
+          style={{ borderColor: palette.border }}
+        >
           <SwitchRow checked={freeze} onChange={onFreeze} className="cursor-pointer">
             <span className="block text-[13px] font-semibold" style={{ color: palette.text }}>
               Freeze Header Row
