@@ -7,7 +7,6 @@ import type { ItemTypeDef } from '@livediagram/items';
 import { CardSizeOptions, SwimlaneOptions } from '@/components/palette/plan-menu-parts';
 import type { PlanPalette } from './plan-palette';
 import type { SetupLayout } from './setup-board';
-import { SetupFillTabOption } from './SetupFillTabOption';
 
 const HEADING = 'text-[11px] font-semibold uppercase tracking-wider';
 
@@ -15,8 +14,6 @@ export function SetupLayoutStep({
   layout,
   types,
   allTypes,
-  others,
-  saving,
   palette,
   onChange,
 }: {
@@ -24,20 +21,16 @@ export function SetupLayoutStep({
   // The card types chosen in step 1 (what the swimlanes can group by), and every type of the document.
   types: readonly ItemTypeDef[];
   allTypes: readonly ItemTypeDef[];
-  // The other elements on the tab: what Fill Tab would delete.
-  others: number;
-  // Run again on a board that has columns (Save Board).
-  saving: boolean;
   palette: PlanPalette;
   onChange: (next: SetupLayout) => void;
 }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <p className="text-[13px]" style={{ color: palette.muted }}>
         How the board is laid out. It starts as the board is now; every choice can change later from
         its cog.
       </p>
-      <section className="flex flex-col gap-1.5" aria-labelledby="setup-swimlanes">
+      <section className="flex flex-col gap-2.5" aria-labelledby="setup-swimlanes">
         <h3 id="setup-swimlanes" className={HEADING} style={{ color: palette.muted }}>
           Swimlanes
         </h3>
@@ -58,7 +51,7 @@ export function SetupLayoutStep({
           />
         </div>
       </section>
-      <section className="flex flex-col gap-1.5" aria-labelledby="setup-card-size">
+      <section className="flex flex-col gap-2.5" aria-labelledby="setup-card-size">
         <h3 id="setup-card-size" className={HEADING} style={{ color: palette.muted }}>
           Card Display
         </h3>
@@ -73,13 +66,6 @@ export function SetupLayoutStep({
           />
         </div>
       </section>
-      <SetupFillTabOption
-        on={layout.fillTab}
-        others={others}
-        saving={saving}
-        palette={palette}
-        onChange={(fillTab) => onChange({ ...layout, fillTab })}
-      />
     </div>
   );
 }

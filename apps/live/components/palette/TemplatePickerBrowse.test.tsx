@@ -5,7 +5,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   POPULAR_TEMPLATE_KINDS,
   TEMPLATES,
-  templateCategory,
+  TEMPLATE_CATEGORIES,
+  isInTemplateCategory,
   type TemplateCategory,
 } from '@livediagram/templates';
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
@@ -33,7 +34,7 @@ const ALL_MODES: TemplateModeFilter = {
 };
 const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>
-  TEMPLATES.filter((t) => t.kind !== 'blank' && templateCategory(t.kind) === c);
+  TEMPLATES.filter((t) => isInTemplateCategory(t.kind, c));
 
 function Shelf({
   initial = null,
@@ -73,7 +74,7 @@ describe('the blanks', () => {
     const commit = vi.fn();
     render(<Shelf onCommit={commit} />);
     const tiles = screen.getAllByRole('button', { name: /Browse .* templates/ })[0]!.closest('ul')!;
-    expect(tiles.children).toHaveLength(8);
+    expect(tiles.children).toHaveLength(TEMPLATE_CATEGORIES.length);
     expect(stage().textContent).toContain('Popular');
     for (const title of ['Blank Whiteboard', 'Blank Illustration']) {
       expect(tiles.textContent).not.toContain(title);

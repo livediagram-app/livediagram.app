@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, presetSetup } from '@livediagram/items';
+import { ITEM_TYPES, defaultCatalogue, presetSetup } from '@livediagram/items';
 import { fakeApi } from '../testing/fake-api';
 import { bringBoardCardTypes } from './brought-types';
 
@@ -51,17 +51,17 @@ describe('bringBoardCardTypes', () => {
     });
     expect(await bringBoardCardTypes(a, D, [board('kanban')])).toEqual(['task', 'action']);
     expect(saved).toEqual(['task', 'action']);
-    expect(calls.sort()).toEqual(['GET document', 'GET items', 'PUT item-types']);
+    expect(calls.sort()).toEqual(['GET document', 'PUT item-types']);
   });
 
-  it('adds only what is missing to a document with cards, after the default types', async () => {
+  it('adds only what is missing, after the types the document has', async () => {
     let saved: string[] = [];
     const { api: a } = api(
       async (r) => {
         saved = await savedIds(r);
         return Response.json({ itemTypes: null });
       },
-      { itemTypes: null, items: [{ id: 'i1' }] },
+      { itemTypes: defaultCatalogue(), items: [{ id: 'i1' }] },
     );
     expect(await bringBoardCardTypes(a, D, [board('bug-triage')])).toEqual(['bug']);
     expect(saved).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
@@ -69,20 +69,20 @@ describe('bringBoardCardTypes', () => {
 
   it('writes nothing when the board brings nothing new', async () => {
     const { api: a, calls } = api(() => Response.json({ itemTypes: null }));
-    const known = { stored: null, hasCards: true };
+    const known = { stored: defaultCatalogue() };
     expect(await bringBoardCardTypes(a, D, [board('retro')], known)).toEqual([]);
     expect(calls).toEqual([]);
   });
 
   it('leaves the board as made when the save is refused', async () => {
     const { api: a } = api(() => Response.json({ error: 'forbidden' }, { status: 403 }));
-    const known = { stored: null, hasCards: false };
+    const known = { stored: null };
     expect(await bringBoardCardTypes(a, D, [board('bug-triage')], known)).toEqual([]);
   });
 
   it('lets a failure that is not a refusal throw', async () => {
     const { api: a } = api(() => new Response('down', { status: 503 }));
-    const known = { stored: null, hasCards: false };
+    const known = { stored: null };
     await expect(bringBoardCardTypes(a, D, [board('bug-triage')], known)).rejects.toThrow();
   });
 

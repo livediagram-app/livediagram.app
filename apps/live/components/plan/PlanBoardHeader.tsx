@@ -20,7 +20,8 @@ import { lucideGlyph } from '@livediagram/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
 import { BoardTitle } from './BoardTitle';
-import { InMenuBox } from './menu-name-slot';
+import { useInHeaderBand, useMenuNameSlot } from './menu-name-slot';
+import { createPortal } from 'react-dom';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
 import { BAND_CONTROLS_CLASS, bandControlsProps } from './band-controls';
@@ -41,9 +42,8 @@ export function PlanBoardHeader({
   canFilterMine,
   canEdit,
   loadFailed,
-  widgetDropAt,
-  flashWidget,
   selected = false,
+  movable = true,
   canRename = false,
   onWidgets,
   onSetup,
@@ -64,12 +64,10 @@ export function PlanBoardHeader({
   canFilterMine: string | null;
   canEdit: boolean;
   loadFailed: boolean;
-  // Where a widget dragged from the palette would land in the zone.
-  widgetDropAt: number | null;
-  // A widget placed again that the board already had, flashed so it is found.
-  flashWidget: BoardWidgetKind | null;
   // The board is selected: the header shows its move handle.
   selected?: boolean;
+  // The board can be moved: not while it is maximised or fills its tab, so no handle then.
+  movable?: boolean;
   // A double-click on the title (or the header's empty space) renames the board: someone who may edit, in Plan
   // mode (docs/specs/026-plan/plan-board.md "What the board shows").
   canRename?: boolean;
@@ -102,6 +100,33 @@ export function PlanBoardHeader({
     onOpenItem,
   };
   const [renaming, setRenaming] = useState(false);
+  // In a header band, the title and widgets ride in the menu box (menu-name-slot).
+  const nameSlot = useMenuNameSlot();
+  const [bandMarker, inBand] = useInHeaderBand();
+  const inBox = inBand && !!nameSlot;
+  // The board's widgets: in the header on a canvas; in a header band, in the controls card before the cog.
+  const widgetZone = (
+    <BoardWidgetZone
+      widgets={widgets}
+      canEdit={canEdit}
+      selected={selected}
+      palette={palette}
+      onChange={(next) => {
+        // Taking a widget off clears what it narrowed.
+        const kept: QuickFilter = { ...quick };
+        if (!next.includes('filter')) delete kept.text;
+        if (!next.includes('mine')) delete kept.mine;
+        if (!next.includes('types')) delete kept.type;
+        if (!next.includes('due')) delete kept.due;
+        if (!next.includes('priorities')) delete kept.priority;
+        if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
+        if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
+        onWidgets(next);
+      }}
+      render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
+    />
+  );
+
   // The header's buttons stay on screen when the board runs past the canvas's right edge (a phone, zoomed in).
   const headerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -127,7 +152,7 @@ export function PlanBoardHeader({
     >
       {/* While the board is selected, a grip before the title says where to take hold of it: the
           header moves the board, its columns and cards do not. */}
-      {selected ? (
+      {selected && movable ? (
         <span
           data-board-grip
           className="-ml-2 flex h-7 w-5 shrink-0 cursor-move items-center justify-center rounded"
@@ -137,55 +162,64 @@ export function PlanBoardHeader({
           <GripIcon />
         </span>
       ) : null}
-      {/* Title and widgets: in a header band, they stop short of the palette strip floating over the header. */}
+      {/* Title and widgets: in a header band they ride in the menu box together (menu-name-slot), the widgets after
+          the name behind a hairline, so the header's top row is one card; on the canvas they sit in the header. */}
+      <span ref={bandMarker} hidden />
+      {inBox && nameSlot
+        ? createPortal(
+            <>
+              <span data-board-title className="contents">
+                <BoardTitle
+                  title={setup.title}
+                  editing={renaming}
+                  selected={selected}
+                  palette={palette}
+                  inBox
+                  onStart={canRename ? () => setRenaming(true) : undefined}
+                  onRename={(t) => onSetup({ ...setup, title: t }, 'Title')}
+                  onDone={() => setRenaming(false)}
+                />
+              </span>
+            </>,
+            nameSlot,
+          )
+        : null}
       <div className="flex min-w-0 max-w-[var(--plan-band-mid,none)] flex-1 items-center gap-3">
-        {/* In a header band, the title rides in the menu box (menu-name-slot). */}
-        <InMenuBox
-          render={(inBox) => (
+        {inBox ? null : (
+          <>
             <span data-board-title className="contents">
               <BoardTitle
                 title={setup.title}
                 editing={renaming}
                 selected={selected}
                 palette={palette}
-                inBox={inBox}
-                onRename={(title) => onSetup({ ...setup, title }, 'Title')}
+                inBox={false}
+                onRename={(t) => onSetup({ ...setup, title: t }, 'Title')}
                 onDone={() => setRenaming(false)}
               />
             </span>
-          )}
-        />
-        {/* No press guard here: a press on the zone's empty space selects and moves the board like the
-          rest of the header; each widget keeps its own presses. */}
-        <div className="flex min-w-0 flex-1 items-center">
-          <BoardWidgetZone
-            widgets={widgets}
-            canEdit={canEdit}
-            selected={selected}
-            palette={palette}
-            dropAt={widgetDropAt}
-            flash={flashWidget}
-            onChange={(next) => {
-              // Taking a widget off clears what it narrowed.
-              const kept: QuickFilter = { ...quick };
-              if (!next.includes('filter')) delete kept.text;
-              if (!next.includes('mine')) delete kept.mine;
-              if (!next.includes('types')) delete kept.type;
-              if (!next.includes('due')) delete kept.due;
-              if (!next.includes('priorities')) delete kept.priority;
-              if (!next.includes('people') && !next.includes('unassigned')) delete kept.person;
-              if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
-              onWidgets(next);
-            }}
-            render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
-          />
-        </div>
+            {/* No press guard here: a press on the zone's empty space selects and moves the board like the
+                rest of the header; each widget keeps its own presses. */}
+            <div className="flex min-w-0 flex-1 items-center">{widgetZone}</div>
+          </>
+        )}
       </div>
       {/* In a header band, a card like the menu box (band-controls.ts). */}
       <div
         {...bandControlsProps(palette)}
         className={`ml-auto flex shrink-0 items-center gap-3 ${BAND_CONTROLS_CLASS}`}
       >
+        {inBox ? (
+          // In a header band the widgets ride here, before the cog, behind a hairline: the top row's right is one card.
+          <span
+            data-widget-zone=""
+            className="flex min-w-0 max-w-[min(56vw,46rem)] items-center border-r pr-2"
+            style={{ borderColor: palette.border }}
+            onPointerDown={stop}
+          >
+            {widgetZone}
+          </span>
+        ) : null}
         {loadFailed || (setup.hideWriting && canEdit) ? (
           <div className="flex shrink-0 items-center gap-2" onPointerDown={stop}>
             {loadFailed ? (

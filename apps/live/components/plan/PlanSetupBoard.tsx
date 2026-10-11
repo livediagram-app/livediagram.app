@@ -14,7 +14,6 @@ import type { SetupColumn, SetupLayout } from './setup-board';
 import { SetupColumnsStep, SetupTypesStep } from './setup-board-steps';
 import { SetupLayoutStep } from './SetupLayoutStep';
 import { SetupCard } from './SetupCard';
-import { useTabElementCount } from '@/hooks/plan/plan-cover-store';
 
 type Step = 'types' | 'columns' | 'layout';
 const STEPS: { id: Step; label: string }[] = [
@@ -33,7 +32,6 @@ export function PlanSetupBoard({
   initial,
   onCancel,
   layout: startLayout,
-  otherElements,
 }: {
   palette: PlanPalette;
   canEdit: boolean;
@@ -44,9 +42,6 @@ export function PlanSetupBoard({
   onSetUp: (columns: SetupColumn[], typeIds: string[], layout: SetupLayout) => void;
   // The board's layout as it is (setupLayoutOf): what step 3 starts from, and what skipping it keeps.
   layout: SetupLayout;
-  // The other elements on the tab: what Fill Tab would delete (its warning). Absent, the open tab's count less this
-  // board (plan-cover-store.ts), read here only, so a board never re-renders for an element added elsewhere.
-  otherElements?: number;
   // Add New Card Type, under the card types (absent while the catalogue is full).
   onCreateType?: (() => void) | undefined;
   // Run again on a board that has columns: what it starts from (the board as it is), and Cancel. Its last button
@@ -58,8 +53,6 @@ export function PlanSetupBoard({
   const [typeIds, setTypeIds] = useState<string[]>(() => initial?.typeIds ?? []);
   const [columns, setColumns] = useState<SetupColumn[]>(() => initial?.columns ?? []);
   const [layout, setLayout] = useState<SetupLayout>(startLayout);
-  const tabElements = useTabElementCount();
-  const others = otherElements ?? Math.max(0, tabElements - 1);
   // A type made from here (Add New Card Type) joins the picks once it is saved: any type the catalogue gains while
   // the board is being set up starts ticked. Adjusted during render when the catalogue changes.
   const [known, setKnown] = useState<readonly ItemTypeDef[]>(types);
@@ -171,8 +164,6 @@ export function PlanSetupBoard({
           layout={layout}
           types={types.filter((t) => typeIds.includes(t.id))}
           allTypes={types}
-          others={others}
-          saving={!!initial}
           palette={palette}
           onChange={setLayout}
         />

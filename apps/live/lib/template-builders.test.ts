@@ -131,6 +131,14 @@ const ALL_KINDS = [
   'timesheet',
   'contact-list',
   'task-tracker',
+  'invoice',
+  'expense-report',
+  'loan-calculator',
+  'sales-pipeline',
+  'inventory',
+  'guest-list',
+  'grade-book',
+  'habit-tracker',
 ] as const satisfies readonly TemplateKind[];
 
 // Real exhaustiveness check: any TemplateKind missing from

@@ -29,6 +29,7 @@ import { SheetCells } from './SheetCells';
 import { SheetHeaders } from './SheetHeaders';
 import { SheetSelectionLayer, type Outline } from './SheetSelectionLayer';
 import { SheetCellEditor } from './SheetCellEditor';
+import { SheetChartsLayer } from './SheetChartsLayer';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { ADD_ROWS_PX, SheetAddRows } from './SheetAddRows';
 import { cellBox, pageRows, scrollToReveal, totalSize, visibleWindow } from './sheet-geometry';
@@ -427,6 +428,8 @@ export function SheetGrid({
                 />
               ) : null}
               <SheetCardRows />
+              {/* The charts that sit in this Sheet, over its cells (sheet.md "Charts"). */}
+              <SheetChartsLayer fontFamily={fontFamily} />
               {pointer.preview?.kind === 'fill' ? (
                 <SheetSelectionLayer
                   geometry={c.geometry}

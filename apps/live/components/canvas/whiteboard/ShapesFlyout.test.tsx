@@ -165,7 +165,7 @@ describe('the Shapes flyout', () => {
     const { m } = renderDock();
     openByPress();
     fireEvent.change(field(), { target: { value: 'zzqx' } });
-    expect(screen.getByText('No shapes match')).toBeTruthy();
+    expect(screen.getByText('No shapes match “zzqx”')).toBeTruthy();
     expect(options()).toHaveLength(0);
     fireEvent.keyDown(field(), { key: 'Enter' });
     expect(m.pickSearchedShape).not.toHaveBeenCalled();

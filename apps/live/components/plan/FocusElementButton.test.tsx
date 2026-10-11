@@ -5,6 +5,7 @@ import { track } from '@/lib/telemetry';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import { FocusElementButton } from './FocusElementButton';
 import { planPalette } from './plan-palette';
+import { DashboardContext, type DashboardContextValue } from './dashboard/dashboard-context';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
@@ -31,6 +32,17 @@ describe('Focus', () => {
 
   it('is not drawn outside an editor canvas', () => {
     render(<FocusElementButton bounds={bounds} kind="Board" palette={planPalette('light')} />);
+    expect(screen.queryByRole('button', { name: 'Focus Board' })).toBeNull();
+  });
+
+  it('is not drawn in a Dashboard slot, whose page covers the canvas', () => {
+    render(
+      <CanvasFocusProvider value={vi.fn()}>
+        <DashboardContext.Provider value={{} as DashboardContextValue}>
+          <FocusElementButton bounds={bounds} kind="Board" palette={planPalette('light')} />
+        </DashboardContext.Provider>
+      </CanvasFocusProvider>,
+    );
     expect(screen.queryByRole('button', { name: 'Focus Board' })).toBeNull();
   });
 });

@@ -1,11 +1,6 @@
-import {
-  freshBoardSetup,
-  isPlanViewId,
-  planBoardHeightFor,
-  planBoardWidthFor,
-  planViewSize,
-} from '@livediagram/items';
-import { SHAPE_DEFAULT_SIZE } from '@livediagram/document';
+import { dashboardItemOf, placeOnDashboard } from '@/hooks/plan/dashboard-drop';
+import { planBoardPlacement } from '@/lib/plan-board-placement';
+import { isPlanViewId, planViewSize } from '@livediagram/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -37,7 +32,12 @@ import { getSticker, stickerDropSize } from '@/lib/stickers';
 import { track, titleCaseType } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { useArrowConnect } from '@/app/document/[id]/useArrowConnect';
-import { isPlacedSheetStart, placeNewSheet } from '@/lib/sheet-seeds';
+import {
+  BLANK_SHEET_CHOICE,
+  isPlacedSheetStart,
+  placeNewSheet,
+  sheetTitleForTab,
+} from '@/lib/sheet-seeds';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
@@ -47,16 +47,6 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
 // addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
 // so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
-// A board placed from the palette: its preset, empty, at least as wide as its columns need, and taller while it
-// has no columns yet (planBoardHeightFor).
-function planBoardPlacement(preset: string | undefined) {
-  const planBoard = freshBoardSetup(preset);
-  return {
-    planBoard,
-    width: Math.max(SHAPE_DEFAULT_SIZE['plan-board'].width, planBoardWidthFor(planBoard)),
-    height: planBoardHeightFor(planBoard),
-  };
-}
 
 // A plan view placed from the palette (docs/specs/026-plan/plan-views.md): its tile's view, at its size.
 function planViewPlacement(view: string | undefined) {
@@ -137,6 +127,8 @@ export function useElementCreation(opts: {
     },
   ) => {
     if (editsBlocked) return;
+    // On a Dashboard a plan view, board or Sheet fills a slot (hooks/plan/dashboard-drop.ts).
+    if (placeOnDashboard(dashboardItemOf(kind, opts?.plan))) return;
     beginDraw({
       type: 'shape',
       kind,
@@ -307,6 +299,8 @@ export function useElementCreation(opts: {
   // (docs/specs/021-event-storming/event-storming.md); absent for the plain sticky tile / the N shortcut.
   const addSticky = (fill?: string, esKind?: EventStormingNoteKind) => {
     if (editsBlocked) return;
+    // On a Dashboard a sticky is a note in a slot.
+    if (placeOnDashboard(dashboardItemOf('sticky'))) return;
     beginDraw({ type: 'sticky', ...(fill ? { fill } : {}), ...(esKind ? { esKind } : {}) });
   };
 
@@ -438,14 +432,17 @@ export function useElementCreation(opts: {
                 ? { estimateScale: art.choice as EstimateScale }
                 : {}),
               // A board wide enough for its columns (docs/specs/026-plan/plan-board.md).
-              ...(kind === 'plan-board' ? planBoardPlacement(art?.choice) : {}),
+              ...(kind === 'plan-board' ? planBoardPlacement(art?.choice, activeTab.name) : {}),
               ...(kind === 'plan-view' ? planViewPlacement(art?.choice) : {}),
               // A Sheet names a new sheet (docs/specs/029-sheets/sheet.md "Placing a sheet").
               ...(kind === 'plan-sheet'
                 ? {
-                    planSheet: placeNewSheet(
-                      isPlacedSheetStart(art?.choice) ? { start: art.choice } : {},
-                    ),
+                    // Named after its tab (docs/specs/029-sheets/sheet.md "Placing a sheet").
+                    planSheet: placeNewSheet({
+                      title: sheetTitleForTab(activeTab.name, art?.choice),
+                      ...(isPlacedSheetStart(art?.choice) ? { start: art.choice } : {}),
+                      ...(art?.choice === BLANK_SHEET_CHOICE ? { blank: true as const } : {}),
+                    }),
                   }
                 : {}),
             },

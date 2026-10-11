@@ -28,7 +28,7 @@ import { rankTrend, windowLabel } from './windows';
 // vote counts the reader's final choice, not every tap.
 //
 // Two more read the help that lives inside the editor: the articles opened
-// from it (`UI·Opened·<slug>`, the same ids), and the welcome tour's steps in
+// from it (`UI·Opened·<slug>`, the same ids), and the Diagram tour's steps in
 // the order it shows them, a funnel whose fall-off says where people stop.
 export const GROUPS: MetricGroup[] = [
   {
@@ -60,7 +60,7 @@ export function HelpView({
       <p className="text-sm text-slate-500 dark:text-slate-400">
         How the help centre is doing, for <span className="font-medium">{windowLabel(active)}</span>
         : reads and per-article feedback, the articles opened from inside the editor, and how far
-        people get through the welcome tour.
+        people get through the Diagram tour.
       </p>
       <p className="mt-1 text-xs text-slate-400">
         Rows before late September 2026 for format-painter and command-palette also count the Tips

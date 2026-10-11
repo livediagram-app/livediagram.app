@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { DialogCloseButton } from '@livediagram/ui';
+import { DialogCloseButton, NoMatches } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import {
   SettingsCategoryList,
@@ -171,7 +171,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // Show Tours › "Welcome" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
+  // Show Tours › "Diagram" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
   // resolved, and promises it will be offered, so closing the dialog has to
   // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
   // the per-tab pending flag, which only /new sets for a brand-new user. A
@@ -275,9 +275,13 @@ export function SettingsDialog({
               searching={result.searching}
             />
             {isMobile && result.searching && result.totalMatches === 0 ? (
-              <p className="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
-                No settings match “{query.trim()}”.
-              </p>
+              <NoMatches
+                size="regular"
+                className="mt-4"
+                things="settings"
+                query={query}
+                onClear={() => setQuery('')}
+              />
             ) : null}
           </div>
         ) : null}
@@ -323,9 +327,12 @@ export function SettingsDialog({
           </div>
         ) : result.searching && !isMobile ? (
           <div className="flex min-w-0 flex-1 items-center justify-center px-6 py-10">
-            <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-              No settings match “{query.trim()}”.
-            </p>
+            <NoMatches
+              size="regular"
+              things="settings"
+              query={query}
+              onClear={() => setQuery('')}
+            />
           </div>
         ) : null}
       </div>

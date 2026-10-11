@@ -72,7 +72,6 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           {...(template ? { template } : {})}
           types={ctx.types}
           itemCount={ofType.length}
-          canDelete={ctx.types.length > 1}
           onSave={(next) => {
             ctx.itemTypes.saveType(next);
             // Made from a board's Add a Card menu: that board takes it.

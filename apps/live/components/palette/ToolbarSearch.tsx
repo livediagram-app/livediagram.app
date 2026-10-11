@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 import { editorModeLabel, type EditorMode, type Element } from '@livediagram/document';
-import { HoverCard, SearchIcon } from '@livediagram/ui';
+import { CompactEmptyState, HoverCard, NoMatches, SearchIcon } from '@livediagram/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
@@ -127,16 +127,26 @@ export function ToolbarSearchPanel({
       ) : null}
       {here.length > 0 ? (
         <PaletteTileGrid tiles={here} actions={actions} pendingDraw={pendingDraw} />
+      ) : // The shared empty state (docs/specs/004-interface-design/empty-states.md).
+      browsing ? (
+        <CompactEmptyState
+          size="small"
+          icon={<SearchIcon />}
+          title={
+            elsewhere.length > 0
+              ? `No ${modeName} elements on this tab yet`
+              : 'No elements on this tab yet'
+          }
+          description="Type to find any element."
+        />
+      ) : elsewhere.length > 0 ? (
+        <NoMatches
+          things={`${modeName} elements`}
+          query={query}
+          hint={`Other modes have ${elsewhere.length} below.`}
+        />
       ) : (
-        <p className="px-1 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
-          {browsing
-            ? elsewhere.length > 0
-              ? `Only elements from other modes are on this tab so far. Type to find any element.`
-              : 'Nothing on this tab yet. Type to find any element.'
-            : elsewhere.length > 0
-              ? `No ${modeName} elements match. Other modes have ${elsewhere.length} below.`
-              : 'No elements match'}
-        </p>
+        <NoMatches things="elements" query={query} onClear={() => setQuery('')} />
       )}
       {elsewhere.length > 0 ? (
         <div className="flex flex-col border-t border-slate-100 pt-2 dark:border-slate-800">

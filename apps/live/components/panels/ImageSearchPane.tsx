@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, TextInput } from '@livediagram/ui';
+import { Button, NoMatches, TextInput } from '@livediagram/ui';
 import { useImageSearch } from '@/hooks/ui/useImageSearch';
 import { licenceLabel, tileLabelFor, type OpenverseImage } from '@/lib/image-search/openverse';
 import type { PickedImage } from '@/lib/upload-image';
@@ -82,7 +82,12 @@ export function ImageSearchPane({
         ) : search.status === 'error' && search.error ? (
           <p className={ERROR_BOX}>{SEARCH_ERROR_COPY[search.error]}</p>
         ) : search.status === 'ready' && search.results.length === 0 ? (
-          <p>No images match “{search.query}”. Try a broader word.</p>
+          <NoMatches
+            size="regular"
+            things="images"
+            query={search.query}
+            hint="Try a broader word."
+          />
         ) : null}
       </div>
 

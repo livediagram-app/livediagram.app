@@ -18,7 +18,6 @@ function editor(type: ItemTypeDef = ITEM_TYPES[1]!) {
       type={type}
       types={ITEM_TYPES}
       itemCount={0}
-      canDelete
       onSave={vi.fn()}
       onDelete={() => {}}
       onClose={() => {}}
@@ -47,7 +46,6 @@ describe('the type editor’s tabs', () => {
         type={null}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete={false}
         onSave={vi.fn()}
         onDelete={() => {}}
         onClose={() => {}}
@@ -187,7 +185,6 @@ describe('deleting a type', () => {
         type={ITEM_TYPES[1]!}
         types={ITEM_TYPES}
         itemCount={2}
-        canDelete
         onSave={vi.fn()}
         onDelete={onDelete}
         onClose={() => {}}
@@ -217,7 +214,6 @@ describe('the Display tab', () => {
         type={ITEM_TYPES[1]!}
         types={ITEM_TYPES}
         itemCount={0}
-        canDelete
         onSave={onSave}
         onDelete={() => {}}
         onClose={() => {}}

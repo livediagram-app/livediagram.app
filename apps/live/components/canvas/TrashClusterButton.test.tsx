@@ -8,7 +8,9 @@ import { PlanCardsClusterStrip } from './PlanCardsClusterStrip';
 // pointerenter on it) still sees "Let go to trash it".
 const plan = {
   draggingItemId: null as string | null,
-  items: new Map([['a', { id: 'a', fields: { status: 'trash' } }]]),
+  canEdit: true,
+  types: [{ id: 'task' }] as unknown[],
+  items: new Map([['a', { id: 'a', fields: { status: 'trash' } }]]) as Map<string, unknown>,
 };
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 
@@ -45,6 +47,34 @@ describe('the Trash in Plan’s strip', () => {
     cleanup();
     strip(false);
     expect(screen.queryByRole('button', { name: /Trash/ })).toBeNull();
+  });
+
+  // docs/specs/026-plan/item-types.md "The type catalogue": with no card types, New Card and Find a Card would
+  // surface nothing; the Trash stays only while it holds cards to restore.
+  it('shows only Card Types with no card types, and the Trash while it holds cards', () => {
+    plan.draggingItemId = null;
+    plan.types = [];
+    const labels = () => screen.getAllByRole('button').map((b) => b.getAttribute('aria-label'));
+    const withNewCard = () =>
+      render(
+        <PlanCardsClusterStrip
+          finderOpen={false}
+          onToggleFinder={() => {}}
+          typesOpen={false}
+          onToggleTypes={() => {}}
+          trash={{ open: false, onToggle: () => {} }}
+          newCard={{ open: false, onToggle: () => {} }}
+        />,
+      );
+    withNewCard();
+    expect(labels()).toEqual(['Open the Trash, 1 card', 'Open Card Types']);
+    cleanup();
+    const held = plan.items;
+    plan.items = new Map();
+    withNewCard();
+    expect(labels()).toEqual(['Open Card Types']);
+    plan.items = held;
+    plan.types = [{ id: 'task' }];
   });
 
   it('lights while the dragged card is over it, wherever the pointer is captured', () => {

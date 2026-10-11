@@ -11,8 +11,8 @@
 // Category artwork is the FIRST tile in the group, so a category always looks
 // like what it contains and no separate icon set can drift from the tiles.
 
+import { BackBar } from '@/components/primitives/BackBar';
 import type { ReactNode } from 'react';
-import { ChevronIcon } from '@/components/primitives/ChevronIcon';
 import { HoverCard } from '@livediagram/ui';
 
 export type ToolsCategory = {
@@ -73,10 +73,9 @@ export function ToolsCategoryGrid({
   );
 }
 
-// "Tools › Write", where Tools goes back. Also the label for where you are, so
-// a drilled-in palette never leaves you guessing which set you're looking at.
-// `root` is the tab's own name, since Icons and Technology drill in the same
-// way ("Icons › People").
+// "Tools › Write", where Tools goes back: the shared BackBar, as every two-level browse has (Export, Import, themes,
+// templates, placement). Also the label for where you are, so a drilled-in palette never leaves you guessing which set
+// you're looking at. `root` is the tab's own name, since Icons and Technology drill in the same way ("Icons › People").
 export function ToolsBreadcrumb({
   root = 'Tools',
   label,
@@ -86,26 +85,5 @@ export function ToolsBreadcrumb({
   label: string;
   onBack: () => void;
 }) {
-  return (
-    // A bar, not a line of small print: the "back" half is the most-used
-    // control on this screen, so it gets a surface, a full-height target, and
-    // a hover state you can see coming.
-    <div className="mb-2 flex items-center gap-1 rounded-lg bg-slate-100 p-1 text-xs dark:bg-slate-800/70">
-      <button
-        type="button"
-        onClick={onBack}
-        className="flex items-center gap-1 rounded-md px-2 py-1.5 font-medium text-slate-600 transition hover:bg-white hover:text-brand-700 hover:shadow-sm dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-brand-200"
-      >
-        {/* The shared disclosure chevron, turned to point back. */}
-        <span className="rotate-90">
-          <ChevronIcon open={false} />
-        </span>
-        {root}
-      </button>
-      <span aria-hidden className="text-slate-400">
-        ›
-      </span>
-      <span className="px-1 font-semibold text-slate-800 dark:text-slate-100">{label}</span>
-    </div>
-  );
+  return <BackBar label={root} current={label} onClick={onBack} gap="tight" />;
 }

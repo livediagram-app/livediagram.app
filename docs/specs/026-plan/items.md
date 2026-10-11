@@ -283,9 +283,9 @@ author redaction, and the same thread list, composer and resolve control the com
   puts that card in the Trash (restorable from there) without leaving the list.
 - Empty: the shared empty state (as the Trash's: an icon badge, a title and a line), filling the list's height:
   **No cards yet** ("Add one from a board, or drag one in from the palette."); a search matching nothing, **No cards
-  match** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these filters**
-  ("Remove a filter, or clear the search, to see more."); no strays, **Every card is on a board** ("None of them sits
-  off a board here.").
+  match “<words>”** ("Try another word, a number or a card type."); filters matching nothing, **No cards match these
+  filters** ("Remove a filter, or clear the search, to see more."); no strays, **No cards off a board** ("Every card
+  here is on a board."). The copy follows [Empty states](../004-interface-design/empty-states.md).
 - Opening it is tracked as `Plan · Opened · CardFinder`.
 
 ## Who may do what

@@ -46,6 +46,7 @@ import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { AnimationSections } from '@/components/palette/AnimationSections';
+import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { LegendTextSize } from '@/components/palette/TypographySections';
@@ -196,6 +197,7 @@ export function ElementDataSections({
   flyoutProps,
 }: ElementDataSectionsProps) {
   const shapeTarget = target.type === 'shape' ? target : null;
+  const covering = useCoversCanvas(target.id);
   // What an uncoloured slice / series shows as, so the swatches in the data
   // rows match the chart. The chart's own palette when it has one (docs/specs/009-elements/pie-chart.md);
   // otherwise the built-in ramp, which is what these rows have always used.
@@ -578,14 +580,17 @@ export function ElementDataSections({
         </MenuFlyoutSection>
       ) : null}
       {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
-            element takes, such as Shape Animation and Text Animation for a labelled shape. */}
-      <AnimationSections
-        elements={[target]}
-        keyPrefix=""
-        sectionProps={sectionProps}
-        flyoutProps={flyoutProps}
-        handlers={props}
-      />
+            element takes, such as Shape Animation and Text Animation for a labelled shape. None while it covers
+            the canvas (maximised, or Fill Tab): it does not animate there. */}
+      {covering ? null : (
+        <AnimationSections
+          elements={[target]}
+          keyPrefix=""
+          sectionProps={sectionProps}
+          flyoutProps={flyoutProps}
+          handlers={props}
+        />
+      )}
       {/* Colours — text / background / border swatches. Boxed elements that
             support colours (excludes images). Icons included: Text tints a
             line-art glyph, Background / Border paint the icon's box. Pie charts

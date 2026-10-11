@@ -1,5 +1,9 @@
 import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
-import { PLAN_TEMPLATE_KINDS, templateEditorMode } from '@livediagram/templates';
+import {
+  PLAN_TEMPLATE_KINDS,
+  isSpreadsheetPlanTemplate,
+  templateEditorMode,
+} from '@livediagram/templates';
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
@@ -34,13 +38,14 @@ const inside = (inner: Element, outer: Element) => {
 // its use wants, and seed items that land in the board's columns. Blank Plan is the exception
 // (docs/specs/026-plan/plan-templates.md "Blank Plan"): an empty tab, so Plan offers Start Planning; and the
 // spreadsheet templates ("Spreadsheet templates") hold a Sheet in place of a board.
-const SHEET_KINDS = ['budget-planner', 'timesheet', 'contact-list', 'task-tracker'] as const;
+const SHEET_KINDS = PLAN_TEMPLATE_KINDS.filter(isSpreadsheetPlanTemplate);
 describe('plan templates', () => {
   const kinds = PLAN_TEMPLATE_KINDS.filter(
     (kind) => kind !== 'blank-plan' && !(SHEET_KINDS as readonly string[]).includes(kind),
   );
 
   it('makes each spreadsheet template a Sheet and no board, opening in Plan', () => {
+    expect(SHEET_KINDS).toHaveLength(12);
     for (const kind of SHEET_KINDS) {
       const els = buildTemplate(kind, 0, 0);
       expect(shapesOf(els, 'plan-sheet'), kind).toHaveLength(1);
@@ -72,7 +77,8 @@ describe('plan templates', () => {
     };
     expect(board.planBoard.hideWriting).toBe(true);
     expect('voting' in board.planBoard).toBe(false);
-    expect(retro.some((el) => el.type === 'sticky')).toBe(true);
+    // Its how-to is a note on the template's Overview, not beside the board (plan-tabs.md "Templates").
+    expect(retro.some((el) => el.type === 'sticky')).toBe(false);
   });
 });
 

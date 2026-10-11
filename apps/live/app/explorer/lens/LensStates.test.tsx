@@ -48,7 +48,7 @@ describe('FilteredEmpty', () => {
     render(<FilteredEmpty issues={issues} onClear={onClear} />);
     expect(screen.getByText(FILTERED_EMPTY_TITLE)).toBeTruthy();
     expect(screen.getByText('“colour:red” isn’t a filter, so it’s searched as text.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
     expect(onClear).toHaveBeenCalledOnce();
   });
 });

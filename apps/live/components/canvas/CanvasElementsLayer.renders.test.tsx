@@ -273,3 +273,25 @@ describe('drawing a drag preview', () => {
     expect(drawnAs.get(a.id)).toBe(a);
   });
 });
+
+// docs/specs/029-sheets/sheet.md "Charts": a chart that sits in a Sheet on the tab is the Sheet's to draw.
+describe('charts that sit in a Sheet', () => {
+  it('are not drawn on the canvas while their Sheet is on the tab; floating and orphaned ones are', () => {
+    const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };
+    const sheet = { ...createShape('plan-sheet', 0, 0), planSheet: { sheetId: 'sheet0001' } };
+    const chartOf = (sheetId: string, anchored: boolean) => ({
+      ...createShape('bar-chart', 0, 0),
+      chartSource: { sheetId, range },
+      ...(anchored ? { sheetAnchor: { x: 0, y: 0 } } : {}),
+    });
+    const inSheet = chartOf('sheet0001', true);
+    const floating = chartOf('sheet0001', false);
+    const orphan = chartOf('sheet0002', true);
+    drawnAs.clear();
+    mount(layerProps({ elements: [sheet, inSheet, floating, orphan] as Element[] }));
+    expect(drawnAs.has(sheet.id)).toBe(true);
+    expect(drawnAs.has(inSheet.id)).toBe(false);
+    expect(drawnAs.has(floating.id)).toBe(true);
+    expect(drawnAs.has(orphan.id)).toBe(true);
+  });
+});

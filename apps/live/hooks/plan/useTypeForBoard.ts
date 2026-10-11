@@ -36,11 +36,15 @@ export function withTypeOnBoard(els: Element[], boardId: string, typeId: string)
   return changed ? next : els;
 }
 
-export function useTypeForBoard(commit: (map: (els: Element[]) => Element[]) => void) {
+// `commitOn`: a change to the tab holding the board (usePlanSlice).
+export function useTypeForBoard(
+  commitOn: (boardId: string, map: (els: Element[]) => Element[]) => void,
+) {
   const [typeForBoard, setTypeForBoard] = useState<TypeForBoard | null>(null);
   const addTypeToBoard = useCallback(
-    (boardId: string, typeId: string) => commit((els) => withTypeOnBoard(els, boardId, typeId)),
-    [commit],
+    (boardId: string, typeId: string) =>
+      commitOn(boardId, (els) => withTypeOnBoard(els, boardId, typeId)),
+    [commitOn],
   );
   return { typeForBoard, setTypeForBoard, addTypeToBoard };
 }

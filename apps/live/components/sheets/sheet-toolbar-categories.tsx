@@ -38,6 +38,7 @@ import {
   NumberFormatIcon,
   PieChartIcon,
   SigmaIcon,
+  FUNCTION_FAMILY_ICONS,
   SortIcon,
   TextColourIcon,
   VAlignIcon,
@@ -219,6 +220,7 @@ export function toolbarCategories(
           separatorBefore: true,
         },
         { id: 'wr', label: 'Wrap Text', icon: <WrapIcon />, menu: 'wrap' },
+        { id: 'freeze', label: 'Freeze', icon: <FreezeIcon />, menu: 'freeze' },
         {
           id: 'clear',
           label: 'Clear Formatting',
@@ -262,24 +264,12 @@ export function toolbarCategories(
           pressed: !!c.sheet.layout.filter,
           run: () => actions.toggleFilter(),
         },
-        {
-          id: 'freeze',
-          label: 'Freeze',
-          icon: <FreezeIcon />,
-          menu: 'freeze',
-          separatorBefore: true,
-        },
-      ],
-    },
-    {
-      id: 'charts',
-      label: 'Charts',
-      icon: <BarChartIcon />,
-      buttons: [
+        // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts").
         {
           id: 'bar-chart',
           label: 'Bar Chart',
           icon: <BarChartIcon />,
+          separatorBefore: true,
           run: () => actions.insertChart('bar-chart'),
         },
         {
@@ -302,13 +292,16 @@ export function toolbarCategories(
       icon: <SigmaIcon />,
       buttons: [
         // Every function, family by family: a menu each (SheetFunctionMenu); those that do not fit fold into More.
-        ...FUNCTION_FAMILIES.map(([family]): ToolbarButton => ({
-          id: `fam-${family}`,
-          label: `${FUNCTION_FAMILY_LABELS[family]} Functions`,
-          icon: <SigmaIcon />,
-          text: FUNCTION_FAMILY_LABELS[family],
-          menu: `fn:${family}`,
-        })),
+        ...FUNCTION_FAMILIES.map(([family]): ToolbarButton => {
+          const Icon = FUNCTION_FAMILY_ICONS[family];
+          return {
+            id: `fam-${family}`,
+            label: `${FUNCTION_FAMILY_LABELS[family]} Functions`,
+            icon: <Icon />,
+            text: FUNCTION_FAMILY_LABELS[family],
+            menu: `fn:${family}`,
+          };
+        }),
         {
           id: 'fn-all',
           label: 'All Functions',

@@ -91,7 +91,7 @@ describe('the type editor’s States', () => {
 
   it('says so when the boards name no states', () => {
     render(<ItemTypeStatuses statuses={[]} excluded={[]} onChange={vi.fn()} />);
-    expect(screen.getByText(/no states to choose from/)).toBeTruthy();
+    expect(screen.getByText('No States Yet')).toBeTruthy();
   });
 
   it('Select All needs nothing listed to be off', () => {

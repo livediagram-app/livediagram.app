@@ -6,7 +6,7 @@
 // focus and the highlighted row is its active descendant, so arrows move through the rows, Enter adds the
 // highlighted one, and a press on a row adds it.
 import { useEffect } from 'react';
-import { PlusIcon } from '@livediagram/ui';
+import { NoMatches, PlusIcon } from '@livediagram/ui';
 import type { MissingStatus } from '@livediagram/items';
 
 export const HEADING =
@@ -143,9 +143,7 @@ export function ExistingStatusList({
           })}
         </ul>
       ) : (
-        <p className="rounded-md border border-dashed border-slate-200 px-2 py-2 text-[12px] text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          No existing status matches “{query.trim()}”.
-        </p>
+        <NoMatches things="states" query={query} hint="Add Column makes it a new state." />
       )}
     </div>
   );

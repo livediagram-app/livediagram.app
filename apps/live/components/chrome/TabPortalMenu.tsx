@@ -1,4 +1,5 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import type { TabDataRows } from './tab-data-rows';
 import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
@@ -48,6 +49,7 @@ export function PortalMenu({
   locked,
   modeChoice,
   planTab = false,
+  dataRows,
   selfId,
   otherDocuments,
   folderNames,
@@ -79,6 +81,8 @@ export function PortalMenu({
   modeChoice?: TabModeChoice;
   // A Plan tab: Add to Document is off, its cards belong to this document's items.
   planTab?: boolean;
+  // A Board or Sheet tab's own Import, in place of the document's, and its Download CSV after Export (tab-data-rows.ts).
+  dataRows?: TabDataRows;
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
@@ -388,11 +392,19 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<FileImportIcon />}
-            label="Import"
-            onClick={onImport}
-            disabled={locked}
+            label={dataRows?.importLabel ?? 'Import'}
+            onClick={dataRows ? () => (dataRows.onImport?.(), onClose()) : onImport}
+            disabled={locked || (!!dataRows && !dataRows.onImport)}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
+          {dataRows ? (
+            <MenuActionRow
+              plain
+              icon={<FileExportIcon />}
+              label={dataRows.downloadLabel}
+              onClick={() => (dataRows.onDownload(), onClose())}
+            />
+          ) : null}
           <MenuActionRow
             plain
             icon={<ClearIcon />}

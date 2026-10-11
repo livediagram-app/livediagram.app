@@ -23,19 +23,15 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
 - **Armed** on entering Facilitate (or mounting in it) and by the rerun event while in Facilitate;
   disarmed on leaving, on offering, and whenever `facilitateTourSeen` is true.
 - **Offer** after `OFFER_DELAY_MS` (800) when armed, in Facilitate, `canWork` (hydrated, `prefsSettled`, no welcome
-  overlay, not read-only, not embedded, tab not locked), not seen, the welcome tour seen (`tourSeen`), no
-  other tour active (`useActiveTour()` is null or `'facilitate'`) and `hasTourPending()` false.
-- **Welcome tour first:** `TourHost` treats its offer as owed (`owedByFacilitate`) while the tab's mode is
-  `facilitate`, `isOwner`, `prefsSettled`, the tab not locked, and `facilitateTourSeen` not true, beside the `/new` handoff flag; its `tourSeen` check
-  still applies.
-- **Offer on the closing card:** while `owedByFacilitate`, `TourHost` passes `TourStage` an `outroChoice`
-  ("Show me Facilitate"), rendered by `TourPopover` as the primary button with the finish button
-  (`secondary`) beside it. Picking it finishes the welcome tour (`completed`) and sends
-  `FACILITATE_TOUR_START_EVENT` (`requestFacilitateTourStart`); this host answers it while in Facilitate and
-  `canWork`, ignoring the seen-guard, with `facilitateTourSteps({ canShare, withWelcome: false })`.
-- **Answered with the welcome tour:** `TourHost.endTour` writes `facilitateTourSeen: true` beside `tourSeen`
-  whenever `owedByFacilitate`, whatever the outcome, so the standalone offer never follows it.
-- **One tour at a time:** each of `TourHost`, `PlanTourHost`, `FacilitateTourHost` treats any other
+  overlay, not read-only, not embedded, tab not locked), not seen, and no other tour active (`useActiveTour()`
+  is null or `'facilitate'`). It reads neither `tourSeen` nor `hasTourPending()`: the Diagram tour never runs
+  in Facilitate.
+- **Retired: the welcome tour's chain.** Until October 2026 `TourHost` offered the welcome tour first in
+  Facilitate (`owedByFacilitate`), carried this tour's offer on its closing card (`outroChoice`, "Show me
+  Facilitate", `FACILITATE_TOUR_START_EVENT`) and wrote `facilitateTourSeen` with `tourSeen`. All of it is gone:
+  `TourStage` / `TourPopover` lost `outroChoice`, `lib/facilitate-tour.ts` lost the start event, and
+  `facilitateTourSteps` lost `withWelcome`.
+- **One tour at a time:** each of `TourHost` (the Diagram tour), `PlanTourHost`, `FacilitateTourHost` treats any other
   active tour as blocking and publishes itself with `setActiveTour` while active.
 - **Steps:** `welcome` (card) → `collaborate` (`band-collaborate` with `alsoHighlight`
   `option-collab-navigate`: the band's heading to its last tile; opens the picker, closes it on cleanup) → `session-strip` (`session-tools`) → `share` (`share`, the
@@ -62,7 +58,6 @@ helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and n
 
 - A missing anchor mid-tour is skipped by the engine, as in every tour.
 - A rerun outside Facilitate is ignored; the cleared preference offers it on the next entry.
-- No storage: `hasTourPending()` reads false, so nothing waits on a flag that cannot be set.
 
 ## Security and trust
 
@@ -95,10 +90,10 @@ helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and n
 | Rule                                                                                              | Test                                                                         |
 | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | Offer after the delay, only in Facilitate, not when seen, read-only, locked, unhydrated, embedded | `FacilitateTourHost.test.tsx`                                                |
-| Waits for the welcome tour (shown or owed), offered as it ends; never beside the Plan tour        | `FacilitateTourHost.test.tsx`                                                |
+| Offered without the Diagram tour, even owed; waits while another tour is on screen                | `FacilitateTourHost.test.tsx`                                                |
 | Rerun in Facilitate only                                                                          | `FacilitateTourHost.test.tsx`                                                |
 | Decline and completion mark it seen and send telemetry; leaving ends as skipped                   | `FacilitateTourHost.test.tsx`                                                |
-| The welcome tour's closing card offers it; picking it starts it; ending without it answers it     | `TourHost.test.tsx`, `FacilitateTourHost.test.tsx`                           |
+| The Diagram tour is never owed or offered in Facilitate                                           | `TourHost.test.tsx`                                                          |
 | Step order, anchors, Share filter, telemetry tokens                                               | `facilitate-tour-steps.test.ts`                                              |
 | Settings switch inverted, third in Show Tours                                                     | `settings-catalogue.test.ts`                                                 |
 | Power user mode marks it seen                                                                     | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
@@ -108,7 +103,7 @@ helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and n
 
 | Constant         | Value | Provenance                         |
 | ---------------- | ----- | ---------------------------------- |
-| `OFFER_DELAY_MS` | 800   | The welcome and Plan tours' settle |
+| `OFFER_DELAY_MS` | 800   | The Diagram and Plan tours' settle |
 
 ## Assets and external resources
 

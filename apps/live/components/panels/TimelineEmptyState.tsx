@@ -26,7 +26,7 @@ export function TimelineEmptyState() {
           />
         </Glyph>
       }
-      title="Nothing has happened yet"
+      title="No activity yet"
       description="Create a document, comment on one, or join a team, and it will show up here."
     >
       {/* Same CTA treatment as every other Explorer empty state

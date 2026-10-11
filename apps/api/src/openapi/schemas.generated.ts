@@ -4309,6 +4309,397 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "DashboardCardContent": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "state": {
+            "$ref": "#/components/schemas/DashboardStatus"
+          },
+          "style": {
+            "$ref": "#/components/schemas/DashboardCardStyle"
+          },
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "const": "status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "state",
+          "text",
+          "at"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardChecklistItem"
+            },
+            "type": "array"
+          },
+          "style": {
+            "$ref": "#/components/schemas/DashboardCardStyle"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "const": "checklist",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "items"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "style": {
+            "$ref": "#/components/schemas/DashboardCardStyle"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "const": "key-date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "date"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/DashboardLink"
+            },
+            "type": "array"
+          },
+          "style": {
+            "$ref": "#/components/schemas/DashboardCardStyle"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "const": "links",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "links"
+        ],
+        "type": "object"
+      },
+      {
+        "$ref": "#/components/schemas/SheetMetricContent"
+      }
+    ]
+  },
+  "DashboardCardStyle": {
+    "additionalProperties": false,
+    "properties": {
+      "borderStyle": {
+        "$ref": "#/components/schemas/BorderStyle"
+      },
+      "borderWidth": {
+        "$ref": "#/components/schemas/BorderStroke"
+      },
+      "fill": {
+        "type": "string"
+      },
+      "preset": {
+        "type": "string"
+      },
+      "shadow": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ElementShadow"
+          },
+          {
+            "const": "none",
+            "type": "string"
+          }
+        ]
+      },
+      "stroke": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "DashboardChecklistItem": {
+    "additionalProperties": false,
+    "properties": {
+      "done": {
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "text",
+      "done"
+    ],
+    "type": "object"
+  },
+  "DashboardContent": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "of": {
+            "$ref": "#/components/schemas/DashboardTabOf"
+          },
+          "tabId": {
+            "type": "string"
+          },
+          "type": {
+            "const": "tab",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "tabId"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "elementId": {
+            "type": "string"
+          },
+          "type": {
+            "const": "element",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "elementId"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "style": {
+            "$ref": "#/components/schemas/DashboardCardStyle"
+          },
+          "text": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "const": "note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "style": {
+            "$ref": "#/components/schemas/DashboardCardStyle"
+          },
+          "text": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "type": {
+            "const": "title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "$ref": "#/components/schemas/DashboardCardContent"
+      }
+    ]
+  },
+  "DashboardLayout": {
+    "additionalProperties": false,
+    "properties": {
+      "background": {
+        "const": "tint",
+        "type": "string"
+      },
+      "rows": {
+        "items": {
+          "$ref": "#/components/schemas/DashboardRow"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "rows"
+    ],
+    "type": "object"
+  },
+  "DashboardLink": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "tabId": {
+            "not": {}
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "url"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "tabId": {
+            "type": "string"
+          },
+          "url": {
+            "not": {}
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "tabId"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "DashboardRow": {
+    "additionalProperties": false,
+    "properties": {
+      "fill": {
+        "const": true,
+        "type": "boolean"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "slots": {
+        "items": {
+          "$ref": "#/components/schemas/DashboardSlot"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "id",
+      "height",
+      "slots"
+    ],
+    "type": "object"
+  },
+  "DashboardSlot": {
+    "additionalProperties": false,
+    "properties": {
+      "content": {
+        "$ref": "#/components/schemas/DashboardContent"
+      },
+      "id": {
+        "type": "string"
+      },
+      "span": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "span"
+    ],
+    "type": "object"
+  },
+  "DashboardStatus": {
+    "enum": [
+      "on-track",
+      "at-risk",
+      "off-track"
+    ],
+    "type": "string"
+  },
+  "DashboardTabOf": {
+    "enum": [
+      "board",
+      "sheet",
+      "diagram"
+    ],
+    "type": "string"
+  },
   "DecisionStatus": {
     "enum": [
       "proposed",
@@ -5023,9 +5414,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "diagram",
       "draw",
+      "facilitate",
       "illustrate",
-      "plan",
-      "facilitate"
+      "plan"
     ],
     "type": "string"
   },
@@ -10052,10 +10443,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "statuses": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
       "swimlaneBy": {
         "$ref": "#/components/schemas/SwimlaneBy"
       },
       "swimlaneField": {
+        "type": "string"
+      },
+      "title": {
         "type": "string"
       },
       "types": {
@@ -10077,6 +10477,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "gantt",
       "calendar",
+      "start-calendar",
       "workload",
       "status-mix",
       "priority-matrix",
@@ -11114,6 +11515,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "shape": {
         "$ref": "#/components/schemas/ShapeKind"
       },
+      "sheetAnchor": {
+        "$ref": "#/components/schemas/SheetAnchor"
+      },
       "stats": {
         "items": {
           "$ref": "#/components/schemas/StatItem"
@@ -11491,6 +11895,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "SheetAnchor": {
+    "additionalProperties": false,
+    "properties": {
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "x",
+      "y"
+    ],
+    "type": "object"
+  },
   "SheetCellDto": {
     "$ref": "#/components/schemas/SheetCellJson"
   },
@@ -11722,6 +12142,73 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cols"
     ],
     "type": "object"
+  },
+  "SheetMetricCell": {
+    "additionalProperties": false,
+    "properties": {
+      "c": {
+        "type": "string"
+      },
+      "r": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "r",
+      "c"
+    ],
+    "type": "object"
+  },
+  "SheetMetricContent": {
+    "additionalProperties": false,
+    "properties": {
+      "cell": {
+        "$ref": "#/components/schemas/SheetMetricCell"
+      },
+      "col": {
+        "type": "string"
+      },
+      "metric": {
+        "$ref": "#/components/schemas/SheetMetricKind"
+      },
+      "sheetId": {
+        "type": "string"
+      },
+      "stat": {
+        "$ref": "#/components/schemas/SheetMetricStat"
+      },
+      "target": {
+        "$ref": "#/components/schemas/SheetMetricCell"
+      },
+      "type": {
+        "const": "sheet-metric",
+        "type": "string"
+      }
+    },
+    "required": [
+      "type",
+      "metric",
+      "sheetId"
+    ],
+    "type": "object"
+  },
+  "SheetMetricKind": {
+    "enum": [
+      "figure",
+      "summary",
+      "trend"
+    ],
+    "type": "string"
+  },
+  "SheetMetricStat": {
+    "enum": [
+      "sum",
+      "average",
+      "min",
+      "max",
+      "count"
+    ],
+    "type": "string"
   },
   "SheetPerson": {
     "additionalProperties": false,
@@ -12332,6 +12819,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "dashboard": {
+        "$ref": "#/components/schemas/DashboardLayout"
+      },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"
       },
@@ -12409,7 +12899,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabKind": {
     "enum": [
       "diagram",
-      "event-storming"
+      "event-storming",
+      "board",
+      "sheet",
+      "dashboard"
     ],
     "type": "string"
   },
@@ -12442,6 +12935,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "dashboard": {
+        "$ref": "#/components/schemas/DashboardLayout"
       },
       "defaultTextSize": {
         "$ref": "#/components/schemas/TextSize"

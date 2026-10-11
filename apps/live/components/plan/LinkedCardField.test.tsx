@@ -117,6 +117,18 @@ describe('LinkedCardField', () => {
     fireEvent.keyDown(filter, { key: 'Enter' });
     expect(onSave).toHaveBeenCalledWith('c3');
   });
+
+  it('says no cards match the words when the filter finds none', () => {
+    const many = Array.from({ length: LINK_FILTER_FROM + 2 }, (_, i) =>
+      card(`c${i}`, i + 1, `Card ${i + 1}`),
+    );
+    field(undefined, many);
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Find a card for Parent' }), {
+      target: { value: 'zzz' },
+    });
+    expect(screen.getByRole('status').textContent).toContain('No cards match “zzz”');
+  });
 });
 
 // The list shows each card's whole title, however long (docs/specs/026-plan/item-types.md "Card fields").

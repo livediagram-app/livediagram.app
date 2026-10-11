@@ -152,7 +152,7 @@ slots are Most used and Recent), "More shapes" (merged into Shapes), "toolbar" f
   used shapes"), each entry with its key badge and `aria-keyshortcuts` where it has one. The slots
   are taken once, as the flyout mounts (`useState(slots)`), so they never change while it is open.
   Typed field: at most `SHAPE_SEARCH_LIMIT` entries (`searchWhiteboardShapes`), `paletteRank` over
-  label and keywords, ties in catalogue order; nothing matched shows "No shapes match". Never the
+  label and keywords, ties in catalogue order; nothing matched shows "No shapes match “<words>”" (the shared empty state, with Clear Search). Never the
   full list. The grid area has a fixed height (two rows) either way.
 - The active entry starts at 0 on every query change; every arrow key walks the grid (`gridStep`,
   `SHAPE_GRID_COLUMNS`, the two rows as two groups), clamped. The active entry has
@@ -404,7 +404,7 @@ border p-3 shadow-lg`, `w-max max-w-[min(20rem,calc(100vw-1.5rem))]`) with its t
   "Settings", "Text", "Sticky note", "Path tool", "Shapes", a shape by its label; flyout rows
   named (for screen readers only) "Recent shapes", "Most used shapes";
   search placeholder
-  and name "Search shapes", clear "Clear the shape search", empty "No shapes match"; slot menu "Pin
+  and name "Search shapes", clear "Clear the shape search", empty "No shapes match “<words>”" (the shared empty state, with Clear Search); slot menu "Pin
   to dock", "Unpin"; hint "Seven shapes are pinned. Drag one out to swap."
 - Settings row: in the **Editor › Draw** sub-category (category id `draw`, `parent: 'editor'`,
   no section), label "Dock Position", options "Top", "Bottom", description "Where Draw mode's dock

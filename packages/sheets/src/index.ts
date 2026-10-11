@@ -30,8 +30,10 @@ export * from './validate';
 export * from './write-caps';
 export * from './a1-io';
 export * from './chart-data';
+export * from './sheet-metrics';
 export * from './sheet-starters';
 export * from './template-starts';
+export * from './sheet-templates';
 export * from './formula/values';
 export * from './formula/ast';
 export * from './formula/tokens';
@@ -41,6 +43,7 @@ export * from './formula/registry';
 export * from './formula/function-docs';
 export { Workbook, type WorkbookOptions } from './engine/workbook';
 export {
+  renderFrameWindow,
   renderModelsForTab,
   renderWindow,
   sheetFramesOf,

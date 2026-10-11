@@ -8,6 +8,7 @@ import { debugLog } from '@/lib/debug-log';
 import {
   EMPTY_ITEM_STORE,
   applyItemWrite,
+  legacyCatalogue,
   readItemWrite,
   typesOf,
   writtenItemsRefusal,
@@ -57,7 +58,8 @@ export async function offlineWriteItem(
       const store = recordItemStore(rec);
       const result = applyItemWrite(store, read, { now: Date.now(), by });
       if (!result.ok) throw new ApiError('item write', STATUS[result.error], result.error);
-      const after = writtenItemsRefusal(read, store.items, result.upserts, typesOf(rec.itemTypes));
+      const types = typesOf(legacyCatalogue(rec.itemTypes ?? null, store.items.length > 0));
+      const after = writtenItemsRefusal(read, store.items, result.upserts, types);
       if (after) throw refused(after.error);
       const { items, rev, nextKey } = result.state;
       answer = { upserts: result.upserts, removed: result.removed, rev };

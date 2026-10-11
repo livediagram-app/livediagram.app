@@ -5,6 +5,7 @@
 // (as the Sheet Functions article reads it), so the menu can never offer a function the Sheet lacks or miss one.
 // Picking one, with several cells selected, writes it over them into the cell below (=SUM(B2:B6)); else starts it in
 // the active cell, where the formula bar's assist takes over (insertFunction).
+import { useEffect, useRef, useState } from 'react';
 import { FUNCTION_DOCS, FUNCTION_FAMILIES, type FunctionFamily } from '@livediagram/sheets';
 import { useMenuItemProps } from '@/components/primitives/menu-item-props';
 
@@ -25,16 +26,39 @@ export const FUNCTION_FAMILY_LABELS: Record<FunctionFamily, string> = {
 export const functionsOf = (family: FunctionFamily): string[] =>
   Object.keys(FUNCTION_FAMILIES.find(([f]) => f === family)?.[1] ?? {}).sort();
 
-function FunctionRow({ name, onPick }: { name: string; onPick: () => void }) {
+// How long a function found by Search stays highlighted in its menu.
+export const FUNCTION_HIGHLIGHT_MS = 2000;
+
+function FunctionRow({
+  name,
+  onPick,
+  highlight = false,
+}: {
+  name: string;
+  onPick: () => void;
+  highlight?: boolean;
+}) {
   const { itemProps } = useMenuItemProps();
   const doc = FUNCTION_DOCS[name];
+  // Found by Search: scrolled into view, focused and tinted for FUNCTION_HIGHLIGHT_MS.
+  const ref = useRef<HTMLButtonElement | null>(null);
+  const [lit, setLit] = useState(highlight);
+  useEffect(() => {
+    if (!highlight) return;
+    ref.current?.scrollIntoView?.({ block: 'center' });
+    ref.current?.focus({ preventScroll: true });
+    const t = setTimeout(() => setLit(false), FUNCTION_HIGHLIGHT_MS);
+    return () => clearTimeout(t);
+  }, [highlight]);
   return (
     <button
+      ref={ref}
       type="button"
+      data-highlighted={lit || undefined}
       {...itemProps}
       aria-label={`Insert ${name}`}
       onClick={onPick}
-      className="flex w-full min-w-0 cursor-pointer flex-col items-start gap-0.5 break-words px-3 py-1.5 text-left transition hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
+      className="flex w-full min-w-0 cursor-pointer flex-col items-start gap-0.5 break-words px-3 py-1.5 text-left transition duration-micro motion-reduce:transition-none data-[highlighted]:bg-brand-100 data-[highlighted]:ring-2 data-[highlighted]:ring-inset data-[highlighted]:ring-brand-400 dark:data-[highlighted]:bg-brand-500/20 hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:outline-none dark:hover:bg-slate-800 dark:focus-visible:bg-slate-800"
     >
       <span className="font-mono text-[12px] font-semibold text-slate-800 dark:text-slate-100">
         {name}
@@ -52,14 +76,22 @@ function FunctionRow({ name, onPick }: { name: string; onPick: () => void }) {
 export function SheetFunctionMenu({
   family,
   onPick,
+  highlight,
 }: {
   family: FunctionFamily;
   onPick: (name: string) => void;
+  // A function to bring into view and highlight (the toolbar's Search).
+  highlight?: string | undefined;
 }) {
   return (
     <div className="max-h-80 w-full overflow-y-auto overscroll-contain py-1">
       {functionsOf(family).map((name) => (
-        <FunctionRow key={name} name={name} onPick={() => onPick(name)} />
+        <FunctionRow
+          key={name}
+          name={name}
+          onPick={() => onPick(name)}
+          highlight={name === highlight}
+        />
       ))}
     </div>
   );

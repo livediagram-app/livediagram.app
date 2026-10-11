@@ -1,4 +1,4 @@
-import { editorModeLabel, nextEditorMode } from '@livediagram/document';
+import { editorModeLabel, modesBesidePlanRule, nextEditorMode } from '@livediagram/document';
 import type { EditorModeState } from './useEditorMode';
 
 // Shift+D (docs/specs/007-editor/editor-modes.md "The mode switch"): move to the next editor mode
@@ -9,9 +9,11 @@ export function editorModeShortcut(
   { mode, setMode, canSwitch }: EditorModeState,
   announce: (message: string) => void,
 ): (() => void) | null {
-  if (!canSwitch) return null;
+  // Only the modes beside the tab's own (never into or out of Plan): on a Plan tab, none.
+  const modes = modesBesidePlanRule(mode);
+  if (!canSwitch || modes.length < 2) return null;
   return () => {
-    const next = nextEditorMode(mode, 1);
+    const next = nextEditorMode(mode, 1, modes);
     setMode(next);
     announce(`${editorModeLabel(next)} mode`);
   };

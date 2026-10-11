@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 
 // The Facilitate tour's offer (docs/specs/012-collaboration/facilitate-tour.md "Where it appears"): on
-// entering Facilitate, once, after the welcome tour and never with another tour, and rerun from Settings.
+// entering Facilitate, once, on its own (the Diagram tour never runs in Facilitate), never with another tour,
+// and rerun from Settings.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requestFacilitateTourRelaunch, requestFacilitateTourStart } from '@/lib/facilitate-tour';
+import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
 import { setActiveTour } from '@/lib/tour-active';
 import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
@@ -118,39 +119,25 @@ describe('FacilitateTourHost offer', () => {
     expect(offered()).toBe(false);
   });
 
-  // The ask: someone who has not done the welcome tour gets it first, and this one at its end.
-  it('waits for the welcome tour, then is offered as it ends', () => {
+  // docs/specs/012-collaboration/facilitate-tour.md "Where it appears": on its own, whatever other tours.
+  it('offers itself to someone who has not done the Diagram tour, even with its handoff owed', () => {
     markTourPending();
+    editor({ userPreferences: {} });
+    render(<FacilitateTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+    expect(stage.engine?.hasWelcome).toBe(true);
+  });
+
+  it('waits while the Diagram tour is on screen, then follows it', () => {
     setActiveTour('welcome', true);
     editor();
     render(<FacilitateTourHost />);
     act(() => vi.advanceTimersByTime(2000));
     expect(offered()).toBe(false);
-    act(() => {
-      clearTourPending();
-      setActiveTour('welcome', false);
-    });
+    act(() => setActiveTour('welcome', false));
     act(() => vi.advanceTimersByTime(800));
     expect(offered()).toBe(true);
-  });
-
-  it('waits until the welcome tour is answered, then follows it', () => {
-    editor({ userPreferences: {} });
-    const { rerender } = render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
-    expect(offered()).toBe(false);
-    editor({ userPreferences: { tourSeen: true } });
-    rerender(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(800));
-    expect(offered()).toBe(true);
-  });
-
-  it('waits while the welcome tour is still owed', () => {
-    markTourPending();
-    editor();
-    render(<FacilitateTourHost />);
-    act(() => vi.advanceTimersByTime(2000));
-    expect(offered()).toBe(false);
   });
 
   it('never runs beside the Plan tour', () => {
@@ -226,26 +213,6 @@ describe('FacilitateTourHost end', () => {
   it('keeps the Share step where there is one', () => {
     start();
     expect(stage.engine!.countableSteps).toBe(3);
-  });
-
-  // The offer rides on the welcome tour's closing card: its "Show me Facilitate" starts the steps directly.
-  it('starts straight into its steps from the welcome tour, though the welcome tour marked it seen', () => {
-    editor({ userPreferences: { tourSeen: true, facilitateTourSeen: true } });
-    render(<FacilitateTourHost />);
-    act(() => requestFacilitateTourStart());
-    expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.id).toBe('collaborate');
-    expect(stage.engine?.hasWelcome).toBe(false);
-    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'FacilitateTourFromWelcome');
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'FacilitateTour');
-    expect(offered()).toBe(false);
-  });
-
-  it('ignores the welcome tour asking outside Facilitate', () => {
-    editor({ editorMode: { mode: 'diagram' } });
-    render(<FacilitateTourHost />);
-    act(() => requestFacilitateTourStart());
-    expect(stage.engine?.active).toBe(false);
   });
 
   it('ends as skipped when the person leaves Facilitate or the tab', () => {

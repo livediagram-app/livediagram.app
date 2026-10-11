@@ -6,8 +6,7 @@ import {
   POPULAR_TEMPLATE_KINDS,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
-  isBlankTemplate,
-  templateCategory,
+  isInTemplateCategory,
   type TemplateCategory,
 } from '@livediagram/templates';
 import { TemplatePickerBrowse, type ShelfCategory } from './TemplatePickerBrowse';
@@ -41,7 +40,7 @@ const ALL_MODES: TemplateModeFilter = {
 };
 const popular = POPULAR_TEMPLATE_KINDS.map(byKind);
 const categoryTemplates = (c: TemplateCategory) =>
-  TEMPLATES.filter((t) => !isBlankTemplate(t.kind) && templateCategory(t.kind) === c);
+  TEMPLATES.filter((t) => isInTemplateCategory(t.kind, c));
 
 function Shelf({ initialExpanded = false }: { initialExpanded?: boolean }) {
   const [open, setOpen] = useState<ShelfCategory | null>(null);
@@ -83,6 +82,16 @@ describe('the template shelf', () => {
     }
   });
 
+  it('lists the category tiles alphabetically by name, Popular staying the shelf above them', () => {
+    render(<Shelf />);
+    const names = screen
+      .getAllByRole('button', { name: /^Browse .* templates$/ })
+      .map((b) => b.getAttribute('aria-label')!.replace(/^Browse | templates$/g, ''));
+    expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
+    expect(names).toHaveLength(TEMPLATE_CATEGORIES.length);
+    expect(stage().textContent).toContain('Popular');
+  });
+
   it('swaps an opened tile into the stage and folds Popular into the tiles', () => {
     render(<Shelf />);
     fireEvent.click(screen.getByRole('button', { name: 'Browse Technical templates' }));
@@ -93,6 +102,29 @@ describe('the template shelf', () => {
     expect(within(list).getAllByRole('listitem')).toHaveLength(
       categoryTemplates('technical').length,
     );
+  });
+
+  it('counts as more templates only those the open shelf does not already show', () => {
+    render(<Shelf />);
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Finance templates' }));
+    const open = new Set(categoryTemplates('finance').map((t) => t.kind));
+    const more = new Set(
+      TEMPLATE_CATEGORIES.filter((c) => c.id !== 'finance')
+        .flatMap((c) => categoryTemplates(c.id))
+        .map((t) => t.kind)
+        .filter((k) => !open.has(k)),
+    );
+    // Finance shares a template with Spreadsheets (an Invoice), so the two counts differ.
+    expect(
+      TEMPLATE_CATEGORIES.filter((c) => c.id !== 'finance').some((c) =>
+        categoryTemplates(c.id).some((t) => open.has(t.kind)),
+      ),
+    ).toBe(true);
+    expect(
+      screen.getByText(
+        `${TEMPLATE_CATEGORIES.length} more categories, ${more.size} more templates`,
+      ),
+    ).toBeTruthy();
   });
 
   it('lists only real templates in Popular', () => {
@@ -157,8 +189,8 @@ describe('the expand toggle', () => {
   it('opens a picked category expanded on desktop, its tiles re-forming as a carousel', () => {
     setDesktop(true);
     render(<Shelf />);
-    fireEvent.click(screen.getByRole('button', { name: 'Browse Agile templates' }));
-    expect(stage().textContent).toContain('Agile');
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Plan and Track templates' }));
+    expect(stage().textContent).toContain('Plan and Track');
     expect(screen.getByRole('button', { name: 'Show Fewer Templates' })).toBeTruthy();
     const cards = within(screen.getAllByRole('list')[0]!).getAllByRole('listitem');
     expect(cards).toHaveLength(categoryTemplates('planning').length);
@@ -174,8 +206,10 @@ describe('the expand toggle', () => {
   it('opens a picked category as the carousel on a phone', () => {
     setDesktop(false);
     render(<Shelf />);
-    fireEvent.click(screen.getByRole('button', { name: 'Browse Agile templates' }));
-    expect(screen.getByRole('button', { name: 'Next Agile templates', hidden: true })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Plan and Track templates' }));
+    expect(
+      screen.getByRole('button', { name: 'Next Plan and Track templates', hidden: true }),
+    ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Next more categories', hidden: true })).toBeNull();
   });
 

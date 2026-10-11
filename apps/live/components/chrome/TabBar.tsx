@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import { tabDataRows } from './tab-data-rows';
 import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
@@ -217,6 +218,7 @@ export function TabBar({
     // A Plan tab's cards are its document's items: it is not added to another document
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements, null),
+    dataRows: tabDataRows(tab),
     selfId,
     otherDocuments,
     folderNames,

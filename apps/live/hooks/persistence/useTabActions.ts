@@ -15,6 +15,8 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
+import { defaultTabName, isDefaultTabName } from '@livediagram/document';
+import { boardsRenamedWithTab, planTitledWithTab, sheetIdsOn } from '@/lib/tab-named-plan';
 import type { ImportedPlanItems } from '@/lib/import-tab';
 import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
 import {
@@ -26,10 +28,10 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { apiLinkTab } from '@/lib/api-client';
-import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
+import { newTabOpening, newTabSeed, modeHasOwnStart } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
-import { remintElementIds, useTabImport } from './useTabImport';
+import { remintTabElements, useTabImport } from './useTabImport';
 import { trackTabFolderTransition } from './tab-folder-reporting';
 import type { useConfirm } from '@/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
@@ -39,6 +41,9 @@ type TabActionsDeps = {
   activeId: string;
   // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md).
   editorMode: EditorMode;
+  // Whether the session may change the document's structure (its tabs): false for a view link and
+  // for any tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md).
+  canEditStructure: boolean;
   // The owner's document list — read for the destination name when
   // linking a tab into another document.
   documentList: { id: string; name: string }[];
@@ -79,6 +84,10 @@ type TabActionsDeps = {
   toast: ReturnType<typeof useToast>;
   // A JSON tab export's Plan items, added after its tab lands (usePlanTabImport).
   importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
+  // A tab renamed away from its default name: its Sheets still named that follow it (lib/tab-named-plan.ts).
+  retitleSheets?: (sheetIds: readonly string[], from: string, to: string) => void;
+  // A Sheet's title as it is now (a Sheet tab's follows the tab whatever it was).
+  sheetTitle?: (sheetId: string) => string | undefined;
 };
 
 export function useTabActions(deps: TabActionsDeps) {
@@ -105,16 +114,25 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  const addTab = () => {
+  // `mode`: open it in that mode (a Plan tab's switch offering a new tab instead, plan-tabs.md); else as the creator's
+  // mode says (newTabOpening).
+  const addTab = (mode?: EditorMode) => {
+    // A session that cannot change the document's tabs adds none, whichever control asked.
+    if (!deps.canEditStructure) return;
     // The new tab takes the active tab's look (newTabSeed), never its creator's mode: it opens in
     // Diagram.
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
     // From Plan the tab opens in Plan with no Quick Start (newTabOpening).
-    const opening = newTabOpening(deps.editorMode);
+    const opening =
+      mode === undefined
+        ? newTabOpening(deps.editorMode)
+        : mode === 'diagram'
+          ? { quickStart: true as const }
+          : { opensIn: mode, quickStart: !modeHasOwnStart(mode) };
     const tab: Tab = {
-      ...createTab(`Tab ${tabs.length + 1}`),
+      ...createTab(defaultTabName(tabs.length + 1)),
       ...seed,
       ...('opensIn' in opening ? { opensIn: opening.opensIn } : {}),
     };
@@ -132,8 +150,8 @@ export function useTabActions(deps: TabActionsDeps) {
   };
 
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
-  // lives in useTabImport; remintElementIds is shared with the
-  // cross-document link below.
+  // lives in useTabImport; remintTabElements is shared with the
+  // Duplicate below.
   const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
     tabs,
     createTab,
@@ -185,7 +203,33 @@ export function useTabActions(deps: TabActionsDeps) {
     // same limit (docs/specs/006-document/name-length.md).
     const trimmed = truncateName(name);
     if (trimmed === previous.trim()) return;
-    commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
+    // Its boards and Sheets still named after its default name follow it (docs/specs/026-plan/plan-board.md
+    // "The board set-up"): the boards in the same commit, so one undo takes both back. A Board or Sheet tab and its
+    // board or Sheet are one thing (docs/specs/026-plan/plan-tabs.md): theirs follow it whatever they were called.
+    const target = tabs.find((t) => t.id === id);
+    const kindTab = target?.kind === 'board' || target?.kind === 'sheet';
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              name: trimmed,
+              elements:
+                planTitledWithTab(t, trimmed) ??
+                boardsRenamedWithTab(t.elements, previous, trimmed),
+            }
+          : t,
+      ),
+    );
+    const sheetIds = sheetIdsOn(target?.elements ?? []);
+    if (kindTab) {
+      for (const sheetId of sheetIds) {
+        const now = deps.sheetTitle?.(sheetId);
+        if (now !== undefined) deps.retitleSheets?.([sheetId], now, trimmed);
+      }
+    } else if (isDefaultTabName(previous) && sheetIds.length > 0) {
+      deps.retitleSheets?.(sheetIds, previous.trim(), trimmed);
+    }
     track('Tab', 'Renamed');
   };
 
@@ -226,15 +270,19 @@ export function useTabActions(deps: TabActionsDeps) {
       toast.error('That tab is still loading. Try again in a moment.');
       return;
     }
+    // Re-mint ids (arrow endpoints remapped): element ids must be
+    // unique per DOCUMENT, not just per tab — verbatim copies made a
+    // peer's selection of the original render (and lock, docs/specs/007-editor/live-app.md) on
+    // the copy too, since remote selections resolve by element id. A Dashboard's slots follow the new ids.
+    const reminted = remintTabElements({ ...src, elements: src.elements.map((el) => ({ ...el })) });
+    const name = `${src.name} copy`;
+    // A Board or Visualisation tab and its board or chart share one name (docs/specs/026-plan/plan-tabs.md "Names"):
+    // the copy's are titled as the copy is, so neither takes the original's name back later.
     const copy: Tab = {
-      ...src,
+      ...reminted,
+      elements: planTitledWithTab(reminted, name) ?? reminted.elements,
       id: crypto.randomUUID(),
-      name: `${src.name} copy`,
-      // Re-mint ids (arrow endpoints remapped): element ids must be
-      // unique per DOCUMENT, not just per tab — verbatim copies made a
-      // peer's selection of the original render (and lock, docs/specs/007-editor/live-app.md) on
-      // the copy too, since remote selections resolve by element id.
-      elements: remintElementIds(src.elements.map((el) => ({ ...el }))),
+      name,
     };
     const srcIndex = tabs.findIndex((t) => t.id === id);
     commitTabs((ts) => {

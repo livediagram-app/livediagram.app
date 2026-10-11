@@ -11,6 +11,8 @@ import { useMemo, useState } from 'react';
 import { isVoteHost } from '@livediagram/document';
 import { presentedPages } from '@/lib/presented-pages';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
+import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
+import { useSheetChartMenuSelection } from '@/hooks/sheets/useSheetChartMenuSelection';
 import { LockedElementMenu, type LockHolder } from '@/components/canvas/LockedElementMenu';
 import { participantKey } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
@@ -427,6 +429,23 @@ export function EditorCanvasHost() {
   const tabLoadState = activeTabLoadState;
   // Quick add + connect Arrow starter (docs/specs/008-canvas/canvas-and-palette.md) — see useQuickConnectStart.
   const { handleStartArrow } = useQuickConnectStart({ readSelection, beginAnchorDrag });
+
+  // A control inside an element (a board header's ⋯) opens this element menu under itself, selecting the element
+  // first as a right-click does (the menu acts on the selection); never on one a peer holds.
+  // A chart its Sheet draws is selected for its menu directly, and let go as the menu closes (sheet.md "Charts").
+  const selectForMenu = useSheetChartMenuSelection({
+    elements: activeTab.elements,
+    contextMenu,
+    readSelection,
+    selectElement,
+    setSelectedId,
+    setMultiSelectedIds,
+  });
+  useElementMenuOpener(setContextMenu, !isReadOnly, (id) => {
+    if (lockedByOther(id)) return false;
+    selectForMenu(id);
+    return true;
+  });
 
   // While a label is being edited, ride the element context menu alongside
   // the editor (docs/specs/008-canvas/canvas-and-palette.md) — see useEditModeContextMenu.

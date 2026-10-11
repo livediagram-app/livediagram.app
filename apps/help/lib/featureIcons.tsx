@@ -436,6 +436,16 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M4.5 16h2.5M17 16h2.5" />
     </Glyph>
   ),
+  // A page of rows and slots, a wide one over two, the first holding a small ring: a dashboard.
+  dashboards: (
+    <Glyph>
+      <rect x="2.5" y="3.5" width="19" height="7" rx="1.5" />
+      <rect x="2.5" y="12.5" width="9" height="8" rx="1.5" />
+      <rect x="12.5" y="12.5" width="9" height="8" rx="1.5" />
+      <circle cx="7" cy="16.5" r="2" />
+      <path d="M15 18.5v-2M17 18.5v-4M19 18.5v-3M5.5 7h7" />
+    </Glyph>
+  ),
   // A grid with a header row and one highlighted cell: a spreadsheet tab.
   sheets: (
     <Glyph>

@@ -1,6 +1,6 @@
 // The steps of the Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md "The steps"): a welcome
-// card (or the welcome tour's closing card, which can start it), then the Collaborate band of the category
-// picker → the Session strip → Share, then the outro. The palette itself is the welcome tour's. It places
+// card, then the Collaborate band of the category picker → the Session strip → Share, then the outro. The
+// palette itself is the Diagram tour's. It places
 // nothing, so its steps only point at the chrome and open the one menu they explain.
 
 import { closeDropdown, ensurePaletteOpen } from './tour-steps';
@@ -56,17 +56,8 @@ export const FACILITATE_TOUR_STEPS: FacilitateTourStep[] = [
 
 // The steps this surface has chrome for, filtered up front so the count stays honest (spec "The steps"):
 // the Share button is not on every surface (a phone header, someone who may not share).
-// Started from the welcome tour's closing card, it has no welcome card of its own: that card just asked.
-export function facilitateTourSteps({
-  canShare,
-  withWelcome = true,
-}: {
-  canShare: boolean;
-  withWelcome?: boolean;
-}): FacilitateTourStep[] {
-  return FACILITATE_TOUR_STEPS.filter(
-    (step) => (canShare || step.id !== 'share') && (withWelcome || step.card !== 'welcome'),
-  );
+export function facilitateTourSteps({ canShare }: { canShare: boolean }): FacilitateTourStep[] {
+  return FACILITATE_TOUR_STEPS.filter((step) => canShare || step.id !== 'share');
 }
 
 // Telemetry `type` token for a step-viewed event: 'session-strip' → 'FacilitateTourStepSessionStrip'.

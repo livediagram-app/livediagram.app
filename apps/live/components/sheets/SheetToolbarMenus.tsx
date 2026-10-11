@@ -77,9 +77,12 @@ export function SheetToolbarMenu({
   folded,
   onOpen,
   onClose,
+  highlight,
 }: {
   kind: ToolbarMenuKind;
   anchor: HTMLElement;
+  // A function to highlight in a family's menu (the toolbar's Search).
+  highlight?: string | undefined;
   actions: SheetActions;
   folded: FoldedButton[];
   onOpen: (kind: ToolbarMenuKind, anchor: HTMLElement) => void;
@@ -152,6 +155,7 @@ export function SheetToolbarMenu({
       {kind.startsWith('fn:') ? (
         <SheetFunctionMenu
           family={kind.slice(3) as FunctionFamily}
+          highlight={highlight}
           onPick={(name) => {
             onClose();
             insertFunction(c, actions, name);

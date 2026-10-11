@@ -52,6 +52,62 @@ export function isChartSource(v: unknown): v is ChartSource {
   );
 }
 
+// Where a chart sits in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): the px from the top-left corner of the
+// sheet's cells (A1's corner, at 100% zoom) to the chart's top-left. Its size is the element's own width and height.
+export type SheetAnchor = { x: number; y: number };
+
+// The farthest a chart sits into its sheet, either way: well past the widest sheet the engine allows.
+export const SHEET_ANCHOR_MAX = 1_000_000;
+
+export function isSheetAnchor(v: unknown): v is SheetAnchor {
+  if (typeof v !== 'object' || v === null) return false;
+  const { x, y, ...rest } = v as { x?: unknown; y?: unknown };
+  return (
+    Object.keys(rest).length === 0 &&
+    [x, y].every(
+      (n) => typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= SHEET_ANCHOR_MAX,
+    )
+  );
+}
+
+type AnchorFields = {
+  id: string;
+  type: string;
+  shape?: string;
+  chartSource?: ChartSource;
+  sheetAnchor?: SheetAnchor;
+  planSheet?: { sheetId: string };
+};
+
+// A chart that sits in a Sheet: one with both a source and an anchor (its Sheet may still be missing from the tab).
+export function isSheetAnchoredChart(el: AnchorFields): boolean {
+  return el.type === 'shape' && !!el.chartSource && !!el.sheetAnchor;
+}
+
+// The charts on a tab that its Sheets draw, by id: anchored charts whose Sheet is on the same tab. The canvas draws
+// none of these; an anchored chart whose Sheet is not there draws on the canvas at its own place.
+export function sheetDrawnChartIds(elements: readonly AnchorFields[]): ReadonlySet<string> {
+  const anchored = elements.filter(isSheetAnchoredChart);
+  if (anchored.length === 0) return EMPTY_IDS;
+  const sheets = new Set<string>();
+  for (const el of elements)
+    if (el.type === 'shape' && el.shape === 'plan-sheet' && el.planSheet)
+      sheets.add(el.planSheet.sheetId);
+  const out = new Set<string>();
+  for (const el of anchored) if (sheets.has(el.chartSource!.sheetId)) out.add(el.id);
+  return out.size ? out : EMPTY_IDS;
+}
+
+const EMPTY_IDS: ReadonlySet<string> = new Set();
+
+// The charts a Sheet of `sheetId` draws over its cells, in paint order.
+export function chartsInSheet<E extends AnchorFields>(
+  elements: readonly E[],
+  sheetId: string,
+): E[] {
+  return elements.filter((el) => isSheetAnchoredChart(el) && el.chartSource!.sheetId === sheetId);
+}
+
 type ChartFields = {
   shape: string;
   pieSlices?: PieSlice[];

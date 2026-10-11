@@ -42,6 +42,3 @@ export const BOARD_WIDGET_INFO: Record<BoardWidgetKind, { label: string; descrip
     description: 'Cards not done that nobody has changed in two weeks.',
   },
 };
-
-// The drag type a widget tile carries, so only a board's header takes it.
-export const PLAN_WIDGET_MIME = 'application/x-livediagram-plan-widget';

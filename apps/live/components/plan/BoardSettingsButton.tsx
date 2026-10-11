@@ -1,14 +1,19 @@
 'use client';
 
-// A board's own settings cog (docs/specs/026-plan/plan-board.md "The board set-up"): in its header, at the far right after Maximise,
-// for someone who may edit. It opens a popover holding the same four sections as the board's element menu's Board
-// (Board Setup, Swimlanes, Supported Cards, Card Layout), one open at a time, so the board is set up without the
-// right-click menu. A press outside or Escape closes it, handing focus back to the cog.
+// A board's settings cog (docs/specs/026-plan/plan-board.md "The board set-up"): in its header, at the far right after
+// Maximise, for someone who may edit. It selects the board and opens its element menu under itself (the menu a
+// right-click on the board opens: its Board and Cards sections, Style, Collaborate and the rest); pressed again it
+// closes it.
+import { Tooltip, lucideGlyph } from '@livediagram/ui';
+import { lucideSettings } from '@livediagram/icons/lucide';
 import type { ShapeElement } from '@livediagram/document';
-import { PlanBoardSectionsPanel } from '@/components/palette/PlanBoardMenuSection';
+import { openElementMenu } from '@/hooks/canvas/element-menu-opener';
 import type { PlanPalette } from './plan-palette';
-import { SettingsCog } from './SettingsCog';
 import { track } from '@/lib/telemetry';
+
+const CogIcon = lucideGlyph(lucideSettings, 16);
+
+const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 export function BoardSettingsButton({
   element,
@@ -18,12 +23,25 @@ export function BoardSettingsButton({
   palette: PlanPalette;
 }) {
   return (
-    <SettingsCog
-      label="Board Settings"
-      palette={palette}
-      onOpen={() => track('Plan', 'Opened', 'BoardSettings')}
-    >
-      {(close) => <PlanBoardSectionsPanel element={element} onClose={close} />}
-    </SettingsCog>
+    <Tooltip label="Board Settings">
+      <button
+        type="button"
+        aria-label="Board Settings"
+        aria-haspopup="menu"
+        // A menu trigger: the open menu's outside-press close leaves this press to the cog (a toggle).
+        data-context-menu-trigger
+        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10"
+        style={{ color: palette.muted }}
+        onPointerDown={stop}
+        onContextMenu={stop}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (openElementMenu(element.id, e.currentTarget.getBoundingClientRect()))
+            track('Plan', 'Opened', 'BoardSettings');
+        }}
+      >
+        <CogIcon />
+      </button>
+    </Tooltip>
   );
 }

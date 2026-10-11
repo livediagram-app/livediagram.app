@@ -29,7 +29,7 @@ describe('plan view budgets', () => {
       return n % 10 === 0 ? { ...it, type: 'project' } : it;
     });
     const start = performance.now();
-    ganttModel(many, phases, new Date(2026, 9, 5));
+    ganttModel(many, phases, new Date(2026, 9, 5), ['project']);
     calendarModel(many, phases, 2026, 9);
     breakdownModel(many, phases, { by: 'assignee' });
     statusMixModel(many);

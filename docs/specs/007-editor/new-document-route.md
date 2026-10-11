@@ -406,18 +406,19 @@ palette tool arms as normal). Presses inside the card, including its search
 and carousel, keep it open. The first-run welcome and the name prompt ask for
 an answer and never close this way.
 
-The **empty-canvas hint** is a subdued **bottom banner** (`EmptyCanvasBanner`),
-shown while the active tab has no elements — not the old centre-of-canvas card,
-which read as a half-finished modal. It is **not dismissible** (it simply goes
-away once the canvas has content). It shares the bottom-banner slot with the
-sign-in / theme banners (yielding to the sign-in one) and hides while a draw
-tool is armed or Quick Start is open, and in Illustrate mode (an empty page
-invites a layout in its own title bar, [Infographic pages](illustrate-pages.md)). Editors get a **Quick Start** button on
-it; viewers get a passive "nothing here yet" line. **On a phone** (below `sm`) it is a slim
-one-line chip, "Tab 1 is empty" and Quick Start, with no blurb or Help button. On every
-viewport it rides **above the bottom-right cluster** rather than in its row: the cluster carries
-the [Session strip](../012-collaboration/session-tools.md#the-session-strip), which reaches the
-banner's centred slot on a laptop-width screen.
+The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), as Start Planning
+and an empty page's own start sit in theirs, shown while the active tab has no elements. It is **not dismissible** (it
+goes once the canvas has content) and takes presses only on itself: the canvas around it still pans and a palette
+tool still places. It hides while a draw tool is armed or Quick Start is open, and in Draw mode (its dock is the hint,
+[Draw mode](../023-draw-mode/draw-mode.md)), Illustrate mode (an empty page invites a layout in its own title bar,
+[Infographic pages](illustrate-pages.md)) and Plan (Start Planning). The guest sign-in nudge sits at the foot of the
+canvas, clear of it, so the two can show together. The card: a small picture of what the tab's mode makes, in the
+brand's tints on a soft panel (Diagram: two shapes and an arrow to a decision; Facilitate: stickies, a vote and a
+timer; `EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), one line of what to do, in full (never cut short), then
+for an Editor **Quick Start** (the primary button) and **Help**. A viewer reads "Nothing here yet. The owner can build
+it out, and your view updates live."; a Participant is pointed at a sticky, text or an image. **On a phone** it is the
+same card, narrower (18rem), without Help (the help centre is a tap away in the Explorer). (It once sat in a bottom
+banner slot to stay out of the way; at the foot of an empty canvas it read as floating at random.)
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind
 the card: thick multi-colour curved lines that slowly flow along their paths via
@@ -456,7 +457,7 @@ default document name) without walking the wizard:
     redirects to the plain `/new` wizard rather than silently minting
     another blank document or trapping the user behind a page that always
     navigates forward again.
-  - The interactive tour's welcome offer ([Interactive editor tour ("Show me around")](editor-tour.md)) is not queued on
+  - The Diagram tour's welcome offer ([Diagram tour ("Show me around")](editor-tour.md)) is not queued on
     this path: the create fires before the document count resolves, and a
     Start Blank user has asked to get straight to the canvas.
   - **The wizard must never paint on this path, not even for a frame.**

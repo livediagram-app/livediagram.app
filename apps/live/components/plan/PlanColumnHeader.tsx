@@ -95,8 +95,9 @@ export function PlanColumnHeader({
             aria-label={`${column.name} column settings`}
             aria-haspopup="dialog"
             aria-expanded={open}
-            className={`-mr-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition hover:bg-black/5 focus-visible:opacity-100 group-hover:opacity-100 [@media(pointer:coarse)]:opacity-100 ${
-              open ? 'opacity-100' : 'opacity-0'
+            // Always shown, so a column's settings are found without hunting for them.
+            className={`-mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md transition hover:bg-black/5 dark:hover:bg-white/10 ${
+              open ? 'bg-black/5 dark:bg-white/10' : ''
             }`}
             style={{ color: palette.muted }}
             onPointerDown={(e) => e.stopPropagation()}

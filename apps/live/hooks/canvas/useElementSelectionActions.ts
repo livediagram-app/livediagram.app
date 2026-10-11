@@ -18,6 +18,7 @@ import {
   duplicateElements,
   sendManyToBack,
   isBoxed,
+  withSheetCharts,
   type Element,
   type Tab,
 } from '@livediagram/document';
@@ -115,7 +116,11 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // Locked elements can't be deleted: drop them from the delete set so
     // only the unlocked part of the selection (and arrows pinned to it)
     // goes. If the whole selection is locked, the delete is a no-op.
-    const targetIds = deletableIds(ids);
+    // A Sheet takes the charts anchored in it (docs/specs/029-sheets/sheet.md "Charts"), in the same undo step; a
+    // floating chart over it stays on the canvas.
+    const targetIds = deletableIds(
+      withSheetCharts(activeTab.elements, ids, { anchoredOnly: true }),
+    );
     if (targetIds.size === 0) return;
     guarded(targetIds, opts, () => removeSelected(targetIds));
   };
@@ -268,7 +273,13 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
       // Clone only, no connector arrow. Most duplicates don't need an arrow,
       // so adding one was usually noise to delete; draw one with the + menu's
       // Arrow action on the occasions you do want it.
-      const { newElements, idMap } = duplicateElements(activeTab.elements, ids, dx, dy);
+      // A Sheet's copy takes the charts it draws (docs/specs/029-sheets/sheet.md "Charts").
+      const { newElements, idMap } = duplicateElements(
+        activeTab.elements,
+        withSheetCharts(activeTab.elements, ids),
+        dx,
+        dy,
+      );
       const sourceCopyId = idMap.get(source.id);
       if (!sourceCopyId) return;
       commit((els) => [...els, ...newElements]);

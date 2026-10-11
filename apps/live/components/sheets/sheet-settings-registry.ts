@@ -40,6 +40,11 @@ export function usePublishSheetSettings(elementId: string, entry: SheetSettingsE
   );
 }
 
+// The entry now, outside React: the tab menu's Import CSV and Download CSV on a Sheet tab, at the press.
+export function sheetSettingsEntryOf(elementId: string): SheetSettingsEntry | undefined {
+  return entries.get(elementId);
+}
+
 export function useSheetSettingsEntry(elementId: string): SheetSettingsEntry | undefined {
   return useSyncExternalStore(
     subscribe,

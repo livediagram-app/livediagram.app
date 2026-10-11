@@ -9,7 +9,10 @@
 import {
   copiedSheetId,
   freshCopyFields,
+  readDashboard,
   relinkCopiedCharts,
+  remapDashboardElements,
+  remintDashboardIds,
   remapElementRefs,
   savableElements,
   type Element,
@@ -26,16 +29,19 @@ import type { ImportImageProgress } from '@/lib/import-images';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
-// Re-mint element ids (and remap pinned-arrow endpoints) so imported
-// elements can't collide with anything already on the document. Shared
-// with useTabActions' cross-document tab link, which copies elements the
-// same way.
-export const remintElementIds = (elements: Element[]): Element[] => {
-  const idMap = new Map<string, string>();
+// Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
+// the document, with the old-to-new maps of the element ids and of the Sheets copied with them. Shared with
+// remintTabElements, which a Duplicate goes through too.
+export function remintElements(elements: Element[]): {
+  elements: Element[];
+  ids: Map<string, string>;
+  sheetIds: Map<string, string>;
+} {
+  const ids = new Map<string, string>();
   const sheetIds = new Map<string, string>();
   const minted = elements.map((el) => {
     const id = crypto.randomUUID();
-    idMap.set(el.id, id);
+    ids.set(el.id, id);
     // A Sheet's copy frames a new sheet made from the original's (freshCopyFields).
     const sheet = el.type === 'shape' && el.shape === 'plan-sheet' ? freshCopyFields(el) : {};
     const copy = { ...el, id, ...sheet } as Element;
@@ -50,8 +56,29 @@ export const remintElementIds = (elements: Element[]): Element[] => {
   // nodes named parents on the SOURCE tab and paired portals lost their
   // partner. Element links are left alone: a link names its tab too, and
   // that is still the source tab, where the original element still is.
-  return remapElementRefs(next, idMap);
-};
+  return { elements: remapElementRefs(next, ids), ids, sheetIds };
+}
+
+// A tab's elements re-minted as above, its Dashboard layout (if any) following them: each element slot names its
+// element's new id, each figure from a Sheet the Sheet copied with it, and every row and slot takes a new id of its
+// own (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard"). The layout is read safely first, as a
+// file's is never trusted. Shared with useTabActions' Duplicate.
+export function remintTabElements<T extends Pick<Tab, 'elements' | 'dashboard'>>(tab: T): T {
+  const { elements, ids, sheetIds } = remintElements(tab.elements);
+  const layout = tab.dashboard === undefined ? undefined : readDashboard(tab.dashboard);
+  if (!layout) {
+    const { dashboard: _drop, ...rest } = tab;
+    return { ...rest, elements } as T;
+  }
+  const dashboard = remintDashboardIds(remapDashboardElements(layout, ids, sheetIds), () =>
+    crypto.randomUUID(),
+  );
+  return { ...tab, elements, dashboard };
+}
+
+// What a Dashboard tab refuses to import (null: it may): only a Dashboard tab's own JSON export replaces it.
+export const NOT_A_DASHBOARD =
+  "This file isn't a Dashboard. Export a Dashboard tab as JSON, then import that.";
 
 export type ImportFormat = 'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio';
 export type ImportProgressListener = (progress: ImportImageProgress) => void;
@@ -223,6 +250,10 @@ export function useTabImport({
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
+    // A Dashboard takes only a Dashboard's JSON (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
+    if (active?.kind === 'dashboard' && format !== 'json') {
+      return { status: 'error', error: NOT_A_DASHBOARD };
+    }
     if (format === 'drawio') return importDrawioInput({ kind: 'text', text }, onProgress);
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
@@ -265,7 +296,10 @@ export function useTabImport({
     const { parseImportedTab } = await import('@/lib/import-tab');
     const result = parseImportedTab(text);
     if (!result.ok) return { status: 'error', error: result.error };
-    replaceActiveTabContent({ ...result.tab, elements: remintElementIds(result.tab.elements) });
+    if (active?.kind === 'dashboard' && result.tab.kind !== 'dashboard') {
+      return { status: 'error', error: NOT_A_DASHBOARD };
+    }
+    replaceActiveTabContent(remintTabElements(result.tab));
     track('Tab', 'Imported', 'JSON');
     // The tab's boards and cards draw from the document's items: the file's come in after the tab.
     const landed = result.plan ? await importPlanItems(result.plan) : null;

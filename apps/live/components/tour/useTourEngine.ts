@@ -6,7 +6,7 @@ import { findTour, waitForSelector } from './tour-dom';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
 // The step runner every guided tour shares (docs/specs/007-editor/editor-tour.md "Mechanics",
-// docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the welcome tour and the Plan tour each own
+// docs/specs/026-plan/blueprints/plan-tour.md "Engine"): the Diagram, Plan and Facilitate tours each own
 // their offer, their steps and what ending means, and hand this the rest. Each step runs prepare
 // (opening the real panel / dropdown / menu it explains), waits for its target node, then reports a
 // rect for the dimming highlight ring. A watcher re-measures the target every 150ms so the highlight

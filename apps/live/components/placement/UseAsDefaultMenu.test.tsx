@@ -60,11 +60,12 @@ describe('UseAsDefaultMenu', () => {
     expect(screen.getByText('New documents that open as')).toBeTruthy();
     const items = screen.getAllByRole('menuitemcheckbox');
     expect(items.map((i) => i.textContent)).toEqual([
+      // The modes in mode order (EDITOR_MODES), then the kinds and template families.
       'Diagrams',
       'Whiteboards',
+      'Sessions',
       'Illustrate pages',
       'Plan boards',
-      'Sessions',
       'Event Storming boards',
       'Retrospectives',
       'Kanban boards',

@@ -1,5 +1,5 @@
-// The steps of the interactive editor tour (docs/specs/007-editor/editor-tour.md), in palette →
-// mode → explorer → canvas → tabs order. Each step names its anchor (`target`, a
+// The steps of the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026),
+// in palette → mode → canvas → tabs → theme order, all about diagramming. Each step names its anchor (`target`, a
 // data-tour-id) and drives the real chrome in `prepare` (opening the panel
 // / dropdown / menu it explains) through the TourApi facade TourHost
 // builds. `cleanup` undoes whatever prepare opened, and runs on every exit
@@ -18,7 +18,7 @@ export type TourApi = {
   closeContextMenu: () => void;
 };
 
-// A welcome-tour step: the shared step shape (tour-step.ts) over this tour's api.
+// A Diagram tour step: the shared step shape (tour-step.ts) over this tour's api.
 export type TourStep = TourStepOf<TourApi>;
 
 // The steps this surface actually has chrome for. Filtering up front (not
@@ -53,19 +53,19 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Welcome to livediagram',
-    body: 'We can help you to get the most out of livediagram, want us to show you the basics?',
+    title: 'Welcome to Diagram',
+    body: 'Diagram mode builds diagrams from shapes, arrows and the palette. Want a quick look at the basics?',
   },
   {
     id: 'palette',
     title: 'The Palette',
-    body: 'Everything you need to build an amazing diagram, click or drag what you want onto the canvas.',
+    body: 'Every shape, arrow and icon for your diagram lives here: click or drag what you want onto the canvas.',
     target: 'palette',
     prepare: ensurePaletteOpen,
   },
   {
     id: 'selection-modes',
-    title: 'Selection modes',
+    title: 'Selection Modes',
     body: 'This dropdown changes what your pointer does: Select to move and edit, Hand to pan, Eraser to remove, and more.',
     target: 'canvas-tool-menu',
     alsoHighlight: 'canvas-tool',
@@ -92,10 +92,10 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"), beside the
-    // menu button. Opens its menu, switches nobody's mode.
+    // menu button. Opens its menu, switches nobody's mode; the copy stays on diagramming.
     id: 'editor-mode',
-    title: 'Change Tab Mode',
-    body: 'Each tab works in one of five modes: Diagram for shapes, arrows and the palette, Draw for pens, the eraser and sketching by hand, Illustrate for pages, Plan for boards of items and Facilitate for running a session. Switch here, or press Shift+D.',
+    title: 'Tab Mode',
+    body: 'This tab is a diagram. To work on it another way, switch its mode here or press Shift+D; each mode has a tour of its own.',
     target: 'editor-mode-menu',
     alsoHighlight: 'editor-mode',
     // An event-storming board offers no switch, and nor does a phone (its tab menu's Opens in
@@ -110,24 +110,8 @@ export const TOUR_STEPS: TourStep[] = [
     cleanup: () => closeDropdown('editor-mode-menu', 'editor-mode'),
   },
   {
-    id: 'explorer',
-    title: 'The Explorer',
-    body: 'The menu button opens the Explorer: find your documents and folders without leaving the editor. Open, create, and organise from here.',
-    target: 'explorer',
-    // The Explorer is a popover under the top-left menu button (docs/specs/007-editor/toolbar-layout.md),
-    // so the step opens it there and rings the button + popover as one region.
-    alsoHighlight: 'dock-explorer',
-    prepare: async () => {
-      if (!findTour('explorer')) clickTour('dock-explorer');
-      await waitForSelector('[data-tour-id="explorer"]');
-    },
-    cleanup: () => {
-      if (findTour('explorer')) clickTour('dock-explorer');
-    },
-  },
-  {
     id: 'context-menu',
-    title: 'The element menu',
+    title: 'The Element Menu',
     body: 'Right-click any element (long-press on touch) to style it: colours, borders, text, and layers, plus links, notes, comments, and actions.',
     target: 'context-menu',
     prepare: (api) => api.openElementContextMenu(),
@@ -136,14 +120,14 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'tabs',
     title: 'Tabs',
-    body: 'One document can hold many pages: this is your current tab, and + adds another. Each tab also has a menu of helpful tools and ways to organise, cleanup and customise.',
+    body: 'One document can hold many diagrams, one per tab: this is your current tab, and + adds another. Each tab also has a menu of tools to organise, tidy and customise it.',
     // The active pill and the add button highlight as one region.
     target: 'active-tab',
     alsoHighlight: 'add-tab',
   },
   {
     id: 'theme-canvas',
-    title: 'Theme & canvas',
+    title: 'Theme & Canvas',
     body: "The paintbrush restyles the whole tab in one place: pick a theme for your elements and set the canvas background's colour, pattern, or animation.",
     target: 'canvas-theme',
     // The paintbrush dock button is desktop chrome (mobile reaches the
@@ -153,7 +137,7 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'outro',
     card: 'outro',
-    title: "You're ready to go",
+    title: "You're ready to diagram",
     body: "That's the basics, the canvas is yours. If you ever have a question, the help centre has a guide for it.",
   },
 ];

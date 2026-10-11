@@ -568,7 +568,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // (docs/specs/026-plan/plan-mode.md). Plan card: its caller names the item.
   if (kind === 'plan-board') return { ...base, planBoard: presetSetup('blank') };
   if (kind === 'plan-card') return { ...base, planCard: { itemId: '' } };
-  // Plan view: Status Breakdown unless its caller names the view.
+  // Plan view: Cards by Field unless its caller names the view.
   if (kind === 'plan-view') return { ...base, planView: { view: 'workload' } };
   // Sheet: its caller makes the sheet in the store and names it.
   if (kind === 'plan-sheet') return { ...base, planSheet: { sheetId: '' } };

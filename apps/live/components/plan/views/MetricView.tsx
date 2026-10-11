@@ -3,10 +3,13 @@
 // A metric (docs/specs/026-plan/plan-views.md "Metrics"): a board widget free on the canvas,
 // drawn as in a header, over every live card. It narrows nothing and offers no set-up.
 import { useMemo } from 'react';
+import { useToday } from '@/hooks/ui/useToday';
 import { ITEM_TYPES, metricBoard, type MetricKind } from '@livediagram/items';
 import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
 import { BoardWidgetView, type WidgetContext } from '../widgets/BoardWidgetView';
 import type { PlanViewProps } from './PlanViewView';
+import { MetricTile } from './MetricTile';
+import { metricModel, metricTier } from './metric-tile-model';
 
 const noop = () => {};
 const NO_QUICK = {};
@@ -18,11 +21,16 @@ export function MetricView({
   items,
   palette,
   fontFamily,
+  width,
+  height,
 }: PlanViewProps & { kind: MetricKind }) {
   const types = plan?.types ?? ITEM_TYPES;
   const phases = plan?.statusPhases ?? NO_PHASES;
   const board = useMemo(() => metricBoard(items.values(), phases, types), [items, phases, types]);
   const openItem = plan?.openItem ?? noop;
+  // One clock for the day: the tile's model and the widget read the same now, which moves on at midnight so a due or
+  // overdue count rolls over (useToday).
+  const now = useToday();
   const ctx: WidgetContext = {
     setup: board.setup,
     projection: board.projection,
@@ -34,12 +42,41 @@ export function MetricView({
     canFilterMine: null,
     trayOpen: false,
     onToggleTray: noop,
-    now: new Date(),
+    now,
     canEdit: false,
     onSetup: noop,
     onOpenItem: openItem,
   };
   const label = BOARD_WIDGET_INFO[kind].label;
+  // With room (a Dashboard slot, or sized up on the canvas), a tile; at its small canvas size, the header widget.
+  const tier = metricTier(width, height);
+  const model = useMemo(() => metricModel(kind, board, types, now), [kind, board, types, now]);
+  if (tier !== 'pill')
+    return (
+      <div
+        className="absolute inset-0"
+        onPointerDown={
+          plan?.planInput
+            ? (e) => {
+                if ((e.target as HTMLElement).closest('button')) e.stopPropagation();
+              }
+            : undefined
+        }
+      >
+        <MetricTile
+          kind={kind}
+          label={label}
+          model={model}
+          tier={tier}
+          width={width}
+          height={height}
+          palette={palette}
+          fontFamily={fontFamily}
+          loading={plan?.status === 'loading'}
+          onOpenItem={plan?.openItem}
+        />
+      </div>
+    );
   return (
     <div
       className="absolute inset-0 flex flex-col justify-center gap-1 overflow-hidden rounded-xl border px-3 py-1.5"

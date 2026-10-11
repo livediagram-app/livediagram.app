@@ -132,6 +132,8 @@ test.describe('editor modes', () => {
   test('a board placed in Plan stays on the tab in every mode', async ({ page, pageErrors }) => {
     await openBlank(page);
     await chooseMode(page, 'Plan');
+    // Start Planning: Boards in its rail, then the board.
+    await page.getByRole('button', { name: /^Board/ }).click();
     await page.getByRole('button', { name: /^Kanban/ }).click();
     await expect(boards(page)).toHaveCount(1);
 

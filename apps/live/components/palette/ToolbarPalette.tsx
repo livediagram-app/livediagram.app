@@ -18,7 +18,7 @@ import { ChevronDownIcon, EllipsisIcon, HoverCard, safeInlinePadding } from '@li
 import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@/components/primitives/SnapWidth';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
-import { TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
+import { BAND_TINT, TOOLBAR_CARD } from '@/components/chrome/toolbar-surface';
 import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
@@ -36,13 +36,18 @@ import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { RAIL_LEAVE_MS, ToolbarStripRail } from './ToolbarStripRail';
 import { usePaletteCatalogue } from './usePaletteCatalogue';
-import { paletteLandingCategory } from './palette-layouts';
+import { DASHBOARD_PALETTE_LANDING, paletteLandingCategory } from './palette-layouts';
 import type { PaletteProps } from './palette.types';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { STRIP_DIVIDER_ATTR } from './useEdgeDividers';
 import { StripPopover, useStripPopover } from './ToolbarStripPopover';
 import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
-import { useSheetFillingTab } from '@/hooks/plan/plan-cover-store';
+import {
+  useCoveringBoardId,
+  usePlanTabKind,
+  useSheetCovering,
+} from '@/hooks/plan/plan-cover-store';
+import { BoardCardsStrip } from './BoardCardsStrip';
 
 // The Toolbar layout's Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the
 // top centre of the canvas, the way Excalidraw's tool bar works. Selection
@@ -83,7 +88,7 @@ type Props = Pick<
     participant?: boolean;
   };
 // The strip's card, and the leading card beside it on a phone.
-const CARD_CLASS = `${TOOLBAR_CARD} ${PHONE_TOOLBAR_ITEMS}`;
+const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${PHONE_TOOLBAR_ITEMS}`;
 
 // With a leading card (a phone), the menu card sits at the left gutter and the
 // strip beside it rather than centred (docs/specs/007-editor/toolbar-layout.md
@@ -133,9 +138,14 @@ function Divider() {
 
 export function ToolbarPalette(props: Props) {
   const { canvasTool, esBoard, themeTint, pendingDraw, leading } = props;
-  // A Sheet filling its tab hides the palette (docs/specs/026-plan/plan-board.md "The palette follows what fills the
-  // screen"): the whole strip, or on a phone only its card, the menu beside it staying.
-  const sheetFilling = useSheetFillingTab();
+  // A Sheet covering the canvas, maximised or filling its tab, hides the palette (docs/specs/026-plan/plan-board.md
+  // "The palette follows what fills the screen"): nothing it offers lands in a Sheet. The whole strip, or on a phone
+  // only its card, the menu beside it staying. A board keeps it (its cards land there).
+  const sheetFilling = useSheetCovering();
+  // A board covering the canvas gives the strip to its own cards (BoardCardsStrip), apart from its controls; on a
+  // phone, where the menu shares the strip, the strip stays and narrows to Cards (coveredPaletteCategories).
+  const coveringBoard = useCoveringBoardId();
+  const boardCards = !!coveringBoard && !leading;
   const hidden = props.hidden || (sheetFilling && !leading);
   const participant = !!props.participant;
   // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
@@ -161,9 +171,14 @@ export function ToolbarPalette(props: Props) {
     () => (props.tabElements ?? []).some((el) => el.type === 'shape' && el.shape === 'plan-board'),
     [props.tabElements],
   );
+  // A Dashboard opens on its Popular (palette-layouts DASHBOARD) and offers no selection modes: its page covers the
+  // canvas, so there is nothing for a mode to act on (docs/specs/026-plan/plan-tabs.md).
+  const dashboardTab = usePlanTabKind() === 'dashboard';
   const defaultId = participant
     ? 'participate'
-    : paletteLandingCategory(editorMode, !!esBoard, hasPlanBoard);
+    : dashboardTab
+      ? DASHBOARD_PALETTE_LANDING
+      : paletteLandingCategory(editorMode, !!esBoard, hasPlanBoard);
   // Crossing an ES / non-ES tab boundary re-lands on the right default: the
   // host keys this component on `esBoard`, so a board change re-lands the category.
   const [categoryId, setCategoryId] = useState(defaultId);
@@ -175,6 +190,12 @@ export function ToolbarPalette(props: Props) {
     const from = paletteLandingCategory('plan', false, hadPlanBoard);
     if (editorMode === 'plan' && categoryId === from)
       setCategoryId(paletteLandingCategory('plan', false, hasPlanBoard));
+  }
+  // Arriving on a Dashboard opens its Popular; leaving one, the mode's landing (adjusted during render).
+  const [wasDashboard, setWasDashboard] = useState(dashboardTab);
+  if (wasDashboard !== dashboardTab) {
+    setWasDashboard(dashboardTab);
+    setCategoryId(defaultId);
   }
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
@@ -352,7 +373,14 @@ export function ToolbarPalette(props: Props) {
         <PaletteTintProvider tint={themeTint}>
           {/* Whole-pixel wide where centred (see CardWidth). */}
           <StripRow leading={leading} leadingRef={leadingRef}>
-            {sheetFilling ? null : (
+            {boardCards && coveringBoard ? (
+              <BoardCardsStrip
+                boardId={coveringBoard}
+                elements={props.tabElements ?? []}
+                actions={tileActions}
+                pendingDraw={pendingDraw}
+              />
+            ) : sheetFilling ? null : (
               <CardWidth swipe={swipe}>
                 {/* The tour's Palette anchor (docs/specs/007-editor/editor-tour.md) is the card, not the
                 full-width row around it, so the ring frames the strip. */}
@@ -385,22 +413,26 @@ export function ToolbarPalette(props: Props) {
                   ) : null}
                   {esBoard && !participant ? null : (
                     <>
-                      <PaletteDropdown
-                        ariaLabel="Selection mode"
-                        dataTourId="canvas-tool"
-                        hoverCardTitle="Selection Mode"
-                        hoverCardDescription="Choose how the pointer acts on the canvas."
-                        value={canvasTool}
-                        variant="toolbar"
-                        iconOnly
-                        autoHeight
-                        grid
-                        menuClassName=""
-                        groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-                        onChange={onCanvasToolChange}
-                        options={canvasToolOptions}
-                      />
-                      <Divider />
+                      {dashboardTab ? null : (
+                        <>
+                          <PaletteDropdown
+                            ariaLabel="Selection mode"
+                            dataTourId="canvas-tool"
+                            hoverCardTitle="Selection Mode"
+                            hoverCardDescription="Choose how the pointer acts on the canvas."
+                            value={canvasTool}
+                            variant="toolbar"
+                            iconOnly
+                            autoHeight
+                            grid
+                            menuClassName=""
+                            groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                            onChange={onCanvasToolChange}
+                            options={canvasToolOptions}
+                          />
+                          <Divider />
+                        </>
+                      )}
                       {/* The category picker sits between the selection mode and the
                     tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
                     Its width follows its label's text, which is fractional:

@@ -212,7 +212,17 @@ export type TemplateKind =
   | 'budget-planner'
   | 'timesheet'
   | 'contact-list'
-  | 'task-tracker';
+  | 'task-tracker'
+  // Spreadsheet templates added with the catalogue's job-based categories (docs/specs/026-plan/plan-templates.md
+  // "Spreadsheet templates"): one Sheet each, filling its tab.
+  | 'invoice'
+  | 'expense-report'
+  | 'loan-calculator'
+  | 'sales-pipeline'
+  | 'inventory'
+  | 'guest-list'
+  | 'grade-book'
+  | 'habit-tracker';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -418,6 +428,62 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Task Tracker',
     description:
       'A spreadsheet on the canvas: tasks with owners, status, priority, dates and how much is done, beside a how-to.',
+    extra: true,
+  },
+  {
+    kind: 'invoice',
+    title: 'Invoice',
+    description:
+      'A spreadsheet filling the tab: who it is from and to, line items with tax worked out, and the amount due.',
+    extra: true,
+  },
+  {
+    kind: 'expense-report',
+    title: 'Expense Report',
+    description:
+      'A spreadsheet filling the tab: claims with dates and receipts, what is reimbursable, totalled by category.',
+    extra: true,
+  },
+  {
+    kind: 'loan-calculator',
+    title: 'Loan Calculator',
+    description:
+      'A spreadsheet filling the tab: a loan’s amount, rate and term, the monthly payment and a yearly schedule.',
+    extra: true,
+  },
+  {
+    kind: 'sales-pipeline',
+    title: 'Sales Pipeline',
+    description:
+      'A spreadsheet filling the tab: deals by stage, each weighted by its probability, with a forecast and a chart.',
+    extra: true,
+  },
+  {
+    kind: 'inventory',
+    title: 'Inventory',
+    description:
+      'A spreadsheet filling the tab: stock on hand, its value, what is due a reorder, and a chart by item.',
+    extra: true,
+  },
+  {
+    kind: 'guest-list',
+    title: 'Guest List',
+    description:
+      'A spreadsheet filling the tab: invitations, RSVPs, plus-ones and dietary needs, with the headcount totalled.',
+    extra: true,
+  },
+  {
+    kind: 'grade-book',
+    title: 'Grade Book',
+    description:
+      'A spreadsheet filling the tab: each student’s scores, their average and grade, and how the class is doing.',
+    extra: true,
+  },
+  {
+    kind: 'habit-tracker',
+    title: 'Habit Tracker',
+    description:
+      'A spreadsheet filling the tab: a week of ticks against each habit’s goal, the streaks counted and charted.',
     extra: true,
   },
   {
@@ -880,213 +946,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
   },
 ];
 
-// Picker grouping. Templates are organised into a handful of
-// categories so the picker reads as titled sections (Diagrams /
-// Planning / Design / Technical) instead of one long flat grid. The
-// mapping lives beside the catalogue (mirroring TEMPLATE_PATTERNS) so a
-// new template slots into a section with a one-line edit; the picker
-// renders sections in TEMPLATE_CATEGORIES order and skips empties.
-export type TemplateCategory =
-  | 'mindmaps'
-  | 'flowcharts'
-  | 'hierarchies'
-  | 'planning'
-  | 'project-management'
-  | 'strategy'
-  | 'design'
-  | 'technical';
-
-// Category descriptions are kept to a similar length (~40-46 chars) so the
-// overview cards read as a tidy, even set rather than ragged.
-export const TEMPLATE_CATEGORIES: { id: TemplateCategory; label: string; description: string }[] = [
-  {
-    id: 'mindmaps',
-    // Id kept (links and telemetry name it); the label says what the shelf is for.
-    label: 'Brainstorm',
-    description: 'Mind maps and sketchnotes for getting ideas out of heads.',
-  },
-  {
-    id: 'flowcharts',
-    label: 'Flowcharts',
-    description: 'Step-by-step process and decision flows.',
-  },
-  {
-    id: 'hierarchies',
-    label: 'Hierarchies',
-    description: 'Org charts, goal trees, sitemaps and pyramids.',
-  },
-  {
-    // id stays 'planning' (nothing saved references it; label is the
-    // user-facing name) — Agile artefacts: boards, retros, prioritisation.
-    id: 'planning',
-    label: 'Agile',
-    description: 'Boards, retrospectives and prioritisation.',
-  },
-  {
-    id: 'project-management',
-    label: 'Projects',
-    description: 'Plans, timelines, risks and meeting agendas.',
-  },
-  {
-    id: 'strategy',
-    label: 'Strategy',
-    description: 'Analysis frameworks, decisions and Venn sets.',
-  },
-  {
-    id: 'design',
-    label: 'Design',
-    description: 'Wireframes, decks, mock-ups and floor plans.',
-  },
-  {
-    id: 'technical',
-    label: 'Technical',
-    description: 'Architecture, schema and sequence diagrams.',
-  },
-];
-
-const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
-  // Mind maps: radial / tree / bubble brainstorming layouts.
-  mindmap: 'mindmaps',
-  'mindmap-tree': 'mindmaps',
-  'mindmap-bubble': 'mindmaps',
-  // Flowcharts: process + decision flows. Blank lives here too: it is shown
-  // as a separate quick-pick in the picker, never inside a category grid, so
-  // its category is nominal. The map is a Record over TemplateKind, so every
-  // kind needs an entry whether or not a grid ever reads it.
-  blank: 'flowcharts',
-  flowchart: 'flowcharts',
-  swimlane: 'flowcharts',
-  'decision-tree': 'flowcharts',
-  'approval-workflow': 'flowcharts',
-  'data-flow': 'flowcharts',
-  // Hierarchies: top-down structure, goal trees + cause-effect.
-  orgchart: 'hierarchies',
-  pyramid: 'hierarchies',
-  fishbone: 'hierarchies',
-  'okr-tree': 'hierarchies',
-  'opportunity-solution-tree': 'hierarchies',
-  sitemap: 'hierarchies',
-  // Planning: agile boards, retrospectives, prioritisation, story maps.
-  kanban: 'planning',
-  // Plan templates (docs/specs/026-plan/plan-templates.md). Blank Plan is a quick-pick; its category is nominal.
-  'blank-plan': 'planning',
-  // Facilitate's blank is a quick-pick too; its category is nominal.
-  'blank-session': 'planning',
-  'project-planner': 'project-management',
-  'bug-triage': 'planning',
-  'team-retro': 'planning',
-  'weekly-planner': 'project-management',
-  'content-calendar': 'project-management',
-  'hiring-pipeline': 'project-management',
-  okrs: 'project-management',
-  'product-launch': 'project-management',
-  'feedback-board': 'planning',
-  'budget-planner': 'project-management',
-  timesheet: 'project-management',
-  'contact-list': 'project-management',
-  'task-tracker': 'project-management',
-  retrospective: 'planning',
-  'start-stop-continue': 'planning',
-  'mad-sad-glad': 'planning',
-  'four-ls': 'planning',
-  sailboat: 'planning',
-  'prioritization-matrix': 'planning',
-  'user-story-map': 'planning',
-  'affinity-map': 'planning',
-  // Live sessions run on a Q&A board (docs/specs/012-collaboration/qa-board.md): meetings, which the Agile
-  // category's retros already make a home for.
-  'lean-coffee': 'planning',
-  'town-hall': 'planning',
-  // Projects: time-ordered schedules, roadmaps + ownership.
-  gantt: 'project-management',
-  timeline: 'project-management',
-  'milestone-timeline': 'project-management',
-  'milestone-timeline-vertical': 'project-management',
-  roadmap: 'project-management',
-  'raci-matrix': 'project-management',
-  'risk-matrix': 'project-management',
-  'meeting-agenda': 'project-management',
-  article: 'project-management',
-  'objectives-planner': 'project-management',
-  // Strategy: business / product analysis, decision frameworks + set
-  // relationships (Venn).
-  swot: 'strategy',
-  flywheel: 'strategy',
-  journey: 'strategy',
-  'comparison-table': 'strategy',
-  venn: 'strategy',
-  'business-model-canvas': 'strategy',
-  'empathy-map': 'strategy',
-  'user-persona': 'strategy',
-  'stakeholder-map': 'strategy',
-  funnel: 'strategy',
-  // Design: wireframes, slides + visual mock-ups.
-  'mobile-wireframe': 'design',
-  'laptop-wireframe': 'design',
-  'browser-wireframe': 'design',
-  'slide-deck': 'design',
-  storyboard: 'design',
-  'logo-design': 'design',
-  'live-card': 'design',
-  // A floor plan is a layout drawing, so it sits with the wireframes and
-  // mock-ups rather than with the developer diagrams in Technical.
-  'floor-plan': 'design',
-  'crazy-eights': 'design',
-  // Technical / developer diagrams.
-  'system-architecture': 'technical',
-  'cloud-architecture': 'technical',
-  'er-diagram': 'technical',
-  'sequence-diagram': 'technical',
-  'uml-class': 'technical',
-  'state-machine': 'technical',
-  'event-storming': 'technical',
-  // Nominal, like Blank: the picker shows the other two blanks only as quick-picks.
-  whiteboard: 'design',
-  'blank-illustration': 'design',
-  // Draw templates (docs/specs/007-editor/templates-by-mode.md).
-  sketchnote: 'mindmaps',
-  'rich-picture': 'strategy',
-  'comic-strip': 'design',
-  'doodle-warmup': 'planning',
-  'paper-prototype': 'design',
-  'journey-doodle': 'strategy',
-  'pre-mortem': 'planning',
-  'idea-garden': 'mindmaps',
-  // Illustrate templates.
-  'event-poster': 'project-management',
-  'year-in-review': 'strategy',
-  resume: 'design',
-  'recipe-card': 'design',
-  'data-story': 'strategy',
-  'how-it-works': 'flowcharts',
-  versus: 'strategy',
-  'social-carousel': 'design',
-  'incident-postmortem': 'technical',
-};
-
-// The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
-// most people start, open by default above the categories. Not a category of
-// its own (every kind here still lives in its real one); the five blanks lead it, one per editor
-// mode (docs/specs/007-editor/templates-by-mode.md "Five blanks"), so the picker needs no separate
-// blank card.
-export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
-  'blank',
-  'whiteboard',
-  'blank-illustration',
-  'blank-plan',
-  'blank-session',
-  'mindmap',
-  'sketchnote',
-  'sailboat',
-  'flowchart',
-  'orgchart',
-  'article',
-];
-
-export function templateCategory(kind: TemplateKind): TemplateCategory {
-  return TEMPLATE_CATEGORY[kind];
-}
-
 // True when `value` names a template in the catalogue. The guard for a kind
 // that arrives as a plain string from outside the type system: the MCP
 // `template` argument, the `/new?template=<kind>` query (docs/specs/007-editor/new-document-route.md).
@@ -1156,6 +1015,14 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   timesheet: 'grid',
   'contact-list': 'grid',
   'task-tracker': 'grid',
+  invoice: 'grid',
+  'expense-report': 'grid',
+  'loan-calculator': 'grid',
+  'sales-pipeline': 'grid',
+  inventory: 'grid',
+  'guest-list': 'grid',
+  'grade-book': 'grid',
+  'habit-tracker': 'grid',
   'mobile-wireframe': 'graph',
   'laptop-wireframe': 'graph',
   venn: 'blank',

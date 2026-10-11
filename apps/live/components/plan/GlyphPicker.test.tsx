@@ -60,7 +60,7 @@ describe('the glyph picker', () => {
     expect((screen.getByLabelText('Glyph category') as HTMLSelectElement).value).toBe('all');
     fireEvent.change(search, { target: { value: 'zzz' } });
     expect(screen.queryAllByRole('radio')).toHaveLength(0);
-    expect(screen.getByText('No glyphs match “zzz”.')).toBeTruthy();
+    expect(screen.getByText('No glyphs match “zzz”')).toBeTruthy();
   });
 
   it('picks a glyph, closes and hands focus back', () => {

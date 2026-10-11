@@ -95,7 +95,8 @@ collaboration band** ([Canvas and palette](../008-canvas/canvas-and-palette.md) 
    Note alone.
 
 Both categories keep the old section's gate (boxed elements only, so arrows
-are excluded just like today), each gets its own accordion section id
+are excluded just like today, and never a Plan item: a board, Plan card,
+visualisation or Sheet takes none, [Nothing attached to Plan items](../026-plan/plan-mode.md#nothing-attached-to-plan-items)), each gets its own accordion section id
 (`'collaborate'`, `'resources'`), and the band separator rules are
 unchanged. The **Assign Action** tile:
 

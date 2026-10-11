@@ -180,18 +180,24 @@ export async function startEventStormingRow(page: Page): Promise<void> {
   await notes.nth(2).waitFor();
 }
 
-// Dismiss the quick-tour offer (docs/specs/007-editor/editor-tour.md) when this page is owed one.
+// Dismiss the Diagram tour's offer (docs/specs/007-editor/editor-tour.md) when this page is owed one.
 // It lands a BEAT AFTER the canvas does, and its modal overlay swallows pointer events, so a test that
 // merely checks whether it is showing YET races it and then finds its drags going nowhere, silently.
 // The offer comes only while /new's handoff flag is in sessionStorage (lib/tour-pending.ts): without
 // the flag (a reload after declining it, a document opened by URL) nothing is owed, and this returns
 // at once instead of waiting out a timeout. With it, wait until the offer shows, or until the flag
-// clears without one (the tour already seen).
+// clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
+// keeps it owed without showing it (the mode switch says which mode the tab is in).
 export async function dismissQuickTour(page: Page): Promise<void> {
   const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
   const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);
+  const elsewhere = () =>
+    page.evaluate(() => {
+      const mode = document.querySelector('[data-editor-mode]')?.getAttribute('data-editor-mode');
+      return mode !== undefined && mode !== null && mode !== 'diagram';
+    });
   await expect
-    .poll(async () => (await decline.isVisible()) || !(await owed()), {
+    .poll(async () => (await decline.isVisible()) || !(await owed()) || (await elsewhere()), {
       message: 'the owed tour offer never showed',
     })
     .toBe(true);

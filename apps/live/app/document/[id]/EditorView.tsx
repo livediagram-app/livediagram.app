@@ -22,6 +22,7 @@ import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { PlanProvider } from '@/components/plan/PlanContext';
+import { DashboardPage } from '@/components/plan/dashboard/DashboardPage';
 import { SheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
@@ -37,6 +38,7 @@ import { TabBar } from '@/components/chrome/TabBar';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
 import { PollPromptSheet } from '@/components/panels/PollPromptSheet';
@@ -56,7 +58,7 @@ import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
 import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';
 import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-detect';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
-import { draftNotesOf } from '@livediagram/document';
+import { draftNotesOf, readDashboard } from '@livediagram/document';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -76,6 +78,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
+import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -248,27 +251,21 @@ export function EditorView() {
   const signInTimerEnabled = clerkEnabled && !clerkUserId && appChrome && !signInDismissed;
   const signInDelayElapsed = useDelayedReveal(SIGNIN_BANNER_DELAY_MS, signInTimerEnabled);
   const showSignInBanner = signInTimerEnabled && !zenMode && signInDelayElapsed;
-  // Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a bottom banner while the active tab has no
-  // elements. Not dismissible — it just goes away once there's content. Hidden
-  // in zen / embed, while a draw tool is armed, or while Quick Start is open;
-  // yields the bottom slot to the sign-in banner.
-  const showEmptyCanvasBanner =
-    hydrated &&
-    !zenMode &&
-    !embedMode &&
-    !showSignInBanner &&
-    !templateGridOpen &&
-    !pendingDraw &&
-    // Draw mode's dock is its own hint (docs/specs/023-draw-mode/draw-mode.md).
-    !drawMode &&
-    // An empty infographic page invites a layout in its own title bar
-    // (docs/specs/007-editor/illustrate-pages.md).
-    ctx.editorMode.mode !== 'illustrate' &&
-    // Plan offers its boards in the middle instead (docs/specs/026-plan/plan-mode.md "Starting a board").
-    ctx.editorMode.mode !== 'plan' &&
-    activeTab.elements.length === 0;
+  // Empty-canvas hint (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a card in the middle of
+  // the canvas while the active tab has no elements. Not dismissible: it goes once there's content. The sign-in nudge
+  // sits at the bottom, clear of it, so the two show together.
+  const showEmptyCanvasBanner = showsEmptyCanvasCard({
+    hydrated,
+    zen: zenMode,
+    embed: embedMode,
+    quickStartOpen: templateGridOpen,
+    drawToolArmed: !!pendingDraw,
+    mode: ctx.editorMode.mode,
+    elementCount: activeTab.elements.length,
+  });
   // An empty Plan tab: the board types, in the middle of the canvas. Anything already drawn (a board, a shape, a
   // view) hides it; the palette's Boards still add one.
+  const dashboardHasRows = (readDashboard(activeTab.dashboard)?.rows.length ?? 0) > 0;
   const showPlanBoardPicker =
     hydrated &&
     !zenMode &&
@@ -276,7 +273,10 @@ export function EditorView() {
     !isReadOnly &&
     !templateGridOpen &&
     ctx.editorMode.mode === 'plan' &&
-    activeTab.elements.length === 0;
+    (activeTab.kind === 'dashboard' ? !dashboardHasRows : activeTab.elements.length === 0);
+  // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
+  // Start Planning again, a new choice replacing it.
+  const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
   // The photo draft awaiting a decision, and the session-local view state
   // that goes with it (docs/specs/021-event-storming/event-storming.md Phase 8).
   const draftNotes = draftNotesOf(activeTab.elements);
@@ -371,7 +371,7 @@ export function EditorView() {
           onRenameFolder={renameTabFolder}
           activeTabHasContent={activeTab.elements.length > 0}
           onSelect={selectTab}
-          onAdd={addTab}
+          onAdd={() => addTab()}
           onRename={renameTab}
           onDuplicate={duplicateTab}
           onDelete={deleteTab}
@@ -625,32 +625,61 @@ export function EditorView() {
                                 placementClassName="bottom-0 z-[var(--z-overlay)] pb-16"
                               />
                             ) : null}
-                            {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md) — replaces the old centre-of-canvas card
-          with a subdued, dismissible bottom banner so a blank document reads as
-          intentionally blank. */}
                             {/* What a pasted board brought across (docs/specs/020-import-export/board-scene.md). */}
                             <BoardSceneNotice
                               notice={boardSceneInsert.notice}
                               onClose={boardSceneInsert.dismissNotice}
                             />
+                            {showDashboard ? (
+                              <DashboardPage
+                                // One page per Dashboard: opening another draws it still (useSlotEnter).
+                                key={activeTab.id}
+                                tab={activeTab}
+                                tabs={tabs}
+                                // A locked tab's Dashboard reads as a Viewer's does (plan-tabs.md "Dashboard tab").
+                                canEdit={ctx.can.level === 'edit' && !ctx.activeTabLocked}
+                                actions={ctx.planTabs}
+                                openTab={selectTab}
+                                loadTabs={loadAllTabs}
+                                loadedTabIds={ctx.loadedTabIds}
+                                deleteTab={deleteTab}
+                                releaseSheets={ctx.releaseSheets}
+                                renameTab={renameTab}
+                              />
+                            ) : null}
                             {showPlanBoardPicker ? (
                               <PlanBoardPicker
+                                // Each choice makes the tab its kind (docs/specs/026-plan/plan-tabs.md).
                                 onPick={(preset) => {
                                   const c = ctx.getViewportCenter();
-                                  ctx.dropPaletteItem('plan-board', c.x, c.y, { choice: preset });
+                                  ctx.planTabs.startElementTab('board', () =>
+                                    ctx.dropPaletteItem('plan-board', c.x, c.y, { choice: preset }),
+                                  );
                                 }}
                                 onPickSheet={(start) => {
                                   const c = ctx.getViewportCenter();
-                                  ctx.dropPaletteItem(
-                                    'plan-sheet',
-                                    c.x,
-                                    c.y,
-                                    start ? { choice: start } : undefined,
+                                  ctx.planTabs.startElementTab('sheet', () =>
+                                    ctx.dropPaletteItem(
+                                      'plan-sheet',
+                                      c.x,
+                                      c.y,
+                                      // Empty Sheet: a blank grid, with no Setup Sheet (plan-tabs.md "Names").
+                                      { choice: start ?? BLANK_SHEET_CHOICE },
+                                    ),
                                   );
                                 }}
+                                onDashboard={ctx.planTabs.startDashboard}
+                                // Something Else: the Quick Start, on Everything.
                                 onQuickStart={openTemplatePicker}
+                                onTemplate={(kind) => void ctx.chooseTemplate(kind)}
+                                tabs={tabs}
+                                loadTabs={loadAllTabs}
+                                onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
+                                onVisualisation={ctx.planTabs.startVisualisationTab}
                               />
                             ) : null}
+                            {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
+          middle of an empty canvas, so a blank document reads as intentionally blank. */}
                             {showEmptyCanvasBanner ? (
                               <EmptyCanvasBanner
                                 tabName={activeTab.name}
@@ -661,8 +690,8 @@ export function EditorView() {
                             ) : null}
                             {/* Offer to match the editor chrome to the active tab's theme
           (dark theme -> dark mode, light theme -> light mode). Hidden in
-          zen / embed like the other floating prompts, and yields the
-          bottom-centre slot to the sign-in / empty-canvas banners. */}
+          zen / embed like the other floating prompts, and yields to the
+          sign-in nudge and the empty-canvas card. */}
                             {zenMode ||
                             !appChrome ||
                             minimalChrome ||

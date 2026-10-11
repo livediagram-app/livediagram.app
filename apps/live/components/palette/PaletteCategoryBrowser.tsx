@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode, useRef, useState } from 'react';
+import { NoMatches } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { ToolsBreadcrumb, ToolsCategoryGrid, type ToolsCategory } from './palette-tools-nav';
 import { track } from '@/lib/telemetry';
@@ -41,7 +42,8 @@ type Props<T> = {
   // Telemetry `type` tokens for the two interactions worth counting: which
   // categories people open, and whether they search instead (docs/specs/017-telemetry/telemetry.md).
   telemetry: { openedType: string; searchedType: string };
-  emptyMessage: (query: string) => string;
+  // What the catalogue holds, plural and lowercase ("icons"), for its no-match empty state.
+  things: string;
   // True while an async catalogue chunk is still in flight. Without it an
   // empty grid reads as "nothing matches" when it means "not here yet".
   loading?: boolean;
@@ -64,7 +66,7 @@ export function PaletteCategoryBrowser<T>({
   onQueryChange,
   searchInput,
   telemetry,
-  emptyMessage,
+  things,
   loading = false,
   loadingMessage = 'Loading…',
   rootLeadIn,
@@ -105,7 +107,7 @@ export function PaletteCategoryBrowser<T>({
         matches.length > 0 ? (
           renderItems(matches)
         ) : (
-          <p className="px-1 py-2 text-center text-[11px] text-slate-400">{emptyMessage(query)}</p>
+          <NoMatches things={things} query={query} onClear={() => onQueryChange('')} />
         )
       ) : openCategory ? (
         <>

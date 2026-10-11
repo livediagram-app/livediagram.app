@@ -27,8 +27,6 @@ function header(canRename: boolean) {
         canEdit
         canRename={canRename}
         loadFailed={false}
-        widgetDropAt={null}
-        flashWidget={null}
         onWidgets={vi.fn()}
         onSetup={onSetup}
         onOpenItem={vi.fn()}

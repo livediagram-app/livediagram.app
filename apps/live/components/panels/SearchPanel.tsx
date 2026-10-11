@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { LocalOnlyPill } from '@/components/primitives/LocalOnlyPill';
-import { SearchIcon, useEscape } from '@livediagram/ui';
+import { NoMatches, SearchIcon, useEscape } from '@livediagram/ui';
 import type { Tab } from '@livediagram/document';
 import {
   buildSearchResults,
@@ -290,9 +290,24 @@ export function SearchPanel({
         </div>
         <div className="max-h-[60vh] overflow-y-auto py-1">
           {groups.length === 0 ? (
-            <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              {query ? 'No matches.' : 'Start typing to search.'}
-            </p>
+            query.trim() ? (
+              // The shared empty state (docs/specs/004-interface-design/empty-states.md), naming what is searched.
+              <NoMatches
+                size="regular"
+                className="py-6"
+                things={
+                  tabs
+                    ? 'documents, tabs, elements or help articles'
+                    : 'documents, folders or help articles'
+                }
+                query={query}
+                onClear={() => setQuery('')}
+              />
+            ) : (
+              <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                Start typing to search.
+              </p>
+            )
           ) : (
             groups.map((group) => {
               const baseIndex = flatItems.findIndex((f) => f === group.items[0]);

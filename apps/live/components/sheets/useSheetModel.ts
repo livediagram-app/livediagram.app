@@ -3,22 +3,24 @@
 // One Sheet element's view of the sheet store (blueprint sheet-store.md "Editor slice"): the store of its document
 // (attached to the room through the bridge once), its tab loaded, its sheet made when it was just placed or copied,
 // and the Plan cards handed to formulas that read them. Re-renders when the store moves on.
-import { useEffect, useMemo, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import {
   copyTitle,
   emptyLayout,
   isTemplateStart,
-  templateSheet,
+  templateSheetWithCharts,
   nextSheetTitle,
-  setupWrite,
-  sheetStarter,
+  designWrite,
+  sheetTemplate,
   sheetToJson,
+  TEMPLATE_LOOK,
   uniqueSheetTitle,
   type Sheet,
   type Workbook,
 } from '@livediagram/sheets';
 import { cardSourceOf } from '@livediagram/items';
-import type { ShapeElement } from '@livediagram/document';
+import { templateChartElements } from '@livediagram/templates/template-sheets';
+import { chartsInSheet, type ShapeElement } from '@livediagram/document';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import {
   registerSheetSource,
@@ -30,6 +32,8 @@ import {
 import type { PlanContextValue } from '@/components/plan/PlanContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { sheetStoreOf, type SheetStore, type TabStatus } from './sheet-store-client';
+import { useSheetHomeTab } from './sheet-home-tab';
+import { retitleSheets } from './sheet-rename';
 import { sheetPresenceFor } from './sheet-presence-store';
 import { markCardTableSheet } from '@/hooks/sheets/card-table-sheets';
 import { CSV_TRUNCATED, csvWrites } from './sheet-csv';
@@ -71,23 +75,23 @@ function fillFromCsv(
   if (made.truncated) toast(CSV_TRUNCATED);
 }
 
-// A sheet placed already set up (the Plan tour's example sheet): its start in the Header look, header frozen, as
-// part of placing it (undone by removing it), so never an undo step of its own.
+// A sheet placed already set up (a Dashboard slot's template Sheet): its template in the Banded look, header frozen,
+// as part of placing it (undone by removing it), so never an undo step of its own. Its chart is left out: a slot
+// shows the grid, and Insert Chart adds one on the Sheet's own tab.
 function setUpNow(
   store: SheetStore,
   tabId: string,
   sheetId: string,
-  start: NonNullable<PlacedSheet['setUp']>,
+  template: NonNullable<PlacedSheet['setUp']>,
   dark: boolean,
 ) {
-  const write = setupWrite(store.workbook(tabId), sheetId, {
-    start: sheetStarter(start, Date.now()),
-    look: 'header',
+  const made = designWrite(store.workbook(tabId), sheetId, sheetTemplate(template, Date.now()), {
+    look: TEMPLATE_LOOK,
     freezeHeader: true,
     size: 'default',
     dark,
   });
-  if (write) store.write(sheetId, write, { undoable: false });
+  if (made) store.write(sheetId, made.write, { undoable: false });
 }
 
 export const SHEET_TOO_BIG_TO_PASTE =
@@ -117,6 +121,7 @@ export function useSheetModel(
       receive: (op) => store.receive(op),
       title: (id) => store.sheet(id)?.title,
       release: (ids) => store.release(ids),
+      retitle: (ids, from, to) => retitleSheets(store, ids, from, to),
       presence: (from, op) => presence.receive(from, op),
       resync: () => store.resync(),
       reannounce: () => presence.reannounce(),
@@ -134,8 +139,10 @@ export function useSheetModel(
   const ref = element.planSheet;
   const sheetId = ref?.sheetId ?? '';
   const known = sheetId ? store.sheet(sheetId) : undefined;
-  // A sheet already loaded knows its tab; a new or copied one is on the tab open now.
-  const tabId = known?.tabId ?? bridge.activeTabId;
+  // A sheet already loaded knows its tab; a new or copied one is on the tab it is shown from (a Dashboard slot showing
+  // a Sheet tab), else on the tab open now.
+  const homeTab = useSheetHomeTab();
+  const tabId = known?.tabId ?? homeTab ?? bridge.activeTabId;
   const status = store.status(tabId);
 
   useEffect(() => {
@@ -158,7 +165,8 @@ export function useSheetModel(
         id: sheetId,
         tabId,
         title,
-        layout: placed.csv || placed.setUp ? layout : { ...layout, setupPending: true },
+        layout:
+          placed.csv || placed.setUp || placed.blank ? layout : { ...layout, setupPending: true },
       });
       if (placed.setUp) setUpNow(store, tabId, sheetId, placed.setUp, dark);
       if (placed.start) rememberSetupStart(sheetId, placed.start);
@@ -170,10 +178,28 @@ export function useSheetModel(
     // this canvas, and the mark dropped quietly (saved and sent, no undo step). Someone else making it at the same
     // moment wins: their sheet loads.
     if (ref?.start && isTemplateStart(ref.start)) {
-      const made = templateSheet({ id: sheetId, tabId, start: ref.start, now: Date.now(), dark });
-      if (made) {
+      const built = templateSheetWithCharts({
+        id: sheetId,
+        tabId,
+        start: ref.start,
+        now: Date.now(),
+        dark,
+      });
+      if (built) {
+        // The template's charts, placed beside the Sheet once the server takes this person's sheet (quietly, no undo
+        // step). Two editors drawing it at once both make it; only the one whose sheet was taken adds the charts, so
+        // they are never added twice.
+        const addCharts = () =>
+          bridge.tickElements((els) => {
+            const host = els.find(
+              (el): el is ShapeElement =>
+                el.id === element.id && el.type === 'shape' && el.planSheet?.sheetId === sheetId,
+            );
+            if (!host || chartsInSheet(els, sheetId).length > 0) return els;
+            return [...els, ...templateChartElements(host, sheetId, built.charts)];
+          });
         store.create(
-          { ...made, id: sheetId, title: uniqueSheetTitle(made.title, titles) },
+          { ...built.sheet, id: sheetId, title: uniqueSheetTitle(built.sheet.title, titles) },
           undefined,
           {
             onRefused: (code) => {
@@ -181,15 +207,19 @@ export function useSheetModel(
               store.resync();
               return true;
             },
+            ...(built.charts.length ? { onCreated: addCharts } : {}),
           },
         );
       }
+      // The mark dropped at once, quietly, so no one else makes it again.
       bridge.tickElements((els) =>
-        els.map((el) =>
-          el.id === element.id && el.type === 'shape' && el.planSheet?.start
-            ? { ...el, planSheet: (({ start: _s, ...rest }) => rest)(el.planSheet) }
-            : el,
-        ),
+        els.some((el) => el.id === element.id && el.type === 'shape' && !!el.planSheet?.start)
+          ? els.map((el) =>
+              el.id === element.id && el.type === 'shape' && el.planSheet?.start
+                ? { ...el, planSheet: (({ start: _s, ...rest }) => rest)(el.planSheet) }
+                : el,
+            )
+          : els,
       );
       return;
     }
@@ -247,6 +277,18 @@ export function useSheetModel(
   useEffect(() => {
     if (sheet) markCardTableSheet(sheetId, hasCardTable);
   }, [sheet, sheetId, hasCardTable]);
+
+  // A Sheet tab and its sheet share one name (docs/specs/026-plan/plan-tabs.md "Names"): when the title changes while
+  // drawn (renamed here, by a collaborator or an agent, or undone), the tab it fills follows. Not on first sight, so
+  // opening a document never rewrites a tab; only someone who may shape the Sheet.
+  const title = sheet?.title;
+  const seenTitle = useRef(title);
+  useEffect(() => {
+    const before = seenTitle.current;
+    if (title !== undefined) seenTitle.current = title;
+    if (before !== undefined && title && title !== before && bridge.canShape)
+      bridge.sheetRetitled(sheetId, title);
+  }, [title, sheetId, bridge]);
 
   return { store, sheet, workbook, status, version };
 }

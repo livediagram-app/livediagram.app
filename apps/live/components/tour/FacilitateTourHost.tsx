@@ -4,11 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
-import { FACILITATE_TOUR_RELAUNCH_EVENT, FACILITATE_TOUR_START_EVENT } from '@/lib/facilitate-tour';
+import { FACILITATE_TOUR_RELAUNCH_EVENT } from '@/lib/facilitate-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
-import { hasTourPending } from '@/lib/tour-pending';
 import { findTour } from './tour-dom';
 import {
   facilitateTourSteps,
@@ -19,7 +18,7 @@ import { FacilitateTourArt } from './FacilitateTourArt';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 
-// The settle delay before the offer, as the welcome and Plan tours'.
+// The settle delay before the offer, as the Diagram and Plan tours'.
 export const OFFER_DELAY_MS = 800;
 
 const FACILITATE_TOUR_COPY = {
@@ -32,21 +31,16 @@ const NO_API: FacilitateTourApi = {};
 
 // Orchestrates the Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md). Mounted once in
 // EditorView beside TourHost; renders nothing until a person who has not seen it is in Facilitate mode with an
-// editor they can use, no other tour is on screen and the welcome tour's offer is not still owed, and the
-// settle delay has passed, or the Settings row asks for a rerun. So a newcomer in Facilitate is offered the
-// welcome tour first and this one as soon as it ends. It places nothing: its steps point at the chrome.
+// editor they can use, no other tour is on screen and the settle delay has passed, or the Settings row asks
+// for a rerun. It no longer waits for the Diagram tour, which never runs in Facilitate. It places nothing: its
+// steps point at the chrome.
 export function FacilitateTourHost() {
   const ctx = useEditorContext();
   const apiRef = useLatest(NO_API);
 
   // Whether the header's Share button is on this surface, read when the tour starts.
   const [canShare, setCanShare] = useState(true);
-  // Started from the welcome tour's closing card: straight into the steps, no welcome card of its own.
-  const [fromWelcome, setFromWelcome] = useState(false);
-  const steps = useMemo(
-    () => facilitateTourSteps({ canShare, withWelcome: !fromWelcome }),
-    [canShare, fromWelcome],
-  );
+  const steps = useMemo(() => facilitateTourSteps({ canShare }), [canShare]);
   const engine = useTourEngine<FacilitateTourApi>({
     steps,
     apiRef,
@@ -65,9 +59,6 @@ export function FacilitateTourHost() {
 
   const inFacilitate = ctx.editorMode.mode === 'facilitate';
   const seen = ctx.userPreferences?.facilitateTourSeen === true;
-  // After the welcome tour: someone who has not seen it is offered it first (TourHost treats it as owed
-  // while they are in Facilitate), and this tour follows once it is answered.
-  const welcomeSeen = ctx.userPreferences?.tourSeen === true;
   const canWork =
     ctx.hydrated &&
     // The synced preferences are in, so an answer given on another device holds here too.
@@ -108,21 +99,20 @@ export function FacilitateTourHost() {
   const endTourRef = useLatest(endTour);
   const engineRef = useLatest(engine);
 
-  // The offer: armed, in Facilitate, usable, not seen, and no other tour on screen or owed. The welcome
-  // tour ending re-renders this through useActiveTour, so this tour follows it.
+  // The offer: armed, in Facilitate, usable, not seen, and no other tour on screen. Another tour ending
+  // re-renders this through useActiveTour, so this tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inFacilitate || !canWork || otherTour || !welcomeSeen || hasTourPending()) return;
+    if (!inFacilitate || !canWork || otherTour) return;
     const t = setTimeout(() => {
       setArmed(false);
       debugLog('[facilitate-tour] offer');
       setCanShare(findTour('share') !== null);
-      setFromWelcome(false);
       engineRef.current.start();
       track('UI', 'Opened', 'FacilitateTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [armed, active, seen, inFacilitate, canWork, otherTour, welcomeSeen, engineRef]);
+  }, [armed, active, seen, inFacilitate, canWork, otherTour, engineRef]);
 
   // Settings rerun (the Show Tours › "Facilitate" row, turned on from off + closed): offers again in
   // Facilitate, and otherwise the next time the person enters it (the row has cleared the preference).
@@ -134,24 +124,6 @@ export function FacilitateTourHost() {
     window.addEventListener(FACILITATE_TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(FACILITATE_TOUR_RELAUNCH_EVENT, onRelaunch);
   }, [inFacilitateRef]);
-
-  // The welcome tour's closing card ("Show Me Facilitate"): starts at the first step, whatever the seen-guard
-  // says (the welcome tour has just marked this tour answered, so it never pops up again on its own).
-  const canStartRef = useLatest(inFacilitate && canWork);
-  useEffect(() => {
-    const onStart = () => {
-      if (!canStartRef.current) return;
-      setArmed(false);
-      setCanShare(findTour('share') !== null);
-      setFromWelcome(true);
-      engineRef.current.start();
-      debugLog('[facilitate-tour] start from the welcome tour');
-      track('UI', 'Selected', 'FacilitateTourFromWelcome');
-      track('UI', 'Started', 'FacilitateTour');
-    };
-    window.addEventListener(FACILITATE_TOUR_START_EVENT, onStart);
-    return () => window.removeEventListener(FACILITATE_TOUR_START_EVENT, onStart);
-  }, [canStartRef, engineRef]);
 
   // Ends as skipped when the tour can no longer run where it started: edit rights gone, Facilitate left,
   // or another tab opened.

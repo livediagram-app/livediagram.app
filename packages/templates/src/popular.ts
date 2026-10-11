@@ -1,30 +1,74 @@
-// Popular under a mode filter (docs/specs/007-editor/templates-by-mode.md "The mode filter"): Popular's own
-// templates of that mode (its blank first), topped up from the mode's best so it never shows fewer than
-// POPULAR_PER_MODE. Everything keeps Popular as the catalogue lists it. Shared by the editor's template
-// step and the marketing gallery, so the two shelves can never disagree.
+// The Popular shelf (docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/
+// templates-by-mode.md "The mode filter"): where most people start, a short curated list per mode filter, each
+// opening with its blank(s). Shared by the editor's template step and the marketing gallery, so the two shelves can
+// never disagree.
 import type { EditorMode } from '@livediagram/document';
-import { templateEditorMode } from './template-modes';
-import { POPULAR_TEMPLATE_KINDS, TEMPLATES, type TemplateKind } from './templates';
+import { TEMPLATES, type TemplateKind } from './templates';
 
-export const POPULAR_PER_MODE = 5;
+export type PopularChoice = 'all' | EditorMode;
 
-export const MODE_BEST: Readonly<Record<EditorMode, readonly TemplateKind[]>> = {
-  diagram: ['swot', 'timeline', 'flowchart'],
-  draw: ['journey-doodle', 'comic-strip', 'idea-garden', 'rich-picture'],
-  illustrate: ['event-poster', 'year-in-review', 'social-carousel', 'data-story'],
-  plan: ['project-planner', 'kanban', 'team-retro', 'bug-triage'],
-  facilitate: ['retrospective', 'town-hall', 'lean-coffee', 'crazy-eights'],
+export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
+  // The five blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
+  all: [
+    'blank',
+    'whiteboard',
+    'blank-session',
+    'blank-illustration',
+    'blank-plan',
+    'mindmap',
+    'flowchart',
+    'kanban',
+    'sailboat',
+    'budget-planner',
+    'orgchart',
+    'sketchnote',
+    'article',
+  ],
+  diagram: ['blank', 'flowchart', 'mindmap', 'orgchart', 'swot', 'timeline', 'system-architecture'],
+  draw: [
+    'whiteboard',
+    'sketchnote',
+    'journey-doodle',
+    'comic-strip',
+    'idea-garden',
+    'rich-picture',
+  ],
+  illustrate: [
+    'blank-illustration',
+    'article',
+    'slide-deck',
+    'event-poster',
+    'year-in-review',
+    'social-carousel',
+  ],
+  plan: [
+    'blank-plan',
+    'project-planner',
+    'kanban',
+    'budget-planner',
+    'team-retro',
+    'bug-triage',
+    'invoice',
+  ],
+  facilitate: [
+    'blank-session',
+    'sailboat',
+    'retrospective',
+    'town-hall',
+    'lean-coffee',
+    'crazy-eights',
+  ],
 };
+
+// Popular under Everything (the marketing gallery's and the step's default shelf).
+export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = POPULAR_BY_MODE.all;
+
+// The fewest cards any mode's Popular holds (popular.test.ts pins every list to it).
+export const POPULAR_PER_MODE = 5;
 
 const LISTED = new Set(TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind));
 
-export function popularKindsFor(choice: 'all' | EditorMode): TemplateKind[] {
-  const popular = POPULAR_TEMPLATE_KINDS.filter(
-    (k) => LISTED.has(k) && (choice === 'all' || templateEditorMode(k) === choice),
-  );
-  if (choice === 'all' || popular.length >= POPULAR_PER_MODE) return popular;
-  const extra = MODE_BEST[choice].filter(
-    (k) => LISTED.has(k) && !popular.includes(k) && templateEditorMode(k) === choice,
-  );
-  return [...popular, ...extra].slice(0, Math.max(POPULAR_PER_MODE, popular.length));
+/** Popular for a mode filter: its curated list, hidden templates left out. */
+export function popularKindsFor(choice: PopularChoice): TemplateKind[] {
+  return POPULAR_BY_MODE[choice].filter((k) => LISTED.has(k));
 }

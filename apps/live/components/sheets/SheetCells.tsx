@@ -5,7 +5,7 @@
 // over empty neighbours to its right; numbers too wide for their column show fewer decimals, then scientific,
 // then ####. Memoised on what it draws, so moving the selection redraws none of it.
 import { memo, type CSSProperties } from 'react';
-import { resolveFontStack } from '@livediagram/document';
+import { cellColours, isLightColor, resolveFontStack } from '@livediagram/document';
 import {
   cellKey,
   displayValue,
@@ -85,6 +85,13 @@ function shownValue(v: Value): { text: string; pending: boolean } {
 
 function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
   const { sheet, workbook, geometry: g, scroll, palette, locale } = p;
+  // Stored colours are drawn for this Sheet's surface: pale fills tinted on a dark one, ink kept readable (sheet.md
+  // "Readable cells").
+  const surface = {
+    fill: palette.surface,
+    ink: palette.text,
+    dark: !isLightColor(palette.surface),
+  };
   const { rows, cols } = sheet.layout;
   const showGrid = sheet.layout.showGrid !== false;
   const out: React.ReactNode[] = [];
@@ -125,12 +132,13 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
           width += g.cols[k + 1]! - g.cols[k]!;
         }
       }
+      const colours = cellColours(f, surface);
       const style: CSSProperties = {
         left: box.x,
         top: box.y,
         width: box.w,
         height: box.h,
-        backgroundColor: f?.bg ?? (m ? palette.surface : undefined),
+        backgroundColor: colours.fill ?? (m ? palette.surface : undefined),
       };
       out.push(
         <div
@@ -186,7 +194,7 @@ function RegionCells({ region, ...p }: CellsProps & { region: Region }) {
               ? palette.muted
               : shown.kind === 'error'
                 ? ERROR_INK
-                : (f?.fc ?? palette.text),
+                : colours.ink,
             justifyContent: align === 'r' ? 'flex-end' : align === 'c' ? 'center' : 'flex-start',
             // Middle unless the cell says otherwise.
             alignItems: f?.va === 't' ? 'flex-start' : f?.va === 'b' ? 'flex-end' : 'center',

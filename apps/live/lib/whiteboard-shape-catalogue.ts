@@ -49,10 +49,11 @@ const EXCLUDED_CATEGORIES = new Set([
   'components',
   'plan-boards',
   'plan-cards',
-  'plan-widgets',
   'plan-metrics',
   'plan-visualisations',
   'plan-sheets',
+  'dashboard-layout',
+  'dashboard-cards',
 ]);
 
 // The palette tile behind each flyout shape that has one; Line and Arrow have none.

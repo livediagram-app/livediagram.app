@@ -30,6 +30,12 @@ describe('a screen inside an element', () => {
     expect(scaleOf()).toBe('');
   });
 
+  it('never draws past 100%: a little zoom in is held too', () => {
+    show(1.2);
+    const s = Number(/scale\(([\d.]+)\)/.exec(scaleOf())![1]);
+    expect(1.2 * s).toBeCloseTo(1);
+  });
+
   it('is held at the cap when zoomed in past it', () => {
     show(3);
     const s = Number(/scale\(([\d.]+)\)/.exec(scaleOf())![1]);

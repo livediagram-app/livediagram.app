@@ -66,12 +66,15 @@ const NO_MOVE = () => {};
 
 export function useCanvasChromePanels({
   props,
+  planVoting,
   chromeHidden,
   isMobile,
   panelWiringFor,
   panelsOn,
 }: {
   props: CanvasChromeProps;
+  // Plan offers Timer and Vote (usePlanVoting).
+  planVoting: boolean;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
@@ -414,7 +417,7 @@ export function useCanvasChromePanels({
       ? activeDockPanel
       : null;
   // Only the tools the mode's strip offers (docs/specs/012-collaboration/session-tools.md).
-  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true);
+  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true, planVoting);
   const sessionTools = stripTools ? props.sessionTools : undefined;
   const sessionButtonGone =
     sessionSegment !== null &&

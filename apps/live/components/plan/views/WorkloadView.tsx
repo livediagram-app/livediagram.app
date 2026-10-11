@@ -3,7 +3,7 @@
 // Cards by Field (docs/specs/026-plan/plan-views.md "Cards by Field", once Workload by Person): a bar per value of
 // the field it groups by (Assignee unless set: a person, a priority, a type, a state, a label, a custom field's
 // value), and the empty group last, as long as their cards against the most, split Not Started, In Progress and
-// Done.
+// Done. The rows share the view's height and the bars thicken, and labels grow, where there is room.
 import { useMemo } from 'react';
 import {
   PLAN_VISUALISATION_LABELS,
@@ -11,22 +11,38 @@ import {
   STATUS_PHASE_LABELS,
   breakdownGroupingOf,
   breakdownModel,
+  cardsInStatuses,
 } from '@livediagram/items';
 import { PersonDisc } from '../PersonDisc';
 import { PHASE_COLOURS, PhaseLegend, ViewFrame, viewState } from './view-frame';
+import { workloadLayout } from './view-layout';
 import type { PlanViewProps } from './PlanViewView';
 
 const NO_PHASES = new Map();
+// The Statuses setting leaves nothing (docs/specs/026-plan/plan-views.md "Statuses").
+const NO_MATCH = 'No cards in the chosen statuses.';
 
-export function WorkloadView({ plan, items, palette, fontFamily, settings }: PlanViewProps) {
+export function WorkloadView({
+  plan,
+  items,
+  palette,
+  fontFamily,
+  width,
+  height,
+  settings,
+}: PlanViewProps) {
   const phases = plan?.statusPhases ?? NO_PHASES;
   const { by, field } = breakdownGroupingOf(settings);
   const types = plan?.types;
   const statusNames = plan?.statusNames;
+  // Only the cards in the chosen statuses, when the view names some.
+  const statuses = settings.statuses;
+  const counted = useMemo(() => cardsInStatuses(items, statuses), [items, statuses]);
   const model = useMemo(
-    () => breakdownModel(items.values(), phases, { by, field }, types, statusNames),
-    [items, phases, by, field, types, statusNames],
+    () => breakdownModel(counted.values(), phases, { by, field }, types, statusNames),
+    [counted, phases, by, field, types, statusNames],
   );
+  const layout = workloadLayout(width, height, model.rows.length);
   return (
     <ViewFrame
       title={PLAN_VISUALISATION_LABELS.workload}
@@ -35,11 +51,19 @@ export function WorkloadView({ plan, items, palette, fontFamily, settings }: Pla
       palette={palette}
       fontFamily={fontFamily}
       state={viewState(plan, model.total > 0)}
-      empty="No cards yet. Add cards to a board to see how they split."
+      empty={
+        settings.statuses ? NO_MATCH : 'No cards yet. Add cards to a board to see how they split.'
+      }
     >
-      <div className="absolute inset-0 flex flex-col gap-2 px-3 py-2.5">
-        <PhaseLegend palette={palette} />
-        <ul className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
+      <div className="absolute inset-0 flex flex-col gap-1 p-3">
+        <div className="flex shrink-0 justify-end" style={{ minHeight: 20 }}>
+          <PhaseLegend palette={palette} />
+        </div>
+        {/* Centred only while every row fits: centring an overflowing list would push its top rows above the
+            scroll origin, out of reach. */}
+        <ul
+          className={`flex min-h-0 flex-1 flex-col ${layout.scrolls ? 'overflow-y-auto' : 'justify-center overflow-hidden'}`}
+        >
           {model.rows.map((row) => {
             const name = row.label;
             const spoken = STATUS_PHASES.map(
@@ -48,11 +72,15 @@ export function WorkloadView({ plan, items, palette, fontFamily, settings }: Pla
             return (
               <li
                 key={row.key}
-                className="grid shrink-0 items-center gap-2 text-[12px]"
-                style={{ gridTemplateColumns: 'minmax(0, min(160px, 30%)) minmax(0, 1fr)' }}
+                className="grid shrink-0 items-center gap-3"
+                style={{
+                  gridTemplateColumns: `minmax(0, ${layout.labelColumn}px) minmax(0, 1fr)`,
+                  height: layout.rowHeight,
+                  fontSize: layout.font,
+                }}
                 aria-label={`${name}: ${row.total} cards, ${spoken}`}
               >
-                <span className="flex min-w-0 items-center gap-1.5">
+                <span className="flex min-w-0 items-center gap-2">
                   {row.person ? (
                     <PersonDisc person={row.person} />
                   ) : by === 'assignee' ? (
@@ -72,8 +100,9 @@ export function WorkloadView({ plan, items, palette, fontFamily, settings }: Pla
                 <span className="flex min-w-0 items-center gap-2">
                   <span
                     aria-hidden
-                    className="flex h-4 min-w-0 overflow-hidden rounded"
-                    style={{ width: `${(row.total / model.max) * 100}%` }}
+                    data-bar
+                    className="flex min-w-0 overflow-hidden rounded"
+                    style={{ width: `${(row.total / model.max) * 100}%`, height: layout.bar }}
                   >
                     {STATUS_PHASES.map((p) =>
                       row.counts[p] ? (
@@ -89,8 +118,8 @@ export function WorkloadView({ plan, items, palette, fontFamily, settings }: Pla
                     )}
                   </span>
                   <span
-                    className="shrink-0 text-[11px] font-semibold tabular-nums"
-                    style={{ color: palette.muted }}
+                    className="shrink-0 font-semibold tabular-nums"
+                    style={{ color: palette.muted, fontSize: layout.countFont }}
                   >
                     {row.total}
                   </span>

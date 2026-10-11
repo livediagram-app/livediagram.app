@@ -9,8 +9,9 @@
 // press in here never closes it. Escape (taken before the dialog's own) and a press outside close it; opening
 // focuses its first control and closing hands focus back to the anchor.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Portal, useClickOutside, useEscape } from '@livediagram/ui';
+import { Portal, useClickOutside } from '@livediagram/ui';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import { usePopoverLayer } from './popover-stack';
 
 const GAP = 6; // space between the anchor and the panel
 const FOCUSABLE =
@@ -75,7 +76,9 @@ export function AnchoredPopover({
   name,
   width,
   onClose,
+  onEscape,
   beside,
+  keepOpenWithin,
   children,
 }: {
   anchor: HTMLElement;
@@ -83,8 +86,13 @@ export function AnchoredPopover({
   name: string;
   width: number;
   onClose: () => void;
+  // Escape asked first: true when it was taken (a drill-down went back a level), the panel then staying open.
+  onEscape?: () => boolean;
   // Open beside this panel rather than under the anchor (placeBeside).
   beside?: HTMLElement | null;
+  // A press inside what this selector matches (a menu's flyout, a picker it opened, portalled elsewhere) is not a
+  // press outside.
+  keepOpenWithin?: string;
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -95,6 +103,12 @@ export function AnchoredPopover({
     onClose();
     anchor.focus();
   };
+  const closeRef = useRef(close);
+  const escapeRef = useRef(onEscape);
+  useEffect(() => {
+    closeRef.current = close;
+    escapeRef.current = onEscape;
+  });
 
   useLayoutEffect(() => {
     const place = () => {
@@ -130,10 +144,21 @@ export function AnchoredPopover({
     panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
   }, []);
 
-  // Escape closes this panel only, before the dialog's own Escape.
-  useEscape(close, { capture: true, stopPropagation: true, preventDefault: true });
-  // A press outside closes it; a press on the anchor is the anchor's own toggle.
+  // Escape closes this panel only, before the dialog's own Escape, and only while it is the top popover
+  // (popover-stack.ts): a popover it opened (a colour picker, a ConfirmPopover) takes Escape first, and this one
+  // stays.
+  const { withinAbove } = usePopoverLayer(panel, (e) => {
+    if (e.key !== 'Escape') return;
+    e.stopPropagation();
+    e.preventDefault();
+    if (escapeRef.current?.()) return;
+    closeRef.current();
+  });
+  // A press outside closes it; a press on the anchor is the anchor's own toggle, and one in a popover it opened
+  // (a picker, a ConfirmPopover) is that popover's.
   useClickOutside(panel, (e) => {
+    if (withinAbove(e.target)) return;
+    if (keepOpenWithin && e.target instanceof Element && e.target.closest(keepOpenWithin)) return;
     if (!(e.target instanceof Node && anchor.contains(e.target))) onClose();
   });
 

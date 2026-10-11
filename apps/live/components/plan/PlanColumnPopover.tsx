@@ -53,9 +53,8 @@ import {
 } from './column-status-picks';
 import { usePlan } from './PlanContext';
 import { RemoveColumnPopover } from './RemoveColumnPopover';
-import { ColourPicker } from '@/components/colour/ColourPicker';
+import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
-import { COLOUR_PICKER_WIDTH } from '@/components/colour/colour-metrics';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
 
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();
@@ -65,11 +64,10 @@ const NO_COLOUR = 'none';
 const NO_COLOUR_OPTION = [noColour(NO_COLOUR, 'No colour')];
 const COLUMN_STANDARD = [standardGroup('strong', 'light', 'hex')];
 
-// The colour picker's width and the body's 12px padding either side.
-const WIDTH = COLOUR_PICKER_WIDTH + 24;
+// The popover's width: its rows (the colour now a swatch, the picker in its own popover) need no more.
+const WIDTH = 288;
 const GAP = 6;
 
-const LABEL = 'mb-1.5 block text-[13px] text-slate-700 dark:text-slate-200';
 const STEP =
   'w-8 text-[15px] text-slate-600 transition enabled:hover:bg-slate-100 disabled:opacity-35 dark:text-slate-300 dark:enabled:hover:bg-slate-800';
 // The element menu's plain row (PortalMenu MenuActionRow `plain`): icon left, 13px.
@@ -162,10 +160,12 @@ export function PlanColumnPopover({
     true,
     '[data-column-cog], [data-add-column-picker], [data-anchored-popover]',
   );
+  // Whether the colour picker is open: its Escape closes it alone, this popover staying.
+  const [picking, setPicking] = useState(false);
   useEscape(() => onClose(true), {
     capture: true,
     stopPropagation: true,
-    enabled: !adding && !removingAt,
+    enabled: !adding && !removingAt && !picking,
   });
 
   const wip = column.wipLimit ?? null;
@@ -227,16 +227,26 @@ export function PlanColumnPopover({
         </p>
       ) : null}
       <div className="flex flex-col gap-3 px-3 py-3">
-        <div>
-          <span className={LABEL}>Colour</span>
-          {/* The one colour picker (docs/specs/004-interface-design/colour-picker.md): No colour first, the
-              strong standard colours for light paper, then Custom colours with the board's column colours. */}
-          <ColourPicker
+        {/* The one colour picker (docs/specs/004-interface-design/colour-picker.md), condensed to its swatch at the
+            row's end like the WIP limit's stepper; pressed, the picker opens in a popover beside it: No colour
+            first, the strong standard colours for light paper, then Custom colours with the board's column colours. */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <span className="block text-[13px] text-slate-700 dark:text-slate-200">Colour</span>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              {column.color ? 'The column’s band and header' : 'No colour'}
+            </p>
+          </div>
+          <ColourSwatchButton
             label="Colour"
+            swatch={column.color ?? 'transparent'}
+            none={!column.color}
+            className="h-8 w-8 shrink-0"
             value={column.color ?? NO_COLOUR}
             leading={NO_COLOUR_OPTION}
             standard={COLUMN_STANDARD}
             yours={yours}
+            onOpenChange={setPicking}
             onPick={(id) =>
               onChange(
                 recolourColumn(setup, column.id, id === NO_COLOUR ? null : id.toLowerCase()),

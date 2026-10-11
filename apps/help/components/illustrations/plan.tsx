@@ -429,24 +429,57 @@ export function PlanBoardPickerScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      <Label x={210} y={32} size={14} weight={700} tone="strong" anchor="middle">
+      <Label x={34} y={36} size={13} weight={700} tone="strong">
         Start Planning
       </Label>
-      <Tabs x={110} y={46} items={['Boards', 'Spreadsheets']} active={0} tabW={100} h={22} />
+      {/* The search, at the header's right. */}
+      <rect x={282} y={22} width={104} height={20} rx={6} className="fill-white stroke-slate-200" />
+      <Label x={294} y={36} size={8} tone="muted">
+        Find a board…
+      </Label>
+      <line x1={20} y1={52} x2={400} y2={52} className="stroke-slate-200" strokeWidth={1} />
+      {/* The rail: Boards chosen. */}
+      <line x1={112} y1={52} x2={112} y2={282} className="stroke-slate-200" strokeWidth={1} />
+      {['Recommended', 'Boards', 'Spreadsheets', 'Dashboards', 'More Templates'].map((name, i) => (
+        <g key={name}>
+          {i === 1 ? (
+            <rect x={26} y={60 + i * 22} width={80} height={18} rx={5} className="fill-brand-50" />
+          ) : null}
+          {i === 4 ? (
+            <line
+              x1={30}
+              y1={60 + i * 22 - 3}
+              x2={102}
+              y2={60 + i * 22 - 3}
+              className="stroke-slate-200"
+              strokeWidth={1}
+            />
+          ) : null}
+          <Label
+            x={34}
+            y={72 + i * 22}
+            size={8.5}
+            weight={i === 1 ? 700 : 500}
+            tone={i === 1 ? 'accent' : 'strong'}
+          >
+            {name}
+          </Label>
+        </g>
+      ))}
       {tiles.map((t, i) => {
         const col = i % 3;
         const row = Math.floor(i / 3);
-        const x = 36 + col * 118;
-        const y = 80 + row * 66;
-        const pic = { x: x + 6, y: y + 5, w: 98, h: 34 };
+        const x = 122 + col * 92;
+        const y = 62 + row * 72;
+        const pic = { x: x + 5, y: y + 5, w: 76, h: 34 };
         const cw = t.cols ? (pic.w - (t.cols + 1) * 3) / t.cols : 0;
         return (
           <g key={t.name}>
             <rect
               x={x}
               y={y}
-              width={110}
-              height={60}
+              width={86}
+              height={64}
               rx={8}
               className={i === 1 ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
               strokeWidth={1.5}
@@ -461,7 +494,7 @@ export function PlanBoardPickerScene() {
             />
             {t.cols === 0 ? (
               <rect
-                x={pic.x + 36}
+                x={pic.x + 25}
                 y={pic.y + 6}
                 width={26}
                 height={22}
@@ -502,7 +535,7 @@ export function PlanBoardPickerScene() {
                 strokeWidth={1}
               />
             )}
-            <Label x={x + 55} y={y + 50} size={10} weight={600} tone="strong" anchor="middle">
+            <Label x={x + 7} y={y + 52} size={9} weight={600} tone="strong">
               {t.name}
             </Label>
           </g>

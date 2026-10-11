@@ -907,7 +907,7 @@ export const MIND_OUTLINE_OPENED = opened(
 
 export const TOUR_OFFERED = opened(
   'Tour Offered',
-  'The welcome tour offered.',
+  'The Diagram tour (the welcome tour until October 2026) offered.',
   (t) => t === 'TourOffer',
 );
 

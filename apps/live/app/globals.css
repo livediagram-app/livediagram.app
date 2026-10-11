@@ -145,6 +145,12 @@
      outside the transition budget; reduced motion stops them. */
   --animate-sync-spin: sync-spin 2s linear infinite;
   --animate-sync-rise: sync-rise 1.6s ease-in-out infinite;
+  /* A direction nudged while its control is hovered or focused (Add a Slot's sides): the arrow bounces the way it
+     points. Looping while hovered; reduced motion stops it. */
+  --animate-nudge-up: nudge-up 0.9s ease-in-out infinite;
+  --animate-nudge-down: nudge-down 0.9s ease-in-out infinite;
+  --animate-nudge-left: nudge-left 0.9s ease-in-out infinite;
+  --animate-nudge-right: nudge-right 0.9s ease-in-out infinite;
   --animate-pop-out: pop-out var(--transition-duration-micro) cubic-bezier(0.4, 0, 1, 1) forwards;
   /* The template picker's open shelf arriving (docs/specs/008-canvas/canvas-and-palette.md
      "Templates section"): a longer rise than fly-up-in, so opening a tile below
@@ -189,16 +195,48 @@
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
 }
 
-/* The entry pop for a newly added element. It carries the element's own
-   rotation through every frame via --lvd-enter-rot (0deg when unset): a
-   keyframe that sets `transform` at all REPLACES the inline
-   `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
-   element — a rotated shape, or any sticker (docs/specs/010-palette/stickers.md) — popped in flat and
-   then visibly snapped to its angle when the class dropped. */
 /* The syncing arrows turn about their own centre (transform-box: fill-box). */
 @keyframes sync-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* A nudged arrow bounces 3px the way it points, and back. */
+@keyframes nudge-up {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes nudge-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+@keyframes nudge-left {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-3px);
+  }
+}
+@keyframes nudge-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
   }
 }
 
@@ -215,6 +253,12 @@
   }
 }
 
+/* The entry pop for a newly added element. It carries the element's own
+   rotation through every frame via --lvd-enter-rot (0deg when unset): a
+   keyframe that sets `transform` at all REPLACES the inline
+   `transform: rotate(Ndeg)` for its whole duration, so without this a tilted
+   element (a rotated shape, or any sticker, docs/specs/010-palette/stickers.md) popped in flat and
+   then visibly snapped to its angle when the class dropped. */
 @keyframes pop-in {
   0% {
     transform: rotate(var(--lvd-enter-rot, 0deg)) scale(0);
@@ -436,6 +480,16 @@
    with Reduce motion on they don't play at all: the picker shows the static
    art, as it does with the OS setting (preview-motion.css). */
 :root.reduce-motion .preview-motion * {
+  animation: none !important;
+}
+
+/* The direction nudges (above) loop, so reduced motion stops them outright rather than freezing a frame. */
+@media (prefers-reduced-motion: reduce) {
+  [class*='animate-nudge-'] {
+    animation: none !important;
+  }
+}
+:root.reduce-motion [class*='animate-nudge-'] {
   animation: none !important;
 }
 

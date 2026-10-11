@@ -31,6 +31,7 @@ export function buildTemplateTab(
     ...buildTab(tabId, name, buildTemplate(kind, 0, 0), 'preserve', themeId),
     templateChosen: true,
     ...templateCanvasOverrides(kind),
+    ...templateTabs(kind)[0]?.tab?.([tabId]),
   });
 }
 
@@ -43,10 +44,12 @@ export function buildTemplateTabs(
   newId: () => string,
   themeId?: string,
 ): Tab[] {
-  return templateTabs(kind).map((def, i) =>
+  const defs = templateTabs(kind);
+  const ids = defs.map((_, i) => (i === 0 ? first.id : newId()));
+  return defs.map((def, i) =>
     stampTabKind({
       ...buildTab(
-        i === 0 ? first.id : newId(),
+        ids[i]!,
         i === 0 ? first.name : (def.name ?? first.name),
         def.build(0, 0),
         'preserve',
@@ -54,6 +57,7 @@ export function buildTemplateTabs(
       ),
       templateChosen: true,
       ...templateCanvasOverrides(kind),
+      ...def.tab?.(ids),
     }),
   );
 }

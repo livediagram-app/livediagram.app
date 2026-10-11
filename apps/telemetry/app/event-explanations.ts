@@ -630,13 +630,47 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Participant|Returned|Authenticated':
     'A returning signed-in user reopened the app on a later day, counted once per day.',
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
+  'Sheet|Searched|Function':
+    'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
+  'Plan|Created|BoardTab':
+    'Someone started a Board tab from Start Planning: one board filling the tab.',
+  'Plan|Created|SheetTab':
+    'Someone started a Sheet tab from Start Planning: one Sheet filling the tab.',
+  'Plan|Created|DashboardTab':
+    'Someone started a Dashboard tab from Start Planning, from one of its layouts.',
+  'Plan|Created|VisualisationTab':
+    'Someone started a Visualisation tab from Start Planning: one chart of the cards filling the tab.',
+  'Plan|Created|SuggestedDashboard':
+    'Someone started a dashboard Start Planning suggested for their cards, under For You.',
+  'Plan|Changed|DashboardRow': 'Someone added, removed or resized a row on a Dashboard tab.',
+  'Plan|Changed|DashboardSlot':
+    'Someone added, removed, moved or resized a slot on a Dashboard tab.',
+  'Plan|Changed|DashboardContent': 'Someone put something in a Dashboard slot, or cleared one.',
+  'Plan|Changed|DashboardLook':
+    "Someone changed a Dashboard tab's background from its Dashboard Settings (plain or tinted).",
+  'Plan|Changed|DashboardCardStyle':
+    "Someone styled a card on a Dashboard tab (a Note, Title, Status, Checklist, Key Date or Links) from its Slot Options' Style: a preset, a colour, its border or its shadow.",
+  'Plan|Opened|DashboardSettings':
+    "Someone opened a Dashboard tab's settings from the cog at its top right.",
+  'Plan|Changed|CalendarDue':
+    "Someone moved a card's due date on a Due Calendar, by dragging it to another day or with Alt and the arrow keys.",
+  'Plan|Changed|CalendarStart':
+    "Someone moved a card's start date on a Start Calendar, by dragging it to another day or with Alt and the arrow keys.",
   'Sheet|Opened|Settings':
     "Someone opened a Sheet's settings cog (title, data, view, cell sizes, freeze and totals).",
   'Sheet|Created|Blank': 'Someone set up a new Sheet from Setup Sheet as a blank grid.',
-  'Sheet|Created|Budget': 'Someone set up a new Sheet from the Budget layout.',
-  'Sheet|Created|Tracker': 'Someone set up a new Sheet from the Tracker layout.',
-  'Sheet|Created|Timesheet': 'Someone set up a new Sheet from the Timesheet layout.',
-  'Sheet|Created|Contacts': 'Someone set up a new Sheet from the Contacts layout.',
+  'Sheet|Created|Budget': 'Someone set up a new Sheet from the Budget template.',
+  'Sheet|Created|Tracker': 'Someone set up a new Sheet from the Tracker template.',
+  'Sheet|Created|Timesheet': 'Someone set up a new Sheet from the Timesheet template.',
+  'Sheet|Created|Contacts': 'Someone set up a new Sheet from the Contacts template.',
+  'Sheet|Created|Invoice': 'Someone set up a new Sheet from the Invoice template.',
+  'Sheet|Created|ExpenseReport': 'Someone set up a new Sheet from the Expense Report template.',
+  'Sheet|Created|SalesPipeline': 'Someone set up a new Sheet from the Sales Pipeline template.',
+  'Sheet|Created|Inventory': 'Someone set up a new Sheet from the Inventory template.',
+  'Sheet|Created|GuestList': 'Someone set up a new Sheet from the Guest List template.',
+  'Sheet|Created|GradeBook': 'Someone set up a new Sheet from the Grade Book template.',
+  'Sheet|Created|HabitTracker': 'Someone set up a new Sheet from the Habit Tracker template.',
+  'Sheet|Created|LoanCalculator': 'Someone set up a new Sheet from the Loan Calculator template.',
   'Sheet|Created|Cards': 'Someone set up a new Sheet with their Plan cards as rows.',
   'Sheet|Created|Csv':
     'Someone chose Import CSV in Setup Sheet (Imported · Csv counts the file actually read; the picker can be cancelled).',
@@ -644,6 +678,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone made a chart from a Sheet's cells (a bar, line or pie chart, live from the range).",
   'Sheet|Imported|Csv':
     'Someone filled a Sheet from a CSV file: Import CSV, or a CSV file dropped on the canvas in Plan mode.',
+  'Plan|Imported|Csv':
+    "Someone read a CSV file into a board's cards from a Board tab's menu (each row a new card).",
+  'Plan|Exported|Csv': "Someone downloaded a board's cards as a CSV file from a Board tab's menu.",
+  'Plan|Changed|ViewStatuses':
+    'Someone chose which statuses a chart of their Plan cards counts (Cards by Field or Priority by Status), from its settings cog.',
   'Sheet|Exported|Csv': "Someone downloaded a Sheet's cells as a CSV file.",
   'Sheet|Deleted|Confirmed':
     'Someone deleted a Sheet whose cells nothing else used, and confirmed deleting the cells with it.',
@@ -965,9 +1004,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|SignInBannerEditor': 'Someone dismissed the guest sign-in banner shown in the editor.',
   'UI|Closed|SignInBannerExplorer':
     'Someone dismissed the guest sign-in banner shown in the Explorer.',
-  'UI|Closed|TourOffer': "Someone dismissed the welcome tour's offer card without starting it.",
+  'UI|Closed|TourOffer':
+    "Someone dismissed the Diagram tour's offer card (the welcome tour's, until October 2026) without starting it.",
   'UI|Closed|FacilitateTourOffer':
-    'Someone turned the Facilitate tour down: No thanks on its own card, or finishing the welcome tour without pressing Show me Facilitate.',
+    'Someone turned the Facilitate tour down with No thanks on its own card (until October 2026, also by finishing the welcome tour without pressing Show me Facilitate).',
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
@@ -985,11 +1025,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Copied|ShareLink': 'Someone copied a share link to the clipboard.',
   'UI|Copied|TeamInviteLink': "Someone copied a team's shareable invite link to their clipboard.",
   'UI|Ended|TourCompleted':
-    "Someone reached the end of the welcome tour, or a step's target never appeared on screen and the tour finished early.",
+    "Someone reached the end of the Diagram tour (the welcome tour until October 2026), or a step's target never appeared on screen and the tour finished early.",
   'UI|Ended|TourDeclined':
     'This exact combination is never actually sent: declining the welcome tour on its very first card is recorded as the tour offer closing, not as an ended tour.',
   'UI|Ended|TourSkipped':
-    'Someone skipped out of the welcome tour after it had already started (not on the very first card).',
+    'Someone skipped out of the Diagram tour (the welcome tour until October 2026) after it had already started (not on the very first card), or it ended because the tab left Diagram mode.',
   'UI|Ended|CardTypeTourCompleted':
     "Someone reached the end of the card type editor's Show Me tour.",
   'UI|Ended|CardTypeTourSkipped':
@@ -1000,7 +1040,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|PlanTourCompleted':
     "Someone reached the end of the Plan tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PlanTourSkipped':
-    'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights.',
+    'Someone left the Plan tour after it had started, or it ended because they left Plan mode, the tab or their edit rights, or the board or sheet it was showing was deleted.',
   'UI|Moved|PanelDock':
     'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
   'UI|Moved|Slide':
@@ -1076,11 +1116,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The welcome tour\'s offer card was shown, either automatically on a first visit or replayed from Settings\' Show Tours › "Welcome".',
+    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Show Tours › "Diagram" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|FacilitateTourOffer':
-    'The Facilitate tour was offered: on the welcome tour\'s closing card ("Show me Facilitate") for someone new in Facilitate mode, or as its own card for someone who had already done the welcome tour, or replayed from Settings\' Show Tours › "Facilitate".',
+    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Show Tours › "Facilitate". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode or replayed from Settings\' Show Tours › "Plan".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Show Tours › "Plan".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1114,11 +1154,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Searched|PaletteSearch':
     'Someone searched within their Favourites in the palette. No longer recorded: Favourites is gone.',
   'UI|Selected|FacilitateTourFromWelcome':
-    "Someone pressed Show me Facilitate on the welcome tour's closing card, going straight into the Facilitate tour.",
+    "Someone pressed Show me Facilitate on the welcome tour's closing card, going straight into the Facilitate tour. Retired in October 2026, when the welcome tour became the Diagram tour and stopped running in Facilitate.",
   'UI|Selected|PlanTourBoards':
-    "Someone picked Boards on the Plan tour's first card, touring boards and cards on an example board.",
+    "Someone picked Boards on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example board).",
   'UI|Selected|PlanTourSheets':
-    "Someone picked Spreadsheets on the Plan tour's first card, touring Sheets on an example sheet.",
+    "Someone picked Spreadsheets on the Plan tour's first card, on a tab with both a board and a sheet (until October 2026, on every offer, touring an example sheet).",
   // The Inbox was once the Activity row (docs/specs/013-workspace/explorer-structure.md#telemetry).
   'UI|Selected|Sidebar.Activity':
     "Someone picked the Activity row in the Explorer's sidebar, the row since renamed Inbox. No longer recorded: the row now counts as Inbox.",
@@ -1134,13 +1174,13 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Sign in" on the guest sign-in banner shown in the Explorer.',
   'UI|Started|Presentation': 'Someone started presenting: entering full-screen slideshow mode.',
   'UI|Started|Tour':
-    "Someone clicked past the welcome tour's first card, beginning the step-by-step walkthrough.",
+    "Someone clicked past the Diagram tour's first card (the welcome tour's, until October 2026), beginning the step-by-step walkthrough.",
   'UI|Started|CardTypeTour':
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|FacilitateTour':
     "Someone pressed Show me around on the Facilitate tour's first card, beginning its walkthrough of the session kit.",
   'UI|Started|PlanTour':
-    "Someone picked a track on the Plan tour's first card, beginning its walkthrough on an example board or sheet.",
+    'Someone started the Plan tour from its first card, beginning its walkthrough of their own board or sheet (an example one until October 2026).',
   'UI|Toggled|ActivityRevertPreviewOff':
     'Someone turned off the hover preview that showed what a change would look like before reverting it, in the since-removed Activity panel settings.',
   'UI|Toggled|ActivityRevertPreviewOn':
@@ -1275,9 +1315,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TourSeenOff':
-    'Someone switched on Show Tours › "Welcome" in Settings, marking the tour as not yet seen and relaunching it immediately.',
+    'Someone switched on Show Tours › "Diagram" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
   'UI|Toggled|TourSeenOn':
-    'Someone switched off Show Tours › "Welcome" in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+    'Someone switched off Show Tours › "Diagram" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|FacilitateTourSeenOff':
     'Someone switched on Show Tours › "Facilitate" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
@@ -1302,47 +1342,50 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|FacilitateTourStepOutro':
     'The Facilitate tour reached its closing "You\'re ready to facilitate" card.',
   'UI|View|PlanTourStepBoard':
-    'The Plan tour reached its "Your board" step, placing its example board.',
+    'The Plan tour reached its "Your Board" step, highlighting the person\'s board (placing an example board until October 2026).',
   'UI|View|PlanTourStepAddCards':
-    'The Plan tour reached its "Add cards" step, adding its example cards.',
+    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add card (adding example cards until October 2026).',
   'UI|View|PlanTourStepMoveCard':
-    'The Plan tour reached its "Move work along" step, moving a card to the next column.',
+    'The Plan tour reached its "Move Work Along" step, pointing at a card on the board (moving an example card until October 2026).',
   'UI|View|PlanTourStepCardPanel':
-    'The Plan tour reached its "The card panel" step, opening a card.',
-  'UI|View|PlanTourStepBoardHeader': 'The Plan tour reached its "The board header" step.',
-  'UI|View|PlanTourStepCardTypes': 'The Plan tour reached its "Card types" step.',
+    'The Plan tour reached its "The Card Panel" step, opening a card\'s panel.',
+  'UI|View|PlanTourStepBoardHeader': 'The Plan tour reached its "The Board Header" step.',
+  'UI|View|PlanTourStepCardTypes': 'The Plan tour reached its "Card Types" step.',
   'UI|View|PlanTourStepPalette':
     'The Plan tour reached its "The Plan palette" step, opening the palette\'s categories.',
-  'UI|View|PlanTourStepOutro':
-    'The Plan tour reached its closing "You\'re ready to plan" card, with its example board or sheet taken away.',
+  'UI|View|PlanTourStepOutro': 'The Plan tour reached its closing "You\'re ready to plan" card.',
   'UI|View|PlanTourStepSheet':
-    'The Plan tour\'s Spreadsheets track reached its "Your sheet" step, placing its example sheet.',
+    'The Plan tour\'s Spreadsheets track reached its "Your Sheet" step, highlighting the person\'s sheet (placing an example sheet until October 2026).',
   'UI|View|PlanTourStepCells':
-    'The Plan tour\'s Spreadsheets track reached its "Type into cells" step.',
+    'The Plan tour\'s Spreadsheets track reached its "Type Into Cells" step.',
   'UI|View|PlanTourStepFormulas':
-    'The Plan tour\'s Spreadsheets track reached its "Formulas" step, selecting the example sheet\'s total.',
+    'The Plan tour\'s Spreadsheets track reached its "Formulas" step, pointing at the formula bar (selecting an example sheet\'s total until October 2026).',
   'UI|View|PlanTourStepSheetToolbar':
-    'The Plan tour\'s Spreadsheets track reached its "The toolbar" step.',
+    'The Plan tour\'s Spreadsheets track reached its "The Toolbar" step.',
   'UI|View|PlanTourStepSheetSettings':
     'The Plan tour\'s Spreadsheets track reached its "Sheet Settings" step.',
   'UI|View|PlanTourStepSheetPalette':
     'The Plan tour\'s Spreadsheets track reached its "The Plan palette" step, opening the palette\'s categories.',
   'UI|View|TourStepCategories':
-    'The welcome tour reached its "Palette Categories" step, pointing out the palette\'s category tabs.',
+    'The Diagram tour (the welcome tour until October 2026) reached its "Palette Categories" step, pointing out the palette\'s category tabs.',
   'UI|View|TourStepContextMenu':
-    'The welcome tour reached its "The element menu" step, showing the right-click menu on an element.',
+    'The Diagram tour (the welcome tour until October 2026) reached its "The Element Menu" step, showing the right-click menu on an element.',
   'UI|View|TourStepEditorMode':
-    'The welcome tour reached its "Change Tab Mode" step, pointing out the switch for the tab\'s editor mode.',
-  'UI|View|TourStepExplorer': 'The welcome tour reached its "The Explorer" step.',
-  'UI|View|TourStepOutro': 'The welcome tour reached its closing "You\'re ready to go" card.',
-  'UI|View|TourStepPalette': 'The welcome tour reached its "The Palette" step.',
+    'The Diagram tour (the welcome tour until October 2026) reached its "Tab Mode" step ("Change Tab Mode" before), pointing out the switch for the tab\'s editor mode.',
+  'UI|View|TourStepExplorer':
+    'The welcome tour reached its "The Explorer" step (retired in October 2026, when the welcome tour became the Diagram tour).',
+  'UI|View|TourStepOutro':
+    'The Diagram tour reached its closing "You\'re ready to diagram" card ("You\'re ready to go" when it was the welcome tour).',
+  'UI|View|TourStepPalette':
+    'The Diagram tour (the welcome tour until October 2026) reached its "The Palette" step.',
   'UI|View|TourStepSearch':
     'The welcome tour reached its "Search everything" step, showing the search panel.',
   'UI|View|TourStepSelectionModes':
-    'The welcome tour reached its "Selection modes" step, showing the pointer-tool dropdown.',
-  'UI|View|TourStepTabs': 'The welcome tour reached its "Tabs" step.',
+    'The Diagram tour (the welcome tour until October 2026) reached its "Selection Modes" step, showing the pointer-tool dropdown.',
+  'UI|View|TourStepTabs':
+    'The Diagram tour (the welcome tour until October 2026) reached its "Tabs" step.',
   'UI|View|TourStepThemeCanvas':
-    'The welcome tour reached its "Theme & canvas" step, showing the paintbrush that restyles a tab.',
+    'The Diagram tour (the welcome tour until October 2026) reached its "Theme & Canvas" step, showing the paintbrush that restyles a tab.',
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
@@ -1598,6 +1641,11 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone was asked before deleting a Sheet with its cells (the value says Confirmed or Cancelled).',
   'Sheet|Used':
     'Someone saved a Sheet formula using a function for the first time in that formula (the value is the function name, from the fixed list).',
+  'Plan|Created':
+    'Someone started a Plan tab from Start Planning (the value says which: a Board, Sheet, Dashboard or Visualisation tab, or a suggested dashboard).',
+  'Sheet|Searched': 'Someone searched a list on a Sheet (the value says which: the functions).',
+  'Plan|Imported': "Someone read a file into a board's cards (the value says which kind: Csv).",
+  'Plan|Exported': "Someone downloaded a board's cards as a file (the value says which kind: Csv).",
   'Plan|Duplicated': 'Someone made a new card type by duplicating an existing one.',
   'Plan|Opened':
     'Someone opened an item in the item panel, or a Plan panel (Card Types, the Trash, Cards).',

@@ -73,6 +73,19 @@ function quote(field: string): string {
   return /[",\r\n]/.test(field) ? `"${field.replace(/"/g, '""')}"` : field;
 }
 
-export function toCsv(rows: readonly (readonly string[])[]): string {
-  return rows.map((r) => r.map(quote).join(',')).join('\r\n') + (rows.length ? '\r\n' : '');
+// A field a spreadsheet would run as a formula when the file is opened (CSV injection): one starting with = + - @, a
+// tab or a carriage return. A number as shown ("-1,200.50", "-£45", "+3%") is left as it is.
+const FORMULA_START = /^[=+\-@\t\r]/;
+const SHOWN_NUMBER = /^[+-]?\s*\p{Sc}?\s*[\d.,]+\s*\p{Sc}?%?$/u;
+
+// A field made inert for a download: prefixed with ' so a spreadsheet opening the file shows it as text.
+export function csvSafeField(field: string): string {
+  return FORMULA_START.test(field) && !SHOWN_NUMBER.test(field) ? `'${field}` : field;
+}
+
+// `safe` (every download leaving the app, never a sheet's own round trip): each field a spreadsheet would run as a
+// formula is made inert (csvSafeField).
+export function toCsv(rows: readonly (readonly string[])[], opts: { safe?: boolean } = {}): string {
+  const field = opts.safe ? (f: string) => quote(csvSafeField(f)) : quote;
+  return rows.map((r) => r.map(field).join(',')).join('\r\n') + (rows.length ? '\r\n' : '');
 }

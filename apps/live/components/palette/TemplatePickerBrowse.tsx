@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import type { TemplateCategory, TemplateDescriptor, TemplateKind } from '@livediagram/templates';
 import { TEMPLATE_CATEGORIES, isBlankTemplate } from '@livediagram/templates';
-import { Button, CloseIcon, SearchIcon } from '@livediagram/ui';
+import {
+  Button,
+  CloseIcon,
+  CompactEmptyState,
+  SearchIcon,
+  noMatchHint,
+  noMatchTitle,
+} from '@livediagram/ui';
 import { editorModeLabel } from '@livediagram/document';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { TemplateCard } from '@/components/palette/template-picker-cards';
@@ -147,18 +154,33 @@ export function TemplatePickerBrowse({
       <AnimatedHeightBox viewKey={templateFilter ? 'search' : 'shelf'} className="mt-4">
         {templateFilter ? (
           filteredTemplates.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 px-1 py-6 text-center">
-              <p className="text-xs text-slate-400 dark:text-slate-400">
-                No {modeFilter.choice === 'all' ? '' : `${editorModeLabel(modeFilter.choice)} `}
-                templates match “{templateQuery.trim()}”.
-              </p>
-              {/* Found in other modes: one press shows them (docs/specs/007-editor/templates-by-mode.md). */}
-              {matchesInEveryMode > 0 ? (
-                <Button size="xs" variant="secondary" onClick={() => modeFilter.choose('all')}>
-                  {`Show ${matchesInEveryMode} ${matchesInEveryMode === 1 ? 'match' : 'matches'} in Everything`}
-                </Button>
-              ) : null}
-            </div>
+            // The shared empty state (docs/specs/004-interface-design/empty-states.md); found in other modes, one
+            // press shows them (docs/specs/007-editor/templates-by-mode.md).
+            <CompactEmptyState
+              role="status"
+              className="py-6"
+              icon={<SearchIcon />}
+              title={noMatchTitle(
+                modeFilter.choice === 'all'
+                  ? 'templates'
+                  : `${editorModeLabel(modeFilter.choice)} templates`,
+                templateQuery,
+              )}
+              description={
+                matchesInEveryMode > 0 ? 'Other modes have some.' : noMatchHint(templateQuery)
+              }
+              action={
+                matchesInEveryMode > 0 ? (
+                  <Button size="xs" variant="secondary" onClick={() => modeFilter.choose('all')}>
+                    {`Show ${matchesInEveryMode} ${matchesInEveryMode === 1 ? 'match' : 'matches'} in Everything`}
+                  </Button>
+                ) : (
+                  <Button size="xs" variant="secondary" onClick={() => setTemplateQuery('')}>
+                    Clear Search
+                  </Button>
+                )
+              }
+            />
           ) : (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {filteredTemplates.map((t) => (

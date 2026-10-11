@@ -35,7 +35,7 @@ Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s; their
 | `sessionStripTools`                  | `facilitate` or an event-storming board (`esBoard`) → all three; `plan` → `['timer','vote']`; else `null`                                                                                                                                                                                                                                    | spec "The Session strip per mode" |
 | `TEMPLATE_MODES` additions           | `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`, `sailboat`, `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `blank-session` → `'facilitate'`                                                                                                                                                                | spec "Templates"                  |
 | `BLANK_TEMPLATE_FOR_MODE.facilitate` | `'blank-session'`                                                                                                                                                                                                                                                                                                                            | spec "Templates"                  |
-| `MODE_BEST.facilitate`               | `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights` (D5)                                                                                                                                                                                                                                                                             | templates-by-mode spec            |
+| `POPULAR_BY_MODE.facilitate`         | `blank-session`, `sailboat`, `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights` (D5)                                                                                                                                                                                                                                                | templates-by-mode spec            |
 
 ## Behaviour and state
 
@@ -69,7 +69,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 ```
 
 - Every `Record<EditorMode, …>` gains a `facilitate` entry (the compiler enforces it):
-  `MODE_EVENT` (`useEditorMode.ts`), `MODE_WORDS`, `BLANK_TEMPLATE_FOR_MODE`, `MODE_BEST`,
+  `MODE_EVENT` (`useEditorMode.ts`), `MODE_WORDS`, `BLANK_TEMPLATE_FOR_MODE`, `POPULAR_BY_MODE`,
   `useTemplateModeFilter` events and counts, marketing `modeCounts`.
 - Non-exhaustive lists updated by hand: `VALUE_LABELS['opens-in']` (explorer-lens), settings
   icons, help `featureColours`, marketing `HeroMode` and `TemplateGallery` `CHOICES`.

@@ -477,7 +477,7 @@ type LibraryLens = { active: boolean; input: string; issues: readonly LensIssue[
   option. Clear is a text button at the end, `invisible` while the lens is empty (`D85`).
 - **Issues:** one `text-xs` amber line each under the row, the message from `issueMessage`.
 - **Filtered empty:** `EmptyState`, title "No documents match these filters", description "Change or clear the
-  filters to see more.", the issue lines, and a Clear filters button. **Failed:** `EmptyState`, title "Couldn’t load
+  filters to see more.", the issue lines, and a Clear Filters button. **Failed:** `EmptyState`, title "Couldn’t load
   documents", description "Check your connection, then try again.", a Try again button.
 - **Made by AI badge:** `MadeByAiPill`, sparkle and "Made by AI", violet tone (`text-violet-800` on `bg-violet-50`,
   `ring-violet-600`; dark `text-violet-200` on `violet-500/15`, `ring-violet-400`), beside the name on rows, in the

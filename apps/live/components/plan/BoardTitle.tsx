@@ -20,6 +20,7 @@ export function BoardTitle({
   palette,
   onRename,
   onDone,
+  onStart,
   inBox = false,
 }: {
   title: string;
@@ -30,11 +31,15 @@ export function BoardTitle({
   palette: PlanPalette;
   onRename: (title: string) => void;
   onDone: () => void;
+  // Starts a rename (in the menu box, on a click); absent for someone who may not rename.
+  onStart?: (() => void) | undefined;
 }) {
   if (!editing)
     return (
       <div
-        className={`${inBox ? IN_BOX_TITLE_CLASS : `${TITLE_CLASS} truncate`} ${selected ? 'cursor-move' : ''}`}
+        // In the menu box a click renames (on the canvas a press moves the board, a double-click renames).
+        onClick={inBox ? onStart : undefined}
+        className={`${inBox ? `${IN_BOX_TITLE_CLASS} ${onStart ? 'cursor-text' : ''}` : `${TITLE_CLASS} truncate`} ${selected && !inBox ? 'cursor-move' : ''}`}
       >
         {title}
       </div>

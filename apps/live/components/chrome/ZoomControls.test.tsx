@@ -42,4 +42,13 @@ describe('ZoomControls', () => {
     expect(h.onFitToScreen).not.toHaveBeenCalled();
     expect(ZOOM_OFF_REASON).toMatch(/^Zoom is off while/);
   });
+
+  // docs/specs/026-plan/plan-tabs.md "On a phone": with pinch zoom and zoom off, nothing is left to offer.
+  it('goes on a touch screen while zoom is off, and stays while it is on', () => {
+    const h = handlers();
+    const { container, rerender } = render(<ZoomControls zoom={1} {...h} pinchOnly zoomOff />);
+    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
+    rerender(<ZoomControls zoom={1} {...h} pinchOnly />);
+    expect(screen.getAllByRole('button', { name: 'Fit to screen' }).length).toBeGreaterThan(0);
+  });
 });

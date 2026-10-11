@@ -357,6 +357,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: PLAN_TYPE_WHY,
   },
   'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
+  // A Dashboard tab's layout change names its kind (usePlanTabActions.ts DashboardChange).
+  'apps/live/hooks/plan/usePlanTabActions.ts Plan·Changed': {
+    values: [
+      'DashboardRow',
+      'DashboardSlot',
+      'DashboardContent',
+      'DashboardLook',
+      'DashboardCardStyle',
+    ],
+  },
   // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
   'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
     values: [
@@ -374,7 +384,23 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // A Sheet set up from Setup Sheet names how it started (SheetSetup.tsx TELEMETRY).
   'apps/live/components/sheets/SheetSetup.tsx Sheet·Created': {
-    values: ['Blank', 'Budget', 'Tracker', 'Timesheet', 'Contacts', 'Cards', 'Csv'],
+    values: [
+      'Blank',
+      'Budget',
+      'Tracker',
+      'Timesheet',
+      'Contacts',
+      'Invoice',
+      'ExpenseReport',
+      'SalesPipeline',
+      'Inventory',
+      'GuestList',
+      'GradeBook',
+      'HabitTracker',
+      'LoanCalculator',
+      'Cards',
+      'Csv',
+    ],
   },
   'apps/live/components/sheets/useSheetActions.ts Sheet·Used': {
     values: ['SUM', 'AVERAGE', 'IF', 'VLOOKUP', 'CARDCOUNT'],

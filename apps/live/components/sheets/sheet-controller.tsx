@@ -5,7 +5,9 @@
 // open over it, and the write helper every command goes through. Lives inside MaximisableSlot, so maximising and
 // restoring keep all of it.
 import type { SheetChartKind } from './sheet-charts';
-import type { ChartPick } from './sheet-charts';
+import type { ChartPick, PlaceChartOpts } from './sheet-charts';
+import type { SheetAnchor } from '@livediagram/document';
+import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
   filteredOutRows,
@@ -86,7 +88,8 @@ export type SheetController = {
   setFindHits: (hits: readonly { r: number; c: number }[]) => void;
   setFindOpen: (f: 'find' | 'replace' | null) => void;
   // Send a write and count it; false when it was refused (said in a toast).
-  write: (w: SheetWrite, kind: SheetChangeKind) => boolean;
+  // `alongside`: a change outside the sheet made with this write, one undo step with it (sheet-store-client.ts).
+  write: (w: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => boolean;
   writeAll: (
     edits: readonly { sheetId: string; write: SheetWrite }[],
     kind: SheetChangeKind,
@@ -98,8 +101,16 @@ export type SheetController = {
   announce: (message: string) => void;
   toast: (message: string) => void;
   notify: (message: string) => void;
-  // Place a chart reading `range` over the Sheet (sheet-charts.ts).
-  placeChart?: (kind: SheetChartKind, pick: ChartPick) => void;
+  // Place a chart reading `range` in the Sheet at `anchor` (sheet-charts.ts).
+  placeChart?: (
+    kind: SheetChartKind,
+    pick: ChartPick,
+    anchor: SheetAnchor,
+    opts?: PlaceChartOpts,
+  ) => void;
+  // Taking the charts anchored in this Sheet off its tab (Clear Sheet): `redo` takes them, `undo` puts them back.
+  // Null when it has none, or they are not this tab's to change (a Dashboard slot showing another tab's Sheet).
+  chartsRemoval?: () => ItemUndoStep | null;
 };
 
 const SheetControllerContext = createContext<SheetController | null>(null);
@@ -143,7 +154,13 @@ export function useSheetControllerState(opts: {
   announce: (message: string) => void;
   toast: (message: string) => void;
   notify: (message: string) => void;
-  placeChart?: (kind: SheetChartKind, pick: ChartPick) => void;
+  placeChart?: (
+    kind: SheetChartKind,
+    pick: ChartPick,
+    anchor: SheetAnchor,
+    opts?: PlaceChartOpts,
+  ) => void;
+  chartsRemoval?: () => ItemUndoStep | null;
   // After this person's own write to this sheet lands locally (card tables push it to the cards).
   onWrote?: (before: Sheet, write: SheetWrite) => void;
 }): SheetController {
@@ -226,10 +243,10 @@ export function useSheetControllerState(opts: {
     return false;
   });
   const write = useCallback(
-    (w: SheetWrite, kind: SheetChangeKind) => {
+    (w: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => {
       if (!canShape && w.kind !== 'cells') return shapeRefused.current();
       const before = store.sheet(sheet.id);
-      const refused = store.write(sheet.id, w);
+      const refused = store.write(sheet.id, w, alongside ? { alongside } : {});
       if (refused) return false;
       if (w.kind === 'layout') ownLayout.current = true;
       track('Sheet', 'Changed', kind);

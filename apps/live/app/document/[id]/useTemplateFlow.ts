@@ -4,6 +4,7 @@ import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
+import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
 import { landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
@@ -195,12 +196,15 @@ export function useTemplateFlow(opts: {
     const opensIn = templateOpensIn(overrides);
     // The template's later tabs: built at the origin (a fresh tab frames itself), recoloured as the
     // first, named by the template.
-    const followers = rest.map((def) => {
+    // Every tab's id in order: a Plan template's tabs name each other (a Dashboard's slots, plan-tabs.md).
+    const ids = [activeId, ...rest.map(() => crypto.randomUUID())];
+    const followers = rest.map((def, i) => {
       const raw = def.build(0, 0);
       return {
-        id: crypto.randomUUID(),
+        id: ids[i + 1]!,
         name: def.name ?? '',
         elements: theme ? recolourElementsForTheme(raw, theme) : raw,
+        ...(def.tab ? { fields: def.tab(ids) } : {}),
       };
     });
     // A Plan template's boards bring their card types, every tab's (docs/specs/026-plan/plan-templates.md "Card
@@ -208,6 +212,7 @@ export function useTemplateFlow(opts: {
     bringCardTypes([...elements, ...followers.flatMap((f) => f.elements)]);
     // Re-checked inside the commit (landTemplateOnTab): the tab may have gained a collaborator's
     // element while the builders loaded, and the scaffold must never replace it.
+    const firstKind = first!.tab?.(ids).kind;
     commitTabs((ts) =>
       landTemplateOnTab(ts, activeId, (active) => {
         const backdrop =
@@ -216,10 +221,19 @@ export function useTemplateFlow(opts: {
           ...active,
           elements,
           templateChosen: true,
-          ...(first!.name ? { name: first!.name } : {}),
+          // Any template but a blank one names the tab after itself (docs/specs/007-editor/templates-by-mode.md "The
+          // tab's name"): its own name for the tab, else for a Board or Sheet template what fills it (the board's
+          // title), else the template's title. A blank one leaves the name as it was.
+          ...(first!.name
+            ? { name: first!.name }
+            : (() => {
+                const name = templateTabName(kind, { ...active, elements, kind: firstKind });
+                return name ? { name } : {};
+              })()),
           ...(backdrop && themeId ? { theme: themeId, ...backdrop } : {}),
           ...overrides,
           ...(opensIn ? { opensIn } : {}),
+          ...first!.tab?.(ids),
         };
         const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
         return { landed, followers: templateFollowerTabs(landed, followers, withMode) };

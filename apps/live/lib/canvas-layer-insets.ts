@@ -155,7 +155,8 @@ function unionOfChildren(el: HTMLElement): Box | null {
 }
 
 // The chrome over `canvas` now, read off the screen.
-export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
+// `withBand` false: never a header band (a Dashboard's page starts below the top row, docs/specs/026-plan/plan-tabs.md).
+export function measureCanvasChrome(canvas: HTMLElement, withBand = true): CanvasLayout {
   const boxes: ChromeBox[] = [];
   const read = (selector: string, kind: ChromeBox['kind']) => {
     for (const el of document.querySelectorAll<HTMLElement>(selector)) {
@@ -180,13 +181,18 @@ export function measureCanvasChrome(canvas: HTMLElement): CanvasLayout {
   const strip = shown(STRIP_SELECTOR);
   // The covering element's controls card (BAND_CONTROLS_SELECTOR) and its header's right padding: what the strip stops
   // short of. offsetWidth, so a maximise's grow (a transform) does not shrink it.
-  const controls = canvas.querySelector<HTMLElement>(BAND_CONTROLS_SELECTOR);
+  // A Dashboard's slots carry their own boards' controls cards (docs/specs/026-plan/plan-tabs.md): never theirs.
+  const controls =
+    [...canvas.querySelectorAll<HTMLElement>(BAND_CONTROLS_SELECTOR)].find(
+      (el) => !el.closest('[data-dashboard]'),
+    ) ?? null;
   const endWidth = controls
     ? controls.offsetWidth +
       (controls.parentElement
         ? parseFloat(getComputedStyle(controls.parentElement).paddingRight) || 0
         : 0)
     : BAND_RIGHT_MIN_PX;
+  if (!withBand) return { insets, band: null };
   const band = headerBand(
     area,
     insets,

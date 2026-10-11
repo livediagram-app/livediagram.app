@@ -48,6 +48,23 @@ Files are named after the document and the tab, for example `Roadmap - Overview.
   <ExportMenu />
 </Figure>
 
+## Board, Sheet and Dashboard Tabs
+
+A [Plan](/help/canvas/plan-mode/) tab offers only the formats that suit it, and its images show it as it is laid out, not the canvas hidden underneath:
+
+| Tab           | Formats                 | Also in the tab menu |
+| ------------- | ----------------------- | -------------------- |
+| Board tab     | PNG, SVG, PDF, Markdown | **Download CSV**     |
+| Sheet tab     | PNG, SVG, PDF           | **Download CSV**     |
+| Dashboard tab | PNG, SVG, PDF, JSON     |                      |
+
+- A **Board tab**'s image is its board: the header, each column with its count, and the cards in it. Its Markdown lists every column and its cards.
+- A **Sheet tab**'s image is the sheet's cells as they show now, with its charts where they sit in the grid.
+- A **Dashboard tab**'s image is the whole page, 1440 px wide: each slot drawn as a card holding a picture of what it shows (a board, a sheet, a diagram tab, a chart, a metric, a note, a checklist and so on). A Visualisation tab gives its one chart. Its JSON is the file a Dashboard's [Import](/help/tabs/import-tabs/) reads back.
+- A plan view (a Gantt chart, a calendar, Cards by Field, Priority by Status, Card Search or a metric) on any tab's image is drawn as its chart, as it looks in the editor.
+
+These images have no **Isometric view**, **Background pattern** or **Hidden layers** options: they are pages, not canvases.
+
 ## Image options
 
 The PNG, SVG, and PDF exports show the tab as it looks. After you pick one, the options screen offers:

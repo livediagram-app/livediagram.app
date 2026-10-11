@@ -42,6 +42,7 @@ import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { templateTabName } from '@/lib/template-tab-name';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
@@ -385,7 +386,15 @@ export default function NewDocumentPage() {
     }
 
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md); the first opens.
-    const tabs = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+    // The first tab is named after its template unless the template names it (template-tab-name.ts).
+    const tabs =
+      built && templateKind && built[0]!.name === 'Tab 1'
+        ? [
+            { ...built[0]!, name: templateTabName(templateKind, built[0]!) ?? 'Tab 1' },
+            ...built.slice(1),
+          ]
+        : built;
     // A Plan template's boards bring their card types (docs/specs/026-plan/plan-templates.md "Card types a template
     // uses"): the document is made with them. Null (the default types) for every other template.
     const itemTypes = tabs

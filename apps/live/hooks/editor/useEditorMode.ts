@@ -14,6 +14,7 @@
 //   it was in, for everyone. A no-op when the switch is not offered or `next` is already the mode.
 import { useCallback } from 'react';
 import {
+  crossesPlan,
   editorModeLabel,
   withEditorModeSwitched,
   type EditorMode,
@@ -28,6 +29,9 @@ export type EditorModeState = {
   setMode: (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => void;
   canSwitch: boolean;
   canEdit: boolean;
+  // The tab keeps its mode, for this reason (resolveEditorMode): picking another offers a new tab in it instead.
+  lockedReason?: string;
+  newTabIn?: (mode: EditorMode) => void;
 };
 
 // The telemetry type a switch into each mode fires.
@@ -61,14 +65,17 @@ export function useEditorMode(
     canEdit: boolean;
     commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
     toastInfo: (message: string) => void;
+    // A new tab in a mode: what a mode picked on a tab that cannot switch offers instead (plan-tabs.md).
+    newTabIn?: (mode: EditorMode) => void;
   },
 ): EditorModeState {
   const { canEdit, commitTabs, toastInfo } = deps;
   const tabId = tab?.id;
-  const { mode, canSwitch } = resolveEditorMode({ tab, canEdit });
+  const { mode, canSwitch, lockedReason } = resolveEditorMode({ tab, canEdit });
   const setMode = useCallback(
     (next: EditorMode, alsoChange?: (tab: Tab) => Tab) => {
-      if (!canSwitch || !tabId || next === mode) return;
+      // Never into or out of Plan (crossesPlan): the mode menu offers a new tab in it instead.
+      if (!canSwitch || !tabId || next === mode || crossesPlan(mode, next)) return;
       trackModeSwitch(next);
       let paged = false;
       commitTabs((ts) =>
@@ -87,5 +94,12 @@ export function useEditorMode(
     },
     [canSwitch, tabId, mode, commitTabs, toastInfo],
   );
-  return { mode, setMode, canSwitch, canEdit };
+  return {
+    mode,
+    setMode,
+    canSwitch,
+    canEdit,
+    ...(lockedReason ? { lockedReason } : {}),
+    ...(deps.newTabIn ? { newTabIn: deps.newTabIn } : {}),
+  };
 }

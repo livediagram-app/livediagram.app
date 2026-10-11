@@ -84,6 +84,7 @@ function bridge(over: Partial<SheetsBridge> = {}): Fake {
     }),
     switchToPlan: vi.fn(),
     selectElement: vi.fn(),
+    sheetRetitled: vi.fn(),
     handlers: null,
     detach: vi.fn<() => void>(),
     elements: [],
@@ -175,7 +176,23 @@ describe('a placed sheet', () => {
     expect(b.toast).not.toHaveBeenCalled();
   });
 
-  it("makes the Plan tour's example sheet already set up, with no undo step", async () => {
+  it('makes Start Planning’s Empty Sheet a blank grid, with no Setup Sheet', async () => {
+    fetchSheets.mockResolvedValue([]);
+    const { sheetId } = placeNewSheet({ title: 'Sheet', blank: true });
+    const { result } = model(element({ sheetId }), bridge());
+    await waitFor(() => expect(result.current.sheet?.id).toBe(sheetId));
+    expect(result.current.sheet!.layout.setupPending).toBeUndefined();
+  });
+
+  it('awaits Setup Sheet when placed from the palette', async () => {
+    fetchSheets.mockResolvedValue([]);
+    const { sheetId } = placeNewSheet({ title: 'Sheet' });
+    const { result } = model(element({ sheetId }), bridge());
+    await waitFor(() => expect(result.current.sheet?.id).toBe(sheetId));
+    expect(result.current.sheet!.layout.setupPending).toBe(true);
+  });
+
+  it('makes a Dashboard slot’s template Sheet already set up, with no undo step', async () => {
     const { sheetId } = placeNewSheet({ title: 'Example Sheet', setUp: 'budget' });
     const b = bridge();
     const { result } = model(element({ sheetId }), b);
@@ -183,9 +200,10 @@ describe('a placed sheet', () => {
     const sheet = result.current.sheet!;
     expect(sheet.title).toBe('Example Sheet');
     expect(sheet.layout.setupPending).toBeUndefined();
-    expect(sheet.layout.frozenRows).toBe(1);
+    expect(sheet.layout.frozenRows).toBe(4);
     const wb = result.current.workbook;
-    expect([wb.value(sheetId, 0, 0), wb.value(sheetId, 5, 2)]).toEqual(['Item', 1840]);
+    // The title, and the Planned total (C13).
+    expect([wb.value(sheetId, 0, 0), wb.value(sheetId, 12, 2)]).toEqual(['Monthly Budget', 2375]);
     expect(b.pushUndo).not.toHaveBeenCalled();
   });
 
@@ -257,17 +275,46 @@ describe('a template’s Sheet not yet made', () => {
     const { result } = model(el, b);
     await waitFor(() => expect(result.current.sheet?.id).toBe('sheetTPL1'));
     expect(result.current.sheet!.title).toBe('Budget');
-    // Planned total, row 9 column C.
-    expect(result.current.workbook.value('sheetTPL1', 8, 2)).toBe(2335);
+    // The Planned total, C13.
+    expect(result.current.workbook.value('sheetTPL1', 12, 2)).toBe(2375);
     expect(createSheet).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ id: 'sheetTPL1', tabId: 't1', title: 'Budget' }),
       by,
     );
-    expect(tickElements).toHaveBeenCalledTimes(1);
+    // The mark dropped at once; the Budget's spending chart, anchored in the Sheet, once the server took the sheet.
+    await waitFor(() => expect(tickElements).toHaveBeenCalledTimes(2));
     const dropped = tickElements.mock.calls[0]![0]([el]) as ShapeElement[];
+    expect(dropped).toHaveLength(1);
     expect(dropped[0]!.planSheet).toEqual({ sheetId: 'sheetTPL1' });
+    const charted = tickElements.mock.calls[1]![0](dropped) as ShapeElement[];
+    expect(charted[1]).toMatchObject({
+      shape: 'pie-chart',
+      chartSource: { sheetId: 'sheetTPL1' },
+      chartPalette: 'forest',
+    });
+    expect(charted[1]!.sheetAnchor).toBeDefined();
+    // Already made (the mark gone, the charts there): nothing more is added.
+    expect(tickElements.mock.calls[0]![0](dropped)).toBe(dropped);
+    expect(tickElements.mock.calls[1]![0](charted)).toBe(charted);
     expect(b.commitElements).not.toHaveBeenCalled();
+  });
+
+  it('adds no charts when someone else made it first: theirs are the ones', async () => {
+    const tickElements = vi.fn();
+    const b = bridge({ tickElements });
+    // The other editor's sheet is on the server by the time this one's create arrives.
+    createSheet.mockImplementation(async () => {
+      fetchSheets.mockResolvedValue([sheetJson('sheetTPL3', { title: 'Budget' })]);
+      throw new ApiError('create sheet', 409, 'sheet_exists');
+    });
+    const el = element({ sheetId: 'sheetTPL3', start: 'budget-planner' });
+    const { result } = model(el, b);
+    await waitFor(() => expect(createSheet).toHaveBeenCalled());
+    await waitFor(() => expect(result.current.sheet?.title).toBe('Budget'));
+    // Only the mark dropped: no step adds a chart.
+    expect(tickElements).toHaveBeenCalled();
+    for (const [step] of tickElements.mock.calls) expect(step([el])).toHaveLength(1);
   });
 
   it('leaves it for an editor when this person may only view', async () => {

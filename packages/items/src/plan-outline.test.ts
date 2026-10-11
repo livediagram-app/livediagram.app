@@ -60,8 +60,8 @@ describe('planOutline', () => {
     expect(statusColumnsOfSetups([archive])).toEqual([]);
   });
 
-  it('answers the built-in types without a catalogue, else the stored ones', () => {
-    expect(planOutline([], null).types).toBe(ITEM_TYPES);
+  it('answers no types without a catalogue, else the stored ones', () => {
+    expect(planOutline([], null).types).toEqual([]);
     const bug = { ...ITEM_TYPES[1], id: 'bug', label: 'Bug' };
     const stored = { version: ITEM_TYPE_CATALOGUE_VERSION, types: [bug] };
     expect(planOutline([], stored).types).toEqual([bug]);

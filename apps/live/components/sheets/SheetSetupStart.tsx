@@ -6,17 +6,30 @@ import type { ReactNode } from 'react';
 import { itemTitle, namedStatus, typeIn, type Item, type ItemTypeDef } from '@livediagram/items';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
-import { PlanCardsIcon } from '@livediagram/ui';
+import { NoMatches, PlanCardsIcon } from '@livediagram/ui';
 import { lucideGlyph } from '@livediagram/ui';
 import {
+  lucideBookOpen,
+  lucideCalculator,
+  lucideChartNoAxesColumnIncreasing,
+  lucideCircleCheck,
+  lucideClipboardCheck,
   lucideClock,
+  lucideCoins,
+  lucideFileText,
   lucideFileUp,
-  lucideHash,
+  lucideGift,
   lucideListTodo,
+  lucidePackage,
   lucideTable,
   lucideUsers,
 } from '@livediagram/icons/lucide';
-import type { SheetStartId } from '@livediagram/sheets';
+import {
+  SHEET_TEMPLATE_GROUPS,
+  SHEET_TEMPLATES,
+  type SheetStartId,
+  type SheetTemplateId,
+} from '@livediagram/sheets';
 import { CardSearchControls, type CardSearch } from '@/components/plan/CardSearchControls';
 import { OptionRows } from '@/components/plan/OptionRows';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
@@ -60,13 +73,28 @@ const HEADING = 'text-[11px] font-semibold uppercase tracking-wider';
 
 const G = (prims: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(prims, 15);
 const BlankGlyph = G(lucideTable);
-const BudgetGlyph = G(lucideHash);
-const TrackerGlyph = G(lucideListTodo);
-const TimesheetGlyph = G(lucideClock);
-const ContactsGlyph = G(lucideUsers);
 const CsvGlyph = G(lucideFileUp);
 
-const STARTS: readonly { id: SetupStart; label: string; hint: string; icon: ReactNode }[] = [
+// Each template's glyph in its row.
+export const TEMPLATE_GLYPHS: Record<SheetTemplateId, ReturnType<typeof G>> = {
+  budget: G(lucideCoins),
+  tracker: G(lucideListTodo),
+  timesheet: G(lucideClock),
+  contacts: G(lucideUsers),
+  invoice: G(lucideFileText),
+  expenses: G(lucideClipboardCheck),
+  pipeline: G(lucideChartNoAxesColumnIncreasing),
+  inventory: G(lucidePackage),
+  guests: G(lucideGift),
+  grades: G(lucideBookOpen),
+  habits: G(lucideCircleCheck),
+  loan: G(lucideCalculator),
+};
+
+type StartRow = { id: SetupStart; label: string; hint: string; icon: ReactNode };
+
+// The starts that are not templates: nothing, the document's cards, a file.
+const BASICS: readonly StartRow[] = [
   { id: 'blank', label: 'Blank', hint: 'An empty grid', icon: <BlankGlyph /> },
   {
     id: 'cards',
@@ -74,27 +102,23 @@ const STARTS: readonly { id: SetupStart; label: string; hint: string; icon: Reac
     hint: 'Your cards as rows, linked both ways',
     icon: <PlanCardsIcon size={15} />,
   },
-  { id: 'budget', label: 'Budget', hint: 'Items, amounts and a total', icon: <BudgetGlyph /> },
-  {
-    id: 'tracker',
-    label: 'Tracker',
-    hint: 'Tasks, owners, status and due dates',
-    icon: <TrackerGlyph />,
-  },
-  {
-    id: 'timesheet',
-    label: 'Timesheet',
-    hint: 'Days, hours and a weekly total',
-    icon: <TimesheetGlyph />,
-  },
-  {
-    id: 'contacts',
-    label: 'Contacts',
-    hint: 'Names, emails and phone numbers',
-    icon: <ContactsGlyph />,
-  },
   { id: 'csv', label: 'Import CSV', hint: 'A .csv or .tsv file', icon: <CsvGlyph /> },
 ];
+
+// The templates under their headings (Money, Work, People and Life), in the catalogue's order.
+const TEMPLATE_GROUPS = SHEET_TEMPLATE_GROUPS.map((group) => ({
+  group,
+  rows: SHEET_TEMPLATES.filter((t) => t.group === group).map((t): StartRow => {
+    const Glyph = TEMPLATE_GLYPHS[t.id];
+    return { id: t.id, label: t.name, hint: t.line, icon: <Glyph /> };
+  }),
+}));
+
+const iconChip = (icon: ReactNode) => (
+  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+    {icon}
+  </span>
+);
 
 export function SheetSetupStart({
   palette,
@@ -110,7 +134,9 @@ export function SheetSetupStart({
   plan: Pick<PlanContextValue, 'items' | 'types' | 'statusNames'> | undefined;
   live: readonly Item[];
 }) {
-  const starts = STARTS.filter((s) => s.id !== 'cards' || (plan && live.length > 0));
+  const basics = BASICS.filter((s) => s.id !== 'cards' || (plan && live.length > 0));
+  const rowsOf = (rows: readonly StartRow[]) =>
+    rows.map((s) => ({ id: s.id, label: s.label, detail: s.hint, icon: iconChip(s.icon) }));
   return (
     <div className="flex flex-col gap-4">
       <section className="flex flex-col gap-1.5" aria-labelledby="setup-sheet-start">
@@ -123,18 +149,29 @@ export function SheetSetupStart({
           palette={palette}
           selected={start}
           onPick={(id) => onStart(id as SetupStart)}
-          rows={starts.map((s) => ({
-            id: s.id,
-            label: s.label,
-            detail: s.hint,
-            icon: (
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
-                {s.icon}
-              </span>
-            ),
-          }))}
+          rows={rowsOf(basics)}
         />
       </section>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {TEMPLATE_GROUPS.map(({ group, rows }) => {
+          const id = `setup-sheet-${group.replace(/\W+/g, '-').toLowerCase()}`;
+          return (
+            <section key={group} className="flex min-w-0 flex-col gap-1.5" aria-labelledby={id}>
+              <h3 id={id} className={HEADING} style={{ color: palette.muted }}>
+                {group}
+              </h3>
+              <OptionRows
+                kind="single"
+                label={`${group} Templates`}
+                palette={palette}
+                selected={start}
+                onPick={(pick) => onStart(pick as SetupStart)}
+                rows={rowsOf(rows)}
+              />
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -161,11 +198,26 @@ export function SheetSetupCards({
         Search and filter as the Cards panel does; each card found becomes a row.
       </p>
       <CardSearchControls plan={plan} live={live} search={search} />
-      <p role="status" className="text-[12px]" style={{ color: palette.muted }}>
-        {search.found.length === 0
-          ? 'No cards match'
-          : `${search.found.length} ${search.found.length === 1 ? 'card' : 'cards'}`}
-      </p>
+      {search.found.length === 0 ? (
+        // The shared no-match empty state, never a bare line (docs/specs/004-interface-design/empty-states.md).
+        <NoMatches
+          size="regular"
+          ink={palette}
+          things="cards"
+          query={search.query}
+          filters={search.filters.length}
+          // It takes the words and the filters together, and says so when both are in force.
+          clearsBoth
+          onClear={() => {
+            search.setQuery('');
+            search.setFilters([]);
+          }}
+        />
+      ) : (
+        <p role="status" className="text-[12px]" style={{ color: palette.muted }}>
+          {`${search.found.length} ${search.found.length === 1 ? 'card' : 'cards'}`}
+        </p>
+      )}
       <CardsPreview palette={palette} plan={plan} cards={search.found} />
     </section>
   );

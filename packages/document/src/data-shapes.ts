@@ -220,6 +220,13 @@ export function isPlanShape(kind: ShapeKind): boolean {
   );
 }
 
+// Whether an element takes a comment thread, an assigned action, a link or a note (docs/specs/026-plan/plan-mode.md
+// "Nothing attached to Plan items"): every element but a Plan item (a board, card, view or Sheet), whose cards hold
+// the conversation. Whoever is asking: the rule does not depend on a share role.
+export function takesAttachments(el: { type: string; shape?: string | undefined }): boolean {
+  return !(el.type === 'shape' && isPlanShape(el.shape as ShapeKind));
+}
+
 // Round to a whole number and clamp into [0, max]. The fiddly half of the
 // clamp-and-round idiom (min/max order, the round) lives here so clampRating /
 // clampPercent can't drift apart.

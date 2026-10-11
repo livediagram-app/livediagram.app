@@ -3,7 +3,13 @@
 // Everything a Sheet's keys, toolbar and menus do (docs/specs/029-sheets/sheet.md "Editing", "Keyboard",
 // "Formatting", "Rows and columns", "Sort", "Filter", "Freeze"), built from the engine's command builders and sent
 // through the controller's write. One place, so a toolbar button and its shortcut can never differ.
-import { chartRangeOf, NOTHING_TO_CHART, type SheetChartKind } from './sheet-charts';
+import {
+  chartRangeOf,
+  chartSizeOf,
+  newChartAnchor,
+  NOTHING_TO_CHART,
+  type SheetChartKind,
+} from './sheet-charts';
 import { useMemo } from 'react';
 import {
   PARSE_FAILURE_COPY,
@@ -316,15 +322,25 @@ export function useSheetActions() {
       setFilter(colId: string, cond: FilterCondition | null) {
         c.write(setFilterCondition(colId, cond), 'Filter');
       },
-      // Insert Chart: the selection (or the data around the cell) as a chart over the Sheet.
+      // Insert Chart: the selection (or the data around the cell) as a chart in the Sheet, beside it, in view.
       insertChart(kind: SheetChartKind) {
         const pick = chartRangeOf(c.workbook, c.sheet, c.selectionNow());
         if (!pick) return c.toast(NOTHING_TO_CHART);
-        c.placeChart?.(kind, pick);
+        const view = {
+          width: Math.max(0, c.view.width - c.geometry.headW),
+          height: Math.max(0, c.view.height - c.geometry.headH),
+        };
+        c.placeChart?.(
+          kind,
+          pick,
+          newChartAnchor(c.geometry, c.sheet, pick, chartSizeOf(kind), c.scroll, view),
+        );
       },
-      // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), one change and one undo.
+      // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), its charts taken with it (a
+      // set-up-again sheet would otherwise show them twice), one change and one undo.
       clearSheet() {
-        c.write(resetSheetWrite(c.sheet), 'Clear');
+        const charts = c.chartsRemoval?.() ?? null;
+        if (c.write(resetSheetWrite(c.sheet), 'Clear', charts ?? undefined)) charts?.redo();
       },
       // The sheet's look (Sheet Settings): gridlines, headers, default sizes (null back to the default).
       setOptions(options: {

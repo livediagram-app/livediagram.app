@@ -83,6 +83,30 @@ describe('measureCanvasChrome', () => {
     });
   });
 
+  // plan-tabs.md: on a Dashboard, the strip stops short of the maximised element's controls, never a slot's smaller ones.
+  it('measures the maximised element’s controls, not a Dashboard slot’s', () => {
+    document.body.innerHTML = `
+      <main data-canvas-a11y-root="">
+        <div data-dashboard=""><div data-canvas-cover=""><div><div data-band-controls=""></div></div></div></div>
+        <div data-canvas-cover=""><div><div data-band-controls=""></div></div></div>
+      </main>
+      <div data-toolbar-menu=""></div>`;
+    const main = document.querySelector('main')!;
+    const menu = document.querySelector<HTMLElement>('[data-toolbar-menu]')!;
+    const [slotControls, maxControls] = [
+      ...document.querySelectorAll<HTMLElement>('[data-band-controls]'),
+    ];
+    const rect = (r: { left: number; top: number; right: number; bottom: number }) => () =>
+      ({ ...r, x: r.left, y: r.top, width: r.right - r.left, height: r.bottom - r.top }) as DOMRect;
+    main.getBoundingClientRect = rect(canvas);
+    menu.getBoundingClientRect = rect(box(16, 92, 200, 136));
+    Object.defineProperty(slotControls!, 'offsetWidth', { value: 60 });
+    Object.defineProperty(maxControls!, 'offsetWidth', { value: 140 });
+    const { band } = measureCanvasChrome(main);
+    // The strip's right edge: the controls (140) and the gap (12) inside the cover's padding (12).
+    expect(band?.stripEnd).toBe(12 + 140 + 12);
+  });
+
   // "Maximised board": a panel opened for a moment (the Trash, a card search) floats over the board, never moving it.
   it('ignores a passing panel, however wide', () => {
     document.body.innerHTML = `

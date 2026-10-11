@@ -5,7 +5,7 @@
 // Tab choose (the writing's keys, through article-slash.ts), a press chooses too. It never takes focus
 // from the writing.
 import { useLayoutEffect, useRef, useState } from 'react';
-import { Portal } from '@livediagram/ui';
+import { NoMatches, Portal } from '@livediagram/ui';
 import type { SlashItem } from '@/lib/article/article-slash-items';
 
 // The menu and its options by id, for the writing to point at (aria-controls,
@@ -22,7 +22,10 @@ export function SlashMenu({
   index,
   onPick,
   onHover,
+  query = '',
 }: {
+  // What is typed after the `/`, for the empty state.
+  query?: string;
   // The `/`'s place on screen.
   at: { left: number; top: number; bottom: number };
   items: readonly SlashItem[];
@@ -72,7 +75,7 @@ export function SlashMenu({
         }}
       >
         {items.length === 0 ? (
-          <p className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">No blocks match</p>
+          <NoMatches things="blocks" query={query} />
         ) : (
           groups.map((group) => (
             <div key={`${group.name}-${group.entries[0]!.i}`} role="group" aria-label={group.name}>

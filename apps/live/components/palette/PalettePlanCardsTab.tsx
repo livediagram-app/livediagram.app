@@ -17,7 +17,16 @@ export function PalettePlanCardsTab(props: GridProps) {
   const types = plan?.types ?? ITEM_TYPES;
   return (
     <>
-      <PaletteTileGrid {...props} tiles={types.map(planCardTile)} />
+      {types.length > 0 ? (
+        <PaletteTileGrid {...props} tiles={types.map(planCardTile)} />
+      ) : (
+        // A document starts with no card types (docs/specs/026-plan/item-types.md "The type catalogue").
+        <p className="px-1 py-2 text-[12px] text-slate-500 dark:text-slate-400">
+          {plan?.canEdit
+            ? 'No card types yet. Add one, or the default types, with Edit Cards.'
+            : 'This document has no card types yet.'}
+        </p>
+      )}
       {/* Edit Cards: the Card Types panel, where types are added and their fields set
           (docs/specs/026-plan/item-types.md "The Card Types panel"). */}
       {plan?.canEdit ? (

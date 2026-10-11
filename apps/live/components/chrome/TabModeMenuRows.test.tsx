@@ -23,7 +23,7 @@ const choices = () => within(screen.getByRole('group', { name: 'Mode' })).getAll
 // docs/specs/007-editor/editor-modes.md "Where the mode lives" (the tab menu's Mode): every editor mode as a one-of-a-set choice, a
 // toggle button in the Tab control menu (docs/specs/004-interface-design/menus.md, D55).
 describe('TabModeMenuRows', () => {
-  it("lists every editor mode from the catalogue, the tab's one checked", () => {
+  it("lists every editor mode beside the tab's own, the tab's one checked, never Plan from another mode", () => {
     setup();
     const group = screen.getByRole('group', { name: 'Mode' });
     expect(group).toBeTruthy();
@@ -31,14 +31,12 @@ describe('TabModeMenuRows', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       expect.stringContaining('Diagram'),
       expect.stringContaining('Draw'),
-      expect.stringContaining('Illustrate'),
-      expect.stringContaining('Plan'),
       expect.stringContaining('Facilitate'),
+      expect.stringContaining('Illustrate'),
     ]);
     expect(items.map((i) => i.getAttribute('aria-pressed'))).toEqual([
       'false',
       'true',
-      'false',
       'false',
       'false',
     ]);

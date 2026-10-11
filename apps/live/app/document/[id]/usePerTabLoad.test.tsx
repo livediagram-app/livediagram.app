@@ -277,3 +277,137 @@ describe('usePerTabLoad TabLoad timing', () => {
     expect(timing.endAfterPaint).not.toHaveBeenCalled();
   });
 });
+
+// A tab joins the loaded-set only with its content (docs/specs/006-document/per-tab-storage.md). The loaded-set is
+// what lets the autosave save a tab, empty included, so the sweep claiming tabs there before their GETs answered
+// let a commit stamping every tab save the empty placeholders over the real rows: tabs wiped on reload.
+describe('usePerTabLoad never counts an in-flight tab as loaded', () => {
+  beforeEach(() => {
+    apiLoadTab.mockReset();
+  });
+
+  function sweepHook(loadedTabIdsRef: { current: Set<string> }) {
+    return renderHook(
+      ({ activeId }: { activeId: string }) =>
+        usePerTabLoad({
+          hydrated: true,
+          documentId: 'd1',
+          activeId,
+          selfId: 'me',
+          sessionShareCode: null,
+          sessionTabScope: null,
+          tabsRef: {
+            current: [
+              { id: 't1', name: 't1', elements: [] },
+              { id: 't2', name: 't2', elements: [] },
+            ] as Tab[],
+          },
+          loadedTabIdsRef,
+          setLoadedTabIds: vi.fn(),
+          setTabLoadErrors: vi.fn(),
+          retryNonce: 0,
+          lastSavedTabsRef: { current: [] },
+          resetTabs: () => {},
+          noteChangesetSeen: vi.fn(),
+        }),
+      { initialProps: { activeId: 't1' } },
+    );
+  }
+
+  it('the sweep adds a tab only once its content is in place', async () => {
+    let resolveT2: (t: Tab) => void = () => {};
+    apiLoadTab.mockImplementation((_s: string, _d: string, tabId: string) =>
+      tabId === 't2'
+        ? new Promise((resolve) => {
+            resolveT2 = resolve;
+          })
+        : Promise.resolve({ id: tabId, name: tabId, elements: [] }),
+    );
+    const loadedTabIdsRef = { current: new Set<string>(['t1']) };
+    const hook = sweepHook(loadedTabIdsRef);
+    let sweep: Promise<unknown> = Promise.resolve();
+    act(() => {
+      sweep = hook.result.current.loadAllTabs();
+    });
+    await flush();
+    expect(apiLoadTab).toHaveBeenCalledTimes(1);
+    expect(loadedTabIdsRef.current.has('t2')).toBe(false);
+    // A second sweep while the first is in flight does not fetch it again.
+    await act(async () => {
+      await hook.result.current.loadAllTabs();
+    });
+    expect(apiLoadTab).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveT2({ id: 't2', name: 't2', elements: [] } as unknown as Tab);
+      await sweep;
+    });
+    expect(loadedTabIdsRef.current.has('t2')).toBe(true);
+  });
+
+  it('the visit-time load adds a tab only once its content is in place', async () => {
+    let resolveT2: (t: Tab) => void = () => {};
+    apiLoadTab.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveT2 = resolve;
+        }),
+    );
+    const loadedTabIdsRef = { current: new Set<string>(['t1']) };
+    const hook = sweepHook(loadedTabIdsRef);
+    hook.rerender({ activeId: 't2' });
+    await flush();
+    expect(loadedTabIdsRef.current.has('t2')).toBe(false);
+    await act(async () => {
+      await hook.result.current.loadAllTabs();
+    });
+    expect(apiLoadTab).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      resolveT2({ id: 't2', name: 't2', elements: [] } as unknown as Tab);
+    });
+    expect(loadedTabIdsRef.current.has('t2')).toBe(true);
+  });
+});
+
+// docs/specs/006-document/per-tab-storage.md: an empty placeholder never keeps the fetched content out.
+describe('usePerTabLoad with an empty placeholder that dismissed its Quick Start', () => {
+  beforeEach(() => {
+    apiLoadTab.mockReset();
+  });
+
+  it('puts the fetched content in place, so nothing empty is saved over it', async () => {
+    const stored = { id: 't2', name: 't2', elements: [{ id: 'e' }] } as unknown as Tab;
+    apiLoadTab.mockResolvedValue(stored);
+    let tabs: Tab[] = [
+      { id: 't1', name: 't1', elements: [] },
+      { id: 't2', name: 't2', elements: [], templateChosen: true },
+    ] as Tab[];
+    const loadedTabIdsRef = { current: new Set<string>(['t1']) };
+    const lastSavedTabsRef = { current: [...tabs] };
+    const hook = renderHook(() =>
+      usePerTabLoad({
+        hydrated: true,
+        documentId: 'd1',
+        activeId: 't1',
+        selfId: 'me',
+        sessionShareCode: null,
+        sessionTabScope: null,
+        tabsRef: { current: tabs },
+        loadedTabIdsRef,
+        setLoadedTabIds: vi.fn(),
+        setTabLoadErrors: vi.fn(),
+        retryNonce: 0,
+        lastSavedTabsRef,
+        resetTabs: (u: (prev: Tab[]) => Tab[]) => {
+          tabs = u(tabs);
+        },
+        noteChangesetSeen: vi.fn(),
+      }),
+    );
+    await act(async () => {
+      await hook.result.current.loadAllTabs();
+    });
+    expect(tabs.find((t) => t.id === 't2')!.elements).toHaveLength(1);
+    expect(lastSavedTabsRef.current.find((t) => t.id === 't2')!.elements).toHaveLength(1);
+    expect(loadedTabIdsRef.current.has('t2')).toBe(true);
+  });
+});

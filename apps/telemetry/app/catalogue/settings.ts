@@ -269,15 +269,15 @@ export const NOTIFICATION_SETTINGS = settingsStack(
 
 export const ACCESSIBILITY_SETTINGS = settingsStack(
   'Accessibility Settings',
-  'Motion and the welcome and Plan tours.',
+  'Motion and the Diagram, Plan and Facilitate tours.',
   [
     toggle('UI', 'ReduceMotionOn', 'ReduceMotionOff', 'Reduce Motion', 'Turning animation down.'),
     toggle(
       'UI',
       'TourSeenOff',
       'TourSeenOn',
-      'Show Tours: Welcome',
-      'The welcome tour switched back on or off.',
+      'Show Tours: Diagram',
+      'The Diagram tour (the welcome tour until October 2026) switched back on or off.',
     ),
     toggle(
       'UI',

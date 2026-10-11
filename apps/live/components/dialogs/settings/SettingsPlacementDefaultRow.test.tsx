@@ -60,9 +60,9 @@ describe('SettingsPlacementDefaultRow', () => {
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
       'Diagrams',
       'Whiteboards',
+      'Sessions',
       'Illustrate Pages',
       'Plan Boards',
-      'Sessions',
       'Event Storming Boards',
       'Retrospectives',
       'Kanban Boards',

@@ -32,6 +32,7 @@ import type {
   TimelineStackSlotsFor,
 } from './types';
 import { CARD_GRID } from '../cardGrid';
+import { NoMatches } from '../CompactEmptyState';
 
 export type TimelineProps = {
   /** Shared with <TimelineControls>; see useTimelineControls. */
@@ -182,18 +183,15 @@ export function Timeline({
   if (visibleEvents.length === 0) {
     return (
       <div>
-        <div className="rounded-xl border border-dashed border-slate-200 px-6 py-10 text-center dark:border-slate-700">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {hasMore ? 'No matches in the events loaded so far.' : 'No events match these filters.'}
-          </p>
-          <button
-            type="button"
-            onClick={controls.resetFilters}
-            className="mt-2 text-xs text-brand-600 hover:underline dark:text-brand-400"
-          >
-            Clear filters
-          </button>
-        </div>
+        {/* The shared empty state (docs/specs/004-interface-design/empty-states.md). */}
+        <NoMatches
+          size="regular"
+          className="py-10"
+          things={hasMore ? 'loaded events' : 'events'}
+          filters={1}
+          hint={hasMore ? 'Show more to look further back, or remove a filter.' : undefined}
+          onClear={controls.resetFilters}
+        />
         {hasMore && <ShowMore loading={loadingMore} onClick={onLoadMore} />}
       </div>
     );

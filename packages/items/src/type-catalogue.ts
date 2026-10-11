@@ -105,9 +105,12 @@ export interface ItemTypeCatalogue {
 
 const BUILT_IN_FIELDS = new Set<string>(BUILT_IN_FIELD_IDS);
 
-// The types a document's stored catalogue holds, or the default types when it holds none.
+const NO_TYPES: readonly ItemTypeDef[] = [];
+
+// The types a document's stored catalogue holds; none while its card types are not chosen (docs/specs/026-plan/
+// item-types.md "The type catalogue": the default types arrive only through Add Default Types).
 export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly ItemTypeDef[] {
-  return stored?.types ?? ITEM_TYPES;
+  return stored?.types ?? NO_TYPES;
 }
 
 // A type by id within a catalogue; an unknown id (deleted, or an agent's) draws as "Item".
@@ -447,7 +450,7 @@ export function validateItemTypeCatalogue(input: unknown): Result {
   if (!isObj(input)) return { ok: false, reason: 'not an object' };
   if (input['version'] !== ITEM_TYPE_CATALOGUE_VERSION) return { ok: false, reason: 'version' };
   const typesIn = input['types'];
-  if (!Array.isArray(typesIn) || typesIn.length < 1 || typesIn.length > ITEM_TYPES_MAX)
+  if (!Array.isArray(typesIn) || typesIn.length > ITEM_TYPES_MAX)
     return { ok: false, reason: 'types' };
   const types: ItemTypeDef[] = [];
   for (const [i, t] of typesIn.entries()) {
@@ -464,8 +467,8 @@ export function validateItemTypeCatalogue(input: unknown): Result {
   return { ok: true, catalogue };
 }
 
-// A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else the
-// default types, so a damaged value never stops a document opening.
+// A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else none
+// (not chosen), so a damaged value never stops a document opening.
 export function readItemTypeCatalogue(input: unknown): ItemTypeCatalogue | null {
   if (input === null || input === undefined) return null;
   const parsed = typeof input === 'string' ? safeParse(input) : input;
@@ -481,7 +484,19 @@ function safeParse(text: string): unknown {
   }
 }
 
-// The catalogue a first change starts from: the default types, as a stored catalogue.
+// The default types as a stored catalogue: what a document made before card types started empty, with cards,
+// reads as (legacyCatalogue).
 export function defaultCatalogue(): ItemTypeCatalogue {
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: ITEM_TYPES };
+}
+
+// What a document made before card types started empty reads as (docs/specs/026-plan/item-types.md "The type
+// catalogue"): one never chosen (`stored` null) that has cards kept the five default types its cards were made
+// with, so it reads as them; anything else reads as it is stored. Used where a document is read whole and its cards
+// are known (an offline record, a Drive file); D1 documents were given theirs by migration 0090.
+export function legacyCatalogue(
+  stored: ItemTypeCatalogue | null,
+  hasCards: boolean,
+): ItemTypeCatalogue | null {
+  return stored === null && hasCards ? defaultCatalogue() : stored;
 }

@@ -77,4 +77,8 @@ Opening the dialog fires `track('UI', 'Opened', 'CanvasStyle')` (Change Canvas) 
 
 - `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas tab.
 - `ThemeCategoryBrowser` — the theme overview/drill-in. Rendered by both the New-document picker and the dialog's Theme tab.
+- On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the paintbrush**: its
+  bottom-right corner sits 8 px above the brush, right edges aligned, and it grows from that corner (the long motion
+  token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the brush. Without the
+  brush on screen, or on a phone, it is the centred (phone: full-screen) dialog.
 - The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`) — but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.

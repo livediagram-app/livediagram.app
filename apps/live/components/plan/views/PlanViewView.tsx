@@ -13,8 +13,9 @@ import {
   type PlanViewId,
 } from '@livediagram/items';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { track } from '@/lib/telemetry';
 import { usePlan, type PlanContextValue } from '../PlanContext';
-import { planOwnColours, planPalette, type PlanPalette } from '../plan-palette';
+import { planBandTint, planOwnColours, planPalette, type PlanPalette } from '../plan-palette';
 import { MetricView } from './MetricView';
 import { GanttView } from './GanttView';
 import { CalendarView } from './CalendarView';
@@ -22,8 +23,12 @@ import { WorkloadView } from './WorkloadView';
 import { StatusMixView } from './StatusMixView';
 import { PriorityMatrixView } from './PriorityMatrixView';
 import { CardSearchView } from './CardSearchView';
-import { ViewHeaderEnd } from './view-frame';
+import { ViewHeaderEnd, ViewTitle } from './view-frame';
+import { PlanViewSettingsPanel } from './PlanViewSettingsPanel';
+import { SettingsCog } from '../SettingsCog';
+import { SLOT_KEEP_OPEN, useSlotSettings } from '../dashboard/slot-menu';
 import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
+import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import {
   MaximisePlanButton,
   MaximisableSlot,
@@ -95,25 +100,69 @@ export function PlanViewView({
   const widget = planViewMetric(view);
   // Maximised, for this person only; a metric is too small to need it.
   const maximised = useMaximisedPlanId() === element.id;
+  // A Visualisation tab's chart fills its tab, as a Board tab's board does (fill-tab.ts): no Maximise there.
+  const filled = useFillsTab(element.id);
   const interactive = !!plan?.planInput;
+  // In a Dashboard slot, the slot's settings (slot-menu.ts).
+  const slot = useSlotSettings();
   useMaximisedPlanLifetime(element.id, maximised, interactive);
   if (widget) return <MetricView kind={widget} {...props} />;
+  // Its own title, and on a Visualisation tab a rename of the chart and tab together (view-frame ViewTitle), for
+  // someone who may change the chart (an Editor) only.
+  const ownTitle = element.planView?.title;
+  const rename =
+    filled && interactive && plan?.canEdit && element.planView
+      ? (title: string) => {
+          // A rename of the tab (docs/specs/017-telemetry/telemetry.md "Tab"), typed as made from its chart.
+          track('Tab', 'Renamed');
+          plan?.updateView(element.id, { ...element.planView!, title });
+        }
+      : undefined;
   const body = (
-    <ViewHeaderEnd.Provider
-      value={
-        interactive ? (
-          <MaximisePlanButton
-            id={element.id}
-            kind="View"
-            maximised={maximised}
-            palette={palette}
-            small
-          />
-        ) : null
-      }
+    <ViewTitle.Provider
+      value={{ ...(ownTitle ? { title: ownTitle } : {}), ...(rename ? { rename } : {}) }}
     >
-      {viewOf(view, props)}
-    </ViewHeaderEnd.Provider>
+      <ViewHeaderEnd.Provider
+        value={
+          interactive ? (
+            <>
+              {filled ? null : (
+                <MaximisePlanButton
+                  id={element.id}
+                  kind="View"
+                  maximised={maximised}
+                  palette={palette}
+                  small
+                />
+              )}
+              {/* Its settings, for someone who may change the chart (an Editor), last as on a board: its one menu,
+                  in a Dashboard slot with the slot's Slot section after its own; for anyone else there, the slot's
+                  own cog (slot-menu.ts). */}
+              {plan?.canEdit && element.planView ? (
+                <SettingsCog
+                  label="Chart Settings"
+                  palette={palette}
+                  {...(slot ? { keepOpenWithin: SLOT_KEEP_OPEN } : {})}
+                >
+                  {(close) => (
+                    <PlanViewSettingsPanel
+                      elementId={element.id}
+                      stored={element.planView!}
+                      onClose={close}
+                      more={slot ? (section) => slot.sections(section, close) : undefined}
+                    />
+                  )}
+                </SettingsCog>
+              ) : (
+                slot?.cog
+              )}
+            </>
+          ) : null
+        }
+      >
+        {viewOf(view, props)}
+      </ViewHeaderEnd.Provider>
+    </ViewTitle.Provider>
   );
   // One stable tree whether maximised or not (MaximisableSlot), so the view keeps its state (a Gantt's scale,
   // window and collapsed lanes) both ways; while it fills the canvas area, the canvas keeps its place, empty.
@@ -121,6 +170,9 @@ export function PlanViewView({
     <MaximisableSlot
       id={element.id}
       maximised={maximised}
+      fill={filled}
+      tint={planBandTint(element)}
+      blend={{ surface: palette.surface, line: palette.border }}
       placeholder={{
         backgroundColor: palette.surface,
         borderColor: palette.border,
@@ -140,6 +192,7 @@ function viewOf(view: PlanViewId, props: PlanViewProps) {
     case 'gantt':
       return <GanttView {...props} />;
     case 'calendar':
+    case 'start-calendar':
       return <CalendarView {...props} />;
     case 'workload':
       return <WorkloadView {...props} />;

@@ -6,7 +6,6 @@
 // WIP limit, pips for votes). Filter, Only Mine and Not on Board are controls. The pictures are CSS, so
 // they stay crisp at any zoom.
 import {
-  ITEM_TYPES,
   PRIORITY_LABELS,
   UNASSIGNED,
   dayKey,
@@ -316,7 +315,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
     case 'types': {
       // Counted by the type each item reads as, so items of a type the catalogue no longer has join
       // the type they show as.
-      const catalogue = ctx.types.length ? ctx.types : ITEM_TYPES;
+      const catalogue = ctx.types;
       const merged = new Map<string, { def: ItemTypeDef; count: number }>();
       for (const { type, count } of boardTypeCounts(
         ctx.items,

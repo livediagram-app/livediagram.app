@@ -95,6 +95,7 @@ export {
   type ExportStickerArt,
   type ResolveIconArt,
   type ResolveImageHref,
+  type ResolvePlanArt,
   type ResolveStickerArt,
 } from './svg-render-describe';
 import {
@@ -221,7 +222,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
         ? svgPlanBoard(el, opts.items, surface, opts.itemTypes)
         : el.shape === 'plan-card'
           ? svgPlanCard(el, opts.items, surface, opts.itemTypes)
-          : svgPlanView(el, surface);
+          : (opts.resolvePlanArt?.(el) ?? svgPlanView(el, surface));
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
   if (el.type === 'shape' && el.shape === 'checklist' && shape.kind === 'rect') {

@@ -9,7 +9,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Boards',
   description:
-    'Plan boards in livediagram: Kanban, to-do list, sprint, bug triage, retro, roadmap, week, All Cards and Archive boards; columns, swimlanes, WIP limits, widgets, card sizes and the card types each board takes.',
+    'Plan boards in livediagram: Kanban, to-do list, sprint, bug triage, retro, roadmap, week, All Cards and Archive boards; columns, swimlanes, WIP limits, widgets, card sizes, the card types each board takes, and CSV import and download.',
   path: '/help/canvas/plan-mode/boards/',
 });
 
@@ -24,26 +24,26 @@ A **board** is where [Plan mode](/help/canvas/plan-mode/) work happens: columns 
 
 ## Pick a Board
 
-An empty Plan tab shows **Start Planning** in the middle, with a **Boards** tab and a **Spreadsheets** tab (an **Empty Sheet**, a **Card Table** once the document has cards, a **Budget** and a **Tracker**). Each board is a small picture of the board over its name and what it is for; pick one and it is placed, empty, in the middle of your view. Every board, the Archive board included, is also in the palette's **Boards** category: press one and click the canvas, or drag it out to the size you want. Participants and Viewers don't see the picker.
+An empty Plan tab shows **Start Planning** in the middle. Choose **Boards** in its rail on the left (a few favourites are also under **Recommended**) to see every board type, or search for one. Each card is a picture of the board over its name, what it's for and the card types it takes; pick one and it is placed, empty, in the middle of your view. Participants and Viewers don't see the picker.
 
-<Figure caption="Start Planning, on an empty Plan tab: each tile is a picture of the board it places.">
+<Figure caption="Start Planning, on an empty Plan tab: Boards chosen in its rail, each card a picture of the board it places.">
   <PlanBoardPickerScene />
 </Figure>
 
-| Board                                        | For                                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------- |
-| **Blank** (**Board** in the palette)         | A board with no columns: pick or name the first one and build from there. |
-| **Kanban**                                   | Tasks and Actions from Backlog to Done, with WIP limits.                  |
-| **To-do List**                               | Actions to tick off, from To Do to Done.                                  |
-| **Sprint**                                   | A sprint's Stories, Tasks and Bugs, a row per person, with estimates.     |
-| **Retro**                                    | Notes hidden until you reveal them, then everyone votes.                  |
-| **Roadmap**                                  | Projects on Now, Next and Later.                                          |
-| **Bug Triage**                               | Bugs from New to Fixed, a row per priority.                               |
-| **Weekly Planner** (**Week** in the palette) | A column a day, Monday to Friday.                                         |
-| **All Cards**                                | Every card in the document, a row per status, so nothing gets lost.       |
-| **Archive** (palette only)                   | Every archived card, out of the way, ready to restore.                    |
+| Board              | For                                                                       |
+| ------------------ | ------------------------------------------------------------------------- |
+| **Blank**          | A board with no columns: pick or name the first one and build from there. |
+| **Kanban**         | Tasks and Actions from Backlog to Done, with WIP limits.                  |
+| **To-do List**     | Actions to tick off, from To Do to Done.                                  |
+| **Sprint**         | A sprint's Stories, Tasks and Bugs, a row per person, with estimates.     |
+| **Retro**          | Notes hidden until you reveal them, then everyone votes.                  |
+| **Roadmap**        | Projects on Now, Next and Later.                                          |
+| **Bug Triage**     | Bugs from New to Fixed, a row per priority.                               |
+| **Weekly Planner** | A column a day, Monday to Friday.                                         |
+| **All Cards**      | Every card in the document, a row per status, so nothing gets lost.       |
+| **Archive**        | Every archived card, out of the way, ready to restore.                    |
 
-A board placed from the palette or the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. The exception is a column named like a status the tab already has (a second Kanban's **Done**, say): it takes that status, so its cards show on the new board too. Boards from a [Plan template](/help/canvas/plan-mode/#plan-templates) are set up for their job, share columns between tabs where the work hands over, and come with no cards either.
+A board placed from the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. The exception is a column named like a status the tab already has (a second Kanban's **Done**, say): it takes that status, so its cards show on the new board too. Boards from a [Plan template](/help/canvas/plan-mode/#plan-templates) are set up for their job, share columns between tabs where the work hands over, and come with no cards either.
 
 ## Columns
 
@@ -67,16 +67,20 @@ A board holds up to 12 columns. A new Blank board shows **Setup Board**: first c
 
 ## The Board's Own Settings
 
-Press the cog at the top right of the board (**Board Settings**), or right-click the board (or select it and press **⋯**) and open **Board**. Both show four sections, one open at a time (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board**):
+Press the cog at the top right of the board (**Board Settings**), or right-click the board: both open the board's menu. Its **Board** category holds four sections, one open at a time (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board**):
 
-- **Board Setup:** the board's name, **Setup Board**, which opens the setup screen again filled in with the board as it is, so you can change its card types, columns and layout in one go (**Save Board** keeps each kept column's settings), and **Fill Tab** (below). To put the whole board in the [Slide Deck](/help/selection-modes/slide-deck/), use **Add to Slides** in the board's **⋯** menu at its top right.
+- **Board Setup:** the board's name, **Setup Board**, which opens the setup screen again filled in with the board as it is, so you can change its card types, columns and layout in one go (**Save Board** keeps each kept column's settings), and **Fill Tab** (below). To put the whole board in the [Slide Deck](/help/selection-modes/slide-deck/), press **Add to Slides** in the board's header, left of Focus.
 - **Swimlanes:** **Group Rows By**, one list: **None**, **Assignee**, **Type** or **Priority**, then a row per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. There is no Status row grouping on a board, since its columns already are its statuses (an All Cards board, which has one column, groups its rows by status).
 - **Supported Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Stories, Tasks and Bugs; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again). You can turn them all off, then add one with **Add New Card Type** under any column's **+ Add card**. A board whose chosen types have all since been deleted shows every type again.
 - **Card Layout:** the **Card Size** (**Minimal**, **Compact** or **Detailed**). What a card shows at each size is set per card type, in its [Display](/help/canvas/plan-mode/card-types/) tab.
 
+A board takes no comments, actions, links or notes of its own, and nor does a chart or a sheet: its menu has no Collaborate or Resources. Talk on the cards instead, each with its own comments.
+
+On a [Dashboard](/help/canvas/plan-mode/dashboards/), the board's cog opens these sections as a panel, with the slot's own **Slot** section last.
+
 ## Fill Tab
 
-Turn on **Fill Tab** (in **Board Setup**, or in the **Layout** step of **Setup Board**) and the board always fills its tab, for everyone, every time the tab opens: there is no **Restore Board** and **Escape** leaves it be, while the tab bar stays so you can still move between tabs. The rest of the canvas can't be used, so turning it on deletes everything else on the tab: when there is anything, you are told how many elements first. Your cards are never deleted, and **Undo** brings the canvas back in one step. Choose **On Canvas** to put the board back. While a board fills its tab, the palette shows **Cards** alone, ready to drag onto it.
+Turn on **Fill Tab** (in **Board Setup**, or in the **Layout** step of **Setup Board**) and the board always fills its tab, for everyone, every time the tab opens: there is no **Restore Board** and **Escape** leaves it be, while the tab bar stays so you can still move between tabs. The rest of the canvas can't be used, so turning it on deletes everything else on the tab: when there is anything, you are told how many elements first. Your cards are never deleted, and **Undo** brings the canvas back in one step. Choose **On Canvas** to put the board back.
 
 A card type can leave statuses out ([Card types](/help/canvas/plan-mode/card-types/)). A column whose status the dragged card's type leaves out turns red and won't take it. A new card can still be added in any column; it just can't be moved into a left-out status afterwards.
 
@@ -99,7 +103,7 @@ While a board is selected, the grip beside its title is where to take hold of it
 
 The header holds **widgets**: Item Count, Completion, Filter, Only Mine, People, Not on Board, Card Types, WIP Alerts, Due Soon, Points, Priorities, Unassigned, Top Voted and Stale Cards. Each board type starts with the ones that suit it.
 
-- **Add one:** drag it from the palette's **Widgets** category into the header (a bar shows where it lands), or press the **+** at the end of the header to open that category. Tapped rather than dragged, a widget goes to the end of the selected board's header.
+- **Add one:** press the **+** at the end of the board's header and pick a widget from the list. It lists only the widgets the board doesn't have yet, and adds the one you pick at the end of the header.
 - **Arrange them:** drag left or right, or focus one and press **Alt+←** or **Alt+→**. Take one off with its **×** (shown while the board is selected) or **Delete**.
 - **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed. **Filter** and **Only Mine** are yours alone and aren't saved.
 - **Stale Cards** counts cards not done that nobody has changed in 14 days. **Due Soon** counts overdue cards and those due in the next 7 days.
@@ -116,12 +120,21 @@ On a board that hides writing, everyone else's cards show face down (and take no
 
 **Archive** a card (right-click it) to take it off every board without deleting it; the **Archive** board shows them all, and **Restore** brings one back (or drag it onto another board). The **All Cards** board shows every other card with a row per status: the place to find a card no board shows, and give it a status a board has. To search every card instead, use the **Cards** button in the bottom-right corner (see [Cards](/help/canvas/plan-mode/cards/#find-a-card)).
 
+## Import and Download CSV
+
+On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import CSV…**, **Export** and **Download CSV**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#board-sheet-and-dashboard-tabs) with the board's picture (PNG, SVG or PDF) and its Markdown outline; the other two suit a board:
+
+- **Download CSV** saves `<board title>.csv` with a row per card the board shows, column by column: Key, Title, Type and Status, then the fields its card types have (Assignee, Priority, Start, Due, Estimate, Labels, Description) and your custom fields by name. Anyone who can see the board can download it.
+- **Import CSV…** reads a `.csv` or `.tsv` file and adds each row as a new card. The first row names the columns, in any order and any case; only **Title** is required. **Type** picks one of the board's card types by name (else its first), **Status** a column by name (else the first column), and **Assignee** a person by name. Dates can be `2026-10-11` or day-first like `11/10/2026`. Columns it doesn't know, and values that don't fit, are left out. The import is one step, so a single **Undo** takes every new card back, and the board tells you how many cards were added and how many rows were skipped.
+
+Importing adds cards, so it is for people who can edit or take part; on a view-only link it is greyed out, as it is on an Archive board.
+
 ## Focus
 
 Press **Focus Board** (left of Maximise in a board's header) to glide the view so the board fits the screen. Press it again to zoom back out to the whole tab.
 
 ## Maximise
 
-Press **Maximise Board** at the right of a board's header to fill the canvas with it; **Restore Board** or **Escape** puts it back. On a wide enough screen the board starts at the very top of the canvas: its header grows to hold the menu at its left and the palette at its right, beside the board's own buttons (gathered in a card like the menu's), its title and widgets in the room between them, so the columns get the room, and the board's name moves into the menu box at the top left (double-click it there to rename). Zoom is switched off while a board is maximised (the zoom buttons stay, greyed out). Pick anything from the palette other than a card and the board is restored first, so you can place it on the canvas. Maximising is just for you: nobody else's view changes.
+Press **Maximise Board** at the right of a board's header to fill the canvas with it; **Restore Board** or **Escape** puts it back. On a wide enough screen the board starts at the very top of the canvas: its header grows to hold the menu at its left beside the board's own buttons (gathered in a card like the menu's), its title and widgets in the room between them, so the columns get the room, and the board's name moves into the menu box at the top left (double-click it there to rename). Zoom is switched off while a board is maximised (the zoom buttons stay, greyed out). Maximising is just for you: nobody else's view changes.
 
 </ArticleLayout>

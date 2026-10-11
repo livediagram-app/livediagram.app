@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { ShapeLibrary, ShapeLibraryItem } from '@livediagram/api-schema';
+import { NoMatches } from '@livediagram/ui';
 import { SearchInput } from '@/components/primitives/SearchInput';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import { LibraryShapeTile } from './LibraryShapeTile';
@@ -44,9 +45,7 @@ export function PaletteMyShapesTab({ onInsert }: { onInsert: (item: ShapeLibrary
         />
       </div>
       {sections.length === 0 ? (
-        <p className="px-1 py-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
-          No shapes match
-        </p>
+        <NoMatches things="shapes" query={query} onClear={() => setQuery('')} />
       ) : (
         <div className="flex max-h-80 flex-col gap-3 overflow-y-auto overflow-x-hidden">
           {sections.map(({ library, shapes }) => {

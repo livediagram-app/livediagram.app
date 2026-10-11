@@ -5,6 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import { defaultCatalogue } from '@livediagram/items';
 import { TAB_SCHEMA_VERSION, type Tab } from '@livediagram/document';
 import { planCardsFailure, useTabImport } from './useTabImport';
 
@@ -63,7 +64,10 @@ describe('useTabImport, JSON with Plan items', () => {
     const { deps, api, order } = setup(0);
     expect(await api.importTextIntoActiveTab('json', fileOf([item]))).toEqual({ status: 'done' });
     expect(order).toEqual(['tab', 'items']);
-    expect(deps.importPlanItems).toHaveBeenCalledWith({ items: [item], itemTypes: null });
+    expect(deps.importPlanItems).toHaveBeenCalledWith({
+      items: [item],
+      itemTypes: defaultCatalogue(),
+    });
   });
 
   it('reports the cards the store refused, the tab still imported', async () => {

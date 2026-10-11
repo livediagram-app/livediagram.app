@@ -28,7 +28,7 @@ describe('SettingsToggleGroupRow', () => {
     );
     const group = screen.getByRole('group', { name: 'Show Tours' });
     const switches = within(group).getAllByRole('switch');
-    expect(switches.map((s) => s.textContent)).toEqual(['Welcome', 'Plan', 'Facilitate']);
+    expect(switches.map((s) => s.textContent)).toEqual(['Diagram', 'Plan', 'Facilitate']);
     expect(switches.map((s) => s.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
     // One shared description, with a Learn more link per tour.
     const footnote = document.getElementById('tours-description')!;
@@ -36,7 +36,7 @@ describe('SettingsToggleGroupRow', () => {
       within(footnote)
         .getAllByRole('link')
         .map((a) => a.textContent),
-    ).toEqual(['Welcome', 'Plan', 'Facilitate']);
+    ).toEqual(['Diagram', 'Plan', 'Facilitate']);
   });
 
   it('flips the one switch pressed', () => {

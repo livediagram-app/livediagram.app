@@ -95,34 +95,6 @@ describe('usePlanSlice', () => {
     expect(applied).toEqual([{ ...card, planCard: { itemId: 'a', size: 'minimal' } }, other]);
   });
 
-  it('hands a board to the latest slide callback, and offers none without a deck', () => {
-    const added: string[] = [];
-    const base = {
-      planItems,
-      itemTypes,
-      editorMode: 'plan' as const,
-      canEdit: true,
-      canVote: true,
-      teamPeople: participants,
-      presence,
-      statusNames,
-      commit: () => {},
-      select: () => {},
-      announce: () => {},
-    };
-    const { result } = renderHook(() =>
-      usePlanSlice({
-        ...base,
-        addItemSlide: () => {},
-        addBoardSlide: (id) => added.push(id),
-      }),
-    );
-    result.current.context.addBoardSlide?.('board');
-    expect(added).toEqual(['board']);
-    const bare = renderHook(() => usePlanSlice(base));
-    expect(bare.result.current.context.addBoardSlide).toBeUndefined();
-  });
-
   // docs/specs/026-plan/items.md "Comments": a card's comment change goes to the item store.
   it('hands a comment change and the owner id to the item store', () => {
     const comment = vi.fn(async () => true);

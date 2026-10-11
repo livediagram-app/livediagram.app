@@ -6,13 +6,13 @@
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
-import type { PlanFillTab } from '@/hooks/plan/usePlanFillTab';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
 import type { PlanCardRef, PlanViewRef } from '@livediagram/document';
 import type {
   BoardStatusTypes,
   Item,
+  ItemCreate,
   ItemMove,
   ItemPatch,
   ItemPerson,
@@ -71,6 +71,9 @@ export type PlanContextValue = {
     id?: string;
     // Whether the card was made (false: refused, and the store put back).
   }) => Promise<boolean>;
+  // Many new cards as one write and one undo step (a board's Import CSV); whether they were made. Absent outside
+  // the editor.
+  addItems?: (creates: readonly ItemCreate[]) => Promise<boolean>;
   moveItem: (itemId: string, move: ItemMove) => void;
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
@@ -90,6 +93,8 @@ export type PlanContextValue = {
   // A Plan card's own settings (its Card Size): one element edit, synced and undoable.
   updateCard: (cardElementId: string, ref: PlanCardRef) => void;
   announce: (message: string) => void;
+  // A message on screen (a toast), for an outcome the person waits on (a board's Import CSV).
+  notify?: (message: string) => void;
   setDragging: (itemId: string | null) => void;
   // The card being dragged by this person, if any (the Trash grows to take it).
   draggingItemId: string | null;
@@ -102,8 +107,6 @@ export type PlanContextValue = {
   // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");
   // absent where there is no deck to add to.
   addItemSlide?: (itemId: string) => void;
-  // A whole board as a slide ("Board slides" there); absent with addItemSlide.
-  addBoardSlide?: (boardId: string) => void;
   // The names the tab's boards give their statuses, in order (an All Cards board's rows).
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status: what the plan views count as done
@@ -114,7 +117,7 @@ export type PlanContextValue = {
   statusTypes: BoardStatusTypes;
   // Each board's title and the statuses it names, in board order: the type editor's States groups by them.
   statusBoards: readonly StatusBoard[];
-} & PlanFillTab;
+};
 
 const PlanContext = createContext<PlanContextValue | undefined>(undefined);
 

@@ -16,7 +16,7 @@ import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
-import type { ChartSource } from './chart-source';
+import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
 import type { IconWeight } from './icon-weight';
@@ -348,6 +348,9 @@ export type ShapeElement = {
   // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): its data is read live from there,
   // the fields above holding the last read. Only meaningful on the pie, bar and line chart kinds.
   chartSource?: ChartSource;
+  // Where a chart drawn from a sheet sits in its Sheet (docs/specs/029-sheets/sheet.md "Charts"): the Sheet draws it
+  // over its cells and the canvas does not. Only meaningful with chartSource; absent = it floats over the canvas.
+  sheetAnchor?: SheetAnchor;
   // Code block (docs/specs/009-elements/code-block.md): the snippet text + its highlight language. Only
   // meaningful on the 'code-block' kind; bounded in validate.ts.
   code?: string;
@@ -1455,7 +1458,8 @@ export function isPlanSheetRef(v: unknown): v is PlanSheetRef {
 // The Gantt chart adds its swimlanes and its names column width (px), validated by isPlanViewSettings.
 export type PlanViewRef = {
   view: PlanViewId;
-  // The Gantt chart's card types (card type ids); absent is Project alone.
+  // The card types the view shows (card type ids, docs/specs/026-plan/plan-views.md "Card types"); absent is every
+  // type it can show (for a Gantt chart, every type with a Start and a Due field).
   types?: string[];
   swimlaneBy?: SwimlaneBy;
   swimlaneField?: string;
@@ -1465,4 +1469,9 @@ export type PlanViewRef = {
   // Card Search's filters, each a grouping (and field) and the lane a card must fall in (docs/specs/026-plan/plan-views.md
   // "Card Search"); absent is every card.
   filters?: CardSearchFilter[];
+  // The statuses a chart counts (status ids; docs/specs/026-plan/plan-views.md "Statuses"); absent is every card.
+  statuses?: string[];
+  // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
+  // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
+  title?: string;
 };

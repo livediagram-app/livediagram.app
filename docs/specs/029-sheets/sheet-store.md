@@ -77,14 +77,18 @@ A Plan template's Sheet ([Spreadsheet templates](../026-plan/plan-templates.md#s
 element naming its **start** (`start`, a template start's id: `budget-planner`, `timesheet`, `contact-list`,
 `task-tracker`) and a fresh `sheetId`, and no sheet yet.
 
-- Whatever makes the tabs makes each such sheet from its start at once: its title the start's, its rows and cells
-  the start's, set up as Setup Sheet would (the Header look, the header row frozen, tints for the tab's canvas, light
-  or dark), dates reckoned from that moment. The element's `start` is then dropped, so a template's tabs are never
+- Each start is one of the [sheet templates](sheet.md#sheet-templates): `budget-planner` the Budget, `timesheet` the
+  Timesheet, `contact-list` Contacts, `task-tracker` the Tracker (`TEMPLATE_START_SHEETS`).
+- Whatever makes the tabs makes each such sheet from its template at once: titled with the template's name, set up
+  in the Banded look, its header frozen, tints for the tab's canvas, light or dark, dates reckoned from that moment;
+  the template's chart is added to the tab as a chart element anchored in the Sheet, carrying its first read. The element's `start` is then dropped, so a template's tabs are never
   stored with it: the document is created with the sheets beside the tabs, or Quick Start and `add_tab` make the
   sheets right after the tabs.
 - An element still carrying `start` with no sheet behind it (a path that missed it) is made from the start by the
-  first editor to draw it, as a copy not yet made is, and the mark dropped; until then it shows its loader, never
-  "no longer in this document". A second editor drawing it at the same moment finds it made and loads it.
+  first editor to draw it, as a copy not yet made is, and the mark dropped quietly at once; until then it shows its
+  loader, never "no longer in this document". The template's chart is added beside it, quietly, once the server takes
+  that editor's sheet. A second editor drawing it at the same moment finds it made (the server refuses their copy) and
+  loads it, adding no chart, so the chart is never added twice.
 - `start` counts as nothing referenced: the sheet is referenced by its `sheetId` once made.
 
 ## Deleting a sheet

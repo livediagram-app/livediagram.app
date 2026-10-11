@@ -6,18 +6,18 @@ import { TabModeMenuScene, LeaveIllustrateScene } from '@/components/illustratio
 export const metadata = helpMetadata({
   title: 'Editor Modes',
   description:
-    'Work on any tab in Diagram, Draw, Illustrate, Plan or Facilitate mode: what each mode is for, how to switch with the mode switch, Shift+D or the tab menu, why everyone on a tab shares its mode, and what stays the same when you switch.',
+    'Work on any tab in Diagram, Draw, Facilitate, Illustrate or Plan mode: what each mode is for, how to switch with the mode switch, Shift+D or the tab menu, why everyone on a tab shares its mode, and what stays the same when you switch.',
   path: '/help/canvas/editor-modes/',
 });
 
 <ArticleLayout
   title="Editor Modes"
-  description="Diagram, Draw, Illustrate, Plan and Facilitate: five ways of working on the same tab."
+  description="Diagram, Draw, Facilitate, Illustrate and Plan: five ways of working on the same tab."
   categoryTitle="Canvas"
   categorySlug="canvas"
 >
 
-An **editor mode** is how you work on a tab right now. There are five: **Diagram**, **Draw**, **Illustrate**, **Plan** and **Facilitate**. A mode decides which tools are in front of you; it never changes what is on the tab. Switch from Diagram to Draw and every shape stays exactly where it was, and the strokes you draw in Draw mode are still there when you switch back.
+An **editor mode** is how you work on a tab right now. There are five: **Diagram**, **Draw**, **Facilitate**, **Illustrate** and **Plan**. A mode decides which tools are in front of you; it never changes what is on the tab. Switch from Diagram to Draw and every shape stays exactly where it was, and the strokes you draw in Draw mode are still there when you switch back.
 
 Three words describe how documents and tabs differ, and they mean different things:
 
@@ -46,7 +46,9 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
   <ModeSwitchScene />
 </Figure>
 
-**Shift+D** moves to the next mode from anywhere on the canvas (with one element selected it types a capital D into its label instead, so press Escape first): Diagram, then Draw, Illustrate, Plan, Facilitate and back to Diagram. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
+**Shift+D** moves to the next mode from anywhere on the canvas (with one element selected it types a capital D into its label instead, so press Escape first): Diagram, then Draw, Facilitate, Illustrate and back to Diagram.
+
+**Plan works in tabs of its own.** A tab can't switch into Plan from another mode, or out of Plan into another: pick **Plan** in the mode switch and you're offered a **New Plan Tab** instead (and the same the other way round on a Plan tab). Shift+D skips Plan. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
 
 ## One Mode for Everyone
 
@@ -55,7 +57,7 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
 - **Undo switches back.** Switching is one step in your [undo history](/help/canvas/undo/): **Undo** puts the tab back in the mode it was in, exactly as it was, for everyone, and **Redo** switches again.
 - **The tab pill shows the tab's mode.** Each tab in the tab bar starts with the icon of its mode, the same icon the switch uses.
 - **A tab opens in its mode**, for everyone, Diagram unless something set it otherwise.
-- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab) and choose **Diagram**, **Draw**, **Illustrate**, **Plan** or **Facilitate** from the mode rows at the bottom. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
+- **The tab menu has it too:** open the tab menu (the **⋯** on the tab, or right-click the tab) and choose **Diagram**, **Draw**, **Facilitate**, **Illustrate** or **Plan** from the mode rows at the bottom. Each choice says what the mode is for, and choosing one switches the tab exactly as the switch does.
 
 <Figure caption="The tab menu's mode rows, with a dot on the tab's current one; the tab pill leads with the same icon.">
   <TabModeMenuScene />

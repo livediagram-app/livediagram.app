@@ -76,7 +76,8 @@ export function useChartSetters({
     setPieFieldSelected({ lineCategories: categories, lineSeries: series }, 'LineData');
   // A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): Unlink keeps the data it last read
   // and makes it an ordinary chart, edited by hand.
-  const unlinkChartSelected = () => setPieFieldSelected({ chartSource: undefined }, 'ChartData');
+  const unlinkChartSelected = () =>
+    setPieFieldSelected({ chartSource: undefined, sheetAnchor: undefined }, 'ChartData');
   return {
     unlinkChartSelected,
     setRatingSelected,

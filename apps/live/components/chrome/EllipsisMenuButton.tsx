@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import type { TabDataRows } from './tab-data-rows';
 import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
@@ -31,6 +32,7 @@ export function EllipsisMenuButton({
   onDelete,
   modeChoice,
   planTab,
+  dataRows,
   selfId,
 }: {
   open: boolean;
@@ -60,6 +62,7 @@ export function EllipsisMenuButton({
   onDelete: () => void;
   modeChoice?: TabModeChoice;
   planTab?: boolean;
+  dataRows?: TabDataRows;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -93,6 +96,7 @@ export function EllipsisMenuButton({
             locked={locked}
             modeChoice={modeChoice}
             planTab={planTab}
+            {...(dataRows ? { dataRows } : {})}
             selfId={selfId}
             otherDocuments={otherDocuments}
             folderNames={folderNames}

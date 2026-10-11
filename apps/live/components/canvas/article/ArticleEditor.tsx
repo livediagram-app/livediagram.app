@@ -624,6 +624,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         <SlashMenu
           at={slash.at}
           items={slashItems}
+          query={slash.query}
           index={Math.min(slashIndex, Math.max(0, slashItems.length - 1))}
           onPick={pickSlash}
           onHover={setSlashIndex}

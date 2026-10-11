@@ -12,6 +12,7 @@
 // self-drawing data shapes the same way the inline editor does.
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
+import type { DashboardLayout } from './dashboard';
 import type { EditorMode } from './editor-mode';
 import type { IllustratePage, PageOrientation } from './illustrate-page';
 import type { ArticleFlow } from './article-flow';
@@ -284,6 +285,8 @@ export type Tab = {
   id: TabId;
   name: string;
   kind?: TabKind;
+  // A Dashboard tab's rows and slots (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), read via `readDashboard`.
+  dashboard?: DashboardLayout;
   // The tab's editor mode, the same for everyone on it and the mode it opens in
   // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
   // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
@@ -380,7 +383,15 @@ export {
   PLAN_SHEET_ID_PATTERN,
   takesTypedLabel,
 } from './element-types';
-export { DEFAULT_TAB_KIND, stampTabKind, tabKindOf, type TabKind } from './tab-kind';
+export {
+  DEFAULT_TAB_KIND,
+  PLAN_TAB_KINDS,
+  isPlanTabKind,
+  stampTabKind,
+  tabKindOf,
+  type PlanTabKind,
+  type TabKind,
+} from './tab-kind';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './illustrate-page';
@@ -534,6 +545,7 @@ export * from './web-components';
 // draw their own `…` rather than taking the shared settings one.
 export * from './behaviour-shapes';
 export * from './colors';
+export * from './cell-colours';
 export * from './icon-size';
 export * from './icon-weight';
 
@@ -599,6 +611,16 @@ export * from './tab-builders';
 export * from './svg-render';
 export * from './svg-render-plan-sheet';
 export * from './svg-render-table';
+// The marks the editor's Plan tab images draw with (docs/specs/026-plan/plan-tabs.md "Export"): text, line fitting,
+// people and card faces, so its plan view and dashboard pictures read like the boards beside them.
+export {
+  fitLine as svgFitLine,
+  mixHex,
+  personDisc as svgPersonDisc,
+  text as svgText,
+  wrapLines as svgWrapLines,
+} from './svg-render-face-kit';
+export { svgCardFace } from './svg-render-plan';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
@@ -707,3 +729,8 @@ export * from './element-refs';
 export * from './containment';
 export * from './style-keys';
 export * from './plan-palette';
+export * from './plan-presets';
+export * from './dashboard';
+export * from './dashboard-cards';
+export * from './dashboard-card-style';
+export * from './tab-names';

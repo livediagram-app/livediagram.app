@@ -49,7 +49,6 @@ export function ItemTypeEditor({
   template,
   types,
   itemCount,
-  canDelete,
   onSave,
   onDelete,
   onClose,
@@ -62,7 +61,6 @@ export function ItemTypeEditor({
   types: readonly ItemTypeDef[];
   // How many cards (out of the Trash) have this type: a delete says they go to the Trash with it.
   itemCount: number;
-  canDelete: boolean;
   onSave: (type: ItemTypeDef) => void;
   // Deletes the type and moves its cards to the Trash, once confirmed.
   onDelete: () => void;
@@ -260,7 +258,7 @@ export function ItemTypeEditor({
       />
       <DialogFooter>
         <>
-          {type && canDelete ? (
+          {type ? (
             <Button
               variant="secondary"
               // Duplicate Type, when there, sits beside it and ends the left group instead.

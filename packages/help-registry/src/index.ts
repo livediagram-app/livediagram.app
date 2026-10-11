@@ -376,10 +376,12 @@ export const articles: Article[] = [
     categorySlug: 'getting-started',
   },
   {
-    slug: 'welcome-tour',
-    title: 'The Welcome Tour',
-    description: 'The interactive editor walkthrough, offered once and replayable from Settings.',
-    keywords: 'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps',
+    slug: 'diagram-tour',
+    title: 'The Diagram Tour',
+    description:
+      'The interactive Diagram mode walkthrough, offered once and replayable from Settings.',
+    keywords:
+      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps welcome diagram mode palette',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -1269,7 +1271,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1287,7 +1289,7 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw, Illustrate, Plan and Facilitate: what each mode is for, the mode switch, Shift+D and Opens in.',
+      'Diagram, Draw, Facilitate, Illustrate and Plan: what each mode is for, the mode switch, Shift+D and Opens in.',
     keywords:
       'editor mode editor modes mode switch switch mode change mode modes diagram draw illustrate plan facilitate session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave illustrate switch to diagram confirm convert pages workflow way of working',
     category: 'Canvas',
@@ -1340,7 +1342,7 @@ export const articles: Article[] = [
     description:
       'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
     keywords:
-      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner',
+      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner csv import csv download csv spreadsheet export cards',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
@@ -1389,12 +1391,23 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
+    slug: 'dashboards',
+    title: 'Dashboards',
+    description:
+      'A Plan tab of rows and slots: boards, sheets, metrics, charts and notes side by side, live, arranged by dragging.',
+    keywords:
+      'dashboard dashboards overview report summary page layout rows row slots slot grid tiles widgets metrics metric kpi kpis chart charts board boards sheet sheets tabs at a glance status home portal add to slot settings cog background tint clear dashboard start over sheet chart change chart sheet figure column summary trend move swap resize arrange drag rearrange',
+    category: 'Canvas',
+    categorySlug: 'canvas/plan-mode',
+    parentSlug: 'plan-mode',
+  },
+  {
     slug: 'sheets',
     title: 'Sheets',
     description:
-      'A spreadsheet tab on the canvas: setup, cells, formulas, formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
+      'A spreadsheet tab on the canvas: setup and templates, cells, formulas, formatting, sort, filter, find, charts, card tables, CSV, maximise and fill tab.',
     keywords:
-      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab',
+      'sheet sheets spreadsheet spreadsheets excel google sheets workbook table grid cell cells row rows column columns formula formulas function functions sum average reference references a1 range ranges number format currency percent date bold italic border borders merge merged freeze frozen sort sorting filter filtering find replace csv tsv import export download upload paste copy fill handle series autofill maximise maximize full screen restore spill setup chart charts bar line pie card table cards linked save focus fill tab templates template budget invoice expense report expenses loan calculator mortgage sales pipeline inventory stock guest list rsvp grade book habit tracker timesheet contacts tracker cell size compact roomy',
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',

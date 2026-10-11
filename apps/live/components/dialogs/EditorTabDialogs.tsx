@@ -108,6 +108,8 @@ export function EditorTabDialogs() {
           // (docs/specs/007-editor/illustrate-pages.md "Export").
           pages={exportScope === 'tab' ? illustratePages?.pages : undefined}
           documentName={documentName}
+          // A Dashboard's slots that show another tab draw it (docs/specs/026-plan/plan-tabs.md "Export").
+          documentTabs={tabs}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}
@@ -118,9 +120,10 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
-          // Illustrate mode imports a livediagram tab only: the other formats are diagrams
-          // (docs/specs/007-editor/illustrate-pages.md "Import").
-          formats={illustratePages ? ['json'] : undefined}
+          // Illustrate mode and a Dashboard tab import a livediagram tab only: the other formats are diagrams
+          // (docs/specs/007-editor/illustrate-pages.md "Import", docs/specs/026-plan/plan-tabs.md "Import and
+          // Export of a Dashboard").
+          formats={illustratePages || activeTab.kind === 'dashboard' ? ['json'] : undefined}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

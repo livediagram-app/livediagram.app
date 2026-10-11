@@ -93,11 +93,12 @@ A strip shows one category at a time, so finding an element means knowing which 
   record the choice (a board's preset, a card's type) the first tile in layout order stands for
   them all. Tiles that place no one element type (the icon, sticker and tech catalogue tiles, the
   shape pen, a board's header widget, the hero and avatar composites) never list here. An empty
-  tab says "Nothing on this tab yet. Type to find any element."; one holding only other modes'
-  types says "Only elements from other modes are on this tab so far. Type to find any element."
-- **Nothing matches:** the mode's section says so in one line, pointing at the accordion when that
-  has matches ("No Diagram elements match. Other modes have 3 below."); with neither, "No elements
-  match".
+  tab shows the shared empty state "No elements on this tab yet" ("Type to find any element."); one holding only
+  other modes' types, "No Diagram elements on this tab yet" (the mode's name).
+- **Nothing matches:** the mode's section shows the shared empty state
+  ([Empty states](../004-interface-design/empty-states.md)), pointing at the accordion when that has matches ("No
+  Diagram elements match “pie chart”", "Other modes have 3 below."); with neither, "No elements match “<words>”" with
+  **Clear Search**.
 - **Its heading** is "Search Elements", as More's is the category's name; the field reads "Search
   elements". The accordion's line under its title: "Elements other modes offer. Any of them works
   here too."
@@ -172,6 +173,21 @@ The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
 so a new page load starts on the mode's Popular.
 
+## The tab's name
+
+- On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
+  hairline, in every mode: Diagram, Draw, Illustrate and Plan alike, as a board's name rides there
+  ([The name rides in the menu box](../026-plan/plan-board.md)). It is the chrome's ink, 14 px at regular weight (never bold), cut short
+  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
+- While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
+  so the box never shows two.
+- A click (a tap) on it renames the tab in place, for someone who may change the
+  document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
+- Every name in the box renames on a single click, whichever it is (the tab's, a board's, a Sheet's, a chart's, a
+  Dashboard's): in the box a click has nothing else to do. In an element's own header a press moves the element, so
+  there a double-click renames, as before.
+- Not on a phone: the top row is the strip's there.
+
 ## The Explorer and the other panels
 
 There is no Explorer **panel** floating in a corner. A **menu button** (☰) in
@@ -205,8 +221,8 @@ better layout. Its parts went with it:
 
 - The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
-- Settings has no Panel Layout row, and the editor tour's welcome card no layout picker
-  ([Interactive editor tour ("Show me around")](editor-tour.md)).
+- Settings has no Panel Layout row, and the Diagram tour's welcome card no layout picker
+  ([Diagram tour ("Show me around")](editor-tour.md)).
 - The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
   that names them is ignored ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
@@ -275,9 +291,9 @@ their bottom-row buttons. What changes to fit the width:
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
-- The editor tour ([Interactive editor tour ("Show me around")](editor-tour.md)) follows the layout: its Palette step rings the
-  strip's card, and its Explorer step opens the Explorer from the menu button
-  and rings both, with copy that names the button.
+- The Diagram tour ([Diagram tour ("Show me around")](editor-tour.md)) follows the layout: its Palette step rings the
+  strip's card. (Its Explorer step, which opened the Explorer from the menu button, went when the
+  welcome tour became the Diagram tour.)
 
 ## Motion
 

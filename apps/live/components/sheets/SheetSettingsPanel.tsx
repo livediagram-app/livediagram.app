@@ -6,7 +6,7 @@
 // the same wherever it lives. Everything but the totals is the sheet's, seen by everyone and undoable; the totals
 // pick is the viewer's own.
 import { useState, type ReactNode } from 'react';
-import { Button, TextInput, lucideGlyph } from '@livediagram/ui';
+import { TextInput, lucideGlyph } from '@livediagram/ui';
 import {
   lucideColumns2,
   lucideEye,
@@ -27,29 +27,30 @@ import {
   SHEET_FREEZE_COLS_MAX,
   SHEET_FREEZE_ROWS_MAX,
   SHEET_TITLE_MAX,
+  cellSizeDefaults,
+  cellSizeOf,
+  type SheetCellSize,
 } from '@livediagram/sheets';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { SheetNamedRanges } from './SheetNamedRanges';
+import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { SigmaIcon } from './sheet-icons';
 import { SettingsRow } from '@/components/dialogs/settings/SettingsRow';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import { NumberStepper } from '@/components/primitives/NumberStepper';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { usePlan } from '@/components/plan/PlanContext';
-import { FillTabArt } from '@/components/plan/plan-tile-art';
-import { fillTabConfirm } from '@/components/plan/fill-tab';
-import { useFillsTab } from '@/hooks/plan/plan-cover-store';
-import { useConfirm } from '@/hooks/ui/useConfirm';
-import { track } from '@/lib/telemetry';
+import {
+  SettingsActionTile,
+  SettingsBody,
+  SettingsField,
+} from '@/components/plan/settings-panel-parts';
+import { CELL_SIZE_OPTIONS } from './sheet-cell-sizes';
 import { useSheetController } from './sheet-controller';
 import { downloadSheetCsv } from './sheet-csv';
 import { renameSheet } from './sheet-rename';
 import { SheetArt } from './sheet-art';
 import { STATS, toggleStatusPick, useStatusPick } from './sheet-status-pick';
 import type { SheetActions } from './useSheetActions';
-
-export const SHEET_FILL_TAB_HINT =
-  'The sheet always fills this tab, for everyone, so the rest of the canvas can’t be used.';
 
 const DataGlyph = lucideGlyph(lucideTable, 14);
 const ViewGlyph = lucideGlyph(lucideEye, 14);
@@ -70,67 +71,29 @@ const row = (key: string, label: string, description: string) => ({
   description,
 });
 
-const Body = ({ children }: { children: ReactNode }) => (
-  <div className="flex flex-col gap-3 px-3 pb-3 pt-1">{children}</div>
-);
-
-// A tile for a one-press action (Import CSV…, Download CSV, Clear Sheet), as the element menu's tiles.
-function ActionTile({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: ReactNode;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex flex-1 flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-3 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/60 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10 dark:hover:text-brand-200"
-    >
-      <span className="text-slate-400">{icon}</span>
-      {label}
-    </button>
-  );
-}
-
 export function SheetSettingsPanel({
-  elementId,
   actions,
   onImportCsv,
   onClose,
+  csvInTabMenu = false,
+  more,
 }: {
-  // The Sheet element (its Fill Tab).
-  elementId?: string;
   actions: SheetActions;
   onImportCsv: () => void;
   onClose: () => void;
+  // A Sheet filling its Sheet tab: Import CSV and Download CSV are the tab menu's (tab-data-rows.ts), not repeated here.
+  csvInTabMenu?: boolean;
+  // Sections after the Sheet's own, sharing its one-open-at-a-time (a Dashboard slot's Slot section).
+  more?:
+    ((section: (id: string) => { open: boolean; onToggle: () => void }) => ReactNode) | undefined;
 }) {
   const c = useSheetController();
-  const plan = usePlan();
-  const confirm = useConfirm();
-  const filled = useFillsTab(elementId ?? '');
-  // Fill Tab (sheet.md "Fill Tab"): as a board's, turning it on deletes the rest of the canvas, asked first.
-  const setFill = async (on: boolean) => {
-    if (!plan || !elementId || on === filled) return;
-    if (on) {
-      const others = plan.tabOthers(elementId);
-      if (others.count > 0) {
-        onClose();
-        if (!(await confirm(fillTabConfirm(c.sheet.title, others)))) return;
-      }
-    }
-    track('Plan', 'Toggled', on ? 'SheetFillTabOn' : 'SheetFillTabOff');
-    plan.fillTabSheet(elementId, on);
-  };
   const layout = c.sheet.layout;
-  const [open, setOpen] = useState<Section | null>('data');
+  const [open, setOpen] = useState<string | null>('data');
   const [title, setTitle] = useState<string | null>(null);
-  const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmClear, setConfirmClear] = useState<HTMLElement | null>(null);
   const pick = useStatusPick();
-  const section = (id: Section) => ({
+  const section = (id: Section | string) => ({
     open: open === id,
     onToggle: () => setOpen((s) => (s === id ? null : id)),
   });
@@ -143,11 +106,8 @@ export function SheetSettingsPanel({
   return (
     <>
       <BoardSettingsSection title="Sheet Setup" icon={<DataGlyph />} {...section('data')}>
-        <Body>
-          <label className="flex flex-col gap-1.5">
-            <span className="px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-              Title
-            </span>
+        <SettingsBody>
+          <SettingsField label="Title">
             <TextInput
               disabled={!c.canShape}
               aria-label="Title"
@@ -160,38 +120,11 @@ export function SheetSettingsPanel({
                 if (e.key === 'Enter') saveTitle();
               }}
             />
-          </label>
-          {confirmClear ? (
-            <div
-              role="alertdialog"
-              aria-label="Clear Sheet"
-              className="rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-            >
-              <p>
-                Start {c.sheet.title} over? Every cell, format and setting goes, and Setup Sheet
-                shows again. You can undo this.
-              </p>
-              <div className="mt-2.5 flex justify-end gap-2">
-                <Button variant="ghost" size="xs" onClick={() => setConfirmClear(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  size="xs"
-                  onClick={() => {
-                    setConfirmClear(false);
-                    actions.clearSheet();
-                    onClose();
-                  }}
-                >
-                  Clear
-                </Button>
-              </div>
-            </div>
-          ) : (
+          </SettingsField>
+          {
             <div className="flex gap-2">
-              {c.canShape ? (
-                <ActionTile
+              {c.canShape && !csvInTabMenu ? (
+                <SettingsActionTile
                   icon={<ImportGlyph />}
                   label="Import CSV…"
                   onClick={() => {
@@ -202,7 +135,7 @@ export function SheetSettingsPanel({
               ) : null}
               {/* An empty sheet can be set up again (sheet.md "Setup Sheet"): its card takes the grid's place. */}
               {c.canShape && c.sheet.cells.size === 0 ? (
-                <ActionTile
+                <SettingsActionTile
                   icon={<SheetArt size={18} />}
                   label="Setup Sheet"
                   onClick={() => {
@@ -215,26 +148,42 @@ export function SheetSettingsPanel({
                   }}
                 />
               ) : null}
-              <ActionTile
-                icon={<DownloadGlyph />}
-                label="Download CSV"
-                onClick={() => downloadSheetCsv(c.workbook, c.sheet)}
-              />
+              {csvInTabMenu ? null : (
+                <SettingsActionTile
+                  icon={<DownloadGlyph />}
+                  label="Download CSV"
+                  onClick={() => downloadSheetCsv(c.workbook, c.sheet)}
+                />
+              )}
               {c.canShape && c.sheet.cells.size > 0 ? (
-                <ActionTile
+                <SettingsActionTile
                   icon={<ClearGlyph />}
                   label="Clear Sheet"
-                  onClick={() => setConfirmClear(true)}
+                  onClick={(e) => setConfirmClear(e.currentTarget)}
                 />
               ) : null}
             </div>
-          )}
-        </Body>
+          }
+          {/* Clearing asks first, beside its tile (the shared ConfirmPopover). */}
+          {confirmClear ? (
+            <ConfirmPopover
+              anchor={confirmClear}
+              message={`Start ${c.sheet.title} over? Every cell, chart, format and setting goes, and Setup Sheet shows again. You can undo this.`}
+              confirmLabel="Clear"
+              onConfirm={() => {
+                setConfirmClear(null);
+                actions.clearSheet();
+                onClose();
+              }}
+              onCancel={() => setConfirmClear(null)}
+            />
+          ) : null}
+        </SettingsBody>
       </BoardSettingsSection>
       {c.canShape ? (
         <>
           <BoardSettingsSection title="Sheet Options" icon={<ViewGlyph />} {...section('view')}>
-            <Body>
+            <SettingsBody>
               <SettingsRow
                 row={row('grid', 'Gridlines', 'The lines between the cells, for everyone.')}
                 checked={layout.showGrid !== false}
@@ -249,30 +198,19 @@ export function SheetSettingsPanel({
                 checked={layout.showHeaders !== false}
                 onChange={(on) => actions.setOptions({ showHeaders: on })}
               />
-              {plan && elementId ? (
-                <div className="flex flex-col gap-1.5">
-                  <span className="px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-                    Fill Tab
-                  </span>
-                  <OptionRows
-                    kind="single"
-                    label="Fill Tab"
-                    selected={filled ? 'fill' : 'canvas'}
-                    rows={[
-                      { id: 'canvas', label: 'On Canvas', icon: <FillTabArt fill={false} /> },
-                      { id: 'fill', label: 'Fill Tab', icon: <FillTabArt fill /> },
-                    ]}
-                    onPick={(id) => void setFill(id === 'fill')}
-                  />
-                  <p className="px-0.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
-                    {SHEET_FILL_TAB_HINT}
-                  </p>
-                </div>
-              ) : null}
-            </Body>
+            </SettingsBody>
           </BoardSettingsSection>
           <BoardSettingsSection title="Cells" icon={<SizeGlyph />} {...section('sizes')}>
-            <Body>
+            <SettingsBody>
+              {/* Setup Sheet's sizes: a pick sets both defaults at once; none is chosen once they are set by hand. */}
+              <OptionRows
+                kind="single"
+                label="Cell Size"
+                palette={c.palette}
+                selected={cellSizeOf(layout)}
+                onPick={(id) => actions.setOptions(cellSizeDefaults(id as SheetCellSize))}
+                rows={CELL_SIZE_OPTIONS.map((x) => ({ id: x.id, label: x.label, detail: x.hint }))}
+              />
               <div className="flex flex-col gap-2">
                 <SettingsRowShell
                   row={row('col-width', 'Column Width', '')}
@@ -321,14 +259,14 @@ export function SheetSettingsPanel({
                   Reset to Default
                 </button>
               ) : null}
-            </Body>
+            </SettingsBody>
           </BoardSettingsSection>
         </>
       ) : null}
       {/* Freeze changes the sheet: someone who may only view does not see it. */}
       {c.canShape ? (
         <BoardSettingsSection title="Freeze" icon={<FreezeGlyph />} {...section('freeze')}>
-          <Body>
+          <SettingsBody>
             <div className="flex flex-col gap-2">
               <SettingsRowShell
                 row={row('frozen-rows', 'Frozen Rows', '')}
@@ -359,11 +297,11 @@ export function SheetSettingsPanel({
                 }
               />
             </div>
-          </Body>
+          </SettingsBody>
         </BoardSettingsSection>
       ) : null}
       <BoardSettingsSection title="Calculations" icon={<SigmaIcon />} {...section('calc')}>
-        <Body>
+        <SettingsBody>
           <div className="flex flex-col gap-1.5">
             <span className="px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
               Totals
@@ -384,13 +322,14 @@ export function SheetSettingsPanel({
               Shown under a selection of numbers. Your own choice, on every sheet.
             </p>
           </div>
-        </Body>
+        </SettingsBody>
       </BoardSettingsSection>
       <BoardSettingsSection title="Named Ranges" icon={<NamesGlyph />} {...section('names')}>
-        <Body>
+        <SettingsBody>
           <SheetNamedRanges actions={actions} onClose={onClose} />
-        </Body>
+        </SettingsBody>
       </BoardSettingsSection>
+      {more?.(section)}
     </>
   );
 }
