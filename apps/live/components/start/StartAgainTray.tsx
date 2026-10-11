@@ -11,6 +11,7 @@ import {
   PaletteTray,
   PaletteTrayAction,
   usePaletteStripBox,
+  useToolbarBox,
 } from '@/components/chrome/PaletteTray';
 import { TopCenterBanner } from '@/components/chrome/TopCenter';
 import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
@@ -19,6 +20,21 @@ import { startClosedKey } from './start-closed-key';
 import type { TemplateStartMode } from './start-template-items';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 15);
+
+// The pill's room from the dock it stands clear of, px.
+const DOCK_GAP = 10;
+
+// Where the pill goes without a strip: under a dock in the top half of the screen, over one in the bottom half, and
+// with no dock, below the top chrome.
+export function pillPlace(
+  dock: { top: number; bottom: number } | null,
+  viewportHeight = typeof window === 'undefined' ? 0 : window.innerHeight,
+): { top: number } | { bottom: number } {
+  if (!dock) return { top: 80 };
+  return dock.top < viewportHeight / 2
+    ? { top: dock.bottom + DOCK_GAP }
+    : { bottom: viewportHeight - dock.top + DOCK_GAP };
+}
 
 export function StartAgainTray({
   mode,
@@ -32,11 +48,16 @@ export function StartAgainTray({
   const key = startClosedKey(tabId, mode);
   const closed = useEmptyCardDismissed(key);
   const strip = usePaletteStripBox(closed);
+  // Without a strip, Draw's dock: the pill sits just clear of it, below a top dock and above a bottom one.
+  const dock = useToolbarBox('[data-whiteboard-dock]', closed && !strip);
   if (!closed) return null;
   const reopen = () => restoreEmptyCard(key);
   if (!strip)
     return (
-      <div className="pointer-events-none fixed inset-x-0 top-20 z-[var(--z-chrome)] flex justify-center px-4">
+      <div
+        className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4"
+        style={pillPlace(dock)}
+      >
         <TopCenterBanner
           tone="brand"
           className="pointer-events-auto gap-3 py-1.5 pl-3 pr-1.5 text-sm"
