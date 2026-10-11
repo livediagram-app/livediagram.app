@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useExplorer } from './ExplorerContext';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { ListView, PaneHeader, SharedList, SkeletonRows, type PaneDocument } from './views';
@@ -145,6 +145,12 @@ export function ExplorerPane() {
     moveDocumentTo,
     timelineUnread,
   } = useExplorer();
+  // The shared rows the pane's documents still show, by id: a scan of the documents per shared row was
+  // quadratic, rerun on every keystroke in the lens (63 ms at 1,000 rows).
+  const shownIds = useMemo(
+    () => new Set(paneContent.documents.map((d) => d.id)),
+    [paneContent.documents],
+  );
 
   // A team you're not a member of 404s in TeamPane (it doesn't leak the
   // name). When that happens, drop the title/breadcrumb above it — there
@@ -336,7 +342,7 @@ export function ExplorerPane() {
         <FilteredEmpty issues={lens.parsed.issues} onClear={() => lens.setInput('')} />
       ) : selected.kind === 'shared' ? (
         <SharedList
-          shared={shared.filter((s) => paneContent.documents.some((d) => d.id === s.id))}
+          shared={shared.filter((s) => shownIds.has(s.id))}
           ownerId={ownerId}
           onDismiss={dismissShared}
         />

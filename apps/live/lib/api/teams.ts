@@ -69,10 +69,15 @@ export async function apiAcceptTeamInvite(
 
 // The team's shared library (docs/specs/013-workspace/team-shared-documents.md): folder tree + documents in one
 // call, joined members only.
-export async function apiGetTeamLibrary(
-  ownerId: string,
-  teamId: string,
-): Promise<TeamLibraryResponse> {
+//
+// Callers asking for the same library at the same time share one request (the Explorer's sweep, the team
+// page and the placement options each ask on arrival); a later call reads afresh.
+export const apiGetTeamLibrary = dedupeInFlight(
+  fetchTeamLibrary,
+  (ownerId, teamId) => `${ownerId}|${teamId}`,
+);
+
+async function fetchTeamLibrary(ownerId: string, teamId: string): Promise<TeamLibraryResponse> {
   const res = await apiFetch(`${API_BASE}/teams/${teamId}/library`, {
     headers: await apiHeaders(ownerId),
   });
