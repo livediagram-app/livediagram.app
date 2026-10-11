@@ -135,6 +135,7 @@ describe('the wizard with the Location step skipped', () => {
       documentName: 'Untitled document',
       teamId: 't',
       folderId: 's',
+      placementChosen: true,
     });
   });
 
@@ -156,6 +157,7 @@ describe('the wizard with the Location step skipped', () => {
     expect(settingsOf(onPick)).toEqual({
       saveLocation: 'browser',
       documentName: 'Untitled document',
+      placementChosen: true,
     });
   });
 

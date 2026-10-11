@@ -64,6 +64,9 @@ import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
+import { closeStartForBlank } from '@/components/start/close-start-for-blank';
+import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
+import { isBlankTemplate } from '@livediagram/templates';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -138,6 +141,8 @@ export default function NewDocumentPage() {
   // navigating to the editor for a document that was never persisted (which would 404). The ref
   // keeps the last attempt's args so Retry can re-run the exact same create.
   const [createError, setCreateError] = useState<CreateFailure | null>(null);
+  // Set by Skip and the bypass links: the new tab opens with its start closed (closeStartForBlank).
+  const explicitBlank = useRef(false);
   const lastCreateArgs = useRef<{
     kind: TemplateKind | null;
     name: string;
@@ -350,6 +355,15 @@ export default function NewDocumentPage() {
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
+    // An explicit blank (Skip, Start Blank, a blank's link) opens with its start closed (close-start-for-blank.ts).
+    if (explicitBlank.current) closeStartForBlank(tabId, templateKind);
+    // A mode's blank in the cloud: the template picked later on its start screen may move it to that template's
+    // default folder (docs/specs/013-workspace/default-folders.md "A template picked after creation").
+    handTemplatePick(
+      !offline && templateKind && isBlankTemplate(templateKind)
+        ? { documentId, tabId, placementChosen: settings.placementChosen === true }
+        : null,
+    );
     // A Retry re-runs the create, not the preference write below.
     lastCreateArgs.current = {
       kind: templateKind,
@@ -520,12 +534,14 @@ export default function NewDocumentPage() {
     void (async () => {
       // A guest's link makes a Local only document straight away (docs/specs/007-editor/new-document-route.md).
       const saveLocation = await resolveBypassLocation(!!(folderId || teamId), resolveSelf);
+      explicitBlank.current = true;
       await commitNewDocument(kind, '', 'brand', {
         saveLocation,
         // A missing param is no choice, not the root: a bypass link without context leaves room for a
         // default folder (docs/specs/013-workspace/default-folders.md "Precedence").
         folderId,
         teamId,
+        placementChosen: !!(folderId || teamId),
       });
     })();
   });
@@ -640,11 +656,12 @@ export default function NewDocumentPage() {
               // Empty name = "keep the resolved participant name" (commit falls
               // back to it); passing self.name here could freeze the
               // pre-bootstrap 'Guest' placeholder into the account.
-              onSkip={() =>
+              onSkip={() => {
+                explicitBlank.current = true;
                 void commitNewDocument('blank', '', 'brand', {
                   saveLocation: defaultLocation,
-                })
-              }
+                });
+              }}
               // Escape backs out to the page that opened /new, creating nothing
               // (docs/specs/007-editor/new-document-route.md "Escape backs out").
               onBackOut={backOut}

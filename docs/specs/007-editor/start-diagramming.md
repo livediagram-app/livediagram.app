@@ -99,6 +99,13 @@ closing the panel, or choosing **Blank Illustration**, shows the first page with
 elements, as one edit that Undo puts back, and brings Start Illustrating back even if it was closed. The agents'
 page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`).
 
+## Default folders
+
+A template picked here on a document `/new` just made goes to that template's default folder, unless the person
+chose the folder themselves on the Location step ([Default folders](../013-workspace/default-folders.md) "A template
+picked after creation"). The move loads only at the pick (`useTemplatePickMove`, a dynamic import of
+`move-on-template-pick.ts`).
+
 ## The tours wait
 
 A tour's welcome never lands over a start: while one is on screen the Diagram, Facilitate, Draw and Illustrate

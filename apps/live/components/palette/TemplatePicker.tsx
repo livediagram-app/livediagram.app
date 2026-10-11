@@ -176,6 +176,8 @@ export function TemplatePicker({
     return {
       saveLocation,
       documentName: name,
+      placementChosen:
+        picked !== undefined || where.source === 'picked' || where.source === 'context',
       ...(picked === undefined ? where.sent() : where.sent(picked, 'picked')),
       ...(alwaysSave ? { alwaysSave } : {}),
       ...(skip.ticked

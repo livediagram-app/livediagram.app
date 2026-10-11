@@ -4,7 +4,8 @@ import { freshUserId, installClerkStub, type StubUser } from './clerk-stub';
 
 // A signed-in member's default folder in a team (docs/specs/013-workspace/default-folders.md "Use as
 // default for", "The New Document wizard", "Settings"), in dark mode: set from the team library's
-// folder menu, pre-selected by the wizard, filed into the team by the one create, named in Settings.
+// folder menu, a new document moved into the team when its template is picked on the start screen, named in
+// Settings.
 
 function stubUser(id: string): StubUser {
   return {
@@ -68,35 +69,30 @@ test('a team folder becomes a member’s default, and new boards land in it', as
   await page.keyboard.press('Escape');
   await expect(page.locator('[data-default-marker]').first()).toBeVisible();
 
-  // The wizard pre-selects it for a Kanban board and files the board into the team.
+  // The wizard asks for a mode; the Kanban template is picked on Start Planning, and the new document moves to the
+  // template's default folder, since no folder was chosen on the Location step ("Move on template pick").
   await page.goto('/new');
-  const search = page.getByRole('searchbox', { name: 'Search templates' });
-  await untilHydrated(search);
-  await search.fill('kanban');
-  await page
+  const plan = page.locator('[data-new-mode="plan"]');
+  await untilHydrated(plan);
+  await plan.click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}$/, { timeout: 30_000 });
+  const start = page.getByRole('region', { name: 'Start Planning' });
+  await start.locator('[data-rail="inspiration"]').click();
+  await start
     .getByRole('button', { name: /^Kanban/ })
     .first()
     .click();
-  const next = page.getByRole('button', { name: /^Next/ });
-  if (await next.isVisible()) await next.click();
-  await expect(page.getByRole('note').filter({ hasText: 'by default' })).toHaveText(
-    'Kanban boards go to Boards by default. Change default',
-    { timeout: 20_000 },
-  );
-  // The browser opens inside the team, the default's card checked.
-  const checked = page
-    .getByRole('radiogroup', { name: 'Choose livediagram Folder' })
-    .locator('[role="radio"][aria-checked="true"]');
-  await expect(checked).toHaveCount(1);
-  await expect(checked).toHaveAccessibleName(/^Boards/);
-  await expect(page.getByRole('button', { name: /^All spaces/ })).toContainText('Atlas');
-  await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page).toHaveURL(/\/document\/[0-9a-f-]{36}$/, { timeout: 30_000 });
+  await expect(page.getByText(/Moved to Boards/)).toBeVisible({ timeout: 20_000 });
   const documentId = page.url().split('/').pop()!;
-  const library = (await (
-    await page.request.get(`/api/teams/${teamId}/library`, { headers })
-  ).json()) as { documents: { id: string; folderId: string | null }[] };
-  expect(library.documents.find((d) => d.id === documentId)?.folderId).toBe(folderId);
+  await expect
+    .poll(async () => {
+      const library = (await (
+        await page.request.get(`/api/teams/${teamId}/library`, { headers })
+      ).json()) as { documents: { id: string; folderId: string | null }[] };
+      return library.documents.find((d) => d.id === documentId)?.folderId;
+    })
+    .toBe(folderId);
 
   // Settings names the folder with its team.
   await page.goto(`/explorer/team?id=${teamId}&settings=documents`);

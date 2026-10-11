@@ -632,7 +632,9 @@ by a request that failed quietly.
 
 The create also carries the new document's creation `intent` (its first tab's editor mode
 its first tab's kind and its template family), so a create with no place chosen lands in the person's
-[default folder](../013-workspace/default-folders.md) for it, resolved by the server.
+[default folder](../013-workspace/default-folders.md) for it, resolved by the server. A mode's blank made by the
+wizard is filed by its mode; the template picked later on its start screen may then move it to that template's
+default ([Default folders](../013-workspace/default-folders.md) "A template picked after creation").
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
   "Placement refused", title "Couldn't file the document there", and one action,

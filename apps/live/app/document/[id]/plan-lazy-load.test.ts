@@ -29,6 +29,14 @@ describe('the editor’s first load', () => {
       expect(staticImports(read(always))).not.toContain('@livediagram/template-previews');
   });
 
+  // docs/specs/013-workspace/default-folders.md "A template picked after creation": the mover reads the template
+  // builders and the folder lists, so it loads only at a start screen's pick.
+  it('loads the move to a template default folder only at the pick', () => {
+    expect(staticImports(read('components/start/useTemplatePickMove.ts'))).not.toContain(
+      '@/lib/placement-defaults/move-on-template-pick',
+    );
+  });
+
   it('names Sheet templates without their designs', () => {
     const catalogue = read('../../packages/sheets/src/sheet-templates/catalogue.ts');
     expect(staticImports(catalogue).filter((p) => /\.\/(money|people|work)$/.test(p))).toEqual([]);

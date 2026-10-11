@@ -26,6 +26,10 @@ export type NewDocumentSettings = {
   // (docs/specs/013-workspace/default-folders.md "Skipping the Location step"): the preference to
   // save before the create.
   skipLocationStep?: SkipLocationStep;
+  // The folder was the person's own choice (picked, a /new context, or their saved "skip this step" place), so a
+  // template picked later on the start screen keeps it (docs/specs/013-workspace/default-folders.md "A template
+  // picked after creation"). Absent or false: a default or the shown root, which the template's default may answer.
+  placementChosen?: boolean;
 };
 
 export type TemplatePickerProps = {

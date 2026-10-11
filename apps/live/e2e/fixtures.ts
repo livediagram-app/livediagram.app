@@ -118,33 +118,43 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// Complete the /new template wizard into a blank document and land on
-// the editor canvas. Shared by the create-flow tests; resilient to the
-// wizard's step count by clicking whatever advances it.
-// Start a document from a named TEMPLATE in a named category. The blank
-// helper below skips the category step entirely (Blank is on the first
-// screen), so template creation — builders, layers, per-template canvas
-// overrides, the tab kind — is a genuinely different path through the
-// wizard and needs its own way in.
-export async function startTemplateDocument(
-  page: Page,
-  category: RegExp,
-  template: RegExp,
-): Promise<void> {
+// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "Choosing a mode"): choose one, Create
+// on the Location step, and land on the editor with the mode's start screen over the canvas
+// (docs/specs/007-editor/start-diagramming.md).
+async function createInMode(page: Page, mode: string): Promise<void> {
   await page.goto('/new');
   await page.getByText('New Document', { exact: false }).waitFor();
-  // Category tiles are aria-labelled "Browse <name> templates"; the
-  // template tiles carry their title + description as the accessible name.
-  const categoryTile = page.getByRole('button', { name: category }).first();
-  await untilHydrated(categoryTile);
-  await categoryTile.click();
-  // Picking a template moves straight on to the Location step.
-  await page.getByRole('button', { name: template }).first().click();
+  const card = page.locator(`[data-new-mode="${mode}"]`);
+  await untilHydrated(card);
+  await card.click();
+  // The Location step's primary action finishes the wizard. Anchored finish verbs: an unanchored /create/i also
+  // matched the settings step's "New Folder ... Create here" tile.
   await page
     .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
     .first()
     .click();
   await page.locator('[data-canvas-a11y-root]').waitFor();
+}
+
+// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
+export const startScreen = (page: Page, title: RegExp = /^Start /) =>
+  page.getByRole('region', { name: title });
+
+// Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
+// wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
+// canvas overrides, the tab kind) is its own path, as a person takes it.
+export async function startTemplateDocument(
+  page: Page,
+  group: string,
+  template: RegExp,
+): Promise<void> {
+  await createInMode(page, 'diagram');
+  const start = startScreen(page, /^Start Diagramming$/);
+  const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
+  await untilHydrated(rail);
+  await rail.click();
+  await start.getByRole('button', { name: template }).first().click();
+  await start.waitFor({ state: 'detached' });
 }
 
 // An event-storming board with a ROW of three domain events on it, one gutter
@@ -153,7 +163,7 @@ export async function startTemplateDocument(
 // a row around that note through the api and reloads. The three are copies of
 // the seeded note (so they carry exactly its stationery), one rhythm step apart.
 export async function startEventStormingRow(page: Page): Promise<void> {
-  await startTemplateDocument(page, /Browse Technical templates/, /^Event storming/i);
+  await startTemplateDocument(page, 'Technical', /^Event storming/i);
   const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
   await notes.first().waitFor();
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
@@ -209,7 +219,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
 // clears without one (the tour already seen). The offer is the Diagram tour's, so a tab in another mode
 // keeps it owed without showing it (the mode switch says which mode the tab is in).
 export async function dismissQuickTour(page: Page): Promise<void> {
-  const decline = page.getByRole('button', { name: /^no thanks$/i }).first();
+  const decline = page.getByRole('button', { name: /^no$/i }).first();
   const owed = () => page.evaluate((key) => sessionStorage.getItem(key) === '1', TOUR_PENDING_KEY);
   const elsewhere = () =>
     page.evaluate(() => {
@@ -255,25 +265,13 @@ export async function openBlankSession(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
+// A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
+// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
 export async function startBlankDocument(page: Page): Promise<void> {
-  await page.goto('/new');
-  await page.getByText('New Document', { exact: false }).waitFor();
-  // Step 1: pick the Blank template. Single-click advances to the Location
-  // step (docs/specs/007-editor/new-document-route.md), so no explicit Next is needed here.
-  const blank = page.getByText('Blank Diagram', { exact: false }).first();
-  await untilHydrated(blank);
-  await blank.click();
-  // Step 2 (Location): the footer's primary action finishes the wizard.
-  // Anchored finish verbs: an unanchored /create/i also matched the
-  // settings step's "New Folder ... Create here" tile (the CI breakage
-  // this comment is the tombstone for).
-  await page
-    .getByRole('button', { name: /^(create|start|use this|done|finish)$/i })
-    .first()
-    .click();
-  // The editor is up once the canvas surface (the a11y root, docs/specs/004-interface-design/canvas-accessibility.md)
-  // is in the DOM.
-  await page.locator('[data-canvas-a11y-root]').waitFor();
+  await createInMode(page, 'diagram');
+  const start = startScreen(page, /^Start Diagramming$/);
+  await start.getByRole('button', { name: 'Close' }).click();
+  await start.waitFor({ state: 'detached' });
 }
 
 export type Seed = Record<string, unknown>[];

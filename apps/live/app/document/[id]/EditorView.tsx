@@ -80,6 +80,7 @@ import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { QuickStyleHost } from '@/components/canvas/QuickStyleHost';
 import { panelEnabled } from '@/lib/user-preferences';
 import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
+import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -289,6 +290,15 @@ export function EditorView() {
     elementCount: activeTab.elements.length,
   });
   // An editor's empty Diagram, Facilitate or Illustrate tab: its template start (docs/specs/007-editor/start-diagramming.md).
+  // A template picked from a start screen on a document /new just made goes to its default folder
+  // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
+  const moveOnTemplatePick = useTemplatePickMove({
+    ownerId: ctx.selfParticipant.id,
+    documentId: ctx.documentId,
+    tabId: activeTab.id,
+    signedIn: !!clerkUserId,
+    tabHasContent: activeTab.elements.length > 0,
+  });
   const templateStart = templateStartMode({
     hydrated,
     zen: zenMode,
@@ -722,7 +732,10 @@ export function EditorView() {
                                 onDashboard={ctx.planTabs.startDashboard}
                                 // Something Else: the Quick Start, on Everything.
                                 onQuickStart={openTemplatePicker}
-                                onTemplate={(kind) => void ctx.chooseTemplate(kind)}
+                                onTemplate={(kind) => {
+                                  void ctx.chooseTemplate(kind);
+                                  moveOnTemplatePick(kind);
+                                }}
                                 tabs={tabs}
                                 loadTabs={loadAllTabs}
                                 onSuggestedDashboard={ctx.planTabs.startSuggestedDashboard}
@@ -739,7 +752,10 @@ export function EditorView() {
                                   key={`${activeTab.id}:${templateStart}`}
                                   mode={templateStart}
                                   tabId={activeTab.id}
-                                  onTemplate={(kind) => void ctx.chooseTemplate(kind)}
+                                  onTemplate={(kind) => {
+                                    void ctx.chooseTemplate(kind);
+                                    moveOnTemplatePick(kind);
+                                  }}
                                   onQuickStart={openTemplatePicker}
                                 />
                                 {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}

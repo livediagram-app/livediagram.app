@@ -283,7 +283,8 @@ The Location step ([Save locations](../006-document/save-locations.md)) shows wh
 document will go and why.
 
 - **It pre-selects the resolved default.** The wizard resolves the precedence itself, for the
-  intent of the template picked on the first step, over the reader's defaults and the folders it
+  intent of the mode's blank chosen on the first step (the wizard asks only for a mode, [New document
+  route](../007-editor/new-document-route.md) "Choosing a mode"), over the reader's defaults and the folders it
   has loaded; a default whose folder it cannot see (deleted, or in a team not listed) is skipped, as
   the server skips it.
 - **It shows the pre-selection.** The folder browser opens at the level that lists the selected
@@ -299,7 +300,7 @@ document will go and why.
   for that key. A new default chosen there is pre-selected at once.
   - The line and the Always save switch below never show together, so they share one slot
     under the browser, kept whenever the folder step shows: neither moves the browser as it appears.
-- **Changing template re-resolves** the pre-selection, unless the reader has picked a place
+- **Changing mode re-resolves** the pre-selection, unless the reader has picked a place
   themselves: their pick stands.
 - **What is sent:**
   - a place the reader picked, the root tile ("My documents") included, is explicit, so choosing
@@ -319,6 +320,31 @@ document will go and why.
     root) before creating. A failed write is logged and never stops the create.
 - None of this applies to **Local Browser**: an offline document has no folder step
   ([Non-goals](#non-goals)).
+
+### A template picked after creation
+
+The wizard makes the chosen mode's blank, and the template is picked afterwards on the new document's start screen
+([Template starts](../007-editor/start-diagramming.md)), so a template's own default (`template:kanban`,
+`kind:event-storming`) can only answer then.
+
+- **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
+  document it made, its first tab, and whether the person chose the folder themselves (a place picked on the
+  Location step, a `/new?folder=` / `?team=` context, or their saved "skip this step" place). It is written for a
+  cloud document made from a mode's blank, never for Local Browser or a template link (`/new?template=`), which is
+  filed by its template at creation.
+- **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Illustrating, or
+  Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the
+  precedence is resolved again for the template's intent, as the wizard resolves it (kind, then template, then mode
+  default, `templatePickMoveTarget`), and the document **moves** to the default that answers, when it is somewhere
+  else. A toast says so: "Moved to **Boards**, your default folder for Kanban boards."
+- **Once per document:** the note is taken at the first pick, and dropped when the tab gains content any other
+  way first. A Quick Start on an existing document never moves it.
+- **Only an Editor** picks from a start screen, so only an Editor's pick moves a document.
+- **The recorded intent stays as created** ([Recorded intent](#recorded-intent)): the mode's blank. The move does
+  not rewrite `templateFamily`, so the Explorer's **Template** filter does not see a template picked after
+  creation.
+- A failure (a list that cannot be read, a refused move) leaves the document where it is, logged
+  (`[default-folders] template pick move failed`); a move logs `[default-folders] moved on template pick key=<key>`.
 
 ### Skipping the Location step
 
