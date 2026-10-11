@@ -31,6 +31,7 @@ import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
+import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -346,6 +347,7 @@ export function EditorCanvasHost() {
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
   // owner's libraries, then placed at the drop point.
   const { libraries } = useShapeLibraries();
+  const startPanelOpen = useStartPanelOpen();
   const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
     const item = libraries
       .find((l) => l.id === ref.libraryId)
@@ -564,12 +566,13 @@ export function EditorCanvasHost() {
         tabLayers={activeTab.layers}
         tabKind={activeTab.kind}
         editorMode={editorMode.mode}
-        illustratePages={presentedPages(
-          illustratePages,
-          activeTab,
-          presentingPageId,
-          presentArticles,
-        )}
+        // No page while Start Illustrating is open (docs/specs/007-editor/start-diagramming.md "Start Illustrating"):
+        // the tab's first page is drawn only once a template is picked or the panel closed, so nothing waits behind it.
+        illustratePages={
+          startPanelOpen && editorMode.mode === 'illustrate'
+            ? null
+            : presentedPages(illustratePages, activeTab, presentingPageId, presentArticles)
+        }
         whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
         whiteboardInk={PEN_INK[surface]}
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>

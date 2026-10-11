@@ -82,6 +82,24 @@ describe('Illustrate page edits', () => {
     expect(first.onGoTo).toHaveBeenLastCalledWith('page-2');
   });
 
+  // docs/specs/007-editor/start-diagramming.md "Start Illustrating": the last page can go too.
+  it('deletes the last page with everything on the tab, and brings Start Illustrating back', async () => {
+    const { dismissEmptyCard, emptyCardDismissed } =
+      await import('@/components/canvas/empty-card-dismissed');
+    dismissEmptyCard('t:illustrate');
+    const h = harness({
+      id: 't',
+      name: 'T',
+      elements: [box('a', 0)],
+      pages: [{ id: 'page-1', orientation: 'portrait', kind: 'infographic' }],
+    } as unknown as Tab);
+    h.edits().removePage!('page-1');
+    expect(h.tab().elements).toEqual([]);
+    expect(illustratePagesOf(h.tab())).toHaveLength(1);
+    expect(illustratePagesOf(h.tab())[0]!.kind).toBeUndefined();
+    expect(emptyCardDismissed('t:illustrate')).toBe(false);
+  });
+
   it('deletes a page with its content, and the next page closes the gap', () => {
     const h = harness(twoPages());
     h.edits().removePage!('page-1');

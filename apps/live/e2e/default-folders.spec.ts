@@ -73,15 +73,10 @@ async function documentFolder(page: Page, s: Seeded, id: string): Promise<string
 // The wizard on its Location step for a whiteboard.
 async function newWhiteboard(page: Page) {
   await page.goto('/new');
-  const search = page.getByRole('searchbox', { name: 'Search templates' });
-  await untilHydrated(search);
-  await search.fill('whiteboard');
-  await page
-    .getByRole('button', { name: /^Blank Whiteboard/ })
-    .first()
-    .click();
-  const next = page.getByRole('button', { name: /^Next/ });
-  if (await next.isVisible()) await next.click();
+  // The Mode step (docs/specs/007-editor/new-document-route.md "Choosing a mode"): Draw makes a Blank Whiteboard.
+  const draw = page.locator('[data-new-mode="draw"]');
+  await untilHydrated(draw);
+  await draw.click();
   await expect(page.getByText('Choose livediagram Folder')).toBeVisible();
 }
 
@@ -254,15 +249,9 @@ test.describe('default folders', () => {
     const projects = await folder(page, s, 'Projects');
     const sprints = await folder(page, s, 'Sprints', projects);
     await page.goto(`/new?folder=${sprints}`);
-    const search = page.getByRole('searchbox', { name: 'Search templates' });
-    await untilHydrated(search);
-    await search.fill('whiteboard');
-    await page
-      .getByRole('button', { name: /^Blank Whiteboard/ })
-      .first()
-      .click();
-    const next = page.getByRole('button', { name: /^Next/ });
-    if (await next.isVisible()) await next.click();
+    const draw = page.locator('[data-new-mode="draw"]');
+    await untilHydrated(draw);
+    await draw.click();
     await expect(checkedFolder(page)).toHaveAccessibleName(/^Sprints/);
     const id = await create(page);
     expect(await documentFolder(page, s, id)).toBe(sprints);

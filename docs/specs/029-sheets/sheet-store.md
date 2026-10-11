@@ -83,7 +83,9 @@ element naming its **start** (`start`, a template start's id: `budget-planner`, 
 `task-tracker`) and a fresh `sheetId`, and no sheet yet.
 
 - Each start is one of the [sheet templates](sheet.md#sheet-templates): `budget-planner` the Budget, `timesheet` the
-  Timesheet, `contact-list` Contacts, `task-tracker` the Tracker (`TEMPLATE_START_SHEETS`).
+  Timesheet, `contact-list` Contacts, `task-tracker` the Tracker (`TEMPLATE_START_SHEETS`), and so on for every
+  spreadsheet template; but one: `blank-spreadsheet` (`BLANK_SHEET_START`, Blank Spreadsheet's) makes an empty sheet,
+  titled Sheet 1, with no template, no charts and no setup to await.
 - Whatever makes the tabs makes each such sheet from its template at once: titled with the template's name, set up
   in the Banded look, its header frozen, tints for the tab's canvas, light or dark, dates reckoned from that moment;
   the template's chart is added to the tab as a chart element anchored in the Sheet, carrying its first read. The element's `start` is then dropped, so a template's tabs are never

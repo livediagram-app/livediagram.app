@@ -7,13 +7,13 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 
 ## Domain language
 
-| Term             | Means                                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------------- |
-| **Plan tour**    | This tour                                                                                         |
-| **Diagram tour** | The Diagram mode tour ("Show me around"), [Diagram tour](../007-editor/editor-tour.md)            |
-| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                       |
-| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab    |
-| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind |
+| Term             | Means                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------ |
+| **Plan tour**    | This tour                                                                                              |
+| **Diagram tour** | The Diagram mode tour ("Getting started with Diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
+| **tour track**   | Which half of Plan the tour shows: **Boards** or **Sheets**                                            |
+| **tour subject** | The board or [Sheet](../029-sheets/sheet.md) the tour shows: the person's own, on the open tab         |
+| **plan work**    | A board (`plan-board` element) or a Sheet (`plan-sheet` element) on the open tab, of any tab kind      |
 
 ## Where it appears
 
@@ -28,7 +28,7 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 - **Once ever per person**, through the synced `planTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Plan** switch in the Accessibility category's **Show Tours** control,
+- **Replayable from Settings**: the **Plan** switch in the Accessibility category's **Onboarding Tutorials** control,
   beside **Diagram** and built the same way (on means "not seen yet"). Turning it on from off and closing
   Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:
@@ -37,14 +37,22 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 - **One tour at a time**: while the Diagram or Facilitate tour is on screen the Plan tour waits. Each tour
   belongs to its own mode, so the Plan tour never waits for the Diagram tour's offer to be answered.
 - The offer is the opt-in, as for the Diagram tour. With only boards or only Sheets on the tab, the welcome card
-  names the one it will show and offers **Show me around** and **No thanks**. With both on the tab (a Plan
-  canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No thanks**, all with
+  names the one it will show and offers **Yes** and **No**. With both on the tab (a Plan
+  canvas holding a board and a Sheet), it asks which: **Boards**, **Spreadsheets** and **No**, all with
   equal weight. Taking the tour marks it seen; the other track is a Settings rerun away.
 
 ## Tour subject
 
-- The tour subject is the first board (Boards track) or first Sheet (Sheets track) on the open tab, in the
-  tab's element order. A Board tab and a Sheet tab hold exactly one.
+- The tour subject is the board (Boards track) or Sheet (Sheets track) on the open tab **that the person sees**,
+  read from what is drawn when the tour is offered: one maximised or filling its tab (a Board tab, a Sheet tab)
+  first, then one on screen, then the first in the tab's element order. A Board tab and a Sheet tab hold exactly
+  one.
+- **Its steps point at it as drawn**, wherever that is: on the canvas, maximised, or filling its tab. They never
+  point at its place on the canvas while it is drawn over the canvas, where it is hidden.
+- **On screen.** Its first step brings it into view when it sits on the canvas out of the window: the view pans to
+  it, zooming out only if it is too big to fit. One maximised or filling its tab is already on screen.
+- **Never over Start Planning.** An empty Plan tab shows Start Planning, so the tour is offered only once the tab
+  has a board or Sheet (see [Where it appears](#where-it-appears)).
 - **It changes nothing.** The tour adds no element, card, row or cell, moves nothing, selects no cell and writes
   nothing, so there is nothing to take away, nothing in the document's history, and nothing a collaborator
   sees. Undo after the tour is exactly as before it.
@@ -67,7 +75,7 @@ strings live in `apps/live/components/tour/plan-tour-steps.ts`.
 
 0. **Welcome to Plan** (the offer): centred card with its own illustration (a card moving across a small
    board). With one kind on the tab it says the tour will show around this board (or this sheet), without
-   changing anything, then **No thanks** and **Show me around**; with both it asks which, then **No thanks**,
+   changing anything, then **No** and **Yes**; with both it asks which, then **No**,
    **Boards** and **Spreadsheets**.
 
 ### Boards
@@ -124,7 +132,7 @@ settings) is an Editor's to use.
 The Diagram tour's funnel, with its own tokens, so the tours chart apart:
 
 - **Offer**: `UI` · `Opened` · `PlanTourOffer` when the welcome card shows; `UI` · `Closed` · `PlanTourOffer` on
-  No thanks.
+  No.
 - **Start**: `UI` · `Selected` · `PlanTourBoards` | `PlanTourSheets` (the track picked, only when the welcome
   card asked), then `UI` · `Started` · `PlanTour`.
 - **Stage views**: `UI` · `View` · `PlanTourStep<Id>` once per step entry (`PlanTourStepBoard`,

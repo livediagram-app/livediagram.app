@@ -235,6 +235,57 @@ function filledSheet(
   );
 }
 
+// Blank Spreadsheet: an empty grid under its column letters and row numbers, the first cell selected, ready to type
+// into; the story types into it.
+function blankSheet(): ReactElement {
+  const cols = [16, 28, 40, 52, 64];
+  const rows = [14, 20, 26, 32, 38, 44];
+  return (
+    <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
+      <rect
+        x="1"
+        y="1"
+        width="78"
+        height="48"
+        rx="3"
+        fill="white"
+        stroke={FRAME}
+        strokeWidth="0.8"
+      />
+      <rect x="4" y="4" width="72" height="5" fill={RULER} />
+      <rect x="4" y="9" width="5" height="38" fill={RULER} />
+      {cols.map((x) => (
+        <line key={`c${x}`} x1={x - 3} y1="4" x2={x - 3} y2="47" stroke={GRID} strokeWidth="0.5" />
+      ))}
+      {rows.map((y) => (
+        <line key={`r${y}`} x1="4" y1={y - 5} x2="76" y2={y - 5} stroke={GRID} strokeWidth="0.5" />
+      ))}
+      <rect
+        x="9"
+        y="9"
+        width="12"
+        height="6"
+        fill="none"
+        stroke={ACCENTS.emerald.hue}
+        strokeWidth="1"
+      />
+      <rect x="20" y="14" width="1.6" height="1.6" fill={ACCENTS.emerald.hue} />
+      {/* The story: a value typed into the first cell. */}
+      <rect
+        x="10.5"
+        y="11.4"
+        width="7"
+        height="1.2"
+        rx="0.6"
+        fill={BOLD}
+        className="pv-new"
+        opacity={0}
+        style={pv({ '--pv-at': '600ms' })}
+      />
+    </svg>
+  );
+}
+
 const head = (n: number): Cell[] => Array.from({ length: n }, () => ({ w: 0.7 }));
 const num = (w: number, extra: Omit<NonNullable<Cell>, 'w'> = {}): Cell => ({
   w,
@@ -244,6 +295,8 @@ const num = (w: number, extra: Omit<NonNullable<Cell>, 'w'> = {}): Cell => ({
 
 export function templatePreviewGroup16(kind: TemplateKind): ReactElement | null {
   switch (kind) {
+    case 'blank-spreadsheet':
+      return blankSheet();
     case 'budget-planner':
       // Planned, Actual and the Difference, green under and red over; the story totals it.
       return filledSheet(

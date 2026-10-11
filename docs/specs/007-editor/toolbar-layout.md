@@ -222,7 +222,7 @@ better layout. Its parts went with it:
 - The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
 - Settings has no Panel Layout row, and the Diagram tour's welcome card no layout picker
-  ([Diagram tour ("Show me around")](editor-tour.md)).
+  ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)).
 - The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
   that names them is ignored ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
@@ -282,6 +282,9 @@ their bottom-row buttons. What changes to fit the width:
   - One row at the strip's type size (13 px): a leading icon (or the modifier's key chip), the message, then
     its actions as small text buttons at the end (**Cancel**, **Done**) and any toggles the message carries.
   - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
+  - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
+    Templates**, which opens the start again, until the first element lands
+    ([Template starts](start-diagramming.md) "Bringing it back").
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
   - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
@@ -291,7 +294,7 @@ their bottom-row buttons. What changes to fit the width:
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
-- The Diagram tour ([Diagram tour ("Show me around")](editor-tour.md)) follows the layout: its Palette step rings the
+- The Diagram tour ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)) follows the layout: its Palette step rings the
   strip's card. (Its Explorer step, which opened the Explorer from the menu button, went when the
   welcome tour became the Diagram tour.)
 

@@ -16,6 +16,8 @@ export type EditorModeSwitchProps = {
   // instead (`newTabIn`).
   lockedReason?: string | undefined;
   newTabIn?: ((mode: EditorMode) => void) | undefined;
+  // The tab is empty: Plan's line is open, every mode a plain switch (useEditorMode `crossPlan`).
+  crossPlan?: boolean | undefined;
 };
 
 // The keyboard focus ring on the switch's light chrome surfaces: brand-500 (the shared default)

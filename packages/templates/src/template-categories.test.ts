@@ -19,17 +19,17 @@ describe('template categories', () => {
   it('are the twelve job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorm',
-      'Design and UX',
+      'Design',
       'Finance',
-      'Flowcharts and Processes',
-      'Meetings and Workshops',
-      'Org and Structure',
-      'Plan and Track',
-      'Presentations and Content',
+      'Flowcharts',
+      'Org Charts',
+      'Planning',
+      'Presentations',
       'Spreadsheets',
-      'Strategy and Decisions',
+      'Strategy',
       'Technical',
-      'Timelines and Roadmaps',
+      'Timelines',
+      'Workshops',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));

@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'The Plan Tour',
   description:
-    'Take the Plan tour: a guided walkthrough of your own board and its cards, or your own spreadsheet, offered the first time you work in Plan mode with one open and replayable from Settings.',
+    'The Plan tour is a guided walkthrough of your own board and cards, or your own sheet, offered on first use in Plan mode and replayable from Settings.',
   path: '/help/canvas/plan-mode/plan-tour/',
 });
 
@@ -21,7 +21,7 @@ The Plan tour shows you around your own board, or your own spreadsheet. Like the
 
 The tour needs something to show, so it waits until you're in [Plan mode](/help/canvas/plan-mode/) on a tab you can edit **with a board or a sheet open**: a Board tab, a Sheet tab, or a Plan tab holding a board or sheet. On an empty Plan tab, pick a board or a spreadsheet from **Start Planning** first; a Dashboard waits until you open one of its boards or sheets in their own tab.
 
-Then a centred **Welcome to Plan** card offers a look around your board (or your sheet): **Show me around** starts it, **No thanks** dismisses it. If the tab has both a board and a sheet, the card asks which: **Boards** or **Spreadsheets**. It isn't offered on a locked tab, in an embed, or to a Participant or a Viewer.
+Then a centred **Welcome to Plan** card offers a look around your board (or your sheet): **Yes** starts it, **No** dismisses it. If the tab has both a board and a sheet, the card asks which: **Boards** or **Spreadsheets**. It isn't offered on a locked tab, in an embed, or to a Participant or a Viewer.
 
 The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
 
@@ -50,6 +50,7 @@ Each step has **Next**, **Back** and **Skip tour**. The last card, **You're read
 
 - The tour only points things out. It adds no cards, moves nothing, selects no cells and types nothing, so your board or sheet is exactly as you left it.
 - Nothing goes into your undo history, and nobody else in the document sees the tour.
+- It shows the board or sheet you're looking at: the one filling a Board or Sheet tab, or a maximised one. On a busy canvas it moves the view to the board or sheet first, if it's out of sight.
 - The one thing it opens is your first card's panel, which it closes again.
 - If you leave Plan mode, switch tab, or the board or sheet is deleted mid-tour, it ends as skipped.
 
@@ -57,7 +58,7 @@ Each step has **Next**, **Back** and **Skip tour**. The last card, **You're read
 
 <Step n={1}>Open **Settings** from the editor and go to **Accessibility**.</Step>
 
-<Step n={2}>Under **Show Tours**, switch **Plan** back on.</Step>
+<Step n={2}>Under **Onboarding Tutorials**, switch **Plan** back on.</Step>
 
 <Step n={3}>
   Close Settings. If you're in Plan mode with a board or sheet open, the tour's welcome card shows

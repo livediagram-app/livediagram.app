@@ -3,7 +3,11 @@
 // matches when every word typed is found, case, punctuation and hyphens ignored, in its title, description, kind, the
 // labels of every category it is shown in, or its search words.
 import type { TemplateDescriptor } from './templates';
-import { templateCategories, templateCategoryLabel } from './template-categories';
+import {
+  templateCategories,
+  templateCategoryLabel,
+  templateCategorySearchWords,
+} from './template-categories';
 import { templateKeywords } from './template-keywords';
 
 // Punctuation and hyphens are no part of a word here, on both sides: read as a space ("to-do" is "to do", "1-on-1" is
@@ -25,6 +29,7 @@ function haystack(t: Pick<TemplateDescriptor, 'kind' | 'title' | 'description'>)
       t.description,
       t.kind,
       ...templateCategories(t.kind).map(templateCategoryLabel),
+      ...templateCategories(t.kind).map(templateCategorySearchWords),
       ...templateKeywords(t.kind),
     ];
     hay = { spaced: fields.map(spaced).join('\n'), joined: fields.map(joined).join('\n') };

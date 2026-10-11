@@ -1,7 +1,8 @@
 import type { EditorMode } from '@livediagram/document';
+import { EDITOR_MODES } from '@livediagram/document';
 import {
-  POPULAR_TEMPLATE_KINDS,
-  popularKindsFor,
+  BLANK_TEMPLATE_FOR_MODE,
+  EXTRA_BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
@@ -17,8 +18,8 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Popular first (the five blanks,
-// then the starters most people reach for), then one shelf per category. The data half lives here
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else: each
+// mode's, and Blank Spreadsheet), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
 type GalleryTemplate = TemplateDescriptor & {
@@ -31,7 +32,7 @@ type GalleryTemplate = TemplateDescriptor & {
   mode: EditorMode;
 };
 
-// The open shelf: Popular, or a category.
+// The open shelf: Blank Slate (its id `popular`, the shelf it replaced), or a category.
 export type ShelfId = 'popular' | TemplateCategory;
 
 export type GalleryShelf = { id: ShelfId; label: string; templates: GalleryTemplate[] };
@@ -39,7 +40,7 @@ export type GalleryShelf = { id: ShelfId; label: string; templates: GalleryTempl
 // Everything, or one editor mode (the gallery's mode filter, as the template step's).
 export type ModeChoice = 'all' | EditorMode;
 
-const POPULAR_LABEL = 'Popular';
+const POPULAR_LABEL = 'Blank Slate';
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
@@ -56,15 +57,21 @@ function toGallery(t: TemplateDescriptor): GalleryTemplate {
 }
 
 // Every listed template on a category shelf: hidden templates never appear in a listing, and the
-// five blanks are only ever on Popular, never on a category shelf
+// blanks are only ever on Blank Slate, never on a category shelf
 // (docs/specs/007-editor/templates-by-mode.md "Five blanks").
 export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Popular, in its fixed order, the five blanks first.
+// Blank Slate's blanks in mode order (the mode switch's), Blank Spreadsheet beside Blank Plan.
+const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) => [
+  BLANK_TEMPLATE_FOR_MODE[mode],
+  ...EXTRA_BLANK_TEMPLATES.filter((k) => templateEditorMode(k) === mode),
+]);
+
+// Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {
-  return POPULAR_TEMPLATE_KINDS.flatMap((kind) => {
+  return BLANK_SLATE_KINDS.flatMap((kind) => {
     const t = BY_KIND.get(kind);
     return t && !t.hidden ? [toGallery(t)] : [];
   });
@@ -150,13 +157,9 @@ export function groupGallery(
   })).filter((g) => g.templates.length > 0);
 }
 
-// Popular under a mode filter: that mode's curated list (popularKindsFor, shared with the editor's
-// template step).
+// Blank Slate under a mode filter: that mode's blanks (Plan: Blank Plan and Blank Spreadsheet).
 export function popularFor(choice: ModeChoice): GalleryTemplate[] {
-  return popularKindsFor(choice).flatMap((kind) => {
-    const t = BY_KIND.get(kind);
-    return t ? [toGallery(t)] : [];
-  });
+  return byMode(popularTemplates(), choice);
 }
 
 // Popular and every category, under the mode filter, emptied shelves dropped.
@@ -170,7 +173,7 @@ export function galleryShelves(choice: ModeChoice): GalleryShelf[] {
   ];
 }
 
-// A search's shelves: the matching blanks under Popular (the only shelf they are on), then every
+// A search's shelves: the matching blanks under Blank Slate (the only shelf they are on), then every
 // category with a match, all under the mode filter.
 export function searchShelves(query: string, choice: ModeChoice): GalleryShelf[] {
   const blanks = byMode(

@@ -20,6 +20,7 @@ import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps'
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useLatest } from '@/hooks/ui/useLatest';
+import { useStartPanelOpen } from '@/components/start/start-panel-open';
 
 // Orchestrates the Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
 // Mounted once in EditorView; renders nothing until the open tab is in Diagram mode and either the /new
@@ -119,9 +120,13 @@ export function TourHost() {
   // Diagram mode only (docs/specs/007-editor/editor-tour.md "Where it appears"): a document that opened in
   // another mode keeps the offer owed until the person is on a Diagram tab.
   const inDiagram = ctx.editorMode.mode === 'diagram';
+  // Start Diagramming on screen holds the offer until a template is picked or the panel closed
+  // (docs/specs/007-editor/start-diagramming.md "The tours wait").
+  const startPanelOpen = useStartPanelOpen();
   const ready =
     ctx.hydrated &&
     !ctx.anyWelcomeOpen &&
+    !startPanelOpen &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     inDiagram &&
@@ -143,7 +148,7 @@ export function TourHost() {
     return () => clearTimeout(t);
   }, [active, ready, seen, offerRef]);
 
-  // Settings relaunch (the Show Tours › "Diagram" row, turned on + closed):
+  // Settings relaunch (the Onboarding Tutorials › "Diagram" row, turned on + closed):
   // rerun from the top: the welcome card is always step 1. Also re-marks
   // the pending flag so a reload mid-rerun re-offers, exactly like the
   // first-run path. Off a Diagram tab, or while another tour runs, it waits,

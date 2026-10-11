@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Settings > Accessibility > Show Tours (docs/specs/007-editor/user-preferences.md "Show Tours"): one
+// Settings > Accessibility > Onboarding Tutorials (docs/specs/007-editor/user-preferences.md "Onboarding Tutorials"): one
 // heading and description over a grid of the three tour switches, each its own preference.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
@@ -26,17 +26,29 @@ describe('SettingsToggleGroupRow', () => {
         onChange={() => {}}
       />,
     );
-    const group = screen.getByRole('group', { name: 'Show Tours' });
+    const group = screen.getByRole('group', { name: 'Onboarding Tutorials' });
     const switches = within(group).getAllByRole('switch');
-    expect(switches.map((s) => s.textContent)).toEqual(['Diagram', 'Plan', 'Facilitate']);
-    expect(switches.map((s) => s.getAttribute('aria-checked'))).toEqual(['false', 'true', 'false']);
+    expect(switches.map((s) => s.textContent)).toEqual([
+      'Diagram',
+      'Plan',
+      'Facilitate',
+      'Draw',
+      'Illustrate',
+    ]);
+    expect(switches.map((s) => s.getAttribute('aria-checked'))).toEqual([
+      'false',
+      'true',
+      'false',
+      'false',
+      'false',
+    ]);
     // One shared description, with a Learn more link per tour.
     const footnote = document.getElementById('tours-description')!;
     expect(
       within(footnote)
         .getAllByRole('link')
         .map((a) => a.textContent),
-    ).toEqual(['Diagram', 'Plan', 'Facilitate']);
+    ).toEqual(['Diagram', 'Plan', 'Facilitate', 'Draw', 'Illustrate']);
   });
 
   it('flips the one switch pressed', () => {

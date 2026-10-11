@@ -25,3 +25,21 @@ describe('the empty-tab card’s dismissal', () => {
     expect(emptyCardDismissed('x')).toBe(false);
   });
 });
+
+describe('bringing a closed card back', () => {
+  it('reopens it, tells its readers, and survives a reload', async () => {
+    const { dismissEmptyCard, emptyCardDismissed, restoreEmptyCard, subscribeEmptyCardDismissed } =
+      await import('./empty-card-dismissed');
+    let told = 0;
+    const off = subscribeEmptyCardDismissed(() => told++);
+    dismissEmptyCard('back:diagram');
+    expect(emptyCardDismissed('back:diagram')).toBe(true);
+    restoreEmptyCard('back:diagram');
+    expect(emptyCardDismissed('back:diagram')).toBe(false);
+    expect(localStorage.getItem('livediagram:v2:empty-card-dismissed') ?? '').not.toContain(
+      'back:diagram',
+    );
+    expect(told).toBe(2);
+    off();
+  });
+});

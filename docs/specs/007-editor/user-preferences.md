@@ -251,16 +251,22 @@ type UserPreferences = {
   // was until October 2026, so earlier answers still hold). True once the
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user on any device. Surfaced
-  // in Settings as Show Tours › "Diagram" (inverted); turning it on and closing
+  // in Settings as Onboarding Tutorials › "Diagram" (inverted); turning it on and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the Diagram
-  // tour's. Surfaced in Settings as Show Tours › "Plan" (inverted); turning it on from off and closing
+  // tour's. Surfaced in Settings as Onboarding Tutorials › "Plan" (inverted); turning it on from off and closing
   // Settings reruns the tour in Plan. Missing / undefined === not seen.
   planTourSeen?: boolean;
   // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Show Tours › "Facilitate" (inverted). Missing / undefined === not seen.
+  // Surfaced in Settings as Onboarding Tutorials › "Facilitate" (inverted). Missing / undefined === not seen.
   facilitateTourSeen?: boolean;
+  // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
+  // Surfaced in Settings as Onboarding Tutorials › "Draw" (inverted). Missing / undefined === not seen.
+  drawTourSeen?: boolean;
+  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`.
+  // Surfaced in Settings as Onboarding Tutorials › "Illustrate" (inverted). Missing / undefined === not seen.
+  illustrateTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -571,7 +577,7 @@ and the dialog stays as the one complete, browsable index of them.
   collapsible groups), **Panels** (panel opacity; with the
   sub-categories **Layers**, **Map**, **Collaborate** and
   **Quick Style**, one per panel),
-  **Accessibility** (reduce motion, Show Tours), **AI Tools** (assistant,
+  **Accessibility** (reduce motion, Onboarding Tutorials), **AI Tools** (assistant,
   suggested prompts, and a **Manage API Tokens** link row that opens the API
   Tokens sub-category), **Documents** (a **Where New Documents Go** section: first **Skip the Location Step**,
   the `skipLocationStep` preference with a Turn Off button, then one row per
@@ -703,7 +709,7 @@ and the dialog stays as the one complete, browsable index of them.
   ([Minimap](../008-canvas/minimap.md)), so flipping them there did nothing
   and read as broken.
 
-  **Show Tours** is one control for the three guided tours: a heading and one description over a grid of
+  **Onboarding Tutorials** is one control for the three guided tours: a heading and one description over a grid of
   switches, **Diagram**, **Plan** and **Facilitate**, each its own preference with its own
   telemetry, and a **Learn more** link per tour after the description (a `toggleGroup` row: three
   near-identical rows each repeating the same paragraph read as clutter). Every switch is inverted: on
@@ -719,7 +725,9 @@ and the dialog stays as the one complete, browsable index of them.
   inverted against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself in
   Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate** works the same way against
-  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)).
+  `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw** against
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), and **Illustrate** against `illustrateTourSeen`
+  ([Illustrate tour](illustrate-tour.md)).
 
   The dialog is **data-driven**: `settings-catalogue.ts` declares the
   categories and, per row, its label, description, help article, section,

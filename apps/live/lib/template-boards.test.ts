@@ -44,8 +44,8 @@ describe('plan templates', () => {
     (kind) => kind !== 'blank-plan' && !(SHEET_KINDS as readonly string[]).includes(kind),
   );
 
-  it('makes each spreadsheet template a Sheet and no board, opening in Plan', () => {
-    expect(SHEET_KINDS).toHaveLength(12);
+  it('makes each spreadsheet template, Blank Spreadsheet among them, a Sheet and no board, opening in Plan', () => {
+    expect(SHEET_KINDS).toHaveLength(13);
     for (const kind of SHEET_KINDS) {
       const els = buildTemplate(kind, 0, 0);
       expect(shapesOf(els, 'plan-sheet'), kind).toHaveLength(1);

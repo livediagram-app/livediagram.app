@@ -1,10 +1,11 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Facilitate**, **Illustrate** or **Plan**. The template step of the New Document wizard and Quick Start
-([Templates](../008-canvas/canvas-and-palette.md#templates)) says which on every card, and lets a
-person narrow the whole catalogue to one mode, so someone who came to sketch or to make a poster
-sees only what starts there.
+**Facilitate**, **Illustrate** or **Plan**. Quick Start ([Templates](../008-canvas/canvas-and-palette.md#templates))
+says which on every card, and lets a person narrow the whole catalogue to one mode, so someone who came to sketch or to
+make a poster sees only what starts there. The New Document wizard asks for the mode itself
+([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
+its own start ([Template starts](start-diagramming.md)).
 
 ## A template's mode
 
@@ -30,9 +31,8 @@ sees only what starts there.
   **Everything**, **Diagram**, **Draw**, **Facilitate**, **Illustrate** and **Plan**, each with its glyph (a grid for
   Everything, `EDITOR_MODE_ICON` for the modes, the glyphs of the mode switch) and how many
   templates it holds, in a count badge. A dropdown, not a row of buttons, so a mode added later is one more row.
-  **Everything** is the default and is chosen each time the step opens; the choice is not
-  remembered. A `/new?mode=` link ([New document route](new-document-route.md)) opens the step on
-  that mode instead, its blank selected.
+  **Everything** is the default and is chosen each time Quick Start opens; the choice is not
+  remembered.
 - **Hovering the chip** with a mouse opens the menu without moving focus, so the choice is in plain
   sight; it closes a moment (`HOVER_CLOSE_MS`, 200ms) after the pointer leaves the chip and menu. A
   press or the keyboard opens it as a menu button does (focus on the checked row); opened that way
@@ -68,7 +68,8 @@ sees only what starts there.
 
 ## Five blanks
 
-Popular opens with one blank per mode, in mode order:
+Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
+start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
 | Template           | Kind id              | Opens in   | What it makes                                                                  |
 | ------------------ | -------------------- | ---------- | ------------------------------------------------------------------------------ |
@@ -78,9 +79,17 @@ Popular opens with one blank per mode, in mode order:
 | Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
 | Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
 
+**Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
+holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
+charts and no setup to await ([Sheet store](../029-sheets/sheet-store.md#template-starts)). It is a blank like the five
+(`isBlankTemplate`): in no category and on no category shelf. It is not a mode's blank, so it leads no start and is
+not what the New Document wizard creates; the editor's Popular lists are unchanged (the Quick Start finds it by
+search), and Start Planning, which has its own Empty Sheet, does not offer it. The landing page's **Blank Slate**
+shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-site.md)).
+
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
-- None of the five is on a category shelf or a category tile.
+- None of the blanks is on a category shelf or a category tile.
 - Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan,
   Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Article. Under a
   mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
@@ -95,20 +104,20 @@ draw over, not an empty frame.
   banner title, the speaker and date, a cloud holding the big idea at the centre, three framed
   areas (Key points, Quotes, Questions) joined to it by drawn arrows, a lightbulb doodle and a
   takeaway banner along the bottom.
-- **Rich Picture** _(Strategy and Decisions)_: a systems-thinking rich picture of a problem (a hospital's
+- **Rich Picture** _(Strategy)_: a systems-thinking rich picture of a problem (a hospital's
   discharge delays): stick-figure stakeholders with what they say in speech bubbles, the system in
   a drawn cloud, crossed swords where interests clash, an eye for who is watching, and a legend
   that teaches the symbols.
-- **Comic Strip** _(Presentations and Content)_: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
+- **Comic Strip** _(Presentations)_: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
   each with a caption, speech bubbles and a sticker for the moment it shows.
 - **Doodle Warm-Up** _(Brainstorm)_: a meeting icebreaker, "Draw your teammate in 60 seconds": six
   hand-drawn frames each named for a teammate, the rules on a sticky note, a timer and a
   "best likeness" vote with sticker stars.
-- **Paper Prototype** _(Design and UX)_: three hand-drawn phone screens of a made-up app, lo-fi UI in
+- **Paper Prototype** _(Design)_: three hand-drawn phone screens of a made-up app, lo-fi UI in
   marker, tap arrows from one screen to the next, and stickies with what to test with users.
-- **Journey Doodle** _(Design and UX)_: a customer's day as a winding drawn road, each stop a doodle with
+- **Journey Doodle** _(Design)_: a customer's day as a winding drawn road, each stop a doodle with
   a face for how it felt, the dip where it goes wrong ringed, and opportunities on stickies.
-- **Pre-Mortem** _(Meetings and Workshops)_: "It's a year from now and the project failed": a drawn wreck in the
+- **Pre-Mortem** _(Workshops)_: "It's a year from now and the project failed": a drawn wreck in the
   middle, the reasons on stickies round it by theme, and what to do now with tick boxes.
 - **Idea Garden** _(Brainstorm)_: ideas grown as a drawn tree: the question at the roots, themes as
   branches, ideas as leaves, the best ones as fruit, and a legend.
@@ -118,22 +127,22 @@ draw over, not an empty frame.
 Each opens on pages of its own ([Templates on pages](../008-canvas/canvas-and-palette.md#templates-on-pages)),
 already infographic pages, built with the page layouts' kit.
 
-- **Event Poster** _(Presentations and Content)_: one A3 portrait page for a community event ("Night Market"): a
+- **Event Poster** _(Presentations)_: one A3 portrait page for a community event ("Night Market"): a
   bold title over a colour band, the date, time and place, an image placeholder, three highlights
   and a footer line.
-- **Year in Review** _(Presentations and Content)_: a four-page A4 report for a small team: a cover, a page of
+- **Year in Review** _(Presentations)_: a four-page A4 report for a small team: a cover, a page of
   headline numbers, a timeline of the year's moments, and a thank-you page with a quote.
-- **Résumé** _(Presentations and Content)_: one A4 page: name and role, contact line, a profile, an experience timeline,
+- **Résumé** _(Presentations)_: one A4 page: name and role, contact line, a profile, an experience timeline,
   skills and education in a side column.
-- **Recipe Card** _(Presentations and Content)_: a Square page and a Portrait post page for sharing a recipe: the dish,
+- **Recipe Card** _(Presentations)_: a Square page and a Portrait post page for sharing a recipe: the dish,
   serves and timings with icons, the ingredients, and the method in numbered steps.
-- **Data Story** _(Presentations and Content)_: one A4 page telling one story in numbers: a headline stat set huge,
+- **Data Story** _(Presentations)_: one A4 page telling one story in numbers: a headline stat set huge,
   a pictogram row, a then-and-now comparison, a small chart and a source line.
-- **How It Works** _(Presentations and Content)_: one Story (9:16) page: five illustrated steps down a winding
+- **How It Works** _(Presentations)_: one Story (9:16) page: five illustrated steps down a winding
   path, from first tap to done, under a title and over a call to action.
-- **Versus** _(Presentations and Content)_: one Portrait post (4:5) page split between two options, a VS badge,
+- **Versus** _(Presentations)_: one Portrait post (4:5) page split between two options, a VS badge,
   matched rows of pros and cons, and a verdict at the foot.
-- **Social Carousel** _(Presentations and Content)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
+- **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
 
 ## Facilitate templates

@@ -52,6 +52,7 @@ const writeUserPreferences = vi.fn();
 const tickTabs = vi.fn();
 const showItem = vi.fn();
 const closeItem = vi.fn();
+const scrollIntoView = vi.fn();
 
 // The person's own board and Sheet: the offer waits for one (docs/specs/026-plan/plan-tour.md).
 const BOARD = { id: 'b0', type: 'shape', shape: 'plan-board' };
@@ -71,6 +72,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     selfParticipant: { id: 'me' },
     plan: { openItemId: null, showItem, closeItem },
     tickTabs,
+    scrollIntoView,
     ...over,
   };
 };
@@ -80,7 +82,7 @@ const onTab = (...elements: unknown[]) => ({
 const offered = () => track.mock.calls.some((c) => c[1] === 'Opened' && c[2] === 'PlanTourOffer');
 // A drawn board with one card, for the card steps.
 const drawBoard = (cards: string[]) => {
-  document.body.innerHTML = `<div data-element-id="b0">${cards
+  document.body.innerHTML = `<div data-plan-board="b0">${cards
     .map((id) => `<div data-plan-card="${id}"></div>`)
     .join('')}</div>`;
 };
@@ -231,6 +233,31 @@ describe('PlanTourHost tracks', () => {
     expect(track).toHaveBeenCalledWith('UI', 'View', 'PlanTourStepBoard');
     expect(stage.helpHref).toBe('/help/canvas/plan-mode/');
     expect(stage.engine!.countableSteps).toBe(6);
+  });
+
+  // docs/specs/026-plan/plan-tour.md "The tour subject": the board the person sees, not the first in the tab.
+  it('runs on the board drawn over the canvas when the tab has two', async () => {
+    document.body.innerHTML =
+      '<div data-plan-board="b0"><div data-plan-card="c1"></div></div>' +
+      '<div data-canvas-cover><div data-plan-board="b1"><div data-plan-card="c9"></div></div></div>';
+    start(BOARD, { ...BOARD, id: 'b1' });
+    act(() => stage.engine!.next());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000);
+    });
+    expect(showItem).toHaveBeenCalledWith('c9');
+    expect(showItem).not.toHaveBeenCalledWith('c1');
+  });
+
+  it('does not move the view for a board already on screen over the canvas', async () => {
+    document.body.innerHTML =
+      '<div data-canvas-cover><div data-plan-board="b0"><div data-plan-card="card1"></div></div></div>';
+    start(BOARD);
+    act(() => stage.engine!.next());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+    expect(scrollIntoView).not.toHaveBeenCalled();
   });
 
   it('a Sheet alone skips the choice and runs the sheet track', async () => {

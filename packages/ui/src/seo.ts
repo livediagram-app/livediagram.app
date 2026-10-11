@@ -26,6 +26,12 @@ const OG_IMAGE = {
 };
 const TWITTER_IMAGE = `${SITE_URL}/twitter-image`;
 
+// The brand card alone, for a page whose og:url cannot be known at build time
+// (the Community post shell serves every post), so it still previews with an
+// image rather than none.
+export const BRAND_OG_IMAGE = OG_IMAGE;
+export const BRAND_TWITTER_IMAGE = TWITTER_IMAGE;
+
 export type PageMetadataInput = {
   title: string;
   description: string;
@@ -43,6 +49,10 @@ export type PageMetadataInput = {
   // twitter-image (marketing's /features/<id> cards): the shared brand card
   // is then left off so it doesn't override the page's own.
   ownOgImage?: boolean;
+  // The OG type. `article` suits a content page; a hub or dashboard that is
+  // the app's own front page (the Community gallery, the Telemetry
+  // dashboard) is a `website`.
+  type?: 'article' | 'website';
 };
 
 export function pageMetadata({
@@ -52,13 +62,14 @@ export function pageMetadata({
   siteName = SITE_NAME,
   modifiedTime,
   ownOgImage = false,
+  type = 'article',
 }: PageMetadataInput): Metadata {
   return {
     title,
     description,
     alternates: { canonical: path },
     openGraph: {
-      type: 'article',
+      type,
       url: path,
       siteName,
       title,

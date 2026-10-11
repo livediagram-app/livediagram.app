@@ -20,6 +20,8 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
 import { requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
+import { requestDrawTourRelaunch } from '@/lib/draw-tour';
+import { requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -171,7 +173,7 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   };
 
-  // Show Tours › "Diagram" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
+  // Onboarding Tutorials › "Diagram" (docs/specs/007-editor/editor-tour.md). The row is ON when the tour has not been
   // resolved, and promises it will be offered, so closing the dialog has to
   // MAKE that true. `tourSeen !== true` alone never was: TourHost also needs
   // the per-tab pending flag, which only /new sets for a brand-new user. A
@@ -183,13 +185,19 @@ export function SettingsDialog({
   // in place, which is the "run it again" case the row's copy describes.
   const tourSeen = settings.tourSeen === true;
   const tourSeenAtOpen = useRef(tourSeen);
-  // Show Tours › "Plan" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
+  // Onboarding Tutorials › "Plan" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
   // itself on entering Plan; turning the row on from off reruns it in place.
   const planTourSeen = settings.planTourSeen === true;
   const planTourSeenAtOpen = useRef(planTourSeen);
-  // Show Tours › "Facilitate" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
+  // Onboarding Tutorials › "Facilitate" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
   const facilitateTourSeen = settings.facilitateTourSeen === true;
   const facilitateTourSeenAtOpen = useRef(facilitateTourSeen);
+  // Onboarding Tutorials › "Draw" (docs/specs/023-draw-mode/draw-tour.md): as Plan Tour.
+  const drawTourSeen = settings.drawTourSeen === true;
+  const drawTourSeenAtOpen = useRef(drawTourSeen);
+  // Onboarding Tutorials › "Illustrate" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
+  const illustrateTourSeen = settings.illustrateTourSeen === true;
+  const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
   const close = () => {
     if (!tourSeen) {
       markTourPending();
@@ -197,6 +205,8 @@ export function SettingsDialog({
     }
     if (!planTourSeen && planTourSeenAtOpen.current) requestPlanTourRelaunch();
     if (!facilitateTourSeen && facilitateTourSeenAtOpen.current) requestFacilitateTourRelaunch();
+    if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
+    if (!illustrateTourSeen && illustrateTourSeenAtOpen.current) requestIllustrateTourRelaunch();
     onClose();
   };
 

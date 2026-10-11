@@ -7,7 +7,7 @@ import { SettingsRowShell } from './SettingsRowShell';
 import type { SettingsToggleGroupRowSpec } from './settings-catalogue';
 
 // Several related switches as one control (the guided tours, docs/specs/007-editor/user-preferences.md
-// "Show Tours"): the group's heading over a grid of switch tiles, one per preference, and the group's one
+// "Onboarding Tutorials"): the group's heading over a grid of switch tiles, one per preference, and the group's one
 // description beneath, so three near-identical rows and paragraphs read as one setting with three parts.
 export function SettingsToggleGroupRow({
   row,

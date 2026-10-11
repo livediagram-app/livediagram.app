@@ -92,13 +92,13 @@ test.describe('Power user mode', () => {
     );
     await expect(
       children.getByRole('list', { name: 'Set By Power User Mode' }).getByRole('listitem'),
-    ).toHaveCount(6);
+    ).toHaveCount(8);
     await closeSettings(page);
     await page.screenshot({ path: 'test-results/power-user-minimal-chrome.png' });
 
     // Kept: the empty-canvas banner holds actions, so it is a control, not a hint.
     await expect(page.getByText('Tab 1 is empty')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Quick Start' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Show Templates' })).toBeVisible();
 
     // Status bar: icons only, names kept.
     await expect(tabBar(page).getByText('Tabs', { exact: true })).toHaveCount(0);

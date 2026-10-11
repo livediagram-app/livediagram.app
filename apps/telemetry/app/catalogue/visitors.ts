@@ -10,6 +10,8 @@ import {
   TOUR_OFFERED,
   PLAN_TOUR_OFFERED,
   FACILITATE_TOUR_OFFERED,
+  DRAW_TOUR_OFFERED,
+  ILLUSTRATE_TOUR_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
@@ -333,6 +335,120 @@ export const FACILITATE_TOUR: MetricStack = {
     FACILITATE_TOURS_SKIPPED,
   ],
   headline: FACILITATE_TOURS_STARTED,
+};
+
+// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): its own funnel, beside the Facilitate tour's.
+export const DRAW_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Draw Tours Declined',
+  'The Draw tour turned down on its welcome card, before it started.',
+  { types: ['DrawTourOffer'], rising: 'neutral' },
+);
+
+export const DRAW_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Draw Tours Started',
+  'The Draw tour started.',
+  { types: ['DrawTour'] },
+);
+
+export const DRAW_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Draw Tour Steps Viewed',
+  'A step of the Draw tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('DrawTourStep') },
+);
+
+export const DRAW_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Draw Tours Completed',
+  'The Draw tour run to its last step.',
+  { types: ['DrawTourCompleted'] },
+);
+
+export const DRAW_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Draw Tours Skipped',
+  'The Draw tour closed before its end.',
+  { types: ['DrawTourSkipped'], rising: 'neutral' },
+);
+
+export const DRAW_TOUR: MetricStack = {
+  stack: true,
+  title: 'Draw Tour',
+  blurb:
+    'The first time in Draw mode: the Draw tour offered, stepped through, finished or skipped.',
+  members: [
+    DRAW_TOUR_OFFERED,
+    DRAW_TOUR_DECLINED,
+    DRAW_TOURS_STARTED,
+    DRAW_TOUR_STEPS_VIEWED,
+    DRAW_TOURS_COMPLETED,
+    DRAW_TOURS_SKIPPED,
+  ],
+  headline: DRAW_TOURS_STARTED,
+};
+
+// The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): its own funnel, beside the Illustrate tour's.
+export const ILLUSTRATE_TOUR_DECLINED = chart(
+  'UI',
+  'Closed',
+  'Illustrate Tours Declined',
+  'The Illustrate tour turned down on its welcome card, before it started.',
+  { types: ['IllustrateTourOffer'], rising: 'neutral' },
+);
+
+export const ILLUSTRATE_TOURS_STARTED = chart(
+  'UI',
+  'Started',
+  'Illustrate Tours Started',
+  'The Illustrate tour started.',
+  { types: ['IllustrateTour'] },
+);
+
+export const ILLUSTRATE_TOUR_STEPS_VIEWED = chart(
+  'UI',
+  'View',
+  'Illustrate Tour Steps Viewed',
+  'A step of the Illustrate tour shown.',
+  { typeIn: (t) => (t ?? '').startsWith('IllustrateTourStep') },
+);
+
+export const ILLUSTRATE_TOURS_COMPLETED = chart(
+  'UI',
+  'Ended',
+  'Illustrate Tours Completed',
+  'The Illustrate tour run to its last step.',
+  { types: ['IllustrateTourCompleted'] },
+);
+
+export const ILLUSTRATE_TOURS_SKIPPED = chart(
+  'UI',
+  'Ended',
+  'Illustrate Tours Skipped',
+  'The Illustrate tour closed before its end.',
+  { types: ['IllustrateTourSkipped'], rising: 'neutral' },
+);
+
+export const ILLUSTRATE_TOUR: MetricStack = {
+  stack: true,
+  title: 'Illustrate Tour',
+  blurb:
+    'The first time in Illustrate mode: the Illustrate tour offered, stepped through, finished or skipped.',
+  members: [
+    ILLUSTRATE_TOUR_OFFERED,
+    ILLUSTRATE_TOUR_DECLINED,
+    ILLUSTRATE_TOURS_STARTED,
+    ILLUSTRATE_TOUR_STEPS_VIEWED,
+    ILLUSTRATE_TOURS_COMPLETED,
+    ILLUSTRATE_TOURS_SKIPPED,
+  ],
+  headline: ILLUSTRATE_TOURS_STARTED,
 };
 
 // Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts

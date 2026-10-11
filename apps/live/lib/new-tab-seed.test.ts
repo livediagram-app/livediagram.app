@@ -8,9 +8,9 @@ describe('newTabOpening', () => {
     expect(newTabOpening('plan')).toEqual({ opensIn: 'plan', quickStart: false });
   });
 
-  it('leaves every other mode as before: Diagram, with the Quick Start', () => {
+  it('opens a tab added from any other mode in Diagram, on Start Diagramming, with no Quick Start', () => {
     for (const mode of ['diagram', 'draw', 'illustrate'] as const)
-      expect(newTabOpening(mode)).toEqual({ quickStart: true });
+      expect(newTabOpening(mode)).toEqual({ quickStart: false });
   });
 });
 

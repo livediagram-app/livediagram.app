@@ -38,6 +38,8 @@ export function useWizardSkipLocation({
     settingsFor: (saved: SkipLocationStep, kind: TemplateKind): NewDocumentSettings => ({
       saveLocation: saved.saveLocation,
       documentName: untitledNameForTemplate(kind),
+      // The saved place is the person's own choice.
+      placementChosen: true,
       ...(isOfflineLocation(saved.saveLocation) ? {} : skipPlacementSent(saved)),
     }),
   };

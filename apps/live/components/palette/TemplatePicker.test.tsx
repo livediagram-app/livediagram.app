@@ -70,22 +70,19 @@ describe('TemplatePicker, Escape', () => {
     expect(onPick).not.toHaveBeenCalled();
   });
 
-  it('steps back from Location to Template first', () => {
+  it('steps back from Location to Mode first', () => {
     const { onBackOut } = renderWelcome();
     fireEvent.click(screen.getByRole('button', { name: /^Next/ }));
     expect(screen.getByText(/Location/)).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onBackOut).not.toHaveBeenCalled();
-    expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'What are you making?' })).toBeTruthy();
   });
 
-  it('clears a search first', () => {
+  it('backs out from the Mode step at once: it has no search to clear', () => {
     const { onBackOut } = renderWelcome();
-    const search = screen.getByRole('searchbox', { name: 'Search templates' });
-    fireEvent.change(search, { target: { value: 'kanban' } });
     fireEvent.keyDown(document, { key: 'Escape' });
-    expect((search as HTMLInputElement).value).toBe('');
-    expect(onBackOut).not.toHaveBeenCalled();
+    expect(onBackOut).toHaveBeenCalledTimes(1);
   });
 
   it('backs out with the X too, from any step, creating nothing', () => {
@@ -289,11 +286,19 @@ describe('TemplatePicker, the /new presets', () => {
     return onPick;
   };
 
-  it('opens a `q` preset on its matches at once, with no debounce to wait out', () => {
+  // "Choosing a mode": the wizard asks only for a mode; a `q` preset is the start panel's search, not the wizard's.
+  it('asks for a mode, with no template search, whatever the `q` preset', () => {
     renderPreset({ initialQuery: 'town hall' });
-    expect(
-      (screen.getByRole('searchbox', { name: 'Search templates' }) as HTMLInputElement).value,
-    ).toBe('town hall');
-    expect(screen.queryByRole('heading', { name: /^Popular/ })).toBeNull();
+    expect(screen.queryByRole('searchbox', { name: 'Search templates' })).toBeNull();
+    expect(screen.getByRole('group', { name: 'What are you making?' })).toBeTruthy();
+  });
+
+  it('preselects a `mode` preset, and choosing a mode moves on with its blank', () => {
+    renderPreset({ initialModeChoice: 'plan' });
+    expect(screen.getByRole('button', { name: /^Plan:/ }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Draw:/ }));
+    expect(screen.getByText(/Location/)).toBeTruthy();
   });
 });
