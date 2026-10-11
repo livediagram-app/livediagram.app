@@ -12,6 +12,7 @@
 // so callers keep importing from '@/components/FeatureArt'.
 export * from './feature-art/canvas';
 export * from './feature-art/together';
+export * from './feature-art/sharing';
 export * from './feature-art/foundations';
 export * from './feature-art/features';
 export * from './feature-art/motion';
@@ -22,6 +23,7 @@ export * from './feature-art/structure';
 // fact that presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/room';
+export * from './feature-art/facilitate';
 // Infographic pages (docs/specs/007-editor/illustrate-pages.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';
 export * from './feature-art/logo';

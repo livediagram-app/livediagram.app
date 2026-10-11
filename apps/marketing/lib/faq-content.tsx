@@ -243,15 +243,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is it good for running workshops and retros?',
         a: (
           <>
-            Very. There are templates for retrospectives, Lean Coffee, town hall Q&amp;A and event
-            storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls
-            and reveals. Estimate cards run planning poker, a temperature check shows how the room
-            feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See{' '}
-            <a href="/help/collaboration/facilitator/">the facilitator</a>.
+            Very. Switch a tab to Facilitate, the mode for running a session, or start from a
+            retrospective, Lean Coffee or town hall Q&amp;A template, which opens there. Whoever
+            holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate
+            cards run planning poker, a temperature check shows how the room feels, a quiz asks what
+            it knows, and an idea box collects anonymous ideas. See{' '}
+            <a href="/help/canvas/facilitate-mode/">Facilitate mode</a>.
           </>
         ),
         aText:
-          'Very. There are templates for retrospectives, Lean Coffee, town hall Q&A and event storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See the facilitator.',
+          'Very. Switch a tab to Facilitate, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Facilitate mode.',
       },
     ],
   },

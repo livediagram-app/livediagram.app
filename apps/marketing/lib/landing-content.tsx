@@ -27,6 +27,7 @@ import {
   ErasersArt,
   ExpiryArt,
   ExportArt,
+  FacilitateModeArt,
   FacilitatorArt,
   FlowingArrowsArt,
   FontsArt,
@@ -136,7 +137,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and the tools to run a workshop, from timers and votes to a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Facilitate, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
     metaDescription:
       'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
     highlights: [
@@ -216,7 +217,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & facilitate',
         title: 'Run the session: timer + voting',
         description:
-          'Facilitate live from the canvas. Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+          'Facilitate live from the canvas. In Facilitate, Timer, Vote and Poll sit in the Session strip at the foot of the canvas: start a countdown or stopwatch the whole room sees, its time on the button, or drop a timer onto the canvas as a session button so a template carries its own running order. Then open dot-voting to surface the group’s priorities. Everyone votes with a budget of dots; results tally in real time, and revealing them starts a guided walkthrough: each top pick lights up and centres on screen while you step through with Next and Previous. Perfect for retros, workshops, and timeboxed planning.',
+      },
+      {
+        art: <FacilitateModeArt />,
+        href: '/help/canvas/facilitate-mode/',
+        group: 'Present & facilitate',
+        title: 'A mode for running the room',
+        description:
+          'Switch a tab to Facilitate and it brings the session to hand: stickies, timers, votes, polls, reveals, quizzes and the Q&A board on its palette, and the Session strip at the foot of the canvas. Retrospectives, Lean Coffee and town halls open there, and Diagram stays about diagrams.',
       },
       {
         art: <FacilitatorArt />,

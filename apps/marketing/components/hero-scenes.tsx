@@ -140,10 +140,10 @@ export const HERO_SCENES: HeroScene[] = [
     key: 'townhall',
     word: 'Workshop',
     short: 'Town hall',
-    build: '/new?mode=diagram&q=town%20hall',
+    build: '/new?mode=facilitate&q=town%20hall',
     title: 'Q3 all-hands',
     label: 'Town hall: questions in, votes up, answered live with the whole room',
-    mode: 'diagram',
+    mode: 'facilitate',
     tabs: [
       { name: 'Q&A', color: '#ef4444', active: true },
       { name: 'Agenda', color: '#0ea5e9' },
