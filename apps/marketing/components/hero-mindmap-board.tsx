@@ -1,164 +1,151 @@
-import { FONT, at } from '@/components/art-tokens';
+import type { CSSProperties } from 'react';
+import {
+  lucideCalendar,
+  lucideGlobe,
+  lucideMessagesSquare,
+  lucidePackage,
+} from '@livediagram/icons/lucide';
+import { Glyph, Prims } from '@livediagram/ui';
+import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
+import { cursorRide } from '@/lib/hero-motion';
+import {
+  LEAF_H,
+  NODE_GLYPH,
+  NODE_H,
+  TALL_LAYOUT,
+  WIDE_LAYOUT,
+  type Box,
+  type Branch,
+  type PlacedBranch,
+  type PlacedLeaf,
+} from './hero-mindmap-layout';
 
 // The hero's Mind Map window (docs/specs/019-marketing/marketing-site.md "Hero"): a launch plan
-// grown from the centre in Diagram mode's mind map (docs/specs/009-elements/mind-node.md). The
-// centre lands, four colour-coded branches grow out on tapered curves (Marketing, Product, Support,
-// Events), and ideas sprout from each, written on an underline as a mind map draws its leaves; a
-// teammate fills the Events branch at the same time, and a rocket sticker lands on the centre. Each piece arrives at its own --d delay
-// (hero-mode-animations.css).
+// grown from the centre in Diagram mode's mind map (docs/specs/009-elements/mind-node.md), drawn
+// as the editor's Mind map template draws one. The round centre topic lands with its date, four
+// branches grow out on tapered curves to their nodes (each tinted in its colour with its glyph:
+// Marketing, Product, Support, Events), and ideas sprout from each in small outlined boxes. You
+// fill Marketing as the keyboard does it, the selection hopping on with Tab and then Enter; a
+// teammate fills Events at the same time, their own selection in their colour; a rocket sticker
+// lands on the centre, and the editor's hint sits under the map. Each piece arrives at its own --d
+// delay (hero-mode-animations.css, hero-scenes/mindmap.css); the geometry is
+// hero-mindmap-layout.ts.
 
-const CENTRE = { x: 300, y: 140 };
-// On a phone the map is drawn tall: the centre in the middle, two branches above it and two below,
-// each branch's ideas stacked away from the centre.
-const PORTRAIT_CENTRE = { x: 180, y: 206 };
-const PORTRAIT_AT: Record<string, { x: number; y: number }> = {
-  Marketing: { x: 92, y: 104 },
-  Product: { x: 268, y: 104 },
-  Support: { x: 268, y: 308 },
-  Events: { x: 92, y: 308 },
+const GLYPHS: Record<Branch['key'], Parameters<typeof Prims>[0]['prims']> = {
+  marketing: lucideGlobe,
+  product: lucidePackage,
+  support: lucideMessagesSquare,
+  events: lucideCalendar,
 };
 
-type Leaf = { text: string; d: number };
-type Branch = {
-  label: string;
-  color: string;
-  tint: string;
-  // The branch node's centre, and which side its ideas grow on.
-  x: number;
-  y: number;
-  side: 'left' | 'right';
-  d: number;
-  leaves: Leaf[];
-};
-
-const BRANCHES: Branch[] = [
-  {
-    label: 'Marketing',
-    color: '#ec4899',
-    tint: '#fce7f3',
-    x: 168,
-    y: 44,
-    side: 'left',
-    d: 0.9,
-    leaves: [
-      { text: 'Teaser video', d: 3.0 },
-      { text: 'Press kit', d: 3.5 },
-      { text: 'Newsletter', d: 4.0 },
-    ],
-  },
-  {
-    label: 'Product',
-    color: '#8b5cf6',
-    tint: '#ede9fe',
-    x: 432,
-    y: 44,
-    side: 'right',
-    d: 1.4,
-    leaves: [
-      { text: 'Beta invites', d: 5.9 },
-      { text: 'Pricing page', d: 6.4 },
-      { text: 'Changelog', d: 6.9 },
-    ],
-  },
-  {
-    label: 'Support',
-    color: '#10b981',
-    tint: '#d1fae5',
-    x: 432,
-    y: 236,
-    side: 'right',
-    d: 1.9,
-    leaves: [
-      { text: 'Help centre', d: 7.6 },
-      { text: 'Live chat', d: 8.1 },
-    ],
-  },
-  {
-    label: 'Events',
-    color: '#f59e0b',
-    tint: '#fef3c7',
-    x: 168,
-    y: 236,
-    side: 'left',
-    d: 2.4,
-    leaves: [
-      { text: 'Launch party', d: 4.7 },
-      { text: 'Webinar', d: 5.3 },
-    ],
-  },
-];
-
-// A branch from the centre: a curve out, drawn thick at the centre and thinning toward the
-// branch, as a mind map draws its main branches (two strokes, the thick one shorter).
-function trunk(b: Branch, portrait: boolean) {
-  if (portrait) {
-    const c = PORTRAIT_CENTRE;
-    const up = b.y < c.y;
-    const sx = c.x + (b.x < c.x ? -30 : 30);
-    const sy = c.y + (up ? -24 : 24);
-    const ey = b.y + (up ? 16 : -16);
-    const my = (sy + ey) / 2;
-    return `M${sx} ${sy} C${sx} ${my}, ${b.x} ${my}, ${b.x} ${ey}`;
-  }
-  const sx = CENTRE.x + (b.x < CENTRE.x ? -58 : 58);
-  const ex = b.x + (b.x < CENTRE.x ? 46 : -46);
-  const mx = (sx + ex) / 2;
-  return `M${sx} ${CENTRE.y} C${mx} ${CENTRE.y}, ${mx} ${b.y}, ${ex} ${b.y}`;
+// A branch's colours as custom properties, so one set of classes paints it in light and dark.
+function tone(b: Branch): CSSProperties {
+  const t = b.tone;
+  return {
+    '--mm-c': t.stroke,
+    '--mm-cd': t.strokeDark,
+    '--mm-t': t.tint,
+    '--mm-td': t.tintDark,
+    '--mm-k': t.ink,
+    '--mm-kd': t.inkDark,
+  } as CSSProperties;
 }
 
-// Where a branch's ideas sit: stacked beside it, spread evenly round its centre line.
-function leafY(b: Branch, i: number) {
-  const step = 38;
-  return b.y + (i - (b.leaves.length - 1) / 2) * step;
+const STROKE = 'stroke-(--mm-c) dark:stroke-(--mm-cd)';
+const FILL = 'fill-(--mm-c) dark:fill-(--mm-cd)';
+
+// Who is filling which branch: the keyboard's selection is yours, Events is the teammate's.
+const teammateFills = (b: PlacedBranch) => b.key === 'events';
+
+// A selection outline round a box, shown for `dur` seconds from `d` in its owner's colour.
+function Selection({ box, d, dur, colour }: { box: Box; d: number; dur: number; colour: string }) {
+  return (
+    <rect
+      className="mm-sel"
+      style={at(d, { '--dur': `${dur}s` })}
+      x={box.x - 3.5}
+      y={box.y - 3.5}
+      width={box.w + 7}
+      height={box.h + 7}
+      rx="7"
+      fill="none"
+      stroke={colour}
+      strokeWidth="1.5"
+    />
+  );
 }
 
-function LeafNode({
-  b,
-  leaf,
-  i,
-  portrait,
-}: {
-  b: Branch;
-  leaf: Leaf;
-  i: number;
-  portrait: boolean;
-}) {
-  if (portrait) return <PortraitLeaf b={b} leaf={leaf} i={i} />;
-  const y = leafY(b, i);
-  const fromX = b.x + (b.side === 'left' ? -46 : 46);
-  const lineStart = b.side === 'left' ? fromX - 26 : fromX + 26;
-  const width = leaf.text.length * 6.4 + 8;
-  const lineEnd = b.side === 'left' ? lineStart - width : lineStart + width;
-  const mx = (fromX + lineStart) / 2;
+// The key that made the next idea, shown for a moment beside the box it was pressed on.
+function KeyCap({ x, y, d, label }: { x: number; y: number; d: number; label: string }) {
+  const w = label.length * 5.4 + 12;
+  return (
+    <g className="mm-sel" style={at(d, { '--dur': '0.55s' })}>
+      <rect
+        x={x - w / 2}
+        y={y - 8}
+        width={w}
+        height="16"
+        rx="4"
+        className="fill-white stroke-slate-300 dark:fill-slate-800 dark:stroke-slate-600"
+        strokeWidth="1"
+      />
+      <rect
+        x={x - w / 2}
+        y={y + 6}
+        width={w}
+        height="2"
+        rx="1"
+        className="fill-slate-300 dark:fill-slate-600"
+      />
+      <text
+        x={x}
+        y={y + 3}
+        textAnchor="middle"
+        fontFamily={FONT}
+        fontSize="8.5"
+        fontWeight="600"
+        className="fill-slate-600 dark:fill-slate-300"
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+function LeafNode({ leaf }: { leaf: PlacedLeaf }) {
+  const { box } = leaf;
   return (
     <g>
       <path
-        className="hm-draw"
-        style={at(leaf.d, { '--dur': '0.35s', '--len': 60 })}
-        d={`M${fromX} ${b.y} C${mx} ${b.y}, ${mx} ${y + 4}, ${lineStart} ${y + 4}`}
+        className={`hm-draw ${STROKE}`}
+        style={at(leaf.d - 0.15, { '--dur': '0.35s', '--len': leaf.linkLen })}
+        d={leaf.link}
         fill="none"
-        stroke={b.color}
-        strokeWidth="2"
+        strokeWidth="1.5"
+        strokeOpacity="0.6"
         strokeLinecap="round"
       />
-      <path
-        className="hm-draw"
-        style={at(leaf.d + 0.25, { '--dur': '0.3s', '--len': width })}
-        d={`M${lineStart} ${y + 4} L${lineEnd} ${y + 4}`}
-        stroke={b.color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      <g className="hm-pop" style={at(leaf.d)}>
+        <rect
+          x={box.x}
+          y={box.y}
+          width={box.w}
+          height={box.h}
+          rx="4"
+          className={`fill-white dark:fill-(--art-ink-fill) ${STROKE}`}
+          strokeWidth="1.25"
+        />
+      </g>
       <text
         className="hm-type fill-(--art-text)"
-        style={at(leaf.d + 0.3, { '--steps': leaf.text.length })}
-        x={b.side === 'left' ? lineStart - 4 : lineStart + 4}
-        y={y}
-        textAnchor={b.side === 'left' ? 'end' : 'start'}
+        style={at(leaf.d + 0.12, { '--steps': leaf.text.length })}
+        x={box.x + box.w / 2}
+        y={box.y + LEAF_H / 2 + 3.5}
+        textAnchor="middle"
         fontFamily={FONT}
-        fontSize="11.5"
-        fontWeight="600"
+        fontSize="10"
+        fontWeight="500"
       >
         {leaf.text}
       </text>
@@ -166,152 +153,179 @@ function LeafNode({
   );
 }
 
-// A phone's leaf: stacked above a top branch or below a bottom one, written on an underline. Its line
-// leaves the branch sideways and runs up (or down) just left of the stack, so it never crosses a word.
-function PortraitLeaf({ b, leaf, i }: { b: Branch; leaf: Leaf; i: number }) {
-  const up = b.y < PORTRAIT_CENTRE.y;
-  const y = up ? b.y - 44 - i * 30 : b.y + 42 + i * 30;
-  const edgeY = b.y + (up ? -16 : 16);
-  const width = leaf.text.length * 6.4 + 8;
-  const start = b.x - 44;
+function BranchNode({ b }: { b: PlacedBranch }) {
+  const { node } = b;
+  const textW = node.w - NODE_GLYPH - 5 - 30;
+  const left = node.x + (node.w - (NODE_GLYPH + 5 + textW)) / 2;
   return (
-    <g>
-      <path
-        className="hm-draw"
-        style={at(leaf.d, { '--dur': '0.35s', '--len': 80 })}
-        d={`M${b.x - 30} ${edgeY} C${start - 8} ${edgeY}, ${start - 8} ${y + 4}, ${start} ${y + 4}`}
-        fill="none"
-        stroke={b.color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        className="hm-draw"
-        style={at(leaf.d + 0.25, { '--dur': '0.3s', '--len': width })}
-        d={`M${start} ${y + 4} L${start + width} ${y + 4}`}
-        stroke={b.color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+    <>
+      <g className="hm-pop" style={at(b.d)}>
+        <rect
+          x={node.x}
+          y={node.y}
+          width={node.w}
+          height={NODE_H}
+          rx="7"
+          className={`fill-(--mm-t) dark:fill-(--mm-td) ${STROKE}`}
+          strokeWidth="2"
+        />
+        <Glyph
+          x={left}
+          y={node.y + (NODE_H - NODE_GLYPH) / 2}
+          size={NODE_GLYPH}
+          units={24}
+          weight={1.6}
+          className="text-(--mm-k) dark:text-(--mm-kd)"
+        >
+          <Prims prims={GLYPHS[b.key]} />
+        </Glyph>
+      </g>
       <text
-        className="hm-type fill-(--art-text)"
-        style={at(leaf.d + 0.3, { '--steps': leaf.text.length })}
-        x={start + 4}
-        y={y}
+        className="hm-type fill-(--mm-k) dark:fill-(--mm-kd)"
+        style={at(b.d + 0.1, { '--steps': b.label.length })}
+        x={left + NODE_GLYPH + 5}
+        y={node.y + NODE_H / 2 + 4.3}
         fontFamily={FONT}
-        fontSize="11.5"
-        fontWeight="600"
+        fontSize="12"
+        fontWeight="700"
       >
-        {leaf.text}
+        {b.label}
       </text>
-    </g>
+    </>
+  );
+}
+
+// The keyboard's path through a branch: the selection on the node, Tab adds the first idea, and
+// Enter each one after; the selection follows each new idea until the next is made.
+function Keyboard({ b, colour, keys }: { b: PlacedBranch; colour: string; keys: boolean }) {
+  const first = b.leaves[0]!;
+  const capX = (box: Box) => (b.side === 'left' ? box.x + box.w + 18 : box.x - 18);
+  return (
+    <>
+      <Selection box={b.node} d={first.d - 0.55} dur={0.6} colour={colour} />
+      {keys ? <KeyCap x={capX(b.node)} y={b.node.y - 12} d={first.d - 0.35} label="Tab" /> : null}
+      {b.leaves.map((leaf, i) => {
+        const next = b.leaves[i + 1];
+        const dur = next ? next.d - leaf.d : 1.1;
+        return (
+          <g key={leaf.text}>
+            <Selection box={leaf.box} d={leaf.d + 0.05} dur={dur} colour={colour} />
+            {keys && next ? (
+              <KeyCap
+                x={b.side === 'left' ? leaf.box.x - 22 : leaf.box.x + leaf.box.w + 22}
+                y={leaf.box.y + LEAF_H / 2}
+                d={next.d - 0.35}
+                label="Enter"
+              />
+            ) : null}
+          </g>
+        );
+      })}
+    </>
   );
 }
 
 export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
-  const centre = portrait ? PORTRAIT_CENTRE : CENTRE;
-  const branches = portrait ? BRANCHES.map((b) => ({ ...b, ...PORTRAIT_AT[b.label]! })) : BRANCHES;
+  const L = portrait ? TALL_LAYOUT : WIDE_LAYOUT;
+  const { centre: c } = L;
   return (
     <>
-      {/* Branches out from the centre, each thick at its root. */}
-      {branches.map((b) => (
-        <g key={b.label}>
+      {/* The trunks, tapering from the centre out to each branch: a line draws on, then the taper
+          fills in under it. */}
+      {L.branches.map((b) => (
+        <g key={b.key} style={tone(b)}>
+          <path className={`hm-fade ${FILL}`} style={at(b.d - 0.05)} d={b.trunk.fill} />
           <path
-            className="hm-draw"
-            style={at(b.d - 0.15, { '--dur': '0.45s', '--len': 220 })}
-            d={trunk(b, portrait)}
+            className={`hm-draw ${STROKE}`}
+            style={at(b.d - 0.3, { '--dur': '0.4s', '--len': b.trunk.len })}
+            d={b.trunk.centre}
             fill="none"
-            stroke={b.color}
-            strokeWidth="3"
-            strokeLinecap="round"
-          />
-          <path
-            className="hm-draw"
-            style={at(b.d - 0.15, { '--dur': '0.3s', '--len': 220, '--to': 150 })}
-            d={trunk(b, portrait)}
-            fill="none"
-            stroke={b.color}
-            strokeWidth="7"
+            strokeWidth="2.5"
             strokeLinecap="round"
           />
         </g>
       ))}
 
-      {/* The centre. */}
+      {/* The centre topic: a round node in the theme's ink, its name and its date. */}
       <g className="hm-pop" style={at(0.2)}>
-        <rect x={centre.x - 62} y={centre.y - 24} width="124" height="48" rx="24" fill="#0ea5e9" />
+        <circle
+          cx={c.x}
+          cy={c.y}
+          r={c.r}
+          className="fill-(--art-ink-fill) stroke-(--art-ink-stroke)"
+          strokeWidth="2"
+        />
       </g>
       <text
-        className="hm-type"
-        style={at(0.35, { '--steps': 11 })}
-        x={centre.x}
-        y={centre.y + 5}
+        className="hm-type fill-(--art-ink-text)"
+        style={at(0.4, { '--steps': 11 })}
+        x={c.x}
+        y={c.y + 1}
         textAnchor="middle"
         fontFamily={FONT}
-        fontSize="14"
-        fontWeight="800"
-        fill="white"
+        fontSize={portrait ? 14 : 17}
+        fontWeight="700"
       >
         Launch plan
       </text>
+      <text
+        className="hm-fade fill-(--art-ink-text)"
+        style={at(0.8)}
+        x={c.x}
+        y={c.y + (portrait ? 15 : 18)}
+        textAnchor="middle"
+        fontFamily={FONT}
+        fontSize={portrait ? 8 : 9}
+        fontWeight="500"
+        opacity="0.8"
+      >
+        v2.0 · ships 14 May
+      </text>
 
-      {/* The branch nodes, in their colours. */}
-      {branches.map((b) => (
-        <g key={b.label}>
-          <g className="hm-pop" style={at(b.d)}>
-            <rect
-              x={b.x - 46}
-              y={b.y - 16}
-              width="92"
-              height="32"
-              rx="16"
-              fill={b.tint}
-              stroke={b.color}
-              strokeWidth="2"
-            />
-          </g>
-          <text
-            className="hm-type"
-            style={at(b.d + 0.1, { '--steps': b.label.length })}
-            x={b.x}
-            y={b.y + 4.5}
-            textAnchor="middle"
-            fontFamily={FONT}
-            fontSize="12"
-            fontWeight="700"
-            fill="#1e293b"
-          >
-            {b.label}
-          </text>
-          {b.leaves.map((leaf, i) => (
-            <LeafNode key={leaf.text} b={b} leaf={leaf} i={i} portrait={portrait} />
+      {/* The branches, their ideas, and who is adding them. */}
+      {L.branches.map((b) => (
+        <g key={b.key} style={tone(b)}>
+          <BranchNode b={b} />
+          {b.leaves.map((leaf) => (
+            <LeafNode key={leaf.text} leaf={leaf} />
           ))}
+          {b.key === 'marketing' ? <Keyboard b={b} colour={YOU} keys /> : null}
+          {teammateFills(b) ? <Keyboard b={b} colour={TEAMMATE} keys={false} /> : null}
         </g>
       ))}
 
-      {/* A rocket on the centre, for the launch. An emoji's ink is the platform's emoji font's
-          (Linux CI's sits 1px off where macOS's centres), so no nudge centres it everywhere: a
-          decoration, not a control, it is left out of the optical audit
+      {/* A rocket sticker on the centre, for the launch: the editor's sticker look (a die-cut white
+          plate on a soft shadow, @livediagram/icons sticker-markup.ts). An emoji's ink is the
+          platform's emoji font's, so it is left out of the optical audit
           (docs/specs/004-interface-design/blueprints/DEFAULTS.md D45). */}
-      <g className="hm-pop" style={at(8.9)} data-optical-ignore="">
-        <circle cx={centre.x + 56} cy={centre.y - 22} r="14" fill="white" stroke="#e2e8f0" />
-        <text x={centre.x + 56} y={centre.y - 17} textAnchor="middle" fontSize="15">
-          🚀
-        </text>
+      <g transform={`translate(${c.x + 6} ${c.y - c.r - 8}) rotate(8)`} data-optical-ignore="">
+        <g className="hm-pop" style={at(8.6)}>
+          <rect x="-15" y="-12" width="30" height="30" rx="9" fill="#0f172a" opacity="0.14" />
+          <rect x="-15" y="-15" width="30" height="30" rx="9" fill="#ffffff" stroke="#e2e8f0" />
+          <text x="0" y="5.5" textAnchor="middle" fontSize="17">
+            🚀
+          </text>
+        </g>
       </g>
 
-      {/* The teammate filling in Events. */}
-      <g
-        className="hm-cursor"
-        style={at(
-          4.4,
-          portrait
-            ? { '--sx': '330px', '--sy': '470px', '--cx': '128px', '--cy': '362px' }
-            : { '--sx': '330px', '--sy': '330px', '--cx': '112px', '--cy': '262px' },
-        )}
-        aria-hidden
+      {/* The editor's hint under a mind map. */}
+      <text
+        className="hm-fade fill-slate-500 dark:fill-slate-400"
+        style={at(1.6)}
+        x={L.hint.x}
+        y={L.hint.y}
+        textAnchor="middle"
+        fontFamily={FONT}
+        fontSize={portrait ? 7.5 : 8.5}
       >
-        <CursorMark colour="#ec4899" label="JR" />
+        {portrait
+          ? 'Select an idea: Tab adds a child, Enter a sibling.'
+          : 'Select any idea, then press Tab to add a child or Enter to add a sibling.'}
+      </text>
+
+      {/* The teammate, filling in Events. */}
+      <g className="mm-jr" style={cursorRide(L.teammate) as CSSProperties} aria-hidden>
+        <CursorMark colour={TEAMMATE} label="JR" />
       </g>
     </>
   );

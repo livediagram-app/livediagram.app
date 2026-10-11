@@ -127,9 +127,13 @@ export function EditorWindow({
               </Chip>
             )}
             {/* Your role on it, as the editor's RoleIndicator pill shows it. */}
-            <span className="hidden h-[17px] items-center rounded-full bg-emerald-100 px-1.5 text-[8px] font-semibold uppercase tracking-wide text-emerald-800 @min-[480px]/window:inline-flex dark:bg-emerald-500/15 dark:text-emerald-200">
-              <span className="text-optical-line text-optical-caps">Editing</span>
-            </span>
+            <Chip
+              height={17}
+              caps
+              className="bg-emerald-100 px-1.5 text-[8px] font-semibold text-emerald-800 @max-[480px]/window:hidden dark:bg-emerald-500/15 dark:text-emerald-200"
+            >
+              Editing
+            </Chip>
           </div>
           <span className="flex flex-col items-center justify-self-end gap-0.5 border-l border-slate-100 px-3 text-[8px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
             <ShareGlyph />

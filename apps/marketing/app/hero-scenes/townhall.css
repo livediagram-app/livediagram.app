@@ -1,1 +1,117 @@
-/* The townhall scene's own keyframes and classes (components/hero-*-board.tsx); the shared hm-* build lives in ../hero-mode-animations.css. */
+/* The town hall scene's own keyframes and classes (components/hero-townhall-board.tsx); the shared hm-* build lives in ../hero-mode-animations.css. */
+
+/* A vote lands: "+1" pops off the vote pill and drifts up. */
+.th-plus {
+  opacity: 0;
+  animation: th-plus 0.9s ease-out var(--d, 0s) both;
+}
+@keyframes th-plus {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+/* The host's row actions: shown while the pointer is on the row, then gone. */
+.th-blink {
+  opacity: 0;
+  animation: th-blink 0.7s ease-out var(--d, 0s) both;
+}
+@keyframes th-blink {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The two cursors ride their stops (--p1 ...; lib/hero-motion.ts). The teammate votes (3.9s) and
+   claps (6.8s); you start the timer (5.3s), put the top note in the spotlight (6.0s), mark it done
+   (8.6s) and spotlight the next (9.4s). */
+.th-mate,
+.th-you {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  offset-rotate: 0deg;
+  opacity: 0;
+}
+.th-mate {
+  animation: th-mate 5.3s ease-in-out 3.3s both;
+}
+@keyframes th-mate {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  11.3%,
+  20.8% {
+    offset-distance: var(--p1);
+  }
+  66%,
+  84.9% {
+    offset-distance: var(--p2);
+  }
+  99% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+.th-you {
+  animation: th-you 5.6s ease-in-out 4.6s both;
+}
+@keyframes th-you {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  12.5%,
+  17.9% {
+    offset-distance: var(--p1);
+  }
+  25%,
+  32.1% {
+    offset-distance: var(--p2);
+  }
+  71.4%,
+  78.6% {
+    offset-distance: var(--p3);
+  }
+  85.7%,
+  92.9% {
+    offset-distance: var(--p4);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+
+.hero-static .th-plus,
+.hero-static .th-blink,
+.hero-static .th-mate,
+.hero-static .th-you {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .th-plus,
+  .th-blink,
+  .th-mate,
+  .th-you {
+    display: none;
+  }
+}

@@ -37,7 +37,13 @@ const CARD =
 const CELL = 'flex h-full w-7 items-center justify-center';
 const SPLIT = 'border-l border-slate-100 dark:border-slate-800';
 
-function Lucide({ prims, size = 11 }: { prims: Parameters<typeof Prims>[0]['prims']; size?: number }) {
+function Lucide({
+  prims,
+  size = 11,
+}: {
+  prims: Parameters<typeof Prims>[0]['prims'];
+  size?: number;
+}) {
   return (
     <Glyph size={size} units={24}>
       <Prims prims={prims} />
@@ -136,9 +142,12 @@ export function ToolbarMenuButton({ mode, tab }: { mode: HeroMode; tab: string }
         <Icon size={11} />
         <ChevronDownIcon size={7} />
       </span>
-      <span aria-hidden className="mx-0.5 h-4 w-px bg-slate-200 dark:bg-slate-700" />
-      <span className="text-optical-line pr-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-200">
-        {tab}
+      {/* The tab's name, where the canvas is wide enough that it clears the strip. */}
+      <span className="hidden items-center @[720px]:flex">
+        <span aria-hidden className="mx-0.5 h-4 w-px bg-slate-200 dark:bg-slate-700" />
+        <span className="text-optical-line px-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-200">
+          {tab}
+        </span>
       </span>
     </span>
   );
@@ -178,15 +187,32 @@ function StripTile({ tile, index }: { tile: Tile; index: number }) {
 // mode's tiles (the tool in hand marked), More, and the palette's search. Draw's dock splits
 // its drawing tools from its shapes and carries its settings in a card of its own.
 export function ToolbarStrip({ mode }: { mode: HeroMode }) {
-  if (mode === 'plan') return <PlanBoardBar />;
-  const select = MODE_GLYPHS.select!;
   const { Icon } = HERO_MODE[mode];
-  const tiles = MODE_TILES[mode];
-  const draw = mode === 'draw';
   const pill =
     'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-300';
   const strip =
     'flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5 text-slate-600 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
+  // A Plan board's bar is for a wide window; on a phone the strip carries only the menu and mode.
+  if (mode === 'plan')
+    return (
+      <>
+        <PlanBoardBar />
+        <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center sm:hidden">
+          <div className={strip}>
+            <span className="flex h-6 w-5 items-center justify-center">
+              <MenuIcon size={10} />
+            </span>
+            <span className={pill}>
+              <Icon size={10} />
+              <ChevronDownIcon size={7} />
+            </span>
+          </div>
+        </div>
+      </>
+    );
+  const select = MODE_GLYPHS.select!;
+  const tiles = MODE_TILES[mode];
+  const draw = mode === 'draw';
   return (
     <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center gap-1.5">
       <div className={strip}>
@@ -219,7 +245,12 @@ export function ToolbarStrip({ mode }: { mode: HeroMode }) {
         )}
         {tiles.map((t, i) => (
           <span key={t.key} className="contents">
-            {draw && t.group && i > 0 ? <StripDivider /> : null}
+            {draw && t.group && i > 0 ? (
+              // The group's divider shows only where its tiles do.
+              <span className={i < NARROW_TILES ? 'contents' : 'hidden @[600px]:contents'}>
+                <StripDivider />
+              </span>
+            ) : null}
             <StripTile tile={t} index={i} />
           </span>
         ))}
@@ -256,21 +287,22 @@ function PlanBoardBar() {
   return (
     <div className="pointer-events-none absolute right-2 top-2 z-10 hidden items-center gap-1 rounded-lg border border-slate-200 bg-white/90 p-0.5 shadow-sm sm:flex dark:border-slate-700 dark:bg-slate-900/90">
       <span className={chip}>
-        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden>
-          <circle cx="5" cy="5" r="4" fill="none" strokeWidth="1.6" className="stroke-slate-200 dark:stroke-slate-700" />
+        {/* The done ring: a third of the way round. */}
+        <Glyph size={10} units={10} weight={1.6}>
+          <circle cx="5" cy="5" r="4" className="stroke-slate-200 dark:stroke-slate-700" />
           <circle
             cx="5"
             cy="5"
             r="4"
-            fill="none"
-            strokeWidth="1.6"
             stroke="#10b981"
-            strokeDasharray="10 25.1"
+            strokeDasharray="8.3 25.1"
             transform="rotate(-90 5 5)"
           />
-        </svg>
-        <span className="text-optical-line font-semibold text-slate-800 dark:text-slate-100">40%</span>
-        <span className="text-optical-line">done · 4/10</span>
+        </Glyph>
+        <span className="text-optical-line font-semibold text-slate-800 dark:text-slate-100">
+          33%
+        </span>
+        <span className="text-optical-line">done · 4/12</span>
       </span>
       <span className={`${chip} text-emerald-700 dark:text-emerald-300`}>
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />

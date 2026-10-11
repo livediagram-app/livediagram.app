@@ -1,1 +1,84 @@
-/* The draw scene's own keyframes and classes (components/hero-*-board.tsx); the shared hm-* build lives in ../hero-mode-animations.css. */
+/* The draw scene's own keyframes and classes (components/hero-draw-board.tsx); the shared hm-* build lives in ../hero-mode-animations.css. */
+
+/* Draw mode writes in a hand face (Caveat, the editor's "caveat" font). The hero carries a subset
+   holding only the glyphs its Draw window writes (components/hero-draw-copy.ts), about 18 KB,
+   fetched only when that window's text is drawn; until then the fallback hand stands in. */
+@font-face {
+  font-family: 'Caveat Hero';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/caveat-hero.woff2') format('woff2');
+}
+
+/* Hand lettering is written on from left to right, as a pen moves along the line. */
+.hd-write {
+  clip-path: inset(-20% 100% -20% 0);
+  animation: hd-write var(--dur, 0.7s) cubic-bezier(0.45, 0, 0.55, 1) var(--d, 0s) both;
+}
+@keyframes hd-write {
+  to {
+    clip-path: inset(-20% -2% -20% 0);
+  }
+}
+
+/* The teammate's pen rides the ring, glides to the arrow's start and draws the arrow, then lifts
+   away. The stops (--p1, --p2) are worked out from the layout (hero-draw-board.tsx). */
+.hd-pen {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  offset-rotate: 0deg;
+  opacity: 0;
+  animation:
+    hd-pen 2s linear 4s both,
+    hd-lift 0.4s ease-out 6.1s forwards;
+}
+@keyframes hd-pen {
+  /* Hidden until it starts, so the waiting pen never shows at the ring's start. */
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  2% {
+    opacity: 1;
+  }
+  /* In step with the strokes: the ring 4s to 5.2s, the glide to 5.45s, the arrow to 6s. */
+  60% {
+    offset-distance: var(--p1);
+  }
+  72.5% {
+    offset-distance: var(--p2);
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+@keyframes hd-lift {
+  to {
+    opacity: 0;
+    translate: 8px -10px;
+  }
+}
+
+/* The highlighter lays translucent ink that darkens what it crosses, as the Highlighter does. */
+.hd-highlight {
+  mix-blend-mode: multiply;
+}
+
+.hero-static .hd-write {
+  animation: none;
+  clip-path: none;
+}
+.hero-static .hd-pen {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hd-write {
+    animation: none;
+    clip-path: none;
+  }
+  .hd-pen {
+    display: none;
+  }
+}

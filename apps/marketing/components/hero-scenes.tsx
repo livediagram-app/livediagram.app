@@ -35,6 +35,9 @@ export type HeroScene = {
   shared: boolean;
   // The scene itself, drawn in its landscape or (on a phone) portrait layout.
   Board: ComponentType<{ portrait?: boolean }>;
+  // The landscape viewBox, when the scene reaches past the shared 600 by 400 one (LANDSCAPE_VIEWBOX):
+  // as tall, so the hero's height-bound canvas draws it at the same scale, only wider.
+  landscapeViewBox?: string;
   // The portrait viewBox a phone draws it in: taller than wide, the pages' scenes taller still so
   // two pages stack.
   portraitViewBox: string;
@@ -105,6 +108,7 @@ export const HERO_SCENES: HeroScene[] = [
     tabs: [{ name: 'Infographic', color: '#8b5cf6', active: true }],
     shared: true,
     Board: InfographicPages,
+    landscapeViewBox: '-24 -60 690 400',
     portraitViewBox: PORTRAIT_PAGES,
   },
   {
@@ -150,6 +154,7 @@ export const HERO_SCENES: HeroScene[] = [
     ],
     shared: true,
     Board: TownHallBoard,
+    landscapeViewBox: '-28 -60 668 400',
     portraitViewBox: PORTRAIT,
   },
 ];

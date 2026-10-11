@@ -10,7 +10,7 @@ describe('FeatureScene', () => {
     const markup = renderToStaticMarkup(<FeatureScene scene="plan" />);
     expect(markup).toContain('Launch');
     expect(markup).toContain('aspect-[16/10]');
-    expect(markup).not.toContain('Launch board');
+    expect(markup).not.toContain('Pricing page');
   });
 
   it('rests with a clear veil, never the stage veil that flashes grey', () => {

@@ -32,7 +32,13 @@ export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<Ic
 };
 
 // `hint` is the shortcut the editor prints under the tile; `group` starts a new group in Draw's dock.
-export type Tile = { key: string; glyph: ReactNode; active?: boolean; hint?: string; group?: boolean };
+export type Tile = {
+  key: string;
+  glyph: ReactNode;
+  active?: boolean;
+  hint?: string;
+  group?: boolean;
+};
 
 function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
   return (
@@ -43,8 +49,9 @@ function Lucide({ prims }: { prims: Parameters<typeof Prims>[0]['prims'] }) {
 }
 
 // A marker in its ink, as the Draw dock shows Marker 1, 2 and 3.
-function Marker({ color }: { color: string }) {
-  return <MarkerIcon size={14} style={{ color }} />;
+// The black marker reads as near-white on the dark strip, as the editor lifts dark ink there.
+function Marker({ color, className }: { color?: string; className?: string }) {
+  return <MarkerIcon size={14} style={color ? { color } : undefined} className={className} />;
 }
 
 function SelectGlyph() {
@@ -97,7 +104,7 @@ const DIAGRAM_TILES: Tile[] = [
 // Draw's dock: its drawing tools, the blue marker in hand, then its shapes in a group of their own.
 const DRAW_TILES: Tile[] = [
   { key: 'select', glyph: <SelectGlyph />, hint: 'V' },
-  { key: 'm1', glyph: <Marker color="#1c1917" />, hint: '1' },
+  { key: 'm1', glyph: <Marker className="text-stone-900 dark:text-stone-100" />, hint: '1' },
   { key: 'm2', glyph: <Marker color="#2563eb" />, active: true, hint: '2' },
   { key: 'm3', glyph: <Marker color="#dc2626" />, hint: '3' },
   { key: 'text', glyph: <Shape kind="text" />, hint: 'T' },
