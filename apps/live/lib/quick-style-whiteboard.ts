@@ -17,13 +17,7 @@ import {
   type QuickCorners,
   type QuickStyleView,
 } from './quick-style';
-import {
-  customOptions,
-  INK_CHOICE,
-  stockOptions,
-  type PenColourChoice,
-  type PenPalette,
-} from './quick-style-pen';
+import { INK_CHOICE, stockOptions, type PenColourChoice, type PenPalette } from './quick-style-pen';
 
 type Coloured = {
   strokeColor?: string;
@@ -43,7 +37,7 @@ const shared = <T>(values: T[]): T | null =>
   values.length > 0 && values.every((v) => v === values[0]) ? values[0]! : null;
 
 function section(values: (PenColourChoice | null)[], palette: PenPalette): BoardColourSection {
-  return { value: shared(values), options: stockOptions(palette), custom: customOptions(palette) };
+  return { value: shared(values), options: stockOptions(palette) };
 }
 
 // A target whose line the Stroke row colours (a shape that draws one, an arrow, a path).

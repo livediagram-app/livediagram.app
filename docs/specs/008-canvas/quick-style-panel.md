@@ -275,7 +275,7 @@ over, never refused, so they never hide the panel from the rest.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
 - **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
-  colours and the tab's custom colours, as Marker colour offers them
+  colours and More colours (custom colours live in its picker), as Marker colour offers them
   ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
   Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
   A line with no colour of its own wears its theme default and marks none. Background keeps the

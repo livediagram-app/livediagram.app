@@ -73,10 +73,10 @@ describe('useQuickStyle pen rows', () => {
     expect(elements()[0]).toMatchObject({ penWidth: 2.5 });
   });
 
-  it('offers the tab\u2019s custom colours, and restyles with stock and custom colours', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": the second section.
+  it('restyles with stock and custom colours', () => {
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": a custom colour comes
+    // from More colours, the colour picker.
     const { result, elements } = setup(['s1']);
-    expect(result.current.view?.pen?.colour.custom).toEqual([]);
     act(() => result.current.setPenColour('teal'));
     expect(elements()[0]).toMatchObject({ penColour: 'teal' });
     act(() => result.current.setPenColour('#ff6b00'));

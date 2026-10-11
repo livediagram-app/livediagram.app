@@ -32,7 +32,6 @@ import {
   INK_CHOICE,
   penWidthPx,
   strokesPenStyle,
-  tabCustomColours,
   type PenColourChoice,
   type PenWidthId,
 } from '@/lib/quick-style-pen';
@@ -152,15 +151,7 @@ export function useQuickStyle(
   const board = canvasSurface(resolveTabBackdrop(activeTab, appearance).backgroundColor);
   const ink = PEN_INK[board];
   const held = deps.pen?.held ?? null;
-  // The custom colours used on this tab, the Marker colour row's second section.
-  const palette = useMemo(
-    () => ({
-      board,
-      ink,
-      custom: whiteboard ? tabCustomColours(activeTab.elements) : [],
-    }),
-    [board, ink, whiteboard, activeTab.elements],
-  );
+  const palette = useMemo(() => ({ board, ink }), [board, ink]);
   // A tool's choices land in memory, not the document: a version to re-read it.
   const [toolVersion, bumpTool] = useReducer((n: number) => n + 1, 0);
   const intent = deps.toolIntent ?? null;

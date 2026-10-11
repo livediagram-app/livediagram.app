@@ -28,11 +28,10 @@ import {
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
 
-// The whiteboard's colours as a row: the choice the targets share, the stock options, the tab's own.
+// The whiteboard's colours as a row: the choice the targets share and the stock options.
 export type BoardColourSection = {
   value: PenColourChoice | null;
   options: PenColourOption[];
-  custom: PenColourOption[];
 };
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement | PathElement;

@@ -37,7 +37,7 @@ import {
 } from '@livediagram/document';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
-import { BoardColourRows, QuickPenRows } from './QuickPenRows';
+import { BoardColourRow, QuickPenRows } from './QuickPenRows';
 import { QuickHighlighterRows } from './QuickHighlighterRows';
 import { QuickMoreColours } from './QuickMoreColours';
 import { standardGroup } from '@/components/colour/colour-options';
@@ -321,10 +321,9 @@ function QuickStyleSections({
               : undefined;
         if (board) {
           return (
-            <BoardColourRows
+            <BoardColourRow
               key={row.role}
               title={row.title}
-              customTitle={row.role === 'stroke' ? 'Custom stroke colours' : 'Custom text colours'}
               testId={row.testId}
               section={board}
               showTitles={showTitles}

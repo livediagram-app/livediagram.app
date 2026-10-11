@@ -75,25 +75,21 @@ pointing at the button that opened it, on the edge facing the dock, over its but
   **Stroke** and **Text colour** rows offer the **stock colours**, the same
   choices as Marker colour: **Ink** first, then the eight hued colours in the
   standard order, Red to Pink (each stored by name, drawn in its version for the
-  canvas), then **More colours**, then the tab's custom
-  colours section when there is one. Ink is stored by name like the others; a
+  canvas), then **More colours**: one row each. Ink is stored by name like the others; a
   line with no colour of its own wears its theme default, so no choice is
   marked for it. **Background** keeps its fills, "no fill" first. **Corners** (None, Small,
   Medium, Large) rounds the selected rectangles, which the menu does not
   offer on a whiteboard ([Corner radius](../008-canvas/corner-radius.md)).
   A restyle on a whiteboard never feeds the style memory Diagram mode uses; the
   board's own memory remembers a stock colour by name.
-  Selected pen strokes get **Marker colour** and **Marker width** (Fine / Medium /
-  Bold). The quick style panel is **quick choices first**: **Marker colour** is
-  Ink and the eight hued stock colours, adaptive like the marker's picker, then
-  **More colours**, which opens the full colour picker
-  ([Colour picker](../004-interface-design/colour-picker.md#quick-style)). Below them, **a second section of custom
-  colours appears only when custom colours are used on this whiteboard
-  tab**: the custom (hex) colours of the tab's marker strokes, shapes, lines,
-  arrows, paths and text (exactly the colours [Snap colours](#snap-colours)
-  would convert), up to eight, most recently drawn first (imported and
-  pasted content brings its own); with none on the tab, the section is
-  not there. A custom colour is added with the marker picker's **Add a custom colour**. With nothing selected
+  Selected pen strokes get **Marker colour** and **Marker width** (the six widths, Fine to
+  Broad, in one row). The quick style panel is **quick choices first, one row per setting**:
+  **Marker colour** is Ink and the eight hued stock colours, adaptive like the marker's picker,
+  then **More colours**, which opens the full colour picker
+  ([Colour picker](../004-interface-design/colour-picker.md#quick-style)). **Custom colours live
+  only in that picker** (its Custom Colours, the document's own, the same list wherever a picker
+  opens): the panel never shows a second row of them, so there is one list of custom colours,
+  never two that disagree. A custom colour is added with the picker's **Add a custom colour**. With nothing selected
   and a pen in hand, the panel styles **that pen**: picking up a pen already
   offers its colour and width, the same settings its dock flyout holds.
   **Every pen shows the same rows**, so Marker width stays at the same height
@@ -105,11 +101,15 @@ pointing at the button that opened it, on the edge facing the dock, over its but
 - **One dock, no modes.** Every user sees the same three groups; the shapes
   bar stays small by starting with just two pinned shapes, so there is no
   simpler mode to switch to.
-- **The dock is three groups side by side**, centred together at the top
-  (or bottom) of the canvas with a clear gap between them, left to right: **drawing
-  tools**, **shapes** and **settings** (the cog on its own). Each group is its
-  own pill, and its own toolbar for assistive technology ("Drawing tools",
-  "Shapes", "Settings"), each one Tab stop with arrow keys moving within it.
+- **The dock is three groups side by side in one card**, centred at the top
+  (or bottom) of the canvas, a hairline between each group, left to right: **drawing
+  tools**, **shapes** and **settings** (the cog on its own). **It looks like the other modes'
+  palette** ([Toolbar layout](../007-editor/toolbar-layout.md)): the same card, the same 36 px
+  tiles and hairlines, and a tool in hand marked as the palette marks its active tool (a soft
+  brand fill with a hairline ring), so Draw reads as the same product. What it holds and how it
+  behaves stay Draw's own (pens that stay in hand, flyouts, pinned shapes). Each group is still
+  its own toolbar for assistive technology ("Drawing tools", "Shapes", "Settings"), each one Tab
+  stop with arrow keys moving within it.
 - **Drawing tools, left to right:**
   1. **Select** (marquee and move; the ordinary select tool). A board with content opens on
      Select; an empty one puts the active pen in hand.
@@ -307,17 +307,17 @@ Explorer Home's Jump back in.
 - **Markers 2 and 3 are adjustable**: their flyouts change both
   colour and width. They start as **blue** (second) and **red** (third), and
   keep their place and name whatever colour they are given.
-- **Widths**, on every pen including Marker 1: **Fine** (1 px),
-  **Medium** (1.5 px, the default) and **Bold** (2.5 px),
-  `WHITEBOARD_PEN_WIDTHS`: a subtle line at 100%, not a felt tip (the width at
-  medium pressure). (Tuned with
-  the operator: Medium is what Fine was, each step one notch thinner.) The width is recorded as the stroke's `penWidth`, which every
+- **Widths**, on every pen including Marker 1, six in all (`WHITEBOARD_PEN_WIDTHS`, the width at
+  medium pressure): **Fine** (1 px), **Medium** (1.5 px, the default) and **Bold** (2.5 px), a
+  subtle line at 100%, not a felt tip (tuned with the operator: Medium is what Fine was, each step
+  one notch thinner); then three progressively stronger, each about half again the last, for
+  felt-tip and poster marks: **Thick** (4 px), **Heavy** (6 px) and **Broad** (9 px). The width is recorded as the stroke's `penWidth`, which every
   freehand renderer honours; choosing a border width from an element's menu
   afterwards replaces it. A pen stores its width as the preset's name, not its
   px, so retuning the px never reinterprets a stored choice.
   - **Each width is pictured the same wherever it is chosen** (the marker's popover and the quick
-    style panel's Marker width row, `PenWidthIcon`): as the thin, medium and thick border-width
-    previews, not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
+    style panel's Marker width row, `PenWidthIcon`): as a line in six even steps, thinnest first,
+    not to scale. Drawn to scale, 1 and 1.5 px looked identical in the popover.
 - **The markers outside Draw mode:** the Toolbar strip's Search offers Marker 1, 2 and 3 in the
   other modes ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), each
   as this browser last set it. Picking one picks the pen up exactly as the dock does (the same pen
@@ -358,7 +358,7 @@ Explorer Home's Jump back in.
     to see on the dark board") and offers a nearby version that is not, as
     a swatch to press. **The warning's line is always reserved**, empty
     until needed, so it never shifts the picker.
-  - **Width:** Fine, Medium, Bold.
+  - **Width:** Fine, Medium, Bold, Thick, Heavy, Broad.
   - Each swatch has its name as its tooltip and accessible name ("Blue",
     "#ff6b00"); arrow keys move focus through every swatch and +
     (wrapping), Enter picks, Escape closes.
@@ -556,8 +556,7 @@ Microsoft Whiteboard board ([Microsoft Whiteboard import](../020-import-export/w
   dark on the light board and light on the dark one, whatever board it was
   drawn on. A colour close to a **stock colour** (Blue, Red, Orange, Yellow,
   Green, Teal, Violet, Pink) lands by its name and is drawn in the version for each
-  viewer's board. Anything else keeps its exact hex, a custom colour, and shows
-  in the quick style panel's custom colours.
+  viewer's board. Anything else keeps its exact hex, a custom colour.
 - **Named colours on every mark:** a stock colour is stored by name on a
   stroke, shape, line, arrow and path (its line colour) and on a text box, a
   shape's label, a sticky note's text and an arrow's label (its text colour),
@@ -763,8 +762,7 @@ light and dark boards like everything drawn with the stock colours.
 - **What it converts:** every custom (`#rrggbb`) colour held in a field that
   has a stock counterpart: a marker stroke's colour, a shape's outline, a
   line's, arrow's or path's colour, a text box's text, and the label of an
-  unfilled shape or of an arrow. These are the custom colours the quick style
-  panel's custom section offers. Further kinds join as they gain a stock
+  unfilled shape or of an arrow. Further kinds join as they gain a stock
   colour field.
 - **The rule:** each colour is read in OKLCH.
   - A **neutral** colour (chroma under 0.05: black, grey, white, slate)
