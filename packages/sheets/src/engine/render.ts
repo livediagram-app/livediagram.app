@@ -7,6 +7,9 @@ import { cellKey, type Border, type CellFormat } from '../sheet';
 import { Workbook } from './workbook';
 import type { CardSource } from '../cards';
 import { sheetFromJson, type SheetJson } from '../sheet-json';
+import { checkboxValue, optionFor, validationRuleAt } from '../rules/validation';
+import { formatRuleStyle } from '../rules/format-rules';
+import { isArray, isError, scalarOf } from '../formula/values';
 
 export type RenderCell = {
   r: number; // index into the model's rows
@@ -90,8 +93,22 @@ export function renderWindow(
       if (covered.has(`${r},${c}`)) continue;
       const cell = sheet.cells.get(cellKey(layout.rows[r]!, layout.cols[c]!));
       const value = wb.value(sheetId, r, c);
-      const f: CellFormat = cell?.format ?? {};
-      const shown = displayValue(value, f, locale);
+      const own: CellFormat = cell?.format ?? {};
+      let shown = displayValue(value, own, locale);
+      // A met format rule's style draws over the cell's own (conditional-formatting.md).
+      const style = layout.formatRules?.length
+        ? formatRuleStyle(wb, sheetId, r, c, value, shown.text)
+        : null;
+      const f: CellFormat = style ? { ...own, ...style } : own;
+      // A checkbox draws as a box, a chip on its option's colour (data-validation.md "Drawing").
+      const rule = layout.rules?.length ? validationRuleAt(layout, r, c) : null;
+      const scalar = isArray(value) ? scalarOf(value) : value;
+      let chip: string | undefined;
+      if (rule?.is === 'check') {
+        const box = checkboxValue(scalar);
+        if (box !== undefined) shown = { text: box ? '☑' : '☐', align: 'c', kind: 'text' };
+      } else if (rule?.is === 'list' && !rule.show && scalar !== null && !isError(scalar))
+        chip = optionFor(rule, scalar)?.c;
       const span = spans.get(`${r},${c}`);
       if (!shown.text && !f.bg && !f.bt && !f.br && !f.bb && !f.bl) continue;
       const out: RenderCell = {
@@ -107,7 +124,7 @@ export function renderWindow(
       if (f.u) out.underline = true;
       if (f.st) out.strike = true;
       if (f.fc) out.color = f.fc;
-      if (f.bg) out.fill = f.bg;
+      if (chip ?? f.bg) out.fill = chip ?? f.bg;
       if (f.ff) out.font = f.ff;
       if (f.fs) out.size = f.fs;
       if (f.wr) out.wrap = f.wr;

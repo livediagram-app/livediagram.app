@@ -43,7 +43,9 @@ export type NumberFormatKind =
   | 'time'
   | 'datetime'
   | 'duration'
-  | 'text';
+  | 'text'
+  // A format code (`nc`), as TEXT reads one (sheet.md "Formatting").
+  | 'custom';
 
 // A whole number of points, FONT_SIZE_MIN to FONT_SIZE_MAX (format.ts); FONT_SIZES are the steps − and + take.
 export type FontSize = number;
@@ -68,6 +70,8 @@ export type CellFormat = {
   br?: Border;
   bb?: Border;
   bl?: Border;
+  // The Custom number format's code (with nf 'custom').
+  nc?: string;
 };
 
 export type Cell = { input?: CellInput; format?: CellFormat };
@@ -99,6 +103,48 @@ export type FilterCondition = { values?: string[]; op?: ConditionOp; a?: string;
 
 export type SheetFilter = IdRange & { conds: Record<string, FilterCondition> };
 
+// Validation rules (docs/specs/029-sheets/data-validation.md, blueprint sheet-rules.md "Types"): what a range of
+// cells may hold.
+export type DropdownOption = { v: string; c?: string };
+export type ValidationKind = 'list' | 'range' | 'check' | 'num' | 'date' | 'text';
+export type NumOp = 'between' | 'notBetween' | 'gt' | 'gte' | 'lt' | 'lte' | 'eq' | 'neq';
+export type DateOp =
+  'valid' | 'before' | 'onOrBefore' | 'after' | 'onOrAfter' | 'on' | 'between' | 'notBetween';
+export type TextOp = 'contains' | 'notContains' | 'exactly' | 'email' | 'url';
+export type ValidationRule = IdRange & {
+  id: string;
+  is: ValidationKind;
+  // A Dropdown's options; a Dropdown from a Range's cells (on this sheet).
+  opts?: DropdownOption[];
+  src?: IdRange;
+  // A dropdown's Display: absent is Chip.
+  show?: 'arrow' | 'plain';
+  op?: NumOp | DateOp | TextOp;
+  // Number and Date: numbers (a date's day number); Text: a string.
+  a?: number | string;
+  b?: number;
+  // Show a Warning (absent: Reject the Value).
+  warn?: true;
+  help?: string;
+};
+
+// Format rules (docs/specs/029-sheets/conditional-formatting.md): a condition and its style, or a colour scale.
+export type FormatStyle = Pick<CellFormat, 'b' | 'i' | 'u' | 'st' | 'fc' | 'bg'>;
+export type ScalePoint = { c: string; at: 'min' | 'max' | 'num' | 'pct' | 'pctile'; v?: number };
+export type FormatRule = IdRange & {
+  id: string;
+  is: 'when' | 'scale';
+  op?: ConditionOp | 'formula';
+  a?: string;
+  b?: string;
+  // Custom Formula Is: written for the range's top-left cell.
+  fx?: StoredFormula;
+  style?: FormatStyle;
+  min?: ScalePoint;
+  mid?: ScalePoint;
+  max?: ScalePoint;
+};
+
 export type SheetLayout = {
   rows: string[];
   cols: string[];
@@ -123,6 +169,9 @@ export type SheetLayout = {
   cardTables?: CardTable[];
   // Named ranges (docs/specs/029-sheets/sheet.md "Named ranges"): each a name and the cells it covers, by id.
   names?: RangeName[];
+  // Validation rules and format rules (data-validation.md, conditional-formatting.md); format rules in list order.
+  rules?: ValidationRule[];
+  formatRules?: FormatRule[];
 };
 
 // A card table: its header row, each column's card field (as the header named it), which row is which card (row

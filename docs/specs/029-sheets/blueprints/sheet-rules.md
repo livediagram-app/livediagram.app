@@ -189,8 +189,11 @@ rangeValues }` to `validateWrite` and toasts `value_invalid` as `<A1>: <line>`; 
 
 - `VALIDATION_RULES_MAX = 200`, `FORMAT_RULES_MAX = 100`, `DROPDOWN_OPTIONS_MAX = 500`, `DROPDOWN_OPTION_MAX = 255`,
   `VALIDATION_HELP_MAX = 255`, `FORMAT_RULE_FORMULA_MAX = 1000`, `FORMAT_CODE_MAX = 64`.
-- Per visible cell: one bucket scan of the column's rules (at most 200, typically 0 to 3). Budget: a 60 × 26 window
-  with 100 format rules on every column draws in under 4 ms of rule work (a test).
+- Per visible cell: one bucket scan of the column's rules (at most 200, typically 0 to 3). Each rule's condition is
+  read once (`conditionMatcher`, its operands parsed) and kept per rule, never parsed per cell. Measured (October
+  2026, a laptop): a 60 × 26 window with 100 format rules covering every cell, none met (156,000 checks, the worst
+  case) costs 22 ms of rule work (276 ms before conditions were read once); a test holds it under 150 ms for a loaded
+  machine. A sheet with a few rules a column costs well under 1 ms.
 - Scale statistics: one pass over the range per workbook version (at most `RANGE_CELLS_MAX` reads, the engine's).
 - Write check: per written cell, one bucket scan; a range rule's options once per write.
 

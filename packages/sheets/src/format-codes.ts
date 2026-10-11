@@ -3,6 +3,7 @@
 // English names, locale-independent, as TEXT is in Sheets.
 import { DAY_NAMES, MONTH_NAMES, dateFromSerial } from './dates';
 import { numberText } from './formula/values';
+import { FORMAT_CODE_MAX } from './limits';
 
 type Tok =
   | { k: 'lit'; v: string }
@@ -314,4 +315,33 @@ export function formatCodeText(value: number | string, code: string): string {
   const text = formatNumberSection(n, toks);
   // One section for every number: a negative keeps its minus.
   return value < 0 && section === sections[0] ? `-${text}` : text;
+}
+
+// Whether a Custom number format's code reads (sheet.md "Formatting"): 1 to FORMAT_CODE_MAX characters, quotes and
+// brackets closed, at most four sections, and it draws a number and text without failing.
+export function formatCodeReads(code: string): boolean {
+  if (code.trim().length === 0 || code.length > FORMAT_CODE_MAX) return false;
+  let quoted = false;
+  let depth = 0;
+  for (let i = 0; i < code.length; i++) {
+    const ch = code[i]!;
+    if (ch === '\\' && !quoted) {
+      i++;
+      continue;
+    }
+    if (ch === '"') quoted = !quoted;
+    else if (!quoted && ch === '[') depth++;
+    else if (!quoted && ch === ']') depth--;
+    if (depth < 0 || depth > 1) return false;
+  }
+  if (quoted || depth !== 0 || splitSections(code).length > 4) return false;
+  try {
+    formatCodeText(1234.5, code);
+    formatCodeText(-1, code);
+    formatCodeText(0, code);
+    formatCodeText('a', code);
+    return true;
+  } catch {
+    return false;
+  }
 }
