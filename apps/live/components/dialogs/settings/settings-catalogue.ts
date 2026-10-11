@@ -51,7 +51,7 @@ import {
 } from '@/lib/cloud-sync/providers';
 
 // One logo guide's row (docs/specs/007-editor/logo-pages.md "Construction guides"): shown or
-// hidden, in Settings > Editor > Illustrate as in the logo page's panel.
+// hidden, in Settings > Editor > Illustrate as in a logo page's Guides popover.
 function logoGuidePartRow(
   part: LogoGuidePart,
   row: Pick<SettingsToggleRowSpec, 'kind' | 'event'>,
@@ -64,7 +64,7 @@ function logoGuidePartRow(
     label: `Logo ${label}`,
     description: `Shows the ${label.toLowerCase()} among a logo page's construction guides.`,
     helpArticle: 'logoPages',
-    alsoIn: "a logo page's panel",
+    alsoIn: "a logo page's Guides button",
     read: (p) => readLogoGuideParts(p).has(part),
     write: (p, v) => withLogoGuidePart(p, part, v),
   };
@@ -532,7 +532,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           "Shows a logo page's construction guides: centre lines, keyline circles and square, the safe area and a grid. The keylines snap while they show. A page you switch them on or off for keeps its own choice.",
         helpArticle: 'logoPages',
-        alsoIn: "a logo page's panel",
+        alsoIn: "a logo page's Guides button",
         read: (p) => p.logoGuides !== false,
         write: (p, v) => ({ ...p, logoGuides: v }),
         event: { category: 'UI', on: 'LogoGuidesOn', off: 'LogoGuidesOff' },
@@ -544,7 +544,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Logo Guide Strength',
         description: "How strongly a logo page's construction guides show over the artwork.",
         helpArticle: 'logoPages',
-        alsoIn: "a logo page's panel",
+        alsoIn: "a logo page's Guides button",
         options: [
           { id: 'faint', label: 'Faint' },
           { id: 'medium', label: 'Medium' },
