@@ -139,8 +139,9 @@ export function buildSheetChange(
       });
       if (!check.ok && check.error === 'value_invalid') {
         const ix = layoutIndex(sheet.layout);
-        const { r, c } = splitCellKey(check.at ?? ':');
-        const where = formatA1(ix.rowPos.get(r) ?? 0, ix.colPos.get(c) ?? 0);
+        // A refused value always names its cell, on this sheet.
+        const { r, c } = splitCellKey(check.at!);
+        const where = formatA1(ix.rowPos.get(r)!, ix.colPos.get(c)!);
         return refuse('value_invalid', `${where} cannot take that value: ${check.line}.`);
       }
       const cut = made.truncated ? ' (cut at the sheet’s 10,000 rows or 200 columns)' : '';

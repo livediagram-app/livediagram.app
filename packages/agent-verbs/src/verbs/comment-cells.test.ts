@@ -26,6 +26,13 @@ const sheetEl = {
   },
 };
 const square = { id: 'web', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+const words = { id: 'words', type: 'text', text: 'Hi', x: 0, y: 0, width: 10, height: 10 };
+const ghost = {
+  ...sheetEl,
+  id: 'ghost-sheet',
+  cellComments: undefined,
+  planSheet: { sheetId: 'sheet99' },
+};
 const sheets = {
   sheets: [
     {
@@ -56,7 +63,9 @@ function setUp() {
   };
   const api = fakeApi({
     ...tabsOfA,
-    [TAB]: { tab: { id: 'tab-one-0000', name: 'Overview', elements: [sheetEl, square] } },
+    [TAB]: {
+      tab: { id: 'tab-one-0000', name: 'Overview', elements: [sheetEl, square, words, ghost] },
+    },
     [SHEETS]: sheets,
     [`${TAB}/comments`]: route,
     [`${TAB}/comments/k1/reply`]: route,
@@ -105,6 +114,18 @@ describe('comment verbs on a Sheet cell', () => {
     expect(
       await refusal(commentReply.run!(ctx, { doc: DOC_A, ref: 'budget', text: 'x', cell: 'A1' })),
     ).toEqual([404, 'no_thread']);
+    // A cell that is not A1, a Sheet whose sheet is gone, and an element that is not a shape.
+    expect(
+      await refusal(commentAdd.run!(ctx, { doc: DOC_A, ref: 'budget', text: 'x', cell: 'nope' })),
+    ).toEqual([400, 'cell_not_found']);
+    expect(
+      await refusal(
+        commentAdd.run!(ctx, { doc: DOC_A, ref: 'ghost-sheet', text: 'x', cell: 'B4' }),
+      ),
+    ).toEqual([400, 'cell_not_found']);
+    expect(
+      await refusal(commentAdd.run!(ctx, { doc: DOC_A, ref: 'words', text: 'x', cell: 'B4' })),
+    ).toEqual([400, 'not_a_sheet']);
   });
 
   it('lists a cell thread with its A1', async () => {

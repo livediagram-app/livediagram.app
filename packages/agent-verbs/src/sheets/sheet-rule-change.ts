@@ -264,8 +264,8 @@ export function buildRuleChange(
         ...(change.help?.trim() ? { help: change.help.trim().slice(0, 255) } : {}),
       });
       if (!made.ok) return made;
-      const set = setValidationRule(layout, g, made.settings, rand);
-      if (!set) return badRange(change.range);
+      // The range is on the sheet (rangeOn), so the rule can be made.
+      const set = setValidationRule(layout, g, made.settings, rand)!;
       return {
         ok: true,
         writes: [set.write],
@@ -369,12 +369,11 @@ export function buildRuleChange(
 export function rulesRead(wb: Workbook, sheetId: string) {
   const sheet = wb.sheet(sheetId)!;
   const layout = sheet.layout;
-  const a1 = (r: Parameters<typeof posRangeOf>[1]) => {
-    const p = posRangeOf(layout, r);
-    return p ? formatRange(p) : null;
-  };
-  const back = (words: Record<string, string>, op?: string) =>
-    Object.entries(words).find(([, v]) => v === op)?.[0] ?? op;
+  // A stored rule's corners are on the sheet (a deletion that takes them drops the rule).
+  const a1 = (r: Parameters<typeof posRangeOf>[1]) => formatRange(posRangeOf(layout, r)!);
+  // Every stored op is one of the words' (rule-shape.ts checks it on write).
+  const back = (words: Record<string, string>, op: string) =>
+    Object.entries(words).find(([, v]) => v === op)![0];
   const validation = (layout.rules ?? []).map((r) => ({
     range: a1(r),
     type: {

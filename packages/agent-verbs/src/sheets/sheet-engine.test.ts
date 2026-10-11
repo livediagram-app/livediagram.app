@@ -210,6 +210,51 @@ describe('reading a sheet', () => {
     });
   });
 
+  it('lists the rules, and says why a value its rule does not allow is marked', async () => {
+    const json = costs();
+    const { rows, cols } = json.layout;
+    json.layout = {
+      ...json.layout,
+      rules: [
+        {
+          id: 'rule01',
+          r1: rows[1]!,
+          c1: cols[1]!,
+          r2: rows[2]!,
+          c2: cols[1]!,
+          is: 'num',
+          op: 'gt',
+          a: 500,
+          warn: true,
+        },
+        {
+          id: 'rule02',
+          r1: rows[1]!,
+          c1: cols[0]!,
+          r2: rows[2]!,
+          c2: cols[0]!,
+          is: 'range',
+          src: { r1: rows[1]!, c1: cols[0]!, r2: rows[2]!, c2: cols[0]! },
+        },
+      ],
+    };
+    const { api } = setup([json, notes()]);
+    const r = await read(api, 'Costs');
+    expect(r.cells.find((c) => c.at === 'B3')?.invalid).toBe('Enter a number greater than 500');
+    expect(r.cells.find((c) => c.at === 'B2')).not.toHaveProperty('invalid');
+    expect(r.cells.find((c) => c.at === 'A2')).not.toHaveProperty('invalid');
+    expect(r.validation).toEqual([
+      expect.objectContaining({
+        range: 'B2:B3',
+        type: 'number',
+        condition: 'greater_than',
+        reject: false,
+      }),
+      expect.objectContaining({ range: 'A2:A3', type: 'dropdown_range', source: 'A2:A3' }),
+    ]);
+    expect(r.conditionalFormats).toEqual([]);
+  });
+
   it('answers a spilled cell with no input, and the merges and filter in A1', async () => {
     const sheet = sheetJson({ id: 'sheet_spill1', tabId: ONE, title: 'Spill' }, [
       ['=SEQUENCE(3)', 'x'],

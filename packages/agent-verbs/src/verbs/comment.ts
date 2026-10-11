@@ -156,8 +156,9 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined, 
 
 // The thread verbs name a thread by its last comment (CLI78); an element (or cell) without one has nothing to act on.
 function lastCommentOf(target: Target, ref: string): string {
-  const el = target.tab.elements.find((e) => e.id === target.elementId);
-  const last = el ? threadAt(el, target.cell)?.comments.at(-1) : undefined;
+  // The target was found on its tab, so its element is there.
+  const el = target.tab.elements.find((e) => e.id === target.elementId)!;
+  const last = threadAt(el, target.cell)?.comments.at(-1);
   const where = target.cell === undefined ? ref : `${ref} cell`;
   if (!last)
     throw new VerbRefusal({
@@ -173,9 +174,9 @@ function lastCommentOf(target: Target, ref: string): string {
 // or the cell is not on it.
 async function withCell(ctx: VerbContext, target: Target, ref: string, a1: string | undefined) {
   if (a1 === undefined) return target;
-  const el = target.tab.elements.find((e) => e.id === target.elementId);
-  const sheetId = el && el.type === 'shape' ? el.planSheet?.sheetId : undefined;
-  if (!el || !takesCellThreads(el) || !sheetId)
+  const el = target.tab.elements.find((e) => e.id === target.elementId)!;
+  const sheetId = el.type === 'shape' ? el.planSheet?.sheetId : undefined;
+  if (!takesCellThreads(el) || !sheetId)
     throw new VerbRefusal({
       status: 400,
       code: 'not_a_sheet',

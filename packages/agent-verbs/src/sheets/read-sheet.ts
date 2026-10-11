@@ -104,13 +104,11 @@ export async function readSheet(
       const rule = layout.rules?.length
         ? validationRuleAt(layout, start.r1 + i, start.c1 + j)
         : null;
-      const ctx = {
-        locale: 'en-GB',
-        layout,
-        rangeValues: () => (rule ? rangeOptions(wb, id, rule) : []),
-      };
-      if (rule && valueInvalid(rule, wb.value(id, start.r1 + i, start.c1 + j), cell.display, ctx))
-        out.invalid = ruleMessage(rule, ctx);
+      if (rule) {
+        const ctx = { locale: 'en-GB', layout, rangeValues: () => rangeOptions(wb, id, rule) };
+        if (valueInvalid(rule, wb.value(id, start.r1 + i, start.c1 + j), cell.display, ctx))
+          out.invalid = ruleMessage(rule, ctx);
+      }
       chars += JSON.stringify(out).length;
       if (chars > SHEET_READ_CHARS_MAX) cut = at;
       else cells.push(out);

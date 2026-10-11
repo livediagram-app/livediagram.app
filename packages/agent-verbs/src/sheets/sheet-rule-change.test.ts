@@ -288,3 +288,100 @@ describe('format rules for agents', () => {
     expect(code({ op: 'clear_conditional_formats', range: 'nope' })).toBe('range_invalid');
   });
 });
+
+describe('the rest of the words', () => {
+  it('reads a number for a date, refuses missing values, and takes formulas without their =', () => {
+    const { wb, id, run } = book();
+    const code = (c: SheetChange) => {
+      const r = run(c);
+      return r.ok ? null : r.message;
+    };
+    expect(
+      run({ op: 'validate', range: 'A1', rule: { type: 'date', condition: 'on', value: 46300 } })
+        .ok,
+    ).toBe(true);
+    expect(
+      code({
+        op: 'validate',
+        range: 'A1',
+        rule: { type: 'date', condition: 'on', value: Number.NaN },
+      }),
+    ).toMatch(/as dates/);
+    expect(
+      code({
+        op: 'validate',
+        range: 'A1',
+        rule: { type: 'date', condition: 'between', value: '2026-01-01' },
+      }),
+    ).toBe('Give value and value2 as dates, YYYY-MM-DD.');
+    expect(
+      code({ op: 'validate', range: 'A1', rule: { type: 'number', condition: 'greater_than' } }),
+    ).toBe('Give value as numbers.');
+    expect(
+      code({
+        op: 'conditional_format',
+        range: 'A1',
+        when: { condition: 'formula' },
+        style: { bold: true },
+      }),
+    ).toMatch(/cannot be read/);
+    expect(
+      run({
+        op: 'conditional_format',
+        range: 'A1:A3',
+        when: { condition: 'formula', formula: 'A1>1' },
+        style: { bold: true },
+      }).ok,
+    ).toBe(true);
+    expect(
+      run({
+        op: 'conditional_format',
+        range: 'B1',
+        when: { condition: 'not_empty' },
+        style: { italic: true },
+      }).ok,
+    ).toBe(true);
+    expect(
+      run({
+        op: 'conditional_format',
+        range: 'C1:C5',
+        scale: {
+          min: { color: '#ffffff', type: 'number', value: 0 },
+          max: { color: '#000000', type: 'percent', value: 90 },
+        },
+      }).ok,
+    ).toBe(true);
+    expect(run({ op: 'clear_validation', range: 'F20' })).toMatchObject({ ok: true, writes: [] });
+    expect(
+      run({
+        op: 'conditional_format',
+        range: 'D1',
+        when: { condition: 'between', value: 1, value2: 5 },
+        style: { bold: true },
+      }).ok,
+    ).toBe(true);
+    // A dropdown from a range is checked against the range's values.
+    expect(run({ op: 'set', at: 'E10', rows: [['Red'], ['Blue']] }).ok).toBe(true);
+    expect(
+      run({ op: 'validate', range: 'E1:E5', rule: { type: 'dropdown_range', source: 'E10:E11' } })
+        .ok,
+    ).toBe(true);
+    expect(run({ op: 'set', at: 'E2', rows: [['Green']] })).toMatchObject({
+      ok: false,
+      code: 'value_invalid',
+    });
+    expect(run({ op: 'set', at: 'E2', rows: [['blue']] }).ok).toBe(true);
+    const read = rulesRead(wb, id);
+    expect(read.conditionalFormats.map((r) => r.rule)).toEqual([
+      'Custom Formula Is =A1>1',
+      'Is Not Empty',
+      'Colour Scale',
+      'Is Between 1 and 5',
+    ]);
+    expect(read.conditionalFormats[2]).toMatchObject({
+      scale: { min: { at: 'num', v: 0 }, max: { at: 'pct', v: 90 } },
+    });
+    expect(read.conditionalFormats[2]!.scale).not.toHaveProperty('mid');
+    expect(read.validation[0]).toMatchObject({ type: 'date', condition: 'on' });
+  });
+});
