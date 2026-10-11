@@ -391,7 +391,12 @@ export function IllustratePages({
       })}
       {drag.reorder ? <ReorderMarker pages={pages} reorder={drag.reorder} zoom={zoom} /> : null}
       {edit?.addPage ? (
-        <AddPageButton lastRight={last.rect.x + last.rect.width} zoom={zoom} onAdd={edit.addPage} />
+        <AddPageButton
+          lastRight={last.rect.x + last.rect.width}
+          lastMiddle={last.rect.y + last.rect.height / 2}
+          zoom={zoom}
+          onAdd={edit.addPage}
+        />
       ) : null}
       {previewed && view.layoutPreview ? (
         <InfographicLayoutPreview

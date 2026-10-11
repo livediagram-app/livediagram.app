@@ -13,15 +13,18 @@ const ADD_PAGE_CLEARANCE = 12;
 // "Add a page" (AddPagePopover) to choose the kind. Held at one screen size whatever the zoom.
 export function AddPageButton({
   lastRight,
+  lastMiddle,
   zoom,
   onAdd,
 }: {
-  // The last page's right edge, in canvas px.
+  // The last page's right edge, and its vertical middle, in canvas px.
   lastRight: number;
+  lastMiddle: number;
   zoom: number;
   onAdd: (kind: PageKind) => void;
 }) {
-  // Centred in a gap's width to the right of the last page, on the row's axis; zoomed far out (a
+  // Centred in a gap's width to the right of the last page, level with its middle (a page sized to its content need
+  // not sit on the row's axis, so the row's axis alone left the button by its top); zoomed far out (a
   // phone's fit) the gap is narrower than the button, which then keeps clear of the page by
   // ADD_PAGE_CLEARANCE screen px rather than covering its edge.
   const x =
@@ -32,7 +35,7 @@ export function AddPageButton({
   return (
     <div
       className="pointer-events-auto absolute transition-[left] duration-200 ease-out motion-reduce:transition-none"
-      style={{ left: x, top: 0, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
+      style={{ left: x, top: lastMiddle, transform: `translate(-50%, -50%) scale(${1 / zoom})` }}
       // A press here is the button's, never the canvas's (no marquee, no deselect, no draw).
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
