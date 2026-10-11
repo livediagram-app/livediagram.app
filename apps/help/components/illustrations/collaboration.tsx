@@ -9,7 +9,6 @@ import {
   Cursor,
   Avatar,
   Panel,
-  Dialog,
   Button,
   Label,
   Tabs,
@@ -170,89 +169,6 @@ export function PresenceSelection() {
 }
 
 // --- Sharing ------------------------------------------------------------------
-
-/** The Share dialog's link list (the Getting Started article's overview). The fuller, current
- *  dialog scenes for the Sharing articles live in sharing.tsx. */
-function ShareDialog() {
-  const dx = 56;
-  const dy = 18;
-  const dw = 308;
-  const dh = 204;
-  const sceneH = 240;
-  return (
-    <Scene w={420} h={sceneH} bg="plain">
-      <Dialog x={dx} y={dy} w={dw} h={dh} title="Share" sceneW={420} sceneH={sceneH} scrim={false}>
-        {/* Edit link row */}
-        <ShareLinkRow x={dx + 16} y={dy + 50} role="Edit" />
-        {/* View link row */}
-        <ShareLinkRow x={dx + 16} y={dy + 92} role="View" />
-      </Dialog>
-    </Scene>
-  );
-}
-
-/** A single share link drawn as a pass (docs/specs/007-editor/live-app.md "The pass metaphor"):
- *  a role-coloured stub and a faux URL field with its copy button inside. */
-function ShareLinkRow({ x, y, role }: { x: number; y: number; role: 'Edit' | 'View' }) {
-  const edit = role === 'Edit';
-  const w = 276;
-  const h = 34;
-  const stub = 46;
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y - 4}
-        width={w}
-        height={h}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      {/* Stub: the role at a glance, brand for edit and violet for view. */}
-      <path
-        d={`M${x + 8} ${y - 4} h${stub - 8} v${h} h${-(stub - 8)} a8 8 0 0 1 -8 -8 v${-(h - 16)} a8 8 0 0 1 8 -8 Z`}
-        className={edit ? 'fill-brand-500' : 'fill-violet-500 dark:fill-violet-700'}
-      />
-      <Label x={x + stub / 2} y={y + 13} anchor="middle" size={8} weight={700} tone="onAccent">
-        {edit ? 'EDITOR' : 'VIEWER'}
-      </Label>
-      {/* URL field, with the copy button inside its right edge */}
-      <rect
-        x={x + stub + 10}
-        y={y + 1}
-        width={w - stub - 20}
-        height={24}
-        rx={6}
-        className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={x + stub + 20} y={y + 13} size={10} tone="muted">
-        livediagram.app/d/…
-      </Label>
-      <rect
-        x={x + w - 27}
-        y={y + 9}
-        width={7}
-        height={8}
-        rx={1.5}
-        fill="none"
-        className="stroke-slate-400"
-        strokeWidth={1.3}
-      />
-      <path
-        d={`M${x + w - 29} ${y + 15} v-6.5 a1.5 1.5 0 0 1 1.5 -1.5 h5`}
-        fill="none"
-        className="stroke-slate-400"
-        strokeWidth={1.3}
-      />
-    </g>
-  );
-}
-
-export function ShareLinks() {
-  return <ShareDialog />;
-}
 
 /** A visitor on a one-tab link: their tab's canvas above a tab bar where the
  *  shared tab sits between two nameless "Not shared" pills. */

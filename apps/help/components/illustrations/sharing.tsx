@@ -43,7 +43,7 @@ function Pass({
   const bandFill = expired
     ? 'fill-slate-200'
     : role === 'edit'
-      ? 'fill-brand-600'
+      ? 'fill-brand-700'
       : role === 'participate'
         ? 'fill-teal-700'
         : 'fill-violet-500 dark:fill-violet-700';
@@ -337,7 +337,11 @@ function LifetimeControl({
                 height={22}
                 rx={5}
                 className={
-                  role === 'edit' ? 'fill-brand-500' : 'fill-violet-500 dark:fill-violet-700'
+                  role === 'edit'
+                    ? 'fill-brand-700'
+                    : role === 'participate'
+                      ? 'fill-teal-700'
+                      : 'fill-violet-500 dark:fill-violet-700'
                 }
               />
             )}
@@ -413,7 +417,7 @@ export function SharePassesDialog() {
     {
       title: 'Editor',
       blurb: 'Draws with you in real time.',
-      tile: 'fill-brand-500',
+      tile: 'fill-brand-700',
       text: 'fill-brand-700 dark:fill-brand-300',
       on: true,
     },
@@ -435,90 +439,115 @@ export function SharePassesDialog() {
   const panelX = x + 16;
   const panelW = w - 32;
   return (
-    <Scene w={420} h={404} bg="plain">
-      <ShareCard x={x} y={8} w={w} h={388} status="Shared: anyone holding the pass can get in.">
-        <SectionLabel x={panelX} y={68}>
-          ISSUE A PASS
-        </SectionLabel>
-        {/* One tinted panel holds the role picker and the fine print. */}
-        <rect x={panelX} y={76} width={panelW} height={198} rx={10} className="fill-slate-50" />
-        <rect
-          x={panelX + 8}
-          y={84}
-          width={panelW - 16}
-          height={146}
-          rx={9}
-          className="fill-brand-50 stroke-brand-500"
-          strokeWidth={1.8}
-        />
-        {/* The picker's header names the chosen role; the chevron points up while it is open. */}
-        <rect x={panelX + 18} y={92} width={22} height={22} rx={5} className="fill-brand-500" />
-        <Label x={panelX + 50} y={100} size={11} weight={700} tone="strong">
-          Editor
+    <Scene w={420} h={426} bg="plain">
+      <ShareCard x={x} y={8} w={w} h={410} status="Shared: anyone holding the pass can get in.">
+        {/* The dialog's two tabs, Passes chosen. */}
+        <Label x={x + 20} y={70} size={11} weight={700} tone="accent">
+          Passes
         </Label>
-        <Label x={panelX + 50} y={112} size={9} tone="muted">
-          Draws with you in real time.
-        </Label>
-        <path
-          d={`M${panelX + panelW - 30} ${106} l5 -5 l5 5`}
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
         <line
-          x1={panelX + 8}
-          y1={122}
-          x2={panelX + panelW - 8}
-          y2={122}
+          x1={x + 16}
+          y1={78}
+          x2={x + 62}
+          y2={78}
+          className="stroke-brand-500"
+          strokeWidth={2}
+        />
+        <Label x={x + 76} y={70} size={11} weight={500} tone="muted">
+          Community
+        </Label>
+        <line
+          x1={x + 1}
+          y1={79}
+          x2={x + w - 1}
+          y2={79}
           className="stroke-slate-200"
           strokeWidth={1}
         />
-        {roles.map((r, i) => {
-          const ry = 127 + i * 33;
-          return (
-            <g key={r.title}>
-              <rect
-                x={panelX + 13}
-                y={ry}
-                width={panelW - 26}
-                height={30}
-                rx={7}
-                className={r.on ? 'fill-white stroke-brand-300' : 'fill-white/70'}
-                strokeWidth={1}
-              />
-              <rect x={panelX + 19} y={ry + 6} width={18} height={18} rx={4} className={r.tile} />
-              <Label x={panelX + 45} y={ry + 12} size={10} weight={700} className={r.text}>
-                {r.title}
-              </Label>
-              <Label x={panelX + 45} y={ry + 23} size={8.5} tone="muted">
-                {r.blurb}
-              </Label>
-              {r.on ? (
-                <g>
-                  <circle cx={panelX + panelW - 30} cy={ry + 15} r={6} className={r.tile} />
-                  <path
-                    d={`M${panelX + panelW - 33} ${ry + 15} l2 2 l4 -4`}
-                    className="fill-none stroke-white"
-                    strokeWidth={1.4}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </g>
-              ) : null}
-            </g>
-          );
-        })}
-        {/* The fine print: Valid, then Create Pass ending the row. */}
-        <Label x={panelX + 10} y={253} size={10} weight={600} tone="body">
-          Valid
-        </Label>
-        <LifetimeControl x={panelX + 44} y={240} w={214} active={0} />
-        <Button x={panelX + 266} y={240} w={86} h={26} label="Create Pass" variant="primary" />
-        <SectionLabel x={panelX} y={294}>
-          PASSES
-        </SectionLabel>
-        <ActivePass x={panelX} y={302} w={panelW} role="edit" />
+        <g transform="translate(0 22)">
+          <SectionLabel x={panelX} y={68}>
+            ISSUE A PASS
+          </SectionLabel>
+          {/* One tinted panel holds the role picker and the fine print. */}
+          <rect x={panelX} y={76} width={panelW} height={198} rx={10} className="fill-slate-50" />
+          <rect
+            x={panelX + 8}
+            y={84}
+            width={panelW - 16}
+            height={146}
+            rx={9}
+            className="fill-brand-50 stroke-brand-500"
+            strokeWidth={1.8}
+          />
+          {/* The picker's header names the chosen role; the chevron points up while it is open. */}
+          <rect x={panelX + 18} y={92} width={22} height={22} rx={5} className="fill-brand-700" />
+          <Label x={panelX + 50} y={100} size={11} weight={700} tone="strong">
+            Editor
+          </Label>
+          <Label x={panelX + 50} y={112} size={9} tone="muted">
+            Draws with you in real time.
+          </Label>
+          <path
+            d={`M${panelX + panelW - 30} ${106} l5 -5 l5 5`}
+            className="fill-none stroke-slate-400"
+            strokeWidth={1.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <line
+            x1={panelX + 8}
+            y1={122}
+            x2={panelX + panelW - 8}
+            y2={122}
+            className="stroke-slate-200"
+            strokeWidth={1}
+          />
+          {roles.map((r, i) => {
+            const ry = 127 + i * 33;
+            return (
+              <g key={r.title}>
+                <rect
+                  x={panelX + 13}
+                  y={ry}
+                  width={panelW - 26}
+                  height={30}
+                  rx={7}
+                  className={r.on ? 'fill-white stroke-brand-300' : 'fill-white/70'}
+                  strokeWidth={1}
+                />
+                <rect x={panelX + 19} y={ry + 6} width={18} height={18} rx={4} className={r.tile} />
+                <Label x={panelX + 45} y={ry + 12} size={10} weight={700} className={r.text}>
+                  {r.title}
+                </Label>
+                <Label x={panelX + 45} y={ry + 23} size={8.5} tone="muted">
+                  {r.blurb}
+                </Label>
+                {r.on ? (
+                  <g>
+                    <circle cx={panelX + panelW - 30} cy={ry + 15} r={6} className={r.tile} />
+                    <path
+                      d={`M${panelX + panelW - 33} ${ry + 15} l2 2 l4 -4`}
+                      className="fill-none stroke-white"
+                      strokeWidth={1.4}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                ) : null}
+              </g>
+            );
+          })}
+          {/* The fine print: Valid, then Create Pass ending the row. */}
+          <Label x={panelX + 10} y={253} size={10} weight={600} tone="body">
+            Valid
+          </Label>
+          <LifetimeControl x={panelX + 44} y={240} w={214} active={0} />
+          <Button x={panelX + 266} y={240} w={86} h={26} label="Create Pass" variant="primary" />
+          <SectionLabel x={panelX} y={294}>
+            PASSES
+          </SectionLabel>
+          <ActivePass x={panelX} y={302} w={panelW} role="edit" />
+        </g>
       </ShareCard>
     </Scene>
   );

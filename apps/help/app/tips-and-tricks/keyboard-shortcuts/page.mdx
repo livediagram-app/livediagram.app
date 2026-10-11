@@ -29,7 +29,7 @@ The most useful canvas-tool keys are:
 
 Two more switch mode rather than tool, and have articles of their own: `I` for [Isometric mode](/help/selection-modes/isometric-mode/) (hold Shift and drag to rotate its camera) and `W` for [Avatar mode](/help/selection-modes/avatar-mode/).
 
-The reference in Settings stays available in every role. On a view-only link, only the keys that change nothing still work: `V` (or `S` or `1`), `H`, `K`, `I`, `W` and `Z`, zoom and zoom to fit, search, `Tab` to step through elements, and `Escape`. Everything that edits is switched off. A [Participant](/help/collaboration/sharing/) sits in between: they can type into labels, delete and undo, but the tool keys that add elements stay off.
+The reference in Settings stays available in every role. On a view-only link, only the keys that change nothing still work: `V` (or `S` or `1`), `H`, `K`, `I`, `W` and `Z`, zoom and zoom to fit, search, `Tab` to step through elements, and `Escape`. Everything that edits is switched off. A [Participant](/help/collaboration/sharing/) sits in between: they can type into labels, delete, undo and redo, but the tool keys that add elements stay off, and so do copy, cut, duplicate, select all, lock, layer order and nudging.
 
 <Figure caption="The shortcut reference in Settings pairs each single-key tool with what it does.">
   <KeyboardShortcuts />
@@ -56,23 +56,23 @@ These are the chords that edit the selection.
 
 ## Moving around and selecting
 
-| Keys            | Does                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------- |
-| `⌘K`            | Open search and commands (`⌘.` does the same)                                               |
-| `⌘+` / `⌘-`     | Zoom in / out                                                                               |
-| `⌘0`            | Reset the zoom to 100%                                                                      |
-| `⇧1`            | Zoom to fit everything on the tab                                                           |
-| `⇧D`            | Move to the next [editor mode](/help/canvas/editor-modes/): Diagram, Draw, Illustrate, Plan |
-| `Tab`           | Select the next element while the canvas has focus (Shift for the previous one)             |
-| `Tab` / `Enter` | On a [mind map](/help/palette/mind-maps/) node: add a child / a sibling                     |
-| Arrow keys      | Nudge the selection 1px, or 10px with Shift                                                 |
-| `⇧` + click     | Add an element to the selection, or take it out                                             |
-| `⇧` + drag      | Drop a duplicate (the original stays put)                                                   |
-| `Space` + drag  | Pan the canvas whatever tool you are holding                                                |
-| `Space`         | Edit the selected element's label                                                           |
-| Just type       | Replace the selected element's label                                                        |
-| `Escape`        | Cancel the current mode, or clear the selection                                             |
-| Hold `⌘`        | Show each palette tile's shortcut badge                                                     |
+| Keys            | Does                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| `⌘K`            | Open search and commands (`⌘.` does the same)                                                           |
+| `⌘+` / `⌘-`     | Zoom in / out                                                                                           |
+| `⌘0`            | Reset the zoom to 100%                                                                                  |
+| `⇧1`            | Zoom to fit everything on the tab                                                                       |
+| `⇧D`            | Move to the next [editor mode](/help/canvas/editor-modes/): Diagram, Draw, Illustrate, Plan, Facilitate |
+| `Tab`           | Select the next element while the canvas has focus (Shift for the previous one)                         |
+| `Tab` / `Enter` | On a [mind map](/help/palette/mind-maps/) node: add a child / a sibling                                 |
+| Arrow keys      | Nudge the selection 1px, or 10px with Shift                                                             |
+| `⇧` + click     | Add an element to the selection, or take it out                                                         |
+| `⇧` + drag      | Drop a duplicate (the original stays put)                                                               |
+| `Space` + drag  | Pan the canvas whatever tool you are holding                                                            |
+| `Space`         | Edit the selected element's label                                                                       |
+| Just type       | Replace the selected element's label                                                                    |
+| `Escape`        | Cancel the current mode, or clear the selection                                                         |
+| Hold `⌘`        | Show each palette tile's shortcut badge                                                                 |
 
 ## Keys that place an element
 
@@ -83,7 +83,7 @@ The rest of the letters pick up an element, ready to place: click the canvas to 
 
 ## The number row
 
-Every tool also sits on a digit, along the top of the keyboard:
+The main tools also sit on a digit, along the top of the keyboard:
 
 | Key | Tool    | Key | Tool      |
 | --- | ------- | --- | --------- |
@@ -97,7 +97,7 @@ The digits are deliberately laid out to mirror Excalidraw's tool row, so if you 
 
 `9` does nothing in an embedded diagram, where images can't be uploaded.
 
-`⇧D` is not offered on a view-only link, a locked tab or an [Event Storming board](/help/canvas/event-storming-boards/), and in [Draw mode](/help/canvas/draw-mode/) the letters and digits work differently (see below).
+`⇧D` is not offered on a view-only link, to a Participant, on a locked tab or an [Event Storming board](/help/canvas/event-storming-boards/), and in [Draw mode](/help/canvas/draw-mode/) the letters and digits work differently (see below).
 
 ## In Draw mode
 
@@ -133,15 +133,15 @@ Shift is the editor's power modifier. While you hold it, a small hint bar near t
 
 A running [slide deck](/help/selection-modes/slide-deck/) has its own set, and only its own set: the editor's shortcuts are switched off for the duration, so a stray `R` cannot drop a rectangle onto the canvas behind the slide.
 
-| Keys                                           | Does                                                    |
-| ---------------------------------------------- | ------------------------------------------------------- |
-| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                                              |
-| `←` or `Page Up`                               | Previous slide                                          |
-| `Home` / `End`                                 | Jump to the first or last slide                         |
-| `G`                                            | Open the jump-to-slide list                             |
-| `N`                                            | Show or hide presenter notes (on a slide that has them) |
-| `L` / `S`                                      | Arm the laser / the spotlight                           |
-| `Esc`                                          | Leave the presentation                                  |
+| Keys                                           | Does                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------- |
+| `→`, `Space`, `Enter`, `Page Down`, or a click | Next slide                                                                |
+| `←` or `Page Up`                               | Previous slide                                                            |
+| `Home` / `End`                                 | Jump to the first or last slide                                           |
+| `G`                                            | Open the jump-to-slide list                                               |
+| `N`                                            | Show or hide presenter notes (on a slide that has them)                   |
+| `L` / `S`                                      | Arm the laser / the spotlight                                             |
+| `Esc`                                          | Close what's open (jump list, notes, settings), or leave the presentation |
 
 A click on empty slide advances; a click on an element that carries a note or comments opens them instead. Click-to-advance can be switched off in the deck's settings, and it pauses while the laser or spotlight is armed, so a click points rather than turns the page.
 
