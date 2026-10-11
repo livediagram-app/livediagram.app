@@ -439,6 +439,7 @@ export function SearchCommandPalette() {
             { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (down)' },
             { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (right)' },
             { icon: <CommandIcon />, label: 'Auto Layout: Tree' },
+            { icon: <CommandIcon />, label: 'Auto Layout: Mindmap' },
           ],
         },
         {

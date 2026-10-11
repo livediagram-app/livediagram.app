@@ -48,22 +48,42 @@ export function AiPanel() {
         <Label x={326} y={59} size={10} weight={600} anchor="middle">
           Connect agent
         </Label>
-        <Label x={124} y={88} size={10} tone="muted">
+        {/* The suggestion chips for the active mode (on by default). */}
+        {[
+          { x: 124, w: 120, t: 'Summarise this diagram' },
+          { x: 250, w: 108, t: 'What could go wrong?' },
+        ].map((c) => (
+          <g key={c.t}>
+            <rect
+              x={c.x}
+              y={78}
+              width={c.w}
+              height={18}
+              rx={9}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1.2}
+            />
+            <Label x={c.x + c.w / 2} y={88} size={8.5} anchor="middle" tone="body">
+              {c.t}
+            </Label>
+          </g>
+        ))}
+        <Label x={124} y={112} size={10} tone="muted">
           Context: 1 selected element
         </Label>
         <rect
           x={124}
-          y={100}
+          y={122}
           width={248}
-          height={68}
+          height={52}
           rx={8}
           className="fill-slate-50 stroke-slate-200"
           strokeWidth={1.5}
         />
-        <Label x={134} y={116} size={11} tone="muted">
+        <Label x={134} y={138} size={11} tone="muted">
           Ask a question about the diagram…
         </Label>
-        <Button x={124} y={180} w={248} h={28} label="Send" variant="primary" />
+        <Button x={124} y={184} w={248} h={28} label="Send" variant="primary" />
       </Panel>
     </Scene>
   );
@@ -119,32 +139,67 @@ export function ZenBefore() {
       <Shape x={96} y={108} w={80} h={44} label="A" />
       <Shape x={232} y={108} w={80} h={44} accent label="B" />
       <Arrow from={[176, 130]} to={[232, 130]} />
-      {/* Palette */}
-      <Panel x={356} y={64} w={50} h={110} title="">
-        <Tile x={368} y={74} active size={22}>
-          <rect
-            x={-6}
-            y={-6}
-            width={12}
-            height={12}
-            rx={2}
-            className="stroke-white"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={368} y={104} size={22}>
-          <circle r={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
-        </Tile>
-        <Tile x={368} y={134} size={22}>
-          <path
-            d="M0 -7 L7 0 L0 7 L-7 0 Z"
-            className="stroke-brand-500"
-            strokeWidth={2}
-            fill="none"
-          />
-        </Tile>
-      </Panel>
+      {/* Palette: one horizontal strip pinned to the top centre */}
+      <rect
+        x={140}
+        y={34}
+        width={140}
+        height={30}
+        rx={8}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Tile x={170} y={49} active size={22}>
+        <rect
+          x={-6}
+          y={-6}
+          width={12}
+          height={12}
+          rx={2}
+          className="stroke-white"
+          strokeWidth={2}
+          fill="none"
+        />
+      </Tile>
+      <Tile x={210} y={49} size={22}>
+        <circle r={6} className="stroke-brand-500" strokeWidth={2} fill="none" />
+      </Tile>
+      <Tile x={250} y={49} size={22}>
+        <path
+          d="M0 -7 L7 0 L0 7 L-7 0 Z"
+          className="stroke-brand-500"
+          strokeWidth={2}
+          fill="none"
+        />
+      </Tile>
+      {/* Undo / Redo and Layers, left of the zoom dock */}
+      <rect
+        x={218}
+        y={186}
+        width={74}
+        height={24}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <path
+        d="M232 198 a5 5 0 1 1 3 4.5 M232 198 l-2.5 -3 M232 198 l3.5 -1.5"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <path
+        d="M256 198 a5 5 0 1 0 -3 4.5 M256 198 l2.5 -3 M256 198 l-3.5 -1.5"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <path
+        d="M272 195 l8 -4 l8 4 l-8 4 Z M272 200 l8 4 l8 -4"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.3}
+        strokeLinejoin="round"
+      />
       {/* Zoom dock */}
       <rect
         x={300}
@@ -329,7 +384,7 @@ export function LightDarkToggle() {
       </Label>
       <ChromeButton x={190} y={159} w={66} label="Search" />
       <ChromeButton x={262} y={159} w={70} label="Settings" />
-      <ChromeButton x={338} y={159} w={70} label="Light" glyph="sun" on />
+      <ChromeButton x={338} y={159} w={70} label="Light" glyph="sun" />
       {/* The cycle each click walks through. */}
       <ChromeButton x={58} y={44} w={74} label="Light" glyph="sun" on />
       <Arrow from={[138, 57]} to={[168, 57]} tone="muted" />
@@ -358,12 +413,11 @@ export function LightDarkToggle() {
  *  the right. */
 export function MarkdownToTree() {
   const lines: [number, number][] = [
+    // A heading and its three bullets: the Root and its children A, B and C.
     [0, 92],
     [12, 70],
     [12, 58],
     [12, 78],
-    [24, 56],
-    [24, 64],
   ];
   return (
     <Scene w={420} h={220}>
@@ -414,9 +468,19 @@ export function MarkdownToTree() {
         stroke="stroke-brand-400"
         label="C"
       />
-      <Arrow from={[280, 102]} to={[310, 51]} kind="curved" />
-      <Arrow from={[280, 109]} to={[310, 109]} kind="curved" />
-      <Arrow from={[280, 116]} to={[310, 167]} kind="curved" />
+      {/* Curved arrows, as the import draws them: out of the root's east side, into each child's
+          west side, leaving and arriving level so every arrowhead points straight in. */}
+      {[51, 109, 167].map((cy) => (
+        <g key={cy}>
+          <path
+            d={`M280 109 C296 109 288 ${cy} 302 ${cy}`}
+            className="fill-none stroke-brand-400"
+            strokeWidth={2}
+            strokeLinecap="round"
+          />
+          <Arrow from={[300, cy]} to={[310, cy]} />
+        </g>
+      ))}
     </Scene>
   );
 }
@@ -429,12 +493,14 @@ export function CleanupBeforeAfter() {
   return (
     <Scene w={420} h={220}>
       {/* Messy, left */}
-      <Shape x={24} y={40} w={64} h={30} />
-      <Shape x={92} y={94} w={48} h={48} />
-      <Shape x={36} y={150} w={72} h={26} />
-      <Shape x={118} y={48} w={40} h={40} kind="circle" />
-      <Arrow from={[88, 55]} to={[118, 68]} tone="muted" />
-      <Arrow from={[116, 118]} to={[72, 150]} tone="muted" kind="elbow" />
+      {/* The same four shapes and three arrows as the right, off-grid and mis-sized. */}
+      <Shape x={24} y={44} w={60} h={30} label="A" />
+      <Shape x={124} y={30} w={50} h={44} kind="circle" label="C" />
+      <Shape x={38} y={118} w={46} h={40} label="B" />
+      <Shape x={116} y={134} w={70} h={26} accent label="D" />
+      <Arrow from={[84, 57]} to={[124, 54]} tone="muted" />
+      <Arrow from={[58, 74]} to={[60, 118]} tone="muted" />
+      <Arrow from={[84, 142]} to={[116, 146]} tone="muted" />
       {/* Divider */}
       <line
         x1={210}
@@ -448,16 +514,16 @@ export function CleanupBeforeAfter() {
       {/* Tidied, right */}
       <Shape x={252} y={48} w={64} h={36} label="A" />
       <Shape x={252} y={110} w={64} h={36} label="B" />
-      <Shape x={340} y={48} w={64} h={36} kind="circle" label="C" />
+      <Shape x={352} y={46} w={40} h={40} kind="circle" label="C" />
       <Shape x={340} y={110} w={64} h={36} accent label="D" />
-      <Arrow from={[316, 66]} to={[340, 66]} />
+      <Arrow from={[316, 66]} to={[352, 66]} />
       <Arrow from={[316, 128]} to={[340, 128]} />
       <Arrow from={[284, 84]} to={[284, 110]} />
     </Scene>
   );
 }
 
-/** Auto-Align: selected shapes a few pixels off the grid snapping onto it. */
+/** Auto-Align: shapes a few pixels off the grid snapping onto it (the whole tab, no selection). */
 export function AutoAlignGrid() {
   return (
     <Scene w={420} h={220}>
@@ -484,22 +550,18 @@ export function AutoAlignGrid() {
           strokeWidth={1}
         />
       ))}
-      {/* Off-grid ghosts */}
-      <Shape x={87} y={44} w={60} h={34} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Shape x={233} y={70} w={60} h={34} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Arrow from={[120, 84]} to={[120, 90]} tone="muted" head />
-      <Arrow from={[262, 110]} to={[262, 116]} tone="muted" head />
-      {/* Snapped, selected */}
-      <Shape x={80} y={96} w={60} h={34} accent label="A" />
-      <Shape x={240} y={128} w={60} h={34} accent label="B" />
-      <SelectionBox x={80} y={96} w={60} h={34} />
-      <SelectionBox x={240} y={128} w={60} h={34} />
+      {/* Where each shape sat, a few pixels off: the snap moves it only that far. */}
+      <Shape x={85} y={69} w={80} h={42} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+      <Shape x={236} y={124} w={80} h={42} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+      {/* Snapped: corners on the grid, sides on grid lines. */}
+      <Shape x={80} y={64} w={80} h={42} accent label="A" />
+      <Shape x={240} y={128} w={80} h={42} accent label="B" />
     </Scene>
   );
 }
 
-/** Auto Layout: a tangled arrow graph relaid into clean layers, shown
- *  before/after with the menu row's label. */
+/** Auto Layout: a scattered arrow graph relaid into clean left-to-right ranks, shown
+ *  before/after with the command's name. */
 export function AutoLayoutTidy() {
   return (
     <Scene w={420} h={230}>
@@ -508,10 +570,10 @@ export function AutoLayoutTidy() {
       <Shape x={118} y={90} w={50} h={28} label="2" />
       <Shape x={36} y={150} w={50} h={28} label="3" />
       <Shape x={132} y={32} w={50} h={28} label="4" />
-      <Arrow from={[78, 54]} to={[118, 100]} tone="muted" />
-      <Arrow from={[118, 110]} to={[78, 156]} tone="muted" />
-      <Arrow from={[168, 96]} to={[152, 60]} tone="muted" />
-      <Arrow from={[157, 60]} to={[78, 50]} tone="muted" />
+      {/* The same three arrows as the right (1 to 4, 1 to 2, 2 to 3), scattered. */}
+      <Arrow from={[78, 52]} to={[132, 46]} tone="muted" />
+      <Arrow from={[64, 68]} to={[126, 90]} tone="muted" />
+      <Arrow from={[124, 118]} to={[80, 150]} tone="muted" />
       {/* Auto Layout arrow */}
       <g transform="translate(196 108)">
         <rect
@@ -532,17 +594,18 @@ export function AutoLayoutTidy() {
           strokeLinejoin="round"
         />
       </g>
-      <Label x={210} y={134} size={10} weight={700} anchor="middle" tone="accent">
+      <Label x={210} y={86} size={9} weight={700} anchor="middle" tone="accent">
         Auto Layout
       </Label>
       {/* Laid out in layers, right */}
-      <Shape x={244} y={40} w={52} h={30} label="1" />
-      <Shape x={330} y={40} w={52} h={30} label="4" />
-      <Shape x={244} y={108} w={52} h={30} accent label="2" />
-      <Shape x={244} y={176} w={52} h={30} label="3" />
-      <Arrow from={[296, 55]} to={[330, 55]} />
-      <Arrow from={[270, 70]} to={[270, 108]} />
-      <Arrow from={[270, 138]} to={[270, 176]} />
+      {/* Ranks run left to right, the way the shapes were spread: 1, then its children 4 and 2, then 3. */}
+      <Shape x={244} y={100} w={44} h={30} label="1" />
+      <Shape x={312} y={60} w={44} h={30} label="4" />
+      <Shape x={312} y={140} w={44} h={30} accent label="2" />
+      <Shape x={372} y={140} w={44} h={30} label="3" />
+      <Arrow from={[288, 115]} to={[312, 75]} kind="elbow" />
+      <Arrow from={[288, 115]} to={[312, 155]} kind="elbow" />
+      <Arrow from={[356, 155]} to={[372, 155]} />
     </Scene>
   );
 }

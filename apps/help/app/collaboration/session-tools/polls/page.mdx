@@ -16,15 +16,14 @@ A poll is a quick pulse-check on the people in the room: "does everyone approve 
 
 ## Running a poll
 
-Press the **Poll** button in the bottom bar to open the poll composer above it. Polls are in Diagram mode; Plan, Draw and Illustrate mode have no Poll button. When you ask, the popover stays open and becomes the Poll panel.
+Press the **Poll** button in the bottom bar to open the poll composer above it. Polls are in [Facilitate mode](/help/canvas/facilitate-mode/) and on [Event Storming boards](/help/canvas/event-storming-boards/); Diagram, Plan, Draw and Illustrate mode have no Poll button. When you ask, the popover stays open and becomes the Poll panel.
 
 <Step n={1}>
   Type your question (up to 200 characters) and pick an answer style from the tiles. If the style is
   **Choices**, add your answers (between two and ten; **Enter** moves to the next one, and **+ Add
-  answer** adds another). A **What people see** card previews the exact prompt everyone will get, so
-  you can catch a typo before it lands on every screen. Then choose **Ask everyone**, or press
-  **Enter** in the question. Until the poll is ready, the button says what is missing instead, like
-  "Write a question to ask".
+  answer** adds another). For **Collaborators**, a **Who people can pick** list shows the names that
+  will be on the ballot. Then choose **Ask everyone**, or press **Enter** in the question. Until the
+  poll is ready, the button says what is missing instead, like "Write a question to ask".
 </Step>
 
 <Step n={2}>
@@ -59,9 +58,9 @@ Only one poll runs at a time in a document, and it goes to everyone in the docum
 
 ## Who can answer, and who can see results
 
-**Everyone who can take part is asked: editors and anyone on a Participant pass.** A Viewer only watches, so to hear back from an audience, share a Participant pass with them. Starting and ending a poll still needs edit access (and, while someone is the [facilitator](/help/collaboration/facilitator/), it is theirs), so an audience member can answer but cannot open a poll of their own or close yours. On a document you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
+**Everyone who can take part is asked: editors and anyone on a Participant pass.** A Viewer isn't asked and doesn't see the poll or its results, so to hear back from an audience, share a Participant pass with them. Starting and ending a poll still needs edit access (and, while someone is the [facilitator](/help/collaboration/facilitator/), it is theirs), so an audience member can answer but cannot open a poll of their own or close yours. On a document you haven't shared, a poll still runs, but only you get it; the composer says so before you ask.
 
-**The results panel is for people who have responded**, plus whoever started the poll. Answering is what unlocks it. That way nobody can watch the numbers build up and let them sway their own answer.
+**The results panel is for people who have responded**, plus whoever started the poll. Answering, or pressing **Skip**, is what unlocks it. That way nobody can watch the numbers build up and let them sway their own answer.
 
 **Answers aren't shown against names.** The panel shows counts and free-text answers with nothing attached to any person, and the document does not record who said what. This is about the on-screen result rather than a cryptographic guarantee: a determined participant with browser developer tools open could still work out who sent which answer.
 
@@ -80,7 +79,7 @@ The live session holds on to the poll while it runs, so nobody gets left behind:
 
 - **Someone who opens the document after the poll started is asked too**, and sees the answers so far.
 - **Refreshing the page keeps you in the poll**, with your answer still counted.
-- **If the host refreshes or reconnects**, they can still end the poll. Anyone else can press **Dismiss** to clear their own panel and its button without ending it.
+- **If the host refreshes or reconnects**, they can still end the poll. Anyone else can press **Dismiss** to clear their own results panel (and the button's green dot) without ending it.
 
 Starting or ending a poll is never part of [Undo](/help/canvas/undo/).
 

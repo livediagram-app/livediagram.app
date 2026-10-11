@@ -784,10 +784,12 @@ function VoteShape({
   mine?: boolean;
 }) {
   const w = 108;
-  const h = 60;
+  // Tall enough that the centred label clears the stepper in the corner.
+  const h = 78;
   return (
     <g>
       <Shape x={x} y={y} w={w} h={h} kind="rect" label={label} />
+      {/* The tally stepper sits inside the bottom-right corner (ElementVoteOverlay), below the label. */}
       <g transform={`translate(${x + w - 64} ${y + h - 24})`}>
         <rect
           width={58}

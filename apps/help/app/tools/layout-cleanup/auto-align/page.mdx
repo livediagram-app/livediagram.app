@@ -21,11 +21,11 @@ Auto-Align is the gentle tidier. It rounds every boxed element's position and si
 ## What it does
 
 - It is **structure-blind**: it never reads the arrow graph or considers how shapes connect. It just snaps positions and sizes to the grid.
-- It **never moves anything far**. Because it only rounds to the nearest grid line, nothing moves more than 5 px: a shape that was roughly in place stays roughly in place, only neater.
+- It **never moves anything far**. Because it only rounds to the nearest grid line, no element's position moves more than 5 px: a shape that was roughly in place stays roughly in place, only neater.
 - It works on **every element on the active tab**, not just a selection.
 - **Arrows follow their shapes.** An arrow attached to a shape stays attached as the shape snaps; only loose arrow ends snap on their own.
 - **Locked elements stay put.** A [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), is not snapped.
-- **Round shapes stay round.** Circles, diamonds and actors keep equal sides, and an element whose aspect ratio you locked keeps its ratio.
+- **Round shapes are squared up.** Circles, diamonds and actors are made square, both sides taking the longer snapped side, so an oval circle becomes a round one. An element whose aspect ratio you locked keeps its ratio.
 - **Running it again changes nothing**: a second pass leaves everything where it is, because it is already on the grid.
 
 ## Running it

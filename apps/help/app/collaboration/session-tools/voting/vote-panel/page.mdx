@@ -21,11 +21,11 @@ export const metadata = helpMetadata({
 
 While a [vote](/help/collaboration/session-tools/voting/) is running, press the **Vote** button in the bottom bar to open the **Vote** panel above it. While casting is open the button counts the dots you have left; after that a dot on it means the vote is still on (amber during the results walkthrough). On a desktop the panel stays open while you vote on the canvas: press the button again to put it away, and it closes by itself when the vote is cleared.
 
-The top of the panel shows your own dots, like "2 of 3 dots left".
+For an Editor, the top of the panel shows your own dots, like "2 of 3 dots left".
 
 ## While voting is open
 
-It shows how far the room has got: how many people have finished ("2 of 5 finished"), dots cast against dots available with a progress bar, and a row per voter with their spent dots as filled pips and the rest hollow, ending in how many they have left.
+It shows how far the room has got: how many people have finished ("2 of 5 finished"), dots cast against dots available with a progress bar, and a row per person who has started voting, with their spent dots as filled pips and the rest hollow, ending in how many they have left. Below them a line counts who hasn't started, like "1 person hasn't voted yet".
 
 <Figure caption="Filled pips are dots spent; a part-filled row is somebody still deciding.">
   <VotePanelProgress />
