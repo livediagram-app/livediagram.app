@@ -42,7 +42,14 @@ export type SheetCreateRequest = {
 
 // One write. `wid` is the client's id for it, echoed on the room op so the writer knows its own; `undo` marks an
 // undo or redo (never refused for a title its own undo puts back).
-export type SheetWriteRequest = { write: SheetWrite; wid?: string; undo?: boolean };
+// `unchecked`: an import, a card table's sync or a template's start, stored as it is (data-validation.md "Where values
+// are checked"); like `undo`, it skips only the validation rules' check.
+export type SheetWriteRequest = {
+  write: SheetWrite;
+  wid?: string;
+  undo?: boolean;
+  unchecked?: boolean;
+};
 
 // The write as it landed, the sheet's new rev, and the stored state of every cell it touched (a cell with no `i`
 // and no `f` is gone).
@@ -65,6 +72,9 @@ export const SHEET_ERRORS = [
   'filter_invalid',
   'write_too_large',
   'write_invalid',
+  // A value a Reject validation rule refuses; a sheet past its rules' limit (data-validation.md).
+  'value_invalid',
+  'rules_full',
   'tab_not_found',
 ] as const;
 export type SheetError = (typeof SHEET_ERRORS)[number];

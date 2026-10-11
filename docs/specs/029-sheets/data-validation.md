@@ -121,8 +121,8 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
 
 ## Making and changing rules
 
-- The toolbar's **Data** category gains **Dropdown**, **Checkbox** and **Data Validation…** (after Sort and Filter,
-  before the charts); the cell menu gains a **Data Validation** flyout with the same three rows and **Remove
+- The toolbar's **Data** category gains **Dropdown**, **Checkbox** and **Data Validation** (after Sort and Filter,
+  before the charts, with Conditional Formatting); the cell menu gains a **Data Validation** flyout with the same three rows and **Remove
   Validation** (when the selection touches a rule).
 - **Checkbox** makes a Checkbox rule over the selection at once (one change, one undo step); its cells keep their
   values (TRUE and FALSE stay ticked and unticked; others are marked invalid).

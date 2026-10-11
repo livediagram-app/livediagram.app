@@ -35,6 +35,12 @@ import {
   lucideInfo,
   lucideSearch,
   lucideSquareKanban,
+  lucidePaintRoller,
+  lucideSquareCheck,
+  lucideSquareChevronDown,
+  lucideShieldCheck,
+  lucideHighlighter,
+  lucideHash,
 } from '@livediagram/icons/lucide';
 import type { FunctionFamily } from '@livediagram/sheets';
 
@@ -242,3 +248,10 @@ export const FUNCTION_FAMILY_ICONS: Record<FunctionFamily, () => React.JSX.Eleme
   'Plan cards': prims(lucideSquareKanban),
 };
 export const SearchIcon = prims(lucideSearch);
+// Rules (data-validation.md, conditional-formatting.md, sheet.md "Paint Format", the Custom number format).
+export const PaintFormatIcon = prims(lucidePaintRoller);
+export const CheckboxIcon = prims(lucideSquareCheck);
+export const DropdownIcon = prims(lucideSquareChevronDown);
+export const ValidationIcon = prims(lucideShieldCheck);
+export const ConditionalFormatIcon = prims(lucideHighlighter);
+export const CustomFormatIcon = prims(lucideHash);

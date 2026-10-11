@@ -25,6 +25,11 @@ import type { SheetActions } from './useSheetActions';
 import {
   BarChartIcon,
   BordersIcon,
+  CheckboxIcon,
+  ConditionalFormatIcon,
+  DropdownIcon,
+  PaintFormatIcon,
+  ValidationIcon,
   ClearFormatIcon,
   DecimalsIcon,
   FillColourIcon,
@@ -55,7 +60,8 @@ export type ToolbarButton = {
   text?: string;
   pressed?: boolean;
   menu?: ToolbarMenuKind;
-  run?: () => void;
+  // `anchor`: the button pressed (a panel opens against it; absent when run from More); `clicks`: a double-click's 2.
+  run?: (anchor?: HTMLElement, clicks?: number) => void;
   // Drawn in place of a button while it fits (Font Size's − 12 +), `controlPx` wide; folded into More, the `menu`.
   // Given a way to open the button's menu (Text Colour's +).
   control?: (openMenu: (anchor: HTMLElement) => void) => React.ReactNode;
@@ -171,8 +177,24 @@ export function toolbarCategories(
       icon: <FillColourIcon />,
       buttons: [
         {
+          // Paint Format (sheet.md "Paint Format"): a press holds the selection's formats for the next selection; a
+          // double-click keeps it on; pressed again, it lets go.
+          id: 'paint',
+          label: 'Paint Format',
+          icon: <PaintFormatIcon />,
+          glyphOnly: true,
+          pressed: !!c.rules.paint,
+          run: (_anchor, clicks) =>
+            clicks === 2
+              ? actions.paintStart(true)
+              : c.rules.paint
+                ? actions.paintStop()
+                : actions.paintStart(false),
+        },
+        {
           // As Text Colour: the theme's first colours on the toolbar, + for the full picker (folded, the menu).
           id: 'bg',
+          separatorBefore: true,
           label: 'Fill Colour',
           icon: <FillColourIcon />,
           menu: 'fill-colour',
@@ -263,6 +285,32 @@ export function toolbarCategories(
           icon: <FilterIcon />,
           pressed: !!c.sheet.layout.filter,
           run: () => actions.toggleFilter(),
+        },
+        // Validation rules (data-validation.md "Making and changing rules").
+        {
+          id: 'dropdown',
+          label: 'Dropdown',
+          icon: <DropdownIcon />,
+          separatorBefore: true,
+          run: (anchor) => actions.openValidation(anchor ?? 'cell', { start: 'list' }),
+        },
+        {
+          id: 'checkbox',
+          label: 'Checkbox',
+          icon: <CheckboxIcon />,
+          run: () => actions.addCheckbox(),
+        },
+        {
+          id: 'validation',
+          label: 'Data Validation',
+          icon: <ValidationIcon />,
+          run: (anchor) => actions.openValidation(anchor ?? 'cell'),
+        },
+        {
+          id: 'conditional',
+          label: 'Conditional Formatting',
+          icon: <ConditionalFormatIcon />,
+          run: (anchor) => actions.openFormatRules(anchor ?? 'cell'),
         },
         // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts").
         {

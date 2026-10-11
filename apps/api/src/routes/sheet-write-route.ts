@@ -51,6 +51,7 @@ function readWrite(raw: unknown): SheetWriteRequest | null {
     write: b.write as SheetWrite,
     ...(typeof b.wid === 'string' ? { wid: b.wid } : {}),
     ...(b.undo === true ? { undo: true } : {}),
+    ...(b.unchecked === true ? { unchecked: true } : {}),
   };
 }
 
@@ -137,9 +138,15 @@ export async function writeSheet(
     };
     let landed;
     try {
-      const check = validateWrite(light, write);
+      // Validation rules are checked unless the write is an undo or one stored as it is (data-validation.md).
+      const check = validateWrite(light, write, { checkRules: !body.undo && !body.unchecked });
       if (!check.ok)
-        return sheetRejected(check.error, check.error === 'sheet_too_large' ? 413 : 400, check.at);
+        return sheetRejected(
+          check.error,
+          check.error === 'sheet_too_large' ? 413 : 400,
+          check.at,
+          check.line,
+        );
       landed = applySheetWrite(
         light,
         write.kind === 'title' ? { ...write, title: write.title.trim() } : write,

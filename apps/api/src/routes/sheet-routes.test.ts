@@ -335,6 +335,78 @@ describe('a Participant (docs/specs/013-workspace/share-roles.md)', () => {
   });
 });
 
+describe('validation rules (docs/specs/029-sheets/data-validation.md)', () => {
+  it('refuses a value a Reject rule does not allow, from anyone, and stores undo and unchecked writes as they are', async () => {
+    await make();
+    const s = (await call<SheetsResponse>({ method: 'GET', path: '/sheets' })).body.sheets[0]!;
+    const [r0, r1] = s.layout.rows;
+    const [c0, c1] = s.layout.cols;
+    const rule = {
+      id: 'rule01',
+      r1: r0!,
+      c1: c0!,
+      r2: r1!,
+      c2: c0!,
+      is: 'list' as const,
+      opts: [{ v: 'To Do' }, { v: 'Done' }],
+    };
+    const part = { owner: 'p', code: 'PART' };
+    // Rules are the Sheet's shape: a Participant may not set one.
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'layout', changes: [{ k: 'vrule', id: 'rule01', rule }] },
+          {},
+          part,
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (await write('sheetA00', { kind: 'layout', changes: [{ k: 'vrule', id: 'rule01', rule }] }))
+        .status,
+    ).toBe(200);
+    const bad = { kind: 'cells' as const, cells: [{ r: r0!, c: c0!, i: { s: 'Blocked' } }] };
+    const refused = await write('sheetA00', bad, {}, part);
+    expect(refused.status).toBe(400);
+    expect(refused.body).toMatchObject({ error: 'value_invalid', at: `${r0}:${c0}` });
+    expect((refused.body as unknown as { line: string }).line).toMatch(/To Do, Done/);
+    expect((await write('sheetA00', bad)).status).toBe(400);
+    // A Participant picks one of the options.
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'cells', cells: [{ r: r0!, c: c0!, i: { s: 'Done' } }] },
+          {},
+          part,
+        )
+      ).status,
+    ).toBe(200);
+    // Outside the rule, anything goes.
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'cells', cells: [{ r: r0!, c: c1!, i: { s: 'Blocked' } }] },
+          {},
+          part,
+        )
+      ).status,
+    ).toBe(200);
+    expect((await write('sheetA00', bad, { undo: true })).status).toBe(200);
+    expect(
+      (
+        await write(
+          'sheetA00',
+          { kind: 'cells', cells: [{ r: r1!, c: c0!, i: { s: 'Imported' } }] },
+          { unchecked: true },
+        )
+      ).status,
+    ).toBe(200);
+  });
+});
+
 describe('writes', () => {
   async function sheet() {
     await make();

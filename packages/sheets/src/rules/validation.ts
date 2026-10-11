@@ -2,7 +2,8 @@
 // cell, whether a value is one it allows, and the line that says what it allows. Pure; the editor and the api share
 // it, so the two never disagree.
 import { formatRange } from '../address';
-import { posRangeOf } from '../layout';
+import { layoutIndex, posRangeOf } from '../layout';
+import type { SheetWrite } from '../store';
 import { displayValue } from '../number-format';
 import { isError, isArray, numberText, scalarOf, type Scalar, type Value } from '../formula/values';
 import {
@@ -211,7 +212,7 @@ export function valueInvalid(
 export function inputForRule(rule: ValidationRule, input: CellInput): CellInput {
   if (rule.is === 'list' && ('s' in input || 'n' in input || 'b' in input)) {
     const o = optionFor(rule, inputScalar(input) ?? '');
-    return o ? { s: o.v } : input;
+    return o && !('s' in input && input.s === o.v) ? { s: o.v } : input;
   }
   if (rule.is === 'check' && 'n' in input && (input.n === 1 || input.n === 0))
     return { b: input.n === 1 };
@@ -309,4 +310,24 @@ export function rangeOptions(wb: Workbook, sheetId: string, rule: ValidationRule
       out.push({ value, shown });
     }
   return out;
+}
+
+// A cells write with each input as its cell's rule takes it (a dropdown option in its own spelling, a checkbox's 1 or
+// 0 as TRUE or FALSE). The same write when no rule changes anything.
+export function writeForRules(layout: SheetLayout, write: SheetWrite): SheetWrite {
+  if (write.kind === 'title' || !write.cells?.length || !layout.rules?.length) return write;
+  const ix = layoutIndex(layout);
+  let changed = false;
+  const cells = write.cells.map((ch) => {
+    if (!ch.i) return ch;
+    const r = ix.rowPos.get(ch.r);
+    const c = ix.colPos.get(ch.c);
+    const rule = r === undefined || c === undefined ? null : validationRuleAt(layout, r, c);
+    if (!rule) return ch;
+    const i = inputForRule(rule, ch.i);
+    if (i === ch.i) return ch;
+    changed = true;
+    return { ...ch, i };
+  });
+  return changed ? { ...write, cells } : write;
 }

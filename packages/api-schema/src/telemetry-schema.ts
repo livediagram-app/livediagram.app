@@ -519,6 +519,8 @@ export const SHEET_CHANGE_KINDS = [
   'Settings',
   'Setup',
   'Name',
+  'Validation',
+  'ConditionalFormat',
 ] as const;
 export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
 

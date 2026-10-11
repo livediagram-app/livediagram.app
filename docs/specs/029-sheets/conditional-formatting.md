@@ -54,8 +54,8 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
 
 ## Making and changing rules
 
-- The toolbar's **Cells** category gains **Conditional Formatting…** (after Clear Formatting, behind its divider); the
-  cell menu gains **Conditional Formatting…** in its formatting group.
+- The toolbar's **Data** category gains **Conditional Formatting** (after Data Validation, with the rules); the cell
+  menu gains **Conditional Formatting…** in its formatting group.
 - It opens the **Conditional Formatting** popover (the shared popover, 24 rem wide, anchored to what opened it, the
   height of the window at most and scrolling inside):
   - The **rule list**: the rules whose range touches the selection (**Show All Rules** shows every rule on the sheet,
@@ -71,7 +71,7 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
     never sent); Cancel takes it away.
 - **Sheet Settings** gains a **Conditional Formatting** section (after Data Validation): every rule as a row (its
   swatch, line and range), **Edit** (the popover's rule form, anchored to the row), **Go To** and **Remove**; "No format
-  rules yet. Select cells and choose Conditional Formatting from the toolbar's Cells menu." when there are none.
+  rules yet. Select cells and choose Conditional Formatting from the toolbar's Data menu." when there are none.
 - Telemetry: `Sheet · Changed · ConditionalFormat` for each rule change (made, edited, reordered, removed); never the
   condition's values.
 

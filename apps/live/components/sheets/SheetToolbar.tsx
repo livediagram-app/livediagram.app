@@ -168,7 +168,7 @@ export function SheetToolbar({
           onClick={(e) => {
             if (b.menu) setMenu({ kind: b.menu, anchor: e.currentTarget });
             else {
-              b.run?.();
+              b.run?.(e.currentTarget, e.detail);
               c.focusGrid();
             }
           }}

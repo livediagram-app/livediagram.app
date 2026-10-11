@@ -359,10 +359,10 @@ describe('the sheet toolbar', () => {
     pickCategory('Data');
     pickCategory('Cells');
     expect(btn('Align Left').closest('.lvd-cascade')).toBeTruthy();
-    // Fill, borders, the horizontal and vertical alignments, merge, wrap and freeze, then Clear Formatting; and the
-    // one before Search, at the far right.
+    // Paint Format, fill, borders, the horizontal and vertical alignments, merge, wrap and freeze, then Clear
+    // Formatting; and the one before Search, at the far right.
     const toolbar = btn('Align Left').closest('[role=toolbar]')!;
-    expect(toolbar.querySelectorAll('span[aria-hidden].w-px')).toHaveLength(6);
+    expect(toolbar.querySelectorAll('span[aria-hidden].w-px')).toHaveLength(7);
   });
 
   it('offers every function, a menu per family, each starting its function in the active cell', () => {

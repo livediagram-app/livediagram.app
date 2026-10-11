@@ -25,6 +25,7 @@ import type { PlanPalette } from '@/components/plan/plan-palette';
 import type { SheetStore } from './sheet-store-client';
 import { geometryOf, mergeAt, type Geometry } from './sheet-geometry';
 import { useFollowLayout } from './useFollowLayout';
+import { useSheetRulesState, type SheetRulesState } from './rules/useSheetRulesState';
 import type { Grid } from '@livediagram/sheets';
 import type { SheetChangeKind } from '@livediagram/api-schema';
 
@@ -90,9 +91,11 @@ export type SheetController = {
   // Send a write and count it; false when it was refused (said in a toast).
   // `alongside`: a change outside the sheet made with this write, one undo step with it (sheet-store-client.ts).
   write: (w: SheetWrite, kind: SheetChangeKind, alongside?: ItemUndoStep) => boolean;
+  // `unchecked`: stored past the validation rules (an import; data-validation.md "Where values are checked").
   writeAll: (
     edits: readonly { sheetId: string; write: SheetWrite }[],
     kind: SheetChangeKind,
+    opts?: { unchecked?: boolean },
   ) => boolean;
   // The grid's focusable frame (held as state through a callback ref), so commands can hand focus back.
   gridEl: HTMLDivElement | null;
@@ -108,6 +111,8 @@ export type SheetController = {
     anchor: SheetAnchor,
     opts?: PlaceChartOpts,
   ) => void;
+  // Dropdowns, rule panels, a format rule's preview and Paint Format (rules/useSheetRulesState.ts).
+  rules: SheetRulesState;
   // Taking the charts anchored in this Sheet off its tab (Clear Sheet): `redo` takes them, `undo` puts them back.
   // Null when it has none, or they are not this tab's to change (a Dashboard slot showing another tab's Sheet).
   chartsRemoval?: () => ItemUndoStep | null;
@@ -198,6 +203,7 @@ export function useSheetControllerState(opts: {
   const [findOpen, setFindOpen] = useState<'find' | 'replace' | null>(null);
   const [findHits, setFindHits] = useState<readonly { r: number; c: number }[]>([]);
   const [gridEl, setGridEl] = useState<HTMLDivElement | null>(null);
+  const rules = useSheetRulesState();
   // A layout change this person made keeps their selection where it is (as a spreadsheet's Insert does); only
   // someone else's moves it.
   const ownLayout = useRef(false);
@@ -257,10 +263,14 @@ export function useSheetControllerState(opts: {
   );
   // Writes to several sheets as one change, one undo step (Insert Cells, a cut other sheets' formulas follow).
   const writeAll = useCallback(
-    (edits: readonly { sheetId: string; write: SheetWrite }[], kind: SheetChangeKind) => {
+    (
+      edits: readonly { sheetId: string; write: SheetWrite }[],
+      kind: SheetChangeKind,
+      opts?: { unchecked?: boolean },
+    ) => {
       if (!canShape && edits.some((e) => e.write.kind !== 'cells')) return shapeRefused.current();
       const before = store.sheet(sheet.id);
-      const refused = store.writeAll(edits);
+      const refused = store.writeAll(edits, opts?.unchecked ? { unchecked: true } : {});
       if (refused) return false;
       if (edits.some((e) => e.write.kind === 'layout' && e.sheetId === sheet.id))
         ownLayout.current = true;
@@ -303,5 +313,6 @@ export function useSheetControllerState(opts: {
     gridEl,
     setGridEl,
     focusGrid,
+    rules,
   };
 }

@@ -66,7 +66,7 @@ let lastLine: BorderLine = BORDER_LINES[0]!;
 type FoldedButton = {
   label: string;
   icon: React.ReactNode;
-  run?: () => void;
+  run?: (anchor?: HTMLElement, clicks?: number) => void;
   menu?: ToolbarMenuKind;
 };
 
@@ -180,6 +180,15 @@ export function SheetToolbarMenu({
             />
           ))
         : null}
+      {kind === 'number' ? (
+        // A format code of the person's own (sheet.md "Formatting"), in a popover against the same button.
+        <MenuActionRow
+          plain
+          label="Custom…"
+          icon={<Check on={f?.nf === 'custom'} />}
+          onClick={act(() => actions.openCustomFormat(anchor))}
+        />
+      ) : null}
       {kind === 'font'
         ? [{ id: null, label: 'Default', stack: undefined }, ...FONTS].map((font) => (
             <MenuActionRow

@@ -59,10 +59,15 @@ import {
   type ShiftMode,
   SHEET_FREEZE_COLS_MAX,
   SHEET_FREEZE_ROWS_MAX,
+  rangeOptions,
+  validateWrite,
+  writeForRules,
+  type SheetWrite,
 } from '@livediagram/sheets';
 import { track } from '@/lib/telemetry';
 import { useSheetController, type SheetController } from './sheet-controller';
 import { fontPx, roughWidth } from './SheetCells';
+import { sheetRuleActions } from './rules/sheet-rule-actions';
 
 export type EditResult = { ok: true } | { ok: false; message: string; at: number };
 
@@ -84,6 +89,17 @@ export function inputTextAt(c: SheetController, r: number, col: number): string 
   const colId = c.sheet.layout.cols[col];
   const input = rowId && colId ? c.sheet.cells.get(cellKey(rowId, colId))?.input : undefined;
   return inputAsText(input, c.workbook.ctxFor(c.sheet.id));
+}
+
+// What the first value a Reject rule refuses in a typed write says (the rule's Help Text, else its line), or null.
+function ruleRefusal(c: SheetController, write: SheetWrite): string | null {
+  const layout = c.sheet.layout;
+  if (!layout.rules?.length) return null;
+  const check = validateWrite(c.sheet, writeForRules(layout, write), {
+    locale: c.locale,
+    rangeValues: (rule) => rangeOptions(c.workbook, c.sheet.id, rule),
+  });
+  return !check.ok && check.error === 'value_invalid' ? (check.line ?? null) : null;
 }
 
 function firstUse(text: string): void {
@@ -137,6 +153,9 @@ export function useSheetActions() {
           };
         }
         if (result?.ok) {
+          // A value the cell's Reject rule refuses keeps the edit open and says why (data-validation.md).
+          const refused = ruleRefusal(c, result.write);
+          if (refused) return { ok: false, message: refused, at: 0 };
           // An edit ends the copied range's marquee, as in Sheets and Excel (what the clipboard holds stays).
           c.setMarquee(null);
           const formula = e.draft.startsWith('=');
@@ -185,7 +204,7 @@ export function useSheetActions() {
         fmt({ [flag]: activeFormat(c)?.[flag] ? null : true });
       },
       numberFormat(nf: NumberFormatKind, cur?: string) {
-        fmt({ nf: nf === 'auto' ? null : nf, dp: null, ...(cur ? { cur } : {}) });
+        fmt({ nf: nf === 'auto' ? null : nf, dp: null, nc: null, ...(cur ? { cur } : {}) });
       },
       decimals(delta: 1 | -1) {
         const f = activeFormat(c);
@@ -376,6 +395,12 @@ export function useSheetActions() {
           'Cell',
         );
       },
+      // ---- Custom number format (sheet.md "Formatting") ----
+      customFormat(code: string) {
+        fmt({ nf: 'custom', nc: code, dp: null });
+      },
+      // ---- Rules: dropdowns, checkboxes, validation and format rules, Paint Format ----
+      ...sheetRuleActions(c),
     };
   }, [c]);
 }

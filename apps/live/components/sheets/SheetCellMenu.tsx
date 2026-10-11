@@ -5,7 +5,7 @@
 // each named for what it does to this selection, with the rarer verbs in side flyouts. Someone who may only view gets
 // the header and Copy alone.
 import { useState } from 'react';
-import { unmergeRange } from '@livediagram/sheets';
+import { posRangeOf, unmergeRange } from '@livediagram/sheets';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { CopyIcon, CutIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
@@ -36,6 +36,10 @@ import {
   SortIcon,
   SortZToAIcon,
   UnmergeCellsIcon,
+  CheckboxIcon,
+  ConditionalFormatIcon,
+  DropdownIcon,
+  ValidationIcon,
 } from './sheet-icons';
 
 // A text glyph in a row's icon slot (the row and column header menus' arrows).
@@ -45,7 +49,7 @@ export const Glyph = ({ t }: { t: string }) => (
   </span>
 );
 
-type Flyout = 'sort' | 'shift' | 'hide' | 'paste' | 'chart';
+type Flyout = 'sort' | 'shift' | 'hide' | 'paste' | 'chart' | 'validation';
 
 export function SheetCellMenu({
   at,
@@ -85,6 +89,11 @@ export function SheetCellMenu({
   // A cheap test: building the merge would walk every cell of a large selection on each render.
   const canMerge = c.canEdit && (range.r1 !== range.r2 || range.c1 !== range.c2);
   const canUnmerge = c.canEdit && unmergeRange(c.sheet, range) !== null;
+  // Remove Validation where the selection touches a rule (data-validation.md "Making and changing rules").
+  const touchesRule = (c.sheet.layout.rules ?? []).some((x) => {
+    const p = posRangeOf(c.sheet.layout, x);
+    return p && p.r1 <= range.r2 && range.r1 <= p.r2 && p.c1 <= range.c2 && range.c1 <= p.c2;
+  });
   const row = (label: string, icon: React.ReactNode, run: () => void) => (
     <MenuActionRow plain label={label} icon={icon} onClick={run} />
   );
@@ -188,6 +197,11 @@ export function SheetCellMenu({
                 act(() => actions.unmerge()),
               )
             : null}
+          {row(
+            'Conditional Formatting…',
+            <ConditionalFormatIcon />,
+            act(() => actions.openFormatRules('cell')),
+          )}
           <MenuGroupSeparator />
           <MenuFlyoutSection title="Sort" icon={<SortIcon />} {...flyout('sort')}>
             {row(
@@ -251,6 +265,34 @@ export function SheetCellMenu({
               <FormattingIcon />,
               act(() => void clip.pasteSpecial('formats')),
             )}
+          </MenuFlyoutSection>
+          <MenuFlyoutSection
+            title="Data Validation"
+            icon={<ValidationIcon />}
+            {...flyout('validation')}
+          >
+            {row(
+              'Dropdown',
+              <DropdownIcon />,
+              act(() => actions.openValidation('cell', { start: 'list' })),
+            )}
+            {row(
+              'Checkbox',
+              <CheckboxIcon />,
+              act(() => actions.addCheckbox()),
+            )}
+            {row(
+              'Data Validation…',
+              <ValidationIcon />,
+              act(() => actions.openValidation('cell')),
+            )}
+            {touchesRule
+              ? row(
+                  'Remove Validation',
+                  <DeleteIcon />,
+                  act(() => actions.removeValidation()),
+                )
+              : null}
           </MenuFlyoutSection>
           <MenuFlyoutSection title="Insert Chart" icon={<BarChartIcon />} {...flyout('chart')}>
             {row(
