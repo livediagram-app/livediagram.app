@@ -2,6 +2,7 @@ import { ImageResponse } from 'next/og';
 
 import { renderSocialCard } from '@/app/opengraph-image';
 import { getLandingSection, LANDING_SECTION_IDS } from '@/lib/landing-content';
+import { cardSubtitle } from '@/lib/social-card';
 
 // Per-category social card for /features/<id>: the same branded shell as the
 // homepage OG card (renderSocialCard), but with the category's own headline so
@@ -25,11 +26,9 @@ export function generateStaticParams() {
 // through a barrel, but a plain helper import is fine.)
 export function renderCategoryCard(slug: string) {
   const section = getLandingSection(slug);
-  const description = section?.description ?? '';
-  const subtitle =
-    description.length > 120 ? `${description.slice(0, 117).trimEnd()}…` : description;
+  const subtitle = cardSubtitle(section?.description ?? '');
   return renderSocialCard({
-    kicker: 'livediagram feature',
+    kicker: section?.label ?? 'Features',
     title: section?.title ?? 'Features',
     subtitle: subtitle || undefined,
   });
