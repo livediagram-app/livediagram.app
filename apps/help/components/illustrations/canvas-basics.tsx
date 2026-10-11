@@ -21,6 +21,7 @@ import {
   Menu,
 } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
+import { ModeMark } from './mode-mark';
 
 // --- Shared bits -------------------------------------------------------------------------------
 
@@ -186,46 +187,65 @@ function LookAndFeelShell({
 
 /** The canvas with the menu button and mode switch top-left, the palette strip across the top
  *  (the canvas-tool and category dropdowns, the tiles, More and Search) and the bottom-right
- *  dock (the Theme & canvas paintbrush beside the zoom controls). */
+ *  cluster (Undo and Redo, Layers beside the Theme & canvas paintbrush, then the zoom controls). */
 export function CanvasPaletteOverview() {
+  const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (
     <Scene w={420} h={240}>
       <MenuCard x={8} y={14} />
       <Strip x={78} y={14} category="Popular" />
-      <Shape x={60} y={84} w={76} h={42} label="Start" />
-      <Shape x={176} y={78} w={60} h={54} kind="diamond" />
-      <Shape x={168} y={170} w={76} h={40} accent label="Done" />
-      <Arrow from={[136, 105]} to={[176, 105]} />
-      <Arrow from={[206, 132]} to={[206, 170]} />
-      {/* Bottom-right dock: the paintbrush, then the zoom controls. */}
+      <Shape x={60} y={72} w={76} h={42} label="Start" />
+      <Shape x={176} y={66} w={60} h={54} kind="diamond" />
+      <Shape x={168} y={146} w={76} h={36} accent label="Done" />
+      <Arrow from={[136, 93]} to={[176, 93]} />
+      <Arrow from={[206, 120]} to={[206, 146]} />
+      {/* Bottom-right cluster: Undo and Redo, Layers and the paintbrush, then the zoom controls. */}
       <rect
-        x={262}
+        x={150}
         y={198}
-        width={30}
+        width={60}
         height={30}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
+      <line x1={180} y1={204} x2={180} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
+      <path d="M170 209 h-8 l3 -3 M162 209 l3 3 M162 209 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
+      <path d="M190 209 h8 l-3 -3 M198 209 l-3 3 M198 209 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
+      <rect
+        x={218}
+        y={198}
+        width={66}
+        height={30}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <line x1={251} y1={204} x2={251} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
       <path
-        d="M272 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
+        d="M228 211 L235 208 L242 211 L235 214 Z M228 215 L235 218 L242 215"
+        {...ink}
+        strokeLinejoin="round"
+      />
+      <path
+        d="M260 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
         className="fill-brand-400 stroke-slate-500"
         strokeWidth={1.2}
         strokeLinejoin="round"
       />
       <rect
-        x={298}
+        x={292}
         y={198}
-        width={108}
+        width={114}
         height={30}
         rx={7}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={316} y={214} anchor="middle" size={14} weight={700} tone="muted">
+      <Label x={310} y={214} anchor="middle" size={14} weight={700} tone="muted">
         −
       </Label>
-      <Label x={352} y={214} anchor="middle" size={11} weight={600} tone="body">
+      <Label x={349} y={214} anchor="middle" size={11} weight={600} tone="body">
         100%
       </Label>
       <Label x={388} y={214} anchor="middle" size={14} weight={700} tone="muted">
@@ -325,13 +345,16 @@ export function MultiSelectionBar() {
 
 // --- Templates ---------------------------------------------------------------------------------
 
+const MODE_NAME = { diagram: 'Diagram', draw: 'Draw', illustrate: 'Illustrate' } as const;
+
 /** The New Document wizard's template step: the mode filter beside the search box, the
- *  Popular shelf with a mode glyph before each title, and Next. */
+ *  Popular shelf with the mode's mark before each title, and Next. */
 export function NewDocumentTemplates() {
-  const cards: { title: string; mode: 'diagram' | 'draw'; on?: boolean }[] = [
+  // The shelf's first three: the blanks lead Popular (Blank Plan follows, off the edge here).
+  const cards: { title: string; mode: 'diagram' | 'draw' | 'illustrate'; on?: boolean }[] = [
     { title: 'Blank Diagram', mode: 'diagram', on: true },
-    { title: 'Mind map', mode: 'diagram' },
-    { title: 'Sketchnote', mode: 'draw' },
+    { title: 'Blank Whiteboard', mode: 'draw' },
+    { title: 'Blank Illustration', mode: 'illustrate' },
   ];
   return (
     <Scene w={420} h={250} bg="plain">
@@ -400,7 +423,7 @@ export function NewDocumentTemplates() {
                     strokeWidth={2}
                   />
                 </g>
-              ) : (
+              ) : c.mode === 'draw' ? (
                 <path
                   d={`M${x + 22} ${y + 36} c8 -14 16 10 24 -2 s14 -12 22 2 s10 8 18 -4`}
                   fill="none"
@@ -408,28 +431,22 @@ export function NewDocumentTemplates() {
                   strokeWidth={2}
                   strokeLinecap="round"
                 />
-              )}
-              {/* The mode glyph before the title. */}
-              {c.mode === 'diagram' ? (
-                <rect
-                  x={x + 9}
-                  y={y + 63}
-                  width={9}
-                  height={9}
-                  rx={2}
-                  className="fill-none stroke-slate-400"
-                  strokeWidth={1.5}
-                />
               ) : (
-                <path
-                  d={`M${x + 9} ${y + 70} q3 -6 6 0 t5 -2`}
-                  fill="none"
-                  className="stroke-slate-400"
-                  strokeWidth={1.5}
-                  strokeLinecap="round"
+                <rect
+                  x={x + 41}
+                  y={y + 13}
+                  width={28}
+                  height={36}
+                  rx={2}
+                  className="fill-white stroke-slate-300"
+                  strokeWidth={1.2}
                 />
               )}
-              <Label x={x + 24} y={y + 68} size={10} weight={600} tone="strong">
+              {/* The mode's mark before the title. */}
+              <g transform={`translate(${x + 14} ${y + 67})`}>
+                <ModeMark mode={MODE_NAME[c.mode]} className="stroke-slate-400" scale={0.45} />
+              </g>
+              <Label x={x + 23} y={y + 68} size={9} weight={600} tone="strong">
                 {c.title}
               </Label>
             </g>
@@ -450,15 +467,8 @@ export function ElementFontMenu() {
     <Scene w={420} h={230}>
       <Shape x={22} y={92} w={104} h={52} label="Step one" />
       <SelectionBox x={22} y={92} w={104} h={52} />
-      <Menu
-        x={142}
-        y={40}
-        w={108}
-        items={['Colours', 'Border', 'Style', 'Text']}
-        active={3}
-        rowH={24}
-      />
-      <Label x={238} y={129} anchor="end" size={11} weight={600} tone="accent">
+      <Menu x={142} y={40} w={108} items={['Style', 'Text']} active={1} rowH={24} />
+      <Label x={238} y={81} anchor="end" size={11} weight={600} tone="accent">
         ›
       </Label>
       <rect

@@ -7,49 +7,22 @@
 import type { ReactNode } from 'react';
 import { Scene, Label } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
+import { ModeMark, type Mode } from './mode-mark';
 
 // --- Mode glyphs -------------------------------------------------------------------------------
 
-/** A small glyph per editor mode, centred on (0, 0). */
-function ModeGlyph({ mode, tone = 'slate' }: { mode: string; tone?: 'slate' | 'brand' }) {
-  const cls = tone === 'brand' ? 'stroke-brand-600' : 'stroke-slate-500';
-  const common = {
-    fill: 'none',
-    className: cls,
-    strokeWidth: 1.4,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-  };
-  switch (mode) {
-    case 'Diagram':
-      return (
-        <g>
-          <rect x={-6} y={-6} width={5} height={5} rx={1} {...common} />
-          <rect x={1} y={1} width={5} height={5} rx={1} {...common} />
-          <path d="M-1 -3.5 h4.5 v4.5" {...common} />
-        </g>
-      );
-    case 'Draw':
-      return <path d="M-6 4 c3 -8 5 4 8 -3 s3 -4 4 -2" {...common} />;
-    case 'Illustrate':
-      return (
-        <g>
-          <rect x={-5} y={-6} width={10} height={12} rx={1} {...common} />
-          <path d="M-2.5 -2.5 h5 M-2.5 0.5 h5 M-2.5 3 h3" {...common} />
-        </g>
-      );
-    default:
-      return (
-        <g>
-          <rect x={-6} y={-6} width={3.5} height={12} rx={1} {...common} />
-          <rect x={-1.75} y={-6} width={3.5} height={8} rx={1} {...common} />
-          <rect x={2.5} y={-6} width={3.5} height={10} rx={1} {...common} />
-        </g>
-      );
-  }
+/** A small glyph per editor mode, centred on (0, 0): the app's own mark (ModeMark). */
+function ModeGlyph({ mode, tone = 'slate' }: { mode: Mode; tone?: 'slate' | 'brand' }) {
+  return (
+    <ModeMark
+      mode={mode}
+      className={tone === 'brand' ? 'stroke-brand-600' : 'stroke-slate-500'}
+      scale={0.55}
+    />
+  );
 }
 
-const MODES = ['Diagram', 'Draw', 'Illustrate', 'Plan'];
+const MODES: Mode[] = ['Diagram', 'Draw', 'Illustrate', 'Plan'];
 
 /** The mode switch beside the menu button in the top-left card, its menu open: the four modes,
  *  the current one checked, and ⇧D on the row the key leads to. */

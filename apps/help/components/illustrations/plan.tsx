@@ -168,9 +168,10 @@ export function PlanBoardScene() {
       <Label x={20} y={25} size={13} weight={700} tone="strong">
         Kanban
       </Label>
-      <Widget x={80} y={16} w={66} label="6 items" />
-      <Widget x={152} y={16} w={74} label="Completion" />
-      <Widget x={232} y={16} w={74} label="WIP Alerts" />
+      {/* The Kanban preset's widgets, in its order. */}
+      <Widget x={80} y={16} w={74} label="Completion" />
+      <Widget x={160} y={16} w={74} label="WIP Alerts" />
+      <Widget x={240} y={16} w={66} label="Filter" />
       <rect
         x={312}
         y={16}
@@ -185,8 +186,8 @@ export function PlanBoardScene() {
         +
       </Label>
 
-      <Column x={xs[0]!} y={44} w={colW} h={190} name="To do" count="2" />
-      <Column x={xs[1]!} y={44} w={colW} h={190} name="In progress" count="3 / 3" warn cog />
+      <Column x={xs[0]!} y={44} w={colW} h={190} name="To Do" count="2" />
+      <Column x={xs[1]!} y={44} w={colW} h={190} name="In Progress" count="3 / 2" warn cog />
       <Column x={xs[2]!} y={44} w={colW} h={190} name="Review" count="1" />
 
       {/* To do: one card left, its neighbour is on its way to Review. */}
@@ -251,32 +252,30 @@ function ClusterButton({
   );
 }
 
-/** Plan mode's bottom-right cluster: the Trash (with its count) left of Undo and Redo, then Cards and
- *  Card Types where Layers sits in the other modes, then Theme and the zoom controls. */
+/** One button of a joined strip: its icon centred in a 50px segment, its name beneath. */
+function StripSegment({ x, label, children }: { x: number; label: string; children: ReactNode }) {
+  return (
+    <g>
+      <g transform={`translate(${x + 25} 61)`}>{children}</g>
+      <Label x={x + 25} y={92} size={9.5} anchor="middle" tone="muted">
+        {label}
+      </Label>
+    </g>
+  );
+}
+
+/** Plan mode's bottom-right cluster, as CanvasChrome lays it out: Undo and Redo, then the Plan strip
+ *  where Layers sits in the other modes (the Trash with its grey count, New Card, Cards and Card
+ *  Types), then the Theme paintbrush and the zoom controls. */
 export function PlanClusterScene() {
   const ink = 'stroke-slate-600';
+  const seg = 50;
+  const strip = { x: 92, w: seg * 4 };
   return (
-    <Scene w={420} h={130} bg="canvas">
-      {/* Trash, with its count badge. */}
-      <ClusterButton x={14} y={44} label="Trash">
-        <path
-          d="M-7 -5 h14 M-3 -5 v-2 h6 v2 M-5 -5 l1 12 h8 l1 -12"
-          fill="none"
-          className={ink}
-          strokeWidth={1.6}
-          strokeLinejoin="round"
-        />
-      </ClusterButton>
-      <g className="help-art-as-drawn">
-        <circle cx={46} cy={44} r={8} className="fill-rose-500" />
-        <Label x={46} y={45} size={10} anchor="middle" weight={700} tone="onAccent">
-          2
-        </Label>
-      </g>
-
+    <Scene w={468} h={130} bg="canvas">
       {/* Undo / Redo strip. */}
       <rect
-        x={58}
+        x={14}
         y={44}
         width={68}
         height={34}
@@ -284,9 +283,9 @@ export function PlanClusterScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <line x1={92} y1={50} x2={92} y2={72} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={48} y1={50} x2={48} y2={72} className="stroke-slate-200" strokeWidth={1.5} />
       <path
-        d="M81 58 h-8 l4 -4 M73 58 l4 4 M73 58 h6 a6 6 0 0 1 0 12 h-3"
+        d="M37 58 h-8 l4 -4 M29 58 l4 4 M29 58 h6 a6 6 0 0 1 0 12 h-3"
         fill="none"
         className={ink}
         strokeWidth={1.6}
@@ -294,35 +293,62 @@ export function PlanClusterScene() {
         strokeLinejoin="round"
       />
       <path
-        d="M103 58 h8 l-4 -4 M111 58 l-4 4 M111 58 h-6 a6 6 0 0 0 0 12 h3"
+        d="M59 58 h8 l-4 -4 M67 58 l-4 4 M67 58 h-6 a6 6 0 0 0 0 12 h3"
         fill="none"
         className={ink}
         strokeWidth={1.6}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <Label x={92} y={92} size={10} anchor="middle" tone="muted">
+      <Label x={48} y={92} size={10} anchor="middle" tone="muted">
         Undo / Redo
       </Label>
 
-      {/* Cards: the finder. */}
-      <ClusterButton x={144} y={44} label="Cards">
-        <rect
-          x={-7}
-          y={-6}
-          width={10}
-          height={12}
-          rx={2}
+      {/* The Plan strip: four buttons in one joined strip. */}
+      <rect
+        x={strip.x}
+        y={44}
+        width={strip.w}
+        height={34}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {[1, 2, 3].map((i) => (
+        <line
+          key={i}
+          x1={strip.x + i * seg}
+          y1={50}
+          x2={strip.x + i * seg}
+          y2={72}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+      ))}
+      <StripSegment x={strip.x} label="Trash">
+        <path
+          d="M-7 -5 h14 M-3 -5 v-2 h6 v2 M-5 -5 l1 12 h8 l1 -12"
           fill="none"
           className={ink}
           strokeWidth={1.6}
+          strokeLinejoin="round"
         />
-        <circle cx={4} cy={2} r={3.5} fill="none" className={ink} strokeWidth={1.6} />
-        <path d="M6.5 4.5 l3 3" className={ink} strokeWidth={1.6} strokeLinecap="round" />
-      </ClusterButton>
-
-      {/* Card Types, the button that stands where Layers does. */}
-      <ClusterButton x={196} y={44} label="Card Types">
+      </StripSegment>
+      {/* The Trash's count, grey and tucked into its corner. */}
+      <g className="help-art-as-drawn">
+        <circle cx={strip.x + seg - 9} cy={52} r={6} className="fill-slate-500" />
+        <Label x={strip.x + seg - 9} y={53} size={8} anchor="middle" weight={700} tone="onAccent">
+          2
+        </Label>
+      </g>
+      <StripSegment x={strip.x + seg} label="New Card">
+        <path d="M-6 0 h12 M0 -6 v12" className={ink} strokeWidth={1.8} strokeLinecap="round" />
+      </StripSegment>
+      <StripSegment x={strip.x + seg * 2} label="Cards">
+        <circle cx={-1.5} cy={-1.5} r={5.5} fill="none" className={ink} strokeWidth={1.6} />
+        <path d="M2.5 2.5 l4.5 4.5" className={ink} strokeWidth={1.6} strokeLinecap="round" />
+      </StripSegment>
+      <StripSegment x={strip.x + seg * 3} label="Card Types">
         <rect
           x={-7}
           y={-7}
@@ -330,14 +356,14 @@ export function PlanClusterScene() {
           height={14}
           rx={2.5}
           fill="none"
-          className="stroke-brand-500"
+          className={ink}
           strokeWidth={1.6}
         />
-        <rect x={-7} y={-7} width={3.5} height={14} rx={1.5} className="fill-brand-500" />
-      </ClusterButton>
+        <path d="M-3.5 -7 v14" className={ink} strokeWidth={1.6} />
+      </StripSegment>
 
       {/* Theme and Canvas, the paintbrush. */}
-      <ClusterButton x={250} y={44} label="Theme">
+      <ClusterButton x={302} y={44} label="Theme">
         <path
           d="M5 -7 l2 2 l-7 7 l-2 -2 Z M-2 2 c-3 0 -4 2 -4 5 c3 0 5 -1 5 -4"
           fill="none"
@@ -349,7 +375,7 @@ export function PlanClusterScene() {
 
       {/* Zoom. */}
       <rect
-        x={296}
+        x={346}
         y={44}
         width={108}
         height={34}
@@ -357,16 +383,16 @@ export function PlanClusterScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={312} y={62} size={14} anchor="middle" tone="body">
+      <Label x={362} y={62} size={14} anchor="middle" tone="body">
         −
       </Label>
-      <Label x={350} y={62} size={11} anchor="middle" weight={600} tone="body">
+      <Label x={400} y={62} size={11} anchor="middle" weight={600} tone="body">
         100%
       </Label>
-      <Label x={388} y={62} size={14} anchor="middle" tone="body">
+      <Label x={438} y={62} size={14} anchor="middle" tone="body">
         +
       </Label>
-      <Label x={350} y={92} size={10} anchor="middle" tone="muted">
+      <Label x={400} y={92} size={10} anchor="middle" tone="muted">
         Zoom
       </Label>
 

@@ -90,18 +90,18 @@ export function MultiSelect() {
       <Shape x={56} y={50} w={66} h={40} />
       <Shape x={150} y={96} w={66} h={40} />
       <Shape x={250} y={56} w={66} h={40} kind="circle" />
-      <Shape x={120} y={158} w={66} h={36} />
+      <Shape x={120} y={150} w={66} h={32} />
       <rect
         x={40}
         y={38}
         width={200}
-        height={150}
+        height={156}
         rx={4}
         className="fill-brand-500/10 stroke-brand-500"
         strokeWidth={1.5}
         strokeDasharray="5 4"
       />
-      <Cursor x={232} y={180} colour="brand" />
+      <Cursor x={232} y={186} colour="brand" />
     </Scene>
   );
 }
@@ -296,15 +296,17 @@ export function LinkCard() {
 export function SnappingGuides() {
   return (
     <Scene w={400} h={200}>
-      {/* The dashed brand guide marks the shared top edge A and B aligned to. */}
+      {/* The faint dashed guide, in the theme's element stroke as the app draws it, marks the
+          shared top edge A and B aligned to. */}
       <line
         x1={40}
         y1={66}
         x2={344}
         y2={66}
-        className="stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="5 4"
+        className="stroke-slate-600"
+        strokeWidth={1.2}
+        strokeOpacity={0.55}
+        strokeDasharray="4 3"
       />
       <Shape x={64} y={66} w={84} h={60} label="A" />
       {/* The dragged element, snapped flush to A's top edge. */}

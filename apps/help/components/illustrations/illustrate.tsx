@@ -145,8 +145,8 @@ export function IllustratePagesScene() {
   return (
     <Scene w={480} h={250}>
       {/* Page 1: A4 landscape, a title and a small chart */}
-      <Label x={20} y={38} size={10} weight={600} tone="body">
-        Page 1 · A4 · Landscape
+      <Label x={20} y={38} size={9} weight={600} tone="body">
+        Page 1 · A4 · Landscape · Infographic
       </Label>
       <Cog cx={211} cy={38} />
       <Sheet x={20} y={52} w={200} h={141}>
@@ -201,22 +201,22 @@ export function IllustratePagesScene() {
         />
       </g>
       {/* Page 2: a square social post */}
-      <Label x={244} y={38} size={10} weight={600} tone="body">
-        Page 2 · Square
+      <Label x={244} y={38} size={9} weight={600} tone="body">
+        Page 2 · Square · Infographic
       </Label>
-      <Cog cx={385} cy={38} />
-      <Sheet x={244} y={52} w={150} h={150}>
-        <rect x={244} y={52} width={150} height={150} rx={2} className="fill-brand-50" />
-        <Label x={319} y={100} anchor="middle" size={26} weight={800} tone="accent">
+      <Cog cx={395} cy={38} />
+      <Sheet x={244} y={52} w={160} h={160}>
+        <rect x={244} y={52} width={160} height={160} rx={2} className="fill-brand-50" />
+        <Label x={324} y={104} anchor="middle" size={26} weight={800} tone="accent">
           7 in 10
         </Label>
-        <TextBar x={276} y={124} w={86} />
-        <TextBar x={288} y={138} w={62} tone="faint" />
+        <TextBar x={281} y={128} w={86} />
+        <TextBar x={293} y={142} w={62} tone="faint" />
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
           <circle
             key={i}
-            cx={270 + i * 11}
-            cy={172}
+            cx={275 + i * 11}
+            cy={178}
             r={4}
             className={i < 7 ? 'fill-brand-500' : 'fill-slate-200'}
           />
@@ -225,7 +225,7 @@ export function IllustratePagesScene() {
       {/* Add page, after the last page */}
       <g>
         <rect
-          x={418}
+          x={428}
           y={114}
           width={30}
           height={30}
@@ -235,7 +235,7 @@ export function IllustratePagesScene() {
           strokeDasharray="3 3"
         />
         <path
-          d="M433 122 v14 M426 129 h14"
+          d="M443 122 v14 M436 129 h14"
           className="stroke-slate-500"
           strokeWidth={1.8}
           strokeLinecap="round"
@@ -254,35 +254,30 @@ const SIZE_TILES: { label: string; w: number; h: number }[] = [
   { label: 'Square', w: 13, h: 13 },
   { label: 'Post', w: 11, h: 14 },
   { label: 'Story', w: 8, h: 14 },
+  { label: 'Slide', w: 16, h: 9 },
 ];
 
-const BACKGROUND_SWATCHES = [
-  'fill-white stroke-slate-300',
-  'fill-amber-50 stroke-slate-200',
-  'fill-slate-100 stroke-slate-200',
-  'fill-brand-100 stroke-brand-200',
-  'fill-emerald-100 stroke-emerald-200',
-  'fill-violet-100 stroke-violet-200',
-  'fill-rose-100 stroke-rose-200',
-];
-
-/** The page panel open beside its page: the name, the Page and Layouts tabs, the Size tiles,
- *  Portrait and Landscape, a row of backgrounds, and the page actions along the bottom. */
+/** The page panel open beside its page, on its Page tab: the name, the Page, Background and
+ *  Layouts tabs, the Size tiles four to a row (an infographic's seven, Slide last), Portrait and
+ *  Landscape, and the page actions along the bottom. The backgrounds have a tab of their own. */
 export function PagePanelScene() {
   const px = 196;
   const pw = 230;
   const ix = px + 10;
+  const cols = 4;
+  const gap = 4;
+  const tw = (pw - 20 - (cols - 1) * gap) / cols;
   return (
     <Scene w={436} h={262}>
       {/* The page, its cog lit while its panel is open */}
       <Label x={20} y={50} size={10} weight={600} tone="body">
-        Page 2 · Square
+        Page 2 · A4 · Portrait
       </Label>
       <Cog cx={161} cy={50} on />
-      <Sheet x={20} y={64} w={150} h={150}>
-        <TextBar x={40} y={86} w={90} h={9} tone="accent" />
-        <TextBar x={40} y={104} w={64} />
-        <rect x={40} y={124} width={110} height={70} rx={4} className="fill-brand-50" />
+      <Sheet x={30} y={64} w={130} h={180}>
+        <TextBar x={46} y={84} w={84} h={9} tone="accent" />
+        <TextBar x={46} y={102} w={60} />
+        <rect x={46} y={120} width={98} height={104} rx={4} className="fill-brand-50" />
       </Sheet>
       {/* The panel */}
       <rect
@@ -306,19 +301,26 @@ export function PagePanelScene() {
       <Label x={ix + 8} y={31.5} size={11} tone="muted">
         Page 2
       </Label>
-      <Tabs x={ix} y={50} items={['Page', 'Layouts']} active={0} tabW={(pw - 20) / 2} h={22} />
+      <Tabs
+        x={ix}
+        y={50}
+        items={['Page', 'Background', 'Layouts']}
+        active={0}
+        tabW={(pw - 20) / 3}
+        h={22}
+      />
       <SectionTitle x={ix} y={88}>
         Size
       </SectionTitle>
       {SIZE_TILES.map((t, i) => {
-        const tw = (pw - 20 - 5 * 2) / 6;
-        const tx = ix + i * (tw + 2);
-        const on = i === 3;
+        const tx = ix + (i % cols) * (tw + gap);
+        const ty = 96 + Math.floor(i / cols) * 40;
+        const on = i === 0;
         return (
           <g key={t.label}>
             <rect
               x={tx}
-              y={96}
+              y={ty}
               width={tw}
               height={36}
               rx={5}
@@ -327,7 +329,7 @@ export function PagePanelScene() {
             />
             <rect
               x={tx + tw / 2 - t.w / 2}
-              y={101}
+              y={ty + 5 + (14 - t.h) / 2}
               width={t.w}
               height={t.h}
               rx={1}
@@ -337,7 +339,7 @@ export function PagePanelScene() {
             />
             <Label
               x={tx + tw / 2}
-              y={124}
+              y={ty + 28}
               anchor="middle"
               size={10}
               weight={on ? 700 : 500}
@@ -348,41 +350,16 @@ export function PagePanelScene() {
           </g>
         );
       })}
-      <SectionTitle x={ix} y={148}>
+      <SectionTitle x={ix} y={188}>
         Orientation
       </SectionTitle>
       <Tabs
         x={ix}
-        y={156}
+        y={196}
         items={['Portrait', 'Landscape']}
         active={0}
         tabW={(pw - 20) / 2}
         h={22}
-      />
-      <SectionTitle x={ix} y={194}>
-        Background
-      </SectionTitle>
-      {BACKGROUND_SWATCHES.map((cls, i) => (
-        <rect
-          key={i}
-          x={ix + i * 24}
-          y={202}
-          width={18}
-          height={18}
-          rx={4}
-          className={cls}
-          strokeWidth={1.2}
-        />
-      ))}
-      <rect
-        x={ix - 2.5}
-        y={199.5}
-        width={23}
-        height={23}
-        rx={5.5}
-        fill="none"
-        className="stroke-brand-500"
-        strokeWidth={1.5}
       />
       {/* Page actions: duplicate, move left, move right, delete */}
       <line x1={px} y1={230} x2={px + pw} y2={230} className="stroke-slate-100" strokeWidth={1.2} />

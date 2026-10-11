@@ -280,12 +280,12 @@ export function EsMakeRoomScene() {
       {/* The lane the note will land on, lit while dragging */}
       <rect x={0} y={lane - 6} width={440} height={68} className="fill-brand-50" />
       <g className="help-art-as-drawn">
-        <EsNote x={16} y={lane} cls="fill-amber-400" text="CART" tilt={-1.5} />
-        <EsNote x={86} y={lane} cls="fill-amber-400" text="PAID" tilt={1} />
+        <EsNote x={16} y={lane} cls="fill-orange-300" text="CART" tilt={-1.5} />
+        <EsNote x={86} y={lane} cls="fill-orange-300" text="PAID" tilt={1} />
         {/* The command above the event moves with it */}
         <EsNote x={300} y={lane - 70} cls="fill-brand-300" text="SHIP" tilt={-1} />
-        <EsNote x={300} y={lane} cls="fill-amber-400" text="SHIPPED" tilt={1.5} />
-        <EsNote x={370} y={lane} cls="fill-amber-400" text="DONE" tilt={-1} />
+        <EsNote x={300} y={lane} cls="fill-orange-300" text="SHIPPED" tilt={1.5} />
+        <EsNote x={370} y={lane} cls="fill-orange-300" text="DONE" tilt={-1} />
       </g>
       {/* The slot that opens, and the note being dragged into it */}
       <rect
@@ -300,9 +300,9 @@ export function EsMakeRoomScene() {
         strokeDasharray="5 4"
       />
       <g className="help-art-as-drawn">
-        <EsNote x={172} y={lane - 30} cls="fill-amber-300" text="PACKED" tilt={4} ghost />
+        <EsNote x={172} y={lane - 30} cls="fill-orange-300" text="PACKED" tilt={4} ghost />
       </g>
-      <Cursor x={214} y={lane - 4} />
+      <Cursor x={220} y={lane + 14} />
       {/* Everything after the gap slides right */}
       <path d="M232 186 h52" className="stroke-brand-400" strokeWidth={2.2} strokeLinecap="round" />
       <path
