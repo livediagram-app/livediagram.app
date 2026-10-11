@@ -6,6 +6,7 @@
 // CSV end setup without a style.
 import { useEffect, useMemo, useState } from 'react';
 import { Button, CheckIcon, ChevronLeftIcon } from '@livediagram/ui';
+import { chartTypeOf } from '@livediagram/document';
 import { cardSourceOf, findCards, type BoardStatusTypes } from '@livediagram/items';
 import {
   cardsStarter,
@@ -138,7 +139,7 @@ export function SheetSetup({ onImportCsv }: { onImportCsv: () => void }) {
       // The template's charts, over its cells (each one undo step, as Insert Chart's).
       for (const ch of made.charts)
         c.placeChart?.(
-          ch.kind,
+          chartTypeOf({ shape: ch.kind })!,
           { range: ch.range, ...(ch.cols ? { cols: ch.cols } : {}) },
           ch.anchor,
           {

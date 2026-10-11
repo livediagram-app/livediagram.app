@@ -103,14 +103,18 @@ describe('the cell menu', () => {
     act(() => h.select('A1:B2'));
     fireEvent.click(fly('Insert Chart', 'Line Chart'));
     expect(h.placeChart).toHaveBeenCalledWith(
-      'line-chart',
+      'line',
       expect.any(Object),
       expect.objectContaining({ x: expect.any(Number), y: expect.any(Number) }),
     );
     expect(h.ctl().menu).toBeNull();
     for (const [name, kind] of [
-      ['Bar Chart', 'bar-chart'],
-      ['Pie Chart', 'pie-chart'],
+      ['Column Chart', 'column'],
+      ['Bar Chart', 'bar'],
+      ['Area Chart', 'area'],
+      ['Scatter Chart', 'scatter'],
+      ['Pie Chart', 'pie'],
+      ['Doughnut Chart', 'doughnut'],
     ] as const) {
       reopen();
       fireEvent.click(fly('Insert Chart', name));

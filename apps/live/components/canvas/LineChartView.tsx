@@ -1,6 +1,6 @@
 'use client';
 
-// Line chart (docs/specs/009-elements/pie-chart.md): a 2-D chart — shared x-axis `lineCategories` and one or
+// Line, Area and Scatter charts (docs/specs/009-elements/pie-chart.md "Chart types"): a 2-D chart — shared x-axis `lineCategories` and one or
 // more named `lineSeries`, each drawn as a polyline with point markers in the
 // theme palette, with an optional legend listing the series. Data is edited as
 // a grid (or imported from CSV) via the Data menu. Reuses the chart-family
@@ -8,7 +8,9 @@
 // animates; the axes + x-labels stay still.
 
 import {
-  chartAxisLabel,
+  AREA_FILL_OPACITY,
+  lineMarks,
+  lineVariantOf,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   legendFontPx,
@@ -40,30 +42,10 @@ export function LineChartView({
       : LINE_DEFAULT_CATEGORIES;
   const series =
     element.lineSeries && element.lineSeries.length > 0 ? element.lineSeries : LINE_DEFAULT_SERIES;
-  const n = categories.length;
-
-  const padL = 10;
-  const padTop = 12;
-  const padBottom = 22;
-  // Plot fills the chart area chartFrame leaves after the legend strip.
-  const plotX0 = area.x + padL;
-  const plotW = Math.max(1, area.w - padL - 8);
-  const plotY0 = area.y + padTop;
-  const plotH = Math.max(1, area.h - padTop - padBottom);
-
-  // Value range across every series, with 0 included so the baseline reads
-  // naturally; guard the degenerate all-equal case so the line isn't flat at
-  // the top edge.
-  let minV = 0;
-  let maxV = 0;
-  for (const s of series)
-    for (const v of s.values) {
-      if (v < minV) minV = v;
-      if (v > maxV) maxV = v;
-    }
-  if (maxV === minV) maxV = minV + 1;
-  const xAt = (i: number) => (n <= 1 ? plotX0 + plotW / 2 : plotX0 + (i / (n - 1)) * plotW);
-  const yAt = (v: number) => plotY0 + plotH - ((v - minV) / (maxV - minV)) * plotH;
+  // Line, Area or Scatter, laid out by the marks the export draws too.
+  const m = lineMarks(area, categories, series, lineVariantOf(element));
+  const { x: plotX0, y: plotY0, w: plotW, h: plotH } = m.plot;
+  const pointAt = (s: number, i: number) => m.points[s]?.[i] ?? { x: 0, y: 0 };
   const valAt = (s: number, i: number) => series[s]?.values[i] ?? 0;
 
   const group = chartAnim(element, `${plotX0 + plotW / 2}px ${plotY0 + plotH / 2}px`);
@@ -82,8 +64,8 @@ export function LineChartView({
       readout={
         hover ? (
           <ChartReadout
-            leftPct={(xAt(hover.i) / w) * 100}
-            topPct={(yAt(valAt(hover.s, hover.i)) / h) * 100}
+            leftPct={(pointAt(hover.s, hover.i).x / w) * 100}
+            topPct={(pointAt(hover.s, hover.i).y / h) * 100}
             label={`${categories[hover.i] ?? ''} · ${series[hover.s]?.name ?? ''}`}
             value={valAt(hover.s, hover.i)}
           />
@@ -110,23 +92,27 @@ export function LineChartView({
       <g className={group.className} style={group.style}>
         {series.map((s, si) => {
           const color = colorAt(si, s);
-          const pts = categories.map((_, i) => `${xAt(i)},${yAt(valAt(si, i))}`).join(' ');
           return (
             <g key={si}>
-              <polyline
-                points={pts}
-                fill="none"
-                stroke={color}
-                strokeWidth={2}
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
-              {categories.map((_, i) => (
+              {m.areas[si] ? (
+                <path d={m.areas[si]} fill={color} fillOpacity={AREA_FILL_OPACITY} />
+              ) : null}
+              {m.lines[si] ? (
+                <polyline
+                  points={m.lines[si]}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={2}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              ) : null}
+              {m.points[si]!.map((p, i) => (
                 <circle
                   key={i}
-                  cx={xAt(i)}
-                  cy={yAt(valAt(si, i))}
-                  r={3}
+                  cx={p.x}
+                  cy={p.y}
+                  r={m.dot}
                   fill={color}
                   {...markProps({ s: si, i })}
                 />
@@ -135,18 +121,19 @@ export function LineChartView({
           );
         })}
       </g>
-      {/* X-axis category labels, shortened only past the gap to the next one (chartAxisLabel). */}
-      {categories.map((c, i) => (
+      {/* X-axis labels: the categories, shortened only past the gap to the next one (chartAxisLabel), or a
+          scatter's numbers. */}
+      {m.labels.map((l, i) => (
         <text
           key={i}
-          x={xAt(i)}
+          x={l.x}
           y={plotY0 + plotH + 13}
           textAnchor="middle"
           fontSize={9}
           fill={textColor}
           fontFamily={fontFamily}
         >
-          {chartAxisLabel(c, plotW, n)}
+          {l.text}
         </text>
       ))}
     </ChartSurface>

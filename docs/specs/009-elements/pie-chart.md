@@ -3,14 +3,17 @@
 Data charts are elements whose marks are sized by value, in a categorical
 palette, with an optional legend. The palette holds them in its own top-level **Data**
 category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)):
-**Pie**, **Bar**, and **Line**, built so more chart kinds slot in beside them. They share the
+**Pie**, **Column**, and **Line**, built so more chart kinds slot in beside them. Each draws as one of seven
+**chart types** (Chart types, below): Column, Bar, Line, Area, Scatter, Pie and Doughnut. They share the
 animation set, legend toggle, and context-menu categories; pie + bar also share
 the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
 
 ## Behaviour
 
-- Drag a **Pie**, **Bar**, or **Line** chart in from the palette's **Data**
-  category. It drops with sample data. Each is a row with a one-line blurb
+- Drag a **Pie**, **Column**, or **Line** chart in from the palette's **Data**
+  category. It drops with sample data. (The Column tile was called **Bar** until October 2026; it makes the same
+  `bar-chart` element, named as Google Sheets and Excel name a chart of upright bars.) Any of them then becomes any
+  chart type from its menu's **Chart Type** section. Each is a row with a one-line blurb
   ("Proportions of a whole", "A trend over time") rather than a caption tile:
   the picture names the chart, not the job it does.
 - A **Data** context-menu category edits the chart. Pie / bar edit inline: one
@@ -56,6 +59,38 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   chart styles per-datum via its Data category, not as one filled box. Its
   **Presets** grid holds the chart palettes (see Chart palettes).
 
+## Chart types
+
+A **chart type** is how a chart draws its data, named as Google Sheets names it. Seven ship; each is a chart kind
+(the stored `shape`) and, for all but the first of its kind, a `chartVariant`:
+
+| Chart type | Kind (`shape`) | `chartVariant` | Draws                                                                                         |
+| ---------- | -------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| Column     | `bar-chart`    | (none)         | Upright bars from a baseline, one per datum                                                   |
+| Bar        | `bar-chart`    | `horizontal`   | Bars to the right from a left baseline, one per datum, top to bottom                          |
+| Line       | `line-chart`   | (none)         | A line with point markers per series                                                          |
+| Area       | `line-chart`   | `area`         | Line's lines, each with the area between it and zero filled in its colour at 25%, overlapping |
+| Scatter    | `line-chart`   | `scatter`      | A point per category per series, no lines, at x = the category read as a number (below)       |
+| Pie        | `pie-chart`    | (none)         | Wedges clockwise from twelve o'clock                                                          |
+| Doughnut   | `pie-chart`    | `doughnut`     | Pie's wedges with the middle open: a ring whose hole is 55% of its radius                     |
+
+- A chart with no `chartVariant`, or one its kind does not take, draws as its kind's first type, so every chart
+  made before chart types draws as it did.
+- **Scatter's x**: when every category reads as a number (`12`, `-3.5`, `1,200`), each point sits at its number on
+  an x-axis running from the least to the greatest (widened by 1 when they are all equal), labelled at five evenly
+  spaced values; otherwise the categories are evenly spaced, as Line's are, and labelled as Line's. Its readout reads
+  `x · series: y`.
+- **The Chart Type section** opens first in the chart's Tools flyout, closed until opened (as every section is): a
+  grid of seven tiles, each the type's glyph over its name, the chart's own type pressed. Hovering a tile previews
+  nothing; picking one changes the chart, one undo step, `Element · Changed · ChartType`.
+- **Changing type** keeps the chart's size, style, palette, legend and animation. Within a kind it only sets
+  `chartVariant`. Across kinds it moves the data: a pie or bar chart's slices become one series named **Series 1**
+  over their labels (their colours dropped, so the series takes the palette's first), and a line chart's first
+  series becomes the slices over its categories (below zero read as zero on a pie). A chart drawn from a Sheet
+  re-reads its range as the new type at once.
+- Who may: as every other chart change, someone who may edit the canvas (an Editor); a Participant and a Viewer get
+  no Chart Type section.
+
 ## Model
 
 Each chart is a `ShapeKind` (`'pie-chart'` / `'bar-chart'` / `'line-chart'`),
@@ -66,7 +101,12 @@ groups all three (they're all in `isSelfDrawingShape` too).
 - Line: `ShapeElement.lineCategories?: string[]` + `lineSeries?: LineSeries[]`
   (`{ name, color?, values: number[] }`), aligned to the categories — a 2-D
   dataset. `LINE_DEFAULT_CATEGORIES` / `LINE_DEFAULT_SERIES` seed a fresh chart.
-- All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?`.
+- All three share `pieAnim?` / `pieAnimSpeed?` / `pieAnimRepeat?` / `chartLegend?` / `chartLegendPosition?` and
+  `chartVariant?` (`'horizontal' | 'area' | 'scatter' | 'doughnut'`, Chart types above); `chartTypeOf(el)` and
+  `chartShapeOf(type)` map between a chart and its type, `chartTypeChange(el, type)` gives the patch that changes it
+  (`packages/document/src/chart-types.ts`), and `pieMarks` / `barMarks` / `lineMarks`
+  (`packages/document/src/chart-marks.ts`) lay out every type's marks for both the canvas views and the exporter, so
+  the two never draw a chart differently.
   The types + constants + `isPieShape` / `isBarShape` / `isLineShape` /
   `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
@@ -85,7 +125,7 @@ groups all three (they're all in `isSelfDrawingShape` too).
   shapes.
 - Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `track('Element', 'Added', 'Pie-chart' | 'Bar-chart' |
 'Line-chart')` on create, `track('Element', 'Changed', 'ChartData' | 'LineData'
-| 'ChartAnim' | 'ChartLegend')` on edits.
+| 'ChartAnim' | 'ChartLegend' | 'ChartType')` on edits.
 
 Follows the composite-component pattern ([Timeline rail](timeline-rail.md)): a dedicated
 `ShapeKind` + small `ShapeElement` fields + a bespoke `*View` + a borderless variant + a
@@ -95,7 +135,9 @@ context-menu category. New chart kinds reuse it under the same Data palette cate
 
 A chart may carry `chartSource` (a sheet and a range of it): its data is then read live from that Sheet's cells and
 the element's own data is the last read ([Sheet charts](../029-sheets/sheet.md#charts)). Its Data menu offers
-**Unlink From Sheet** in place of the data editor.
+**Unlink From Sheet** in place of the data editor. A Scatter chart from a Sheet whose first column holds numbers (so
+the read numbers its categories `1, 2, …` and makes that column a series) takes that column as its x and the other
+columns as its series, as a spreadsheet's scatter chart does.
 
 ## Chart palettes
 

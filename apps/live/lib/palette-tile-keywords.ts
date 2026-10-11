@@ -69,9 +69,9 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'timeline-rail': 'timeline roadmap milestones track',
   rating: 'stars score review out of five',
   legend: 'key colour code swatch label caption guide colour key',
-  'pie-chart': 'donut share split proportion chart',
-  'bar-chart': 'column histogram chart graph',
-  'line-chart': 'trend series graph chart plot',
+  'pie-chart': 'donut doughnut ring share split proportion chart',
+  'bar-chart': 'column bar horizontal histogram chart graph',
+  'line-chart': 'trend series graph chart plot area scatter xy',
   'code-block': 'code snippet syntax monospace program',
   checklist: 'todo tasks tick checkbox list',
   // Plan (docs/specs/026-plan/plan-mode.md): the words people bring from Jira, Trello and retros.

@@ -240,6 +240,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ChartLegend':
     "Someone turned a chart's legend on or off, or moved it to a different side.",
   'Element|Changed|ChartPalette': 'Someone applied a colour palette to a selected chart.',
+  'Element|Changed|ChartType':
+    'Someone changed how a selected chart draws its data: Column, Bar, Line, Area, Scatter, Pie or Doughnut.',
   'Element|Changed|Checklist': "Someone edited a checklist element's items.",
   'Element|Changed|CodeBlock':
     "Someone edited a code block element's snippet or its programming language.",

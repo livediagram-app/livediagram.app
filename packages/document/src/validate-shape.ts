@@ -5,6 +5,7 @@
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { isPlanSheetRef } from './element-types';
 import { isChartSource, isSheetAnchor } from './chart-source';
+import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
@@ -158,6 +159,11 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   { field: 'codeTheme', valid: (v) => isCodeThemeId(v as string), rule: 'a code theme id' },
   { field: 'mindFlow', valid: (v) => isMindFlow(v as string), rule: 'a mind flow' },
+  {
+    field: 'chartVariant',
+    valid: isChartVariant,
+    rule: oneOfRule(CHART_VARIANTS),
+  },
   {
     field: 'chartPalette',
     valid: (v) => isChartPaletteId(v as string),

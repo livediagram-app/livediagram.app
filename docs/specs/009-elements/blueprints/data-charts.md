@@ -1,4 +1,4 @@
-# Data charts (pie, bar, line) and the legend: blueprint
+# Data charts (pie, bar, line and their chart types) and the legend: blueprint
 
 Derived from [Data charts (pie + bar + line)](../pie-chart.md). The spec decides; this file only
 adds engineering precision. Defaults applied where the spec is silent are ledgered in
@@ -11,10 +11,14 @@ Scope, by file:
 | `packages/document/src/data-shapes.ts`                                                    | `PieSlice`, `PieAnim`, `PIE_ANIMS`, `PIE_LOOPING_ANIMS`, `PIE_PALETTE`, `PIE_DEFAULT_SLICES`, `LineSeries`, `LINE_DEFAULT_*`, `LegendItem`, `LEGEND_*`, the kind guards |
 | `packages/document/src/element-types.ts`                                                  | `ChartLegendPosition` and the chart / legend fields on `ShapeElement`                                                                                                   |
 | `packages/document/src/chart-frame.ts`                                                    | `chartFrame`: colours, data, legend strip, plot `area`                                                                                                                  |
+| `packages/document/src/chart-types.ts`                                                    | `ChartType`, `CHART_TYPES`, `CHART_TYPE_LABELS`, `ChartVariant`, `chartTypeOf`, `chartShapeOf`, `chartTypeChange`, `lineVariantOf`, `variantFitsKind`                   |
+| `packages/document/src/chart-marks.ts`                                                    | `pieMarks`, `barMarks`, `lineMarks`, `scatterX`: every type's geometry, for the views and the exporter                                                                  |
+| `apps/live/components/palette/ChartTypeTiles.tsx`                                         | The Chart Type section's seven tiles                                                                                                                                    |
+| `apps/live/components/primitives/ChartTypeIcon.tsx`                                       | One glyph per chart type (menus, tiles, the Dashboard picker)                                                                                                           |
 | `packages/document/src/chart-palettes.ts`                                                 | `ChartPaletteId`, `CHART_PALETTES`, `chartPaletteColors`, `isChartPaletteId`                                                                                            |
 | `packages/document/src/theme-presets.ts`                                                  | `themeChartPalette`: the tab theme's categorical ramp                                                                                                                   |
 | `packages/document/src/label-font.ts`                                                     | `LEGEND_FONT_PX`, `legendFontPx`                                                                                                                                        |
-| `packages/document/src/svg-render-charts.ts`                                              | `svgPieChart`, `svgBarChart`, `svgLineChart`                                                                                                                            |
+| `packages/document/src/svg-render-charts.ts`                                              | `svgPieChart`, `svgBarChart`, `svgLineChart` (each draws its kind's types from `chart-marks`)                                                                           |
 | `packages/document/src/svg-render-shapes.ts`                                              | `svgLegendShape`                                                                                                                                                        |
 | `packages/document/src/svg-render.ts`                                                     | Export: resolves the chart palette per tab, routes the legend                                                                                                           |
 | `packages/document/src/svg-render-body.ts`                                                | `svgElementBody`: routes the three charts to their emitters with the tab ramp                                                                                           |
@@ -42,6 +46,8 @@ Scope, by file:
 | Term             | Identifier                                              | Meaning                                                  |
 | ---------------- | ------------------------------------------------------- | -------------------------------------------------------- |
 | Chart            | `isChartShape(kind)`                                    | `'pie-chart' \| 'bar-chart' \| 'line-chart'`             |
+| Chart type       | `ChartType`, `chartTypeOf(el)`                          | Column, Bar, Line, Area, Scatter, Pie, Doughnut          |
+| Variant          | `chartVariant: ChartVariant`                            | `'horizontal' \| 'area' \| 'scatter' \| 'doughnut'`      |
 | Datum (1-D)      | `PieSlice = { label, value, color? }` in `pieSlices`    | One slice or bar                                         |
 | Category         | `lineCategories: string[]`                              | One x-axis position of a line chart                      |
 | Series           | `LineSeries = { name, color?, values }` in `lineSeries` | One line, a value per category                           |
@@ -103,6 +109,18 @@ the theme ramp is not consulted [QE3].
 - **Bar**: max of `max(0, value)` (or 1); side padding `min(20, area.w * 0.08)`; baseline at
   88 % of the area; slot width `innerW / n`, bar width `min(slot * 0.7, 48)`, corner radius
   `min(3, barW / 4)`; a slate-300 baseline.
+- Every type's geometry is `chart-marks`' (`pieMarks`, `barMarks`, `lineMarks`), in the element's own coordinates
+  for the views and offset by the element's `x` / `y` for the exporter; path text carries two decimals.
+- **Doughnut**: the pie's wedges as ring segments, hole `DOUGHNUT_HOLE` (0.55) of the radius, drawn with
+  `fill-rule="evenodd"`; a 100 % datum is two half rings with the hole cut out; readouts at the ring's middle radius.
+- **Bar** (horizontal): baseline at 6 % of the area's width, bars to 94 %; side padding `min(20, area.h * 0.08)`;
+  slot `innerH / n`, thickness `min(slot * 0.7, 48)`; animation origin the baseline's middle; readout at the bar's end.
+- **Area**: Line's marks plus, per series, a closed path from the zero line through its points, filled in its colour
+  at `AREA_FILL_OPACITY` (0.25), drawn under its line; overlapping, never stacked.
+- **Scatter**: points only (radius 4), no polyline. When every category passes `scatterX` (commas removed, a finite
+  number), x is linear from the least to the greatest (all equal: widened by 1) with `SCATTER_TICKS` (5) labels
+  written in a fixed locale (`toPrecision(3)`, exponent form past 1e6 or under 1e-3); otherwise evenly spaced and
+  labelled as Line.
 - **Line**: categories and series fall back to the defaults when empty; the value range always
   includes 0 (an all-equal range widens by 1); each series a polyline with point markers;
   readouts read `category · series: value` (D106).
@@ -129,7 +147,9 @@ independent of the key (D106).
 2. `LineDataDialog`: a row per category, a column per series, add and remove on both axes (never
    below one), **Import CSV** (`parseCsvLineData`), committing the whole dataset on each blur or
    structural change.
-3. Tools flyout, **Chart** section: `LegendPositionTiles` (Off / Top / Left / Right / Below), then
+3. Tools flyout, **Chart Type** section (first, before Data, closed until opened): `ChartTypeTiles`, a 4-column grid
+   of seven `SizeButton`s (glyph over name), the chart's `chartTypeOf` pressed; a pick runs `setChartTypeSelected`.
+   Tools flyout, **Chart** section: `LegendPositionTiles` (Off / Top / Left / Right / Below), then
    `LegendTextSize` while the key is on; picking Off unmounts it and shrinks the flyout [QE14].
 4. Animation section: `PieAnimTiles` replaces the boxed set.
 5. Style band: Colours and Border are hidden; **Presets** shows `ChartPalettePresets` (eight
@@ -149,6 +169,7 @@ independent of the key (D106).
 | `setPieAnimRepeatSelected(v)`             | `{ pieAnimRepeat }`                             | `ChartAnim`   |
 | `setChartLegendSelected(v)`               | `{ chartLegend: v }`                            | `ChartLegend` |
 | `setChartLegendPositionSelected(p)`       | `{ chartLegend: true, chartLegendPosition: p }` | `ChartLegend` |
+| `setChartTypeSelected(type)`              | each chart's own `chartTypeChange(el, type)`    | `ChartType`   |
 | `setLegendItemsSelected(items)` (legend)  | `{ legendItems }` capped to 40 rows, 120 chars  | `Legend`      |
 
 The data setters match every chart kind, so a mixed pie and line selection writes both field sets
@@ -176,6 +197,12 @@ export function chartFrame(
   area: ChartRect;
   legend: ChartLegendRect;
 };
+export type ChartType = 'column' | 'bar' | 'line' | 'area' | 'scatter' | 'pie' | 'doughnut';
+export type ChartVariant = 'horizontal' | 'area' | 'scatter' | 'doughnut';
+export function chartTypeOf(el: { shape: string; chartVariant?: unknown }): ChartType | null;
+export function chartShapeOf(type: ChartType): { shape: ChartKind; chartVariant?: ChartVariant };
+// Null when not a chart or already that type; across kinds also moves the data (spec "Changing type").
+export function chartTypeChange(el: ChartData, type: ChartType): ChartTypePatch | null;
 export function chartPaletteColors(id: string | undefined): readonly string[] | undefined;
 export function themeChartPalette(theme: ThemeDefinition): string[];
 export function legendFontPx(textSize: TextSize | undefined): number;
@@ -187,7 +214,8 @@ export function parseCsvLineData(
 Validation (`isValidElement`): `pieSlices`, `lineCategories`, `lineSeries` bounded to
 `MAX_DATA_ARRAY` entries; `chartPalette` must pass `isChartPaletteId`; `legendItems` bounded to
 `LEGEND_MAX_ITEMS`, each `label` a string of at most `LEGEND_MAX_TEXT`, `color` a string when
-present. Datum shapes, series values, `pieAnim*` and `chartLegendPosition` are not checked [GE5].
+present; `chartVariant` must be one of `CHART_VARIANTS`, and loading (`normaliseElement`) drops one its kind does not
+take (`variantFitsKind`). Datum shapes, series values, `pieAnim*` and `chartLegendPosition` are not checked [GE5].
 
 CSV contract: header row = category column label plus series names (blank names become
 `Series n`); each later non-blank row = category label (blank becomes `#n`) plus values;
@@ -203,6 +231,7 @@ data rows → `null`.
 | `pieAnim`, `pieAnimSpeed`, `pieAnimRepeat` | persisted | static / `'slow'` / loop rule  |
 | `chartLegend`, `chartLegendPosition`       | persisted | shown / `'bottom'`             |
 | `chartPalette`                             | persisted | follow the tab theme           |
+| `chartVariant`                             | persisted | the kind's first chart type    |
 | `textSize`                                 | persisted | `'md'` (14 px key)             |
 | `legendItems`                              | persisted | no rows                        |
 | colour ramps, layout rects                 | derived   | recomputed per render          |
@@ -225,6 +254,9 @@ Palette ids are permanent; names may change.
 | E9  | Series shorter than categories | A missing value reads as 0 (`valAt`)                              |
 | E10 | Custom tab theme in an export  | Export ramp from `getBuiltInTheme`, default scheme [GE3]          |
 | E11 | Legend exported on dark paper  | Rows in `el.textColor ?? '#1e293b'`, dark on the dark card [GE17] |
+| E12 | Variant its kind does not take | Draws as the kind's first type; dropped on load                   |
+| E13 | Scatter with a text category   | Evenly spaced x, labelled as Line                                 |
+| E14 | Type change of an empty chart  | No data moved; the new kind's sample data draws                   |
 
 ## Security and trust
 
@@ -237,7 +269,9 @@ CSS. CSV import runs locally on a user-picked file; nothing is uploaded.
 
 Worst case `MAX_DATA_ARRAY` (5 000) data per array: one path or rect per datum, one key row per
 datum (clipped by `overflow-hidden`). CSV caps keep an import at 12 × 200. The layout is a pure
-function per render; hover state is per view.
+function per render; hover state is per view. A Sheet's chart reads at most 500 categories × 12 series: exporting
+one measured 8.3 ms (Line), 10.5 ms (Area) and 3.3 ms (Scatter) on a laptop (October 2026); a guard test holds the
+Area and Scatter export under 80 ms.
 
 ## Presentation and UX
 
@@ -265,7 +299,7 @@ so its first open suspends at its own boundary rather than the editor's.
 
 Telemetry: `track('Element', 'Added', 'Pie-chart' | 'Bar-chart' | 'Line-chart' | 'Legend')` on
 create; `track('Element', 'Changed', 'ChartData' | 'LineData' | 'ChartAnim' | 'ChartLegend' |
-'ChartPalette' | 'Legend')` on edits. No log fingerprints; the CSV rejection and the value
+'ChartPalette' | 'ChartType' | 'Legend')` on edits. No log fingerprints; the CSV rejection and the value
 fallbacks are silent [GE12].
 
 ## Testing
@@ -273,6 +307,10 @@ fallbacks are silent [GE12].
 | Rule                                             | Test                                                                                                                                       | File                                                              |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | `isChartShape` is the three kinds                | is exactly the three chart kinds                                                                                                           | `packages/document/src/data-shapes.test.ts`                       |
+| Types map to kind + variant, changes move data   | chart types cases                                                                                                                          | `packages/document/src/chart-types.test.ts`                       |
+| Each type's marks, scatter x, export parity      | chart marks cases; chart types in the export                                                                                               | `packages/document/src/chart-marks.test.ts`                       |
+| Area / Scatter export of 500 × 12 within budget  | lays out 500 categories × 12 series quickly                                                                                                | `packages/document/src/chart-marks.test.ts`                       |
+| Chart Type tiles and setter                      | ChartTypeTiles; setChartTypeSelected cases                                                                                                 | `apps/live/components/palette/ChartTypeTiles.test.tsx`            |
 | Key Below by default, side strip, hidden         | chartFrame layout cases (seven)                                                                                                            | `apps/live/lib/chart.test.ts`                                     |
 | Per-datum colour, else cycle the palette         | prefers an explicit slice colour, else cycles the palette                                                                                  | `apps/live/lib/chart.test.ts`                                     |
 | Empty data falls back to samples                 | falls back to the default slices when the element has none                                                                                 | `apps/live/lib/chart.test.ts`                                     |
@@ -308,3 +346,6 @@ fallbacks are silent [GE12].
 | CSV caps                               | `MAX_SERIES` 12, `MAX_CATEGORIES` 200                 | `csv.ts` soft caps                   |
 | Sizes                                  | pie / bar 260 × 220, line 300 × 240, legend 180 × 132 | `SHAPE_DEFAULT_SIZE`                 |
 | Keyframe base durations                | grow 0.6 s, pop 0.5 s, spin 6 s, pulse 1.6 s          | `canvas-motion.css`                  |
+| `DOUGHNUT_HOLE`                        | 0.55 of the radius                                    | Spec "Chart types"; 0.3 to 0.75      |
+| `AREA_FILL_OPACITY`                    | 0.25                                                  | Spec "Chart types"; 0.15 to 0.4      |
+| `SCATTER_TICKS`                        | 5                                                     | Spec "Chart types"; 3 to 7           |

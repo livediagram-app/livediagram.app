@@ -62,7 +62,10 @@ const CONTENT_KINDS =
   'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
   'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
   'the legend. shape "line-chart": "lineCategories" is the x labels, "lineSeries" is ' +
-  '[{ "name", "values" }] with one value per category. A chart draws no title (a caption is a ' +
+  '[{ "name", "values" }] with one value per category. "chartVariant" picks the chart type: ' +
+  'on "bar-chart" "horizontal" draws a Bar chart (absent: upright columns); on "line-chart" "area" ' +
+  'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
+  'number; on "pie-chart" "doughnut" opens the middle. A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty.';
 
 // Self-contained element schema, attached to each tool's element argument so the

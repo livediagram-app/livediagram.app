@@ -227,9 +227,9 @@ function SheetWorkspace({
     notify: bridge.notify,
     // On another tab's Sheet (a Dashboard slot) a chart would land on the open tab: Insert Chart says to open the
     // Sheet's tab; a template set up there simply has no chart (sheet.md "Sheet templates").
-    placeChart: (kind, pick, anchor, opts) => {
+    placeChart: (type, pick, anchor, opts) => {
       if (!charts || charts.editable)
-        placeSheetChart(bridge, element, model.sheet!.id, kind, pick, anchor, opts);
+        placeSheetChart(bridge, element, model.sheet!.id, type, pick, anchor, opts);
       else if (!opts?.template) bridge.toast(OPEN_TAB_TO_CHART);
     },
     chartsRemoval: () =>

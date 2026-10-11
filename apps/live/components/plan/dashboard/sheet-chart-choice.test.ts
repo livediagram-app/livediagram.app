@@ -35,12 +35,15 @@ describe('a Sheet Chart', () => {
 
   it('names a chart by its type and the range it reads now', () => {
     const sheet = budgetSheet();
-    expect(sheetChartLabel(chart('a'), sheet)).toBe('Bar Chart · A1:B3');
+    expect(sheetChartLabel(chart('a'), sheet)).toBe('Column Chart · A1:B3');
     expect(sheetChartLabel(chart('p', { shape: 'pie-chart' }), sheet)).toBe('Pie Chart · A1:B3');
+    expect(
+      sheetChartLabel(chart('d', { shape: 'line-chart', chartVariant: 'scatter' }), sheet),
+    ).toBe('Scatter Chart · A1:B3');
     const gone = chart('g', {
       chartSource: { sheetId: SHEET_ID, range: { ...range, r1: 'gone0' } },
     });
-    expect(sheetChartLabel(gone, sheet)).toBe('Bar Chart');
+    expect(sheetChartLabel(gone, sheet)).toBe('Column Chart');
   });
 
   it('copies a chart as an element of its own, reading the same cells, leaving its place behind', () => {
@@ -69,12 +72,17 @@ describe('a Sheet Chart', () => {
 
   it('makes a new chart over a range typed as A1, or nothing for one that is not on the sheet', () => {
     const sheet = budgetSheet();
-    expect(newSlotChart(sheet, ' a1:b3 ', 'pie-chart')).toMatchObject({
+    expect(newSlotChart(sheet, ' a1:b3 ', 'pie')).toMatchObject({
       shape: 'pie-chart',
       chartSource: { sheetId: SHEET_ID, range },
     });
-    expect(newSlotChart(sheet, 'A1:C3', 'bar-chart')).toBeNull();
-    expect(newSlotChart(sheet, 'A1:B9', 'bar-chart')).toBeNull();
-    expect(newSlotChart(sheet, 'rent', 'bar-chart')).toBeNull();
+    expect(newSlotChart(sheet, 'A1:B3', 'doughnut')).toMatchObject({
+      shape: 'pie-chart',
+      chartVariant: 'doughnut',
+    });
+    expect(newSlotChart(sheet, 'A1:B3', 'column')).not.toHaveProperty('chartVariant');
+    expect(newSlotChart(sheet, 'A1:C3', 'column')).toBeNull();
+    expect(newSlotChart(sheet, 'A1:B9', 'column')).toBeNull();
+    expect(newSlotChart(sheet, 'rent', 'column')).toBeNull();
   });
 });

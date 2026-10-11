@@ -2633,8 +2633,9 @@ export const articles: Article[] = [
     slug: 'bar-and-line-charts',
     title: 'Bar and Line Charts',
     description:
-      'Bar charts from label and value rows, and multi-series line charts from a grid or a CSV import.',
-    keywords: 'graph series csv data plot axis columns trends bar chart line chart',
+      'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
+    keywords:
+      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',

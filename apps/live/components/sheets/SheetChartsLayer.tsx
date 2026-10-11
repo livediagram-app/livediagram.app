@@ -17,7 +17,13 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
-import { chartsInSheet, type Element, type ShapeElement } from '@livediagram/document';
+import {
+  CHART_TYPE_LABELS,
+  chartTypeOf,
+  chartsInSheet,
+  type Element,
+  type ShapeElement,
+} from '@livediagram/document';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { useSheetCharts } from './sheet-charts-context';
@@ -371,5 +377,5 @@ function ChartButton({
 }
 
 function chartName(el: ShapeElement): string {
-  return el.shape === 'pie-chart' ? 'Pie' : el.shape === 'line-chart' ? 'Line' : 'Bar';
+  return CHART_TYPE_LABELS[chartTypeOf(el) ?? 'column'];
 }

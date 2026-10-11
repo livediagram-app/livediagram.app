@@ -50,6 +50,31 @@ describe('a chart drawn from a sheet range', () => {
     ).not.toBeNull();
   });
 
+  it('takes a scatter chart’s x from a numbered read’s first column (pie-chart.md "Charts drawn from a sheet")', () => {
+    const numbered = {
+      categories: ['1', '2'],
+      series: [
+        { name: 'X', values: [5, 7] },
+        { name: 'Y', values: [1, 2] },
+      ],
+    };
+    const scatter = { shape: 'line-chart', chartVariant: 'scatter' };
+    expect(chartFieldsFromTable(scatter, numbered)).toEqual({
+      lineCategories: ['5', '7'],
+      lineSeries: [{ name: 'Y', values: [1, 2] }],
+    });
+    // Labelled categories, a single series, or a line chart keep the read as it is.
+    const labelled = { ...numbered, categories: ['Jan', 'Feb'] };
+    expect(chartFieldsFromTable(scatter, labelled)).toMatchObject({
+      lineCategories: ['Jan', 'Feb'],
+    });
+    const single = { categories: ['1', '2'], series: [numbered.series[1]!] };
+    expect(chartFieldsFromTable(scatter, single)).toMatchObject({ lineCategories: ['1', '2'] });
+    expect(chartFieldsFromTable({ shape: 'line-chart' }, numbered)).toMatchObject({
+      lineCategories: ['1', '2'],
+    });
+  });
+
   it('gives a bar its first series, a pie never below zero, and a line every series, keeping colours', () => {
     expect(
       chartFieldsFromTable(
