@@ -184,7 +184,10 @@ export function ArticleLayoutView({
       )}
 
       <div className="mx-auto max-w-7xl px-4 pb-8 pt-8 md:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row">
+        {/* A grid whose sidebar column exists before the sidebar does: a slow device paints the page
+            while still parsing it, and with a flex row the article took the full width until the
+            sidebar arrived, then narrowed (a large layout shift). */}
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_20rem]">
           <article className="min-w-0 flex-1">
             <div ref={contentRef}>
               <SectionedContent>{children}</SectionedContent>
