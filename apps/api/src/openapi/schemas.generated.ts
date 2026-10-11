@@ -1933,6 +1933,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": true,
         "type": "boolean"
       },
+      "nc": {
+        "type": "string"
+      },
       "nf": {
         "$ref": "#/components/schemas/NumberFormatKind"
       },
@@ -4718,6 +4721,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "DateOp": {
+    "enum": [
+      "valid",
+      "before",
+      "onOrBefore",
+      "after",
+      "onOrAfter",
+      "on",
+      "between",
+      "notBetween"
+    ],
+    "type": "string"
+  },
   "DecisionStatus": {
     "enum": [
       "proposed",
@@ -5404,6 +5420,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "const": "unseen_folder",
     "type": "string"
   },
+  "DropdownOption": {
+    "additionalProperties": false,
+    "properties": {
+      "c": {
+        "type": "string"
+      },
+      "v": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "v"
+    ],
+    "type": "object"
+  },
   "EditWarning": {
     "additionalProperties": false,
     "properties": {
@@ -6033,11 +6064,108 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fs": {},
       "ha": {},
       "i": {},
+      "nc": {},
       "nf": {},
       "st": {},
       "u": {},
       "va": {},
       "wr": {}
+    },
+    "type": "object"
+  },
+  "FormatRule": {
+    "additionalProperties": false,
+    "properties": {
+      "a": {
+        "type": "string"
+      },
+      "b": {
+        "type": "string"
+      },
+      "c1": {
+        "type": "string"
+      },
+      "c2": {
+        "type": "string"
+      },
+      "fx": {
+        "$ref": "#/components/schemas/StoredFormula"
+      },
+      "id": {
+        "type": "string"
+      },
+      "is": {
+        "enum": [
+          "when",
+          "scale"
+        ],
+        "type": "string"
+      },
+      "max": {
+        "$ref": "#/components/schemas/ScalePoint"
+      },
+      "mid": {
+        "$ref": "#/components/schemas/ScalePoint"
+      },
+      "min": {
+        "$ref": "#/components/schemas/ScalePoint"
+      },
+      "op": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/ConditionOp"
+          },
+          {
+            "const": "formula",
+            "type": "string"
+          }
+        ]
+      },
+      "r1": {
+        "type": "string"
+      },
+      "r2": {
+        "type": "string"
+      },
+      "style": {
+        "$ref": "#/components/schemas/FormatStyle"
+      }
+    },
+    "required": [
+      "c1",
+      "c2",
+      "id",
+      "is",
+      "r1",
+      "r2"
+    ],
+    "type": "object"
+  },
+  "FormatStyle": {
+    "additionalProperties": false,
+    "properties": {
+      "b": {
+        "const": true,
+        "type": "boolean"
+      },
+      "bg": {
+        "type": "string"
+      },
+      "fc": {
+        "type": "string"
+      },
+      "i": {
+        "const": true,
+        "type": "boolean"
+      },
+      "st": {
+        "const": true,
+        "type": "boolean"
+      },
+      "u": {
+        "const": true,
+        "type": "boolean"
+      }
     },
     "type": "object"
   },
@@ -8301,6 +8429,85 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "range"
         ],
         "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "k": {
+            "const": "vrule",
+            "type": "string"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationRule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "k",
+          "id",
+          "rule"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "number"
+          },
+          "id": {
+            "type": "string"
+          },
+          "k": {
+            "const": "frule",
+            "type": "string"
+          },
+          "rule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FormatRule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "k",
+          "id",
+          "rule"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "k": {
+            "const": "fruleOrder",
+            "type": "string"
+          }
+        },
+        "required": [
+          "k",
+          "ids"
+        ],
+        "type": "object"
       }
     ]
   },
@@ -8842,6 +9049,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "NumOp": {
+    "enum": [
+      "between",
+      "notBetween",
+      "gt",
+      "gte",
+      "lt",
+      "lte",
+      "eq",
+      "neq"
+    ],
+    "type": "string"
+  },
   "NumberFormatKind": {
     "enum": [
       "auto",
@@ -8854,7 +9074,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "time",
       "datetime",
       "duration",
-      "text"
+      "text",
+      "custom"
     ],
     "type": "string"
   },
@@ -11077,6 +11298,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ScalePoint": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "enum": [
+          "min",
+          "max",
+          "num",
+          "pct",
+          "pctile"
+        ],
+        "type": "string"
+      },
+      "c": {
+        "type": "string"
+      },
+      "v": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "c",
+      "at"
+    ],
+    "type": "object"
+  },
   "SelectionMode": {
     "enum": [
       "select",
@@ -12109,6 +12356,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "filter": {
         "$ref": "#/components/schemas/SheetFilter"
       },
+      "formatRules": {
+        "items": {
+          "$ref": "#/components/schemas/FormatRule"
+        },
+        "type": "array"
+      },
       "frozenCols": {
         "type": "number"
       },
@@ -12151,6 +12404,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rows": {
         "items": {
           "type": "string"
+        },
+        "type": "array"
+      },
+      "rules": {
+        "items": {
+          "$ref": "#/components/schemas/ValidationRule"
         },
         "type": "array"
       },
@@ -12342,6 +12601,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "SheetWriteRequest": {
     "additionalProperties": false,
     "properties": {
+      "unchecked": {
+        "type": "boolean"
+      },
       "undo": {
         "type": "boolean"
       },
@@ -14159,6 +14421,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "TextOp": {
+    "enum": [
+      "contains",
+      "notContains",
+      "exactly",
+      "email",
+      "url"
+    ],
+    "type": "string"
+  },
   "TextRun": {
     "additionalProperties": false,
     "properties": {
@@ -14367,6 +14639,94 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     "required": [
       "url"
+    ],
+    "type": "object"
+  },
+  "ValidationKind": {
+    "enum": [
+      "list",
+      "range",
+      "check",
+      "num",
+      "date",
+      "text"
+    ],
+    "type": "string"
+  },
+  "ValidationRule": {
+    "additionalProperties": false,
+    "properties": {
+      "a": {
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "b": {
+        "type": "number"
+      },
+      "c1": {
+        "type": "string"
+      },
+      "c2": {
+        "type": "string"
+      },
+      "help": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "is": {
+        "$ref": "#/components/schemas/ValidationKind"
+      },
+      "op": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/NumOp"
+          },
+          {
+            "$ref": "#/components/schemas/DateOp"
+          },
+          {
+            "$ref": "#/components/schemas/TextOp"
+          }
+        ]
+      },
+      "opts": {
+        "items": {
+          "$ref": "#/components/schemas/DropdownOption"
+        },
+        "type": "array"
+      },
+      "r1": {
+        "type": "string"
+      },
+      "r2": {
+        "type": "string"
+      },
+      "show": {
+        "enum": [
+          "arrow",
+          "plain"
+        ],
+        "type": "string"
+      },
+      "src": {
+        "$ref": "#/components/schemas/IdRange"
+      },
+      "warn": {
+        "const": true,
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "c1",
+      "c2",
+      "id",
+      "is",
+      "r1",
+      "r2"
     ],
     "type": "object"
   },
