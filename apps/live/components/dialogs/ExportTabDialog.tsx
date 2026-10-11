@@ -58,7 +58,9 @@ const EXPORT_LABEL: Record<Format, string> = {
 // A text format taken (downloaded or copied): CSV counts as its board's or Sheet's own CSV download, as the tab menu's
 // Download CSV did; every other format as the document's export.
 function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
-  if (format === 'csv') track(tab.kind === 'sheet' ? 'Sheet' : 'Plan', 'Exported', 'Csv');
+  // Literal pairs, so the telemetry coverage test finds both.
+  if (format === 'csv' && tab.kind === 'sheet') track('Sheet', 'Exported', 'Csv');
+  else if (format === 'csv') track('Plan', 'Exported', 'Csv');
   else track('Document', 'Exported', EXPORT_LABEL[format]);
 }
 
