@@ -64,6 +64,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'lean-coffee': 'facilitate',
   'crazy-eights': 'facilitate',
   'meeting-agenda': 'facilitate',
+  // Boards that ship a dot vote: only Facilitate's Session strip can watch, end and keep a vote.
+  'affinity-map': 'facilitate',
+  'prioritization-matrix': 'facilitate',
+  'risk-matrix': 'facilitate',
 };
 
 /** The mode a template's tab opens in. */
