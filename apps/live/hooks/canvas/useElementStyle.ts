@@ -150,6 +150,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
   } = useDataShapeSetters({
@@ -429,6 +430,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setPieAnimRepeatSelected,
     setChartLegendSelected,
     setChartLegendPositionSelected,
+    setChartTypeSelected,
     unlinkChartSelected,
     setLineDataSelected,
     applyShapeColorPresetSelected,

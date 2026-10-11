@@ -4,7 +4,12 @@
 // then, for the Sheet picked, the charts already drawn from it (a copy of one fills the slot) or a new one over a
 // range typed as A1, of a type (Bar, Line, Pie). A choice hands the slot its chart element and closes the picker.
 import { useMemo, useState } from 'react';
-import type { ShapeElement } from '@livediagram/document';
+import {
+  CHART_TYPE_LABELS,
+  CHART_TYPES,
+  type ChartType,
+  type ShapeElement,
+} from '@livediagram/document';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import {
   DONE,
@@ -19,13 +24,10 @@ import {
 import { TabWaiting } from './TabWaiting';
 import {
   NOT_A_RANGE,
-  SLOT_CHART_KINDS,
-  SLOT_CHART_NAMES,
   newSlotChart,
   sheetChartLabel,
   sheetChartsOf,
   slotChartFrom,
-  type SlotChartKind,
 } from './sheet-chart-choice';
 
 export function SheetChartSource({
@@ -91,7 +93,7 @@ function NewChart({
   onAdd: (chart: ShapeElement) => void;
 }) {
   const [text, setText] = useState('');
-  const [kind, setKind] = useState<SlotChartKind>('bar-chart');
+  const [kind, setKind] = useState<ChartType>('column');
   const [problem, setProblem] = useState(false);
   return (
     <form
@@ -125,8 +127,8 @@ function NewChart({
       </label>
       <div className="flex items-center gap-2 px-1">
         <span className="w-10 text-[12px] text-slate-500 dark:text-slate-400">Type</span>
-        <div role="radiogroup" aria-label="Type" className="flex gap-1">
-          {SLOT_CHART_KINDS.map((k) => (
+        <div role="radiogroup" aria-label="Type" className="flex flex-wrap gap-1">
+          {CHART_TYPES.map((k) => (
             <button
               key={k}
               type="button"
@@ -135,7 +137,7 @@ function NewChart({
               onClick={() => setKind(k)}
               className={`cursor-pointer rounded-full border px-2.5 py-0.5 text-[12px] transition ${kind === k ? `border-brand-400 ${ON} dark:border-brand-500/60` : 'border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'}`}
             >
-              {SLOT_CHART_NAMES[k]}
+              {CHART_TYPE_LABELS[k]}
             </button>
           ))}
         </div>

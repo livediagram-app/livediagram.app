@@ -9,6 +9,7 @@
 
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from './code-themes';
+import { variantFitsKind } from './chart-types';
 import { entityHeight } from './entity-geometry';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
@@ -54,6 +55,10 @@ function normaliseEntity(el: Raw): Raw {
 
 function normaliseChart(el: Raw): Raw {
   const out = { ...el };
+  // A variant its kind does not take (docs/specs/009-elements/pie-chart.md "Chart types") draws as the kind's first
+  // type anyway; dropped, so what is stored says what is drawn.
+  if (out.chartVariant !== undefined && !variantFitsKind(String(el.shape), out.chartVariant))
+    delete out.chartVariant;
   if (Array.isArray(el.pieSlices))
     out.pieSlices = el.pieSlices.filter(isRecord).map((s) => ({
       ...s,

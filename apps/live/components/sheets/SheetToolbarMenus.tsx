@@ -4,7 +4,8 @@
 // PortalMenu, the colour ones with the shared colour row (theme swatches, your colours, a custom colour).
 import { BORDER_LINES, SheetBordersPicker, type BorderLine } from './SheetBordersPicker';
 import { useState } from 'react';
-import { FONTS } from '@livediagram/document';
+import { CHART_TYPE_LABELS, CHART_TYPES, FONTS } from '@livediagram/document';
+import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import {
   FONT_SIZE_DEFAULT,
   formatRange,
@@ -39,6 +40,7 @@ export type ToolbarMenuKind =
   | 'merge'
   | 'wrap'
   | 'sort'
+  | 'chart'
   | 'freeze'
   | 'more'
   // A family of functions (SheetFunctionMenu).
@@ -288,6 +290,17 @@ export function SheetToolbarMenu({
           />
         </>
       ) : null}
+      {kind === 'chart'
+        ? CHART_TYPES.map((type) => (
+            <MenuActionRow
+              key={type}
+              plain
+              label={`${CHART_TYPE_LABELS[type]} Chart`}
+              icon={<ChartTypeIcon type={type} />}
+              onClick={act(() => actions.insertChart(type))}
+            />
+          ))
+        : null}
       {kind === 'freeze' ? <SheetFreezeRows actions={actions} onDone={onClose} /> : null}
       {kind === 'more'
         ? folded.map((b) => (

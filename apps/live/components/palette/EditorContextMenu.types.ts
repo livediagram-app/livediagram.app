@@ -13,6 +13,7 @@ import type {
   BorderStroke,
   BorderStyle,
   ChartLegendPosition,
+  ChartType,
   ChecklistItem,
   EntityField,
   AgendaItem,
@@ -178,6 +179,8 @@ export type EditorContextMenuProps = {
   onSetPieAnimRepeat: (value: boolean) => void;
   onSetChartLegend: (value: boolean) => void;
   onSetChartLegendPosition: (position: ChartLegendPosition) => void;
+  // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): Column, Bar, Line, Area, Scatter, Pie, Doughnut.
+  onSetChartType: (type: ChartType) => void;
   // A chart drawn from a sheet range: make it an ordinary chart, keeping its last read.
   onUnlinkChart: () => void;
   // Line chart (docs/specs/009-elements/pie-chart.md): open the data modal for the given element (the 2-D

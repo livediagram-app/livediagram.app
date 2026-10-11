@@ -2352,6 +2352,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ChartVariant": {
+    "enum": [
+      "horizontal",
+      "area",
+      "scatter",
+      "doughnut"
+    ],
+    "type": "string"
+  },
   "ChecklistItem": {
     "additionalProperties": false,
     "properties": {
@@ -11178,6 +11187,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "chartSource": {
         "$ref": "#/components/schemas/ChartSource"
+      },
+      "chartVariant": {
+        "$ref": "#/components/schemas/ChartVariant"
       },
       "checklistItems": {
         "items": {

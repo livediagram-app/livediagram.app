@@ -4,7 +4,7 @@
 // tab, drawn at the slot's size and read live from its Sheet (SheetLinkedChart), its last read while the sheet loads
 // or once it is gone. Showing it asks for the sheet's tab, so the read finds it. An Editor changes it from Change
 // Chart in the slot's cog (SlotSection); anyone may look.
-import type { ShapeElement } from '@livediagram/document';
+import { CHART_TYPE_LABELS, chartTypeOf, type ShapeElement } from '@livediagram/document';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { SheetLinkedChart } from '@/components/sheets/SheetLinkedChart';
@@ -12,7 +12,6 @@ import { planPalette } from '../plan-palette';
 import { tabsStateOf, useDashboard } from './dashboard-context';
 import { TabWaiting } from './TabWaiting';
 import { useSheetRead } from './useSheetReader';
-import { SLOT_CHART_NAMES, type SlotChartKind } from './sheet-chart-choice';
 
 export function DashboardSheetChart({
   element,
@@ -29,7 +28,7 @@ export function DashboardSheetChart({
   return (
     <div
       role="group"
-      aria-label={`${SLOT_CHART_NAMES[element.shape as SlotChartKind] ?? 'Bar'} chart`}
+      aria-label={`${CHART_TYPE_LABELS[chartTypeOf(element) ?? 'column']} chart`}
       className="absolute inset-0 overflow-hidden"
     >
       <SheetLinkedChart element={element}>

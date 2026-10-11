@@ -4,9 +4,8 @@
 // parts through context: the selection, the cell being edited and its draft, the grid's scroll and size, the menu
 // open over it, and the write helper every command goes through. Lives inside MaximisableSlot, so maximising and
 // restoring keep all of it.
-import type { SheetChartKind } from './sheet-charts';
 import type { ChartPick, PlaceChartOpts } from './sheet-charts';
-import type { SheetAnchor } from '@livediagram/document';
+import type { ChartType, SheetAnchor } from '@livediagram/document';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {
@@ -103,7 +102,7 @@ export type SheetController = {
   notify: (message: string) => void;
   // Place a chart reading `range` in the Sheet at `anchor` (sheet-charts.ts).
   placeChart?: (
-    kind: SheetChartKind,
+    type: ChartType,
     pick: ChartPick,
     anchor: SheetAnchor,
     opts?: PlaceChartOpts,
@@ -155,7 +154,7 @@ export function useSheetControllerState(opts: {
   toast: (message: string) => void;
   notify: (message: string) => void;
   placeChart?: (
-    kind: SheetChartKind,
+    type: ChartType,
     pick: ChartPick,
     anchor: SheetAnchor,
     opts?: PlaceChartOpts,

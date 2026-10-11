@@ -235,7 +235,7 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 | Text      | **Bold**, **Italic**, **Underline**, **Strikethrough** · **Text Colour** (a quick row of the one [colour picker](../004-interface-design/colour-picker.md): the Theme Palette's first five, the cell's picked, and **More Text Colours** (the four-dot glyph) for the full picker) · **Font**, **Font Size** (· a divider)                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Cells     | **Fill Colour**, **Borders** · **Align Left**, **Align Centre**, **Align Right** · **Align Top**, **Align Middle**, **Align Bottom** · **Merge Cells**, **Wrap Text**, **Freeze** (rows, columns) · **Clear Formatting**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | Numbers   | **Number Format** (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text), **Fewer Decimals**, **More Decimals**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| Data      | **Sort** (A to Z, Z to A, Custom Sort…), **Filter** (on or off) · **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Data      | **Sort** (A to Z, Z to A, Custom Sort…), **Filter** (on or off) · **Insert Chart** (a menu of the seven chart types, each its glyph and name: Column, Bar, Line, Area, Scatter, Pie, Doughnut; [Charts](#charts))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Functions | A menu per family of functions, each its glyph beside its name (Maths a calculator, Statistics a rising column chart, Logic a fork, Information an info circle, Lookup a magnifier, Text a T, Date and Time a calendar, Arrays a grid, Finance coins, Plan Cards a kanban square), **Maths**, **Statistics**, **Logic**, **Information**, **Lookup**, **Text**, **Date and Time**, **Arrays**, **Finance**, **Plan Cards** (named "Maths Functions" and so on: every function of the family the engine knows, each with its arguments and summary from the engine's catalogue, scrolling; a pick with several cells selected writes it over them into the cell below, `=SUM(B2:B6)`, else starts it in the active cell) · **All Functions** (shown as "All Functions…") |
 
 - **Search**, at the toolbar's far right after a divider (a magnifier and the word, tooltip "Search for a function"),
@@ -250,9 +250,9 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 - On a desktop, a mouse resting on the switcher (about 120 ms) opens its menu, which stays open while the pointer
   moves into it and closes a moment (250 ms) after it leaves both; hovering never changes the category, only a pick
   does. Touch and the keyboard open it with a press, as before.
-- `·` is a divider: each category sets its logical groups apart (Numbers: the format · the decimals; Cells: the colours · the alignments · Merge, Wrap and Freeze · Clear Formatting; Data: Sort and Filter · the charts; Functions: the five · All Functions). The everyday actions are buttons (the six alignments, pressed
+- `·` is a divider: each category sets its logical groups apart (Numbers: the format · the decimals; Cells: the colours · the alignments · Merge, Wrap and Freeze · Clear Formatting; Data: Sort and Filter · Insert Chart; Functions: the five · All Functions). The everyday actions are buttons (the six alignments, pressed
   for the active cell, glyphs alone; a pressed horizontal alignment pressed again goes back to automatic, Align Middle
-  is the default); only the rarer ones (Fill Colour, Borders, Merge Cells, Wrap Text, Number Format, Sort, Freeze)
+  is the default); only the rarer ones (Fill Colour, Borders, Merge Cells, Wrap Text, Number Format, Sort, Freeze, Insert Chart)
   open a menu.
 - Switching category cascades the new buttons in (the shared cascade, a small rise and fade a beat apart, within the
   motion budget; still under reduced motion); the toolbar's first paint does not animate.
@@ -437,7 +437,7 @@ named in full and on show, the rarer ones in side flyouts, short enough to fit a
 | Shift Cells   | **Insert Cells, Shift Right**, **Insert Cells, Shift Down**, **Delete Cells, Shift Left**, **Delete Cells, Shift Up** |
 | Hide          | **Hide Row 4** / **Hide Rows 2 to 4**, **Hide Column B** / **Hide Columns B to C**                                    |
 | Paste Special | **Values Only**, **Formatting Only**                                                                                  |
-| Insert Chart  | **Bar Chart**, **Line Chart**, **Pie Chart** ([Charts](#charts))                                                      |
+| Insert Chart  | **Column Chart**, **Bar Chart**, **Line Chart**, **Area Chart**, **Scatter Chart**, **Pie Chart**, **Doughnut Chart** |
 
 Every row closes the menu once it has acted. A merge that would drop values asks the same thing from here and
 from the toolbar: "Merging keeps only the top-left value. Merge B2:C4?" (**Cancel**, **Merge**). Someone who may only
@@ -602,17 +602,18 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
 
 ## Charts
 
-- **Insert Chart** makes a pie, bar or line chart ([Pie chart](../009-elements/pie-chart.md)) from the sheet's cells:
-  the toolbar's **Data** category (**Bar Chart**, **Line Chart**, **Pie Chart**) and the cell menu's **Chart**
-  section. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
+- **Insert Chart** makes a chart of any of the seven chart types (Column, Bar, Line, Area, Scatter, Pie, Doughnut;
+  [Chart types](../009-elements/pie-chart.md#chart-types)) from the sheet's cells: the toolbar's **Data** category
+  (its **Insert Chart** menu) and the cell menu's **Insert Chart** flyout. It reads the selection; a single cell reads the block of data around it (a spreadsheet's current
   region). A single empty cell with nothing around it says "Select the cells to chart first".
 - Several ranges picked together (Ctrl or ⌘ and a drag: the labels in A2:A5 and the amounts in C2:C5) chart as one:
   the rows they span, and only the columns picked, in the sheet's order, so a column between them (Category in B) is
   left out.
 - The range is read as a spreadsheet does: a first row with no numbers among the values names the series; a first
   column of text or dates labels the categories (numbered 1, 2, … without one); every other column is a series
-  ("Column B" when unnamed). A pie or bar chart shows the first series (a pie never below zero); a line chart shows
-  them all. Rows a filter hides are left out. At most 500 categories and 12 series are read.
+  ("Column B" when unnamed). A pie, doughnut, column or bar chart shows the first series (a pie or doughnut never
+  below zero); a line, area or scatter chart shows them all. A scatter chart whose first column holds numbers takes
+  that column as its x. Rows a filter hides are left out. At most 500 categories and 12 series are read.
 - The chart is an ordinary chart element whose `chartSource` names the sheet and the range by stable row and
   column ids, and, when only some of its columns were picked, those columns (`cols`), so it grows with rows inserted
   inside the range and follows moves. Its data is read live: change

@@ -151,7 +151,7 @@ describe('the charts in a Sheet', () => {
       bridge,
       { x: 0, y: 0, width: 900, height: 500 } as ShapeElement,
       SHEET_ID,
-      'pie-chart',
+      'pie',
       { range },
       { x: 300, y: 24 },
     );

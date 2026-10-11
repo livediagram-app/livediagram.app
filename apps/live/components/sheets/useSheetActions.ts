@@ -3,14 +3,9 @@
 // Everything a Sheet's keys, toolbar and menus do (docs/specs/029-sheets/sheet.md "Editing", "Keyboard",
 // "Formatting", "Rows and columns", "Sort", "Filter", "Freeze"), built from the engine's command builders and sent
 // through the controller's write. One place, so a toolbar button and its shortcut can never differ.
-import {
-  chartRangeOf,
-  chartSizeOf,
-  newChartAnchor,
-  NOTHING_TO_CHART,
-  type SheetChartKind,
-} from './sheet-charts';
+import { chartRangeOf, chartSizeOf, newChartAnchor, NOTHING_TO_CHART } from './sheet-charts';
 import { useMemo } from 'react';
+import type { ChartType } from '@livediagram/document';
 import {
   PARSE_FAILURE_COPY,
   appendAxis,
@@ -323,7 +318,7 @@ export function useSheetActions() {
         c.write(setFilterCondition(colId, cond), 'Filter');
       },
       // Insert Chart: the selection (or the data around the cell) as a chart in the Sheet, beside it, in view.
-      insertChart(kind: SheetChartKind) {
+      insertChart(type: ChartType) {
         const pick = chartRangeOf(c.workbook, c.sheet, c.selectionNow());
         if (!pick) return c.toast(NOTHING_TO_CHART);
         const view = {
@@ -331,9 +326,9 @@ export function useSheetActions() {
           height: Math.max(0, c.view.height - c.geometry.headH),
         };
         c.placeChart?.(
-          kind,
+          type,
           pick,
-          newChartAnchor(c.geometry, c.sheet, pick, chartSizeOf(kind), c.scroll, view),
+          newChartAnchor(c.geometry, c.sheet, pick, chartSizeOf(type), c.scroll, view),
         );
       },
       // Clear Sheet: the sheet back to how a placed one starts (Setup Sheet shows again), its charts taken with it (a

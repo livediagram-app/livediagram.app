@@ -1,6 +1,8 @@
 import {
+  chartTypeChange,
   clampRating,
   isChartShape,
+  type ChartType,
   type AnimationSpeed,
   type ChartLegendPosition,
   type Element,
@@ -10,6 +12,7 @@ import {
   type RatingAnim,
 } from '@livediagram/document';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
+import { track } from '@/lib/telemetry';
 
 // THE DATA CATEGORY'S SETTERS: the star rating (docs/specs/009-elements/rating.md) and the charts
 // (docs/specs/009-elements/pie-chart.md) — pie slices, line series, the legend and their animations.
@@ -78,7 +81,22 @@ export function useChartSetters({
   // and makes it an ordinary chart, edited by hand.
   const unlinkChartSelected = () =>
     setPieFieldSelected({ chartSource: undefined, sheetAnchor: undefined }, 'ChartData');
+  // Chart type (docs/specs/009-elements/pie-chart.md "Chart types"): each selected chart its own patch, since a
+  // change across kinds moves that chart's own data. One commit, so one undo step, as the shape patcher's.
+  const setChartTypeSelected = (type: ChartType) => {
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!ids.has(el.id) || el.type !== 'shape') return el;
+        const patch = chartTypeChange(el, type);
+        return patch ? { ...el, ...patch } : el;
+      }),
+    );
+    track('Element', 'Changed', 'ChartType');
+  };
   return {
+    setChartTypeSelected,
     unlinkChartSelected,
     setRatingSelected,
     setRatingAnimSelected,

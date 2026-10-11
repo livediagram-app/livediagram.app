@@ -1,10 +1,12 @@
 // Charts made from a sheet's cells (docs/specs/029-sheets/sheet.md "Charts"): Insert Chart turns the selection (or,
-// for one cell, the block of data it sits in) into a pie, bar or line chart element linked to that range, sitting in
+// for one cell, the block of data it sits in) into a chart element of any chart type linked to that range, sitting in
 // the Sheet at an anchor over its cells (beside the range, inside the cells in view), drawn by the Sheet and selected
 // there. Its own canvas place is over the Sheet's top right, for what does not draw the grid (exports, agents).
 import {
   CHART_SOURCE_COLS_MAX,
+  chartShapeOf,
   chartsInSheet,
+  type ChartType,
   createShape,
   type Element,
   SHEET_ANCHOR_MAX,
@@ -24,8 +26,6 @@ import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { track } from '@/lib/telemetry';
 import type { Geometry } from './sheet-geometry';
-
-export type SheetChartKind = 'bar-chart' | 'line-chart' | 'pie-chart';
 
 export const NOTHING_TO_CHART = 'Select the cells to chart first';
 
@@ -97,9 +97,9 @@ export function newChartAnchor(
   };
 }
 
-// The size a new chart of `kind` takes.
-export function chartSizeOf(kind: SheetChartKind): { width: number; height: number } {
-  const probe = createShape(kind, 0, 0);
+// The size a new chart of `type` takes (its kind's).
+export function chartSizeOf(type: ChartType): { width: number; height: number } {
+  const probe = createShape(chartShapeOf(type).shape, 0, 0);
   return { width: probe.width, height: probe.height };
 }
 
@@ -119,18 +119,19 @@ export type PlaceChartOpts = {
   template?: true;
 };
 
-// Place a chart of `kind` reading `range` in the Sheet at `anchor`; on the canvas, over the Sheet element's top right
+// Place a chart of `type` reading `range` in the Sheet at `anchor`; on the canvas, over the Sheet element's top right
 // (at its left edge when the Sheet is narrower than the chart). One undo step; not selected on the canvas.
 export function placeSheetChart(
   bridge: SheetsBridge,
   sheetEl: ShapeElement,
   sheetId: string,
-  kind: SheetChartKind,
+  type: ChartType,
   pick: ChartPick,
   anchor: SheetAnchor,
   opts: PlaceChartOpts = {},
 ): void {
-  const probe = { ...createShape(kind, 0, 0), ...(opts.size ?? {}) };
+  const { shape, chartVariant } = chartShapeOf(type);
+  const probe = { ...createShape(shape, 0, 0), ...(opts.size ?? {}) };
   const x = Math.max(
     sheetEl.x + probe.width / 2,
     sheetEl.x + sheetEl.width - INSET_PX - probe.width / 2,
@@ -140,7 +141,8 @@ export function placeSheetChart(
     { x, y },
     (cx, cy) => {
       const el: ShapeElement = {
-        ...createShape(kind, cx, cy),
+        ...createShape(shape, cx, cy),
+        ...(chartVariant ? { chartVariant } : {}),
         ...(opts.size ?? {}),
         ...(opts.palette ? { chartPalette: opts.palette } : {}),
         chartSource: { sheetId, range: pick.range, ...(pick.cols ? { cols: pick.cols } : {}) },

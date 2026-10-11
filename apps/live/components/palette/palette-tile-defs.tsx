@@ -1508,9 +1508,11 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     id: 'data:bar',
     blurb: 'Compare values side by side',
     section: 'data',
-    label: 'Add Bar Chart',
-    caption: 'Bar',
-    description: 'A bar chart. Edit its labels + values from the Data menu.',
+    // Upright bars: a Column chart, as Google Sheets and Excel name it (docs/specs/009-elements/pie-chart.md
+    // "Chart types"); its Chart Type menu turns it into a Bar chart (horizontal) or any other type.
+    label: 'Add Column Chart',
+    caption: 'Column',
+    description: 'A column chart. Edit its labels + values from the Data menu.',
     filled: true,
     action: { type: 'shape', kind: 'bar-chart' },
     icon: (

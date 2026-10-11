@@ -23,7 +23,6 @@ import {
 import type { SheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 import {
-  BarChartIcon,
   BordersIcon,
   ClearFormatIcon,
   DecimalsIcon,
@@ -33,10 +32,8 @@ import {
   FontSizeIcon,
   FreezeIcon,
   HAlignIcon,
-  LineChartIcon,
   MergeIcon,
   NumberFormatIcon,
-  PieChartIcon,
   SigmaIcon,
   FUNCTION_FAMILY_ICONS,
   SortIcon,
@@ -45,6 +42,7 @@ import {
   WrapIcon,
 } from './sheet-icons';
 import { type ToolbarMenuKind } from './SheetToolbarMenus';
+import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import { FUNCTION_FAMILY_LABELS } from './SheetFunctionMenu';
 
 export type ToolbarButton = {
@@ -264,25 +262,14 @@ export function toolbarCategories(
           pressed: !!c.sheet.layout.filter,
           run: () => actions.toggleFilter(),
         },
-        // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts").
+        // Charts read the data, so they sit with it (docs/specs/029-sheets/sheet.md "Charts"): one menu of the seven
+        // chart types.
         {
-          id: 'bar-chart',
-          label: 'Bar Chart',
-          icon: <BarChartIcon />,
+          id: 'chart',
+          label: 'Insert Chart',
+          icon: <ChartTypeIcon type="column" />,
           separatorBefore: true,
-          run: () => actions.insertChart('bar-chart'),
-        },
-        {
-          id: 'line-chart',
-          label: 'Line Chart',
-          icon: <LineChartIcon />,
-          run: () => actions.insertChart('line-chart'),
-        },
-        {
-          id: 'pie-chart',
-          label: 'Pie Chart',
-          icon: <PieChartIcon />,
-          run: () => actions.insertChart('pie-chart'),
+          menu: 'chart',
         },
       ],
     },

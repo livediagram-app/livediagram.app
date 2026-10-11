@@ -4,13 +4,15 @@
 // document menu is: a header naming the selection, the clipboard verbs as a toolbar, then icon-left rows in groups,
 // each named for what it does to this selection, with the rarer verbs in side flyouts. Someone who may only view gets
 // the header and Copy alone.
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
+import { CHART_TYPE_LABELS, CHART_TYPES } from '@livediagram/document';
 import { unmergeRange } from '@livediagram/sheets';
 import { ContextMenu } from '@/components/palette/ContextMenu';
 import { CopyIcon, CutIcon, PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader } from '@/components/primitives/PortalMenu';
 import { MenuToolButton, MenuToolbar } from '@/components/primitives/MenuTiles';
+import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import { keyLabel } from '@/lib/key-label';
 import { useSheetController } from './sheet-controller';
 import { cellMenuLabels } from './sheet-cell-menu-labels';
@@ -18,7 +20,6 @@ import { SheetMergeConfirm } from './SheetMergeConfirm';
 import type { SheetActions } from './useSheetActions';
 import { useSheetClipboard } from './useSheetClipboard';
 import {
-  BarChartIcon,
   ClearContentsIcon,
   ClearFormatIcon,
   DeleteIcon,
@@ -28,10 +29,8 @@ import {
   InsertColumnRightIcon,
   InsertRowAboveIcon,
   InsertRowBelowIcon,
-  LineChartIcon,
   MergeCellsIcon,
   PasteValuesIcon,
-  PieChartIcon,
   SortAToZIcon,
   SortIcon,
   SortZToAIcon,
@@ -252,22 +251,20 @@ export function SheetCellMenu({
               act(() => void clip.pasteSpecial('formats')),
             )}
           </MenuFlyoutSection>
-          <MenuFlyoutSection title="Insert Chart" icon={<BarChartIcon />} {...flyout('chart')}>
-            {row(
-              'Bar Chart',
-              <BarChartIcon />,
-              act(() => actions.insertChart('bar-chart')),
-            )}
-            {row(
-              'Line Chart',
-              <LineChartIcon />,
-              act(() => actions.insertChart('line-chart')),
-            )}
-            {row(
-              'Pie Chart',
-              <PieChartIcon />,
-              act(() => actions.insertChart('pie-chart')),
-            )}
+          <MenuFlyoutSection
+            title="Insert Chart"
+            icon={<ChartTypeIcon type="column" />}
+            {...flyout('chart')}
+          >
+            {CHART_TYPES.map((type) => (
+              <Fragment key={type}>
+                {row(
+                  `${CHART_TYPE_LABELS[type]} Chart`,
+                  <ChartTypeIcon type={type} />,
+                  act(() => actions.insertChart(type)),
+                )}
+              </Fragment>
+            ))}
           </MenuFlyoutSection>
         </>
       )}
