@@ -161,9 +161,9 @@ export function OpenSource() {
       <Label x={336} y={67} anchor="middle" size={10} weight={700} tone="accent">
         Your copy
       </Label>
-      <Shape x={292} y={90} w={40} h={24} kind="rect" label="A" />
-      <Shape x={344} y={90} w={40} h={24} kind="circle" accent />
-      <Arrow from={[332, 102]} to={[344, 102]} tone="muted" />
+      <Shape x={288} y={90} w={36} h={24} kind="rect" label="A" />
+      <Shape x={352} y={90} w={36} h={24} kind="circle" accent />
+      <Arrow from={[324, 102]} to={[352, 102]} tone="muted" />
       <TextBar x={292} y={130} w={92} tone="accent" />
 
       {/* MIT licence tag */}

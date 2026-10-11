@@ -83,17 +83,36 @@ export function NewDocumentWelcome() {
         <Label x={173} y={65} size={10} weight={600} tone="muted">
           Location
         </Label>
-        {/* Search field. */}
+        {/* The mode filter (Everything) leads the search row. */}
         <rect
           x={42}
           y={84}
-          width={336}
+          width={86}
           height={22}
           rx={6}
           className="fill-white stroke-slate-200"
           strokeWidth={1.5}
         />
-        <Label x={54} y={96} size={10} tone="muted">
+        <Label x={52} y={96} size={10} weight={600} tone="body">
+          Everything
+        </Label>
+        <path
+          d="M114 93 l3 3 l3 -3"
+          className="fill-none stroke-slate-400"
+          strokeWidth={1.4}
+          strokeLinecap="round"
+        />
+        {/* Search field. */}
+        <rect
+          x={134}
+          y={84}
+          width={244}
+          height={22}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        <Label x={144} y={96} size={10} tone="muted">
           Search templates...
         </Label>
         <Label x={42} y={120} size={10} weight={700} tone="strong">
@@ -107,19 +126,34 @@ export function NewDocumentWelcome() {
             strokeLinecap="round"
           />
         </TemplateCard>
-        <TemplateCard x={161} y={130} title="Flowchart">
-          <rect x={180} y={146} width={22} height={13} rx={3} className="fill-brand-200" />
-          <rect x={220} y={146} width={22} height={13} rx={3} className="fill-brand-400" />
-          <line x1={202} y1={152} x2={220} y2={152} className="stroke-slate-300" strokeWidth={2} />
-          <rect x={200} y={166} width={22} height={11} rx={3} className="fill-brand-300" />
+        {/* The Popular row leads with the blank starts, in the app's fixed order. */}
+        <TemplateCard x={161} y={130} title="Blank Whiteboard">
+          <path
+            d="M190 166 q10 -18 20 -6 t22 -8"
+            className="fill-none stroke-brand-400"
+            strokeWidth={2.2}
+            strokeLinecap="round"
+          />
         </TemplateCard>
-        <TemplateCard x={280} y={130} title="Mind map">
-          <circle cx={329} cy={158} r={8} className="fill-emerald-400" />
-          <rect x={295} y={146} width={18} height={9} rx={3} className="fill-violet-400" />
-          <rect x={345} y={162} width={18} height={9} rx={3} className="fill-amber-400" />
+        <TemplateCard x={280} y={130} title="Blank Illustration">
+          <rect
+            x={306}
+            y={144}
+            width={26}
+            height={30}
+            rx={2}
+            className="fill-white stroke-brand-300"
+            strokeWidth={1.5}
+          />
+          <rect x={311} y={150} width={16} height={3} rx={1} className="fill-brand-300" />
+          <rect x={311} y={157} width={12} height={3} rx={1} className="fill-slate-200" />
         </TemplateCard>
-        {/* Footer: Skip creates a Blank Diagram straight away; Next goes to Location. */}
+        {/* Footer: Open Existing Document at the left; Skip creates a Blank Diagram straight
+            away; Next goes to Location. */}
         <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
+        <Label x={42} y={243} size={9.5} weight={600} tone="accent">
+          Open Existing Document
+        </Label>
         <Button x={250} y={231} w={56} h={22} label="Skip" />
         <Button x={314} y={231} w={64} h={22} label="Next" variant="primary" />
       </Dialog>
@@ -166,7 +200,7 @@ export function ShapePalette() {
       width={14}
       height={14}
       rx={2}
-      className="stroke-white"
+      className="stroke-brand-500"
       strokeWidth={2}
       fill="none"
     />,
@@ -193,12 +227,28 @@ export function ShapePalette() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <DropdownChip x={20} y={37} w={70} label="Select" />
+      {/* The selection-mode dropdown is icon-only: a pointer and a caret. */}
+      <rect
+        x={20}
+        y={37}
+        width={70}
+        height={20}
+        rx={6}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <path d="M40 41 l0 12 l3 -3 l2 5 l2 -1 l-2 -5 l4 0 Z" className="fill-slate-600" />
+      <path
+        d="M62 45 l4 4 l4 -4"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
       <path d="M98 33v28" className="stroke-slate-200" strokeWidth={1} />
       <DropdownChip x={106} y={37} w={80} label="Popular" />
       <path d="M194 33v28" className="stroke-slate-200" strokeWidth={1} />
       {glyphs.map((g, i) => (
-        <Tile key={i} x={202 + i * 28} y={34} active={i === 0}>
+        <Tile key={i} x={202 + i * 28} y={34}>
           {g}
         </Tile>
       ))}
@@ -215,20 +265,14 @@ export function ShapePalette() {
   );
 }
 
-/** Quick-connect: a selected shape shows + buttons on its sides; clicking one
- *  fans out its options (Duplicate, Arrow, Pencil, Text), and dragging Arrow
- *  onto a second shape pins an arrow to both. */
+/** Quick-connect: a selected shape shows + buttons on its sides; clicking one opens a card of
+ *  icon buttons (Duplicate, Arrow, Pencil, Text), and dragging Arrow onto a second shape pins
+ *  an arrow to both. */
 export function QuickConnect() {
   const plus: [number, number][] = [
     [90, 54],
     [90, 150],
     [26, 102],
-  ];
-  const options: { label: string; cx: number; cy: number }[] = [
-    { label: 'Duplicate', cx: 190, cy: 52 },
-    { label: 'Arrow', cx: 204, cy: 86 },
-    { label: 'Pencil', cx: 204, cy: 120 },
-    { label: 'Text', cx: 190, cy: 154 },
   ];
   return (
     <Scene w={420} h={210}>
@@ -255,7 +299,8 @@ export function QuickConnect() {
           />
         </g>
       ))}
-      {/* The clicked + on the right, its options fanned in an arc. */}
+      {/* The clicked + on the right opens one card of icon buttons beside it (QuickConnectRing):
+          Duplicate, Arrow, Pencil and Text, their names in hover cards. */}
       <circle cx={158} cy={102} r={8} className="fill-brand-500" />
       <path
         d="M154 102 h8 M158 98 v8"
@@ -263,36 +308,56 @@ export function QuickConnect() {
         strokeWidth={2}
         strokeLinecap="round"
       />
-      {options.map((o) => (
-        <g key={o.label}>
-          <circle
-            cx={o.cx}
-            cy={o.cy}
-            r={11}
-            className={o.label === 'Arrow' ? 'fill-brand-500' : 'fill-white stroke-slate-300'}
-            strokeWidth={1.5}
-          />
-          <Label
-            x={o.cx}
-            y={o.cy - 17}
-            anchor="middle"
-            size={10}
-            weight={o.label === 'Arrow' ? 700 : 500}
-            tone={o.label === 'Arrow' ? 'accent' : 'muted'}
-          >
-            {o.label}
-          </Label>
-        </g>
+      <rect
+        x={172}
+        y={50}
+        width={32}
+        height={106}
+        rx={8}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {[0, 1, 2].map((i) => (
+        <line
+          key={i}
+          x1={176}
+          y1={76 + i * 26}
+          x2={200}
+          y2={76 + i * 26}
+          className="stroke-slate-100"
+          strokeWidth={1}
+        />
       ))}
+      {/* Duplicate */}
+      <g className="fill-none stroke-slate-500" strokeWidth={1.4}>
+        <rect x={181} y={57} width={10} height={10} rx={2} />
+        <path d="M185 57 v-2 a2 2 0 0 1 2 -2 h6 a2 2 0 0 1 2 2 v6 a2 2 0 0 1 -2 2 h-2" />
+      </g>
+      {/* Arrow, the one being dragged */}
+      <rect x={176} y={80} width={24} height={22} rx={5} className="fill-brand-500" />
       <path
-        d="M199 86 h11 M206 82 l4 4 l-4 4"
-        className="stroke-white help-art-as-drawn"
+        d="M182 91 h11 M189 87 l4 4 l-4 4"
+        className="fill-none stroke-white help-art-as-drawn"
         strokeWidth={1.8}
-        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      {/* Pencil */}
+      <path
+        d="M182 124 l9 -9 l3 3 l-9 9 h-3 Z"
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.4}
+        strokeLinejoin="round"
+      />
+      {/* Text */}
+      <path
+        d="M182 137 h12 M188 137 v11"
+        className="fill-none stroke-slate-500"
+        strokeWidth={1.6}
         strokeLinecap="round"
       />
       {/* Drag the Arrow option onto the second shape. */}
-      <Arrow from={[216, 88]} to={[290, 118]} kind="curved" tone="accent" />
+      <Arrow from={[204, 91]} to={[294, 118]} kind="curved" tone="accent" />
       <Shape x={296} y={100} w={96} h={52} kind="rect" accent label="Pay" />
     </Scene>
   );
@@ -483,7 +548,10 @@ export function WelcomeTourCard() {
       </Label>
       <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
       <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />
-      <Button x={110} y={116} w={92} h={26} label="No thanks" />
+      {/* No thanks is a plain text button, beside the primary. */}
+      <Label x={156} y={130} anchor="middle" size={11} weight={600} tone="body">
+        No thanks
+      </Label>
       <Button x={210} y={116} w={104} h={26} label="Show me around" variant="primary" />
     </Scene>
   );

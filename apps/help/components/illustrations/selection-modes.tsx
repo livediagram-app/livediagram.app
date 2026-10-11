@@ -511,9 +511,14 @@ export function SpotlightTool() {
   return (
     <Scene w={420} h={230}>
       <defs>
+        {/* The default Soft edge: the light feathers out into the dim. */}
+        <radialGradient id="mtt-spot-soft">
+          <stop offset="0.7" stopColor="black" />
+          <stop offset="1" stopColor="white" />
+        </radialGradient>
         <mask id="mtt-spot-hole">
           <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={234} cy={158} r={54} fill="black" />
+          <circle cx={234} cy={158} r={62} fill="url(#mtt-spot-soft)" />
         </mask>
       </defs>
       <PickerTrigger tool="spotlight" />
@@ -530,8 +535,8 @@ export function SpotlightTool() {
       />
       {/* The cursor's stand-in, as the app draws it: a sky dot with a white rim and a glow,
           below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
-      <circle cx={234} cy={162} r={8} className="fill-sky-400/30" />
-      <circle cx={234} cy={162} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
+      <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
+      <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
     </Scene>
   );
 }
