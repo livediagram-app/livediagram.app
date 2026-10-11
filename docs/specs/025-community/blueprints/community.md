@@ -336,27 +336,27 @@ Community app (`apps/community`):
 
 ## 6. Errors and edge cases
 
-| Case                                    | Handling                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------------ |
-| Publish on a document with a password   | 409 `share_password_set`; the section disables Share to Community and says why       |
-| Password set on a published document    | 409 `community_published`; Share dialog explains                                     |
-| Empty document                          | 409 `empty_document`; "Add something to your first tab before sharing: it is the picture on your Community card."            |
-| 51st post                               | 409 `post_limit`                                                                     |
-| Two first publishes at once             | 409 `already_published` (the one-post-per-document `UNIQUE`)                         |
-| A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                  |
-| My Shares, sign-in never loads          | After `SESSION_LOAD_TIMEOUT_MS`: "We couldn't load the Community." Try Again reloads |
-| My Shares on a build without sign-in    | "My Shares needs an account."                                                        |
-| Owner revokes all share links           | Community link untouched (filtered)                                                  |
-| Document trashed                        | Hidden everywhere; post page 404; restore lists it again                             |
-| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."                  |
-| Like twice / unlike twice               | Idempotent; counts recomputed                                                        |
-| Report twice from one browser           | 204, row unchanged                                                                   |
-| Storage blocked in the Community app    | In-memory key; likes work for the page's life                                        |
-| Embed frame fails                       | Falls back to the card image with Open Document                                      |
-| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`                        |
-| Search with only stop characters        | Treated as no search                                                                 |
-| Offset past the end                     | Empty `posts`, `nextOffset: null`                                                    |
-| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author          |
+| Case                                    | Handling                                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Publish on a document with a password   | 409 `share_password_set`; the section disables Share to Community and says why                                    |
+| Password set on a published document    | 409 `community_published`; Share dialog explains                                                                  |
+| Empty document                          | 409 `empty_document`; "Add something to your first tab before sharing: it is the picture on your Community card." |
+| 51st post                               | 409 `post_limit`                                                                                                  |
+| Two first publishes at once             | 409 `already_published` (the one-post-per-document `UNIQUE`)                                                      |
+| A previous owner's post                 | Reads as none; `PUT` replaces it, `DELETE` 404 (G7)                                                               |
+| My Shares, sign-in never loads          | After `SESSION_LOAD_TIMEOUT_MS`: "We couldn't load the Community." Try Again reloads                              |
+| My Shares on a build without sign-in    | "My Shares needs an account."                                                                                     |
+| Owner revokes all share links           | Community link untouched (filtered)                                                                               |
+| Document trashed                        | Hidden everywhere; post page 404; restore lists it again                                                          |
+| Post hidden while a visitor has it open | Likes/reports 404; the UI shows "This post is no longer available."                                               |
+| Like twice / unlike twice               | Idempotent; counts recomputed                                                                                     |
+| Report twice from one browser           | 204, row unchanged                                                                                                |
+| Storage blocked in the Community app    | In-memory key; likes work for the page's life                                                                     |
+| Embed frame fails                       | Falls back to the card image with Open Document                                                                   |
+| Author has no participant row           | Author `{ name: 'Someone', color: '#64748b', picture: null }`                                                     |
+| Search with only stop characters        | Treated as no search                                                                                              |
+| Offset past the end                     | Empty `posts`, `nextOffset: null`                                                                                 |
+| Copy by the author of their own post    | Counted only if a share code was presented and the caller is not the author                                       |
 
 ## 7. Security and trust
 
