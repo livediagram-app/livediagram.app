@@ -81,6 +81,7 @@ export function FeatureScene({ scene: key }: { scene: HeroSceneKey }) {
         tabs={scene.tabs}
         shared={scene.shared}
         mode={scene.mode}
+        viewBox={scene.landscapeViewBox}
         playing={playing}
         veil={veil}
         document={drawn ? <Board /> : null}

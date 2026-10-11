@@ -107,6 +107,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ```
 
+## Caveat
+
+- Source: <https://github.com/googlefonts/caveat>, via Google Fonts
+- Used for: the hand lettering in the marketing site's Draw window, self-hosted as a subset of the
+  glyphs it writes at `apps/marketing/public/fonts/caveat-hero.woff2`
+  (see `apps/marketing/components/hero-draw-copy.ts`).
+- Licence: SIL Open Font License 1.1, full text at <https://openfontlicense.org/open-font-license-official-text/>.
+
+```text
+Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+```
+
 ## svg-path-bbox
 
 - Source: <https://github.com/mondeja/svg-path-bbox>

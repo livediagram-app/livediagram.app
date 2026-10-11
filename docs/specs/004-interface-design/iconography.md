@@ -36,6 +36,7 @@ Every icon livediagram draws follows one grammar, so a glyph looks the same weig
 - The insets are computed from the glyph's geometry during render (no DOM measurement), so static pages carry them and nothing shifts after paint.
 - A glyph whose geometry can't be read (a transform, an opaque child component) carries no insets.
 - Containers use them to measure padding to the ink (optical alignment).
+- The marketing hero's scene chrome (`hero-glyph-ink`) also centres each glyph vertically by them, moving it half the difference of its top and bottom insets: drawn at 11px in 24px chips, a glyph whose ink sits off its box's middle would otherwise read past the 0.5px optical tolerance.
 
 ## One home, one icon per meaning
 

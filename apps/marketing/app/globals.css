@@ -4,6 +4,13 @@
 @import '@livediagram/template-previews/preview-motion.css';
 @import './hero-animations.css';
 @import './hero-mode-animations.css';
+@import './hero-scenes/diagram.css';
+@import './hero-scenes/draw.css';
+@import './hero-scenes/mindmap.css';
+@import './hero-scenes/infographic.css';
+@import './hero-scenes/article.css';
+@import './hero-scenes/plan.css';
+@import './hero-scenes/townhall.css';
 @import './promises.css';
 @import './feature-art/core.css';
 @import './feature-art/content.css';
@@ -61,4 +68,12 @@
     animation: none !important;
     opacity: 0 !important;
   }
+}
+
+/* The scene's chrome draws the editor's glyphs at a fraction of their size (11px in a 24px chip), where a glyph
+   whose ink sits off its box's middle (a flipchart's legs, a timer's crown) reads past the 0.5px optical tolerance
+   (docs/specs/004-interface-design/optical-alignment.md). Each glyph in a scene moves by half the difference of its
+   own ink insets (--glyph-ink-t / --glyph-ink-b, set by Glyph), so its ink, not its box, is centred. */
+.hero-glyph-ink .lvd-glyph {
+  translate: 0 calc((var(--glyph-ink-b, 0px) - var(--glyph-ink-t, 0px)) / 2);
 }

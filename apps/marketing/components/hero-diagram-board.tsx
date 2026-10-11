@@ -1,141 +1,40 @@
-import type { CSSProperties, ReactNode } from 'react';
-import { cursorRide, type Point } from '@/lib/hero-motion';
+import {
+  lucideDatabase,
+  lucideGlobe,
+  lucideMail,
+  lucideSparkles,
+  lucideUser,
+} from '@livediagram/icons/lucide';
+import type { Point } from '@/lib/hero-motion';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@/components/hero-cursor';
+import {
+  Connector,
+  Cursor,
+  Drop,
+  INK,
+  NodeLabel,
+  Sticky,
+  head,
+  type Link,
+} from '@/components/hero-diagram-parts';
 
 // The hero's Diagram window (docs/specs/019-marketing/marketing-site.md "Hero"): two people map a
-// sign-up flow together in Diagram mode. Inside a frame, you drop three steps from the strip (each
-// label typed as it lands) and they join up with arrows; a teammate adds the "No" branch and a
-// Retry loop back; you add the "Yes" step slightly off, drag it, and it snaps onto the pink
-// alignment guide; you select it and pick green from the colour row; the teammate leaves a sticky
-// question and wires a database in with a dashed connector. Every shape is in the Default theme's
-// ink (the --art-* palette), so it looks as the editor draws it. Each piece arrives at its own --d
-// delay and the two cursors ride CSS motion paths timed to the drops (hero-mode-animations.css).
-
-const INK = 'fill-(--art-ink-fill) stroke-(--art-ink-stroke)';
-const LABEL = 'fill-(--art-ink-text)';
-const ARROW = 'stroke-(--art-arrow)';
-
-// A label typed out over `dur` seconds once its shape lands.
-function Typed({
-  x,
-  y,
-  d,
-  children,
-  size = 13,
-}: {
-  x: number;
-  y: number;
-  d: number;
-  children: string;
-  size?: number;
-}) {
-  return (
-    <text
-      className={`hm-type ${LABEL}`}
-      style={at(d, { '--steps': children.length })}
-      x={x}
-      y={y}
-      textAnchor="middle"
-      fontFamily={FONT}
-      fontSize={size}
-      fontWeight="600"
-      stroke="none"
-    >
-      {children}
-    </text>
-  );
-}
-
-// A connector that draws on, its head last, with an optional label on a canvas-coloured chip.
-function Connector({
-  d: path,
-  at: start,
-  len,
-  dashed = false,
-  label,
-}: {
-  d: string;
-  at: number;
-  len: number;
-  dashed?: boolean;
-  label?: { x: number; y: number; text: string };
-}) {
-  return (
-    <g>
-      <path
-        className={`${dashed ? 'hm-fade' : 'hm-draw'} ${ARROW}`}
-        style={at(start, { '--dur': '0.45s', '--len': len })}
-        d={path}
-        fill="none"
-        strokeWidth="2"
-        strokeDasharray={dashed ? '6 5' : undefined}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {label ? (
-        <g className="hm-pop" style={at(start + 0.35)}>
-          <rect
-            x={label.x - (label.text.length * 6 + 10) / 2}
-            y={label.y - 10}
-            width={label.text.length * 6 + 10}
-            height="15"
-            rx="4"
-            className="fill-(--art-paper)"
-          />
-          <text
-            x={label.x}
-            y={label.y + 1}
-            textAnchor="middle"
-            fontFamily={FONT}
-            fontSize="10"
-            fontWeight="600"
-            className="fill-(--art-arrow-label)"
-          >
-            {label.text}
-          </text>
-        </g>
-      ) : null}
-    </g>
-  );
-}
-
-// A shape that lands with a small overshoot.
-function Drop({ d, children }: { d: number; children: ReactNode }) {
-  return (
-    <g className="hm-pop" style={at(d)}>
-      {children}
-    </g>
-  );
-}
-
-function Cursor({
-  className,
-  color,
-  name,
-  ride,
-}: {
-  className: string;
-  color: string;
-  name: string;
-  ride: readonly Point[];
-}) {
-  return (
-    <g className={className} style={cursorRide(ride) as CSSProperties} aria-hidden>
-      <CursorMark colour={color} label={name} badge="name" />
-    </g>
-  );
-}
-
-const SWATCHES = ['#f87171', '#fbbf24', '#4ade80', '#60a5fa', '#c084fc'];
+// sign-up flow together in Diagram mode, under its title and a one-line caption as the editor's
+// flowchart templates set them. You drop three steps from the strip (a terminator, a process step
+// and a decision), each with its icon and its label typed as it lands, and they join up with
+// arrows whose heads land as the line arrives; a teammate adds the "No" branch and a Retry loop
+// back; you add the "Yes" step slightly off, drag it, and it snaps onto the pink alignment guide;
+// you select it and pick green from the colour row; the teammate leaves a sticky question and
+// wires a database in with a dashed connector. Every shape is in the Default theme's ink (the
+// --art-* palette), so it looks as the editor draws it. Each piece arrives at its own --d delay
+// and the two cursors ride CSS motion paths timed to the drops (hero-mode-animations.css).
 
 type Box = { cx: number; cy: number; w: number; h: number };
-type Link = { d: string; len: number; label?: { x: number; y: number; text: string } };
 
 // Where everything sits: the wide window's landscape layout, and a phone's portrait one, where the
 // flow runs down the screen (the Yes step beside the decision, the No step below it).
 type Layout = {
-  frame: { x: number; y: number; w: number; h: number };
+  title: { x: number; y: number };
   visit: Box;
   create: Box;
   verified: { cx: number; cy: number; hw: number; hh: number };
@@ -144,132 +43,135 @@ type Layout = {
   db: { cx: number; top: number; w: number };
   sticky: { x: number; y: number };
   guide: { x1: number; x2: number; y: number };
-  links: {
-    visitCreate: Link;
-    createVerified: Link;
-    no: Link;
-    retry: Link;
-    yes: Link;
-    writes: Link;
-  };
+  links: Record<'visitCreate' | 'createVerified' | 'no' | 'retry' | 'yes' | 'writes', Link>;
   you: Point[];
   teammate: Point[];
 };
 
 const LANDSCAPE: Layout = {
-  frame: { x: 20, y: -44, w: 560, h: 340 },
-  visit: { cx: 110, cy: 32, w: 120, h: 44 },
-  create: { cx: 110, cy: 135, w: 120, h: 50 },
-  verified: { cx: 290, cy: 135, hw: 70, hh: 40 },
-  reminder: { cx: 290, cy: 255, w: 130, h: 50 },
-  tour: { cx: 475, cy: 135, w: 130, h: 50 },
-  db: { cx: 475, top: 228, w: 110 },
-  sticky: { x: 410, y: -31 },
-  guide: { x1: 40, x2: 565, y: 135 },
+  title: { x: 24, y: -30 },
+  visit: { cx: 100, cy: 42, w: 130, h: 42 },
+  create: { cx: 100, cy: 140, w: 144, h: 50 },
+  verified: { cx: 295, cy: 140, hw: 66, hh: 40 },
+  reminder: { cx: 295, cy: 255, w: 144, h: 48 },
+  tour: { cx: 488, cy: 140, w: 144, h: 50 },
+  db: { cx: 488, top: 228, w: 116 },
+  sticky: { x: 440, y: -44 },
+  guide: { x1: 28, x2: 576, y: 140 },
   links: {
-    visitCreate: { d: 'M110 54 L110 110 M104 103 L110 110 L116 103', len: 70 },
-    createVerified: { d: 'M170 135 L220 135 M213 129 L220 135 L213 141', len: 60 },
+    visitCreate: { d: 'M100 63 L100 106', head: head(100, 115, 'down'), len: 43 },
+    createVerified: { d: 'M172 140 L220 140', head: head(229, 140, 'right'), len: 48 },
     no: {
-      d: 'M290 175 L290 230 M284 223 L290 230 L296 223',
-      len: 70,
-      label: { x: 290, y: 205, text: 'No' },
+      d: 'M295 180 L295 222',
+      head: head(295, 231, 'down'),
+      len: 42,
+      label: { x: 295, y: 201, text: 'No' },
     },
     retry: {
-      d: 'M225 255 L110 255 L110 160 M104 167 L110 160 L116 167',
-      len: 230,
+      d: 'M223 255 L100 255 L100 174',
+      head: head(100, 165, 'up'),
+      len: 204,
       label: { x: 160, y: 255, text: 'Retry' },
     },
     yes: {
-      d: 'M360 135 L410 135 M403 129 L410 135 L403 141',
-      len: 60,
-      label: { x: 384, y: 126, text: 'Yes' },
+      d: 'M361 140 L407 140',
+      head: head(416, 140, 'right'),
+      len: 46,
+      label: { x: 386, y: 140, text: 'Yes' },
     },
     writes: {
-      d: 'M475 166 L475 218 M469 211 L475 218 L481 211',
-      len: 60,
-      label: { x: 498, y: 195, text: 'writes' },
+      d: 'M488 165 L488 209',
+      head: head(488, 218, 'down'),
+      len: 44,
+      label: { x: 488, y: 190, text: 'writes' },
     },
   },
   you: [
-    [330, -40],
-    [110, 32],
-    [110, 135],
-    [290, 135],
-    [475, 150],
-    [475, 137],
-    [480, 86],
+    [300, -55],
+    [100, 42],
+    [100, 140],
+    [295, 140],
+    [488, 155],
+    [488, 142],
+    [490, 92],
   ],
   teammate: [
-    [620, 300],
-    [290, 255],
-    [170, 255],
-    [470, 15],
-    [545, 268],
+    [620, 330],
+    [295, 255],
+    [160, 255],
+    [500, -2],
+    [548, 268],
   ],
 };
 
 const PORTRAIT: Layout = {
-  frame: { x: 8, y: -32, w: 344, h: 432 },
-  visit: { cx: 110, cy: 22, w: 120, h: 44 },
-  create: { cx: 110, cy: 115, w: 120, h: 50 },
-  verified: { cx: 110, cy: 215, hw: 60, hh: 36 },
-  reminder: { cx: 110, cy: 322, w: 130, h: 50 },
-  tour: { cx: 268, cy: 215, w: 130, h: 50 },
-  db: { cx: 268, top: 300, w: 110 },
-  sticky: { x: 208, y: -22 },
-  guide: { x1: 16, x2: 344, y: 215 },
+  title: { x: 18, y: -16 },
+  visit: { cx: 108, cy: 48, w: 130, h: 42 },
+  create: { cx: 108, cy: 138, w: 140, h: 50 },
+  verified: { cx: 108, cy: 238, hw: 60, hh: 38 },
+  reminder: { cx: 108, cy: 345, w: 140, h: 48 },
+  tour: { cx: 272, cy: 238, w: 128, h: 50 },
+  db: { cx: 272, top: 322, w: 112 },
+  sticky: { x: 222, y: 36 },
+  guide: { x1: 12, x2: 350, y: 238 },
   links: {
-    visitCreate: { d: 'M110 44 L110 90 M104 83 L110 90 L116 83', len: 60 },
-    createVerified: { d: 'M110 140 L110 179 M104 172 L110 179 L116 172', len: 50 },
+    visitCreate: { d: 'M108 69 L108 104', head: head(108, 113, 'down'), len: 35 },
+    createVerified: { d: 'M108 163 L108 191', head: head(108, 200, 'down'), len: 28 },
     no: {
-      d: 'M110 251 L110 297 M104 290 L110 297 L116 290',
-      len: 60,
-      label: { x: 110, y: 277, text: 'No' },
+      d: 'M108 276 L108 312',
+      head: head(108, 321, 'down'),
+      len: 36,
+      label: { x: 108, y: 296, text: 'No' },
     },
     retry: {
-      d: 'M45 322 L24 322 L24 115 L50 115 M43 109 L50 115 L43 121',
-      len: 260,
-      label: { x: 24, y: 222, text: 'Retry' },
+      d: 'M38 345 L20 345 L20 138 L29 138',
+      head: head(38, 138, 'right'),
+      len: 236,
+      label: { x: 20, y: 240, text: 'Retry' },
     },
     yes: {
-      d: 'M170 215 L203 215 M196 209 L203 215 L196 221',
-      len: 45,
-      label: { x: 187, y: 205, text: 'Yes' },
+      d: 'M168 238 L199 238',
+      head: head(208, 238, 'right'),
+      len: 31,
+      label: { x: 188, y: 224, text: 'Yes' },
     },
     writes: {
-      d: 'M268 240 L268 290 M262 283 L268 290 L274 283',
-      len: 60,
-      label: { x: 292, y: 266, text: 'writes' },
+      d: 'M272 263 L272 303',
+      head: head(272, 312, 'down'),
+      len: 40,
+      label: { x: 272, y: 286, text: 'writes' },
     },
   },
   you: [
-    [300, -38],
-    [110, 22],
-    [110, 115],
-    [110, 215],
-    [268, 230],
-    [268, 217],
-    [272, 151],
+    [300, -30],
+    [108, 48],
+    [108, 138],
+    [108, 238],
+    [272, 253],
+    [272, 240],
+    [272, 190],
   ],
   teammate: [
     [350, 470],
-    [110, 322],
-    [40, 322],
-    [266, 10],
-    [334, 330],
+    [108, 345],
+    [24, 240],
+    [282, 62],
+    [330, 352],
   ],
 };
 
-function Rect({ box, round }: { box: Box; round?: boolean }) {
+const SWATCHES = ['#f87171', '#fbbf24', '#4ade80', '#60a5fa', '#c084fc'];
+
+function Rect({ box, round, className = INK }: { box: Box; round?: boolean; className?: string }) {
   return (
     <rect
       x={box.cx - box.w / 2}
       y={box.cy - box.h / 2}
       width={box.w}
       height={box.h}
-      rx={round ? box.h / 2 : 8}
-      className={INK}
-      strokeWidth="2"
+      rx={round ? box.h / 2 : 7}
+      className={className}
+      strokeWidth="1.75"
     />
   );
 }
@@ -277,34 +179,39 @@ function Rect({ box, round }: { box: Box; round?: boolean }) {
 export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
   const L = portrait ? PORTRAIT : LANDSCAPE;
   const { tour, verified: v } = L;
-  const dbBottom = L.db.top + 42;
+  const dbBottom = L.db.top + 44;
   const dbLeft = L.db.cx - L.db.w / 2;
   const dbRight = L.db.cx + L.db.w / 2;
+  const sel = {
+    x: tour.cx - tour.w / 2 - 6,
+    y: tour.cy - tour.h / 2 - 6,
+    w: tour.w + 12,
+    h: tour.h + 12,
+  };
   return (
-    <>
-      {/* The frame the flow lives in, with its name. */}
+    // A phone's portrait layout sits a little lower, so the flow centres in its tall canvas.
+    <g transform={portrait ? 'translate(0 24)' : undefined}>
+      {/* The canvas title and its caption, as the flowchart templates open. */}
       <g className="hm-fade" style={at(0.1)}>
-        <rect
-          x={L.frame.x}
-          y={L.frame.y}
-          width={L.frame.w}
-          height={L.frame.h}
-          rx="10"
-          fill="none"
-          className="stroke-(--art-ink-stroke)"
-          strokeWidth="1.5"
-          strokeDasharray="6 5"
-          opacity="0.6"
-        />
         <text
-          x={L.frame.x + 14}
-          y={L.frame.y + 18}
+          x={L.title.x}
+          y={L.title.y}
           fontFamily={FONT}
-          fontSize="11"
+          fontSize="17"
           fontWeight="700"
-          className="fill-(--art-ink-text)"
+          className="fill-(--art-text)"
         >
           Sign-up flow
+        </text>
+        <text
+          x={L.title.x}
+          y={L.title.y + 15}
+          fontFamily={FONT}
+          fontSize="9.5"
+          className="fill-(--art-arrow-label)"
+          opacity="0.85"
+        >
+          From first visit to a welcome tour.
         </text>
       </g>
 
@@ -312,35 +219,36 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
       <Drop d={1.0}>
         <Rect box={L.visit} round />
       </Drop>
-      <Typed x={L.visit.cx} y={L.visit.cy + 5} d={1.1}>
+      <NodeLabel cx={L.visit.cx} cy={L.visit.cy} d={1.05} icon={lucideGlobe}>
         Visit site
-      </Typed>
+      </NodeLabel>
       <Drop d={1.8}>
         <Rect box={L.create} />
       </Drop>
-      <Typed x={L.create.cx} y={L.create.cy + 5} d={1.9}>
+      <NodeLabel cx={L.create.cx} cy={L.create.cy} d={1.85} icon={lucideUser}>
         Create account
-      </Typed>
+      </NodeLabel>
       <Connector {...L.links.visitCreate} at={2.0} />
       <Drop d={2.6}>
         <polygon
           points={`${v.cx},${v.cy - v.hh} ${v.cx + v.hw},${v.cy} ${v.cx},${v.cy + v.hh} ${v.cx - v.hw},${v.cy}`}
           className={INK}
-          strokeWidth="2"
+          strokeWidth="1.75"
+          strokeLinejoin="round"
         />
       </Drop>
-      <Typed x={v.cx} y={v.cy + 4} d={2.7} size={12}>
+      <NodeLabel cx={v.cx} cy={v.cy} d={2.65} size={12}>
         Verified?
-      </Typed>
+      </NodeLabel>
       <Connector {...L.links.createVerified} at={3.2} />
 
       {/* The teammate's No branch and the Retry loop back. */}
       <Drop d={4.4}>
         <Rect box={L.reminder} />
       </Drop>
-      <Typed x={L.reminder.cx} y={L.reminder.cy + 5} d={4.5}>
+      <NodeLabel cx={L.reminder.cx} cy={L.reminder.cy} d={4.45} icon={lucideMail}>
         Send reminder
-      </Typed>
+      </NodeLabel>
       <Connector {...L.links.no} at={4.8} />
       <Connector {...L.links.retry} at={5.1} />
 
@@ -357,24 +265,24 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
       />
       <g className="hm-snap">
         <Drop d={5.0}>
-          <rect
-            x={tour.cx - tour.w / 2}
-            y={tour.cy - tour.h / 2}
-            width={tour.w}
-            height={tour.h}
-            rx="8"
-            className={`hm-recolour ${INK}`}
-            strokeWidth="2"
-          />
+          <Rect box={tour} className={`hm-recolour ${INK}`} />
         </Drop>
-        <Typed x={tour.cx} y={tour.cy + 5} d={5.1}>
-          Welcome tour
-        </Typed>
+        {/* Its icon and label take the green's ink with it (hero-scenes/diagram.css). */}
+        <g className="hd-pick">
+          <NodeLabel cx={tour.cx} cy={tour.cy} d={5.05} icon={lucideSparkles}>
+            Welcome tour
+          </NodeLabel>
+        </g>
         {/* Picked green: done. */}
         <g className="hm-pop" style={at(7.95)}>
-          <circle cx={tour.cx + 57} cy={tour.cy - 23} r="8" fill="#16a34a" />
+          <circle
+            cx={tour.cx + tour.w / 2 - 2}
+            cy={tour.cy - tour.h / 2 + 2}
+            r="8"
+            fill="#16a34a"
+          />
           <path
-            d={`M${tour.cx + 53} ${tour.cy - 23} l3 3 l5 -6`}
+            d={`M${tour.cx + tour.w / 2 - 6} ${tour.cy - tour.h / 2 + 2} l3 3 l5 -6`}
             fill="none"
             stroke="white"
             strokeWidth="2"
@@ -388,19 +296,20 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
       {/* You select it: the outline, its handles and the colour row. */}
       <g className="hm-select" style={at(7.0)}>
         <rect
-          x={tour.cx - 71}
-          y={tour.cy - 31}
-          width="142"
-          height="62"
+          x={sel.x}
+          y={sel.y}
+          width={sel.w}
+          height={sel.h}
+          rx="3"
           fill="none"
           stroke={YOU}
-          strokeWidth="1.5"
+          strokeWidth="1.25"
         />
         {[
-          [tour.cx - 71, tour.cy - 31],
-          [tour.cx + 71, tour.cy - 31],
-          [tour.cx - 71, tour.cy + 31],
-          [tour.cx + 71, tour.cy + 31],
+          [sel.x, sel.y],
+          [sel.x + sel.w, sel.y],
+          [sel.x, sel.y + sel.h],
+          [sel.x + sel.w, sel.y + sel.h],
         ].map(([hx, hy]) => (
           <rect
             key={`${hx}-${hy}`}
@@ -411,24 +320,34 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
             rx="1.5"
             fill="white"
             stroke={YOU}
-            strokeWidth="1.5"
+            strokeWidth="1.25"
           />
         ))}
         <g className="hm-pop" style={at(7.2)}>
           <rect
-            x={tour.cx - 45}
-            y={tour.cy - 67}
-            width="96"
+            x={tour.cx - 47}
+            y={tour.cy - 64}
+            width="94"
             height="26"
-            rx="7"
+            rx="8"
+            fill="#0f172a"
+            opacity="0.08"
+            transform="translate(0 2)"
+          />
+          <rect
+            x={tour.cx - 47}
+            y={tour.cy - 64}
+            width="94"
+            height="26"
+            rx="8"
             className="fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700"
           />
           {SWATCHES.map((c, i) => (
             <circle
               key={c}
-              cx={tour.cx - 30 + i * 16.5}
-              cy={tour.cy - 54}
-              r="6"
+              cx={tour.cx - 33 + i * 16.5}
+              cy={tour.cy - 51}
+              r="5.5"
               fill={c}
               stroke={i === 2 ? '#15803d' : 'none'}
               strokeWidth="2"
@@ -439,44 +358,13 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
 
       {/* The teammate's sticky question, and the database wired in. */}
       <Drop d={8.4}>
-        <g transform={`rotate(2 ${L.sticky.x + 59} ${L.sticky.y + 32})`}>
-          <rect
-            x={L.sticky.x + 2}
-            y={L.sticky.y + 3}
-            width="118"
-            height="64"
-            rx="3"
-            fill="#0f172a"
-            opacity="0.08"
-          />
-          <rect x={L.sticky.x} y={L.sticky.y} width="118" height="64" rx="3" fill="#fde68a" />
-          <text
-            x={L.sticky.x + 12}
-            y={L.sticky.y + 23}
-            fontFamily={FONT}
-            fontSize="11"
-            fontWeight="600"
-            fill="#1c1917"
-          >
-            Add SSO here
-          </text>
-          <text
-            x={L.sticky.x + 12}
-            y={L.sticky.y + 39}
-            fontFamily={FONT}
-            fontSize="11"
-            fontWeight="600"
-            fill="#1c1917"
-          >
-            later? – JR
-          </text>
-        </g>
+        <Sticky x={L.sticky.x} y={L.sticky.y} lines={['Add SSO here', 'later?']} author="JR" />
       </Drop>
       <Drop d={9.5}>
         <path
           d={`M${dbLeft} ${L.db.top} L${dbLeft} ${dbBottom} A${L.db.w / 2} 10 0 0 0 ${dbRight} ${dbBottom} L${dbRight} ${L.db.top}`}
           className={INK}
-          strokeWidth="2"
+          strokeWidth="1.75"
           strokeLinejoin="round"
         />
         <ellipse
@@ -485,17 +373,17 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
           rx={L.db.w / 2}
           ry="10"
           className={INK}
-          strokeWidth="2"
+          strokeWidth="1.75"
         />
       </Drop>
-      <Typed x={L.db.cx} y={L.db.top + 30} d={9.6}>
+      <NodeLabel cx={L.db.cx} cy={L.db.top + 28} d={9.55} icon={lucideDatabase}>
         Users DB
-      </Typed>
+      </NodeLabel>
       <Connector {...L.links.writes} at={9.8} dashed />
 
       {/* The two of you, live. */}
       <Cursor className="hm-you" color={YOU} name="TM" ride={L.you} />
       <Cursor className="hm-teammate" color={TEAMMATE} name="JR" ride={L.teammate} />
-    </>
+    </g>
   );
 }

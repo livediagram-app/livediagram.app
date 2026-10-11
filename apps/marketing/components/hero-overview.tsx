@@ -19,6 +19,8 @@ export type OverviewScene = {
   key: string;
   label: string;
   mode: HeroMode;
+  // The scene's own landscape viewBox, when it reaches past the shared one.
+  viewBox?: string;
 };
 
 const SCENES: Record<string, () => ReactNode> = {
@@ -89,7 +91,7 @@ function OverviewFrame({ scene, onOpen }: { scene: OverviewScene; onOpen: (key: 
         <svg
           data-optical-ignore=""
           className="block aspect-[3/2] w-full"
-          viewBox={LANDSCAPE_VIEWBOX}
+          viewBox={scene.viewBox ?? LANDSCAPE_VIEWBOX}
           preserveAspectRatio="xMidYMid meet"
           aria-hidden
         >
