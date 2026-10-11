@@ -31,6 +31,23 @@ function panel(color: string | null, highlight: string | null) {
 const group = (name: string) => screen.getByRole('group', { name });
 
 describe('the page toolbar colours', () => {
+  it('names each picker on screen, Text Colour then Highlight, without announcing it twice', () => {
+    const { container } = render(
+      <ColourPanel
+        selection={selection(null, null)}
+        accent={ACCENT}
+        onColor={vi.fn()}
+        onHighlight={vi.fn()}
+      />,
+    );
+    const titles = [...container.querySelectorAll('[data-picker-title]')];
+    expect(titles.map((t) => t.textContent)).toEqual(['Text Colour', 'Highlight']);
+    expect(titles.every((t) => t.getAttribute('aria-hidden') === 'true')).toBe(true);
+    // Each title sits right before the picker it names.
+    expect(titles[0]!.nextElementSibling?.getAttribute('aria-label')).toBe('Text colour');
+    expect(titles[1]!.nextElementSibling?.getAttribute('aria-label')).toBe('Highlight');
+  });
+
   it('leads text colour with Default and Accent before the strong colours', () => {
     const { onColor } = panel(null, null);
     const text = within(group('Text colour'));

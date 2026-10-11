@@ -12,6 +12,14 @@ describe('newTabOpening', () => {
     for (const mode of ['diagram', 'draw', 'illustrate'] as const)
       expect(newTabOpening(mode)).toEqual({ quickStart: false });
   });
+
+  it('opens a tab asked for in a mode in that mode, on its own start, never the Quick Start', () => {
+    for (const creator of ['plan', 'diagram'] as const) {
+      expect(newTabOpening(creator, 'diagram')).toEqual({ quickStart: false });
+      for (const mode of ['draw', 'facilitate', 'illustrate', 'plan'] as const)
+        expect(newTabOpening(creator, mode)).toEqual({ opensIn: mode, quickStart: false });
+    }
+  });
 });
 
 const source: Tab = {
