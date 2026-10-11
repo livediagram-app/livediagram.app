@@ -32,7 +32,7 @@ type LaserTrailRow = {
 };
 // `holds`: whether the selection locks the element against editing (docs/specs/013-workspace/share-roles.md): a
 // Viewer only looks, so its selection shows its badge and holds nothing. A peer with no role (an older room) holds.
-type RemoteSelector = { id: string; name: string; color: string; holds: boolean };
+export type RemoteSelector = { id: string; name: string; color: string; holds: boolean };
 
 // Group participants by the tab they're focused on, so each TabBar entry
 // renders the right avatar dots. Always includes the local participant on

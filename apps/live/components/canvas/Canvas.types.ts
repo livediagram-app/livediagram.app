@@ -1,4 +1,5 @@
 import type { CombineOp } from '@/lib/combine/combine';
+import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ShapeLibraryItem } from '@livediagram/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
@@ -262,7 +263,7 @@ export type CanvasProps = {
   // Map of elementId -> remote participants currently focused on that
   // element. Drives a small badge ring on each element so participants
   // can see in real time what others are working on.
-  remoteSelectionsByElement: Map<string, { id: string; name: string; color: string }[]>;
+  remoteSelectionsByElement: Map<string, RemoteSelector[]>;
   // Live cursor positions for remote participants — canvas-coords +
   // participant identity. Rendered inside the transformed wrapper so
   // they pan and zoom with the canvas.

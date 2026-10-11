@@ -163,10 +163,10 @@ function BoxedElementViewImpl({
   const isLocked = element.locked === true || tabLocked;
   // Concurrent-selection lock (docs/specs/007-editor/live-app.md): another participant has this
   // element selected (remoteSelectors already excludes our own
-  // selection). We block select / drag / edit and show a not-allowed
+  // selection) and holds it: a Viewer's selection only shows its badge. We block select / drag / edit and show a not-allowed
   // cursor so two people don't fight over the same element. Distinct
   // from `isLocked` above, which is the persisted user-set padlock.
-  const remotelyLocked = remoteSelectors.length > 0;
+  const remotelyLocked = remoteSelectors.some((s) => s.holds);
   // Clockwise rotation about the element centre. The resize handles stay
   // while rotated, turned with the box: resolveBoxedResize projects the drag
   // into the element's own frame and anchors the opposite side, it just

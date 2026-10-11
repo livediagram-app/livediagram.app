@@ -12,41 +12,53 @@
 import { initialsOf } from '@/lib/identity';
 import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
+import type { RemoteSelector } from '@/lib/presence-rows';
 
 // Below this canvas zoom the on-element adornments (badge pill, lock
 // badge, remote-selector avatars) disappear entirely.
 export const ADORNMENT_MIN_ZOOM = 0.4;
 
-export function RemoteSelectorsStrip({
-  selectors,
-}: {
-  selectors: { id: string; name: string; color: string }[];
-}) {
+// What a remote selector's disc says (docs/specs/007-editor/live-app.md "Concurrent-selection lock"): an Editor or
+// Participant holds the element, a Viewer only looks at it, so their disc never claims a lock.
+export function remoteSelectorCopy(s: Pick<RemoteSelector, 'name' | 'holds'>): {
+  title: string;
+  description: string;
+} {
+  return s.holds
+    ? {
+        title: `Locked to ${s.name}`,
+        description: "Selected by them; you can't edit it right now.",
+      }
+    : {
+        title: `Selected by ${s.name}`,
+        description: "They're only viewing, so you can still edit it.",
+      };
+}
+
+export function RemoteSelectorsStrip({ selectors }: { selectors: RemoteSelector[] }) {
   const zoom = useCanvasZoom();
   if (zoom < ADORNMENT_MIN_ZOOM) return null;
+  // The strip lets presses through to the element, but each disc takes the pointer so its hover card can
+  // open (pointer-events is inherited, so a none on the strip alone left the card unreachable). A press on a
+  // disc still bubbles to the element, as a press on its corner always did.
   return (
-    <div
-      onPointerDown={(e) => e.stopPropagation()}
-      className="pointer-events-none absolute -left-1 -top-1 flex"
-    >
+    <div className="pointer-events-none absolute -left-1 -top-1 flex">
       {selectors.map((p, i) => (
         // Margin / z-index live on the outer wrapper so the HoverCard's
         // inline-flex span doesn't disturb the overlap stack.
         <div
           key={p.id}
+          className="pointer-events-auto"
           style={{
             marginLeft: i === 0 ? 0 : -6,
             zIndex: selectors.length - i,
           }}
         >
-          <HoverCard
-            title={`Locked to ${p.name}`}
-            description="Selected by them; you can't edit it right now."
-          >
+          <HoverCard {...remoteSelectorCopy(p)}>
             <GlyphDisc
               size={20}
               as="div"
-              aria-label={`Locked to ${p.name}`}
+              aria-label={remoteSelectorCopy(p).title}
               style={identityVars(p.color)}
               className={`border border-white text-[9px] font-semibold text-white shadow-sm ${IDENTITY_FILL}`}
             >
