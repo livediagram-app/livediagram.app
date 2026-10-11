@@ -15,6 +15,7 @@ export default function GettingStartedPage() {
   const articles = getArticlesByCategory('getting-started');
   return (
     <BrowsePage
+      listing={{ appPath: '/getting-started/', articles: articles }}
       title="Getting Started"
       lede="New here? These guides get you up and running quickly."
     >

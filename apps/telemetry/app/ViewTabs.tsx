@@ -88,14 +88,16 @@ export function ViewTabs<K extends string>({
     });
   };
 
+  // Taller on a touch screen (touch-targets.md): padding, not a ::before pad, since the tabs sit in a
+  // horizontal scroller that would clip one. The icon-only Dashboard tab gets a min-height to match.
   const arrowClass = (enabled: boolean) =>
-    'flex h-8 w-7 shrink-0 items-center justify-center rounded-lg text-slate-500 transition dark:text-slate-400 ' +
+    'flex h-8 w-7 shrink-0 pointer-coarse:h-10 pointer-coarse:w-8 items-center justify-center rounded-lg text-slate-500 transition dark:text-slate-400 ' +
     (enabled
       ? 'cursor-pointer hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100'
       : 'cursor-default opacity-30');
 
   const tabClass = (selected: boolean) =>
-    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition ' +
+    'flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition pointer-coarse:min-h-10 ' +
     (selected
       ? 'bg-brand-700 text-white shadow-sm dark:bg-brand-600'
       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100');

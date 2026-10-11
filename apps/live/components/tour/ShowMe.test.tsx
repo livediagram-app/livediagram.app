@@ -77,4 +77,21 @@ describe('Show Me', () => {
     await settle();
     expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 1: First/ })).toBeTruthy();
   });
+
+  it('ignores a second press while its steps load, and can be pressed again after a failed load', async () => {
+    let fail!: () => void;
+    const onStart = vi.fn(
+      () => new Promise<void>((_, reject) => (fail = () => reject(new Error('offline')))),
+    );
+    render(<Surface onStart={onStart} onFinish={() => {}} />);
+    const button = screen.getByRole('button', { name: 'Show Me' });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(onStart).toHaveBeenCalledTimes(1);
+    await act(async () => fail());
+    await settle();
+    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    fireEvent.click(button);
+    expect(onStart).toHaveBeenCalledTimes(2);
+  });
 });

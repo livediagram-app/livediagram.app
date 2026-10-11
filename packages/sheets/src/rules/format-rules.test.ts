@@ -1,6 +1,7 @@
 // Format rules (docs/specs/029-sheets/conditional-formatting.md): conditions, custom formulas, colour scales, list
 // order, the layout changes and their undo, validation, the static render, and the drawing budget.
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from '../store';
 import { validateWrite, validateSheetCreate } from '../validate';
 import { compileFormula } from '../formula/stored';
@@ -311,12 +312,26 @@ describe('the static render', () => {
 });
 
 describe('the drawing budget', () => {
-  it('a 60 × 26 window under 100 rules on every column works out quickly', () => {
+  // Every cell of a 60 × 26 window checks every rule (none met): the worst case. Timed as growth, not as a ceiling
+  // (as the other packages' speed tests are): an absolute time depends on the machine and on coverage
+  // instrumentation, which once measured 166 ms against about 15 ms locally, while a ratio does not. In CPU time
+  // (cpuMsOf), so a busy CI runner waiting for a core does not count. Four times the rules should cost about four
+  // times as much; a quadratic step would cost sixteen.
+  const GROWTH = 4;
+  const RATIO_CEILING = 8;
+  const RUNS = 3;
+  // The window drawn this many times a pass, so even the small pass measures several ms, well clear of the CPU timer's
+  // microseconds. Kept low: under coverage on a busy CI runner 5 runs of 10 overran the test's 5 s timeout (6.8 s).
+  const REPEATS = 3;
+  // Room for a slow, instrumented runner: the ratio, not the clock, is what fails a slow path.
+  const TIMEOUT_MS = 30_000;
+
+  function windowPass(ruleCount: number): number {
     const cells: Record<string, string> = {};
     for (let r = 1; r <= 60; r++) cells[`A${r}`] = String(r);
     const b = book(cells, { rows: 100, cols: 26 });
     let sheet = b.sheets[0]!;
-    const rules: FormatRule[] = Array.from({ length: 100 }, (_, i) =>
+    const rules: FormatRule[] = Array.from({ length: ruleCount }, (_, i) =>
       fr(
         { id: `f${String(i).padStart(5, '0')}`, op: 'gt', a: String(1000 + i), style: RED },
         0,
@@ -328,19 +343,27 @@ describe('the drawing budget', () => {
     sheet = { ...sheet, layout: { ...sheet.layout, formatRules: rules } };
     b.sheets[0] = sheet;
     b.wb.updateSheet(sheet);
-    const pass = () => {
-      const start = performance.now();
-      for (let r = 0; r < 60; r++)
-        for (let c = 0; c < 26; c++) {
-          const v = b.wb.value(sheet.id, r, c);
-          formatRuleStyle(b.wb, sheet.id, r, c, v, v === null ? '' : String(v));
-        }
-      return performance.now() - start;
-    };
-    // Every cell checks all 100 rules (none met): the worst case. The fastest of five passes, so a cold first pass or
-    // a busy CI runner (one pass measured 166 ms there under coverage, against about 15 ms here) never fails a fast
-    // path; a slow one fails every pass.
-    const ms = Math.min(...Array.from({ length: 5 }, pass));
-    expect(ms).toBeLessThan(150);
-  });
+    const pass = () =>
+      cpuMsOf(() => {
+        for (let n = 0; n < REPEATS; n++)
+          for (let r = 0; r < 60; r++)
+            for (let c = 0; c < 26; c++) {
+              const v = b.wb.value(sheet.id, r, c);
+              formatRuleStyle(b.wb, sheet.id, r, c, v, v === null ? '' : String(v));
+            }
+      });
+    // The fastest of several passes, so a cold first pass never fails a fast path; a slow one fails every pass.
+    return Math.min(...Array.from({ length: RUNS }, pass));
+  }
+
+  it(
+    'a 60 × 26 window under 100 rules on every column costs in step with the rules, not faster',
+    () => {
+      const small = windowPass(100 / GROWTH);
+      const large = windowPass(100);
+      // A floor on the small pass, so a timer that rounds a tiny pass to 0 cannot make the ratio infinite.
+      expect(large / Math.max(small, 1)).toBeLessThan(RATIO_CEILING);
+    },
+    TIMEOUT_MS,
+  );
 });

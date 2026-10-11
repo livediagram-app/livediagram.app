@@ -14,6 +14,8 @@ import { CloseIcon } from '../icons';
 // here it silently dropped any sibling — the help `?` — 2px below the ×.
 // Dialogs with a deliberately different close treatment (the welcome
 // picker's h-8, the sign-in modal's on-gradient white) keep their own.
+// Both shapes reach a 44px tap area on a touch screen (`touch-target`,
+// touch-targets.md); the drawn size stays.
 export function DialogCloseButton({
   onClick,
   compact = false,
@@ -28,8 +30,8 @@ export function DialogCloseButton({
       aria-label="Close"
       className={
         compact
-          ? 'rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-          : '-mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+          ? 'touch-target relative rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+          : 'touch-target relative -mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200'
       }
     >
       {compact ? <CloseIcon size={16} /> : <CloseIcon />}

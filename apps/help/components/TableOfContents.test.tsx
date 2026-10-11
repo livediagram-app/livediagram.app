@@ -52,3 +52,14 @@ describe('TableOfContents', () => {
     expect(host.innerHTML).toBe('');
   });
 });
+
+// docs/specs/004-interface-design/touch-targets.md "A list's rows abut at 44px".
+describe('TableOfContents on a touch screen', () => {
+  it('stacks 44px rows with no gap between them', async () => {
+    document.body.appendChild(article(['First part', 'Second part']));
+    const { host } = await mount();
+    expect(host.querySelector('ul')!.className).toMatch(/\bpointer-coarse:space-y-0\b/);
+    for (const a of host.querySelectorAll('a'))
+      expect(a.className).toMatch(/\bpointer-coarse:min-h-11\b/);
+  });
+});

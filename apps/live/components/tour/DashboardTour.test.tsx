@@ -45,15 +45,19 @@ function drawPage(layout: DashboardLayout): HTMLElement {
 }
 
 function show(layout: DashboardLayout, canEdit = true) {
-  render(
+  const canvas = drawPage(layout);
+  const actions = { changeDashboard: vi.fn() } as unknown as PlanTabActions;
+  const page = (edit: boolean) => (
     <DashboardSettings
-      canvas={drawPage(layout)}
-      canEdit={canEdit}
+      canvas={canvas}
+      canEdit={edit}
       name="Overview"
       layout={layout}
-      actions={{ changeDashboard: vi.fn() } as unknown as PlanTabActions}
-    />,
+      actions={actions}
+    />
   );
+  const { rerender } = render(page(canEdit));
+  return { setCanEdit: (edit: boolean) => rerender(page(edit)) };
 }
 
 const held = () => {
@@ -127,5 +131,23 @@ describe('Dashboard Show Me', () => {
     await startShowMe();
     fireEvent.click(screen.getByRole('button', { name: /skip/i }));
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'DashboardTourSkipped');
+  });
+
+  it('ends when the page can no longer be edited, letting go of the slot it was showing', async () => {
+    const { setCanEdit } = show(held());
+    await startShowMe();
+    fireEvent.click(screen.getByRole('button', { name: /next/i })); // Fill a Slot
+    await settle();
+    fireEvent.click(screen.getByRole('button', { name: /next/i })); // Change or Move a Slot
+    await settle();
+    const filled = document.querySelector('[data-dashboard-slot]:not([data-slot-empty])');
+    expect(filled?.hasAttribute('data-tour-reveal')).toBe(true);
+    setCanEdit(false);
+    await settle();
+    expect(filled?.hasAttribute('data-tour-reveal')).toBe(false);
+    setCanEdit(true);
+    await settle();
+    expect(screen.queryByRole('dialog', { name: /^Show Me step/ })).toBeNull();
+    expect(track).not.toHaveBeenCalledWith('UI', 'Ended', expect.anything());
   });
 });

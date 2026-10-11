@@ -57,7 +57,7 @@ A **Participant** or **Viewer** never sees a start: they keep the empty-canvas c
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
 Participant at what they may add.
 
-A new tab opens on its mode's start with no Quick Start over it (`modeHasOwnStart`, `newTabOpening` in
+A new tab opens on its mode's start with no Quick Start over it (`newTabOpening` in
 `apps/live/lib/new-tab-seed.ts`).
 
 ## Bringing it back

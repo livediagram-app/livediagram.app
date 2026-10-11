@@ -72,11 +72,13 @@ export function BreadcrumbTrail({
   rootHref?: string;
   linkComponent?: LinkLike;
 }) {
+  // On a touch screen each link's tap area is 44px tall: padding the line keeps, a negative margin
+  // gives back (a ::before pad would be clipped by `truncate`).
   return (
     <>
       <Link
         href={rootHref}
-        className="flex shrink-0 items-center gap-1.5 transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+        className="flex shrink-0 items-center gap-1.5 transition-colors pointer-coarse:-my-3 pointer-coarse:py-3 hover:text-slate-900 dark:hover:text-slate-100"
       >
         {HomeIcon}
         {rootLabel}
@@ -87,7 +89,7 @@ export function BreadcrumbTrail({
           {item.href ? (
             <Link
               href={item.href}
-              className="truncate transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+              className="truncate transition-colors pointer-coarse:-my-3 pointer-coarse:py-3 hover:text-slate-900 dark:hover:text-slate-100"
             >
               {item.label}
             </Link>

@@ -51,8 +51,8 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
 - `metricBoard(items, phases, types)`: three phase columns (`phase-todo` ...), the done one `doneColumnId` when any
   phase is done; live cards copied with their status mapped; `projectBoard` over them. `MetricView` builds a
   `WidgetContext` with no quick filter, `canEdit: false` and no-op set-up, and draws `BoardWidgetView`.
-- `ganttModel`: rows of live `project` items, `mark` `bar | due | start | none`; a bar's ends are the min and max of
-  start and due; `overdue` when not done and due is before today; children by `parent`; sorted by `from` then
+- `ganttModel`: rows of live items of the chart's types, `mark` `bar | due | start | none`; a bar's ends are the min and max of
+  start and due; `overdue` when not done and due is before today; children by the Parent field (`parent`); sorted by `from` then
   key, dateless last. Axis `from = min(dates, today) - 7`, `to = max(max(dates, today) + 7, from + 27)`; Monday
   ticks up to 120 days, else month starts (the first and each January with the year). Labels thin to one per
   52 px of axis.
@@ -106,9 +106,9 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
   `GANTT_TYPES_MAX` (32, the catalogue's limit), each `ITEM_TYPE_PATTERN`, none repeated). `ganttEligibleTypes(types)`
   is the catalogue's types offering both `start` and `due`; `ganttShownTypes(settings, types)` the named ones among
   them (every eligible type when the chart names none), which is what
-  `GanttView` draws. The menu lists only eligible types, under `GanttTypesNote` (a `role="note"` info block).
+  `GanttView` draws. The menu lists only eligible types, under an `InfoNote` (plan-menu-parts.tsx, a `role="note"` info block).
   `ganttModel(items, phases, now, types)` (types required, no default) keeps live
-  cards of those types; children still by `parent`. A row's colour is its own `itemColourOf`, else its type's
+  cards of those types; children still by the Parent field (`PARENT_FIELD_ID`). A row's colour is its own `itemColourOf`, else its type's
   colour (`typeIn`), lifted by `accentOn`. Header "Gantt Chart", count `N cards`, empty "No cards of these types
   yet.". Set from `PlanViewMenuSection`'s Card Types row (`CardTypeOptions`, plan-menu-parts.tsx, shared with the
   board's Card Types), which drops the setting when it is exactly Project, tracking
@@ -147,8 +147,8 @@ apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread
 - Gantt swimlanes: `planView.swimlaneBy` (`SWIMLANE_BY`) and `swimlaneField`, validated in validate-shape.ts.
   `laneGroups(by, field, list, items, types, statusNames)` (board.ts, shared with `projectBoard`) gives the lanes
   the rows fall in, in a board's order, and each item's lane; `ganttLanes(rows, ...)` keeps only lanes with rows,
-  rows in the chart's order. `GanttRows` lays rows and lane headers out in one pass (`ganttLayout`: each entry's
-  top). Lane collapse is per person, component state keyed by lane key. Set from `PlanViewMenuSection` (a View
+  rows in the chart's order. `GanttView` lays rows and lane headers out in one pass (`ganttLayout`: each entry's
+  top), drawing `GanttLaneHead` and `GanttNameRow` (gantt-rows.tsx). Lane collapse is per person, component state keyed by lane key. Set from `PlanViewMenuSection` (a View
   flyout for a gantt plan view holding two `MenuAccordionSection`s, Card Types and Swimlanes, each with the
   scaffold's `sectionProps` id; the Board flyout's Swimlanes grid), tracking `('Plan', 'Changed', 'GanttSwimlanes')`.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`

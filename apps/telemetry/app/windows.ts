@@ -17,23 +17,37 @@ import {
 // the api, which counts each window over exactly these days). `hint` says so
 // on the card: "Last 7 days" read as a rolling 168 hours otherwise, and the
 // count only matched the highlighted span of the trend line once both were
-// the same calendar days.
-export const WINDOW_META: { key: TelemetryWindowKey; label: string; hint: string; days: number }[] =
-  [
-    { key: 'today', label: 'Today', hint: 'Since midnight UTC', days: TELEMETRY_WINDOW_DAYS.today },
-    {
-      key: 'last7',
-      label: 'Last 7 days',
-      hint: 'Today and the 6 days before, UTC',
-      days: TELEMETRY_WINDOW_DAYS.last7,
-    },
-    {
-      key: 'last30',
-      label: 'Last 30 days',
-      hint: 'Today and the 29 days before, UTC',
-      days: TELEMETRY_WINDOW_DAYS.last30,
-    },
-  ];
+// the same calendar days. `short` is the name on a phone's sticky window bar,
+// where the three full names ran past a 360px screen.
+export const WINDOW_META: {
+  key: TelemetryWindowKey;
+  label: string;
+  short: string;
+  hint: string;
+  days: number;
+}[] = [
+  {
+    key: 'today',
+    label: 'Today',
+    short: 'Today',
+    hint: 'Since midnight UTC',
+    days: TELEMETRY_WINDOW_DAYS.today,
+  },
+  {
+    key: 'last7',
+    label: 'Last 7 days',
+    short: '7 days',
+    hint: 'Today and the 6 days before, UTC',
+    days: TELEMETRY_WINDOW_DAYS.last7,
+  },
+  {
+    key: 'last30',
+    label: 'Last 30 days',
+    short: '30 days',
+    hint: 'Today and the 29 days before, UTC',
+    days: TELEMETRY_WINDOW_DAYS.last30,
+  },
+];
 
 export function windowLabel(key: TelemetryWindowKey): string {
   return WINDOW_META.find((w) => w.key === key)?.label ?? key;

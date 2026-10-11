@@ -157,12 +157,39 @@ type) and on the worker (authoritative).
   two action buttons stack).
 - **More Like This**: up to six other posts in the same category, most loved first.
 - A post that does not exist, was removed or is hidden shows a friendly not-found with a way back to the gallery.
-- Once a post loads, its page names its own address as canonical (the static shell, shared by every post, carries
-  none). The shell's Open Graph block likewise has no `og:url`, so a link preview never folds a post into the gallery;
-  it carries a generic post description and the brand card.
+- The page names its own address as canonical, filled in before it reaches the browser (see "Search engines" below)
+  and again once the post loads. The static shell, shared by every post, carries none, and its Open Graph block has no
+  `og:url`, so a link preview never folds a post into the gallery.
 - The gallery's metadata (canonical, Open Graph and Twitter card with the brand card) comes from the shared
   `pageMetadata` in `@livediagram/ui`, with `og:type` `website` ([Marketing site](../019-marketing/marketing-site.md)
   "SEO and metadata").
+
+### Search engines
+
+Posts are the Community's long tail of search traffic: each is a real diagram with its own title and description. The
+app is a static export with one shell for every post, so a small worker script in front of its assets
+(`apps/community/worker/`) makes each post findable and previewable without running the page's script. It runs for
+only two paths; everything else is served straight from the assets.
+
+- **A post's page** (`/community/post/?id=<postId>`): the worker reads the post from the api and rewrites the shell's
+  head with the post's own title (`<Title> | livediagram Community`, as the page sets once it loads), a description
+  (the post's, cut at a whole word to 160 characters; a sentence naming the post when it has none), a canonical and
+  `og:url` at its own address, the Open Graph and Twitter title and description, and JSON-LD: a `CreativeWork` (name,
+  description, category as `genre`, tags as `keywords`, published and modified dates, the author unless the post is
+  anonymous, part of the Community) and a `BreadcrumbList` (Community, then the post). The card image stays the brand
+  card: a post's own image is SVG, which link previews do not show.
+- **A post that is missing, removed or hidden** answers 404 with the same shell, which still shows its friendly
+  not-found, so a dead link never indexes as a page.
+- **The sitemap** (`/community/sitemap.xml`, listed in the origin's robots.txt beside the marketing and help ones):
+  every public post at its canonical address with its last-updated date, newest first, from the api's
+  `GET /api/community/sitemap`, which reads only ids and dates and caps the list at `COMMUNITY_SITEMAP_MAX` (5,000; one
+  sitemap may hold 50,000). The api answers it with an hour's caching; switched off, the sitemap is empty.
+- **When the api cannot answer** (no `API` binding, an error, or no reply within `API_TIMEOUT_MS`, 1.5 seconds) the
+  post page is the shell exactly as built and the sitemap answers 503 with `Retry-After`. Nothing about the page
+  depends on the worker: it only adds what crawlers read.
+- **Cost**: each post page view makes one extra api read (an indexed D1 lookup of one post) before the HTML is sent,
+  since HTML is never cached ([Router app](../016-platform/router-app.md)). The timeout bounds what a slow api can
+  add.
 
 ## Viewing a post's document
 
@@ -342,8 +369,9 @@ While it is off:
 
 ## Self-hosting
 
-Community works with zero external services: D1 holds posts, the snapshot cache renders images, the app is static. A
-self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, so
+Community works with zero external services: D1 holds posts, the snapshot cache renders images, the app is static
+behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
+out, the pages are served exactly as built). A self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, so
 a build without a Clerk key offers neither; the Community app reads the same `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` as
 the editor.
 

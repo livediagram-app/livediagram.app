@@ -19,7 +19,7 @@ item store.
 
 ## Offering the mode
 
-- Plan is the fourth mode, after Illustrate and before Facilitate: the mode switch, the tab menu's mode rows, **Shift+D** and the template picker's
+- Plan is the fifth mode, after Illustrate: the mode switch, the tab menu's mode rows, **Shift+D** and the template picker's
   mode filter list it in that order.
 - It is always offered, like every mode ([Editor modes](../007-editor/editor-modes.md#every-mode-always-offered)).
   Its Settings › Experimental switch went when it graduated.
@@ -139,7 +139,7 @@ Plan must cost nothing to a document that does not use it:
     in the middle of the view; a sheet as above; a layout makes the tab a Dashboard of it. Each choice makes the tab
     its kind ([Plan tabs](plan-tabs.md)).
   - **Search** matches names, lines, kinds, a board's card types and each choice's keywords (`START_KEYWORDS`, a sheet template's own `keywords` and a Plan template's
-    `TEMPLATE_KEYWORDS`, the words the Quick Start searches too: what
+    `templateKeywords`, the words the Quick Start searches too: what
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
     grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**; the rail shows no choice while a search is typed, and

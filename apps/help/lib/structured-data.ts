@@ -51,3 +51,32 @@ export function webSiteJsonLd() {
     inLanguage: 'en-GB',
   };
 }
+
+/** A category landing (docs/specs/018-help/help-app.md "SEO"): a CollectionPage whose ItemList names every
+ *  article the page lists, in the order shown, so a search engine reads the landing as an index of guides. */
+export function collectionJsonLd(input: {
+  title: string;
+  description: string;
+  appPath: string;
+  items: { name: string; appPath: string }[];
+}) {
+  const url = helpUrl(input.appPath);
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: input.title,
+    description: input.description,
+    url,
+    inLanguage: 'en-GB',
+    isPartOf: { '@type': 'WebSite', name: 'livediagram Help', url: `${HELP}/` },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: input.items.map((item, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: item.name,
+        url: helpUrl(item.appPath),
+      })),
+    },
+  };
+}

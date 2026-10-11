@@ -139,18 +139,18 @@ a page slide of a deleted page stays empty rather than finding a new page under 
 
 ## Sizes
 
-| Size id         | Label (portrait / landscape) | Short x long side (px) | For                      |
-| --------------- | ---------------------------- | ---------------------- | ------------------------ |
-| `a4`            | A4                           | 794 x 1123             | Print, the default       |
-| `letter`        | US Letter                    | 816 x 1056             | Print in North America   |
-| `a3`            | A3                           | 1123 x 1587            | Posters                  |
-| `square`        | Square                       | 1080 x 1080            | Social posts             |
-| `social`        | Portrait post (4:5)          | 1080 x 1350            | Instagram and LinkedIn   |
-| `wide`          | Story (9:16) / Slide (16:9)  | 1080 x 1920            | Stories, and slides wide |
-| `slide`         | Slide (16:9)                 | 1080 x 1920            | Slides, landscape only   |
-| `slide-classic` | Classic slide (4:3)          | 1080 x 1440            | Slides for 4:3 screens   |
-| `logo`          | 1024 x 1024                  | 1024 x 1024            | Logos, logo pages only   |
-| `fit`           | Fit to Content               | its own (`fit`)        | A board put onto a page  |
+| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                      |
+| --------------- | ------------------------------------------ | ---------------------- | ------------------------ |
+| `a4`            | A4                                         | 794 x 1123             | Print, the default       |
+| `letter`        | US Letter                                  | 816 x 1056             | Print in North America   |
+| `a3`            | A3                                         | 1123 x 1587            | Posters                  |
+| `square`        | Square                                     | 1080 x 1080            | Social posts             |
+| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn   |
+| `wide`          | Story (9:16) / Slide (16:9)                | 1080 x 1920            | Stories, and slides wide |
+| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only   |
+| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens   |
+| `logo`          | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only   |
+| `fit`           | Fit to Content                             | its own (`fit`)        | A board put onto a page  |
 
 - **Which sizes a page offers** depends on its kind. An **infographic** page: A4, US Letter, A3,
   Square, Post, Story and **Slide** (16:9). An **article** page: the first six. A **slide** page:
@@ -218,7 +218,7 @@ the swatches below, then, on Gradient, its **custom** choice last.
   (starting from the page's current gradient, or its current solid colour to a deepened version
   of it, or Sky to Lavender at 160° on the paper) and opens its editor under the swatches, as does
   any gradient that is not a preset: **From** and **To** (each a swatch button opening the colour
-  picker in a popover, with the Light and Dark rows), **Angle** (a slider, 0° to 359° in steps of
+  picker in a popover, with the Light and Dark rows), **Angle** (a slider, 0° to 355° in steps of
   5°, previewed while dragged, one edit on release) and **Swap** (exchanges From and To, one
   edit). The editor closes when another category or a preset is chosen.
 - **Previews**: hovering or focusing any colour (Solid, From, To) previews it on the page; a pick
@@ -384,7 +384,8 @@ build), filed under the slide category.
 
 From the page panel's footer. On an **article page** each action acts on its **whole article**
 (every page of its flow, its writing, and the elements on its pages), and reads so: **Duplicate
-article**, **Move article left / right**, **Delete article**.
+article**, **Move article left / right**, **Delete article**. On a **slide page** they read
+**Duplicate slide**, **Move slide left / right**, **Delete slide**.
 
 - **Duplicate**: a copy of the page (size, orientation, background, a name with "copy") right
   after it, with a copy of every element on it (new ids; arrows pinned between copied elements stay
@@ -393,8 +394,9 @@ article**, **Move article left / right**, **Delete article**.
 - **Move left** / **Move right**: swaps the page with its neighbour (a whole article counts as one
   neighbour); both sides' content moves with them. Disabled at the row's ends.
 - **Delete page**: removes the page **and everything on it** (arrows pinned to it too); the pages
-  after it close the gap. Offered while the row holds more than one unit (a page, or a whole
-  article).
+  after it close the gap. Deleting the last unit (the only page, or the only article) clears the
+  tab (its pages, writing and elements, one edit) and brings Start Illustrating back
+  ([Template starts](start-diagramming.md) "Start Illustrating").
 - **Split Into Pages** (a Fit to Content page only): splits the page into one page per cluster of
   its content, nothing scaled ("Into pages" › "Split Into Pages"). Its icon button sits first in
   the action row, tooltip **Split Into Pages**.
@@ -528,11 +530,13 @@ are diagram formats and are not offered.
 `Tab · Changed ·` `PageAdded`, `PageRemoved`, `PagePortrait`, `PageLandscape`, `PageSize`,
 `PageBackground`, `PagePattern`, `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLocked`, `PageUnlocked`,
-`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`, `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
+`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
+(and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
 `PageKindLogo` (the first page's own choice);
 `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF` (one page) and
 `IllustratePNGPages / IllustrateSVGPages / IllustratePDFPages` (all pages);
-`UI · Added · PageSlide`; `UI · Opened · SlideDeck`. Never a colour, name or layout content.
+`UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Closed · EmptyPageLayouts` (the in-page
+**Start From a Layout** card's Hide). Never a colour, name or layout content.
 A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".
 
 ## Into pages

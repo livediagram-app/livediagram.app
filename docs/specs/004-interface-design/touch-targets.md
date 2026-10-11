@@ -20,8 +20,34 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   The toolbar cards apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
 - **Shared controls carry it**, so every caller does: the chrome buttons (`CHROME_BTN`), the
   `⋯` triggers (`EllipsisTriggerButton`, the tab menu), the help `?` (`HelpArticleLink`), panel
-  header buttons (`MovablePanelHeader`, `SettingsPopover`), search clear and dismiss buttons, and
-  Add tab. Resize handles have their own 16px pad on a coarse pointer (canvas element parts).
+  header buttons (`MovablePanelHeader`, `SettingsPopover`), the dialog close in both shapes
+  (`DialogCloseButton`), search clear and dismiss buttons, and Add tab. Resize handles have their
+  own 16px pad on a coarse pointer (canvas element parts).
+- **Every canvas toolbar pads its items.** The Palette strip, the Draw dock's pills (`DockToolbar`)
+  and the menu button's own card in Draw (`ToolbarExplorerButton`) all carry `PHONE_TOOLBAR_ITEMS`;
+  the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do the tab pill,
+  the role pill (Editing / Viewing), the tour card's buttons and an Illustrate page's lock and cog.
+  The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
+  full `touch-target`.
+- **Padding where a pad would be clipped.** A `truncate` box or a horizontal scroller clips its own
+  `::before`, so there the control grows by padding instead (`pointer-coarse:py-*`, with a matching
+  negative margin where the line must not move): the document title in the editor header, the
+  breadcrumb links, and the telemetry view tabs and their arrows.
+- **A list's rows abut at 44px.** Where links or rows stack closer than 44px, a pad would overlap the
+  next row's, so on a touch screen each row is 44px tall and the list drops its gap: the Explorer tree
+  (`SidebarRow`, its chevron taking the row's full height), the site footer's columns, a story beat's
+  highlights on the landing page, and the help centre's contents and Learn More lists. The list grows
+  taller on a touch screen; under a mouse it keeps its compact rhythm.
+- **Keyboard hints are not drawn on a touch screen.** A tile's always-on shortcut letter (the Palette
+  strip, the Draw dock and its flyouts, a picker's corner key) teaches a key there is no keyboard to
+  press, so it carries `pointer-coarse:hidden`; `aria-keyshortcuts` stays for a paired keyboard.
+- **Text fields are 16px on a touch screen.** iOS zooms the page into any focused field under 16px and
+  leaves it zoomed, so a search box drawn at 14 or 15px reads at 16px under `pointer: coarse` (the
+  landing page's template search, the Community search).
+- **The public sites follow the same rules** (marketing, help, Community, telemetry): the shared header's
+  brand, apps menu and primary CTA pad vertically; the hero's example dots are 44px tall and 24px wide
+  and its arrows padded; the template carousel arrows, the Community's search-bar buttons and like
+  button, and the telemetry window pills are padded.
 - **A scroller holding padded controls scrolls on its own axis only.** The pad is an absolutely
   positioned box, so it counts toward its scroll container's overflow; a container that sets
   `overflow-x: auto` gets `overflow-y: auto` too and scrolls (and draws a scrollbar) by the few
@@ -34,5 +60,6 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
 
 ## Non-goals
 
-- Growing controls visually on touch. A bigger drawn button is a layout change per surface; the
-  pad gets the tap area without one.
+- Growing a lone control visually on touch. A bigger drawn button is a layout change per surface;
+  the pad gets the tap area without one. Only stacked rows grow (above), because there the pad has
+  nowhere to reach.

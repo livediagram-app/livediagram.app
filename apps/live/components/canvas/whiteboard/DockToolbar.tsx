@@ -17,6 +17,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
+import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Roving = { focusKey: string; setFocusKey: (key: string) => void };
@@ -74,8 +75,9 @@ export function DockToolbar({
         // The Draw tour's anchors (docs/specs/023-draw-mode/draw-tour.md): dock-drawing, dock-shapes, dock-settings.
         data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
-        // A pill of the dock, the Toolbar layout strip's twin (its card and padding).
-        className="pointer-events-auto relative flex shrink-0 animate-pop-in items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        // A pill of the dock, the Toolbar layout strip's twin (its card, its padding and its 44px-tall
+        // tap areas on a touch screen).
+        className={`pointer-events-auto relative flex shrink-0 animate-pop-in items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS}`}
       >
         {children}
       </div>
@@ -156,7 +158,7 @@ export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
             // learn the keys. Slate-500 / -400 keep 4.5:1.
             <span
               aria-hidden
-              className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400"
+              className="pointer-events-none absolute bottom-0.5 right-1 text-[8px] font-medium uppercase leading-none text-slate-500 pointer-coarse:hidden dark:text-slate-400"
             >
               {o.shortcut}
             </span>

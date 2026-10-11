@@ -1521,6 +1521,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
+    path: '/community/sitemap',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      'Every public post, newest first (up to 5,000), with when it last changed: the sitemap source.',
+    auth: 'public',
+    responseSchema: ref('CommunitySitemapResponse'),
+    statuses: [200, 404],
+  },
+  {
+    method: 'GET',
     path: '/community/facets',
     segment: 'community',
     tag: 'Community',

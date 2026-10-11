@@ -143,7 +143,7 @@ export function ProductNav({
         aria-label={`Switch section, currently ${active.label}`}
         onClick={toggle}
         onKeyDown={onTriggerKeyDown}
-        className="optical-edges flex h-[34px] items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        className="optical-edges relative flex h-[34px] items-center gap-1.5 touch-target-y rounded-lg border border-slate-200 bg-white px-2.5 text-sm font-medium text-slate-600 shadow-sm outline-none transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800 focus-visible:border-slate-300 focus-visible:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
         {/* Hamburger affordance so the label reads as an openable menu, not a
             static section name. */}

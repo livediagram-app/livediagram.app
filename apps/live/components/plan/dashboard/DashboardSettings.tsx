@@ -82,7 +82,7 @@ export function DashboardSettings({
   // dashboard's steps aside until it is restored (plan-tabs.md "Dashboard Settings").
   const covered = useMaximisedPlanId() !== null;
   // Show Me: the tour of arranging and filling this dashboard, run on the page (plan-tabs.md "Show Me").
-  const { tour, freeze } = useDashboardTour();
+  const { tour, freeze } = useDashboardTour(!canEdit || covered);
   if (!canEdit || covered) return null;
   return createPortal(
     <div

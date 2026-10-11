@@ -100,3 +100,14 @@ describe('TabPill opening-mode icon', () => {
     localStorage.clear();
   });
 });
+
+// docs/specs/004-interface-design/touch-targets.md: the 28px pill reaches a 44px-tall tap area on a
+// touch screen, vertically only, since the tabs sit side by side.
+describe('TabPill tap area', () => {
+  it('carries the vertical touch pad on a positioned button', () => {
+    render(<TabPill tab={tab('t2', 'Board')} ctx={ctx()} />);
+    const button = screen.getByRole('button', { name: 'Board' });
+    expect(button.className).toMatch(/\btouch-target-y\b/);
+    expect(button.className).toMatch(/\brelative\b/);
+  });
+});

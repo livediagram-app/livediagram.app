@@ -58,16 +58,17 @@ export function StoryBeat({ section, index }: { section: LandingSection; index: 
           </p>
 
           {/* A few of the features waiting on its page, each straight to its card. Centred as a block
-              while the beat is centred, its ticks still lined up on the left. */}
+              while the beat is centred, its ticks still lined up on the left. On a touch screen the
+              rows abut at 44px tall, so each tap lands on a link. */}
           <ul
-            className="mx-auto mt-6 grid w-fit gap-x-6 gap-y-2.5 text-left sm:grid-cols-2 lg:mx-0 lg:grid-cols-1"
+            className="mx-auto mt-6 grid w-fit gap-x-6 gap-y-2.5 text-left pointer-coarse:mt-4 pointer-coarse:gap-y-0 sm:grid-cols-2 lg:mx-0 lg:grid-cols-1"
             aria-label={`${section.label} highlights`}
           >
             {sectionHighlights(section).map((item) => (
               <li key={item.title}>
                 <a
                   href={featureHref(section.id, item.title)}
-                  className="group flex items-start gap-2 rounded-sm text-[15px] text-slate-700 transition hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:text-brand-200"
+                  className="group flex items-start gap-2 rounded-sm text-[15px] text-slate-700 transition pointer-coarse:py-3 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-200 dark:hover:text-brand-200"
                 >
                   <span className="mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300">
                     <CheckIcon size={11} aria-hidden />

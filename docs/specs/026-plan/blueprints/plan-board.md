@@ -26,14 +26,15 @@ editor views.
 - `element-fields.ts`: both fields listed.
 - `shape-factory.ts`: `SHAPE_DEFAULT_SIZE` board 1120×640, card 240×120; `createShape('plan-board')` seeds the
   `blank` preset set-up; `createShape('plan-card')` seeds `planCard: { itemId: '' }` (the caller sets it).
-- `validate-shape.ts`: `planBoard` checked by `validateBoardSetup` (items package: 1..12 columns, unique ids and
+- `validate-shape.ts`: `planBoard` valid when `normaliseBoardSetup` (items package) reads it (1..12 columns, unique ids and
   statuses, names ≤ 40, wip 1..99, cardFields known, `cardSize` minimal or compact (absent is detailed), budget
   1..99); `planCard.itemId` by `ITEM_ID_PATTERN` or empty.
 - Predicates: `isSelfDrawingShape` (both), `SELF_PAINTING_SHAPES` (both: board paints its own surfaces; card its
   type colour), `isSvgRenderedShape` exclusion (both), `SHAPE_LABELS` ("Plan board", "Plan card"), not markers,
   not containers.
-- `svg-render.ts`: `svgBoxed` branches to `svg-render-plan.ts`: `svgPlanBoard(el, items?)`,
-  `svgPlanCard(el, items?)`. `SvgRenderOptions.items?: ReadonlyMap<string, Item>`. Without items, columns draw
+- `svg-render.ts`: `svgBoxed` branches to `svg-render-plan.ts`: `svgPlanBoard(el, items, surface, itemTypes)`,
+  `svgPlanCard(el, items, surface, itemTypes)`. `renderElementsToSvg`'s options carry `items?: ReadonlyMap<string, Item>`
+  and `itemTypes?`. Without items, columns draw
   with names and empty bodies; a card draws "Item".
 - `edit-operations` `SHAPE_KIND_FIELDS`: `plan-board` → `planBoard`, `plan-card` → `planCard`.
 - `document-views` `content-summary` / `find`: board → title + column names; card → item id.
@@ -171,7 +172,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
     card's height marks the drop slot: column under the pointer, lane under the pointer, slot by the midpoint of
     the cards under it.
   - Drop inside the board: `moveItem(id, { status, after|before, set: laneField })`, pushed to undo.
-  - Drop outside the board's rect: `onCardOut(itemId, canvasPoint)` adds a `plan-card` element there (one
+  - Drop outside the board's rect: `usePlanCardDrag`'s `onDropOutside` calls `PlanContext.placeCardOut(itemId, x, y)`,
+    which adds a `plan-card` element there (one
     commit), item unchanged.
 - **Plan card onto a board**: in `useEditorDrag`'s drag end, a moved `plan-card` released over a board cell
   (`data-plan-status` under the pointer) → `onPlanCardDroppedOnBoard(card, status)`: the item moves to the end of
@@ -266,7 +268,7 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   prevented; ignore: the rest) instead of returning early (`getMaximisedPlanId() !== null || fillTabId !== null`, read at the key press). `useCanvasSelectionView` passes `canvasCovered` from `useCanvasCovered()` (`useMaximisedPlanId() !== null ||
 fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePaletteCatalogue`, while `useBoardFillingTab()`, swaps its categories for
   `coveredPaletteCategories()` (Plan's `plan-cards` alone), and `ToolbarPalette` shows the first offered
-  category while the chosen one is not offered, keeping the choice; while `useSheetFillingTab()` `ToolbarPalette` hides its root
+  category while the chosen one is not offered, keeping the choice; while `useSheetCovering()` `ToolbarPalette` hides its root
   (`hidden`), or on a phone (a `leading` menu) renders no card beside the menu; `usePaletteCatalogue`'s tile preamble
   calls `restorePlanElement()` while `getMaximisedPlanId()` is set and `restoresMaximised(action, args)` (any action
   but `cancelDraw` and `addShape('plan-card', …)`; `withTileActionPreamble` hands the preamble the action and its
@@ -276,18 +278,15 @@ fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePal
   (`{ id, kind: FillTabKind }` or null: on a Board or Sheet tab its first board or Sheet; on a Dashboard its one
   filling visualisation, the stored layout read through `readDashboard`; otherwise the first board whose raw
   `planBoard.fillTab === true`, or Sheet whose `planSheet.fillTab === true`, in element order;
-  [Sheet element blueprint](../../029-sheets/blueprints/sheet-element.md#fill-tab)) and
-  `fillTabElements(elements, id, update)` (the board alone, its set-up `update`d from the one it holds at the commit,
-  Fill Tab on).
+  [Sheet element blueprint](../../029-sheets/blueprints/sheet-element.md#fill-tab)).
 - **The Plan cover** (`apps/live/hooks/plan/plan-cover-store.ts`, a module store like `maximised-plan.ts`): `{ fillTabId, fillTabKind,
 planKind }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
   `fillTabElementOf(activeTab.elements, kind, dashboard)`, and returns `canvasCovered` for the keyboard). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
   (maximised or filled: selection chrome, the Map), `useBoardFillingTab` (a board filling the tab: the palette's Cards alone),
-  `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet). `isCanvasCovered()` is the
+  `useSheetCovering` (a Sheet maximised or filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet). `isCanvasCovered()` is the
   one covered check, read at a key press too. Neither value is on `PlanContext`, so adding or moving an element never
   changes the context (guarded by `plan-cover-store.test.tsx`: 40 element adds, 0 re-renders).
-- **Fill Tab's action** on `PlanContext` (`usePlanFillTab`, a stable callback): `fillTab(id, update)` (one `commit`,
-  so one undo step). `PlanBoardView` calls `useBoardMaximised(id, interactive)`:
+- **A filled board**: `PlanBoardView` calls `useBoardMaximised(id, interactive)`:
   `filled` from `useFillsTab(id)`; a store maximise on it is released (`releasePlanElement`, no telemetry) and the
   lifetime hook (Escape) runs only for a store maximise. A filled board hides `MaximisePlanButton` and passes `fill` to
   `MaximisableSlot`, which moves the host into `FilledTabLayer` (the same `CanvasCover` as the maximised layer, at the
@@ -296,8 +295,9 @@ planKind }`, published before paint by `usePlanCoverWiring` (called once from `u
   card size; `onSetUp(columns, typeIds, layout)` writes `withSetupLayout(setUpBoard(current, …), layout)` through
   `updateBoard`.
 - **Reveal**: sets `planBoard.hideWriting = false` (element commit).
-- **Set-up edits**: element commits via `updateElement`; removing a column with items opens a choice "Move
-  N items to …" (another column) before the commit, the moves pushed with it.
+- **Set-up edits**: board commits via `PlanContext.updateBoard(boardId, setup)`; Delete Status on a state that holds
+  cards opens `RemoveColumnPopover` first (move them to another column of this board, or to the Trash), the move done
+  before the state's column comes off every board.
 - **Face-down**: `setup.hideWriting && item.createdBy.id !== viewerId` → face shows the author's colour and
   "Hidden until reveal".
 - **Presence**: room presence op `plan-presence` `{ tabId, itemId | null, state: 'drag' | 'view' }`, sent on a
@@ -341,7 +341,8 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 
 - Board is a `region` named by its title; each column a `list` labelled "In Progress, 3 items, WIP limit 4";
   each card a `listitem` containing a `button` named "#12 Fix login, Bug, assigned to Sam, high priority".
-- Keyboard per spec (`usePlanBoardKeyboard`); moves announced in a polite live region.
+- Keyboard per spec (`planBoardKey` in `plan-board-keys.ts`, read by `PlanBoardView`); moves announced in a polite
+  live region.
 - Drag has the keyboard equivalent (Shift+arrows). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
   type colour key fill (the #key text meets 4.5:1 on it).
 - Reduced motion: no placeholder animation, no card lift shadow transition.
@@ -386,9 +387,8 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
 ## Observability
 
 `[plan]` log fingerprints: `plan.drop.board`, `plan.drop.out`, `plan.card.onto-board`, `plan.setup.column-removed`,
-`plan.items.load-failed`. Panel navigation sends `Plan · Opened · Parent | ChildCard | Breadcrumb`. Fill Tab sends
-`Plan · Toggled · FillTabOn | FillTabOff` (`trackFillTab`, before the write); the column picker's `Plan · Changed ·
-ColumnAdded | ColumnAddedExisting`.
+`plan.items.load-failed`. Panel navigation sends `Plan · Opened · Parent | ChildCard | Breadcrumb` (`ChildCard`: a card opened from a Linked as
+section). The column picker sends `Plan · Changed · ColumnAdded | ColumnAddedExisting`.
 
 ## Testing
 

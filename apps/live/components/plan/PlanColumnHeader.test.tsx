@@ -121,3 +121,17 @@ describe('a column’s settings', () => {
     expect(screen.queryByRole('dialog', { name: 'Add a Column' })).toBeNull();
   });
 });
+
+// docs/specs/004-interface-design/touch-targets.md: a column's 24px cog reaches a 44px tap area on a
+// touch screen.
+describe('PlanColumnHeader cog tap area', () => {
+  it('pads every column cog', () => {
+    render(<Board initial={presetSetup('kanban')} />);
+    const cogs = screen.getAllByRole('button', { name: /column settings$/ });
+    expect(cogs.length).toBeGreaterThan(0);
+    for (const cog of cogs) {
+      expect(cog.className).toMatch(/\btouch-target\b/);
+      expect(cog.className).toMatch(/\brelative\b/);
+    }
+  });
+});

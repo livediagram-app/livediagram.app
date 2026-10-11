@@ -14,6 +14,7 @@ export default function SelfHostingPage() {
   const articles = getArticlesByCategory('self-hosting');
   return (
     <BrowsePage
+      listing={{ appPath: '/self-hosting/', articles: articles }}
       title="Self-Hosting"
       lede="The whole product is open source. Here is how to run your own."
     >

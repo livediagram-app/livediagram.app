@@ -9,16 +9,16 @@ and its templates.
 | ------------ | -------------------------------------------------------------------------------------- |
 | Plan mode    | `EditorMode` `'plan'` (`EDITOR_MODE_CATALOGUE`, 4th entry)                             |
 | Plan palette | `PLAN` layout in `palette-layouts.ts`; categories `plan-boards`, `plan-cards` (band 4) |
-| Plan mark    | `PlanModeIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                            |
+| Plan mark    | `PlanIcon` in `packages/ui/src/icons/drawing-kinds.tsx`                                |
 | Blank Plan   | `TemplateKind` `'blank-plan'`                                                          |
 
 ## Mode wiring
 
 - `packages/document/src/editor-mode.ts`: catalogue entry `{ id: 'plan', label: 'Plan', description: 'Boards of
 items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
-- Every `Record<EditorMode, …>` the compiler flags: `MODE_EVENT` (`ModePlan`), `OPENS_IN_EVENT` (`OpensInPlan`),
+- Every `Record<EditorMode, …>` the compiler flags: `MODE_EVENT` (`ModePlan`),
   template filter (`TemplateModePlan`), `BLANK_TEMPLATE_FOR_MODE` (`blank-plan`), `MODE_WORDS` (Plan, "Plan
-  boards"), `POPULAR_BY_MODE` (was `MODE_BEST`), `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
+  boards"), `POPULAR_BY_MODE`, `EDITOR_MODE_ICONS` (widened to `Record<EditorMode, …>`).
 - By hand: explorer lens `VALUE_LABELS['opens-in'].plan`, `paletteLayoutFor` (switch on mode), OpenAPI
   regeneration, marketing hero/gallery mode unions, telemetry explanations and catalogue `types`.
 
@@ -105,7 +105,7 @@ elements)` to the create (cloud and Offline Mode), so a template's document has 
 | Mode catalogue order, cycle    | `editor-mode.test.ts`                                                                         |
 | Plan palette layout            | `palette-layouts.test.ts`                                                                     |
 | Card tiles no board takes      | `board-card-types.test.ts`, `PaletteTile.disabled.test.tsx`                                   |
-| Templates open in Plan         | `template-modes.test.ts`, `template-tab.test.ts`                                              |
+| Templates open in Plan         | `apps/live/lib/templates.test.ts`, `template-tab.test.ts`                                     |
 | Template set-ups validate, fit | `template-builders-plan.test.ts`                                                              |
 | Hand-offs, tab layout          | `template-builders-plan.test.ts`                                                              |
 | Template tabs on create        | `document-create-seeded.test.ts`, `create-document-placement.test.ts`, `template-tab.test.ts` |

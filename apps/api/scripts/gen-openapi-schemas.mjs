@@ -83,6 +83,7 @@ export const ROOT_TYPES = [
   'CommunityReportInput',
   'CommunityListResponse',
   'CommunityFacetsResponse',
+  'CommunitySitemapResponse',
   'CommunityPostResponse',
   'CommunityFeaturedResponse',
   'CommunityMineResponse',

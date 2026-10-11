@@ -14,6 +14,7 @@ export default function AboutPage() {
   const articles = getArticlesByCategory('about');
   return (
     <BrowsePage
+      listing={{ appPath: '/about/', articles: articles }}
       title="About livediagram"
       lede="What livediagram is, who it is for, and why it exists."
     >
