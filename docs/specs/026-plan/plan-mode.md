@@ -83,7 +83,11 @@ Plan must cost nothing to a document that does not use it:
     Recommended each time.
   - **The grid** beside the rail: the chosen category's heading and line, then its cards, three a row (two on a narrow
     panel, one on a phone), cascading in when the category changes (the shared cascade, within the motion budget; the
-    first paint does not animate).
+    first paint does not animate), scrolled back to its top each time.
+  - **On a phone** the panel runs nearly edge to edge under the menu box and stays compact: the title (18 px) and Help on
+    one line, the search on the next, no line under the title; the rail's chips scroll the chosen one into view; each
+    card is a row (its picture 96 by 72 px at the left, its name, badge and line, two lines at most, beside it, no
+    card-type chips), so a screen holds several.
     - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-do List boards,
       the Overview dashboard, and the Empty Sheet and Budget sheets.
     - **Boards** ("Columns of cards for the work to move through."): every board type in `PLAN_BOARD_TILES`' order,

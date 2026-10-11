@@ -45,6 +45,7 @@ export function PlanBoardHeader({
   selected = false,
   movable = true,
   canRename = false,
+  showWidgets = true,
   onWidgets,
   onSetup,
   onOpenItem,
@@ -71,6 +72,8 @@ export function PlanBoardHeader({
   // A double-click on the title (or the header's empty space) renames the board: someone who may edit, in Plan
   // mode (docs/specs/026-plan/plan-board.md "What the board shows").
   canRename?: boolean;
+  // The widgets are shown: not on a phone, whose header has no room for them (phone-board.ts).
+  showWidgets?: boolean;
   onWidgets: (next: BoardWidgetKind[]) => void;
   // A set-up change a widget makes (Set Done Column), with its telemetry part.
   onSetup: (next: PlanBoardSetup, part: string) => void;
@@ -110,6 +113,8 @@ export function PlanBoardHeader({
       widgets={widgets}
       canEdit={canEdit}
       selected={selected}
+      // In a header band the board is maximised or fills its tab, where no selection shows: an empty zone keeps its +.
+      offerAdd={inBox}
       palette={palette}
       onChange={(next) => {
         // Taking a widget off clears what it narrowed.
@@ -200,7 +205,9 @@ export function PlanBoardHeader({
             </span>
             {/* No press guard here: a press on the zone's empty space selects and moves the board like the
                 rest of the header; each widget keeps its own presses. */}
-            <div className="flex min-w-0 flex-1 items-center">{widgetZone}</div>
+            <div className="flex min-w-0 flex-1 items-center">
+              {showWidgets ? widgetZone : null}
+            </div>
           </>
         )}
       </div>
@@ -209,8 +216,9 @@ export function PlanBoardHeader({
         {...bandControlsProps(palette)}
         className={`ml-auto flex shrink-0 items-center gap-3 ${BAND_CONTROLS_CLASS}`}
       >
-        {inBox ? (
+        {inBox && showWidgets && (widgets.length > 0 || canEdit) ? (
           // In a header band the widgets ride here, before the cog, behind a hairline: the top row's right is one card.
+          // Someone who may not edit a board with none sees no zone, so no hairline stands alone before the cog.
           <span
             data-widget-zone=""
             className="flex min-w-0 max-w-[min(56vw,46rem)] items-center border-r pr-2"

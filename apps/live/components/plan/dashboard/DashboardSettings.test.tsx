@@ -9,6 +9,7 @@ import {
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from './DashboardSettings';
+import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
 
 // docs/specs/026-plan/plan-tabs.md "Dashboard Settings".
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -50,6 +51,16 @@ describe('Dashboard Settings', () => {
     show(dashboardFromPreset('two-by-two', id));
     openCog();
     expect(track).toHaveBeenCalledWith('Plan', 'Opened', 'DashboardSettings');
+  });
+
+  // A board maximised from a slot puts its own cog in this corner: the dashboard's steps aside until it is restored.
+  it('steps aside while a slot’s board is maximised over the page', () => {
+    show(dashboardFromPreset('two-by-two', id));
+    expect(screen.getByRole('button', { name: 'Dashboard Settings' })).toBeTruthy();
+    act(() => maximisePlanElement('board-1'));
+    expect(screen.queryByRole('button', { name: 'Dashboard Settings' })).toBeNull();
+    act(() => releasePlanElement('board-1'));
+    expect(screen.getByRole('button', { name: 'Dashboard Settings' })).toBeTruthy();
   });
 
   it('renames the tab from Name, trimmed, on Enter', () => {

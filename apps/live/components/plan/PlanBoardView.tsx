@@ -50,6 +50,7 @@ import { pickableStatuses } from './column-status-picks';
 import { boardItems } from './widgets/widget-stats';
 import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
+import { boardLook, shownQuick } from './phone-board';
 import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
@@ -102,6 +103,9 @@ export function PlanBoardView({
   // Its Board tab's Import CSV… and Download CSV (docs/specs/026-plan/plan-board.md "CSV").
   useBoardCsv(element.id, setup);
   const [quick, setQuick] = useState<QuickFilter>({});
+  // A phone draws the board its own way (phone-board.ts): no widgets, so no quick filter either.
+  const phone = useIsMobileViewport();
+  const applied = shownQuick(quick, phone);
   const [adding, setAdding] = useState<{ status: string; laneKey: string } | null>(null);
   const closeAdding = useCallback(() => setAdding(null), []);
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(new Set());
@@ -113,8 +117,8 @@ export function PlanBoardView({
   const items = plan?.items ?? NO_ITEMS;
   const statusNames = plan?.statusNames;
   const projection = useMemo(
-    () => (setup ? projectBoard(setup, items, quick, types, statusNames) : null),
-    [setup, items, quick, types, statusNames],
+    () => (setup ? projectBoard(setup, items, applied, types, statusNames) : null),
+    [setup, items, applied, types, statusNames],
   );
   // The statuses a column can be made for: the boards', any a card is in and the card types' Default States
   // (docs/specs/026-plan/plan-board.md "The column picker").
@@ -147,7 +151,6 @@ export function PlanBoardView({
       : null;
   // On a phone a tap on a column's header frames that column on screen, as a tap on a page does in Illustrate.
   const viewport = useViewportStoreIfAny();
-  const phone = useIsMobileViewport();
   const frameColumn =
     phone && interactive && !maximised && !filled && viewport
       ? (header: HTMLElement) => {
@@ -215,8 +218,12 @@ export function PlanBoardView({
     [projection, collapsed],
   );
   usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null);
-  // Maximised (or filling its tab), a card dragged near the columns' left or right edge scrolls them sideways.
-  useEdgeAutoScroll(bodyRef, (maximised || filled) && (!!drag.drag || !!incoming));
+  // Maximised (or filling its tab, or a phone's Dashboard slot, one column a screen), a card dragged near the columns'
+  // left or right edge scrolls them sideways.
+  useEdgeAutoScroll(
+    bodyRef,
+    (maximised || filled || (phone && !!slot)) && (!!drag.drag || !!incoming),
+  );
 
   if (!setup || !projection) {
     return (
@@ -286,7 +293,17 @@ export function PlanBoardView({
   const dragging = drag.drag;
   // A slot per column, two or three for a wider one (docs/specs/026-plan/plan-board.md "The board set-up"); five
   // slots across while it covers the canvas, then it scrolls sideways.
-  const columnTemplate = boardColumnTemplate(setup.columns, maximised || filled);
+  const look = boardLook(
+    {
+      phone,
+      covering: maximised || filled,
+      inSlot: !!slot,
+      interactive,
+      dragging: !!dragging || !!incoming,
+    },
+    setup.cardSize,
+  );
+  const columnTemplate = boardColumnTemplate(setup.columns, look.columns);
 
   const board = (
     <div
@@ -318,6 +335,7 @@ export function PlanBoardView({
           plan?.updateBoard(element.id, next);
           trackSetup(part);
         }}
+        showWidgets={look.widgets}
         onWidgets={(next) => {
           plan?.updateBoard(element.id, { ...setup, widgets: next });
           trackSetup('Widgets');
@@ -368,11 +386,12 @@ export function PlanBoardView({
       <div
         ref={bodyRef}
         // A scroll container resets touch-action, so without touch-none a finger on a card starts a native
-        // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, the
-        // board covers the canvas, so a finger on empty board scrolls the board itself; each card is touch-none
-        // on its own, so a finger on one still picks it up.
-        className={`min-h-0 flex-1 overflow-auto px-3 pb-3 ${maximised || filled ? '@container' : ''} ${
-          interactive ? (maximised || filled ? 'touch-pan-x touch-pan-y' : 'touch-none') : ''
+        // scroll and the browser cancels the drag; the canvas pans across empty board instead. Maximised, filling
+        // its tab or in a Dashboard slot, nothing under the board pans, so a finger on empty board scrolls the board
+        // (and past its end, the Dashboard's page); each card is touch-none on its own, so a finger on one still
+        // picks it up. On a phone its columns snap into view one at a time (phone-board.ts).
+        className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${
+          look.snap ? 'snap-x snap-mandatory scroll-px-3' : ''
         }`}
         onPointerDown={interactive ? keepBoardPress : undefined}
       >
@@ -536,7 +555,7 @@ export function PlanBoardView({
                                 done={done}
                                 // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
                                 setupFields={CARD_FIELDS}
-                                cardSize={setup.cardSize}
+                                cardSize={look.cardSize}
                                 faceDown={cardIsFaceDown(item, setup, self?.id ?? '')}
                                 presence={plan?.presence.get(item.id)}
                                 interactive={interactive}
@@ -613,7 +632,7 @@ export function PlanBoardView({
         <PlanDragGhost
           drag={dragging}
           pointer={drag.pointer}
-          size={setup.cardSize}
+          size={look.cardSize}
           item={items.get(dragging.itemId)!}
           palette={palette}
           fields={CARD_FIELDS}

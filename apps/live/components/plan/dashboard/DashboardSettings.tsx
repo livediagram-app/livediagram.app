@@ -39,6 +39,7 @@ import { planPalette } from '../plan-palette';
 import { SettingsCog } from '../SettingsCog';
 import { dashboardRowCount, revealNewRow } from './reveal-new-row';
 import { useSlotDraft } from './useSlotDraft';
+import { useMaximisedPlanId } from '@/hooks/plan/maximised-plan';
 
 const SetupGlyph = lucideGlyph(lucideLayoutGrid, 14);
 const LookGlyph = lucideGlyph(lucidePaintbrush, 14);
@@ -71,7 +72,10 @@ export function DashboardSettings({
   const palette = planPalette(useCanvasSurface(), {});
   // Drawn at the toolbar's UI scale, 12 px from the corner, as the menu box is at the other (ToolbarExplorerButton).
   const scale = useUiScale('toolbar');
-  if (!canEdit) return null;
+  // A board, view or Sheet maximised from a slot covers the page and puts its own cog in this corner: the
+  // dashboard's steps aside until it is restored (plan-tabs.md "Dashboard Settings").
+  const covered = useMaximisedPlanId() !== null;
+  if (!canEdit || covered) return null;
   return createPortal(
     <div
       data-dashboard-settings
