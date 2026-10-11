@@ -17,7 +17,8 @@ const revealSlot = () => {
   const slot = document.querySelector<HTMLElement>(FIRST_FILLED_SLOT);
   if (slot) slot.dataset[REVEAL] = '';
 };
-const hideSlot = () => {
+// Also the tour's own tidy-up when it ends under the slot step (DashboardTour.tsx).
+export const hideSlot = () => {
   document.querySelectorAll<HTMLElement>('[data-tour-reveal]').forEach((el) => {
     delete el.dataset[REVEAL];
   });

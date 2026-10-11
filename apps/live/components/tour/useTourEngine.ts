@@ -92,6 +92,9 @@ export function useTourEngine<Api>({
   // Direction of the last step change, for the popover content's
   // directional slide (the TemplatePicker wizard's tip-next / tip-prev).
   const [stepDir, setStepDir] = useState<'forward' | 'backward'>('forward');
+  // Read by the step-run effect: a step whose target is missing is skipped the way the person was going.
+  const stepDirRef = useRef(stepDir);
+  useAssignRef(stepDirRef, stepDir);
   const [targetRect, setTargetRect] = useState<TourTargetRect | null>(null);
   const targetElRef = useRef<HTMLElement | null>(null);
   // Monotonic token: bumping it invalidates any in-flight async step run
@@ -144,10 +147,16 @@ export function useTourEngine<Api>({
       const el = await waitForAnchor(step, apiRef.current);
       if (cancelled || token !== runTokenRef.current) return;
       if (!el) {
-        // Target never appeared: skip forward (or finish from the last step).
+        // Target never appeared: skip on the way the person was going. Going back, past it to the step before
+        // (never onto the welcome card, which would start the tour over); else forward, finishing from the last.
         step.cleanup?.(apiRef.current);
-        if (stepIndex < steps.length - 1) setStepIndex(stepIndex + 1);
-        else finishRef.current('completed');
+        const before = steps[stepIndex - 1];
+        if (stepDirRef.current === 'backward' && before && before.card !== 'welcome') {
+          setStepIndex(stepIndex - 1);
+        } else if (stepIndex < steps.length - 1) {
+          setStepDir('forward');
+          setStepIndex(stepIndex + 1);
+        } else finishRef.current('completed');
         return;
       }
       targetElRef.current = el;
@@ -176,9 +185,10 @@ export function useTourEngine<Api>({
           try {
             await step.prepare?.(apiRef.current);
             const next = await waitForAnchor(step, apiRef.current);
-            if (token === runTokenRef.current && next) {
+            if (token === runTokenRef.current) {
               targetElRef.current = next;
-              setTargetRect(measureStep(next, step.alsoHighlight));
+              // Gone for good (a box deleted while its step is up): the ring lets go rather than framing nothing.
+              setTargetRect(next ? measureStep(next, step.alsoHighlight) : null);
             }
           } finally {
             healingRef.current = false;
