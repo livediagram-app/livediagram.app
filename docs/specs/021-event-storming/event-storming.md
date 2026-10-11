@@ -1509,6 +1509,22 @@ Decisions from the operator:
   run and a stall is blamed on the right engine. The review never calls the
   notes read while a retry is still going.
 
+### Show Me
+
+**Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of checking what was found, there and then, on
+the review itself; it is never offered or started on its own. It sits with **Help** (the labelled Help link, to the
+Event Storming Boards article) in a small card on the photo's top-left corner (the zoom has the other), shown once the
+detector has answered; a press on the card never draws a box. The box steps point at the first box on the photo when
+the tour starts, and every control stays usable, so the author can untick, retype or redraw while a step is up. The
+steps: **Each Box Is a Note** (that box), **Tick What to Keep** (its tick), **Fix the Words** (its words),
+**Correct a Box** (that box selected, its correcting toolbar ringed; let go again on leaving the step), **Draw One It
+Missed** (the count pill, which says to drag the photo), **Add Them to the Board** (Add N notes), then a closing card,
+**That Is the Review**, with a link to the Event Storming Boards article. When nothing was found the four box steps
+are left out. Which box, and so which steps, is fixed when it starts. While it runs, Escape belongs to the tour (it
+neither lets go of a box nor leaves the review). Whoever reaches the review (edit access on the board) sees Show Me.
+Telemetry: `UI` · `Started` · `PhotoReviewTour`, and `UI` · `Ended` · `PhotoReviewTourCompleted` or
+`PhotoReviewTourSkipped`.
+
 The plans live in `plans/0010-event-storming-photo-review.md`,
 `plans/0011-event-storming-photo-surface-and-shade.md` and
 `plans/0009-event-storming-photo-precision.md`.

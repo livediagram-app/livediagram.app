@@ -77,6 +77,8 @@ export const HELP_ARTICLES = {
   planDashboards: 'canvas/plan-mode/dashboards',
   planTour: 'canvas/plan-mode/plan-tour',
   facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
+  // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
+  eventStormingBoards: 'canvas/event-storming-boards',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -144,6 +146,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   planDashboards: {
     title: 'Learn about dashboards',
     description: 'Rows of slots, what a slot can show, and arranging them.',
+  },
+  eventStormingBoards: {
+    title: 'Learn about event-storming boards',
+    description: 'Lanes, next-note buttons, and importing a photo of the wall.',
   },
   planTour: {
     title: 'Learn about the Plan Tour',

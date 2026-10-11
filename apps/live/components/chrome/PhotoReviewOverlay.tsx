@@ -21,6 +21,11 @@ import { useRereadOnChange } from './photo/useRereadOnChange';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import {
+  PhotoReviewShowMe,
+  PhotoReviewTourStage,
+  usePhotoReviewTour,
+} from '@/components/tour/PhotoReviewTour';
 
 // Reviewing a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 9).
 //
@@ -157,9 +162,14 @@ export function PhotoReviewOverlay({
   // selected box. An input being edited stops the event first, so Escape
   // there reverts the words and Backspace deletes a letter.
   const { selected, select, remove } = edits;
+  // Show Me: the tour of checking what was found, run on this review (event-storming.md "Show Me").
+  const { tour, freeze } = usePhotoReviewTour(select);
+  const touring = tour.active;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const typing = e.target instanceof HTMLInputElement;
+      // While Show Me runs, Escape is the tour's, never the review's.
+      if (e.key === 'Escape' && touring) return;
       if (e.key === 'Escape') {
         if (selected !== null) select(null);
         else onCancel();
@@ -170,7 +180,7 @@ export function PhotoReviewOverlay({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onCancel, selected, select, remove]);
+  }, [onCancel, selected, select, remove, touring]);
 
   const textOf = useCallback(
     (id: number): string => edited.get(id) ?? review.textById.get(id)?.text ?? '',
@@ -385,6 +395,9 @@ export function PhotoReviewOverlay({
             Loading your photo…
           </div>
         )}
+        {detection ? (
+          <PhotoReviewShowMe tour={tour} onStart={() => freeze(notes[0]?.id ?? null)} />
+        ) : null}
         <div className="pointer-events-none absolute right-2 top-2">
           <ZoomControls zoom={view.zoom} onZoomIn={zoomIn} onZoomOut={zoomOut} onFit={fit} />
         </div>
@@ -420,7 +433,10 @@ export function PhotoReviewOverlay({
           />
         ) : null}
         <div className="pointer-events-none flex items-center justify-center gap-3">
-          <p className="pointer-events-auto rounded-full bg-slate-900/85 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur">
+          <p
+            data-tour-id="photo-count"
+            className="pointer-events-auto rounded-full bg-slate-900/85 px-3 py-1.5 text-xs text-white shadow-lg backdrop-blur"
+          >
             {detecting
               ? 'Finding the stickies…'
               : `${edits.ticked.size} of ${notes.length} · drag the photo to add one`}
@@ -446,12 +462,14 @@ export function PhotoReviewOverlay({
             type="button"
             onClick={confirm}
             disabled={edits.ticked.size === 0}
+            data-tour-id="photo-add"
             className={`pointer-events-auto rounded-full bg-brand-700 px-4 py-1.5 text-sm font-semibold text-white shadow-lg hover:bg-brand-800 disabled:opacity-50 ${SOLID_BRAND_DARK_CONTROL}`}
           >
             Add {edits.ticked.size} {edits.ticked.size === 1 ? 'note' : 'notes'}
           </button>
         </div>
       </div>
+      <PhotoReviewTourStage tour={tour} />
     </div>
   );
 }

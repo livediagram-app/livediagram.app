@@ -1040,6 +1040,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|ShareTourSkipped': "Someone left the Share dialog's Show Me tour before its end.",
   'UI|Ended|DashboardTourCompleted': "Someone reached the end of Dashboard Settings' Show Me tour.",
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
+  'UI|Ended|PhotoReviewTourCompleted':
+    "Someone reached the end of the photo import review's Show Me tour.",
+  'UI|Ended|PhotoReviewTourSkipped':
+    "Someone left the photo import review's Show Me tour before its end.",
   'UI|Ended|FacilitateTourCompleted':
     "Someone reached the end of the Facilitate tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|FacilitateTourSkipped': 'Someone closed the Facilitate tour before its end.',
@@ -1185,6 +1189,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|DashboardTour':
     'Someone pressed Show Me in Dashboard Settings, starting its tour of arranging and filling a dashboard.',
+  'UI|Started|PhotoReviewTour':
+    'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
   'UI|Started|ShareTour':
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|FacilitateTour':
