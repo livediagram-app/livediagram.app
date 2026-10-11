@@ -134,6 +134,8 @@ type) and on the worker (authoritative).
   budget; not under reduced motion) whenever a new set of results arrives: the post's live image, title, category, up to three tags, the author (picture or
   initial in their colour, and name) with when it was shared beneath ("2 days ago", whole months after the first
   month, whole years after the first year), likes and copies. The card opens the post page; the heart likes it in place.
+  The first row's four images load at once and first (`fetchpriority="high"`), since one of them is usually the
+  largest thing on screen; every later card's image loads lazily.
 - **Load More** pages through results (24 per page).
 - The whole query lives in the URL as `q` (with its `#tag`, `category:` and `sort:` words), so a filtered view can be
   shared and survives a reload. Older `tag`, `category` and `sort` parameters are read into the search.
@@ -265,7 +267,8 @@ of all time by likes and copies, newest first on a tie. Public posts only, credi
 gallery (Anonymous when the author chose it). The page is static, so the six load after it: placeholder cards
 hold their space, and with nothing to show the section says the Community is just getting started. **Explore
 the Community** leads to the gallery. The api answers `GET /api/community/featured`, cacheable for one
-minute.
+minute, and answers it from Cloudflare's edge cache for that minute (every home page visit asks; the facets read
+is edge-cached the same way for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
 
 ## Where Community is linked from
 
