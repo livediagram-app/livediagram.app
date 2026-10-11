@@ -231,7 +231,8 @@ export const CARDS_SQL = `${SCOPE_CTES}${CARDS_CTES}${CARDS_SELECT}`;
 // A Plan card's comment threads (§2.5), read from the item store like the cards.
 export const CARD_THREADS_SQL = `${SCOPE_CTES}${CARD_THREADS_CTES}${CARD_THREADS_SELECT}`;
 
-const THREADS_SQL = `${SCOPE_CTES}
+// Exported for the query-plan guard in activity-plans.test.ts.
+export const THREADS_SQL = `${SCOPE_CTES}
   SELECT ct.tab_id, ct.element_id, ct.element_label, ct.comment_count,
          ct.latest_text, ct.latest_author_name, ct.latest_author_color, ct.first_at, ct.latest_at,
          v.id AS document_id, v.name AS document_name, v.team_id AS document_team_id,
@@ -243,9 +244,11 @@ const THREADS_SQL = `${SCOPE_CTES}
                             WHERE jm.value IN (SELECT id FROM me)
                                OR jm.value IN (SELECT id FROM my_members)) THEN 1 ELSE 0 END
            AS mentions_you
-    FROM collab_threads ct
-    JOIN document_tabs dt ON dt.tab_id = ct.tab_id
-    JOIN visible v ON v.id = dt.document_id
+    -- From the reader's documents to their tabs' threads, in that order (CROSS JOIN fixes it): led by
+    -- the open-threads index instead, the read walked every open thread in the database.
+    FROM visible v
+    CROSS JOIN document_tabs dt ON dt.document_id = v.id
+    CROSS JOIN collab_threads ct ON ct.tab_id = dt.tab_id
     JOIN tabs t ON t.id = ct.tab_id
    WHERE ct.resolved = 0
      AND (v.scope_tab_id IS NULL OR v.scope_tab_id = ct.tab_id)
