@@ -16,6 +16,7 @@ import {
   sheetStoreFor,
   forgetSheetStores,
   SHEET_REFETCH_DEBOUNCE_MS,
+  writeRefusalMessage,
 } from './sheet-store-client';
 
 const by = { id: 'me', name: 'Me', color: '#000000' };
@@ -634,5 +635,75 @@ describe('the sheet store client, edges', () => {
     s.release(['sheet0001']);
     await s.settle();
     expect(toast).not.toHaveBeenCalled();
+  });
+});
+
+describe('validation rules in the store (docs/specs/029-sheets/data-validation.md)', () => {
+  const ruled = (): SheetJson => {
+    const json = initial();
+    const { rows, cols } = json.layout;
+    return {
+      ...json,
+      layout: {
+        ...json.layout,
+        rules: [
+          {
+            id: 'rule01',
+            r1: rows[0]!,
+            c1: cols[0]!,
+            r2: rows[4]!,
+            c2: cols[0]!,
+            is: 'list',
+            opts: [{ v: 'Done' }],
+          },
+        ],
+      },
+    };
+  };
+  it('refuses a value a Reject rule does not allow, naming the cell; saves an option in its spelling', async () => {
+    const srv = server(ruled());
+    const toasts: string[] = [];
+    const s = store(srv.api, { toast: (m) => toasts.push(m) });
+    await s.loadTab('t1');
+    const { rows, cols } = s.sheet('sheet0001')!.layout;
+    expect(
+      s.write('sheet0001', {
+        kind: 'cells',
+        cells: [{ r: rows[1]!, c: cols[0]!, i: { s: 'Nope' } }],
+      }),
+    ).toBe('value_invalid');
+    expect(toasts).toEqual(["A2: Choose one of the dropdown's options: Done"]);
+    expect(
+      s.write('sheet0001', {
+        kind: 'cells',
+        cells: [{ r: rows[1]!, c: cols[0]!, i: { s: 'done' } }],
+      }),
+    ).toBeNull();
+    await flush();
+    expect(srv.sheet.cells.get(`${rows[1]}:${cols[0]}`)?.input).toEqual({ s: 'Done' });
+  });
+  it('stores an import or a quiet write as it is, telling the api it is unchecked', async () => {
+    const srv = server(ruled());
+    const s = store(srv.api);
+    await s.loadTab('t1');
+    const { rows, cols } = s.sheet('sheet0001')!.layout;
+    const cell = (v: string): SheetWrite => ({
+      kind: 'cells',
+      cells: [{ r: rows[2]!, c: cols[0]!, i: { s: v } }],
+    });
+    expect(s.write('sheet0001', cell('Imported'), { unchecked: true })).toBeNull();
+    expect(s.write('sheet0001', cell('Synced'), { undoable: false })).toBeNull();
+    await flush();
+    await flush();
+    const sent = srv.api.writeSheet.mock.calls.map((c) => c[2] as { unchecked?: boolean });
+    expect(sent.map((r) => r.unchecked)).toEqual([true, true]);
+  });
+  it('words a refusal without a line as the store does', () => {
+    expect(writeRefusalMessage({ error: 'rules_full' })).toBe(
+      'This sheet holds the most rules it can',
+    );
+    expect(writeRefusalMessage({ error: 'value_invalid', line: 'Enter a date' })).toBe(
+      'Enter a date',
+    );
   });
 });

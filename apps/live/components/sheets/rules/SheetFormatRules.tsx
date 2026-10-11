@@ -30,16 +30,17 @@ import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 
 const WIDTH_PX = 384;
+const NO_RULES: readonly FormatRule[] = [];
 
 // conditional-formatting.md "Rules": a new rule's style, the preset styles and the preset scales.
 export const NEW_RULE_STYLE: FormatStyle = { bg: '#b7e1cd', fc: '#137333' };
 export const PRESET_STYLES: { label: string; style: FormatStyle }[] = [
-  { label: 'Green', style: { bg: '#b7e1cd', fc: '#137333' } },
-  { label: 'Red', style: { bg: '#f4c7c3', fc: '#a50e0e' } },
-  { label: 'Yellow', style: { bg: '#fce8b2', fc: '#7a5c00' } },
-  { label: 'Blue', style: { bg: '#c6dafc', fc: '#174ea6' } },
-  { label: 'Bold', style: { b: true } },
-  { label: 'Strikethrough', style: { st: true, fc: '#80868b' } },
+  { label: 'Green Fill', style: { bg: '#b7e1cd', fc: '#137333' } },
+  { label: 'Red Fill', style: { bg: '#f4c7c3', fc: '#a50e0e' } },
+  { label: 'Yellow Fill', style: { bg: '#fce8b2', fc: '#7a5c00' } },
+  { label: 'Blue Fill', style: { bg: '#c6dafc', fc: '#174ea6' } },
+  { label: 'Bold Text', style: { b: true } },
+  { label: 'Struck Through Text', style: { st: true, fc: '#80868b' } },
 ];
 const SCALE_ENDS = {
   white: '#ffffff',
@@ -232,7 +233,7 @@ export function SheetFormatRules({
   onClose: () => void;
 }) {
   const c = useSheetController();
-  const rules = c.sheet.layout.formatRules ?? [];
+  const rules = c.sheet.layout.formatRules ?? NO_RULES;
   const [all, setAll] = useState(allAtFirst);
   const opening = ruleId ? (rules.find((x) => x.id === ruleId) ?? null) : null;
   const [d, setD] = useState<Draft | null>(() =>

@@ -6,7 +6,7 @@ import { applySheetWrite } from '../store';
 import { validateWrite } from '../validate';
 import { cellKey } from '../sheet';
 import { isError } from '../formula/values';
-import { colWidth, rowHeight } from '../layout';
+import { colWidth, posRangeOf, rowHeight } from '../layout';
 import { SHEET_LOOKS, type SheetLook } from '../sheet-starters';
 import { designWrite, designExtent, type TemplateSetup } from './compile';
 import {
@@ -243,5 +243,17 @@ describe('a template’s dates', () => {
     expect(table.kind === 'table' && table.rows[0]![1]).toEqual({ n: monday, date: true });
     const invoice = sheetTemplate('invoice', sundayEveningUtc);
     expect(JSON.stringify(invoice)).toContain(`"n":${monday},"date":true`);
+  });
+});
+
+describe('the Habit Tracker’s checkboxes (data-validation.md)', () => {
+  it('makes each habit’s days a Checkbox rule, ticked as TRUE, counted by COUNTIF', () => {
+    const { next, v } = make('habits');
+    expect(next.layout.rules).toHaveLength(1);
+    expect(next.layout.rules![0]).toMatchObject({ is: 'check' });
+    expect(posRangeOf(next.layout, next.layout.rules![0]!)).toEqual({ r1: 4, c1: 1, r2: 9, c2: 7 });
+    expect(v('B5')).toBe(true);
+    expect(v('D5')).toBe(false);
+    expect(v('I5')).toBe(5);
   });
 });

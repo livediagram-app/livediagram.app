@@ -32,8 +32,8 @@ the sheet's, seen by everyone, and worked out in every browser that shows it, as
     saved: the editor says why under its field. An error meets nothing.
   - The style: any of **Bold**, **Italic**, **Underline**, **Strikethrough**, **Text Colour**, **Fill Colour** (the
     one [colour picker](../004-interface-design/colour-picker.md)). A new rule starts with a light green fill
-    (`#b7e1cd`) and dark green text (`#137333`), as Google Sheets' does; six **preset styles** sit above the controls
-    (green, red, yellow, blue, bold and strikethrough, each a small "Aa" swatch).
+    (`#b7e1cd`) and dark green text (`#137333`), as Google Sheets' does; six **preset styles** sit above the controls (**Green Fill**, **Red Fill**, **Yellow Fill**, **Blue Fill**, **Bold Text**
+    and **Struck Through Text**, each a small "123" swatch drawn in it).
 - **Colour Scale**: a **Minpoint**, an optional **Midpoint** and a **Maxpoint**, each a colour and where it sits:
   **Min Value** (the range's smallest number; the Minpoint only), **Max Value** (the largest; the Maxpoint only),
   **Number**, **Percent** (of the way from the smallest to the largest) or **Percentile** (of the range's numbers).

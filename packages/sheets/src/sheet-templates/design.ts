@@ -62,6 +62,8 @@ export type SheetDesign = {
   // Rows frozen: through the main table's header; 0 for a sheet read as a page (an invoice).
   freeze: number;
   charts?: readonly DesignChart[];
+  // Ranges of checkboxes, by position [r1, c1, r2, c2] (data-validation.md): each a Checkbox rule.
+  checkboxes?: readonly (readonly [number, number, number, number])[];
 };
 
 // Where a design's rows start: A1 the title, A2 the subtitle, row 3 a gap, row 4 the main table's header.

@@ -3,6 +3,8 @@
 // on a box, chip or arrow are the grid pointer's (useSheetPointer, via ruleTargetAt).
 import type { CSSProperties, ReactNode } from 'react';
 import { isLightColor } from '@livediagram/document';
+import { lucideGlyph } from '@livediagram/ui';
+import { lucideCheck, lucideChevronDown } from '@livediagram/icons/lucide';
 import {
   checkboxValue,
   isArray,
@@ -41,17 +43,15 @@ export type RuleDraw = {
 
 const NONE: RuleDraw = { hideText: false, padEnd: false, nodes: [] };
 
-function Chevron({ colour, size = 10 }: { colour: string; size?: number }) {
+// The chip's and arrow's chevron, and a ticked box's check, in the shared glyphs (currentColor).
+const ChevronGlyph = lucideGlyph(lucideChevronDown, 12);
+const CheckGlyph = lucideGlyph(lucideCheck, 11);
+
+function Chevron({ colour }: { colour: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 10 10" aria-hidden>
-      <path
-        d="M2 3.5 5 6.5 8 3.5"
-        fill="none"
-        stroke={colour}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-    </svg>
+    <span aria-hidden className="flex items-center" style={{ color: colour }}>
+      <ChevronGlyph />
+    </span>
   );
 }
 
@@ -152,16 +152,9 @@ export function ruleCellDraw(opts: {
         }}
       >
         {on ? (
-          <svg width={10} height={10} viewBox="0 0 10 10">
-            <path
-              d="M2 5.2 4.2 7.4 8 3"
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth={1.8}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <span className="flex items-center text-white">
+            <CheckGlyph />
+          </span>
         ) : null}
       </div>,
     );

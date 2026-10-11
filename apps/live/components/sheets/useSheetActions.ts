@@ -130,8 +130,9 @@ export function useSheetActions() {
         c.focusGrid();
       },
       // Save the draft, then move (Enter down, Tab right, ...). `all` is Ctrl+Enter: into every selected cell.
-      commitEdit(move: Dir | 'none', all = false): EditResult {
-        const e = c.editing;
+      // `draft`: what to save in place of the editor's draft (a dropdown option picked while typing).
+      commitEdit(move: Dir | 'none', all = false, draft?: string): EditResult {
+        const e = c.editing && draft !== undefined ? { ...c.editing, draft } : c.editing;
         if (!e) return { ok: true };
         const result = all
           ? typeIntoRanges(c.workbook, c.sheet.id, { r: e.r, c: e.c }, ranges(), e.draft)
