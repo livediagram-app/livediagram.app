@@ -180,6 +180,36 @@ export const FACILITATE_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
+// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
+// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
+export const DRAW_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `DrawTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
+// The Illustrate tour's steps, as illustrateTourStepTelemetryType makes them (apps/live
+// illustrate-tour-steps.ts, docs/specs/007-editor/illustrate-tour.md). The welcome card sends no step view.
+export const ILLUSTRATE_TOUR_STEP_SOURCE: string[] = [
+  ...read('live/components/tour/illustrate-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
+]
+  .map((m) => m[1]!)
+  .filter((id) => id !== 'welcome')
+  .map(
+    (id) =>
+      `IllustrateTourStep${id
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('')}`,
+  );
+
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
@@ -496,6 +526,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FacilitateTourHost.tsx UI·View': {
     values: FACILITATE_TOUR_STEP_SOURCE,
+  },
+  'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
+  'apps/live/components/tour/IllustrateTourHost.tsx UI·View': {
+    values: ILLUSTRATE_TOUR_STEP_SOURCE,
   },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {

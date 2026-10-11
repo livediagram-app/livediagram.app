@@ -3,13 +3,14 @@ import { SOLID_BRAND_DARK, Glyph } from '@livediagram/ui';
 
 export type WizardStep = 'template' | 'settings';
 const WIZARD_STEPS: { key: WizardStep; label: string }[] = [
-  { key: 'template', label: 'Template' },
+  // The step is still "template" in code; on the New Document wizard it asks what you are making, a mode.
+  { key: 'template', label: 'Mode' },
   // The step is still "settings" in code; what it asks is where the document
   // lives (name, save location, folder), so the chip says that.
   { key: 'settings', label: 'Location' },
 ];
 
-// The welcome wizard's header (Template -> Location,
+// The welcome wizard's header (Mode -> Location,
 // docs/specs/007-editor/new-document-route.md), plus its StepChip pill. A compact, left-aligned
 // stepper: each chip jumps to that step, and the connector fills brand as you
 // advance so it reads as progress rather than a static rule. There is no theme

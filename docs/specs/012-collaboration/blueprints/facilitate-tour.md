@@ -13,7 +13,7 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
 | The seen-guard      | `UserPreferences.facilitateTourSeen` (synced)                                                           |
 | The rerun signal    | `FACILITATE_TOUR_RELAUNCH_EVENT`, `requestFacilitateTourRelaunch` in `apps/live/lib/facilitate-tour.ts` |
 | The one-tour slot   | `ActiveTour` `'facilitate'` in `apps/live/lib/tour-active.ts`                                           |
-| The Settings switch | `facilitateTourSeen`, "Facilitate", third in the Show Tours `toggleGroup` (Accessibility)               |
+| The Settings switch | `facilitateTourSeen`, "Facilitate", third in the Onboarding Tutorials `toggleGroup` (Accessibility)     |
 | The help article    | `canvas/facilitate-mode/facilitate-tour` (`helpArticle: 'facilitateTour'`)                              |
 
 ## Behaviour and state
@@ -47,7 +47,7 @@ Derived from [Facilitate tour](../facilitate-tour.md). Where this is silent, the
 - `FacilitateTourApi = Record<string, never>`: the steps drive only the DOM.
 - `TourStage` gets `ariaPrefix="Facilitate tour"`, copy `{ welcomeEyebrow: 'Facilitate tour',
 helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and no
-  `welcomeChoices` (the default Show me around / No thanks).
+  `welcomeChoices` (the default Yes / No).
 
 ## Data and persistence
 
@@ -95,7 +95,7 @@ helpHref: '/help/canvas/facilitate-mode/', finish: 'Start facilitating' }` and n
 | Decline and completion mark it seen and send telemetry; leaving ends as skipped                   | `FacilitateTourHost.test.tsx`                                                |
 | The Diagram tour is never owed or offered in Facilitate                                           | `TourHost.test.tsx`                                                          |
 | Step order, anchors, Share filter, telemetry tokens                                               | `facilitate-tour-steps.test.ts`                                              |
-| Settings switch inverted, third in Show Tours                                                     | `settings-catalogue.test.ts`                                                 |
+| Settings switch inverted, third in Onboarding Tutorials                                           | `settings-catalogue.test.ts`                                                 |
 | Power user mode marks it seen                                                                     | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
 | The slot holds `'facilitate'`                                                                     | `lib/tour-active.test.ts`                                                    |
 

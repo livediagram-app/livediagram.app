@@ -47,6 +47,8 @@ import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { restoreEmptyCard } from '@/components/canvas/empty-card-dismissed';
+import { startClosedKey } from '@/components/start/start-closed-key';
 
 export type IllustratePageEdits = {
   setOrientation: (pageId: string, next: PageOrientation) => void;
@@ -67,7 +69,7 @@ export type IllustratePageEdits = {
   duplicatePage?: (pageId: string) => void;
   // Whether a page's copy fits under the page limit (an article's copy is all its pages).
   canDuplicate: (pageId: string) => boolean;
-  // Absent while there is only one unit (one page, or one document).
+  // Deletes a page, or its whole document; the last one empties the tab, which opens Start Illustrating again.
   removePage?: (pageId: string) => void;
   // A Fit to Content page split into one page per cluster of its content, nothing scaled
   // (docs/specs/007-editor/illustrate-pages.md "Split Into Pages").
@@ -325,8 +327,17 @@ export function illustratePageEdits({
   const removePage = (pageId: string) => {
     if (refusedLocked(pageId, 'delete')) return;
     const target = page(pageId);
-    if (!target || units.length <= 1) return;
+    if (!target) return;
     track('Tab', 'Changed', 'PageRemoved');
+    // The last page (or the last article) goes with everything on the tab, leaving it empty: no pages, no writing,
+    // no elements, so Start Illustrating opens again, brought back if it was closed
+    // (docs/specs/007-editor/start-diagramming.md "Start Illustrating"). Undo puts it all back.
+    if (units.length <= 1) {
+      commitTab((t) => ({ ...t, elements: [], pages: [], articles: {} }));
+      restoreEmptyCard(startClosedKey(tabId, 'illustrate'));
+      debugLog('[illustrate-page] last page removed', { tabId, pageId });
+      return;
+    }
     // The view glides to the page before it (the next, when the first goes), so a delete never
     // leaves an empty stretch of canvas in view (docs/specs/007-editor/illustrate-pages.md
     // "Page actions").
@@ -427,7 +438,7 @@ export function illustratePageEdits({
       const size = flow ? current.filter((p) => p.flow === flow).length : 1;
       return current.length + size <= MAX_ILLUSTRATE_PAGES;
     },
-    removePage: units.length > 1 ? removePage : undefined,
+    removePage,
     splitPage,
     applyLayout,
     contentCount,

@@ -11,27 +11,39 @@ import { createPortal } from 'react-dom';
 // The strip's card: the Palette in the Toolbar layout (ToolbarPalette's `data-tour-id="palette"` card).
 const STRIP_CARD = '[data-toolbar-palette] [data-tour-id="palette"]';
 
-export type StripBox = { left: number; width: number; bottom: number };
+export type StripBox = { left: number; width: number; bottom: number; top: number };
 
-function measure(): StripBox | null {
-  const card = document.querySelector<HTMLElement>(STRIP_CARD);
+function measure(selector: string): StripBox | null {
+  const card = document.querySelector<HTMLElement>(selector);
   // The strip hides (zen, the welcome flow) with `hidden` rather than unmounting.
   if (!card || card.closest('[data-toolbar-palette].hidden')) return null;
   const r = card.getBoundingClientRect();
   if (r.width <= 0) return null;
-  return { left: r.left, width: r.width, bottom: r.bottom };
+  return { left: r.left, width: r.width, bottom: r.bottom, top: r.top };
 }
 
 const same = (a: StripBox | null, b: StripBox | null) =>
-  a === b || (!!a && !!b && a.left === b.left && a.width === b.width && a.bottom === b.bottom);
+  a === b ||
+  (!!a &&
+    !!b &&
+    a.left === b.left &&
+    a.width === b.width &&
+    a.bottom === b.bottom &&
+    a.top === b.top);
 
 // Where the Toolbar layout's strip card is on screen, kept current as it resizes or the window does; null
 // while there is no strip (the floating palette, zen, read-only).
 // `active` is whether a message is showing: each time one shows the strip is found afresh (it mounts late, or
 // remounts, after read-only or layout flips), and the size watcher follows whichever card is on screen.
 export function usePaletteStripBox(active = true): StripBox | null {
+  return useToolbarBox(STRIP_CARD, active);
+}
+
+// Where a toolbar is on screen (the strip's card, Draw's dock), kept current as it or the window resizes; null while
+// it is not on screen.
+export function useToolbarBox(selector: string, active = true): StripBox | null {
   const [box, setBox] = useState<StripBox | null>(() =>
-    typeof document === 'undefined' ? null : measure(),
+    typeof document === 'undefined' ? null : measure(selector),
   );
   useEffect(() => {
     if (!active) return;
@@ -39,13 +51,13 @@ export function usePaletteStripBox(active = true): StripBox | null {
     const observer =
       typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => update()) : null;
     const update = () => {
-      const card = document.querySelector<HTMLElement>(STRIP_CARD);
+      const card = document.querySelector<HTMLElement>(selector);
       if (card !== watched) {
         if (watched) observer?.unobserve(watched);
         if (card) observer?.observe(card);
         watched = card;
       }
-      const next = measure();
+      const next = measure(selector);
       setBox((prev) => (same(prev, next) ? prev : next));
     };
     update();
@@ -54,7 +66,7 @@ export function usePaletteStripBox(active = true): StripBox | null {
       observer?.disconnect();
       window.removeEventListener('resize', update);
     };
-  }, [active]);
+  }, [active, selector]);
   return box;
 }
 

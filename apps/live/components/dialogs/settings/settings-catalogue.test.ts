@@ -123,18 +123,20 @@ describe('settings catalogue', () => {
     expect(row.event.off).toBe('FacilitateTourSeenOn');
   });
 
-  // docs/specs/007-editor/user-preferences.md "Show Tours": one control in Accessibility, the three switches
+  // docs/specs/007-editor/user-preferences.md "Onboarding Tutorials": one control in Accessibility, the three switches
   // in the order the tours come.
-  it('groups the three tour switches into one Show Tours control in Accessibility', () => {
+  it('groups the five tour switches into one Onboarding Tutorials control in Accessibility', () => {
     const accessibility = SETTINGS_CATEGORIES.find((c) => c.id === 'accessibility')!;
     const group = accessibility.rows.find((r) => r.key === 'tours');
     expect(group?.kind).toBe('toggleGroup');
     if (group?.kind !== 'toggleGroup') return;
-    expect(group.label).toBe('Show Tours');
+    expect(group.label).toBe('Onboarding Tutorials');
     expect(group.toggles.map((t) => [t.key, t.label])).toEqual([
       ['tourSeen', 'Diagram'],
       ['planTourSeen', 'Plan'],
       ['facilitateTourSeen', 'Facilitate'],
+      ['drawTourSeen', 'Draw'],
+      ['illustrateTourSeen', 'Illustrate'],
     ]);
     expect(accessibility.rows.some((r) => r.key === 'tourSeen')).toBe(false);
   });

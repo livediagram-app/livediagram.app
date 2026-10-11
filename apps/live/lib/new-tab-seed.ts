@@ -19,17 +19,17 @@ export function newTabSeed(source: Tab | undefined): Partial<Tab> {
   };
 }
 
-// A mode whose empty tab starts with its own chooser, so a new tab in it opens no Quick Start over it: Plan (Start
-// Planning) and Illustrate (What Is This Page For?).
+// A mode whose empty tab starts with its own chooser, so a new tab in it opens no Quick Start over it: Diagram (Start
+// Diagramming), Plan (Start Planning) and Illustrate (What Is This Page For?).
 export function modeHasOwnStart(mode: EditorMode): boolean {
-  return mode === 'plan' || mode === 'illustrate';
+  return mode === 'diagram' || mode === 'plan' || mode === 'illustrate';
 }
 
 // How a new tab opens for its maker (docs/specs/007-editor/editor-modes.md "New documents and new tabs open in
-// Diagram"): from Plan it opens in Plan, for everyone, with no Quick Start (Plan's own board picker is its
-// start); from any other mode it opens as ever, in Diagram with the Quick Start.
+// Diagram"): from Plan it opens in Plan, for everyone, with Start Planning; from any other mode it opens in Diagram,
+// with Start Diagramming (docs/specs/007-editor/start-diagramming.md). Neither opens the Quick Start over it.
 export function newTabOpening(
   creatorMode: EditorMode,
-): { opensIn: 'plan'; quickStart: false } | { quickStart: true } {
-  return creatorMode === 'plan' ? { opensIn: 'plan', quickStart: false } : { quickStart: true };
+): { opensIn: 'plan'; quickStart: false } | { quickStart: false } {
+  return creatorMode === 'plan' ? { opensIn: 'plan', quickStart: false } : { quickStart: false };
 }

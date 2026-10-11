@@ -43,10 +43,10 @@ describe('adding a tab', () => {
     expect(setTemplatePickerMode).not.toHaveBeenCalled();
   });
 
-  it('from any other mode, opens the Quick Start and sets no opening mode', () => {
+  it('from any other mode, opens on Start Diagramming: no Quick Start and no opening mode', () => {
     const { added, setTemplatePickerMode } = add('diagram');
     expect(added.opensIn).toBeUndefined();
-    expect(setTemplatePickerMode).toHaveBeenCalledWith('templates');
+    expect(setTemplatePickerMode).not.toHaveBeenCalled();
   });
 
   it('in a mode with its own start (Illustrate, Plan), opens no Quick Start over it', () => {

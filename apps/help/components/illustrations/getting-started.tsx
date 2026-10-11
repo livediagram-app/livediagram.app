@@ -6,49 +6,8 @@
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Dialog, Button, Tile, Label, Avatar } from './primitives';
 
-/** A template card in the New Document wizard: a thumbnail over its title. */
-function TemplateCard({
-  x,
-  y,
-  title,
-  selected = false,
-  children,
-}: {
-  x: number;
-  y: number;
-  title: string;
-  selected?: boolean;
-  children?: ReactNode;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={98}
-        height={84}
-        rx={9}
-        className={selected ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
-        strokeWidth={selected ? 2.5 : 1.5}
-      />
-      <rect x={x + 8} y={y + 8} width={82} height={46} rx={5} className="fill-slate-50" />
-      {children}
-      <Label
-        x={x + 49}
-        y={y + 70}
-        anchor="middle"
-        size={10}
-        weight={selected ? 700 : 600}
-        tone={selected ? 'strong' : 'body'}
-      >
-        {title}
-      </Label>
-    </g>
-  );
-}
-
-/** The New Document wizard on its first step: the Template / Location rail,
- *  the template search, the Popular shelf led by Blank Diagram, and the
+/** The New Document wizard on its first step: the Mode / Location rail, the
+ *  five mode cards (Diagram wide and chosen, then the other four), and the
  *  footer's Skip and Next. */
 export function NewDocumentWelcome() {
   return (
@@ -66,88 +25,73 @@ export function NewDocumentWelcome() {
         <g className="stroke-slate-400" strokeWidth={1.6} fill="none" strokeLinecap="round">
           <path d="M366 26 l7 7 M373 26 l-7 7" />
         </g>
-        {/* Step rail: 1 Template (current), 2 Location. */}
-        <rect x={42} y={54} width={78} height={20} rx={10} className="fill-brand-50" />
+        {/* Step rail: 1 Mode (current), 2 Location. */}
+        <rect x={42} y={54} width={62} height={20} rx={10} className="fill-brand-50" />
         <circle cx={53} cy={64} r={8} className="fill-brand-500" />
         <Label x={53} y={65} anchor="middle" size={10} weight={700} tone="onAccent">
           1
         </Label>
         <Label x={66} y={65} size={10} weight={600} tone="strong">
-          Template
+          Mode
         </Label>
-        <rect x={126} y={62} width={20} height={4} rx={2} className="fill-slate-200" />
-        <circle cx={160} cy={64} r={8} className="fill-slate-200" />
-        <Label x={160} y={65} anchor="middle" size={10} weight={700} tone="muted">
+        <rect x={110} y={62} width={20} height={4} rx={2} className="fill-slate-200" />
+        <circle cx={144} cy={64} r={8} className="fill-slate-200" />
+        <Label x={144} y={65} anchor="middle" size={10} weight={700} tone="muted">
           2
         </Label>
-        <Label x={173} y={65} size={10} weight={600} tone="muted">
+        <Label x={157} y={65} size={10} weight={600} tone="muted">
           Location
         </Label>
-        {/* The mode filter (Everything) leads the search row. */}
+        {/* Diagram, where most start, leads as a wide card: a small flow on its plate. */}
         <rect
           x={42}
           y={84}
-          width={86}
-          height={22}
-          rx={6}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          width={336}
+          height={56}
+          rx={9}
+          className="fill-white stroke-brand-500"
+          strokeWidth={2.5}
         />
-        <Label x={52} y={96} size={10} weight={600} tone="body">
-          Everything
-        </Label>
+        <rect x={50} y={92} width={110} height={40} rx={5} className="fill-brand-50" />
+        <g className="fill-white stroke-brand-400" strokeWidth={1.5}>
+          <rect x={60} y={105} width={26} height={14} rx={3} />
+          <rect x={124} y={105} width={26} height={14} rx={3} />
+        </g>
         <path
-          d="M114 93 l3 3 l3 -3"
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-        {/* Search field. */}
-        <rect
-          x={134}
-          y={84}
-          width={244}
-          height={22}
-          rx={6}
-          className="fill-white stroke-slate-200"
+          d="M86 112 h34 m-5 -4 l5 4 l-5 4"
+          className="fill-none stroke-brand-400"
           strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <Label x={144} y={96} size={10} tone="muted">
-          Search templates...
+        <Label x={172} y={106} size={11} weight={700} tone="strong">
+          Diagram
         </Label>
-        <Label x={42} y={120} size={10} weight={700} tone="strong">
-          Popular
+        <Label x={172} y={122} size={9} tone="muted">
+          Flowcharts, mind maps and org charts.
         </Label>
-        <TemplateCard x={42} y={130} title="Blank Diagram" selected>
-          <path
-            d="M83 155 h16 M91 147 v16"
-            className="stroke-brand-400"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-        </TemplateCard>
-        {/* The Popular row leads with the blank starts, in the app's fixed order. */}
-        <TemplateCard x={161} y={130} title="Blank Whiteboard">
-          <path
-            d="M190 166 q10 -18 20 -6 t22 -8"
-            className="fill-none stroke-brand-400"
-            strokeWidth={2.2}
-            strokeLinecap="round"
-          />
-        </TemplateCard>
-        <TemplateCard x={280} y={130} title="Blank Illustration">
-          <rect
-            x={306}
-            y={144}
-            width={26}
-            height={30}
-            rx={2}
-            className="fill-white stroke-brand-300"
-            strokeWidth={1.5}
-          />
-          <rect x={311} y={150} width={16} height={3} rx={1} className="fill-brand-300" />
-          <rect x={311} y={157} width={12} height={3} rx={1} className="fill-slate-200" />
-        </TemplateCard>
+        {/* The other four modes, in the mode switch's order. */}
+        {(['Draw', 'Facilitate', 'Illustrate', 'Plan'] as const).map((mode, i) => {
+          const x = 42 + i * 86;
+          return (
+            <g key={mode}>
+              <rect
+                x={x}
+                y={148}
+                width={78}
+                height={64}
+                rx={9}
+                className="fill-white stroke-slate-200"
+                strokeWidth={1.5}
+              />
+              <rect x={x + 7} y={155} width={64} height={30} rx={5} className="fill-slate-50" />
+              <rect x={x + 26} y={162} width={26} height={16} rx={3} className="fill-brand-100" />
+              <Label x={x + 39} y={200} anchor="middle" size={10} weight={600} tone="strong">
+                {mode}
+              </Label>
+            </g>
+          );
+        })}
         {/* Footer: Open Existing Document at the left; Skip creates a Blank Diagram straight
             away; Next goes to Location. */}
         <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
@@ -527,7 +471,7 @@ export function KeyboardEssentials() {
   );
 }
 
-/** The Diagram tour's offer card: a short welcome, then No thanks or Show me around. */
+/** The Diagram tour's offer card: a short welcome, then No or Yes. */
 export function DiagramTourCard() {
   return (
     <Scene w={420} h={170} bg="plain">
@@ -544,15 +488,15 @@ export function DiagramTourCard() {
         DIAGRAM TOUR
       </Label>
       <Label x={210} y={54} anchor="middle" size={14} weight={700} tone="strong">
-        Welcome to Diagram
+        Getting started with Diagrams?
       </Label>
       <rect x={110} y={68} width={200} height={6} rx={3} className="fill-slate-200" />
       <rect x={130} y={82} width={160} height={6} rx={3} className="fill-slate-200" />
-      {/* No thanks is a plain text button, beside the primary. */}
+      {/* No is a plain text button, beside the primary. */}
       <Label x={156} y={130} anchor="middle" size={11} weight={600} tone="body">
-        No thanks
+        No
       </Label>
-      <Button x={210} y={116} w={104} h={26} label="Show me around" variant="primary" />
+      <Button x={210} y={116} w={104} h={26} label="Yes" variant="primary" />
     </Scene>
   );
 }

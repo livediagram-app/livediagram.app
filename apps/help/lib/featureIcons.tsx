@@ -427,6 +427,22 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="7" y="6" width="10" height="6" rx="1.5" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
+  // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
+  'draw-tour': (
+    <Glyph>
+      <path d="M4 17c2-3 4 1 6-2s3-4 5-1" />
+      <path d="M15 4l5 5-7 7h-5v-5z" />
+      <circle cx="12" cy="12" r="9" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
+  // A page with its colour band under a dashed spotlight ring: a guided look at Illustrate.
+  'illustrate-tour': (
+    <Glyph>
+      <rect x="7" y="4" width="10" height="14" rx="1" />
+      <path d="M7 7.5h10M9.5 11h5M9.5 13.5h3" />
+      <circle cx="12" cy="11" r="9.5" strokeDasharray="1.6 1.4" />
+    </Glyph>
+  ),
   'plan-tour': (
     <Glyph>
       <rect x="2.5" y="4" width="19" height="16" rx="1.5" />

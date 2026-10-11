@@ -229,7 +229,7 @@ test('a dragged note takes the slot two events suggest', async ({ page, pageErro
 // The negative half: no other board grows a lane switch. Cheap, and it is the
 // claim every gate in this feature rests on.
 test('an ordinary diagram has no timeline lanes', async ({ page, pageErrors }) => {
-  await startTemplateDocument(page, /Browse Technical templates/, /^Sequence/i);
+  await startTemplateDocument(page, 'Technical', /^Sequence/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await expect(page.getByRole('switch', { name: /timeline lanes/i })).toHaveCount(0);
