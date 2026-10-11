@@ -1358,7 +1358,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words',
+      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
   },
@@ -1454,6 +1454,17 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas/plan-mode',
     parentSlug: 'plan-mode',
+  },
+  {
+    slug: 'draw-tour',
+    title: 'The Draw Tour',
+    description:
+      "A short, optional walkthrough of Draw mode's dock, offered the first time you work in Draw and replayable from Settings.",
+    keywords:
+      'draw tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn draw mode whiteboard sketch pen pens marker markers highlighter eraser path tool shapes sticky dock settings background cursor shape recognition replay rerun settings accessibility',
+    category: 'Canvas',
+    categorySlug: 'canvas/draw-mode',
+    parentSlug: 'draw-mode',
   },
   {
     slug: 'facilitate-tour',
@@ -1558,6 +1569,17 @@ export const articles: Article[] = [
       'Write on pages like a doc: text that flows onto new pages, with pictures, charts and drawings in it.',
     keywords:
       'article articles write writing document doc word google docs page pages text paragraph heading headings title subtitle list bullet numbered todo checklist quote code divider page break flow overflow new page toolbar formatting bold italic underline link colour color highlight align markdown shortcut slash menu paste picture image chart table sticky drawing inline wrap float move drag resize comment comments action actions assign margin note style look font fonts margins page numbers line spacing lined paper notebook convert page element leave illustrate',
+    category: 'Canvas',
+    categorySlug: 'canvas/illustrate',
+    parentSlug: 'illustrate',
+  },
+  {
+    slug: 'illustrate-tour',
+    title: 'The Illustrate Tour',
+    description:
+      "A short, optional walkthrough of Illustrate mode's pages, offered the first time you work in Illustrate and replayable from Settings.",
+    keywords:
+      'illustrate tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn illustrate mode pages page name cog page settings layout add page slides slide deck present presentation infographic replay rerun settings accessibility',
     category: 'Canvas',
     categorySlug: 'canvas/illustrate',
     parentSlug: 'illustrate',

@@ -58,6 +58,8 @@ import {
   PLAN_TOUR,
   FACILITATE_TOUR,
   SHOW_ME_TOURS,
+  DRAW_TOUR,
+  ILLUSTRATE_TOUR,
   POWER_USER_OFFER,
   NEW_VERSION_PROMPT,
 } from './metric-catalogue';
@@ -94,6 +96,8 @@ export const GROUPS: MetricGroup[] = [
       PLAN_TOUR,
       FACILITATE_TOUR,
       SHOW_ME_TOURS,
+      DRAW_TOUR,
+      ILLUSTRATE_TOUR,
       POWER_USER_OFFER,
       NEW_VERSION_PROMPT,
     ],

@@ -33,7 +33,7 @@ function insets(
 describe('the wizard step rail', () => {
   it("keeps the current step's circle concentric with its pill", () => {
     render(<WizardSteps step="template" onStep={() => {}} />);
-    const chip = screen.getByRole('button', { name: /Template/ });
+    const chip = screen.getByRole('button', { name: /Mode/ });
     for (const [bp, inset] of Object.entries(insets(chip.className))) {
       expect(inset.left, `leading inset ${bp || 'base'}`).toBe(inset.top);
       expect(inset.top, `vertical insets ${bp || 'base'}`).toBe(inset.bottom);

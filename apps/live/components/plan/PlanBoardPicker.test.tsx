@@ -103,9 +103,11 @@ describe('Start Planning', () => {
     expect(screen.getByRole('region', { name: 'Recommended' })).toBeTruthy();
   });
 
-  it('moves along the rail with the arrow keys, cascading only after the first paint', () => {
+  it('moves along the rail with the arrow keys, its cards cascading in from the first paint', () => {
     show();
-    expect(document.querySelector('.lvd-cascade')).toBeNull();
+    expect(
+      document.querySelector('[data-start-card]')!.parentElement!.parentElement!.className,
+    ).toMatch(/lvd-cascade/);
     fireEvent.keyDown(rail(/^Recommended/), { key: 'ArrowDown' });
     expect(rail(/^Boards/).getAttribute('aria-current')).toBe('true');
     expect(document.querySelector('.lvd-cascade')).not.toBeNull();

@@ -28,15 +28,21 @@ export const TEMPLATE_STARTS = [
   'guest-list',
   'grade-book',
   'habit-tracker',
+  // Blank Spreadsheet (docs/specs/026-plan/plan-templates.md "Spreadsheet templates"): an empty sheet, no template.
+  'blank-spreadsheet',
 ] as const;
 export type TemplateStartId = (typeof TEMPLATE_STARTS)[number];
+
+// The start that makes an empty sheet rather than a sheet template's.
+export const BLANK_SHEET_START = 'blank-spreadsheet' satisfies TemplateStartId;
+type DesignedStartId = Exclude<TemplateStartId, typeof BLANK_SHEET_START>;
 
 export function isTemplateStart(id: unknown): id is TemplateStartId {
   return typeof id === 'string' && (TEMPLATE_STARTS as readonly string[]).includes(id);
 }
 
-// The sheet template each Plan template's Sheet is made from.
-export const TEMPLATE_START_SHEETS: Record<TemplateStartId, SheetTemplateId> = {
+// The sheet template each Plan template's Sheet is made from (every start but the blank one).
+export const TEMPLATE_START_SHEETS: Record<DesignedStartId, SheetTemplateId> = {
   'budget-planner': 'budget',
   timesheet: 'timesheet',
   'contact-list': 'contacts',
@@ -50,6 +56,9 @@ export const TEMPLATE_START_SHEETS: Record<TemplateStartId, SheetTemplateId> = {
   'grade-book': 'grades',
   'habit-tracker': 'habits',
 };
+
+// A blank start's sheet's title.
+const BLANK_SHEET_TITLE = 'Sheet 1';
 
 // The look a template's sheet is made in when nobody picked one (a Plan template, a Dashboard slot, Setup Sheet's
 // first choice for a template).
@@ -109,5 +118,16 @@ export function templateSheetWithCharts(opts: {
   rand?: Rand;
 }): ReturnType<typeof sheetFromTemplate> {
   const { start, ...rest } = opts;
+  if (start === BLANK_SHEET_START) {
+    // An empty grid, ready to type into: no setup to await, no charts.
+    const { id, tabId, now, rand = Math.random } = rest;
+    const json = sheetToJson(
+      emptySheet({ id, tabId, title: BLANK_SHEET_TITLE, layout: emptyLayout(rand), now }),
+    );
+    return {
+      sheet: { id, tabId, title: json.title, layout: json.layout, cells: json.cells },
+      charts: [],
+    };
+  }
   return sheetFromTemplate({ ...rest, template: TEMPLATE_START_SHEETS[start] });
 }

@@ -59,9 +59,29 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
+// The Draw and Illustrate tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/007-editor/illustrate-tour.md)
+// offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// their own unit tests. Marked seen for every page of the context.
+export async function markModeToursSeen(context: BrowserContext): Promise<void> {
+  await context.addInitScript(() => {
+    const key = 'livediagram:user-preferences:v1';
+    try {
+      const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+      if (prefs.drawTourSeen !== true || prefs.illustrateTourSeen !== true)
+        localStorage.setItem(
+          key,
+          JSON.stringify({ ...prefs, drawTourSeen: true, illustrateTourSeen: true }),
+        );
+    } catch {
+      // No storage: nothing to mark.
+    }
+  });
+}
+
 export const test = base.extend<{ pageErrors: string[] }>({
   context: async ({ context }, use) => {
     await enableDebugLogs(context);
+    await markModeToursSeen(context);
     await use(context);
   },
   pageErrors: async ({ page }, use) => {

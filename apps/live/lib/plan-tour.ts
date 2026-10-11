@@ -9,7 +9,7 @@ import {
 // signal, its tracks, and the leftover record an older tour wrote, so a later visit tidies the example content
 // a reload cut short (usePlanTourLeftovers).
 
-// Settings → Plan tour: the Show Tours › "Plan" row, turned on from off and closed, reruns the tour. A
+// Settings → Plan tour: the Onboarding Tutorials › "Plan" row, turned on from off and closed, reruns the tour. A
 // window event keeps the dialog decoupled from PlanTourHost, as the welcome tour's relaunch does.
 export const PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch';
 

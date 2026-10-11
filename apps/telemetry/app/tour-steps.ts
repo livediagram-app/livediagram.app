@@ -11,7 +11,6 @@ export const TOUR_STEP_TYPES: readonly string[] = [
   'TourStepPalette',
   'TourStepSelectionModes',
   'TourStepCategories',
-  'TourStepEditorMode',
   'TourStepContextMenu',
   'TourStepTabs',
   'TourStepThemeCanvas',

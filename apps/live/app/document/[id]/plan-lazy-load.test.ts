@@ -18,6 +18,17 @@ describe('the editor’s first load', () => {
     expect(imports).not.toContain('@/components/plan/PlanSheetsHost');
   });
 
+  // docs/specs/007-editor/start-diagramming.md: the template starts carry every template's preview.
+  it('imports the template starts lazily, and nothing that draws a template preview', () => {
+    const imports = staticImports(read('app/document/[id]/EditorView.tsx'));
+    expect(imports).not.toContain('@/components/start/StartFromTemplates');
+    for (const always of [
+      'components/start/StartAgainTray.tsx',
+      'components/start/template-start-mode.ts',
+    ])
+      expect(staticImports(read(always))).not.toContain('@livediagram/template-previews');
+  });
+
   it('names Sheet templates without their designs', () => {
     const catalogue = read('../../packages/sheets/src/sheet-templates/catalogue.ts');
     expect(staticImports(catalogue).filter((p) => /\.\/(money|people|work)$/.test(p))).toEqual([]);

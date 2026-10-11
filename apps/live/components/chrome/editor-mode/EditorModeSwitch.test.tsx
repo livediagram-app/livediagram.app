@@ -195,7 +195,8 @@ describe('EditorModeSwitch chip', () => {
   it('opens downward, from the left edge', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
-    expect(screen.getByRole('menu').className).toMatch(/left-0 top-full/);
+    expect(screen.getByRole('menu').className).toMatch(/left-0/);
+    expect(screen.getByRole('menu').className).toMatch(/top-full/);
   });
 });
 

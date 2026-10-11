@@ -26,7 +26,11 @@ export function TemplatePickerHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-slate-100 px-6 pt-6 pb-5 dark:border-slate-800">
+    <div
+      className={`flex flex-col border-b border-slate-100 px-6 pt-6 dark:border-slate-800 ${
+        isWizard ? 'gap-3 pb-3.5' : 'gap-4 pb-5'
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
@@ -41,7 +45,9 @@ export function TemplatePickerHeader({
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             {!isIdentity
               ? step === 'template'
-                ? 'Build anything, start from scratch or find inspiration in a template.'
+                ? isWelcome
+                  ? 'What are you making? Pick a mode, and its templates are ready on the canvas.'
+                  : 'Build anything, start from scratch or find inspiration in a template.'
                 : 'Name your document and choose where it lives.'
               : nameLocked
                 ? 'This is the name from your account; others will see it on this document.'

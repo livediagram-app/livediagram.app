@@ -9,11 +9,15 @@ import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
 import {
+  boardRoot,
   firstCardOn,
+  needsReveal,
   planTourSteps,
   planTourStepTelemetryType,
   type PlanTourApi,
   type PlanTourOffer,
+  sheetRoot,
+  visiblePlanWork,
 } from './plan-tour-steps';
 import { PlanTourArt } from './PlanTourArt';
 import { TourStage } from './TourStage';
@@ -35,7 +39,8 @@ type PlanWork = { type: string; shape?: string; id: string };
 const isBoard = (el: PlanWork) => el.type === 'shape' && el.shape === 'plan-board';
 const isSheet = (el: PlanWork) => el.type === 'shape' && el.shape === 'plan-sheet';
 
-// What the tour runs on, fixed when it is offered: the first board and first Sheet on the open tab.
+// What the tour runs on, fixed when it is offered: the board and the Sheet on the open tab the person sees
+// (visiblePlanWork: a maximised or tab-filling one, else one on screen, else the first).
 type Subject = { boardId: string | null; sheetId: string | null };
 const NO_SUBJECT: Subject = { boardId: null, sheetId: null };
 
@@ -59,6 +64,16 @@ export function PlanTourHost() {
     },
     closeCard: () => {
       if (ctx.plan.openItemId !== null) ctx.plan.closeItem();
+    },
+    // A subject on the canvas but out of the window is panned into view (zoomed out only if it is too big to fit,
+    // scrollIntoView); one maximised or filling its tab is already on screen. Nothing is placed or moved.
+    reveal: (which) => {
+      const id = which === 'sheets' ? subject.sheetId : subject.boardId;
+      if (!id) return;
+      if (!needsReveal(which === 'sheets' ? sheetRoot(id) : boardRoot(id))) return;
+      const el = ctx.activeTab.elements.find((e) => e.id === id);
+      if (!el || !('width' in el) || !('height' in el)) return;
+      ctx.scrollIntoView(el.x, el.y, el.width, el.height);
     },
   });
 
@@ -99,9 +114,11 @@ export function PlanTourHost() {
   // The plan work on the open tab: the tour is offered only once there is a board or Sheet to show, so an empty
   // tab is started first (Start Planning), never talked over, and a Dashboard waits for a Board or Sheet tab.
   const elements = ctx.activeTab.elements as readonly PlanWork[];
-  const boardId = elements.find(isBoard)?.id ?? null;
-  const sheetId = elements.find(isSheet)?.id ?? null;
-  const hasPlanWork = boardId !== null || sheetId !== null;
+  const boardIds = elements.filter(isBoard).map((el) => el.id);
+  const sheetIds = elements.filter(isSheet).map((el) => el.id);
+  const hasPlanWork = boardIds.length > 0 || sheetIds.length > 0;
+  // A stable key for the effect below: the ids themselves, not a fresh array each render.
+  const workKey = `${boardIds.join(',')}|${sheetIds.join(',')}`;
   // Armed on entering Plan (or mounting in it), and by a relaunch; disarmed on leaving it or once offered.
   // Adjusted during render when the mode changes. A relaunch waits for a board or Sheet like a first offer.
   const [armed, setArmed] = useState(false);
@@ -137,6 +154,9 @@ export function PlanTourHost() {
     if (!inPlan || !canWork || otherTour || !hasPlanWork) return;
     const t = setTimeout(() => {
       setArmed(false);
+      // Read as it is offered, from what is drawn: the board and Sheet the person sees.
+      const boardId = visiblePlanWork(boardIds, boardRoot);
+      const sheetId = visiblePlanWork(sheetIds, sheetRoot);
       const offer: PlanTourOffer = boardId && sheetId ? 'choice' : boardId ? 'boards' : 'sheets';
       debugLog('[plan-tour] offer', { offer });
       setSubject({ boardId, sheetId });
@@ -147,9 +167,11 @@ export function PlanTourHost() {
       track('UI', 'Opened', 'PlanTourOffer');
     }, OFFER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [armed, active, seen, inPlan, canWork, otherTour, hasPlanWork, boardId, sheetId, engineRef]);
+    // workKey stands for boardIds and sheetIds.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [armed, active, seen, inPlan, canWork, otherTour, hasPlanWork, workKey, engineRef]);
 
-  // Settings rerun (the Show Tours › "Plan" row, turned on from off + closed): offers again in Plan once a
+  // Settings rerun (the Onboarding Tutorials › "Plan" row, turned on from off + closed): offers again in Plan once a
   // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared
   // `planTourSeen`). It places nothing to show: an empty tab offers Start Planning, which makes one.
   const inPlanRef = useLatest(inPlan);

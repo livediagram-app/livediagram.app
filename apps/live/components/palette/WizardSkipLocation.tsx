@@ -19,7 +19,8 @@ export function WizardSkipLocationCheckbox({
   onChange: (on: boolean) => void;
 }) {
   return (
-    <div className="border-t border-slate-100 pt-4 dark:border-slate-800">
+    // In a row card, as a switch in Settings is (SettingsRowShell), drawn up close under the folders.
+    <div className="-mt-5 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
       <SwitchRow
         checked={checked}
         onChange={onChange}

@@ -63,6 +63,7 @@ import { getTheme } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
+import { handStartQuery } from '@/components/start/start-query';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -344,6 +345,8 @@ export default function NewDocumentPage() {
   ) => {
     if (submitting) return;
     setSubmitting(true);
+    // A `?q=` preset becomes the search in the new document's start panel (start-query.ts).
+    handStartQuery(presetQuery);
     // Save location (docs/specs/006-document/save-locations.md): only Local Browser takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);

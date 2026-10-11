@@ -50,6 +50,7 @@ describe('plan templates', () => {
     );
     expect(names).toEqual({
       'blank-plan': ['Board'],
+      'blank-spreadsheet': ['Sheet'],
       'project-planner': ['Roadmap', 'Backlog', 'Sprint', 'Daily Standup'],
       kanban: ['Board', 'Requests', 'Flow'],
       'bug-triage': ['Triage', 'Fixing', 'Health'],

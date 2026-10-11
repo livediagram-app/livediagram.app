@@ -137,6 +137,9 @@ function SheetBody({
   }
   return (
     <div
+      // The Sheet's body wherever it is drawn (its canvas slot, maximised, filling its tab): the Plan tour's
+      // subject (docs/specs/026-plan/plan-tour.md "The tour subject").
+      data-plan-sheet={element.id}
       className="absolute inset-0 isolate flex flex-col overflow-hidden border"
       style={{
         backgroundColor: palette.surface,

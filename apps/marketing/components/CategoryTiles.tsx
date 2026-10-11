@@ -3,7 +3,7 @@ import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-cla
 import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 
 // The template gallery's folded shelves (docs/specs/019-marketing/marketing-site.md): one card
-// per shelf not open (Popular among them once another is), so they read as part of the gallery rather than a row of tags under
+// per shelf not open (Blank Slate among them once another is), so they read as part of the gallery rather than a row of tags under
 // it. Each shows a fanned stack of its first three templates' previews (PreviewFan, shared with
 // the editor's template picker), its name and how many templates it holds. Hovering or
 // focusing a card fans the stack wider. Clicking opens the
@@ -16,11 +16,8 @@ export function CategoryTiles({
   groups: GalleryShelf[];
   onOpen: (id: ShelfId) => void;
 }) {
-  // Popular only repeats templates the categories already hold, so it is left out of the
-  // "more templates" sum, as the editor's template step does (TemplatePickerShelf).
-  const total = groups
-    .filter((g) => g.id !== 'popular')
-    .reduce((n, g) => n + g.templates.length, 0);
+  // Blank Slate's blanks are on no category, so every folded shelf counts toward the "more templates" sum.
+  const total = groups.reduce((n, g) => n + g.templates.length, 0);
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">

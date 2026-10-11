@@ -27,9 +27,9 @@ import { EYEBROW } from '@/components/eyebrow';
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): every template the
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
-// carousel (TemplateCarousel), Popular on load (the five blanks, then the starters most people
-// reach for); every other category sits folded underneath as a card (CategoryTiles) that opens it
-// in the open one's place, the shelf it replaces folding back (Popular leading the folds). Beside
+// carousel (TemplateCarousel), Blank Slate on load (every blank and nothing else: each mode's and Blank
+// Spreadsheet); every other category sits folded underneath as a card (CategoryTiles) that opens it
+// in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). Beside
 // the search box, the mode filter (the editor's own ModeFilterMenu) narrows every view to one
 // editor mode's templates, Everything on load. A search shows every matching shelf at once. Every
 // card is a link that creates that document straight away and opens it in the editor
@@ -44,13 +44,13 @@ const choiceLabel = (c: ModeChoice) => (c === 'all' ? 'Everything' : editorModeL
 export function TemplateGallery() {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState<ModeChoice>('all');
-  // The open shelf; Popular until the visitor opens another.
+  // The open shelf; Blank Slate until the visitor opens another.
   const [openId, setOpenId] = useState<ShelfId>('popular');
   // Whether the open shelf was opened by the visitor (it rises in) or is the load's.
   const [opened, setOpened] = useState(false);
   const searching = query.trim() !== '';
   const shelves = searching ? searchShelves(query, mode) : galleryShelves(mode);
-  // The open shelf falls back to the first left under the filter (Popular, when it has any).
+  // The open shelf falls back to the first left under the filter (Blank Slate, when it has any).
   const openShelf = shelves.find((s) => s.id === openId) ?? shelves[0];
   const open = searching ? shelves : openShelf ? [openShelf] : [];
   const folded = searching ? [] : shelves.filter((s) => s !== openShelf);

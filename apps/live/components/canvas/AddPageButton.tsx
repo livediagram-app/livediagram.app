@@ -45,6 +45,8 @@ export function AddPageButton({
           aria-haspopup="dialog"
           aria-expanded={open}
           data-add-page-trigger
+          // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md).
+          data-tour-id="add-page"
           onClick={() => setOpen((o) => !o)}
           className={`flex h-9 w-9 items-center justify-center rounded-full shadow-md ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 ${
             open

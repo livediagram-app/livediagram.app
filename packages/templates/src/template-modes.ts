@@ -30,6 +30,7 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'social-carousel': 'illustrate',
   // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
+  'blank-spreadsheet': 'plan',
   kanban: 'plan',
   'project-planner': 'plan',
   'bug-triage': 'plan',
@@ -84,7 +85,13 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
   facilitate: 'blank-session',
 };
 
-/** True for the five blanks: quick-picks on Popular, never on a category shelf or tile. */
+// The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
+// empty Sheet, beside Blank Plan.
+export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet'];
+
+/** True for the blanks: each mode's, and Blank Spreadsheet. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
-  return Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind);
+  return (
+    Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)
+  );
 }

@@ -79,6 +79,8 @@ export const HELP_ARTICLES = {
   facilitateTour: 'canvas/facilitate-mode/facilitate-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
+  drawTour: 'canvas/draw-mode/draw-tour',
+  illustrateTour: 'canvas/illustrate/illustrate-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
@@ -157,6 +159,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   facilitateTour: {
     title: 'Learn about the Facilitate Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  drawTour: {
+    title: 'Learn about the Draw Tour',
+    description: 'What the tour shows you and how replaying works.',
+  },
+  illustrateTour: {
+    title: 'Learn about the Illustrate Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   sharing: {

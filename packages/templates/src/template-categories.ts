@@ -22,12 +22,20 @@ export type TemplateCategory =
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
 // category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
 // them): `planning` was Agile, `mindmaps` was Mind maps, `hierarchies` was Hierarchies.
-type CategoryInfo = { id: TemplateCategory; label: string; description: string };
+// `searchWords`: what a search also finds the category's templates by, the words a longer label once carried (Flowcharts
+// was Flowcharts and Processes), so shortening a label never loses a search.
+type CategoryInfo = {
+  id: TemplateCategory;
+  label: string;
+  description: string;
+  searchWords?: string;
+};
 
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
     id: 'planning',
-    label: 'Plan and Track',
+    label: 'Planning',
+    searchWords: 'plan track',
     description: 'Boards and trackers for projects and teams.',
   },
   {
@@ -42,7 +50,8 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'meetings',
-    label: 'Meetings and Workshops',
+    label: 'Workshops',
+    searchWords: 'meetings',
     description: 'Agendas, retros, Q&A and workshop formats.',
   },
   {
@@ -52,32 +61,38 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'timelines',
-    label: 'Timelines and Roadmaps',
+    label: 'Timelines',
+    searchWords: 'roadmaps',
     description: 'Timelines, Gantt charts, roadmaps and goals.',
   },
   {
     id: 'flowcharts',
-    label: 'Flowcharts and Processes',
+    label: 'Flowcharts',
+    searchWords: 'processes',
     description: 'Step-by-step processes, flows and decisions.',
   },
   {
     id: 'strategy',
-    label: 'Strategy and Decisions',
+    label: 'Strategy',
+    searchWords: 'decisions',
     description: 'Frameworks for analysis, priorities and risk.',
   },
   {
     id: 'hierarchies',
-    label: 'Org and Structure',
+    label: 'Org Charts',
+    searchWords: 'org structure hierarchies',
     description: 'Org charts, goal trees, sitemaps and pyramids.',
   },
   {
     id: 'design',
-    label: 'Design and UX',
+    label: 'Design',
+    searchWords: 'ux',
     description: 'Wireframes, prototypes, personas and journeys.',
   },
   {
     id: 'presentations',
-    label: 'Presentations and Content',
+    label: 'Presentations',
+    searchWords: 'content',
     description: 'Slides, articles, posters and social posts.',
   },
   {
@@ -94,9 +109,15 @@ export const TEMPLATE_CATEGORIES: readonly CategoryInfo[] = [...CATEGORY_LIST].s
   a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }),
 );
 
-// The five blanks: in no category, reached only from Popular (docs/specs/007-editor/templates-by-mode.md "Five
-// blanks"). Mirrors BLANK_TEMPLATE_FOR_MODE; the categories test pins the two together.
-type BlankKind = 'blank' | 'whiteboard' | 'blank-illustration' | 'blank-plan' | 'blank-session';
+// The blanks: in no category, reached only from Popular (docs/specs/007-editor/templates-by-mode.md "The blanks").
+// Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.
+type BlankKind =
+  | 'blank'
+  | 'whiteboard'
+  | 'blank-illustration'
+  | 'blank-plan'
+  | 'blank-spreadsheet'
+  | 'blank-session';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -278,4 +299,13 @@ const LABELS: ReadonlyMap<TemplateCategory, string> = new Map(
 /** A category's label. */
 export function templateCategoryLabel(category: TemplateCategory): string {
   return LABELS.get(category) ?? category;
+}
+
+const SEARCH_WORDS: ReadonlyMap<TemplateCategory, string> = new Map(
+  CATEGORY_LIST.map((c) => [c.id, c.searchWords ?? '']),
+);
+
+/** The words a search also finds a category's templates by, beyond its label. */
+export function templateCategorySearchWords(category: TemplateCategory): string {
+  return SEARCH_WORDS.get(category) ?? '';
 }

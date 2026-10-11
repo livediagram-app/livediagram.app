@@ -189,8 +189,8 @@ describe('the expand toggle', () => {
   it('opens a picked category expanded on desktop, its tiles re-forming as a carousel', () => {
     setDesktop(true);
     render(<Shelf />);
-    fireEvent.click(screen.getByRole('button', { name: 'Browse Plan and Track templates' }));
-    expect(stage().textContent).toContain('Plan and Track');
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Planning templates' }));
+    expect(stage().textContent).toContain('Planning');
     expect(screen.getByRole('button', { name: 'Show Fewer Templates' })).toBeTruthy();
     const cards = within(screen.getAllByRole('list')[0]!).getAllByRole('listitem');
     expect(cards).toHaveLength(categoryTemplates('planning').length);
@@ -206,9 +206,9 @@ describe('the expand toggle', () => {
   it('opens a picked category as the carousel on a phone', () => {
     setDesktop(false);
     render(<Shelf />);
-    fireEvent.click(screen.getByRole('button', { name: 'Browse Plan and Track templates' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Browse Planning templates' }));
     expect(
-      screen.getByRole('button', { name: 'Next Plan and Track templates', hidden: true }),
+      screen.getByRole('button', { name: 'Next Planning templates', hidden: true }),
     ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Next more categories', hidden: true })).toBeNull();
   });

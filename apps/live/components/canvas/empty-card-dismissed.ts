@@ -13,15 +13,45 @@ function read(): string[] {
   }
 }
 
+// Closed this session where storage could not keep it (private mode, full storage), and the readers to tell of a
+// change (a start panel and the tray that brings it back read the same key).
+const closedNow = new Set<string>();
+const listeners = new Set<() => void>();
+const changed = () => {
+  for (const l of listeners) l();
+};
+
 export function emptyCardDismissed(tabId: string): boolean {
-  return read().includes(tabId);
+  return closedNow.has(tabId) || read().includes(tabId);
+}
+
+function write(ids: string[]): boolean {
+  try {
+    localStorage.setItem(EMPTY_CARD_DISMISSED_KEY, JSON.stringify(ids));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function dismissEmptyCard(tabId: string): void {
-  const ids = [...read().filter((id) => id !== tabId), tabId].slice(-EMPTY_CARD_DISMISSED_MAX);
-  try {
-    localStorage.setItem(EMPTY_CARD_DISMISSED_KEY, JSON.stringify(ids));
-  } catch {
-    // Private mode or full storage: the card closes for now and may show again next time.
-  }
+  // Storage refused: the card closes for now and may show again next time.
+  if (!write([...read().filter((id) => id !== tabId), tabId].slice(-EMPTY_CARD_DISMISSED_MAX)))
+    closedNow.add(tabId);
+  changed();
+}
+
+/** Brings a closed card (a start panel) back on that tab (docs/specs/007-editor/start-diagramming.md "Bringing it
+ *  back"). */
+export function restoreEmptyCard(tabId: string): void {
+  closedNow.delete(tabId);
+  write(read().filter((id) => id !== tabId));
+  changed();
+}
+
+export function subscribeEmptyCardDismissed(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }

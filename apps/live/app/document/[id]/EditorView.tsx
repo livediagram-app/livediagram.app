@@ -37,6 +37,7 @@ import { TabBar } from '@/components/chrome/TabBar';
 import { SplitViewFrame } from '@/components/split/SplitViewFrame';
 import { SignInBanner, SIGNIN_BANNER_DISMISS_KEY } from '@/components/chrome/SignInBanner';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
+import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { BoardSceneNotice } from '@/components/canvas/BoardSceneNotice';
 import { EditorModals } from '@/components/dialogs/EditorModals';
@@ -57,7 +58,8 @@ import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
 import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';
 import { PHOTO_ACCEPT_ATTR } from '@/lib/photo-detect';
 import { usePhotoDraftView } from '@/lib/photo-draft-preview';
-import { draftNotesOf, readDashboard } from '@livediagram/document';
+import { draftNotesOf, illustratePagesOf, readDashboard } from '@livediagram/document';
+import { templateStartMode } from '@/components/start/template-start-mode';
 import { clerkEnabled } from '@/lib/clerk-config';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -81,6 +83,12 @@ import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
+// The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time
+// an empty tab offers one, never on the editor's first load.
+const StartFromTemplates = dynamic(
+  () => import('@/components/start/StartFromTemplates').then((m) => m.StartFromTemplates),
+  { ssr: false },
+);
 const PlanBoardPicker = dynamic(
   () => import('@/components/plan/PlanBoardPicker').then((m) => m.PlanBoardPicker),
   { ssr: false },
@@ -104,6 +112,17 @@ const PlanTourHost = dynamic(
 // enters Facilitate, and stays mounted after, as the Plan tour does.
 const FacilitateTourHost = dynamic(
   () => import('@/components/tour/FacilitateTourHost').then((m) => m.FacilitateTourHost),
+  { ssr: false },
+);
+// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
+const DrawTourHost = dynamic(
+  () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
+  { ssr: false },
+);
+// The Illustrate tour (docs/specs/007-editor/illustrate-tour.md): the same, the first time the person enters
+// Illustrate.
+const IllustrateTourHost = dynamic(
+  () => import('@/components/tour/IllustrateTourHost').then((m) => m.IllustrateTourHost),
   { ssr: false },
 );
 
@@ -240,6 +259,8 @@ export function EditorView() {
   const drawMode = ctx.editorMode.mode === 'draw';
   const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
   const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
+  const mountDrawTour = useEverTrue(ctx.editorMode.mode === 'draw');
+  const mountIllustrateTour = useEverTrue(ctx.editorMode.mode === 'illustrate');
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
@@ -266,6 +287,22 @@ export function EditorView() {
     drawToolArmed: !!pendingDraw,
     mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
+  });
+  // An editor's empty Diagram, Facilitate or Illustrate tab: its template start (docs/specs/007-editor/start-diagramming.md).
+  const templateStart = templateStartMode({
+    hydrated,
+    zen: zenMode,
+    embed: embedMode,
+    readOnly: isReadOnly,
+    quickStartOpen: templateGridOpen,
+    drawToolArmed: !!pendingDraw,
+    mode: ctx.editorMode.mode,
+    elementCount: activeTab.elements.length,
+    // Read only for an empty Illustrate tab: EditorView renders often, and a tab with content shows no start.
+    pages:
+      ctx.editorMode.mode === 'illustrate' && activeTab.elements.length === 0
+        ? illustratePagesOf(activeTab)
+        : [],
   });
   // An empty Plan tab: the board types, in the middle of the canvas. Anything already drawn (a board, a shape, a
   // view) hides it; the palette's Boards still add one.
@@ -626,6 +663,8 @@ export function EditorView() {
                               {mountPlanTour ? <PlanTourHost /> : null}
                               {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
                               {mountFacilitateTour ? <FacilitateTourHost /> : null}
+                              {mountDrawTour ? <DrawTourHost /> : null}
+                              {mountIllustrateTour ? <IllustrateTourHost /> : null}
                             </AreaErrorBoundary>
 
                             {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above
@@ -692,7 +731,26 @@ export function EditorView() {
                             ) : null}
                             {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
           middle of an empty canvas, so a blank document reads as intentionally blank. */}
-                            {showEmptyCanvasBanner ? (
+                            {/* An editor's empty Diagram, Facilitate or Illustrate tab offers its template start, in
+          the card's place (docs/specs/007-editor/start-diagramming.md). */}
+                            {templateStart ? (
+                              <>
+                                <StartFromTemplates
+                                  key={`${activeTab.id}:${templateStart}`}
+                                  mode={templateStart}
+                                  tabId={activeTab.id}
+                                  onTemplate={(kind) => void ctx.chooseTemplate(kind)}
+                                  onQuickStart={openTemplatePicker}
+                                />
+                                {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
+                                <StartAgainTray
+                                  key={`tray:${activeTab.id}:${templateStart}`}
+                                  mode={templateStart}
+                                  tabId={activeTab.id}
+                                  tabName={activeTab.name}
+                                />
+                              </>
+                            ) : showEmptyCanvasBanner ? (
                               <EmptyCanvasBanner
                                 key={activeTab.id}
                                 tabId={activeTab.id}
