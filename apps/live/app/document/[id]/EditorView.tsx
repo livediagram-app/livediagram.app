@@ -10,7 +10,7 @@ import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
 import { useEffect } from 'react';
-import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { canvasSurface } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
@@ -381,15 +381,13 @@ export function EditorView() {
             setExportScope('tab');
             setExportOpen(true);
           }}
-          otherDocuments={
-            // Tab linking is a server-side row insert (docs/specs/006-document/tab-document-many-to-many.md), so neither an
-            // offline document's tabs nor an offline destination can take part
-            // (docs/specs/006-document/offline-mode.md) — empty list disables the menu entry.
-            // Nor a workbench, which reaches its one document only.
-            isOffline || workbench
-              ? []
-              : documentList.filter((d) => d.id !== documentId && d.ownerId !== OFFLINE_OWNER_ID)
-          }
+          otherDocuments={addToDocumentTargets({
+            documentId,
+            documentList,
+            isOffline,
+            workbench: workbench !== null,
+            isOwner,
+          })}
           onCopyTabTo={linkActiveTabTo}
           onToggleLockTab={toggleActiveTabLock}
           modeChoiceFor={ctx.modeChoiceFor}
