@@ -1,5 +1,5 @@
 // Editor-mode illustrations for the Canvas article on Editor Modes (docs/specs/018-help/help-app.md,
-// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the four modes at its foot
+// docs/specs/007-editor/editor-modes.md): the tab menu's mode rows, the five modes at its foot
 // (chrome/TabModeMenuRows.tsx), the tab pill leading with the mode icon (TabModeIcon.tsx), and the
 // confirmation card that hangs from the mode switch when an editor leaves Illustrate on a tab with
 // pages (dialogs/LeaveIllustrateConfirm.tsx). The mode switch itself is `ModeSwitchScene` in
@@ -10,15 +10,19 @@ import { Scene, Label, Button } from './primitives';
 import { MenuCard } from './toolbar-layout';
 import { ModeMark, type Mode } from './mode-mark';
 
-// The four modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
+// The five modes as the tab menu's mode rows list them: name, then the catalogue's description, wrapped.
 const OPENS_IN: { mode: Mode; lines: string[] }[] = [
   { mode: 'Diagram', lines: ['Shapes, arrows, the palette and snapping.'] },
   { mode: 'Draw', lines: ['Pens, the eraser and shape recognition.'] },
   { mode: 'Illustrate', lines: ['Pages: infographics to lay out, and', 'articles to write.'] },
   { mode: 'Plan', lines: ['Boards of items: columns, cards and', 'the work moving through them.'] },
+  {
+    mode: 'Facilitate',
+    lines: ['Run a session with your team: timers,', 'votes, polls and reveals.'],
+  },
 ];
 
-/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the four
+/** The foot of the tab menu: the content rows (Import, Export, Clear), a hairline, then the five
  *  mode rows, each with its mark, name and what it is for, a dot on the tab's current one (Draw),
  *  above the tab bar whose pill leads with the same mark. */
 export function TabModeMenuScene() {

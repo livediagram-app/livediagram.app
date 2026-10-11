@@ -41,6 +41,9 @@ order:
 | --------------------- | ------------------------ |
 | Diagrams              | `mode:diagram`           |
 | Whiteboards           | `mode:draw`              |
+| Illustrate pages      | `mode:illustrate`        |
+| Plan boards           | `mode:plan`              |
+| Sessions              | `mode:facilitate`        |
 | Event Storming boards | `kind:event-storming`    |
 | Retrospectives        | `template:retrospective` |
 | Kanban boards         | `template:kanban`        |
@@ -222,13 +225,16 @@ wizard and Settings.
 
 Each key has a label, the plural a sentence uses, and an icon, in list order:
 
-| Key                      | Label                 | In a sentence         | Icon                     |
-| ------------------------ | --------------------- | --------------------- | ------------------------ |
-| `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon  |
-| `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon     |
-| `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note            |
-| `template:retrospective` | Retrospectives        | retrospectives        | A clock turning back     |
-| `template:kanban`        | Kanban boards         | Kanban boards         | A board of three columns |
+| Key                      | Label                 | In a sentence         | Icon                       |
+| ------------------------ | --------------------- | --------------------- | -------------------------- |
+| `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon    |
+| `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon       |
+| `mode:illustrate`        | Illustrate pages      | Illustrate pages      | The Illustrate mode's icon |
+| `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon       |
+| `mode:facilitate`        | Sessions              | sessions              | The Facilitate mode's icon |
+| `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note              |
+| `template:retrospective` | Retrospectives        | retrospectives        | A clock turning back       |
+| `template:kanban`        | Kanban boards         | Kanban boards         | A board of three columns   |
 
 - A new editor mode, tab kind or template family is named once (label, plural and icon) and
   needs nothing else; until it is named, it does not compile.
@@ -402,7 +408,7 @@ new <these>", opened by Settings' Change and the wizard's Change default.
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
 - `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModeIllustrate` /
-  `DefaultModePlan` / `DefaultKindEventStorming` /
+  `DefaultModePlan` / `DefaultModeFacilitate` / `DefaultKindEventStorming` /
   `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
   default, before the write.
 - `Folder` · `Cleared` · the same values, fired by the surface that clears one, before the write.

@@ -17,8 +17,8 @@ import type { Tab } from './index';
 
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on.
 describe('editor modes', () => {
-  it('are Diagram, Draw, Illustrate and Plan, Diagram by default', () => {
-    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'illustrate', 'plan']);
+  it('are Diagram, Draw, Illustrate, Plan and Facilitate, Diagram by default', () => {
+    expect(EDITOR_MODES).toEqual(['diagram', 'draw', 'illustrate', 'plan', 'facilitate']);
     expect(DEFAULT_EDITOR_MODE).toBe('diagram');
   });
 
@@ -26,6 +26,7 @@ describe('editor modes', () => {
     expect(isEditorMode('diagram')).toBe(true);
     expect(isEditorMode('draw')).toBe(true);
     expect(isEditorMode('illustrate')).toBe(true);
+    expect(isEditorMode('facilitate')).toBe(true);
     expect(isEditorMode('whiteboard')).toBe(false);
     expect(isEditorMode(undefined)).toBe(false);
     expect(isEditorMode(1)).toBe(false);
@@ -80,7 +81,13 @@ describe('hasBoardLook', () => {
 describe('the editor mode catalogue', () => {
   it('lists every mode once, in order, with the words the interface shows', () => {
     expect(EDITOR_MODE_CATALOGUE.map((m) => m.id)).toEqual(EDITOR_MODES);
-    expect(EDITOR_MODES.map(editorModeLabel)).toEqual(['Diagram', 'Draw', 'Illustrate', 'Plan']);
+    expect(EDITOR_MODES.map(editorModeLabel)).toEqual([
+      'Diagram',
+      'Draw',
+      'Illustrate',
+      'Plan',
+      'Facilitate',
+    ]);
     for (const m of EDITOR_MODE_CATALOGUE) expect(m.description.length).toBeGreaterThan(0);
   });
 });
@@ -113,11 +120,13 @@ describe('nextEditorMode', () => {
     expect(nextEditorMode('diagram')).toBe('draw');
     expect(nextEditorMode('draw')).toBe('illustrate');
     expect(nextEditorMode('illustrate')).toBe('plan');
-    expect(nextEditorMode('plan')).toBe('diagram');
+    expect(nextEditorMode('plan')).toBe('facilitate');
+    expect(nextEditorMode('facilitate')).toBe('diagram');
   });
 
   it('moves backward with a negative step, wrapping at the start', () => {
-    expect(nextEditorMode('diagram', -1)).toBe('plan');
+    expect(nextEditorMode('diagram', -1)).toBe('facilitate');
+    expect(nextEditorMode('facilitate', -1)).toBe('plan');
     expect(nextEditorMode('plan', -1)).toBe('illustrate');
     expect(nextEditorMode('illustrate', -1)).toBe('draw');
     expect(nextEditorMode('draw', -1)).toBe('diagram');

@@ -57,6 +57,7 @@ export const TEMPLATE_MODE_FILTER = chart(
       'TemplateModeDraw',
       'TemplateModeIllustrate',
       'TemplateModePlan',
+      'TemplateModeFacilitate',
     ],
   },
 );

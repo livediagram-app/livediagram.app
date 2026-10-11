@@ -15,6 +15,7 @@ import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@/lib/viewport';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
+import { requestFacilitateTourStart } from '@/lib/facilitate-tour';
 import { waitForSelector } from './tour-dom';
 import { tourStepsFor, tourStepTelemetryType, type TourApi } from './tour-steps';
 import { TourStage } from './TourStage';
@@ -62,9 +63,8 @@ export function TourHost() {
           x: centre.x - base.width / 2,
           y: centre.y - base.height / 2,
         };
-        // Single-undo-block append via the AI merge path: fresh id, so it
-        // lands as a plain add.
-        ctx.applyAiElements([el], 'generate');
+        // The tour's own square, with no history, taken away when the tour ends (useTourSquare).
+        ctx.tourSquare.place(el);
         elementId = el.id;
       }
       ctx.setSelectedId(elementId);
@@ -88,15 +88,21 @@ export function TourHost() {
     // included: it is a real view). The welcome card's view is already
     // covered by Opened/TourOffer; the last View before an
     // Ended/TourSkipped marks the drop-off stage on the dashboard.
-    onStepView: (step) => track('UI', 'View', tourStepTelemetryType(step.id)),
+    onStepView: (step) => {
+      track('UI', 'View', tourStepTelemetryType(step.id));
+      // The closing card carries the Facilitate tour's offer while it is owed.
+      if (step.card === 'outro' && owedByFacilitateRef.current)
+        track('UI', 'Opened', 'FacilitateTourOffer');
+    },
     onStart: () => track('UI', 'Started', 'Tour'),
     onFinish: (outcome) => endTour(outcome),
   });
   const { active } = engine;
 
   // One tour at a time (docs/specs/026-plan/plan-tour.md "Where it appears"): this one publishes itself
-  // while on screen, and waits while the Plan tour is.
-  const otherTour = useActiveTour() === 'plan';
+  // while on screen, and waits while the Plan or Facilitate tour is.
+  const shown = useActiveTour();
+  const otherTour = shown !== null && shown !== 'welcome';
   useEffect(() => {
     setActiveTour('welcome', active);
   }, [active]);
@@ -116,12 +122,26 @@ export function TourHost() {
   // checked again at fire time below in case the preferences fetch lands
   // after mount.
   const seen = ctx.userPreferences?.tourSeen === true;
+  // Owed by a sibling (docs/specs/012-collaboration/facilitate-tour.md "Where it appears"): someone in
+  // Facilitate who has seen neither tour is offered this one first, and the Facilitate tour as it ends.
+  // Only the document's owner, on an unlocked tab, once the synced preferences are in: never an Editor
+  // joining someone else's live session (the tour's element step would put a square on their board), never a
+  // returning user whose answer has not arrived yet, and never where the Facilitate tour could not then start.
+  const owedByFacilitate =
+    ctx.editorMode.mode === 'facilitate' &&
+    ctx.isOwner &&
+    ctx.prefsSettled &&
+    ctx.activeTab.locked !== true &&
+    ctx.userPreferences?.facilitateTourSeen !== true;
   const ready =
     ctx.hydrated && !ctx.anyWelcomeOpen && !ctx.isReadOnly && !ctx.embedMode && !otherTour;
   const offerRef = useLatest(offer);
+  const owedByFacilitateRef = useLatest(owedByFacilitate);
+  // Whether "Show me Facilitate" ended this run, so its end is not counted as turning that tour down.
+  const pickedFacilitateRef = useRef(false);
   useEffect(() => {
     offerPendingRef.current ??= hasTourPending();
-    if (!offerPendingRef.current || active || !ready) return;
+    if (!(offerPendingRef.current || owedByFacilitate) || active || !ready) return;
     if (seen) {
       // Resolved elsewhere (another tab / device): tidy the stale flag.
       clearTourPending();
@@ -133,9 +153,9 @@ export function TourHost() {
       offerRef.current();
     }, 800);
     return () => clearTimeout(t);
-  }, [active, ready, seen, offerRef]);
+  }, [active, ready, seen, owedByFacilitate, offerRef]);
 
-  // Settings relaunch (the "Show Welcome Tour" row, turned on + closed):
+  // Settings relaunch (the Show Tours › "Welcome" row, turned on + closed):
   // rerun from the top: the welcome card is always step 1. Also re-marks
   // the pending flag so a reload mid-rerun re-offers, exactly like the
   // first-run path. While the Plan tour runs it waits, offering once that ends.
@@ -159,17 +179,39 @@ export function TourHost() {
     // The offer is now RESOLVED, so the reload-surviving pending flag can
     // finally go.
     apiRef.current.closeContextMenu();
+    // The square it placed on an empty tab goes, so the document is left as the person had it.
+    if (ctx.tourSquare.remove() !== null) ctx.setSelectedId(null);
     clearTourPending();
     // Onto the freshest preferences, not this render's: the whole blob is written.
+    // In Facilitate the Facilitate tour's offer rode on this tour's closing card
+    // (docs/specs/012-collaboration/facilitate-tour.md), so ending this tour answers it too: it never pops
+    // up on its own afterwards. "Show me Facilitate" starts it straight away.
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
       tourSeen: true,
+      ...(owedByFacilitate ? { facilitateTourSeen: true } : {}),
     });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
     if (outcome === 'declined') track('UI', 'Closed', 'TourOffer');
     else track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
+    if (owedByFacilitate && outcome === 'completed' && !pickedFacilitateRef.current)
+      track('UI', 'Closed', 'FacilitateTourOffer');
+    pickedFacilitateRef.current = false;
   };
 
-  return <TourStage engine={engine} />;
+  const showFacilitate = () => {
+    pickedFacilitateRef.current = true;
+    engine.next();
+    requestFacilitateTourStart();
+  };
+
+  return (
+    <TourStage
+      engine={engine}
+      {...(owedByFacilitate
+        ? { outroChoice: { label: 'Show me Facilitate', onPick: showFacilitate } }
+        : {})}
+    />
+  );
 }

@@ -5,6 +5,7 @@ import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
 import type { SettingsCategoryId } from './settings-icons';
 
 import { SettingsChoiceRow } from './SettingsChoiceRow';
+import { SettingsToggleGroupRow } from './SettingsToggleGroupRow';
 import { SettingsRow } from './SettingsRow';
 import { SettingsDeleteAccountRow, SettingsIdentityRow } from './SettingsAccountRows';
 import { SettingsShortcutsRow } from './SettingsShortcutsRow';
@@ -150,6 +151,18 @@ export function SettingsCategoryPane({
             onChange={(next) => {
               track(row.event.category, 'Toggled', next ? row.event.on : row.event.off);
               onChange(row.write(settings, next));
+            }}
+          />
+        );
+      case 'toggleGroup':
+        return (
+          <SettingsToggleGroupRow
+            row={row}
+            checked={(key) => row.toggles.find((t) => t.key === key)!.read(settings)}
+            onChange={(key, next) => {
+              const toggle = row.toggles.find((t) => t.key === key)!;
+              track(toggle.event.category, 'Toggled', next ? toggle.event.on : toggle.event.off);
+              onChange(toggle.write(settings, next));
             }}
           />
         );

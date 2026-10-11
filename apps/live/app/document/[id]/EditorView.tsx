@@ -93,6 +93,12 @@ const PlanTourHost = dynamic(
   () => import('@/components/tour/PlanTourHost').then((m) => m.PlanTourHost),
   { ssr: false },
 );
+// The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md) loads the first time the person
+// enters Facilitate, and stays mounted after, as the Plan tour does.
+const FacilitateTourHost = dynamic(
+  () => import('@/components/tour/FacilitateTourHost').then((m) => m.FacilitateTourHost),
+  { ssr: false },
+);
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
@@ -226,6 +232,7 @@ export function EditorView() {
   // follows the tab's theme in Draw mode too.
   const drawMode = ctx.editorMode.mode === 'draw';
   const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
+  const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
   useEditorAccent(activeTab.theme);
   // The viewer's own light / dark chrome (docs/specs/007-editor/live-app.md). Read here because the
   // Default theme resolves through it — see the canvas surface below.
@@ -607,6 +614,8 @@ export function EditorView() {
                               <TourHost />
                               {/* The Plan tour (docs/specs/026-plan/plan-tour.md): the first time a person works in Plan. */}
                               {mountPlanTour ? <PlanTourHost /> : null}
+                              {/* The Facilitate tour (docs/specs/012-collaboration/facilitate-tour.md): the first time a person works in Facilitate. */}
+                              {mountFacilitateTour ? <FacilitateTourHost /> : null}
                             </AreaErrorBoundary>
 
                             {/* Guest sign-in nudge (docs/specs/014-identity/sign-in-encouragement.md), delayed ~5 min. Lifted above

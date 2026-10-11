@@ -1,9 +1,10 @@
 import { useSyncExternalStore } from 'react';
 
-// Which guided tour is on screen (docs/specs/026-plan/plan-tour.md "Where it appears"): the welcome tour
-// and the Plan tour never run at once, so each host publishes itself here while it is active and waits
-// for the other to clear. A module store, like the modal guard: one editor per page.
-export type ActiveTour = 'welcome' | 'plan';
+// Which guided tour is on screen (docs/specs/026-plan/plan-tour.md "Where it appears",
+// docs/specs/012-collaboration/facilitate-tour.md): the welcome, Plan and Facilitate tours never run at
+// once, so each host publishes itself here while it is active and waits for the others to clear. A module
+// store, like the modal guard: one editor per page.
+export type ActiveTour = 'welcome' | 'plan' | 'facilitate';
 
 let current: ActiveTour | null = null;
 const listeners = new Set<() => void>();

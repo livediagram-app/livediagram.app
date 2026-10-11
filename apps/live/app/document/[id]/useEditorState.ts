@@ -12,6 +12,7 @@ import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { usePlanTourContent } from '@/hooks/plan/usePlanTourContent';
+import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { boardClientPoint, dropPlanCardAt, PLAN_CARD_MISSED } from '@/hooks/plan/plan-card-drop';
 import { setPlanWidgetEditor } from '@/hooks/plan/plan-widget-drop';
@@ -2232,6 +2233,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readTabElements: planCover.readTabElements,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
+  const tourSquare = useTourSquare({ activeId, tickTabs });
   const planTour = usePlanTourContent({
     documentId,
     hydrated,
@@ -3602,6 +3604,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useAssignRef(sheetsPlaceRef, (at, make) => addBoxedAt(at.x, at.y, make));
   return {
     surface,
+    tourSquare,
     addCustomColour,
     workbenchMode,
     appChrome,
@@ -4189,6 +4192,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     unresolveThread,
     updateParticipantName,
     userPreferences,
+    // The server copy merged in (or failed to arrive): a once-ever offer (the tours) waits for it, so a
+    // returning user on a new device is not offered what another device already answered.
+    prefsSettled,
     toggleRecentExclusion,
     favouriteIds,
     toggleFavourite,

@@ -33,9 +33,9 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The three searchable catalogues, the Behaviours group browser and My shapes (no strip tiles
-    // of its own) can only be fully reached through More.
-    for (const id of ['icons', 'stickers', 'technology', 'behaviour', 'my-shapes']) {
+    // The three searchable catalogues and My shapes (no strip tiles of its own) can only be fully
+    // reached through More.
+    for (const id of ['icons', 'stickers', 'technology', 'my-shapes']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -57,8 +57,8 @@ describe('stripTilesFor', () => {
 
   // docs/specs/007-editor/toolbar-layout.md: using a tile never reorders the strip.
   it('keeps the category\u2019s own order, the first tiles on the strip and the rest behind More', () => {
-    const own = tilesForCategory('behaviour').map((t) => t.id);
-    const strip = stripTilesFor('behaviour', NONE);
+    const own = tilesForCategory('shapes').map((t) => t.id);
+    const strip = stripTilesFor('shapes', NONE);
     expect(strip.hasMore).toBe(true);
     expect(strip.tiles.map((t) => t.id)).toEqual(own.slice(0, strip.tiles.length));
   });
@@ -73,7 +73,6 @@ describe('stripTilesFor', () => {
     ['devices', ['devices:laptop']],
     ['media', ['tools:image', 'media:embed-website']],
     ['data', ['data:legend']],
-    ['behaviour', ['tools:mode-isometric']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });

@@ -10,7 +10,7 @@
 
 import type { ReactNode } from 'react';
 
-import { BehaviourGroups } from './palette-behaviour';
+import { CollaborateCategories as CategoryPicker } from './palette-behaviour';
 import { Scene, Label, Avatar } from './primitives';
 
 // --- Shared card chrome ------------------------------------------------------
@@ -134,11 +134,11 @@ function AccentBar({
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The Collaborate category: a search across every group, over the six
- *  groups you click into. Ask and Record hold the elements that collect what
- *  the room thinks, so they are the two drawn lit. */
-export function CollaborateGroups() {
-  return <BehaviourGroups lit={['Ask', 'Record']} />;
+/** Facilitate mode's Collaborate band in the category picker: the six Collaborate
+ *  categories. Ask and Record hold the elements that collect what the room thinks,
+ *  so they are the two drawn lit. */
+export function CollaborateCategories() {
+  return <CategoryPicker lit={['Ask', 'Record']} />;
 }
 
 /** An estimate card before the reveal: your own pick lifted, who has

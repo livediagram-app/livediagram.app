@@ -28,8 +28,8 @@ spec is silent, the welcome tour's rules hold.
 - **Once ever per person**, through the synced `planTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the Accessibility category's **Show Plan Tour** row, under **Show Welcome Tour**
-  and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour
+- **Replayable from Settings**: the **Plan** switch in the Accessibility category's **Show Tours** control,
+  beside **Welcome** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour
   straight away when the person is in Plan, or offers it the next time they enter Plan.
 - The offer is the opt-in, as for the welcome tour, and it is also where the person picks the tour track: Plan
   covers both boards and spreadsheets, so the welcome card offers **Boards** and **Spreadsheets** (each starts that

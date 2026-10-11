@@ -14,4 +14,7 @@ export const CATEGORY_BANDS: Record<number, string> = {
   4: 'Boards & Cards',
   // Plan mode's Sheets (docs/specs/029-sheets/sheet.md "Placing a sheet"), after Boards & Cards.
   5: 'Spreadsheets',
+  // Facilitate mode's session kit (docs/specs/012-collaboration/facilitate-mode.md "The palette"): the
+  // six Collaborate categories, under the name the elements go by rather than Dynamic.
+  6: 'Collaborate',
 };

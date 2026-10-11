@@ -15,6 +15,7 @@ export const CTA_SOURCES = {
     'HeaderWhiteboard',
     'HeaderIllustration',
     'HeaderPlan',
+    'HeaderSession',
     // Retired with the hero's old buttons and launch window: nothing links them now, but they stay
     // so a page a browser still has cached reports, and the dashboard labels the rows they left.
     'Hero',
@@ -32,17 +33,62 @@ export const CTA_SOURCES = {
     'HeaderWhiteboard',
     'HeaderIllustration',
     'HeaderPlan',
+    'HeaderSession',
     'Hero',
     'Closing',
   ],
-  Compare: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan', 'Card'],
-  Faq: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan', 'Card'],
-  Status: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
-  Dashboard: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
-  Help: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
+  Compare: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+    'Card',
+  ],
+  Faq: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+    'Card',
+  ],
+  Status: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
+  Dashboard: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
+  Help: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
   // The Community app (docs/specs/025-community/community.md): its header. Its Share Your Own buttons open
   // Explorer Home, not /new, so they are not funnel sources.
-  Community: ['Header', 'HeaderDraw', 'HeaderWhiteboard', 'HeaderIllustration', 'HeaderPlan'],
+  Community: [
+    'Header',
+    'HeaderDraw',
+    'HeaderWhiteboard',
+    'HeaderIllustration',
+    'HeaderPlan',
+    'HeaderSession',
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type CtaSurface = keyof typeof CTA_SOURCES;

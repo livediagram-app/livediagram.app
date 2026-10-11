@@ -1,5 +1,5 @@
 // Editor modes (docs/specs/007-editor/editor-modes.md): how a general tab is worked on, Diagram,
-// Draw, Illustrate or Plan. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
+// Draw, Illustrate, Plan or Facilitate. A mode tunes tools and rules; it never decides what the tab is (that is its kind). The
 // mode is the tab's, the same for everyone on it (`Tab.opensIn`, Diagram when absent).
 import type { Layer } from './layers';
 import { isEventStormingTab } from './event-storming';
@@ -18,6 +18,11 @@ export const EDITOR_MODE_CATALOGUE = [
     id: 'plan',
     label: 'Plan',
     description: 'Boards of items: columns, cards and the work moving through them.',
+  },
+  {
+    id: 'facilitate',
+    label: 'Facilitate',
+    description: 'Run a session with your team: timers, votes, polls and reveals.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 

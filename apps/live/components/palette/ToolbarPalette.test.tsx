@@ -6,6 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import type { EsBoardControls } from './EventStormingBoardRows';
+import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
 import { createShape, type EditorMode, type Element } from '@livediagram/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
@@ -93,6 +94,8 @@ function pickCategory(id: string) {
 
 // The tiles in the strip itself, not in the More popover.
 const strip = () => document.querySelector('[data-toolbar-palette] > div') as HTMLElement;
+
+const COLLAB_IDS = Object.keys(COLLABORATE_CATEGORY_GROUPS);
 
 describe('ToolbarPalette', () => {
   it('opens on Popular with the selection mode and category pickers', () => {
@@ -227,10 +230,10 @@ describe('ToolbarPalette', () => {
   });
 
   it('only offers More when the category has more than the strip shows', () => {
-    show();
-    // Collaborate always has More: its group browser lives there.
-    pickCategory('behaviour');
-    expect(screen.getByRole('button', { name: 'More Collaborate' })).toBeTruthy();
+    // Icons always has More: its search lives there.
+    show({ mode: 'facilitate' });
+    pickCategory('icons');
+    expect(screen.getByRole('button', { name: 'More Icons' })).toBeTruthy();
     cleanup();
     // Devices fits in the strip whole.
     show({ mode: 'illustrate' });
@@ -250,9 +253,30 @@ describe('ToolbarPalette', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
     expect(document.querySelector('[data-option-id="devices"]')).not.toBeNull();
     expect(document.querySelector('[data-option-id="data"]')).not.toBeNull();
-    expect(document.querySelector('[data-option-id="behaviour"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="collab-ask"]')).toBeNull();
     expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
     expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
+  });
+
+  // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
+  it('offers Stickers and the Collaborate categories in Facilitate, not in Diagram, and Icons in both', () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    expect(document.querySelector('[data-option-id="collab-ask"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).toBeNull();
+    expect(document.querySelector('[data-option-id="icons"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).not.toBeNull();
+    cleanup();
+    show({ mode: 'facilitate' });
+    fireEvent.click(screen.getByRole('button', { name: 'Palette category' }));
+    for (const id of COLLAB_IDS) {
+      expect(document.querySelector(`[data-option-id="${id}"]`), id).not.toBeNull();
+    }
+    expect(screen.getByText('Collaborate')).toBeTruthy();
+    expect(screen.queryByText('Dynamic')).toBeNull();
+    expect(document.querySelector('[data-option-id="stickers"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="icons"]')).not.toBeNull();
+    expect(document.querySelector('[data-option-id="technology"]')).toBeNull();
   });
 
   it("opens the category's full body under More, and closes it when a tile is used", () => {
@@ -267,39 +291,35 @@ describe('ToolbarPalette', () => {
   });
 
   it('focuses the search field when More opens (docs/specs/007-editor/toolbar-layout.md)', () => {
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+    show({ mode: 'facilitate' });
+    pickCategory('icons');
+    fireEvent.click(screen.getByRole('button', { name: 'More Icons' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
-    expect(document.activeElement).toBe(
-      within(popover).getByPlaceholderText('Search collaboration'),
-    );
+    expect(document.activeElement).toBe(within(popover).getByPlaceholderText('Search icons'));
   });
 
   it('leaves focus alone on a phone, where it would raise the keyboard', () => {
     mobile.value = true;
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+    show({ mode: 'facilitate' });
+    pickCategory('icons');
+    fireEvent.click(screen.getByRole('button', { name: 'More Icons' }));
     const popover = document.querySelector('[data-toolbar-more]') as HTMLElement;
-    expect(document.activeElement).not.toBe(
-      within(popover).getByPlaceholderText('Search collaboration'),
-    );
+    expect(document.activeElement).not.toBe(within(popover).getByPlaceholderText('Search icons'));
   });
 
   it('closes More when the category changes, since it showed the old one', () => {
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+    show({ mode: 'facilitate' });
+    pickCategory('icons');
+    fireEvent.click(screen.getByRole('button', { name: 'More Icons' }));
     expect(document.querySelector('[data-toolbar-more]')).not.toBeNull();
     pickCategory('shapes');
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
 
   it('closes More on Escape', () => {
-    show();
-    pickCategory('behaviour');
-    fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+    show({ mode: 'facilitate' });
+    pickCategory('icons');
+    fireEvent.click(screen.getByRole('button', { name: 'More Icons' }));
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
@@ -486,9 +506,9 @@ describe('ToolbarPalette', () => {
     });
 
     it('is one strip menu at a time with More, and closes on Escape', () => {
-      show();
-      pickCategory('behaviour');
-      fireEvent.click(screen.getByRole('button', { name: 'More Collaborate' }));
+      show({ mode: 'facilitate' });
+      pickCategory('icons');
+      fireEvent.click(screen.getByRole('button', { name: 'More Icons' }));
       const searchButton = screen.getByRole('button', { name: 'Search elements' });
       fireEvent.pointerDown(searchButton);
       fireEvent.click(searchButton);

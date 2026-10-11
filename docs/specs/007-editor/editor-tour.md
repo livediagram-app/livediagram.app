@@ -23,13 +23,18 @@ card were removed once this tour proved the better introduction.
   device the user signs in from (guests get the same via their
   owner-keyed preference row + the localStorage warm cache).
 - **Replayable from Settings.** The Settings dialog's Accessibility category
-  has a "Show Welcome Tour" row surfacing `tourSeen` (inverted: on means not
-  seen). Turning a previously-off row on and closing Settings relaunches the
+  has a **Show Tours** control whose **Welcome** switch surfaces `tourSeen`
+  (inverted: on means not seen). Turning a previously-off switch on and closing Settings relaunches the
   tour from the top: the welcome card is always step 1, on a rerun too.
   Finishing the rerun turns it off again.
-- **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md) is this
-  tour's sibling; while either is on screen the other waits, and the Plan
-  tour also waits while this tour's offer is still owed.
+- **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md) and the
+  [Facilitate tour](../012-collaboration/facilitate-tour.md) are this tour's
+  siblings; while any is on screen the others wait, and the Plan and Facilitate
+  tours also wait while this tour's offer is still owed. In Facilitate this
+  tour is also owed to someone who has answered neither it nor the Facilitate
+  tour, without the `/new` handoff, so a newcomer there is offered this tour
+  first, and its closing card offers the Facilitate tour (**Show me Facilitate**),
+  which counts as answered however this tour ends.
 
 ## Handoff
 
@@ -62,11 +67,11 @@ live in `apps/live/components/tour/tour-steps.ts`):
 2. **Selection modes**: opens the canvas-tool dropdown (Select / Hand /
    Eraser / ...) and explains mode switching. No "default" claim in the
    copy — desktop defaults to Select but mobile to Hand.
-3. **Shape categories**: opens the palette-category dropdown (Popular /
+3. **Palette Categories**: opens the palette-category dropdown (Popular /
    Shapes / Tools / Components / Devices / Icons / Technology). A
    dedicated "Tools category" step existed briefly and was cut — the
    category dropdown already tells that story.
-4. **Diagram & Draw**: opens the editor mode switch's menu
+4. **Change Tab Mode**: opens the editor mode switch's menu
    ([Editor modes](editor-modes.md#the-mode-switch)) and highlights the switch
    and its menu as one region, beside the menu button. The copy says
    what each mode is for and that Shift+D steps through them; the step
@@ -75,7 +80,10 @@ live in `apps/live/components/tour/tour-steps.ts`):
 5. **The Explorer**: the in-editor document/folder browser.
 6. **Element context menu**: selects an element (adding a theme-coloured
    square at the viewport centre first if the tab is empty) and opens its
-   right-click menu programmatically.
+   right-click menu programmatically. A square it added is the tour's own:
+   placed with no history and taken away, with its selection, when the tour
+   ends however it ends (`useTourSquare`), so a fresh document is left as it
+   was and Undo never brings it back.
 7. **Tabs**: highlights the active tab pill and the "+" add button as one
    region (an `alsoHighlight` union, like the dropdown steps), with the
    tab menu covered in the copy. A separate open-the-⋯-menu step existed

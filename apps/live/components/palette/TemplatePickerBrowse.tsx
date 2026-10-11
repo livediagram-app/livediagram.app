@@ -15,8 +15,8 @@ import {
 
 export type { ShelfCategory };
 
-// The four blanks are not in a category: never on a category shelf or a tile of their own, only
-// on Popular (docs/specs/007-editor/templates-by-mode.md "Four blanks", docs/specs/023-draw-mode/draw-mode.md
+// The five blanks are not in a category: never on a category shelf or a tile of their own, only
+// on Popular (docs/specs/007-editor/templates-by-mode.md "Five blanks", docs/specs/023-draw-mode/draw-mode.md
 // "Creating one").
 const onShelf = (t: TemplateDescriptor) => !isBlankTemplate(t.kind);
 
@@ -30,7 +30,7 @@ const onShelf = (t: TemplateDescriptor) => !isBlankTemplate(t.kind);
 // The shelf mirrors the landing page's "What do you want to create?" gallery
 // (docs/specs/019-marketing/marketing-site.md): ONE shelf is open as a carousel of large
 // cards, and every other one sits folded underneath as a fanned tile that
-// opens it in the open one's place. Popular (the four blanks first, then the
+// opens it in the open one's place. Popular (the five blanks first, then the
 // starters most people reach for) is open until the user opens another.
 export function TemplatePickerBrowse({
   showIdentity,

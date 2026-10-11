@@ -28,6 +28,14 @@ import {
   LogoTabIcon,
   ParticipateTabIcon,
 } from './palette-tab-icons';
+import {
+  AskGroupIcon,
+  FacilitateGroupIcon,
+  ModeGroupIcon,
+  MoveGroupIcon,
+  ReactionGroupIcon,
+  RecordGroupIcon,
+} from './palette-group-icons';
 import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
 
@@ -42,7 +50,8 @@ import { SheetArt } from '@/components/sheets/sheet-art';
  *
  * Order IS layout: the category picker renders the dropdown straight from this
  * array, grouping by `group` under the CATEGORY_BANDS headings (0 Common,
- * 1 Structure, 2 Decorate, 3 Dynamic, 4 Boards & Cards, 5 Spreadsheets; Plan mode lists its bands first).
+ * 1 Structure, 2 Decorate, 3 Dynamic, 4 Boards & Cards, 5 Spreadsheets, 6 Collaborate; Plan mode lists its
+ * bands first).
  */
 export const PALETTE_CATEGORIES: {
   id: string;
@@ -256,22 +265,58 @@ export const PALETTE_CATEGORIES: {
       'Charts and meters: pie, bar and line charts, progress bars and rings, and ratings.',
     icon: <DataTabIcon />,
   },
+  // The Collaborate elements (docs/specs/010-palette/palette-top-level-categories.md): everything whose
+  // content arrives at RUNTIME rather than being drawn by the author, the ones that do something when
+  // pressed and the ones that collect what the room thinks. Their own Collaborate band. Six categories, one per group, in
+  // room-first order: Facilitate offers them in place of one Collaborate category with a group
+  // browser inside it, since every group is something a facilitator reaches for mid-session and a
+  // parent category was a click in front of each (docs/specs/012-collaboration/facilitate-mode.md
+  // "The palette"). Their tiles: COLLABORATE_CATEGORY_GROUPS.
   {
-    // Collaborate, id `behaviour` (docs/specs/010-palette/palette-top-level-categories.md): everything whose content arrives at RUNTIME
-    // rather than being drawn by the author — the elements that do something
-    // when pressed (docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md, docs/specs/009-elements/reaction-pad.md) and the ones that collect
-    // what the room thinks (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md, docs/specs/012-collaboration/comment-pin.md).
-    //
-    // ONE category, not two. They were split on "pressing this does something
-    // to your session" versus "the canvas is collecting an answer from
-    // everybody" — a real distinction, and a useless one to navigate by. You
-    // reach for both while facilitating, and nothing told a user hunting for
-    // the Done check why it lived apart from the Estimate card.
-    id: 'behaviour',
-    label: 'Collaborate',
-    group: 3,
+    id: 'collab-ask',
+    label: 'Ask',
+    group: 6,
     description:
-      'Elements that come alive with the room: ask for an estimate or a temperature, run a quiz, leave a comment or an action on the canvas, collect ideas, rank the room’s questions, check who is done, run a timer or a stopwatch, vote or poll, keep an agenda or a decision, throw a reaction, switch a mode, jump through a portal, or bring everyone to look at one spot.',
-    icon: <BehaviourTabIcon />,
+      'Put a question to the room: dot votes, polls, quizzes, estimates, a temperature check, an idea box and a Q&A board.',
+    icon: <AskGroupIcon />,
+  },
+  {
+    id: 'collab-tools',
+    label: 'Tools',
+    group: 6,
+    description:
+      'Run the session: a timer or a stopwatch, a reveal zone, a done check and a picker.',
+    icon: <FacilitateGroupIcon />,
+  },
+  {
+    id: 'collab-record',
+    label: 'Record',
+    group: 6,
+    description:
+      'Leave a record on the canvas: comments, actions, an agenda, decisions and a roll call.',
+    icon: <RecordGroupIcon />,
+  },
+  {
+    id: 'collab-react',
+    label: 'React',
+    group: 6,
+    description: 'Pads that throw confetti, sparkles, hearts, applause or fireworks for everyone.',
+    icon: <ReactionGroupIcon />,
+  },
+  {
+    id: 'collab-mode',
+    label: 'Selection Mode',
+    group: 6,
+    description:
+      'Buttons that hand everyone a selection mode: select, pan, laser, spotlight and more.',
+    icon: <ModeGroupIcon />,
+  },
+  {
+    id: 'collab-navigate',
+    label: 'Navigate',
+    group: 6,
+    description:
+      'Take people somewhere: a portal to another tab, a bring-focus button, a chair or a link card.',
+    icon: <MoveGroupIcon />,
   },
 ];

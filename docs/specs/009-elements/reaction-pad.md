@@ -17,8 +17,8 @@ Chosen to cover distinct **things people mean**, not five ways of saying
 | **Applause**  | 👏    | Thanks for the talk or the demo   |
 | **Fireworks** | 🎆    | It shipped                        |
 
-**The palette offers a tile per reaction**, grouped under **React** in the
-palette's Collaborate category.
+**The palette offers a tile per reaction**, in the palette's **React**
+category, one of Facilitate's Collaborate categories.
 Which reaction you want is the whole decision — a pad is not useful until it is
 the right one — so placing one and then going to change it is two steps for
 something you already knew. The choice rides the draw intent

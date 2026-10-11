@@ -48,7 +48,7 @@ export const COMPETITOR_LOOK: Record<string, CompetitorLook> = {
     icon: lucideGlyph(lucidePencil, 22),
     panel: 'from-violet-100 to-fuchsia-50 dark:from-violet-500/15 dark:to-fuchsia-500/5',
     glyph: 'text-violet-600 dark:text-violet-300',
-    highlights: ['95 templates', 'Tabs and folders', '.excalidraw in and out'],
+    highlights: ['96 templates', 'Tabs and folders', '.excalidraw in and out'],
   },
   drawio: {
     icon: lucideGlyph(lucideWorkflow, 22),

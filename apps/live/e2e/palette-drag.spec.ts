@@ -1,10 +1,11 @@
 import type { Page } from '@playwright/test';
-import { expect, test, expectNoPageErrors, openStartBlank } from './fixtures';
+import { expect, test, expectNoPageErrors, openBlankSession, openStartBlank } from './fixtures';
 
 // Palette drag-to-canvas (docs/specs/010-palette/palette-drag-ghost.md) from the Palette strip
 // (docs/specs/007-editor/toolbar-layout.md): a tile in a category's More popover drags onto the canvas
 // like the tile it stands for, whatever its catalogue: a shape from Shapes' full body, a line icon and
-// a sticker found by searching their own catalogue's body.
+// a sticker found by searching their own catalogue's body (Stickers are Facilitate's,
+// docs/specs/012-collaboration/facilitate-mode.md).
 
 const CANVAS = '[data-canvas-a11y-root]';
 
@@ -31,16 +32,34 @@ async function dragTileOntoCanvas(page: Page, tileName: string, at: { x: number;
 }
 
 test.describe('Toolbar strip drag', () => {
-  for (const { category, query, tile, placedAs } of [
-    { category: 'shapes', query: undefined, tile: 'Add Speech Bubble', placedAs: /speech bubble/i },
-    { category: 'icons', query: 'speech', tile: 'Add Message', placedAs: /^Icon$/ },
-    { category: 'stickers', query: 'speech', tile: 'Speech balloon', placedAs: /^Sticker$/ },
+  for (const { category, query, tile, placedAs, open } of [
+    {
+      category: 'shapes',
+      query: undefined,
+      tile: 'Add Speech Bubble',
+      placedAs: /speech bubble/i,
+      open: openStartBlank,
+    },
+    {
+      category: 'icons',
+      query: 'speech',
+      tile: 'Add Message',
+      placedAs: /^Icon$/,
+      open: openStartBlank,
+    },
+    {
+      category: 'stickers',
+      query: 'speech',
+      tile: 'Speech balloon',
+      placedAs: /^Sticker$/,
+      open: openBlankSession,
+    },
   ]) {
     test(`a "${tile}" tile from the ${category} More popover drags onto the canvas`, async ({
       page,
       pageErrors,
     }) => {
-      await openStartBlank(page);
+      await open(page);
       await openMore(page, category, query);
       await expect(placed(page, placedAs)).toHaveCount(0);
       await dragTileOntoCanvas(page, tile, { x: 300, y: 500 });

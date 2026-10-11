@@ -117,6 +117,7 @@ const ALL_KINDS = [
   'pre-mortem',
   'idea-garden',
   'blank-plan',
+  'blank-session',
   'project-planner',
   'bug-triage',
   'team-retro',
@@ -291,6 +292,8 @@ describe('buildTemplate translation invariance', () => {
         k !== 'blank-illustration' &&
         // An empty Plan tab: it opens on Start Planning (docs/specs/026-plan/plan-templates.md).
         k !== 'blank-plan' &&
+        // An empty session tab (docs/specs/012-collaboration/facilitate-mode.md "Templates").
+        k !== 'blank-session' &&
         !(PAGED_KINDS as readonly string[]).includes(k),
     ),
   )('%s: every coordinate shifts by (cx, cy)', (kind) => {

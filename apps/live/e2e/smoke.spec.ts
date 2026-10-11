@@ -3,6 +3,7 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
+  openBlankSession,
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
@@ -310,8 +311,10 @@ test('a note already on the board inserts between two others', async ({ page, pa
 //
 // The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
 // phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
-// was pushed off the left edge. The strip now takes a row of its own on a phone
-// (docs/specs/012-collaboration/session-tools.md "The Session strip"). A desktop run is blind to it.
+// was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
+// strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the
+// empty-canvas hint rides just above that one row, clear of the strip's popovers. A desktop run is
+// blind to both.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
@@ -327,15 +330,25 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    await startBlankDocument(page);
-    // A fresh guest gets the tour offer over a scrim that eats taps, a beat after the canvas.
-    await dismissQuickTour(page);
+    // The strip is Facilitate's (docs/specs/012-collaboration/facilitate-mode.md), so a Blank Session.
+    await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.
     const undo = page.getByRole('button', { name: /^undo/i });
     await expect(undo).toBeVisible();
     const undoBox = await undo.boundingBox();
     expect(undoBox && undoBox.x >= 0).toBe(true);
+    // And the whole cluster is one row at phone width, the Session strip beside Undo
+    // (docs/specs/012-collaboration/session-tools.md "The Session strip").
+    const rows = await page.locator('[data-zoom-cluster] button').evaluateAll((buttons) => [
+      ...new Set(
+        buttons
+          .map((b) => b.getBoundingClientRect())
+          .filter((r) => r.width > 0)
+          .map((r) => Math.round((r.top + r.bottom) / 2 / 10)),
+      ),
+    ]);
+    expect(rows).toHaveLength(1);
 
     // The Timer opens its set-up as a popover that is genuinely on top, not just present.
     await page.getByRole('button', { name: 'Open Timer' }).tap();

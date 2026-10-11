@@ -1,7 +1,7 @@
 # Templates by mode
 
 Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw**,
-**Illustrate** or **Plan**. The template step of the New Document wizard and Quick Start
+**Illustrate**, **Plan** or **Facilitate**. The template step of the New Document wizard and Quick Start
 ([Templates](../008-canvas/canvas-and-palette.md#templates)) says which on every card, and lets a
 person narrow the whole catalogue to one mode, so someone who came to sketch or to make a poster
 sees only what starts there.
@@ -18,13 +18,15 @@ sees only what starts there.
 - Plan templates: Blank Plan and the ten [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates come with no cards: each but Blank Plan sets up a way of working across
   several tabs, every one opening in Plan.
+- Facilitate templates: Blank Session and the nine [Facilitate templates](#facilitate-templates)
+  below.
 - Every other template is a Diagram template.
 
 ## The mode filter
 
 - A **dropdown** sits **to the left of the search box**, as tall as it, named "Show templates for":
   a chip showing the choice in force (its glyph, its name, a chevron) over a menu of
-  **Everything**, **Diagram**, **Draw**, **Illustrate** and **Plan**, each with its glyph (a grid for
+  **Everything**, **Diagram**, **Draw**, **Illustrate**, **Plan** and **Facilitate**, each with its glyph (a grid for
   Everything, `EDITOR_MODE_ICON` for the modes, the glyphs of the mode switch) and how many
   templates it holds, in a count badge. A dropdown, not a row of buttons, so a mode added later is one more row.
   **Everything** is the default and is chosen each time the step opens; the choice is not
@@ -38,7 +40,8 @@ sees only what starts there.
   search keeps its width.
 - Choosing a mode narrows **everything the step shows** to templates of that mode:
   - **Popular** shows its templates of that mode, the mode's blank first, topped up from the mode's best
-    (`MODE_BEST` in `packages/templates`: Plan adds Project Planner, Kanban Board, Team Retro, Bug Tracker)
+    (`MODE_BEST` in `packages/templates`: Plan adds Project Planner, Kanban Board, Team Retro, Bug Tracker;
+    Facilitate adds Retrospective, Town Hall Q&A, Lean Coffee, Crazy Eights)
     so it never holds fewer than five (`POPULAR_PER_MODE`), as the marketing gallery's does.
   - The **open shelf** shows only its templates of that mode.
   - **Explore More Categories** shows only categories holding at least one template of that mode,
@@ -49,12 +52,12 @@ sees only what starts there.
     a **Show N matches in Everything** button switches to Everything, the search kept.
 - If the open shelf has none of the mode's templates, **Popular** opens instead.
 - If the selected template is not of the mode, the selection moves to the mode's blank (Blank
-  Diagram, Blank Whiteboard, Blank Illustration or Blank Plan; Everything keeps the selection), so one card is always
+  Diagram, Blank Whiteboard, Blank Illustration, Blank Plan or Blank Session; Everything keeps the selection), so one card is always
   selected and Next never starts something the person filtered away.
 - The control is a menu button (docs/specs/004-interface-design/menus.md): the chip says it opens a
   menu and whether it is open, the rows are `menuitemradio` with the choice checked.
 - Each choice sends `UI` / `Toggled` / `TemplateModeAll`, `TemplateModeDiagram`, `TemplateModeDraw`,
-  `TemplateModeIllustrate` or `TemplateModePlan` ([Telemetry](../017-telemetry/telemetry.md)).
+  `TemplateModeIllustrate`, `TemplateModePlan` or `TemplateModeFacilitate` ([Telemetry](../017-telemetry/telemetry.md)).
 
 ## The mode on a card
 
@@ -63,7 +66,7 @@ sees only what starts there.
   title (", Opens in Draw"), so a card's accessible name still starts with its title.
 - Category tiles carry no glyph: a category can hold templates of several modes.
 
-## Four blanks
+## Five blanks
 
 Popular opens with one blank per mode, in mode order:
 
@@ -73,11 +76,12 @@ Popular opens with one blank per mode, in mode order:
 | Blank Whiteboard   | `whiteboard`         | Draw       | An empty board to draw on (was "Whiteboard").                                  |
 | Blank Illustration | `blank-illustration` | Illustrate | One empty page that asks what it is for (Infographic, Article, Slide or Logo). |
 | Blank Plan         | `blank-plan`         | Plan       | An empty Plan tab that opens on Start Planning.                                |
+| Blank Session      | `blank-session`      | Facilitate | An empty tab in Facilitate, named "Untitled Session".                          |
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
-- None of the four is on a category shelf or a category tile.
-- Popular, in order: Blank Diagram, Blank Whiteboard, Blank Illustration, Blank Plan, Mind map, Sketchnote,
+- None of the five is on a category shelf or a category tile.
+- Popular, in order: Blank Diagram, Blank Whiteboard, Blank Illustration, Blank Plan, Blank Session, Mind map, Sketchnote,
   Sailboat retrospective, Flowchart, Org chart, Article.
 
 ## Draw templates
@@ -130,6 +134,18 @@ already infographic pages, built with the page layouts' kit.
   matched rows of pros and cons, and a verdict at the foot.
 - **Social Carousel** _(Design)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
+
+## Facilitate templates
+
+Session formats open in Facilitate ([Facilitate mode](../012-collaboration/facilitate-mode.md#templates)),
+so the Collaborate kit and the Session strip are there when the session starts. Their content is
+unchanged; only the mode they open in moved from Diagram.
+
+- The Retrospectives family's **Retrospective** (`retrospective`), **Start, Stop, Continue**
+  (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
+  (`sailboat`). **Team Retro** (`team-retro`) stays in Plan: it is a board of cards.
+- **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
+  (`crazy-eights`) and **Meeting Agenda** (`meeting-agenda`).
 
 ## Testing
 

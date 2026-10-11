@@ -44,6 +44,18 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   timesheet: 'plan',
   'contact-list': 'plan',
   'task-tracker': 'plan',
+  // Session formats (docs/specs/012-collaboration/facilitate-mode.md "Templates"): run with the room,
+  // so they open where the Collaborate kit and the Session strip are.
+  'blank-session': 'facilitate',
+  retrospective: 'facilitate',
+  'start-stop-continue': 'facilitate',
+  'mad-sad-glad': 'facilitate',
+  'four-ls': 'facilitate',
+  sailboat: 'facilitate',
+  'town-hall': 'facilitate',
+  'lean-coffee': 'facilitate',
+  'crazy-eights': 'facilitate',
+  'meeting-agenda': 'facilitate',
 };
 
 /** The mode a template's tab opens in. */
@@ -51,15 +63,16 @@ export function templateEditorMode(kind: TemplateKind): EditorMode {
   return TEMPLATE_MODES[kind] ?? 'diagram';
 }
 
-/** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Four blanks"). */
+/** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks"). */
 export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>> = {
   diagram: 'blank',
   draw: 'whiteboard',
   illustrate: 'blank-illustration',
   plan: 'blank-plan',
+  facilitate: 'blank-session',
 };
 
-/** True for the four blanks: quick-picks on Popular, never on a category shelf or tile. */
+/** True for the five blanks: quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
   return Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind);
 }

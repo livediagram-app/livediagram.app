@@ -21,6 +21,7 @@ Switching the mode **on** writes these values, once:
 | Auto-attach arrows   | `autoRebindArrows`   | on    |
 | Welcome tour         | `tourSeen`           | seen  |
 | Plan tour            | `planTourSeen`       | seen  |
+| Facilitate tour      | `facilitateTourSeen` | seen  |
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
@@ -54,7 +55,7 @@ directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
 2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
-   Guides, Auto-Attach Arrows, Show Welcome Tour, Suggested Prompts), each with its current value
+   Guides, Auto-Attach Arrows, the Welcome, Plan and Facilitate tours, Suggested Prompts), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise

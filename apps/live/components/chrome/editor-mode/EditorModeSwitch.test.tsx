@@ -71,10 +71,12 @@ describe('EditorModeSwitch chip', () => {
       expect.stringMatching(/^Draw/),
       expect.stringMatching(/^Illustrate/),
       expect.stringMatching(/^Plan/),
+      expect.stringMatching(/^Facilitate/),
     ]);
     expect(rows.map((row) => row.getAttribute('aria-checked'))).toEqual([
       'false',
       'true',
+      'false',
       'false',
       'false',
     ]);
@@ -90,6 +92,7 @@ describe('EditorModeSwitch chip', () => {
       'Draw⇧D',
       'Illustrate',
       'Plan',
+      'Facilitate',
     ]);
   });
 
@@ -111,7 +114,7 @@ describe('EditorModeSwitch chip', () => {
     renderSwitch('diagram');
     fireEvent.click(chip());
     const menu = screen.getByRole('menu');
-    const [diagram, draw, illustrate, plan] = screen.getAllByRole('menuitemradio');
+    const [diagram, draw, illustrate, plan, facilitate] = screen.getAllByRole('menuitemradio');
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(draw);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
@@ -119,13 +122,15 @@ describe('EditorModeSwitch chip', () => {
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(plan);
     fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(facilitate);
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(plan);
+    expect(document.activeElement).toBe(facilitate);
     fireEvent.keyDown(menu, { key: 'Home' });
     expect(document.activeElement).toBe(diagram);
     fireEvent.keyDown(menu, { key: 'End' });
-    expect(document.activeElement).toBe(plan);
+    expect(document.activeElement).toBe(facilitate);
   });
 
   it.each([

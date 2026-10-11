@@ -7,18 +7,20 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 | Term         | Answers                        | Values                                                      | Where it lives                                |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Illustrate, Plan (`EditorMode`)              | Per tab, the same for everyone; `Tab.opensIn` |
+| **mode**     | How is a tab worked on?        | Diagram, Draw, Illustrate, Plan, Facilitate (`EditorMode`)  | Per tab, the same for everyone; `Tab.opensIn` |
 | **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
 
 ### Mode
 
-- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Illustrate or Plan.
+- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Illustrate, Plan or Facilitate.
   (the Editor modes spec in 007-editor).
 - A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
 - A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
   new concept.
 - Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
+- Running a session (a retro, a town hall) is Facilitate mode. A session is an activity, never a tab kind or a
+  stored thing; "Session" and "Collaborate" never name the mode.
 
 ### Kind
 

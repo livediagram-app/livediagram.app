@@ -58,7 +58,20 @@ describe('the whiteboard shape catalogue', () => {
 
   it('orders its groups as the palette orders its categories', () => {
     const groups = [...new Set(WHITEBOARD_SHAPE_CATALOGUE.map((x) => x.group))];
-    expect(groups).toEqual(['shapes', 'write', 'draw', 'build', 'devices', 'data', 'behaviour']);
+    expect(groups).toEqual([
+      'shapes',
+      'write',
+      'draw',
+      'build',
+      'devices',
+      'data',
+      'collab-ask',
+      'collab-tools',
+      'collab-record',
+      'collab-react',
+      'collab-mode',
+      'collab-navigate',
+    ]);
   });
 
   it('arms every shape entry plain, as a board shape', () => {

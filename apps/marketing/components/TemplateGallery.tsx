@@ -1,6 +1,6 @@
 'use client';
 
-import { editorModeLabel } from '@livediagram/document';
+import { EDITOR_MODES, editorModeLabel } from '@livediagram/document';
 import { TemplatePreview } from '@livediagram/template-previews';
 import { ctaHref } from '@livediagram/api-schema';
 import { templateCreateHref } from '@livediagram/templates';
@@ -27,7 +27,7 @@ import { EYEBROW } from '@/components/eyebrow';
 // "What do you want to create?" (docs/specs/019-marketing/marketing-site.md): every template the
 // editor ships, laid out as the editor's template step lays them out
 // (docs/specs/008-canvas/canvas-and-palette.md "Templates"). ONE shelf is open as a four-across
-// carousel (TemplateCarousel), Popular on load (the four blanks, then the starters most people
+// carousel (TemplateCarousel), Popular on load (the five blanks, then the starters most people
 // reach for); every other category sits folded underneath as a card (CategoryTiles) that opens it
 // in the open one's place, the shelf it replaces folding back (Popular leading the folds). Beside
 // the search box, the mode filter (the editor's own ModeFilterMenu) narrows every view to one
@@ -38,7 +38,7 @@ import { EYEBROW } from '@/components/eyebrow';
 // (@livediagram/template-previews), so a template looks the same here as it does in the app.
 
 const COUNTS = modeCounts();
-const CHOICES: readonly ModeChoice[] = ['all', 'diagram', 'draw', 'illustrate', 'plan'];
+const CHOICES: readonly ModeChoice[] = ['all', ...EDITOR_MODES];
 const choiceLabel = (c: ModeChoice) => (c === 'all' ? 'Everything' : editorModeLabel(c));
 
 export function TemplateGallery() {

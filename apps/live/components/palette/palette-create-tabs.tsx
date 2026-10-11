@@ -4,24 +4,14 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
-import { PaletteGroupBrowser, type TileGroupDef } from './PaletteGroupBrowser';
-import {
-  AskGroupIcon,
-  EmbedGroupIcon,
-  FacilitateGroupIcon,
-  ModeGroupIcon,
-  MoveGroupIcon,
-  ReactionGroupIcon,
-  RecordGroupIcon,
-  WebGroupIcon,
-} from './palette-group-icons';
+import { EmbedGroupIcon, WebGroupIcon } from './palette-group-icons';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { EventStormingBoardRows, type EsBoardControls } from './EventStormingBoardRows';
 
 // The palette's creation-category tab bodies. Every tile is
 // a data entry in the shared catalogue (palette-tile-defs.tsx) rendered
 // through PaletteTileGrid. Each body is how its category is PRESENTED (a grid, rows with a
-// blurb, a group browser); which tiles it holds is the mode's palette layout's call
+// blurb, collapsed groups); which tiles it holds is the mode's palette layout's call
 // (palette-layouts.ts, docs/specs/007-editor/editor-modes.md "The palette per mode"), handed in
 // as `tiles`. The
 // search-driven tabs (Icons / Stickers / Technology) have their own files since they
@@ -92,78 +82,15 @@ export function PaletteDataTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// Every element whose content arrives at RUNTIME (docs/specs/010-palette/palette-top-level-categories.md): the ones that do
-// something when pressed and the ones that collect what the room thinks.
+// The Collaborate elements (docs/specs/012-collaboration/facilitate-mode.md "The palette"): six
+// categories, one per group (Ask, Tools, Record, React, Selection Mode, Navigate). Rows with a blurb,
+// like Build and Data: eight mode buttons or five reaction pads look alike at palette size, and
+// "Hand everyone the laser" against "Hand everyone the spotlight" is the choice being made.
 //
-// Browsed by category rather than stacked as accordions (docs/specs/008-canvas/canvas-and-palette.md
-// "Sub-categories"): a column of collapsed headers meant you saw a table of
-// contents where the palette otherwise shows you pictures, and nothing in the
-// tab was visible until you opened one. Same navigation as Icons and
-// Technology, from the same component — see PaletteGroupBrowser.
-//
-// Ordered room-first: the groups a facilitator opens mid-session come before
-// the ones you set up once and forget. Collaborate used to be a separate
-// category (Ask / Record); merging it in is docs/specs/010-palette/palette-top-level-categories.md's
-// reconciliation, which docs/specs/012-collaboration/done-check.md called ahead of time when it filed the Done
-// check under Behaviour and said so.
-//
-// There is no **Session** group. It held the Timer, the Dot vote and the Poll
-// — a group named after the machinery rather than the job. A poll and a dot
-// vote ARE asking the room, so they sit with the estimate card and the
-// temperature check, which is where somebody looking to put a question to
-// everybody actually looks. A timer is facilitation, so it sits with the
-// Reveal, the Done check and the Picker. With all three rehoused the group had
-// nothing left in it.
-export const BEHAVIOUR_GROUPS: TileGroupDef[] = [
-  {
-    id: 'ask',
-    label: 'Ask',
-    icon: <AskGroupIcon />,
-  },
-  {
-    id: 'facilitate',
-    label: 'Tools',
-    icon: <FacilitateGroupIcon />,
-  },
-  {
-    id: 'record',
-    label: 'Record',
-    icon: <RecordGroupIcon />,
-  },
-  {
-    id: 'reaction',
-    label: 'React',
-    icon: <ReactionGroupIcon />,
-  },
-  { id: 'mode', label: 'Selection Mode', icon: <ModeGroupIcon /> },
-  { id: 'move', label: 'Navigate', icon: <MoveGroupIcon /> },
-];
-
-export function PaletteBehaviourTab({ pendingDraw, actions, tiles }: TabProps) {
-  // Every tile is in a group. The comment pin used to sit loose above them,
-  // on the reasoning that it is the one you reach for outside a facilitated
-  // session and a group of one would be a click in front of the tab's
-  // most-used tile. It is in **Record** now: a comment thread is a
-  // thing you leave behind on the canvas for somebody to find later, which is
-  // what the agenda, the decision record and the roll call all are, and a
-  // single row floating above six category tiles read as an oversight.
-  return (
-    <PaletteGroupBrowser
-      root="Collaborate"
-      tiles={tiles}
-      groups={BEHAVIOUR_GROUPS}
-      actions={actions}
-      pendingDraw={pendingDraw}
-      searchInput={{
-        placeholder: 'Search collaboration',
-        ariaLabel: 'Search collaborate elements',
-        clearAriaLabel: 'Clear collaborate search',
-        clearDescription: 'Clear the collaborate element search query.',
-      }}
-      telemetry={{ openedType: 'BehaviourGroup', searchedType: 'BehaviourSearch' }}
-      emptyMessage={(q) => `No behaviours match \u201c${q}\u201d.`}
-    />
-  );
+// They were once one category with a group browser inside it. In Facilitate every group is
+// something a facilitator reaches for mid-session, so the parent was a click in front of each.
+export function PaletteCollaborateTab({ pendingDraw, actions, tiles }: TabProps) {
+  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
 // Pictures and figures (docs/specs/010-palette/palette-top-level-categories.md): Image and Avatar. Rows with a blurb — two

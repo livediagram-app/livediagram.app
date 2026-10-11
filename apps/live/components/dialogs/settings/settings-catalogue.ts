@@ -165,6 +165,25 @@ export type SettingsToggleRowSpec = RowBase & {
   event: { category: TelemetryCategory; on: string; off: string };
 };
 
+// One switch inside a toggle group: its own preference and telemetry, like a toggle row, drawn as a
+// tile in the group's grid under the group's heading and description.
+export type SettingsToggleOptionSpec = {
+  key: string;
+  label: string;
+  // Linked from the group's description by this switch's label.
+  helpArticle?: HelpArticleKey;
+  read: (prefs: UserPreferences) => boolean;
+  write: (prefs: UserPreferences, next: boolean) => UserPreferences;
+  event: { category: TelemetryCategory; on: string; off: string };
+};
+
+// Several related switches as one control (the guided tours): one heading and one description over a
+// grid of switch tiles, where separate rows would repeat the same paragraph each time.
+export type SettingsToggleGroupRowSpec = RowBase & {
+  kind: 'toggleGroup';
+  toggles: SettingsToggleOptionSpec[];
+};
+
 export type SettingsChoiceRowSpec = RowBase & {
   kind: 'choice';
   options: { id: string; label: string }[];
@@ -267,6 +286,7 @@ export type SettingsSkipLocationRowSpec = RowBase & { kind: 'skipLocationStep' }
 
 export type SettingsRowSpec =
   | SettingsToggleRowSpec
+  | SettingsToggleGroupRowSpec
   | SettingsChoiceRowSpec
   | SettingsSliderRowSpec
   | SettingsAppearanceRowSpec
@@ -434,7 +454,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Power User',
         label: 'Power User Mode',
         description:
-          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome and Plan tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
+          'Applies a set of recommended settings for people who know their way around: alignment guides and auto-attach arrows on, the welcome, Plan and Facilitate tours marked as seen, and AI suggested prompts off. Change any of them afterwards and the mode stays on. Switching it off puts back the settings you did not change.',
         helpArticle: 'powerUserMode',
         read: isPowerUserMode,
         write: (p, v) => setPowerUserMode(p, v).prefs,
@@ -810,36 +830,49 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'ReduceMotionOn', off: 'ReduceMotionOff' },
       },
       {
-        kind: 'toggle',
-        key: 'tourSeen',
-        keywords: 'walkthrough onboarding intro show me around getting started',
-        label: 'Show Welcome Tour',
-        description:
-          'Offers the Show me around tour the next time you open a document. It switches itself off once you have taken or dismissed the tour, so it only ever offers itself once. Turn it back on and close Settings to run the tour again straight away.',
-        helpArticle: 'welcomeTour',
-        // INVERTED against the stored preference: the row asks "show me the
-        // tour?", `tourSeen` records "already seen". Switch on === not seen.
-        read: (p) => p.tourSeen !== true,
-        write: (p, v) => ({ ...p, tourSeen: !v }),
-        // The tokens still track the PREFERENCE, not the switch, so the
-        // dashboard series keeps meaning what it has always meant: turning
-        // the row ON sets tourSeen=false, which is 'TourSeenOff'.
-        event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
-      },
-      {
-        kind: 'toggle',
-        key: 'planTourSeen',
+        // The three guided tours as one control (docs/specs/007-editor/user-preferences.md "Show Tours"):
+        // a heading and one description over a grid of their switches, rather than three near-identical
+        // rows and paragraphs. Each switch is still its own preference with its own telemetry.
+        kind: 'toggleGroup',
+        key: 'tours',
         keywords:
-          'walkthrough onboarding intro show me around plan board kanban cards getting started',
-        label: 'Show Plan Tour',
+          'tour tours walkthrough onboarding intro show me around getting started welcome plan board kanban cards facilitate session retro workshop replay rerun',
+        label: 'Show Tours',
         description:
-          'Offers a short tour of Plan mode the next time you work in Plan. It switches itself off once you have taken or dismissed the tour. Turn it back on and close Settings to run it again: straight away if you are in Plan, otherwise the next time you are.',
-        helpArticle: 'planTour',
-        // Inverted like Show Welcome Tour: the row asks "show me the tour?", `planTourSeen` records
-        // "already seen" (docs/specs/026-plan/plan-tour.md).
-        read: (p) => p.planTourSeen !== true,
-        write: (p, v) => ({ ...p, planTourSeen: !v }),
-        event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
+          'Each tour offers itself once: the Welcome Tour the next time you open a document, the Plan and Facilitate tours the first time you work in those modes. A switch turns itself off once you have taken or dismissed its tour. Turn one back on and close Settings to run it again: straight away if you are where it starts, otherwise the next time you are.',
+        toggles: [
+          {
+            key: 'tourSeen',
+            label: 'Welcome',
+            helpArticle: 'welcomeTour',
+            // INVERTED against the stored preference: the switch asks "show me the
+            // tour?", `tourSeen` records "already seen". Switch on === not seen.
+            read: (p) => p.tourSeen !== true,
+            write: (p, v) => ({ ...p, tourSeen: !v }),
+            // The tokens still track the PREFERENCE, not the switch, so the
+            // dashboard series keeps meaning what it has always meant: turning
+            // the switch ON sets tourSeen=false, which is 'TourSeenOff'.
+            event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
+          },
+          {
+            key: 'planTourSeen',
+            label: 'Plan',
+            helpArticle: 'planTour',
+            // Inverted the same way (docs/specs/026-plan/plan-tour.md).
+            read: (p) => p.planTourSeen !== true,
+            write: (p, v) => ({ ...p, planTourSeen: !v }),
+            event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
+          },
+          {
+            key: 'facilitateTourSeen',
+            label: 'Facilitate',
+            helpArticle: 'facilitateTour',
+            // Inverted the same way (docs/specs/012-collaboration/facilitate-tour.md).
+            read: (p) => p.facilitateTourSeen !== true,
+            write: (p, v) => ({ ...p, facilitateTourSeen: !v }),
+            event: { category: 'UI', on: 'FacilitateTourSeenOff', off: 'FacilitateTourSeenOn' },
+          },
+        ],
       },
     ],
   },

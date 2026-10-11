@@ -103,7 +103,9 @@ describe('the shelves, as the template step lays them out', () => {
 
   it('counts each template once per choice', () => {
     const counts = modeCounts();
-    expect(counts.diagram + counts.draw + counts.illustrate + counts.plan).toBe(counts.all);
+    expect(counts.diagram + counts.draw + counts.illustrate + counts.plan + counts.facilitate).toBe(
+      counts.all,
+    );
     expect(counts.all).toBe(TEMPLATES.filter((t) => !t.hidden).length);
     expect(counts.draw).toBe(byMode(galleryTemplates(), 'draw').length + 1);
   });

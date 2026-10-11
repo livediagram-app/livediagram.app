@@ -170,7 +170,7 @@ export type TemplateKind =
   // Article (docs/specs/007-editor/article-pages.md): a tab that opens in Illustrate mode on one
   // article page, written as a short project brief.
   | 'article'
-  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Four blanks"): a tab that opens
+  // Blank Illustration (docs/specs/007-editor/templates-by-mode.md "Five blanks"): a tab that opens
   // in Illustrate on one empty page, which asks what it is for. A quick-pick beside the other two
   // blanks, never inside a category grid.
   | 'blank-illustration'
@@ -194,6 +194,8 @@ export type TemplateKind =
   | 'how-it-works'
   | 'versus'
   | 'social-carousel'
+  // Facilitate mode's blank (docs/specs/012-collaboration/facilitate-mode.md "Templates").
+  | 'blank-session'
   // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
   // each opening in Plan mode, with no cards. The Kanban board ('kanban', above) is one of them;
   // Blank Plan is the mode's blank.
@@ -254,6 +256,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-plan',
     title: 'Blank Plan',
     description: 'An empty Plan tab: pick the board that fits the work, or build your own.',
+    extra: true,
+  },
+  {
+    kind: 'blank-session',
+    title: 'Blank Session',
+    description: 'An empty tab to run a session on: timers, votes, polls and reveals to hand.',
     extra: true,
   },
   {
@@ -962,6 +970,8 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
   kanban: 'planning',
   // Plan templates (docs/specs/026-plan/plan-templates.md). Blank Plan is a quick-pick; its category is nominal.
   'blank-plan': 'planning',
+  // Facilitate's blank is a quick-pick too; its category is nominal.
+  'blank-session': 'planning',
   'project-planner': 'project-management',
   'bug-triage': 'planning',
   'team-retro': 'planning',
@@ -1056,14 +1066,15 @@ const TEMPLATE_CATEGORY: Record<TemplateKind, TemplateCategory> = {
 
 // The picker's "Popular" shelf (docs/specs/008-canvas/canvas-and-palette.md "Templates section"): where
 // most people start, open by default above the categories. Not a category of
-// its own (every kind here still lives in its real one); the four blanks lead it, one per editor
-// mode (docs/specs/007-editor/templates-by-mode.md "Four blanks"), so the picker needs no separate
+// its own (every kind here still lives in its real one); the five blanks lead it, one per editor
+// mode (docs/specs/007-editor/templates-by-mode.md "Five blanks"), so the picker needs no separate
 // blank card.
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
   'blank',
   'whiteboard',
   'blank-illustration',
   'blank-plan',
+  'blank-session',
   'mindmap',
   'sketchnote',
   'sailboat',

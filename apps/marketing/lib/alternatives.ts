@@ -120,7 +120,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Three kinds of link: Editor, Participant (add stickies, write and vote without reshaping the board, handy for a class) or view-only.',
       'For a class: quizzes with a countdown and a reveal of who got it right, live polls, an anonymous idea box and a shared timer.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan.',
-      '95 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
+      '96 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
     ],
     sections: [
@@ -206,7 +206,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Focus',
-        us: 'One document, four modes: diagrams, whiteboards, designed pages and slides, Plan boards and Sheets',
+        us: 'One document, five modes: diagrams, whiteboards, designed pages and slides, Plan boards and Sheets, and Facilitate sessions',
         them: 'All-in-one visual workspace',
       },
     ],
@@ -220,19 +220,19 @@ export const ALTERNATIVES: Alternative[] = [
       "It's free and MIT-licensed, so you can self-host it instead of paying per seat.",
       'Open a link and draw, with no sign-up wall in front of the canvas, even to create a document.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
-      'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards and spreadsheets.',
+      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards and spreadsheets, and Facilitate for running a session with your team.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
       'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
-      '95 templates and 26 one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
+      '96 templates and 26 one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
       'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
     ],
     sections: [
       {
-        heading: 'One workspace, four ways to work',
+        heading: 'One workspace, five ways to work',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of four modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards.',
+          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of five modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards. Facilitate for running the workshop itself: timers, dot votes, polls and reveals.',
           'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
@@ -333,7 +333,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Nothing to install: open a link in any browser and start.',
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
-      '95 templates (three mind-map styles among them) and 26 one-click themes make a map look polished instantly.',
+      '96 templates (three mind-map styles among them) and 26 one-click themes make a map look polished instantly.',
       'Free, open source, and self-hostable.',
     ],
     sections: [
@@ -408,7 +408,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         label: 'Structure',
-        us: 'Templates, tabs, folders, layers, themes, four editor modes',
+        us: 'Templates, tabs, folders, layers, themes, five editor modes',
         them: 'A freeform canvas (Excalidraw+ adds workspaces and presentations)',
       },
       {
@@ -424,7 +424,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Excalidraw+ adds presentations with a presenter view, and AI features that can run on your own model keys, on top of the free editor.',
     ],
     usBest: [
-      'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 95 of them.',
+      'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 96 of them.',
       'Keep a whole project together: several tabs in one document, organised in folders, with per-tab layers.',
       '26 themes recolour the whole canvas, shapes and arrows, in one click.',
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
@@ -534,7 +534,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Real-time co-editing with live cursors and presence on every document, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
-      '95 templates and 26 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
+      '96 templates and 26 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
       'Bring your diagrams with you: .drawio files import page by page, whole folders import as documents, and draw.io libraries become shape libraries.',
@@ -699,7 +699,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livediagram',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 95 templates, Mermaid, an API and an MCP server.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 96 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livediagram covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -741,8 +741,8 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
-      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 26 one-click themes and 95 templates.',
-      'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards.',
+      'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 26 one-click themes and 96 templates.',
+      'Five ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, Plan for boards of cards, and Facilitate for running a session with your team.',
       'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
@@ -760,7 +760,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A whiteboard that keeps going',
         paragraphs: [
           'FigJam is excellent for loose, freeform boards. livediagram’s Draw mode is a plain whiteboard too, with pressure-sensitive markers, sticky notes, text and shapes, but the same document carries on after the brainstorm. Switch a tab to Diagram when a sketch needs structure, with arrows that stay attached and themes that restyle the whole canvas in one click; to Plan when the ideas become cards on a board, with a Sheet beside it; or to Illustrate for the write-up and the slides.',
-          'Start from one of 95 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
+          'Start from one of 96 templates, from retrospectives and story maps to flowcharts and system architecture, and split larger work across tabs, folders and layers.',
         ],
       },
       {
@@ -784,7 +784,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can I import my FigJam boards?',
-        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 95 templates.',
+        a: 'Not directly: there is no FigJam importer. You can bring a board across as a picture by exporting it from FigJam as a PNG and adding it to a tab as an image. For new work, start from one of the 96 templates.',
       },
       {
         q: 'Does livediagram work with Figma?',
@@ -843,7 +843,7 @@ export const ALTERNATIVES: Alternative[] = [
     usBest: [
       'Free with no limits on documents or shapes, and no paid tier.',
       'Open a link and start, no account needed, even to create a document.',
-      '95 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
+      '96 templates, from flowcharts, org charts and swimlanes to system and cloud architecture, database schemas and sequence, class and state diagrams.',
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
       '26 one-click themes restyle the whole canvas, shapes and arrows.',
       'Mermaid in and out: flowcharts import as editable diagrams and export back to text.',
@@ -860,7 +860,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
-          'livediagram ships 95 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click.',
+          'livediagram ships 96 templates, including flowcharts in four styles, swimlanes, org charts, mind maps, data-flow diagrams, system and cloud architecture, database schemas, and sequence, class and state diagrams. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click.',
           'Bigger work splits across tabs inside one document, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it.',
         ],
       },

@@ -1,0 +1,47 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Facilitate Tour',
+  description:
+    'Take the Facilitate tour: a short, optional walkthrough of the Collaborate categories, the Session strip and Share, offered the first time you work in Facilitate mode and replayable from Settings.',
+  path: '/help/canvas/facilitate-mode/facilitate-tour/',
+});
+
+<ArticleLayout
+  title="The Facilitate Tour"
+  description="A short, optional walkthrough of Facilitate mode, offered the first time you work in Facilitate and replayable from Settings."
+  categoryTitle="Canvas"
+  categorySlug="canvas/facilitate-mode"
+>
+
+The Facilitate tour shows you where everything for running a session lives. Like the [Welcome Tour](/help/getting-started/welcome-tour/), it works on the real editor rather than screenshots: it spotlights each part with a highlight ring and a short explanation. It adds nothing to your canvas, takes under a minute, and you can leave at any point.
+
+## When It's Offered
+
+The first time you work in [Facilitate mode](/help/canvas/facilitate-mode/) on a tab you can edit (switching a tab to Facilitate, opening a document whose tab opens in Facilitate, or making a retro or a Blank Session), a centred **Welcome to Facilitate** card asks whether you'd like a look: **Show me around** starts it, **No thanks** dismisses it.
+
+If you haven't taken the Welcome Tour yet, that comes first, and its last card, **You're ready to go**, offers this tour: **Show me Facilitate** goes straight into it, and **Start creating** finishes without it. Either way you won't be asked again with a separate card. The tour isn't offered on a locked tab, in an embed, or to someone who can only view or take part.
+
+The offer appears **once ever**. However you answer (decline, skip midway, or finish), it won't come back on its own, and if you're signed in the answer follows you to every device. Turning on **Power User Mode** in Settings marks it as seen too.
+
+## What It Covers
+
+1. **Collaborate**: the category picker's **Collaborate** heading, with **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**. See [Collaborate](/help/palette/behaviour/). The rest of the palette is the [Welcome Tour](/help/getting-started/welcome-tour/)'s.
+2. **Run the room**: the **Timer**, **Vote** and **Poll** buttons in the bottom-right corner, which run for everyone without placing anything. See [Session Tools](/help/collaboration/session-tools/).
+3. **Bring people in**: the **Share** button, where a Participant link lets people add notes, vote and answer without changing the rest. Left out where there is no Share button.
+
+Each step has **Next**, **Back** and **Skip tour**. The last card, **You're ready to facilitate**, links to the [Facilitate mode](/help/canvas/facilitate-mode/) article and ends the tour with **Start facilitating**. If you leave Facilitate mode or switch tab mid-tour, it ends as skipped.
+
+## Replaying the Tour
+
+<Step n={1}>Open **Settings** from the editor and go to **Accessibility**.</Step>
+
+<Step n={2}>Under **Show Tours**, switch **Facilitate** back on.</Step>
+
+<Step n={3}>
+  Close Settings. If you're in Facilitate mode the tour's welcome card shows straight away;
+  otherwise it's offered the next time you work in Facilitate.
+</Step>
+
+</ArticleLayout>

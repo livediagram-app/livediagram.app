@@ -5024,7 +5024,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "diagram",
       "draw",
       "illustrate",
-      "plan"
+      "plan",
+      "facilitate"
     ],
     "type": "string"
   },

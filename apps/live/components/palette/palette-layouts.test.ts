@@ -9,11 +9,12 @@ import {
   paletteCategoriesFor,
   paletteCategoryOffered,
   paletteLandingCategory,
+  participantTiles,
 } from './palette-layouts';
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'diagram' | 'illustrate' | 'plan', esBoard = false) =>
+const ids = (mode: 'diagram' | 'illustrate' | 'plan' | 'facilitate', esBoard = false) =>
   paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
 const tileIds = (mode: 'diagram' | 'illustrate' | 'plan', category: string) =>
   paletteCategoriesFor(mode)
@@ -35,7 +36,7 @@ describe('palette layouts', () => {
     }
   });
 
-  it('gives Diagram Popular, then every category but the mock-up kit and the charts', () => {
+  it('gives Diagram Popular, then every category but the mock-up kit, the charts and the session kit', () => {
     expect(ids('diagram')).toEqual([
       'popular',
       'shapes',
@@ -44,10 +45,91 @@ describe('palette layouts', () => {
       'draw',
       'build',
       'icons',
-      'stickers',
       'technology',
       'media',
-      'behaviour',
+    ]);
+  });
+
+  // Comments and assigned actions belong to every mode (docs/specs/012-collaboration/facilitate-mode.md).
+  it("keeps the Comment panel and the Action card at the end of Diagram's Write", () => {
+    const write = paletteCategoriesFor('diagram').find((c) => c.id === 'write')!;
+    expect(write.tiles!.slice(-2).map((t) => t.id)).toEqual([
+      'collab:comment-pin',
+      'collab:action-card',
+    ]);
+  });
+
+  // Facilitate mode (docs/specs/012-collaboration/facilitate-mode.md "The palette").
+  it('gives Facilitate Popular, the drawing basics, the decorations and the six Collaborate categories', () => {
+    expect(ids('facilitate')).toEqual([
+      'popular',
+      'shapes',
+      'my-shapes',
+      'write',
+      'draw',
+      'build',
+      'icons',
+      'stickers',
+      'media',
+      'collab-ask',
+      'collab-tools',
+      'collab-record',
+      'collab-react',
+      'collab-mode',
+      'collab-navigate',
+    ]);
+    expect(paletteLandingCategory('facilitate', false)).toBe('popular');
+  });
+
+  it("puts the session tools on Facilitate's Popular, twelve tiles", () => {
+    const popular = paletteCategoriesFor('facilitate').find((c) => c.id === 'popular')!;
+    expect(popular.tiles!.map((t) => t.id)).toEqual([
+      'tools:sticky',
+      'tools:text',
+      'tools:frame',
+      'tools:arrow',
+      'tools:session-timer',
+      'tools:session-vote',
+      'tools:session-poll',
+      'tools:reveal',
+      'collab:agenda',
+      'collab:idea-box',
+      'collab:qa-board',
+      'collab:temperature',
+    ]);
+  });
+
+  it('holds every Collaborate tile in Facilitate, across its six categories', () => {
+    const held = paletteCategoriesFor('facilitate')
+      .filter((c) => c.id.startsWith('collab-'))
+      .flatMap((c) => c.tiles!.map((t) => t.id));
+    expect(held.sort()).toEqual(
+      tilesForCategory('behaviour')
+        .map((t) => t.id)
+        .sort(),
+    );
+  });
+
+  it("leaves Page, Annotation, Shape Pen, Polygon, Lane and Timeline out of Facilitate's Write, Draw and Build", () => {
+    const tilesOf = (id: string) =>
+      paletteCategoriesFor('facilitate')
+        .find((c) => c.id === id)!
+        .tiles!.map((t) => t.id);
+    expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
+    expect(tilesOf('draw')).toEqual([
+      'tools:pencil',
+      'tools:highlighter',
+      'tools:arrow',
+      'tools:line',
+    ]);
+    expect(tilesOf('build')).toEqual(['tools:mind-node', 'tools:table', 'tools:frame']);
+  });
+
+  it("gives a Facilitate Participant the landing's sticky and text, and an image", () => {
+    expect(participantTiles('facilitate', false).map((t) => t.id)).toEqual([
+      'tools:sticky',
+      'tools:text',
+      'tools:image',
     ]);
   });
 
