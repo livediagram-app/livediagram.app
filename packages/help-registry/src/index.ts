@@ -34,28 +34,9 @@ export interface Article {
   group?: string;
 }
 
-/**
- * Canonical in-app path to an article page. Trailing slash to match the help
- * app's `trailingSlash: true` (so internal links resolve directly instead of
- * 308-redirecting). `next/link` prepends the `/help` basePath at render; the
- * sitemap, which needs absolute URLs, prepends the origin + `/help` itself.
- * One source for the `/<categorySlug>/<slug>/` shape every card / list / sitemap
- * entry was spelling out by hand.
- */
-export function articleHref(article: Pick<Article, 'categorySlug' | 'slug'>): string {
-  return `/${article.categorySlug}/${article.slug}/`;
-}
-
-/**
- * Canonical in-app path to a category landing page (`/<slug>/`, trailing slash
- * to match `trailingSlash: true`). `slug` is a category slug — top-level
- * (`canvas`) or a nested feature path (`canvas/the-canvas`), both of
- * which have a landing page. Sibling of {@link articleHref}; one source for the
- * category-link shape the cards / breadcrumbs / sitemap built by hand.
- */
-export function categoryHref(slug: string): string {
-  return `/${slug}/`;
-}
+// The href helpers live in ./hrefs, a module with no data, so a client component that only builds
+// links (the help centre's article page and search box) does not bundle the whole catalogue.
+export { articleHref, categoryHref } from './hrefs';
 
 /**
  * The top-level category a (possibly nested) `categorySlug` belongs to:
