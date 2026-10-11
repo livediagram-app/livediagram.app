@@ -5,7 +5,7 @@ import { TemplatePreview } from '@livediagram/template-previews';
 import { ctaHref } from '@livediagram/api-schema';
 import { templateCreateHref } from '@livediagram/templates';
 import { EDITOR_MODE_ICONS, EverythingIcon, Glyph, ModeFilterMenu } from '@livediagram/ui';
-import { useState, type CSSProperties } from 'react';
+import { useDeferredValue, useState, type CSSProperties } from 'react';
 import { CategoryTiles } from '@/components/CategoryTiles';
 import { TemplateCarousel } from '@/components/TemplateCarousel';
 import {
@@ -48,8 +48,12 @@ export function TemplateGallery() {
   const [openId, setOpenId] = useState<ShelfId>('popular');
   // Whether the open shelf was opened by the visitor (it rises in) or is the load's.
   const [opened, setOpened] = useState(false);
-  const searching = query.trim() !== '';
-  const shelves = searching ? searchShelves(query, mode) : galleryShelves(mode);
+  // The shelves follow the query a beat behind the box: a one-letter query matches nearly every
+  // template, and mounting all their previews on the keystroke held up the next one. React drops
+  // the stale render when the visitor keeps typing.
+  const shownQuery = useDeferredValue(query);
+  const searching = shownQuery.trim() !== '';
+  const shelves = searching ? searchShelves(shownQuery, mode) : galleryShelves(mode);
   // The open shelf falls back to the first left under the filter (Popular, when it has any).
   const openShelf = shelves.find((s) => s.id === openId) ?? shelves[0];
   const open = searching ? shelves : openShelf ? [openShelf] : [];
@@ -108,7 +112,7 @@ export function TemplateGallery() {
 
         {shelves.length === 0 ? (
           <p className="mt-12 text-center text-slate-600 dark:text-slate-400">
-            Nothing matches &ldquo;{query.trim()}&rdquo;
+            Nothing matches &ldquo;{shownQuery.trim()}&rdquo;
             {mode === 'all' ? '' : ` in ${choiceLabel(mode)}`}. Try a different word
             {mode === 'all' ? '' : ' or Everything'}, or{' '}
             <a

@@ -24,12 +24,18 @@ export const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 // Bordered surface every illustration sits in. `canvas` paints the
 // editor's dot-grid on the Default scheme's canvas; otherwise
 // it's a plain panel (explorer, dialog…).
+//
+// `content-visibility: auto` lets the browser skip laying out, painting
+// and animating an illustration while it is off screen: a features page
+// holds dozens, each looping forever, and only a few are ever in view. The
+// frame's size is fixed (h-24, full width), so skipping its contents never
+// moves anything.
 export function Frame({ children, canvas = false }: { children: ReactNode; canvas?: boolean }) {
   return (
     <div
       aria-hidden
       className={
-        'relative mb-5 h-24 w-full overflow-hidden rounded-md border border-slate-200 dark:border-slate-800 ' +
+        'relative mb-5 h-24 w-full overflow-hidden rounded-md border border-slate-200 [content-visibility:auto] dark:border-slate-800 ' +
         (canvas
           ? 'bg-(color:--art-paper) bg-[radial-gradient(circle_at_center,_var(--art-grid)_1px,_transparent_1px)] bg-[size:13px_13px]'
           : 'bg-slate-50 dark:bg-slate-950')
