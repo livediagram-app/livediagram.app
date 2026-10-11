@@ -107,6 +107,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         aText:
           'Yes. The canvas is a stop in the Tab order: move through its elements and edit them with the keyboard, and screen readers announce what is selected. See accessibility.',
       },
+      {
+        q: 'Is there a dark mode?',
+        a: (
+          <>
+            Yes. Choose Light, Dark or System from the Appearance button, and one choice covers the
+            editor and the help centre alike. See <a href="/help/tools/dark-mode/">dark mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Choose Light, Dark or System from the Appearance button, and one choice covers the editor and the help centre alike. See dark mode.',
+      },
     ],
   },
   {
@@ -186,6 +197,66 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits. Card types carry your own fields, the same card can sit on two boards, and widgets add a Gantt chart, a due-date calendar and counts by person or priority. See Plan mode.',
+      },
+      {
+        q: 'Can I add pictures?',
+        a: (
+          <>
+            Yes. Upload an image once and reuse it from your gallery, or search Openverse for an
+            openly licensed photo or illustration without leaving the editor. See{' '}
+            <a href="/help/palette/tools/images/">images</a>.
+          </>
+        ),
+        aText:
+          'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
+      },
+      {
+        q: 'Can I show data, like a chart?',
+        a: (
+          <>
+            Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
+            line chart, a progress bar, a rating or a timeline. For real formulas, put a Sheet on a
+            Plan tab. See <a href="/help/palette/tools/data-elements/">data elements</a>.
+          </>
+        ),
+        aText:
+          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. For real formulas, put a Sheet on a Plan tab. See data elements.',
+      },
+      {
+        q: 'Can I animate things?',
+        a: (
+          <>
+            Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a
+            label can type itself in, and a drawing can draw itself. Hover a choice to preview it on
+            your selection first. See <a href="/help/canvas/animations/">animations</a>.
+          </>
+        ),
+        aText:
+          'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
+      },
+      {
+        q: 'Can I use the same tab in two documents?',
+        a: (
+          <>
+            Yes. Add to Document puts the tab you are on into another of your documents. It is the
+            same tab in both places, not a copy, so an edit in one shows up in the other. See{' '}
+            <a href="/help/tabs/add-to-document/">Add to Document</a>.
+          </>
+        ),
+        aText:
+          'Yes. Add to Document puts the tab you are on into another of your documents. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Document.',
+      },
+      {
+        q: 'Is there a 3D view?',
+        a: (
+          <>
+            Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an
+            architecture walkthrough or a screenshot. It is a way to look at a diagram rather than
+            edit it. See <a href="/help/selection-modes/isometric-mode/">Isometric mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
       },
       {
         q: 'Can I write documents in it?',
@@ -276,6 +347,18 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can I set up a team with shared documents?',
         a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of documents. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
+      },
+      {
+        q: 'Can I follow what someone else is looking at?',
+        a: (
+          <>
+            Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a
+            teammate: your view goes wherever theirs goes, until you move away yourself. See{' '}
+            <a href="/help/canvas/follow-along/">following along</a>.
+          </>
+        ),
+        aText:
+          'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
       },
       {
         q: 'Can I stop a finished tab being changed?',
