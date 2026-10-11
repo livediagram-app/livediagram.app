@@ -89,7 +89,8 @@ export function Strip({
   x,
   y,
   moreActive = false,
-  category = 'Shapes',
+  // Diagram mode opens the palette on Popular.
+  category = 'Popular',
 }: {
   x: number;
   y: number;
