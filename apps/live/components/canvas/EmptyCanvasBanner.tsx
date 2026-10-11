@@ -20,9 +20,10 @@ export function EmptyCanvasBanner({
   onQuickStart,
   // It rides above the bottom-right cluster (16px inset + 44px buttons above the 48px tab bar)
   // instead of over it, on every viewport: with the Session strip the cluster reaches the banner's
-  // centred slot on a laptop-width screen too. On a phone the Session strip has a row of its own
-  // above the cluster, so it rides one row (44px + the 8px gap) higher there.
-  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-[7.5rem] phone:pb-[10.75rem]',
+  // centred slot on a laptop-width screen too. On a phone the Session strip shares the cluster's one
+  // row (docs/specs/012-collaboration/session-tools.md "The Session strip"), so the same height holds
+  // there; a row higher would sit where the strip's Timer, Vote and Poll open and cover them.
+  placementClassName = 'bottom-0 z-[var(--z-overlay)] pb-[7.5rem]',
 }: {
   tabName: string;
   readOnly: boolean;

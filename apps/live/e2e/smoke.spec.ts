@@ -311,8 +311,10 @@ test('a note already on the board inserts between two others', async ({ page, pa
 //
 // The bug it guards: the bottom-right cluster gained the Session strip (Timer, Vote, Poll), and at
 // phone width one row could no longer hold it beside Undo, Redo, Layers, the brush and Fit, so Undo
-// was pushed off the left edge. The strip now takes a row of its own on a phone
-// (docs/specs/012-collaboration/session-tools.md "The Session strip"). A desktop run is blind to it.
+// was pushed off the left edge. On a phone the cluster's buttons now share the row's width, so the
+// strip fits beside Undo (docs/specs/012-collaboration/session-tools.md "The Session strip"), and the
+// empty-canvas hint rides just above that one row, clear of the strip's popovers. A desktop run is
+// blind to both.
 test.describe('mobile', () => {
   // Only the properties that create the condition — a narrow viewport and a
   // real touch pointer. Spreading a whole `devices[...]` entry would also set
