@@ -115,7 +115,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
   colour as the new slot and its arrow bounces the way it points (3 px, looping while hovered; still with reduced
   motion). No line of description: a side that cannot be used stays dashed and dimmed, its tooltip (and its accessible
   description) saying why (the row holds four slots, the dashboard twelve rows, or what is here would be too small:
-  What fits), and the cog closes once one is added; then a row of action tiles: **Open Tab** (a slot showing a tab,
+  What fits), and the cog closes once one is added; then a row of compact action buttons (icon left of label, wrapping): **Open Tab** (a slot showing a tab,
   for anyone), an Editor's **Change Chart** or **Change Source** (a chart or a figure from a Sheet), **Clear Slot** and
   **Remove Slot** (its span goes to its neighbour; a row's last slot takes the row with it). Where clearing or removing asks what goes with it, the question replaces the tiles in the section, with
   **Cancel** under its two answers. A Participant or a Viewer sees the Slot section with Open Tab alone, and no cog at
@@ -411,13 +411,14 @@ leaves it out of a smaller slot and names charts in its line.
 An Editor's **Dashboard Settings** cog sits in a card of its own at the page's top right, 12 px from the corner at the
 toolbar's UI scale, as the menu box sits at the top left (and as a board's or Sheet's cog sits in its header). It
 opens the settings popover boards and Sheets use, built from the same parts as Sheet Settings (a labelled field,
-action tiles, picture choices), its sections collapsible, one open at a time (Dashboard Setup when it opens):
+compact action buttons with their icon left of their label, picture choices), its sections collapsible, one open at a time (Dashboard Setup when it opens):
 
 - **Dashboard Setup**: **Name**, the tab's name typed in place (Enter or leaving saves it trimmed, up to 80
   characters; Escape puts it back; the tab bar and the menu box follow; untouched, it follows a rename made
-  elsewhere); then two action tiles, **Add Row** (two
-  empty slots at the foot; dimmed at 12 rows, with a line saying so) and **Clear Dashboard** (empties every slot, the
-  rows and their sizes kept, after asking in a popover beside the tile, "Empty every slot on this dashboard? Its rows
+  elsewhere); then two action buttons, **Add Row** (two
+  empty slots at the foot; dimmed at 12 rows, with a line saying so; the cog closes and the page scrolls the new row
+  into view, smoothly, at once under reduced motion) and **Clear Dashboard** (empties every slot, the
+  rows and their sizes kept, after asking in a popover beside the button, "Empty every slot on this dashboard? Its rows
   and their sizes stay." (**Clear**, **Cancel**); dimmed while every slot is empty).
 - **Background**: two swatches side by side, each its look drawn above its name and line: **Plain** (the canvas as it
   is) or **Tinted** (a soft wash of the theme's brand behind the slots, 7%, 9% in dark), the chosen one ringed. Kept on

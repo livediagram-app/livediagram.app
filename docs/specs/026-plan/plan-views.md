@@ -134,8 +134,11 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 - **Add Card**: for someone who may add cards (an Editor or a Participant; never a Viewer), an **Add Card** row under
   the last row of the names column opens the Add a Card menu of the card types the chart draws. The new card starts
-  today and is due 7 days on, so its bar shows at once, and opens to be named. No types to draw, no row; with none of
-  its cards yet, such a person sees the empty chart with the row in place of "No cards of these types yet."
+  today and is due 7 days on, so its bar shows at once, and opens to be named. An Editor's menu ends with **Add New
+  Card Type**, as a board's does: the type editor opens on a new type with **Start** and **Due** on (so it draws on the
+  chart), and once saved the chart takes it where it names its own types. No types to draw and no Add New Card Type
+  (a Participant), no row; an Editor keeps the row with no types yet, for Add New Card Type. With none of its cards
+  yet, such a person sees the empty chart with the row in place of "No cards of these types yet."
   Once the rows run past the chart's foot (the chart clips its rows, it does not scroll them), the row pins to the
   foot of the names column, over the rows on the chart's surface, so it is always in reach. Its label is the muted
   ink at full strength (at least 4.5:1 on the surface).

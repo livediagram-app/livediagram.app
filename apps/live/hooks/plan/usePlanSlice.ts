@@ -156,6 +156,15 @@ export function usePlanSlice(opts: {
     },
     [setTypeForBoard],
   );
+  // A Gantt chart's Add New Card Type: a new type with Start and Due, so it draws on the chart once saved.
+  const createTypeForView = useCallback(
+    (viewId: string) => {
+      setEditingTypeId('new');
+      setTypeTemplateId(null);
+      setTypeForBoard({ viewId, fields: ['start', 'due'] });
+    },
+    [setTypeForBoard],
+  );
 
   const people = useMemo(() => {
     const byId = new Map<string, ItemPerson>();
@@ -481,6 +490,7 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
+      createTypeForView,
       setupBoardId,
       openBoardSetup,
       status: planItems.status,
@@ -527,6 +537,7 @@ export function usePlanSlice(opts: {
       itemTypes,
       editType,
       createTypeForBoard,
+      createTypeForView,
       setupBoardId,
       planItems.status,
       planItems.self,
@@ -585,6 +596,7 @@ export function usePlanSlice(opts: {
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,
     addTypeToBoard: forBoard.addTypeToBoard,
+    addTypeToView: forBoard.addTypeToView,
     closeTypeEditor: () => {
       setEditingTypeId(null);
       setTypeTemplateId(null);

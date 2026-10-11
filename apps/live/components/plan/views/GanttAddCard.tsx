@@ -4,7 +4,7 @@
 // under the last card in the names column, opening the Add a Card menu of the card types the chart draws (those with a Start and a Due). The new
 // card starts today and is due a week on, so its bar shows at once, and opens to be named.
 import { useState } from 'react';
-import { newItemId, typeIn, type ItemTypeDef } from '@livediagram/items';
+import { ITEM_TYPES_MAX, newItemId, typeIn, type ItemTypeDef } from '@livediagram/items';
 import { lucideGlyph } from '@livediagram/ui';
 import { lucidePlus } from '@livediagram/icons/lucide';
 import { AddCardPopover } from '../AddCardPopover';
@@ -32,8 +32,11 @@ export function GanttAddCard({
   palette,
   top,
   height,
+  viewId,
 }: {
   plan: PlanContextValue;
+  // The chart, for Add New Card Type (a new type with Start and Due, added to the chart).
+  viewId: string;
   types: readonly ItemTypeDef[];
   // The card types the chart draws, comma-joined ids.
   shown: string;
@@ -45,7 +48,12 @@ export function GanttAddCard({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const ids = shown.split(',');
   const types = all.filter((t) => ids.includes(t.id));
-  if (!plan.canEditCards || types.length === 0) return null;
+  // Add New Card Type, as a board's Add a Card menu offers it (an Editor's, while the catalogue has room).
+  const createType =
+    plan.canEdit && plan.types.length < ITEM_TYPES_MAX
+      ? () => plan.createTypeForView(viewId)
+      : undefined;
+  if (!plan.canEditCards || (types.length === 0 && !createType)) return null;
   return (
     <>
       {/* Under the last row, or pinned to the column's foot once the rows run past it (the chart clips its rows, so
@@ -77,6 +85,7 @@ export function GanttAddCard({
         <AddCardPopover
           anchor={anchor}
           types={types}
+          {...(createType ? { onCreateType: createType } : {})}
           onClose={() => setAnchor(null)}
           onAdd={({ type, fields }) => {
             const id = newItemId();

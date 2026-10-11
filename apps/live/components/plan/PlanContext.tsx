@@ -38,6 +38,8 @@ export type PlanContextValue = {
   // Add New Card Type from a board's Add a Card menu: a new type with only the board's statuses on, added to the
   // board once saved (docs/specs/026-plan/plan-board.md "Add New Card Type").
   createTypeForBoard: (boardId: string, statuses: readonly string[]) => void;
+  // A Gantt chart's Add New Card Type: a new type with Start and Due, added to the chart's types if it names some.
+  createTypeForView: (viewId: string) => void;
   // Setup Board on a board that has columns (its Board Setup's Setup Board): the board showing it, or null.
   setupBoardId: string | null;
   openBoardSetup: (boardId: string | null) => void;

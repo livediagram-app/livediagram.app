@@ -66,7 +66,9 @@ export function GanttView({
   const accepted = ganttShownTypes(settings, types);
   const acceptedKey = accepted.join(',');
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
-  const canAdd = !!plan?.planInput && !!plan.canEditCards && accepted.length > 0;
+  // An Editor gets it with no type to draw yet too, for Add New Card Type.
+  const canAdd =
+    !!plan?.planInput && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
     () => ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(',')),
@@ -228,6 +230,7 @@ export function GanttView({
               palette={palette}
               top={AXIS_H + layout.height}
               height={ROW_H}
+              viewId={elementId}
             />
           ) : null}
         </div>
