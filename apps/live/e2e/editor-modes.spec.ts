@@ -1,5 +1,12 @@
 import type { Page } from '@playwright/test';
-import { dismissQuickTour, expect, expectNoPageErrors, test, pageOwnerHeaders } from './fixtures';
+import {
+  dismissQuickTour,
+  expect,
+  expectNoPageErrors,
+  test,
+  pageOwnerHeaders,
+  seedTab,
+} from './fixtures';
 
 // Editor modes end to end (docs/specs/007-editor/editor-modes.md), in dark mode: the chip beside the
 // menu button switches a general tab between Diagram and Draw, a stroke drawn in Draw stays in
@@ -59,6 +66,36 @@ async function chooseMode(page: Page, name: 'Diagram' | 'Draw' | 'Plan') {
   await page.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }).click();
 }
 
+// An empty tab offers each mode's start screen as it enters it (docs/specs/007-editor/start-diagramming.md); its ×
+// starts from a blank canvas, as a person drawing straight away would close it.
+async function closeStart(page: Page) {
+  const start = page.getByRole('region', {
+    name: /^Start (Diagramming|Drawing|Facilitating|Illustrating)$/,
+  });
+  await start.waitFor();
+  await start.getByRole('button', { name: 'Close' }).click();
+  await start.waitFor({ state: 'detached' });
+}
+
+// A tab with something on it keeps Plan's line (docs/specs/007-editor/editor-modes.md "Plan stands apart"; an empty
+// tab crosses it freely, start-diagramming.md "Changing mode").
+async function openWithContent(page: Page) {
+  await openBlank(page);
+  await seedTab(page, [
+    {
+      id: 'kept',
+      type: 'shape',
+      shape: 'square',
+      x: 900,
+      y: 500,
+      width: 100,
+      height: 100,
+      label: 'Kept',
+    },
+  ]);
+  await page.locator(CANVAS).waitFor();
+}
+
 async function drawWave(page: Page, from: { x: number; y: number }) {
   await page.mouse.move(from.x, from.y);
   await page.mouse.down();
@@ -88,6 +125,7 @@ test.describe('editor modes', () => {
     await chooseMode(page, 'Draw');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
     await expect(dock(page)).toBeVisible();
+    await closeStart(page);
 
     await page.keyboard.press('1');
     await drawWave(page, { x: 500, y: 600 });
@@ -99,13 +137,13 @@ test.describe('editor modes', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  // Shift+D steps through the modes beside the tab's own and wraps: Plan stands apart, so a canvas tab
+  // Shift+D steps through the modes beside the tab's own and wraps: Plan stands apart, so a canvas tab with content
   // cycles Diagram, Draw, Facilitate and Illustrate (docs/specs/007-editor/editor-modes.md "Plan stands apart").
   test('Shift+D moves to the next mode and wraps, and the choice survives a reload', async ({
     page,
     pageErrors,
   }) => {
-    await openBlank(page);
+    await openWithContent(page);
     await page.locator(CANVAS).click({ position: { x: 40, y: 40 } });
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Draw');
@@ -120,6 +158,8 @@ test.describe('editor modes', () => {
     await page.keyboard.press('Shift+D');
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Illustrate');
     await page.keyboard.press('Shift+D');
+    // Leaving Illustrate with content on the tab asks first (docs/specs/007-editor/illustrate-pages.md).
+    await page.getByRole('button', { name: 'Switch', exact: true }).click();
     await expect(chip(page)).toHaveAccessibleName('Editor mode: Diagram');
     expectNoPageErrors(pageErrors);
   });
@@ -130,7 +170,7 @@ test.describe('editor modes', () => {
     page,
     pageErrors,
   }) => {
-    await openBlank(page);
+    await openWithContent(page);
     await chooseMode(page, 'Plan');
     await expect(page.getByRole('dialog', { name: 'Open a New Plan Tab?' })).toBeVisible();
     await page.getByRole('button', { name: 'New Plan Tab' }).click();

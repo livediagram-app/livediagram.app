@@ -347,8 +347,8 @@ export function MultiSelectionBar() {
 
 const MODE_NAME = { diagram: 'Diagram', draw: 'Draw', illustrate: 'Illustrate' } as const;
 
-/** The New Document wizard's template step: the mode filter beside the search box, the
- *  Popular shelf with the mode's mark before each title, and Next. */
+/** Quick Start, the whole template catalogue (a start's Something Else): the mode filter beside
+ *  the search box, the Popular shelf with the mode's mark before each title, Cancel and Apply. */
 export function NewDocumentTemplates() {
   // The shelf's first three: the blanks lead Popular (Blank Plan follows, off the edge here).
   const cards: { title: string; mode: 'diagram' | 'draw' | 'illustrate'; on?: boolean }[] = [
@@ -363,7 +363,7 @@ export function NewDocumentTemplates() {
         y={10}
         w={380}
         h={232}
-        title="New Document"
+        title="Quick Start"
         sceneW={420}
         sceneH={250}
         scrim={false}
@@ -452,7 +452,8 @@ export function NewDocumentTemplates() {
             </g>
           );
         })}
-        <Button x={316} y={206} w={68} label="Next" variant="primary" />
+        <Button x={240} y={206} w={68} label="Cancel" />
+        <Button x={316} y={206} w={68} label="Apply" variant="primary" />
       </Dialog>
     </Scene>
   );

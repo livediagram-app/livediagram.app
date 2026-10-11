@@ -120,6 +120,7 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     // gives them all.
     case 'kanban':
     case 'blank-plan':
+    case 'blank-spreadsheet':
     case 'project-planner':
     case 'bug-triage':
     case 'team-retro':

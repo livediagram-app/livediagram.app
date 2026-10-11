@@ -6,7 +6,7 @@ import { TabModeMenuScene, LeaveIllustrateScene } from '@/components/illustratio
 export const metadata = helpMetadata({
   title: 'Editor Modes',
   description:
-    'Work on any tab in Diagram, Draw, Facilitate, Illustrate or Plan mode: what each mode is for, how to switch with the mode switch, Shift+D or the tab menu, why everyone on a tab shares its mode, and what stays the same when you switch.',
+    'Diagram, Draw, Facilitate, Illustrate and Plan modes explained: what each is for, switching with the mode switch or Shift+D, and why modes are shared.',
   path: '/help/canvas/editor-modes/',
 });
 
@@ -48,7 +48,7 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
 
 **Shift+D** moves to the next mode from anywhere on the canvas (with one element selected it types a capital D into its label instead, so press Escape first): Diagram, then Draw, Facilitate, Illustrate and back to Diagram.
 
-**Plan works in tabs of its own.** A tab can't switch into Plan from another mode, or out of Plan into another: pick **Plan** in the mode switch and you're offered a **New Plan Tab** instead (and the same the other way round on a Plan tab). Shift+D skips Plan. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
+**Plan works in tabs of its own.** A tab can't switch into Plan from another mode, or out of Plan into another: pick **Plan** in the mode switch and you're offered a **New Plan Tab** instead (and the same the other way round on a Plan tab). Shift+D skips Plan. The one exception is an **empty tab**: with nothing on it, it switches into or out of Plan like any other mode, so a tab started in the wrong mode is never stuck. The switch's menu shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
 
 ## One Mode for Everyone
 
@@ -63,7 +63,7 @@ The mode switch shows the mode you are in. Press it to open a short menu of the 
   <TabModeMenuScene />
 </Figure>
 
-- **New documents and new tabs open in Diagram**, whatever mode you are in, unless the template you pick opens somewhere else: **Blank Whiteboard** opens in Draw, **Blank Illustration** in Illustrate, **Blank Plan** in Plan, and **Blank Session** and the session templates (the retrospectives, Town Hall Q&A, Lean Coffee, Crazy Eights and Meeting Agenda, plus the boards with a dot vote: Affinity map, Prioritization matrix and Risk matrix) in Facilitate.
+- **New documents open in the mode you choose** in the New Document wizard, and **new tabs open in Diagram** on **Start Diagramming** (or in Plan on **Start Planning**, when you add one from Plan), unless the template you pick opens somewhere else: **Blank Whiteboard** opens in Draw, **Blank Illustration** in Illustrate, **Blank Plan** in Plan, and **Blank Session** and the session templates (the retrospectives, Town Hall Q&A, Lean Coffee, Crazy Eights and Meeting Agenda, plus the boards with a dot vote: Affinity map, Prioritization matrix and Risk matrix) in Facilitate.
 - In the Explorer, the **Opens in** filter finds documents by the mode they were created to open in. See [Filters](/help/explorer/filters/).
 
 ## On a Phone
@@ -105,6 +105,6 @@ Leaving **Plan** never asks: boards and cards stay on the tab as they are, and t
 
 ## Templates and Modes
 
-Every template opens in one mode, and its card in the template picker shows that mode's icon before its name. To see only one mode's templates, use the **Show templates for** menu beside the search box and choose **Diagram**, **Draw**, **Illustrate** or **Plan**; **Everything** shows them all again. The **Popular** shelf leads with one blank per mode: **Blank Diagram**, **Blank Whiteboard**, **Blank Illustration** and **Blank Plan**. See [Finding Templates for a Mode](/help/canvas/templates/#finding-templates-for-a-mode).
+An empty tab opens on its mode's start (**Start Diagramming**, **Start Facilitating**, **Start Illustrating**, **Start Planning**), where that mode's templates are, and the mode switch at the top of the start's list changes the tab's mode before you begin. Every template opens in one mode, and its card in Quick Start shows that mode's icon before its name. To see only one mode's templates, use the **Show templates for** menu beside the search box and choose **Diagram**, **Draw**, **Illustrate** or **Plan**; **Everything** shows them all again. The **Popular** shelf leads with one blank per mode: **Blank Diagram**, **Blank Whiteboard**, **Blank Illustration** and **Blank Plan**. See [Finding Templates for a Mode](/help/canvas/templates/#finding-templates-for-a-mode).
 
 </ArticleLayout>

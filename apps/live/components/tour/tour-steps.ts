@@ -53,8 +53,8 @@ export const TOUR_STEPS: TourStep[] = [
   {
     id: 'welcome',
     card: 'welcome',
-    title: 'Welcome to Diagram',
-    body: 'Diagram mode builds diagrams from shapes, arrows and the palette. Want a quick look at the basics?',
+    title: 'Getting started with Diagrams?',
+    body: 'Want a quick tour of the editor so you can build mind blowing diagrams in minutes?',
   },
   {
     id: 'palette',
@@ -89,25 +89,6 @@ export const TOUR_STEPS: TourStep[] = [
       if (!findTour('palette-category-menu')) clickTour('palette-category');
     },
     cleanup: () => closeDropdown('palette-category-menu', 'palette-category'),
-  },
-  {
-    // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch"), beside the
-    // menu button. Opens its menu, switches nobody's mode; the copy stays on diagramming.
-    id: 'editor-mode',
-    title: 'Tab Mode',
-    body: 'This tab is a diagram. To work on it another way, switch its mode here or press Shift+D; each mode has a tour of its own.',
-    target: 'editor-mode-menu',
-    alsoHighlight: 'editor-mode',
-    // An event-storming board offers no switch, and nor does a phone (its tab menu's Opens in
-    // switches there).
-    boardSkip: true,
-    mobileSkip: true,
-    prepare: async () => {
-      closeDropdown('palette-category-menu', 'palette-category');
-      await waitForSelector('[data-tour-id="editor-mode"]');
-      if (!findTour('editor-mode-menu')) clickTour('editor-mode');
-    },
-    cleanup: () => closeDropdown('editor-mode-menu', 'editor-mode'),
   },
   {
     id: 'context-menu',

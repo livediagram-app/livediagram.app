@@ -7,10 +7,10 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
 
 ## Domain language
 
-| Term                | Means                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| **Facilitate tour** | This tour                                                                              |
-| **Diagram tour**    | The Diagram mode tour ("Show me around"), [Diagram tour](../007-editor/editor-tour.md) |
+| Term                | Means                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Facilitate tour** | This tour                                                                                              |
+| **Diagram tour**    | The Diagram mode tour ("Getting started with Diagrams?"), [Diagram tour](../007-editor/editor-tour.md) |
 
 ## Where it appears
 
@@ -24,11 +24,11 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
   offered the welcome tour first, with this tour's offer (**Show me Facilitate**) on its closing card. The
   welcome tour is now the Diagram tour and never runs in Facilitate, so this tour no longer waits for it: the
   first time someone is in Facilitate it offers itself, never at the same time as another tour.
-- **Optional.** The offer is the opt-in: **Show me around** starts it, **No thanks** declines it.
+- **Optional.** The offer is the opt-in: **Yes** starts it, **No** declines it.
 - **Once ever per person**, through the synced `facilitateTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Facilitate** switch in the Accessibility category's **Show Tours**
+- **Replayable from Settings**: the **Facilitate** switch in the Accessibility category's **Onboarding Tutorials**
   control, beside **Plan** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the
   tour straight away when the person is in Facilitate, or offers it the next time they enter Facilitate.
 
@@ -44,7 +44,7 @@ itself is the Diagram tour's, so this tour does not repeat it. The exact strings
 
 0. **Welcome to Facilitate** (the offer): centred card with its own illustration (a flipchart with two sticky
    notes and a timer), saying Facilitate is for running a session with a team and offering a quick look, then
-   **No thanks** and **Show me around**.
+   **No** and **Yes**.
 1. **Collaborate**: opens the palette's category picker and rings the **Collaborate** band alone, from its
    heading to its last category. Ask, Tools, Record, React, Selection Mode and Navigate hold every element that
    comes alive with the room.
@@ -72,7 +72,7 @@ not theirs to use.
 The Plan tour's funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `FacilitateTourOffer` when its welcome card shows; `UI` · `Closed` ·
-  `FacilitateTourOffer` on No thanks.
+  `FacilitateTourOffer` on No.
 - **Start**: `UI` · `Started` · `FacilitateTour`. (`UI` · `Selected` · `FacilitateTourFromWelcome`, sent when the
   welcome tour's closing card started it, is retired with that card's offer and stays explained for the history.)
 - **Stage views**: `UI` · `View` · `FacilitateTourStep<Id>` once per step entry (`FacilitateTourStepCollaborate`, `FacilitateTourStepSessionStrip`, `FacilitateTourStepShare`,

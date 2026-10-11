@@ -280,6 +280,8 @@ One rule for every public page, shared with the marketing site ([Marketing site]
 - **Canonical and `og:url` are the page's path**, `/help/<categorySlug>/<slug>/`, resolved against the shared origin; `seo-canonical.test.ts` checks every article's path matches its route.
 - **The card is the large brand card**: `og:type` article, Twitter `summary_large_image`, with the image marketing generates (`/opengraph-image`, `/twitter-image`), referenced by absolute URL because help has no card of its own.
 - **Breadcrumb structured data** is a `BreadcrumbList` rooted at the help home, built by the shared `breadcrumbJsonLd` (the one marketing's `BreadcrumbJsonLd` uses) and rendered through `JsonLd` from the `Breadcrumb` component.
+- **A sub-article's parent crumb and its `TechArticle` url come from its route.** Sub-articles nest under their parent's folder, so the parent is the route one level up and the article's own URL is its route (`lib/article-route.ts`), never rebuilt from the page's `categorySlug` prop, which names the top category on some pages and the parent's path on others. `article-route.test.ts` checks every sub-article sits directly under a real page.
+- **Meta descriptions are 50 to 160 characters**, the same range the marketing site holds, so a search result shows each one whole; the article meta is written for the result, not copied from the search card. **Page titles are unique** across articles, static pages and category landings. `meta-descriptions.test.ts` holds every page to both.
 
 ## In-editor entry point
 

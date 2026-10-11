@@ -71,6 +71,8 @@ export function DockToolbar({
         aria-label={label}
         aria-orientation="horizontal"
         data-dock-group={group}
+        // The Draw tour's anchors (docs/specs/023-draw-mode/draw-tour.md): dock-drawing, dock-shapes, dock-settings.
+        data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
         // A pill of the dock, the Toolbar layout strip's twin (its card and padding).
         className="pointer-events-auto relative flex shrink-0 animate-pop-in items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"

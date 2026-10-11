@@ -34,14 +34,11 @@ describe('tourStepsFor', () => {
     expect(ids({ mobile: false, esBoard: false })).toEqual(TOUR_STEPS.map((s) => s.id));
   });
 
-  // docs/specs/007-editor/editor-tour.md "The steps": Tab Mode follows Palette Categories.
-  it('shows the Tab Mode step after Palette Categories, opening the switch menu', () => {
+  // docs/specs/007-editor/editor-tour.md "The steps": no Tab Mode step; Element Menu follows Palette Categories.
+  it('has no Tab Mode step, the Element Menu following Palette Categories', () => {
     const desktop = ids({ mobile: false, esBoard: false });
-    expect(desktop.indexOf('editor-mode')).toBe(desktop.indexOf('categories') + 1);
-    const step = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
-    expect(step).toMatchObject({ target: 'editor-mode-menu', alsoHighlight: 'editor-mode' });
-    // A phone shows no switch (docs/specs/007-editor/editor-modes.md "The mode switch").
-    expect(ids({ mobile: true, esBoard: false })).not.toContain('editor-mode');
+    expect(desktop).not.toContain('editor-mode');
+    expect(desktop.indexOf('context-menu')).toBe(desktop.indexOf('categories') + 1);
   });
 
   it('drops the desktop-only step on mobile', () => {
@@ -54,17 +51,15 @@ describe('tourStepsFor', () => {
     const board = ids({ mobile: false, esBoard: true });
     expect(board).not.toContain('selection-modes');
     expect(board).not.toContain('categories');
-    // Nor a mode switch: a board is always Diagram.
-    expect(board).not.toContain('editor-mode');
     // The rest of the tour still applies: the board has a palette, elements,
     // tabs, and a paintbrush.
     expect(board).toEqual(['welcome', 'palette', 'context-menu', 'tabs', 'theme-canvas', 'outro']);
   });
 
-  it('counts seven steps on a desktop diagram, five on a phone and three on a phone board', () => {
+  it('counts six steps on a desktop diagram, five on a phone and three on a phone board', () => {
     const count = (opts: { mobile: boolean; esBoard: boolean }) =>
       tourStepsFor(opts).filter((s) => !s.card).length;
-    expect(count({ mobile: false, esBoard: false })).toBe(7);
+    expect(count({ mobile: false, esBoard: false })).toBe(6);
     expect(count({ mobile: true, esBoard: false })).toBe(5);
     expect(count({ mobile: true, esBoard: true })).toBe(3);
   });
@@ -86,20 +81,16 @@ describe('tourStepsFor', () => {
 // docs/specs/007-editor/editor-tour.md: the tour is about diagramming, named for Diagram mode, and leaves the
 // app-wide Explorer to its own help article.
 describe('the Diagram tour copy', () => {
-  it('welcomes the person to Diagram and sends them off to diagram', () => {
+  it('offers a tour of diagramming and sends them off to diagram', () => {
     const welcome = TOUR_STEPS[0]!;
     const outro = TOUR_STEPS[TOUR_STEPS.length - 1]!;
-    expect(welcome.title).toBe('Welcome to Diagram');
-    expect(welcome.body).toMatch(/Diagram mode/);
+    expect(welcome.title).toBe('Getting started with Diagrams?');
+    expect(welcome.body).toMatch(/diagrams in minutes/);
     expect(outro.title).toBe("You're ready to diagram");
   });
 
-  it('has no Explorer step, and its Tab Mode step names no other mode', () => {
+  it('has no Explorer step', () => {
     expect(TOUR_STEPS.map((s) => s.id)).not.toContain('explorer');
-    const mode = TOUR_STEPS.find((s) => s.id === 'editor-mode')!;
-    expect(mode.title).toBe('Tab Mode');
-    for (const other of ['Draw', 'Illustrate', 'Plan', 'Facilitate'])
-      expect(mode.body).not.toContain(other);
   });
 
   it('titles every step in Title Case', () => {

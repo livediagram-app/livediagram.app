@@ -6,6 +6,7 @@ import {
   TEMPLATES,
   BLANK_TEMPLATE_FOR_MODE,
   isInTemplateCategory,
+  templateEditorMode,
   popularKindsFor,
   templateMatchesQuery,
   untitledNameForTemplate,
@@ -28,6 +29,7 @@ import { useTemplateModeFilter } from '@/components/palette/useTemplateModeFilte
 import { placeNameOf, skipLocationStepFor, CONTEXT_PLACE_FALLBACK } from '@/lib/skip-location-step';
 import { useWizardSkipLocation } from './useWizardSkipLocation';
 import { WizardSavingIn, WizardSkipLocationCheckbox } from './WizardSkipLocation';
+import { NewDocumentModeStep } from './NewDocumentModeStep';
 
 // Whether this render is past hydration, as a store with nothing to subscribe to: prerender and
 // hydration read the server snapshot, every later render the client one.
@@ -174,6 +176,8 @@ export function TemplatePicker({
     return {
       saveLocation,
       documentName: name,
+      placementChosen:
+        picked !== undefined || where.source === 'picked' || where.source === 'context',
       ...(picked === undefined ? where.sent() : where.sent(picked, 'picked')),
       ...(alwaysSave ? { alwaysSave } : {}),
       ...(skip.ticked
@@ -204,7 +208,9 @@ export function TemplatePicker({
   // step, then the wizard itself (`onBackOut`, the page that opened /new); without one (Quick Start
   // over the canvas, the name prompt) it closes as before.
   useEscape(() => {
-    if (templateQuery) {
+    // The welcome wizard has no template search (its first step asks for a mode); a `?q=` preset waits for the
+    // start panel, so it is nothing to clear here.
+    if (templateQuery && !isWelcome) {
       setTemplateQuery('');
       return;
     }
@@ -341,7 +347,7 @@ export function TemplatePicker({
           onClose={onBackOut ?? onSkip}
         />
 
-        <div className="flex-1 overflow-y-auto px-6 pt-5 pb-8">
+        <div className={`flex-1 overflow-y-auto px-6 ${isWelcome ? 'pt-4 pb-6' : 'pt-5 pb-8'}`}>
           {/* Identity row — first-run welcome + join-existing-document
               flows. See TemplatePickerIdentityRow. */}
           {showIdentity ? (
@@ -374,7 +380,15 @@ export function TemplatePicker({
             {/* Template search + two-level browse — see TemplatePickerBrowse
               (render-only; the query / category / shuffle state lives here
               so it survives wizard step switches). */}
-            {showTemplateSection ? (
+            {/* The New Document wizard asks only what you are making, a mode
+              (docs/specs/007-editor/new-document-route.md "Choosing a mode"); its templates wait on
+              the canvas, in the mode's own start. Quick Start keeps the whole catalogue. */}
+            {showTemplateSection && isWelcome ? (
+              <NewDocumentModeStep
+                selected={chosenKind || initialModeChoice ? templateEditorMode(templateKind) : null}
+                onChoose={(m) => onTemplateCommit(BLANK_TEMPLATE_FOR_MODE[m])}
+              />
+            ) : showTemplateSection ? (
               <TemplatePickerBrowse
                 showIdentity={showIdentity}
                 templateQuery={templateQuery}

@@ -16,6 +16,8 @@ export function SlidesClusterButton(props: {
       hoverTitle="Open Slides"
       hoverDescription="Build a slide deck from your pages and present it."
       icon={<SlideDeckIcon />}
+      // The Illustrate tour's anchor (docs/specs/007-editor/illustrate-tour.md).
+      dataTourId="slides"
       {...props}
     />
   );

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { sheetFromJson } from './sheet-json';
 import { validateSheetCreate } from './validate';
 import {
+  BLANK_SHEET_START,
   isTemplateStart,
   sheetFromTemplate,
   templateSheetWithCharts,
@@ -18,7 +19,7 @@ let seed = 1;
 const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
 describe('template starts', () => {
-  it('names the twelve starts and nothing else', () => {
+  it('names the twelve designed starts and the blank one, and nothing else', () => {
     expect(TEMPLATE_STARTS).toEqual([
       'budget-planner',
       'timesheet',
@@ -32,13 +33,14 @@ describe('template starts', () => {
       'guest-list',
       'grade-book',
       'habit-tracker',
+      'blank-spreadsheet',
     ]);
     expect(isTemplateStart('timesheet')).toBe(true);
     expect(isTemplateStart('budget')).toBe(false);
     expect(isTemplateStart(undefined)).toBe(false);
   });
 
-  it.each(TEMPLATE_STARTS)(
+  it.each(TEMPLATE_STARTS.filter((s) => s !== BLANK_SHEET_START))(
     '%s builds its sheet template, valid and frozen through its header',
     (start) => {
       const json = templateSheetWithCharts({
@@ -64,6 +66,29 @@ describe('template starts', () => {
       expect(sheet.layout.setupPending).toBeUndefined();
     },
   );
+
+  it('makes the blank start an empty, valid sheet with no charts and no setup to await', () => {
+    const made = templateSheetWithCharts({
+      id: 'sheet-blank',
+      tabId: 't',
+      start: BLANK_SHEET_START,
+      now: NOW,
+      dark: false,
+      rand,
+    });
+    expect(made!.charts).toEqual([]);
+    const sheet = sheetFromJson({
+      ...made!.sheet,
+      rev: 1,
+      createdAt: NOW,
+      updatedAt: NOW,
+      updatedBy: null as never,
+    });
+    expect(validateSheetCreate(sheet)).toEqual({ ok: true });
+    expect(sheet.title).toBe('Sheet 1');
+    expect(sheet.cells.size).toBe(0);
+    expect(sheet.layout.setupPending).toBeUndefined();
+  });
 
   it('hands back the charts that sit over the Budget', () => {
     const made = templateSheetWithCharts({

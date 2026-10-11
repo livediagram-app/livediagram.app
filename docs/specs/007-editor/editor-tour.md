@@ -1,4 +1,4 @@
-# Diagram tour ("Show me around")
+# Diagram tour ("Getting started with Diagrams?")
 
 A bootstrap-style guided tour of [Diagram mode](editor-modes.md): a sequence of anchored popover steps that
 spotlight one piece of the diagramming chrome at a time, opening the real panels and menus as it goes. Until
@@ -11,11 +11,11 @@ proved the better introduction.
 
 ## Domain language
 
-| Term             | Means                                                                                    |
-| ---------------- | ---------------------------------------------------------------------------------------- |
-| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram** in Settings' Show Tours   |
-| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens          |
-| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram) |
+| Term             | Means                                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------------------ |
+| **Diagram tour** | This tour. In the interface: **Diagram Tour**, and **Diagram** in Settings' Onboarding Tutorials |
+| **welcome tour** | Its name until October 2026; kept only in code identifiers and telemetry tokens                  |
+| **Diagram tab**  | A tab whose mode is Diagram, an event-storming board included (one is always in Diagram)         |
 
 ## Where it appears
 
@@ -27,8 +27,9 @@ proved the better introduction.
 - **Automatically, for a brand-new user.** When a **zero-owned-documents** user (the `/new` page already learns
   the count from the Jump-back-in fetch; `null` = unknown = no offer) creates a document through the wizard
   (any path: Create or Skip), the tour is owed in that browser tab. A document that opens on a Diagram tab
-  shows a centred **welcome offer card** once the editor is ready: "Show me around" starts the tour, "No
-  thanks" dismisses it. A document made from a Plan, Draw, Illustrate or Facilitate template does not show it
+  shows a centred **welcome offer card** once the editor is ready, and once its start is done (a template picked
+  or Start Diagramming closed, [Template starts](start-diagramming.md) "The tours wait"): **Yes** starts the tour,
+  **No** dismisses it. A document made from a Plan, Draw, Illustrate or Facilitate template does not show it
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
 - **Once ever per user.** However the offer ends (declined, skipped mid-tour, or completed), the synced
@@ -36,15 +37,16 @@ proved the better introduction.
   must never read as nagging, and answering it once covers every device the user signs in from (guests get
   the same via their owner-keyed preference row + the localStorage warm cache). The preference keeps the
   welcome tour's name, so an answer given to the welcome tour still holds for this one.
-- **Replayable from Settings.** The Settings dialog's Accessibility category has a **Show Tours** control whose
+- **Replayable from Settings.** The Settings dialog's Accessibility category has a **Onboarding Tutorials** control whose
   **Diagram** switch surfaces `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and
   closing Settings relaunches the tour from the top when the open tab is in Diagram, and otherwise offers it
   the next time the person is on a Diagram tab. The welcome card is always step 1, on a rerun too. Finishing
   the rerun turns it off again.
-- **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md) and the
-  [Facilitate tour](../012-collaboration/facilitate-tour.md) are this tour's siblings; while any is on screen
-  the others wait. Each belongs to its own mode, so none is owed to another: the Plan and Facilitate tours
-  never wait for this tour's offer, and this tour never carries theirs.
+- **One tour at a time.** The [Plan tour](../026-plan/plan-tour.md), the
+  [Facilitate tour](../012-collaboration/facilitate-tour.md), the [Draw tour](../023-draw-mode/draw-tour.md) and
+  the [Illustrate tour](illustrate-tour.md) are this tour's siblings; while any is on screen the others wait.
+  Each belongs to its own mode, so none is owed to another: the others never wait for this tour's offer, and
+  this tour never carries theirs.
 
 ## Handoff
 
@@ -54,47 +56,44 @@ clears it only when the offer is **resolved** (completed, skipped, or declined),
 reloading mid-offer or mid-tour brings the offer back instead of silently swallowing an unanswered tour. The
 flag is also what keeps the offer owed across a document that opened in another mode. sessionStorage keeps it
 per-tab; a URL param would survive into copy-pasted links. The editor shows the offer only when it's actually
-usable: hydrated, no welcome overlay, not read-only, not an embed, and the open tab in Diagram. The Settings
+usable: hydrated, no welcome overlay, no start on screen, not read-only, not an embed, and the open tab in
+Diagram. The Settings
 relaunch crosses no navigation, so it's a window event (`livediagram:tour-relaunch`), which also re-marks the
 flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps
 
-A welcome offer card, then seven steps in palette → mode → canvas → tabs → theme order (five on mobile, where
-the mode step and the theme-canvas step are skipped; four on an **event-storming board**, which hides the
-strip's pickers and offers no mode switch, and so drops the two dropdown steps and the mode step; three when it
-is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
+A welcome offer card, then six steps in palette → canvas → tabs → theme order (five on mobile, where the
+theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
+the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
 `apps/live/components/tour/tour-steps.ts`):
 
-0. **Welcome to Diagram** (the offer): centred card, eyebrow **Diagram tour**, saying Diagram mode builds
-   diagrams from shapes, arrows and the palette, then "Show me around" / "No thanks".
+0. **Getting started with Diagrams?** (the offer): centred card, eyebrow **Diagram tour**, "Want a quick tour of the
+   editor so you can build mind blowing diagrams in minutes?", then **No** / **Yes**. Yes and No are every tour's
+   offer buttons (`WELCOME_TOUR_COPY` in `TourPopover.tsx`).
 1. **The Palette**: the strip across the top where every shape, arrow and icon comes from.
 2. **Selection Modes**: opens the canvas-tool dropdown (Select / Hand / Eraser / ...) and explains mode
    switching. No "default" claim in the copy: desktop defaults to Select but mobile to Hand.
 3. **Palette Categories**: opens the palette-category dropdown (Popular / Shapes / Tools / Components /
    Devices / Icons / Technology). A dedicated "Tools category" step existed briefly and was cut: the category
    dropdown already tells that story.
-4. **Tab Mode**: opens the editor mode switch's menu ([Editor modes](editor-modes.md#the-mode-switch)) and
-   highlights the switch and its menu as one region, beside the menu button. The copy says this tab is a
-   diagram, and that the switch (or Shift+D) moves it to another mode, each with its own tour; it does not
-   describe the other modes. The step switches nobody's mode. Skipped on an event-storming board, which offers
-   no switch, and on a phone, which shows none (it switches from the tab menu's mode rows).
-5. **The Element Menu**: selects an element (adding a theme-coloured square at the viewport centre first if the
+4. **The Element Menu**: selects an element (adding a theme-coloured square at the viewport centre first if the
    tab is empty) and opens its right-click menu programmatically. A square it added is the tour's own: placed
    with no history and taken away, with its selection, when the tour ends however it ends (`useTourSquare`), so
    a fresh document is left as it was and Undo never brings it back.
-6. **Tabs**: highlights the active tab pill and the "+" add button as one region (an `alsoHighlight` union,
+5. **Tabs**: highlights the active tab pill and the "+" add button as one region (an `alsoHighlight` union,
    like the dropdown steps): one document holds many diagrams, one per tab, with the tab menu covered in the
    copy. A separate open-the-⋯-menu step existed briefly and was folded in here.
-7. **Theme & Canvas** (desktop only): highlights the paintbrush dock button
+6. **Theme & Canvas** (desktop only): highlights the paintbrush dock button
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas
    background dialog. No prepare needed: the button is always in the desktop chrome for an editable session.
    Mobile reaches the same dialog through the canvas menu, so the step is skipped there.
-8. **Outro** (card): "You're ready to diagram": a help-article illustration, a help-centre link (new tab),
+7. **Outro** (card): "You're ready to diagram": a help-article illustration, a help-centre link (new tab),
    and a "Start diagramming" button that completes the tour.
 
-Retired steps: **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
+Retired steps: **Tab Mode** (opening the editor mode switch's menu, step 4 until October 2026) was cut to keep
+the tour on diagramming; each mode now has a tour of its own, offered when the person enters it. **The Explorer** (the document browser behind the top-left menu button) was step 5 of the
 welcome tour; it describes the whole app rather than diagramming, so the Diagram tour left it out. A **Search**
 step (opening the Cmd/Ctrl+K panel) once followed Theme & Canvas until it was cut to keep the tour short; the
 search panel has its own help article.
@@ -133,6 +132,18 @@ menu alone.
 - Advancing closes whatever the previous step opened (dropdowns, context menu, popovers); finishing or skipping
   restores a quiet editor.
 
+## Look
+
+- **Every tour wears the active tab's colours**, as the start panels do: the card (welcome, step and outro) takes
+  the tab's palette (`useStartPalette`, the start panels' hook; `tour-colours.ts` reads it into CSS variables).
+  Card background, border, title, copy (muted) and the eyebrow, help link, progress dots and primary buttons
+  (the tab's accent) all follow it, so a tour on a dark or coloured tab reads as part of that tab.
+- **The primary buttons stay readable**: their label is white or near-black, whichever contrasts more with the
+  accent.
+- **The ring** around a step's target is drawn in the same accent; the dim around it is unchanged.
+- This holds for the Diagram, Plan, Facilitate, Draw and Illustrate tours and the card type editor's Show Me,
+  which all draw through `TourStage` and `TourPopover`.
+
 ## Share roles
 
 Only someone who may edit the tab is offered the tour (an **Editor**): the element step selects an element and
@@ -144,12 +155,12 @@ for the tour's purposes: `isReadOnly`).
 The welcome tour's tokens, unchanged, so the funnel's history reads straight through the rename:
 
 - **Offer**: `'UI'/'Opened'/'TourOffer'` when the welcome card shows (first run and Settings relaunch alike);
-  `'UI'/'Closed'/'TourOffer'` on "No thanks".
+  `'UI'/'Closed'/'TourOffer'` on **No**.
 - **Start**: `'UI'/'Started'/'Tour'` on accept.
 - **Stage views**: `'UI'/'View'/'TourStep<Id>'` once per step entry (`TourStepPalette`,
-  `TourStepSelectionModes`, `TourStepCategories`, `TourStepEditorMode`, `TourStepContextMenu`, `TourStepTabs`,
+  `TourStepSelectionModes`, `TourStepCategories`, `TourStepContextMenu`, `TourStepTabs`,
   `TourStepThemeCanvas`, `TourStepOutro`, derived from the fixed step ids, never content; a Back re-entry
   counts as a view). The last View before an `Ended/TourSkipped` marks the drop-off stage.
-  `TourStepExplorer` and `TourStepSearch` are retired with their steps, and stay explained for the history.
+  `TourStepExplorer`, `TourStepSearch` and `TourStepEditorMode` are retired with their steps, and stay explained for the history.
 - **End**: `'UI'/'Ended'/'TourCompleted' | 'TourSkipped'` (leaving Diagram mid-tour is a skip).
 - **Settings row**: `'UI'/'Toggled'/'TourSeenOn' | 'TourSeenOff'`.

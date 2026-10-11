@@ -2,11 +2,7 @@
 // "Template categories", Search): other names for it and the job it does. Pure data. A spreadsheet template adds to
 // its sheet's own words (@livediagram/sheets SheetTemplateInfo.keywords, which Start Planning searches too), so the
 // Quick Start and Start Planning find a sheet by the same words.
-import {
-  TEMPLATE_START_SHEETS,
-  sheetTemplateInfo,
-  type TemplateStartId,
-} from '@livediagram/sheets';
+import { TEMPLATE_START_SHEETS, sheetTemplateInfo } from '@livediagram/sheets';
 import type { TemplateKind } from './templates';
 
 const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
@@ -15,8 +11,9 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   whiteboard: ['empty', 'scratch', 'draw', 'sketch', 'freehand', 'pen'],
   'blank-illustration': ['empty', 'page', 'infographic', 'poster', 'design'],
   'blank-plan': ['empty', 'board', 'cards', 'tasks', 'sheet'],
+  'blank-spreadsheet': ['empty', 'sheet', 'spreadsheet', 'excel', 'grid', 'cells', 'table'],
   'blank-session': ['empty', 'workshop', 'meeting', 'facilitate', 'session'],
-  // Plan and Track.
+  // Planning.
   'project-planner': [
     'project',
     'sprint',
@@ -88,7 +85,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'guest-list': ['guests', 'rsvp list', 'invite list'],
   'grade-book': ['grades', 'report card', 'exam'],
   'habit-tracker': ['habits', 'self improvement', 'fitness'],
-  // Meetings and Workshops.
+  // Workshops.
   'meeting-agenda': [
     'meeting',
     'agenda',
@@ -137,7 +134,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'affinity-map': ['affinity', 'clustering', 'research', 'synthesis', 'themes', 'stickies'],
   'crazy-eights': ['crazy 8s', 'design sprint', 'sketch', 'ideation', 'ideas', 'ux'],
   'doodle-warmup': ['icebreaker', 'warm up', 'energiser', 'game', 'team building', 'fun'],
-  // Timelines and Roadmaps.
+  // Timelines.
   timeline: ['history', 'schedule', 'milestones', 'chronology', 'dates', 'events'],
   'milestone-timeline': ['milestones', 'phases', 'schedule', 'project', 'dates'],
   'milestone-timeline-vertical': ['milestones', 'phases', 'schedule', 'history', 'dates'],
@@ -145,13 +142,13 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   roadmap: ['product roadmap', 'now next later', 'quarters', 'plan', 'strategy', 'releases'],
   'objectives-planner': ['goals', 'personal', 'smart', 'objectives', 'development', 'pdp'],
   'raci-matrix': ['raci', 'roles', 'responsibilities', 'accountable', 'ownership', 'rasci'],
-  // Flowcharts and Processes.
+  // Flowcharts.
   flowchart: ['flow', 'process', 'diagram', 'steps', 'workflow', 'algorithm', 'bpmn'],
   swimlane: ['cross functional', 'process', 'lanes', 'handoffs', 'workflow', 'bpmn'],
   'decision-tree': ['decision', 'yes no', 'choices', 'logic', 'branching'],
   'approval-workflow': ['approval', 'sign off', 'review', 'process', 'workflow'],
   'data-flow': ['dfd', 'data', 'system', 'processes', 'stores'],
-  // Strategy and Decisions.
+  // Strategy.
   swot: ['strengths', 'weaknesses', 'opportunities', 'threats', 'analysis', 'strategy'],
   'business-model-canvas': ['bmc', 'startup', 'business plan', 'revenue', 'value proposition'],
   'prioritization-matrix': [
@@ -170,13 +167,13 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'comparison-table': ['compare', 'comparison', 'features', 'options', 'table', 'vs'],
   'stakeholder-map': ['stakeholders', 'power interest', 'influence', 'engagement'],
   'rich-picture': ['systems thinking', 'soft systems', 'problem', 'stakeholders', 'drawing'],
-  // Org and Structure.
+  // Org Charts.
   orgchart: ['org', 'organisation', 'organization', 'team', 'hierarchy', 'reporting lines'],
   pyramid: ['hierarchy', 'levels', 'layers', 'maslow', 'tiers'],
   'okr-tree': ['okr', 'goals', 'objectives', 'key results', 'alignment', 'tree'],
   sitemap: ['site map', 'ia', 'information architecture', 'website', 'pages', 'navigation'],
   'opportunity-solution-tree': ['ost', 'product discovery', 'outcomes', 'opportunities'],
-  // Design and UX.
+  // Design.
   'mobile-wireframe': ['wireframe', 'mockup', 'app', 'phone', 'ui', 'ux', 'screens'],
   'laptop-wireframe': ['wireframe', 'mockup', 'dashboard', 'desktop', 'ui', 'ux'],
   'browser-wireframe': ['wireframe', 'mockup', 'website', 'landing page', 'ui', 'ux'],
@@ -188,7 +185,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'empathy-map': ['empathy', 'says thinks does feels', 'user', 'research', 'ux'],
   'user-story-map': ['story map', 'user stories', 'backlog', 'mvp', 'releases', 'agile'],
   'floor-plan': ['floorplan', 'layout', 'room', 'office', 'house', 'architecture'],
-  // Presentations and Content.
+  // Presentations.
   'slide-deck': ['presentation', 'slides', 'deck', 'pitch', 'powerpoint', 'keynote'],
   article: ['document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
   'how-it-works': ['steps', 'explainer', 'onboarding', 'guide', 'infographic'],
@@ -220,6 +217,8 @@ const SHEET_STARTS_BY_KIND = TEMPLATE_START_SHEETS as Readonly<Record<string, un
 export function templateKeywords(kind: TemplateKind): readonly string[] {
   const own = OWN_KEYWORDS[kind];
   if (!(kind in SHEET_STARTS_BY_KIND)) return own;
-  const sheet = sheetTemplateInfo(TEMPLATE_START_SHEETS[kind as TemplateStartId]).keywords;
+  const sheet = sheetTemplateInfo(
+    TEMPLATE_START_SHEETS[kind as keyof typeof TEMPLATE_START_SHEETS],
+  ).keywords;
   return [...new Set([...own, ...sheet])];
 }
