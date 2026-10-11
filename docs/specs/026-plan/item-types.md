@@ -261,8 +261,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   still named beside Save. The tabs edit one draft: switching loses nothing, and Save or Cancel acts on the whole.
   The title row ends with **Show Me**, **Help** (the Card Types help article) and a close cross, which acts as
   Cancel.
-  - **Show Me** runs a guided tour of making a card type, there and then, on the editor itself; it is never offered
-    or started on its own. It uses the shared tour (the step card, Back, Next and Skip, the ring around what it
+  - **Show Me** ([Show Me](../007-editor/show-me.md)) runs a guided tour of making a card type, there and then, on the
+    editor itself; it is never offered or started on its own. It uses the shared tour (the step card, Back, Next and Skip, the ring around what it
     points at with room to breathe, drawn over the editor), and each step opens the editor tab it is about and points at a real
     control, which stays usable: the person types the name, picks a colour or adds a field while the step is up, and
     their edits stay in the draft. The steps: **Name It, Then Give It a Look** (the Configuration tab's General

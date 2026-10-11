@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CARD_TYPE_TOUR_STEPS } from './card-type-tour-steps';
-import { CardTypeTourStage, ShowMeButton, useCardTypeTour } from './CardTypeTour';
+import { CardTypeShowMeButton, CardTypeTourStage, useCardTypeTour } from './CardTypeTour';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // jsdom lays nothing out, so "on screen" is just "in the document" here.
@@ -17,7 +17,7 @@ function Editor({ showTab }: { showTab: (tab: string) => void }) {
   const tour = useCardTypeTour(showTab as never);
   return (
     <div>
-      <ShowMeButton tour={tour} />
+      <CardTypeShowMeButton tour={tour} />
       <div data-tour-id="card-type-general">
         <input aria-label="Name" />
       </div>
