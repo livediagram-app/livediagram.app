@@ -1,4 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { McpConsent } from '@/components/illustrations/account-settings';
 
@@ -14,6 +15,7 @@ export const metadata = helpMetadata({
   description="Drive your documents from Claude or any MCP client. A signed-in-only feature for advanced users."
   categoryTitle="Account and Data"
   categorySlug="account-and-data"
+  subArticles={getSubArticles("connect-ai-mcp")}
 >
 
 livediagram has an [MCP](https://modelcontextprotocol.io) server, so you can connect it to an AI tool you already use, like Claude, and then find, view, create, and edit your documents from inside that tool. Point the AI at a codebase and ask for a control-flow diagram, or ask it to tweak an existing one, and the result is saved to your account.
@@ -24,7 +26,7 @@ Connecting an AI tool is a **signed-in-only** feature, the same as [API tokens](
 
 ## Connecting
 
-In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.livediagram.app/mcp`**. The first time, your tool opens a livediagram page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It says which site the access will be sent to: only continue if you recognise it. Choose **Connect** to approve, or **Cancel**.
+In your AI tool, add a connector (an MCP server) pointing at **`https://mcp.livediagram.app/mcp`**. [Connecting AI Tools](/help/account-and-data/connect-ai-mcp/ai-clients/) has the steps for Claude, Claude Code, Cursor, ChatGPT and others. The first time, your tool opens a livediagram page titled **Connect** followed by the tool's name (you'll sign in first if you aren't already). It says which site the access will be sent to: only continue if you recognise it. Choose **Connect** to approve, or **Cancel**.
 
 <Figure
   caption="The approval page: an optional Read-only access switch, where the access goes, then Connect."
@@ -58,7 +60,7 @@ For building the picture, the AI can just describe the **graph** (the nodes and 
 
 Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, and **bar, line, and pie charts**. Your AI tool may also surface a few ready-made **prompts** ("Diagram this", "Flowchart from steps" and "Show my document") as quick actions, so you don't have to know the tool names.
 
-When the AI changes a document you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. An element someone else in the document has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
+When the AI changes a document you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). An element someone else in the document has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
 The AI does the thinking; livediagram validates, lays out, saves, and renders what it produces. The MCP server runs no AI model of its own. New documents an AI creates land at the root of **My documents** (or your default folder, if you set one), each with a **Made by AI** badge; the **Made by AI** filter lists them all, wherever you file them.
 

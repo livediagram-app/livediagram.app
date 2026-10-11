@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { LiveCursors, PresenceSelection } from '@/components/illustrations/collaboration';
+import { ReleaseHold } from '@/components/illustrations/release-hold';
 
 export const metadata = helpMetadata({
   title: 'Live Presence',
@@ -55,6 +56,24 @@ When someone selects an element, a small disc with their initials appears on its
 <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
   <PresenceSelection />
 </Figure>
+
+## Freeing an element someone left selected
+
+The lock clears by itself when the person clicks away, switches tab or leaves. What it can't fix on its own is someone who is still connected but has wandered off with something selected, leaving an element nobody else can touch. When that happens, it can be freed:
+
+<Step n={1}>Right-click the locked element.</Step>
+<Step n={2}>
+  A small **In use** menu opens, with one row per person holding it, such as "Release Jae's Hold".
+</Step>
+<Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
+
+<Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
+  <ReleaseHold />
+</Figure>
+
+**Who can do it.** While someone is the [facilitator](/help/collaboration/facilitator/), only they can. While nobody is facilitating, any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing, as it does for an Editor while somebody else is facilitating.
+
+**What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them "The facilitator freed an element you were holding", so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
 
 ## Agents at work
 

@@ -1,4 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { TelemetryToggle } from '@/components/illustrations/privacy';
 
@@ -9,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/privacy-and-security/what-we-collect/',
 });
 
-<ArticleLayout title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" subArticles={getSubArticles("what-we-collect")}>
 
 livediagram measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party, and a deployment only collects them if its operator turns them on: livediagram.app does, a self-hosted copy does not unless its operator chooses to. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
 
@@ -51,7 +52,7 @@ The label comes from a fixed list of our own buttons and says nothing about you 
 
 ## The public dashboard
 
-Whatever is collected is published openly at the public [telemetry dashboard](/telemetry). It shows aggregate counts for today, the last 7 days and the last 30 days, grouped by category and action. Events are deleted automatically after 60 days, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured.
+Whatever is collected is published openly at the public [telemetry dashboard](/telemetry). It shows aggregate counts for today, the last 7 days and the last 30 days, grouped by category and action. Events are deleted automatically after 60 days, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured. [The Public Telemetry Dashboard](/help/privacy-and-security/what-we-collect/telemetry-dashboard/) walks through each of its views.
 
 ## How to opt out
 

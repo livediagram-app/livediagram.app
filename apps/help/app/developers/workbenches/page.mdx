@@ -1,4 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
@@ -13,11 +14,14 @@ export const metadata = helpMetadata({
   description="Draw in a document inside your developer tool, signed in, and talk to your agent about what you select."
   categoryTitle="Developers"
   categorySlug="developers"
+  subArticles={getSubArticles("workbenches")}
 >
 
 A **workbench** is a developer tool that shows a livediagram document live beside a coding agent. You draw in the editor right there, everything reaches livediagram at once, and when you type a message to your agent, the tool attaches what you had selected so the agent reads exactly those elements.
 
 The editor in a workbench is signed in as you, for one document at a time. It has the canvas, the tab bar, the palette and the panels; account settings, sharing and your document library stay in livediagram itself, one click away through **Open in livediagram**.
+
+Building a tool of your own? [Building a Workbench](/help/developers/workbenches/building-a-workbench/) has the full integration contract.
 
 ## Pair a Workbench Once
 
