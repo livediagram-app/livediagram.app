@@ -83,10 +83,10 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
 
 ## Drawing
 
-- **Chip**: the value on a rounded pill (12 px tall at 13 px text, 6 px in from the cell's left, as wide as the text
-  and its arrow), in the option's colour, or the Sheet's quiet column tint when it has none; its ink black or white,
+- **Chip**: the value on a rounded pill (the text's line height and 6 px, 6 px in from the cell's left, as wide as the
+  text and its arrow, never wider than the cell), in the option's colour, or the Sheet's quiet column tint when it has none; its ink black or white,
   whichever meets WCAG AA on the pill. An empty cell draws the arrow alone, quietly. A cell's own fill shows around the
-  pill. The pill is drawn for the Sheet's surface as cell colours are ([Readable cells](sheet.md#readable-cells)).
+  pill.
 - **Arrow**: the value as the cell draws it, and a small down arrow inside the cell's right edge, in the room a
   dropdown column keeps (as a card table's does).
 - **Plain Text**: the value alone; the active cell shows the arrow.
@@ -128,7 +128,7 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
   values (TRUE and FALSE stay ticked and unticked; others are marked invalid).
 - **Dropdown** opens the **rule editor** on a new Dropdown rule over the selection, its options filled from the
   distinct values already in the selection (up to 500, in the order first met), each given a colour from the
-  Theme Palette in turn; with none, two empty options.
+  soft Standard Colours in turn (so each chip reads apart); with none, two empty options.
 - **Data Validation…** opens the rule editor on the rule at the active cell, else a new Dropdown rule.
 - The **rule editor** is a popover anchored to the button or row that opened it (the shared popover, 22 rem wide,
   scrolling inside the window), titled **Data Validation**:

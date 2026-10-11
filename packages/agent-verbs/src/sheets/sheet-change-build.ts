@@ -17,6 +17,12 @@ import {
   sortSheet,
   validFormatPatch,
   writeRows,
+  formatA1,
+  layoutIndex,
+  rangeOptions,
+  splitCellKey,
+  validateWrite,
+  writeForRules,
   type AgentValue,
   type FormatPatch,
   type GridRange,
@@ -25,6 +31,7 @@ import {
   type Workbook,
 } from '@livediagram/sheets';
 import type { SheetRefusal } from './sheet-state';
+import { buildRuleChange, type SheetRuleChange } from './sheet-rule-change';
 import { plural } from '@livediagram/document';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
@@ -56,7 +63,9 @@ export type SheetChange =
   | { op: 'delete_cols'; cols: string }
   | { op: 'rename'; title: string }
   | { op: 'sort'; by: string; range?: string; descending?: boolean; header?: boolean }
-  | { op: 'freeze'; rows?: number; cols?: number };
+  | { op: 'freeze'; rows?: number; cols?: number }
+  // Validation and format rules (sheet-rule-change.ts).
+  | SheetRuleChange;
 
 // What one change sends, and the line that says what it did.
 export type BuiltChange = { ok: true; writes: SheetWrite[]; line: string } | SheetRefusal;
@@ -123,8 +132,23 @@ export function buildSheetChange(
         return made.error === 'formula_invalid'
           ? refuse('formula_invalid', `The formula in ${made.at} cannot be read: ${made.why}.`)
           : badRange(change.at);
+      // A value a Reject rule refuses is refused here, naming the cell and what its rule allows (data-validation.md
+      // "Agents"); the api would refuse it too.
+      const check = validateWrite(sheet, writeForRules(sheet.layout, made.write), {
+        rangeValues: (rule) => rangeOptions(wb, sheetId, rule),
+      });
+      if (!check.ok && check.error === 'value_invalid') {
+        const ix = layoutIndex(sheet.layout);
+        const { r, c } = splitCellKey(check.at ?? ':');
+        const where = formatA1(ix.rowPos.get(r) ?? 0, ix.colPos.get(c) ?? 0);
+        return refuse('value_invalid', `${where} cannot take that value: ${check.line}.`);
+      }
       const cut = made.truncated ? ' (cut at the sheet’s 10,000 rows or 200 columns)' : '';
-      return { ok: true, writes: [made.write], line: `set ${made.range}${cut}` };
+      return {
+        ok: true,
+        writes: [writeForRules(sheet.layout, made.write)],
+        line: `set ${made.range}${cut}`,
+      };
     }
     case 'clear': {
       const range = parseRangeText(change.range);
@@ -250,6 +274,11 @@ export function buildSheetChange(
         line: `sorted ${formatRange(range)} by column ${change.by.toUpperCase()}, ${order}`,
       };
     }
+    case 'validate':
+    case 'clear_validation':
+    case 'conditional_format':
+    case 'clear_conditional_formats':
+      return buildRuleChange(wb, sheetId, change, rand);
     case 'freeze': {
       if (change.rows === undefined && change.cols === undefined)
         return refuse('write_invalid', 'Freeze names rows, cols or both (0 unfreezes).');

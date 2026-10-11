@@ -77,7 +77,7 @@ export type FormatRule = IdRange & {
   range (or `src`) is gone is dropped. `store-inverse-delete.ts` puts back the rules a deletion shrank or dropped, as it
   does named ranges.
 - `resetSheetWrite` (Clear Sheet) removes both lists.
-- Making a validation rule over a range is one layout write: `subtractRange` (`rules/validation-edit.ts`) gives, for
+- Making a validation rule over a range is one layout write: `subtractRange` (`packages/sheets/src/rules/validation-edit.ts`) gives, for
   each rule the range touches, its removal and its leftover pieces (up to four new rules: the bands above, below, left
   and right of the overlap, in position order, each with a new id), then the new rule. **Remove Validation** is the
   same without the new rule.
@@ -122,7 +122,7 @@ ranges)` (the Space and press write; `null` when no checkbox cell is selected).
 - `Workbook.evaluateAt(sheetId, r, c, stored)`: evaluates a stored formula as if in that cell, under the read budget,
   returning a scalar (`#ERROR!` when it cannot be read, `#REF!` for a cycle through itself never arises as it is not a
   cell).
-- Static render (`engine/render.ts`): a checkbox cell's text is `☑` / `☐` (centred), a chip's fill is its option's
+- Static render (`packages/sheets/src/engine/render.ts`): a checkbox cell's text is `☑` / `☐` (centred), a chip's fill is its option's
   colour, and a met format rule's style is merged over the cell's own format before drawing.
 - Custom number format: `displayValue` with `nf: 'custom'` and `nc` draws `formatCodeText(value, nc)` (numbers right,
   text left); `formatCodeReads(code)` reports whether a code reads (balanced quotes and brackets, at most four `;`
@@ -130,38 +130,58 @@ ranges)` (the Space and press write; `null` when no checkbox cell is selected).
 
 ## Editor (`apps/live/components/sheets/`)
 
-- `rules/SheetRuleCells.tsx`: draws, per visible cell of a rule, the chip, the arrow, the checkbox box and the invalid
-  triangle (in the cell layer's regions, via `SheetCells` passing each cell's rule) and takes a press on a chip, an
-  arrow or a box; `SheetCells` asks `validationRuleAt` per visible cell only when `layout.rules` is set.
-- `rules/SheetDropdownList.tsx`: the option list popover (AnchoredPopover, `OptionRows`, the search field over 8
-  options, **Clear**).
-- `rules/SheetValidationEditor.tsx`: the rule editor popover; `rules/SheetFormatRules.tsx`: the Conditional
-  Formatting popover (list and form); `rules/SheetRuleSettings.tsx`: the two Sheet Settings sections.
-- `rules/SheetCustomFormat.tsx`: the Custom Number Format popover.
-- `useSheetActions`: `commitEdit` checks the active cell's rule first (`inputAllowed`, normalising a dropdown option's
-  spelling) and answers `{ ok: false, message: line }`; `toggleCheckboxes`, `pickOption`, `setValidation`,
-  `removeValidation`, `setFormatRule`, `removeFormatRule`, `moveFormatRule`, `customFormat(code)`, `paintFormat`
-  (`start(keep)`, `apply(range)`, `stop()`).
-- `sheet-store-client.ts`: `WriteOpts` gains `unchecked`; `writeAll` passes `{ checkRules: !undo && !unchecked,
-rangeValues }` to `validateWrite` and toasts `value_invalid` as `<A1>: <line>`; `send` adds `unchecked: true` to the
-  request body. Imports, card-table sync and template starts write with `unchecked`.
-- Keys (`sheet-keys.ts`): Alt+Down opens the active cell's dropdown; Space on a selection with a checkbox cell
-  toggles; Escape ends Paint Format first.
-- Paint Format: `paint: { clip: SheetClip; keep: boolean } | null` on the controller; the pointer's selection end
-  (`useSheetPointer`) calls `paintFormat.apply` with the new range; the grid's cursor is `copy` while it is set.
+- `apps/live/components/sheets/rules/sheet-rule-draw.tsx`: `ruleCellDraw` (a cell's chip, arrow, checkbox box and
+  invalid triangle, as nodes for `SheetCells`, which asks `validationRuleAt` per visible cell only when
+  `layout.rules` is set), `chipBox`, `checkboxBox`, `ruleTargetAt` and `ruleHitAt` (what a press hits, for
+  `useSheetPointer`).
+- `apps/live/components/sheets/rules/SheetRuleLayer.tsx`: over the cells, a Plain Text dropdown's arrow on the
+  active cell, the open option list, the active cell's anchor for panels opened from a menu, and the panels (lazy).
+- `apps/live/components/sheets/rules/SheetDropdownList.tsx`: the option list popover (AnchoredPopover,
+  `OptionRows`, the search field over `DROPDOWN_SEARCH_FROM` options, **Clear**).
+- `apps/live/components/sheets/rules/SheetValidationEditor.tsx`: the rule editor popover (`settingsOf` turns its
+  draft into a rule's settings, or why not; new options take `OPTION_COLOURS`, the soft Standard Colours less ink
+  and grey); `apps/live/components/sheets/rules/SheetFormatRules.tsx`: the Conditional Formatting popover (list and
+  form, the preview through `rules.setFormatPreview`); `apps/live/components/sheets/rules/SheetRuleSettings.tsx`:
+  the two Sheet Settings sections.
+- `apps/live/components/sheets/rules/SheetCustomFormat.tsx`: the Custom Number Format popover.
+- `apps/live/components/sheets/rules/useSheetRulesState.ts`: the controller's `rules` slice (`dropdown`, `panel`,
+  `formatPreview`, `paint`) and `previewFormatRules`; `apps/live/components/sheets/rules/sheet-rule-actions.ts`:
+  the rule actions spread into `useSheetActions` (`toggleCheckboxes`, `openDropdown`, `pickOption`, `addCheckbox`,
+  `setValidation`, `removeValidation`, `removeValidationRule`, `openValidation`, `openFormatRules`,
+  `newFormatRuleId`, `setFormatRule`, `removeFormatRule`, `moveFormatRule`, `rangeIds`, `openCustomFormat`,
+  `paintStart(keep)`, `paintApply(range)`, `paintStop()`); `apps/live/components/sheets/rules/sheet-rule-hover.ts`:
+  `invalidWhy`, the hover line.
+- `useSheetActions`: `commitEdit` checks the edit against the cell's rule first (`ruleRefusal`: `validateWrite` on
+  `writeForRules`) and answers `{ ok: false, message: line, at: 0 }`; `customFormat(code)` sets `nf: 'custom'` and
+  `nc`; `numberFormat` clears `nc`.
+- `sheet-store-client.ts`: `WriteOpts` gains `unchecked`; `writeAll` runs `writeForRules` and passes `{ checkRules,
+rangeValues }` to `validateWrite` (checked unless an undo, `unchecked`, or a quiet `undoable: false` write) and
+  toasts `value_invalid` as `<A1>: <line>` (`writeRefusalMessage`); `send` adds `unchecked: true` to the request
+  body for unchecked and quiet writes. Import CSV writes with `unchecked`.
+- Keys (`sheet-keys.ts`): Alt+Down is `dropdown`; Space on the grid toggles the selection's checkboxes on release
+  when any is selected, else types a space; Escape ends Paint Format first.
+- Toolbar: Cells gains **Paint Format** (first, pressed while held; a double-click keeps it); Data gains
+  **Dropdown**, **Checkbox**, **Data Validation** and **Conditional Formatting** after Sort and Filter; the Number
+  Format menu gains **Custom…**. A toolbar button's `run` takes the pressed button (a panel's anchor) and the click
+  count.
+- Paint Format: the pointer's `select` drag end (`useSheetPointer`) calls `paintApply` with the selection's last
+  range; the cursor over cells is `copy` while it is held.
 
 ## Api (`apps/api/src/routes/sheet-write-route.ts`)
 
 - `readWrite` keeps `unchecked: true`; `validateWrite(light, write, { checkRules: !body.undo && !body.unchecked })`.
   A `value_invalid` refusal answers 400 with `at` and `line`. The light sheet holds the layout, so rules are known
-  without reading cells.
+  without reading cells. The offline store (`apps/live/lib/offline/offline-sheets.ts`) checks the same way.
 
 ## Agents (`packages/agent-verbs/src/sheets/`)
 
-- `SheetChange` gains `validate`, `clear_validation`, `conditional_format` and `clear_conditional_formats`, built by
-  the engine's `setValidationRule`, `removeValidation` and the `frule` change; `read_sheet` adds `validation` and
-  `conditionalFormats` lists, and marks invalid values (`invalid: true`). The MCP schema (`mcp/sheet-schema.ts`)
-  describes them.
+- `packages/agent-verbs/src/sheets/sheet-rule-change.ts`: `SheetRuleChange` (`validate`, `clear_validation`,
+  `conditional_format`, `clear_conditional_formats`) built by `buildRuleChange` with the engine's
+  `setValidationRule`, `removeValidation` and the `frule` change; `rulesRead` reads the rules back in words.
+  `buildSheetChange`'s `set` runs `writeForRules` and refuses a value a Reject rule does not allow before sending
+  (`value_invalid`, naming the cell). `read_sheet` adds `validation` and `conditionalFormats`, and `invalid` (what
+  the rule allows) on a cell whose value its rule does not allow. The MCP schema
+  (`packages/agent-verbs/src/mcp/sheet-schema.ts`) describes them.
 
 ## Errors and edge cases
 

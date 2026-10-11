@@ -22,7 +22,9 @@ export const INVALID_MARK_PX = 6;
 // A chip's inset from the cell's left, its height's room above and below, and its arrow's room.
 export const CHIP_INSET_PX = 6;
 const CHIP_PAD_Y = 4;
+// The arrow's room, and the pill's padding beside the text (8 left, 4 right, 4 gap) with slack for the rough width.
 const CHIP_ARROW_PX = 16;
+const CHIP_TEXT_ROOM_PX = 24;
 // The room an arrow dropdown keeps at its cell's right (as a card table's column does).
 export const RULE_ARROW_PX = 22;
 const INVALID_INK = '#dc2626';
@@ -58,7 +60,7 @@ export function chipBox(box: Box, textWidth: number, px: number): Box {
   const h = Math.min(box.h - CHIP_PAD_Y, Math.round(px * 1.3) + 6);
   const w = Math.min(
     box.w - CHIP_INSET_PX * 2,
-    Math.max(CHIP_ARROW_PX + 8, textWidth + 8 + CHIP_ARROW_PX),
+    Math.max(CHIP_ARROW_PX + 8, textWidth * 1.1 + CHIP_TEXT_ROOM_PX + CHIP_ARROW_PX),
   );
   return { x: box.x + CHIP_INSET_PX, y: box.y + (box.h - h) / 2, w, h };
 }

@@ -3,7 +3,7 @@
 // The Data Validation rule editor (docs/specs/029-sheets/data-validation.md "Making and changing rules"): Apply to
 // Range, the Criteria (a rule kind and its fields), Advanced (Reject or Warn, Help Text), and Remove Rule, Cancel and
 // Done. Done writes the rule over its range (taking the range out of every other rule), one change and one undo step.
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Button, Select, TextInput, DateInput } from '@livediagram/ui';
 import {
   DROPDOWN_OPTIONS_MAX,
@@ -25,14 +25,22 @@ import {
 import { OptionRows } from '@/components/plan/OptionRows';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
-import { noColour, themeOptions } from '@/components/colour/colour-options';
-import { useThemeColours } from '@/components/colour/useThemeColours';
-import { getTheme, themePresetColors } from '@/lib/themes';
+import { noColour, standardGroup } from '@/components/colour/colour-options';
+import { GREY_PEN_COLOUR, INK_PEN_COLOUR, standardColours } from '@livediagram/document';
 import { useSheetController, type SheetController } from '../sheet-controller';
 import type { SheetActions } from '../useSheetActions';
 
 const EDITOR_WIDTH_PX = 352;
-const DEFAULT_THEME = themeOptions(themePresetColors(getTheme(undefined)));
+// Options take the soft Standard Colours in turn, so each reads apart as a chip (data-validation.md).
+// Ink and grey aside: a white or grey chip barely reads as one.
+const NEUTRALS = new Set<string>([INK_PEN_COLOUR, GREY_PEN_COLOUR]);
+export const OPTION_COLOURS = standardColours('soft', 'light')
+  .filter((c) => !NEUTRALS.has(c.name))
+  .map((c) => c.hex.toLowerCase());
+const OPTION_GROUPS = [
+  standardGroup('soft', 'light', 'hex'),
+  standardGroup('strong', 'light', 'hex'),
+];
 
 const KINDS: { id: ValidationKind; label: string }[] = [
   { id: 'list', label: 'Dropdown' },
@@ -250,11 +258,7 @@ export function SheetValidationEditor({
   onClose: () => void;
 }) {
   const c = useSheetController();
-  const theme = useThemeColours();
-  const palette = useMemo(
-    () => (theme.length ? theme : DEFAULT_THEME).map((o) => o.colour.toLowerCase()),
-    [theme],
-  );
+  const palette = OPTION_COLOURS;
   const existing = fresh
     ? undefined
     : ((ruleId ? c.sheet.layout.rules?.find((x) => x.id === ruleId) : undefined) ??
@@ -372,6 +376,7 @@ export function SheetValidationEditor({
                   none={!o.c}
                   value={o.c ?? 'none'}
                   leading={[noColour('none', 'No Colour')]}
+                  standard={OPTION_GROUPS}
                   onPick={(id) =>
                     setOpt(o.key, { c: id === 'none' ? undefined : id.toLowerCase() })
                   }

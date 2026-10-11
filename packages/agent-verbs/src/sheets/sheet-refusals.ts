@@ -19,5 +19,8 @@ export const SHEET_REFUSAL_WORDS: Readonly<Record<SheetError, string>> = {
   filter_invalid: 'that filter is not valid.',
   write_too_large: 'a write changes up to 5,000 cells.',
   write_invalid: 'the change is not one a sheet takes.',
+  value_invalid:
+    "a value is not one its cell's validation rule allows: read_sheet lists the rules and what each allows.",
+  rules_full: 'a sheet holds up to 200 validation rules and 100 format rules.',
   tab_not_found: 'no such tab in this document.',
 };

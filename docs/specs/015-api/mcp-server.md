@@ -591,16 +591,21 @@ document's Plan cards when a formula reads them.
 - **`list_sheets`** (read): the document's sheets (or one tab's), each with its title, tab, the rows and columns in
   use and that range in A1, and the id of the Sheet element framing it (null when none does).
 - **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value, display }`,
-  plus the frozen rows and columns, merges and filter. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
+  plus the frozen rows and columns, merges and filter, the validation rules (`validation`) and format rules
+  (`conditionalFormats`) in words, and `invalid` on a cell whose value its rule does not allow. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
   of the range and answers at most `SHEET_READ_CHARS_MAX` (100,000) characters of cells; past either it stops,
   sets `truncated` and says in `note` where to read on.
 - **`change_sheet`** (destructive, as it clears and deletes): up to 50 changes in order, each built against the
   sheet as the ones before it left it: `set` `{ at, rows }`, `clear` `{ range, what }`, `format` `{ range, format }`
   (bold, italic, underline, strikethrough, colours, font size, alignment, wrap, number format, decimals,
   currency), `insert_rows` / `insert_cols` `{ at, count, side }`, `delete_rows` `{ rows }`, `delete_cols`
-  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }` and `freeze` `{ rows, cols }`. Each
+  `{ cols }`, `rename` `{ title }`, `sort` `{ by, range?, descending, header }`, `freeze` `{ rows, cols }`, `validate`
+  `{ range, rule, reject?, help? }`, `clear_validation` `{ range }`, `conditional_format` `{ range, when + style |
+scale }` and `clear_conditional_formats` `{ range? }` ([Data validation](../029-sheets/data-validation.md#agents),
+  [Conditional formatting](../029-sheets/conditional-formatting.md#agents)). Each
   is sent through the sheet write route as the editor sends it (one write a call, split past 5,000 cells, each with
-  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`); a refusal
+  its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
+  validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
   answers what was applied before it.
 - **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first), titled
   uniquely on the tab, blank or filled from A1 with `rows` or `csv` (not both), then a Sheet element (960 x 560)

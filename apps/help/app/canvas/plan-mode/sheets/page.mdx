@@ -4,7 +4,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Sheets',
   description:
-    'Sheets in livediagram Plan mode: a spreadsheet tab on the canvas with cells, formulas, number formats, borders, merges, freeze, sort, filter, find and replace, CSV import and export, and Plan card functions.',
+    'Sheets in livediagram Plan mode: a spreadsheet tab on the canvas with cells, formulas, number formats, borders, merges, dropdowns, checkboxes, conditional formatting, freeze, sort, filter, find and replace, CSV import and export, and Plan card functions.',
   path: '/help/canvas/plan-mode/sheets/',
 });
 
@@ -102,7 +102,30 @@ Below the last row, **Add** puts more rows at the bottom (100 at a time, or the 
 
 ## Formatting
 
-The toolbar (shown in Plan mode to Editors) starts with a category switcher: **Text**, **Cells**, **Numbers**, **Data** and **Functions**, each showing just its own buttons. Together they set bold, italic, underline, strikethrough, text and fill colour, **Font** (each font listed in its own lettering; **Default** follows the tab), **Font Size** (step it with − and +, or type a size), borders, alignment (a button each for left, centre and right, and for top, middle and bottom), merging and wrapping, number formats (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text) and decimals. When the Sheet is narrow, the toolbar folds the buttons that don't fit into **More**. To find a function, press **Search** at the toolbar's far right and type its name or what it does: pick one and the toolbar opens its family's menu with the function highlighted.
+The toolbar (shown in Plan mode to Editors) starts with a category switcher: **Text**, **Cells**, **Numbers**, **Data** and **Functions**, each showing just its own buttons. Together they set bold, italic, underline, strikethrough, text and fill colour, **Font** (each font listed in its own lettering; **Default** follows the tab), **Font Size** (step it with − and +, or type a size), borders, alignment (a button each for left, centre and right, and for top, middle and bottom), merging and wrapping, number formats (Automatic, Number, Percent, Currency, Accounting, Scientific, Date, Time, Date Time, Duration, Plain Text, and **Custom…** for a format code of your own, like `0.0 "h"` or `dd mmm yyyy`, with a live preview) and decimals. When the Sheet is narrow, the toolbar folds the buttons that don't fit into **More**. To find a function, press **Search** at the toolbar's far right and type its name or what it does: pick one and the toolbar opens its family's menu with the function highlighted.
+
+### Paint Format
+
+**Paint Format** (the paint roller, first in the **Cells** buttons) copies the formatting of the selected cells onto the next cells you select, like Google Sheets' and Excel's format painter. Double-click it to keep painting until you press it again or press Escape.
+
+## Dropdowns and Checkboxes
+
+Under **Data** in the toolbar (or **Data Validation** when you right-click cells):
+
+- **Dropdown** makes the selected cells pick from a list. Its options start as the values already in the cells; give each a colour, drag to reorder, and choose how it shows: **Chip** (a coloured pill), **Arrow** or **Plain Text**. **Dropdown (From a Range)** takes its options from other cells of the sheet instead. Click a chip or arrow, or press Alt and Down (⌥↓), to pick from the list; typing works too, and `done` is saved as the option `Done`.
+- **Checkbox** turns the selected cells into tick boxes. Click a box, or press Space with cells selected, to tick or untick them all. A ticked box is `TRUE` to formulas, so `=COUNTIF(B2:B9,TRUE)` counts the ticks.
+- **Data Validation…** opens the full rule: a dropdown, a checkbox, or a number, date or text rule (between two numbers, a date after another, a valid email address, and more). By default a value the rule doesn't allow is refused, and the cell says why; under **Advanced** you can choose **Show a Warning** instead (the value is kept, with a small red mark), and add **Help Text** to show in place of the standard message.
+
+A new rule replaces any rule its cells already had. **Remove Validation** takes the rule off the selected cells. Every rule is listed in **Sheet Settings** under **Data Validation**. Pasted and typed values are checked, as are changes made by AI agents; undo and CSV imports aren't, and any value they bring in that a rule doesn't allow is marked.
+
+## Conditional Formatting
+
+**Conditional Formatting** (under **Data**, or right-click cells) colours cells by their values:
+
+- **Single Colour**: pick a condition (is empty, text contains, greater than, between, date is before, and more, or **Custom Formula Is**, such as `=$C2>100` written for the range's first cell) and a style: bold, italic, underline, strikethrough, a text colour and a fill. Six ready-made styles sit above the controls.
+- **Colour Scale**: shade numbers from one colour to another (and through a middle colour if you like), by the smallest and largest values, a number, a percent or a percentile.
+
+You see the rule on the cells while you edit it. Rules apply in list order: the first rule a cell meets colours it, so use **Move Up** and **Move Down** to choose which wins. Every rule is listed in **Sheet Settings** under **Conditional Formatting**.
 
 ## Charts
 
@@ -118,6 +141,7 @@ The cog in the Sheet's header opens **Sheet Settings** (the same sections are un
 
 - **Sheet Setup**: rename the sheet, import or download a CSV, set up an empty sheet again with **Setup Sheet**, or start it over with **Clear Sheet** (every cell, chart, format and setting goes, and Setup Sheet shows again).
 - **Named Ranges**: the names given to ranges of cells, to use in formulas.
+- **Data Validation** and **Conditional Formatting**: every rule on the sheet, with **Edit**, **Go To** and **Remove**.
 - **Sheet Options**: turn the gridlines, and the row numbers and column letters, on or off for everyone, and, on a Plan tab, choose whether the Sheet sits **On Canvas** or fills the tab ([Fill Tab](#fill-tab)).
 - **Cells**: a **Cell Size** (**Compact**, **Default** or **Roomy**, as Setup Sheet offers; none is chosen once you set your own), and the exact width of new columns and height of new rows; ones you sized yourself keep their size.
 - **Freeze**: how many rows and columns stay put.
@@ -163,13 +187,14 @@ From the Sheet's **Sheet Settings** (the cog in its header), **Download CSV** sa
 Everyone on the document sees each change as it is made, and each person's selection is outlined in their colour with their name. Two people typing in different cells never overwrite each other. Sheet changes join the canvas's **Undo** and **Redo**.
 
 - **Editors** do everything on this page.
-- **Participants** can type into cells, but get no toolbar, no row, column or merge controls and no Sheet Settings; a row or column header menu offers them only **Copy**.
+- **Participants** can type into cells, pick from dropdowns and tick checkboxes (each checked by the cells' rules), but can't make or change rules, and get no toolbar, no row, column or merge controls and no Sheet Settings; a row or column header menu offers them only **Copy**.
 - **Viewers** read the Sheet and can't change it.
 
 ## Limits
 
 - A Sheet holds up to 10,000 rows, 200 columns and 50,000 cells with something typed or formatted in them, and freezes up to 100 rows and 26 columns.
 - A Sheet's title is up to 60 characters.
+- A Sheet holds up to 200 validation rules and 100 conditional formatting rules; a dropdown up to 500 options.
 
 ## Keyboard
 
@@ -189,6 +214,8 @@ Everyone on the document sees each change as it is made, and each person's selec
 | Ctrl/⌘ + Shift + 1, 4, 5  | Number, Currency, Percent                       |
 | Ctrl/⌘ + F; Ctrl + H, ⌘⇧H | Find; Find and Replace                          |
 | Ctrl/⌘ + Alt + M          | Comment on the cell                             |
+| Alt + Down (⌥↓)           | Open the cell's dropdown                        |
+| Space (on checkboxes)     | Tick or untick the selected boxes               |
 | Escape                    | Leave the grid                                  |
 
 </ArticleLayout>
