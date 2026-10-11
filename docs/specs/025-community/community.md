@@ -156,7 +156,11 @@ type) and on the worker (authoritative).
 - **More Like This**: up to six other posts in the same category, most loved first.
 - A post that does not exist, was removed or is hidden shows a friendly not-found with a way back to the gallery.
 - Once a post loads, its page names its own address as canonical (the static shell, shared by every post, carries
-  none).
+  none). The shell's Open Graph block likewise has no `og:url`, so a link preview never folds a post into the gallery;
+  it carries a generic post description and the brand card.
+- The gallery's metadata (canonical, Open Graph and Twitter card with the brand card) comes from the shared
+  `pageMetadata` in `@livediagram/ui`, with `og:type` `website` ([Marketing site](../019-marketing/marketing-site.md)
+  "SEO and metadata").
 
 ## Viewing a post's document
 

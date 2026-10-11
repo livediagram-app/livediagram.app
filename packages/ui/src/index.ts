@@ -101,6 +101,8 @@ export {
 export {
   pageMetadata,
   breadcrumbJsonLd,
+  BRAND_OG_IMAGE,
+  BRAND_TWITTER_IMAGE,
   type PageMetadataInput,
   type BreadcrumbCrumb,
 } from './seo';
