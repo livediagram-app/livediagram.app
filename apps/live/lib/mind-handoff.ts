@@ -191,6 +191,26 @@ export function claimMindHandoff(
   return { type: 'text', text };
 }
 
+/**
+ * Called once node `id` is on screen, selected. A growth no longer opens the
+ * node's label editor, so this is where the handoff ends:
+ *
+ * - `false`: nothing was typed for the node yet; the capture lets go and the
+ *   canvas takes the keys from here (type-to-edit, Tab and Enter on the
+ *   selected node).
+ * - `true`: keys already arrived for it; the caller opens its editor, which
+ *   claims them as before.
+ */
+export function landMindHandoff(id: string): boolean {
+  if (!pending || pending.id !== id) return false;
+  const first = pending.segments[0];
+  const typed = pending.segments.length > 1 || !!first?.text || !!first?.end;
+  if (typed) return true;
+  release(pending);
+  debugLog(`[mind-handoff] land id=${id} untyped`);
+  return false;
+}
+
 /** Test seam: forget everything. */
 export function resetMindHandoff(): void {
   if (pending) release(pending);

@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import {
   applyMindMoves,
   isMindNode,
@@ -15,7 +15,7 @@ import {
 } from '@livediagram/document';
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { beginMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
+import { beginMindHandoff, landMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
@@ -33,8 +33,8 @@ const MIND_REVEAL_SIDE_MARGIN = 300;
 // Mind-map growth in the editor (docs/specs/009-elements/mind-node.md). Tab grows a child, Enter a
 // sibling, from the keyboard (the label editor or a selected node) or the "+"
 // ring; the new node is placed by the package's planner, dressed like its
-// level, wired to its parent, selected, put into label editing, and scrolled
-// into view, all as ONE undo step.
+// level, wired to its parent, selected and scrolled into view, all as ONE undo
+// step. It is not put into label editing: typing on it opens the editor.
 export function useMindGrowth(opts: {
   editsBlocked: boolean;
   // A Participant's growth leaves the tab's own fields alone: it never edits a tab's settings.
@@ -80,6 +80,11 @@ export function useMindGrowth(opts: {
     return !!el && isMindNode(el);
   };
 
+  // The grown node waiting to reach the screen, and the last one grown (for
+  // Escape on it while still empty).
+  const landing = useRef<string | null>(null);
+  const lastGrown = useRef<string | null>(null);
+
   // The new node's look: the tab's theme, then its level's (lib/mind-dress.ts).
   const dress = (node: ShapeElement, styleFrom: ShapeElement | null): ShapeElement =>
     dressMindNode(node, styleFrom, activeTab);
@@ -115,10 +120,13 @@ export function useMindGrowth(opts: {
       ...added,
     ];
     patchActive(grown);
+    // Grown from inside a label editor, that editor closes with the commit.
+    setEditingId(null);
     setSelectedId(node.id);
-    setEditingId(node.id);
-    // Keys typed before the new editor has focus are held for it.
+    // Keys typed before the new node is on screen are held for it.
     beginMindHandoff(node.id, handoffActions);
+    landing.current = node.id;
+    lastGrown.current = node.id;
     scrollIntoView(node.x, node.y, node.width, node.height, {
       sideMargin: MIND_REVEAL_SIDE_MARGIN,
     });
@@ -162,6 +170,26 @@ export function useMindGrowth(opts: {
   // The handoff calls back a task later, after further renders: always into
   // the LATEST state, never the closure that opened it.
   const latest = useLatest({ settleLabel, growMindNode, abandonMindNode });
+
+  // Escape on the node a growth just made, still selected and never labelled:
+  // the Tab one time too many, removed as from its label editor. Any other
+  // node keeps its usual Escape (deselect).
+  const escapeGrownMindNode = (id: string): boolean => {
+    if (lastGrown.current !== id) return false;
+    lastGrown.current = null;
+    const el = activeTab.elements.find((e) => e.id === id);
+    if (!el || (el.label ?? '').trim() !== '') return false;
+    return abandonMindNode(id);
+  };
+
+  // Once the grown node is on screen the keyboard handoff ends: keys typed in
+  // the gap open its editor to take them; otherwise it just stays selected.
+  useEffect(() => {
+    const id = landing.current;
+    if (!id || !activeTab.elements.some((e) => e.id === id)) return;
+    landing.current = null;
+    if (landMindHandoff(id)) setEditingId(id);
+  }, [activeTab.elements, setEditingId]);
   const handoffActions: HandoffActions = {
     settle: (id, text) => latest.current.settleLabel(id, text),
     grow: (id, kind, label) => latest.current.growMindNode(id, kind, label),
@@ -172,5 +200,6 @@ export function useMindGrowth(opts: {
     canGrowMindNode,
     growMindNode: (id: string, kind: 'child' | 'sibling') => growMindNode(id, kind),
     abandonMindNode,
+    escapeGrownMindNode,
   };
 }

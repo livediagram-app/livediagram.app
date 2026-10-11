@@ -32,7 +32,7 @@ Scope, by file:
 | `apps/live/lib/outline-rows.ts`                              | The row model: `rowsFromText`, `textFromRows`, split, join, indent, outdent, move, paste                                           |
 | `apps/live/components/canvas/MindOutlineContext.tsx`         | `useMindOutlineBadges`, `useMindOutlineBadge`: the root's Edit Outline and Tidy Map commands                                       |
 | `apps/live/components/canvas/indicator-items.ts`             | `buildIndicatorItems`: the outline and tidy commands                                                                               |
-| `apps/live/lib/mind-handoff.ts`                              | Typing ahead: `beginMindHandoff`, `claimMindHandoff`, `applyHandoffKey`                                                            |
+| `apps/live/lib/mind-handoff.ts`                              | Typing ahead: `beginMindHandoff`, `landMindHandoff`, `claimMindHandoff`, `applyHandoffKey`                                         |
 | `apps/live/lib/format-painter.ts`                            | `paintableBoxedFields`, `paintableArrowFields`: the look a new node copies                                                         |
 | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.ts`       | Tab / Enter on a selected node                                                                                                     |
 | `apps/live/hooks/canvas/useCanvasA11y.ts`                    | `ownsTabKey`: traversal stands aside                                                                                               |
@@ -162,9 +162,14 @@ Every plan is a pure function of the element list; the editor applies it in one 
 5. **One commit** (`commitTabs`, active tab, `templateChosen: true`): write `label` on `id` when
    given, `applyMindMoves` (positions and connector faces as patches over the elements in the
    commit), then append the node and its connector.
-6. Select the node, `setEditingId(node.id)`, `beginMindHandoff(node.id, handoffActions)`, and
-   `scrollIntoView(node, { sideMargin: MIND_REVEAL_SIDE_MARGIN })` (`D139`).
-7. `console.debug('[mind-grow] ...')`, `track('Element', 'Added', 'MindNode')`.
+6. `setEditingId(null)` (an editor grown from closes), select the node,
+   `beginMindHandoff(node.id, handoffActions)`, remember it as landing, and
+   `scrollIntoView(node, { sideMargin: MIND_REVEAL_SIDE_MARGIN })` (`D139`). The node is never
+   put into label editing here.
+7. Landing (an effect on the active tab's elements): once the landing node is in them,
+   `landMindHandoff(id)`; `true` (keys arrived for it) opens its editor with `setEditingId(id)`,
+   `false` leaves it selected.
+8. `console.debug('[mind-grow] ...')`, `track('Element', 'Added', 'MindNode')`.
 
 ### Typing ahead (`apps/live/lib/mind-handoff.ts`)
 
@@ -179,28 +184,32 @@ States: **idle** (no pending handoff), **capturing** (pending for a node id), **
    opening a new segment; Shift+Enter appends a newline; Escape ends it as `escape`; Backspace
    deletes; a one-character key appends; any other key is swallowed (`D138`). A taken key is
    `preventDefault` + `stopImmediatePropagation`.
-3. `claimMindHandoff(id)`, from the new label editor's mount (`useMindLabelKeys`):
+3. `landMindHandoff(id)`, once the grown node is on screen: no handoff for `id`, `false`; nothing
+   typed yet (one empty, unended segment), released (`[mind-handoff] land`) and `false`; else
+   `true`, and the caller opens the editor so step 4 claims it.
+4. `claimMindHandoff(id)`, from the new label editor's mount (`useMindLabelKeys`):
    - no handoff for `id`: `null`, edit as normal;
    - first segment ended by Tab / Enter: carrying, the rest stays queued, and a task later
      `actions.grow(id, end, text)` writes the label and grows the next node in one commit; the
      editor closes without committing;
    - ended by Escape: released; a task later an empty text abandons the node, else settles it;
    - still open: released; the editor types the text in and carries on.
-4. Timeout: release and settle the first segment's text on the label (`[mind-handoff] unclaimed`).
+5. Timeout: release and settle the first segment's text on the label (`[mind-handoff] unclaimed`).
 
 ### Keys
 
-| Where                            | Key         | Result                                         |
-| -------------------------------- | ----------- | ---------------------------------------------- |
-| Canvas, one mind node, no editor | Tab         | Child                                          |
-| Canvas, one mind node, no editor | Enter       | Sibling                                        |
-| Canvas                           | Shift+Tab   | Element traversal (`useCanvasA11y`)            |
-| Label editor on a mind node      | Tab         | Commit label, then child                       |
-| Label editor on a mind node      | Enter       | Commit label, then sibling                     |
-| Label editor on a mind node      | Shift+Enter | Newline                                        |
-| Label editor on a mind node      | Escape      | Commit; an empty new leaf is abandoned instead |
-| Label editor on a mind node      | Shift+Tab   | Nothing mind-specific [GA9]                    |
-| Between growth and editor mount  | any         | Captured by the handoff (typing ahead, above)  |
+| Where                                         | Key         | Result                                           |
+| --------------------------------------------- | ----------- | ------------------------------------------------ |
+| Canvas, one mind node, no editor              | Tab         | Child                                            |
+| Canvas, one mind node, no editor              | Enter       | Sibling                                          |
+| Canvas                                        | Shift+Tab   | Element traversal (`useCanvasA11y`)              |
+| Label editor on a mind node                   | Tab         | Commit label, then child                         |
+| Label editor on a mind node                   | Enter       | Commit label, then sibling                       |
+| Label editor on a mind node                   | Shift+Enter | Newline                                          |
+| Label editor on a mind node                   | Escape      | Commit; an empty new leaf is abandoned instead   |
+| Canvas, the node just grown, empty, no editor | Escape      | Abandoned (`escapeGrownMindNode`), else deselect |
+| Label editor on a mind node                   | Shift+Tab   | Nothing mind-specific [GA9]                      |
+| Between growth and editor mount               | any         | Captured by the handoff (typing ahead, above)    |
 
 Canvas guards: not in a text field, no modifier, no Shift, not read-only, `editingId === null`,
 exactly one selected element (`D32`), `canGrowMindNode`. `useCanvasA11y` returns early for plain
