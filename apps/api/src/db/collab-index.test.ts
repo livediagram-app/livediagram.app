@@ -183,7 +183,7 @@ describe('readActivity', () => {
       expect(s.args[2]).toBe(7);
     }
     expect(batches[0]![0]!.sql).toMatch(/FROM collab_actions/);
-    expect(batches[0]![1]!.sql).toMatch(/FROM collab_threads/);
+    expect(batches[0]![1]!.sql).toMatch(/JOIN collab_threads ct/);
     // Cards also bind the reader's hashed person ids (docs/specs/013-workspace/inbox.md §2.4).
     expect(batches[0]![2]!.sql).toMatch(/FROM items i/);
     expect(JSON.parse(batches[0]![2]!.args[3] as string)).toEqual([

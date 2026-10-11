@@ -13,7 +13,7 @@ const { db, canReadDocument, resolveDocumentGrant } = vi.hoisted(() => ({
     deleteImage: vi.fn(),
     documentServesImage: vi.fn(),
     findImageBySha: vi.fn(),
-    getDocument: vi.fn(),
+    getDocumentMeta: vi.fn(),
     getImage: vi.fn(),
     imageTotalsByOwner: vi.fn(),
     imageUsageByOwner: vi.fn(),
@@ -154,7 +154,7 @@ describe('handleImages', () => {
 
   it('byte-read 200 for a non-owner via a share-readable document that references the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
     canReadDocument.mockResolvedValue(true);
     db.documentServesImage.mockResolvedValue(true);
     const ctx = makeCtx('GET', '/api/images/i1?d=d1');
@@ -170,7 +170,7 @@ describe('handleImages', () => {
   // image but may not serve it (an id pasted where its owner has no tie) answers 404.
   it('404s a readable document that places the image but may not serve it', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'victim' });
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'reader' });
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'reader' });
     canReadDocument.mockResolvedValue(true);
     db.documentServesImage.mockResolvedValue(false);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -190,7 +190,7 @@ describe('handleImages', () => {
   // docs/specs/013-workspace/tab-scoped-share-links.md: a tab-scoped visitor reads images their tab uses.
   it('asks whether the scoped tab, not the whole document, uses the image', async () => {
     db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'someone-else' });
-    db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
+    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'someone-else' });
     resolveDocumentGrant.mockResolvedValue({ role: 'view', tabScope: 't2' });
     db.documentServesImage.mockResolvedValue(false);
     const res = await handleImages(makeCtx('GET', '/api/images/i1?d=d1'));
@@ -218,12 +218,12 @@ describe('handleImages', () => {
       db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
       const res = await handleImages(session('/api/images/i1?d=d2'));
       expect(res.status).toBe(404);
-      expect(db.getDocument).not.toHaveBeenCalled();
+      expect(db.getDocumentMeta).not.toHaveBeenCalled();
     });
 
     it('serves an image its own document serves', async () => {
       db.getImage.mockResolvedValue({ id: 'i1', ownerId: 'owner-1' });
-      db.getDocument.mockResolvedValue({ id: 'd1', ownerId: 'owner-1' });
+      db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'owner-1' });
       canReadDocument.mockResolvedValue(true);
       db.documentServesImage.mockResolvedValue(true);
       const ctx = session('/api/images/i1?d=d1');

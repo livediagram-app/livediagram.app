@@ -12,7 +12,16 @@ import { LikeButton } from './LikeButton';
 // One post in the gallery (docs/specs/025-community/community.md "Gallery"): the shared Community card
 // with the live heart, which likes in place, and the copy count in its corner. In My Shares a hidden post
 // says so, and opens the author's document in the editor, since its public page is gone.
-export function PostCard({ post, now }: { post: GalleryPost; now: number }) {
+export function PostCard({
+  post,
+  now,
+  priority = false,
+}: {
+  post: GalleryPost;
+  now: number;
+  // In the first row on screen (see CommunityPostTile's `priority`).
+  priority?: boolean;
+}) {
   const like = useLike(post);
   const hidden = isMinePost(post) && post.state === 'hidden';
   return (
@@ -21,6 +30,7 @@ export function PostCard({ post, now }: { post: GalleryPost; now: number }) {
       href={hidden ? editDocumentHref(post.documentId) : postHref(post.id)}
       imageUrl={postImageUrl(post.shareCode)}
       now={now}
+      priority={priority}
       // The editor is outside this app's basePath, so its link is a plain anchor.
       LinkComponent={hidden ? undefined : Link}
       badge={

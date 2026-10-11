@@ -15,7 +15,7 @@ const BOARD: Element[] = [a, b, { ...createPinnedArrow(a.id, 'e', b.id, 'w'), la
 describe('useArrowLabelLayouts', () => {
   it('keeps the draft layout across element changes', () => {
     const { result, rerender } = renderHook(
-      ({ els }) => useArrowLabelLayouts(els, true, undefined, true),
+      ({ els }) => useArrowLabelLayouts(els, true, undefined, 1),
       {
         initialProps: { els: BOARD },
       },

@@ -50,8 +50,10 @@ vi.mock('@/lib/drive/config', () => ({
   googleClientId: 'client',
   googlePickerApiKey: '',
 }));
-vi.mock('@/lib/drive/browser-engine', () => ({
+vi.mock('@/lib/drive/browser-tokens', () => ({
   createBrowserTokens: () => ({ mode: 'broker', source: { get: vi.fn(), clear: vi.fn() } }),
+}));
+vi.mock('@/lib/drive/browser-engine', () => ({
   createBrowserEngine: (input: { onStatus: (s: unknown) => void }) => {
     const engine = {
       start: vi.fn(async () => {}),

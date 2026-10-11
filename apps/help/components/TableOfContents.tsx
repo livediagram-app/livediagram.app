@@ -44,7 +44,9 @@ function readToc(): TocItem[] {
 
 function subscribeToArticle(onChange: () => void): () => void {
   const observer = new MutationObserver(onChange);
-  observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  // Added and removed nodes only: a heading's text never changes in place, and watching text too
+  // re-read the list on every character typed anywhere on the page.
+  observer.observe(document.body, { childList: true, subtree: true });
   return () => observer.disconnect();
 }
 

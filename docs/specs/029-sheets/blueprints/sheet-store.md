@@ -375,6 +375,9 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 - GET of a full sheet: 50,000 cells × typical 40 bytes ≈ 2 MB JSON (worst 4 MB by the bytes cap), one per sheet on
   the tab, only when a tab with a sheet opens. The tab's sheets come in one request.
 - A write is one D1 batch of at most 6 statements, independent of its cell count.
+- Every statement that names cells by key matches them as `(row_id, col_id)` pairs (`cellsNamedBy`), so the primary
+  key seeks each named cell; matched on the joined `row_id || ':' || col_id`, each read every cell of the sheet
+  (up to `SHEET_CELLS_MAX`). `apps/api/src/db/sheets-plans.test.ts` pins the plan.
 - A whole-sheet sort is one layout write (`orderRows`, ≤ 10,000 ids ≈ 70 KB); no cell is rewritten.
 - Room op carries only the landed write and the touched cells, capped at `SHEET_RELAY_BYTES_MAX`.
 - Deleting a sheet adds one statement to every tab write (two when the tab has a Sheet): measured on the test

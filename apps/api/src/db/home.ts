@@ -80,18 +80,8 @@ export const MARKED_MAKING = `(e.event_type IN ('document_created', 'document_du
 
 type JumpBackInRow = PlaceRow & { use_days: number; last_used_at: number };
 
-/** The person's server-side Within reach set (blueprint "Jump back in"): use days are the UTC days
- *  in the window with an open, a real edit or a marked making by them; the last use is the latest of
- *  those and their last open. SQL narrows to the n most used and the 2n most recent (which by the merge
- *  property hold the whole set); `withinReach` then allocates exactly, over rows in id order. */
-export async function readJumpBackIn(
-  env: Env,
-  personId: string,
-  now: number,
-  n: number = HOME_WITHIN_REACH_PER_ROW,
-): Promise<WithinReach<HomeJumpBackInItem>> {
-  const res = await env.DB.prepare(
-    `WITH ${VISIBLE_DOCUMENTS_CTES},
+// Exported for the query-plan guard in home-plans.test.ts.
+export const JUMP_BACK_IN_SQL = `WITH ${VISIBLE_DOCUMENTS_CTES},
      used AS (
        SELECT e.source_id AS document_id,
               COUNT(DISTINCT e.occurred_at / ${DAY_MS}) AS use_days,
@@ -128,16 +118,31 @@ export async function readJumpBackIn(
          SELECT document_id FROM reach
           ORDER BY last_used_at DESC, document_id ASC LIMIT ?5)
      )
+     -- Unordered: rows are put in id order in JS (readJumpBackIn). An ORDER BY v.id here let the
+     -- planner walk every document in the database in id order to meet the few picked.
      SELECT r.use_days, r.last_used_at, ${PLACE_COLUMNS}
        FROM picked p
        JOIN reach r ON r.document_id = p.document_id
        JOIN visible v ON v.id = p.document_id
-       ${PLACE_JOINS}
-      ORDER BY v.id ASC`,
-  )
+       ${PLACE_JOINS}`;
+
+/** The person's server-side Within reach set (blueprint "Jump back in"): use days are the UTC days
+ *  in the window with an open, a real edit or a marked making by them; the last use is the latest of
+ *  those and their last open. SQL narrows to the n most used and the 2n most recent (which by the merge
+ *  property hold the whole set); `withinReach` then allocates exactly, over rows in id order. */
+export async function readJumpBackIn(
+  env: Env,
+  personId: string,
+  now: number,
+  n: number = HOME_WITHIN_REACH_PER_ROW,
+): Promise<WithinReach<HomeJumpBackInItem>> {
+  const res = await env.DB.prepare(JUMP_BACK_IN_SQL)
     .bind(personId, now, windowStartOf(now), n, 2 * n)
     .all<JumpBackInRow>();
-  const items = (res.results ?? []).map((r): HomeJumpBackInItem => ({
+  const rows = (res.results ?? []).sort((a, b) =>
+    a.document_id < b.document_id ? -1 : a.document_id > b.document_id ? 1 : 0,
+  );
+  const items = rows.map((r): HomeJumpBackInItem => ({
     ...placeOf(r),
     useDays: r.use_days,
     lastUsedAt: r.last_used_at,
@@ -157,16 +162,8 @@ export async function readMe(env: Env, personId: string): Promise<Set<string>> {
   return new Set([personId, ...(res.results ?? []).map((r) => r.alias_id)]);
 }
 
-/** Other people's actions on the documents the person can open, newest first, from `since`. A
- *  tab-scoped share is left out: its actions name things on tabs the link does not reach. */
-export async function readWhatHappenedRows(
-  env: Env,
-  personId: string,
-  now: number,
-  opts: { since: number; limit: number },
-): Promise<WhatHappenedRow[]> {
-  const res = await env.DB.prepare(
-    `WITH me(id) AS (
+// Exported for the query-plan guard in home-plans.test.ts.
+export const WHAT_HAPPENED_SQL = `WITH me(id) AS (
        SELECT ?1
        UNION
        SELECT alias_id FROM owner_aliases WHERE owner_id = ?1
@@ -175,8 +172,10 @@ export async function readWhatHappenedRows(
      SELECT e.id AS event_id, e.event_type, e.actor_id, e.occurred_at, e.description, e.snapshot,
             ap.name AS actor_name, ap.color AS actor_color, ap.picture_url AS actor_picture,
             ${PLACE_COLUMNS}
+       -- The reader's documents lead (CROSS JOIN fixes the order), so the scopes are sought by
+       -- (scope_type, scope_id); led by scope_type alone, the read walked every document's events.
        FROM visible v
-       JOIN timeline_event_scopes sc ON sc.scope_type = 'document' AND sc.scope_id = v.id
+       CROSS JOIN timeline_event_scopes sc ON sc.scope_type = 'document' AND sc.scope_id = v.id
        JOIN timeline_events e ON e.id = sc.event_id
        LEFT JOIN participants ap ON ap.id = e.actor_id
        ${PLACE_JOINS}
@@ -186,8 +185,17 @@ export async function readWhatHappenedRows(
         AND e.actor_id IS NOT NULL
         AND e.actor_id NOT IN (SELECT id FROM me)
       ORDER BY e.occurred_at DESC, e.id DESC
-      LIMIT ?4`,
-  )
+      LIMIT ?4`;
+
+/** Other people's actions on the documents the person can open, newest first, from `since`. A
+ *  tab-scoped share is left out: its actions name things on tabs the link does not reach. */
+export async function readWhatHappenedRows(
+  env: Env,
+  personId: string,
+  now: number,
+  opts: { since: number; limit: number },
+): Promise<WhatHappenedRow[]> {
+  const res = await env.DB.prepare(WHAT_HAPPENED_SQL)
     .bind(personId, now, opts.since, opts.limit)
     .all<
       PlaceRow & {
