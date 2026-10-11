@@ -20,9 +20,9 @@ describe('PLACEMENT_DEFAULT_KEYS', () => {
     expect(PLACEMENT_DEFAULT_KEYS).toEqual([
       'mode:diagram',
       'mode:draw',
+      'mode:facilitate',
       'mode:illustrate',
       'mode:plan',
-      'mode:facilitate',
       'kind:event-storming',
       'template:retrospective',
       'template:kanban',
@@ -193,9 +193,9 @@ describe('placementDefaultTelemetryType', () => {
     expect(PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType)).toEqual([
       'DefaultModeDiagram',
       'DefaultModeDraw',
+      'DefaultModeFacilitate',
       'DefaultModeIllustrate',
       'DefaultModePlan',
-      'DefaultModeFacilitate',
       'DefaultKindEventStorming',
       'DefaultTemplateRetrospective',
       'DefaultTemplateKanban',
