@@ -8,7 +8,8 @@ import { HELP_URL } from './site';
 // title instead of the generic brand card. Pages outside the registry (the home, the features index)
 // keep the brand card.
 
-export const HELP_CARD_FOOTER = 'livediagram Help Centre';
+// Beside the livediagram.app pill, so the brand is not said twice.
+export const HELP_CARD_FOOTER = 'Help Centre';
 
 // `canvas/themes`: the route, without the `/help/` prefix or slashes, a card is keyed by.
 export const cardRoute = (href: string) => href.replace(/^\/(?:help\/)?|\/$/g, '');
@@ -30,7 +31,7 @@ function buildCards(): Map<string, SocialCardOptions> {
   const cards = new Map<string, SocialCardOptions>();
   for (const cat of categories) {
     cards.set(cardRoute(categoryHref(cat.slug)), {
-      kicker: 'Help Centre',
+      kicker: 'Help Topic',
       title: cardText(cat.title),
       subtitle: cardSubtitle(cardText(cat.description)),
       footer: HELP_CARD_FOOTER,
