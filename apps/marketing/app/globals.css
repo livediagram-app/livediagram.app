@@ -4,6 +4,13 @@
 @import '@livediagram/template-previews/preview-motion.css';
 @import './hero-animations.css';
 @import './hero-mode-animations.css';
+@import './hero-scenes/diagram.css';
+@import './hero-scenes/draw.css';
+@import './hero-scenes/mindmap.css';
+@import './hero-scenes/infographic.css';
+@import './hero-scenes/article.css';
+@import './hero-scenes/plan.css';
+@import './hero-scenes/townhall.css';
 @import './promises.css';
 @import './feature-art/core.css';
 @import './feature-art/content.css';
