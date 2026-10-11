@@ -339,7 +339,7 @@ export function PortalMenu({
                 description={
                   locked
                     ? 'This tab is locked. Unlock it before deleting.'
-                    : "Delete this tab. Its content can't be recovered."
+                    : "Delete this tab. Unless another document also holds it, its content can't be recovered."
                 }
                 onClick={() => setConfirmingDelete(true)}
                 disabled={!canDelete || locked}
@@ -415,7 +415,9 @@ export function PortalMenu({
     confirmingDelete && deleteRow ? (
       <ConfirmPopover
         anchor={deleteRow}
-        message="Delete this tab? Its content can't be recovered."
+        // A tab added to another document lives on there (docs/specs/006-document/tab-document-many-to-many.md),
+        // and the menu can't tell which tabs are, so the copy says so rather than overclaiming.
+        message="Delete this tab? Unless another document also holds it, its content can't be recovered."
         confirmLabel="Delete"
         onConfirm={() => {
           setConfirmingDelete(false);

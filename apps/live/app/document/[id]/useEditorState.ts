@@ -274,7 +274,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     redo: tabRedo,
     clearRedo: clearHistoryRedo,
   });
-  const { canUndo, canRedo, undo: undoHistory, redo: redoHistory } = itemUndo;
+  const {
+    canUndo: canHistoryUndo,
+    canRedo: canHistoryRedo,
+    undo: undoHistory,
+    redo: redoHistory,
+  } = itemUndo;
 
   // Counts this person's own edits (never a remote op, an undo or a tick): what lets the documents
   // take in what was just added to a page (useArticleIntake) without taking a peer's.
@@ -2248,14 +2253,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const editorHistory = useEditorHistory({
     activeId,
     editsBlocked,
-    canUndo,
-    canRedo,
+    canUndo: canHistoryUndo,
+    canRedo: canHistoryRedo,
+    tabLocked: activeTabLocked,
     tickTabs,
     undoHistory,
     redoHistory,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
-  const { tick, undo, redo } = editorHistory;
+  const { tick, undo, redo, canUndo, canRedo } = editorHistory;
   // The writing of the active tab's article pages (docs/specs/007-editor/article-pages.md): in
   // Illustrate mode, and while a page slide presents in any mode (read only, then: nothing is
   // edited while presenting).

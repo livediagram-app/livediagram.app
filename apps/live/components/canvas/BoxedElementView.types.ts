@@ -1,4 +1,5 @@
 import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
+import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type {
   BoxedElement,
@@ -291,8 +292,8 @@ export type BoxedElementViewProps = {
   resizable?: boolean;
   // Other participants whose realtime selection is currently on this
   // element. Rendered as a small initial-badge stack at the top-left
-  // (opposite the link / comment badges).
-  remoteSelectors: { id: string; name: string; color: string }[];
+  // (opposite the link / comment badges). Only a selector who `holds` (not a Viewer) locks it.
+  remoteSelectors: RemoteSelector[];
   // Resolved CSS font-family stack for this element's text (docs/specs/004-interface-design/fonts.md):
   // its own font, else the tab's, else undefined (inherit the editor
   // default). Applied to the label / cell text + their live editors.

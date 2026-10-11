@@ -104,7 +104,10 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
     const team = await getTeamByInviteToken(env, segments[3]!);
     if (!team) return notFound();
     const memberCount = await countJoinedMembers(env, team.id);
-    const alreadyMember = userId ? (await getMembership(env, team.id, userId)) !== null : false;
+    // Joined only: someone whose email invite is still pending must be offered Join, which accepts it.
+    const alreadyMember = userId
+      ? (await getMembership(env, team.id, userId))?.status === 'joined'
+      : false;
     return json({ team, memberCount, alreadyMember });
   }
 

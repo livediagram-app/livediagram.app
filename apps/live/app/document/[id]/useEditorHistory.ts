@@ -14,6 +14,10 @@ export function useEditorHistory(opts: {
   editsBlocked: boolean;
   canUndo: boolean;
   canRedo: boolean;
+  // A locked active tab pauses undo and redo on every route (toolbar, keyboard, command palette), so an
+  // undo can't unlock the tab or roll it back past the lock (docs/specs/008-canvas/canvas-and-palette.md
+  // "A locked tab pauses undo and redo").
+  tabLocked: boolean;
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   undoHistory: () => void;
   redoHistory: () => void;
@@ -23,8 +27,9 @@ export function useEditorHistory(opts: {
     setFormatSourceId: SetState<string | null>;
   };
 }) {
-  const { activeId, editsBlocked, canUndo, canRedo, tickTabs, undoHistory, redoHistory, set } =
-    opts;
+  const { activeId, editsBlocked, tabLocked, tickTabs, undoHistory, redoHistory, set } = opts;
+  const canUndo = opts.canUndo && !tabLocked;
+  const canRedo = opts.canRedo && !tabLocked;
   const { setSelectedId, setEditingId, setFormatSourceId } = set;
 
   const tick = (mapElements: (els: Element[]) => Element[]) => {
@@ -56,5 +61,5 @@ export function useEditorHistory(opts: {
     clearFocus();
   };
 
-  return { tick, undo, redo };
+  return { tick, undo, redo, canUndo, canRedo };
 }

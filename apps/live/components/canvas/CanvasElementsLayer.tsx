@@ -47,6 +47,7 @@ import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { IllustratePageClip } from '@/components/canvas/IllustratePageClip';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
+import type { RemoteSelector } from '@/lib/presence-rows';
 
 // Stable empty-array constant for the `remoteSelectors` prop on the
 // (very common) "no remote participants have this element selected"
@@ -55,7 +56,7 @@ import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteConte
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
 
-const EMPTY_REMOTE_SELECTORS: { id: string; name: string; color: string }[] = [];
+const EMPTY_REMOTE_SELECTORS: RemoteSelector[] = [];
 
 // Canvas-computed values threaded into the element layer alongside the
 // raw props.

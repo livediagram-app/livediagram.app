@@ -90,9 +90,11 @@ hands it over from the Collaborators modal, or simply lets the person who is
 running the session take it. "The document can always take back control" falls
 out of one row.
 
-**View-role visitors cannot hold it.** The tools it governs write to the
-document, so a baton a view-only person cannot use would be a trap. The action
-is shown greyed with the reason rather than hidden, so the rule is learnable.
+**Participants and Viewers cannot hold it.** The tools it governs write to the
+document, so a baton a read-only person cannot use would be a trap. The action
+is shown greyed with the reason ("Only Editors can run a session") rather than
+hidden, so the rule is learnable. Nor can they hand a free baton to somebody
+else: on another person's row they see no verb, since the room would refuse it.
 
 ### What happens when they leave
 
@@ -292,7 +294,7 @@ On this tab — Board
 | Row                          | Button                            | When                                                                                                        |
 | ---------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | Somebody else                | **Make Facilitator**              | I may grant: the baton is free and I have edit rights, or I am the owner, or I hold it and am passing it on |
-| Somebody else, a viewer      | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
+| Somebody else, not an Editor | **Make Facilitator**, disabled    | Always. The hover card says why, rather than hiding the button and leaving the rule unlearnable             |
 | Somebody else, holding it    | no button, **Facilitating** badge | Taking it back is done from my own row, so the baton has one home per person                                |
 | Mine, baton free             | **Take Facilitation**             | I have edit rights. This is also how a solo facilitator starts                                              |
 | Mine, somebody else holds it | **Take Over**                     | Owner only — the one row that makes "the document can always take back control" true                        |
