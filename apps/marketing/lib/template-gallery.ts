@@ -19,7 +19,7 @@ import {
 // then the starters most people reach for), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.
 
-export type GalleryTemplate = TemplateDescriptor & {
+type GalleryTemplate = TemplateDescriptor & {
   category: TemplateCategory;
   categoryLabel: string;
   // The editor mode the template opens in (docs/specs/007-editor/templates-by-mode.md).

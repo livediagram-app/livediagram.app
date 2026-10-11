@@ -7,7 +7,7 @@ import {
 } from '@livediagram/licences';
 import { useEffect, useRef, useState } from 'react';
 
-export type LicenceTextRef = { label: string; hash: string; lines: number };
+type LicenceTextRef = { label: string; hash: string; lines: number };
 
 // A text box's height, fixed from its line count before anything loads, so
 // loading, failing or finishing never moves the page (blueprint "Web Experience").

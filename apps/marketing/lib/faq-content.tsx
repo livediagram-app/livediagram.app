@@ -36,6 +36,9 @@ const ICON = 18;
 export const TEMPLATE_COUNT = 95;
 // Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 17;
+// Illustrate's infographic page layouts and logo layouts, pinned the same way.
+export const PAGE_LAYOUT_COUNT = 31;
+export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -52,14 +55,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Do I need an account to use livediagram?',
         a: (
           <>
-            No. Open the editor and start drawing straight away, with no sign-up. Your work is saved
-            and shareable as a guest. Signing in (also free) keeps your documents with you across
-            devices and unlocks teams, API tokens and the AI connection. See{' '}
+            No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
+            your browser as you go, and pressing Share puts it online for others to join. Signing in
+            (also free) keeps your documents with you across devices and unlocks teams, API tokens
+            and the AI connection. See{' '}
             <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open the editor and start drawing straight away, with no sign-up. Your work is saved and shareable as a guest. Signing in (also free) keeps your documents with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your documents with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
       },
       {
         q: 'How do I start my first document?',
@@ -131,7 +135,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, kanban and Plan boards, spreadsheets, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, infographics, posters, logos, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, UI wireframes, slide decks, articles and a to-scale floor plan.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -146,21 +150,62 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a document onto a folder to file it.',
       },
       {
+        q: 'Can I write documents in it?',
+        a: (
+          <>
+            Yes. Switch a tab to Illustrate and write an article straight onto pages: Markdown
+            shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and
+            Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the
+            text, and teammates comment on the words themselves. Pick one of five looks, then export
+            every page as a PDF. See <a href="/help/canvas/illustrate/articles/">Articles</a>.
+          </>
+        ),
+        aText:
+          'Yes. Switch a tab to Illustrate and write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and diagrams sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
+      },
+      {
+        q: 'Can I design infographics, posters or a logo?',
+        a: (
+          <>
+            Yes, in Illustrate. Lay out pages in print sizes (A4, US Letter, A3) or social sizes,
+            starting from one of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF,
+            PNG or SVG. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
+            construction guides, mirror drawing and wordmark type, and it exports a logo kit. See{' '}
+            <a href="/help/canvas/illustrate/">Illustrate mode</a>.
+          </>
+        ),
+        aText: `Yes, in Illustrate. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Illustrate mode.`,
+      },
+      {
+        q: 'Can I use it as a whiteboard?',
+        a: (
+          <>
+            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
+            text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
+            stylus, a resting palm never leaves a mark. See{' '}
+            <a href="/help/canvas/draw-mode/">Draw mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+      },
+      {
         q: 'Is there a spreadsheet?',
         a: (
           <>
             Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort,
             filter and freeze, edited live by everyone on the tab. Formulas can read the cards on
-            the board, and Budget Planner, Timesheet, Contact List and Task Tracker templates start
-            you off. See <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
+            the board, or list the cards as rows that stay linked both ways. CSV files come in and
+            go out, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you
+            off. See <a href="/help/canvas/plan-mode/sheets/">Sheets</a>.
           </>
         ),
         aText:
-          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you off. See Sheets.',
+          'Yes. Put a Sheet on a Plan tab: cells with over 150 functions, number formats, sort, filter and freeze, edited live by everyone on the tab. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. CSV files come in and go out, and Budget Planner, Timesheet, Contact List and Task Tracker templates start you off. See Sheets.',
       },
       {
         q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Illustrate adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. A laser pointer and spotlight help you guide the room.`,
+        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Illustrate adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
       },
       {
         q: 'Can I undo a mistake?',
@@ -179,8 +224,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucideUsers, ICON),
     items: [
       {
-        q: 'Can I work on a diagram with my team?',
-        a: 'Yes, that is the point. Share a link and teammates join the same canvas in real time, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
+        q: 'Can I work with my team in real time?',
+        a: 'Yes, that is the point. Share a link and teammates join the same document in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new document starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -196,7 +241,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Is it good for running workshops and retros?',
-        a: 'Very. There are templates for retrospectives, Lean Coffee, town hall Q&A and event storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls and reveals.',
+        a: (
+          <>
+            Very. There are templates for retrospectives, Lean Coffee, town hall Q&amp;A and event
+            storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls
+            and reveals. Estimate cards run planning poker, a temperature check shows how the room
+            feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See{' '}
+            <a href="/help/collaboration/facilitator/">the facilitator</a>.
+          </>
+        ),
+        aText:
+          'Very. There are templates for retrospectives, Lean Coffee, town hall Q&A and event storming, and a facilitator role: whoever holds it runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See the facilitator.',
       },
     ],
   },
@@ -281,8 +336,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucideArrowUpDown, ICON),
     items: [
       {
-        q: 'Can I export my diagrams?',
-        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Hidden layers stay out of exports.',
+        q: 'Can I export my work?',
+        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of exports.',
       },
       {
         q: 'Does it work with Mermaid?',
@@ -290,7 +345,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
+        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too, and a CSV file dropped on a Plan tab becomes a Sheet.',
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',
@@ -335,6 +390,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Offline Mode saves a document only in your browser, never on our servers. Until you sign in, new documents start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
+      },
+      {
+        q: 'What happens to my documents if I clear my browser data?',
+        a: (
+          <>
+            A document kept only in your browser goes with it, so share it or sign in first. Share
+            syncs a document online in one step, and after you sign in livediagram offers to move
+            every browser-only document into your account. Documents saved to your account are never
+            touched. See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
+          </>
+        ),
+        aText:
+          'A document kept only in your browser goes with it, so share it or sign in first. Share syncs a document online in one step, and after you sign in livediagram offers to move every browser-only document into your account. Documents saved to your account are never touched. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',

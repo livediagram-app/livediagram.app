@@ -4,6 +4,7 @@ export { brandLogoSvg } from './brand-logo-svg';
 export { PRISM_PALETTES, prismPalette, type PrismPalette, type PrismScheme } from './brand-prism';
 export { ProductNav, type ProductNavKey } from './ProductNav';
 export { SiteHeader } from './SiteHeader';
+export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { StartBlankMenu } from './StartBlankMenu';
 export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
 export { CountBadge } from './CountBadge';

@@ -47,6 +47,7 @@ import {
   LinkCardArt,
   LivingBackgroundArt,
   LockArt,
+  LogoPageArt,
   MarginCommentsArt,
   MarkdownImportArt,
   MarkersArt,
@@ -106,6 +107,8 @@ export type LandingSection = {
   /** The headline: the beat's title on the landing page and the category page's h1. */
   title: string;
   description: string;
+  /** The category page's meta description: 50 to 160 characters, so a search result shows it whole. */
+  metaDescription: string;
   /**
    * The label for the beat's link into its category page. Hand written rather
    * than derived from the title, which read awkwardly ("Explore work on it
@@ -134,6 +137,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'Work on it together, live',
     description:
       'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and the tools to run a workshop, from timers and votes to a spotlight on the thing you mean.',
+    metaDescription:
+      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
     highlights: [
       'Live presence',
       'Comments on any element',
@@ -311,6 +316,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'Diagrams that look designed, not dragged',
     description:
       'Shapes that snap into line, arrows that follow them, and icons, tables and components when boxes are not enough. Start from a template, recolour it with a theme, or describe it to your AI and let it build the diagram for you.',
+    metaDescription:
+      'Shapes that snap into line, arrows that follow them, templates and one-click themes, and an AI that can build the diagram from a description.',
     highlights: [
       'Arrows that bend your way',
       'Guides that line things up',
@@ -696,6 +703,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'A whiteboard that feels like paper',
     description:
       'Switch a tab to Draw and the canvas becomes a whiteboard: three markers in hand, a pen that answers to pressure, and erasers that take a whole stroke or just a smudge. Sketch it rough, and let it snap to shape when you want it neat.',
+    metaDescription:
+      'Switch a tab to Draw for a whiteboard that feels like paper: three pressure-sensitive markers, smart erasers, and rough shapes that snap neat.',
     highlights: [
       'Three markers in hand',
       'Pressure-sensitive pens',
@@ -759,13 +768,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Infographics',
     scene: 'infographic',
     cta: 'Explore infographics',
-    title: 'Posters, one-pagers and social posts',
+    title: 'Posters, social posts and logos',
     description:
-      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it.',
+      'Switch a tab to Illustrate and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
+    metaDescription:
+      'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
     highlights: [
       'Pages for print and social',
       'Start a page from a layout',
-      'Turn any diagram into pages',
+      'Design a logo',
       'Every page, print-ready',
     ],
     items: [
@@ -774,7 +785,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/illustrate/',
         title: 'Pages for print and social',
         description:
-          'A4, US Letter and A3 for print; square, portrait post and story or slide for social. Each page has its own size and orientation, and everything on it moves with it.',
+          'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
       },
       {
         art: <InfographicLayoutArt />,
@@ -798,6 +809,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Switch a diagram, mind map or sketch to Illustrate mode and it lands on a page made around it, nothing moved or shrunk. Split it into a page for each part whenever you like.',
       },
       {
+        art: <LogoPageArt />,
+        href: '/help/canvas/illustrate/logo-pages/',
+        title: 'Design a logo',
+        description:
+          'A logo page is a square artboard with construction guides to build on. Start from twenty-five logo layouts or a blank board, draw with Mirror for a symmetrical mark, combine shapes into one, set the name in wordmark type, then download a logo kit: SVG, PNGs from 16 to 1024 pixels and a favicon.',
+      },
+      {
         art: <IllustrateExportArt />,
         href: '/help/canvas/illustrate/exporting-pages/',
         title: 'Every page, print-ready',
@@ -814,6 +832,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'Write it up, then present it',
     description:
       'Write on pages like a doc, with the diagram right there in the text. Then turn pages into slides and present them full screen, your notes beside you. The write-up, the deck and the diagram stay one document.',
+    metaDescription:
+      'Write on pages like a doc, with the diagram in the text, then turn pages into slides and present them. The write-up and the deck stay one document.',
     highlights: [
       'Write like a doc',
       'Pages that grow',
@@ -919,6 +939,8 @@ export const LANDING_SECTIONS: LandingSection[] = [
     title: 'Plan the work, then watch it move',
     description:
       'Switch a tab to Plan and the work moves onto boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and live charts of every card, right beside the diagram that explains it.',
+    metaDescription:
+      'Plan mode puts the work on boards of cards: WIP limits, swimlanes, card types with your own fields, live charts and Sheets with real formulas.',
     highlights: [
       'Boards with WIP limits',
       'One card, every board',
@@ -959,7 +981,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/plan-mode/sheets/',
         title: 'Sheets with real formulas',
         description:
-          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, copy and paste works with Google Sheets and Excel, and the cells zoom from 50% to 200%.',
+          'Put a spreadsheet on a Plan tab: cells, over 150 functions, number formats, sort, filter and freeze, live for everyone. Formulas can read the cards on the board, or list the cards as rows that stay linked both ways. Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and the cells zoom from 50% to 200%.',
       },
       {
         art: <BoardWidgetsArt />,
@@ -1006,7 +1028,7 @@ export function getLandingSection(id: string): LandingSection | undefined {
   return LANDING_SECTIONS.find((section) => section.id === id);
 }
 
-export type FeatureGroup = { title: string; items: FeatureProps[] };
+type FeatureGroup = { title: string; items: FeatureProps[] };
 
 /**
  * Split a section's features into ordered, captioned sub-groups for the

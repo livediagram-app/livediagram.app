@@ -18,7 +18,7 @@
 // ALTERNATIVES array so revising a competitor row + bumping the date
 // lands in one diff. Bump this when adding a competitor or revising
 // any row / claim / lede.
-export const ALTERNATIVES_LAST_UPDATED = new Date('2026-10-10');
+export const ALTERNATIVES_LAST_UPDATED = new Date('2026-10-11');
 
 type ComparisonRow = {
   label: string;
@@ -74,9 +74,9 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Microsoft Whiteboard',
     title: 'Microsoft Whiteboard alternative · livediagram',
     description:
-      'A free, open-source Microsoft Whiteboard alternative: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with the ink still editable.',
+      'A free, open-source Microsoft Whiteboard alternative: pressure-sensitive ink, no Microsoft account, and an import that keeps your boards editable.',
     h1: 'The open-source Microsoft Whiteboard alternative',
-    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, and the standalone apps and remaining legacy boards go on 16 October 2026. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
+    lede: 'Microsoft is retiring Whiteboard for personal accounts: boards became read-only in September 2026, and on 16 October 2026 the remaining legacy boards are deleted and the standalone apps retire. livediagram is a free, open-source home for that work: a real-time whiteboard with pressure-sensitive ink, no Microsoft account needed, and an import that brings your boards across with every stroke still editable.',
     rows: [
       {
         label: 'Price',
@@ -118,6 +118,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Draw mode is a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Real-time multiplayer with live cursors, comments and a laser pointer, for anyone with the link.',
       'Three kinds of link: Editor, Participant (add stickies, write and vote without reshaping the board, handy for a class) or view-only.',
+      'For a class: quizzes with a countdown and a reveal of who got it right, live polls, an anonymous idea box and a shared timer.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan.',
       '95 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
       'Free and MIT-licensed, so no future retirement can take your boards away: you can always run your own copy.',
@@ -126,7 +127,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'What the retirement means',
         paragraphs: [
-          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, and on 16 October 2026 the standalone Windows, iOS and Android apps retire and the remaining legacy boards are deleted for good.',
+          'Microsoft Whiteboard is not going away for everyone. Work and school accounts keep it inside Teams and on the web. What is ending is Whiteboard for personal Microsoft accounts and the standalone apps: personal boards became read-only on 25 September 2026, and on 16 October 2026 the remaining legacy boards are deleted for good and the standalone Windows, iOS and Android apps retire, for every kind of account.',
           'If you used Whiteboard on a personal account, for teaching, family planning, tutoring or your own thinking, you need a new home for those boards and for the next ones. Check Microsoft’s own retirement notice for the details that apply to your account.',
         ],
       },
@@ -141,7 +142,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'A whiteboard that grows into more',
         paragraphs: [
           'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things. A document holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
-          'For sessions, there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes and polls for the room.',
+          'For sessions, there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
         ],
       },
       {
@@ -155,7 +156,7 @@ export const ALTERNATIVES: Alternative[] = [
     faqs: [
       {
         q: 'Is Microsoft Whiteboard being discontinued?',
-        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, and the standalone apps retire and remaining legacy boards are deleted on 16 October 2026. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
+        a: 'For personal Microsoft accounts, yes: boards became read-only on 25 September 2026, and on 16 October 2026 the remaining legacy boards are deleted and the standalone Windows, iOS and Android apps retire. Work and school accounts keep Whiteboard in Teams and on the web. Microsoft’s retirement notice has the details for your account.',
       },
       {
         q: 'Can I import my Microsoft Whiteboard boards?',
@@ -195,7 +196,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out; CSV both ways for Sheets',
         them: 'Broad import + export options',
       },
       {
@@ -212,7 +213,7 @@ export const ALTERNATIVES: Alternative[] = [
     themBest: [
       'Facilitating very large workshops: breakout-scale sessions and a marketplace of meeting apps around the board.',
       'A deep template and integration marketplace (Jira, Slack, and more).',
-      'AI woven through the whole workspace, well beyond a single assistant panel.',
+      'AI across the canvas: assistants, flows and generators, well beyond a single panel.',
       'Enterprise admin, SSO, and compliance at large scale.',
     ],
     usBest: [
@@ -222,7 +223,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards and spreadsheets.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, a Q&A board and hidden-then-revealed responses.',
+      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       '95 templates and 26 one-click whole-canvas themes turn a blank canvas into a polished diagram fast.',
       'Present a document as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
@@ -232,7 +233,7 @@ export const ALTERNATIVES: Alternative[] = [
         heading: 'One workspace, four ways to work',
         paragraphs: [
           'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livediagram covers the same ground in one document with tabs, and each tab works in one of four modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Illustrate for designed pages: infographics, written documents and slide decks. Plan for boards of cards with WIP limits and swimlanes, beside Sheets with real formulas that can read the cards.',
-          'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
+          'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee, town hall Q&A and event storming, including turning a photo of a sticky-note wall into notes. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
       },
       {
@@ -272,7 +273,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
       {
         q: 'Can livediagram run workshops the way Miro does?',
-        a: 'Sessions like retros, brainstorms, estimation and planning work well: a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
+        a: 'Sessions like retros, brainstorms, estimation and planning work well: a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the document keeps the comments and assigned actions that came out of it. What livediagram does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
       },
       {
         q: 'Can I self-host livediagram?',
@@ -322,7 +323,7 @@ export const ALTERNATIVES: Alternative[] = [
       },
     ],
     themBest: [
-      'Deep, keyboard-fast mind-map outlining and dedicated brainstorming modes.',
+      'Deep, keyboard-fast mind-map outlining, with a distraction-free ZEN mode.',
       'A refined native desktop experience with dedicated mobile apps.',
       "Pitch mode turns a map's branches into presentation slides.",
     ],
@@ -420,7 +421,7 @@ export const ALTERNATIVES: Alternative[] = [
       'The signature hand-drawn aesthetic that made it famous.',
       'A huge community, shared shape libraries, and integrations that embed it in other tools.',
       'Dead-simple, single-canvas freeform sketching.',
-      'Excalidraw+ adds text-to-diagram AI and presentations on top of the free editor.',
+      'Excalidraw+ adds presentations with a presenter view, and AI features that can run on your own model keys, on top of the free editor.',
     ],
     usBest: [
       'Start from a real template (flowchart, kanban, retro, org chart…) instead of a blank page: 95 of them.',
@@ -593,7 +594,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Google Slides',
     title: 'Google Slides alternative · livediagram',
     description:
-      'A free, open-source Google Slides alternative: slide pages from ready-made layouts and decks built from your live canvas, presented with notes, timing and transitions, no account needed.',
+      'A free, open-source Google Slides alternative: slide pages from ready-made layouts, decks built from your canvas, notes, timing and transitions.',
     h1: 'A free, open-source Google Slides alternative',
     lede: 'Google Slides is the presentation tool most people already have open. livediagram makes decks differently: start a slide page from a ready-made layout, or build slides straight from the work on your canvas, so the deck, the write-up and the plan behind it live in one document that your team edits together.',
     rows: [
@@ -631,7 +632,7 @@ export const ALTERNATIVES: Alternative[] = [
       'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
       'A full presentation suite: per-object animations, a presenter view, audience Q&A and a large template gallery.',
       'PowerPoint import and export, for decks that travel between organisations.',
-      'Gemini, built into Workspace, can draft a whole presentation for you from a prompt.',
+      'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
     ],
     usBest: [
       'Slides straight from the work: select elements or a Plan board on any tab and present it, and editing a shape updates every slide it is on.',
@@ -698,7 +699,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'FigJam',
     title: 'FigJam alternative · livediagram',
     description:
-      'A free, open-source FigJam alternative: a real-time whiteboard and diagram canvas with no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source FigJam alternative: a real-time whiteboard with workshop tools, no account needed, 95 templates, Mermaid, an API and an MCP server.',
     h1: 'The free, open-source FigJam alternative',
     lede: 'FigJam is a polished, playful whiteboard that lives inside Figma. livediagram covers the same ground, brainstorms, workshops and diagrams with your team in real time, as free, open-source software that anyone can open from a link, no account or Figma seat needed.',
     rows: [
@@ -735,14 +736,14 @@ export const ALTERNATIVES: Alternative[] = [
       'Your team designs in Figma, and you want boards that sit beside your design files and copy across into them.',
       'A playful, polished feel: stamps, stickers, emotes, cursor chat and widgets.',
       'A large community of plugins, widgets and templates.',
-      'AI features built into the board for generating and summarising content.',
+      'FigJam AI, for generating boards, sorting and summarising sticky notes.',
     ],
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
       'Open a link and start, no account needed, even to create a document.',
       'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 26 one-click themes and 95 templates.',
       'Four ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, Illustrate for designed pages, and Plan for boards of cards.',
-      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, a Q&A board and hidden-then-revealed responses.',
+      'Workshop tools built in: a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your documents.',
@@ -765,7 +766,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Workshops built in',
         paragraphs: [
-          'Running a session needs more than sticky notes. livediagram gives one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
+          'Running a session needs more than sticky notes. livediagram gives one person the facilitator role, and with it a shared timer, dot-voting, live polls, a Q&A board and responses kept hidden until the reveal. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas until the reveal. There are templates for retrospectives in five formats, Lean Coffee, town hall Q&A and event storming, and comments and assigned actions keep the follow-ups with the board.',
         ],
       },
       {
@@ -800,7 +801,7 @@ export const ALTERNATIVES: Alternative[] = [
     name: 'Lucidchart',
     title: 'Lucidchart alternative · livediagram',
     description:
-      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, 95 templates, Mermaid, an API and an MCP server for AI tools.',
+      'A free, open-source Lucidchart alternative: real-time diagrams with no document or shape limits, no account needed, Mermaid, an API and MCP.',
     h1: 'The free Lucidchart alternative, with no limits',
     lede: 'Lucidchart is a mature, professional diagramming tool, with a free plan that limits how many documents and shapes you can make. livediagram is free and open source with no such limits: real-time flowcharts, org charts and architecture diagrams that anyone can open from a link, no account needed.',
     rows: [
