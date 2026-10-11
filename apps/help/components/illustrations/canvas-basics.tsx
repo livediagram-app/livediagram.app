@@ -716,9 +716,9 @@ export function LookAndFeelCanvas() {
   );
 }
 
-/** The custom-theme builder, opened from New theme in the Custom category: the live
- *  preview, the name, the four base colours, the Pattern and Per-shape colours sections,
- *  and Save theme. */
+/** The custom-theme builder, opened from New theme in the Custom category: the tab strip
+ *  stays on top, then the live preview, the name, the four base colours, the Pattern section
+ *  (open to start with) and the Per-shape colours section stacked beneath it, and Save theme. */
 export function CustomThemeBuilderScene() {
   const bases: [string, string][] = [
     ['Background', 'fill-brand-50'],
@@ -726,102 +726,114 @@ export function CustomThemeBuilderScene() {
     ['Stroke', 'fill-brand-600'],
     ['Text', 'fill-slate-800'],
   ];
+  const chevron = { className: 'stroke-slate-400', strokeWidth: 1.4, fill: 'none' } as const;
   return (
-    <Scene w={420} h={300} bg="plain">
-      <Dialog
-        x={50}
-        y={10}
-        w={320}
-        h={282}
-        title="Tab Look & Feel"
-        sceneW={420}
-        sceneH={300}
-        scrim={false}
-      >
-        <Label x={66} y={60} size={10} weight={600} tone="muted">
-          ‹ Back
-        </Label>
-        <Label x={108} y={60} size={10} weight={700} tone="strong">
-          New theme
-        </Label>
-        {/* Live preview of the in-progress theme. */}
-        <g className="help-art-as-drawn">
-          <rect x={66} y={72} width={288} height={40} rx={6} className="fill-brand-50" />
-          <rect
-            x={100}
-            y={82}
-            width={52}
-            height={20}
-            rx={4}
-            className="fill-brand-200 stroke-brand-600"
-            strokeWidth={1.5}
-          />
-          <rect
-            x={196}
-            y={82}
-            width={52}
-            height={20}
-            rx={4}
-            className="fill-brand-200 stroke-brand-600"
-            strokeWidth={1.5}
-          />
-          <path d="M152 92 H194" className="stroke-brand-600" strokeWidth={1.5} />
-        </g>
-        <Caption x={66} y={126}>
-          Name
-        </Caption>
+    <LookAndFeelShell active={0} h={378} sceneH={402}>
+      <Label x={60} y={98} size={10} weight={600} tone="muted">
+        ‹ Back
+      </Label>
+      <Label x={102} y={98} size={10} weight={700} tone="strong">
+        New theme
+      </Label>
+      {/* Live preview of the in-progress theme. */}
+      <g className="help-art-as-drawn">
+        <rect x={60} y={110} width={300} height={40} rx={6} className="fill-brand-50" />
         <rect
-          x={66}
-          y={134}
-          width={288}
-          height={22}
-          rx={5}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.3}
+          x={110}
+          y={120}
+          width={52}
+          height={20}
+          rx={4}
+          className="fill-brand-200 stroke-brand-600"
+          strokeWidth={1.5}
         />
-        <Label x={76} y={145} size={10} tone="muted">
-          My theme
-        </Label>
-        <Caption x={66} y={170}>
-          Base colours
-        </Caption>
-        {bases.map(([name, cls], i) => (
-          <g key={name}>
+        <rect
+          x={258}
+          y={120}
+          width={52}
+          height={20}
+          rx={4}
+          className="fill-brand-200 stroke-brand-600"
+          strokeWidth={1.5}
+        />
+        <path d="M162 130 H256" className="stroke-brand-600" strokeWidth={1.5} />
+      </g>
+      <Caption x={60} y={164}>
+        Name
+      </Caption>
+      <rect
+        x={60}
+        y={172}
+        width={300}
+        height={22}
+        rx={5}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.3}
+      />
+      <Label x={70} y={183} size={10} tone="muted">
+        My theme
+      </Label>
+      <Caption x={60} y={208}>
+        Base colours
+      </Caption>
+      {bases.map(([name, cls], i) => (
+        <g key={name}>
+          <rect
+            x={60 + i * 77}
+            y={216}
+            width={69}
+            height={40}
+            rx={6}
+            className="fill-white stroke-slate-200"
+            strokeWidth={1.3}
+          />
+          <g className="help-art-as-drawn">
             <rect
-              x={66 + i * 74}
-              y={178}
-              width={66}
-              height={40}
-              rx={6}
-              className="fill-white stroke-slate-200"
-              strokeWidth={1.3}
+              x={67 + i * 77}
+              y={221}
+              width={55}
+              height={16}
+              rx={3}
+              className={`${cls} stroke-slate-300`}
+              strokeWidth={1}
             />
-            <g className="help-art-as-drawn">
-              <rect
-                x={72 + i * 74}
-                y={183}
-                width={54}
-                height={16}
-                rx={3}
-                className={`${cls} stroke-slate-300`}
-                strokeWidth={1}
-              />
-            </g>
-            <Label x={99 + i * 74} y={209} anchor="middle" size={10} tone="body">
-              {name}
-            </Label>
           </g>
-        ))}
-        <line x1={66} y1={228} x2={354} y2={228} className="stroke-slate-100" strokeWidth={1.5} />
-        <Label x={66} y={238} size={10} weight={600} tone="body">
-          Pattern
-        </Label>
-        <Label x={190} y={238} size={10} weight={600} tone="body">
-          Per-shape colours
-        </Label>
-        <Button x={212} y={256} w={64} h={24} label="Cancel" />
-        <Button x={282} y={256} w={72} h={24} label="Save theme" variant="primary" />
-      </Dialog>
-    </Scene>
+          <Label x={94.5 + i * 77} y={247} anchor="middle" size={10} tone="body">
+            {name}
+          </Label>
+        </g>
+      ))}
+      {/* Pattern: open to start with, a row of pattern tiles inside. */}
+      <line x1={60} y1={266} x2={360} y2={266} className="stroke-slate-100" strokeWidth={1.5} />
+      <Label x={60} y={278} size={10} weight={600} tone="body">
+        Pattern
+      </Label>
+      <path d="M350 275 L354 280 L358 275" {...chevron} />
+      {Array.from({ length: 6 }, (_, i) => (
+        <g key={i}>
+          <rect
+            x={60 + i * 51}
+            y={290}
+            width={45}
+            height={22}
+            rx={4}
+            className={i === 0 ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
+            strokeWidth={1.3}
+          />
+          {i === 0 &&
+            [0, 1, 2, 3].map((d) => (
+              <circle key={d} cx={71 + d * 8} cy={301} r={1.4} className="fill-brand-400" />
+            ))}
+        </g>
+      ))}
+      {/* Per-shape colours: an advanced section, closed until opened. */}
+      <line x1={60} y1={322} x2={360} y2={322} className="stroke-slate-100" strokeWidth={1.5} />
+      <Label x={60} y={334} size={10} weight={600} tone="body">
+        Per-shape colours
+      </Label>
+      <path d="M352 330 L357 334 L352 338" {...chevron} />
+      <Button x={208} y={350} w={64} h={24} label="Cancel" />
+      <Button x={280} y={350} w={80} h={24} label="Save theme" variant="primary" />
+    </LookAndFeelShell>
   );
 }

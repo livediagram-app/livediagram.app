@@ -76,10 +76,11 @@ function Sheet({
 }
 
 /** A section title, as the page panel prints it. */
+/** A page-panel section heading, set in capitals as the panel sets it. */
 function SectionTitle({ x, y, children }: { x: number; y: number; children: string }) {
   return (
-    <Label x={x} y={y} size={10} weight={700} tone="muted">
-      {children}
+    <Label x={x} y={y} size={9.5} weight={700} tone="muted">
+      {children.toUpperCase()}
     </Label>
   );
 }
@@ -477,9 +478,16 @@ export function LayoutCategoriesScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Tabs x={ix} y={20} items={['Page', 'Layouts']} active={1} tabW={(pw - 20) / 2} h={22} />
+      <Tabs
+        x={ix}
+        y={20}
+        items={['Page', 'Background', 'Layouts']}
+        active={2}
+        tabW={(pw - 20) / 3}
+        h={22}
+      />
       <SectionTitle x={ix} y={58}>
-        Start from a layout
+        Start From a Layout
       </SectionTitle>
       {LAYOUT_CATEGORIES.map(([name, count], i) => {
         const col = i % 2;
@@ -515,16 +523,17 @@ export function LayoutCategoriesScene() {
 
 // --- Exporting pages ---------------------------------------------------------------------------
 
-/** The Export dialog's page picker: All pages or One page, the page the preview shows, and the
+/** The Export dialog's page picker, inside the PDF panel (reached from the format cards, with
+ *  the All formats bar to go back): All pages or One page, the page the preview shows, and the
  *  line saying what the download will be, over the preview of that page. */
 export function ExportPagePickerScene() {
   return (
-    <Scene w={420} h={230} bg="none">
+    <Scene w={420} h={248} bg="none">
       <rect
         x={16}
         y={12}
         width={388}
-        height={206}
+        height={224}
         rx={12}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -532,36 +541,45 @@ export function ExportPagePickerScene() {
       <Label x={32} y={32} size={13} weight={700} tone="strong">
         Export tab
       </Label>
-      <Tabs x={32} y={48} items={['PDF', 'PNG', 'SVG', 'JSON']} active={0} tabW={52} h={22} />
-      <rect x={32} y={80} width={356} height={64} rx={8} className="fill-slate-50" />
-      <SolidSegments x={42} y={90} items={['All pages', 'One page']} active={0} segW={72} />
+      {/* The two-level bar back to the format cards. */}
+      <Label x={32} y={56} size={10.5} weight={600} tone="muted">
+        ‹ All formats
+      </Label>
+      <Label x={102} y={56} size={10.5} tone="muted">
+        ›
+      </Label>
+      <Label x={112} y={56} size={10.5} weight={700} tone="strong">
+        PDF
+      </Label>
+      <rect x={32} y={70} width={356} height={90} rx={8} className="fill-slate-50" />
+      <SolidSegments x={42} y={80} items={['All pages', 'One page']} active={0} segW={72} />
       <rect
-        x={198}
-        y={90}
-        width={180}
+        x={42}
+        y={110}
+        width={336}
         height={24}
         rx={6}
         className="fill-white stroke-slate-300"
         strokeWidth={1.2}
       />
-      <Label x={206} y={102.5} size={10} tone="body">
-        Preview: Page 1 · A4 · Portrait
+      <Label x={52} y={122.5} size={10} tone="body">
+        Preview: Page 1 · A4 · Portrait · Infographic
       </Label>
       <path
-        d="M366 100 l3.5 3.5 l3.5 -3.5"
+        d="M362 120 l3.5 3.5 l3.5 -3.5"
         fill="none"
         className="stroke-slate-500"
         strokeWidth={1.4}
         strokeLinecap="round"
       />
-      <Label x={42} y={130} size={10.5} tone="body">
+      <Label x={42} y={148} size={10.5} tone="body">
         3 pages, one PDF.
       </Label>
       {/* The preview: exactly the page, nothing around it */}
-      <Sheet x={176} y={154} w={44} h={58}>
-        <TextBar x={182} y={162} w={26} h={4} tone="accent" />
-        <TextBar x={182} y={171} w={20} h={3} />
-        <rect x={182} y={180} width={32} height={24} rx={2} className="fill-brand-100" />
+      <Sheet x={176} y={170} w={44} h={58}>
+        <TextBar x={182} y={178} w={26} h={4} tone="accent" />
+        <TextBar x={182} y={187} w={20} h={3} />
+        <rect x={182} y={196} width={32} height={24} rx={2} className="fill-brand-100" />
       </Sheet>
     </Scene>
   );
@@ -680,9 +698,12 @@ export function ArticleToolbarScene() {
         <TextBar x={84} y={202} w={150} />
       </Sheet>
       {/* The comment's marker in the margin, beside its words (amber in both appearances) */}
-      <g className="help-art-as-drawn">
-        <rect x={364} y={109} width={24} height={18} rx={6} className="fill-amber-400" />
-        <Label x={376} y={118.5} anchor="middle" size={10} weight={700} className="fill-slate-900">
+      <g className="help-art-as-drawn" transform="translate(362 104) scale(1.1)">
+        <path
+          d="M5 4.5h14A2.5 2.5 0 0 1 21.5 7v8a2.5 2.5 0 0 1-2.5 2.5h-8l-4.5 3.5v-3.5H5A2.5 2.5 0 0 1 2.5 15V7A2.5 2.5 0 0 1 5 4.5Z"
+          className="fill-amber-500"
+        />
+        <Label x={12} y={11.4} anchor="middle" size={9.5} weight={700} className="fill-white">
           1
         </Label>
       </g>

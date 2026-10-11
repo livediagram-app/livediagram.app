@@ -12,7 +12,6 @@ import {
   Dialog,
   Tabs,
   Label,
-  TextBar,
 } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 
@@ -189,45 +188,61 @@ export function MulticolourTheme() {
         y={28}
         w={70}
         h={36}
-        fill="fill-emerald-500"
+        fill="fill-emerald-100"
         stroke="stroke-emerald-600"
         label="A"
-        labelTone="onAccent"
+        labelTone="strong"
       />
       <Shape
         x={40}
         y={156}
         w={70}
         h={36}
-        fill="fill-violet-500"
+        fill="fill-violet-100"
         stroke="stroke-violet-600"
         label="B"
-        labelTone="onAccent"
+        labelTone="strong"
       />
       <Shape
         x={310}
         y={28}
         w={70}
         h={36}
-        fill="fill-amber-500"
+        fill="fill-amber-100"
         stroke="stroke-amber-600"
         label="C"
-        labelTone="onAccent"
+        labelTone="strong"
       />
       <Shape
         x={310}
         y={156}
         w={70}
         h={36}
-        fill="fill-rose-500"
+        fill="fill-rose-100"
         stroke="stroke-rose-600"
         label="D"
-        labelTone="onAccent"
+        labelTone="strong"
       />
-      <Arrow from={[172, 104]} to={[110, 50]} tone="muted" />
-      <Arrow from={[172, 120]} to={[110, 170]} tone="muted" />
-      <Arrow from={[248, 104]} to={[310, 50]} tone="muted" />
-      <Arrow from={[248, 120]} to={[310, 170]} tone="muted" />
+      <Arrow
+        from={[172, 104]}
+        to={[110, 50]}
+        colour={{ stroke: 'stroke-emerald-600', fill: 'fill-emerald-600' }}
+      />
+      <Arrow
+        from={[172, 120]}
+        to={[110, 170]}
+        colour={{ stroke: 'stroke-violet-600', fill: 'fill-violet-600' }}
+      />
+      <Arrow
+        from={[248, 104]}
+        to={[310, 50]}
+        colour={{ stroke: 'stroke-amber-600', fill: 'fill-amber-600' }}
+      />
+      <Arrow
+        from={[248, 120]}
+        to={[310, 170]}
+        colour={{ stroke: 'stroke-rose-600', fill: 'fill-rose-600' }}
+      />
     </Scene>
   );
 }
@@ -266,27 +281,45 @@ export function ElementLink() {
   );
 }
 
-/** A link card: a bookmarked URL rendered as a card with favicon + title. */
+/** A link card: the page's preview image on top, then the row that follows the link: the
+ *  favicon, the page's title, its full address and the arrow. */
 export function LinkCard() {
   return (
     <Scene w={420} h={180}>
       <rect
-        x={110}
-        y={44}
-        width={200}
-        height={92}
+        x={100}
+        y={24}
+        width={220}
+        height={132}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      <rect x={110} y={44} width={200} height={44} rx={10} className="fill-brand-100" />
-      <rect x={110} y={78} width={200} height={10} className="fill-brand-100" />
-      <circle cx={130} cy={108} r={9} className="fill-brand-500" />
-      <Label x={148} y={104} size={12} weight={700} tone="strong">
-        livediagram
+      {/* The preview image: a simple picture in brand tints. */}
+      <g className="help-art-as-drawn">
+        <path
+          d="M101 34 a9 9 0 0 1 9 -9 h200 a9 9 0 0 1 9 9 V104 H101 Z"
+          className="fill-brand-100"
+        />
+        <circle cx={268} cy={50} r={10} className="fill-brand-200" />
+        <path d="M101 104 L150 66 L184 90 L214 70 L262 104 Z" className="fill-brand-300" />
+      </g>
+      <line x1={101} y1={104} x2={319} y2={104} className="stroke-slate-200" strokeWidth={1} />
+      <rect x={114} y={118} width={14} height={14} rx={3} className="fill-brand-500" />
+      <Label x={138} y={122} size={11.5} weight={700} tone="strong">
+        Release notes, v2.4
       </Label>
-      <TextBar x={148} y={114} w={120} />
-      <TextBar x={148} y={124} w={86} tone="faint" />
+      <Label x={138} y={139} size={9.5} tone="muted">
+        https://example.com/notes
+      </Label>
+      <path
+        d="M292 130 h10 M298 125.5 l4.5 4.5 l-4.5 4.5"
+        fill="none"
+        className="stroke-slate-400"
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </Scene>
   );
 }

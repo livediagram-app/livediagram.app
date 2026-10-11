@@ -19,7 +19,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("themes").filter((a) => a.slug !== "custom-themes")}
 >
 
-The built-in catalogue covers a lot of ground, but sometimes you want your own palette: brand colours, a house diagram style, or a notation of your own. Custom themes let you author exactly that, save it, and reuse it. A saved custom theme behaves just like a built-in one: pick it on a tab and the tab takes its colours. Custom themes work for everyone, signed in or not.
+The built-in catalogue covers a lot of ground, but sometimes you want your own palette: brand colours, a house diagram style, or a notation of your own. Custom themes let you author exactly that, save it, and reuse it. A saved custom theme behaves just like a built-in one: pick it on a tab and the tab takes its colours. Custom themes work for everyone who can edit the tab, signed in or not.
 
 ## Building a Theme
 
@@ -32,8 +32,9 @@ Open the **Tab Look & Feel** dialog from the paintbrush button in the bottom-rig
 </Step>
 
 <Step n={2}>
-  **Text** sits beside them in the same row. It follows the **Fill** colour, staying readable
-  against it, until you set it yourself, so touch it only when the derived one is not what you want.
+  **Text** sits beside them in the same row. On a new theme it follows the **Fill** colour, staying
+  readable against it, until you set it yourself. A copied or edited theme keeps the text colour it
+  already has.
 </Step>
 
 <Step n={3}>
@@ -65,7 +66,7 @@ The [Explorer](/help/explorer/explorer-page/) has a **Themes** entry under **Lib
 
 ## Editing and Deleting
 
-Editing a theme opens the same builder again, and **Save changes** updates it. Deleting one asks you to confirm first, and is safe for documents that still reference it: they fall back to the default look and keep rendering rather than breaking. If you delete a theme that the document you have open is using, the tabs using it revert to the default theme straight away so the change is visible.
+Editing a theme opens the same builder again, and **Save changes** updates it and applies it to the active tab. Deleting one asks you to confirm first, and is safe for documents that still reference it: they fall back to the default look and keep rendering rather than breaking. If you delete a theme that the document you have open is using, the tabs using it revert to the default theme straight away so the change is visible.
 
 <Tip>
   To tweak a built-in theme, press **Copy** on its card and edit from there. The shipped catalogue
