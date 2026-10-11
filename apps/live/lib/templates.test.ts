@@ -989,4 +989,13 @@ describe('templateEditorMode', () => {
         expect(templateEditorMode(t.kind)).toBe('illustrate');
     }
   });
+
+  // A session tool shipped on a Diagram tab could be started but never watched or ended: Diagram has
+  // no Session strip (docs/specs/012-collaboration/facilitate-mode.md).
+  it('opens every template carrying a session tool in Facilitate', () => {
+    for (const t of TEMPLATES) {
+      if (buildTemplate(t.kind, 0, 0).some((e) => 'session' in e && e.session))
+        expect(templateEditorMode(t.kind), t.kind).toBe('facilitate');
+    }
+  });
 });
