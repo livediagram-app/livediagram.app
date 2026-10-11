@@ -437,6 +437,7 @@ export function SearchCommandPalette() {
           rows: [
             { icon: <CommandIcon />, label: 'Auto Layout (tidy up)', active: true },
             { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (down)' },
+            { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (right)' },
             { icon: <CommandIcon />, label: 'Auto Layout: Tree' },
           ],
         },
