@@ -41,7 +41,8 @@ export function AddCardButton({
         data-add-card-trigger
         aria-haspopup="menu"
         aria-expanded={shown}
-        className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] font-medium transition enabled:cursor-pointer hover:bg-black/5 focus-visible:outline-2"
+        // A 44px-tall row to tap on a touch screen (touch-targets.md).
+        className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] font-medium transition pointer-coarse:min-h-11 enabled:cursor-pointer hover:bg-black/5 focus-visible:outline-2"
         style={{ color: palette.muted, outlineColor: palette.focus }}
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {

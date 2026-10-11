@@ -117,7 +117,13 @@ export function EditorHeader({
       className="relative z-[var(--z-modal)] flex shrink-0 items-center justify-between gap-2 border-y border-slate-200 bg-white sm:gap-4 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <div className="flex w-auto items-center gap-2.5">
-        <Brand href="/" size="md" accentColor={brandAccent} wordmarkClassName="hidden sm:inline" />
+        <Brand
+          href="/"
+          size="md"
+          accentColor={brandAccent}
+          wordmarkClassName="hidden sm:inline"
+          className="relative touch-target"
+        />
         <ProductNav current="editor" />
       </div>
       <div className="flex flex-1 items-center justify-start sm:justify-center">
@@ -142,7 +148,8 @@ export function EditorHeader({
                 <button
                   type="button"
                   onClick={() => setEditing(true)}
-                  className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+                  // 44px tall on a touch screen; padding, not a pad, since `truncate` clips a ::before.
+                  className="truncate rounded px-2 py-0.5 text-sm text-slate-600 transition pointer-coarse:py-3 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
                 >
                   {documentName}
                 </button>

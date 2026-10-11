@@ -421,7 +421,9 @@ brand's tints on a soft panel (Diagram: two shapes and an arrow to a decision; F
 timer; `EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), one line of what to do, in full (never cut short), then
 for an Editor **Quick Start** (the primary button) and **Help**. A viewer reads "Nothing here yet. The owner can build
 it out, and your view updates live."; a Participant is pointed at a sticky, text or an image. **On a phone** it is the
-same card, narrower (18rem), without Help (the help centre is a tap away in the Explorer). (It once sat in a bottom
+same card, narrower (18rem), without Help (the help centre is a tap away in the Explorer). On a **short screen** (480px
+tall or less, a phone on its side) the card drops its picture, so it clears the toolbars above and below instead of
+sliding under the Palette strip. (It once sat in a bottom
 banner slot to stay out of the way; at the foot of an empty canvas it read as floating at random.)
 
 A soft, decorative **animated backdrop** (`AnimatedLinesBackdrop`) sits behind

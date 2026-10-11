@@ -321,8 +321,9 @@ export function HeroIllustration() {
             Open Explorer Home
           </a>
         ) : null}
-        {/* Each dot sits in a 24px-tall hit area; the overview's is always a small grid, a little
-            larger (in brand while it is showing), so the way back to it is easy to find and hit. */}
+        {/* Each dot sits in a 24px-tall hit area (44px tall and 24px wide on a touch screen, so a
+            thumb picks the dot it means); the overview's is always a small grid, a little larger (in
+            brand while it is showing), so the way back to it is easy to find and hit. */}
         <div className="flex items-center" role="group" aria-label="Hero examples">
           {CARDS.map((c, i) => (
             <button
@@ -331,7 +332,7 @@ export function HeroIllustration() {
               aria-label={labelOf(c)}
               aria-current={i === active}
               onClick={() => show(i)}
-              className="group/dot flex h-6 items-center justify-center rounded-full px-1 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500"
+              className="group/dot flex h-6 items-center justify-center rounded-full px-1 pointer-coarse:h-11 pointer-coarse:px-2 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500"
             >
               {c.overview ? (
                 <EverythingIcon
@@ -384,7 +385,7 @@ function StageArrow({
       onClick={onClick}
       aria-label={side === 'left' ? 'Previous example' : 'Next example'}
       style={side === 'left' ? { left: EDGE } : { right: EDGE }}
-      className={`absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:scale-105 hover:border-brand-300 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100 sm:h-11 sm:w-11 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300 ${
+      className={`touch-target absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white/95 text-slate-600 shadow-lg shadow-slate-900/10 backdrop-blur transition hover:scale-105 hover:border-brand-300 hover:text-brand-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none motion-reduce:hover:scale-100 sm:h-11 sm:w-11 dark:border-slate-700 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:border-brand-500/60 dark:hover:text-brand-300 ${
         side === 'left'
           ? '-translate-x-1/2 sm:-translate-x-full'
           : 'translate-x-1/2 sm:translate-x-full'
