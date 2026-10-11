@@ -407,8 +407,11 @@ and carousel, keep it open. The first-run welcome and the name prompt ask for
 an answer and never close this way.
 
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), as Start Planning
-and an empty page's own start sit in theirs, shown while the active tab has no elements. It is **not dismissible** (it
-goes once the canvas has content) and takes presses only on itself: the canvas around it still pans and a palette
+and an empty page's own start sit in theirs, shown while the active tab has no elements. It goes once the canvas has
+content, and a **Close** (×) in its top right corner closes it for good on that tab: never shown there again for
+this person in this browser (a per-browser list of the last 200 closed tab ids, `livediagram:v2:empty-card-dismissed`
+in localStorage; a closed card is a preference, not the document's, so everyone else still sees theirs). It takes
+presses only on itself: the canvas around it still pans and a palette
 tool still places. It sits beneath the editor's toolbars and panels, so a palette popover or a panel opened over the
 middle of the canvas is in front of it. It hides while a draw tool is armed or Quick Start is open, and in Draw mode (its dock is the hint,
 [Draw mode](../023-draw-mode/draw-mode.md)), Illustrate mode (an empty page invites a layout in its own title bar,

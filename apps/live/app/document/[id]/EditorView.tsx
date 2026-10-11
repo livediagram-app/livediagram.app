@@ -686,6 +686,8 @@ export function EditorView() {
           middle of an empty canvas, so a blank document reads as intentionally blank. */}
                             {showEmptyCanvasBanner ? (
                               <EmptyCanvasBanner
+                                key={activeTab.id}
+                                tabId={activeTab.id}
                                 tabName={activeTab.name}
                                 readOnly={isReadOnly}
                                 participant={ctx.can.addContent && isReadOnly}
