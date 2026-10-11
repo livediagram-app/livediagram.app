@@ -6,7 +6,7 @@ import { commentHosts, commentsView, threadListingLines } from './comments';
 import { diffView } from './diff';
 import { cellThreadsOf } from './fields';
 import { buildViewModel } from './model';
-import { showView } from './show';
+import { showView, shownFields } from './show';
 
 const comment = (id: string, text: string) => ({
   id,
@@ -77,5 +77,18 @@ describe('cell threads in the views', () => {
     const after = tab(el);
     const { text } = diffView(before, after, { tabIds: ['t'], since: 1, rev: 2 });
     expect(text).toContain('cells 2 in 2 (1 open)');
+  });
+});
+
+describe('malformed cell threads', () => {
+  it('skips a cell whose thread is not an object, and strips nothing from cellComments that is not a record', () => {
+    expect(
+      cellThreadsOf(sheet({ [B4]: 'nope', [C2]: { comments: [comment('a', 'x')] } })).map(
+        (t) => t.cell,
+      ),
+    ).toEqual([C2]);
+    const odd = sheet(['not', 'a', 'record']);
+    expect(shownFields(odd).fields.cellComments).toEqual(['not', 'a', 'record']);
+    expect(shownFields(odd).omitted).not.toContain('cellComments{}.comments[].authorId');
   });
 });
