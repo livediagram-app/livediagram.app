@@ -1,9 +1,10 @@
 'use client';
 
 // One group of the whiteboard dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows"):
-// its own pill and its own toolbar for assistive technology, one Tab stop, the arrow keys walking
-// its buttons (the WAI-ARIA toolbar pattern). Buttons are fixed-size, so nothing moves under the
-// pointer when a tool is picked.
+// a run of the dock's one card, between hairlines, and its own toolbar for assistive technology, one
+// Tab stop, the arrow keys walking its buttons (the WAI-ARIA toolbar pattern). Buttons are
+// fixed-size, so nothing moves under the pointer when a tool is picked. The card, the tiles and the
+// pressed look are the Toolbar layout strip's, so Draw's tools read as the other modes' palette.
 
 import {
   createContext,
@@ -17,12 +18,16 @@ import {
   type ReactNode,
 } from 'react';
 import { Tooltip } from '@livediagram/ui';
-import { TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
+import { TOOLBAR_CONTROL_REST, TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 
 type Roving = { focusKey: string; setFocusKey: (key: string) => void };
 const RovingContext = createContext<Roving>({ focusKey: '', setFocusKey: () => {} });
 
 const NAV_KEYS = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+
+// A tool in hand or a toggle on: the Toolbar layout strip's active tile (PaletteIconButton).
+const DOCK_PRESSED =
+  'bg-brand-100 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50';
 
 export function DockToolbar({
   label,
@@ -74,8 +79,8 @@ export function DockToolbar({
         // The Draw tour's anchors (docs/specs/023-draw-mode/draw-tour.md): dock-drawing, dock-shapes, dock-settings.
         data-tour-id={`dock-${group}`}
         onKeyDown={onKeyDown}
-        // A pill of the dock, the Toolbar layout strip's twin (its card and padding).
-        className="pointer-events-auto relative flex shrink-0 animate-pop-in items-center gap-0.5 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+        // A run of the dock's card (DockBody draws the card and the hairlines between groups).
+        className="relative flex shrink-0 items-center gap-0.5"
       >
         {children}
       </div>
@@ -107,11 +112,10 @@ export type DockButtonProps = {
 export const DockButton = forwardRef<HTMLButtonElement, DockButtonProps>(
   function DockButton(o, ref) {
     const { focusKey, setFocusKey } = useContext(RovingContext);
-    // The Toolbar layout strip's tile size (36px), so the dock is the strip's height.
-    const shape = `relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-600 transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 dark:text-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-white ${
-      o.pressed
-        ? 'bg-brand-50 text-brand-700 ring-2 ring-inset ring-brand-500 dark:bg-brand-500/15 dark:text-brand-200'
-        : ''
+    // The Toolbar layout strip's tile (36px, its corners and its pressed look: PaletteIconButton's
+    // active tone), so the dock is the strip's height and a tool in hand reads the same in every mode.
+    const shape = `relative flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 ${
+      o.pressed ? DOCK_PRESSED : TOOLBAR_CONTROL_REST
     }`;
     return (
       <Tooltip label={o.label}>

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { QuickStyleView } from '@/lib/quick-style';
-import { customOptions, heldPenStyle, stockOptions } from '@/lib/quick-style-pen';
+import { heldPenStyle, stockOptions } from '@/lib/quick-style-pen';
 import { toolHighlighterStyle } from '@/lib/quick-style-highlighter';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 import { describe, expect, it, vi } from 'vitest';
@@ -250,7 +250,7 @@ describe('QuickStylePanel under Minimal chrome (docs/specs/007-editor/power-user
   });
 });
 
-const PALETTE = { board: 'light' as const, ink: '#1c1917', custom: [] };
+const PALETTE = { board: 'light' as const, ink: '#1c1917' };
 
 describe('QuickStylePanel on a whiteboard: the marker rows', () => {
   const api = (pen: QuickStyleView['pen'], targetIds: string[] = []) => ({
@@ -287,19 +287,21 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     fireEvent.click(within(colour).getByRole('button', { name: 'Red' }));
     expect(quickStyle.setPenColour).toHaveBeenCalledWith('red');
     const width = screen.getByRole('radiogroup', { name: 'Marker width' });
+    expect(
+      within(width)
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('aria-label')),
+    ).toEqual(['Fine', 'Medium', 'Bold', 'Thick', 'Heavy', 'Broad']);
     fireEvent.click(within(width).getByRole('radio', { name: 'Bold' }));
     expect(quickStyle.setPenWidth).toHaveBeenCalledWith('bold');
+    fireEvent.click(within(width).getByRole('radio', { name: 'Broad' }));
+    expect(quickStyle.setPenWidth).toHaveBeenCalledWith('broad');
     expect(screen.queryByTestId('quick-style-clear')).toBeNull();
   });
 
-  it('offers the whiteboard’s colours on Stroke and Text colour, with the tab’s custom colours', () => {
+  it('offers the whiteboard’s colours on Stroke and Text colour, one row each', () => {
     // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays".
-    const palette = { ...PALETTE, custom: ['#868e96'] };
-    const board = {
-      value: 'blue' as const,
-      options: stockOptions(palette),
-      custom: customOptions(palette),
-    };
+    const board = { value: 'blue' as const, options: stockOptions(PALETTE) };
     const quickStyle = {
       ...api(undefined, ['s1']),
       view: {
@@ -316,10 +318,9 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     );
     fireEvent.click(within(stroke).getByRole('button', { name: 'Teal' }));
     expect(quickStyle.setBoardStroke).toHaveBeenCalledWith('teal');
-    const custom = screen.getByRole('group', { name: 'Custom text colours' });
-    fireEvent.click(within(custom).getByRole('button', { name: '#868e96' }));
-    expect(quickStyle.setBoardTextColour).toHaveBeenCalledWith('#868e96');
-    expect(screen.getByRole('group', { name: 'Custom stroke colours' })).toBeTruthy();
+    // Custom colours live one press deeper, in More colours: no second row.
+    expect(screen.queryByRole('group', { name: 'Custom text colours' })).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Custom stroke colours' })).toBeNull();
   });
 
   it('offers Corners as four quick choices, marking the shared one', () => {
@@ -348,9 +349,10 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
     expect(screen.getByRole('radiogroup', { name: 'Marker width' })).toBeTruthy();
   });
 
-  it('offers the nine stock colours and More colours, and Custom colours only when the tab uses some', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only.
-    const { unmount } = render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
+  it('offers the nine stock colours and More colours in one row, with no Custom colours row', () => {
+    // docs/specs/023-draw-mode/draw-mode.md "The quick style panel stays": quick choices only; the
+    // colour picker behind More colours holds the custom colours.
+    render(<QuickStylePanel quickStyle={api(second)} hidden={false} />);
     const colour = screen.getByRole('group', { name: 'Marker colour' });
     expect(
       within(colour)
@@ -369,21 +371,6 @@ describe('QuickStylePanel on a whiteboard: the marker rows', () => {
       'More colours, marker colour',
     ]);
     expect(screen.queryByRole('group', { name: 'Custom colours' })).toBeNull();
-    unmount();
-    const withCustom = heldPenStyle(DEFAULT_WHITEBOARD_PREFS.pens[1]!, {
-      ...PALETTE,
-      custom: ['#ff6b00', '#00a39b'],
-    });
-    const quickStyle = api(withCustom);
-    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
-    const custom = screen.getByRole('group', { name: 'Custom colours' });
-    expect(
-      within(custom)
-        .getAllByRole('button')
-        .map((r) => r.getAttribute('aria-label')),
-    ).toEqual(['#ff6b00', '#00a39b']);
-    fireEvent.click(within(custom).getByRole('button', { name: '#00a39b' }));
-    expect(quickStyle.setPenColour).toHaveBeenCalledWith('#00a39b');
   });
 
   it('gives Marker 1 its one colour, the ink', () => {

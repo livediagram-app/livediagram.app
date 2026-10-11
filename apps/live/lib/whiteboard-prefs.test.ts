@@ -26,12 +26,26 @@ describe('whiteboard pens', () => {
     expect(new Set(pens.map((p) => p.width))).toEqual(new Set([1.5]));
   });
 
-  it('keeps the widths subtle: Medium is 1.5 px, a notch either side', () => {
+  it('keeps the widths subtle around Medium (1.5 px), then three progressively stronger', () => {
     expect(WHITEBOARD_PEN_WIDTHS.map((w) => [w.label, w.px])).toEqual([
       ['Fine', 1],
       ['Medium', 1.5],
       ['Bold', 2.5],
+      ['Thick', 4],
+      ['Heavy', 6],
+      ['Broad', 9],
     ]);
+  });
+
+  it('stores and reads back each of the stronger widths by name', () => {
+    for (const w of WHITEBOARD_PEN_WIDTHS.slice(3)) {
+      const prefs = {
+        ...DEFAULT_WHITEBOARD_PREFS,
+        pens: DEFAULT_WHITEBOARD_PREFS.pens.map((p) => ({ ...p, width: w.px })),
+      };
+      saveWhiteboardPrefs(prefs);
+      expect(loadWhiteboardPrefs().pens.map((p) => p.width)).toEqual([w.px, w.px, w.px]);
+    }
   });
 
   it('lets only the second and third pens change colour; the main pen stays the default', () => {
