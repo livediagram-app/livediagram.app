@@ -28,6 +28,7 @@ import {
 import {
   applyCss,
   computeActiveFormat,
+  sameActiveFormat,
   type ActiveFormat,
   type RunDefaults,
 } from '@/components/rich-text/rich-text-format';
@@ -94,7 +95,10 @@ export function useRichTextDocument({
     if (!el) return;
     const offsets = domSelectionToOffsets(el);
     if (offsets) selectionRef.current = offsets;
-    setActive(computeActiveFormat(runsRef.current, offsets ?? selectionRef.current, defaults));
+    // The previous object while nothing changed, so the second refresh a keystroke brings (input, then the
+    // caret's selectionchange) renders nothing: it rendered the editor and its toolbar twice per keystroke.
+    const next = computeActiveFormat(runsRef.current, offsets ?? selectionRef.current, defaults);
+    setActive((prev) => (sameActiveFormat(prev, next) ? prev : next));
     setLiveText(runsPlainText(runsRef.current));
   };
 

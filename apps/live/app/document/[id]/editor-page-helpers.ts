@@ -146,9 +146,17 @@ function sameTabContent(prev: Tab | undefined, current: Tab): boolean {
     const b = current.elements[i];
     if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
   }
-  const { elements: _p, ...prevMeta } = prev;
-  const { elements: _c, ...currentMeta } = current;
-  return JSON.stringify(prevMeta) === JSON.stringify(currentMeta);
+  // The rest of the tab key by key, identity first too: an Illustrate tab's articles and pages are large,
+  // and serialising all of it on both sides every autosave cost the most when nothing in it had changed.
+  const prevMeta = prev as unknown as Record<string, unknown>;
+  const currentMeta = current as unknown as Record<string, unknown>;
+  for (const key of new Set([...Object.keys(prevMeta), ...Object.keys(currentMeta)])) {
+    if (key === 'elements') continue;
+    const a = prevMeta[key];
+    const b = currentMeta[key];
+    if (a !== b && JSON.stringify(a) !== JSON.stringify(b)) return false;
+  }
+  return true;
 }
 
 // Whether the autosave may write this document (docs/specs/007-editor/load-recovery.md "Offline").
