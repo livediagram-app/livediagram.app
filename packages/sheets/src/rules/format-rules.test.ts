@@ -319,10 +319,12 @@ describe('the drawing budget', () => {
   // times as much; a quadratic step would cost sixteen.
   const GROWTH = 4;
   const RATIO_CEILING = 8;
-  const RUNS = 5;
-  // The window drawn this many times a pass, so even the small pass measures tens of ms, well clear of the timer's
-  // resolution.
-  const REPEATS = 10;
+  const RUNS = 3;
+  // The window drawn this many times a pass, so even the small pass measures several ms, well clear of the CPU timer's
+  // microseconds. Kept low: under coverage on a busy CI runner 5 runs of 10 overran the test's 5 s timeout (6.8 s).
+  const REPEATS = 3;
+  // Room for a slow, instrumented runner: the ratio, not the clock, is what fails a slow path.
+  const TIMEOUT_MS = 30_000;
 
   function windowPass(ruleCount: number): number {
     const cells: Record<string, string> = {};
@@ -354,10 +356,14 @@ describe('the drawing budget', () => {
     return Math.min(...Array.from({ length: RUNS }, pass));
   }
 
-  it('a 60 × 26 window under 100 rules on every column costs in step with the rules, not faster', () => {
-    const small = windowPass(100 / GROWTH);
-    const large = windowPass(100);
-    // A floor on the small pass, so a timer that rounds a tiny pass to 0 cannot make the ratio infinite.
-    expect(large / Math.max(small, 1)).toBeLessThan(RATIO_CEILING);
-  });
+  it(
+    'a 60 × 26 window under 100 rules on every column costs in step with the rules, not faster',
+    () => {
+      const small = windowPass(100 / GROWTH);
+      const large = windowPass(100);
+      // A floor on the small pass, so a timer that rounds a tiny pass to 0 cannot make the ratio infinite.
+      expect(large / Math.max(small, 1)).toBeLessThan(RATIO_CEILING);
+    },
+    TIMEOUT_MS,
+  );
 });
