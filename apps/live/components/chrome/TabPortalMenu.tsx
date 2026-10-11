@@ -397,14 +397,6 @@ export function PortalMenu({
             disabled={locked || (!!dataRows && !dataRows.onImport)}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
-          {dataRows ? (
-            <MenuActionRow
-              plain
-              icon={<FileExportIcon />}
-              label={dataRows.downloadLabel}
-              onClick={() => (dataRows.onDownload(), onClose())}
-            />
-          ) : null}
           <MenuActionRow
             plain
             icon={<ClearIcon />}

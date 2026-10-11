@@ -11,34 +11,26 @@ let published: typeof entry | undefined = entry;
 vi.mock('@/components/sheets/sheet-settings-registry', () => ({
   sheetSettingsEntryOf: () => published,
 }));
-vi.mock('@/components/sheets/sheet-csv', () => ({ downloadSheetCsv: vi.fn() }));
-const board = { canImport: true, onImportCsv: vi.fn(), onDownloadCsv: vi.fn() };
+const board = { canImport: true, onImportCsv: vi.fn(), csvText: () => 'Key,Title' };
 let boardPublished: typeof board | undefined = board;
 vi.mock('@/components/plan/board-csv-registry', () => ({
   boardCsvEntryOf: (id: string) => (id === 'b' ? boardPublished : undefined),
 }));
 
 const { tabDataRows } = await import('./tab-data-rows');
-const { downloadSheetCsv } = await import('@/components/sheets/sheet-csv');
 
 const sheetTab = {
   kind: 'sheet' as const,
   elements: [{ id: 'el', type: 'shape', shape: 'plan-sheet' }] as unknown as Element[],
 };
 
-describe('a tab menu’s Import and Download CSV', () => {
-  it('is the Sheet’s own CSV on a Sheet tab', async () => {
+// Download CSV is the Export dialog's CSV now (lib/export-plan/tab-csv.ts); the menu keeps Import CSV… alone.
+describe('a tab menu’s Import CSV…', () => {
+  it('is the Sheet’s own import on a Sheet tab', () => {
     const rows = tabDataRows(sheetTab)!;
-    expect([rows.importLabel, rows.downloadLabel]).toEqual(['Import CSV…', 'Download CSV']);
+    expect(rows.importLabel).toBe('Import CSV…');
     rows.onImport!();
     expect(entry.onImportCsv).toHaveBeenCalledOnce();
-    rows.onDownload();
-    // The writer loads at the press.
-    await vi.waitFor(() => expect(downloadSheetCsv).toHaveBeenCalled());
-    expect(downloadSheetCsv).toHaveBeenCalledWith(
-      entry.controller.workbook,
-      entry.controller.sheet,
-    );
   });
 
   it('offers no import to someone who may not shape the Sheet', () => {
@@ -57,24 +49,18 @@ describe('a tab menu’s Import and Download CSV', () => {
     elements: [{ id: 'b', type: 'shape', shape: 'plan-board' }] as unknown as Element[],
   };
 
-  it('is the board’s own CSV on a Board tab', () => {
+  it('is the board’s own import on a Board tab', () => {
     const rows = tabDataRows(boardTab)!;
-    expect([rows.importLabel, rows.downloadLabel]).toEqual(['Import CSV…', 'Download CSV']);
+    expect(rows.importLabel).toBe('Import CSV…');
     rows.onImport!();
     expect(board.onImportCsv).toHaveBeenCalledOnce();
-    rows.onDownload();
-    expect(board.onDownloadCsv).toHaveBeenCalledOnce();
   });
 
-  it('offers no import to someone who may not add cards, and still the download', () => {
+  it('offers no import to someone who may not add cards', () => {
     boardPublished = { ...board, canImport: false };
-    const rows = tabDataRows(boardTab)!;
-    expect(rows.onImport).toBeUndefined();
-    rows.onDownload();
-    expect(board.onDownloadCsv).toHaveBeenCalledOnce();
+    expect(tabDataRows(boardTab)!.onImport).toBeUndefined();
     boardPublished = undefined;
     expect(tabDataRows(boardTab)!.onImport).toBeUndefined();
-    expect(() => tabDataRows(boardTab)!.onDownload()).not.toThrow();
     boardPublished = board;
   });
 

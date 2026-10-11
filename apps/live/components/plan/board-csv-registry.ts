@@ -2,14 +2,15 @@
 
 // Each drawn board's CSV actions, by element id, for its Board tab's tab menu (docs/specs/026-plan/plan-tabs.md
 // "Board tab and Sheet tab"): the menu sits outside the board's Plan context, so the board publishes what Import
-// CSV… and Download CSV do, kept current as it renders, as a Sheet publishes its settings.
+// CSV… does and its cards' CSV, kept current as it renders, as a Sheet publishes its settings.
 import { useLayoutEffect } from 'react';
 
 export type BoardCsvEntry = {
   // Whether this person may add cards here (an Editor or a Participant, not on an Archive board).
   canImport: boolean;
   onImportCsv: () => void;
-  onDownloadCsv: () => void;
+  // The board's cards as CSV text, for the Export dialog's CSV (docs/specs/026-plan/plan-tabs.md "Export").
+  csvText: () => string;
 };
 
 const entries = new Map<string, BoardCsvEntry>();

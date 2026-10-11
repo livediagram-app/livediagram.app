@@ -17,11 +17,9 @@ const {
   BOARD_CSV_MAX_BYTES,
   BOARD_CSV_TOO_BIG,
   boardCsvText,
-  downloadBoardCsv,
   importBoardCsv,
   useBoardCsv,
 } = await import('./useBoardCsv');
-const { downloadBlob } = await import('@/lib/download-blob');
 const { track } = await import('@/lib/telemetry');
 const { pickTabFile } = await import('@/lib/import-tab');
 
@@ -89,12 +87,6 @@ describe('Download CSV', () => {
       `"'=HYPERLINK(""http://x"")"`,
     );
   });
-
-  it('saves a file named for the board and counts it', () => {
-    downloadBoardCsv(planOf(), setup);
-    expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), 'Road map.csv');
-    expect(track).toHaveBeenCalledWith('Plan', 'Exported', 'Csv');
-  });
 });
 
 describe('Import CSV…', () => {
@@ -145,8 +137,8 @@ describe('useBoardCsv', () => {
   it('publishes the board’s actions while it is drawn, and takes them back', () => {
     const { unmount } = renderHook(() => useBoardCsv('b1', setup), { wrapper: wrap(planOf()) });
     expect(boardCsvEntryOf('b1')?.canImport).toBe(true);
-    boardCsvEntryOf('b1')!.onDownloadCsv();
-    expect(downloadBlob).toHaveBeenCalledOnce();
+    // Its cards' CSV, for the Export dialog's CSV (lib/export-plan/tab-csv.ts).
+    expect(boardCsvEntryOf('b1')!.csvText()).toContain('Title');
     unmount();
     expect(boardCsvEntryOf('b1')).toBeUndefined();
   });

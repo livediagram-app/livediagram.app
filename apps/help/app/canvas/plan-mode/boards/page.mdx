@@ -120,11 +120,11 @@ On a board that hides writing, everyone else's cards show face down (and take no
 
 **Archive** a card (right-click it) to take it off every board without deleting it; the **Archive** board shows them all, and **Restore** brings one back (or drag it onto another board). The **All Cards** board shows every other card with a row per status: the place to find a card no board shows, and give it a status a board has. To search every card instead, use the **Cards** button in the bottom-right corner (see [Cards](/help/canvas/plan-mode/cards/#find-a-card)).
 
-## Import and Download CSV
+## Import and Export CSV
 
-On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import CSV…**, **Export** and **Download CSV**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#board-sheet-and-dashboard-tabs) with the board's picture (PNG, SVG or PDF) and its Markdown outline; the other two suit a board:
+On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import CSV…** and **Export**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#board-sheet-and-dashboard-tabs) with the board's picture (PNG, SVG or PDF), its Markdown outline and its **CSV**:
 
-- **Download CSV** saves `<board title>.csv` with a row per card the board shows, column by column: Key, Title, Type and Status, then the fields its card types have (Assignee, Priority, Start, Due, Estimate, Labels, Description) and your custom fields by name. Anyone who can see the board can download it.
+- **CSV** in the Export dialog gives a row per card the board shows, column by column: Key, Title, Type and Status, then the fields its card types have (Assignee, Priority, Start, Due, Estimate, Labels, Description) and your custom fields by name. Anyone who can see the board can download it.
 - **Import CSV…** reads a `.csv` or `.tsv` file and adds each row as a new card. The first row names the columns, in any order and any case; only **Title** is required. **Type** picks one of the board's card types by name (else its first), **Status** a column by name (else the first column), and **Assignee** a person by name. Dates can be `2026-10-11` or day-first like `11/10/2026`. Columns it doesn't know, and values that don't fit, are left out. The import is one step, so a single **Undo** takes every new card back, and the board tells you how many cards were added and how many rows were skipped.
 
 Importing adds cards, so it is for people who can edit or take part; on a view-only link it is greyed out, as it is on an Archive board.

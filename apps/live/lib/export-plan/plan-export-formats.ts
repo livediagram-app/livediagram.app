@@ -4,13 +4,13 @@ import { tabKindOf, type Tab } from '@livediagram/document';
 
 // The Export dialog's format keys ('file' is the livediagram .json).
 export type ExportFormatKey =
-  'markdown' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file' | 'logo-kit';
+  'markdown' | 'csv' | 'mermaid' | 'excalidraw' | 'pdf' | 'png' | 'svg' | 'file' | 'logo-kit';
 
-// A Board tab: its picture, and its board's outline (each column and its cards). A Sheet tab: its picture (its CSV
-// is the tab menu's Download CSV). A Dashboard tab: its page's picture, and the JSON its Import reads back.
+// A Board tab: its picture, its board's outline (each column and its cards) and its cards as CSV. A Sheet tab: its
+// picture and its cells as CSV. A Dashboard tab: its page's picture, and the JSON its Import reads back.
 const PLAN_TAB_FORMATS = {
-  board: ['png', 'svg', 'pdf', 'markdown'],
-  sheet: ['png', 'svg', 'pdf'],
+  board: ['png', 'svg', 'pdf', 'markdown', 'csv'],
+  sheet: ['png', 'svg', 'pdf', 'csv'],
   dashboard: ['png', 'svg', 'pdf', 'file'],
 } as const satisfies Record<string, readonly ExportFormatKey[]>;
 

@@ -49,14 +49,13 @@ it brings its own behaviour.
   ([Sheet](../029-sheets/sheet.md#sheet-tab)).
 - Anything else added to a Board or Sheet tab (a paste, an agent) is hidden under the element, as for Fill Tab.
 - **Import and Export** in a Board or Sheet tab's tab menu are only what fits its element, in place of the
-  document's Import dialog: **Import CSV…**, **Export** (the Export dialog, with only the formats that suit the kind:
-  [Export](#export)) and **Download CSV**, in that order.
+  document's Import dialog: **Import CSV…** and **Export** (the Export dialog, with only the formats that suit the
+  kind, its CSV among them: [Export](#export)), in that order. There is no separate Download CSV row: CSV is one of
+  the Export dialog's formats.
   - A **Sheet tab**: **Import CSV…** (the Sheet's own file picker and import, for someone who may shape it; dimmed
-    otherwise) and **Download CSV**. Sheet Settings then leaves them out, so each shows once; a Sheet on any other tab
-    keeps them in Sheet Settings.
+    otherwise). Sheet Settings then leaves Import CSV… and Download CSV out; a Sheet on any other tab keeps them there.
   - A **Board tab**: **Import CSV…** (each row a new card on the board, for someone who may add cards: an Editor or a
-    Participant; dimmed for a Viewer, and on an Archive board) and **Download CSV** (the cards the board shows, for
-    everyone). The rules are the board's [CSV](plan-board.md#csv).
+    Participant; dimmed for a Viewer, and on an Archive board). The rules are the board's [CSV](plan-board.md#csv).
 
 ### Names
 
@@ -304,12 +303,16 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 The Export dialog offers each tab only the formats that can carry what it is, and its images draw the tab as it is
 laid out, never the canvas hidden under it:
 
-| Kind          | Formats offered         | Also in the tab menu |
-| ------------- | ----------------------- | -------------------- |
-| Board tab     | PNG, SVG, PDF, Markdown | Download CSV         |
-| Sheet tab     | PNG, SVG, PDF           | Download CSV         |
-| Dashboard tab | PNG, SVG, PDF, JSON     |                      |
-| Any other tab | every format, as ever   |                      |
+| Kind          | Formats offered              |
+| ------------- | ---------------------------- |
+| Board tab     | PNG, SVG, PDF, Markdown, CSV |
+| Sheet tab     | PNG, SVG, PDF, CSV           |
+| Dashboard tab | PNG, SVG, PDF, JSON          |
+| Any other tab | every format, as ever        |
+
+**CSV** opens a text panel like JSON's and Markdown's (view, copy, **Download .csv**): a Board tab's cards the board
+shows, a Sheet tab's cells as shown, both safe to open (a field a spreadsheet would run as a formula made inert).
+Taking it counts as the board's or Sheet's own CSV export (`Plan · Exported · Csv`, `Sheet · Exported · Csv`).
 
 - **Images** (PNG, SVG, PDF) of a **Board tab** draw its board alone (header, columns, counts and card faces, from the
   document's items) at the board's size, in the viewer's appearance; of a **Sheet tab**, its Sheet alone with its

@@ -57,7 +57,6 @@ describe('the tab menu’s Import and Export rows', () => {
 
   it('are Import CSV…, Export and Download CSV on a Board or Sheet tab', () => {
     const onExport = vi.fn();
-    const onDownload = vi.fn();
     const onImport = vi.fn();
     const onClose = vi.fn();
     render(
@@ -68,19 +67,15 @@ describe('the tab menu’s Import and Export rows', () => {
           onClose,
           dataRows: {
             importLabel: 'Import CSV…',
-            downloadLabel: 'Download CSV',
             onImport,
-            onDownload,
           },
         })}
       />,
     );
-    expect(rowLabels()).toEqual(['Import CSV…', 'Export', 'Download CSV']);
+    // No Download CSV row: CSV is one of the Export dialog's formats on a Board or Sheet tab.
+    expect(rowLabels()).toEqual(['Import CSV…', 'Export']);
     fireEvent.click(screen.getByRole('button', { name: 'Export' }));
     expect(onExport).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button', { name: 'Download CSV' }));
-    expect(onDownload).toHaveBeenCalledOnce();
-    expect(onClose).toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Import CSV…' }));
     expect(onImport).toHaveBeenCalledOnce();
   });
@@ -92,14 +87,12 @@ describe('the tab menu’s Import and Export rows', () => {
           point: { x: 10, y: 10 },
           dataRows: {
             importLabel: 'Import CSV…',
-            downloadLabel: 'Download CSV',
-            onDownload: vi.fn(),
           },
         })}
       />,
     );
     const row = screen.getByText('Import CSV…').closest('[aria-disabled]');
     expect(row?.getAttribute('aria-disabled')).toBe('true');
-    expect(rowLabels()).toEqual(['Export', 'Download CSV']);
+    expect(rowLabels()).toEqual(['Export']);
   });
 });

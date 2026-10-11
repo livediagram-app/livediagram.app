@@ -1,4 +1,5 @@
 import { usePlan } from '@/components/plan/PlanContext';
+import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
@@ -46,12 +47,20 @@ const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
   mermaid: 'Mermaid',
   markdown: 'Markdown',
+  csv: 'CSV',
   excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
   'logo-kit': 'LogoKit',
 };
+
+// A text format taken (downloaded or copied): CSV counts as its board's or Sheet's own CSV download, as the tab menu's
+// Download CSV did; every other format as the document's export.
+function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
+  if (format === 'csv') track(tab.kind === 'sheet' ? 'Sheet' : 'Plan', 'Exported', 'Csv');
+  else track('Document', 'Exported', EXPORT_LABEL[format]);
+}
 
 // An Illustrate tab's pages exported (docs/specs/007-editor/illustrate-pages.md "Telemetry"): one
 // page, or all of them.
@@ -111,10 +120,10 @@ export type Format = ExportFormatKey;
 
 // The four text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown' | 'excalidraw';
+type TextFormat = 'file' | 'mermaid' | 'markdown' | 'csv' | 'excalidraw';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'excalidraw';
+  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'csv' || f === 'excalidraw';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -133,6 +142,12 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'markdown',
     title: 'Markdown',
     description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+  },
+  {
+    kind: 'csv',
+    title: 'CSV',
+    description:
+      'The cards or cells as comma-separated values, for a spreadsheet. Copy it or save a .csv.',
   },
   {
     kind: 'excalidraw',
@@ -197,6 +212,14 @@ const TEXT_PANELS: Record<
     ext: 'md',
     mime: 'text/markdown',
     getText: tabToMarkdownText,
+  },
+  csv: {
+    blurb:
+      "This tab's cards or cells as CSV, formulas made safe to open in a spreadsheet. Edit it here to copy a variant.",
+    downloadLabel: 'Download .csv',
+    ext: 'csv',
+    mime: 'text/csv',
+    getText: (tab) => tabCsvText(tab),
   },
   excalidraw: {
     blurb:
@@ -437,9 +460,9 @@ export function ExportTabDialog({
             onDownload={(text) => {
               const cfg = TEXT_PANELS[active];
               downloadBlob(new Blob([text], { type: cfg.mime }), `${baseName}.${cfg.ext}`);
-              track('Document', 'Exported', EXPORT_LABEL[active]);
+              trackTextExport(active, tab);
             }}
-            onCopied={() => track('Document', 'Exported', EXPORT_LABEL[active])}
+            onCopied={() => trackTextExport(active, tab)}
             onBack={() => setActive(null)}
           />
         ) : active === 'logo-kit' && pages ? (

@@ -3,12 +3,12 @@ import { exportFormatsFor, planTabKindOf } from './plan-export-formats';
 
 // docs/specs/026-plan/plan-tabs.md "Export": each kind offers the formats that can carry it.
 describe('the formats a tab exports to', () => {
-  it('offers a Board tab its picture and its outline', () => {
-    expect(exportFormatsFor({ kind: 'board' })).toEqual(['png', 'svg', 'pdf', 'markdown']);
+  it('offers a Board tab its picture, its outline and its cards as CSV', () => {
+    expect(exportFormatsFor({ kind: 'board' })).toEqual(['png', 'svg', 'pdf', 'markdown', 'csv']);
   });
 
-  it('offers a Sheet tab its picture alone (its CSV is the tab menu’s)', () => {
-    expect(exportFormatsFor({ kind: 'sheet' })).toEqual(['png', 'svg', 'pdf']);
+  it('offers a Sheet tab its picture and its cells as CSV', () => {
+    expect(exportFormatsFor({ kind: 'sheet' })).toEqual(['png', 'svg', 'pdf', 'csv']);
   });
 
   it('offers a Dashboard its picture and the JSON its Import reads back', () => {

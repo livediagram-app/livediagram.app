@@ -5,7 +5,6 @@
 // actions for its Board tab's tab menu (board-csv-registry.ts).
 import {
   ITEMS_MAX,
-  boardCsvFileName,
   boardCsvImport,
   boardCsvMessage,
   boardCsvRows,
@@ -16,7 +15,6 @@ import { parseCsv, toCsv } from '@livediagram/sheets';
 import { usePlan, type PlanContextValue } from '@/components/plan/PlanContext';
 import { usePublishBoardCsv } from '@/components/plan/board-csv-registry';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { downloadBlob } from '@/lib/download-blob';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';
 
@@ -35,12 +33,6 @@ type Plan = Pick<PlanContextValue, 'items' | 'types' | 'statusNames'>;
 export function boardCsvText(plan: Plan, setup: PlanBoardSetup): string {
   // A download: no field runs as a formula in the spreadsheet that opens it (sheet.md "CSV").
   return toCsv(boardCsvRows(setup, plan.items, plan.types, plan.statusNames), { safe: true });
-}
-
-export function downloadBoardCsv(plan: Plan, setup: PlanBoardSetup): void {
-  const blob = new Blob([boardCsvText(plan, setup)], { type: 'text/csv;charset=utf-8' });
-  downloadBlob(blob, boardCsvFileName(setup.title));
-  track('Plan', 'Exported', 'Csv');
 }
 
 // Reads a file's text into new cards on the board as one write; answers what the board then says.
@@ -77,9 +69,9 @@ export function useBoardCsv(elementId: string, setup: PlanBoardSetup | null): vo
     plan && setup
       ? {
           canImport: plan.canEditCards && !!plan.addItems && boardTakesCsv(setup),
-          onDownloadCsv: () => {
+          csvText: () => {
             const { plan: p, setup: s } = latest.current;
-            if (p && s) downloadBoardCsv(p, s);
+            return p && s ? boardCsvText(p, s) : '';
           },
           onImportCsv: () => {
             void (async () => {
