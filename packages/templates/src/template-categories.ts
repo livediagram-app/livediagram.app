@@ -105,9 +105,11 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
 // The categories in the order every picker shows them (the Quick Start, /new and the marketing gallery): alphabetical
 // by label, locale-aware, derived rather than hand-ordered (docs/specs/008-canvas/canvas-and-palette.md "Template
 // categories"). Popular is no category: it stays a shelf above them.
-export const TEMPLATE_CATEGORIES: readonly CategoryInfo[] = [...CATEGORY_LIST].sort((a, b) =>
-  a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }),
-);
+// Its search words stay inside the package (templateCategorySearchWords): the list is what every picker and the
+// agents' catalogue (list_templates, a fixed output schema) read, so it carries only id, label and description.
+export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] = [...CATEGORY_LIST]
+  .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
+  .map(({ id, label, description }) => ({ id, label, description }));
 
 // The blanks: in no category, reached only from Popular (docs/specs/007-editor/templates-by-mode.md "The blanks").
 // Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE and EXTRA_BLANK_TEMPLATES); the categories test pins them together.

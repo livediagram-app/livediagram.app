@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  PLAN_TOUR_STEPS,
   boardRoot,
   firstCardOn,
   needsReveal,
