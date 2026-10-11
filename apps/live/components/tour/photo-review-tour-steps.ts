@@ -30,6 +30,9 @@ const TICK: PhotoReviewTourStep = {
     const b = box(api);
     return b && `${b} [role="checkbox"]`;
   },
+  // A selected box's tick moves into its correcting toolbar, so the box is let go of first: the tick is back on its
+  // corner for the ring to find.
+  prepare: (api) => api.select(null),
 };
 
 const WORDS: PhotoReviewTourStep = {
