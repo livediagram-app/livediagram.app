@@ -95,6 +95,18 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         aText:
           'Plenty. Cmd-Z (or Ctrl-Z) undoes and Cmd-Shift-Z redoes, Cmd-K opens the command palette for any action, and single keys pick tools. The keyboard essentials article lists them all.',
       },
+      {
+        q: 'Can I use it with a keyboard or a screen reader?',
+        a: (
+          <>
+            Yes. The canvas is a stop in the Tab order: move through its elements and edit them with
+            the keyboard, and screen readers announce what is selected. See{' '}
+            <a href="/help/getting-started/accessibility/">accessibility</a>.
+          </>
+        ),
+        aText:
+          'Yes. The canvas is a stop in the Tab order: move through its elements and edit them with the keyboard, and screen readers announce what is selected. See accessibility.',
+      },
     ],
   },
   {
@@ -148,6 +160,32 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can I organise a big document?',
         a: 'Yes. A document holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your documents live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a document onto a folder to file it.',
+      },
+      {
+        q: 'Can I make mind maps?',
+        a: (
+          <>
+            Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the
+            mouse. Pick a Tree, Balanced, Downward or Bubble layout, tidy it in one click, or open
+            Edit Outline to rewrite the whole map as an indented list. See{' '}
+            <a href="/help/palette/mind-maps/">mind maps</a>.
+          </>
+        ),
+        aText:
+          'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Balanced, Downward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
+      },
+      {
+        q: 'Can I plan projects with it?',
+        a: (
+          <>
+            Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits.
+            Card types carry your own fields, the same card can sit on two boards, and widgets add a
+            Gantt chart, a due-date calendar and counts by person or priority. See{' '}
+            <a href="/help/canvas/plan-mode/">Plan mode</a>.
+          </>
+        ),
+        aText:
+          'Yes. Switch a tab to Plan for boards of cards with columns, swimlanes and WIP limits. Card types carry your own fields, the same card can sit on two boards, and widgets add a Gantt chart, a due-date calendar and counts by person or priority. See Plan mode.',
       },
       {
         q: 'Can I write documents in it?',
@@ -209,11 +247,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I undo a mistake?',
-        a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits and Cmd-Shift-Z to bring one back; the buttons also sit in the bottom-right corner. Undo is personal, so it only rewinds your own changes, never a teammate’s.',
+        a: 'Yes. Press Cmd-Z (or Ctrl-Z) to step back your recent edits and Cmd-Shift-Z to bring one back; the buttons also sit in the bottom-right corner. Undo is personal, so it rewinds your own changes, not a teammate’s; if you both changed the same element, it puts that element back as you had it.',
       },
       {
         q: 'What if I delete something by accident?',
-        a: 'Deleted documents wait in the Trash for 30 days before they are removed for good, so you can restore them from Settings › Account. Team documents go to their team’s Trash.',
+        a: 'Deleted documents wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team documents go to their team’s Trash.',
       },
     ],
   },
@@ -238,6 +276,31 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can I set up a team with shared documents?',
         a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of documents. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
+      },
+      {
+        q: 'Can I stop a finished tab being changed?',
+        a: (
+          <>
+            Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone
+            unlocks it, with a padlock beside its name. You can also lock single elements or whole
+            layers. See <a href="/help/tabs/locking-tabs/">locking a tab</a>.
+          </>
+        ),
+        aText:
+          'Yes. Lock it from the tab’s menu and the whole canvas becomes read-only until someone unlocks it, with a padlock beside its name. You can also lock single elements or whole layers. See locking a tab.',
+      },
+      {
+        q: 'How do I keep up with what changed?',
+        a: (
+          <>
+            Your Inbox gathers the actions, Plan cards and comment threads waiting on you across
+            every document, and Home shows what other people did while you were away. Once you sign
+            in, emails can tell you too, and you choose which in Settings. See{' '}
+            <a href="/help/explorer/activity/">the Inbox</a>.
+          </>
+        ),
+        aText:
+          'Your Inbox gathers the actions, Plan cards and comment threads waiting on you across every document, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
       {
         q: 'Is it good for running workshops and retros?',
@@ -271,8 +334,32 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. Add a password in the Share dialog and every link to that document asks for it before opening.',
       },
       {
+        q: 'Can I share just one tab?',
+        a: (
+          <>
+            Yes. When a document has more than one tab, the Share dialog lets a link open a single
+            tab, as an editor, participant or view-only link, and the rest of the document stays
+            private. See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
+          </>
+        ),
+        aText:
+          'Yes. When a document has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the document stays private. See sharing one tab.',
+      },
+      {
         q: 'Can I embed a diagram in my docs or wiki?',
         a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+      },
+      {
+        q: 'Can I show a diagram where iframes are blocked, like a README?',
+        a: (
+          <>
+            Yes. A live image is a plain image URL that follows your document, redrawn after each
+            save, so a GitHub README or a doc always shows the current version. See{' '}
+            <a href="/help/collaboration/sharing/live-image/">live images</a>.
+          </>
+        ),
+        aText:
+          'Yes. A live image is a plain image URL that follows your document, redrawn after each save, so a GitHub README or a doc always shows the current version. See live images.',
       },
       {
         q: 'What is the Community?',
@@ -328,6 +415,19 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there a command-line tool?',
         a: 'Yes. Install it from npm as @livediagram/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents.',
       },
+      {
+        q: 'Can I keep my diagrams next to my code?',
+        a: (
+          <>
+            Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of
+            each one in the repository, so coding agents find your diagrams by name and read them as
+            text. livediagram stays the home of every document. See{' '}
+            <a href="/help/developers/repositories/">diagrams in your repository</a>.
+          </>
+        ),
+        aText:
+          'Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livediagram stays the home of every document. See diagrams in your repository.',
+      },
     ],
   },
   {
@@ -338,11 +438,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export any tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of exports.',
+        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file, Illustrate pages as PNG, SVG or one print-ready PDF, a logo page as a logo kit, and a Sheet as CSV. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Does it work with Mermaid?',
-        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livediagram lays it out on the canvas with every connection intact. Export any tab back to Mermaid text for your READMEs, issues and AI tools. Sequence, Gantt and pie Mermaid types are not supported.',
+        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livediagram lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
       },
       {
         q: 'Can I move my boards over from another tool?',
@@ -354,7 +454,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Switch on the Google Drive mirror and your documents are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
+        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the documents in My documents are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
       },
     ],
   },
@@ -447,7 +547,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance, email and the Google Drive mirror are optional and switch on only when you add their keys.',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance and photo import switch on when you add an AI key, and email and the Google Drive mirror once sign-in and their own keys are set up.',
       },
     ],
   },
@@ -474,10 +574,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is livediagram up right now?',
         a: (
           <>
-            The <a href="/status">status page</a> shows the live state of every part of the service.
+            The <a href="/status">status page</a> lists every part of the service and notes any
+            incident we are working on. If it loads, the site is up.
           </>
         ),
-        aText: 'The status page shows the live state of every part of the service.',
+        aText:
+          'The status page lists every part of the service and notes any incident we are working on. If it loads, the site is up.',
       },
       {
         q: 'Who makes livediagram?',
