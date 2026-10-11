@@ -160,6 +160,14 @@ export async function readFormulaCells(
   }));
 }
 
+// The cells a JSON array of `row:col` keys (cellKey) names, matched as (row_id, col_id) pairs so the primary key
+// seeks each one. Matched on the joined `row_id || ':' || col_id` instead, a write read every cell of the sheet.
+// The key splits at its first ':', as readCells splits it.
+export function cellsNamedBy(param: string): string {
+  return `(row_id, col_id) IN (SELECT substr(value, 1, instr(value, ':') - 1), substr(value, instr(value, ':') + 1)
+                                 FROM json_each(${param}))`;
+}
+
 // The stored state of named cells (missing ones come back as just their ids), for a write's answer.
 export async function readCells(
   env: Env,
@@ -170,7 +178,7 @@ export async function readCells(
   if (keys.length === 0) return [];
   const rows = await env.DB.prepare(
     `SELECT sheet_id, row_id, col_id, input, format FROM sheet_cells
-      WHERE document_id = ? AND sheet_id = ? AND row_id || ':' || col_id IN (SELECT value FROM json_each(?))`,
+      WHERE document_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
   )
     .bind(documentId, sheetId, JSON.stringify(keys))
     .all<CellRow>();
@@ -197,7 +205,7 @@ export async function existingCells(
   const row = await env.DB.prepare(
     `SELECT COUNT(*) AS n, COALESCE(SUM(COALESCE(length(input), 0) + COALESCE(length(format), 0)), 0) AS b
        FROM sheet_cells
-      WHERE document_id = ? AND sheet_id = ? AND row_id || ':' || col_id IN (SELECT value FROM json_each(?))`,
+      WHERE document_id = ? AND sheet_id = ? AND ${cellsNamedBy('?')}`,
   )
     .bind(documentId, sheetId, JSON.stringify(keys))
     .first<{ n: number; b: number }>();
@@ -263,7 +271,7 @@ export function cellWriteStatements(
              FROM json_each(?3) j
             WHERE j.value ->> 'r' = sheet_cells.row_id AND j.value ->> 'c' = sheet_cells.col_id)
           WHERE document_id = ?1 AND sheet_id = ?2
-            AND row_id || ':' || col_id IN (SELECT (value ->> 'r') || ':' || (value ->> 'c') FROM json_each(?3))
+            AND (row_id, col_id) IN (SELECT value ->> 'r', value ->> 'c' FROM json_each(?3))
             AND ${LANDED}`,
       ).bind(documentId, sheetId, JSON.stringify(fmts), nonce),
     );
@@ -272,7 +280,7 @@ export function cellWriteStatements(
     out.push(
       env.DB.prepare(
         `UPDATE sheet_cells SET input = NULL
-          WHERE document_id = ?1 AND sheet_id = ?2 AND row_id || ':' || col_id IN (SELECT value FROM json_each(?3))
+          WHERE document_id = ?1 AND sheet_id = ?2 AND ${cellsNamedBy('?3')}
             AND ${LANDED}`,
       ).bind(documentId, sheetId, JSON.stringify(clears), nonce),
     );
@@ -282,7 +290,7 @@ export function cellWriteStatements(
       env.DB.prepare(
         `DELETE FROM sheet_cells
           WHERE document_id = ?1 AND sheet_id = ?2 AND input IS NULL AND (format IS NULL OR format = '{}')
-            AND row_id || ':' || col_id IN (SELECT value FROM json_each(?3)) AND ${LANDED}`,
+            AND ${cellsNamedBy('?3')} AND ${LANDED}`,
       ).bind(documentId, sheetId, JSON.stringify(touched), nonce),
     );
   return out;
