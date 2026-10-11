@@ -86,7 +86,7 @@ export function EmbedCardsIdle() {
           d="M16 112 L70 72 L104 98 L140 64 L204 112 V122 a8 8 0 0 1 -8 8 H24 a8 8 0 0 1 -8 -8 Z"
           className="fill-slate-600"
         />
-        <rect x={92} y={63} width={36} height={26} rx={8} className="fill-rose-500" />
+        <rect x={92} y={63} width={36} height={26} rx={8} className="fill-[#ff0000]" />
         <path d="M105 69 L117 76 L105 83 Z" className="fill-white" />
         {/* Figma: the named card and Load embed. */}
         <rect x={216} y={24} width={188} height={106} rx={8} className="fill-slate-800" />
@@ -131,20 +131,20 @@ export function EmbedCardsIdle() {
  *  with the first control; the second stops it. */
 export function EmbedPlayerControls() {
   const x = 110;
-  const y = 30;
+  const y = 40;
   const w = 220;
   const h = 124;
   return (
-    <Scene w={420} h={206}>
+    <Scene w={420} h={184}>
       <g className="help-art-as-drawn">
-        <rect x={x} y={y} width={w} height={h} rx={8} className="fill-slate-900" />
+        <rect x={x} y={y} width={w} height={h} rx={8} className="fill-slate-600" />
         <rect
           x={x + 14}
           y={y + h - 20}
           width={w - 28}
           height={4}
           rx={2}
-          className="fill-slate-600"
+          className="fill-slate-400"
         />
         <rect
           x={x + 14}
@@ -160,22 +160,22 @@ export function EmbedPlayerControls() {
       <LinkBadge x={x + w - 6} y={y + 6} />
       {/* Callouts naming each control by its hover label. */}
       <path
-        d={`M${x + 16} ${y + 6} V${y - 10} H${x - 8}`}
+        d={`M${x + 16} ${y + 6} V${y - 14} H${x - 8}`}
         className="fill-none stroke-slate-300"
         strokeWidth={1.2}
       />
-      <Label x={x - 12} y={y - 10} anchor="end" size={10} tone="body">
+      <Label x={x - 12} y={y - 14} anchor="end" size={10} tone="body">
         Use the player
       </Label>
-      <Label x={x - 12} y={y + 3} anchor="end" size={10} tone="body">
+      <Label x={x - 12} y={y - 1} anchor="end" size={10} tone="body">
         controls
       </Label>
       <path
-        d={`M${x + 40} ${y + 26} V${y + h + 22} H${x + 60}`}
+        d={`M${x + 40} ${y + 6} V${y - 14} H${x + 66}`}
         className="fill-none stroke-slate-300"
         strokeWidth={1.2}
       />
-      <Label x={x + 64} y={y + h + 22} size={10} tone="body">
+      <Label x={x + 70} y={y - 14} size={10} tone="body">
         Stop video
       </Label>
       <path
@@ -203,9 +203,9 @@ export function WebsiteEmbedCards() {
         {/* Waiting: the host chip and Load embed. */}
         <rect x={16} y={24} width={188} height={106} rx={8} className="fill-slate-800" />
         <rect
-          x={56}
+          x={40}
           y={52}
-          width={108}
+          width={140}
           height={16}
           rx={8}
           className="fill-white"

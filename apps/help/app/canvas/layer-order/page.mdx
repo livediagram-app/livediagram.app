@@ -26,7 +26,7 @@ Right-click an element and open the **Layer** category:
 - **Bring to Front** moves the element onto the tab's top [layer](/help/canvas/layers/), so nothing overlaps it. If the top layer holds anything else, a fresh layer is created above it first.
 - **Send to Back** mirrors that at the bottom: the element lands on (or below) the bottom layer, so other elements paint over it.
 
-These two buttons are how layers accumulate even if you never open the Layers panel; a layer they empty out is removed automatically. Once the tab has more than one layer, the same category also shows **Move to layer** tiles, one per layer with a preview of what is on it, for placing the selection on a specific layer.
+These two buttons are how layers accumulate even if you never open the Layers panel; a layer they empty out is removed automatically. Once the tab has more than one layer (and the Layers panel is switched on in Settings, as it is by default), the same category also shows **Move to layer** tiles, one per layer with a preview of what is on it, for placing the selection on a specific layer.
 
 <Figure caption="The Layer category of the element menu: Bring to Front and Send to Back, the Move to layer tiles, and the Opacity slider.">
   <ElementLayerMenuScene />
@@ -39,9 +39,11 @@ Both also work from the keyboard while an element is selected (Ctrl in place of 
 
 The menu stays open after each one, so you can adjust several elements in a row without reopening it. Layer changes are a single undoable step.
 
+Notes on an [event storming board](/help/canvas/event-storming-boards/) have no Layer category. Their menu has **Bring to Front** and **Send to Back** rows instead, which restack the note within its own layer and close the menu.
+
 ## Restacking Within a Layer
 
-The selection's floating toolbar has its own **Bring to Front** and **Send to Back** buttons. These are the quick nudge for two things overlapping on the same layer: they stack the selection in front of, or behind, everything else **on its own layer**, and never move it to another layer. A selection of several elements moves together and keeps its own order.
+The selection's floating toolbar has its own **Bring to Front** and **Send to Back** buttons. These are the quick nudge for two things overlapping on the same layer: they stack the selection in front of, or behind, everything else **on its own layer**, and never move it to another layer. They are on the toolbar of a single selected element; the toolbar for several elements has no stacking buttons, so use the right-click menu's **Layer** category for those.
 
 <Note>
   Newly added elements always land on top, which is what you usually want. Reach for Send to Back

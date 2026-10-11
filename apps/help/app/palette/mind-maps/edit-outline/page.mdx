@@ -27,8 +27,8 @@ Dragging nodes around one at a time is slow when you want to rethink a whole map
 
 <Step n={2}>
   Hover the root and press **Edit Outline**, among the small icons along its top (they hide while
-  the root is selected). Or right-click the root and find it in the **Mind Map** section, just below
-  **Tidy Map**.
+  the root is selected). Or right-click the root, open **Tools**, and find it in the **Mind Map**
+  section, just below **Tidy Map**.
 </Step>
 
 Beside Edit Outline on the root, **Tidy Map** lays the map out neatly again and tells you whether anything moved.
@@ -45,7 +45,7 @@ The first row is the root, a size larger, with no bullet. It can't be indented, 
 
 You never type spaces to nest a row: its level is part of the row, so nothing can end up misaligned.
 
-- **Enter** starts a new node after the one you are on, at the same level, carrying any text after the cursor with it. On an empty row, it steps the row out a level instead.
+- **Enter** starts a new node after the one you are on, at the same level, carrying any text after the cursor with it (on the root, or at the end of a row that has children, it starts the first child). On an empty row below the first level, it steps the row out a level instead.
 - **Tab** and **Shift+Tab** move a row a level in or out, with its children. A row can sit at most one level below the row above it.
 - **Backspace** at the start of an empty row removes it; on a row with text, it joins the row onto the one above. **Delete** at the end of a row joins the next row onto it.
 - **Shift+Enter** starts a second line inside the same node.
@@ -60,12 +60,11 @@ Select some text in a row and press **Bold**, **Italic** or **Underline** on the
 
 ## Paste a list in
 
-Paste several lines into a row and they arrive as rows, nested from the row you pasted into. Pasting is forgiving, so a list from a document or another app works:
+Paste several lines into a row and they arrive as rows after it, at its level (pasted into the root, they become its children; pasted into an empty row, the first one takes its place). Pasting is forgiving, so a list from a document or another app works:
 
-- Bullets (`-`, `*`, `+`), numbered items and indented lines nest by their indentation, and `#` headings nest by how many `#` they have.
+- Bullets (`-`, `*`, `+`), numbered items and indented lines nest by their indentation, and `#` headings nest by their `#` count (a `#` and a `##` arrive at the same level).
 - `**bold**`, `_italic_` and `<u>underline</u>` become formatting.
 - Links, inline code and task boxes are reduced to their text, and blank lines are skipped.
-- The first line is the root. A second line at the root's level becomes a child of the root, since a map has one root.
 
 ## What Save does
 

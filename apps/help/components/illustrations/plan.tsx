@@ -147,8 +147,8 @@ function Column({
   );
 }
 
-/** A Kanban board in Plan mode: header widgets, a column over its WIP limit with its cog, cards with
- *  their type stripes, a card being dragged into the gap it opens, and + Add card. */
+/** A Kanban board in Plan mode: header widgets, a column over its WIP limit (the preset's 3) with its
+ *  cog, Task and Action cards (the types Kanban takes) with their type stripes, a card being dragged into the gap it opens, and + Add card. */
 export function PlanBoardScene() {
   const colW = 124;
   const xs = [18, 148, 278];
@@ -168,9 +168,10 @@ export function PlanBoardScene() {
       <Label x={20} y={25} size={13} weight={700} tone="strong">
         Kanban
       </Label>
-      <Widget x={80} y={16} w={66} label="6 items" />
-      <Widget x={152} y={16} w={74} label="Completion" />
-      <Widget x={232} y={16} w={74} label="WIP Alerts" />
+      {/* The Kanban preset's widgets, in its order. */}
+      <Widget x={80} y={16} w={74} label="Completion" />
+      <Widget x={160} y={16} w={74} label="WIP Alerts" />
+      <Widget x={240} y={16} w={66} label="Filter" />
       <rect
         x={312}
         y={16}
@@ -185,11 +186,11 @@ export function PlanBoardScene() {
         +
       </Label>
 
-      <Column x={xs[0]!} y={44} w={colW} h={190} name="To do" count="2" />
-      <Column x={xs[1]!} y={44} w={colW} h={190} name="In progress" count="3 / 3" warn cog />
+      <Column x={xs[0]!} y={44} w={colW} h={190} name="To Do" count="2" />
+      <Column x={xs[1]!} y={44} w={colW} h={190} name="In Progress" count="4 / 3" warn cog />
       <Column x={xs[2]!} y={44} w={colW} h={190} name="Review" count="1" />
 
-      {/* To do: one card left, its neighbour is on its way to Review. */}
+      {/* To Do: one card left, its neighbour is on its way to Review. */}
       <Card x={xs[0]! + 7} y={66} w={cw} type="action" num={15} title="Pick a date" />
       <Label x={xs[0]! + 11} y={110} size={10} tone="muted">
         + Add card
@@ -197,9 +198,10 @@ export function PlanBoardScene() {
 
       <Card x={xs[1]! + 7} y={66} w={cw} type="task" num={9} title="Fix login" />
       <Card x={xs[1]! + 7} y={102} w={cw} type="task" num={11} title="New icons" />
-      <Card x={xs[1]! + 7} y={138} w={cw} type="project" num={2} title="Launch" />
+      <Card x={xs[1]! + 7} y={138} w={cw} type="task" num={2} title="Launch" />
+      <Card x={xs[1]! + 7} y={174} w={cw} type="action" num={12} title="Book venue" />
 
-      <Card x={xs[2]! + 7} y={66} w={cw} type="note" num={8} title="Copy check" />
+      <Card x={xs[2]! + 7} y={66} w={cw} type="action" num={8} title="Copy check" />
       {/* The gap the dragged card opens where it will land. */}
       <rect
         x={xs[2]! + 7}
@@ -214,8 +216,8 @@ export function PlanBoardScene() {
       />
 
       {/* The card on the move, lifted under the pointer. */}
-      <Card x={240} y={178} w={cw} type="task" num={14} title="Write docs" lifted />
-      <Cursor x={330} y={198} />
+      <Card x={xs[2]! + 9} y={150} w={cw} type="task" num={14} title="Write docs" lifted />
+      <Cursor x={xs[2]! + 98} y={170} />
     </Scene>
   );
 }
@@ -251,32 +253,30 @@ function ClusterButton({
   );
 }
 
-/** Plan mode's bottom-right cluster: the Trash (with its count) left of Undo and Redo, then Cards and
- *  Card Types where Layers sits in the other modes, then Theme and the zoom controls. */
+/** One button of a joined strip: its icon centred in a 50px segment, its name beneath. */
+function StripSegment({ x, label, children }: { x: number; label: string; children: ReactNode }) {
+  return (
+    <g>
+      <g transform={`translate(${x + 25} 61)`}>{children}</g>
+      <Label x={x + 25} y={92} size={9.5} anchor="middle" tone="muted">
+        {label}
+      </Label>
+    </g>
+  );
+}
+
+/** Plan mode's bottom-right cluster, as CanvasChrome lays it out: Undo and Redo, then the Plan strip
+ *  where Layers sits in the other modes (the Trash with its grey count, New Card, Cards and Card
+ *  Types), then the Theme paintbrush and the zoom controls. */
 export function PlanClusterScene() {
   const ink = 'stroke-slate-600';
+  const seg = 50;
+  const strip = { x: 92, w: seg * 4 };
   return (
-    <Scene w={420} h={130} bg="canvas">
-      {/* Trash, with its count badge. */}
-      <ClusterButton x={14} y={44} label="Trash">
-        <path
-          d="M-7 -5 h14 M-3 -5 v-2 h6 v2 M-5 -5 l1 12 h8 l1 -12"
-          fill="none"
-          className={ink}
-          strokeWidth={1.6}
-          strokeLinejoin="round"
-        />
-      </ClusterButton>
-      <g className="help-art-as-drawn">
-        <circle cx={46} cy={44} r={8} className="fill-rose-500" />
-        <Label x={46} y={45} size={10} anchor="middle" weight={700} tone="onAccent">
-          2
-        </Label>
-      </g>
-
+    <Scene w={468} h={130} bg="canvas">
       {/* Undo / Redo strip. */}
       <rect
-        x={58}
+        x={14}
         y={44}
         width={68}
         height={34}
@@ -284,9 +284,9 @@ export function PlanClusterScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <line x1={92} y1={50} x2={92} y2={72} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={48} y1={50} x2={48} y2={72} className="stroke-slate-200" strokeWidth={1.5} />
       <path
-        d="M81 58 h-8 l4 -4 M73 58 l4 4 M73 58 h6 a6 6 0 0 1 0 12 h-3"
+        d="M37 58 h-8 l4 -4 M29 58 l4 4 M29 58 h6 a6 6 0 0 1 0 12 h-3"
         fill="none"
         className={ink}
         strokeWidth={1.6}
@@ -294,35 +294,62 @@ export function PlanClusterScene() {
         strokeLinejoin="round"
       />
       <path
-        d="M103 58 h8 l-4 -4 M111 58 l-4 4 M111 58 h-6 a6 6 0 0 0 0 12 h3"
+        d="M59 58 h8 l-4 -4 M67 58 l-4 4 M67 58 h-6 a6 6 0 0 0 0 12 h3"
         fill="none"
         className={ink}
         strokeWidth={1.6}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <Label x={92} y={92} size={10} anchor="middle" tone="muted">
+      <Label x={48} y={92} size={10} anchor="middle" tone="muted">
         Undo / Redo
       </Label>
 
-      {/* Cards: the finder. */}
-      <ClusterButton x={144} y={44} label="Cards">
-        <rect
-          x={-7}
-          y={-6}
-          width={10}
-          height={12}
-          rx={2}
+      {/* The Plan strip: four buttons in one joined strip. */}
+      <rect
+        x={strip.x}
+        y={44}
+        width={strip.w}
+        height={34}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      {[1, 2, 3].map((i) => (
+        <line
+          key={i}
+          x1={strip.x + i * seg}
+          y1={50}
+          x2={strip.x + i * seg}
+          y2={72}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+      ))}
+      <StripSegment x={strip.x} label="Trash">
+        <path
+          d="M-7 -5 h14 M-3 -5 v-2 h6 v2 M-5 -5 l1 12 h8 l1 -12"
           fill="none"
           className={ink}
           strokeWidth={1.6}
+          strokeLinejoin="round"
         />
-        <circle cx={4} cy={2} r={3.5} fill="none" className={ink} strokeWidth={1.6} />
-        <path d="M6.5 4.5 l3 3" className={ink} strokeWidth={1.6} strokeLinecap="round" />
-      </ClusterButton>
-
-      {/* Card Types, the button that stands where Layers does. */}
-      <ClusterButton x={196} y={44} label="Card Types">
+      </StripSegment>
+      {/* The Trash's count, grey and tucked into its corner. */}
+      <g className="help-art-as-drawn">
+        <circle cx={strip.x + seg - 9} cy={52} r={6} className="fill-slate-500" />
+        <Label x={strip.x + seg - 9} y={53} size={8} anchor="middle" weight={700} tone="onAccent">
+          2
+        </Label>
+      </g>
+      <StripSegment x={strip.x + seg} label="New Card">
+        <path d="M-6 0 h12 M0 -6 v12" className={ink} strokeWidth={1.8} strokeLinecap="round" />
+      </StripSegment>
+      <StripSegment x={strip.x + seg * 2} label="Cards">
+        <circle cx={-1.5} cy={-1.5} r={5.5} fill="none" className={ink} strokeWidth={1.6} />
+        <path d="M2.5 2.5 l4.5 4.5" className={ink} strokeWidth={1.6} strokeLinecap="round" />
+      </StripSegment>
+      <StripSegment x={strip.x + seg * 3} label="Card Types">
         <rect
           x={-7}
           y={-7}
@@ -330,14 +357,14 @@ export function PlanClusterScene() {
           height={14}
           rx={2.5}
           fill="none"
-          className="stroke-brand-500"
+          className={ink}
           strokeWidth={1.6}
         />
-        <rect x={-7} y={-7} width={3.5} height={14} rx={1.5} className="fill-brand-500" />
-      </ClusterButton>
+        <path d="M-3.5 -7 v14" className={ink} strokeWidth={1.6} />
+      </StripSegment>
 
       {/* Theme and Canvas, the paintbrush. */}
-      <ClusterButton x={250} y={44} label="Theme">
+      <ClusterButton x={302} y={44} label="Theme">
         <path
           d="M5 -7 l2 2 l-7 7 l-2 -2 Z M-2 2 c-3 0 -4 2 -4 5 c3 0 5 -1 5 -4"
           fill="none"
@@ -349,7 +376,7 @@ export function PlanClusterScene() {
 
       {/* Zoom. */}
       <rect
-        x={296}
+        x={346}
         y={44}
         width={108}
         height={34}
@@ -357,16 +384,16 @@ export function PlanClusterScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <Label x={312} y={62} size={14} anchor="middle" tone="body">
+      <Label x={362} y={62} size={14} anchor="middle" tone="body">
         −
       </Label>
-      <Label x={350} y={62} size={11} anchor="middle" weight={600} tone="body">
+      <Label x={400} y={62} size={11} anchor="middle" weight={600} tone="body">
         100%
       </Label>
-      <Label x={388} y={62} size={14} anchor="middle" tone="body">
+      <Label x={438} y={62} size={14} anchor="middle" tone="body">
         +
       </Label>
-      <Label x={350} y={92} size={10} anchor="middle" tone="muted">
+      <Label x={400} y={92} size={10} anchor="middle" tone="muted">
         Zoom
       </Label>
 
@@ -377,25 +404,27 @@ export function PlanClusterScene() {
   );
 }
 
-/** The Start Planning picker an empty Plan tab shows: a tile per board type, each a small picture. */
+/** The Start Planning picker an empty Plan tab shows, on its Boards tab: a tile per board type in the
+ *  picker's order, each a small picture. */
 export function PlanBoardPickerScene() {
   const tiles: { name: string; cols: number; rows?: boolean }[] = [
     { name: 'Blank', cols: 0 },
     { name: 'Kanban', cols: 5 },
+    { name: 'To-do List', cols: 2 },
     { name: 'Sprint', cols: 4, rows: true },
-    { name: 'Bug Triage', cols: 5, rows: true },
     { name: 'Retro', cols: 3 },
     { name: 'Roadmap', cols: 3 },
+    { name: 'Bug Triage', cols: 5, rows: true },
     { name: 'Weekly Planner', cols: 5 },
     { name: 'All Cards', cols: 1, rows: true },
   ];
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={292}>
       <rect
         x={20}
         y={12}
         width={380}
-        height={208}
+        height={270}
         rx={12}
         className="fill-white stroke-slate-200"
         strokeWidth={2}
@@ -403,20 +432,21 @@ export function PlanBoardPickerScene() {
       <Label x={210} y={32} size={14} weight={700} tone="strong" anchor="middle">
         Start Planning
       </Label>
+      <Tabs x={110} y={46} items={['Boards', 'Spreadsheets']} active={0} tabW={100} h={22} />
       {tiles.map((t, i) => {
-        const col = i % 4;
-        const row = Math.floor(i / 4);
-        const x = 34 + col * 90;
-        const y = 48 + row * 84;
-        const pic = { x: x + 6, y: y + 6, w: 70, h: 42 };
+        const col = i % 3;
+        const row = Math.floor(i / 3);
+        const x = 36 + col * 118;
+        const y = 80 + row * 66;
+        const pic = { x: x + 6, y: y + 5, w: 98, h: 34 };
         const cw = t.cols ? (pic.w - (t.cols + 1) * 3) / t.cols : 0;
         return (
           <g key={t.name}>
             <rect
               x={x}
               y={y}
-              width={82}
-              height={74}
+              width={110}
+              height={60}
               rx={8}
               className={i === 1 ? 'fill-brand-50 stroke-brand-400' : 'fill-white stroke-slate-200'}
               strokeWidth={1.5}
@@ -431,8 +461,8 @@ export function PlanBoardPickerScene() {
             />
             {t.cols === 0 ? (
               <rect
-                x={pic.x + 22}
-                y={pic.y + 10}
+                x={pic.x + 36}
+                y={pic.y + 6}
                 width={26}
                 height={22}
                 rx={3}
@@ -445,15 +475,15 @@ export function PlanBoardPickerScene() {
                 <g key={c}>
                   <rect
                     x={pic.x + 3 + c * (cw + 3)}
-                    y={pic.y + 4}
+                    y={pic.y + 3}
                     width={cw}
-                    height={pic.h - 8}
+                    height={pic.h - 6}
                     rx={2}
                     className="fill-slate-100"
                   />
                   <rect
                     x={pic.x + 4.5 + c * (cw + 3)}
-                    y={pic.y + 8}
+                    y={pic.y + 6}
                     width={cw - 3}
                     height={6}
                     rx={1.5}
@@ -465,14 +495,14 @@ export function PlanBoardPickerScene() {
             {t.rows && (
               <line
                 x1={pic.x + 2}
-                y1={pic.y + 24}
+                y1={pic.y + 20}
                 x2={pic.x + pic.w - 2}
-                y2={pic.y + 24}
+                y2={pic.y + 20}
                 className="stroke-slate-300"
                 strokeWidth={1}
               />
             )}
-            <Label x={x + 41} y={y + 62} size={10} weight={600} tone="strong" anchor="middle">
+            <Label x={x + 55} y={y + 50} size={10} weight={600} tone="strong" anchor="middle">
               {t.name}
             </Label>
           </g>
@@ -492,10 +522,12 @@ export function PlanColumnSettingsScene() {
     'fill-brand-500',
     'fill-indigo-500',
     'fill-violet-500',
+    'fill-pink-500',
+    'fill-orange-500',
     'fill-slate-400',
   ];
   return (
-    <Scene w={420} h={260}>
+    <Scene w={420} h={290}>
       {/* The column the cog belongs to. */}
       <rect
         x={14}
@@ -506,15 +538,16 @@ export function PlanColumnSettingsScene() {
         className="fill-slate-50 stroke-slate-200"
       />
       <Label x={24} y={36} size={11} weight={700} tone="strong">
-        In progress
+        In Progress
       </Label>
-      <Label x={134} y={36} size={10} anchor="end" weight={700} className="fill-amber-500">
+      {/* At its limit, not past it: the count only turns amber over the limit. */}
+      <Label x={134} y={36} size={10} anchor="end" className="fill-slate-400">
         3 / 3
       </Label>
       <Cog cx={146} cy={36} on />
       <Card x={22} y={52} type="task" num={9} title="Fix login" w={124} />
       <Card x={22} y={88} type="task" num={11} title="New icons" w={124} />
-      <Card x={22} y={124} type="project" num={2} title="Launch" w={124} />
+      <Card x={22} y={124} type="task" num={2} title="Launch" w={124} />
 
       <Arrow2 from={[154, 36]} to={[162, 36]} />
 
@@ -523,7 +556,7 @@ export function PlanColumnSettingsScene() {
         x={162}
         y={14}
         width={240}
-        height={236}
+        height={266}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -538,13 +571,24 @@ export function PlanColumnSettingsScene() {
         strokeWidth={1}
       />
       <Label x={182} y={36} size={11} tone="strong">
-        In progress
+        In Progress
       </Label>
       <circle cx={182} cy={60} r={6} fill="none" className="stroke-slate-300" strokeWidth={1.2} />
       <path d="M178 64 l8 -8" className="stroke-slate-300" strokeWidth={1.2} />
       {swatches.map((cls, i) => (
-        <circle key={cls} cx={198 + i * 16} cy={60} r={6} className={cls} />
+        <circle key={cls} cx={196 + i * 16} cy={60} r={6} className={cls} />
       ))}
+      {/* Custom colour. */}
+      <circle
+        cx={356}
+        cy={60}
+        r={6}
+        fill="none"
+        className="stroke-slate-400"
+        strokeWidth={1.2}
+        strokeDasharray="2 2"
+      />
+      <path d="M353 60 h6 M356 57 v6" className="stroke-slate-500" strokeWidth={1.2} />
       <Label x={174} y={84} size={11} tone="strong">
         WIP Limit
       </Label>
@@ -588,6 +632,9 @@ export function PlanColumnSettingsScene() {
       <Label x={174} y={234} size={11} weight={600} tone="body">
         Remove Column
       </Label>
+      <Label x={174} y={262} size={11} weight={600} className="fill-rose-600">
+        Delete Status
+      </Label>
     </Scene>
   );
 }
@@ -604,7 +651,7 @@ function Arrow2({ from, to }: { from: [number, number]; to: [number, number] }) 
   );
 }
 
-/** The card panel: a breadcrumb back to the project, the type and number, Help, the ⋯ menu and close;
+/** The card panel: a breadcrumb back to the project, the type and number, the ⋯ menu and close;
  *  the title over the type's tabs and description; Linked as Parent; Details on the right. */
 export function PlanCardPanelScene() {
   return (
@@ -623,23 +670,17 @@ export function PlanCardPanelScene() {
       <Label x={32} y={28} size={10} tone="body">
         #2 Launch
       </Label>
-      <Label x={84} y={28} size={11} tone="muted">
+      <Label x={88} y={28} size={11} tone="muted">
         ›
       </Label>
-      <rect x={94} y={21} width={4} height={14} rx={1.5} className={STRIPE.task} />
-      <Label x={102} y={28} size={11} weight={700} tone="strong">
+      <rect x={98} y={21} width={4} height={14} rx={1.5} className={STRIPE.task} />
+      <Label x={106} y={28} size={11} weight={700} tone="strong">
         Task
       </Label>
-      <Label x={132} y={28} size={11} tone="muted">
+      <Label x={136} y={28} size={11} tone="muted">
         #11
       </Label>
-      <circle cx={318} cy={28} r={6} fill="none" className="stroke-slate-400" strokeWidth={1.3} />
-      <Label x={318} y={29} size={10} anchor="middle" tone="muted">
-        ?
-      </Label>
-      <Label x={328} y={28} size={10} tone="muted">
-        Help
-      </Label>
+      {/* Help lives inside the ⋯ menu, not on the header. */}
       <Label x={368} y={27} size={13} anchor="middle" weight={700} tone="muted">
         ⋯
       </Label>
@@ -678,7 +719,7 @@ export function PlanCardPanelScene() {
             {i ? 'Export set' : 'Draw glyphs'}
           </Label>
           <Label x={256} y={175 + i * 26} size={10} anchor="end" tone="muted">
-            {i ? 'To do' : 'In progress'}
+            {i ? 'To Do' : 'In Progress'}
           </Label>
         </g>
       ))}
@@ -692,11 +733,11 @@ export function PlanCardPanelScene() {
         Details
       </Label>
       {[
-        ['Status', 'In progress'],
+        ['Status', 'In Progress'],
         ['Assignee', 'Sam'],
         ['Parent', '#2 Launch'],
         ['Priority', 'High'],
-        ['Due date', '14 Oct'],
+        ['Due', '14 Oct'],
       ].map(([k, v], i) => (
         <g key={k}>
           <Label x={288} y={88 + i * 22} size={10} tone="muted">
@@ -709,29 +750,30 @@ export function PlanCardPanelScene() {
       ))}
       <line x1={288} y1={202} x2={394} y2={202} className="stroke-slate-200" />
       <Label x={288} y={216} size={10} tone="muted">
-        Made by Sam
+        Created by Sam
       </Label>
       <Label x={288} y={230} size={10} tone="muted">
-        Changed by Alex
+        Edited by Alex
       </Label>
     </Scene>
   );
 }
 
-/** Right-clicking a card: Open, Duplicate, Add to Slides, a Move to row per column, Flag, Archive, Trash. */
+/** Right-clicking a card: Open, Duplicate, Add to Slides, Edit Card Type, a Move to row per column, Flag,
+ *  Archive, Trash. */
 export function PlanCardMenuScene() {
   return (
-    <Scene w={420} h={250}>
+    <Scene w={420} h={264}>
       <rect
         x={20}
         y={20}
         width={110}
-        height={210}
+        height={224}
         rx={8}
         className="fill-slate-50 stroke-slate-200"
       />
       <Label x={30} y={36} size={11} weight={700} tone="strong">
-        To do
+        To Do
       </Label>
       <Card x={28} y={52} type="task" num={14} title="Write docs" w={94} />
       <Card x={28} y={88} type="action" num={15} title="Pick a date" w={94} />
@@ -747,7 +789,8 @@ export function PlanCardMenuScene() {
           'Open',
           'Duplicate',
           'Add to Slides',
-          'Move to In progress',
+          'Edit Card Type',
+          'Move to In Progress',
           'Move to Review',
           'Flag',
           'Archive',
@@ -760,25 +803,27 @@ export function PlanCardMenuScene() {
         Write docs
       </Label>
       <line x1={156} y1={45} x2={324} y2={45} className="stroke-slate-200" />
-      <line x1={156} y1={108} x2={324} y2={108} className="stroke-slate-200" />
-      <line x1={156} y1={150} x2={324} y2={150} className="stroke-slate-200" />
-      <rect x={154} y={192} width={172} height={21} rx={5} className="fill-white" />
-      <Label x={162} y={203} size={11} tone="body">
+      <line x1={156} y1={129} x2={324} y2={129} className="stroke-slate-200" />
+      <line x1={156} y1={171} x2={324} y2={171} className="stroke-slate-200" />
+      <rect x={154} y={213} width={172} height={21} rx={5} className="fill-white" />
+      <Label x={162} y={224} size={11} tone="body">
         Trash
       </Label>
     </Scene>
   );
 }
 
-/** The Card Types panel above its button: each type's stripe, glyph tint, name, fields and count. */
+/** The Card Types panel above its button: a row per type (its stripe, glyph tile, name and how many
+ *  fields, then Duplicate and the pencil), then Add New Card Type. */
 export function PlanCardTypesScene() {
-  const rows: { type: CardType; name: string; fields: number; items: number }[] = [
-    { type: 'project', name: 'Project', fields: 8, items: 3 },
-    { type: 'task', name: 'Task', fields: 11, items: 14 },
-    { type: 'note', name: 'Note', fields: 5, items: 6 },
-    { type: 'idea', name: 'Idea', fields: 6, items: 2 },
-    { type: 'action', name: 'Action', fields: 7, items: 4 },
+  const rows: { type: CardType; name: string; fields: string }[] = [
+    { type: 'project', name: 'Project', fields: '8 fields' },
+    { type: 'task', name: 'Task', fields: '11 fields, 2 custom' },
+    { type: 'note', name: 'Note', fields: '5 fields' },
+    { type: 'idea', name: 'Idea', fields: '6 fields' },
+    { type: 'action', name: 'Action', fields: '7 fields' },
   ];
+  const ink = { fill: 'none', className: 'stroke-slate-400', strokeWidth: 1.3 } as const;
   return (
     <Scene w={420} h={270}>
       <Panel x={120} y={8} w={200} h={226} title="CARD TYPES">
@@ -796,15 +841,19 @@ export function PlanCardTypesScene() {
                 strokeWidth={1}
               />
               <rect x={130} y={y} width={3.5} height={26} rx={1.5} className={STRIPE[r.type]} />
-              <Label x={142} y={y + 9} size={10} weight={600} tone="strong">
+              {/* The type's glyph tile, tinted in its colour. */}
+              <rect x={139} y={y + 5} width={16} height={16} rx={4} className="fill-slate-100" />
+              <rect x={144} y={y + 10} width={6} height={6} rx={1.5} className={STRIPE[r.type]} />
+              <Label x={161} y={y + 9} size={10} weight={600} tone="strong">
                 {r.name}
               </Label>
-              <Label x={142} y={y + 20} size={10} tone="muted">
-                {r.fields} fields
+              <Label x={161} y={y + 20} size={9} tone="muted">
+                {r.fields}
               </Label>
-              <Label x={300} y={y + 14} size={10} anchor="end" tone="muted">
-                {r.items} items
-              </Label>
+              {/* Duplicate, then the pencil. */}
+              <rect x={273} y={y + 9} width={7} height={7} rx={1.5} {...ink} />
+              <rect x={276} y={y + 6} width={7} height={7} rx={1.5} {...ink} />
+              <path d={`M292 ${y + 18} l2 -0.5 l7 -7 l-1.5 -1.5 l-7 7 Z`} {...ink} />
             </g>
           );
         })}
@@ -819,7 +868,7 @@ export function PlanCardTypesScene() {
           strokeDasharray="4 3"
         />
         <Label x={220} y={201} size={11} weight={600} anchor="middle" tone="accent">
-          + Add Type
+          + Add New Card Type
         </Label>
       </Panel>
       {/* Its button, in the bottom-right cluster. */}
@@ -896,7 +945,7 @@ export function PlanItemTwoBoardsScene() {
   );
   return (
     <Scene w={420} h={230}>
-      {board(20, 'Sprint', ['To do', 'Doing', 'Done'], 1)}
+      {board(20, 'Sprint', ['To Do', 'Doing', 'Done'], 1)}
       {board(230, 'Standup', ['Doing', 'Blocked', 'Done'], 0)}
       <path
         d="M128 84 C 170 130, 200 130, 240 84"

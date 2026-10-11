@@ -144,9 +144,9 @@ function Row({
 
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
-/** The Components category as Illustrate mode's palette shows it: the Web
- *  Elements group opened in place, its six components below it. (Illustrate
- *  leaves the category's Entity tile out, so the group is all there is.) */
+/** The Components category as Illustrate mode's palette shows it: Code and
+ *  Checklist, then the Web Elements group opened in place with its six components
+ *  below it. (Illustrate leaves the category's Entity tile out.) */
 export function ComponentsCategory() {
   const x = PX + 12;
   const rows: [string, string][] = [
@@ -158,10 +158,24 @@ export function ComponentsCategory() {
     ['Header', 'A website-style nav bar'],
   ];
   return (
-    <PaletteFrame category="Components" h={258} sceneH={282}>
+    <PaletteFrame category="Components" h={318} sceneH={342}>
       <Row
         x={x}
         y={56}
+        name="Code"
+        blurb="A syntax-highlighted code card"
+        glyph={<path d="M-2 -5l-4 5 4 5M2 -5l4 5 -4 5" {...g} />}
+      />
+      <Row
+        x={x}
+        y={86}
+        name="Checklist"
+        blurb="Tickable to-do rows"
+        glyph={<path d="M-6 -5h5v5h-5zM-5 -3l1.5 1.5 3 -3M2 -3h5M-6 2h5v5h-5zM2 4h5" {...g} />}
+      />
+      <Row
+        x={x}
+        y={116}
         name="Web Elements"
         blurb="Themed page sections"
         open
@@ -172,7 +186,7 @@ export function ComponentsCategory() {
         <Row
           key={name}
           x={x + 14}
-          y={92 + i * 30}
+          y={152 + i * 30}
           name={name}
           blurb={blurb}
           glyph={
@@ -232,7 +246,7 @@ export function DevicesCategory() {
   return (
     <PaletteFrame category="Devices" h={274} sceneH={298}>
       {rows.map(([name, blurb, glyph], i) => (
-        <Row key={name} x={x} y={52 + i * 31} name={name} blurb={blurb} glyph={glyph} />
+        <Row key={name} x={x} y={62 + i * 31} name={name} blurb={blurb} glyph={glyph} />
       ))}
     </PaletteFrame>
   );
@@ -257,19 +271,25 @@ export function IconsCategory() {
     <circle key="0" r={5} strokeDasharray="20 8" {...g} />,
     <path key="1" d="M-6 -4h12v3h-12zM-6 1h12v3h-12z" {...g} />,
     <path key="2" d="M0 -2a2.6 2.6 0 1 0 0.01 0M-5 6a5 5 0 0 1 10 0" {...g} />,
-    <path key="3" d="M-4 -1h8v7h-8zM-2.4 -1v-2.4a2.4 2.4 0 0 1 4.8 0v2.4" {...g} />,
-    <path key="4" d="M-4 -6h5l3 3v9h-8z" {...g} />,
+    <path key="3" d="M0 -6l5 2v3c0 4-3 6-5 7c-2-1-5-3-5-7v-3z" {...g} />,
+    <path key="4" d="M-6 -4h4l2 2h6v8h-12z" {...g} />,
     <path key="5" d="M-6 6v-4M-2 6v-9M2 6v-6M6 6v-11" {...g} />,
     <path key="6" d="M-6 0h11M2 -3l3 3-3 3" {...g} />,
     <path key="7" d="M-6 2h12v-4h-12zM-6 2v3M6 2v3" {...g} />,
-    <path key="8" d="M-6 -5h12v10h-12zM-6 -2h12" {...g} />,
+    <g key="8">
+      <circle r={2.2} {...g} />
+      <path
+        d="M0 -6v2M0 4v2M-6 0h2M4 0h2M-4.2 -4.2l1.4 1.4M2.8 2.8l1.4 1.4M-4.2 4.2l1.4 -1.4M2.8 -2.8l1.4 -1.4"
+        {...g}
+      />
+    </g>,
   ];
   const left = PX + 14;
   return (
-    <PaletteFrame category="Icons" h={262} sceneH={286}>
+    <PaletteFrame category="Icons" h={330} sceneH={354}>
       <rect
         x={left}
-        y={52}
+        y={58}
         width={PW - 28}
         height={24}
         rx={7}
@@ -278,31 +298,32 @@ export function IconsCategory() {
       />
       <circle
         cx={left + 13}
-        cy={64}
+        cy={70}
         r={4}
         className="fill-none stroke-slate-400"
         strokeWidth={1.5}
       />
-      <path d={`M${left + 16} ${67} l4 4`} className="stroke-slate-400" strokeWidth={1.5} />
-      <Label x={left + 26} y={65} size={10} tone="muted">
+      <path d={`M${left + 16} ${73} l4 4`} className="stroke-slate-400" strokeWidth={1.5} />
+      <Label x={left + 26} y={71} size={10} tone="muted">
         Search icons
       </Label>
       {cats.map((c, i) => {
-        const tx = left + (i % 3) * 92;
-        const ty = 86 + Math.floor(i / 3) * 60;
+        // Two to a row, short and wide, as the app lays its category tiles out.
+        const tx = left + (i % 2) * 140;
+        const ty = 94 + Math.floor(i / 2) * 50;
         return (
           <g key={c}>
             <rect
               x={tx}
               y={ty}
-              width={84}
-              height={52}
+              width={132}
+              height={44}
               rx={9}
               className="fill-white stroke-slate-200"
               strokeWidth={1.5}
             />
-            <g transform={`translate(${tx + 42} ${ty + 18})`}>{glyphs[i]}</g>
-            <Label x={tx + 42} y={ty + 40} anchor="middle" size={10} weight={600} tone="body">
+            <g transform={`translate(${tx + 66} ${ty + 15})`}>{glyphs[i]}</g>
+            <Label x={tx + 66} y={ty + 34} anchor="middle" size={10} weight={500} tone="body">
               {c}
             </Label>
           </g>

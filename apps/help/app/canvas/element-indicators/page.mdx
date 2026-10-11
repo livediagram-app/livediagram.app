@@ -28,7 +28,7 @@ An element shows an indicator for each of these it has, always in this order:
 
 Comments come last because they are the most frequent and the most urgent, and the far end is the first place your eye lands.
 
-A few elements show these things on their own face instead, so they carry no indicator for them: an [annotation](/help/canvas/annotations/)'s marker is its note, a link card is its link, a comment pin or comment panel shows its own comments, and an action panel its own action.
+A few elements show these things on their own face instead, so they carry no indicator for them: an [annotation](/help/canvas/annotations/)'s marker is its note, a link card is its link, a comment panel shows its own comments, and an action panel its own action. A margin note on an article page shows no indicators at all.
 
 A **mind map root** can also carry two commands, **Edit Outline** and **Tidy Map**. They work a little differently; see [Mind Map Commands](#mind-map-commands) below.
 
@@ -79,7 +79,7 @@ Selecting an element brings its own handles, **+** buttons and toolbar onto the 
 
 A mind map root with at least one child carries **Edit Outline** (edit the whole map as a list) and **Tidy Map** (lay the map out neatly again). These are things you **do**, not things the root **has**, so they stay hidden until you **hover** the root. Their space is kept free so nothing shifts when they appear. In Top they lead the cluster, and in Footer they end the row.
 
-They aren't shown while the root is selected, on a root with no children, on a [locked tab](/help/tabs/locking-tabs/), or to someone who can only view the document. Both are always in the root's **Mind Map** menu section too, which is the way in from the keyboard or on a touch screen. See [Edit Outline](/help/palette/mind-maps/edit-outline/).
+They aren't shown while the root is selected, on a root with no children, on a [locked tab](/help/tabs/locking-tabs/), on a hidden or locked active [layer](/help/canvas/layers/), or to a Viewer or Participant. Both are always in the root's **Mind Map** menu section too, which is the way in from the keyboard or on a touch screen. See [Edit Outline](/help/palette/mind-maps/edit-outline/).
 
 <Figure caption="Hovering a mind map root shows Edit Outline and Tidy Map ahead of its note indicator.">
   <MindRootCommandsScene />
@@ -97,7 +97,7 @@ Turning indicators **Off** hides them on every element, and a mind map root's co
 
 - **Zoomed far out**: below 40% zoom, indicators hide, along with the padlock on locked elements and the avatars of collaborators who have an element selected. An overview is for shape, not detail. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
 - **Exports**: indicators are editor chrome, so PNG and SVG exports and document thumbnails never include them.
-- **View-only**: someone who can only view the document still sees links, notes, actions and comments, and can open each one to read it. They don't get the mind map commands.
+- **Viewers and Participants** still see links, notes, actions and comments, and can open each one to read it. They don't get the mind map commands.
 - **Embeds**: a document [embedded](/help/collaboration/sharing/embeds/) in another page shows no indicators at all, whether the embed is for viewing or editing and whatever style you chose. Open it in livediagram to see them.
 - **Community**: a visitor viewing a document in the [Community](/help/collaboration/sharing/community/) sees no comment counts, since there is no comments panel for them to open. The other indicators still show.
 

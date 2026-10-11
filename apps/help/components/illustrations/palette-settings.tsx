@@ -3,7 +3,7 @@
 // settings-dialog.tsx. Labels are lifted from apps/live: the quick-add options from
 // components/canvas/quick-connect-options.tsx.
 
-import { Label, Scene, Shape, SelectionBox } from './primitives';
+import { Scene, Shape, SelectionBox } from './primitives';
 
 // The four default quick-add options, drawn as the strip's icon buttons (Duplicate, Arrow,
 // Pencil, Text), left to right.
@@ -33,7 +33,7 @@ function OptionGlyph({ kind }: { kind: 'duplicate' | 'arrow' | 'pencil' | 'text'
 }
 
 /** Quick-add on hover: the selected element's right-hand "+" with the pointer resting on it and
- *  its menu already open beside it, no click needed. The hover card names the option. */
+ *  its menu already open beside it, no click needed: a column of options, as on either side edge. */
 export function QuickAddHoverMenu() {
   const opts = ['duplicate', 'arrow', 'pencil', 'text'] as const;
   return (
@@ -58,65 +58,37 @@ export function QuickAddHoverMenu() {
           />
         </g>
       ))}
-      {/* The hovered "+" on the right edge. */}
+      {/* The hovered "+" on the right edge, as far off it as the others. */}
       <circle
-        cx={184}
+        cx={176}
         cy={108}
         r={12}
         className="fill-slate-100 stroke-slate-200"
         strokeWidth={2}
       />
       <path
-        d="M184 102v12M178 108h12"
+        d="M176 102v12M170 108h12"
         className="stroke-slate-700"
         strokeWidth={2}
         strokeLinecap="round"
       />
-      {/* Its menu: one strip of icon buttons. */}
+      {/* Its menu: on a side edge the options stand in a column beside the "+". */}
       <rect
-        x={204}
-        y={92}
-        width={140}
-        height={32}
+        x={198}
+        y={44}
+        width={34}
+        height={128}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
       {opts.map((k, i) => (
-        <g key={k}>
-          {i === 1 && (
-            <rect
-              x={210 + i * 33}
-              y={96}
-              width={28}
-              height={24}
-              rx={5}
-              className="fill-slate-100"
-            />
-          )}
-          <g transform={`translate(${224 + i * 33} 108)`}>
-            <OptionGlyph kind={k} />
-          </g>
+        <g key={k} transform={`translate(215 ${60 + i * 32})`}>
+          <OptionGlyph kind={k} />
         </g>
       ))}
-      {/* The hover card on Arrow. */}
-      <rect
-        x={210}
-        y={132}
-        width={186}
-        height={42}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={220} y={146} size={11} weight={700} tone="strong">
-        Arrow
-      </Label>
-      <Label x={220} y={163} size={10} tone="body">
-        Drag out an arrow from this side.
-      </Label>
       {/* The pointer resting on the "+": a hover, not a click. */}
-      <g transform="translate(188 111)">
+      <g transform="translate(180 111)">
         <path
           d="M0 0 L0 15 L4.2 11 L6.6 16.2 L9.2 15 L6.8 9.8 L12 9.4 Z"
           className="fill-white stroke-slate-700"

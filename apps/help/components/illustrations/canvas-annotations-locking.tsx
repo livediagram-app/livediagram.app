@@ -12,7 +12,7 @@ function NoteMarker({ cx, cy }: { cx: number; cy: number }) {
     <g
       transform={`translate(${cx - 12} ${cy - 13})`}
       fill="none"
-      className="stroke-brand-500"
+      className="stroke-brand-400"
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -29,26 +29,26 @@ function NoteMarker({ cx, cy }: { cx: number; cy: number }) {
 export function AnnotationScene() {
   return (
     <Scene w={420} h={200}>
-      <Shape x={54} y={104} w={110} h={58} kind="rect" label="Payments API" />
-      {/* The annotation: a themed circle, never resized */}
-      <circle cx={196} cy={104} r={22} className="fill-white stroke-brand-300" strokeWidth={2} />
-      <NoteMarker cx={196} cy={105} />
-      {/* The hover preview, above everything else on the canvas */}
+      <Shape x={40} y={120} w={110} h={58} kind="rect" label="Payments API" />
+      {/* The annotation: a themed circle, never resized; the glyph shares its stroke */}
+      <circle cx={262} cy={150} r={22} className="fill-white stroke-brand-400" strokeWidth={2} />
+      <NoteMarker cx={262} cy={151} />
+      {/* The hover preview, centred above the marker and above everything else on the canvas */}
       <g>
         <rect
-          x={222}
-          y={22}
+          x={174}
+          y={30}
           width={176}
           height={70}
           rx={9}
           className="fill-white stroke-slate-200"
           strokeWidth={1.5}
         />
-        <Label x={236} y={40} size={11} weight={700} tone="strong">
+        <Label x={188} y={48} size={11} weight={700} tone="strong">
           Rate limit
         </Label>
-        <TextBar x={236} y={54} w={146} />
-        <TextBar x={236} y={66} w={118} tone="faint" />
+        <TextBar x={188} y={62} w={146} />
+        <TextBar x={188} y={74} w={118} tone="faint" />
       </g>
     </Scene>
   );
