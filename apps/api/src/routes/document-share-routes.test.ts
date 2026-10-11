@@ -310,6 +310,15 @@ describe('PUT /api/documents/:id/share-password (docs/specs/013-workspace/share-
     expect(await res!.json()).toEqual({ passwordSet: true });
   });
 
+  it('trims the password before hashing it, as the visitor gate trims what is typed', async () => {
+    const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', {
+      body: { password: '  hunter2 ' },
+    });
+    await handleDocumentShareRoutes(ctx);
+    const stored = db.setDocumentSharePassword.mock.calls[0]![2] as string;
+    expect((await verifySharePassword(stored, 'hunter2')).ok).toBe(true);
+  });
+
   it('clears the password for a whitespace-only value', async () => {
     // A stray space must not lock a document in a way the owner can't see.
     const { ctx } = ctxFor('PUT', '/api/documents/d_1/share-password', {

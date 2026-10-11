@@ -132,8 +132,11 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
           : null;
       if (post && post.state !== 'hidden') return conflict('community_published');
       // Whitespace-only clears, so a stray space can't lock a document in a way
-      // the owner can't see. Anything else is stored as its hash.
-      const stored = password?.trim() ? await hashSharePassword(password) : null;
+      // the owner can't see. Anything else is stored as the hash of its trimmed
+      // value: the visitor's gate trims what is typed, so an untrimmed hash
+      // could never be matched.
+      const trimmed = password?.trim() ?? '';
+      const stored = trimmed ? await hashSharePassword(trimmed) : null;
       await setDocumentSharePassword(env, id, stored);
       // Visitors a share code admitted before this password meet the gate again
       // (docs/specs/013-workspace/share-password.md). Clearing it widens access, so closes nobody.

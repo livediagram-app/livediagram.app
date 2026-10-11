@@ -171,7 +171,8 @@ export function useShareLinks(deps: ShareLinksDeps) {
     password: string | null,
   ): Promise<boolean | undefined> => {
     if (!documentId) return undefined;
-    const trimmed = password && password.trim() ? password : null;
+    // Trimmed, as the visitor's gate trims what is typed, so the two always agree.
+    const trimmed = password?.trim() || null;
     try {
       const passwordSet = await apiSetSharePassword(selfParticipant.id, documentId, trimmed);
       setSharePasswordSet(passwordSet);
