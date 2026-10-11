@@ -127,7 +127,9 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
   problem or a custom field problem flag `configuration`; a left-out status problem flags `statuses`.
 - Show Me steps (`card-type-tour-steps.ts`): `general` shows `configuration` and focuses the Name input (focus
   scrolls it into view); `fields` shows `configuration` and scrolls `card-type-fields` to the panel's top
-  (`scrollIntoView({ block: 'start' })`, instant under reduced motion); `states` and `display` show their tabs.
+  (`revealTour(target, 'start')` from `tour-dom.ts`: `scrollIntoView({ block: 'start' })`, instant under reduced
+  motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
+  `ShowMeStage` (`ShowMe.tsx`, [Show Me](../../007-editor/show-me.md)); `CardTypeTour.tsx` keeps the literal telemetry.
 
 ## Tabs
 
