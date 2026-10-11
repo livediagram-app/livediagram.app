@@ -18,19 +18,19 @@ Derived from [Plan tour](../plan-tour.md). The engine, popover and DOM helpers a
 
 ## Files
 
-| File                                           | Holds                                                                                                      |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `apps/live/components/tour/tour-step.ts`       | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`                    |
-| `apps/live/components/tour/useTourEngine.ts`   | The shared step runner: step index, direction, target rect, prepare / wait / heal                          |
-| `apps/live/components/tour/TourStage.tsx`      | The shared overlay: card backdrop, highlight ring, `TourPopover`                                           |
-| `apps/live/components/tour/TourPopover.tsx`    | `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept)       |
-| `apps/live/components/tour/TourHost.tsx`       | The Diagram tour on the engine; publishes itself to `tour-active`                                          |
-| `apps/live/components/tour/plan-tour-steps.ts` | `planTourSteps`, `PLAN_TOUR_STEPS` (Boards), `PlanTourApi`, `PlanTourOffer`, `firstCardOn`, telemetry type |
-| `apps/live/components/tour/PlanTourHost.tsx`   | Offer, subject, relaunch, end; builds `PlanTourApi`                                                        |
-| `apps/live/components/tour/PlanTourArt.tsx`    | The welcome card's illustration                                                                            |
-| `apps/live/lib/tour-active.ts`                 | Which tour is on screen (`'welcome' \| 'plan' \| 'facilitate' \| null`), a module store                    |
-| `apps/live/lib/plan-tour.ts`                   | Relaunch event, tracks, and the old tour's `PlanTourContent` leftover record                               |
-| `apps/live/hooks/plan/usePlanTourLeftovers.ts` | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                          |
+| File                                           | Holds                                                                                                |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `apps/live/components/tour/tour-step.ts`       | `TourStepOf<Api>` (the shared step shape), `hasAnchor`, `stepTelemetryType(prefix, id)`              |
+| `apps/live/components/tour/useTourEngine.ts`   | The shared step runner: step index, direction, target rect, prepare / wait / heal                    |
+| `apps/live/components/tour/TourStage.tsx`      | The shared overlay: card backdrop, highlight ring, `TourPopover`                                     |
+| `apps/live/components/tour/TourPopover.tsx`    | `copy` (`TourCardCopy`), `welcomeArt` and `welcomeChoices` (`TourWelcomeChoice[]`, replacing accept) |
+| `apps/live/components/tour/TourHost.tsx`       | The Diagram tour on the engine; publishes itself to `tour-active`                                    |
+| `apps/live/components/tour/plan-tour-steps.ts` | `planTourSteps`, `PlanTourApi`, `PlanTourOffer`, `firstCardOn`, telemetry type                       |
+| `apps/live/components/tour/PlanTourHost.tsx`   | Offer, subject, relaunch, end; builds `PlanTourApi`                                                  |
+| `apps/live/components/tour/PlanTourArt.tsx`    | The welcome card's illustration                                                                      |
+| `apps/live/lib/tour-active.ts`                 | Which tour is on screen (`'welcome' \| 'plan' \| 'facilitate' \| null`), a module store              |
+| `apps/live/lib/plan-tour.ts`                   | Relaunch event, tracks, and the old tour's `PlanTourContent` leftover record                         |
+| `apps/live/hooks/plan/usePlanTourLeftovers.ts` | The sweep of an old tour's leftover record; nothing new is placed (see Leftovers)                    |
 
 Also touched: `ClusterPopoverButton` (a `dataTourId` prop; Card Types passes `card-types`), the Settings catalogue
 and dialog, `power-user-mode.ts`, `help-articles.ts`, the help article

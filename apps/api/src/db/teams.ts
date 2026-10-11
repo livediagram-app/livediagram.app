@@ -204,16 +204,6 @@ export async function deleteTeam(env: Env, id: string): Promise<void> {
   await env.DB.prepare('DELETE FROM teams WHERE id = ?').bind(id).run();
 }
 
-export async function updateTeamMemberRole(
-  env: Env,
-  memberId: string,
-  role: TeamRole,
-): Promise<void> {
-  await env.DB.prepare('UPDATE team_members SET role = ?, updated_at = ? WHERE id = ?')
-    .bind(role, Date.now(), memberId)
-    .run();
-}
-
 // The last-admin guard inside the write itself (docs/specs/013-workspace/teams.md): a row that is a joined admin
 // changes only while another joined admin remains, checked in the same statement. Counting first and writing
 // after let two admins demoting each other, or one leaving while removed, both pass and leave none.

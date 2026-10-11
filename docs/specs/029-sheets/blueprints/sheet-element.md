@@ -266,7 +266,7 @@ non-top-left cell holds an input.
 - Stored as `planSheet.fillTab: true` (validated by `isPlanSheetRef`). `fill-tab.ts`: `fillTabElementOf(elements)`
   returns the first board or Sheet in element order with Fill Tab on, with its `FillTabKind` (`'Board' | 'Sheet'`);
   on a Sheet tab, its first Sheet whatever the flag says.
-- `usePlanCoverWiring` publishes `{ fillTabId, fillTabKind, tabElementCount }` to `plan-cover-store.ts`; `useFillsTab(id)`
+- `usePlanCoverWiring` publishes `{ fillTabId, fillTabKind, planKind }` to `plan-cover-store.ts`; `useFillsTab(id)`
   reads whether an element fills its tab.
 - Sheet Settings offers no Fill Tab switch: a Sheet tab always fills it (docs/specs/026-plan/plan-tabs.md), and a
   stored `fillTab` on a Sheet elsewhere is honoured but never set from the UI (`SheetFillTab.test.tsx`).

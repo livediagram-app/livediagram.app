@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CATEGORY_DESCRIPTIONS, categoryColor, eventLabel, typeLabel } from './event-vocab';
+import { TELEMETRY_CATEGORIES } from '@livediagram/api-schema';
+import { categoryColor, eventLabel, typeLabel } from './event-vocab';
 
 // The dashboard's vocabulary layer (docs/specs/017-telemetry/telemetry.md): pure labelling helpers behind
 // the public /telemetry page. First tests for this app.
@@ -33,7 +34,7 @@ describe('categoryColor', () => {
   });
 
   it('gives every known category a non-neutral colour', () => {
-    for (const category of Object.keys(CATEGORY_DESCRIPTIONS)) {
+    for (const category of TELEMETRY_CATEGORIES) {
       expect(categoryColor(category), category).not.toBe('#94a3b8');
     }
   });

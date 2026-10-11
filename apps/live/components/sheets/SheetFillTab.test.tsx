@@ -22,7 +22,7 @@ describe('Fill Tab on a Sheet', () => {
   let h: SheetHarness;
   beforeEach(async () => {
     vi.clearAllMocks();
-    setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 });
+    setPlanCover({ fillTabId: null, fillTabKind: null });
     h = await makeSheet({ cells: { A1: '1' } });
   });
   const show = () =>
@@ -47,9 +47,9 @@ describe('Fill Tab on a Sheet', () => {
   });
 
   it('while filling the tab, hides Maximise', () => {
-    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet', tabElementCount: 1 });
+    setPlanCover({ fillTabId: 'el1', fillTabKind: 'Sheet' });
     show();
     expect(screen.queryByRole('button', { name: 'Maximise Sheet' })).toBeNull();
-    act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 }));
+    act(() => setPlanCover({ fillTabId: null, fillTabKind: null }));
   });
 });

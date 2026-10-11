@@ -75,20 +75,6 @@ export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// A hub with four branches, on a 16-unit grid.
-export function MindmapIcon({ size = 16, ...rest }: IconProps) {
-  return (
-    <Glyph size={size} units={16} {...rest}>
-      <circle cx="8" cy="8" r="2.2" />
-      <circle cx="2.8" cy="3" r="1.4" />
-      <circle cx="13.2" cy="3" r="1.4" />
-      <circle cx="2.8" cy="13" r="1.4" />
-      <circle cx="13.2" cy="13" r="1.4" />
-      <path d="M6.5 6.6L3.8 4M9.5 6.6L12.2 4M6.5 9.4L3.8 12M9.5 9.4L12.2 12" />
-    </Glyph>
-  );
-}
-
 // Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
 // mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
 // and the marketing site's mode pictures.

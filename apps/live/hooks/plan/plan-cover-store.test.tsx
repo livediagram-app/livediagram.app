@@ -10,7 +10,6 @@ import {
   useCanvasCovered,
   useCoversCanvas,
   useFillsTab,
-  useTabElementCount,
 } from './plan-cover-store';
 
 // docs/specs/026-plan/plan-board.md "Maximised board", "Fill Tab": the chrome asking whether the canvas is covered,
@@ -18,7 +17,7 @@ import {
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 afterEach(() => {
   act(() => {
-    setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 0 });
+    setPlanCover({ fillTabId: null, fillTabKind: null });
     releasePlanElement('v');
     releasePlanElement('b');
   });
@@ -42,7 +41,7 @@ describe('plan-cover-store', () => {
     act(() => maximisePlanElement('b'));
     expect([b.current, other.current, none.current]).toEqual([true, false, false]);
     act(() => releasePlanElement('b'));
-    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'b', fillTabKind: 'Board' }));
     expect([b.current, other.current]).toEqual([true, false]);
   });
 
@@ -50,14 +49,13 @@ describe('plan-cover-store', () => {
     const renders = vi.fn();
     render(<Probe onRender={renders} />);
     expect(renders).toHaveBeenCalledTimes(1);
-    // Forty elements added, one at a time: no re-render.
-    for (let n = 1; n <= 40; n++)
-      act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: n }));
+    // Forty elements added, one at a time, republish the same cover: no re-render.
+    for (let n = 1; n <= 40; n++) act(() => setPlanCover({ fillTabId: null, fillTabKind: null }));
     expect(renders).toHaveBeenCalledTimes(1);
-    act(() => setPlanCover({ fillTabId: 'a', fillTabKind: 'Board', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'a', fillTabKind: 'Board' }));
     expect(renders).toHaveBeenCalledTimes(2);
     // Still covered, still board 'a': elements added while filled re-render nothing.
-    act(() => setPlanCover({ fillTabId: 'a', fillTabKind: 'Board', tabElementCount: 2 }));
+    act(() => setPlanCover({ fillTabId: 'a', fillTabKind: 'Board' }));
     expect(renders).toHaveBeenCalledTimes(2);
   });
 
@@ -70,10 +68,10 @@ describe('plan-cover-store', () => {
     expect(isCanvasCovered()).toBe(true);
     expect(isBoardFillingTab()).toBe(false);
     act(() => releasePlanElement('b'));
-    act(() => setPlanCover({ fillTabId: 'x', fillTabKind: 'Board', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 'x', fillTabKind: 'Board' }));
     expect(isBoardFillingTab()).toBe(true);
     expect(isSheetCovering()).toBe(false);
-    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet', tabElementCount: 1 }));
+    act(() => setPlanCover({ fillTabId: 's', fillTabKind: 'Sheet' }));
     expect(isBoardFillingTab()).toBe(false);
     expect(isSheetCovering()).toBe(true);
   });
@@ -86,14 +84,5 @@ describe('plan-cover-store', () => {
     act(() => maximisePlanElement('b', 'Board'));
     expect(isSheetCovering()).toBe(false);
     act(() => releasePlanElement('b'));
-  });
-
-  it('gives the tab’s element count to whoever asks', () => {
-    function Count() {
-      return <span>{useTabElementCount()}</span>;
-    }
-    const { container } = render(<Count />);
-    act(() => setPlanCover({ fillTabId: null, fillTabKind: null, tabElementCount: 7 }));
-    expect(container.textContent).toBe('7');
   });
 });

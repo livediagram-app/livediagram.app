@@ -65,24 +65,6 @@ function weightOf(bold: boolean, attrs: WordmarkAttrs | undefined): number {
   return attrs?.weight ?? (bold ? 600 : 400);
 }
 
-export function svgLabel(
-  text: string,
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-  color: string,
-  fontSize: number,
-  bold: boolean,
-  italic: boolean,
-  fontFamily?: string,
-): string {
-  return (
-    `<text x="${r2(x)}" y="${r2(y)}"${svgFontFamilyAttr(fontFamily)} font-size="${fontSize}"` +
-    ` font-weight="${bold ? 600 : 400}"${italic ? ' font-style="italic"' : ''}` +
-    ` fill="${xmlEscape(color)}" text-anchor="${anchor}" dominant-baseline="central">${xmlEscape(text)}</text>`
-  );
-}
-
 // Where a wrapped block's FIRST line sits so the block hangs off `y` per
 // the vertical alignment: 'top' anchors the first line, 'bottom' the last,
 // 'middle' centres the block. Shared by the plain + rich wrapped labels.
@@ -220,27 +202,5 @@ export function svgRichWrappedLabel(
     `<text x="${r2(x)}" y="${r2(firstY)}"${svgFontFamilyAttr(fontFamily)}` +
     `${trackingAttr(wordmark, maxSize)}` +
     ` text-anchor="${anchor}" dominant-baseline="central">${body}</text>`
-  );
-}
-
-// Per-range label: one anchored <text> with a <tspan> per run.
-export function svgRichLabel(
-  runs: ExportRun[],
-  x: number,
-  y: number,
-  anchor: 'start' | 'middle' | 'end',
-  fontFamily?: string,
-): string {
-  const spans = runs
-    .map(
-      (run) =>
-        `<tspan fill="${xmlEscape(run.color)}" font-size="${run.size}"` +
-        ` font-weight="${run.bold ? 600 : 400}"${run.italic ? ' font-style="italic"' : ''}>` +
-        `${xmlEscape(run.text)}</tspan>`,
-    )
-    .join('');
-  return (
-    `<text x="${r2(x)}" y="${r2(y)}"${svgFontFamilyAttr(fontFamily)}` +
-    ` text-anchor="${anchor}" dominant-baseline="central">${spans}</text>`
   );
 }

@@ -41,16 +41,6 @@ export const ICON_DND_MIME = 'application/x-livediagram-icon';
 // element at that point. Value carried = the ShapeKind (shapes + devices).
 export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
 
-// The full catalogue (part 1 then part 2, so index 0 is still the default
-// icon — the registry preserves that order when it assembles the parts).
-// Empty until the async catalogue chunk loads; callers that render the list
-// (the Icons picker, palette search) subscribe via useIconCatalogs so they
-// re-run once the data lands. A function rather than an exported const so
-// there is no stale module-level snapshot of the pre-load empty array.
-export function getIconCatalog(): IconDef[] {
-  return getLoadedIconCatalog();
-}
-
 // The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
 // anim = static, no class). The shared shape behind the per-element animation
 // classes — icon glyphs, rating stars, pie slices — so the `lvd-` naming

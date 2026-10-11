@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  PLAN_TOUR_STEPS,
   firstCardOn,
   planTourSteps,
   planTourStepTelemetryType,
@@ -19,6 +18,7 @@ const api = (over: Partial<PlanTourApi> = {}): PlanTourApi => ({
   closeCard: vi.fn(),
   ...over,
 });
+const PLAN_TOUR_STEPS = planTourSteps('boards');
 const step = (id: string) => PLAN_TOUR_STEPS.find((s) => s.id === id)!;
 const SHEET_STEPS = planTourSteps('sheets');
 const sheetStep = (id: string) => SHEET_STEPS.find((s) => s.id === id)!;

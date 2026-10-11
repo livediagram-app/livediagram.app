@@ -280,10 +280,10 @@ fillTabId`; `ViewMinimap` returns null while it is true, hiding the Map; `usePal
   `fillTabElements(elements, id, update)` (the board alone, its set-up `update`d from the one it holds at the commit,
   Fill Tab on).
 - **The Plan cover** (`apps/live/hooks/plan/plan-cover-store.ts`, a module store like `maximised-plan.ts`): `{ fillTabId, fillTabKind,
-tabElementCount }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
+planKind }`, published before paint by `usePlanCoverWiring` (called once from `useEditorState`: it memoises
   `fillTabElementOf(activeTab.elements, kind, dashboard)`, and returns `canvasCovered` for the keyboard). Readers subscribe with selectors, so they re-render only when their answer changes: `useCanvasCovered`
   (maximised or filled: selection chrome, the Map), `useBoardFillingTab` (a board filling the tab: the palette's Cards alone),
-  `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet), `useTabElementCount` (Setup Board's warning only). `isCanvasCovered()` is the
+  `useSheetFillingTab` (a Sheet filling the tab: the palette hidden), `useFillsTab(id)` (a board or Sheet). `isCanvasCovered()` is the
   one covered check, read at a key press too. Neither value is on `PlanContext`, so adding or moving an element never
   changes the context (guarded by `plan-cover-store.test.tsx`: 40 element adds, 0 re-renders).
 - **Fill Tab's action** on `PlanContext` (`usePlanFillTab`, a stable callback): `fillTab(id, update)` (one `commit`,
