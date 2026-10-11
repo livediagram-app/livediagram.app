@@ -28,7 +28,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { apiLinkTab } from '@/lib/api-client';
-import { newTabOpening, newTabSeed, modeHasOwnStart } from '@/lib/new-tab-seed';
+import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { useBoardSceneImport } from './useBoardSceneImport';
 import { remintTabElements, useTabImport } from './useTabImport';
@@ -124,17 +124,12 @@ export function useTabActions(deps: TabActionsDeps) {
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    // A new tab opens on its mode's own start (Start Diagramming, Start Planning), with no Quick Start (newTabOpening).
-    const opening =
-      mode === undefined
-        ? newTabOpening(deps.editorMode)
-        : mode === 'diagram'
-          ? { quickStart: false as const }
-          : { opensIn: mode, quickStart: !modeHasOwnStart(mode) };
+    // A new tab opens on its mode's own start (Start Diagramming, Start Drawing...), with no Quick Start (newTabOpening).
+    const opening = newTabOpening(deps.editorMode, mode);
     const tab: Tab = {
       ...createTab(defaultTabName(tabs.length + 1)),
       ...seed,
-      ...('opensIn' in opening ? { opensIn: opening.opensIn } : {}),
+      ...(opening.opensIn ? { opensIn: opening.opensIn } : {}),
     };
     commitTabs((ts) => [...ts, tab]);
     markTabLoaded(tab.id);

@@ -49,14 +49,13 @@ describe('adding a tab', () => {
     expect(setTemplatePickerMode).not.toHaveBeenCalled();
   });
 
-  it('in a mode with its own start (Illustrate, Plan), opens no Quick Start over it', () => {
-    // From Plan's mode menu, a new Illustrate tab: What Is This Page For? is its start.
-    const illustrate = add('plan', 'illustrate');
-    expect(illustrate.added.opensIn).toBe('illustrate');
-    expect(illustrate.setTemplatePickerMode).not.toHaveBeenCalled();
-    const draw = add('plan', 'draw');
-    expect(draw.added.opensIn).toBe('draw');
-    expect(draw.setTemplatePickerMode).toHaveBeenCalledWith('templates');
+  it("in any mode, opens on that mode's own start with no Quick Start over it", () => {
+    // From Plan's mode menu: Start Illustrating, Start Drawing, Start Facilitating are each the new tab's start.
+    for (const mode of ['illustrate', 'draw', 'facilitate'] as const) {
+      const tab = add('plan', mode);
+      expect(tab.added.opensIn).toBe(mode);
+      expect(tab.setTemplatePickerMode).not.toHaveBeenCalled();
+    }
   });
 });
 
