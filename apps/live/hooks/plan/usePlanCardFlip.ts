@@ -39,11 +39,13 @@ export function placeWithin(node: HTMLElement, root: HTMLElement): { x: number; 
 }
 
 // `signature` changes when the cards' order or columns change; the board's body is `root`; `skipId` is the card
-// being dragged.
+// being dragged; `hold` says a column is gliding (useColumnMoveFlip), its cards riding in their cells, so they are
+// measured but not played.
 export function usePlanCardFlip(
   root: RefObject<HTMLElement | null>,
   signature: string,
   skipId: string | null,
+  hold?: () => boolean,
 ): void {
   const last = useRef(new Map<string, { x: number; y: number }>());
   useLayoutEffect(() => {
@@ -69,6 +71,7 @@ export function usePlanCardFlip(
       before.size === 0 ||
       moves.length === 0 ||
       moves.length > FLIP_CARDS_MAX ||
+      hold?.() === true ||
       prefersReducedMotion()
     )
       return;
@@ -87,5 +90,5 @@ export function usePlanCardFlip(
         once: true,
       });
     }
-  }, [root, signature, skipId]);
+  }, [root, signature, skipId, hold]);
 }

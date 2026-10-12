@@ -16,9 +16,10 @@ import {
   TextInput,
   lucideGlyph,
 } from '@livediagram/ui';
-import { lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
+import { lucideColumns3, lucideLayoutGrid, lucideRows2 } from '@livediagram/icons/lucide';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { usePlan } from '@/components/plan/PlanContext';
+import { BoardColumnsSection } from '@/components/plan/BoardColumnsSection';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
 import { trackSetup } from '@/components/plan/track-board-setup';
 
@@ -176,15 +177,20 @@ export function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
 }
 
 const RowsIcon = lucideGlyph(lucideRows2, 16);
+const ColumnsIcon = lucideGlyph(lucideColumns3, 16);
 const LayoutIcon = lucideGlyph(lucideLayoutGrid, 16);
 
 // The four sections, in order, for the element menu and the cog alike. `shows` leaves one out where it has nothing
 // (Supported Cards on an Archive board).
 export const PLAN_BOARD_SECTIONS: readonly {
-  id: 'board-setup' | 'swimlanes' | 'supported-cards' | 'card-layout';
+  id: 'board-setup' | 'columns' | 'swimlanes' | 'supported-cards' | 'card-layout';
   title: string;
   icon: ReactNode;
-  Body: (props: { element: ShapeElement; onClose?: (() => void) | undefined }) => ReactNode;
+  Body: (props: {
+    element: ShapeElement;
+    open: boolean;
+    onClose?: (() => void) | undefined;
+  }) => ReactNode;
   shows: (setup: PlanBoardSetup) => boolean;
 }[] = [
   {
@@ -193,6 +199,14 @@ export const PLAN_BOARD_SECTIONS: readonly {
     icon: <PlanIcon size={16} />,
     Body: PlanBoardSetupSection,
     shows: () => true,
+  },
+  {
+    id: 'columns',
+    title: 'Columns',
+    icon: <ColumnsIcon />,
+    Body: BoardColumnsSection,
+    // Not on an All Cards or Archive board, which have no columns of their own, nor one not set up yet (Setup Board).
+    shows: (setup) => !setup.allCards && !setup.archive && setup.columns.length > 0,
   },
   {
     id: 'swimlanes',
@@ -244,7 +258,7 @@ export function PlanBoardSectionsPanel({
             open={open === id}
             onToggle={() => setOpen(open === id ? null : id)}
           >
-            <Body element={element} onClose={onClose} />
+            <Body element={element} open={open === id} onClose={onClose} />
           </BoardSettingsSection>
         ),
       )}

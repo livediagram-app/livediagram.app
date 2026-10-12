@@ -124,7 +124,9 @@ SheetBordersPicker.tsx   the Borders menu: a 4 x 2 grid of drawn borders and dra
 sheet-rename.ts          renameSheet: trim, unchanged, unique on the tab (TITLE_TAKEN toast); header and settings
 sheet-status-pick.ts     the viewer's totals pick (localStorage, useSyncExternalStore), status bar and settings
 SheetToolbar.tsx         the category switcher (PaletteDropdown) and the category's buttons, labelled when they
-                         all fit (never on a phone), folding into More when narrow (TOOLBAR_PX)
+                         all fit (never on a phone), folding into More when narrow (TOOLBAR_PX); on a phone no
+                         Search or chevrons, PHONE_GAP_PX / PHONE_SEPARATOR_PX, an iconOnly switcher, glyph-only
+                         word buttons, controls drawn as their menu's glyph
 sheet-toolbar-categories.tsx the six categories (Text, Cells, Numbers, Data, Charts, Functions) and their
                          buttons
 SheetToolbarMenus.tsx    number format, colours, font size, borders, merge (with its confirm), alignment, wrap,

@@ -127,5 +127,6 @@ export {
   SHEET_FULL_HEIGHT,
   type SheetDrag,
 } from './useSheetDrag';
+export { SheetHandle, SHEET_HANDLE_PX } from './SheetHandle';
 export { safeInset, atLeastInset, safeInlinePadding } from './safe-area';
 export * from './browser-repair';

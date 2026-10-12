@@ -55,6 +55,7 @@ import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
+import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { ExampleCardsNotice } from './ExampleCardsNotice';
@@ -218,7 +219,10 @@ export function PlanBoardView({
         : '',
     [projection, collapsed],
   );
-  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null);
+  // A column moved left or right glides there (column-move-flip.ts), its cards riding along rather than gliding too.
+  const gridRef = useRef<HTMLDivElement>(null);
+  const columnMove = useColumnMoveFlip(gridRef, setup?.columns.map((c) => c.id).join('|') ?? '');
+  usePlanCardFlip(bodyRef, flipSignature, drag.drag?.itemId ?? null, columnMove.isMoving);
   // Maximised (or filling its tab, or a phone's Dashboard slot, one column a screen), a card dragged near the columns'
   // left or right edge scrolls them sideways.
   useEdgeAutoScroll(
@@ -434,6 +438,7 @@ export function PlanBoardView({
           />
         ) : (
           <div
+            ref={gridRef}
             className="grid min-h-full gap-3"
             style={{
               gridTemplateColumns: columnTemplate,
@@ -452,6 +457,7 @@ export function PlanBoardView({
                 palette={palette}
                 canEdit={canEdit}
                 onChange={(next, part) => {
+                  if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
                   plan?.updateBoard(element.id, next);
                   trackSetup(part);
                 }}
@@ -530,6 +536,7 @@ export function PlanBoardView({
                         return (
                           <div
                             key={col.column.id}
+                            {...{ [COLUMN_ATTR]: col.column.id }}
                             data-plan-status={col.column.status}
                             data-plan-lane={lane.key}
                             role="list"
