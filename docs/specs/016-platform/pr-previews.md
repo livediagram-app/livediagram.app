@@ -115,8 +115,14 @@ Previews build like staging with three differences:
 | `NEXT_PUBLIC_MCP_ORIGIN`            | `https://mcp-staging.livediagram.app`            | No MCP of its own.                                                                                                                                                                                                                                                                                                                 |
 | `NEXT_PUBLIC_BUILD_ID`              | empty on a Preview; the commit on a Full preview | A Preview's editor talks to staging's api, whose `BUILD_ID` is staging's commit; with both set they never match, and the editor would treat itself as permanently stale ([Stale builds](stale-builds.md)). Empty disables that layer. A full preview's api is deployed in the same run, so the ids agree as they do in production. |
 
-The hosted profile's build values come from staging's entry in
-`apps/api/hosted-vars.json`.
+The hosted profile ([Deployment](deployment.md), "Hosted profile") gains a third
+environment, `preview`, beside production and staging in `apps/api/hosted-vars.json`.
+Its per-environment values are all empty: no `APP_BASE_URL` (no email leaves a preview)
+and no `GOOGLE_CLIENT_ID` (the Drive mirror stays off). The shared values, telemetry on
+and the per-owner image caps, apply as they do everywhere hosted. A Preview's telemetry
+lands in staging's D1 through staging's api; a full preview's lands in its own. The build
+check then proves a preview build carries neither production's nor staging's Google
+client id.
 
 ## Lifecycle
 
