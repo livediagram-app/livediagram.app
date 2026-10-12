@@ -225,14 +225,14 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 - Menu rows: a glyph (a link for Follow Tab, a rounded square for Flexible, a crisp square for Professional, a wobbly
   square for Sketch), the name, and the line "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand".
   The checked row is the element's own finish (Follow Tab when it has none).
-- Finish tab: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
+- Finish panel: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
   tab.", button "Apply to All Elements".
 
 ## Accessibility
 
 The menu rows are `OptionRows`: menu item radios inside the menu (its own keys move between them), each with
-`aria-checked`. The dialog tiles are `SizeButton`s with `aria-pressed`; the tab strip gains one more tab with the
-same roles. Hover preview never fires for touch. No motion.
+`aria-checked`. The dialog tiles are `SizeButton`s with `aria-pressed`; the panel is reached from the dialog's
+**Fine-tune** row named Finish, with a **Back** control to the home. Hover preview never fires for touch. No motion.
 
 ## Web Experience
 

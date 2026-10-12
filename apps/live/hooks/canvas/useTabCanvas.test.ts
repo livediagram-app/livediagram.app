@@ -76,3 +76,31 @@ describe('useTabCanvas finish', () => {
     expect(h.commit).not.toHaveBeenCalled();
   });
 });
+
+// Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks").
+describe('useTabCanvas applyTabLook', () => {
+  it('sets the theme, finish, font and pattern as one step, and tracks it', () => {
+    track.mockClear();
+    const h = setup([box('a')]);
+    h.api.applyTabLook('boardroom');
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    const t = h.tabs()[0]!;
+    expect([t.theme, t.finish, t.font, t.backgroundPattern]).toEqual([
+      'steel',
+      'professional',
+      'inter',
+      'blank',
+    ]);
+    expect(h.tabs()[1]!.theme).toBeUndefined();
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Look');
+  });
+
+  it('ignores an unknown look and a blocked session', () => {
+    const h = setup([box('a')]);
+    h.api.applyTabLook('nope');
+    expect(h.commitTabs).not.toHaveBeenCalled();
+    const blocked = setup([box('a')], true);
+    blocked.api.applyTabLook('everyday');
+    expect(blocked.commitTabs).not.toHaveBeenCalled();
+  });
+});

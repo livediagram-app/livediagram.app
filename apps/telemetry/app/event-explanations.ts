@@ -801,6 +801,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
     "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
+  'Tab|Changed|Look':
+    "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
   'Tab|Changed|FinishToAll':

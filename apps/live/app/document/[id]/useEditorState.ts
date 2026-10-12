@@ -2616,6 +2616,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyTabFontToAll,
     setTabFinish,
     applyTabFinishToAll,
+    applyTabLook,
     setTabFont,
     setTabDefaultTextSize,
     setBackgroundPattern,
@@ -3870,6 +3871,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyTabFontToAll,
     setTabFinish,
     applyTabFinishToAll,
+    applyTabLook,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,

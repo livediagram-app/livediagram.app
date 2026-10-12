@@ -27,7 +27,7 @@ import {
   RedoIcon,
   SearchIcon,
   SettingsIcon,
-  ThemeBrushIcon,
+  ThemeLookIcon,
   UndoIcon,
 } from '@livediagram/ui';
 import { HERO_MODE, MODE_TILES, type HeroMode, type Tile } from './hero-mode-palette';
@@ -88,7 +88,7 @@ export function CanvasCluster({ className, mode }: { className: string; mode: He
           </span>
         )}
         <span className={`${CELL} ${mode === 'plan' ? '' : SPLIT}`}>
-          <ThemeBrushIcon size={12} />
+          <ThemeLookIcon size={12} />
         </span>
       </span>
       {/* Each piece of the readout centres its cap band, not its line box, as the window's

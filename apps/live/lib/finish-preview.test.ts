@@ -34,3 +34,11 @@ describe('finishPreviewSvg', () => {
     expect(finishPreviewSvg('flexible', { ...tab, font: 'lora' })).toMatch(/Lora/);
   });
 });
+
+describe('finishPreviewSvg in a theme', () => {
+  it('draws the sample in the tab’s theme colours', () => {
+    expect(finishPreviewSvg('flexible', { ...tab, theme: 'forest' })).not.toBe(
+      finishPreviewSvg('flexible', tab),
+    );
+  });
+});

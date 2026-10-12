@@ -122,7 +122,7 @@ The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry u
 ## New-document / template picker
 
 The New-document theme picker ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) shows the same
-**Custom** category and **+ New theme** builder as the Tab Look & Feel dialog's Theme tab,
+**Custom** category and **+ New theme** builder as the Tab Look & Feel dialog's Colours panel,
 so a user can apply (or author) one of their saved themes at the moment they
 start a document. Both surfaces render one shared `CustomThemePicker` (which owns
 the builder state and wires the custom category into `ThemeCategoryBrowser`), so
@@ -141,7 +141,7 @@ New `type`s on the existing `Theme` category ([Telemetry + public transparency d
 
 - DB / route / test layers copy the **folders** resource one-for-one (`db/custom-themes.ts`, `routes/custom-themes.ts`, `routes/custom-themes.test.ts`).
 - `ColorSwatch`, `CanvasStyleControls` (pattern grid), `ShapeIcon`, `elementKindLabel`, `ThemeSwatch`, `tint`/`shade`/`deriveTextColorForBg` are all reused; the builder adds no parallel colour primitives.
-- The builder component is shared between the Tab Look & Feel dialog's Theme tab and the Explorer edit modal (one `CustomThemeBuilder`, two hosts), so the two entry points can't drift.
+- The builder component is shared between the Tab Look & Feel dialog's Colours panel and the Explorer edit modal (one `CustomThemeBuilder`, two hosts), so the two entry points can't drift.
 
 ## Out of scope (for now)
 

@@ -14,17 +14,10 @@
 // New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
-import { lucideGrid3x3 } from '@livediagram/icons/lucide';
+import { lucideChevronLeft } from '@livediagram/icons/lucide';
 import { useRef, useState } from 'react';
-import type { BackgroundPattern, Finish } from '@livediagram/document';
-import {
-  Glyph,
-  lucideGlyph,
-  useEscape,
-  useFocusTrap,
-  Portal,
-  DialogCloseButton,
-} from '@livediagram/ui';
+import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
+import { lucideGlyph, useEscape, useFocusTrap, Portal, DialogCloseButton } from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
@@ -33,9 +26,19 @@ import { FontSelect } from '@/components/palette/FontSelect';
 import { SizeButton } from '@/components/palette/palette-controls';
 import type { TextSize } from '@livediagram/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
-import { FinishTab, FinishTabIcon } from './FinishTab';
+import { FinishTab } from './FinishTab';
+import { LooksHome } from './LooksHome';
+import { activeLookId } from '@/lib/tab-looks';
 
-export type CanvasThemeTab = 'canvas' | 'theme' | 'font' | 'finish';
+// 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
+export type CanvasThemeTab = 'looks' | 'canvas' | 'theme' | 'font' | 'finish';
+
+const PANEL_TITLES: Record<Exclude<CanvasThemeTab, 'looks'>, string> = {
+  theme: 'Colours',
+  finish: 'Finish',
+  font: 'Text',
+  canvas: 'Canvas',
+};
 
 type CanvasThemeDialogProps = {
   tab: CanvasThemeTab;
@@ -73,6 +76,8 @@ type CanvasThemeDialogProps = {
   onApplyFinishToAll: () => void;
   // The tab's own background, unresolved, for the Finish preview's paper.
   canvasBackground?: string;
+  // Looks: set the tab's theme, finish, font and pattern at once (lib/tab-looks.ts).
+  onApplyLook: (id: string) => void;
   onClose: () => void;
 };
 
@@ -103,6 +108,7 @@ export function CanvasThemeDialog({
   onSetFinish,
   onApplyFinishToAll,
   canvasBackground,
+  onApplyLook,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
@@ -157,16 +163,23 @@ export function CanvasThemeDialog({
               : undefined
           }
         >
-          {/* Header + the full-width tab bar live in one band so the modal
-              reads as a single unit rather than two stacked divider rows. */}
-          <div className="flex flex-col gap-3 border-b border-slate-200 px-4 pb-3 pt-3 dark:border-slate-800">
+          {/* The header: the title with help and close on the right; inside a panel, a Back row to the home
+              (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
+          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-3 pt-3 dark:border-slate-800">
             <div className="flex items-center justify-between gap-3">
               {/* "Appearance" is the VIEWER's own light / dark chrome now
                   (docs/specs/007-editor/live-app.md), so this dialog — which is the tab's look, shared
                   with everyone — takes the name of the section that opens it. */}
-              <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                Tab Look &amp; Feel
-              </h2>
+              <div className="flex min-w-0 flex-col">
+                <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+                  Tab Look &amp; Feel
+                </h2>
+                {tab === 'looks' ? (
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Pick a look for the whole tab, then fine-tune any part of it.
+                  </p>
+                ) : null}
+              </div>
               {/* Help sits with the close button, where the other editor
                   dialogs keep their window controls, not beside the title. */}
               <div className="flex items-center gap-1">
@@ -185,45 +198,46 @@ export function CanvasThemeDialog({
                 <DialogCloseButton compact onClick={onClose} />
               </div>
             </div>
-            {/* The theme leads the strip: it's the broader, more-used
-                control (the paintbrush dock button also opens here); Canvas is
-                the finer backdrop tuning. */}
-            <div className="flex w-full gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
-              <TabButton
-                active={tab === 'theme'}
-                onClick={() => onTabChange('theme')}
-                icon={<ThemeTabIcon />}
-              >
-                Theme
-              </TabButton>
-              <TabButton
-                active={tab === 'canvas'}
-                onClick={() => onTabChange('canvas')}
-                icon={<BackgroundTabIcon />}
-              >
-                Canvas
-              </TabButton>
-              <TabButton
-                active={tab === 'font'}
-                onClick={() => onTabChange('font')}
-                icon={<FontTabIcon />}
-              >
-                Font
-              </TabButton>
-              <TabButton
-                active={tab === 'finish'}
-                onClick={() => onTabChange('finish')}
-                icon={<FinishTabIcon />}
-              >
-                Finish
-              </TabButton>
-            </div>
+            {tab !== 'looks' ? (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => onTabChange('looks')}
+                  className="-ml-1.5 inline-flex h-9 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                >
+                  <BackIcon />
+                  Back
+                </button>
+                <span aria-hidden className="text-slate-300 dark:text-slate-600">
+                  /
+                </span>
+                <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+                  {PANEL_TITLES[tab]}
+                </h3>
+              </div>
+            ) : null}
           </div>
 
           {/* Fixed min-height so switching between tabs doesn't collapse the
               modal and make it jump around. */}
           <div className="min-h-[20rem] overflow-y-auto px-5 py-4">
-            {tab === 'font' ? (
+            {tab === 'looks' ? (
+              <LooksHome
+                activeLook={activeLookId({
+                  theme: themeId,
+                  finish,
+                  font: font ?? undefined,
+                  backgroundPattern,
+                })}
+                onPickLook={onApplyLook}
+                themeId={themeId}
+                finish={resolveFinish(finish, undefined)}
+                font={font}
+                defaultTextSize={defaultTextSize}
+                pattern={backgroundPattern}
+                onOpenPanel={onTabChange}
+              />
+            ) : tab === 'font' ? (
               <FontTab
                 font={font}
                 onSetFont={onSetFont}
@@ -361,55 +375,8 @@ function FontTab({
   );
 }
 
-function TabButton({
-  active,
-  onClick,
-  icon,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={
-        'flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ' +
-        (active
-          ? 'bg-white font-semibold text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100'
-          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100')
-      }
-    >
-      <span className={active ? 'text-brand-500 dark:text-brand-300' : ''}>{icon}</span>
-      {children}
-    </button>
-  );
-}
-
-// Compact 14px glyphs for the tab bar.
-// The canvas background: a pattern grid.
-const BackgroundTabIcon = lucideGlyph(lucideGrid3x3, 14);
-
-function FontTabIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M3 13L7.5 3l4.5 10M4.6 9.5h5.8" />
-    </Glyph>
-  );
-}
-function ThemeTabIcon() {
-  return (
-    <Glyph size={14} units={16} strokeLinecap="butt" strokeLinejoin="miter">
-      <path d="M8 2.5a5.5 5.5 0 1 0 0 11c.9 0 1.3-.7 1.3-1.3 0-.7-.6-1-.6-1.6 0-.5.4-.9 1-.9h1.1A2.7 2.7 0 0 0 13.5 7 5.5 5.5 0 0 0 8 2.5z" />
-      <circle cx="5.5" cy="7" r="0.7" fill="currentColor" stroke="none" />
-      <circle cx="8" cy="5.2" r="0.7" fill="currentColor" stroke="none" />
-    </Glyph>
-  );
-}
+// The Back row's chevron.
+const BackIcon = lucideGlyph(lucideChevronLeft, 14);
 
 // The paintbrush's place: how far the panel's right edge and bottom sit from the window's, so its corner is just above
 // the brush, right edges aligned. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.

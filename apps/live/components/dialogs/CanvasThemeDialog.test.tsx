@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
 
@@ -9,8 +10,8 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-const props = {
-  tab: 'canvas' as const,
+const props: ComponentProps<typeof CanvasThemeDialog> = {
+  tab: 'canvas',
   onTabChange: vi.fn(),
   backgroundPattern: 'grid' as const,
   backgroundColor: '#ffffff',
@@ -35,6 +36,7 @@ const props = {
   finish: undefined,
   onSetFinish: vi.fn(),
   onApplyFinishToAll: vi.fn(),
+  onApplyLook: vi.fn(),
   onClose: vi.fn(),
 };
 
@@ -62,10 +64,10 @@ describe('CanvasThemeDialog placement', () => {
 // docs/specs/008-canvas/finish.md "Where it is set": the Finish tab sets the tab's finish and clears every
 // element's own.
 describe('CanvasThemeDialog Finish tab', () => {
-  it('is in the tab strip and opens on request', () => {
+  it('is a Fine-tune row on the home that opens its panel', () => {
     const onTabChange = vi.fn();
-    render(<CanvasThemeDialog {...props} onTabChange={onTabChange} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    render(<CanvasThemeDialog {...props} tab="looks" onTabChange={onTabChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish: Flexible' }));
     expect(onTabChange).toHaveBeenCalledWith('finish');
   });
 
@@ -102,5 +104,70 @@ describe('CanvasThemeDialog Finish tab', () => {
     render(<CanvasThemeDialog {...props} tab="finish" onApplyFinishToAll={onApplyFinishToAll} />);
     fireEvent.click(screen.getByRole('button', { name: 'Apply to All Elements' }));
     expect(onApplyFinishToAll).toHaveBeenCalledTimes(1);
+  });
+});
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Looks", "Fine-tune": the home, its looks and its panels.
+describe('CanvasThemeDialog home', () => {
+  const home = (over: Partial<ComponentProps<typeof CanvasThemeDialog>> = {}) =>
+    render(<CanvasThemeDialog {...props} tab="looks" {...over} />);
+  const lookNames = ['Everyday', 'Whiteboard', 'Graph Paper', 'Boardroom', 'Notebook', 'Midnight'];
+
+  it('offers the six looks, each drawn as a preview', () => {
+    home();
+    for (const name of lookNames) {
+      const card = screen.getByRole('button', { name: new RegExp(`^${name}`) });
+      expect(card.querySelector('svg'), name).not.toBeNull();
+    }
+  });
+
+  it('applies a look on click', () => {
+    const onApplyLook = vi.fn();
+    home({ onApplyLook });
+    fireEvent.click(screen.getByRole('button', { name: /^Whiteboard/ }));
+    expect(onApplyLook).toHaveBeenCalledWith('whiteboard');
+  });
+
+  it('marks the look the tab matches, and none for its own mix', () => {
+    const { unmount } = home({ themeId: 'brand', finish: undefined, font: null });
+    expect(screen.getByRole('button', { name: /^Everyday/ }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    unmount();
+    home({ themeId: 'brand', finish: 'sketch', font: null });
+    for (const name of lookNames)
+      expect(
+        screen.getByRole('button', { name: new RegExp(`^${name}`) }).getAttribute('aria-pressed'),
+      ).toBe('false');
+  });
+
+  it('shows each setting’s current value on its Fine-tune row and opens its panel', () => {
+    const onTabChange = vi.fn();
+    home({
+      onTabChange,
+      finish: 'professional',
+      font: 'inter',
+      defaultTextSize: 'lg',
+      backgroundPattern: 'lines',
+    });
+    expect(screen.getByRole('button', { name: /^Colours: / })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Finish: Professional' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /^Text: Inter, large/ }));
+    expect(onTabChange).toHaveBeenLastCalledWith('font');
+    fireEvent.click(screen.getByRole('button', { name: /^Canvas: / }));
+    expect(onTabChange).toHaveBeenLastCalledWith('canvas');
+    fireEvent.click(screen.getByRole('button', { name: /^Colours: / }));
+    expect(onTabChange).toHaveBeenLastCalledWith('theme');
+  });
+
+  it('has no Back on the home; a panel goes Back to it', () => {
+    const { unmount } = home();
+    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    unmount();
+    const onTabChange = vi.fn();
+    render(<CanvasThemeDialog {...props} tab="font" onTabChange={onTabChange} />);
+    expect(screen.getByRole('heading', { name: 'Text' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    expect(onTabChange).toHaveBeenCalledWith('looks');
   });
 });

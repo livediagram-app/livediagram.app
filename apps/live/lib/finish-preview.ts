@@ -10,6 +10,7 @@ import {
   type StickyElement,
   type Tab,
 } from '@livediagram/document';
+import { withThemeApplied } from '@/lib/tab-theme-apply';
 
 const STEP: ShapeElement = {
   id: 'finish-preview-step',
@@ -56,10 +57,17 @@ export function finishPreviewSvg(
   finish: Finish,
   tab: { background: string; theme?: string; font?: string },
 ): string {
+  // The sample in the tab's theme colours, recoloured exactly as picking that theme does.
+  const elements = tab.theme
+    ? withThemeApplied(
+        { id: 'finish-preview', name: '', elements: [...FINISH_PREVIEW_ELEMENTS] } as Tab,
+        tab.theme,
+      ).elements
+    : [...FINISH_PREVIEW_ELEMENTS];
   const previewTab = {
     id: 'finish-preview',
     name: 'Finish preview',
-    elements: [...FINISH_PREVIEW_ELEMENTS],
+    elements,
     finish,
     backgroundColor: tab.background,
     ...(tab.theme ? { theme: tab.theme } : {}),

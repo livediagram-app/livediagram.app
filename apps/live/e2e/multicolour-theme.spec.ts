@@ -48,6 +48,9 @@ test.describe('Multi-colour themes', () => {
     expect(await rainbowHues(page)).toBe(0);
 
     await page.getByRole('button', { name: 'Theme and canvas' }).click();
+    // The dialog opens on its home (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"): Colours
+    // opens the theme browser.
+    await page.getByRole('button', { name: /^Colours: / }).click();
     await page.getByRole('button', { name: 'Browse Multi-colour themes' }).click();
     await page
       .getByRole('button', { name: /^Rainbow/ })

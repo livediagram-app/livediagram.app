@@ -4,17 +4,17 @@ import { HoverCard, TidyUpIcon } from '@livediagram/ui';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
-import { ThemeBrushIcon } from '@/components/palette/palette-icons';
+import { ThemeLookIcon } from '@/components/palette/palette-icons';
 
-// Layers and the Theme & Canvas brush, one strip in the bottom-right cluster
+// Layers and the Theme & canvas button, one strip in the bottom-right cluster
 // (docs/specs/007-editor/live-app.md): both shape how the tab looks rather than what is on it, so
 // they sit together in every mode. A mode without Layers (Plan, Illustrate) or a session without
-// the brush (a view-only visitor, a whiteboard) keeps whichever of the two it has.
+// the Theme & canvas button (a view-only visitor, a whiteboard) keeps whichever of the two it has.
 //
 // In Diagram mode an Editor's strip starts with Tidy Up (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
 // button"), left of Layers: how the tab is arranged sits with how it looks.
 //
-// Layers opens its panel as a popover above it (docs/specs/006-document/layers.md); the brush
+// Layers opens its panel as a popover above it (docs/specs/006-document/layers.md); the palette
 // opens the CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md).
 export function LayersThemeStrip({
   tidyUp,
@@ -25,7 +25,7 @@ export function LayersThemeStrip({
   tidyUp?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Layers button: its popover's state and toggle. Absent, the strip has none.
   layers?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
-  // The brush. Absent, the strip has none.
+  // The Theme & canvas button. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
 }) {
   if (!tidyUp && !layers && !onOpenTheme) return null;
@@ -68,7 +68,7 @@ export function LayersThemeStrip({
               layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''
             } ${CLUSTER_CONTROL_REST}`}
           >
-            <ThemeBrushIcon />
+            <ThemeLookIcon />
           </button>
         </HoverCard>
       ) : null}

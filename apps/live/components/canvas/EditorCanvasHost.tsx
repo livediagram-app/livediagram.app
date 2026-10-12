@@ -868,14 +868,13 @@ export function EditorCanvasHost() {
         )}
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
-        // Bottom-dock paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): the same CanvasThemeDialog the
-        // canvas right-click menu opens, one click from the chrome. Opens on
-        // the Theme tab; the dialog's tab strip reaches Canvas from there.
+        // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
+        // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
         onOpenCanvasTheme={
           isReadOnly || embedMode
             ? undefined
             : () => {
-                setCanvasThemeTab('theme');
+                setCanvasThemeTab('looks');
                 track('UI', 'Opened', 'ThemePicker');
               }
         }

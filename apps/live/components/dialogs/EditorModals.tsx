@@ -48,6 +48,7 @@ export function EditorModals() {
     applyTabFontToAll,
     setTabFinish,
     applyTabFinishToAll,
+    applyTabLook,
   } = useEditorContext();
 
   return (
@@ -103,6 +104,7 @@ export function EditorModals() {
           onSetFinish={setTabFinish}
           onApplyFinishToAll={applyTabFinishToAll}
           canvasBackground={activeTab.backgroundColor}
+          onApplyLook={applyTabLook}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}

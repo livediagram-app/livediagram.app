@@ -12,7 +12,7 @@ import {
   FINISHES,
   type Finish,
 } from '@livediagram/document';
-import { Button, Glyph } from '@livediagram/ui';
+import { Button } from '@livediagram/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -106,14 +106,5 @@ function FinishPreview({
         dangerouslySetInnerHTML={{ __html: markup }}
       />
     </div>
-  );
-}
-
-// The dialog tab strip's glyph: a pencil drawing a line.
-export function FinishTabIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M10.5 2.5l3 3L6 13H3v-3z" />
-    </Glyph>
   );
 }

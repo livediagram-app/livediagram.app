@@ -80,7 +80,7 @@ Draws exactly as livediagram did before finishes existed.
   Hovering a tile previews it on the selection; clicking commits it as one undo step. The category shows for
   shapes, arrows, text, stickies and tables, and in the multi-selection menu when the selection holds any of
   them (the commit then sets every one of them).
-- **Tab look and feel:** a **Finish** tab beside Canvas, Theme and Font, with the three finishes as tiles, a
+- **Tab look and feel:** the **Finish** panel (a Fine-tune row of the dialog's home, beside Colours, Text and Canvas, [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), and every **Look** sets a finish, with the three finishes as tiles, a
   **Preview** under them showing a small sample diagram (a step, a decision, the arrow between them and a sticky
   note) in the chosen finish on the tab's own background and font, and an **Apply to All Elements** action that
   clears every element's own finish on the tab so they all follow it again.

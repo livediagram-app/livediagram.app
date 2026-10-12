@@ -85,7 +85,7 @@ short sentences per step about diagramming ("concise" is the spec constraint; th
 5. **Tabs**: highlights the active tab pill and the "+" add button as one region (an `alsoHighlight` union,
    like the dropdown steps): one document holds many diagrams, one per tab, with the tab menu covered in the
    copy. A separate open-the-⋯-menu step existed briefly and was folded in here.
-6. **Theme & Canvas** (desktop only): highlights the paintbrush dock button
+6. **Theme & Canvas** (desktop only): highlights the Theme & canvas dock button
    ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)) that opens the tab's theme + canvas
    background dialog. No prepare needed: the button is always in the desktop chrome for an editable session.
    Mobile reaches the same dialog through the canvas menu, so the step is skipped there.

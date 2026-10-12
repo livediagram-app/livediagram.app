@@ -1,6 +1,6 @@
 # Canvas + Theme dialog
 
-A focused modal for changing the active tab's **canvas style** and **theme**, reached from the paintbrush dock button. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
+A focused modal for changing the active tab's **canvas style** and **theme**, reached from the Theme & canvas dock button. It opens on a home of ready-made **Looks** and a **Fine-tune** list of the four settings. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
 
 ## Why
 
@@ -8,13 +8,57 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 
 ## Behaviour
 
-- The dialog is one modal (`CanvasThemeDialog`) with three tabs. The tab / canvas context menu no longer carries a **Look & Feel** category (Change Theme / Change Canvas) or a **Font** category: those controls live here, and the paintbrush dock button is the one entry point. A menu that opened a dialog was a detour the button already skips.
-- A **paintbrush dock button** ("Theme & Canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers button** (Layers on its left) in every mode ([Live app](../007-editor/live-app.md) "Mobile chrome"), and opens the same dialog on the **Theme** tab, a one-click, always-visible entry. It shows on **every viewport, mobile included** (it was originally desktop-only on the theory that the canvas menu covered mobile, back when that menu still offered the dialog). It stays hidden in zen mode and in read-only / embed views.
-- The dialog is titled **Tab Look & Feel** ("Appearance" now names the VIEWER's own chrome, [Live app](../007-editor/live-app.md)) and has three tabs, **Theme**, **Canvas** and **Font** (Theme leads the strip: the broader, more-used control; Font is last, the finest-grained), switchable from a tab strip below its header. The header is a title row with the **help icon beside the close button** on the right, where the other editor dialogs keep their window controls. Opening on one tab does not prevent switching to the others.
-- Every control applies **live** to the active tab (same setters as the accordions), so the canvas updates behind the dialog as the user clicks. There is no Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses it; nothing is rolled back.
-- The dialog is only reachable when the tab is editable. It is not offered on read-only / embed views (the right-click menu itself is suppressed there).
+- The dialog is one modal (`CanvasThemeDialog`) titled **Tab Look & Feel** ("Appearance" names the VIEWER's own
+  chrome, [Live app](../007-editor/live-app.md)). It opens on its **home**: a grid of **Looks**, then a
+  **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category: the dock button is
+  the one entry point.
+- A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers
+  button** (Layers on its left) in every mode ([Live app](../007-editor/live-app.md) "Mobile chrome"), and opens
+  the dialog on its home. Its icon is a painter's palette with coloured paint wells, so it reads as "how this tab
+  looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
+  read-only / embed views.
+- The header is a title row with the **help icon beside the close button** on the right.
+- Every control applies **live** to the active tab, so the canvas updates behind the dialog. There is no
+  Apply/Cancel: the dialog is an editor, not a wizard. Closing (the X, Escape, or a backdrop click) just dismisses
+  it; nothing is rolled back.
+- The dialog is only reachable when the tab is editable. It is not offered on read-only / embed views.
 
-### Font tab
+### Looks
+
+A **look** is a shortcut that sets four of the tab's existing settings at once: its **theme**, **finish**
+([Finish](../008-canvas/finish.md)), **tab font** and **canvas pattern**. It is not a stored concept: nothing
+records which look was picked, and the tab carries only those four ordinary settings, exactly as if they had been
+picked one by one.
+
+| Look        | Theme    | Finish       | Tab font    | Pattern |
+| ----------- | -------- | ------------ | ----------- | ------- |
+| Everyday    | Default  | Flexible     | (none)      | Grid    |
+| Whiteboard  | Mono     | Sketch       | (none)      | Blank   |
+| Graph Paper | Indigo   | Professional | Roboto Mono | Graph   |
+| Boardroom   | Steel    | Professional | Inter       | Blank   |
+| Notebook    | Mocha    | Sketch       | (none)      | Lines   |
+| Midnight    | Midnight | Flexible     | (none)      | Grid    |
+
+- Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
+  preview, on the look's own canvas colour and pattern), its name, and a one-line description.
+- Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
+  (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
+  element's own finish or font still wins over the tab's.
+- A look's card shows as **selected** while the tab's four settings match it. Change any one of them and no look is
+  selected; the tab simply has its own mix.
+- The grid is three columns, two on a phone.
+- **Share roles:** an Editor picks looks. A Participant or Viewer never reaches the dialog (it is only offered on
+  an editable tab, and the tab setters refuse a blocked session), so neither can apply a look.
+
+### Fine-tune
+
+Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
+**Finish**, **Text** (the tab font and the default size) and **Canvas** (the pattern). Two columns, one on a phone.
+Pressing a row opens that setting's panel **in place**, with a **Back** control to the home; the panels are the
+existing controls below, unchanged, each keeping its own "apply to existing elements" action. The editor's commands
+that open a panel directly ("Change Theme", "Canvas Options") open the dialog on that panel.
+
+### Text panel
 
 The tab's typography ([Fonts](../004-interface-design/fonts.md)), moved back here from the context menu's
 Font category: the **Tab font** select (the default for every text element
@@ -22,9 +66,14 @@ on the tab that hasn't set its own; "Default" clears it), the **Default
 size for new elements** row (Scale / Small / Medium / Large, seeded onto
 each element added next), and **Apply to all elements**, which pushes the
 pair onto everything already on the tab. Every control applies live, like
-the other two tabs.
+the other panels.
 
-### Canvas tab
+### Finish panel
+
+The tab's [Finish](../008-canvas/finish.md): the three finishes, a preview of the chosen one on a sample diagram,
+and **Apply to All Elements**.
+
+### Canvas panel
 
 The canvas-style controls, identical to the palette's **Canvas** accordion (and sharing the exact component, `CanvasStyleControls`, so the two can never drift):
 
@@ -34,7 +83,7 @@ The canvas-style controls, identical to the palette's **Canvas** accordion (and 
 - **Size** — the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
 - **Speed** — a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.
 
-### Theme tab
+### Colours panel
 
 The two-level **category browse** lifted from the New-document theme picker (`ThemeCategoryBrowser`, shared with [Dedicated route for new-document creation](../007-editor/new-document-route.md) so the two stay identical):
 
@@ -71,14 +120,17 @@ The editor chrome **follows the active tab's theme** so it matches the diagram y
 
 ## Telemetry
 
-Opening the dialog fires `track('UI', 'Opened', 'CanvasStyle')` (Change Canvas) or `track('UI', 'Opened', 'ThemePicker')` (Change Theme). The underlying changes keep the existing `Canvas`/`Theme` events emitted by the tab-canvas setters ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)); no new category/action is introduced.
+Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or
+`track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')`;
+the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events
+([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## Reuse notes
 
-- `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas tab.
-- `ThemeCategoryBrowser` — the theme overview/drill-in. Rendered by both the New-document picker and the dialog's Theme tab.
-- On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the paintbrush**: its
-  bottom-right corner sits 8 px above the brush, right edges aligned, and it grows from that corner (the long motion
-  token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the brush. Without the
-  brush on screen, or on a phone, it is the centred (phone: full-screen) dialog.
+- `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
+- `ThemeCategoryBrowser` — the theme overview/drill-in. Rendered by both the New-document picker and the dialog's Colours panel.
+- On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
+  bottom-right corner sits 8 px above the button, right edges aligned, and it grows from that corner (the long motion
+  token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the button. Without the
+  button on screen, or on a phone, it is the centred (phone: full-screen) dialog.
 - The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`) — but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.

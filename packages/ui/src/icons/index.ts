@@ -54,7 +54,7 @@ export {
   LayersStackIcon,
   RedoIcon,
   SettingsIcon,
-  ThemeBrushIcon,
+  ThemeLookIcon,
   TidyUpIcon,
   UndoIcon,
 } from './editor-chrome';
