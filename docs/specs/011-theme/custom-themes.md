@@ -125,7 +125,7 @@ The New-document theme picker ([Dedicated route for new-document creation](../00
 **Custom** category and **+ New theme** builder as the Tab Style dialog's Colours panel,
 so a user can apply (or author) one of their saved themes at the moment they
 start a document. Both surfaces render one shared `CustomThemePicker` (which owns
-the builder state and wires the custom category into `ThemeCategoryBrowser`), so
+the builder state and lists the saved themes in `ThemeBrowser`), so
 they can't drift. The `/new` route mounts its own `CustomThemeProvider`
 (owner-scoped to the resolved self id) so the registry is populated there too;
 the editor and Explorer already mount one. The chosen id (built-in or

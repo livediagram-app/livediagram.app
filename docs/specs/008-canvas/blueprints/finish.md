@@ -165,9 +165,9 @@ raster path so PNG matches SVG.
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
-- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles and
-  **Apply to All Elements**) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas` gains `setTabFinish`
-  and `applyTabFinishToAll` (one `commit`, nothing written when no element has its own).
+- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles, each
+  previewing on hover) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
+  `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
   "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
@@ -226,7 +226,7 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
   square for Sketch), the name, and the line "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand".
   The checked row is the element's own finish (Follow Tab when it has none).
 - Finish panel: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
-  tab.", button "Apply to All Elements".
+  tab." (no apply button: a pick applies to the whole tab).
 
 ## Accessibility
 

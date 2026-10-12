@@ -1,10 +1,10 @@
-# Canvas + Theme dialog
+# Tab Style dialog
 
-A focused modal for changing the active tab's **canvas style** and **theme**, reached from the Theme & canvas dock button. It opens on a home of ready-made **Looks** and a **Fine-tune** list of the four settings. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
+A focused modal for changing how the active tab looks (its **theme**, **finish**, **text** and **canvas**), reached from the Theme & canvas dock button. It opens on a home of ready-made **Looks** and a **Fine-tune** list of the four settings. The same controls live in the canvas's context menus too ([Canvas and palette](../008-canvas/canvas-and-palette.md)); this dialog is a larger entry point that brings them front-and-centre when the user explicitly asks to change the canvas or theme.
 
 ## Why
 
-The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same category browse as the [New-document](../007-editor/new-document-route.md) "Pick a template" screen.
+The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same browser as the [New-document](../007-editor/new-document-route.md) screen.
 
 ## Behaviour
 
@@ -30,23 +30,32 @@ A **look** is a shortcut that sets four of the tab's existing settings at once: 
 records which look was picked, and the tab carries only those four ordinary settings, exactly as if they had been
 picked one by one.
 
-| Look        | Theme    | Finish       | Tab font    | Pattern |
-| ----------- | -------- | ------------ | ----------- | ------- |
-| Everyday    | Default  | Flexible     | (none)      | Grid    |
-| Whiteboard  | Mono     | Sketch       | (none)      | Blank   |
-| Graph Paper | Indigo   | Professional | Roboto Mono | Graph   |
-| Boardroom   | Steel    | Professional | Inter       | Blank   |
-| Notebook    | Mocha    | Sketch       | (none)      | Lines   |
-| Midnight    | Midnight | Flexible     | (none)      | Grid    |
+| Look        | Theme    | Finish       | Tab font         | Pattern     | Pattern strength |
+| ----------- | -------- | ------------ | ---------------- | ----------- | ---------------- |
+| Everyday    | Default  | Flexible     | (none)           | Grid        | (kept)           |
+| Whiteboard  | Mono     | Sketch       | (none)           | Blank       | (kept)           |
+| Graph Paper | Indigo   | Professional | Roboto Mono      | Graph       | (kept)           |
+| Boardroom   | Steel    | Professional | Inter            | Blank       | (kept)           |
+| Notebook    | Mocha    | Sketch       | (none)           | Lines       | (kept)           |
+| Midnight    | Midnight | Flexible     | (none)           | Grid        | (kept)           |
+| Seaside     | Ocean    | Flexible     | Nunito           | Waves       | (kept)           |
+| Editorial   | Cream    | Professional | Lora             | Blank       | (kept)           |
+| Engineer    | Sky      | Professional | Space Grotesk    | Engineering | (kept)           |
+| Workshop    | Sand     | Sketch       | Permanent Marker | Grid        | 60%              |
+| Garden      | Forest   | Flexible     | Poppins          | Hexagonal   | 40%              |
+| Studio      | Lavender | Professional | Roboto Slab      | Isometric   | (kept)           |
 
+- A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
+- The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots.
+- When the tab matches no look, a leading **Current** card shows the tab as it is, so the home always shows where the
+  tab stands; it goes once a look is picked.
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
-  preview, on the look's own canvas colour and pattern), its name, and a one-line description.
+  preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), and its name.
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
   (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
   element's own finish or font still wins over the tab's.
 - A look's card shows as **selected** while the tab's four settings match it. Change any one of them and no look is
   selected; the tab simply has its own mix.
-- The grid is three columns, two on a phone.
 - **Share roles:** an Editor picks looks. A Participant or Viewer never reaches the dialog (it is only offered on
   an editable tab, and the tab setters refuse a blocked session), so neither can apply a look.
 
@@ -54,30 +63,45 @@ picked one by one.
 
 Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
 **Finish**, **Text** (the tab font and the default size) and **Canvas** (the pattern). Two columns, one on a phone.
-Pressing a row opens that setting's panel **in place**, with a **Back** control to the home; the panels are the
-existing controls below, unchanged, each keeping its own "apply to existing elements" action. The editor's commands
-that open a panel directly ("Change Theme", "Canvas Options") open the dialog on that panel.
+Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
+with reduced motion), under the shared back bar (the one Import and Export use: **Tab Style** then the panel's name).
+Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
+open the dialog on that panel.
+
+### Hover to preview
+
+Every option in the dialog (a look, a theme, a finish, a typeface, a size, a pattern) **previews on the canvas while
+a mouse rests on it**: the canvas draws the tab as that option would make it, and moving off puts it back. Nothing is
+written, saved, broadcast or added to undo while previewing; a click commits through the ordinary setter, using the
+same transform the preview drew (`lib/tab-style-transforms.ts`), so the preview is exactly what a click does. Touch
+has no hover: a tap commits. Closing the dialog ends any preview.
+
+Each change of what the canvas shows, previewed or committed, **eases** its colours (background, fill, outline, text)
+over 250 ms instead of snapping; the transition is switched on only for the moment of the change (a class on the
+root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
 
 ### Text panel
 
-The tab's typography ([Fonts](../004-interface-design/fonts.md)), moved back here from the context menu's
-Font category: the **Tab font** select (the default for every text element
-on the tab that hasn't set its own; "Default" clears it), the **Default
-size for new elements** row (Scale / Small / Medium / Large, seeded onto
-each element added next), and **Apply to all elements**, which pushes the
-pair onto everything already on the tab. Every control applies live, like
-the other panels.
+The tab's typography ([Fonts](../004-interface-design/fonts.md)): a **preview** of the sample diagram lettered in
+the tab's font at the size new text takes; the **Typeface** specimen cards ("Aa" and the name in each face, with its
+style), nine to a carousel page, "Editor default" first; and **Size of New Text** as four tiles (Small, Medium,
+Large, Scale), each drawing a letter at that size. Picking a typeface or a size **applies to the whole tab at
+once**: the tab's setting, and every element following it again (an element's own font is cleared, every
+text-bearing element takes the size). There is no separate apply action.
 
 ### Finish panel
 
-The tab's [Finish](../008-canvas/finish.md): the three finishes, a preview of the chosen one on a sample diagram,
-and **Apply to All Elements**.
+The tab's [Finish](../008-canvas/finish.md): a preview of the sample diagram in the chosen finish, and the three
+finishes as tiles with a 40 px icon each. Picking one applies to the whole tab at once (every element's own finish
+cleared).
 
 ### Canvas panel
 
-The canvas-style controls, identical to the palette's **Canvas** accordion (and sharing the exact component, `CanvasStyleControls`, so the two can never drift):
+The canvas-style controls, shared with the palette's **Canvas** accordion (`CanvasStyleControls`, so the two can never drift):
 
-- **Pattern** — the pattern grid. The dialog has room to show **all** patterns at once (a 7-wide grid, no "Show more" toggle); the narrow palette accordion keeps the 4-wide grid with the toggle. ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
+- **Pattern** — in the dialog, two carousels of real pattern previews: **static** patterns and **animated** ones,
+  nine to a page on a desktop and six on a phone (`PatternCarousel`). The narrow palette accordion keeps its 4-wide
+  grid with "Show more". ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
 - **Colours** — Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
 - **Opacity** — the pattern-opacity slider with its percentage readout.
 - **Size** — the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
@@ -85,11 +109,14 @@ The canvas-style controls, identical to the palette's **Canvas** accordion (and 
 
 ### Colours panel
 
-The two-level **category browse** lifted from the New-document theme picker (`ThemeCategoryBrowser`, shared with [Dedicated route for new-document creation](../007-editor/new-document-route.md) so the two stay identical):
+Every theme in **one flat list**, nine to a carousel page (`ThemeBrowser`, shared with the palette accordion and
+the [New-document](../007-editor/new-document-route.md) picker so they stay identical), the owner's saved themes
+([Custom themes](custom-themes.md)) among them. No categories, no shuffle. Each card previews the theme in the
+viewer's half ([Light and dark halves](light-and-dark.md)).
 
-- Overview shows a **Default** quick-pick plus a card per [`THEME_CATEGORIES`](../007-editor/new-document-route.md) bucket (Cool / Warm / Dark / Multi-colour / Formal), plus a **Custom** category for the owner's saved themes ([Custom themes](custom-themes.md)). Clicking a category drills into its themes with an "All themes" back affordance.
 - Clicking a theme applies it live; double-clicking applies and closes the dialog.
-- A **Reset elements to theme** action (same as the accordion) recolours every element on the tab to the active theme's defaults. A shape carrying a **preset binding** ([Style presets](../010-palette/style-presets.md)) keeps it: reset re-derives the preset's colours + border under the active theme ("this theme's Bold") instead of blanking to the plain look; only a binding the theme can't express (a branch variant under a single-accent theme) drops. Arrows keep their pattern / thickness / flow — reset only re-points the colour fields.
+- There is no "reset elements to theme" action: picking a theme already moves every element still on the old
+  theme's colours, and a colour someone chose is theirs.
 
 **Arrows always track the theme.** Picking a theme keeps the per-field
 preserve-customs rule for shapes / text (a colour the user hand-set survives the
@@ -135,13 +162,15 @@ TabStyleTourCompleted` / `TabStyleTourSkipped`.
 
 Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or
 `track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')`;
-the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events
+the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (the Apply to All actions, and their
+`FinishToAll` and `ResetElements` events, are gone)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## Reuse notes
 
 - `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
-- `ThemeCategoryBrowser` — the theme overview/drill-in. Rendered by both the New-document picker and the dialog's Colours panel.
+- `ThemeBrowser` — the flat, paged theme list. Rendered by the palette accordion, the New-document picker and the dialog's Colours panel.
+- `PagedCarousel` — the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
 - On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
   bottom-right corner sits 8 px above the button, right edges aligned, and it grows from that corner (the long motion
   token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the button. Without the
