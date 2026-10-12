@@ -89,11 +89,20 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 | ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
 | **colour picker**        | The one control that chooses a colour, in any skin                                                | swatch picker, palette, colour well   |
 | **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours (outside Draw), presets |
-| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant                        |
+| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish      |
 | **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                               |
 | **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours       |
 | **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker           |
 | **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                         |
+
+## Drawing
+
+The words for how elements are drawn, apart from their colours ([Finish](../008-canvas/finish.md)).
+
+| Term           | Means                                                                                   | Never called                   |
+| -------------- | --------------------------------------------------------------------------------------- | ------------------------------ |
+| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional or Sketch | tone, look, style, render mode |
+| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                | inherit, default               |
 
 ## Repositories and workbenches
 
