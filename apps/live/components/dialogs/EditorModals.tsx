@@ -42,12 +42,10 @@ export function EditorModals() {
     setBackgroundPatternScale,
     setBackgroundAnimationSpeed,
     setTheme,
-    resetElementsToTheme,
     setTabFont,
     setTabDefaultTextSize,
-    applyTabFontToAll,
     setTabFinish,
-    applyTabFinishToAll,
+    applyTabLook,
   } = useEditorContext();
 
   return (
@@ -93,16 +91,14 @@ export function EditorModals() {
           onSetBackgroundAnimationSpeed={setBackgroundAnimationSpeed}
           themeId={activeTab.theme ?? 'brand'}
           onSetTheme={setTheme}
-          onResetElementsToTheme={resetElementsToTheme}
           font={activeTab.font ?? null}
           onSetFont={setTabFont}
           defaultTextSize={activeTab.defaultTextSize}
           onSetDefaultTextSize={setTabDefaultTextSize}
-          onApplyFontToAll={applyTabFontToAll}
           finish={activeTab.finish}
           onSetFinish={setTabFinish}
-          onApplyFinishToAll={applyTabFinishToAll}
           canvasBackground={activeTab.backgroundColor}
+          onApplyLook={applyTabLook}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}

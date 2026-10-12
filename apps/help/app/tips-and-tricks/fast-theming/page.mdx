@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ThemePicker } from '@/components/illustrations/canvas';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Restyle a Diagram Fast',
@@ -15,14 +15,14 @@ A clean, consistent look does not have to mean fiddling with colours one element
 
 ## Start with a theme
 
-A theme sets the look of the whole tab at once. Open it from the **Theme & canvas** paintbrush in the bottom-right corner of the editor (not on a Draw-mode whiteboard), which opens the **Tab Look & Feel** dialog. Picking a theme writes its colours, background, and pattern onto the tab, and from then on new elements inherit the theme's fill, border, and text colours, so everything you add stays on-brand automatically.
+A theme sets the look of the whole tab at once. Open it from the **Theme & canvas** button in the bottom-right corner of the editor (not on a Draw-mode whiteboard), which opens the **Tab Style** dialog. For the quickest result, pick one of its twelve **Looks**, which sets the theme, finish, tab font and canvas pattern in one click; to choose a theme on its own, press **Colours** under **Fine-tune**. Picking a theme writes its colours, background, and pattern onto the tab, and from then on new elements inherit the theme's fill, border, and text colours, so everything you add stays on-brand automatically.
 
-The catalogue ships with twenty-six themes: **Default**, plus the rest grouped by temperament (**Formal**, **Cool**, **Warm**, **Dark** and **Multi-colour**), so you browse by mood rather than scanning a wall of swatches. Themes you save yourself sit in a **Custom** category beside them. See [Themes](/help/canvas/themes/) and [Custom Themes](/help/canvas/themes/custom-themes/).
+The catalogue ships with twenty-four themes in one browser, nine to a page, each working in light and dark mode. Themes you save yourself sit beside them. See [Themes](/help/canvas/themes/) and [Custom Themes](/help/canvas/themes/custom-themes/).
 
-Switching theme respects deliberate choices. Elements still on the old theme's colours take the new theme's; a shape or text you coloured by hand keeps its colour, and a canvas colour or pattern you hand-picked survives too. Arrows are the exception: every arrow takes the new theme's line colour, so connectors always match. Sticky notes and images are never recoloured by a theme. When you do want everything back in line, **Reset elements to theme** in the same dialog recolours every shape, text and arrow on the tab (shapes on a preset keep it, in the theme's version).
+Switching theme respects deliberate choices. Elements still on the old theme's colours take the new theme's; a shape or text you coloured by hand keeps its colour, and a canvas colour or pattern you hand-picked survives too. Arrows are the exception: every arrow takes the new theme's line colour, so connectors always match. Sticky notes and images are never recoloured by a theme. To bring a hand-coloured shape back in line, use **Reset to Default** in its presets (below).
 
-<Figure caption="The Tab Look & Feel dialog opens on its Theme tab: Default, then a card per category, so you browse by mood.">
-  <ThemePicker />
+<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+  <LookAndFeelTheme />
 </Figure>
 
 ## Add emphasis with presets

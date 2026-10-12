@@ -65,6 +65,25 @@
   --animate-dialog-in: dialog-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fly-up-in: fly-up-in var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
   --animate-sheet-up: sheet-up var(--transition-duration-long) cubic-bezier(0.16, 1, 0.3, 1);
+  /* A drill-in view swapping in (the Tab Style dialog's panels, AnimatedHeightBox): forward slides in from the right,
+   * back from the left, so moving in and out of a level reads as moving through a stack. Short motion token. */
+  --animate-view-forward: view-forward var(--transition-duration-short)
+    cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-view-back: view-back var(--transition-duration-short) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes view-forward {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes view-back {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
 }
 
 @keyframes fly-up-in {
@@ -374,6 +393,12 @@
 @media (prefers-reduced-motion: reduce) {
   /* A dialog only fades in: no rise, no scale. */
   .animate-dialog-in {
+    animation-name: fade-in;
+  }
+
+  /* A drill-in view only fades in: no slide. */
+  .animate-view-forward,
+  .animate-view-back {
     animation-name: fade-in;
   }
 

@@ -7,7 +7,7 @@ import { lucidePalette } from '@livediagram/icons/lucide';
 // custom themes. Lists each as a swatch preview + name with icon actions
 // (edit / duplicate / delete), and a New-theme card. Editing / creating
 // opens the shared CustomThemeBuilder in a modal (the same builder the
-// Tab Look & Feel dialog hosts, so the two can't drift). Reads the
+// Tab Style dialog hosts, so the two can't drift). Reads the
 // reactive list + CRUD from CustomThemeProvider, which the Explorer shell
 // mounts.
 

@@ -2153,7 +2153,7 @@ export const articles: Article[] = [
   {
     slug: 'changing-the-background',
     title: 'Changing the Canvas Background',
-    description: 'Pick a canvas pattern and colours in the Tab Look & Feel dialog.',
+    description: 'Pick a canvas pattern and colours in the Tab Style dialog.',
     keywords: 'backdrop color colour pattern grid dots lines paper dark',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
@@ -2530,7 +2530,7 @@ export const articles: Article[] = [
   {
     slug: 'changing-theme',
     title: 'Changing the Theme',
-    description: 'Open the Tab Look & Feel dialog and browse themes by category.',
+    description: 'Open the Tab Style dialog and browse themes by category.',
     keywords: 'apply browse switch restyle colours colors dialog pick paintbrush look feel',
     category: 'Canvas',
     categorySlug: 'canvas/themes',

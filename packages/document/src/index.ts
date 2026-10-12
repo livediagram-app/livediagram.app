@@ -640,6 +640,7 @@ export { svgCardFace } from './svg-render-plan';
 // MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/live/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
+export * from './theme-halves';
 export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),

@@ -68,18 +68,6 @@ export function StrikethroughIcon() {
   );
 }
 
-// Renders a short horizontal line at the given stroke-width inside the
-// SizeButton frame so the user can pick a thickness preset visually
-// rather than by name.
-export function ResetIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M3 8 a5 5 0 1 0 1.5 -3.5" />
-      <polyline points="2,2 4,4.5 6.5,3.5" />
-    </Glyph>
-  );
-}
-
 // Import into / export out of a tab (the tab menu's Content rows).
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
@@ -159,7 +147,7 @@ export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
-export { ThemeBrushIcon } from '@livediagram/ui';
+export { ThemeLookIcon } from '@livediagram/ui';
 
 // Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
 // "Copy formatting" chip (drawn once in @livediagram/ui): picks one

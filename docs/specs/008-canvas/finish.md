@@ -35,6 +35,8 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Lines:** an unset border width draws at 1 px (Thin) instead of 2 px; an unset arrow thickness draws at 1 px.
 - **Shadows:** the default soft shadow on boxed shapes and the paper peel under stickies are not drawn. An
   element's own shadow ([Element shadows](element-shadows.md)) still draws.
+- **Icons:** a line-art icon without its own weight draws Thin (0.75 px) instead of Regular. A weight picked on the
+  icon wins. Technology icons and stickers are full-colour art and draw as they are.
 - **Lettering:** an element without its own font, on a tab without one, is written in Inter. A font picked on the
   element or the tab wins.
 - **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
@@ -54,15 +56,18 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
   centre inside the shape, such as a flowchart key's card under its captions) is not shaded, so what sits on it
   stays readable. Only a shape that stands alone is shaded.
-- **Lettering:** an element without its own font is written in the handwriting font (Caveat), whatever font the
-  tab has. An element's own font wins. A code block keeps its monospace font.
+- **Lettering:** an element without its own font, on a tab without one, is written in the handwriting font
+  (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab. A code block keeps its monospace font.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
   cardinality).
   Server-rendered PNG previews (the MCP's inline images, the CLI) letter every font in Inter, so there the
   hand-drawn lines carry the look and the lettering does not; browser exports use the real font.
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the hand-drawn line.
-- **Not affected:** freehand strokes (already hand-drawn), images, icons, and the faces of self-painting elements
+- **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through the same
+  hand-drawn wobble as the palette's Sketch tiles, so their lines tremble like pencil. The canvas and browser exports
+  both draw it (an SVG displacement filter, defined once per export and only when something needs it).
+- **Not affected:** freehand strokes (already hand-drawn), images, and the faces of self-painting elements
   (charts, checklists, progress, code) other than their lettering.
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.
@@ -80,10 +85,10 @@ Draws exactly as livediagram did before finishes existed.
   Hovering a tile previews it on the selection; clicking commits it as one undo step. The category shows for
   shapes, arrows, text, stickies and tables, and in the multi-selection menu when the selection holds any of
   them (the commit then sets every one of them).
-- **Tab look and feel:** a **Finish** tab beside Canvas, Theme and Font, with the three finishes as tiles, a
+- **Tab style:** the **Finish** panel (a Fine-tune row of the dialog's home, beside Colours, Text and Canvas, [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), and every **Look** sets a finish, with the three finishes as tiles, a
   **Preview** under them showing a small sample diagram (a step, a decision, the arrow between them and a sticky
-  note) in the chosen finish on the tab's own background and font, and an **Apply to All Elements** action that
-  clears every element's own finish on the tab so they all follow it again.
+  note) in the chosen finish on the tab's own background and font. Picking a finish applies to the whole tab at once: every
+  element's own finish on the tab is cleared so they all follow it again.
 - **New tabs** start Flexible. Duplicated and imported tabs keep their finish.
 - **Agents (MCP):** `create_document` and `add_tab` take an optional `finish`; an element's `finish` is an
   ordinary element field agents may set.
@@ -91,9 +96,9 @@ Draws exactly as livediagram did before finishes existed.
 ## Where it shows
 
 - **The canvas and every export** (SVG, PNG, PDF, thumbnails, the Map, live images) draw each element in its finish.
-- **The palette** previews the tab's finish on the tiles that place elements with one (shapes, text, stickies,
-  arrows, tables): under Professional the glyphs are square and fine, under Sketch they are drawn wobbly and
-  doubled. Icons, media, tools and self-painting faces keep their glyphs, as their elements keep their looks.
+- **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
+  glyphs are square and fine, under Sketch they are drawn wobbly and doubled. Full-colour art (technology icons,
+  stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.
 
 ## Share roles
 
@@ -103,13 +108,13 @@ Draws exactly as livediagram did before finishes existed.
 | **Participant** | Sees elements in their finish; never changes one (a finish restyles the board, a setting) |
 | **Viewer**      | Sees elements in their finish                                                             |
 
-The element menu is not offered to a Participant or Viewer, and the Tab look and feel setters are blocked for
+The element menu is not offered to a Participant or Viewer, and the Tab style setters are blocked for
 both, so neither control is reachable. A Participant's element ops cannot carry `finish` (it is not in the
 Participant's writable fields).
 
 ## Telemetry
 
-- `Tab · Changed · Finish` when a tab's finish changes; `Tab · Changed · FinishToAll` for Apply to All Elements.
+- `Tab · Changed · Finish` when a tab's finish changes.
 - `Element · Changed · Finish` when an element finish is committed.
 
 ## Performance

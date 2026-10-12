@@ -1,9 +1,9 @@
 // Canvas basics illustrations (docs/specs/018-help/help-app.md): the palette strip and dock on the
 // canvas, the multi-selection toolbar, the New Document template step, the element menu's
-// Font tiles, and the three tabs of the Tab Look & Feel dialog plus the custom-theme builder.
+// Font tiles, and the Colours, Text and Canvas panels of the Tab Style dialog plus the custom-theme builder.
 // Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,
 // MultiSelectionToolbar.tsx, TemplatePickerHeader.tsx / TemplatePickerBrowse.tsx,
-// TypographySections.tsx, CanvasThemeDialog.tsx, ThemeCategoryBrowser.tsx,
+// TypographySections.tsx, CanvasThemeDialog.tsx, BackBar.tsx, ThemeBrowser.tsx, TextTab.tsx,
 // CanvasStyleControls.tsx and CustomThemeBuilder.tsx. Composed from the shared primitives so
 // the house style holds.
 
@@ -15,7 +15,6 @@ import {
   SelectionBox,
   Panel,
   Dialog,
-  Tabs,
   Label,
   Button,
   Menu,
@@ -152,14 +151,122 @@ function Slider({
   );
 }
 
-/** The Tab Look & Feel dialog's shell: title plus the Theme / Canvas / Font tab strip. */
-function LookAndFeelShell({
-  active,
+/** The shared back bar a Tab Style panel opens under (BackBar.tsx): the chevron well, Tab Style,
+ *  and the open panel's name in a chip on the right. */
+function TabStyleBackBar({ x, y, w, panel }: { x: number; y: number; w: number; panel: string }) {
+  const chipW = panel.length * 6 + 16;
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={26}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.3}
+      />
+      <rect x={x + 7} y={y + 5} width={16} height={16} rx={4} className="fill-slate-100" />
+      <path
+        d={`M${x + 17} ${y + 9} L${x + 13} ${y + 13} L${x + 17} ${y + 17}`}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Label x={x + 30} y={y + 13} size={10} weight={600} tone="body">
+        Tab Style
+      </Label>
+      <rect
+        x={x + w - 7 - chipW}
+        y={y + 6}
+        width={chipW}
+        height={14}
+        rx={4}
+        className="fill-slate-100"
+      />
+      <Label x={x + w - 7 - chipW / 2} y={y + 13} anchor="middle" size={9} weight={600} tone="body">
+        {panel}
+      </Label>
+    </g>
+  );
+}
+
+/** A carousel's previous / next arrows, right-aligned to `right`, centred on `y`. */
+function PagerArrows({ right, y }: { right: number; y: number }) {
+  return (
+    <g>
+      {[0, 1].map((i) => {
+        const bx = right - 36 + i * 20;
+        const d =
+          i === 0
+            ? `M${bx + 9.5} ${y - 3} L${bx + 6.5} ${y} L${bx + 9.5} ${y + 3}`
+            : `M${bx + 6.5} ${y - 3} L${bx + 9.5} ${y} L${bx + 6.5} ${y + 3}`;
+        return (
+          <g key={i}>
+            <rect
+              x={bx}
+              y={y - 7}
+              width={16}
+              height={14}
+              rx={4}
+              className="fill-white stroke-slate-200"
+              strokeWidth={1.2}
+            />
+            <path
+              d={d}
+              fill="none"
+              className="stroke-slate-500"
+              strokeWidth={1.4}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/** A carousel's page dots, centred on `cx`, the first page current. */
+function PageDots({ cx, y, count }: { cx: number; y: number; count: number }) {
+  return (
+    <g>
+      {Array.from({ length: count }, (_, i) => (
+        <circle
+          key={i}
+          cx={cx + (i - (count - 1) / 2) * 10}
+          cy={y}
+          r={2.5}
+          className={i === 0 ? 'fill-brand-500' : 'fill-slate-300'}
+        />
+      ))}
+    </g>
+  );
+}
+
+/** A carousel heading: the section caption on the left, the pager arrows on the right. */
+function CarouselHeading({ y, label }: { y: number; label: string }) {
+  return (
+    <g>
+      <Caption x={60} y={y}>
+        {label}
+      </Caption>
+      <PagerArrows right={360} y={y - 2} />
+    </g>
+  );
+}
+
+/** A Tab Style panel as it opens from Fine-tune: the dialog, then the shared back bar naming
+ *  the panel. */
+function TabStylePanel({
+  panel,
   h,
   sceneH,
   children,
 }: {
-  active: 0 | 1 | 2;
+  panel: 'Colours' | 'Text' | 'Canvas';
   h: number;
   sceneH: number;
   children: ReactNode;
@@ -171,12 +278,12 @@ function LookAndFeelShell({
         y={12}
         w={340}
         h={h}
-        title="Tab Look & Feel"
+        title="Tab Style"
         sceneW={420}
         sceneH={sceneH}
         scrim={false}
       >
-        <Tabs x={60} y={56} items={['Theme', 'Canvas', 'Font']} active={active} tabW={100} />
+        <TabStyleBackBar x={60} y={56} w={300} panel={panel} />
         {children}
       </Dialog>
     </Scene>
@@ -510,215 +617,458 @@ export function ElementFontMenu() {
   );
 }
 
-/** The Font tab: the Tab font grid, the default size for new elements, and Apply to all
- *  elements. */
+/** The Text panel: a preview, the typeface cards (a page of nine) and the four sizes of new
+ *  text. Picking either applies to the whole tab, so there is no Apply button. */
 export function LookAndFeelFont() {
-  const fonts = ['Default', 'Inter', 'Poppins', 'Nunito', 'Oswald', 'Space Grotesk'];
-  const sizes = ['Scale', 'Small', 'Medium', 'Large'];
+  const faces: [string, string][] = [
+    ['Editor default', 'System'],
+    ['Inter', 'Sans-serif'],
+    ['Poppins', 'Geometric'],
+    ['Nunito', 'Rounded'],
+    ['Oswald', 'Condensed'],
+    ['Space Grotesk', 'Techy sans'],
+    ['Lora', 'Serif'],
+    ['Abril Fatface', 'Display serif'],
+    ['Roboto Slab', 'Slab serif'],
+  ];
+  const sizes: [string, number | null][] = [
+    ['Small', 9],
+    ['Medium', 12],
+    ['Large', 15],
+    ['Scale', null],
+  ];
   return (
-    <LookAndFeelShell active={2} h={240} sceneH={264}>
-      <Caption x={60} y={96}>
-        TAB FONT
-      </Caption>
-      {fonts.map((f, i) => {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
+    <TabStylePanel panel="Text" h={336} sceneH={360}>
+      {/* Preview: a small sample diagram lettered in the tab's font. */}
+      <g className="help-art-as-drawn">
+        <rect
+          x={60}
+          y={92}
+          width={300}
+          height={36}
+          rx={6}
+          className="fill-slate-50 stroke-slate-200"
+          strokeWidth={1.2}
+        />
+        <rect
+          x={130}
+          y={100}
+          width={56}
+          height={20}
+          rx={4}
+          className="fill-brand-100 stroke-brand-500"
+          strokeWidth={1.3}
+        />
+        <rect
+          x={234}
+          y={100}
+          width={56}
+          height={20}
+          rx={4}
+          className="fill-brand-100 stroke-brand-500"
+          strokeWidth={1.3}
+        />
+        <path d="M186 110 H232" className="stroke-brand-500" strokeWidth={1.3} />
+        <path
+          d="M227 106.5 L232 110 L227 113.5"
+          fill="none"
+          className="stroke-brand-500"
+          strokeWidth={1.3}
+        />
+      </g>
+      <Label x={158} y={110} anchor="middle" size={9} weight={600} tone="strong">
+        Idea
+      </Label>
+      <Label x={262} y={110} anchor="middle" size={9} weight={600} tone="strong">
+        Plan
+      </Label>
+      <CarouselHeading y={144} label="TYPEFACE" />
+      {faces.map(([name, kind], i) => {
+        const x = 60 + (i % 3) * 102;
+        const y = 152 + Math.floor(i / 3) * 38;
+        const on = i === 1;
         return (
-          <OptionBox key={f} x={60 + col * 102} y={106 + row * 30} w={96} h={24} on={i === 1}>
-            <Label
-              x={108 + col * 102}
-              y={119 + row * 30}
-              anchor="middle"
-              size={10}
-              weight={i === 1 ? 700 : 500}
-              tone={i === 1 ? 'accent' : 'body'}
-            >
-              {f}
+          <g key={name}>
+            <OptionBox x={x} y={y} w={96} h={34} on={on} />
+            <Label x={x + 7} y={y + 17} size={13} weight={600} tone={on ? 'accent' : 'strong'}>
+              Aa
             </Label>
-          </OptionBox>
+            <Label x={x + 29} y={y + 12} size={8.5} weight={600} tone={on ? 'accent' : 'strong'}>
+              {name}
+            </Label>
+            <Label x={x + 29} y={y + 24} size={8} tone="muted">
+              {kind}
+            </Label>
+          </g>
         );
       })}
-      <Caption x={60} y={180}>
-        DEFAULT SIZE FOR NEW ELEMENTS
+      <PageDots cx={210} y={272} count={2} />
+      <Caption x={60} y={288}>
+        SIZE OF NEW TEXT
       </Caption>
-      {sizes.map((s, i) => (
-        <OptionBox key={s} x={60 + i * 76} y={190} w={70} h={22} on={i === 1}>
-          <Label
-            x={95 + i * 76}
-            y={202}
-            anchor="middle"
-            size={10}
-            weight={i === 1 ? 700 : 500}
-            tone={i === 1 ? 'accent' : 'body'}
-          >
-            {s}
-          </Label>
-        </OptionBox>
-      ))}
-      <Button x={60} y={222} w={140} h={22} label="Apply to all elements" />
-    </LookAndFeelShell>
+      {sizes.map(([name, px], i) => {
+        const x = 60 + i * 77;
+        const on = i === 0;
+        return (
+          <g key={name}>
+            <OptionBox x={x} y={296} w={69} h={38} on={on} label={name} />
+            {px ? (
+              <Label
+                x={x + 34.5}
+                y={311}
+                anchor="middle"
+                size={px}
+                weight={700}
+                tone={on ? 'accent' : 'body'}
+              >
+                A
+              </Label>
+            ) : (
+              <path
+                d={`M${x + 29} 316 L${x + 40} 305 M${x + 35} 305 H${x + 40} V310 M${x + 29} 311 V316 H${x + 34}`}
+                fill="none"
+                className="stroke-slate-500"
+                strokeWidth={1.4}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+          </g>
+        );
+      })}
+    </TabStylePanel>
   );
 }
 
 // --- Themes ------------------------------------------------------------------------------------
 
-/** One category card on the Theme tab's overview: a mini preview and the category's name. */
-function ThemeCategoryCard({
+/** One theme card in the Colours panel: a tiny diagram in the theme's colours and its name. */
+function ThemeTile({
   x,
   y,
-  label,
+  name,
+  bg,
+  node,
+  line,
   on = false,
-  children,
 }: {
   x: number;
   y: number;
-  label: string;
+  name: string;
+  bg: string;
+  node: string;
+  line: string;
   on?: boolean;
-  children: ReactNode;
 }) {
   return (
-    <OptionBox x={x} y={y} w={72} h={60} on={on} label={label}>
-      <g className="help-art-as-drawn">{children}</g>
+    <OptionBox x={x} y={y} w={96} h={50} on={on} label={name}>
+      <g className="help-art-as-drawn">
+        <rect x={x + 6} y={y + 5} width={84} height={24} rx={4} className={bg} strokeWidth={1} />
+        <rect
+          x={x + 14}
+          y={y + 11}
+          width={22}
+          height={12}
+          rx={3}
+          className={node}
+          strokeWidth={1.2}
+        />
+        <rect
+          x={x + 60}
+          y={y + 11}
+          width={22}
+          height={12}
+          rx={3}
+          className={node}
+          strokeWidth={1.2}
+        />
+        <path d={`M${x + 36} ${y + 17} H${x + 60}`} className={line} strokeWidth={1.2} />
+      </g>
     </OptionBox>
   );
 }
 
-/** Three little nodes for a card preview, each in its own fill class. */
-function MiniNodes({ x, y, fills }: { x: number; y: number; fills: [string, string, string] }) {
-  return (
-    <g>
-      <rect x={x} y={y} width={56} height={30} rx={4} className={fills[0]} />
-      <rect x={x + 6} y={y + 6} width={18} height={9} rx={2} className={fills[1]} />
-      <rect x={x + 32} y={y + 15} width={18} height={9} rx={2} className={fills[2]} />
-    </g>
-  );
-}
-
-/** The Theme tab's overview: Default, a card per category and Custom, with Reset elements
- *  to theme beneath. */
+/** The Colours panel: every theme in one carousel, nine to a page, Default first (then the
+ *  catalogue, then your custom themes and New theme). */
 export function LookAndFeelTheme() {
-  const row1: [string, [string, string, string]][] = [
-    ['Default', ['fill-white stroke-slate-200', 'fill-brand-100', 'fill-brand-300']],
-    ['Formal', ['fill-white stroke-slate-200', 'fill-amber-400', 'fill-violet-400']],
-    ['Cool', ['fill-brand-50', 'fill-brand-300', 'fill-teal-400']],
-    ['Warm', ['fill-amber-50', 'fill-rose-400', 'fill-amber-400']],
-  ];
-  const row2: [string, [string, string, string]][] = [
-    ['Dark', ['fill-slate-800', 'fill-slate-500', 'fill-teal-400']],
-    ['Multi-colour', ['fill-white stroke-slate-200', 'fill-rose-400', 'fill-emerald-400']],
+  const themes: [string, string, string, string][] = [
+    [
+      'Default',
+      'fill-white stroke-slate-200',
+      'fill-brand-100 stroke-brand-500',
+      'stroke-brand-500',
+    ],
+    ['Pink', 'fill-rose-50 stroke-rose-100', 'fill-rose-200 stroke-rose-500', 'stroke-rose-500'],
+    [
+      'Forest',
+      'fill-emerald-50 stroke-emerald-100',
+      'fill-emerald-200 stroke-emerald-700',
+      'stroke-emerald-700',
+    ],
+    [
+      'Sunset',
+      'fill-orange-50 stroke-orange-100',
+      'fill-orange-200 stroke-orange-500',
+      'stroke-orange-500',
+    ],
+    [
+      'Lavender',
+      'fill-violet-50 stroke-violet-100',
+      'fill-violet-200 stroke-violet-500',
+      'stroke-violet-500',
+    ],
+    ['Mono', 'fill-white stroke-slate-200', 'fill-slate-100 stroke-slate-700', 'stroke-slate-700'],
+    ['Ocean', 'fill-cyan-50 stroke-cyan-100', 'fill-cyan-200 stroke-cyan-700', 'stroke-cyan-700'],
+    ['Sky', 'fill-sky-50 stroke-sky-100', 'fill-sky-200 stroke-sky-600', 'stroke-sky-600'],
+    [
+      'Midnight',
+      'fill-slate-800 stroke-slate-700',
+      'fill-slate-700 stroke-indigo-300',
+      'stroke-indigo-300',
+    ],
   ];
   return (
-    <LookAndFeelShell active={0} h={234} sceneH={258}>
-      {row1.map(([label, fills], i) => (
-        <ThemeCategoryCard key={label} x={60 + i * 76} y={92} label={label} on={i === 0}>
-          <MiniNodes x={68 + i * 76} y={98} fills={fills} />
-        </ThemeCategoryCard>
-      ))}
-      {row2.map(([label, fills], i) => (
-        <ThemeCategoryCard key={label} x={60 + i * 76} y={158} label={label}>
-          <MiniNodes x={68 + i * 76} y={164} fills={fills} />
-        </ThemeCategoryCard>
-      ))}
-      {/* Custom: your saved themes, plus build your own. */}
-      <OptionBox x={212} y={158} w={72} h={60} label="Custom">
-        <rect
-          x={220}
-          y={164}
-          width={56}
-          height={30}
-          rx={4}
-          className="fill-none stroke-slate-300"
-          strokeWidth={1.3}
-          strokeDasharray="4 3"
+    <TabStylePanel panel="Colours" h={284} sceneH={308}>
+      <CarouselHeading y={98} label="THEMES" />
+      {themes.map(([name, bg, node, line], i) => (
+        <ThemeTile
+          key={name}
+          x={60 + (i % 3) * 102}
+          y={106 + Math.floor(i / 3) * 56}
+          name={name}
+          bg={bg}
+          node={node}
+          line={line}
+          on={i === 0}
         />
-        <Label x={248} y={180} anchor="middle" size={14} weight={600} tone="muted">
-          +
-        </Label>
-      </OptionBox>
-      <Button x={60} y={222} w={156} h={20} label="Reset elements to theme" />
-    </LookAndFeelShell>
+      ))}
+      <PageDots cx={210} y={280} count={3} />
+    </TabStylePanel>
   );
 }
 
-/** The Canvas tab: the Pattern grid, the Canvas and Pattern colours, and the Opacity and
- *  Size sliders. */
-export function LookAndFeelCanvas() {
-  const patterns: { label: string; art: ReactNode }[] = [
-    {
-      label: 'Grid',
-      art: (
+/** A pattern's look, drawn inside a tile's preview strip (`x`, `y`, 84 by 13). */
+function PatternArt({ kind, x, y }: { kind: string; x: number; y: number }) {
+  const line = { className: 'stroke-slate-300', strokeWidth: 1, fill: 'none' } as const;
+  const cols = Array.from({ length: 9 }, (_, i) => x + 4 + i * 9.5);
+  switch (kind) {
+    case 'Grid':
+      return (
         <g className="fill-slate-400">
-          {[0, 1, 2].map((r) =>
-            [0, 1, 2, 3].map((c) => <circle key={`${r}${c}`} cx={c * 8} cy={r * 7} r={1.3} />),
+          {cols.map((cx) =>
+            [y + 3.5, y + 9.5].map((cy) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={1.1} />),
           )}
         </g>
-      ),
-    },
-    { label: 'Blank', art: null },
-    {
-      label: 'Lines',
-      art: (
-        <path d="M-2 0 H26 M-2 7 H26 M-2 14 H26" className="stroke-slate-400" strokeWidth={1.2} />
-      ),
-    },
-    {
-      label: 'Graph',
-      art: (
+      );
+    case 'Lines':
+      return <path d={`M${x} ${y + 4} H${x + 84} M${x} ${y + 9} H${x + 84}`} {...line} />;
+    case 'Graph':
+      return (
         <path
-          d="M-2 0 H26 M-2 7 H26 M-2 14 H26 M0 -3 V17 M8 -3 V17 M16 -3 V17 M24 -3 V17"
-          className="stroke-slate-300"
-          strokeWidth={1}
+          d={`M${x} ${y + 4} H${x + 84} M${x} ${y + 9} H${x + 84} ${cols.map((cx) => `M${cx} ${y} V${y + 13}`).join(' ')}`}
+          {...line}
         />
-      ),
-    },
-    {
-      label: 'Cross',
-      art: (
+      );
+    case 'Crosshatch':
+    case 'Diagonal': {
+      const starts = Array.from({ length: 7 }, (_, i) => x + i * 12);
+      const fwd = starts.map((sx) => `M${sx} ${y + 13} L${sx + 13} ${y}`).join(' ');
+      const back = starts.map((sx) => `M${sx} ${y} L${sx + 13} ${y + 13}`).join(' ');
+      return <path d={kind === 'Diagonal' ? fwd : `${fwd} ${back}`} {...line} />;
+    }
+    case 'Confetti': {
+      const bits: [number, number, string][] = [
+        [6, 3, 'fill-rose-400'],
+        [20, 8, 'fill-amber-400'],
+        [33, 2, 'fill-emerald-400'],
+        [47, 7, 'fill-brand-400'],
+        [60, 3, 'fill-violet-400'],
+        [73, 8, 'fill-rose-400'],
+      ];
+      return (
+        <g className="help-art-as-drawn">
+          {bits.map(([dx, dy, cls]) => (
+            <rect key={dx} x={x + dx} y={y + dy} width={4} height={2.5} rx={1} className={cls} />
+          ))}
+        </g>
+      );
+    }
+    case 'Stripes':
+      return (
+        <g className="fill-slate-200">
+          {Array.from({ length: 7 }, (_, i) => (
+            <rect key={i} x={x + 2 + i * 12} y={y} width={5} height={13} />
+          ))}
+        </g>
+      );
+    case 'Waves':
+    case 'Flow': {
+      const wave = (wy: number) => `M${x} ${wy} ${'q7 -3 14 0 '.repeat(6).trim()}`;
+      const d = `${wave(y + 4)} ${wave(y + 10)}`;
+      return kind === 'Flow' ? (
         <path
-          d="M-2 -2 L14 16 M8 -2 L24 16 M-2 8 L8 -2 M-2 18 L18 -2 M8 18 L26 0"
-          className="stroke-slate-300"
-          strokeWidth={1}
+          d={d}
+          className="stroke-brand-300"
+          strokeWidth={1.2}
+          fill="none"
+          strokeDasharray="5 3"
         />
-      ),
-    },
-  ];
+      ) : (
+        <path d={d} {...line} />
+      );
+    }
+    case 'Drift':
+      return (
+        <g className="fill-brand-300">
+          {(
+            [
+              [8, 4],
+              [22, 9],
+              [37, 3],
+              [50, 8],
+              [64, 5],
+              [77, 10],
+            ] as const
+          ).map(([dx, dy]) => (
+            <circle key={dx} cx={x + dx} cy={y + dy} r={1.8} />
+          ))}
+        </g>
+      );
+    case 'Aurora':
+      return (
+        <g className="help-art-as-drawn">
+          <ellipse
+            cx={x + 28}
+            cy={y + 6.5}
+            rx={26}
+            ry={5}
+            className="fill-emerald-200"
+            opacity={0.8}
+          />
+          <ellipse
+            cx={x + 58}
+            cy={y + 6.5}
+            rx={24}
+            ry={5}
+            className="fill-violet-200"
+            opacity={0.8}
+          />
+        </g>
+      );
+    case 'Ripple':
+      return (
+        <g className="stroke-brand-300" fill="none" strokeWidth={1}>
+          {[10, 22, 36].map((rx) => (
+            <ellipse key={rx} cx={x + 42} cy={y + 6.5} rx={rx} ry={rx / 8 + 1} />
+          ))}
+        </g>
+      );
+    case 'Ribbons':
+      return (
+        <g fill="none" strokeWidth={2.4} strokeLinecap="round" className="help-art-as-drawn">
+          <path
+            d={`M${x + 2} ${y + 9} C${x + 24} ${y - 2} ${x + 50} ${y + 14} ${x + 82} ${y + 3}`}
+            className="stroke-brand-200"
+          />
+          <path
+            d={`M${x + 2} ${y + 4} C${x + 30} ${y + 14} ${x + 56} ${y - 1} ${x + 82} ${y + 10}`}
+            className="stroke-violet-200"
+          />
+        </g>
+      );
+    default:
+      return null;
+  }
+}
+
+/** A pattern tile in a Canvas panel carousel: the pattern drawn for real, then its name. */
+function PatternTile({
+  x,
+  y,
+  kind,
+  on = false,
+}: {
+  x: number;
+  y: number;
+  kind: string;
+  on?: boolean;
+}) {
   return (
-    <LookAndFeelShell active={1} h={220} sceneH={244}>
-      <Caption x={60} y={96}>
-        Pattern
-      </Caption>
-      {patterns.map((p, i) => (
-        <OptionBox key={p.label} x={60 + i * 60} y={106} w={54} h={46} on={i === 0} label={p.label}>
-          <g transform={`translate(${75 + i * 60} 114)`}>{p.art}</g>
-        </OptionBox>
+    <OptionBox x={x} y={y} w={96} h={34} on={on} label={kind}>
+      <rect
+        x={x + 6}
+        y={y + 4}
+        width={84}
+        height={13}
+        rx={3}
+        className="fill-white stroke-slate-100"
+        strokeWidth={1}
+      />
+      <PatternArt kind={kind} x={x + 6} y={y + 4} />
+    </OptionBox>
+  );
+}
+
+/** The Canvas panel: the Static and Animated pattern carousels (a page of nine each on a wide
+ *  screen), the Canvas and Pattern colours, and the Opacity and Size sliders. */
+export function LookAndFeelCanvas() {
+  const still = [
+    'Grid',
+    'Blank',
+    'Lines',
+    'Graph',
+    'Crosshatch',
+    'Confetti',
+    'Stripes',
+    'Diagonal',
+    'Waves',
+  ];
+  const animated = ['Flow', 'Drift', 'Aurora', 'Ripple', 'Ribbons'];
+  return (
+    <TabStylePanel panel="Canvas" h={384} sceneH={408}>
+      <CarouselHeading y={98} label="STATIC" />
+      {still.map((p, i) => (
+        <PatternTile
+          key={p}
+          x={60 + (i % 3) * 102}
+          y={106 + Math.floor(i / 3) * 38}
+          kind={p}
+          on={i === 0}
+        />
       ))}
-      <Caption x={60} y={170}>
-        Colours
+      <Caption x={60} y={232}>
+        ANIMATED
+      </Caption>
+      {animated.map((p, i) => (
+        <PatternTile key={p} x={60 + (i % 3) * 102} y={240 + Math.floor(i / 3) * 38} kind={p} />
+      ))}
+      <Caption x={60} y={334}>
+        COLOURS
       </Caption>
       <rect
         x={60}
-        y={180}
+        y={346}
         width={18}
         height={18}
         rx={4}
         className="fill-white stroke-slate-300"
         strokeWidth={1.3}
       />
-      <Label x={84} y={190} size={10} tone="body">
+      <Label x={84} y={355} size={10} tone="body">
         Canvas
       </Label>
-      <rect x={130} y={180} width={18} height={18} rx={4} className="fill-slate-300" />
-      <Label x={154} y={190} size={10} tone="body">
+      <rect x={130} y={346} width={18} height={18} rx={4} className="fill-slate-300" />
+      <Label x={154} y={355} size={10} tone="body">
         Pattern
       </Label>
-      <Slider x={220} y={170} w={140} t={1} label="Opacity" readout="100%" />
-      <Slider x={220} y={204} w={140} t={1 / 3} label="Size" readout="100%" />
-    </LookAndFeelShell>
+      <Slider x={220} y={334} w={140} t={1} label="Opacity" readout="100%" />
+      <Slider x={220} y={364} w={140} t={1 / 3} label="Size" readout="100%" />
+    </TabStylePanel>
   );
 }
 
-/** The custom-theme builder, opened from New theme in the Custom category: the tab strip
- *  stays on top, then the live preview, the name, the four base colours, the Pattern section
+/** The custom-theme builder, opened from the New theme card at the end of the Colours panel's
+ *  theme list: the back bar stays on top, then the live preview, the name, the four base colours, the Pattern section
  *  (open to start with) and the Per-shape colours section stacked beneath it, and Save theme. */
 export function CustomThemeBuilderScene() {
   const bases: [string, string][] = [
@@ -729,7 +1079,7 @@ export function CustomThemeBuilderScene() {
   ];
   const chevron = { className: 'stroke-slate-400', strokeWidth: 1.4, fill: 'none' } as const;
   return (
-    <LookAndFeelShell active={0} h={378} sceneH={402}>
+    <TabStylePanel panel="Colours" h={378} sceneH={402}>
       <Label x={60} y={98} size={10} weight={600} tone="muted">
         ‹ Back
       </Label>
@@ -835,6 +1185,6 @@ export function CustomThemeBuilderScene() {
       <path d="M352 330 L357 334 L352 338" {...chevron} />
       <Button x={208} y={350} w={64} h={24} label="Cancel" />
       <Button x={280} y={350} w={80} h={24} label="Save theme" variant="primary" />
-    </LookAndFeelShell>
+    </TabStylePanel>
   );
 }

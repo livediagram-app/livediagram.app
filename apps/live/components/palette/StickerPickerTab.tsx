@@ -3,6 +3,8 @@ import { STICKER_CATEGORIES, STICKER_DND_MIME, stickersInCategory } from '@/lib/
 import { StickerArt } from '@/components/canvas/StickerView';
 import { PaletteCategoryBrowser } from '@/components/palette/PaletteCategoryBrowser';
 import { HoverCard } from '@livediagram/ui';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import { paletteFinishClass } from './palette-tile-finish';
 
 // One sticker in the picker, drawn as the sticker it actually is — plate,
 // shadow and all — rather than as a glyph on a palette button (docs/specs/010-palette/stickers.md). The
@@ -13,6 +15,11 @@ import { HoverCard } from '@livediagram/ui';
 // hover card, though — 220 small pictures can't tell you "Pleading face" from
 // "Weary face" on their own.
 function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: string) => void }) {
+  // Drawn in the tab's finish, as the sticker will land (palette-tile-finish.ts).
+  const finishClass = paletteFinishClass(useTabFinish(), {
+    type: 'sticker',
+    stickerId: sticker.id,
+  });
   // A badge pill takes two of the four columns: at one column's width its word
   // would be unreadable. The span lives on THIS wrapper, not on the button —
   // HoverCard wraps its child, so the button is a grandchild of the grid and a
@@ -34,7 +41,9 @@ function StickerTile({ sticker, onAdd }: { sticker: StickerDef; onAdd: (id: stri
             wide ? 'h-11 w-full' : 'h-11 w-11'
           }`}
         >
-          <StickerArt def={sticker} className="h-full w-full overflow-visible" />
+          <span className={`flex h-full w-full ${finishClass}`}>
+            <StickerArt def={sticker} className="h-full w-full overflow-visible" />
+          </span>
         </button>
       </HoverCard>
     </div>

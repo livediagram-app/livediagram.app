@@ -24,8 +24,8 @@ import {
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
-import { finishCornerFallbackPx, resolveFinish, type Finish } from './finish';
-import { svgSketchedBody } from './svg-render-sketch';
+import { finishCornerFallbackPx, finishWobblesArt, resolveFinish, type Finish } from './finish';
+import { SKETCH_ART_FILTER_ID, svgSketchArtDefs, svgSketchedBody } from './svg-render-sketch';
 import { sketchBackdropIds } from './sketch-backdrop';
 import { canvasSurface } from './colors';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
@@ -357,6 +357,14 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       ` viewBox="${shape.art.viewBox}" preserveAspectRatio="xMidYMid meet" overflow="visible">` +
       `${shape.art.markup}</svg>`;
   }
+  // Icons and stickers under Sketch draw through the hand-drawn wobble (docs/specs/008-canvas/finish.md), as on the
+  // canvas; the export carries the filter's defs (svgSketchArtDefs).
+  if (
+    finish === 'sketch' &&
+    finishWobblesArt(el) &&
+    (shape.kind === 'icon' || shape.kind === 'sticker')
+  )
+    shapeStr = `<g filter="url(#${SKETCH_ART_FILTER_ID})">${shapeStr}</g>`;
   // A self-drawing element renders NO standard label on the canvas (its own
   // content is what it shows), so the export must not print one either: a
   // chart came out with "pie-chart" centred in the middle of it.
@@ -533,6 +541,8 @@ export function renderElementsToSvg(
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(visible);
   if (shadowDefs) parts.push(shadowDefs);
+  const sketchArtDefs = svgSketchArtDefs(visible, tab.finish);
+  if (sketchArtDefs) parts.push(sketchArtDefs);
   // Per band, in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
   // interleave by array order, so an arrow sent behind a box stays behind it.
   // A dimmed layer wraps its band in a <g opacity>.

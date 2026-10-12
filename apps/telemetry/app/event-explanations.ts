@@ -801,10 +801,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
     "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
+  'Tab|Changed|Look':
+    "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
-  'Tab|Changed|FinishToAll':
-    "Someone pressed Apply to All Elements on the Finish tab, so every element follows the tab's finish again.",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':
@@ -1057,6 +1057,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
+  'UI|Ended|TabStyleTourCompleted':
+    "Someone reached the end of the Tab Style dialog's Show Me tour.",
+  'UI|Ended|TabStyleTourSkipped':
+    "Someone left the Tab Style dialog's Show Me tour before its end.",
   'UI|Ended|SankeyFlowsTourCompleted':
     "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
   'UI|Ended|SankeyFlowsTourSkipped':
@@ -1228,6 +1232,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|PhotoReviewTour':
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
+  'UI|Started|TabStyleTour':
+    'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
   'UI|Started|SankeyFlowsTour':
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':

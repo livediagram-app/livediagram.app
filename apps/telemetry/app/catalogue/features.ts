@@ -3,7 +3,7 @@
 
 import { isHelpArticleType, isSettingsCategory } from '../opened-types';
 import { SELECTION_MODES } from '../palette-types';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES } from '../look-feel-types';
+import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { LOGO_TOOL_TYPES } from '../logo-types';
@@ -1057,7 +1057,7 @@ export const THEMES_CHOSEN = chart(
   'Changed',
   'Themes Chosen',
   'A built-in theme picked, at creation or later.',
-  { typeIn: (t) => !CUSTOM_THEME_TYPES.has(t ?? '') },
+  { typeIn: (t) => !isNonThemePick(t) },
 );
 
 export const CANVAS_STYLES_PICKED = chart(
@@ -1080,7 +1080,7 @@ export const CUSTOM_THEMES = chart(
   'Theme',
   'Created',
   'Custom Themes',
-  'The custom-theme builder: created, applied, edited, deleted, and elements reset to their theme.',
+  'The custom-theme builder: created, applied, edited and deleted.',
   { actionIn: ['Changed', 'Deleted'], typeIn: (t) => CUSTOM_THEME_TYPES.has(t ?? '') },
 );
 

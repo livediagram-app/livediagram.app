@@ -21,6 +21,8 @@ each be sized on their own (see "The setting"):
   That covers the Explorer, AI, Layers, Map, Collaborate
   and the session and tool panels.
 - **The Quick Style panel** ([Quick style panel](../008-canvas/quick-style-panel.md)).
+- **The Tab Style panel** ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md)), flown out of the Theme &
+  Canvas button or centred, its anchored offsets converted to its own px.
 
 **Toolbar** (`toolbar`):
 

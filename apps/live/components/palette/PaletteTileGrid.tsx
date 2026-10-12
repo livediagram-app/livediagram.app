@@ -10,7 +10,6 @@ import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document
 import type { PendingDraw } from '@/lib/draw-mode';
 import { IconButton } from '@/components/palette/palette-controls';
 import type { PaletteTileDef } from './palette-tile-defs';
-import { tileTakesFinish } from './palette-tile-finish';
 import { tileDragStart } from './palette-tile-drag';
 import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
@@ -280,7 +279,7 @@ function TileButton({
       shortcut={def.shortcut}
       hideCaption={compact}
       shortcutAlwaysVisible={compact}
-      takesFinish={tileTakesFinish(a)}
+      finishAction={a}
     >
       {def.icon}
     </IconButton>

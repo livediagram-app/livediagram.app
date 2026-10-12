@@ -1,12 +1,11 @@
 'use client';
 
-// The theme picker with custom-theme support (docs/specs/011-theme/custom-themes.md): the built-in
-// ThemeCategoryBrowser plus a "Custom" category (wired through the browser)
-// whose drill-in lists the owner's saved themes and a "+ New theme" tile.
+// The theme picker with custom-theme support (docs/specs/011-theme/custom-themes.md): the one flat
+// ThemeBrowser, which lists the built-in themes, then the owner's saved themes and a "+ New theme" tile.
 // This component owns the builder: picking New / Edit swaps the whole
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //
-// Shared by the right-click Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
+// Shared by the right-click Tab Style dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
 // New-document / template picker (docs/specs/007-editor/new-document-route.md) so the two surfaces, and the
 // custom-theme create/edit flow, can't drift. Selection is reported via
 // onSelect / onCommit; the host decides what that means: apply live (the
@@ -18,7 +17,7 @@ import { type ThemeDefinition } from '@/lib/themes';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useCustomThemes } from '@/components/primitives/CustomThemeProvider';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
-import { ThemeCategoryBrowser } from '@/components/palette/ThemeCategoryBrowser';
+import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
 
 export function CustomThemePicker({
   // The selected theme: a built-in ThemeId or a custom `custom:<uuid>` id.
@@ -59,10 +58,6 @@ export function CustomThemePicker({
   const [copySeed, setCopySeed] = useState<CustomThemeDraft | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Once the user has been in the builder, returning to the browse should
-  // land back on the Custom category (where New / Edit live) rather than
-  // the default overview — true whether they saved or cancelled.
-  const [returnToCustom, setReturnToCustom] = useState(false);
 
   useEffect(() => {
     onBuildingChange?.(building !== null);
@@ -74,7 +69,6 @@ export function CustomThemePicker({
   const openBuilder = (target: 'new' | string) => {
     setSaveError(null);
     setCopySeed(null);
-    setReturnToCustom(true);
     setBuilding(target);
   };
 
@@ -82,7 +76,6 @@ export function CustomThemePicker({
   // that theme's options so the user can tweak it (docs/specs/011-theme/custom-themes.md).
   const copyTheme = (theme: ThemeDefinition) => {
     setSaveError(null);
-    setReturnToCustom(true);
     setCopySeed({ name: `${theme.label} copy`, definition: customDefinitionFromTheme(theme) });
     setBuilding('new');
   };
@@ -119,8 +112,7 @@ export function CustomThemePicker({
           setSaveError("Couldn't save the theme. Check your connection and try again.");
           return;
         }
-        // Select it so returning to the browse lands on the Custom
-        // category with the new theme highlighted.
+        // Select it so returning to the list shows the new theme highlighted.
         onSelect(created.id);
       } else if (editingTheme) {
         const updated = await updateTheme(editingTheme.id, draft);
@@ -157,14 +149,13 @@ export function CustomThemePicker({
   return (
     <>
       {info}
-      <ThemeCategoryBrowser
+      <ThemeBrowser
         themeId={themeId}
         onSelect={onSelect}
         onCommit={onCommit}
         className={browserClassName}
         customThemes={customThemes}
-        initialCategory={returnToCustom ? 'custom' : undefined}
-        // Without writes (a workbench) there is no builder: no Custom category, no Copy.
+        // Without writes (a workbench) there is no builder: no custom themes, no Copy.
         onNewCustomTheme={writable ? () => openBuilder('new') : undefined}
         onEditCustomTheme={writable ? (id) => openBuilder(id) : undefined}
         onDeleteCustomTheme={writable ? confirmDelete : undefined}

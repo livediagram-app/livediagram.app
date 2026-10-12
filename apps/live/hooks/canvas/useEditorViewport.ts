@@ -14,7 +14,12 @@ import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
-import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
+import {
+  computeFitToScreen,
+  FIT_TO_SCREEN_PADDING,
+  computeViewportCenter,
+  topChromeInset,
+} from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { glideViewport } from '@/lib/viewport-glide';
@@ -264,8 +269,11 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   }, [deps.activeTab.elements, deps]);
 
   const fitToScreen = useCallback(() => {
-    const rect = canvasMainRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const box = canvasMainRef.current?.getBoundingClientRect();
+    if (!box) return;
+    // Plain numbers: a DOMRect's fields are prototype getters, so spreading one (computeFitBelow does) loses them
+    // and the zoom comes out NaN.
+    const rect = { width: box.width, height: box.height, top: box.top, bottom: box.bottom };
     const { activeTab } = depsRef.current;
     const boxedIds = new Set(activeTab.elements.filter(isBoxed).map((el) => el.id));
     if (boxedIds.size === 0) {
@@ -275,7 +283,19 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     }
     const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
     if (!bbox) return;
-    const { zoom, offset } = computeFitToScreen(rect, bbox);
+    // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
+    const strip = document
+      .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
+      ?.getBoundingClientRect();
+    const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
+    // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
+    // strip was considered) and clears both the strip and the bottom chrome of the same depth.
+    const { zoom, offset } = computeFitToScreen(
+      rect,
+      bbox,
+      undefined,
+      Math.max(FIT_TO_SCREEN_PADDING, inset),
+    );
     setViewportZoom(zoom);
     setViewportOffset(offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);

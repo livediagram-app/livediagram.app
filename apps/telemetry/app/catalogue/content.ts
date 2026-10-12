@@ -82,8 +82,16 @@ export const TAB_FINISH = chart(
   'Tab',
   'Changed',
   'Tab Finish',
-  'A tab’s finish changed (Flexible, Professional or Sketch), or every element was set back to follow it.',
-  { types: ['Finish', 'FinishToAll'] },
+  'A tab’s finish changed (Flexible, Professional or Sketch).',
+  { types: ['Finish'] },
+);
+
+export const TAB_LOOKS_PICKED = chart(
+  'Tab',
+  'Changed',
+  'Tab Looks',
+  'A look picked in Tab Look & Feel: theme, finish, font and canvas pattern set at once.',
+  { types: ['Look'] },
 );
 
 export const TABS_ARRANGED = chart(
@@ -369,6 +377,7 @@ const TAB_CHANGES = [
   TABS_DUPLICATED,
   TAB_TEXT_DEFAULTS,
   TAB_FINISH,
+  TAB_LOOKS_PICKED,
   TABS_ARRANGED,
   TABS_REORDERED,
   TABS_LINKED,
@@ -390,6 +399,7 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_DUPLICATED,
     TAB_TEXT_DEFAULTS,
     TAB_FINISH,
+    TAB_LOOKS_PICKED,
     TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,

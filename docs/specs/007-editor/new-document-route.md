@@ -312,7 +312,7 @@ explored instead of always seeing the same curated first rows.
   whole catalogue is reachable and nothing hides behind a "Show more"
   toggle. Shuffling decides which options lead a category and the
   search results, and the pinned default still opens the list.
-  ("Show more" survives only in the Tab Look & Feel dialog's
+  ("Show more" survives only in the Tab Style dialog's
   background-pattern picker, the one caller `useShowMoreList` still
   has.)
 - **Stable within a session.** The shuffle is computed when the picker
@@ -323,7 +323,7 @@ Implementation: `lib/shuffle.ts` (`shufflePinned`, a pinned-first
 Fisher-Yates) feeds `components/palette/TemplatePicker.tsx`, which drives the
 count-based mode of `hooks/ui/useShowMoreList.ts`. The theme and pattern
 grids keep their stable, flag-gated order wherever they render (the
-theme browse of `components/palette/ThemeCategoryBrowser.tsx`, shared
+theme browse of `components/palette/ThemeBrowser.tsx`, shared
 with the right-click Theme dialog per [42](../011-theme/canvas-and-theme-dialog.md),
 and the pattern controls in `components/palette/palette-controls.tsx`)
 — only the Quick Start's template browse shuffles (the New Document wizard offers modes, not templates).
@@ -335,13 +335,14 @@ The wizard's first step asks **what you are making**, as the five editor modes, 
 mode's own start ([Template starts](start-diagramming.md)); the marketing site's gallery is where every template is
 browsed before signing up.
 
+- **Heading:** "What are you making today?"
 - **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Facilitate,
-  Illustrate, Plan). **Diagram**, first there and where most start, is a wide card marked **Most Popular**; the
-  other four sit two by two (one column on a phone).
+  Illustrate, Plan). **Diagram**, first there and where most start, is the wide card; the other four sit two by two
+  (one column on a phone). The cards carry no badges.
 - **Each card:** the mode's mark and name, a line on what it makes in the words of the work ("Flowcharts, mind maps,
   org charts and architecture, snapped neatly into place."), a fan of its own templates' previews (`PreviewFan`,
-  the mode's Popular shelf less its blank) wider on hover, and three of their names. Its number (1 to 5) shows in
-  its corner.
+  the mode's Popular shelf less its blank) wider on hover, and three of their names. Its number (1 to 5) still
+  chooses it from the keyboard, unprinted.
 - **Choosing a card** moves on to Location with the mode's blank as the selection (`BLANK_TEMPLATE_FOR_MODE`), so
   Create makes an empty tab in that mode, which opens on its start. With the Location step skipped, choosing creates
   at once.
@@ -657,7 +658,7 @@ measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemet
 
 With the theme step retired, the picker no longer shows themes at all. Custom
 themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
-the Tab Look & Feel dialog, which renders the same `CustomThemePicker` the theme
+the Tab Style dialog, which renders the same `CustomThemePicker` the theme
 step used. The create path still carries a theme id (`onPick`,
 `commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
 passes through), now always the caller's: `brand` on `/new`, the source tab's

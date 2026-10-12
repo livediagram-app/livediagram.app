@@ -95,7 +95,7 @@ export function pathEndTangents(
 - **Hatching.** Lines at `SKETCH_HATCH_ANGLE_DEG` across the area, `gap = clamp(4 * strokePx, 6, 12)` apart,
   widened so no more than `SKETCH_HATCH_MAX_LINES` lines are drawn; the area is rotated, scanned with horizontal
   lines (even-odd pairs of edge crossings), each piece rotated back and drawn as a one-pass sketch line. Drawn over
-  the solid fill in the stroke colour at `SKETCH_HATCH_OPACITY` (0.3) and `max(1, strokePx / 2)` wide; every
+  the solid fill in the stroke colour at `SKETCH_HATCH_OPACITY` (0.15) and `max(1, strokePx / 2)` wide; every
   filled element keeps its `solid` layer, so text contrast never depends on the canvas behind.
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
@@ -137,9 +137,9 @@ export function pathEndTangents(
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
-- Palette: `components/palette/palette-tile-finish.ts` `tileTakesFinish(action)` (shape kinds other than `icon` and
-  self-painting kinds, plus sticky, text, table, arrow) and `paletteFinishClass(finish)`; `IconButton` adds the class to
-  the glyph wrapper from `useTabFinish()`. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
+- Palette: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` (Sketch for every tile;
+  Professional for every tile but `tech-icon` and `sticker`); `IconButton` adds the class to the glyph wrapper from
+  `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
   strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`).
   `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
@@ -165,9 +165,8 @@ raster path so PNG matches SVG.
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
-- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles and
-  **Apply to All Elements**) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas` gains `setTabFinish`
-  and `applyTabFinishToAll` (one `commit`, nothing written when no element has its own).
+- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
+  `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
   "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
@@ -225,14 +224,14 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 - Menu rows: a glyph (a link for Follow Tab, a rounded square for Flexible, a crisp square for Professional, a wobbly
   square for Sketch), the name, and the line "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand".
   The checked row is the element's own finish (Follow Tab when it has none).
-- Finish tab: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
-  tab.", button "Apply to All Elements".
+- Finish panel: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
+  tab." (no apply button: a pick applies to the whole tab).
 
 ## Accessibility
 
 The menu rows are `OptionRows`: menu item radios inside the menu (its own keys move between them), each with
-`aria-checked`. The dialog tiles are `SizeButton`s with `aria-pressed`; the tab strip gains one more tab with the
-same roles. Hover preview never fires for touch. No motion.
+`aria-checked`. The dialog tiles are `SizeButton`s with `aria-pressed`; the panel is reached from the dialog's
+**Fine-tune** row named Finish, with a **Back** control to the home. Hover preview never fires for touch. No motion.
 
 ## Web Experience
 
@@ -264,20 +263,20 @@ per command letter.
 
 ## Constants and configuration
 
-| Constant                 | Value  | Provenance                                                                | Safe range              |
-| ------------------------ | ------ | ------------------------------------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback)                  | 0 to 4                  |
-| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                                              | any sans font id        |
-| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                                     | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails                              | 0 to 4                  |
-| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)                                | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                                        | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14                       | 12 to 28                |
-| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                     | 1 to 3                  |
-| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                            | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                                  | 100 to 600              |
-| `SKETCH_HATCH_OPACITY`   | 0.3    | shading that reads, under a label that stays legible (dark-mode feedback) | 0.2 to 0.45             |
-| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                          | any handwriting font id |
+| Constant                 | Value  | Provenance                                                             | Safe range              |
+| ------------------------ | ------ | ---------------------------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback)               | 0 to 4                  |
+| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                                           | any sans font id        |
+| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                                  | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails                           | 0 to 4                  |
+| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)                             | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                                     | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14                    | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                  | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                         | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                               | 100 to 600              |
+| `SKETCH_HATCH_OPACITY`   | 0.15   | shading that reads without distracting (softened from 0.3 on feedback) | 0.1 to 0.45             |
+| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                       | any handwriting font id |
 
 ## Assets and external resources
 

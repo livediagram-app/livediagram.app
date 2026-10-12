@@ -52,7 +52,6 @@ import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHos
 import { TourHost } from '@/components/tour/TourHost';
 import { useEverTrue } from '@/hooks/ui/useEverTrue';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
-import { ThemeModeBanner } from '@/components/chrome/ThemeModeBanner';
 import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { PhotoDraftBar } from '@/components/chrome/PhotoDraftBar';
 import { PhotoImportProgress } from '@/components/chrome/PhotoImportProgress';
@@ -266,7 +265,6 @@ export function EditorView() {
   // theme so the editor chrome matches the document (docs/specs/011-theme/canvas-and-theme-dialog.md).
   // One look in both editor modes (docs/specs/007-editor/editor-modes.md "One look"), so the accent
   // follows the tab's theme in Draw mode too.
-  const drawMode = ctx.editorMode.mode === 'draw';
   const mountPlanTour = useEverTrue(ctx.editorMode.mode === 'plan');
   const mountFacilitateTour = useEverTrue(ctx.editorMode.mode === 'facilitate');
   const mountDrawTour = useEverTrue(ctx.editorMode.mode === 'draw');
@@ -796,18 +794,7 @@ export function EditorView() {
                                   onQuickStart={openTemplatePicker}
                                 />
                               ) : null}
-                              {/* Offer to match the editor chrome to the active tab's theme
-          (dark theme -> dark mode, light theme -> light mode). Hidden in
-          zen / embed like the other floating prompts, and yields to the
-          sign-in nudge and the empty-canvas card. */}
-                              {zenMode ||
-                              !appChrome ||
-                              minimalChrome ||
-                              drawMode ||
-                              showSignInBanner ||
-                              showEmptyCanvasBanner ? null : (
-                                <ThemeModeBanner themeId={activeTab.theme} />
-                              )}
+
                               {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md, docs/specs/021-event-storming/event-storming.md): names what holding Shift does
           right now, and offers the Alt insert-between gesture while a note is
           on the move. Suppressed while a mode banner owns the top slot. */}

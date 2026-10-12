@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
 import {
   createFreehand,
   createShape,
@@ -59,6 +60,8 @@ function setup(
   );
   return { result, commit, update, memory, elements: () => elements };
 }
+
+afterEach(() => resetAppearanceForTests());
 
 describe('useQuickStyle pen rows', () => {
   it('restyles the selected strokes in one commit', () => {
@@ -191,6 +194,8 @@ describe('useQuickStyle for a tool in hand', () => {
 // version for the canvas the tab paints, which on a dark theme is the dark one in any appearance.
 describe('useQuickStyle swatches on a themed canvas', () => {
   it('shows the dark canvas versions on a dark theme', () => {
+    // A dark viewer sees Midnight as written (docs/specs/011-theme/light-and-dark.md).
+    setAppearance('dark');
     const square = { ...createShape('square', 0, 0), id: 'q1' } as Element;
     const tab = {
       id: 't',

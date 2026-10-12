@@ -20,7 +20,6 @@ Scope, by file:
 | `apps/*/app/layout.tsx` (live, marketing, help, telemetry, community) | Inline the boot script; declare the lock meta; dark body                                                                                               |
 | `apps/live/hooks/ui/useAppearance.ts`                                 | The shared hook plus the editor's telemetry                                                                                                            |
 | `apps/live/components/chrome/AppearanceToggle.tsx`                    | The three-state control on the TabBar                                                                                                                  |
-| `apps/live/components/chrome/ThemeModeBanner.tsx`                     | The match nudge                                                                                                                                        |
 | `apps/live/components/canvas/CanvasSurfaceContext.tsx`                | Carries the `CanvasSurface` past `React.memo` element views                                                                                            |
 | `packages/document/src/colors.ts`                                     | `CanvasSurface`, `canvasSurface`, `isLightColor`, the `default*Color` inks                                                                             |
 | `packages/document/src/canvas-colors.ts`                              | The Default scheme's light and dark canvas colours                                                                                                     |
@@ -31,17 +30,16 @@ Scope, by file:
 
 One term, one identifier. The left column is the only spelling used in code, tests and logs.
 
-| Term               | Identifier                                            | Meaning                                                          |
-| ------------------ | ----------------------------------------------------- | ---------------------------------------------------------------- |
-| Appearance setting | `AppearanceSetting` (`'light' \| 'dark' \| 'system'`) | What the user picked; what a control renders                     |
-| Appearance         | `Appearance` (`'light' \| 'dark'`)                    | What the chrome is painted as; what a colour decision reads      |
-| Default setting    | `DEFAULT_APPEARANCE_SETTING` (`'system'`)             | The setting of a visitor who never touched the control           |
-| Resolution         | `resolveAppearance(setting)`                          | Setting to appearance; only `system` asks the OS                 |
-| Dark class         | `dark` on `document.documentElement`                  | The single switch every `dark:` utility keys on                  |
-| Boot script        | `APPEARANCE_BOOT_SCRIPT`                              | The inline script that sets the dark class before first paint    |
-| Canvas surface     | `CanvasSurface` (`'light' \| 'dark'`)                 | The paper a canvas colour amounts to, from `canvasSurface(bg)`   |
-| Match nudge        | `ThemeModeBanner`                                     | Offer to switch appearance when a tab's scheme disagrees with it |
-| Dark Reader lock   | `<meta name="darkreader-lock">`                       | The extension's opt-out, declared through `metadata.other`       |
+| Term               | Identifier                                            | Meaning                                                        |
+| ------------------ | ----------------------------------------------------- | -------------------------------------------------------------- |
+| Appearance setting | `AppearanceSetting` (`'light' \| 'dark' \| 'system'`) | What the user picked; what a control renders                   |
+| Appearance         | `Appearance` (`'light' \| 'dark'`)                    | What the chrome is painted as; what a colour decision reads    |
+| Default setting    | `DEFAULT_APPEARANCE_SETTING` (`'system'`)             | The setting of a visitor who never touched the control         |
+| Resolution         | `resolveAppearance(setting)`                          | Setting to appearance; only `system` asks the OS               |
+| Dark class         | `dark` on `document.documentElement`                  | The single switch every `dark:` utility keys on                |
+| Boot script        | `APPEARANCE_BOOT_SCRIPT`                              | The inline script that sets the dark class before first paint  |
+| Canvas surface     | `CanvasSurface` (`'light' \| 'dark'`)                 | The paper a canvas colour amounts to, from `canvasSurface(bg)` |
+| Dark Reader lock   | `<meta name="darkreader-lock">`                       | The extension's opt-out, declared through `metadata.other`     |
 
 Banned synonyms: "UI mode" and "dark mode toggle" in code and copy (the stored key `livediagram:v2:ui-mode` keeps its
 name as data on the wire); "theme" for the appearance, since a theme is the document's.
@@ -102,10 +100,9 @@ editor.
 
 ## Data and persistence
 
-| Field                    | Store                             | Class             | Notes                                       |
-| ------------------------ | --------------------------------- | ----------------- | ------------------------------------------- |
-| `livediagram:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'`    |
-| Dismissed nudge key      | `ThemeModeBanner` component state | Ephemeral         | `${themeId}:${target}`; resets per mismatch |
+| Field                    | Store                             | Class             | Notes                                    |
+| ------------------------ | --------------------------------- | ----------------- | ---------------------------------------- |
+| `livediagram:v2:ui-mode` | `localStorage`, this browser only | Device preference | Values `'light'` / `'dark'` / `'system'` |
 
 Nothing is synced to the api or written into a document. Migration: none; older builds wrote `'light'` / `'dark'`, which
 read back unchanged, and anything older reads as the default.

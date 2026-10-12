@@ -913,3 +913,12 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 .palette-finish-sketch svg {
   filter: url(#lvd-sketch-tile);
 }
+
+/* A Tab Style change (lib/tab-style-ease.ts, docs/specs/011-theme/canvas-and-theme-dialog.md "Eased changes") eases the canvas's colours instead of snapping them. On only for the moment of the change, so it
+   costs nothing the rest of the time; Reduce motion (above) zeroes it. */
+:root.lvd-style-transition [data-canvas-root],
+:root.lvd-style-transition [data-canvas-root] * {
+  transition-property: background-color, border-color, color, fill, stroke, opacity;
+  transition-duration: 250ms;
+  transition-timing-function: ease-out;
+}

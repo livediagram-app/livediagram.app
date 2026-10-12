@@ -20,7 +20,7 @@ import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
-import { getTheme, themeChartPalette, type ThemeId } from '@/lib/themes';
+import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -436,7 +436,13 @@ export function EditorCanvasHost() {
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
   const [projectStockColours] = useState(createStockColourProjector);
   const surface = canvasSurface(backdrop.backgroundColor);
-  const canvasElements = projectStockColours(presentingElements ?? activeTab.elements, surface);
+  // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
+  // appearance, so its identity holds and the projector's cache with it.
+  const canvasElements = projectStockColours(
+    presentingElements ?? activeTab.elements,
+    surface,
+    themeViewMap(activeTab.theme, appearance),
+  );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
@@ -868,14 +874,13 @@ export function EditorCanvasHost() {
         )}
         // +1 for the local participant: livePresence is the REMOTE roster.
         participantCount={livePresence.length + 1}
-        // Bottom-dock paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): the same CanvasThemeDialog the
-        // canvas right-click menu opens, one click from the chrome. Opens on
-        // the Theme tab; the dialog's tab strip reaches Canvas from there.
+        // Bottom-dock Theme & canvas button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
+        // CanvasThemeDialog on its home, the Looks and the Fine-tune rows.
         onOpenCanvasTheme={
           isReadOnly || embedMode
             ? undefined
             : () => {
-                setCanvasThemeTab('theme');
+                setCanvasThemeTab('looks');
                 track('UI', 'Opened', 'ThemePicker');
               }
         }

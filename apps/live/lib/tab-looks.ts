@@ -1,0 +1,192 @@
+// Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts that set four of a tab's existing
+// settings at once, its theme, finish, tab font and canvas pattern. Not a stored concept: picking one writes those
+// four ordinary fields, and a look reads as selected only while the tab still matches all four.
+import {
+  resolveFinish,
+  type BackgroundPattern,
+  type Finish,
+  type Tab,
+} from '@livediagram/document';
+import { withThemeApplied } from '@/lib/tab-theme-apply';
+
+export type TabLookId =
+  | 'everyday'
+  | 'whiteboard'
+  | 'graph-paper'
+  | 'boardroom'
+  | 'notebook'
+  | 'midnight'
+  | 'seaside'
+  | 'editorial'
+  | 'engineer'
+  | 'workshop'
+  | 'garden'
+  | 'studio';
+
+export type TabLook = {
+  id: TabLookId;
+  label: string;
+  /** One line under the name on its card. */
+  description: string;
+  /** A built-in theme id (packages/document/src/themes-data.ts). */
+  theme: string;
+  finish: Finish;
+  /** A font id (packages/document/src/fonts.ts), or undefined for no tab font. */
+  font: string | undefined;
+  pattern: BackgroundPattern;
+  /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */
+  patternOpacity?: number;
+};
+
+/** The looks, in the order the dialog shows them: two carousel pages of six. */
+export const TAB_LOOKS: readonly TabLook[] = [
+  {
+    id: 'everyday',
+    label: 'Everyday',
+    description: 'Default colours, Flexible, grid',
+    theme: 'brand',
+    finish: 'flexible',
+    font: undefined,
+    pattern: 'grid',
+  },
+  {
+    id: 'whiteboard',
+    label: 'Whiteboard',
+    description: 'Sketch, handwriting, plain white',
+    theme: 'mono',
+    finish: 'sketch',
+    font: undefined,
+    pattern: 'blank',
+  },
+  {
+    id: 'graph-paper',
+    label: 'Graph Paper',
+    description: 'Indigo, Professional, mono type',
+    theme: 'indigo',
+    finish: 'professional',
+    font: 'roboto-mono',
+    pattern: 'graph',
+  },
+  {
+    id: 'boardroom',
+    label: 'Boardroom',
+    description: 'Steel, Professional, Inter',
+    theme: 'steel',
+    finish: 'professional',
+    font: 'inter',
+    pattern: 'blank',
+  },
+  {
+    id: 'notebook',
+    label: 'Notebook',
+    description: 'Mocha, Sketch, lined paper',
+    theme: 'mocha',
+    finish: 'sketch',
+    font: undefined,
+    pattern: 'lines',
+  },
+  {
+    id: 'midnight',
+    label: 'Midnight',
+    description: 'Midnight, Flexible, grid',
+    theme: 'midnight',
+    finish: 'flexible',
+    font: undefined,
+    pattern: 'grid',
+  },
+  {
+    id: 'seaside',
+    label: 'Seaside',
+    description: 'Ocean, Flexible, Nunito, waves',
+    theme: 'ocean',
+    finish: 'flexible',
+    font: 'nunito',
+    pattern: 'waves',
+  },
+  {
+    id: 'editorial',
+    label: 'Editorial',
+    description: 'Cream, Professional, Lora serif',
+    theme: 'cream',
+    finish: 'professional',
+    font: 'lora',
+    pattern: 'blank',
+  },
+  {
+    id: 'engineer',
+    label: 'Engineer',
+    description: 'Sky, Professional, engineering grid',
+    theme: 'sky',
+    finish: 'professional',
+    font: 'space-grotesk',
+    pattern: 'engineering',
+  },
+  {
+    id: 'workshop',
+    label: 'Workshop',
+    description: 'Sand, Sketch, marker pen, soft grid',
+    theme: 'sand',
+    finish: 'sketch',
+    font: 'permanent-marker',
+    pattern: 'grid',
+    patternOpacity: 0.6,
+  },
+  {
+    id: 'garden',
+    label: 'Garden',
+    description: 'Forest, Flexible, Poppins, hexagons',
+    theme: 'forest',
+    finish: 'flexible',
+    font: 'poppins',
+    pattern: 'hexagonal',
+    patternOpacity: 0.4,
+  },
+  {
+    id: 'studio',
+    label: 'Studio',
+    description: 'Lavender, Professional, slab serif',
+    theme: 'lavender',
+    finish: 'professional',
+    font: 'roboto-slab',
+    pattern: 'isometric',
+  },
+];
+
+/** How many looks one carousel page holds. */
+export const LOOKS_PER_PAGE = 6;
+
+export function tabLookById(id: string): TabLook | undefined {
+  return TAB_LOOKS.find((l) => l.id === id);
+}
+
+/** The tab with a look applied: the theme exactly as picking it does, then the finish, font and pattern. */
+export function withLookApplied(tab: Tab, look: TabLook): Tab {
+  const themed = withThemeApplied(tab, look.theme);
+  const next: Tab = { ...themed, finish: look.finish, backgroundPattern: look.pattern };
+  // A look that sets a strength sets it; the rest leave the tab's own strength alone.
+  if (look.patternOpacity !== undefined) next.backgroundOpacity = look.patternOpacity;
+  if (look.font) next.font = look.font;
+  else delete next.font;
+  return next;
+}
+
+/** The look the tab's settings match, or undefined when it has its own mix. Unset settings read as what they
+ *  draw: the Default theme, Flexible, no font, the grid. A pattern's strength counts only for a look that sets one
+ *  (a template's softened grid is still Everyday). */
+export function activeLookId(
+  tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'>,
+): TabLookId | undefined {
+  const theme = tab.theme ?? 'brand';
+  const finish = resolveFinish(tab.finish, undefined);
+  const font = tab.font || undefined;
+  const pattern = tab.backgroundPattern ?? 'grid';
+  const opacity = tab.backgroundOpacity ?? 1;
+  return TAB_LOOKS.find(
+    (l) =>
+      l.theme === theme &&
+      l.finish === finish &&
+      l.font === font &&
+      l.pattern === pattern &&
+      (l.patternOpacity === undefined || Math.abs(l.patternOpacity - opacity) < 0.001),
+  )?.id;
+}

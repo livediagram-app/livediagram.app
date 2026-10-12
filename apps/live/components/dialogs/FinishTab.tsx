@@ -1,27 +1,16 @@
 'use client';
 
-// The Tab Look & Feel dialog's Finish tab (docs/specs/008-canvas/finish.md "Where it is set"): the tab's
-// finish as three tiles, applied live, and Apply to All Elements, which clears every element's own finish so
-// the whole tab follows it again.
+// The Tab Style dialog's Finish panel (docs/specs/008-canvas/finish.md "Where it is set"): the tab's finish as three
+// tiles, applied live to the tab and every element on it (each follows the tab again), and a preview of the sample in
+// the chosen finish.
 
-import { useMemo } from 'react';
-import {
-  DARK_CANVAS_BACKGROUND_COLOR,
-  DEFAULT_BACKGROUND_COLOR,
-  DEFAULT_FINISH,
-  FINISHES,
-  type Finish,
-} from '@livediagram/document';
-import { Button, Glyph } from '@livediagram/ui';
-import { SizeButton } from '@/components/palette/palette-controls';
+import { DEFAULT_FINISH, FINISHES, type Finish } from '@livediagram/document';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { finishPreviewSvg } from '@/lib/finish-preview';
+import { TabStylePreview } from './TabStylePreview';
 
 export function FinishTab({
   finish,
   onSetFinish,
-  onApplyFinishToAll,
   canvasBackground,
   themeId,
   font,
@@ -29,7 +18,6 @@ export function FinishTab({
   // The tab's finish; undefined reads as Flexible.
   finish: Finish | undefined;
   onSetFinish: (finish: Finish) => void;
-  onApplyFinishToAll: () => void;
   // The tab's own background (undefined: the canvas's default for this surface), theme and font, so the
   // preview sits on the same paper in the same look.
   canvasBackground: string | undefined;
@@ -43,77 +31,52 @@ export function FinishTab({
         <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           Finish
         </span>
-        <div className="grid grid-cols-3 gap-2">
+        <div role="radiogroup" aria-label="Finish" className="grid grid-cols-3 gap-2">
           {FINISHES.map((f) => (
-            <SizeButton key={f} active={current === f} onClick={() => onSetFinish(f)}>
-              <span className="flex flex-col items-center gap-1 py-1">
-                <FinishSwatch finish={f} />
-                <span className="text-[11px] font-medium">{FINISH_LABELS[f]}</span>
-              </span>
-            </SizeButton>
+            <FinishTile key={f} finish={f} active={current === f} onPick={() => onSetFinish(f)} />
           ))}
         </div>
-        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          How lines, corners and lettering are drawn on this tab.
-        </p>
       </div>
-      <FinishPreview
-        finish={current}
-        canvasBackground={canvasBackground}
-        themeId={themeId}
-        font={font}
-      />
-      <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
-        <Button variant="secondary" size="xs" onClick={onApplyFinishToAll}>
-          Apply to All Elements
-        </Button>
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Preview
+        </span>
+        <TabStylePreview
+          finish={current}
+          canvasBackground={canvasBackground}
+          themeId={themeId}
+          font={font}
+          label={`A sample diagram drawn in the ${FINISH_LABELS[current]} finish`}
+        />
       </div>
     </div>
   );
 }
 
-// A small sample scene in the chosen finish, on the tab's paper (lib/finish-preview.ts), drawn by the export
-// renderer so it is exactly what the canvas will show. Rebuilt only when the finish or the tab's look changes.
-function FinishPreview({
+function FinishTile({
   finish,
-  canvasBackground,
-  themeId,
-  font,
+  active,
+  onPick,
 }: {
   finish: Finish;
-  canvasBackground: string | undefined;
-  themeId: string;
-  font: string | null;
+  active: boolean;
+  onPick: () => void;
 }) {
-  const surface = useCanvasSurface();
-  const background =
-    canvasBackground ??
-    (surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR);
-  const markup = useMemo(
-    () => finishPreviewSvg(finish, { background, theme: themeId, font: font ?? undefined }),
-    [finish, background, themeId, font],
-  );
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-        Preview
-      </span>
-      <div
-        role="img"
-        aria-label={`A sample diagram drawn in the ${FINISH_LABELS[finish]} finish`}
-        data-finish-preview={finish}
-        className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
-        dangerouslySetInnerHTML={{ __html: markup }}
-      />
-    </div>
-  );
-}
-
-// The dialog tab strip's glyph: a pencil drawing a line.
-export function FinishTabIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M10.5 2.5l3 3L6 13H3v-3z" />
-    </Glyph>
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onPick}
+      className={`flex flex-col items-center gap-2 rounded-lg border px-2 pb-2.5 pt-3.5 transition ${
+        active
+          ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
+          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60'
+      }`}
+    >
+      {/* Big enough to see the corner, line weight and wobble change between the three. */}
+      <FinishSwatch finish={finish} size={40} />
+      <span className="text-[12px] font-semibold">{FINISH_LABELS[finish]}</span>
+    </button>
   );
 }

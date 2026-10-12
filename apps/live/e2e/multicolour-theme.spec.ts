@@ -1,19 +1,12 @@
-import {
-  expect,
-  test,
-  dismissQuickTour,
-  expectNoPageErrors,
-  startTemplateDocument,
-} from './fixtures';
+import { expect, test, expectNoPageErrors, seedTab, startBlankDocument } from './fixtures';
 
 // Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) end to end:
-// Rainbow, reset onto a mind map, paints each limb its own palette colour, and
-// the wrappers leave their trace in the console (blueprint O1). Unit tests prove
+// Rainbow, picked for an uncoloured hierarchy, paints each limb its own palette colour, and
+// the switch leaves its trace in the console (blueprint O1). Unit tests prove
 // the branch map; only the editor proves the colours reach the canvas.
 
 const CANVAS = '[data-canvas-a11y-root]';
 const SWITCH_LOG = /^\[theme-graph\] switch theme=rainbow elements=\d+ branches=\d+$/;
-const RESET_LOG = /^\[theme-graph\] reset theme=rainbow elements=\d+ branches=\d+$/;
 
 // Rainbow's palette fills (packages/document/src/themes-data.ts), as computed CSS.
 const RAINBOW_FILLS = ['#fee2e2', '#ffedd5', '#fef9c3', '#dcfce7', '#dbeafe', '#f3e8ff'].map(
@@ -38,32 +31,53 @@ test.describe('Multi-colour themes', () => {
     const logs: string[] = [];
     page.on('console', (msg) => logs.push(msg.text()));
 
-    // The Tree mind map authors a hue per branch, which a switch rightly keeps
-    // as a customisation (docs/specs/011-theme/multicolour-themes.md), so
-    // Reset elements to theme hands the limbs to the palette.
-    await startTemplateDocument(page, 'Brainstorm', /^Tree mind map/i);
-    await dismissQuickTour(page);
-    // The template's own colours carry none of Rainbow's hues, so any found
-    // afterwards came from the palette.
+    // A root and three limbs with no colours of their own (a template's authored hues would rightly be kept
+    // as customisations, docs/specs/011-theme/multicolour-themes.md), so any Rainbow hue found came from the
+    // palette.
+    await startBlankDocument(page);
+    const box = (id: string, x: number, y: number) => ({
+      id,
+      type: 'shape',
+      shape: 'square',
+      x,
+      y,
+      width: 120,
+      height: 60,
+      label: id,
+    });
+    const limb = (id: string, anchor: string) => ({
+      id: `to-${id}`,
+      type: 'arrow',
+      from: { kind: 'pinned', elementId: 'root', anchor },
+      to: { kind: 'pinned', elementId: id, anchor: 'w' },
+    });
+    await seedTab(page, [
+      box('root', 100, 300),
+      box('one', 400, 150),
+      box('two', 400, 300),
+      box('three', 400, 450),
+      limb('one', 'e'),
+      limb('two', 'e'),
+      limb('three', 'e'),
+    ]);
     expect(await rainbowHues(page)).toBe(0);
 
     await page.getByRole('button', { name: 'Theme and canvas' }).click();
-    await page.getByRole('button', { name: 'Browse Multi-colour themes' }).click();
-    await page
-      .getByRole('button', { name: /^Rainbow/ })
-      .first()
-      .click();
+    // The dialog opens on its home (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"): Colours
+    // opens the theme browser.
+    await page.getByRole('button', { name: /^Colours: / }).click();
+    // Every theme sits in one paged list ("Colours panel"): page on until Rainbow shows.
+    const rainbow = page.getByRole('button', { name: /^Rainbow/ }).first();
+    for (let i = 0; i < 4 && !(await rainbow.isVisible()); i++)
+      await page.getByRole('button', { name: 'Next themes' }).click();
+    await rainbow.click();
     await expect
       .poll(() => logs, { message: 'the switch leaves its [theme-graph] trace' })
       .toContainEqual(expect.stringMatching(SWITCH_LOG));
 
-    await page.getByRole('button', { name: 'Reset elements to theme' }).click();
     await expect
       .poll(() => rainbowHues(page), { message: 'limbs take distinct palette colours' })
       .toBeGreaterThanOrEqual(3);
-    await expect
-      .poll(() => logs, { message: 'the reset leaves its [theme-graph] trace' })
-      .toContainEqual(expect.stringMatching(RESET_LOG));
     expectNoPageErrors(pageErrors);
   });
 });

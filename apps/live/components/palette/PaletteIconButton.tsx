@@ -9,6 +9,7 @@ import { HoverCard, Tooltip } from '@livediagram/ui';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';
+import type { PaletteTileDef } from './palette-tile-defs';
 
 // The active tab theme's element colours, made available to every palette
 // tile so the palette previews the theme rather than a fixed slate. `stroke`
@@ -111,9 +112,9 @@ type IconButtonProps = {
   // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets it: a tool bar is where people
   // learn the letters, so it shows them the whole time.
   shortcutAlwaysVisible?: boolean;
-  // The tile places an element drawn in a finish, so its glyph previews the tab's finish
-  // (palette-tile-finish.ts).
-  takesFinish?: boolean;
+  // The tile's action: its glyph previews the tab's finish (palette-tile-finish.ts). Omitted for a button that
+  // places nothing (a tool).
+  finishAction?: PaletteTileDef['action'];
 };
 
 export function IconButton({
@@ -136,7 +137,7 @@ export function IconButton({
   filled,
   noTint,
   shortcutAlwaysVisible,
-  takesFinish,
+  finishAction,
 }: IconButtonProps) {
   const tabFinish = useTabFinish();
   // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
@@ -204,7 +205,7 @@ export function IconButton({
         ...(tintFill ? { '--tile-fill': tintFill } : {}),
       } as React.CSSProperties)
     : undefined;
-  const finishClass = takesFinish ? paletteFinishClass(tabFinish) : '';
+  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
   const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
   // Short caption under the icon (see tileCaption — shared with the Tools
   // tab's rows so the same tool is never named two ways).

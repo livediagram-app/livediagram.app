@@ -27,7 +27,7 @@ import {
   RedoIcon,
   SearchIcon,
   SettingsIcon,
-  ThemeBrushIcon,
+  ThemeLookIcon,
   UndoIcon,
 } from '@livediagram/ui';
 import { HERO_MODE, MODE_TILES, type HeroMode, type Tile } from './hero-mode-palette';
@@ -59,7 +59,7 @@ const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][
 };
 
 // The canvas cluster, bottom right, as CanvasChrome lays it out: undo / redo, the mode's own group,
-// Layers with the Tab Look & Feel brush, and the zoom readout.
+// Layers with the Tab Style brush, and the zoom readout.
 export function CanvasCluster({ className, mode }: { className: string; mode: HeroMode }) {
   const group = MODE_GROUP[mode];
   return (
@@ -88,7 +88,7 @@ export function CanvasCluster({ className, mode }: { className: string; mode: He
           </span>
         )}
         <span className={`${CELL} ${mode === 'plan' ? '' : SPLIT}`}>
-          <ThemeBrushIcon size={12} />
+          <ThemeLookIcon size={12} />
         </span>
       </span>
       {/* Each piece of the readout centres its cap band, not its line box, as the window's

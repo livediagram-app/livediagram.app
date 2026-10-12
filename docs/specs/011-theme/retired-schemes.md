@@ -39,6 +39,14 @@ Default's light half changed from white `#ffffff` to the off-white `#fbfaf7`, ke
 (or no stored grid colour) is rewritten to the current light half on load, so it keeps following the viewer. A white
 canvas with another grid colour, or on another scheme, was a choice and is left alone.
 
+## Autumn and Jewel
+
+Autumn and Jewel left the catalogue ([Light and dark halves](light-and-dark.md#retired-autumn-and-jewel)). On load a tab
+on Autumn becomes Tropical and a tab on Jewel becomes Rainbow: `theme` is rewritten, and every element colour field
+still holding the retired theme's value for that role (its fill, outline, text, or a palette branch's) takes the new
+theme's value for the same role. A colour the user picked is kept. The backdrop follows the same rule: a canvas or
+pattern colour still equal to the retired theme's becomes the new theme's.
+
 ## Where it runs
 
 One pure function in `@livediagram/document`, `migrateStoredTab`, composes every tab-level migration (this one and the
