@@ -71,6 +71,8 @@ type CanvasThemeDialogProps = {
   finish: Finish | undefined;
   onSetFinish: (finish: Finish) => void;
   onApplyFinishToAll: () => void;
+  // The tab's own background, unresolved, for the Finish preview's paper.
+  canvasBackground?: string;
   onClose: () => void;
 };
 
@@ -100,6 +102,7 @@ export function CanvasThemeDialog({
   finish,
   onSetFinish,
   onApplyFinishToAll,
+  canvasBackground,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
@@ -233,6 +236,9 @@ export function CanvasThemeDialog({
                 finish={finish}
                 onSetFinish={onSetFinish}
                 onApplyFinishToAll={onApplyFinishToAll}
+                canvasBackground={canvasBackground}
+                themeId={themeId}
+                font={font}
               />
             ) : tab === 'canvas' ? (
               <CanvasStyleControls

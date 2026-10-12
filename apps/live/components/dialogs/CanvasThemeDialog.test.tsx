@@ -86,6 +86,17 @@ describe('CanvasThemeDialog Finish tab', () => {
     );
   });
 
+  it('previews the chosen finish on a sample diagram', () => {
+    const { rerender } = render(<CanvasThemeDialog {...props} tab="finish" />);
+    const preview = screen.getByRole('img', { name: /Flexible finish/ });
+    expect(preview.getAttribute('data-finish-preview')).toBe('flexible');
+    expect(preview.querySelector('svg')).not.toBeNull();
+    rerender(<CanvasThemeDialog {...props} tab="finish" finish="sketch" />);
+    expect(screen.getByRole('img', { name: /Sketch finish/ }).innerHTML).toContain(
+      'data-finish="sketch"',
+    );
+  });
+
   it('Apply to All Elements clears the elements’ own finishes', () => {
     const onApplyFinishToAll = vi.fn();
     render(<CanvasThemeDialog {...props} tab="finish" onApplyFinishToAll={onApplyFinishToAll} />);

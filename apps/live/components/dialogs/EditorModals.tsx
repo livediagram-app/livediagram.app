@@ -102,6 +102,7 @@ export function EditorModals() {
           finish={activeTab.finish}
           onSetFinish={setTabFinish}
           onApplyFinishToAll={applyTabFinishToAll}
+          canvasBackground={activeTab.backgroundColor}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}

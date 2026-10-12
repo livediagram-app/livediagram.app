@@ -167,6 +167,12 @@ raster path so PNG matches SVG.
 - `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles and
   **Apply to All Elements**) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas` gains `setTabFinish`
   and `applyTabFinishToAll` (one `commit`, nothing written when no element has its own).
+- Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
+  `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
+  "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
+  `FinishTab`'s `FinishPreview` memoises it on finish, background, theme and font and inlines it
+  (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
+  (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 
 ### Agents
 
@@ -218,7 +224,7 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 - Menu rows: a glyph (a link for Follow Tab, a rounded square for Flexible, a crisp square for Professional, a wobbly
   square for Sketch), the name, and the line "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand".
   The checked row is the element's own finish (Follow Tab when it has none).
-- Finish tab: tiles of glyph over name; heading "Finish", line "How lines, corners and lettering are drawn on this
+- Finish tab: tiles of glyph over name, then a "Preview" heading over the sample diagram; heading "Finish", line "How lines, corners and lettering are drawn on this
   tab.", button "Apply to All Elements".
 
 ## Accessibility
@@ -251,7 +257,8 @@ per command letter.
 | Professional new arrows angled; avoidance per finish         | `apps/live/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
 | which palette tiles take the finish                          | `apps/live/components/palette/palette-tile-finish.test.ts`                                               |
 | applyFinishToEl                                              | `apps/live/lib/style-presets.test.ts`                                                                    |
-| dialog tab sets, Apply to All clears                         | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
+| preview draws each finish, stable, in the tab's font         | `apps/live/lib/finish-preview.test.ts`                                                                   |
+| dialog tab sets, previews, Apply to All clears               | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                 |
 
 ## Constants and configuration
