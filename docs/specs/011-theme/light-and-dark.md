@@ -19,6 +19,9 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
 - **Contrast.** Both halves meet WCAG 2.2 AA: text on its fill at 4.5:1 or more, outlines and arrows against the canvas
   at 3:1 or more. Where a derived (or a native) colour falls short, its lightness is moved away from what it sits on
   until it passes, keeping its hue.
+  `packages/document/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
+  `apps/live/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
+  and arrow).
 - **Custom themes** derive their other half the same way. A viewer who cannot resolve someone else's custom theme
   ([Custom themes](custom-themes.md)) sees it as stored.
 
