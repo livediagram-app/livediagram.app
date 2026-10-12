@@ -52,8 +52,9 @@ mindParentId?: ElementId;
 
 Absent = a root. It is the **only** thing that makes this more than a rounded
 box, and it is deliberately not a `children[]` array: a child pointer is
-single-valued, so it cannot disagree with itself, and deleting a parent leaves
-dangling ids rather than a corrupt tree (see "Deleting" below).
+single-valued, so it cannot disagree with itself, and a dangling id (a parent
+gone some other way, an erased node) leaves a root rather than a corrupt tree
+(see "Deleting" below).
 
 The connector is an ordinary pinned arrow. The tree is not a second graph
 model: it is the arrows you can already see, plus a pointer saying which node
@@ -463,13 +464,21 @@ it in place, and the new nodes look like the template's own.
 
 ## Deleting
 
-Deleting a node leaves its children with a `mindParentId` pointing at nothing.
-They become roots: their arrows are already gone (arrow cleanup on delete is
-existing behaviour), so what remains on screen is exactly what the model says.
+Deleting a node deletes its **branch**: every node under it and the connectors
+between them go in the same undo step. A branch is one idea, the same reason it
+moves as one (see "Moving a branch"), and a heading deleted from under its
+points left those points floating as unconnected roots nobody meant to keep.
+Undo brings the whole branch back.
 
-The alternative, cascading the delete to the subtree, was rejected: deleting one
-node and silently losing nine is the kind of thing you only notice after the
-undo stack has moved on.
+- It applies to Delete / Backspace, the element menu's Delete, and a
+  multi-selection's delete: each selected node takes its branch.
+- **Cut** takes the branch too, and copies it first, so a paste puts the whole
+  branch back. A plain **Copy** copies only what is selected.
+- A **locked** node in the branch (or one on a locked layer) stays, as do the
+  nodes under it, and becomes a root, as any protected element survives a
+  delete.
+- The **eraser** is a brush, not a delete: it removes only what it touches, and
+  a child whose parent was erased becomes a root.
 
 ## Discoverability
 

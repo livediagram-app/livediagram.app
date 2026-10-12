@@ -54,6 +54,53 @@ export function mindSubtree(elements: Element[], id: ElementId): ShapeElement[] 
   return out;
 }
 
+/**
+ * `ids` plus every mind node under any of them, and the connectors pinned at
+ * both ends inside that set (docs/specs/009-elements/mind-node.md "Deleting"):
+ * a branch is one idea, so deleting or cutting its node takes the branch.
+ * A node `isProtected` says to keep (a locked one) is not entered, so it and
+ * its own branch stay together. Returns `ids` itself when nothing is added, so
+ * callers can skip work.
+ */
+export function withMindBranches(
+  elements: Element[],
+  ids: ReadonlySet<ElementId>,
+  isProtected: (el: Element) => boolean = () => false,
+): ReadonlySet<ElementId> {
+  // One parent -> children index, so a wide selection stays linear rather
+  // than re-scanning the tab per node as `mindChildren` does.
+  const children = new Map<ElementId, ElementId[]>();
+  for (const el of elements) {
+    if (!isMindNode(el) || !el.mindParentId || isProtected(el)) continue;
+    const list = children.get(el.mindParentId);
+    if (list) list.push(el.id);
+    else children.set(el.mindParentId, [el.id]);
+  }
+  const out = new Set(ids);
+  // Iterative with the set as the seen-guard: a looping `mindParentId` stops.
+  const frontier = [...ids];
+  while (frontier.length > 0) {
+    for (const child of children.get(frontier.pop()!) ?? []) {
+      if (out.has(child)) continue;
+      out.add(child);
+      frontier.push(child);
+    }
+  }
+  if (out.size === ids.size) return ids;
+  for (const el of elements) {
+    if (
+      el.type === 'arrow' &&
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      out.has(el.from.elementId) &&
+      out.has(el.to.elementId)
+    ) {
+      out.add(el.id);
+    }
+  }
+  return out;
+}
+
 /** A node grown from another, plus what had to move to fit it in. */
 export type MindGrowth = {
   node: ShapeElement;

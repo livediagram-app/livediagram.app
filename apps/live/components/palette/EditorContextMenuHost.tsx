@@ -303,7 +303,7 @@ export function EditorContextMenuHost() {
       // moves above: on a workshop board the notes share one band and
       // "bring to front" means "over the note it overlaps".
       onCutElement={() => {
-        copySelection();
+        copySelection({ cut: true });
         // A Cut keeps the sheets of its Sheets for the paste: it never asks (sheet-store.md "Deleting a sheet").
         deleteSelected({ cut: true });
       }}
