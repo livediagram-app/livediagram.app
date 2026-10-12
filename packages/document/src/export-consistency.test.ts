@@ -51,6 +51,7 @@ describe('every kind with a body draws one', () => {
     'pie-chart',
     'bar-chart',
     'line-chart',
+    'sankey',
     'progress-bar',
     'progress-ring',
     'rating',

@@ -18,6 +18,18 @@ import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
 import type { TableElement, TextSize } from './index';
 import { isRecord } from './is-record';
+import {
+  cleanSankeyName,
+  SANKEY_ALIGNS,
+  SANKEY_ANIMS,
+  SANKEY_LINK_COLORS,
+  SANKEY_MAX_FLOWS,
+  SANKEY_MAX_NODES,
+  SANKEY_UNIT_MAX,
+  SANKEY_VALUE_LABELS,
+  SANKEY_VALUE_MAX,
+} from './sankey-model';
+import { readSankeyNumber } from './sankey-text';
 
 type Raw = Record<string, unknown>;
 
@@ -74,6 +86,51 @@ function normaliseChart(el: Raw): Raw {
         count === undefined ? values : Array.from({ length: count }, (_, i) => values[i] ?? 0);
       return { ...s, name: str(s.name), values: fitted };
     });
+  }
+  return out;
+}
+
+// A Sankey's flows as a model writes them (docs/specs/009-elements/sankey.md): `source` / `target` (the
+// d3-sankey spelling) read as `from` / `to`, an amount given as text ("3,200") is read as a number, names are
+// cleaned as the editor cleans them, and the lists are capped. An option the diagram does not know is dropped,
+// so it draws its default rather than failing the call.
+function normaliseSankey(el: Raw): Raw {
+  const out = { ...el };
+  if (Array.isArray(el.sankeyFlows))
+    out.sankeyFlows = el.sankeyFlows
+      .filter(isRecord)
+      .slice(0, SANKEY_MAX_FLOWS)
+      .map((f) => {
+        const raw = f.value ?? f.amount;
+        const value = typeof raw === 'number' ? raw : readSankeyNumber(str(raw));
+        return {
+          from: cleanSankeyName(str(f.from ?? f.source)),
+          to: cleanSankeyName(str(f.to ?? f.target)),
+          value: Number.isFinite(value)
+            ? Math.max(-SANKEY_VALUE_MAX, Math.min(SANKEY_VALUE_MAX, value))
+            : 0,
+        };
+      });
+  if (Array.isArray(el.sankeyNodes))
+    out.sankeyNodes = el.sankeyNodes
+      .filter(isRecord)
+      .slice(0, SANKEY_MAX_NODES)
+      .map((n) => ({
+        name: cleanSankeyName(str(n.name)),
+        ...(typeof n.color === 'string' && n.color ? { color: n.color.slice(0, 64) } : {}),
+      }));
+  const options: [string, readonly string[]][] = [
+    ['sankeyLinkColor', SANKEY_LINK_COLORS],
+    ['sankeyAlign', SANKEY_ALIGNS],
+    ['sankeyValueLabel', SANKEY_VALUE_LABELS],
+    ['sankeyAnim', SANKEY_ANIMS],
+  ];
+  for (const [field, values] of options)
+    if (out[field] !== undefined && !values.includes(out[field] as string)) delete out[field];
+  if (out.sankeyUnit !== undefined) {
+    const unit = str(out.sankeyUnit).trim().slice(0, SANKEY_UNIT_MAX);
+    if (unit) out.sankeyUnit = unit;
+    else delete out.sankeyUnit;
   }
   return out;
 }
@@ -143,6 +200,8 @@ function normaliseContent(el: Raw): unknown {
     case 'pie-chart':
     case 'line-chart':
       return normaliseChart(el);
+    case 'sankey':
+      return normaliseSankey(el);
     default:
       return el;
   }

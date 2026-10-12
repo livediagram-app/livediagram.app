@@ -32,6 +32,7 @@ import {
   DEFAULT_DECISION_STATUS,
 } from './collab-shapes';
 import { QUIZ_DEFAULT_SECONDS } from './quiz';
+import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
@@ -160,6 +161,9 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Legend (docs/specs/009-elements/pie-chart.md): narrower than a checklist, because a key is a swatch and
   // a word, and short enough to sit in a corner beside the thing it explains.
   legend: { width: 180, height: 132 },
+  // Sankey (docs/specs/009-elements/sankey.md): wide, because a Sankey reads left to right across its
+  // columns, and the starter budget has four of them, each with a label beside its bar.
+  sankey: { width: 560, height: 300 },
   // Mode button (docs/specs/009-elements/mode-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -623,6 +627,11 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // legend beside a chart matches it without being told to. See docs/specs/009-elements/pie-chart.md.
   if (kind === 'legend') {
     return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
+  }
+  // Sankey: the starter household budget (docs/specs/009-elements/sankey.md), so it drops as a real
+  // diagram to edit rather than an empty box to fill. Copied, so no two diagrams share the array.
+  if (kind === 'sankey') {
+    return { ...base, sankeyFlows: SANKEY_DEFAULT_FLOWS.map((f) => ({ ...f })) };
   }
   return base;
 }

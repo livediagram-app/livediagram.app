@@ -57,6 +57,17 @@ import {
   stringRule,
 } from './validate-primitives';
 import { isRecord } from './is-record';
+import {
+  SANKEY_ALIGNS,
+  SANKEY_ANIMS,
+  SANKEY_LINK_COLORS,
+  SANKEY_MAX_FLOWS,
+  SANKEY_MAX_NODES,
+  SANKEY_NAME_MAX,
+  SANKEY_UNIT_MAX,
+  SANKEY_VALUE_LABELS,
+  SANKEY_VALUE_MAX,
+} from './sankey-model';
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
@@ -141,6 +152,26 @@ const isRollCallEntry = (entry: unknown) =>
 
 const isChecklistItem = (item: unknown) =>
   isRecord(item) && isStrUpTo(CHECKLIST_MAX_TEXT)(item.text) && isBool(item.done);
+
+// Sankey (docs/specs/009-elements/sankey.md): a zero or negative amount is stored (the Flows dialog names
+// why it is not drawn), but not one past SANKEY_VALUE_MAX, nor a name past SANKEY_NAME_MAX.
+const isSankeyFlow = (item: unknown) =>
+  isRecord(item) &&
+  isStrUpTo(SANKEY_NAME_MAX)(item.from) &&
+  isStrUpTo(SANKEY_NAME_MAX)(item.to) &&
+  isNum(item.value) &&
+  Math.abs(item.value as number) <= SANKEY_VALUE_MAX;
+
+const isSankeyNode = (item: unknown) =>
+  isRecord(item) &&
+  isStrUpTo(SANKEY_NAME_MAX)(item.name) &&
+  (item.color === undefined || isStrUpTo(64)(item.color));
+
+const oneOf = (field: string, values: readonly string[]): FieldCheck => ({
+  field,
+  valid: (v) => values.includes(v as string),
+  rule: oneOfRule(values),
+});
 
 const isLegendItem = (item: unknown) =>
   isRecord(item) &&
@@ -331,6 +362,25 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: rowsOf(LEGEND_MAX_ITEMS, isLegendItem),
     rule: arrayRule(LEGEND_MAX_ITEMS, '{ label, color? } rows'),
   },
+  {
+    field: 'sankeyFlows',
+    valid: rowsOf(SANKEY_MAX_FLOWS, isSankeyFlow),
+    rule: arrayRule(
+      SANKEY_MAX_FLOWS,
+      `{ from, to, value } rows, names up to ${SANKEY_NAME_MAX} characters`,
+    ),
+  },
+  {
+    field: 'sankeyNodes',
+    valid: rowsOf(SANKEY_MAX_NODES, isSankeyNode),
+    rule: arrayRule(SANKEY_MAX_NODES, '{ name, color? } rows'),
+  },
+  oneOf('sankeyLinkColor', SANKEY_LINK_COLORS),
+  oneOf('sankeyAlign', SANKEY_ALIGNS),
+  oneOf('sankeyValueLabel', SANKEY_VALUE_LABELS),
+  oneOf('sankeyAnim', SANKEY_ANIMS),
+  { field: 'sankeyUnit', valid: isStrUpTo(SANKEY_UNIT_MAX), rule: stringRule(SANKEY_UNIT_MAX) },
+  flag('sankeyAnimRepeat'),
 ];
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.

@@ -11,6 +11,7 @@
 // './index', so the public package surface is unchanged.
 
 import type { ShapeKind } from './index';
+import { isSankeyShape } from './sankey-model';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -207,6 +208,7 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||
     isLegendShape(kind) ||
+    isSankeyShape(kind) ||
     isPlanShape(kind) ||
     kind === 'sticker'
   );

@@ -532,6 +532,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'plan-sheet',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
+  // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
+  'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
   'reveal',
