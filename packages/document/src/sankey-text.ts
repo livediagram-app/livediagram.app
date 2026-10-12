@@ -21,17 +21,67 @@ export type SankeyTextResult = {
   unread: number[];
 };
 
-const BRACKET = /^(.+?)\s*\[\s*([^\]]+?)\s*\]\s*(.+)$/;
-const ARROW = /^(.+?)\s*(?:->|→|=>)\s*(.+?)\s*[:=]\s*(.+)$/;
+/**
+ * A line longer than this is not a flow (two names of SANKEY_NAME_MAX and an amount fit many times over), and is
+ * named as unread rather than scanned: the readers below stay linear, and pasted text can never stall the dialog.
+ */
+export const SANKEY_LINE_MAX = 1000;
+
+const ARROWS = ['->', '→', '=>'] as const;
+
+// The readers scan by index rather than with patterns: lazy groups beside optional spaces backtrack polynomially
+// on hostile input (CodeQL js/polynomial-redos), and these read whatever someone pastes.
+
+// "From [amount] To": the first "[" after a non-empty From whose "]" closes a non-empty amount, followed by a To.
+function readBracket(line: string): [string, string, string] | null {
+  for (let open = line.indexOf('[', 1); open !== -1; open = line.indexOf('[', open + 1)) {
+    const close = line.indexOf(']', open + 1);
+    if (close === -1) return null;
+    const amount = line.slice(open + 1, close).trim();
+    const to = line.slice(close + 1).trim();
+    const from = line.slice(0, open).trim();
+    if (from && amount && to) return [from, to, amount];
+  }
+  return null;
+}
+
+// "From -> To: amount" (or →, =>; ":" or "="): the first arrow after a non-empty From, then the first separator
+// after a non-empty To with an amount after it.
+function readArrow(line: string): [string, string, string] | null {
+  let at = -1;
+  let len = 0;
+  for (const a of ARROWS) {
+    const i = line.indexOf(a, 1);
+    if (i !== -1 && (at === -1 || i < at)) [at, len] = [i, a.length];
+  }
+  if (at === -1) return null;
+  const from = line.slice(0, at).trim();
+  const rest = line.slice(at + len);
+  for (let i = 1; i < rest.length; i++) {
+    if (rest[i] !== ':' && rest[i] !== '=') continue;
+    const to = rest.slice(0, i).trim();
+    const amount = rest.slice(i + 1).trim();
+    if (from && to && amount) return [from, to, amount];
+  }
+  return null;
+}
+
+const isNumberStart = (c: string) => (c >= '0' && c <= '9') || c === '.' || c === '+' || c === '-';
+const isNumberEnd = (c: string) => (c >= '0' && c <= '9') || c === '.';
+// One way only to read each digit, so the check is linear.
+const NUMBER = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i;
 
 /** A typed number: "3,200", "£3,200", "3200.5", "12 %" all read; anything else is NaN. */
 export function readSankeyNumber(raw: string): number {
-  const t = raw
-    .trim()
-    .replace(/[,\s_]/g, '')
-    .replace(/^[^\d.+-]+/, '')
-    .replace(/[^\d.]+$/, '');
-  if (!/^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(t)) return NaN;
+  if (raw.length > SANKEY_LINE_MAX) return NaN;
+  const bare = raw.replace(/[,\s_]/g, '');
+  // A currency mark before and a unit after are dropped: "£3,200", "12 %".
+  let start = 0;
+  while (start < bare.length && !isNumberStart(bare[start]!)) start++;
+  let end = bare.length;
+  while (end > start && !isNumberEnd(bare[end - 1]!)) end--;
+  const t = bare.slice(start, end);
+  if (!NUMBER.test(t)) return NaN;
   return Number(t);
 }
 
@@ -61,10 +111,11 @@ function splitDelimited(line: string, sep: string): string[] {
 }
 
 function readLine(line: string): SankeyFlow | null {
-  const bracket = BRACKET.exec(line);
-  if (bracket) return flowOf(bracket[1]!, bracket[3]!, bracket[2]!);
-  const arrow = ARROW.exec(line);
-  if (arrow) return flowOf(arrow[1]!, arrow[2]!, arrow[3]!);
+  if (line.length > SANKEY_LINE_MAX) return null;
+  const bracket = readBracket(line);
+  if (bracket) return flowOf(...bracket);
+  const arrow = readArrow(line);
+  if (arrow) return flowOf(...arrow);
   const sep = line.includes('\t') ? '\t' : line.includes(',') || line.includes('"') ? ',' : null;
   if (sep) {
     // A value with a thousands comma ("Salary, Budget, 3,200") splits into extra cells; the value is

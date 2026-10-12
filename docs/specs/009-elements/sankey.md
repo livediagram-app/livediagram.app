@@ -164,7 +164,7 @@ closed until opened as everywhere ([menus](../004-interface-design/menus.md)), a
   (`Needs receives 2,000 and sends 2,100`), since that is the commonest mistake in a hand-made Sankey.
   While leftovers show, a node keeping some back is drawn, not a mistake, so only one sending on more than
   it receives is listed.
-- **Text**: the flows as lines, edited in place; lines it cannot read are named (`Line 4 was not read.`)
+- **Text**: the flows as lines, edited in place; lines it cannot read are named (`Line 4 was not read.`), as is any line past 1,000 characters,
   and nothing else is lost. Switching tabs carries the flows across.
 - **Import CSV** (both tabs) reads a `.csv`, `.tsv` or `.txt` file into the flows, replacing them, and
   says how many it read and how many lines it could not.

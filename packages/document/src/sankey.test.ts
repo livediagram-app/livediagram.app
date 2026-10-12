@@ -11,7 +11,12 @@ import {
   type SankeyFlow,
 } from './sankey-model';
 import { sankeyBandPath, sankeyLayout } from './sankey-layout';
-import { parseSankeyText, readSankeyNumber, sankeyFlowsToText } from './sankey-text';
+import {
+  parseSankeyText,
+  readSankeyNumber,
+  SANKEY_LINE_MAX,
+  sankeyFlowsToText,
+} from './sankey-text';
 
 const AREA = { x: 0, y: 0, w: 600, h: 300 };
 const flow = (from: string, to: string, value: number): SankeyFlow => ({ from, to, value });
@@ -275,6 +280,7 @@ describe('flows as text', () => {
 
   it('reads an unquoted thousands comma in CSV', () => {
     expect(parseSankeyText('A, B, 3,200').flows).toEqual([flow('A', 'B', 3200)]);
+    expect(parseSankeyText('A, "say ""hi""", 3').flows).toEqual([flow('A', 'say "hi"', 3)]);
   });
 
   it('reads numbers people type', () => {
@@ -288,5 +294,34 @@ describe('flows as text', () => {
   it('round-trips through text', () => {
     const text = sankeyFlowsToText(SANKEY_DEFAULT_FLOWS);
     expect(parseSankeyText(text).flows).toEqual(SANKEY_DEFAULT_FLOWS);
+  });
+
+  it('reads the first bracket or arrow that makes a whole flow, and nothing less', () => {
+    expect(parseSankeyText('[3] B\nA [] B\nA [3]\nA [x] [3] B').flows).toEqual([]);
+    // The amount runs to the first "]"; what is not a number around it is dropped, as everywhere.
+    expect(parseSankeyText('A [x [2] B').flows).toEqual([flow('A', 'B', 2)]);
+    expect(parseSankeyText('A -> B -> C: 3').flows).toEqual([flow('A', 'B -> C', 3)]);
+    expect(parseSankeyText('-> B: 3\nA -> : 3\nA -> B:').flows).toEqual([]);
+    expect(parseSankeyText('A => B = 2').flows).toEqual([flow('A', 'B', 2)]);
+  });
+
+  // CodeQL js/polynomial-redos: these read pasted text, so hostile input must stay linear.
+  it('reads hostile lines quickly and names an over-long one as unread', () => {
+    const hostile = [
+      'a' + ' '.repeat(5000) + 'x',
+      'a[' + ' '.repeat(5000),
+      'a→' + ' '.repeat(5000),
+      'a->a:' + ' '.repeat(5000),
+      '-'.repeat(5000),
+      '0'.repeat(5000) + 'x',
+    ];
+    const t0 = performance.now();
+    for (const line of hostile) {
+      parseSankeyText(line);
+      readSankeyNumber(line);
+    }
+    expect(performance.now() - t0).toBeLessThan(50);
+    expect(parseSankeyText('A [1] ' + 'B'.repeat(SANKEY_LINE_MAX)).unread).toEqual([1]);
+    expect(readSankeyNumber('1'.repeat(SANKEY_LINE_MAX + 1))).toBeNaN();
   });
 });

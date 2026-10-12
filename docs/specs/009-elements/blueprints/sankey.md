@@ -148,6 +148,10 @@ Bounds above enforced at the api by `isValidTab`. Names are React text on canvas
 gradient ids are the element id with non-word characters replaced. A Participant's `applyParticipantOp` has no
 `sankey*` field in its writable lists, and `addableOn` refuses a Sankey.
 
+The text reader (`parseSankeyText`, `readSankeyNumber`) reads whatever is pasted, so it scans by index with no
+backtracking pattern (CodeQL `js/polynomial-redos`), and a line past `SANKEY_LINE_MAX` (1,000 characters) is named
+as unread without being scanned. A test bounds hostile 5,000-character lines at 50 ms in total.
+
 ## Performance and limits
 
 Measured (Apple M-series, Node 22, vitest): `sankeyFrame` 0.07 ms for the starter budget, 0.58 ms for 200 flows
@@ -228,6 +232,7 @@ generic `invalid tab` path.
 | `SANKEY_NAME_CHAR_EM` / `SANKEY_DETAIL_CHAR_EM` | 0.6 / 0.56           | `D162`                                            |
 | Band opacities                                  | 0.42/0.78/0.10       | `D156`                                            |
 | `SANKEY_BALANCE_EPSILON`                        | 1e-9                 | Amounts are typed to a few decimals               |
+| `SANKEY_LINE_MAX`                               | 1000                 | Two names and an amount many times over; ≥ 200    |
 | `SANKEY_LEFTOVER_NAME`                          | `Leftover`           | Spec                                              |
 | Stagger per column                              | 0.28 / 0.35 / 0.30 s | Cascade / Pulse / Rise, times the speed; 0.15–0.5 |
 
