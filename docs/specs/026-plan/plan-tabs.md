@@ -493,7 +493,9 @@ Only the drawing changes: the stored rows, spans and heights stay, and the same 
 laid out. Nothing is resized or carried there: no dividers, no row handle and no grip (the stack is only a way of
 drawing the rows). A slot is reordered from its toolbar instead: **Move Up** and **Move Down** swap what it holds with
 the slot before or after it in the stack's reading order (as the grip's drop on a slot does: the spans stay; one undo
-step each; the cog closes, its slot now holding the other's content). Each is dimmed, saying why, at either end of the
+step each; the cog closes, its slot now holding the other's content). The two cards glide past each other over the
+long motion token, the moved one drawn above, and the moved slot scrolls into view; under reduced motion the swap is
+instant. A separator in the toolbar sets the pair apart from the slot's own verbs. Each is dimmed, saying why, at either end of the
 stack, and where the swap would squeeze either slot below what its content needs on a wide page (What fits). The page scrolls vertically and its end clears the bottom toolbar and the home indicator's safe area.
 Nothing waits for a hover on a touch screen: a slot's floating cog and a link's × are always shown there, and the slot's
 cog, Add to Slot (which offers everything, as the stacked slot takes the height its content needs) and the Dashboard

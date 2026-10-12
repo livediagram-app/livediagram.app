@@ -21,6 +21,7 @@ import {
   type DashboardSlot,
 } from '@livediagram/document';
 import { useDashboard } from './dashboard-context';
+import { swapSlotsWithMotion } from './slot-swap-motion';
 
 const OpenGlyph = lucideGlyph(lucideExternalLink, 16);
 const UpGlyph = lucideGlyph(lucideArrowUp, 16);
@@ -134,13 +135,21 @@ export function SlotToolbar({
       ? 'A Sheet can’t be duplicated into a slot; show its tab again instead'
       : null;
   // Up or down the stack: the slot swaps what it holds with the one before or after it in reading order, as the grip's
-  // drop on a slot does (spans stay). Not offered past either end, nor where the swap would squeeze either slot.
+  // drop on a slot does (spans stay). Not offered past either end, nor where the swap would squeeze either slot. The two
+  // cards glide past each other (slot-swap-motion.ts).
   const swapWith = (dir: 'previous' | 'next') => {
     const to = layout ? dashboardReadingNeighbour(layout, slot.id, dir) : null;
     if (!to) return null;
     const swap = (l: DashboardLayout) =>
       moveDashboardSlot(l, slot.id, { kind: 'slot', slotId: to }, newId);
-    return fit && !fit.keeps(swap) ? null : swap;
+    return fit && !fit.keeps(swap) ? null : { to, swap };
+  };
+  const move = (target: { to: string; swap: (l: DashboardLayout) => DashboardLayout }) => {
+    // What it held moves away from this cog: the cog closes, as after a Duplicate.
+    onClose();
+    swapSlotsWithMotion(slot.id, target.to, () =>
+      actions.changeDashboard(target.swap, 'DashboardSlot'),
+    );
   };
   const up = stacked && canEdit ? swapWith('previous') : null;
   const down = stacked && canEdit ? swapWith('next') : null;
@@ -164,23 +173,20 @@ export function SlotToolbar({
               icon={<UpGlyph />}
               disabled={!up}
               why="Nothing above to swap with"
-              onClick={() => {
-                if (!up) return;
-                // What it held moves away from this cog: the cog closes, as after a Duplicate.
-                onClose();
-                actions.changeDashboard(up, 'DashboardSlot');
-              }}
+              onClick={() => up && move(up)}
             />
             <ToolButton
               label="Move Down"
               icon={<DownGlyph />}
               disabled={!down}
               why="Nothing below to swap with"
-              onClick={() => {
-                if (!down) return;
-                onClose();
-                actions.changeDashboard(down, 'DashboardSlot');
-              }}
+              onClick={() => down && move(down)}
+            />
+            {/* Moving is set apart from the slot's own verbs. */}
+            <span
+              aria-hidden
+              data-toolbar-separator
+              className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700"
             />
           </>
         ) : null}

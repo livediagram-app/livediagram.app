@@ -108,6 +108,19 @@ describe('a stacked slot’s toolbar', () => {
     expect(button('Move Down').getAttribute('aria-disabled')).toBe('true');
   });
 
+  it('sets Move Up and Move Down apart from the slot’s own verbs with a separator', () => {
+    show(slot('b'), { layout }, true);
+    const sep = screen.getByRole('toolbar').querySelector('[data-toolbar-separator]')!;
+    const follows = (x: Node, y: Node) =>
+      !!(x.compareDocumentPosition(y) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(follows(button('Move Down'), sep)).toBe(true);
+    expect(follows(sep, button('Duplicate Slot'))).toBe(true);
+    cleanup();
+    // No moving off a phone's stack, so nothing to set apart.
+    show(slot('b'), { layout });
+    expect(screen.getByRole('toolbar').querySelector('[data-toolbar-separator]')).toBeNull();
+  });
+
   it('swaps with the slot before or after in reading order, as one change, and closes the cog', () => {
     const { actions, onClose } = show(slot('b'), { layout }, true);
     fireEvent.click(button('Move Down'));
