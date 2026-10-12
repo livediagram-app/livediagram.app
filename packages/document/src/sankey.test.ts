@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import {
   cleanSankeyName,
   SANKEY_MAX_NODES,
@@ -315,12 +316,14 @@ describe('flows as text', () => {
       '-'.repeat(5000),
       '0'.repeat(5000) + 'x',
     ];
-    const t0 = performance.now();
-    for (const line of hostile) {
-      parseSankeyText(line);
-      readSankeyNumber(line);
-    }
-    expect(performance.now() - t0).toBeLessThan(50);
+    // CPU time, not wall-clock, so a busy CI runner cannot read as backtracking (cpu-time.js).
+    const ms = cpuMsOf(() => {
+      for (const line of hostile) {
+        parseSankeyText(line);
+        readSankeyNumber(line);
+      }
+    });
+    expect(ms).toBeLessThan(50);
     expect(parseSankeyText('A [1] ' + 'B'.repeat(SANKEY_LINE_MAX)).unread).toEqual([1]);
     expect(readSankeyNumber('1'.repeat(SANKEY_LINE_MAX + 1))).toBeNaN();
   });
