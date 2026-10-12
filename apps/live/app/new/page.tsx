@@ -32,6 +32,8 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
+import { offlineWriteItem } from '@/lib/offline/offline-items';
+import { seedAuthor } from '@/lib/seed-author';
 import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
@@ -43,7 +45,7 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { templateTabName } from '@/lib/template-tab-name';
-import { buildTemplatedTabs } from '@/lib/template-builders';
+import { buildTemplatedTabs, planTemplateSeedItems, seedToday } from '@/lib/template-builders';
 import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
   templateFamilyOf,
@@ -421,6 +423,10 @@ export default function NewDocumentPage() {
         )
       : null;
     if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via: 'new' });
+    // Its worked example cards, dated from today (docs/specs/026-plan/plan-templates.md "Example cards"): none for
+    // any template but a Plan template with boards.
+    const seedItems = templateKind ? planTemplateSeedItems(templateKind, seedToday()) : [];
+    if (seedItems.length) debugLog('[plan] seed cards', { cards: seedItems.length, via: 'new' });
     const tab = tabs
       ? tabs[0]!
       : {
@@ -455,6 +461,14 @@ export default function NewDocumentPage() {
           },
           Date.now(),
         );
+        // Its example cards, through the same checks the api's create puts them through (offline-items.ts).
+        if (seedItems.length) {
+          await offlineWriteItem(
+            documentId,
+            { kind: 'create', creates: seedItems },
+            await seedAuthor(selfRef.current),
+          );
+        }
       } else {
         // "Always save <these> here" first (docs/specs/013-workspace/default-folders.md).
         await applyAlwaysSave(settings.alwaysSave);
@@ -467,6 +481,7 @@ export default function NewDocumentPage() {
           name: documentName,
           tabs: tabs ?? [tab],
           ...(itemTypes ? { itemTypes } : {}),
+          ...(seedItems.length ? { items: seedItems } : {}),
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

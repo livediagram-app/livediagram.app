@@ -1,5 +1,6 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { EditorMode, Tab } from '@livediagram/document';
+import type { ItemCreate } from '@livediagram/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
@@ -63,6 +64,8 @@ export function useTemplateFlow(opts: {
   markTabLoaded: (id: string) => void;
   // Adds the card types the template's boards bring, every tab's (usePresetCardTypes' bring).
   bringCardTypes: (elements: Tab['elements']) => void;
+  // Makes a Plan template's example cards (docs/specs/026-plan/plan-templates.md "Example cards"), as one write.
+  seedCards: (creates: readonly ItemCreate[]) => void;
 }) {
   const {
     activeId,
@@ -79,6 +82,7 @@ export function useTemplateFlow(opts: {
     requestFit,
     markTabLoaded,
     bringCardTypes,
+    seedCards,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -160,7 +164,8 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing document never download it.
-    const { templateTabs, templateCanvasOverrides } = await import('@/lib/template-builders');
+    const { templateTabs, templateCanvasOverrides, planTemplateSeedItems, seedToday } =
+      await import('@/lib/template-builders');
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md): the first lands here.
     const [first, ...rest] = templateTabs(kind);
     const rawElements = first!.build(centre.x, centre.y);
@@ -240,6 +245,9 @@ export function useTemplateFlow(opts: {
       }),
     );
     for (const f of followers) markTabLoaded(f.id);
+    // A Plan template's boards open on its worked example (docs/specs/026-plan/plan-templates.md "Example cards").
+    const seeds = planTemplateSeedItems(kind, seedToday());
+    if (seeds.length) seedCards(seeds);
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can

@@ -18,6 +18,8 @@ import {
 import { getTheme, recolourElementsForTheme } from './themes';
 
 export { buildTemplate, templateCanvasOverrides, templateTabs } from '@livediagram/templates';
+// A Plan template's example cards (docs/specs/026-plan/plan-templates.md "Example cards"), made with its tabs.
+export { planTemplateSeedItems, seedToday } from '@livediagram/templates/plan-template-seeds';
 
 export function buildTemplatedTab(
   kind: TemplateKind,

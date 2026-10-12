@@ -3,8 +3,39 @@
 A Plan template sets up a **way of working**, not one board: a project planner with its roadmap, backlog,
 sprint and daily standup; a retro with its actions and archive. Each makes several tabs, every tab opening in
 [Plan mode](plan-mode.md), and the boards on those tabs share their statuses, so a card moved on one tab turns
-up on the next. A template comes with **no cards**: the columns, swimlanes, card fields, card types, widgets,
-views and facilitation tools are ready, and the team adds its own work.
+up on the next. A template opens on a **worked example**: the columns, swimlanes, card fields, card types, widgets,
+views and facilitation tools are ready, and every board already holds a small team's believable work, so a person
+sees what the template is for before they add their own (see [Example cards](#example-cards)).
+
+## Example cards
+
+Every Plan template with boards opens with **example cards**: a small team's real-looking work, spread so that every
+board of the template shows some, and every plan view on its Dashboard has something to draw.
+
+- **What they are.** Ordinary cards, made with the template's tabs: anyone may move, edit, archive or delete them like
+  any other card. Nothing marks them as examples, and nothing removes them later.
+- **Who they belong to.** The cards are shared among an **example team** of five (Maya Chen, Sam Ortiz, Priya Nair,
+  Leo Park, Ana Silva), each with a colour of their own: the assignees, the swimlane rows of a board laid by assignee,
+  and the voters behind a card's dots. An example person's id starts `example-`, never a real person's
+  (`itemPersonId`), so an example card is never counted as anyone's own vote or card.
+- **What they hold.** Each card fills the fields its board shows: a title, a type its board takes, a status (a column
+  of its board), and where the board shows them an assignee, priority, labels, estimate, checklist, dates, the type's
+  own fields (a Request's Requested By, a Key Result's Baseline, Target and Current) and votes. A card a template links
+  to another (a Story's Project, a Candidate's Role, a Key Result's Objective, an Onboarding Task's New Starter, a Launch
+  Check's Workstream) names the card made with it.
+- **Dates count from today.** Start and Due are days from the day the document is made, so a Gantt chart, a due chip
+  and a Calendar never open stale: a project started two weeks ago and due in three.
+- **Archived examples.** Team Retro's **Past Retros** board shows two archived notes from the sprint before.
+- **Where they are made.** Only where a **person** makes the template: the New Document wizard (the cards ride the
+  create, or an Offline Mode document's first item write) and Quick Start on an empty tab (the cards are one write,
+  one undo step, after the tabs land). **Agents** (the MCP's `create_document` and `add_tab`, the api's seeded create)
+  get the set-up alone: an agent fills a board with real cards, and examples would be cards it then had to find and
+  delete.
+- **Blank Plan and the spreadsheet templates** have no boards, so no example cards; a spreadsheet template's Sheet is
+  already filled in ([Spreadsheet templates](#spreadsheet-templates)).
+- **The catalogue.** `PLAN_TEMPLATE_SEEDS` (`packages/templates/src/plan-template-seed-data.ts`), pure data, resolved
+  by `planTemplateSeedItems(kind, today)` into the item store's creates. A test holds every card to a board of its
+  template that shows it, every board to at least one card, and every card to what the item store accepts.
 
 ## Domain language
 

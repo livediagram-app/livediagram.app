@@ -1,6 +1,7 @@
 // The Plan templates (docs/specs/026-plan/plan-templates.md, plan-tabs.md "Templates"): each makes one or more tabs of
 // the Plan kinds: a Board tab of each board, a Sheet tab of each Sheet, and a Dashboard of the template's plan views
-// and notes beside its Board and Sheet tabs. A template holds only the set-up: it comes with no cards.
+// and notes beside its Board and Sheet tabs. The tabs hold the set-up; the example cards a person's
+// copy opens with are plan-template-seeds.ts's.
 //
 // Pure: takes a centre (cx, cy), returns fresh Element[] per tab.
 
