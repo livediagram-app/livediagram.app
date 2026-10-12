@@ -4,7 +4,7 @@
 // holds; the labels are the editor's own (PlanColumnPopover, ItemPanel, PlanCardMenu, CardTypesPanel...).
 
 import type { ReactNode } from 'react';
-import { Scene, Panel, Button, Label, TextBar, Cursor, Menu, Tabs } from './primitives';
+import { Scene, Panel, Label, TextBar, Cursor, Menu, Tabs } from './primitives';
 
 // The five built-in card types' stripes: Project black, Task gray, Note blue, Idea yellow, Action red.
 type CardType = 'project' | 'task' | 'note' | 'idea' | 'action';
@@ -568,7 +568,7 @@ export function PlanColumnSettingsScene() {
     'fill-slate-400',
   ];
   return (
-    <Scene w={420} h={290}>
+    <Scene w={420} h={266}>
       {/* The column the cog belongs to. */}
       <rect
         x={14}
@@ -597,83 +597,129 @@ export function PlanColumnSettingsScene() {
         x={162}
         y={14}
         width={240}
-        height={266}
+        height={238}
         rx={10}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <rect
-        x={174}
-        y={24}
-        width={216}
-        height={22}
-        rx={5}
-        className="fill-white stroke-slate-300"
-        strokeWidth={1}
-      />
-      <Label x={182} y={36} size={11} tone="strong">
-        In Progress
-      </Label>
-      <circle cx={182} cy={60} r={6} fill="none" className="stroke-slate-300" strokeWidth={1.2} />
-      <path d="M178 64 l8 -8" className="stroke-slate-300" strokeWidth={1.2} />
-      {swatches.map((cls, i) => (
-        <circle key={cls} cx={196 + i * 16} cy={60} r={6} className={cls} />
-      ))}
-      {/* Custom colour. */}
-      <circle
-        cx={356}
-        cy={60}
-        r={6}
+      {/* The toolbar: Move Left and Move Right at the start, Remove at the end. */}
+      <path d="M163 42 h238" className="stroke-slate-100" strokeWidth={1} />
+      <rect x={172} y={20} width={44} height={16} rx={4} className="fill-white stroke-slate-200" />
+      <path d="M194 20 v16" className="stroke-slate-200" strokeWidth={1} />
+      <path
+        d="M185 24.5 l-3.5 3.5 l3.5 3.5 M203 24.5 l3.5 3.5 l-3.5 3.5"
         fill="none"
-        className="stroke-slate-400"
-        strokeWidth={1.2}
-        strokeDasharray="2 2"
+        className="stroke-slate-500"
+        strokeWidth={1.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
-      <path d="M353 60 h6 M356 57 v6" className="stroke-slate-500" strokeWidth={1.2} />
-      <Label x={174} y={84} size={11} tone="strong">
-        WIP Limit
+      <rect
+        x={335}
+        y={23}
+        width={4}
+        height={10}
+        rx={1}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.1}
+      />
+      <rect
+        x={341}
+        y={23}
+        width={4}
+        height={10}
+        rx={1}
+        fill="none"
+        className="stroke-slate-500"
+        strokeWidth={1.1}
+      />
+      <Label x={392} y={28} size={11} weight={600} anchor="end" tone="body">
+        Remove
       </Label>
-      <Label x={174} y={98} size={10} tone="muted">
-        Warns past 3 cards
-      </Label>
-      <rect x={324} y={78} width={66} height={22} rx={5} className="fill-white stroke-slate-200" />
-      <Label x={335} y={90} size={12} anchor="middle" tone="body">
-        −
-      </Label>
-      <Label x={357} y={90} size={11} anchor="middle" weight={600} tone="strong">
-        3
-      </Label>
-      <Label x={379} y={90} size={12} anchor="middle" tone="body">
-        +
-      </Label>
-      <Label x={174} y={120} size={11} tone="strong">
-        Width
-      </Label>
-      <Label x={174} y={134} size={10} tone="muted">
-        Slots across the board
-      </Label>
-      <rect x={330} y={114} width={60} height={22} rx={5} className="fill-white stroke-slate-200" />
-      <rect x={331} y={115} width={20} height={20} rx={4} className="fill-brand-50" />
-      <rect x={339} y={120} width={4} height={10} rx={1} className="fill-brand-600" />
-      <rect x={355} y={120} width={4} height={10} rx={1} className="fill-slate-400" />
-      <rect x={361} y={120} width={4} height={10} rx={1} className="fill-slate-400" />
-      <rect x={372} y={120} width={3} height={10} rx={1} className="fill-slate-400" />
-      <rect x={377} y={120} width={3} height={10} rx={1} className="fill-slate-400" />
-      <rect x={382} y={120} width={3} height={10} rx={1} className="fill-slate-400" />
-      <Label x={174} y={156} size={11} tone="strong">
-        Counts as Done
-      </Label>
-      <rect x={364} y={148} width={26} height={15} rx={7.5} className="fill-slate-200" />
-      <circle cx={372} cy={155.5} r={5.5} className="fill-white" />
-      <Button x={174} y={172} w={104} h={22} label="Move Left" />
-      <Button x={286} y={172} w={104} h={22} label="Move Right" />
-      <Label x={174} y={210} size={11} weight={600} tone="accent">
+      <g transform="translate(0 26)">
+        <rect
+          x={174}
+          y={24}
+          width={216}
+          height={22}
+          rx={5}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1}
+        />
+        <Label x={182} y={36} size={11} tone="strong">
+          In Progress
+        </Label>
+        <circle cx={182} cy={60} r={6} fill="none" className="stroke-slate-300" strokeWidth={1.2} />
+        <path d="M178 64 l8 -8" className="stroke-slate-300" strokeWidth={1.2} />
+        {swatches.map((cls, i) => (
+          <circle key={cls} cx={196 + i * 16} cy={60} r={6} className={cls} />
+        ))}
+        {/* Custom colour. */}
+        <circle
+          cx={356}
+          cy={60}
+          r={6}
+          fill="none"
+          className="stroke-slate-400"
+          strokeWidth={1.2}
+          strokeDasharray="2 2"
+        />
+        <path d="M353 60 h6 M356 57 v6" className="stroke-slate-500" strokeWidth={1.2} />
+        <Label x={174} y={84} size={11} tone="strong">
+          WIP Limit
+        </Label>
+        <Label x={174} y={98} size={10} tone="muted">
+          Warns past 3 cards
+        </Label>
+        <rect
+          x={324}
+          y={78}
+          width={66}
+          height={22}
+          rx={5}
+          className="fill-white stroke-slate-200"
+        />
+        <Label x={335} y={90} size={12} anchor="middle" tone="body">
+          −
+        </Label>
+        <Label x={357} y={90} size={11} anchor="middle" weight={600} tone="strong">
+          3
+        </Label>
+        <Label x={379} y={90} size={12} anchor="middle" tone="body">
+          +
+        </Label>
+        <Label x={174} y={120} size={11} tone="strong">
+          Width
+        </Label>
+        <Label x={174} y={134} size={10} tone="muted">
+          Slots across the board
+        </Label>
+        <rect
+          x={330}
+          y={114}
+          width={60}
+          height={22}
+          rx={5}
+          className="fill-white stroke-slate-200"
+        />
+        <rect x={331} y={115} width={20} height={20} rx={4} className="fill-brand-50" />
+        <rect x={339} y={120} width={4} height={10} rx={1} className="fill-brand-600" />
+        <rect x={355} y={120} width={4} height={10} rx={1} className="fill-slate-400" />
+        <rect x={361} y={120} width={4} height={10} rx={1} className="fill-slate-400" />
+        <rect x={372} y={120} width={3} height={10} rx={1} className="fill-slate-400" />
+        <rect x={377} y={120} width={3} height={10} rx={1} className="fill-slate-400" />
+        <rect x={382} y={120} width={3} height={10} rx={1} className="fill-slate-400" />
+        <Label x={174} y={156} size={11} tone="strong">
+          Counts as Done
+        </Label>
+        <rect x={364} y={148} width={26} height={15} rx={7.5} className="fill-slate-200" />
+        <circle cx={372} cy={155.5} r={5.5} className="fill-white" />
+      </g>
+      <Label x={174} y={208} size={11} weight={600} tone="accent">
         + Add Column After
       </Label>
-      <Label x={174} y={234} size={11} weight={600} tone="body">
-        Remove Column
-      </Label>
-      <Label x={174} y={262} size={11} weight={600} className="fill-rose-600">
+      <Label x={174} y={232} size={11} weight={600} className="fill-rose-600">
         Delete Status
       </Label>
     </Scene>
