@@ -58,16 +58,16 @@ describe('THEMES catalogue', () => {
   // copy. If the catalogue drifts from this the spec stops being
   // accurate. The extras include the multicolour themes from docs/specs/011-theme/multicolour-themes.md.
   // Mirrors the equivalent assertions in templates.test.ts.
-  // 26, not 27: Charcoal merged into Default and left the catalogue.
-  it('lists exactly 26 themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(THEMES).toHaveLength(26);
+  // 24: Charcoal merged into Default, and Autumn and Jewel retired (docs/specs/011-theme/light-and-dark.md).
+  it('lists exactly 24 themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(THEMES).toHaveLength(24);
   });
 
-  it('splits cleanly into 12 default + 14 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
     const defaults = THEMES.filter((t) => !t.extra);
     const extras = THEMES.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(14);
+    expect(extras).toHaveLength(12);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {
@@ -964,9 +964,9 @@ describe('deriveNewBoxedColours', () => {
 });
 
 describe('multi-colour (rainbow) themes', () => {
-  it('ships five palette themes (all extra)', () => {
+  it('ships three palette themes (all extra)', () => {
     const palettes = THEMES.filter((t) => !!t.palette);
-    expect(palettes).toHaveLength(5);
+    expect(palettes).toHaveLength(3);
     for (const t of palettes) {
       expect(t.extra).toBe(true);
       expect(t.palette && t.palette.length).toBeGreaterThan(0);

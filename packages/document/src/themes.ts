@@ -53,8 +53,6 @@ export type ThemeId =
   | 'rainbow'
   | 'pastel'
   | 'tropical'
-  | 'autumn'
-  | 'jewel'
   // Formal: standard notations. UML paints each shape kind its
   // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
   | 'uml';

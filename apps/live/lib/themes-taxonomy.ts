@@ -36,8 +36,6 @@ const THEME_DESCRIPTIONS: Record<ThemeId, string> = {
   rainbow: 'A different hue per branch.',
   pastel: 'Soft multi-colour, a hue per branch.',
   tropical: 'Bright, summery hues per branch.',
-  autumn: 'Warm reds, golds and browns.',
-  jewel: 'Rich, saturated gem tones.',
   uml: 'Standard notation, each shape its colour.',
 };
 

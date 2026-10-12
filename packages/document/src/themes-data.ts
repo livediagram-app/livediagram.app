@@ -333,52 +333,6 @@ export const THEMES: ThemeDefinition[] = [
     extra: true,
   },
   {
-    id: 'autumn',
-    label: 'Autumn',
-    // Warm seasonal multi-colour: reds, oranges, ambers and golds
-    // through to brown and olive, on a faint warm canvas. Reads
-    // cohesively "autumnal" rather than spanning the full wheel.
-    backgroundColor: '#fffaf5',
-    backgroundPattern: 'grid',
-    patternColor: '#fed7aa',
-    elementFill: '#fffaf5',
-    elementStroke: '#7c2d12',
-    elementText: '#431407',
-    rootColor: { fill: '#fffaf5', stroke: '#7c2d12', text: '#431407' },
-    palette: [
-      { fill: '#fee2e2', stroke: '#dc2626', text: '#7f1d1d' },
-      { fill: '#ffedd5', stroke: '#ea580c', text: '#7c2d12' },
-      { fill: '#fef3c7', stroke: '#d97706', text: '#78350f' },
-      { fill: '#fef9c3', stroke: '#ca8a04', text: '#713f12' },
-      { fill: '#f5ede0', stroke: '#92400e', text: '#451a03' },
-      { fill: '#ecfccb', stroke: '#65a30d', text: '#365314' },
-    ],
-    extra: true,
-  },
-  {
-    id: 'jewel',
-    label: 'Jewel',
-    // Rich, saturated gem tones — emerald, sapphire, amethyst, ruby,
-    // topaz, teal — deeper and more luxurious than Rainbow's primary
-    // wheel, on a faint neutral canvas.
-    backgroundColor: '#fbfbfd',
-    backgroundPattern: 'grid',
-    patternColor: '#e2e8f0',
-    elementFill: '#fbfbfd',
-    elementStroke: '#334155',
-    elementText: '#0f172a',
-    rootColor: { fill: '#fbfbfd', stroke: '#334155', text: '#0f172a' },
-    palette: [
-      { fill: '#d1fae5', stroke: '#059669', text: '#064e3b' },
-      { fill: '#dbeafe', stroke: '#1d4ed8', text: '#1e3a8a' },
-      { fill: '#f3e8ff', stroke: '#7e22ce', text: '#581c87' },
-      { fill: '#ffe4e6', stroke: '#e11d48', text: '#881337' },
-      { fill: '#fef9c3', stroke: '#ca8a04', text: '#713f12' },
-      { fill: '#cffafe', stroke: '#0e7490', text: '#155e75' },
-    ],
-    extra: true,
-  },
-  {
     // UML (docs/specs/011-theme/canvas-and-theme-dialog.md): a formal-notation theme. Instead of one colour for
     // every shape, each shape KIND gets its conventional fill / stroke /
     // text so a diagram reads as UML at a glance — a decision diamond is

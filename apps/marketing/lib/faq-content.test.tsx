@@ -78,7 +78,7 @@ describe('template counts in marketing copy', () => {
 
 // Theme counts are written out as digits or words; each must match the theme catalogue.
 describe('theme counts in marketing copy', () => {
-  const WORDS: Record<string, number> = { 'twenty-six': 26 };
+  const WORDS: Record<string, number> = { 'twenty-four': 24 };
   it('matches the catalogue in the FAQ, the landing page and every comparison page', () => {
     const copy = JSON.stringify([
       FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),

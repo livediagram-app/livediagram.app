@@ -104,9 +104,10 @@ sign-in and the Explorer included, by a full round trip to Google.
 
 Both pickers **preview each face**: the per-element font menu shows an
 `Aa` glyph in the font beside its name, and the per-tab picker
-(`components/palette/FontSelect.tsx`) renders each option's **name in its own
-typeface** in a compact tile grid (a native `<select>` can't — browsers /
-macOS ignore `font-family` on `<option>`, so the names would all look alike).
+(Tab Style's Text panel, `components/dialogs/TextTab.tsx`) shows each face as a
+**specimen card**, "Aa" and its name in its own typeface, nine to a carousel page
+(a native `<select>` can't: browsers / macOS ignore `font-family` on `<option>`,
+so the names would all look alike). Picking one letters the whole tab at once.
 
 ## Exports carry the face
 
@@ -137,7 +138,7 @@ whose marker face IS its notation).
   mid-swap would bake the fallback into the file.
 
 Implementation: `packages/document/src/fonts.ts` (catalogue + resolver),
-`components/palette/FontSelect.tsx` (the per-tab font grid; element fonts use the
+`components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and
