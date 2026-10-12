@@ -30,11 +30,12 @@ export function LooksCarousel({
     [],
   );
   return (
-    <section aria-labelledby="looks-heading">
+    <section aria-labelledby="looks-heading" data-tour-id="tab-style-looks">
       <PagedCarousel
         items={TAB_LOOKS}
         perPage={LOOKS_PER_PAGE}
         label="Looks"
+        navTourId="tab-style-looks-nav"
         heading={
           <h3 id="looks-heading" className={headingClass}>
             Looks

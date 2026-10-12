@@ -1059,6 +1059,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
+  'UI|Ended|TabStyleTourCompleted':
+    "Someone reached the end of the Tab Style dialog's Show Me tour.",
+  'UI|Ended|TabStyleTourSkipped':
+    "Someone left the Tab Style dialog's Show Me tour before its end.",
   'UI|Ended|SankeyFlowsTourCompleted':
     "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
   'UI|Ended|SankeyFlowsTourSkipped':
@@ -1230,6 +1234,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|PhotoReviewTour':
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
+  'UI|Started|TabStyleTour':
+    'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
   'UI|Started|SankeyFlowsTour':
     "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':

@@ -9,7 +9,7 @@ import {
   type TelemetryWindowKey,
 } from '@livediagram/api-schema';
 import { useCategoryColor } from './useCategoryColor';
-import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './look-feel-types';
+import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES, isNonThemePick } from './look-feel-types';
 import { ActivityGlyph } from './glyphs';
 import { MiniSparkline } from './MiniSparkline';
 import { CardColumns } from './CardColumns';
@@ -43,8 +43,7 @@ export function LookAndFeelView({
   const templates = rank(rows, (r) => r.category === 'Template' && r.action === 'Used');
   const themes = rank(
     rows,
-    (r) =>
-      r.category === 'Theme' && r.action === 'Changed' && !CUSTOM_THEME_TYPES.has(r.type ?? ''),
+    (r) => r.category === 'Theme' && r.action === 'Changed' && !isNonThemePick(r.type),
     THEME_ALIASES,
   );
   const canvas = rank(

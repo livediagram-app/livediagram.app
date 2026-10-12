@@ -27,6 +27,7 @@ export function PagedCarousel<T>({
   gridClass,
   initialIndex,
   renderItem,
+  navTourId,
 }: {
   items: readonly T[];
   perPage: number;
@@ -39,6 +40,8 @@ export function PagedCarousel<T>({
   // Opens on the page holding this item; the first page when it is negative or absent.
   initialIndex?: number;
   renderItem: (item: T) => ReactNode;
+  // A Show Me target on the page controls.
+  navTourId?: string;
 }) {
   const pages: T[][] = [];
   for (let i = 0; i < items.length; i += perPage) pages.push(items.slice(i, i + perPage));
@@ -68,7 +71,7 @@ export function PagedCarousel<T>({
       <div className="flex min-h-8 items-center justify-between gap-2">
         {heading}
         {pages.length > 1 ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" data-tour-id={navTourId}>
             <button
               type="button"
               aria-label={`Previous ${lower}`}
@@ -108,20 +111,23 @@ export function PagedCarousel<T>({
           </div>
         ) : null}
       </div>
+      {/* The strip scrolls sideways, so it clips anything drawn past a tile; each page's `p-1` keeps a selected
+          tile's ring and border inside it. The strip pulls out by the same 4px so tiles still line up with the
+          heading. */}
       <div
         ref={strip}
         onScroll={(e) => {
           const el = e.currentTarget;
           if (el.clientWidth > 0) setPage(Math.round(el.scrollLeft / el.clientWidth));
         }}
-        className="flex snap-x snap-mandatory items-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-1 flex snap-x snap-mandatory items-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {pages.map((pageItems, i) => (
           <div
             key={i}
             role="group"
             aria-label={`${label} page ${i + 1} of ${pages.length}`}
-            className={`w-full shrink-0 snap-start ${gridClass}`}
+            className={`w-full shrink-0 snap-start p-1 ${gridClass}`}
           >
             {pageItems.map(renderItem)}
           </div>

@@ -57,7 +57,11 @@ export function LooksHome({
     <div className="flex flex-col gap-5">
       <LooksCarousel activeLook={activeLook} onPickLook={onPickLook} headingClass={sectionLabel} />
 
-      <section aria-labelledby="fine-tune-heading" className="flex flex-col gap-2">
+      <section
+        aria-labelledby="fine-tune-heading"
+        data-tour-id="tab-style-fine-tune"
+        className="flex flex-col gap-2"
+      >
         <h3 id="fine-tune-heading" className={sectionLabel}>
           Fine-tune
         </h3>

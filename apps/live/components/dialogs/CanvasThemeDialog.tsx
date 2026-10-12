@@ -21,13 +21,16 @@ import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
+import {
+  TabStyleShowMeButton,
+  TabStyleTourStage,
+  useTabStyleTour,
+} from '@/components/tour/TabStyleTour';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
-import { FontSelect } from '@/components/palette/FontSelect';
-import { SizeButton } from '@/components/palette/palette-controls';
 import type { TextSize } from '@livediagram/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
+import { TextTab } from './TextTab';
 import { LooksHome } from './LooksHome';
 import { activeLookId } from '@/lib/tab-looks';
 
@@ -126,7 +129,10 @@ export function CanvasThemeDialog({
   // phone, the panel's bottom-right corner sits just above the brush and it grows from there. Without the brush (a
   // whiteboard, an embed) or on a phone, it is the centred (phone: full-screen) dialog it always was.
   const anchor = useBrushAnchor();
-  useEscape(onClose);
+  // Show Me: the tour of the home, run on this dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me").
+  const tour = useTabStyleTour({ showHome: () => (tab === 'looks' ? undefined : go('looks')) });
+  // While Show Me runs, Escape is the tour's, never the dialog's.
+  useEscape(onClose, { enabled: !tour.active });
 
   return (
     <Portal>
@@ -189,6 +195,7 @@ export function CanvasThemeDialog({
               {/* Help sits with the close button, where the other editor
                   dialogs keep their window controls, not beside the title. */}
               <div className="flex items-center gap-1">
+                <TabStyleShowMeButton tour={tour} />
                 <HelpArticleLink
                   size="md"
                   article={
@@ -228,6 +235,7 @@ export function CanvasThemeDialog({
                     finish,
                     font: font ?? undefined,
                     backgroundPattern,
+                    backgroundOpacity,
                   })}
                   onPickLook={onApplyLook}
                   themeId={themeId}
@@ -238,12 +246,15 @@ export function CanvasThemeDialog({
                   onOpenPanel={go}
                 />
               ) : tab === 'font' ? (
-                <FontTab
+                <TextTab
                   font={font}
                   onSetFont={onSetFont}
                   defaultTextSize={defaultTextSize}
                   onSetDefaultTextSize={onSetDefaultTextSize}
                   onApplyFontToAll={onApplyFontToAll}
+                  finish={resolveFinish(finish, undefined)}
+                  canvasBackground={canvasBackground}
+                  themeId={themeId}
                 />
               ) : tab === 'finish' ? (
                 <FinishTab
@@ -285,70 +296,8 @@ export function CanvasThemeDialog({
           </div>
         </div>
       </div>
+      <TabStyleTourStage tour={tour} />
     </Portal>
-  );
-}
-
-// The tab's default font and the size seeded onto new elements
-// (docs/specs/004-interface-design/fonts.md). Every change applies live; "Apply to all elements" pushes
-// the pair onto everything already on the tab.
-function FontTab({
-  font,
-  onSetFont,
-  defaultTextSize,
-  onSetDefaultTextSize,
-  onApplyFontToAll,
-}: {
-  font: string | null;
-  onSetFont: (font: string | null) => void;
-  defaultTextSize: TextSize | undefined;
-  onSetDefaultTextSize: (size: TextSize) => void;
-  onApplyFontToAll: () => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Tab font
-        </span>
-        <FontSelect value={font} ariaLabel="Tab font" onChange={onSetFont} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Default size for new elements
-        </span>
-        <div className="grid grid-cols-4 gap-2">
-          {(
-            [
-              ['scale', 'Scale', <ScaleIcon key="s" />],
-              ['sm', 'Small', <DotsIcon key="1" count={1} />],
-              ['md', 'Medium', <DotsIcon key="2" count={2} />],
-              ['lg', 'Large', <DotsIcon key="3" count={3} />],
-            ] as const
-          ).map(([size, label, glyph]) => (
-            <SizeButton
-              key={size}
-              active={(defaultTextSize ?? 'md') === size}
-              onClick={() => onSetDefaultTextSize(size)}
-            >
-              <span className="flex flex-col items-center gap-1 py-0.5">
-                {glyph}
-                <span className="text-[10px] font-medium">{label}</span>
-              </span>
-            </SizeButton>
-          ))}
-        </div>
-      </div>
-      <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={onApplyFontToAll}
-          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-        >
-          Apply to all elements
-        </button>
-      </div>
-    </div>
   );
 }
 

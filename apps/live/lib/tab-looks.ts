@@ -34,6 +34,8 @@ export type TabLook = {
   /** A font id (packages/document/src/fonts.ts), or undefined for no tab font. */
   font: string | undefined;
   pattern: BackgroundPattern;
+  /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */
+  patternOpacity?: number;
 };
 
 /** The looks, in the order the dialog shows them: two carousel pages of six. */
@@ -122,11 +124,12 @@ export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'workshop',
     label: 'Workshop',
-    description: 'Sunset, Sketch, marker pen',
-    theme: 'sunset',
+    description: 'Sand, Sketch, marker pen, soft grid',
+    theme: 'sand',
     finish: 'sketch',
     font: 'permanent-marker',
-    pattern: 'crosshatch',
+    pattern: 'grid',
+    patternOpacity: 0.6,
   },
   {
     id: 'garden',
@@ -136,6 +139,7 @@ export const TAB_LOOKS: readonly TabLook[] = [
     finish: 'flexible',
     font: 'poppins',
     pattern: 'hexagonal',
+    patternOpacity: 0.4,
   },
   {
     id: 'studio',
@@ -158,22 +162,33 @@ export function tabLookById(id: string): TabLook | undefined {
 /** The tab with a look applied: the theme exactly as picking it does, then the finish, font and pattern. */
 export function withLookApplied(tab: Tab, look: TabLook): Tab {
   const themed = withThemeApplied(tab, look.theme);
-  const next: Tab = { ...themed, finish: look.finish, backgroundPattern: look.pattern };
+  const next: Tab = {
+    ...themed,
+    finish: look.finish,
+    backgroundPattern: look.pattern,
+    backgroundOpacity: look.patternOpacity ?? 1,
+  };
   if (look.font) next.font = look.font;
   else delete next.font;
   return next;
 }
 
 /** The look the tab's settings match, or undefined when it has its own mix. Unset settings read as what they
- *  draw: the Default theme, Flexible, no font and the grid. */
+ *  draw: the Default theme, Flexible, no font, the grid at full strength. */
 export function activeLookId(
-  tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern'>,
+  tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'>,
 ): TabLookId | undefined {
   const theme = tab.theme ?? 'brand';
   const finish = resolveFinish(tab.finish, undefined);
   const font = tab.font || undefined;
   const pattern = tab.backgroundPattern ?? 'grid';
+  const opacity = tab.backgroundOpacity ?? 1;
   return TAB_LOOKS.find(
-    (l) => l.theme === theme && l.finish === finish && l.font === font && l.pattern === pattern,
+    (l) =>
+      l.theme === theme &&
+      l.finish === finish &&
+      l.font === font &&
+      l.pattern === pattern &&
+      Math.abs((l.patternOpacity ?? 1) - opacity) < 0.001,
   )?.id;
 }

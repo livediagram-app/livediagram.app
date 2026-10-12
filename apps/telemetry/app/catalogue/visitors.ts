@@ -460,6 +460,7 @@ const SHOW_ME_SURFACES = [
   { token: 'PhotoReviewTour', title: 'Photo Review', where: 'the photo import review' },
   { token: 'LogoTour', title: 'Logo', where: 'a logo page’s panel' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
+  { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(

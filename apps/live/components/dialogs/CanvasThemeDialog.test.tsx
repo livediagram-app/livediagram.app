@@ -80,16 +80,16 @@ describe('CanvasThemeDialog Finish tab', () => {
   it('presses Flexible for a tab without a finish, and sets the one clicked', () => {
     const onSetFinish = vi.fn();
     render(<CanvasThemeDialog {...props} tab="finish" onSetFinish={onSetFinish} />);
-    expect(screen.getByRole('button', { name: 'Flexible' }).getAttribute('aria-pressed')).toBe(
+    expect(screen.getByRole('radio', { name: 'Flexible' }).getAttribute('aria-checked')).toBe(
       'true',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Sketch' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Sketch' }));
     expect(onSetFinish).toHaveBeenCalledWith('sketch');
   });
 
   it("presses the tab's finish", () => {
     render(<CanvasThemeDialog {...props} tab="finish" finish="professional" />);
-    expect(screen.getByRole('button', { name: 'Professional' }).getAttribute('aria-pressed')).toBe(
+    expect(screen.getByRole('radio', { name: 'Professional' }).getAttribute('aria-checked')).toBe(
       'true',
     );
   });

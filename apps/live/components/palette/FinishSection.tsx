@@ -29,9 +29,9 @@ const FINISH_SWATCH_PATH: Record<Finish, ReactNode> = {
   ),
 };
 
-export function FinishSwatch({ finish }: { finish: Finish }) {
+export function FinishSwatch({ finish, size = 16 }: { finish: Finish; size?: number }) {
   return (
-    <Glyph size={16} units={16} aria-hidden>
+    <Glyph size={size} units={16} aria-hidden>
       {FINISH_SWATCH_PATH[finish]}
     </Glyph>
   );

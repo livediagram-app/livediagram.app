@@ -9,6 +9,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type Tab,
+  type TextSize,
 } from '@livediagram/document';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 
@@ -55,15 +56,19 @@ export const FINISH_PREVIEW_ELEMENTS: readonly Element[] = [STEP, DECISION, LINK
 /** The sample scene drawn in `finish` on the tab's background, in the tab's theme and font, as SVG markup. */
 export function finishPreviewSvg(
   finish: Finish,
-  tab: { background: string; theme?: string; font?: string },
+  tab: { background: string; theme?: string; font?: string; textSize?: TextSize },
 ): string {
-  // The sample in the tab's theme colours, recoloured exactly as picking that theme does.
-  const elements = tab.theme
-    ? withThemeApplied(
-        { id: 'finish-preview', name: '', elements: [...FINISH_PREVIEW_ELEMENTS] } as Tab,
-        tab.theme,
-      ).elements
+  // The sample in the tab's theme colours, recoloured exactly as picking that theme does, its labels at the size
+  // new text takes when one is given (the Text panel).
+  const sample = tab.textSize
+    ? FINISH_PREVIEW_ELEMENTS.map((el) =>
+        el.type === 'arrow' ? el : ({ ...el, textSize: tab.textSize } as Element),
+      )
     : [...FINISH_PREVIEW_ELEMENTS];
+  const elements = tab.theme
+    ? withThemeApplied({ id: 'finish-preview', name: '', elements: sample } as Tab, tab.theme)
+        .elements
+    : sample;
   const previewTab = {
     id: 'finish-preview',
     name: 'Finish preview',

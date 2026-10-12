@@ -118,6 +118,19 @@ The editor chrome **follows the active tab's theme** so it matches the diagram y
 - The `<style>` lives in `<head>` so body-portaled UI (context menus, dialogs, popovers, toasts) inherits both. The **Default** (`brand`) scheme and an unthemed tab have no `elementStroke`, so nothing is injected: the built-in brand stands (sky in light mode, Steel in dark) on the built-in surfaces. Switching tabs re-resolves it; leaving the editor removes the `<style>` so the rest of the app (Explorer, marketing) keeps the defaults.
 - Only the chrome retargets — element colours come from the theme applied to the elements themselves ([Multi-colour (rainbow) themes](multicolour-themes.md)), unaffected.
 
+## Show Me
+
+The dialog is a [Show Me](../007-editor/show-me.md) surface: its title row carries **Show Me** left of Help. The tour
+runs on the home (a panel that is open goes back to it first), points at live controls and ends on a closing card
+linking Tab Style Help:
+
+1. **One-Click Looks**: the looks carousel. Each look sets the tab's colours, finish, font and canvas at once.
+2. **More Looks**: the carousel's arrows and page dots.
+3. **Fine-Tune Any Part**: the Fine-tune rows, each showing what the tab uses now.
+
+While it runs, Escape belongs to the tour. Telemetry: `UI · Started · TabStyleTour`, `UI · Ended ·
+TabStyleTourCompleted` / `TabStyleTourSkipped`.
+
 ## Telemetry
 
 Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or
