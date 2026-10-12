@@ -5,7 +5,7 @@
 // This component owns the builder: picking New / Edit swaps the whole
 // picker for the CustomThemeBuilder with a Cancel back to browsing.
 //
-// Shared by the right-click Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
+// Shared by the right-click Tab Style dialog (docs/specs/011-theme/canvas-and-theme-dialog.md) and the
 // New-document / template picker (docs/specs/007-editor/new-document-route.md) so the two surfaces, and the
 // custom-theme create/edit flow, can't drift. Selection is reported via
 // onSelect / onCommit; the host decides what that means: apply live (the

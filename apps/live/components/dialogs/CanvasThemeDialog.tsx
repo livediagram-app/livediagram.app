@@ -1,6 +1,6 @@
 'use client';
 
-// The Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), opened from the paintbrush dock
+// The Tab Style dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), opened from the paintbrush dock
 // button. One modal, four tabs: Theme (the category-browse picker), Canvas
 // (pattern + colours + opacity), Font (the tab's default font + the size
 // seeded onto new elements, docs/specs/004-interface-design/fonts.md) and Finish (how elements are drawn,
@@ -14,12 +14,13 @@
 // New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
-import { lucideChevronLeft } from '@livediagram/icons/lucide';
 import { useRef, useState } from 'react';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
-import { lucideGlyph, useEscape, useFocusTrap, Portal, DialogCloseButton } from '@livediagram/ui';
+import { useEscape, useFocusTrap, Portal, DialogCloseButton } from '@livediagram/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { BackBar } from '@/components/primitives/BackBar';
+import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 import { FontSelect } from '@/components/palette/FontSelect';
@@ -112,6 +113,13 @@ export function CanvasThemeDialog({
   // Mount-open modal: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard).
   useModalGuard(true);
+  // How the next view arrives: the first one only fades (the dialog has its own entrance), then a move into a panel
+  // slides forward and a move home slides back.
+  const [enter, setEnter] = useState<'fade' | 'forward' | 'back'>('fade');
+  const go = (next: CanvasThemeTab) => {
+    setEnter(next === 'looks' ? 'back' : 'forward');
+    onTabChange(next);
+  };
   const dialogRef = useRef<HTMLDivElement>(null);
   useFocusTrap(dialogRef);
   // A popover flying out of the paintbrush (docs/specs/011-theme/canvas-and-theme-dialog.md): on a screen wider than a
@@ -143,7 +151,7 @@ export function CanvasThemeDialog({
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
-          aria-label="Tab look and feel"
+          aria-label="Tab style"
           // Edge to edge on a phone, matching the shared Dialog's rule for its
           // larger sizes. This one predates that component and carries its own
           // portal + backdrop, so it repeats the classes rather than inheriting
@@ -170,7 +178,7 @@ export function CanvasThemeDialog({
                   with everyone — takes the name of the section that opens it. */}
               <div className="flex min-w-0 flex-col">
                 <h2 className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Tab Look &amp; Feel
+                  Tab Style
                 </h2>
                 {tab === 'looks' ? (
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -196,95 +204,84 @@ export function CanvasThemeDialog({
                 <DialogCloseButton compact onClick={onClose} />
               </div>
             </div>
-            {tab !== 'looks' ? (
-              <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => onTabChange('looks')}
-                  className="-ml-1.5 inline-flex h-9 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                >
-                  <BackIcon />
-                  Back
-                </button>
-                <span aria-hidden className="text-slate-300 dark:text-slate-600">
-                  /
-                </span>
-                <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-100">
-                  {PANEL_TITLES[tab]}
-                </h3>
-              </div>
-            ) : null}
           </div>
 
           {/* Fixed min-height so switching between tabs doesn't collapse the
               modal and make it jump around. */}
           <div className="min-h-[20rem] overflow-y-auto px-5 py-4">
-            {tab === 'looks' ? (
-              <LooksHome
-                activeLook={activeLookId({
-                  theme: themeId,
-                  finish,
-                  font: font ?? undefined,
-                  backgroundPattern,
-                })}
-                onPickLook={onApplyLook}
-                themeId={themeId}
-                finish={resolveFinish(finish, undefined)}
-                font={font}
-                defaultTextSize={defaultTextSize}
-                pattern={backgroundPattern}
-                onOpenPanel={onTabChange}
-              />
-            ) : tab === 'font' ? (
-              <FontTab
-                font={font}
-                onSetFont={onSetFont}
-                defaultTextSize={defaultTextSize}
-                onSetDefaultTextSize={onSetDefaultTextSize}
-                onApplyFontToAll={onApplyFontToAll}
-              />
-            ) : tab === 'finish' ? (
-              <FinishTab
-                finish={finish}
-                onSetFinish={onSetFinish}
-                onApplyFinishToAll={onApplyFinishToAll}
-                canvasBackground={canvasBackground}
-                themeId={themeId}
-                font={font}
-              />
-            ) : tab === 'canvas' ? (
-              <CanvasStyleControls
-                backgroundPattern={backgroundPattern}
-                backgroundColor={backgroundColor}
-                patternColor={patternColor}
-                backgroundOpacity={backgroundOpacity}
-                backgroundPatternScale={backgroundPatternScale}
-                backgroundAnimationSpeed={backgroundAnimationSpeed}
-                onSetBackgroundPattern={onSetBackgroundPattern}
-                onSetBackgroundColor={onSetBackgroundColor}
-                onSetPatternColor={onSetPatternColor}
-                onSetBackgroundOpacity={onSetBackgroundOpacity}
-                onSetBackgroundPatternScale={onSetBackgroundPatternScale}
-                onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
-                showAllPatterns
-                previewTiles
-              />
-            ) : (
-              <CustomThemePicker
-                themeId={themeId}
-                onSelect={onSetTheme}
-                onCommit={(id) => {
-                  onSetTheme(id);
-                  onClose();
-                }}
-                info={
-                  <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-                    Sets the canvas backdrop and recolours every element on this tab to match the
-                    theme (sticky notes keep their amber palette).
-                  </p>
-                }
-              />
-            )}
+            {/* The home and its panels swap through an easing height and a short slide: into a panel from the
+                right, back home from the left (AnimatedHeightBox). */}
+            <AnimatedHeightBox viewKey={tab} enter={enter}>
+              {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
+                import / export panels do (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
+              {tab !== 'looks' ? (
+                <BackBar
+                  label="Tab Style"
+                  current={PANEL_TITLES[tab]}
+                  onClick={() => go('looks')}
+                />
+              ) : null}
+              {tab === 'looks' ? (
+                <LooksHome
+                  activeLook={activeLookId({
+                    theme: themeId,
+                    finish,
+                    font: font ?? undefined,
+                    backgroundPattern,
+                  })}
+                  onPickLook={onApplyLook}
+                  themeId={themeId}
+                  finish={resolveFinish(finish, undefined)}
+                  font={font}
+                  defaultTextSize={defaultTextSize}
+                  pattern={backgroundPattern}
+                  onOpenPanel={go}
+                />
+              ) : tab === 'font' ? (
+                <FontTab
+                  font={font}
+                  onSetFont={onSetFont}
+                  defaultTextSize={defaultTextSize}
+                  onSetDefaultTextSize={onSetDefaultTextSize}
+                  onApplyFontToAll={onApplyFontToAll}
+                />
+              ) : tab === 'finish' ? (
+                <FinishTab
+                  finish={finish}
+                  onSetFinish={onSetFinish}
+                  onApplyFinishToAll={onApplyFinishToAll}
+                  canvasBackground={canvasBackground}
+                  themeId={themeId}
+                  font={font}
+                />
+              ) : tab === 'canvas' ? (
+                <CanvasStyleControls
+                  backgroundPattern={backgroundPattern}
+                  backgroundColor={backgroundColor}
+                  patternColor={patternColor}
+                  backgroundOpacity={backgroundOpacity}
+                  backgroundPatternScale={backgroundPatternScale}
+                  backgroundAnimationSpeed={backgroundAnimationSpeed}
+                  onSetBackgroundPattern={onSetBackgroundPattern}
+                  onSetBackgroundColor={onSetBackgroundColor}
+                  onSetPatternColor={onSetPatternColor}
+                  onSetBackgroundOpacity={onSetBackgroundOpacity}
+                  onSetBackgroundPatternScale={onSetBackgroundPatternScale}
+                  onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
+                  showAllPatterns
+                  previewTiles
+                />
+              ) : (
+                <CustomThemePicker
+                  themeId={themeId}
+                  onSelect={onSetTheme}
+                  onCommit={(id) => {
+                    onSetTheme(id);
+                    onClose();
+                  }}
+                />
+              )}
+            </AnimatedHeightBox>
           </div>
         </div>
       </div>
@@ -315,9 +312,6 @@ function FontTab({
           Tab font
         </span>
         <FontSelect value={font} ariaLabel="Tab font" onChange={onSetFont} />
-        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          The default for every text element on this tab that hasn't set its own.
-        </p>
       </div>
       <div className="flex flex-col gap-1.5">
         <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -344,9 +338,6 @@ function FontTab({
             </SizeButton>
           ))}
         </div>
-        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          Seeded onto each element you add next; existing elements keep their size.
-        </p>
       </div>
       <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
         <button
@@ -360,9 +351,6 @@ function FontTab({
     </div>
   );
 }
-
-// The Back row's chevron.
-const BackIcon = lucideGlyph(lucideChevronLeft, 14);
 
 // The paintbrush's place: how far the panel's right edge and bottom sit from the window's, so its corner is just above
 // the brush, right edges aligned. Null without a brush on screen, or on a phone (below 640 px), where it stays a dialog.

@@ -4,6 +4,13 @@ import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
 
+// jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof ResizeObserver;
+
 // docs/specs/011-theme/canvas-and-theme-dialog.md: a popover flying out of the paintbrush, else the centred dialog.
 afterEach(() => {
   cleanup();
@@ -48,7 +55,7 @@ describe('CanvasThemeDialog placement', () => {
       ({ left: 1360, right: 1404, top: 840, bottom: 884, width: 44, height: 44 }) as DOMRect;
     document.body.appendChild(brush);
     render(<CanvasThemeDialog {...props} />);
-    const panel = screen.getByRole('dialog', { name: 'Tab look and feel' });
+    const panel = screen.getByRole('dialog', { name: 'Tab style' });
     expect(panel.style.right).toBe('36px');
     expect(panel.style.bottom).toBe('68px');
   });
@@ -56,7 +63,7 @@ describe('CanvasThemeDialog placement', () => {
   it('is the centred dialog without a brush', () => {
     Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
     render(<CanvasThemeDialog {...props} />);
-    expect(screen.getByRole('dialog', { name: 'Tab look and feel' }).style.right).toBe('');
+    expect(screen.getByRole('dialog', { name: 'Tab style' }).style.right).toBe('');
   });
 });
 
@@ -122,7 +129,7 @@ describe('CanvasThemeDialog home', () => {
     'Engineer',
     'Workshop',
     'Garden',
-    'Party',
+    'Studio',
   ];
 
   it('offers the twelve looks, each drawn as a preview', () => {
@@ -145,7 +152,12 @@ describe('CanvasThemeDialog home', () => {
     ).toBe('true');
     unmount();
     // A tab on a page-two look opens there.
-    home({ themeId: 'rainbow', finish: 'flexible', font: 'oswald', backgroundPattern: 'confetti' });
+    home({
+      themeId: 'lavender',
+      finish: 'professional',
+      font: 'roboto-slab',
+      backgroundPattern: 'isometric',
+    });
     expect(
       screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
     ).toBe('true');
@@ -190,14 +202,15 @@ describe('CanvasThemeDialog home', () => {
     expect(onTabChange).toHaveBeenLastCalledWith('theme');
   });
 
-  it('has no Back on the home; a panel goes Back to it', () => {
+  it('has no breadcrumb on the home; a panel’s shared breadcrumb names it and goes back', () => {
     const { unmount } = home();
-    expect(screen.queryByRole('button', { name: 'Back' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Tab Style/ })).toBeNull();
     unmount();
     const onTabChange = vi.fn();
     render(<CanvasThemeDialog {...props} tab="font" onTabChange={onTabChange} />);
-    expect(screen.getByRole('heading', { name: 'Text' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+    const crumb = screen.getByRole('button', { name: /^Tab Style/ });
+    expect(crumb.textContent).toContain('Text');
+    fireEvent.click(crumb);
     expect(onTabChange).toHaveBeenCalledWith('looks');
   });
 });

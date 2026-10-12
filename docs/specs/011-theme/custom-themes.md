@@ -96,9 +96,9 @@ A React context (`CustomThemeProvider`) tracks the list reactively so the picker
 
 **Deleting an applied theme reverts the document.** When a custom theme is deleted, the provider invokes an `onThemeDeleted(id)` callback (supplied by the editor only — Explorer / new-document have no open document to repaint). The editor's handler (`resetTabsUsingTheme` in `useTabCanvas`) walks every tab in the open document and hard-resets any still pointing at the dead id back to the default theme — backdrop and element colours — so the deletion is visible immediately rather than stranding the old colours on a now-dead id. A document opened _later_ with a since-deleted theme id isn't auto-reverted (a non-owner viewing a shared document must never have their tab's theme silently rewritten); it renders via `getTheme`'s default fallback, and the next theme pick hard-resets it through the `resolveTheme` path above.
 
-## Building a theme — Tab Look & Feel
+## Building a theme — Tab Style
 
-The Theme tab of the Tab Look & Feel dialog ([Canvas + Theme dialog](canvas-and-theme-dialog.md)) gains:
+The Theme tab of the Tab Style dialog ([Canvas + Theme dialog](canvas-and-theme-dialog.md)) gains:
 
 - A **Custom** category in the theme browse, sitting alongside the built-in colour categories. Its drill-in lists the owner's saved themes as cards (apply / edit / delete) plus a **+ New theme** card, with a short explainer line. (This replaced an earlier "My themes" row: presenting custom themes as just another category keeps the browse uniform.)
 - **+ New theme** (or **Edit** on a saved card) opens the **theme builder** in place of the category grid, with a `Back` affordance.
@@ -122,7 +122,7 @@ The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry u
 ## New-document / template picker
 
 The New-document theme picker ([Dedicated route for new-document creation](../007-editor/new-document-route.md)) shows the same
-**Custom** category and **+ New theme** builder as the Tab Look & Feel dialog's Colours panel,
+**Custom** category and **+ New theme** builder as the Tab Style dialog's Colours panel,
 so a user can apply (or author) one of their saved themes at the moment they
 start a document. Both surfaces render one shared `CustomThemePicker` (which owns
 the builder state and wires the custom category into `ThemeCategoryBrowser`), so
@@ -141,7 +141,7 @@ New `type`s on the existing `Theme` category ([Telemetry + public transparency d
 
 - DB / route / test layers copy the **folders** resource one-for-one (`db/custom-themes.ts`, `routes/custom-themes.ts`, `routes/custom-themes.test.ts`).
 - `ColorSwatch`, `CanvasStyleControls` (pattern grid), `ShapeIcon`, `elementKindLabel`, `ThemeSwatch`, `tint`/`shade`/`deriveTextColorForBg` are all reused; the builder adds no parallel colour primitives.
-- The builder component is shared between the Tab Look & Feel dialog's Colours panel and the Explorer edit modal (one `CustomThemeBuilder`, two hosts), so the two entry points can't drift.
+- The builder component is shared between the Tab Style dialog's Colours panel and the Explorer edit modal (one `CustomThemeBuilder`, two hosts), so the two entry points can't drift.
 
 ## Out of scope (for now)
 

@@ -1,6 +1,6 @@
 'use client';
 
-// The Tab Look & Feel dialog's home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks", "Fine-tune"): the looks
+// The Tab Style dialog's home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks", "Fine-tune"): the looks
 // carousel (LooksCarousel), then one Fine-tune row per setting showing its current value, each opening that setting's
 // panel in place. Looks only set the tab's existing settings (lib/tab-looks.ts); the panels are the existing
 // controls.

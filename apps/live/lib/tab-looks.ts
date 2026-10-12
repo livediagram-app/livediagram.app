@@ -21,7 +21,7 @@ export type TabLookId =
   | 'engineer'
   | 'workshop'
   | 'garden'
-  | 'party';
+  | 'studio';
 
 export type TabLook = {
   id: TabLookId;
@@ -138,13 +138,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'hexagonal',
   },
   {
-    id: 'party',
-    label: 'Party',
-    description: 'Rainbow branches, Oswald, confetti',
-    theme: 'rainbow',
-    finish: 'flexible',
-    font: 'oswald',
-    pattern: 'confetti',
+    id: 'studio',
+    label: 'Studio',
+    description: 'Lavender, Professional, slab serif',
+    theme: 'lavender',
+    finish: 'professional',
+    font: 'roboto-slab',
+    pattern: 'isometric',
   },
 ];
 

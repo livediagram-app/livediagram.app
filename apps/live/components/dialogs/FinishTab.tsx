@@ -1,6 +1,6 @@
 'use client';
 
-// The Tab Look & Feel dialog's Finish tab (docs/specs/008-canvas/finish.md "Where it is set"): the tab's
+// The Tab Style dialog's Finish tab (docs/specs/008-canvas/finish.md "Where it is set"): the tab's
 // finish as three tiles, applied live, and Apply to All Elements, which clears every element's own finish so
 // the whole tab follows it again.
 
@@ -53,9 +53,6 @@ export function FinishTab({
             </SizeButton>
           ))}
         </div>
-        <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
-          How lines, corners and lettering are drawn on this tab.
-        </p>
       </div>
       <FinishPreview
         finish={current}

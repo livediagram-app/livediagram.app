@@ -34,7 +34,7 @@ describe('TAB_LOOKS', () => {
       'Engineer',
       'Workshop',
       'Garden',
-      'Party',
+      'Studio',
     ]);
     expect(TAB_LOOKS.length).toBe(LOOKS_PER_PAGE * 2);
     for (const look of TAB_LOOKS) {

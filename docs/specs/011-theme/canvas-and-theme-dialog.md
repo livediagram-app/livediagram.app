@@ -8,7 +8,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 
 ## Behaviour
 
-- The dialog is one modal (`CanvasThemeDialog`) titled **Tab Look & Feel** ("Appearance" names the VIEWER's own
+- The dialog is one modal (`CanvasThemeDialog`) titled **Tab Style** ("Appearance" names the VIEWER's own
   chrome, [Live app](../007-editor/live-app.md)). It opens on its **home**: a grid of **Looks**, then a
   **Fine-tune** list. The tab / canvas context menu carries no Look & Feel or Font category: the dock button is
   the one entry point.

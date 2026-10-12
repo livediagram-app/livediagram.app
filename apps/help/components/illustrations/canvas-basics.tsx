@@ -1,6 +1,6 @@
 // Canvas basics illustrations (docs/specs/018-help/help-app.md): the palette strip and dock on the
 // canvas, the multi-selection toolbar, the New Document template step, the element menu's
-// Font tiles, and the three tabs of the Tab Look & Feel dialog plus the custom-theme builder.
+// Font tiles, and the three tabs of the Tab Style dialog plus the custom-theme builder.
 // Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,
 // MultiSelectionToolbar.tsx, TemplatePickerHeader.tsx / TemplatePickerBrowse.tsx,
 // TypographySections.tsx, CanvasThemeDialog.tsx, ThemeCategoryBrowser.tsx,
@@ -152,7 +152,7 @@ function Slider({
   );
 }
 
-/** The Tab Look & Feel dialog's shell: title plus the Theme / Canvas / Font tab strip. */
+/** The Tab Style dialog's shell: title plus the Theme / Canvas / Font tab strip. */
 function LookAndFeelShell({
   active,
   h,
@@ -171,7 +171,7 @@ function LookAndFeelShell({
         y={12}
         w={340}
         h={h}
-        title="Tab Look & Feel"
+        title="Tab Style"
         sceneW={420}
         sceneH={sceneH}
         scrim={false}

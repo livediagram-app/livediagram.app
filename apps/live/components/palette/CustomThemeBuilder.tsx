@@ -8,7 +8,7 @@
 // diagram (the shared ThemeSwatch scene, with the actual pattern edge to
 // edge) so the user sees the result as they build. A built-in format
 // painter copies a colour from one box and pastes it into others.
-// Shared by the Tab Look & Feel dialog's Theme tab and the Explorer Themes pane,
+// Shared by the Tab Style dialog's Theme tab and the Explorer Themes pane,
 // so the two entry points can't drift. Purely a form: it owns a draft
 // and hands the finished { name, definition } back via onSave.
 

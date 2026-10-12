@@ -127,7 +127,7 @@ export function FormatPainter() {
   );
 }
 
-/** The theme picker as the Tab Look & Feel dialog opens it: Theme, Canvas and Font tabs, and the
+/** The theme picker as the Tab Style dialog opens it: Theme, Canvas and Font tabs, and the
  *  Theme tab's overview of a Default card plus one card per category, so you browse by mood. */
 export function ThemePicker() {
   const cards: { name: string; swatch: string[] }[] = [
@@ -147,7 +147,7 @@ export function ThemePicker() {
         y={14}
         w={300}
         h={212}
-        title="Tab Look & Feel"
+        title="Tab Style"
         sceneW={420}
         sceneH={240}
         scrim={false}

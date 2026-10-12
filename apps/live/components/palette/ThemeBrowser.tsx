@@ -1,7 +1,7 @@
 'use client';
 
-// The theme list (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel"): every theme in one grid, Default
-// first, then the built-in themes in catalogue order, then the owner's custom themes (docs/specs/011-theme/
+// The theme list (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel"): every theme in one carousel, nine
+// to a page (PagedCarousel), Default first, then the built-in themes in catalogue order, then the owner's custom themes (docs/specs/011-theme/
 // custom-themes.md) and a "New theme" card. No categories: every theme works in light and dark mode alike, so there is
 // nothing to sort them by. Hosted by CustomThemePicker, which owns the builder; this list only signals "new" / "edit".
 //
@@ -9,8 +9,20 @@
 // double-click shortcut (defaults to onSelect when not given).
 
 import type { CustomTheme } from '@livediagram/api-schema';
+import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { THEMES, type ThemeDefinition } from '@/lib/themes';
 import { CustomThemeCard, NewThemeCard, ThemeCard } from '@/components/palette/theme-picker-cards';
+
+/** How many theme tiles one carousel page holds: a 3 x 3 grid. */
+export const THEMES_PER_PAGE = 9;
+
+type Item =
+  | { kind: 'built-in'; theme: ThemeDefinition }
+  | { kind: 'custom'; theme: CustomTheme }
+  | { kind: 'new' };
+
+const headingClass =
+  'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 
 export function ThemeBrowser({
   themeId,
@@ -37,36 +49,55 @@ export function ThemeBrowser({
   onCopyTheme?: (theme: ThemeDefinition) => void;
 }) {
   const commit = onCommit ?? onSelect;
+  // Every tile in one list, paged nine at a time: the built-ins, then the owner's own and the New card.
+  const items: Item[] = [
+    ...THEMES.map((theme): Item => ({ kind: 'built-in', theme })),
+    ...(onNewCustomTheme
+      ? [
+          ...(customThemes ?? []).map((theme): Item => ({ kind: 'custom', theme })),
+          { kind: 'new' } as Item,
+        ]
+      : []),
+  ];
   return (
-    <div className={`grid grid-cols-2 gap-2 sm:grid-cols-3 ${className ?? ''}`}>
-      {THEMES.map((t) => (
-        <ThemeCard
-          key={t.id}
-          theme={t}
-          active={themeId === t.id}
-          onSelect={() => onSelect(t.id)}
-          onCommit={() => commit(t.id)}
-          onCopy={onCopyTheme ? () => onCopyTheme(t) : undefined}
-        />
-      ))}
-      {onNewCustomTheme
-        ? (customThemes ?? []).map((t) => (
+    <div className={className}>
+      <PagedCarousel
+        items={items}
+        perPage={THEMES_PER_PAGE}
+        label="Themes"
+        heading={<h3 className={headingClass}>Themes</h3>}
+        gridClass="grid grid-cols-3 gap-2"
+        // Open on the page holding the current theme.
+        initialIndex={items.findIndex((it) => it.kind !== 'new' && it.theme.id === themeId)}
+        renderItem={(it) =>
+          it.kind === 'built-in' ? (
+            <ThemeCard
+              key={it.theme.id}
+              theme={it.theme}
+              active={themeId === it.theme.id}
+              onSelect={() => onSelect(it.theme.id)}
+              onCommit={() => commit(it.theme.id)}
+              onCopy={onCopyTheme ? () => onCopyTheme(it.theme) : undefined}
+            />
+          ) : it.kind === 'custom' ? (
             <CustomThemeCard
-              key={t.id}
-              theme={t}
-              active={themeId === t.id}
-              onApply={() => onSelect(t.id)}
-              onCommit={() => commit(t.id)}
-              onEdit={() => onEditCustomTheme?.(t.id)}
+              key={it.theme.id}
+              theme={it.theme}
+              active={themeId === it.theme.id}
+              onApply={() => onSelect(it.theme.id)}
+              onCommit={() => commit(it.theme.id)}
+              onEdit={() => onEditCustomTheme?.(it.theme.id)}
               onDelete={() => {
                 // Fall the selection back to Default so the host never points at a theme that's about to vanish.
-                if (themeId === t.id) onSelect('brand');
-                onDeleteCustomTheme?.(t.id);
+                if (themeId === it.theme.id) onSelect('brand');
+                onDeleteCustomTheme?.(it.theme.id);
               }}
             />
-          ))
-        : null}
-      {onNewCustomTheme ? <NewThemeCard onClick={onNewCustomTheme} /> : null}
+          ) : (
+            <NewThemeCard key="new" onClick={() => onNewCustomTheme?.()} />
+          )
+        }
+      />
     </div>
   );
 }

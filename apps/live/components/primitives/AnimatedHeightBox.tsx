@@ -8,15 +8,24 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 // With `maxPx` set it caps the height there and scrolls past it; omit
 // `maxPx` to let it grow to the full content height (no inner scroll).
 //
-// Shared by the template + theme browsers in TemplatePicker so the two
-// two-level pickers can't drift in feel.
+// Shared by the template browser and the Tab Style dialog's home and panels, so drill-ins feel the same.
+const ENTER_CLASS = {
+  fade: 'animate-fade-in',
+  forward: 'animate-view-forward',
+  back: 'animate-view-back',
+} as const;
+
 export function AnimatedHeightBox({
   maxPx,
   viewKey,
   className,
+  enter = 'fade',
   children,
 }: {
   maxPx?: number;
+  // How the swapped-in view arrives: a soft fade, or a short slide for a drill-in, `forward` (from the right, going
+  // in a level) or `back` (from the left, coming out). Reduced motion turns both slides into the fade.
+  enter?: 'fade' | 'forward' | 'back';
   // Identity of the current view. When it changes the inner block
   // remounts (replaying the fade); a stable wrapper around it keeps the
   // ResizeObserver measuring across the swap.
@@ -58,7 +67,7 @@ export function AnimatedHeightBox({
           the integer-rounded scrollHeight, and without the pad sub-pixel
           rounding shaved the last row's border (both pickers hit this). */}
       <div ref={ref} className="pb-1">
-        <div key={viewKey} className="animate-fade-in">
+        <div key={viewKey} className={ENTER_CLASS[enter]}>
           {children}
         </div>
       </div>

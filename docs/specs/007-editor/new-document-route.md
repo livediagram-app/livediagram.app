@@ -312,7 +312,7 @@ explored instead of always seeing the same curated first rows.
   whole catalogue is reachable and nothing hides behind a "Show more"
   toggle. Shuffling decides which options lead a category and the
   search results, and the pinned default still opens the list.
-  ("Show more" survives only in the Tab Look & Feel dialog's
+  ("Show more" survives only in the Tab Style dialog's
   background-pattern picker, the one caller `useShowMoreList` still
   has.)
 - **Stable within a session.** The shuffle is computed when the picker
@@ -323,7 +323,7 @@ Implementation: `lib/shuffle.ts` (`shufflePinned`, a pinned-first
 Fisher-Yates) feeds `components/palette/TemplatePicker.tsx`, which drives the
 count-based mode of `hooks/ui/useShowMoreList.ts`. The theme and pattern
 grids keep their stable, flag-gated order wherever they render (the
-theme browse of `components/palette/ThemeCategoryBrowser.tsx`, shared
+theme browse of `components/palette/ThemeBrowser.tsx`, shared
 with the right-click Theme dialog per [42](../011-theme/canvas-and-theme-dialog.md),
 and the pattern controls in `components/palette/palette-controls.tsx`)
 — only the Quick Start's template browse shuffles (the New Document wizard offers modes, not templates).
@@ -657,7 +657,7 @@ measurable ([Telemetry + public transparency dashboard](../017-telemetry/telemet
 
 With the theme step retired, the picker no longer shows themes at all. Custom
 themes ([Custom themes](../011-theme/custom-themes.md)) are applied and built from
-the Tab Look & Feel dialog, which renders the same `CustomThemePicker` the theme
+the Tab Style dialog, which renders the same `CustomThemePicker` the theme
 step used. The create path still carries a theme id (`onPick`,
 `commitNewDocument`, `buildTemplatedTab` take a `string`, so a `custom:<uuid>`
 passes through), now always the caller's: `brand` on `/new`, the source tab's

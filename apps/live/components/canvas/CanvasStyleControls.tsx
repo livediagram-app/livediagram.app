@@ -84,7 +84,7 @@ function PatternGrid({
   );
 }
 
-// A large pattern option (the Tab Look & Feel Canvas panel, docs/specs/011-theme/canvas-and-theme-dialog.md
+// A large pattern option (the Tab Style Canvas panel, docs/specs/011-theme/canvas-and-theme-dialog.md
 // "Canvas panel"): the pattern drawn for real on the tab's canvas colour, its name beneath.
 function PatternPreviewTile({
   active,
