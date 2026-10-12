@@ -57,6 +57,7 @@ import { BoardSettingsButton } from './BoardSettingsButton';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
+import { ExampleCardsNotice } from './ExampleCardsNotice';
 import { AddCardButton } from './AddCardButton';
 import { planBoardKey } from './plan-board-keys';
 import { planBandTint, planOwnColours, planPalette } from './plan-palette';
@@ -383,6 +384,10 @@ export function PlanBoardView({
           ) : null
         }
       />
+      {/* A template's example cards: Clear Example Cards or Keep Them, for an Editor (ExampleCardsNotice). */}
+      {interactive && plan ? (
+        <ExampleCardsNotice shown={shownItems} plan={plan} palette={palette} />
+      ) : null}
       <div
         ref={bodyRef}
         // A scroll container resets touch-action, so without touch-none a finger on a card starts a native

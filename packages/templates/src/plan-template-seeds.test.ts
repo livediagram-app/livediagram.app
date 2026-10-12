@@ -110,6 +110,14 @@ describe('Plan template example cards', () => {
     expect((dark.fields['assignee'] as { id: string }).id).toBe('example-leo');
   });
 
+  it('are all marked as examples', () => {
+    for (const kind of PLAN_TEMPLATE_KINDS) {
+      for (const create of planTemplateSeedItems(kind, TODAY, ids)) {
+        expect(create.fields['example'], kind).toBe(true);
+      }
+    }
+  });
+
   it('make nothing for templates with no boards', () => {
     expect(planTemplateSeedItems('blank-plan', TODAY)).toEqual([]);
     expect(planTemplateSeedItems('invoice', TODAY)).toEqual([]);

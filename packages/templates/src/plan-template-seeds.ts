@@ -4,7 +4,13 @@
 // from as many example voters. Pure, and a subpath of its own ('@livediagram/templates/plan-template-seeds') so only
 // the paths that make a template's tabs for a person bundle it.
 
-import { newItemId, type ItemCreate, type ItemFields, type ItemPerson } from '@livediagram/items';
+import {
+  EXAMPLE_FIELD,
+  newItemId,
+  type ItemCreate,
+  type ItemFields,
+  type ItemPerson,
+} from '@livediagram/items';
 import { isPlanTemplateKind } from './template-builders-plan';
 import {
   PLAN_TEMPLATE_SEEDS,
@@ -45,6 +51,8 @@ function fieldsOf(card: SeedCard, today: string, ids: ReadonlyMap<string, string
   for (const [field, ref] of Object.entries(card.links ?? {})) fields[field] = ids.get(ref)!;
   for (const [field, value] of Object.entries(card.custom ?? {})) fields[field] = value;
   if (card.archived) fields['archived'] = true;
+  // What Clear Example Cards finds them by (docs/specs/026-plan/items.md "Example cards").
+  fields[EXAMPLE_FIELD] = true;
   return fields;
 }
 

@@ -26,11 +26,27 @@ board of the template shows some, and every plan view on its Dashboard has somet
 - **Dates count from today.** Start and Due are days from the day the document is made, so a Gantt chart, a due chip
   and a Calendar never open stale: a project started two weeks ago and due in three.
 - **Archived examples.** Team Retro's **Past Retros** board shows two archived notes from the sprint before.
+- **They are marked.** Every example card carries the `example` flag ([Items](items.md#example-cards)), so the
+  document knows which cards a template made however they have since moved.
 - **Where they are made.** Only where a **person** makes the template: the New Document wizard (the cards ride the
   create, or an Offline Mode document's first item write) and Quick Start on an empty tab (the cards are one write,
   one undo step, after the tabs land). **Agents** (the MCP's `create_document` and `add_tab`, the api's seeded create)
   get the set-up alone: an agent fills a board with real cards, and examples would be cards it then had to find and
   delete.
+- **Clearing them.** While the document holds an example card that is not in the Trash, every board showing one
+  carries a one-line notice under its header: an info glyph, **"Example cards show how this board runs."**, and two
+  buttons, **Clear Example Cards** and **Keep Them**.
+  - **Clear Example Cards** sends every example card of the document (every board, every tab) to the Trash as one
+    write and one undo step, and announces "N example cards moved to the Trash". The Trash restores any of them.
+  - **Keep Them** takes the flag off every example card, one write and one undo step: they are ordinary cards from
+    then on.
+  - Either way no card is an example any more, so the notice goes, for everyone, on every board. Undo brings it back
+    with the cards or the flags.
+  - It sends `Plan · Deleted · ExampleCards` or `Plan · Changed · ExampleCardsKept`.
+  - **Who sees it**: only an **Editor** (the notice trashes or changes other people's cards, which a Participant may
+    not, [Share roles](../013-workspace/share-roles.md#what-a-participant-changes)). A **Participant** and a
+    **Viewer** never see it; to them the example cards are cards like any other. A card shown outside a board (a
+    Plan card, a Dashboard's views) carries no notice: the board does.
 - **Blank Plan and the spreadsheet templates** have no boards, so no example cards; a spreadsheet template's Sheet is
   already filled in ([Spreadsheet templates](#spreadsheet-templates)).
 - **The catalogue.** `PLAN_TEMPLATE_SEEDS` (`packages/templates/src/plan-template-seed-data.ts`), pure data, resolved

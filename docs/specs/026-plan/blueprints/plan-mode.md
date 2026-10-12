@@ -57,7 +57,19 @@ items: columns, cards and the work moving through them' }`; `hasPlanLook(mode)`.
 
 Derived from [Plan templates](../plan-templates.md).
 
-- Builders are element-only and make no items: a template comes with no cards.
+- Builders are element-only and make no items. The example cards ([Example cards](../plan-templates.md#example-cards))
+  are separate data: `PLAN_TEMPLATE_SEEDS` (`plan-template-seed-data.ts`, `SeedCard` per card: `ref`, `type`,
+  `status`, `title`, optional fields, `start` / `due` as day offsets, `parent` / `links` by `ref`, `votes` as a count,
+  `archived`), resolved by `planTemplateSeedItems(kind, today, newId?)` (`plan-template-seeds.ts`, the
+  `@livediagram/templates/plan-template-seeds` subpath) into `ItemCreate[]`: fresh ids, refs swapped for ids, dates
+  from `seedDate(today, days)` (UTC), assignees `seedPerson(who)` (`example-<who>` ids), votes one dot each from
+  `example-voter-<n>`, and `example: true` on every card. `seedToday()` is the local calendar day.
+- Seeded by `/new` (cloud: `items` on `apiCreateDocument`; Offline Mode: one `offlineWriteItem` create after
+  `offlineCreateDocument`, by `seedAuthor(self)`) and Quick Start (`useTemplateFlow`'s `seedCards`, wired to
+  `plan.context.addItems`, after the tabs land). Never by the MCP, the CLI or the api's seeded create.
+- `ExampleCardsNotice` (`apps/live/components/plan/ExampleCardsNotice.tsx`) renders under `PlanBoardHeader` when
+  `canEdit` and the board shows an example card: Clear Example Cards is `trashItems(every example id)`, Keep Them is
+  `patchItems` clearing `example` on each (one `patches` write).
 - `plan-template-catalogue.ts` (pure data): `PLAN_TEMPLATE_KINDS`; `PLAN_TEMPLATE_TABS:
 Record<PlanTemplateKind, PlanTabSpec[]>`; `PlanTabSpec = { name, board?, metrics?, charts?, rail? }`, the Gantt's
   `types` set to the board's `addTypes` when it charts a board of dated cards; every board names its `addTypes`;
