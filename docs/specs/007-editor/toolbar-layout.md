@@ -78,13 +78,20 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **Two sections:**
   - **This mode's elements** first, as the palette's tile grid, drawn from every tile the current
     mode's layout offers (Plan's Cards follow the document's item types, as on the strip).
-  - **Other modes**, below, as an accordion titled **"Not in Diagram Mode"** (the current mode's
-    name), with a count: the matching tiles no category of this mode offers, from the other modes'
-    layouts and the event-storming notation. **Closed by default** each time the popover opens:
-    modes are tailored on purpose, so the rest is one deliberate click away, never hidden. Opened,
-    it stays open while typing. It is absent when nothing outside the mode matches.
+  - **Other modes**, below, as an accordion titled **"Elements From Other Modes"**, with a
+    count: the matching tiles no category of this mode offers, from the other modes' layouts and
+    the event-storming notation. **Closed by default** each time the popover opens: modes are
+    tailored on purpose, so the rest is one deliberate click away, never hidden. Opened, it stays
+    open while typing. It is absent when nothing outside the mode matches.
+  - **Another mode's own elements**, last, as an accordion titled **"Not Available in Diagram
+    Mode"** (the current mode's name), with a count, closed by default and absent when empty like
+    the one above. These are the tiles of Plan's own categories (Cards, Boards, Metrics,
+    Visualisations, Sheet): made for Plan's boards and views, so only Plan adds them. They are
+    listed so a search for one still finds it and says where it lives, but each is greyed out
+    (`aria-disabled`, no press, no drag) with "Only in Plan Mode" in its hover card. Plan itself
+    has none here. Its line: "Made for another mode's own tools, so only that mode adds them."
 - **Before anything is typed** it lists only the element types **already on the tab**, under a
-  small "On This Tab" label, each once, in layout order (other modes' ones in the accordion, as
+  small "On This Tab" label, each once, in layout order (other modes' ones in their accordions, as
   ever): the popover stays short, and the tools a tab is actually built from are one click away.
   Listing the whole mode made a popover taller than the window. A tile and an element meet on a
   **signature**: the element type plus the creation-time choice the element records (a shape's
@@ -102,13 +109,14 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **Its heading** is "Search Elements", as More's is the category's name; the field reads "Search
   elements". The accordion's line under its title: "Elements other modes offer. Any of them works
   here too."
-- **Using a tile** from either section runs the tile's own handler (the same `PaletteTile`, so
+- **Using a tile** from this mode's section or Elements From Other Modes runs the tile's own handler (the same `PaletteTile`, so
   drag-to-place, the pressed state and tinting are the palette's), and closes the popover so the
-  canvas is clear. **Enter** in the field uses the first result of this mode's section (the
-  accordion's first, when that section is empty and the accordion is open).
-- **Nothing is stored:** the query and the accordion reset each time it opens.
+  canvas is clear. **Enter** in the field uses the first result of this mode's section (Elements
+  From Other Modes' first, when that section is empty and the accordion is open); never an
+  unavailable tile.
+- **Nothing is stored:** the query and the accordions reset each time it opens.
 - **Telemetry:** `UI`/`Opened`/`ToolbarSearch` when it opens and `UI`/`Opened`/`ToolbarSearchOtherModes`
-  when the accordion opens. Placing an element reports as any palette add does.
+  and `UI`/`Opened`/`ToolbarSearchUnavailable` when each accordion opens. Placing an element reports as any palette add does.
 - **Cost:** the candidate tiles are a few hundred static entries; the match is a linear filter and
   sort over them per keystroke, only while the popover is open, and the popover mounts only while
   open. The on-tab list is one pass over the tab's elements into a set of signatures, then one

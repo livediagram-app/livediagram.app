@@ -63,6 +63,25 @@ describe('elementTileSections', () => {
     expect([...ids(here), ...ids(elsewhere)].filter((id) => needsImage.includes(id))).toEqual([]);
   });
 
+  it("keeps Plan's own tiles out of other modes, greyed out with the reason", () => {
+    const planOwn = (t: { section: string }) => t.section.startsWith('plan-');
+    for (const mode of ['diagram', 'illustrate', 'facilitate'] as const) {
+      const { here, elsewhere, unavailable } = elementTileSections({ mode, hasImage: true });
+      expect([...here, ...elsewhere].filter(planOwn), mode).toEqual([]);
+      expect(ids(unavailable), mode).toEqual(
+        expect.arrayContaining(['plan:board-kanban', 'plan:view-gantt', 'plan:sheet']),
+      );
+      for (const t of unavailable) {
+        expect(planOwn(t), t.id).toBe(true);
+        expect(t.disabled, t.id).toEqual({ reason: 'Only in Plan Mode' });
+      }
+    }
+  });
+
+  it('has nothing unavailable in Plan itself', () => {
+    expect(elementTileSections({ mode: 'plan', hasImage: true }).unavailable).toEqual([]);
+  });
+
   it("uses the document's own card types in Plan, and keeps the built-in ones out of elsewhere", () => {
     const own = [{ ...ITEM_TYPES[0]!, id: 'custom', label: 'Custom' }];
     const { here, elsewhere } = elementTileSections({
@@ -73,6 +92,9 @@ describe('elementTileSections', () => {
     expect(ids(here)).toContain('plan:card-custom');
     expect(ids(here)).not.toContain(`plan:card-${ITEM_TYPES[0]!.id}`);
     expect(elsewhere.filter((t) => t.section === 'plan-cards')).toEqual([]);
+    expect(
+      elementTileSections({ mode: 'plan', hasImage: true, planCardTiles: [] }).unavailable,
+    ).toEqual([]);
   });
 });
 
@@ -96,6 +118,7 @@ describe('searchElementTiles', () => {
     expect(searchElementTiles({ query: 'zzqqxx', mode: 'diagram', hasImage: true })).toEqual({
       here: [],
       elsewhere: [],
+      unavailable: [],
     });
   });
 
@@ -120,6 +143,7 @@ describe('searchElementTiles', () => {
     expect(searchElementTiles({ query: '', mode: 'diagram', hasImage: true })).toEqual({
       here: [],
       elsewhere: [],
+      unavailable: [],
     });
   });
 });

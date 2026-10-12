@@ -100,10 +100,11 @@ export function searchCatalogueTiles({
   query: string;
   mode: EditorMode;
   tabElements?: readonly Element[];
-}): ElementTileSearch {
+  // No catalogue is bound to one mode's tools, so none is ever unavailable.
+}): Omit<ElementTileSearch, 'unavailable'> {
   const browsing = !query.trim();
   const ids = browsing ? idsOnTab(tabElements) : null;
-  const out: ElementTileSearch = { here: [], elsewhere: [] };
+  const out: Omit<ElementTileSearch, 'unavailable'> = { here: [], elsewhere: [] };
   const add = <T>(cat: Catalogue<T>, onTabIds: Set<string> | undefined) => {
     const tiles = ids ? onTab(cat, onTabIds!) : matchesIn(cat, query);
     (paletteCategoryOffered(mode, cat.category) ? out.here : out.elsewhere).push(...tiles);
