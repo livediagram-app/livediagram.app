@@ -5,12 +5,12 @@
 import type { Tab } from '@livediagram/document';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { FINISH_PREVIEW_ELEMENTS } from '@/lib/finish-preview';
-import { withLookApplied, type TabLook } from '@/lib/tab-looks';
+import { withLookApplied, type LookLike } from '@/lib/tab-looks';
 
 const EXPORT_PATTERN_ID = 'lvd-export-bg';
 
 /** The sample tab with the look applied, as a tab of its own. */
-export function lookPreviewTab(look: TabLook): Tab {
+export function lookPreviewTab(look: LookLike): Tab {
   const blank = {
     id: `look-${look.id}`,
     name: look.label,
@@ -20,7 +20,7 @@ export function lookPreviewTab(look: TabLook): Tab {
 }
 
 /** The look's card preview as SVG markup, its ids scoped to the look. */
-export function lookPreviewSvg(look: TabLook): string {
+export function lookPreviewSvg(look: LookLike): string {
   const svg = renderTabToSvg(lookPreviewTab(look));
   return svg.split(EXPORT_PATTERN_ID).join(`lvd-look-${look.id}-bg`);
 }

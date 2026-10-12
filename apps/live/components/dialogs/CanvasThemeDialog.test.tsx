@@ -141,7 +141,7 @@ describe('CanvasThemeDialog home', () => {
   });
 
   it('pages the looks in a carousel of two pages, opening on the current look’s page', () => {
-    const { unmount } = home();
+    const { unmount } = home({ themeId: 'brand', finish: undefined, font: null });
     const next = screen.getByRole('button', { name: 'Next looks' });
     const prev = screen.getByRole('button', { name: 'Previous looks' });
     expect(prev.hasAttribute('disabled')).toBe(true);
@@ -161,6 +161,20 @@ describe('CanvasThemeDialog home', () => {
     expect(
       screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
     ).toBe('true');
+  });
+
+  it('leads with a selected Current card when the tab matches no look, and none when it does', () => {
+    const { unmount } = home({
+      themeId: 'rose',
+      finish: 'sketch',
+      font: 'lora',
+      backgroundPattern: 'lines',
+    });
+    const current = screen.getByRole('button', { name: /^Current/ });
+    expect(current.getAttribute('aria-pressed')).toBe('true');
+    unmount();
+    home({ themeId: 'brand', finish: undefined, font: null, backgroundPattern: 'grid' });
+    expect(screen.queryByRole('button', { name: /^Current/ })).toBeNull();
   });
 
   it('applies a look on click', () => {

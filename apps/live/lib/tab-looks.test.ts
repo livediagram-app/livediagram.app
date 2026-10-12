@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { FONTS, type Element, type Tab } from '@livediagram/document';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
-import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
+import {
+  LOOKS_PER_PAGE,
+  TAB_LOOKS,
+  activeLookId,
+  currentMix,
+  tabLookById,
+  withLookApplied,
+} from './tab-looks';
 import { withThemeApplied } from './tab-theme-apply';
 
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts over a tab's existing settings.
@@ -95,5 +102,42 @@ describe('activeLookId', () => {
 
   it('is undefined for an unknown look id lookup', () => {
     expect(tabLookById('nope')).toBeUndefined();
+  });
+});
+
+describe('pattern strength', () => {
+  it('counts only for a look that sets one: a template’s softened grid is still Everyday', () => {
+    expect(activeLookId({ backgroundOpacity: 0.4 })).toBe('everyday');
+    const garden = withLookApplied(tab(), tabLookById('garden')!);
+    expect(garden.backgroundOpacity).toBe(0.4);
+    expect(activeLookId(garden)).toBe('garden');
+    expect(activeLookId({ ...garden, backgroundOpacity: 1 })).toBeUndefined();
+  });
+
+  it('leaves the tab’s own strength alone for a look without one', () => {
+    expect(
+      withLookApplied(tab({ backgroundOpacity: 0.4 }), tabLookById('everyday')!).backgroundOpacity,
+    ).toBe(0.4);
+  });
+});
+
+describe('currentMix', () => {
+  it('describes the tab’s own settings as a look-shaped Current card', () => {
+    const mix = currentMix({
+      theme: 'rose',
+      finish: 'sketch',
+      font: 'lora',
+      backgroundPattern: 'lines',
+    });
+    expect(mix).toMatchObject({
+      id: 'current',
+      label: 'Current',
+      theme: 'rose',
+      finish: 'sketch',
+      font: 'lora',
+      pattern: 'lines',
+      patternOpacity: 1,
+    });
+    expect(currentMix({}).theme).toBe('brand');
   });
 });

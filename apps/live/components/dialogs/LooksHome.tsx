@@ -13,7 +13,7 @@ import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { getTheme } from '@/lib/themes';
-import type { TabLookId } from '@/lib/tab-looks';
+import { currentMix, type TabLookId } from '@/lib/tab-looks';
 import { LooksCarousel } from './LooksCarousel';
 
 /** The panels a Fine-tune row opens. */
@@ -37,6 +37,7 @@ export function LooksHome({
   font,
   defaultTextSize,
   pattern,
+  backgroundOpacity,
   onOpenPanel,
 }: {
   // The look the tab's settings match, undefined when it has its own mix.
@@ -48,6 +49,7 @@ export function LooksHome({
   font: string | null;
   defaultTextSize: TextSize | undefined;
   pattern: BackgroundPattern;
+  backgroundOpacity: number;
   onOpenPanel: (panel: LookPanel) => void;
 }) {
   const theme = getTheme(themeId);
@@ -55,7 +57,22 @@ export function LooksHome({
   const patternLabel = PATTERNS.find((p) => p.id === pattern)?.label ?? 'Grid';
   return (
     <div className="flex flex-col gap-5">
-      <LooksCarousel activeLook={activeLook} onPickLook={onPickLook} headingClass={sectionLabel} />
+      <LooksCarousel
+        activeLook={activeLook}
+        current={
+          activeLook
+            ? undefined
+            : currentMix({
+                theme: themeId,
+                finish,
+                font: font ?? undefined,
+                backgroundPattern: pattern,
+                backgroundOpacity,
+              })
+        }
+        onPickLook={onPickLook}
+        headingClass={sectionLabel}
+      />
 
       <section
         aria-labelledby="fine-tune-heading"

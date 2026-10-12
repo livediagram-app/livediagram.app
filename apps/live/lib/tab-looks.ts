@@ -152,6 +152,9 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
 ];
 
+/** A look, or a look-shaped card such as the tab's own mix ("Current"). */
+export type LookLike = Omit<TabLook, 'id'> & { id: string };
+
 /** How many looks one carousel page holds. */
 export const LOOKS_PER_PAGE = 6;
 
@@ -160,21 +163,19 @@ export function tabLookById(id: string): TabLook | undefined {
 }
 
 /** The tab with a look applied: the theme exactly as picking it does, then the finish, font and pattern. */
-export function withLookApplied(tab: Tab, look: TabLook): Tab {
+export function withLookApplied(tab: Tab, look: LookLike): Tab {
   const themed = withThemeApplied(tab, look.theme);
-  const next: Tab = {
-    ...themed,
-    finish: look.finish,
-    backgroundPattern: look.pattern,
-    backgroundOpacity: look.patternOpacity ?? 1,
-  };
+  const next: Tab = { ...themed, finish: look.finish, backgroundPattern: look.pattern };
+  // A look that sets a strength sets it; the rest leave the tab's own strength alone.
+  if (look.patternOpacity !== undefined) next.backgroundOpacity = look.patternOpacity;
   if (look.font) next.font = look.font;
   else delete next.font;
   return next;
 }
 
 /** The look the tab's settings match, or undefined when it has its own mix. Unset settings read as what they
- *  draw: the Default theme, Flexible, no font, the grid at full strength. */
+ *  draw: the Default theme, Flexible, no font, the grid. A pattern's strength counts only for a look that sets one
+ *  (a template's softened grid is still Everyday). */
 export function activeLookId(
   tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'>,
 ): TabLookId | undefined {
@@ -189,6 +190,23 @@ export function activeLookId(
       l.finish === finish &&
       l.font === font &&
       l.pattern === pattern &&
-      Math.abs((l.patternOpacity ?? 1) - opacity) < 0.001,
+      (l.patternOpacity === undefined || Math.abs(l.patternOpacity - opacity) < 0.001),
   )?.id;
+}
+
+/** The tab's own mix as a look-shaped card (the carousel's leading "Current" card, shown when no look matches), so the
+ *  tab's setup is always the first thing in the list. Not a look: picking it changes nothing. */
+export function currentMix(
+  tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'>,
+): LookLike {
+  return {
+    id: 'current',
+    label: 'Current',
+    description: 'This tab’s own mix',
+    theme: tab.theme ?? 'brand',
+    finish: resolveFinish(tab.finish, undefined),
+    font: tab.font || undefined,
+    pattern: tab.backgroundPattern ?? 'grid',
+    patternOpacity: tab.backgroundOpacity ?? 1,
+  };
 }

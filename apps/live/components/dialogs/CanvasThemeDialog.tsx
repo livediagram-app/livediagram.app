@@ -177,7 +177,7 @@ export function CanvasThemeDialog({
         >
           {/* The header: the title with help and close on the right; inside a panel, a Back row to the home
               (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
-          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-3 pt-3 dark:border-slate-800">
+          <div className="flex flex-col gap-2 border-b border-slate-200 px-4 pb-2.5 pt-3 dark:border-slate-800">
             <div className="flex items-center justify-between gap-3">
               {/* "Appearance" is the VIEWER's own light / dark chrome now
                   (docs/specs/007-editor/live-app.md), so this dialog — which is the tab's look, shared
@@ -215,7 +215,7 @@ export function CanvasThemeDialog({
 
           {/* Fixed min-height so switching between tabs doesn't collapse the
               modal and make it jump around. */}
-          <div className="min-h-[20rem] overflow-y-auto px-5 py-4">
+          <div className="min-h-[20rem] overflow-y-auto px-5 pb-4 pt-2">
             {/* The home and its panels swap through an easing height and a short slide: into a panel from the
                 right, back home from the left (AnimatedHeightBox). */}
             <AnimatedHeightBox viewKey={tab} enter={enter}>
@@ -243,6 +243,7 @@ export function CanvasThemeDialog({
                   font={font}
                   defaultTextSize={defaultTextSize}
                   pattern={backgroundPattern}
+                  backgroundOpacity={backgroundOpacity}
                   onOpenPanel={go}
                 />
               ) : tab === 'font' ? (
