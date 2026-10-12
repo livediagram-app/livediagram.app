@@ -94,8 +94,9 @@ export function pathEndTangents(
 - **Passes.** Two passes by default, each from its own stream (`seed`, `seed + 1`), concatenated into one `d`.
 - **Hatching.** Lines at `SKETCH_HATCH_ANGLE_DEG` across the area, `gap = clamp(4 * strokePx, 6, 12)` apart,
   widened so no more than `SKETCH_HATCH_MAX_LINES` lines are drawn; the area is rotated, scanned with horizontal
-  lines (even-odd pairs of edge crossings), each piece rotated back and drawn as a one-pass sketch line. Drawn in
-  the fill colour at `max(1, strokePx / 2)` wide.
+  lines (even-odd pairs of edge crossings), each piece rotated back and drawn as a one-pass sketch line. Drawn over
+  the solid fill in the stroke colour at `SKETCH_HATCH_OPACITY` (0.3) and `max(1, strokePx / 2)` wide; every
+  filled element keeps its `solid` layer, so text contrast never depends on the canvas behind.
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
@@ -196,8 +197,8 @@ sticky and table.
 ## Errors and edge cases
 
 - Zero or negative size: no outline is drawn (overlay returns null), same as `BoxBorderOverlay`.
-- Stroke width none (`'none'`): Sketch draws hatching only.
-- Transparent fill: no hatching.
+- Stroke width none (`'none'`): Sketch draws the fill and its shading only.
+- Transparent fill: no fill and no hatching.
 - Huge shapes (20000 px): hatching capped at `SKETCH_HATCH_MAX_LINES`, curve samples capped at 64.
 - Degenerate arrow (length < 0.5): drawn unsketched.
 - Unknown path commands in `outlineOfPath`: the rest of the path is ignored and the outline so far is used.
@@ -263,19 +264,20 @@ per command letter.
 
 ## Constants and configuration
 
-| Constant                 | Value  | Provenance                                               | Safe range              |
-| ------------------------ | ------ | -------------------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback) | 0 to 4                  |
-| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                             | any sans font id        |
-| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                    | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails             | 0 to 4                  |
-| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)               | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                       | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14      | 12 to 28                |
-| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)    | 1 to 3                  |
-| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                           | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                 | 100 to 600              |
-| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                         | any handwriting font id |
+| Constant                 | Value  | Provenance                                                                | Safe range              |
+| ------------------------ | ------ | ------------------------------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback)                  | 0 to 4                  |
+| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                                              | any sans font id        |
+| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                                     | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails                              | 0 to 4                  |
+| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)                                | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                                        | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14                       | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                     | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                            | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                                  | 100 to 600              |
+| `SKETCH_HATCH_OPACITY`   | 0.3    | shading that reads, under a label that stays legible (dark-mode feedback) | 0.2 to 0.45             |
+| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                          | any handwriting font id |
 
 ## Assets and external resources
 
