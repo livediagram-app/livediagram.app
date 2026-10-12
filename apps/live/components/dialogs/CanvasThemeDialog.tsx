@@ -248,7 +248,6 @@ export function CanvasThemeDialog({
                   font={font}
                   defaultTextSize={defaultTextSize}
                   pattern={backgroundPattern}
-                  backgroundOpacity={backgroundOpacity}
                   onOpenPanel={go}
                 />
               ) : tab === 'font' ? (

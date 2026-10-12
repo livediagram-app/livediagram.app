@@ -95,7 +95,7 @@ export function pathEndTangents(
 - **Hatching.** Lines at `SKETCH_HATCH_ANGLE_DEG` across the area, `gap = clamp(4 * strokePx, 6, 12)` apart,
   widened so no more than `SKETCH_HATCH_MAX_LINES` lines are drawn; the area is rotated, scanned with horizontal
   lines (even-odd pairs of edge crossings), each piece rotated back and drawn as a one-pass sketch line. Drawn over
-  the solid fill in the stroke colour at `SKETCH_HATCH_OPACITY` (0.3) and `max(1, strokePx / 2)` wide; every
+  the solid fill in the stroke colour at `SKETCH_HATCH_OPACITY` (0.15) and `max(1, strokePx / 2)` wide; every
   filled element keeps its `solid` layer, so text contrast never depends on the canvas behind.
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
@@ -275,7 +275,7 @@ per command letter.
 | `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                     | 1 to 3                  |
 | `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                            | -60 to -30              |
 | `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                                  | 100 to 600              |
-| `SKETCH_HATCH_OPACITY`   | 0.3    | shading that reads, under a label that stays legible (dark-mode feedback) | 0.2 to 0.45             |
+| `SKETCH_HATCH_OPACITY`   | 0.15   | shading that reads without distracting (softened from 0.3 on feedback)    | 0.1 to 0.45             |
 | `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                          | any handwriting font id |
 
 ## Assets and external resources

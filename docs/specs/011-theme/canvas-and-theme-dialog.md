@@ -47,8 +47,7 @@ picked one by one.
 
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots.
-- When the tab matches no look, a leading **Current** card shows the tab as it is, so the home always shows where the
-  tab stands; it goes once a look is picked.
+- When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
@@ -79,7 +78,7 @@ root, scoped to the canvas), so it costs nothing the rest of the time. Reduced m
 
 The tab's typography ([Fonts](../004-interface-design/fonts.md)): a **preview** of the sample diagram lettered in
 the tab's font at the size new text takes; the **Typeface** specimen cards ("Aa" and the name in each face, with its
-style), nine to a carousel page, "Editor default" first; and **Size of New Text** as four tiles (Small, Medium,
+style), six to a carousel page (three to a row, two rows), "Editor default" first; and **Size of New Text** as four tiles (Small, Medium,
 Large, Scale), each drawing a letter at that size. Picking a typeface or a size **applies to the whole tab at
 once**: the tab's setting, and every element following it again (an element's own font is cleared, every
 text-bearing element takes the size). There is no separate apply action.

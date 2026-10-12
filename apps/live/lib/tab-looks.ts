@@ -152,9 +152,6 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
 ];
 
-/** A look, or a look-shaped card such as the tab's own mix ("Current"). */
-export type LookLike = Omit<TabLook, 'id'> & { id: string };
-
 /** How many looks one carousel page holds. */
 export const LOOKS_PER_PAGE = 6;
 
@@ -163,7 +160,7 @@ export function tabLookById(id: string): TabLook | undefined {
 }
 
 /** The tab with a look applied: the theme exactly as picking it does, then the finish, font and pattern. */
-export function withLookApplied(tab: Tab, look: LookLike): Tab {
+export function withLookApplied(tab: Tab, look: TabLook): Tab {
   const themed = withThemeApplied(tab, look.theme);
   const next: Tab = { ...themed, finish: look.finish, backgroundPattern: look.pattern };
   // A look that sets a strength sets it; the rest leave the tab's own strength alone.
@@ -192,21 +189,4 @@ export function activeLookId(
       l.pattern === pattern &&
       (l.patternOpacity === undefined || Math.abs(l.patternOpacity - opacity) < 0.001),
   )?.id;
-}
-
-/** The tab's own mix as a look-shaped card (the carousel's leading "Current" card, shown when no look matches), so the
- *  tab's setup is always the first thing in the list. Not a look: picking it changes nothing. */
-export function currentMix(
-  tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'>,
-): LookLike {
-  return {
-    id: 'current',
-    label: 'Current',
-    description: 'This tab’s own mix',
-    theme: tab.theme ?? 'brand',
-    finish: resolveFinish(tab.finish, undefined),
-    font: tab.font || undefined,
-    pattern: tab.backgroundPattern ?? 'grid',
-    patternOpacity: tab.backgroundOpacity ?? 1,
-  };
 }

@@ -81,16 +81,19 @@ export function finishDrawsDefaultShadow(finish: Finish): boolean {
   return finish !== 'professional';
 }
 
-/** The font id an element is lettered in: its own, else the handwriting font under Sketch (whatever the
- *  tab's), else the tab's, else Inter under Professional. Undefined means the editor default. */
+/** The font id an element is lettered in: its own, else the tab's, else the handwriting font under Sketch or Inter
+ *  under Professional. Undefined means the editor default. */
 export function finishFontId(
   own: string | undefined,
   tab: string | undefined,
   finish: Finish,
 ): string | undefined {
+  // A font picked on the element or the tab wins; a finish only fills the gap (handwriting for Sketch, Inter for
+  // Professional), so picking a typeface on a Sketch tab shows.
   if (own) return own;
+  if (tab) return tab;
   if (finish === 'sketch') return SKETCH_FONT_ID;
-  return tab ?? (finish === 'professional' ? PROFESSIONAL_FONT_ID : undefined);
+  return finish === 'professional' ? PROFESSIONAL_FONT_ID : undefined;
 }
 
 /** The font id an element is lettered in, from the element and its tab (finishFontId over the element's

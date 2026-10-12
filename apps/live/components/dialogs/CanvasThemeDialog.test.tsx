@@ -154,17 +154,8 @@ describe('CanvasThemeDialog home', () => {
     ).toBe('true');
   });
 
-  it('leads with a selected Current card when the tab matches no look, and none when it does', () => {
-    const { unmount } = home({
-      themeId: 'rose',
-      finish: 'sketch',
-      font: 'lora',
-      backgroundPattern: 'lines',
-    });
-    const current = screen.getByRole('button', { name: /^Current/ });
-    expect(current.getAttribute('aria-pressed')).toBe('true');
-    unmount();
-    home({ themeId: 'brand', finish: undefined, font: null, backgroundPattern: 'grid' });
+  it('shows only the looks, with no Current card for the tab’s own mix', () => {
+    home({ themeId: 'rose', finish: 'sketch', font: 'lora', backgroundPattern: 'lines' });
     expect(screen.queryByRole('button', { name: /^Current/ })).toBeNull();
   });
 

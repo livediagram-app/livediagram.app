@@ -13,8 +13,8 @@ import { TabStylePreview } from './TabStylePreview';
 const sectionLabel =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 
-/** How many typeface cards one carousel page holds: a 3 x 3 grid. */
-const FONTS_PER_PAGE = 9;
+/** How many typeface cards one carousel page holds: three to a row, two rows. */
+const FONTS_PER_PAGE = 6;
 
 type FontOption = { id: string | null; label: string; kind: string; stack: string | undefined };
 

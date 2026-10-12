@@ -2,14 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FONTS, type Element, type Tab } from '@livediagram/document';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
-import {
-  LOOKS_PER_PAGE,
-  TAB_LOOKS,
-  activeLookId,
-  currentMix,
-  tabLookById,
-  withLookApplied,
-} from './tab-looks';
+import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
 import { withThemeApplied } from './tab-theme-apply';
 
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts over a tab's existing settings.
@@ -118,26 +111,5 @@ describe('pattern strength', () => {
     expect(
       withLookApplied(tab({ backgroundOpacity: 0.4 }), tabLookById('everyday')!).backgroundOpacity,
     ).toBe(0.4);
-  });
-});
-
-describe('currentMix', () => {
-  it('describes the tab’s own settings as a look-shaped Current card', () => {
-    const mix = currentMix({
-      theme: 'rose',
-      finish: 'sketch',
-      font: 'lora',
-      backgroundPattern: 'lines',
-    });
-    expect(mix).toMatchObject({
-      id: 'current',
-      label: 'Current',
-      theme: 'rose',
-      finish: 'sketch',
-      font: 'lora',
-      pattern: 'lines',
-      patternOpacity: 1,
-    });
-    expect(currentMix({}).theme).toBe('brand');
   });
 });

@@ -8,22 +8,19 @@ import { useMemo } from 'react';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
-import { LOOKS_PER_PAGE, TAB_LOOKS, type LookLike, type TabLookId } from '@/lib/tab-looks';
+import { LOOKS_PER_PAGE, TAB_LOOKS, type TabLook, type TabLookId } from '@/lib/tab-looks';
 
 export function LooksCarousel({
   activeLook,
-  current,
   onPickLook,
   headingClass,
 }: {
   activeLook: TabLookId | undefined;
-  // The tab's own mix, shown first and selected when it matches no look; omitted when a look matches.
-  current?: LookLike;
   onPickLook: (id: TabLookId) => void;
   headingClass: string;
 }) {
   // Each look's preview is fixed for an appearance, so the twelve are drawn once per open (again if the viewer's mode
-  // changes: they draw in its half); the Current card redraws with the tab.
+  // changes: they draw in its half).
   const { appearance } = useAppearance();
   const previews = useMemo(
     () =>
@@ -37,27 +34,10 @@ export function LooksCarousel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [appearance],
   );
-  const currentPreview = useMemo(
-    () =>
-      current
-        ? { markup: lookPreviewSvg(current), paper: lookPreviewTab(current).backgroundColor }
-        : null,
-    // The mix's fields, so a new object with the same settings keeps the drawing.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      current?.theme,
-      current?.finish,
-      current?.font,
-      current?.pattern,
-      current?.patternOpacity,
-      appearance,
-    ],
-  );
-  const items: readonly LookLike[] = current ? [current, ...TAB_LOOKS] : TAB_LOOKS;
   return (
     <section aria-labelledby="looks-heading" data-tour-id="tab-style-looks">
       <PagedCarousel
-        items={items}
+        items={TAB_LOOKS}
         perPage={LOOKS_PER_PAGE}
         label="Looks"
         navTourId="tab-style-looks-nav"
@@ -67,20 +47,18 @@ export function LooksCarousel({
           </h3>
         }
         gridClass="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
-        // Open on the page holding the current look (the first, with Current, when the tab has its own mix).
-        initialIndex={items.findIndex((l) => l.id === (activeLook ?? 'current'))}
+        // Open on the page holding the tab's look (the first page when it has its own mix).
+        initialIndex={TAB_LOOKS.findIndex((l) => l.id === activeLook)}
         renderItem={(look) => {
-          const isCurrent = look.id === 'current';
-          const preview = isCurrent ? currentPreview! : previews.get(look.id as TabLookId)!;
+          const preview = previews.get(look.id)!;
           return (
             <LookCard
               key={look.id}
               look={look}
-              active={isCurrent || activeLook === look.id}
+              active={activeLook === look.id}
               markup={preview.markup}
               paper={preview.paper}
-              // The tab's own mix is already applied: picking it changes nothing.
-              onPick={isCurrent ? () => {} : () => onPickLook(look.id as TabLookId)}
+              onPick={() => onPickLook(look.id)}
             />
           );
         }}
@@ -96,7 +74,7 @@ function LookCard({
   paper,
   onPick,
 }: {
-  look: LookLike;
+  look: TabLook;
   active: boolean;
   markup: string;
   paper: string | undefined;

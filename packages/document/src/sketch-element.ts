@@ -44,7 +44,7 @@ export type SketchDrawing = {
 
 /** How strongly the pencil shading shows over a filled shape: enough to read as hand-shaded, faint enough
  *  that the label on it stays readable (docs/specs/008-canvas/finish.md "Sketch"). */
-export const SKETCH_HATCH_OPACITY = 0.3;
+export const SKETCH_HATCH_OPACITY = 0.15;
 
 export type SketchElementOptions = {
   /** The border width in px (0 draws no outline). */

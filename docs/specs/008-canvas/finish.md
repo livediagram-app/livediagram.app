@@ -56,8 +56,8 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
   centre inside the shape, such as a flowchart key's card under its captions) is not shaded, so what sits on it
   stays readable. Only a shape that stands alone is shaded.
-- **Lettering:** an element without its own font is written in the handwriting font (Caveat), whatever font the
-  tab has. An element's own font wins. A code block keeps its monospace font.
+- **Lettering:** an element without its own font, on a tab without one, is written in the handwriting font
+  (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab. A code block keeps its monospace font.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
   cardinality).

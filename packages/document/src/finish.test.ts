@@ -73,8 +73,10 @@ describe('Professional fallbacks', () => {
 });
 
 describe('Sketch lettering', () => {
-  it('writes in the handwriting font unless the element has its own, whatever the tab’s', () => {
-    expect(finishFontId(undefined, 'inter', 'sketch')).toBe(SKETCH_FONT_ID);
+  it('writes in the handwriting font unless the element or the tab picks one', () => {
+    expect(finishFontId(undefined, undefined, 'sketch')).toBe(SKETCH_FONT_ID);
+    // A typeface picked on a Sketch tab shows (Workshop's Permanent Marker, a pick in the Text panel).
+    expect(finishFontId(undefined, 'inter', 'sketch')).toBe('inter');
     expect(finishFontId('lora', 'inter', 'sketch')).toBe('lora');
     expect(finishFontId(undefined, 'lora', 'professional')).toBe('lora');
     // Professional letters in Inter when neither the element nor the tab picks a font.
