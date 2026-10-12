@@ -29,6 +29,9 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   the role pill (Editing / Viewing), the tour card's buttons and an Illustrate page's lock and cog.
   The Plan cogs (a column's, Board Settings, a Sheet's) and the empty-tab card's close take the
   full `touch-target`.
+- **A phone sheet's grab handle** (BottomSheet, Dialog's `phoneSheet`, the start panels) is one shared strip,
+  `SheetHandle`: the sheet's full width and 32px tall (`SHEET_HANDLE_PX`), its pill 48 by 6px, so a thumb finds it
+  without aiming for the pill. A pad cannot reach above it, where the sheet's edge clips it.
 - **Padding where a pad would be clipped.** A `truncate` box or a horizontal scroller clips its own
   `::before`, so there the control grows by padding instead (`pointer-coarse:py-*`, with a matching
   negative margin where the line must not move): the document title in the editor header, the

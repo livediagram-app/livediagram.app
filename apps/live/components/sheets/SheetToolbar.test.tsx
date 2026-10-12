@@ -624,6 +624,28 @@ describe('the sheet toolbar', () => {
     expect(screen.queryByText('Wrap Text')).toBeNull();
     expect(screen.getByRole('button', { name: 'Wrap Text' })).toBeTruthy();
   });
+
+  it('packs a phone’s toolbar: no Search, and wide controls as glyphs opening their menus', () => {
+    // A phone's Sheet: on a desktop the swatches alone overflow this.
+    width = 376;
+    phone = true;
+    show(h);
+    pickCategory('Text');
+    expect(screen.queryByRole('button', { name: 'Search' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More' })).toBeNull();
+    for (const name of ['Bold', 'Italic', 'Underline', 'Strikethrough'])
+      expect(btn(name)).toBeTruthy();
+    const colour = btn('Text Colour');
+    expect(colour.getAttribute('aria-haspopup')).toBe('menu');
+    expect(btn('Font Size').getAttribute('aria-haspopup')).toBe('menu');
+    fireEvent.click(btn('Font Size'));
+    fireEvent.click(row('18'));
+    expect(h.cell('A1')?.format?.fs).toBe(18);
+    // The function families are their glyph alone, named by the tooltip.
+    pickCategory('Functions');
+    expect(btn('Maths Functions')).toBeTruthy();
+    expect(screen.queryByText('Maths')).toBeNull();
+  });
 });
 
 // docs/specs/029-sheets/sheet.md "Toolbar": Search, at the far right, finds a function by name or by what it does,

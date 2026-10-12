@@ -5,6 +5,7 @@ import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
 import { useSheetDrag } from '../useSheetDrag';
+import { SheetHandle } from '../SheetHandle';
 import { safeInset } from '../safe-area';
 
 // The shared modal shell (packages/ui, so the public sites use it too; the editor wraps it with its modal
@@ -179,15 +180,8 @@ export function Dialog({
           }${className ? ` ${className}` : ''}`}
         >
           {phoneSheet ? (
-            // The grab handle, phone only: the full width of the sheet, 24px tall (BottomSheet's).
-            <div
-              aria-hidden
-              data-sheet-handle=""
-              {...sheet.handleProps}
-              className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center sm:hidden"
-            >
-              <span className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
-            </div>
+            // The grab handle, phone only (BottomSheet's).
+            <SheetHandle handleProps={sheet.handleProps} className="sm:hidden" />
           ) : null}
           {children}
         </div>

@@ -84,9 +84,12 @@ or out of it, and the mode menu offers a new tab instead. An empty tab has nothi
 hold, so while a general tab has no elements it switches freely into and out of Plan, from the start's switch, the
 top switch and Shift+D (`crossPlan` on `useEditorMode`). The first element closes the line again.
 
-A mode change swaps one start for another. The new one **turns in place**: the frame stays still and only what is
-in it fades over, so a mode change reads as the same panel turning rather than a second one flying up
-(`startPanelJustLeft`, a start mounting within 400 ms of another leaving).
+A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
+crossfades into the new (the start's mode switch runs the change as a View Transition, `withViewTransition`), so a
+mode change reads as the same panel turning rather than a second one flying up or its content blinking out
+(`startPanelJustLeft`, a start mounting within 400 ms of another leaving). The new content arrives whole, its rail and
+cards not cascading in until the category or search changes. Without View Transitions, or with reduced motion, the
+content swaps at once.
 
 ## Start Illustrating
 

@@ -5,6 +5,12 @@ import { PlanBoardPicker } from './PlanBoardPicker';
 
 let plan: { items: Map<string, unknown> } | null = null;
 vi.mock('./PlanContext', () => ({ usePlan: () => plan }));
+// Each test's panel arrives fresh: one unmounted by the test before is not a mode change turning it in place.
+vi.mock('@/components/start/start-panel-open', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/components/start/start-panel-open')>()),
+  startPanelJustLeft: () => justLeft,
+}));
+let justLeft = false;
 
 // docs/specs/026-plan/plan-mode.md "Starting a board": one panel, a rail of categories beside a grid of cards, and a
 // search across them.
@@ -113,6 +119,21 @@ describe('Start Planning', () => {
     expect(document.querySelector('.lvd-cascade')).not.toBeNull();
     fireEvent.keyDown(rail(/^Boards/), { key: 'ArrowUp' });
     expect(rail(/^Recommended/).getAttribute('aria-current')).toBe('true');
+  });
+});
+
+describe('Start Planning after a mode change', () => {
+  // docs/specs/007-editor/start-diagramming.md "Changing mode": the panel turns in place, its content arriving whole.
+  it('arrives without the cascade, which returns once the category changes', () => {
+    justLeft = true;
+    try {
+      show();
+      expect(document.querySelector('.lvd-cascade')).toBeNull();
+      fireEvent.click(rail(/^Boards/));
+      expect(document.querySelector('.lvd-cascade')).not.toBeNull();
+    } finally {
+      justLeft = false;
+    }
   });
 });
 

@@ -262,6 +262,10 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
   its name beside it (a wide Sheet on a desktop), the names show and the tooltips are dropped. On a phone, or when
   they would not fit, glyphs alone; buttons that still do not fit fold from the right into a **More** (⋯) menu, so
   it never wraps.
+- On a phone the toolbar packs tighter so each category shows as much as it can before More: there is no Search
+  (All Functions… still lists every function), the gaps and dividers are slimmer, menu buttons drop their chevron,
+  the switcher and the function families are their glyph alone (named by the tooltip), and the wide controls (the
+  colour swatches, Font, Font Size's stepper) are their glyph opening the menu they open from More.
 - Each button reads the selection's active cell (Bold pressed when it is bold) and acts on the whole selection.
 - Undo and Redo are the canvas's own (its controls and the keys), not repeated in the toolbar.
 
@@ -334,7 +338,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   - **let go unmoved**, it opens the cell's (or the header's) menu at the finger, the browser's own long-press menu
     never showing.
 - **The grip**: the selection's corner handle is drawn round and twice the size (14 px), and a finger within 22 px of
-  it drags the range's far corner (its top left stays put), for anyone who can select, viewers too. Fill by dragging is
+  it drags the range's far corner (its top left stays put) once it moves 6 px, for anyone who can select, viewers too;
+  lifted unmoved it is a tap, selecting the cell under it. Fill by dragging is
   for a mouse or pen; on a touch screen **Ctrl+D** (Fill Down, with a keyboard) or the menu's commands fill.
 - While a finger selects (from the hold or the grip until it lifts) the page never scrolls under it; a second finger
   is never a hold (it is the pinch, the canvas's or the browser's).

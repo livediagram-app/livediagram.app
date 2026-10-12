@@ -21,6 +21,7 @@ import {
   lucideGlyph,
   noMatchTitle,
   safeInset,
+  SheetHandle,
   useSheetDrag,
 } from '@livediagram/ui';
 import {
@@ -175,9 +176,11 @@ export function StartPanel<C extends string>({
   // Leading the rail, over a hairline: the mode switch.
   lead?: ReactNode;
 }) {
-  // Another start panel was on screen a moment ago: the tab changed mode under it. The frame stays put (no fly-up,
-  // no fade of the whole panel) and only what is in it fades over, so a mode change reads as the same panel turning.
+  // Another start panel was on screen a moment ago: the tab changed mode under it. The frame stays put (no fly-up) and
+  // its content arrives whole, nothing fading up from nothing or cascading in, so a mode change never blinks; the
+  // switch crossfades the two (StartModeSwitch's View Transition). `calm` lasts until the category or search changes.
   const [swapped] = useState(() => startPanelJustLeft());
+  const [calm, setCalm] = useState(swapped);
   useEffect(() => () => noteStartPanelLeft(), []);
   const [category, setCategory] = useState<C>(initialCategory);
   // A search handed over by /new?q= (start-query.ts), else none.
@@ -199,6 +202,7 @@ export function StartPanel<C extends string>({
   // The cards' scroller: a category picked opens at its top, never part way down the last one's cards.
   const cardsScroller = useRef<HTMLDivElement>(null);
   const pick = (next: C) => {
+    setCalm(false);
     setQuery('');
     setCategory(next);
     if (cardsScroller.current) cardsScroller.current.scrollTop = 0;
@@ -260,7 +264,7 @@ export function StartPanel<C extends string>({
   const below = categories.filter((c) => c.below);
   // The cards cascade in as the panel arrives, and again each time the category or search changes them (the
   // grid is keyed by what it shows, so a change remounts it).
-  const cascade = ' lvd-cascade';
+  const cascade = calm ? '' : ' lvd-cascade';
   const shown = categories.find((c) => c.id === category) ?? categories[0]!;
   // One a row on a phone (each card a row of its own), two on a narrow panel, three on a wide one.
   const grid = 'grid grid-cols-1 gap-3 max-sm:gap-2 sm:grid-cols-2 lg:grid-cols-3';
@@ -292,21 +296,16 @@ export function StartPanel<C extends string>({
           } as CSSProperties
         }
       >
-        {/* The grab handle, phone only, as every phone sheet has: the full width of the sheet, 24px tall
-            (BottomSheet's). Dragged down it closes a panel that can close; one that cannot settles back. */}
-        <div
-          aria-hidden
-          data-sheet-handle=""
-          {...sheet.handleProps}
-          className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center sm:hidden"
-        >
-          <span className="h-1 w-10 rounded-full" style={{ backgroundColor: palette.border }} />
-        </div>
+        {/* The grab handle, phone only, as every phone sheet has (BottomSheet's). Dragged down it closes a panel that
+            can close; one that cannot settles back. */}
+        <SheetHandle
+          handleProps={sheet.handleProps}
+          className="sm:hidden"
+          pillColor={palette.border}
+        />
         <header
           // Room on the right for the help and × pinned in the corner.
-          className={`relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pt-1 ${
-            swapped ? 'animate-fade-in' : ''
-          }`}
+          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pt-1"
           style={{ borderColor: palette.border }}
         >
           <div className="min-w-0 flex-1">
@@ -337,6 +336,7 @@ export function StartPanel<C extends string>({
               placeholder={searchLabel}
               value={query}
               onChange={(e) => {
+                setCalm(false);
                 setQuery(e.target.value);
               }}
               onKeyDown={(e) => {
@@ -382,7 +382,7 @@ export function StartPanel<C extends string>({
             ) : null}
           </div>
         </header>
-        <div className={`flex min-h-0 flex-1 max-sm:flex-col ${swapped ? 'animate-fade-in' : ''}`}>
+        <div className="flex min-h-0 flex-1 max-sm:flex-col">
           {/* The rail, led by the mode switch over a hairline. On a phone the switch is its own row over the rail's. */}
           <div
             className="flex shrink-0 flex-col max-sm:contents sm:w-60 sm:border-r"
@@ -398,7 +398,11 @@ export function StartPanel<C extends string>({
               className="flex shrink-0 gap-1 overflow-x-auto p-3 sm:min-h-0 sm:flex-1 sm:flex-col sm:overflow-y-auto sm:overflow-x-hidden sm:p-4 max-sm:border-b max-sm:px-2 max-sm:py-2 max-sm:[scrollbar-width:none]"
               style={{ borderColor: palette.border }}
             >
-              <div ref={rail} className="contents lvd-cascade" onKeyDown={onRailKey}>
+              <div
+                ref={rail}
+                className={swapped ? 'contents' : 'contents lvd-cascade'}
+                onKeyDown={onRailKey}
+              >
                 {above.map(railButton)}
               </div>
               {/* Below a hairline: the ways in that bring a whole way of working, then Something Else. */}
