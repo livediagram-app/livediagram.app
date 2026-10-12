@@ -2,17 +2,7 @@
 // selecting elements, grouping, themes, templates, links, and annotations.
 // Composed only from the shared primitives so the house style holds.
 
-import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Cursor,
-  Panel,
-  Dialog,
-  Tabs,
-  Label,
-} from './primitives';
+import { Scene, Shape, Arrow, SelectionBox, Cursor, Panel, Tabs, Label } from './primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 
 /** The canvas with the menu button and the palette strip across the top and a small flow on
@@ -123,95 +113,6 @@ export function FormatPainter() {
           strokeWidth={1.5}
         />
       </g>
-    </Scene>
-  );
-}
-
-/** The theme picker as the Tab Style dialog opens it: Theme, Canvas and Font tabs, and the
- *  Theme tab's overview of a Default card plus one card per category, so you browse by mood. */
-export function ThemePicker() {
-  const cards: { name: string; swatch: string[] }[] = [
-    { name: 'Default', swatch: ['fill-brand-500', 'fill-brand-100'] },
-    { name: 'Formal', swatch: ['fill-slate-700', 'fill-amber-400'] },
-    { name: 'Cool', swatch: ['fill-sky-500', 'fill-emerald-500'] },
-    { name: 'Warm', swatch: ['fill-amber-500', 'fill-rose-500'] },
-    { name: 'Dark', swatch: ['fill-slate-800', 'fill-slate-500'] },
-    { name: 'Multi-colour', swatch: ['fill-violet-500', 'fill-emerald-500'] },
-    { name: 'Custom', swatch: ['fill-white', 'fill-slate-200'] },
-  ];
-  const tabs = ['Theme', 'Canvas', 'Font'];
-  return (
-    <Scene w={420} h={240} bg="plain">
-      <Dialog
-        x={60}
-        y={14}
-        w={300}
-        h={212}
-        title="Tab Style"
-        sceneW={420}
-        sceneH={240}
-        scrim={false}
-      >
-        {tabs.map((t, i) => (
-          <g key={t}>
-            <Label
-              x={80 + i * 56}
-              y={66}
-              size={10}
-              weight={i === 0 ? 700 : 500}
-              tone={i === 0 ? 'accent' : 'muted'}
-            >
-              {t}
-            </Label>
-            {i === 0 ? (
-              <line x1={78} y1={74} x2={114} y2={74} className="stroke-brand-500" strokeWidth={2} />
-            ) : null}
-          </g>
-        ))}
-        <line x1={61} y1={75} x2={359} y2={75} className="stroke-slate-200" strokeWidth={1} />
-        {cards.map((c, i) => {
-          const col = i % 4;
-          const row = Math.floor(i / 4);
-          const sx = 76 + col * 68;
-          const sy = 86 + row * 66;
-          const sel = i === 0;
-          return (
-            <g key={c.name}>
-              <rect
-                x={sx}
-                y={sy}
-                width={60}
-                height={56}
-                rx={8}
-                className={`fill-white ${sel ? 'stroke-brand-500' : 'stroke-slate-200'}`}
-                strokeWidth={sel ? 2.2 : 1.3}
-              />
-              <g className="help-art-as-drawn">
-                <rect
-                  x={sx + 10}
-                  y={sy + 10}
-                  width={18}
-                  height={18}
-                  rx={4}
-                  className={c.swatch[0]}
-                />
-                <rect
-                  x={sx + 32}
-                  y={sy + 10}
-                  width={18}
-                  height={18}
-                  rx={4}
-                  className={`${c.swatch[1]} stroke-slate-200`}
-                  strokeWidth={1}
-                />
-              </g>
-              <Label x={sx + 30} y={sy + 44} size={8.5} weight={600} anchor="middle" tone="body">
-                {c.name}
-              </Label>
-            </g>
-          );
-        })}
-      </Dialog>
     </Scene>
   );
 }

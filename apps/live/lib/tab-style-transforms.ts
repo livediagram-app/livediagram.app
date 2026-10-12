@@ -1,7 +1,6 @@
 // The Tab Style changes as pure tab transforms (docs/specs/011-theme/canvas-and-theme-dialog.md): what picking a
-// typeface, a size, a finish or a pattern does to a tab. The tab setters commit them (useTabCanvas) and the hover
-// preview draws them without writing anything (tab-style-preview.ts), so a preview always shows exactly what a click
-// will do. Each applies to the whole tab: the tab's own setting, and every element following it again.
+// typeface, a size, a finish or a pattern does to a tab, committed by the tab setters (useTabCanvas). Each applies to
+// the whole tab: the tab's own setting, and every element following it again.
 import {
   isBoxed,
   supportsFinish,

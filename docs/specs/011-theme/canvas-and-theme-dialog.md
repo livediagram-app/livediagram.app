@@ -50,7 +50,7 @@ picked one by one.
 - When the tab matches no look, a leading **Current** card shows the tab as it is, so the home always shows where the
   tab stands; it goes once a look is picked.
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
-  preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), and its name.
+  preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
   (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
   element's own finish or font still wins over the tab's.
@@ -68,16 +68,11 @@ with reduced motion), under the shared back bar (the one Import and Export use: 
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
 open the dialog on that panel.
 
-### Hover to preview
+### Eased changes
 
-Every option in the dialog (a look, a theme, a finish, a typeface, a size, a pattern) **previews on the canvas while
-a mouse rests on it**: the canvas draws the tab as that option would make it, and moving off puts it back. Nothing is
-written, saved, broadcast or added to undo while previewing; a click commits through the ordinary setter, using the
-same transform the preview drew (`lib/tab-style-transforms.ts`), so the preview is exactly what a click does. Touch
-has no hover: a tap commits. Closing the dialog ends any preview.
-
-Each change of what the canvas shows, previewed or committed, **eases** its colours (background, fill, outline, text)
-over 250 ms instead of snapping; the transition is switched on only for the moment of the change (a class on the
+Options do not preview on hover (tried and removed: the canvas changing under a passing pointer was distracting); a
+click applies. Each pick **eases** the canvas's colours (background, fill, outline, text) over 250 ms instead of
+snapping (`lib/tab-style-ease.ts`); the transition is switched on only for the moment of the change (a class on the
 root, scoped to the canvas), so it costs nothing the rest of the time. Reduced motion snaps.
 
 ### Text panel

@@ -21,7 +21,6 @@ import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
-import { useTabAsPreviewed } from '@/lib/tab-style-preview';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
@@ -427,11 +426,8 @@ export function EditorCanvasHost() {
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
     else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
   };
-  // The tab as drawn: the Tab Style hover preview's version while one is up (lib/tab-style-preview.ts), else itself.
-  // Interaction keeps reading `activeTab`; only what is painted follows the preview.
-  const shownTab = useTabAsPreviewed(activeTab);
   const backdrop = resolveViewBackdrop(
-    shownTab,
+    activeTab,
     { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
     appearance,
   );
@@ -443,9 +439,9 @@ export function EditorCanvasHost() {
   // Theme colours in this viewer's half (docs/specs/011-theme/light-and-dark.md); the map is cached per theme and
   // appearance, so its identity holds and the projector's cache with it.
   const canvasElements = projectStockColours(
-    presentingElements ?? shownTab.elements,
+    presentingElements ?? activeTab.elements,
     surface,
-    themeViewMap(shownTab.theme, appearance),
+    themeViewMap(activeTab.theme, appearance),
   );
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
@@ -573,8 +569,8 @@ export function EditorCanvasHost() {
         tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
         tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
         tabPatternColor={backdrop.patternColor}
-        tabFont={shownTab.font}
-        tabFinish={shownTab.finish}
+        tabFont={activeTab.font}
+        tabFinish={activeTab.finish}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
         setViewportZoom={setViewportZoom}
@@ -1112,7 +1108,7 @@ export function EditorCanvasHost() {
         onEditMindOutline={mindOutline.open}
         onTidyMindMap={tidyMindMap}
         onAbandonMindNode={abandonMindNode}
-        chartPalette={themeChartPalette(getTheme(shownTab.theme))}
+        chartPalette={themeChartPalette(getTheme(activeTab.theme))}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}
@@ -1158,7 +1154,7 @@ export function EditorCanvasHost() {
         onChooseTemplate={chooseTemplate}
         onSkipTemplatePicker={skipTemplatePicker}
         onOpenTemplatePicker={openTemplatePicker}
-        tabThemeId={(shownTab.theme as ThemeId | undefined) ?? 'brand'}
+        tabThemeId={(activeTab.theme as ThemeId | undefined) ?? 'brand'}
         tabTimer={activeTab.timer}
         tabVote={activeTab.vote}
         onStartTimer={startTimer}

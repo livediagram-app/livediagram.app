@@ -5,14 +5,13 @@ import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
 
 export const metadata = helpMetadata({
   title: 'Changing the Theme',
-  description:
-    'Open the Tab Style dialog, preview a look or a theme by hovering it, and click to recolour the whole tab.',
+  description: 'Open the Tab Style dialog and pick a look or a theme to recolour the whole tab.',
   path: '/help/canvas/themes/changing-theme/',
 });
 
 <ArticleLayout
   title="Changing the Theme"
-  description="Use the Tab Style dialog to preview looks and themes on the canvas and apply one to the active tab."
+  description="Use the Tab Style dialog to pick a look or a theme for the active tab."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: "Themes", slug: "themes" }}
@@ -33,10 +32,6 @@ The button only appears for people who can edit the tab, so it is missing for a 
 
 The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies to the active tab as you click, and closing it (with the X, the Escape key, or a click outside it) simply dismisses it without rolling anything back. Undo takes a theme change back like any other edit. **Show Me** in the dialog's title row takes you on a short tour of it.
 
-## Hover to Preview
-
-With a mouse, hover any option in the dialog (a look, a theme, a finish, a typeface, a text size or a pattern) and the canvas behind it shows the tab in that option, easing the colours across. Move away and the tab goes back to how it was; nothing is saved until you click. On a touch screen there is no hover, so a tap applies the option straight away (and Undo takes it back).
-
 ## Picking a Look
 
 A look restyles the whole tab in one click. Each one sets four things together: the theme, the [finish](/help/canvas/finish/), the tab font and the canvas pattern. There are twelve, six to a page of the carousel: **Everyday**, **Whiteboard**, **Graph Paper**, **Boardroom**, **Notebook**, **Midnight**, **Seaside**, **Editorial**, **Engineer**, **Workshop**, **Garden** and **Studio**. Each card shows a small sample diagram drawn in that look, with a line on what it is made of.
@@ -51,13 +46,7 @@ Below the looks, **Fine-tune** lists four rows, each showing its current setting
 
 The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the rest of the twenty-four built-in themes, then your own [custom themes](/help/canvas/themes/custom-themes/) and a **New theme** card. It opens on the page holding the tab's current theme; the arrows or the page dots move between pages.
 
-<Step n={1}>
-  Hover a theme to preview it on the canvas.
-</Step>
-
-<Step n={2}>
-  Click a theme to apply it. Double-click a theme to apply it and close the dialog in one move.
-</Step>
+Click a theme to apply it; the canvas eases into the new colours. Double-click a theme to apply it and close the dialog in one move.
 
 Every theme works in light and dark mode: each person sees the tab in their own [appearance's](/help/tools/dark-mode/) version of the theme, so you can pick any theme without thinking about who works in which mode.
 
@@ -68,8 +57,8 @@ To build on a built-in theme, hover its card and press **Copy**: the theme build
 Applying a theme recolours the tab's backdrop and the elements on it, but keeps colours you have hand-set, so deliberate customisations survive the switch. That goes for the backdrop too: a canvas colour, pattern or pattern opacity you chose yourself stays put. Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. Sticky notes keep their own note colours. A shape carrying a [style preset](/help/palette/shapes/style-presets/) moves to the new theme's version of that preset, and **Reset to Default** in a shape's presets brings a hand-coloured shape back to the theme's colours.
 
 <Tip>
-  Hover to compare themes without changing anything, then double-click the one you want to apply it
-  and close the dialog.
+  Double-click a theme to apply it and close the dialog in one move; Undo takes it back if it is not
+  the one.
 </Tip>
 
 </ArticleLayout>

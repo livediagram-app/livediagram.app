@@ -9,8 +9,6 @@ import { FONTS, type Finish, type TextSize } from '@livediagram/document';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { ScaleIcon } from '@/components/palette/palette-icons';
 import { TabStylePreview } from './TabStylePreview';
-import { usePreviewHover } from './TabStylePreviewContext';
-import { withTabFont, withTabTextSize } from '@/lib/tab-style-transforms';
 
 const sectionLabel =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
@@ -109,15 +107,12 @@ function TypefaceCard({
   active: boolean;
   onPick: () => void;
 }) {
-  // Hover letters the tab in this face (TabStylePreviewContext).
-  const previewHover = usePreviewHover((t) => withTabFont(t, option.id));
   return (
     <button
       type="button"
       aria-pressed={active}
       aria-label={option.label}
       onClick={onPick}
-      {...previewHover}
       className={`flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2.5 text-left transition ${
         active
           ? 'border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-500/15'
@@ -151,15 +146,12 @@ function SizeTile({
   active: boolean;
   onPick: () => void;
 }) {
-  // Hover sizes the tab's text at this size (TabStylePreviewContext).
-  const previewHover = usePreviewHover((t) => withTabTextSize(t, option.size));
   return (
     <button
       type="button"
       role="radio"
       aria-checked={active}
       onClick={onPick}
-      {...previewHover}
       className={`flex h-16 flex-col items-center justify-center gap-1 rounded-lg border transition ${
         active
           ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'

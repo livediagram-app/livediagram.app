@@ -41,7 +41,6 @@ const props: ComponentProps<typeof CanvasThemeDialog> = {
   finish: undefined,
   onSetFinish: vi.fn(),
   onApplyLook: vi.fn(),
-  tabId: 't1',
   onClose: vi.fn(),
 };
 

@@ -99,7 +99,6 @@ export function EditorModals() {
           onSetFinish={setTabFinish}
           canvasBackground={activeTab.backgroundColor}
           onApplyLook={applyTabLook}
-          tabId={activeTab.id}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}

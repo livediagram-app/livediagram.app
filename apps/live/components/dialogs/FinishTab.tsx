@@ -7,8 +7,6 @@
 import { DEFAULT_FINISH, FINISHES, type Finish } from '@livediagram/document';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { TabStylePreview } from './TabStylePreview';
-import { usePreviewHover } from './TabStylePreviewContext';
-import { withTabFinish } from '@/lib/tab-style-transforms';
 
 export function FinishTab({
   finish,
@@ -64,15 +62,12 @@ function FinishTile({
   active: boolean;
   onPick: () => void;
 }) {
-  // Hover draws the tab in this finish (TabStylePreviewContext).
-  const previewHover = usePreviewHover((t) => withTabFinish(t, finish));
   return (
     <button
       type="button"
       role="radio"
       aria-checked={active}
       onClick={onPick}
-      {...previewHover}
       className={`flex flex-col items-center gap-2 rounded-lg border px-2 pb-2.5 pt-3.5 transition ${
         active
           ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
