@@ -144,14 +144,16 @@ describe('SidebarRow extras', () => {
 });
 
 // docs/specs/004-interface-design/touch-targets.md: on a touch screen a row is 44px tall and its
-// chevron takes the row's full height, so a thumb lands on the row it means.
+// chevron takes the row's full height, so a thumb lands on the row it means; its words read at 15px
+// on a 20px line, so 12px of padding each side makes the 44px.
 describe('SidebarRow on a touch screen', () => {
   it('grows the row to 44px and the chevron to the full row height', () => {
     row({ expandable: true, expanded: false, onToggleExpand: () => {} });
     const item = screen.getByRole('treeitem');
-    expect(item.querySelector('[data-tree-activate]')?.className).toMatch(
-      /\bpointer-coarse:py-3\.5\b/,
-    );
+    const activate = item.querySelector('[data-tree-activate]')!.className;
+    expect(activate).toMatch(/\bpointer-coarse:py-3\b/);
+    expect(activate).toMatch(/\bpointer-coarse:text-\[15px\]/);
+    expect(activate).toMatch(/\bpointer-coarse:leading-5\b/);
     const gutter = gutterOf(item)!;
     expect(gutter.className).toMatch(/\bpointer-coarse:self-stretch\b/);
     expect(gutter.className).toMatch(/\bpointer-coarse:w-7\b/);

@@ -90,7 +90,8 @@ export function SidebarRow({
         </span>
       ) : null}
       {/* On a touch screen the row is 44px tall and its chevron takes the row's full height
-          (touch-targets.md), so a thumb lands on the row it means. */}
+          (touch-targets.md), so a thumb lands on the row it means; its words and icon read at a phone
+          list's size (15px, 17px), so the 44px rows read as a list rather than small words far apart. */}
       <div
         data-tree-row
         {...rowProps}
@@ -119,7 +120,7 @@ export function SidebarRow({
         <span
           data-tree-activate
           onClick={renaming ? undefined : onActivate}
-          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs pointer-coarse:py-3.5 ${
+          className={`flex min-w-0 flex-1 items-center gap-1.5 py-1 text-left text-xs pointer-coarse:gap-2.5 pointer-coarse:py-3 pointer-coarse:text-[15px] pointer-coarse:leading-5 ${
             renaming ? '' : 'cursor-pointer'
           } ${
             selected
@@ -127,7 +128,7 @@ export function SidebarRow({
               : 'text-slate-700 dark:text-slate-200'
           }`}
         >
-          <span className="shrink-0 text-slate-400">{icon}</span>
+          <span className="shrink-0 text-slate-400 pointer-coarse:[&_svg]:size-[17px]">{icon}</span>
           <span className="min-w-0 flex-1 truncate">{label}</span>
           {badge !== undefined ? <CountBadge count={badge} className="ml-1" /> : null}
         </span>
