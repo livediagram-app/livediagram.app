@@ -4,7 +4,7 @@
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.
 
-import type { Element, ElementOp, Tab } from '@livediagram/document';
+import type { Element, ElementOp, Finish, Tab } from '@livediagram/document';
 import type { LintReport } from './lint';
 import { MAX_TAB_BYTES } from './tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
@@ -184,6 +184,8 @@ export type ChangesetReplaceBody = {
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
+  // The new tab's finish (docs/specs/008-canvas/finish.md).
+  finish?: Finish;
   name?: string;
 };
 

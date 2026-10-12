@@ -227,6 +227,7 @@ function compile(
       tabId: args.tabId,
       name: body.name ?? 'Tab',
       ...(body.theme ? { themeId: body.theme } : {}),
+      ...(body.finish ? { finish: body.finish } : {}),
     });
   }
   if (!stored)

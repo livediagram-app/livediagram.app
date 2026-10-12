@@ -3,7 +3,14 @@
 // @livediagram/api-schema, where the changeset response carries them.
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livediagram/api-schema';
-import type { ElementId, ElementOp, GraphInput, Tab, ThemeDefinition } from '@livediagram/document';
+import type {
+  ElementId,
+  ElementOp,
+  Finish,
+  GraphInput,
+  Tab,
+  ThemeDefinition,
+} from '@livediagram/document';
 import type { PlacementRelation } from './vocabulary';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
@@ -121,7 +128,13 @@ export type ApplyOptions = {
 };
 
 // `themeId` names a created tab's theme by id (custom themes included); it wins over `theme`.
-export type ReplaceOptions = ApplyOptions & { tabId: string; name: string; themeId?: string };
+export type ReplaceOptions = ApplyOptions & {
+  tabId: string;
+  name: string;
+  themeId?: string;
+  // The new tab's finish (docs/specs/008-canvas/finish.md); only a replace that creates the tab sets one.
+  finish?: Finish;
+};
 
 export type ReplaceBody =
   | { graph: GraphInput }

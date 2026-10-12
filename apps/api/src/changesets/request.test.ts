@@ -51,6 +51,12 @@ describe('parseChangesetRequest', () => {
     expect(replace({ mermaid: 'x', template: 'kanban' })).toBe('invalid_body');
     expect(replace({ elements: {} })).toBe('invalid_body');
     expect(replace({ elements: [], layout: 'sideways' })).toBe('invalid_body');
+    expect(replace({ elements: [], finish: 'sketch' })).toEqual({
+      kind: 'replace',
+      replace: { elements: [] },
+      finish: 'sketch',
+    });
+    expect(replace({ elements: [], finish: 'glossy' })).toBe('invalid_body');
   });
 
   it('reads the line form from a string, logging the parse', () => {
