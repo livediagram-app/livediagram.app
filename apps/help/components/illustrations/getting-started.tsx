@@ -7,8 +7,8 @@ import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Dialog, Button, Tile, Label, Avatar } from './primitives';
 
 /** The New Document wizard on its first step: the Mode / Location rail, the
- *  five mode cards (Diagram wide and chosen, then the other four), and the
- *  footer's Skip and Next. */
+ *  five mode cards, three then two at one height (Diagram first and chosen),
+ *  each with its number key, and the footer's Skip and Next. */
 export function NewDocumentWelcome() {
   return (
     <Scene w={420} h={270} bg="plain">
@@ -42,52 +42,73 @@ export function NewDocumentWelcome() {
         <Label x={157} y={65} size={10} weight={600} tone="muted">
           Location
         </Label>
-        {/* Diagram, where most start, leads as a wide card: a small flow on its plate. */}
-        <rect
-          x={42}
-          y={84}
-          width={336}
-          height={56}
-          rx={9}
-          className="fill-white stroke-brand-500"
-          strokeWidth={2.5}
-        />
-        <rect x={50} y={92} width={110} height={40} rx={5} className="fill-brand-50" />
-        <g className="fill-white stroke-brand-400" strokeWidth={1.5}>
-          <rect x={60} y={105} width={26} height={14} rx={3} />
-          <rect x={124} y={105} width={26} height={14} rx={3} />
-        </g>
-        <path
-          d="M86 112 h34 m-5 -4 l5 4 l-5 4"
-          className="fill-none stroke-brand-400"
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Label x={172} y={106} size={11} weight={700} tone="strong">
-          Diagram
-        </Label>
-        <Label x={172} y={122} size={9} tone="muted">
-          Flowcharts, mind maps and org charts.
-        </Label>
-        {/* The other four modes, in the mode switch's order. */}
-        {(['Draw', 'Facilitate', 'Illustrate', 'Plan'] as const).map((mode, i) => {
-          const x = 42 + i * 86;
+        {/* The five mode cards, three then two, every one the same build and height: a plate
+            on top, then the name and its number key. Diagram, where most start, leads and is
+            chosen; its plate holds a small flow. */}
+        {(['Diagram', 'Draw', 'Facilitate', 'Illustrate', 'Plan'] as const).map((mode, i) => {
+          const top = i < 3;
+          const w = top ? 106 : 164;
+          const x = 42 + (top ? i * (w + 9) : (i - 3) * (w + 8));
+          const y = top ? 84 : 152;
+          const chosen = i === 0;
           return (
             <g key={mode}>
               <rect
                 x={x}
-                y={148}
-                width={78}
-                height={64}
+                y={y}
+                width={w}
+                height={62}
                 rx={9}
-                className="fill-white stroke-slate-200"
-                strokeWidth={1.5}
+                className={chosen ? 'fill-white stroke-brand-500' : 'fill-white stroke-slate-200'}
+                strokeWidth={chosen ? 2.5 : 1.5}
               />
-              <rect x={x + 7} y={155} width={64} height={30} rx={5} className="fill-slate-50" />
-              <rect x={x + 26} y={162} width={26} height={16} rx={3} className="fill-brand-100" />
-              <Label x={x + 39} y={200} anchor="middle" size={10} weight={600} tone="strong">
+              <rect
+                x={x + 6}
+                y={y + 6}
+                width={w - 12}
+                height={30}
+                rx={5}
+                className={chosen ? 'fill-brand-50' : 'fill-slate-50'}
+              />
+              {chosen ? (
+                <g>
+                  <g className="fill-white stroke-brand-400" strokeWidth={1.5}>
+                    <rect x={x + 20} y={y + 14} width={22} height={13} rx={3} />
+                    <rect x={x + 64} y={y + 14} width={22} height={13} rx={3} />
+                  </g>
+                  <path
+                    d={`M${x + 42} ${y + 20.5} h18 m-4 -3.5 l4 3.5 l-4 3.5`}
+                    className="fill-none stroke-brand-400"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </g>
+              ) : (
+                <rect
+                  x={x + w / 2 - 13}
+                  y={y + 13}
+                  width={26}
+                  height={16}
+                  rx={3}
+                  className="fill-brand-100"
+                />
+              )}
+              <Label x={x + 9} y={y + 50} size={10} weight={chosen ? 700 : 600} tone="strong">
                 {mode}
+              </Label>
+              {/* The card's number key, at the row's end. */}
+              <rect
+                x={x + w - 21}
+                y={y + 43}
+                width={13}
+                height={13}
+                rx={2.5}
+                className="fill-white stroke-slate-300"
+                strokeWidth={1}
+              />
+              <Label x={x + w - 14.5} y={y + 50} anchor="middle" size={8} weight={500} tone="muted">
+                {String(i + 1)}
               </Label>
             </g>
           );
