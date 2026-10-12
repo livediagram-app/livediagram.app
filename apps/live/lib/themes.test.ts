@@ -123,8 +123,8 @@ describe('getTheme', () => {
     expect(getTheme(undefined).id).toBe('brand');
   });
 
-  it('returns the exact catalogue object (referential, not a copy)', () => {
-    expect(getTheme('forest')).toBe(THEMES.find((t) => t.id === 'forest'));
+  it('returns a theme as written in its own appearance (a light theme to a light viewer)', () => {
+    expect(getTheme('forest', 'light')).toEqual(THEMES.find((t) => t.id === 'forest'));
   });
 });
 
@@ -269,8 +269,8 @@ describe('table-preset re-derivation across themes (docs/specs/010-palette/style
 describe('resolveTheme (distinguishes unknown from the default)', () => {
   afterEach(() => clearCustomThemeRegistry());
 
-  it('resolves a built-in id to its catalogue object', () => {
-    expect(resolveTheme('slate')).toBe(THEMES.find((t) => t.id === 'slate'));
+  it('resolves a built-in id to its catalogue theme (as written, in its own appearance)', () => {
+    expect(resolveTheme('slate', 'light')).toEqual(THEMES.find((t) => t.id === 'slate'));
   });
 
   it('returns undefined for an unknown id (unlike getTheme, which falls back)', () => {

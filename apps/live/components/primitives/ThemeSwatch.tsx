@@ -1,6 +1,8 @@
 'use client';
 
 import { useId } from 'react';
+import { themeHalf } from '@livediagram/document';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import type { ThemeDefinition } from '@/lib/themes';
 
@@ -54,7 +56,7 @@ function nodeColours(theme: ThemeDefinition): [Tri, Tri, Tri] {
 }
 
 export function ThemeSwatch({
-  theme,
+  theme: written,
   size = 'sm',
   heightClass,
   realPattern = false,
@@ -71,6 +73,10 @@ export function ThemeSwatch({
   // uses it); the tiny card samplers keep the cheap hint.
   realPattern?: boolean;
 }) {
+  // The theme in this viewer's half (docs/specs/011-theme/light-and-dark.md), so a card shows what the tab will look
+  // like for them.
+  const { appearance } = useAppearance();
+  const theme = themeHalf(written, appearance);
   const boxH = heightClass ?? (size === 'lg' ? 'h-28' : size === 'md' ? 'h-20' : 'h-9');
   const [c0, c1, c2] = nodeColours(theme);
   const connector = theme.rootColor?.stroke ?? baseTri(theme).stroke;

@@ -14,6 +14,7 @@ import {
 } from '@livediagram/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { finishPreviewSvg } from '@/lib/finish-preview';
+import { resolveTabBackdrop } from '@/lib/themes';
 
 export function TabStylePreview({
   finish,
@@ -34,9 +35,13 @@ export function TabStylePreview({
   label: string;
 }) {
   const surface = useCanvasSurface();
-  const background =
-    canvasBackground ??
-    (surface === 'dark' ? DARK_CANVAS_BACKGROUND_COLOR : DEFAULT_BACKGROUND_COLOR);
+  // The tab's canvas as this viewer sees it: a theme's own colour in their half (docs/specs/011-theme/
+  // light-and-dark.md), a picked colour as it is.
+  const background = canvasBackground
+    ? resolveTabBackdrop({ theme: themeId, backgroundColor: canvasBackground }).backgroundColor
+    : surface === 'dark'
+      ? DARK_CANVAS_BACKGROUND_COLOR
+      : DEFAULT_BACKGROUND_COLOR;
   const markup = useMemo(
     () =>
       finishPreviewSvg(finish, {

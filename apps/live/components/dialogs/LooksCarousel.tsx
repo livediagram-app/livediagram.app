@@ -5,6 +5,7 @@
 // drawn by the exporter.
 
 import { useMemo } from 'react';
+import { useAppearance } from '@/hooks/ui/useAppearance';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
 import { LOOKS_PER_PAGE, TAB_LOOKS, type LookLike, type TabLookId } from '@/lib/tab-looks';
@@ -21,7 +22,9 @@ export function LooksCarousel({
   onPickLook: (id: TabLookId) => void;
   headingClass: string;
 }) {
-  // Each look's preview is fixed, so the twelve are drawn once per open; the Current card redraws with the tab.
+  // Each look's preview is fixed for an appearance, so the twelve are drawn once per open (again if the viewer's mode
+  // changes: they draw in its half); the Current card redraws with the tab.
+  const { appearance } = useAppearance();
   const previews = useMemo(
     () =>
       new Map(
@@ -30,7 +33,9 @@ export function LooksCarousel({
           { markup: lookPreviewSvg(look), paper: lookPreviewTab(look).backgroundColor },
         ]),
       ),
-    [],
+    // The previews read the viewer's appearance themselves (getTheme); it is a dependency so they redraw on a change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [appearance],
   );
   const currentPreview = useMemo(
     () =>
@@ -39,7 +44,14 @@ export function LooksCarousel({
         : null,
     // The mix's fields, so a new object with the same settings keeps the drawing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [current?.theme, current?.finish, current?.font, current?.pattern, current?.patternOpacity],
+    [
+      current?.theme,
+      current?.finish,
+      current?.font,
+      current?.pattern,
+      current?.patternOpacity,
+      appearance,
+    ],
   );
   const items: readonly LookLike[] = current ? [current, ...TAB_LOOKS] : TAB_LOOKS;
   return (

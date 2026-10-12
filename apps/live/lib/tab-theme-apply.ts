@@ -2,7 +2,8 @@
 // multicolour-themes.md): the tab's theme id, its backdrop and its elements' colours, as one pure transform. Picking a
 // theme (useTabTheme.setTheme) and picking a look (useTabCanvas.applyTabLook) both run it, so a look's theme lands
 // exactly as picking that theme does.
-import type { Tab } from '@livediagram/document';
+import { viewElementInTheme, type Appearance, type Tab } from '@livediagram/document';
+import { getResolvedAppearance } from '@livediagram/ui';
 import {
   getTheme,
   resetArrowsToTheme,
@@ -10,11 +11,20 @@ import {
   resolveTheme,
   switchThemeBackdrop,
   switchThemeElements,
+  themeViewMap,
 } from '@/lib/themes';
 
 /** The tab with theme `id` applied: preserve-customs for shapes, text and backdrop; arrows always re-tinted. */
-export function withThemeApplied(t: Tab, id: string): Tab {
-  const theme = getTheme(id);
+export function withThemeApplied(
+  source: Tab,
+  id: string,
+  appearance: Appearance = getResolvedAppearance(),
+): Tab {
+  const theme = getTheme(id, appearance);
+  // The tab as the applier sees it (docs/specs/011-theme/light-and-dark.md): its theme colours in the applier's half,
+  // so colours written by someone in the other appearance still read as the theme's, not as choices.
+  const viewMap = themeViewMap(source.theme, appearance);
+  const t = { ...source, elements: source.elements.map((el) => viewElementInTheme(el, viewMap)) };
   // When the tab's PREVIOUS theme can't be resolved (a custom theme
   // that was deleted, docs/specs/011-theme/custom-themes.md), there's no baseline to diff against:
   // the elements carry the dead theme's colours, which match neither
@@ -29,7 +39,8 @@ export function withThemeApplied(t: Tab, id: string): Tab {
   // works — hard-resetting here wiped a user's hand-picked colours
   // on their FIRST theme pick. Only a named theme that fails to
   // resolve takes the hard-reset branch.
-  const prevTheme = t.theme === undefined ? getTheme(undefined) : resolveTheme(t.theme);
+  const prevTheme =
+    t.theme === undefined ? getTheme(undefined, appearance) : resolveTheme(t.theme, appearance);
   if (!prevTheme) {
     return {
       ...t,

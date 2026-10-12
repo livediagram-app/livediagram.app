@@ -3,6 +3,7 @@
 // in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
 // docs/specs/015-api/mcp-server.md) theme tabs identically. Custom-theme (per-owner) resolution +
 // deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
+import { themeHalf } from './theme-halves';
 import {
   deriveTextColorForBg,
   type BackgroundPattern,
@@ -118,9 +119,8 @@ export type ThemeDefinition = {
   extra?: boolean;
 };
 
-// Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). The Default colour scheme is
-// the only one that reads it: every other scheme paints the same colours for
-// everybody, because those colours are stored in the document.
+// Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). Every scheme reads it: each viewer sees a
+// tab in the half of its scheme that matches their appearance (docs/specs/011-theme/light-and-dark.md).
 export type Appearance = 'light' | 'dark';
 
 // The id of the Default colour scheme. Stays 'brand' — it is the value saved
@@ -156,12 +156,16 @@ export function isDefaultSchemeBackdrop(backdrop: {
   );
 }
 
-// The backdrops a scheme could have painted. One for every scheme except
-// Default, which has a light and a dark half — and the preserve-customs rules
-// have to accept BOTH as "still on the scheme", or a tab saved in one
-// appearance looks hand-coloured to a viewer in the other and freezes.
+// The backdrops a scheme could have painted: every scheme has a light and a dark half
+// (docs/specs/011-theme/light-and-dark.md), and the preserve-customs rules have to accept BOTH as "still on the
+// scheme", or a tab saved in one appearance looks hand-coloured to a viewer in the other and freezes.
 function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
-  return scheme.id === DEFAULT_SCHEME_ID ? [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK] : [scheme];
+  if (scheme.id === DEFAULT_SCHEME_ID) return [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK];
+  const written = THEMES.find((t) => t.id === scheme.id);
+  return [
+    scheme,
+    ...(written ? [written, themeHalf(written, 'light'), themeHalf(written, 'dark')] : []),
+  ];
 }
 
 // Resolve an id to a BUILT-IN ThemeDefinition, falling back to Default. A
@@ -179,7 +183,9 @@ export function getBuiltInTheme(
   appearance: Appearance = 'light',
 ): ThemeDefinition {
   if (id === undefined || id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
-  return THEMES.find((t) => t.id === id) ?? defaultScheme(appearance);
+  // Every theme in the viewer's half (docs/specs/011-theme/light-and-dark.md).
+  const theme = THEMES.find((t) => t.id === id);
+  return theme ? themeHalf(theme, appearance) : defaultScheme(appearance);
 }
 
 // Which element-colour fields each element type writes from a theme.
