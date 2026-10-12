@@ -21,6 +21,8 @@ export function useSketchPaint(
   element: BoxedElement,
   finish: Finish,
   fill: string,
+  // Something sits on this shape (sketch-backdrop-store): a solid fill, never hatching.
+  backdrop = false,
 ): SketchPaint | null {
   const shape = element.type === 'shape' ? element.shape : undefined;
   const { strokeWidth, strokeStyle, borderRadius } = element as {
@@ -29,7 +31,7 @@ export function useSketchPaint(
     borderRadius?: string;
   };
   return useMemo(
-    () => sketchElementPaint(element, finish, fill),
+    () => sketchElementPaint(element, finish, fill, backdrop),
     // The fields sketchElementPaint reads, so moving the element keeps the drawing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
@@ -43,6 +45,7 @@ export function useSketchPaint(
       borderRadius,
       finish,
       fill,
+      backdrop,
     ],
   );
 }

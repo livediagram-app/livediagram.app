@@ -41,9 +41,11 @@ export function svgSketchedBody(
   el: BoxedElement,
   shape: ExportShape,
   finish: Finish,
+  // Something sits on this shape (sketch-backdrop.ts): a solid fill, never hatching.
+  backdrop = false,
 ): string | null {
   if (shape.kind !== 'rect' && shape.kind !== 'ellipse' && shape.kind !== 'diamond') return null;
-  const paint = sketchElementPaint(el, finish, shape.fill);
+  const paint = sketchElementPaint(el, finish, shape.fill, backdrop);
   if (!paint) return null;
   return svgSketchDrawing({ x: el.x, y: el.y }, paint.drawing, {
     fill: shape.fill,

@@ -106,6 +106,8 @@ export type BoxedExportOptions = {
   tabFont?: string;
   // The tab's finish (docs/specs/008-canvas/finish.md), for elements without their own.
   tabFinish?: Finish;
+  // Something sits on this shape (sketch-backdrop.ts): under Sketch it keeps a solid fill.
+  sketchBackdrop?: boolean;
   // The paper the export is being drawn on, for elements that carry no
   // colours of their own (docs/specs/007-editor/live-app.md). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.

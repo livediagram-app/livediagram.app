@@ -264,7 +264,7 @@ describe('describeVariant — finish', () => {
     const flex = describeVariant(shape(), false, false, null, 'light', 'flexible');
     const pro = describeVariant(shape(), false, false, null, 'light', 'professional');
     expect(pro.className).not.toContain('shadow-sm');
-    expect(pro.style.borderRadius).toBe('2px');
+    expect(pro.style.borderRadius).toBe('0px');
     expect(Number(pro.style.borderWidth)).toBeLessThan(Number(flex.style.borderWidth));
     expect(
       describeVariant(make('sticky'), false, false, null, 'light', 'professional').className,

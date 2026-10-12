@@ -5,6 +5,7 @@ import { idBound } from './element-layer-props';
 import { arrowViewGeometry } from './arrow-view-frame';
 import { affectedArrows, buildArrowLinks, previewArrowGeometry } from './drag-affected-arrows';
 import { useDragPreview } from '@/lib/drag-preview';
+import { usePublishSketchBackdrops } from '@/lib/sketch-backdrop-store';
 import { useFontEpoch } from './useFontEpoch';
 import {
   elementFontId,
@@ -471,6 +472,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // The elements actually drawn, for the arrows' pass-behind breaks: a box on
   // a hidden layer must not cut a gap in a line (docs/specs/008-canvas/arrow-route-behind.md).
   const drawnElements = useMemo(() => ordered.map((o) => o.element), [ordered]);
+  // Shapes something sits on keep a solid fill under Sketch (docs/specs/008-canvas/finish.md).
+  usePublishSketchBackdrops(props.activeTabId ?? '', drawnElements, tabFinish);
   // The drawn elements' grid (docs/specs/008-canvas/canvas-performance.md "Questions about neighbours
   // ask a spatial index"), re-bucketing only what changed since the last one, and every arrow's frame
   // and holes from it, once per element change. ArrowView compares both by value, so a move

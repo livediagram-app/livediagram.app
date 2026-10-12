@@ -5,7 +5,7 @@
 // A finish only changes what an element leaves unset (its corner, border width, arrow thickness, shadow,
 // font) plus how a line is drawn (Sketch, see sketch.ts). An explicit pick on the element always wins. Pure
 // functions, read by the canvas and every export so the two agree.
-import type { ArrowThickness } from './arrow-style';
+import type { ArrowStyle, ArrowThickness } from './arrow-style';
 import type { BorderStroke } from './border-style';
 import { DEFAULT_BORDER_STROKE } from './border-style';
 import { SELF_PAINTING_SHAPES } from './colors';
@@ -18,8 +18,12 @@ export const FINISHES: readonly Finish[] = ['flexible', 'professional', 'sketch'
 
 export const DEFAULT_FINISH: Finish = 'flexible';
 
-/** The corner a Professional free-corner box draws when it sets none (blueprint: 0 to 4 px). */
-export const PROFESSIONAL_CORNER_PX = 2;
+/** The corner a Professional free-corner box draws when it sets none: square, the clearest break from
+ *  Flexible's soft corners (blueprint: 0 to 4 px). */
+export const PROFESSIONAL_CORNER_PX = 0;
+
+/** The crisp sans a Professional element is lettered in when neither it nor its tab picks a font. */
+export const PROFESSIONAL_FONT_ID = 'inter';
 
 /** The handwriting font a Sketch element without its own font is lettered in (fonts.ts id). */
 export const SKETCH_FONT_ID = 'caveat';
@@ -76,14 +80,16 @@ export function finishDrawsDefaultShadow(finish: Finish): boolean {
   return finish !== 'professional';
 }
 
-/** The font id an element is lettered in: its own, else the handwriting font under Sketch, else the
- *  tab's. Undefined means the editor default. */
+/** The font id an element is lettered in: its own, else the handwriting font under Sketch (whatever the
+ *  tab's), else the tab's, else Inter under Professional. Undefined means the editor default. */
 export function finishFontId(
   own: string | undefined,
   tab: string | undefined,
   finish: Finish,
 ): string | undefined {
-  return own ?? (finish === 'sketch' ? SKETCH_FONT_ID : tab);
+  if (own) return own;
+  if (finish === 'sketch') return SKETCH_FONT_ID;
+  return tab ?? (finish === 'professional' ? PROFESSIONAL_FONT_ID : undefined);
 }
 
 /** The font id an element is lettered in, from the element and its tab (finishFontId over the element's
@@ -101,17 +107,30 @@ export function finishCurvesNewArrows(finish: Finish): boolean {
   return finish !== 'professional';
 }
 
+/** The style a freshly drawn arrow takes when the person drawing it picked none: a right-angled connector
+ *  under Professional, the formal diagram look; otherwise none (straight, or the avoidance curve). */
+export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined {
+  return finish === 'professional' ? 'angled' : undefined;
+}
+
 // The plain boxes whose fill Sketch hatches; every drawn silhouette but the frame hatches too. Cards, panels,
 // buttons, records, pages, lanes and frames keep a solid fill under a sketched edge: hatching behind their
 // faces and rows makes them hard to read.
 const HATCHED_BOXES = new Set<string>(['square', 'circle', 'stadium', 'mind-node']);
 
-/** Whether a Sketch element's fill (`fill`, already resolved) is drawn as hatching rather than solid:
- *  plain shapes only, and never a see-through fill. */
-export function finishHatches(element: Element, fill: string): boolean {
+/** Whether a shape's kind takes Sketch hatching at all (plain boxes and drawn silhouettes, not frames or
+ *  self-painting faces), whatever its fill and whatever sits on it. */
+export function finishHatchesKind(element: Element): boolean {
   if (element.type !== 'shape') return false;
   if (SELF_PAINTING_SHAPES.has(element.shape)) return false;
   const drawn = element.shape !== 'frame' && shapeGeometry(element.shape) !== null;
-  if (!HATCHED_BOXES.has(element.shape) && !drawn) return false;
+  return HATCHED_BOXES.has(element.shape) || drawn;
+}
+
+/** Whether a Sketch element's fill (`fill`, already resolved) is drawn as hatching rather than solid:
+ *  plain shapes only, never a see-through fill, and never a backdrop (a shape other elements sit on, see
+ *  sketchBackdropIds): hatching under a key's captions or a card's contents makes them unreadable. */
+export function finishHatches(element: Element, fill: string, backdrop = false): boolean {
+  if (backdrop || !finishHatchesKind(element)) return false;
   return fill !== 'transparent' && fill !== 'none';
 }

@@ -40,11 +40,17 @@ describe('applyCollisionAvoidance', () => {
     expect(out.find((e) => e.id === 'mid')).toBe(out.find((e) => e.id === 'mid'));
   });
 
-  it('keeps a Professional arrow straight, from its tab or its own finish', () => {
+  it('makes a Professional arrow a right-angled connector, from its tab or its own finish', () => {
     const els = scene();
-    expect(applyCollisionAvoidance(els, 'arr', 'professional')).toBe(els);
+    const style = (out: Element[]) => (out.find((e) => e.id === 'arr') as ArrowElement).arrowStyle;
+    const fromTab = applyCollisionAvoidance(els, 'arr', 'professional');
+    expect(style(fromTab)).toBe('angled');
+    expect((fromTab.find((e) => e.id === 'arr') as ArrowElement).curveOffset).toBeUndefined();
+    // Clear chord too: still angled.
+    const clear = els.filter((e) => e.id !== 'mid');
+    expect(style(applyCollisionAvoidance(clear, 'arr', 'professional'))).toBe('angled');
     const own = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'professional' as const } : e));
-    expect(applyCollisionAvoidance(own, 'arr')).toBe(own);
+    expect(style(applyCollisionAvoidance(own, 'arr'))).toBe('angled');
     // An arrow's own Flexible beats a Professional tab.
     const flexible = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'flexible' as const } : e));
     const out = applyCollisionAvoidance(flexible, 'arr', 'professional');

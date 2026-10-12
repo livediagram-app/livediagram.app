@@ -26,6 +26,7 @@ import {
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
 import { finishCornerFallbackPx, resolveFinish, type Finish } from './finish';
 import { svgSketchedBody } from './svg-render-sketch';
+import { sketchBackdropIds } from './sketch-backdrop';
 import { canvasSurface } from './colors';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 import { DIAMOND_POINTS } from './shape-geometry';
@@ -169,7 +170,8 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's
   // hand-drawn body. Null when this element is not sketched.
   const finish = resolveFinish(finishOf(el), opts.tabFinish);
-  const sketch = finish === 'sketch' ? svgSketchedBody(el, shape, finish) : null;
+  const sketch =
+    finish === 'sketch' ? svgSketchedBody(el, shape, finish, !!opts.sketchBackdrop) : null;
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -498,6 +500,8 @@ export function renderElementsToSvg(
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
   const visible = visibleLayerElements(tab.elements, tab.layers);
+  // Shapes something sits on keep a solid fill under Sketch (sketch-backdrop.ts), as on the canvas.
+  const backdrops = sketchBackdropIds(visible, tab.finish);
   // Every caption laid out once, in document order, so labels see each other.
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
@@ -542,6 +546,7 @@ export function renderElementsToSvg(
             resolveStickerArt: opts.resolveStickerArt,
             tabFont: tab.font,
             tabFinish: tab.finish,
+            sketchBackdrop: backdrops.has(el.id),
             surface,
             paper: bg,
             chartPalette,

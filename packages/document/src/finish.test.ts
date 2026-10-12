@@ -3,6 +3,7 @@ import {
   DEFAULT_FINISH,
   FINISHES,
   PROFESSIONAL_CORNER_PX,
+  PROFESSIONAL_FONT_ID,
   SKETCH_FONT_ID,
   finishArrowThickness,
   finishBorderStroke,
@@ -10,6 +11,7 @@ import {
   finishCurvesNewArrows,
   finishDrawsDefaultShadow,
   finishFontId,
+  finishNewArrowStyle,
   supportsFinish,
   finishHatches,
   isFinish,
@@ -43,7 +45,8 @@ describe('resolveFinish', () => {
 describe('Professional fallbacks', () => {
   it('sharpens an unset corner, never rounder than the kind’s own', () => {
     expect(finishCornerFallbackPx(8, 'professional')).toBe(PROFESSIONAL_CORNER_PX);
-    expect(finishCornerFallbackPx(1, 'professional')).toBe(1);
+    expect(PROFESSIONAL_CORNER_PX).toBe(0);
+    expect(finishCornerFallbackPx(1, 'professional')).toBe(0);
     expect(finishCornerFallbackPx(8, 'flexible')).toBe(8);
     expect(finishCornerFallbackPx(8, 'sketch')).toBe(8);
   });
@@ -73,7 +76,9 @@ describe('Sketch lettering', () => {
   it('writes in the handwriting font unless the element has its own, whatever the tab’s', () => {
     expect(finishFontId(undefined, 'inter', 'sketch')).toBe(SKETCH_FONT_ID);
     expect(finishFontId('lora', 'inter', 'sketch')).toBe('lora');
-    expect(finishFontId(undefined, 'inter', 'professional')).toBe('inter');
+    expect(finishFontId(undefined, 'lora', 'professional')).toBe('lora');
+    // Professional letters in Inter when neither the element nor the tab picks a font.
+    expect(finishFontId(undefined, undefined, 'professional')).toBe(PROFESSIONAL_FONT_ID);
     expect(finishFontId(undefined, undefined, 'flexible')).toBeUndefined();
   });
 
@@ -108,5 +113,13 @@ describe('supportsFinish', () => {
       expect(supportsFinish({ type }), type).toBe(true);
     for (const type of ['freehand', 'image', 'path', 'annotation', 'link-card'])
       expect(supportsFinish({ type }), type).toBe(false);
+  });
+});
+
+describe('finishNewArrowStyle', () => {
+  it('draws a new arrow right-angled under Professional only', () => {
+    expect(finishNewArrowStyle('professional')).toBe('angled');
+    expect(finishNewArrowStyle('flexible')).toBeUndefined();
+    expect(finishNewArrowStyle('sketch')).toBeUndefined();
   });
 });

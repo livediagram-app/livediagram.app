@@ -2,6 +2,7 @@ import {
   collisionAvoidingCurveOffset,
   endpointPosition,
   finishCurvesNewArrows,
+  finishNewArrowStyle,
   isBoxed,
   resolveFinish,
   type AvoidanceObstacle,
@@ -15,7 +16,7 @@ import {
 // result is an ordinary curved arrow the user can adjust or straighten
 // with the existing handles. Pure elements map so the drag hook can run it
 // through `commit` inside the same gesture (same undo step). An arrow drawn in the Professional finish
-// stays straight (docs/specs/008-canvas/finish.md).
+// becomes a right-angled connector instead (docs/specs/008-canvas/finish.md).
 export function applyCollisionAvoidance(
   els: Element[],
   arrowId: string,
@@ -23,10 +24,14 @@ export function applyCollisionAvoidance(
 ): Element[] {
   const arrow = els.find((e) => e.id === arrowId);
   if (!arrow || arrow.type !== 'arrow') return els;
-  if (!finishCurvesNewArrows(resolveFinish(arrow.finish, tabFinish))) return els;
   // Only untouched-default arrows: a style the creation flow (or the user,
   // mid-gesture) already chose wins.
   if (arrow.arrowStyle !== undefined || arrow.curveOffset || arrow.curvePoints) return els;
+  // Professional draws a new arrow as a right-angled connector and never bows it (finish.md).
+  const finish = resolveFinish(arrow.finish, tabFinish);
+  const style = finishNewArrowStyle(finish);
+  if (style) return els.map((el) => (el.id === arrowId ? { ...el, arrowStyle: style } : el));
+  if (!finishCurvesNewArrows(finish)) return els;
   const from = endpointPosition(arrow.from, els);
   const to = endpointPosition(arrow.to, els);
   const fromId = arrow.from.kind === 'pinned' ? arrow.from.elementId : null;

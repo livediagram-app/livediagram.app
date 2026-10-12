@@ -17,25 +17,33 @@ const renderSection = (finish: Finish | undefined) => {
   );
   return handlers;
 };
-const tile = (name: string) => screen.getByRole('button', { name });
+// Each row's name is its label then its one-line description.
+const tile = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
 
 describe('FinishSection', () => {
-  it('offers Follow Tab and the three finishes, in order', () => {
+  it('offers Follow Tab and the three finishes as one full-width list, in order', () => {
     renderSection(undefined);
-    const names = ['Follow Tab', 'Flexible', 'Professional', 'Sketch'];
-    for (const n of names) expect(tile(n)).toBeTruthy();
+    const rows = screen
+      .getByRole('radiogroup', { name: 'Drawn As' })
+      .querySelectorAll('[role="radio"]');
+    expect([...rows].map((r) => r.getAttribute('data-option'))).toEqual([
+      'follow-tab',
+      'flexible',
+      'professional',
+      'sketch',
+    ]);
   });
 
   it('presses Follow Tab for an element without its own finish', () => {
     renderSection(undefined);
-    expect(tile('Follow Tab').getAttribute('aria-pressed')).toBe('true');
-    expect(tile('Sketch').getAttribute('aria-pressed')).toBe('false');
+    expect(tile('Follow Tab').getAttribute('aria-checked')).toBe('true');
+    expect(tile('Sketch').getAttribute('aria-checked')).toBe('false');
   });
 
   it("presses the element's own finish", () => {
     renderSection('professional');
-    expect(tile('Professional').getAttribute('aria-pressed')).toBe('true');
-    expect(tile('Follow Tab').getAttribute('aria-pressed')).toBe('false');
+    expect(tile('Professional').getAttribute('aria-checked')).toBe('true');
+    expect(tile('Follow Tab').getAttribute('aria-checked')).toBe('false');
   });
 
   it('commits a finish on click, and Follow Tab as null', () => {

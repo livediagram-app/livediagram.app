@@ -1,17 +1,16 @@
 'use client';
 
 // The element menu's Finish category (docs/specs/008-canvas/finish.md "Where it is set"): Follow Tab plus the
-// three finishes, hover to preview on the selection, click to commit as one undo step. Shared by the single
+// three finishes as a full-width option list, hover to preview on the selection, click to commit as one undo
+// step. Shared by the single
 // element menu (ElementColourBorderSections) and the multi-selection Style flyout (MultiStyleSections), so
 // both read the same.
 
 import type { ReactNode } from 'react';
 import { FINISHES, isFinish, type Finish } from '@livediagram/document';
 import { Glyph, LinkIcon } from '@livediagram/ui';
-import { onMouseHover } from '@/components/primitives/hover-preview';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { SizeButton } from '@/components/palette/palette-controls';
-import { BorderGrid } from '@/components/palette/context-menu-rows';
+import { OptionRows, type OptionRow } from '@/components/plan/OptionRows';
 import { FinishMenuGlyph } from '@/components/palette/context-menu-icons';
 
 export const FINISH_LABELS: Record<Finish, string> = {
@@ -44,35 +43,32 @@ export function resolveOwnFinish(el: object | undefined): Finish | undefined {
   return isFinish(own) ? own : undefined;
 }
 
-function FinishTile({
-  active,
-  label,
-  glyph,
-  onClick,
-  onPreview,
-  onPreviewEnd,
-}: {
-  active: boolean;
-  label: string;
-  glyph: ReactNode;
-  onClick: () => void;
-  onPreview: () => void;
-  onPreviewEnd: () => void;
-}) {
-  return (
-    <SizeButton
-      active={active}
-      onClick={onClick}
-      onPointerEnter={onMouseHover(onPreview)}
-      onPointerLeave={onMouseHover(onPreviewEnd)}
-    >
-      <span className="flex w-full items-center gap-1.5 py-0.5">
-        <span className="flex h-4 w-4 shrink-0 items-center justify-center">{glyph}</span>
-        <span className="truncate">{label}</span>
-      </span>
-    </SizeButton>
-  );
-}
+// Follow Tab's row id; a finish's row is the finish itself.
+const FOLLOW_TAB = 'follow-tab';
+const finishOfRow = (id: string): Finish | null => (isFinish(id) ? id : null);
+
+/** One line on what each finish does, under its name. */
+export const FINISH_DETAILS: Record<Finish, string> = {
+  flexible: 'Soft corners and gentle shadows',
+  professional: 'Square corners, fine lines, crisp type',
+  sketch: 'Drawn by hand, with hatching',
+};
+
+// The Plan-style option list (docs/specs/026-plan/plan-board.md "Option lists"): one full-width row per choice.
+const FINISH_ROWS: OptionRow[] = [
+  {
+    id: FOLLOW_TAB,
+    label: 'Follow Tab',
+    detail: 'Drawn in the tab’s finish',
+    icon: <LinkIcon />,
+  },
+  ...FINISHES.map((f) => ({
+    id: f,
+    label: FINISH_LABELS[f],
+    detail: FINISH_DETAILS[f],
+    icon: <FinishSwatch finish={f} />,
+  })),
+];
 
 export function FinishSection({
   finish,
@@ -93,27 +89,15 @@ export function FinishSection({
   return (
     <MenuAccordionSection title="Finish" icon={<FinishMenuGlyph />} {...section}>
       <div className="px-2 py-1">
-        <BorderGrid label="Drawn As" cols={2}>
-          <FinishTile
-            active={finish === undefined}
-            label="Follow Tab"
-            glyph={<LinkIcon />}
-            onClick={() => onCommit(null)}
-            onPreview={() => onPreview(null)}
-            onPreviewEnd={onPreviewEnd}
-          />
-          {FINISHES.map((f) => (
-            <FinishTile
-              key={f}
-              active={finish === f}
-              label={FINISH_LABELS[f]}
-              glyph={<FinishSwatch finish={f} />}
-              onClick={() => onCommit(f)}
-              onPreview={() => onPreview(f)}
-              onPreviewEnd={onPreviewEnd}
-            />
-          ))}
-        </BorderGrid>
+        <OptionRows
+          kind="single"
+          label="Drawn As"
+          selected={finish ?? FOLLOW_TAB}
+          rows={FINISH_ROWS}
+          onPick={(id) => onCommit(finishOfRow(id))}
+          onPreview={(id) => onPreview(finishOfRow(id))}
+          onPreviewEnd={onPreviewEnd}
+        />
       </div>
     </MenuAccordionSection>
   );

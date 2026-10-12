@@ -46,6 +46,7 @@ import { describeVariant, editingLook } from '@/components/canvas/element-varian
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@/components/canvas/indicator-items';
@@ -202,7 +203,13 @@ function BoxedElementViewImpl({
   // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
   // the SketchOverlay below, in place of the wrapper's border and background.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
-  const sketch = useSketchPaint(element, finish, own.fill ?? defaultFillColor(element, surface));
+  const sketchBackdrop = useIsSketchBackdrop(element.id);
+  const sketch = useSketchPaint(
+    element,
+    finish,
+    own.fill ?? defaultFillColor(element, surface),
+    sketchBackdrop,
+  );
 
   // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag

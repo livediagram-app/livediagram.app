@@ -48,6 +48,8 @@ export type SketchElementOptions = {
   radiusPx: number;
   /** The resolved fill colour, which decides hatching against solid. */
   fill: string;
+  /** Something sits on this shape (sketch-backdrop.ts): a solid fill, never hatching. */
+  backdrop?: boolean;
 };
 
 const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set(['main', 'outline', 'head']);
@@ -88,7 +90,7 @@ export function sketchElement(el: BoxedElement, o: SketchElementOptions): Sketch
   // A comment pin draws its own bubble and no box (docs/specs/012-collaboration/comment-pin.md).
   if (el.shape === 'comment-pin') return null;
 
-  const hatches = finishHatches(el, o.fill);
+  const hatches = finishHatches(el, o.fill, o.backdrop);
   const geometry = shapeGeometry(el.shape as ShapeKind, w / h);
   if (geometry) {
     const area = el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: w, height: h };
@@ -148,6 +150,7 @@ export function sketchElementPaint(
   el: BoxedElement,
   finish: Finish,
   fill: string,
+  backdrop = false,
 ): { drawing: SketchDrawing; strokePx: number; dash: string | null } | null {
   if (finish !== 'sketch') return null;
   let strokePx = 0;
@@ -165,7 +168,7 @@ export function sketchElementPaint(
     );
   } else if (el.type === 'table') strokePx = TABLE_FRAME_PX;
   else if (el.type === 'sticky') strokePx = STICKY_EDGE_PX;
-  const drawing = sketchElement(el, { strokePx, radiusPx, fill });
+  const drawing = sketchElement(el, { strokePx, radiusPx, fill, backdrop });
   return drawing ? { drawing, strokePx, dash } : null;
 }
 

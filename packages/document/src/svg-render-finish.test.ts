@@ -63,12 +63,16 @@ describe('renderElementsToSvg in a finish', () => {
     expect(a).toMatch(/<path d="M[^"]+" stroke="[^"]+" stroke-width="[\d.]+" fill="none"/);
   });
 
-  it('Professional sharpens the default corner and thins the border', () => {
+  it('Professional letters in Inter', () => {
+    expect(renderElementsToSvg(tab([square()], 'professional'))).toMatch(/Inter/);
+  });
+
+  it('Professional squares the default corner and thins the border', () => {
     const flex = renderElementsToSvg(tab([square()]));
     const pro = renderElementsToSvg(tab([square()], 'professional'));
     expect(pro).not.toBe(flex);
-    // The 2 px corner and the thin border, the corner inset by half the border as the canvas's CSS one is.
-    expect(pro).toMatch(/rx="1.5"[^>]*stroke-width="1"/);
+    // Square corners and the thin border.
+    expect(pro).toMatch(/rx="0"[^>]*stroke-width="1"/);
     expect(flex).toMatch(/rx="7"[^>]*stroke-width="2"/);
   });
 });
