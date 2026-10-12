@@ -1751,13 +1751,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const collabDeepLink = useCollabDeepLinkCapture();
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
-  // entry). See useTabEntryEffects.
+  // entry). See useTabEntryEffects. A tab showing pages frames its first page
+  // instead (set by useIllustratePages below), never the whole row.
+  const frameFirstPageRef = useRef<(() => void) | null>(null);
   const { requestFit } = useTabEntryEffects({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
-    fitToScreen,
+    fitToScreen: () => (frameFirstPageRef.current ?? fitToScreen)(),
     skipFitForTabRef: skipTabFitRef,
   });
 
@@ -1966,6 +1968,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toastInfo: toast.info,
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
     framePageRef,
+    frameFirstPageRef,
   });
   // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
   const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
