@@ -81,8 +81,8 @@ export function pathEndTangents(
   axes, overshoots along the line by `0..SKETCH_OVERSHOOT_PX`, and the line bows through a quadratic control point
   offset from the midpoint perpendicular by `±min(len * SKETCH_BOW_SHARE, SKETCH_BOW_MAX_PX)`. Emitted as
   `M a Q c b`.
-- **Curves.** Sampled every `SKETCH_CURVE_STEP_PX` (min 8, max 96 samples); each sample moves by up to
-  `SKETCH_CURVE_JITTER_PX`; drawn as a Catmull-Rom spline (cubic `C`). A closed curve starts at a random sample and
+- **Curves.** Sampled every `SKETCH_CURVE_STEP_PX` (min 8, max 64 samples); the samples drift by up to
+  `SKETCH_CURVE_JITTER_PX`, set at every fourth sample and eased between (a low-frequency wander, not a buzz); drawn as a Catmull-Rom spline (cubic `C`). A closed curve starts at a random sample and
   runs one sample past its start, so the two ends overlap like a pen lifted late.
 - **Passes.** Two passes by default, each from its own stream (`seed`, `seed + 1`), concatenated into one `d`.
 - **Hatching.** Lines at `SKETCH_HATCH_ANGLE_DEG` across the area, `gap = clamp(4 * strokePx, 6, 12)` apart,
@@ -152,7 +152,7 @@ sticky and table.
 - Zero or negative size: no outline is drawn (overlay returns null), same as `BoxBorderOverlay`.
 - Stroke width none (`'none'`): Sketch draws hatching only.
 - Transparent fill: no hatching.
-- Huge shapes (20000 px): hatching capped at `SKETCH_HATCH_MAX_LINES`, curve samples capped at 96.
+- Huge shapes (20000 px): hatching capped at `SKETCH_HATCH_MAX_LINES`, curve samples capped at 64.
 - Degenerate arrow (length < 0.5): drawn unsketched.
 - Unknown path commands in `outlineOfPath`: the rest of the path is ignored and the outline so far is used.
 
@@ -163,7 +163,9 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
 
 ## Performance and limits
 
-- Budget: one element's strokes + hatching ≤ 0.2 ms at 400 x 300; ≤ 2 ms at 20000 x 20000 (capped). Measured in
+- Budget: one element's strokes + hatching ≤ 0.2 ms at 400 x 300 (measured 0.055 ms rect, 0.063 ms ellipse); ≤ 2 ms at
+  20000 x 20000 (measured 0.23 ms rect, 0.30 ms ellipse). Path numbers are written in tenths through integer
+  formatting, which tripled the speed (fractional number-to-string was the hot spot). Measured in
   `sketch.perf.test.ts`.
 - Views memoise geometry on size / kind / stroke, never position, so a drag recomputes nothing for moved shapes.
 
@@ -205,18 +207,18 @@ per command letter.
 
 ## Constants and configuration
 
-| Constant                 | Value  | Provenance                                   | Safe range              |
-| ------------------------ | ------ | -------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX` | 2      | crisp but not razor (print diagrams)         | 0 to 4                  |
-| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px        | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails | 0 to 4                  |
-| `SKETCH_BOW_SHARE`       | 0.012  | gentle bow on long edges                     | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`      | 4      | stops long edges from looking bent           | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`   | 14     | smooth curves without visible facets         | 8 to 24                 |
-| `SKETCH_CURVE_JITTER_PX` | 1.2    | matches line jitter                          | 0.5 to 2.5              |
-| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle               | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                     | 100 to 600              |
-| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font             | any handwriting font id |
+| Constant                 | Value  | Provenance                                            | Safe range              |
+| ------------------------ | ------ | ----------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX` | 2      | crisp but not razor (print diagrams)                  | 0 to 4                  |
+| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                 | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails          | 0 to 4                  |
+| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)            | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                    | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14   | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye) | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                        | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                              | 100 to 600              |
+| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                      | any handwriting font id |
 
 ## Assets and external resources
 
