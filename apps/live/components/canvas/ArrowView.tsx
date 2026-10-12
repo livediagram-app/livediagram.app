@@ -19,7 +19,7 @@ import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { elementAriaLabel } from '@/lib/element-names';
-import { ArrowHeadMarker, arrowheadMarkerId } from './arrow-defs';
+import { ArrowHeadMarker, arrowheadMarkerId, markersTakeLineColour } from './arrow-defs';
 import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
@@ -155,15 +155,6 @@ function ArrowViewImpl({
   // Touch long-press opens the arrow's context menu (touch has no
   // right-click); a press that moves becomes a select / drag instead.
   const longPress = useLongPress(contextSelectBeside);
-  // An arrow whose heads are a different colour from its line carries its
-  // OWN marker, because the shared ones paint with `context-stroke`, which is
-  // by definition the line's colour. Unset (the usual case) keeps using the
-  // shared defs, so nothing changes for arrows that never asked.
-  const headShape = arrowheadShapeOf(arrow);
-  const headSize = arrowheadSizeOf(arrow);
-  const ownHeadColor = arrow.arrowheadColor;
-  const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
-  const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Endpoints / path / midpoint / handle points / label placement — the
   // pure per-render frame, resolved in arrow-view-frame.ts.
   const { from, to, pathD, curveAnchors, curveControl, elbowPoint } = frame;
@@ -214,6 +205,16 @@ function ArrowViewImpl({
   // on top in brand-600 regardless so the user can still tell what's
   // selected on a coloured arrow.
   const baseStroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
+  // An arrow whose heads are a different colour from its line carries its
+  // OWN marker, because the shared ones paint with `context-stroke`, which is
+  // by definition the line's colour. So does every arrow where the browser
+  // cannot paint `context-stroke` (WebKit: markersTakeLineColour), in its
+  // line's colour. Otherwise the shared defs serve it.
+  const headShape = arrowheadShapeOf(arrow);
+  const headSize = arrowheadSizeOf(arrow);
+  const ownHeadColor = arrow.arrowheadColor ?? (markersTakeLineColour() ? undefined : baseStroke);
+  const ownMarkerId = ownHeadColor ? `arrowhead-${arrow.id}` : null;
+  const markerUrl = `url(#${ownMarkerId ?? arrowheadMarkerId(headShape, headSize)})`;
   // Per-arrow thickness with a small selected-state bump so the user
   // can tell the difference between "selected" and "thicker stroke".
   const baseStrokeWidth = arrow.strokeWidth ?? 2;

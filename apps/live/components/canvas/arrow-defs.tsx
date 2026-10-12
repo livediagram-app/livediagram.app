@@ -14,6 +14,20 @@ export function arrowheadMarkerId(shape: ArrowheadShape, size: ArrowheadSize): s
   return `arrowhead-${shape}-${size}`;
 }
 
+// Whether this browser paints a shared marker in the line's colour through `context-stroke`. Chromium and Firefox do;
+// WebKit (Safari, and so every browser on an iPhone or iPad) does not, and paints the head its default black, which
+// vanishes on a dark canvas. There every arrow carries its own marker in its line's colour (ArrowView). Read once;
+// where it cannot be asked (a test's DOM, no CSS.supports) the shared markers are assumed to work.
+let contextStroke: boolean | null = null;
+export function markersTakeLineColour(): boolean {
+  if (contextStroke === null)
+    contextStroke =
+      typeof CSS === 'undefined' || typeof CSS.supports !== 'function'
+        ? true
+        : CSS.supports('fill', 'context-stroke');
+  return contextStroke;
+}
+
 // Inner geometry for one arrowhead shape, drawn in the marker's
 // 0..10 viewBox with the attachment point at x≈9. `context-stroke`
 // is the canonical SVG2 way to inherit the referencing line's colour
