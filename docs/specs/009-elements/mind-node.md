@@ -256,9 +256,9 @@ Resizing a node resizes only that node.
 
 The arrangement a keyboard-driven outline wants is a child to the right,
 siblings stacked down it. That is a **tree**, and it is only one of the shapes
-people draw. There are four (`MindFlow` in
-`packages/document/src/mind-flow.ts`), picked from the **Mind Map** section of a
-selected node's menu:
+people draw. There are six (`MindFlow` in
+`packages/document/src/mind-flow.ts`), picked from **Branching** in the **Mind
+Map** section of a selected node's menu (see "The Mind Map menu"):
 
 - **Tree**: branches right, siblings stacked down. The default, so every map
   already drawn keeps its shape.
@@ -269,6 +269,11 @@ selected node's menu:
   of the node it was pressed on.
 - **Downward**: branches below, siblings spread across. The tree on its side,
   which is what an org chart or a decision tree looks like.
+- **Leftward**: branches left, siblings stacked down. The tree mirrored, for a
+  map read right to left or one that sits against the right of the canvas.
+- **Upward**: branches above, siblings spread across. The downward tree
+  mirrored, for a goal tree that builds up to its root, the way a pyramid of
+  reasons reads.
 - **Bubble**: branches fanned around the parent. Laid out tidily, the root's
   children share the full circle **equally**, starting from the root's west
   side and running clockwise, so a lone first branch points east. Weighting
@@ -294,9 +299,60 @@ sibling; the flow decides only where the node lands, and which faces its
 connector leaves and enters through (see Connectors).
 
 In free placement, collisions push along the flow's own stacking axis: a tree
-stacks a column, so something in the way moves down; a downward map spreads a
-row, so it moves right. Pushing the wrong way would shove a node straight into
+stacks a column, so something in the way moves down (a leftward map too); a
+downward or upward map spreads a row, so it moves right. Pushing the wrong way would shove a node straight into
 the next sibling's slot.
+
+## Spacing
+
+How far apart a map's nodes sit is the map's **spacing** (`MindSpacing` in
+`packages/document/src/mind-flow.ts`), picked from **Spacing** in the Mind Map
+menu. It scales both gaps the layout uses, parent to child along the flow and
+sibling to sibling across it, by one factor:
+
+| Spacing         | Factor | Parent to child | Between siblings |
+| --------------- | ------ | --------------- | ---------------- |
+| **Tight**       | 0.5    | 32              | 9                |
+| **Compact**     | 0.75   | 48              | 14               |
+| **Comfortable** | 1      | 64              | 18               |
+| **Wide**        | 1.5    | 96              | 27               |
+
+(Rounded to whole pixels. The downward and upward flows' level gap, a sibling gap plus half a child gap, scales
+the same way.)
+
+**Comfortable** is the default and is exactly the gaps maps have always had, so
+every map already drawn keeps its shape. Like the flow, spacing is stored on the
+map's **root** (`mindSpacing`, absent = Comfortable) and applies to the whole
+map. Picking one re-lays the map out at once, around the root, in one undo step,
+the same way a flow pick does; growth and Tidy Map use it from then on, and in
+free placement a new node lands the chosen gap from its parent and siblings.
+
+## The Mind Map menu
+
+A selected mind node's menu has one **Mind Map** section (a closed
+`MenuAccordionSection` like every element-menu section). Inside it, three
+groups, each under a small heading and each one of Plan mode's option lists
+(`OptionRows`, docs/specs/026-plan/plan-board.md "Option lists"): a bordered,
+rounded box with one row per choice at full width, its icon at the left and its
+name after it.
+
+- **Outline**: actions on the whole map.
+  - **Edit Outline**: the map as a list (see "Edit Outline"). Offered on every
+    node, not only the root: it opens the outline of the node's map.
+  - **Tidy Map**: lay the map out again in its flow and spacing (see "Tidy Map").
+  - **Select Branch**: select the node and every node under it, so a branch can
+    be restyled, copied or moved as one.
+  - **Select Whole Map**: select every node of the map, root included.
+- **Branching**: the six flows, one row each, the map's flow ticked; the row's
+  quiet second line is its hint ("Branches to the right, siblings stacked down").
+- **Spacing**: Tight, Compact, Comfortable and Wide, the map's spacing ticked.
+
+The selects take connectors too: a selected branch moves, copies and restyles
+with the lines that join it.
+
+Share roles: all of it is an **Editor's**. A Participant or a Viewer sees no Mind
+Map section, as today; the outline badge on a root keeps its own rule (see
+"Edit Outline").
 
 ## Tidy Map
 

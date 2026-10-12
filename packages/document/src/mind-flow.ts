@@ -19,9 +19,17 @@
 import { bestAnchorTowards } from './anchor-choice';
 import type { Anchor, ShapeElement } from './index';
 
-export type MindFlow = 'tree' | 'balanced' | 'downward' | 'bubble';
+export type MindFlow = 'tree' | 'leftward' | 'balanced' | 'downward' | 'upward' | 'bubble';
 
-export const MIND_FLOWS: readonly MindFlow[] = ['tree', 'balanced', 'downward', 'bubble'];
+/** In the order the Branching list shows them: each mirror next to its original. */
+export const MIND_FLOWS: readonly MindFlow[] = [
+  'tree',
+  'leftward',
+  'balanced',
+  'downward',
+  'upward',
+  'bubble',
+];
 
 /** What the element grew as before flows existed, so every map already drawn
  *  keeps its shape. */
@@ -30,17 +38,24 @@ export const DEFAULT_MIND_FLOW: MindFlow = 'tree';
 /** Title Case, for the menu tiles. */
 export const MIND_FLOW_LABEL: Record<MindFlow, string> = {
   tree: 'Tree',
+  leftward: 'Leftward',
   balanced: 'Balanced',
   downward: 'Downward',
+  upward: 'Upward',
   bubble: 'Bubble',
 };
 
 export const MIND_FLOW_HINT: Record<MindFlow, string> = {
   tree: 'Branches to the right, siblings stacked down',
+  leftward: 'Branches to the left, siblings stacked down',
   balanced: 'Branches both ways off the root',
   downward: 'Branches below, siblings spread across',
+  upward: 'Branches above, siblings spread across',
   bubble: 'Branches fanned around the parent',
 };
+
+/** Whether a flow's levels run vertically (its siblings spread across a row). */
+export const isVerticalMindFlow = (flow: MindFlow) => flow === 'downward' || flow === 'upward';
 
 /**
  * The connector look a mind map is drawn with when nothing in the map says
@@ -60,6 +75,46 @@ export const MIND_CHILD_GAP_Y = MIND_SIBLING_GAP_Y + MIND_CHILD_GAP_X / 2;
 
 export function isMindFlow(value: string | undefined): value is MindFlow {
   return value !== undefined && (MIND_FLOWS as readonly string[]).includes(value);
+}
+
+/** How far apart a map's nodes sit (docs/specs/009-elements/mind-node.md "Spacing"). */
+export type MindSpacing = 'tight' | 'compact' | 'comfortable' | 'wide';
+
+export const MIND_SPACINGS: readonly MindSpacing[] = ['tight', 'compact', 'comfortable', 'wide'];
+
+/** The gaps every map had before spacing existed, so a map without one keeps its shape. */
+export const DEFAULT_MIND_SPACING: MindSpacing = 'comfortable';
+
+export const MIND_SPACING_LABEL: Record<MindSpacing, string> = {
+  tight: 'Tight',
+  compact: 'Compact',
+  comfortable: 'Comfortable',
+  wide: 'Wide',
+};
+
+/** The factor each spacing scales both gaps by. */
+export const MIND_SPACING_SCALE: Record<MindSpacing, number> = {
+  tight: 0.5,
+  compact: 0.75,
+  comfortable: 1,
+  wide: 1.5,
+};
+
+export function isMindSpacing(value: string | undefined): value is MindSpacing {
+  return value !== undefined && (MIND_SPACINGS as readonly string[]).includes(value);
+}
+
+/** The gaps a map is laid out with: parent to child across a level, between siblings, and the vertical flows'
+ *  level gap. Whole pixels, so a tidy layout stays a fixed point. */
+export type MindGaps = { child: number; sibling: number; level: number };
+
+export function mindGaps(spacing: MindSpacing = DEFAULT_MIND_SPACING): MindGaps {
+  const k = MIND_SPACING_SCALE[spacing] ?? 1;
+  return {
+    child: Math.round(MIND_CHILD_GAP_X * k),
+    sibling: Math.round(MIND_SIBLING_GAP_Y * k),
+    level: Math.round(MIND_CHILD_GAP_Y * k),
+  };
 }
 
 type Size = { width: number; height: number };
@@ -99,20 +154,24 @@ export function placeMindChild(
   subtree: readonly ShapeElement[],
   children: readonly ShapeElement[],
   outward: number,
+  gaps: MindGaps = mindGaps(),
 ): MindPlacement {
-  if (flow === 'bubble') return bubblePlacement(parent, size, children, outward);
-  if (flow === 'downward') return downwardPlacement(parent, size, subtree);
-  if (flow === 'balanced') return balancedPlacement(parent, size, subtree, children, outward);
-  return treePlacement(parent, size, subtree);
+  if (flow === 'bubble') return bubblePlacement(parent, size, children, outward, gaps);
+  if (flow === 'downward') return downwardPlacement(parent, size, subtree, gaps, 1);
+  if (flow === 'upward') return downwardPlacement(parent, size, subtree, gaps, -1);
+  if (flow === 'balanced') return balancedPlacement(parent, size, subtree, children, outward, gaps);
+  return treePlacement(parent, size, subtree, gaps, flow === 'leftward' ? -1 : 1);
 }
 
-// Right, and stacked down: the original arrangement.
+// Right (or, mirrored, left), and stacked down: the original arrangement.
 function treePlacement(
   parent: ShapeElement,
   size: Size,
   subtree: readonly ShapeElement[],
+  gaps: MindGaps,
+  dir: 1 | -1,
 ): MindPlacement {
-  const x = parent.x + parent.width + MIND_CHILD_GAP_X;
+  const x = dir === 1 ? parent.x + parent.width + gaps.child : parent.x - gaps.child - size.width;
   // First child centred on the parent, which is what makes a lone branch look
   // deliberate rather than dropped. Later ones stack against the bottom of the
   // whole subtree, not just the immediate children, so a branch that has grown
@@ -120,22 +179,24 @@ function treePlacement(
   const y =
     subtree.length === 0
       ? parent.y + parent.height / 2 - size.height / 2
-      : bounds(subtree).bottom + MIND_SIBLING_GAP_Y;
+      : bounds(subtree).bottom + gaps.sibling;
   return { x, y, axis: 'y' };
 }
 
-// The tree on its side: children below, siblings spread across. Everything the
+// The tree on its side: children below (or, upward, above), siblings spread across. Everything the
 // tree flow says, with the axes swapped.
 function downwardPlacement(
   parent: ShapeElement,
   size: Size,
   subtree: readonly ShapeElement[],
+  gaps: MindGaps,
+  dir: 1 | -1,
 ): MindPlacement {
-  const y = parent.y + parent.height + MIND_CHILD_GAP_Y;
+  const y = dir === 1 ? parent.y + parent.height + gaps.level : parent.y - gaps.level - size.height;
   const x =
     subtree.length === 0
       ? parent.x + parent.width / 2 - size.width / 2
-      : bounds(subtree).right + MIND_SIBLING_GAP_Y;
+      : bounds(subtree).right + gaps.sibling;
   return { x, y, axis: 'x' };
 }
 
@@ -148,14 +209,13 @@ function balancedPlacement(
   subtree: readonly ShapeElement[],
   children: readonly ShapeElement[],
   outward: number,
+  gaps: MindGaps,
 ): MindPlacement {
   // `outward` is east for a root (no parent to point away from), so a root
   // alternates by how many children it already has and everything deeper
   // follows the direction its own branch already runs in.
   const left = outward === 0 ? children.length % 2 === 1 : Math.cos(outward) < 0;
-  const x = left
-    ? parent.x - MIND_CHILD_GAP_X - size.width
-    : parent.x + parent.width + MIND_CHILD_GAP_X;
+  const x = left ? parent.x - gaps.child - size.width : parent.x + parent.width + gaps.child;
   // Stack against this SIDE's branch only: the other side's nodes are not in
   // the way, and counting them would leave a growing gap on the near side.
   const sameSide = subtree.filter((n) =>
@@ -164,7 +224,7 @@ function balancedPlacement(
   const y =
     sameSide.length === 0
       ? parent.y + parent.height / 2 - size.height / 2
-      : bounds(sameSide).bottom + MIND_SIBLING_GAP_Y;
+      : bounds(sameSide).bottom + gaps.sibling;
   return { x, y, axis: 'y' };
 }
 
@@ -178,6 +238,7 @@ function bubblePlacement(
   size: Size,
   children: readonly ShapeElement[],
   outward: number,
+  gaps: MindGaps,
 ): MindPlacement {
   const index = children.length;
   // 0, +1, -1, +2, -2 ... so each new child takes the next free angle nearest
@@ -187,7 +248,7 @@ function bubblePlacement(
   const angle = outward + step * BUBBLE_STEP;
   const radius =
     Math.hypot(parent.width, parent.height) / 2 +
-    MIND_CHILD_GAP_X +
+    gaps.child +
     Math.hypot(size.width, size.height) / 2;
   const at = centre(parent);
   return {
@@ -206,8 +267,8 @@ export function outwardAngle(from: ShapeElement, to: ShapeElement): number {
 
 /**
  * The faces a parent-to-child connector joins, by flow (docs/specs/009-elements/mind-node.md "Connectors"): a
- * tree or balanced map runs east-west by the side the child is on, a downward
- * map north-south, and only the bubble flow, which fans every way, asks the
+ * tree, leftward or balanced map runs east-west by the side the child is on, a downward
+ * or upward map north-south, and only the bubble flow, which fans every way, asks the
  * nearest-pair chooser.
  */
 export function mindConnectorAnchors(
@@ -217,7 +278,7 @@ export function mindConnectorAnchors(
 ): [Anchor, Anchor] {
   const p = centre(parent);
   const c = centre(child);
-  if (flow === 'downward') return c.y >= p.y ? ['s', 'n'] : ['n', 's'];
+  if (isVerticalMindFlow(flow)) return c.y >= p.y ? ['s', 'n'] : ['n', 's'];
   if (flow === 'bubble') return [bestAnchorTowards(parent, c), bestAnchorTowards(child, p)];
   return c.x >= p.x ? ['e', 'w'] : ['w', 'e'];
 }

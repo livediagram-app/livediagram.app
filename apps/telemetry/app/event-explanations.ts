@@ -292,6 +292,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|MindFlow': "Someone changed a mind map's flow direction.",
   'Element|Changed|MindOutline':
     'Someone saved an edited outline onto a mind map, re-shaping the map from its text.',
+  'Element|Changed|MindSpacing':
+    "Someone changed how far apart a mind map's nodes sit (Tight, Compact, Comfortable or Wide).",
   'Element|Changed|ModeButton':
     "Someone changed which selection mode a Mode Button element switches everyone into when it's pressed.",
   'Element|Changed|Nudge':
@@ -458,6 +460,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone narrowed a multi-selection down to just one kind of element, from the right-click menu's Filter Selection.",
   'Element|Selected|Keyboard':
     'Someone moved the selection to the next element using the keyboard.',
+  'Element|Selected|MindBranch':
+    'Someone selected a mind map branch, or a whole map, from its menu.',
   'Element|Toggled|AspectLock':
     'Someone toggled a formatting option on an element or table: a text style (bold, italic, underline, or strikethrough), the aspect-ratio lock, or a table option (header row, header column, or zebra striping).',
   'Element|Toggled|Strikethrough':

@@ -65,3 +65,23 @@ describe('Tidy Map', () => {
     expect(committed()).toBeNull();
   });
 });
+
+// docs/specs/009-elements/mind-node.md "Spacing": stored on the root and the map re-laid out, in one commit.
+describe('Spacing', () => {
+  it('stores the spacing on the root and re-lays the map out at it', () => {
+    const tidy = (() => {
+      const m = map();
+      const plan = relayoutMindMap(m, 'root')!;
+      return applyMindMoves(m, plan.moves, plan.reanchored);
+    })();
+    const { api, committed } = setters(tidy);
+    api.setMindSpacingSelected('wide');
+    const out = committed()!;
+    const root = out.find((e) => e.id === 'root') as ShapeElement;
+    const a = out.find((e) => e.id === 'a') as ShapeElement;
+    const before = tidy.find((e) => e.id === 'a') as ShapeElement;
+    expect(root.mindSpacing).toBe('wide');
+    expect(a.x - (root.x + root.width)).toBe(96);
+    expect(a.x).toBeGreaterThan(before.x);
+  });
+});

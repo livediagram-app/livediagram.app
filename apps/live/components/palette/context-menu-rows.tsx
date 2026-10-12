@@ -35,7 +35,6 @@ export {
   EntityFieldsEditor,
   CodeSummary,
   LegendDataEditor,
-  MindFlowTiles,
   LineDataSummary,
   LinkedChartData,
   PieDataEditor,

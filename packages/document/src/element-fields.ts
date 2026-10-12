@@ -144,6 +144,7 @@ export const ELEMENT_FIELD_NAMES = {
     'reaction',
     'mindParentId',
     'mindFlow',
+    'mindSpacing',
     'pageTitle',
     'pageSubtitle',
     'stats',
