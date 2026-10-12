@@ -6,7 +6,7 @@ look, independent of their colours. There are three:
 | Finish           | Reads as                      | What it changes                                                                                          |
 | ---------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------- |
 | **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies            |
-| **Professional** | Crisp, print-ready            | Sharper corners, thinner lines, no default shadows, no draw-time arrow curves                            |
+| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows drawn right-angled           |
 | **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, hatched fills, a handwriting font, arrowheads drawn as two loose strokes |
 
 A finish is a look, never a type: switching it changes no stored geometry, colour or text, and switching back
@@ -29,15 +29,17 @@ element leaves unset, plus how a line is drawn (Sketch).
 
 ### Professional
 
-- **Corners:** an unset corner on a free-corner box draws at 2 px instead of the kind's default (8 px for a shape,
-  12 px for a mind node), still capped at a quarter of the shorter side
-  ([Corner radius](corner-radius.md)).
+- **Corners:** an unset corner on a free-corner box draws square (0 px) instead of the kind's default (8 px for a
+  shape, 12 px for a mind node) ([Corner radius](corner-radius.md)). Fixed silhouettes (the stadium's pill, the
+  circle) keep their shape.
 - **Lines:** an unset border width draws at 1 px (Thin) instead of 2 px; an unset arrow thickness draws at 1 px.
 - **Shadows:** the default soft shadow on boxed shapes and the paper peel under stickies are not drawn. An
   element's own shadow ([Element shadows](element-shadows.md)) still draws.
-- **Arrows:** a freshly drawn arrow on a Professional element's tab gets no draw-time avoidance curve
-  ([Arrow collision avoidance](arrow-collision-avoidance.md)); it stays straight and breaks behind the boxes it
-  crosses as usual ([Arrows pass behind](arrow-route-behind.md)).
+- **Lettering:** an element without its own font, on a tab without one, is written in Inter. A font picked on the
+  element or the tab wins.
+- **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
+  taking the draw-time avoidance curve ([Arrow collision avoidance](arrow-collision-avoidance.md)). It is an
+  ordinary Angled arrow afterwards; arrows already on the tab keep their style.
 
 ### Sketch
 
@@ -48,6 +50,9 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Fills** of shapes are drawn as diagonal pencil hatching in the fill colour instead of a solid fill. Stickies,
   frames, lanes, tables, charts and code blocks keep their solid fills: hatching a note or a container makes the
   writing on it hard to read.
+- **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
+  centre inside the shape, such as a flowchart key's card under its captions) is not hatched, so what sits on it
+  stays readable. Only a shape that stands alone is hatched.
 - **Lettering:** an element without its own font is written in the handwriting font (Caveat), whatever font the
   tab has. An element's own font wins. A code block keeps its monospace font.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
@@ -67,8 +72,10 @@ Draws exactly as livediagram did before finishes existed.
 
 ## Where it is set
 
-- **Element menu, Style section:** a **Finish** category (closed by default, like every menu section) with four
-  tiles: **Follow Tab**, **Flexible**, **Professional**, **Sketch**. Follow Tab clears the element's own finish.
+- **Element menu, Style section:** a **Finish** category (closed by default, like every menu section) holding a
+  full-width option list in the Plan style ([Plan board](../026-plan/plan-board.md) "Option lists"), one row per
+  choice with its glyph, name and a short line: **Follow Tab** (As the tab is), **Flexible** (Soft and rounded),
+  **Professional** (Square and fine), **Sketch** (Drawn by hand). Follow Tab clears the element's own finish.
   Hovering a tile previews it on the selection; clicking commits it as one undo step. The category shows for
   shapes, arrows, text, stickies and tables, and in the multi-selection menu when the selection holds any of
   them (the commit then sets every one of them).
@@ -77,6 +84,13 @@ Draws exactly as livediagram did before finishes existed.
 - **New tabs** start Flexible. Duplicated and imported tabs keep their finish.
 - **Agents (MCP):** `create_document` and `add_tab` take an optional `finish`; an element's `finish` is an
   ordinary element field agents may set.
+
+## Where it shows
+
+- **The canvas and every export** (SVG, PNG, PDF, thumbnails, the Map, live images) draw each element in its finish.
+- **The palette** previews the tab's finish on the tiles that place elements with one (shapes, text, stickies,
+  arrows, tables): under Professional the glyphs are square and fine, under Sketch they are drawn wobbly and
+  doubled. Icons, media, tools and self-painting faces keep their glyphs, as their elements keep their looks.
 
 ## Share roles
 
@@ -98,6 +112,8 @@ Participant's writable fields).
 ## Performance
 
 Sketch geometry is computed from an element's kind, size and border, never from its position, so moving an element
-does not recompute it; it is memoised per element view. Generating one element's strokes and hatching stays under
+does not recompute it; it is memoised per element view. Finding backdrops is one sorted sweep over the tab, run
+only when something on it is sketched (0.7 ms for 2,000 elements), and an element view re-renders only when its
+own backdrop flag flips. Generating one element's strokes and hatching stays under
 0.2 ms at worst-case sizes, so a 500-element sketched tab costs under 100 ms to draw from cold and nothing per
 drag frame for unmoved elements ([Canvas performance](canvas-performance.md)).

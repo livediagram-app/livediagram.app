@@ -28,8 +28,11 @@ export function isFinish(v: unknown): v is Finish;
 export function resolveFinish(own: Finish | undefined, tab: Finish | undefined): Finish;
 // own ?? tab ?? DEFAULT_FINISH; a stored value that is not a Finish reads as absent.
 
-export const PROFESSIONAL_CORNER_PX = 2;
+export const PROFESSIONAL_CORNER_PX = 0;
+export const PROFESSIONAL_FONT_ID = 'inter';
 export const SKETCH_FONT_ID = 'caveat';
+export const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']>; // shape, arrow, text, sticky, table
+export function supportsFinish(el: { type: string }): boolean;
 
 export function finishCornerFallbackPx(kindDefaultPx: number, finish: Finish): number;
 // professional → min(PROFESSIONAL_CORNER_PX, kindDefaultPx); else kindDefaultPx
@@ -47,10 +50,14 @@ export function finishFontId(
   tab: string | undefined,
   finish: Finish,
 ): string | undefined;
-// own ?? (sketch ? SKETCH_FONT_ID : tab)
+// own ?? (sketch ? SKETCH_FONT_ID : tab ?? (professional ? PROFESSIONAL_FONT_ID : undefined))
+export function elementFontId(el, tabFont, tabFinish): string | undefined; // finishFontId over resolveFinish
 export function finishCurvesNewArrows(finish: Finish): boolean; // finish !== 'professional'
-export function finishHatches(element: Element): boolean;
-// shape element, not a frame / lane / self-painting kind, fill not transparent
+export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined; // professional → 'angled'
+export function finishHatchesKind(element: Element): boolean;
+// a shape of a plain box kind or a drawn silhouette; not a frame, lane or self-painting kind
+export function finishHatches(element: Element, fill: string, backdrop?: boolean): boolean;
+// finishHatchesKind, not a backdrop, fill not transparent
 ```
 
 ### `packages/document/src/sketch.ts` (pure geometry, no DOM)
@@ -94,39 +101,72 @@ export function pathEndTangents(
 
 ### Canvas (`apps/live`)
 
-- `components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish) and
-  `useElementFinish(own?: Finish): Finish`, a context like `CanvasSurfaceContext` so memoised element views
-  re-render on a tab finish change.
-- `describeVariant(..., surface, finish)`: Professional drops `shadow-sm`, the sticky peel and uses the Professional
-  corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for CSS shapes,
-  stickies and drops the peel.
-- `components/canvas/SketchOverlay.tsx`: an absolutely positioned pixel-space `<svg>` (`viewBox="0 0 w h"`)
-  drawing hatching (or a solid area for stickies / frames / lanes / tables) then the sketch strokes, memoised on
-  `(id, kind, width, height, strokePx, radius, dash)`; used for CSS shapes, stickies and tables.
-- `ShapeSvgOverlay` takes `finish` and `width` / `height`; in Sketch it fits each part into pixels (`fitShapePart`)
-  and draws the sketch version of `main` / `outline` / `head` / `limb` parts (hatching for filled roles), `detail`
-  parts as one-pass strokes.
-- `ArrowView`: Sketch draws the visible line as `sketchStrokes(outlineOfPath(pathD))` (one pass while a flow
-  animation runs, so its dash maths holds) and triangle / hollow-triangle / line heads as `sketchArrowHead` paths
-  instead of markers; the selection halo and the hit band keep `pathD`.
-- Lettering: `CanvasElementsLayer` resolves each element's font with `finishFontId`.
-- Arrow thickness: `ArrowView` reads `finishArrowThickness`.
-- Avoidance: `arrow-avoidance-apply.ts` skips the curve when `finishCurvesNewArrows` is false.
+### `packages/document/src/sketch-element.ts` and `sketch-backdrop.ts`
+
+- `sketchElement(el, { strokePx, radiusPx, fill, backdrop })` returns the `SketchDrawing` layers (`strokes`,
+  `details`, `hatch`, `solid`); `sketchElementPaint(el, finish, fill, backdrop)` resolves stroke, dash and radius as an
+  unsketched element in the same finish; `sketchArrow(id, pathD, options)` returns the sketched line and, for
+  `SKETCHED_HEAD_SHAPES` (triangle, hollow triangle, line), the heads.
+- `sketchBackdropIds(elements, tabFinish): Set<string>`: candidates are elements where `finishHatchesKind` holds and
+  the resolved finish is Sketch (none: an empty set, no further work). Boxed centres are collected with their drawing
+  order and sorted by x; per candidate a binary search finds the first centre at or right of its left edge and scans
+  until past its right edge; a later element's centre inside its box makes it a backdrop. O(n log n + hits). A
+  backdrop draws `solid`, never `hatch`.
+
+### Canvas (`apps/live`)
+
+- `components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish, re-provided by each
+  `Canvas` for its own tab), `useTabFinish()` and `useElementFinish(own): Finish`, a context like
+  `CanvasSurfaceContext` so memoised element views re-render on a tab finish change.
+- `describeVariant(..., surface, finish)`: Professional drops `shadow-sm` and the sticky peel and uses the
+  Professional corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for
+  CSS shapes and stickies and drops the peel.
+- `lib/sketch-backdrop-store.ts`: `usePublishSketchBackdrops(tabId, drawnElements, tabFinish)` (called by
+  `CanvasElementsLayer`) publishes `sketchBackdropIds` per tab; `useIsSketchBackdrop(id)` is a per-id
+  `useSyncExternalStore` read, so only views whose flag flips re-render.
+- `components/canvas/SketchOverlay.tsx`: `useSketchPaint(element, finish, fill, backdrop)` memoised on the fields it
+  reads (never position) and `SketchOverlay`, an absolutely positioned `<svg viewBox="0 0 w h">` drawing solid, hatch,
+  strokes then details. `BoxedElementView` mounts it for every sketched boxed element (shapes, stickies, tables);
+  `ShapeContentRouter` skips its silhouette overlay when sketched.
+- `components/canvas/arrow-finish.ts`: `useArrowFinish(arrow, pathD)` returns the base width (Thin under
+  Professional when unset) and the memoised `sketchArrow` (one pass while a flow runs). `ArrowView` draws the
+  sketched line in place of `pathD`, sketched heads in place of markers (in `arrowheadColor` when set); the
+  selection halo and the hit band keep `pathD`.
+- Lettering: `CanvasElementsLayer`, `text-hug-measure` and `useTextStyleSetters` resolve fonts with `elementFontId`.
+- New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
+  `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
+  false.
+- Palette: `components/palette/palette-tile-finish.ts` `tileTakesFinish(action)` (shape kinds other than `icon` and
+  self-painting kinds, plus sticky, text, table, arrow) and `paletteFinishClass(finish)`; `IconButton` adds the class to
+  the glyph wrapper from `useTabFinish()`. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
+  strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`).
+  `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
+  `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
 
 ### Exports (`packages/document/src/svg-render*.ts`)
 
 `renderElementsToSvg` resolves each element's finish from `tab.finish`; `svgBoxed` and `svgArrow` take it and draw
-the same strokes, hatching and heads from `sketch.ts`, and the Professional fallbacks from `finish.ts`.
+the same strokes, hatching and heads from `sketch.ts`, and the Professional fallbacks from `finish.ts`
+(`svg-render-sketch.ts` places a sketched body). Every caller that loops `svgBoxed` (`renderElementsToSvg`,
+`export-tab.ts` PNG and SVG, `Minimap`, `useLayerThumbnails`, `useSlideThumbnails`) computes `sketchBackdropIds`
+once and passes `sketchBackdrop` per element; `boxedNeedsSvgRaster` sends every non-Flexible element down the SVG
+raster path so PNG matches SVG.
 
 ### Menus and dialog
 
-- `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** with four `SizeButton` tiles
-  (Follow Tab, Flexible, Professional, Sketch), hover preview, click commit. Mounted in the Style flyout
-  (`ElementAppearanceSections`), the arrow menu and `MultiStyleSections`.
-- `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key).
-- `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type).
-- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; a `FinishTab` with three tiles and **Apply to All
-  Elements**; `useTabCanvas` gains `setTabFinish`, `applyTabFinishToAll`.
+- `components/palette/FinishSection.tsx`: a `MenuAccordionSection` titled **Finish** holding `OptionRows`
+  (`kind="single"`, label "Drawn As") with rows `follow-tab`, `flexible`, `professional`, `sketch`: a glyph, the
+  `FINISH_LABELS` name and the `FINISH_DETAILS` line. Hover previews through `OptionRows`' `onPreview` /
+  `onPreviewEnd` (mouse only); click commits. Mounted by `ElementColourBorderSections` (the Style flyout, arrows
+  included) when `supportsFinish(target)`, and by `MultiStyleSections` for the first finish-taking member;
+  `resolveOwnFinish(el)` picks the checked row.
+- `components/plan/OptionRows.tsx`: optional `onPreview(id)` / `onPreviewEnd()`.
+- `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
+- `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
+  `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
+- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (three tiles and
+  **Apply to All Elements**) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas` gains `setTabFinish`
+  and `applyTabFinishToAll` (one `commit`, nothing written when no element has its own).
 
 ### Agents
 
@@ -167,20 +207,25 @@ Cosmetic fields only; no user content reaches the geometry beyond numbers. Parti
   20000 x 20000 (measured 0.23 ms rect, 0.30 ms ellipse). Path numbers are written in tenths through integer
   formatting, which tripled the speed (fractional number-to-string was the hot spot). Measured in
   `sketch.perf.test.ts`.
-- Views memoise geometry on size / kind / stroke, never position, so a drag recomputes nothing for moved shapes.
+- Backdrops: `sketchBackdropIds` on 2,000 overlapping sketched shapes measured 0.70 ms (budget 25 ms in
+  `sketch-backdrop.test.ts`); it returns at once when nothing on the tab is sketched.
+- Views memoise geometry on size / kind / stroke, never position, so a drag recomputes nothing for moved shapes; the
+  backdrop store re-renders only the views whose flag flips.
+- Palette tiles: one shared filter definition, applied by class; no per-tile geometry.
 
 ## Presentation and UX
 
-- Tiles: label + a small glyph each (a rounded square for Flexible, a crisp square for Professional, a wobbly
-  square for Sketch, a link glyph for Follow Tab). Selected tile: the tab's or element's value (Follow Tab when the
-  element has none).
-- Finish tab copy: heading "Finish", line "How lines, corners and lettering are drawn on this tab.", button
-  "Apply to All Elements".
+- Menu rows: a glyph (a link for Follow Tab, a rounded square for Flexible, a crisp square for Professional, a wobbly
+  square for Sketch), the name, and the line "As the tab is", "Soft and rounded", "Square and fine", "Drawn by hand".
+  The checked row is the element's own finish (Follow Tab when it has none).
+- Finish tab: tiles of glyph over name; heading "Finish", line "How lines, corners and lettering are drawn on this
+  tab.", button "Apply to All Elements".
 
 ## Accessibility
 
-Tiles are `SizeButton`s (buttons with `aria-pressed`, keyboard reachable, tooltips via the shared Tooltip). The
-dialog's tab strip gains one more tab with the same roles. No motion.
+The menu rows are `OptionRows`: menu item radios inside the menu (its own keys move between them), each with
+`aria-checked`. The dialog tiles are `SizeButton`s with `aria-pressed`; the tab strip gains one more tab with the
+same roles. Hover preview never fires for touch. No motion.
 
 ## Web Experience
 
@@ -201,24 +246,29 @@ per command letter.
 | budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                              |
 | export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                        |
 | variant drops shadow / peel / border per finish              | `apps/live/components/canvas/element-variant.test.ts`                                                    |
-| menu tiles commit, Follow Tab clears                         | `apps/live/components/palette/FinishSection.test.tsx`                                                    |
+| menu rows commit, preview, Follow Tab clears                 | `apps/live/components/palette/FinishSection.test.tsx`                                                    |
+| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                          |
+| Professional new arrows angled; avoidance per finish         | `apps/live/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
+| which palette tiles take the finish                          | `apps/live/components/palette/palette-tile-finish.test.ts`                                               |
+| applyFinishToEl                                              | `apps/live/lib/style-presets.test.ts`                                                                    |
 | dialog tab sets, Apply to All clears                         | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                 |
 
 ## Constants and configuration
 
-| Constant                 | Value  | Provenance                                            | Safe range              |
-| ------------------------ | ------ | ----------------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX` | 2      | crisp but not razor (print diagrams)                  | 0 to 4                  |
-| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                 | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails          | 0 to 4                  |
-| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)            | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                    | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14   | 12 to 28                |
-| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye) | 1 to 3                  |
-| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                        | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                              | 100 to 600              |
-| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                      | any handwriting font id |
+| Constant                 | Value  | Provenance                                               | Safe range              |
+| ------------------------ | ------ | -------------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback) | 0 to 4                  |
+| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                             | any sans font id        |
+| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                    | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails             | 0 to 4                  |
+| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)               | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                       | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14      | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)    | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                           | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                 | 100 to 600              |
+| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                         | any handwriting font id |
 
 ## Assets and external resources
 
