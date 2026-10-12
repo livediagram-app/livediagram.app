@@ -1487,6 +1487,25 @@ export const PALETTE_TILES: PaletteTileDef[] = [
       </Glyph>
     ),
   },
+  {
+    // Sankey diagram (docs/specs/009-elements/sankey.md): last in Build, after the containers, because it is
+    // the one Build element that lays itself out from data rather than holding work you place in it.
+    id: 'tools:sankey',
+    blurb: 'Flows drawn as wide as the amount they carry',
+    caption: 'Sankey',
+    section: 'build',
+    label: 'Add Sankey Diagram',
+    description:
+      'A Sankey diagram: how much moves where, each band as wide as its amount. Double-click it to edit the flows.',
+    action: { type: 'shape', kind: 'sankey' },
+    icon: (
+      <Glyph size={TILE_GLYPH_PX} units={24}>
+        {/* Two inputs merging into a node, splitting three ways: the shape of every Sankey. */}
+        <path d="M3 5h2M3 13h2M11 7v10M19 4v4M19 11v3M19 17v3" />
+        <path d="M5 4c4 0 2 4 6 4M5 14c4 0 2 2 6 2M11 9c4 0 4-3 8-3M11 12c4 0 4 0 8 1M11 15c4 0 4 3 8 3" />
+      </Glyph>
+    ),
+  },
   // --- Data (docs/specs/009-elements/pie-chart.md) -------------------------------------------------------
   {
     id: 'data:pie',

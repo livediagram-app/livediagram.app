@@ -167,6 +167,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'avoiding-elements': '#0891b2',
   'arrow-to-arrow': '#14b8a6',
   frames: '#14b8a6',
+  'sankey-diagram': '#0ea5e9',
   website: '#0284c7',
   'shape-markers': '#f59e0b',
   'shape-recognition': '#8b5cf6',

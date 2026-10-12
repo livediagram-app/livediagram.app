@@ -29,6 +29,11 @@ import {
   GRAPH_LAYOUT_MAX_EDGES,
   GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
+  SANKEY_LINK_COLORS,
+  SANKEY_MAX_FLOWS,
+  SANKEY_NAME_MAX,
+  SANKEY_UNIT_MAX,
+  SANKEY_VALUE_LABELS,
   SHAPE_KINDS,
   STICKY_PRESETS,
   THEMES,
@@ -68,7 +73,20 @@ const CONTENT_KINDS =
   'on "bar-chart" "horizontal" draws a Bar chart (absent: upright columns); on "line-chart" "area" ' +
   'fills each series down to zero and "scatter" draws points only, at x = each category read as a ' +
   'number; on "pie-chart" "doughnut" opens the middle. A chart draws no title (a caption is a ' +
-  'separate "text" element) and draws sample data when its data is empty.';
+  'separate "text" element) and draws sample data when its data is empty. ' +
+  'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
+  'by itself. "sankeyFlows" is [{ "from", "to", "value" }] with node NAMES (the nodes are the ' +
+  `names; up to ${SANKEY_MAX_FLOWS} flows, names up to ${SANKEY_NAME_MAX} chars, values above ` +
+  'zero; a flow back to an earlier node is hidden, as is one into itself). Options: ' +
+  `"sankeyLinkColor" (${SANKEY_LINK_COLORS.join(', ')}; default gradient), "sankeyAlign" ` +
+  '(justify: end nodes in the last column, the default; left: each at its own step), ' +
+  `"sankeyValueLabel" (${SANKEY_VALUE_LABELS.join(', ')}), "sankeyUnit" (e.g. "£", "kWh"; up ` +
+  `to ${SANKEY_UNIT_MAX} chars), "sankeyNodes" [{ "name", "color", "leftover": false }] to colour a node or switch ` +
+  'off its own leftover, ' +
+  '"sankeyLeftover" (show, the default: a middle node that sends on less than it receives draws ' +
+  'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
+  "node's name; do not write leftover flows yourself). Make it " +
+  'wide (about 2:1); it draws no title.';
 
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).

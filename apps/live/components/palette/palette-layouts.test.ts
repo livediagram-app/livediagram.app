@@ -179,7 +179,11 @@ describe('palette layouts', () => {
     ]) {
       expect(everywhere, id).not.toContain(id);
     }
-    expect(tileIds('illustrate', 'build')).toEqual(['tools:table', 'tools:timeline']);
+    expect(tileIds('illustrate', 'build')).toEqual([
+      'tools:table',
+      'tools:timeline',
+      'tools:sankey',
+    ]);
     expect(tileIds('diagram', 'build')).toContain('tools:mind-node');
     expect(tileIds('diagram', 'write')).toContain('tools:annotation');
   });

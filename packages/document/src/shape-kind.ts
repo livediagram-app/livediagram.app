@@ -156,6 +156,9 @@ export type ShapeKind =
   // Legend (docs/specs/009-elements/pie-chart.md): a card of colour-coded rows (a swatch + a label), the
   // key you put beside a chart or a colour-coded board.
   | 'legend'
+  // Sankey diagram (docs/specs/009-elements/sankey.md): flows between named nodes, each band as wide as
+  // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
+  | 'sankey'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
   // a jump to it, at your zoom, on your tab.
   | 'focus-button'

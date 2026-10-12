@@ -170,6 +170,7 @@ export const SHAPE_KINDS = new Set<string>([
   'code-block',
   'checklist',
   'legend',
+  'sankey',
   'focus-button',
   'icon',
   'sticker',

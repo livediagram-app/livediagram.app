@@ -13,6 +13,8 @@ import {
 } from '@livediagram/document';
 
 import { track } from '@/lib/telemetry';
+import { canEditSankey } from '@/lib/sankey-edit';
+import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 
 const LinkPickerDialog = dynamic(
@@ -29,6 +31,10 @@ const MindOutlineDialog = dynamic(
 );
 const CodeEditDialog = dynamic(
   () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
+  { ssr: false },
+);
+const SankeyFlowsDialog = dynamic(
+  () => import('@/components/dialogs/SankeyFlowsDialog').then((m) => m.SankeyFlowsDialog),
   { ssr: false },
 );
 const ImagePicker = dynamic(
@@ -62,6 +68,9 @@ export function EditorElementDialogs() {
     codeEditOpenForId,
     setCodeSelected,
     setCodeEditOpenForId,
+    sankeyFlowsOpenForId,
+    setSankeyFlowsOpenForId,
+    sankey,
     mindOutline,
     imagePickerOpenFor,
     selfParticipant,
@@ -214,6 +223,24 @@ export function EditorElementDialogs() {
                 language={el.codeLanguage ?? 'plain'}
                 onCommit={setCodeSelected}
                 onClose={() => setCodeEditOpenForId(null)}
+              />
+            );
+          })()
+        : null}
+      {/* Sankey Flows dialog (docs/specs/009-elements/sankey.md "The Flows dialog"): an Editor's, on an
+          unlocked diagram; it closes itself if the diagram goes (deleted, or the tab changed). */}
+      {sankeyFlowsOpenForId !== null
+        ? (() => {
+            const el = activeTab.elements.find((e) => e.id === sankeyFlowsOpenForId);
+            if (!el || el.type !== 'shape' || el.shape !== 'sankey' || !canEditSankey(can, el))
+              return null;
+            return (
+              <SankeyFlowsDialog
+                key={el.id}
+                element={el}
+                palette={themeChartPalette(getTheme(activeTab.theme))}
+                onCommit={(flows, nodes) => sankey.setSankeyFlows(el.id, flows, nodes)}
+                onClose={() => setSankeyFlowsOpenForId(null)}
               />
             );
           })()

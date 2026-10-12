@@ -8,7 +8,7 @@
 // id), so the same section works for one element or many.
 
 import {
-  isChartShape,
+  takesChartPalette,
   isCodeBlockShape,
   planColorPresets,
   STICKY_PRESETS,
@@ -50,7 +50,7 @@ export function shapeSupportsPresets(el: Element): el is ShapeElement {
   // line art with no fill, a chart paints its series from its own palette,
   // and a reveal (docs/specs/009-elements/reveal-zone.md) is an opaque cover whose whole job is to be
   // unreadable — every preset tile changed nothing a viewer could see.
-  return el.shape !== 'icon' && el.shape !== 'reveal' && !isChartShape(el.shape);
+  return el.shape !== 'icon' && el.shape !== 'reveal' && !takesChartPalette(el.shape);
 }
 
 // Presets (docs/specs/010-palette/style-presets.md) — one-click theme-colour + border looks for a shape, plus a
@@ -208,7 +208,7 @@ export function hasStylePresets(el: Element): boolean {
   // The code-block test leads for the same reason it does in the component:
   // `shapeSupportsPresets` narrows shapes away when it fails.
   return (
-    (el.type === 'shape' && (isCodeBlockShape(el.shape) || isChartShape(el.shape))) ||
+    (el.type === 'shape' && (isCodeBlockShape(el.shape) || takesChartPalette(el.shape))) ||
     shapeSupportsPresets(el) ||
     el.type === 'table' ||
     el.type === 'sticky' ||
@@ -301,8 +301,8 @@ export function TargetPresetsSection({
       <CodeThemePresetsSection current={target.codeTheme} props={props} accordion={accordion} />
     );
   }
-  // Charts style per slice, so the grid is their palette rather than a look.
-  if (target.type === 'shape' && isChartShape(target.shape)) {
+  // Charts style per slice and a Sankey per node, so the grid is their palette rather than a look.
+  if (target.type === 'shape' && takesChartPalette(target.shape)) {
     return (
       <ChartPalettePresetsSection
         current={target.chartPalette}

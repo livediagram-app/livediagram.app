@@ -15,6 +15,7 @@ import {
   isRatingShape,
   isSelfDrawingShape,
 } from './data-shapes';
+import { isSankeyShape } from './sankey-model';
 
 // The self-drawing shape family decides real behaviour: BoxedElementView picks
 // a renderer off it, elementSupportsText uses isSelfDrawingShape to decide
@@ -43,6 +44,7 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'code block', guard: isCodeBlockShape },
   { name: 'checklist', guard: isChecklistShape },
   { name: 'legend', guard: isLegendShape },
+  { name: 'sankey', guard: isSankeyShape },
   { name: 'plan', guard: isPlanShape },
 ];
 

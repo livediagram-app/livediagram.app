@@ -4,16 +4,18 @@
 
 import type { AnimationSetId, BodyAnimationSet } from './animation-sets';
 import { isChartShape, isProgressShape, isRatingShape } from './data-shapes';
+import { isSankeyShape } from './sankey-model';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';
 
-// Shapes with a set of their own (Icon, Chart, Progress, Rating), owned outside these catalogues.
+// Shapes with a set of their own (Icon, Chart, Sankey, Progress, Rating), owned outside these catalogues.
 function hasOwnShapeSet(el: Element): boolean {
   return (
     el.type === 'shape' &&
     (el.shape === 'icon' ||
       isChartShape(el.shape) ||
+      isSankeyShape(el.shape) ||
       isProgressShape(el.shape) ||
       isRatingShape(el.shape))
   );

@@ -18,6 +18,8 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   // docs/specs/012-collaboration/decision-record.md).
   decision: 'Decision Record',
   temperature: 'Temperature Check',
+  // 'Sankey' alone names a person, not a picture (docs/specs/009-elements/sankey.md).
+  sankey: 'Sankey Diagram',
 };
 
 function titleCase(s: string): string {

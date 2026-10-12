@@ -11,6 +11,7 @@
 // './index', so the public package surface is unchanged.
 
 import type { ShapeKind } from './index';
+import { isSankeyShape } from './sankey-model';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
 // branch on "is this a progress element" without repeating the literal pair.
@@ -183,6 +184,13 @@ export function isChartShape(kind: ShapeKind): boolean {
   return isPieShape(kind) || isBarShape(kind) || isLineShape(kind);
 }
 
+// The kinds whose Presets grid is a chart palette (docs/specs/009-elements/pie-chart.md "Chart palettes"):
+// the charts, and the Sankey diagram (docs/specs/009-elements/sankey.md), whose nodes take the same ladder.
+// Both colour per datum or per node, so a fill-and-border look has nothing to set on them.
+export function takesChartPalette(kind: ShapeKind): boolean {
+  return isChartShape(kind) || isSankeyShape(kind);
+}
+
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
 // the data charts, the code block, the checklist, and the sticker. They render
 // their own bespoke content (no fill/border box) and carry no editable text
@@ -207,6 +215,7 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||
     isLegendShape(kind) ||
+    isSankeyShape(kind) ||
     isPlanShape(kind) ||
     kind === 'sticker'
   );

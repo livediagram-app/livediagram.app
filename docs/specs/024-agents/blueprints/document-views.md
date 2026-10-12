@@ -32,7 +32,7 @@ Scope, by file:
 | `packages/document-views/src/tree.ts`                                   | `buildViewTree`: `deriveContainers`, then reading order per container                                                       |
 | `packages/document-views/src/reading-order.ts`                          | `readingOrder`, `rowsOf`                                                                                                    |
 | `packages/document-views/src/freehand-runs.ts`                          | `freehandRuns`: consecutive bare strokes folded into one line                                                               |
-| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist                                                            |
+| `packages/document-views/src/content-summary.ts`                        | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                    |
 | `packages/document-views/src/state-attribute.ts`                        | `stateAttributeOf`: the one state attribute of each content kind that has one                                               |
 | `packages/document-views/src/attributes.ts`                             | `attributesOf`: the ordered attribute list of one element                                                                   |
 | `packages/document-views/src/style-attributes.ts`                       | `styleAttributesOf` for `style`                                                                                             |
@@ -325,6 +325,7 @@ are escaped as `\;` and `\}` too.
 | `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                                 | `VW21` |
 | `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                      | `VW21` |
 | `checklist`              | `done=<done>/<total>`                                                                       |        |
+| `sankey`                 | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`  |        |
 | `plan-board`             | `columns=` then each column's `name` (`?` when it has none) as `cellText`, joined `\|`      |        |
 | `plan-card`              | `item=<planCard.itemId as cellText>`, `item=none` when absent or empty                      |        |
 | `plan-view`              | `view=<planView.view as cellText>`, `view=none` when absent                                 |        |
@@ -474,7 +475,7 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
    (`VW67`). Its JSON is `ShowSelectedView`.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
-cells, entity field names and types, checklist item text, code and comment text, and a printed arrow's label, each
+cells, entity field names and types, checklist item text, a Sankey's node names (field `node`), code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
 arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the

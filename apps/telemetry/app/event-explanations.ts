@@ -344,6 +344,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
   'Element|Changed|Finish':
     "Someone set a selected element's own finish (Flexible, Professional or Sketch), or set it back to follow its tab.",
+  'Element|Changed|SankeyAnim':
+    'Someone set or cleared the animation on a selected Sankey diagram (Grow, Flow, Cascade, Pulse or Rise), or its speed or repeat.',
+  'Element|Changed|SankeyFlows':
+    "Someone edited a Sankey diagram's flows (what moves from where to where, and how much) or a node's leftover switch.",
+  'Element|Changed|SankeyStyle':
+    "Someone changed how a Sankey diagram draws: a node's colour, the band colouring, the column layout, the labels, the leftovers or the unit.",
   'Element|Changed|Shadow': 'Someone applied a drop shadow to a selected element, or removed it.',
   'Element|Changed|ShapeMorph':
     'Someone changed a selected shape into a different kind of shape, keeping its size, label, and colours.',
@@ -1051,6 +1057,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
+  'UI|Ended|SankeyFlowsTourCompleted':
+    "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
+  'UI|Ended|SankeyFlowsTourSkipped':
+    "Someone left a Sankey Flows dialog's Show Me tour before its end.",
   'UI|Ended|PhotoReviewTourCompleted':
     "Someone reached the end of the photo import review's Show Me tour.",
   'UI|Ended|PhotoReviewTourSkipped':
@@ -1218,6 +1228,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|PhotoReviewTour':
     'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
+  'UI|Started|SankeyFlowsTour':
+    "Someone pressed Show Me in a Sankey's Flows dialog, starting its tour of writing flows.",
   'UI|Started|ShareTour':
     'Someone pressed Show Me in the Share dialog, starting its tour of issuing and managing passes.',
   'UI|Started|IllustrateTour':

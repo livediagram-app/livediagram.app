@@ -51,6 +51,7 @@ import { buildAffinityMap, buildUserStoryMap } from './template-builders-worksho
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
 import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
 import { buildFunnel } from './template-builders-funnel';
+import { buildSankey } from './template-builders-sankey';
 import { buildRoadmap } from './template-builders-roadmap';
 import { buildLogoDesign } from './template-builders-logo';
 import { buildGanttChart } from './template-builders-gantt';
@@ -225,6 +226,8 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildEmpathyMap(cx, cy);
     case 'funnel':
       return buildFunnel(cx, cy);
+    case 'sankey':
+      return buildSankey(cx, cy);
     case 'okr-tree':
       return buildOkrTree(cx, cy);
     case 'sitemap':

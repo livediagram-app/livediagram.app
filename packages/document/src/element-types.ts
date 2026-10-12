@@ -19,6 +19,15 @@ import type { CodeThemeId } from './code-themes';
 import type { MindFlow } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
+import type {
+  SankeyAlign,
+  SankeyLeftover,
+  SankeyAnim,
+  SankeyFlow,
+  SankeyLinkColor,
+  SankeyNodeStyle,
+  SankeyValueLabel,
+} from './sankey-model';
 import type { ChartSource, SheetAnchor } from './chart-source';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from './icon-size';
@@ -350,6 +359,20 @@ export type ShapeElement = {
   // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
   // kind; bounded in validate.ts.
   legendItems?: LegendItem[];
+  // Sankey diagram (docs/specs/009-elements/sankey.md): the flows (by node name), the nodes somebody
+  // recoloured, and how the diagram draws. Only meaningful on the 'sankey' kind; bounded in validate.ts.
+  // Absent options read as their defaults: bands blended, end nodes to the right, amounts shown, no unit.
+  sankeyFlows?: SankeyFlow[];
+  sankeyNodes?: SankeyNodeStyle[];
+  sankeyLinkColor?: SankeyLinkColor;
+  sankeyAlign?: SankeyAlign;
+  sankeyValueLabel?: SankeyValueLabel;
+  sankeyUnit?: string;
+  sankeyLeftover?: SankeyLeftover;
+  sankeyLeftoverName?: string;
+  sankeyAnim?: SankeyAnim;
+  sankeyAnimSpeed?: AnimationSpeed;
+  sankeyAnimRepeat?: boolean;
   // Chart palette (docs/specs/009-elements/pie-chart.md): which categorical ramp the slices / series take
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.

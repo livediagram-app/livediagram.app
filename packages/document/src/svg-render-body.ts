@@ -20,6 +20,8 @@ import {
 } from './data-shapes';
 import { defaultPadding, PADDING_PX } from './index';
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
+import { svgSankey } from './svg-render-sankey';
+import { isSankeyShape } from './sankey-model';
 import {
   svgEntityRows,
   svgProgressBar,
@@ -81,6 +83,7 @@ export function svgElementBody(
   if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
   if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
   if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
+  if (isSankeyShape(el.shape)) return svgSankey(el, labelColor, chartPalette, fontFamily);
   // The empty track is the element's OWN fill, else a fixed slate on light
   // paper (ShapeContentRouter), not the theme's card fill a resolved `fill`
   // carries. On dark paper the canvas keeps that light slate, which leaves the

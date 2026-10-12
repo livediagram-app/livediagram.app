@@ -1092,9 +1092,10 @@ export const articles: Article[] = [
   {
     slug: 'build',
     title: 'Build Elements',
-    description: 'Mind nodes, lanes, frames, timelines, and tables: the elements that hold others.',
+    description:
+      'Mind nodes, lanes, frames, timelines, tables and Sankey diagrams: the elements you lay a diagram out with.',
     keywords:
-      'build structure layout container holds frame lane timeline table mind node arrange scaffold group section band track grid organise',
+      'build structure layout container holds frame lane timeline table mind node sankey flow arrange scaffold group section band track grid organise',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',
@@ -1105,6 +1106,16 @@ export const articles: Article[] = [
     description: 'A labelled section that draws behind its contents and moves them as one.',
     keywords:
       'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
+    category: 'Palette',
+    categorySlug: 'palette/build',
+    parentSlug: 'build',
+  },
+  {
+    slug: 'sankey-diagram',
+    title: 'Sankey Diagram',
+    description: 'Show how much moves where: bands as wide as the amount they carry.',
+    keywords:
+      'sankey flow flows diagram energy budget money income spending funnel conversion journey migration material supply chain band bands width amount quantity nodes split merge sankeymatic alluvial csv paste spreadsheet',
     category: 'Palette',
     categorySlug: 'palette/build',
     parentSlug: 'build',
@@ -1339,7 +1350,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'starter kanban flowchart swot gantt wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'starter kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw illustrate plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

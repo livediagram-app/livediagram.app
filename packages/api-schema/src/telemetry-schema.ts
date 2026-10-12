@@ -469,6 +469,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Progress-ring',
     'Rating',
     'Legend',
+    // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
+    'Sankey',
   ],
   // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
   // than more entries under `tools`, because the palette gave it its own

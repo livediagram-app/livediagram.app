@@ -31,7 +31,7 @@ export function useBoxedElementGestures({
   onBeginDrag,
   onBeginEdit,
   onEditLink,
-  onEditCode,
+  onOpenEditDialog,
   onOpenNote,
   imageContext,
   onContextSelect,
@@ -47,7 +47,7 @@ export function useBoxedElementGestures({
   | 'onBeginDrag'
   | 'onBeginEdit'
   | 'onEditLink'
-  | 'onEditCode'
+  | 'onOpenEditDialog'
   | 'onOpenNote'
   | 'imageContext'
   | 'onContextSelect'
@@ -169,10 +169,14 @@ export function useBoxedElementGestures({
       onOpenNote?.(element.id);
       return;
     }
-    // A code block has no inline label — double-click opens its edit
-    // dialog (docs/specs/009-elements/code-block.md), the way a link card opens the link picker.
-    if (element.type === 'shape' && element.shape === 'code-block') {
-      onEditCode?.(element.id);
+    // A code block and a Sankey have no inline label — double-click opens their edit
+    // dialog (docs/specs/009-elements/code-block.md, docs/specs/009-elements/sankey.md), the way a link
+    // card opens the link picker.
+    if (
+      element.type === 'shape' &&
+      (element.shape === 'code-block' || element.shape === 'sankey')
+    ) {
+      onOpenEditDialog?.(element.id);
       return;
     }
     // The self-drawing data components (progress / rail / rating / charts /

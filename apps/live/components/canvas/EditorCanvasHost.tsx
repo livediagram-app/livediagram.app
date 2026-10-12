@@ -32,6 +32,7 @@ import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider'
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
+import { canEditSankey } from '@/lib/sankey-edit';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -294,6 +295,7 @@ export function EditorCanvasHost() {
     setExportOpen,
     setExportScope,
     setCodeEditOpenForId,
+    setSankeyFlowsOpenForId,
     setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
@@ -415,6 +417,14 @@ export function EditorCanvasHost() {
     if (!el || el.type !== 'shape' || el.shape !== shape) return false;
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
+  };
+  // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md,
+  // docs/specs/009-elements/sankey.md): which dialog depends on the kind.
+  const openEditDialog = (id: string) => {
+    const el = activeTab.elements.find((e) => e.id === id);
+    if (!el || el.type !== 'shape') return;
+    if (el.shape === 'code-block') setCodeEditOpenForId(id);
+    else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
   };
   const backdrop = resolveViewBackdrop(
     activeTab,
@@ -1112,7 +1122,7 @@ export function EditorCanvasHost() {
         onOpenAction={openActionPopover}
         onOpenNote={openNote}
         onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
-        onEditCode={isReadOnly ? undefined : setCodeEditOpenForId}
+        onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
         imageContext={imageContext}
         showTemplatePicker={
           // The identity / join card (name entry) shows for EVERYONE

@@ -210,7 +210,8 @@ export const PALETTE_CATEGORIES: {
     id: 'build',
     label: 'Build',
     group: 1,
-    description: 'The structural elements: mind nodes, lanes, frames, timelines, and tables.',
+    description:
+      'The structural elements: mind nodes, lanes, frames, timelines, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
   },
   {

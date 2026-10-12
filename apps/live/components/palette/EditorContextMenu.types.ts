@@ -197,6 +197,9 @@ export type EditorContextMenuProps = {
   onSetCodeWrap: (wrap: boolean) => void;
   // Legend rows (docs/specs/009-elements/pie-chart.md): the whole array, committed in one step.
   onSetLegendItems: (items: LegendItem[]) => void;
+  // Sankey diagram (docs/specs/009-elements/sankey.md): its edits, present only when this session may make
+  // them (an Editor, on an unlocked diagram), so the menu shows no Sankey section otherwise.
+  sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
   // Mind-map flow (docs/specs/009-elements/mind-node.md): the shape the selected node's whole map grows
   // in. Resolved here rather than in the menu because it is stored on the
   // tree's ROOT, which the menu has no way to walk to.

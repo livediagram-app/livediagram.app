@@ -190,6 +190,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   venn: 'strategy',
   flywheel: 'strategy',
   funnel: 'strategy',
+  sankey: 'strategy',
   'comparison-table': 'strategy',
   'stakeholder-map': 'strategy',
   'rich-picture': 'strategy',
@@ -259,6 +260,7 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'sales-pipeline': ['spreadsheets'],
   // About money, though drawn as diagrams.
   funnel: ['finance'],
+  sankey: ['finance'],
   'business-model-canvas': ['finance'],
   // Diagrams a team plans its work with.
   gantt: ['planning'],

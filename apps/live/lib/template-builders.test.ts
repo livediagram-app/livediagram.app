@@ -76,6 +76,7 @@ const ALL_KINDS = [
   'business-model-canvas',
   'empathy-map',
   'funnel',
+  'sankey',
   'okr-tree',
   'sitemap',
   'browser-wireframe',

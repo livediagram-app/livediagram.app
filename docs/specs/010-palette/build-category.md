@@ -10,6 +10,13 @@ lay a diagram _out_ with, as opposed to the ones you draw _on_ it:
 | **Frame**     | Draw (Tools)  |
 | **Timeline**  | Components    |
 | **Table**     | Data          |
+| **Sankey**    | (new)         |
+
+The **Sankey** ([Sankey diagram](../009-elements/sankey.md)) joined later and sits last. It is the one Build
+element that lays itself out from data rather than holding work you place in it; it is here because a
+Sankey is a structure you choose for a whole picture (how much moves where), the same moment as choosing
+lanes or a timeline. It is in Diagram and Illustrate (as an infographic), and left out of Facilitate,
+where a session does not stop to chart a flow.
 
 ## Why it exists
 
@@ -33,7 +40,7 @@ decoration or a dynamic behaviour.
 ## Rendering
 
 Rows with a blurb (`PaletteToolRows`), not a bare icon grid — the same
-treatment as Behaviour and Data, for the same reason. Five containers all look
+treatment as Behaviour and Data, for the same reason. The containers all look
 like rectangles at 18px, so the picture does not separate them; "Tab adds a
 child, Enter a sibling" against "A titled band that carries its steps" is what
 the reader is actually choosing between.

@@ -102,6 +102,9 @@ export type TemplateKind =
   // Conversion funnel: narrowing stages with counts, derived step rates
   // and a callout on the biggest drop-off.
   | 'funnel'
+  // Sankey diagram: website visits from their channels through the pages to a paid plan, the drop-off drawn
+  // as the diagram's leftovers.
+  | 'sankey'
   // OKR tree: an objective branching into measurable key results (each
   // with a progress ring) and the initiatives that move them.
   | 'okr-tree'
@@ -688,6 +691,13 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
+    kind: 'sankey',
+    title: 'Sankey diagram',
+    description:
+      'Where visitors come from and where they go: channels into pages into trials, with every drop-off drawn to Bounced.',
+    extra: true,
+  },
+  {
     kind: 'okr-tree',
     title: 'OKR tree',
     description:
@@ -1088,6 +1098,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'event-storming': 'grid',
   'empathy-map': 'grid',
   funnel: 'blank',
+  sankey: 'blank',
   storyboard: 'crosshatch',
   // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,

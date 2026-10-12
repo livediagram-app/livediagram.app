@@ -23,6 +23,7 @@ import {
   isChecklistShape,
   isCodeBlockShape,
   isLegendShape,
+  isSankeyShape,
   isMindNode,
   isLineShape,
   isProgressShape,
@@ -125,6 +126,7 @@ export function ElementAppearanceSections({
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isLegend = target.type === 'shape' && isLegendShape(target.shape);
+  const isSankey = target.type === 'shape' && isSankeyShape(target.shape);
   const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
   const isEntity = target.type === 'shape' && target.shape === 'entity';
@@ -178,7 +180,7 @@ export function ElementAppearanceSections({
     hasStylePresets(target) ||
     target.type === 'sticky' ||
     target.type === 'arrow' ||
-    (boxed && supportsColours(target) && !isChart) ||
+    (boxed && supportsColours(target) && !isChart && !isSankey) ||
     (borderable && !isChart);
   return (
     <>
@@ -230,6 +232,7 @@ export function ElementAppearanceSections({
         isLine={isLine}
         isCodeBlock={isCodeBlock}
         isLegend={isLegend}
+        isSankey={isSankey}
         isMindNode={isMind}
         isChecklist={isChecklist}
         isEntity={isEntity}
