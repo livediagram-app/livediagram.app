@@ -161,9 +161,9 @@ strip's other buttons (one open at a time, a second press or a press outside clo
 - **Diagram mode only.** Draw, Facilitate, Illustrate and Plan arrange their content another way
   (strokes, a session board, pages, boards), so the button is not there; the command palette still
   reaches the tidiers.
-- **Not on a phone.** The phone cluster is one row of shared width
-  ([Session tools](../012-collaboration/session-tools.md#the-session-strip)), and one more button
-  would wrap it on a narrow screen. A phone tidies through the command palette.
+- **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the
+  Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on a tile is the
+  press; the popover fits the screen's width.
 - **Not in Zen**, not during the welcome flow: the strip itself is hidden there.
 - **A locked tab** shows the button, with every tile inert under a "This tab is locked" note, since
   unlocking it is the one step that makes the tidiers work.

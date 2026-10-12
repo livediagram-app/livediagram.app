@@ -268,7 +268,6 @@ export function useCanvasChromePanels({
   const tidyUpShown = tidyUpOffered({
     actions: tidyUp,
     editorMode: props.editorMode,
-    isMobile,
     zenMode: !!zenMode,
   });
   const tidyUpOpen = activeDockPanel === 'tidy-up' && tidyUpShown && !chromeHidden;

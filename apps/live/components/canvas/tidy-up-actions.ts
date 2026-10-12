@@ -14,13 +14,12 @@ export type TidyUpActions = {
   blocked: boolean;
 };
 
-// Whether the cluster shows the button: Diagram mode, off a phone, out of Zen, and only for a session the
-// editor handed actions to.
+// Whether the cluster shows the button: Diagram mode, out of Zen, and only for a session the editor handed
+// actions to. Phones too: there a tap is the press, with no hover preview.
 export function tidyUpOffered(input: {
   actions: TidyUpActions | undefined;
   editorMode: EditorMode | undefined;
-  isMobile: boolean;
   zenMode: boolean;
 }): boolean {
-  return !!input.actions && input.editorMode === 'diagram' && !input.isMobile && !input.zenMode;
+  return !!input.actions && input.editorMode === 'diagram' && !input.zenMode;
 }

@@ -1,5 +1,5 @@
 // docs/specs/008-canvas/layout-cleanup.md "Where it shows" and "Share roles": the Tidy Up button is Diagram
-// mode's, off a phone, out of Zen, and only for a session the editor handed actions to (an Editor's).
+// mode's, on a desktop and a phone alike, out of Zen, and only for a session the editor handed actions to (an Editor's).
 
 import { describe, expect, it } from 'vitest';
 import { tidyUpOffered, type TidyUpActions } from './tidy-up-actions';
@@ -10,7 +10,7 @@ const actions: TidyUpActions = {
   endPreview: () => {},
   blocked: false,
 };
-const base = { actions, editorMode: 'diagram' as const, isMobile: false, zenMode: false };
+const base = { actions, editorMode: 'diagram' as const, zenMode: false };
 
 describe('tidyUpOffered', () => {
   it('offers the button to an Editor in Diagram mode on a desktop', () => {
@@ -32,8 +32,7 @@ describe('tidyUpOffered', () => {
     },
   );
 
-  it('is not on a phone, nor in Zen', () => {
-    expect(tidyUpOffered({ ...base, isMobile: true })).toBe(false);
+  it('is not in Zen', () => {
     expect(tidyUpOffered({ ...base, zenMode: true })).toBe(false);
   });
 });

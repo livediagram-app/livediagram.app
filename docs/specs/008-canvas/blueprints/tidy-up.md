@@ -41,8 +41,8 @@ surface.
 ## Behaviour and state
 
 - **Offered** when, all together: `editorMode === 'diagram'`, not `isReadOnly` (a Participant and a Viewer are
-  read-only for structure), not `isMobile`, not `zenMode`, not an embed. `EditorCanvasHost` passes `tidyUp` only
-  for an Editor's non-embed session; `tidyUpOffered` adds the mode, phone and Zen gates.
+  read-only for structure), not `zenMode`, not an embed (a phone included). `EditorCanvasHost` passes `tidyUp` only
+  for an Editor's non-embed session; `tidyUpOffered` adds the mode and Zen gates.
 - **Open state** is the dock slot: `activeDockPanel === 'tidy-up'`. Leaving Diagram mode or the button
   disappearing closes it (an effect in `useCanvasChromePanels`, as Slides and the Plan popovers do).
 - **Blocked**: `tidyUp.blocked = activeTabLocked`. The popover renders every tile `disabled` under the locked
@@ -68,7 +68,7 @@ type TidyUpActions = {
 };
 ```
 
-`tidyUpOffered({ actions, editorMode, isMobile, zenMode }): boolean` is the one gate, read by both
+`tidyUpOffered({ actions, editorMode, zenMode }): boolean` is the one gate, read by both
 `CanvasChrome` (the segment) and `useCanvasChromePanels` (the popover and its auto-close).
 
 `TidyUpPopover` props: `{ actions: TidyUpActions; empty: boolean; anchor?: DockAnchor; onClose: () => void }`.
@@ -141,7 +141,7 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 | Spec rule                                  | Test                                        |
 | ------------------------------------------ | ------------------------------------------- |
 | Button left of Layers, only when offered   | `LayersThemeStrip.test.tsx`                 |
-| Diagram-only, Editor-only, not phone / Zen | `tidy-up-actions.test.ts` (`tidyUpOffered`) |
+| Diagram-only, Editor-only, not in Zen      | `tidy-up-actions.test.ts` (`tidyUpOffered`) |
 | Five tiles in order + Auto-align row       | `TidyUpPopover.test.tsx`                    |
 | Press ends preview, runs, closes, in order | `TidyUpPopover.test.tsx`                    |
 | Mouse hover previews, touch does not       | `TidyUpPopover.test.tsx`                    |

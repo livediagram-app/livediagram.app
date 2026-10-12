@@ -765,7 +765,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   tidyUpOffered({
                     actions: props.tidyUp,
                     editorMode: props.editorMode,
-                    isMobile,
                     zenMode: !!zenMode,
                   })
                     ? {
