@@ -63,10 +63,9 @@ where it is and changes only how the next mark is made.
     Plan's line ("Plan stands apart").
   - **The preview** shows the row under the pointer, else the focused row, else the current mode:
     a picture of the mode's work on its tint, its name with **Shift+D** when the key leads there,
-    its **description** (one line on what the mode is for, from the mode catalogue), the mode's
-    **main tools** as small chips, and one button that does what choosing the row does:
-    **Switch to <Mode>**, **Open a New <Mode> Tab** across Plan's line, **Current Mode** (inert)
-    on the current one, or **Can’t Switch Here** (inert) on a locked row.
+    its **description** (one line on what the mode is for, from the mode catalogue) and the mode's
+    **main tools** as small chips. It holds **no button**: choosing is the row's alone, by a click
+    or by Enter or Space on the focused row.
   - The preview is for the pointer: assistive technology hears each row's name and description
     on the row itself, and the preview is hidden from it.
   - **Narrow (under 640px wide):** the preview is left out and the list stands alone, each row

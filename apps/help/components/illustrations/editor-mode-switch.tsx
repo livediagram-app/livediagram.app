@@ -20,7 +20,7 @@ const MODES: { mode: Mode; tile: string; mark: string }[] = [
 
 /** The mode switch beside the menu button in the top-left card, its menu open: the list of the
  *  five modes (the current one checked, Plan marked as a new tab) and the preview of the one under
- *  the pointer, Draw: its picture, name with ⇧D, description, tools and Switch to Draw. */
+ *  the pointer, Draw: its picture, name with ⇧D, description and tools. */
 export function ModeSwitchScene() {
   const mx = 40;
   const my = 54;
@@ -153,10 +153,6 @@ export function ModeSwitchScene() {
           </g>
         );
       })}
-      <rect x={px + 10} y={my + 136} width={84} height={18} rx={5} className="fill-orange-700" />
-      <Label x={px + 52} y={my + 145} anchor="middle" size={9.5} weight={600} tone="onAccent">
-        Switch to Draw
-      </Label>
     </Scene>
   );
 }
