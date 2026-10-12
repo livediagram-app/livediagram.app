@@ -236,14 +236,15 @@ describe('bare help-article paths', () => {
   });
 });
 
-// The staging environment's noindex header (docs/specs/016-platform/staging-environment.md). Staging is public on
+// The staging and preview noindex header (docs/specs/016-platform/staging-environment.md,
+// docs/specs/016-platform/pr-previews.md). Both are public on
 // purpose, so this header is the only thing keeping a second copy of every
 // marketing and help page out of search results — and it has to reach every
 // app on the hostname without touching any of their builds.
-describe('staging noindex header', () => {
-  const staging = (base: Env): Env => ({ ...base, DEPLOY_ENV: 'staging' });
+describe.each(['staging', 'preview'])('%s noindex header', (deployEnv) => {
+  const staging = (base: Env): Env => ({ ...base, DEPLOY_ENV: deployEnv });
 
-  it('marks a marketing response noindex on staging', async () => {
+  it('marks a marketing response noindex', async () => {
     const { env } = makeEnv();
     const res = await dispatch('/faq', staging(env));
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -264,10 +265,11 @@ describe('staging noindex header', () => {
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
 
-  it('leaves production untouched', async () => {
+  it('leaves production and local dev untouched', async () => {
     const { env } = makeEnv();
-    const res = await dispatch('/faq', env);
-    expect(res.headers.get('X-Robots-Tag')).toBeNull();
+    expect((await dispatch('/faq', env)).headers.get('X-Robots-Tag')).toBeNull();
+    const local = await dispatch('/faq', { ...env, DEPLOY_ENV: 'local' });
+    expect(local.headers.get('X-Robots-Tag')).toBeNull();
   });
 
   it('keeps the response body and status intact', async () => {
@@ -286,7 +288,7 @@ describe('staging noindex header', () => {
     const env: Env = {
       ...makeEnv().env,
       API: { fetch: () => Promise.resolve(upgrade) } as unknown as Fetcher,
-      DEPLOY_ENV: 'staging',
+      DEPLOY_ENV: deployEnv,
     };
     const res = await dispatch('/api/documents/abc/ws', env);
     expect(res).toBe(upgrade);

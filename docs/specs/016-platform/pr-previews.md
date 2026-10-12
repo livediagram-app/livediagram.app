@@ -117,8 +117,12 @@ Previews build like staging with three differences:
 
 The hosted profile ([Deployment](deployment.md), "Hosted profile") gains a third
 environment, `preview`, beside production and staging in `apps/api/hosted-vars.json`.
-Its per-environment values are all empty: no `APP_BASE_URL` (no email leaves a preview)
-and no `GOOGLE_CLIENT_ID` (the Drive mirror stays off). The shared values, telemetry on
+Its per-environment values are all empty: no `GOOGLE_CLIENT_ID` (the Drive mirror stays
+off) and no `APP_BASE_URL` from the profile, because a preview's origin differs per PR. A
+full preview's api gets `APP_BASE_URL` from the generated config instead, set to its own
+origin, so workbench and pairing links stay on the preview rather than falling back to
+production. The deploy's "hosted vars are live" check, which guards production's image
+caps, is skipped on previews for the same reason. The shared values, telemetry on
 and the per-owner image caps, apply as they do everywhere hosted. A Preview's telemetry
 lands in staging's D1 through staging's api; a full preview's lands in its own. The build
 check then proves a preview build carries neither production's nor staging's Google

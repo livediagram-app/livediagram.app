@@ -81,6 +81,7 @@ describe('a Full preview', () => {
       expect.objectContaining({ binding: 'IMAGES', bucket_name: 'livediagram-images-pr-123' }),
     ]);
     expect((api.vars as Table).AI_ALLOWED_ORIGINS).toBe('https://pr-123.livediagram.app');
+    expect((api.vars as Table).APP_BASE_URL).toBe('https://pr-123.livediagram.app');
     expect(api.triggers).toEqual({ crons: [] });
     expect(api.durable_objects).toEqual(
       (source('api').env as { staging: Table }).staging.durable_objects,

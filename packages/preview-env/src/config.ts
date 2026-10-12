@@ -102,6 +102,8 @@ function rewriteApi(preview: Table, vars: Table, { pr, d1Id }: PreviewConfigInpu
     throw new PreviewError('missing-var', 'api lacks AI_ALLOWED_ORIGINS');
   }
   vars.AI_ALLOWED_ORIGINS = previewOrigin(pr);
+  // The hosted profile cannot hold a per-PR origin, and unset falls back to production's.
+  vars.APP_BASE_URL = previewOrigin(pr);
 
   const d1 = tables(preview.d1_databases);
   if (d1.length !== 1 || d1[0]?.binding !== 'DB') {

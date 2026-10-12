@@ -10,6 +10,10 @@
     "staging": {
       "APP_BASE_URL": "https://staging.livediagram.app",
       "GOOGLE_CLIENT_ID": "1086769580516-elcn86mcfr16vcp1oov4gnn3s32sb7ut.apps.googleusercontent.com"
+    },
+    "preview": {
+      "APP_BASE_URL": "",
+      "GOOGLE_CLIENT_ID": ""
     }
   }
 }

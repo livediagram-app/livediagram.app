@@ -6,12 +6,14 @@
 // vars with whatever the deploy declares, silently wiping dashboard-only ones.
 //
 // Most hosted vars are shared by every environment; a few are per environment
-// under `environments` (production, staging): the Google Drive mirror's OAuth
+// under `environments` (production, staging, preview): the Google Drive mirror's OAuth
 // client id, because livediagram.app runs one Google Cloud project per
-// environment (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment").
+// environment (docs/specs/022-drive-mirror/drive-mirror.md, "Hosted deployment"), and
+// APP_BASE_URL. Every PR preview shares the `preview` entry, whose values are all
+// empty (docs/specs/016-platform/pr-previews.md, "Build").
 // An empty per-environment value means unset there: the feature stays off.
 //
-// Run from apps/api; `--env staging` picks staging, none picks production:
+// Run from apps/api; `--env staging` or `--env preview` picks that one, none picks production:
 //
 //   node scripts/hosted-vars.mjs flags [--env staging]
 //       One token per line (`--var`, `KEY:VALUE`, ...) for `wrangler deploy`.
@@ -36,10 +38,10 @@ import { fileURLToPath } from 'node:url';
 export const HOSTED_VARS_PATH = fileURLToPath(new URL('../hosted-vars.json', import.meta.url));
 
 const VAR_NAME = /^[A-Z][A-Z0-9_]*$/;
-const ENVIRONMENTS = ['production', 'staging'];
+const ENVIRONMENTS = ['production', 'staging', 'preview'];
 
 /** Reads and validates the profile: shared NAME → non-empty string, plus
- *  `environments` with exactly production and staging, each declaring the same
+ *  `environments` with exactly production, staging and preview, each declaring the same
  *  names (none of them also shared), whose values are strings, empty = unset. */
 export function readHostedProfile(path = HOSTED_VARS_PATH) {
   const raw = JSON.parse(readFileSync(path, 'utf8'));
@@ -53,11 +55,11 @@ export function readHostedProfile(path = HOSTED_VARS_PATH) {
       throw new Error(`hosted-vars: ${name} must be a non-empty string`);
     }
   }
-  const environments = { production: {}, staging: {} };
+  const environments = Object.fromEntries(ENVIRONMENTS.map((env) => [env, {}]));
   if (rawEnvs === undefined) return { shared, environments };
   const names = rawEnvs && typeof rawEnvs === 'object' ? Object.keys(rawEnvs).sort() : [];
   if (names.join() !== [...ENVIRONMENTS].sort().join()) {
-    throw new Error('hosted-vars: environments must hold exactly production and staging');
+    throw new Error('hosted-vars: environments must hold exactly production, staging and preview');
   }
   for (const env of ENVIRONMENTS) {
     const vars = rawEnvs[env];
@@ -74,8 +76,8 @@ export function readHostedProfile(path = HOSTED_VARS_PATH) {
     environments[env] = vars;
   }
   const keys = (env) => Object.keys(environments[env]).sort().join();
-  if (keys('production') !== keys('staging')) {
-    throw new Error('hosted-vars: production and staging must declare the same names');
+  if (ENVIRONMENTS.some((env) => keys(env) !== keys('production'))) {
+    throw new Error('hosted-vars: production, staging and preview must declare the same names');
   }
   return { shared, environments };
 }
@@ -83,7 +85,7 @@ export function readHostedProfile(path = HOSTED_VARS_PATH) {
 /** The profile environment a wrangler env deploys: none is production. */
 export function hostedEnvironment(wranglerEnv) {
   if (wranglerEnv === '') return 'production';
-  if (wranglerEnv === 'staging') return 'staging';
+  if (wranglerEnv === 'staging' || wranglerEnv === 'preview') return wranglerEnv;
   throw new Error(`hosted-vars: unknown environment ${wranglerEnv}`);
 }
 
