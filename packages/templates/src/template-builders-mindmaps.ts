@@ -188,38 +188,75 @@ function mindHowTo(map: Element[], label: string): Element {
 }
 
 // Tree mind map: a left-to-right outline for people who think in outlines
-// (the tree flow). The three levels read apart at a glance: a large bold root,
-// tinted medium branches, and small plain leaves two to a branch. Every box is
-// sized so its longest label sits on one line, which the old 140px leaves did
-// not ("SEO articles" spilled over its border).
+// (the tree flow), worked as a quarter's content plan. The three levels read
+// apart at a glance, in the radial map's grammar: a bold root naming the plan
+// and its quarter, branches each in their OWN hue (tint, border, glyph and the
+// connector into them), and plain white leaves edged in their branch's hue
+// carrying concrete pieces of work. Growth copies the look of a node at the
+// same level and its siblings' connector, so a leaf added to Video comes out
+// rose. Every box is sized so its longest label sits on one line.
+const CONTENT_BRANCHES: { label: string; icon: string; leaves: string[] }[] = [
+  { label: 'Blog', icon: 'edit', leaves: ['SEO guides, 2 a month', 'Guest posts from users'] },
+  {
+    label: 'Social',
+    icon: 'message',
+    leaves: ['Weekly tips carousel', 'Creator collabs', 'Live Q&A on Fridays'],
+  },
+  { label: 'Email', icon: 'mail', leaves: ['Monthly newsletter', 'Five-day onboarding'] },
+  { label: 'Events', icon: 'calendar', leaves: ['Two webinars', 'Meetup in Leeds'] },
+  { label: 'Video', icon: 'camera', leaves: ['Product tutorials', 'Customer stories'] },
+];
+
 export function buildMindMapTree(cx: number, cy: number): Element[] {
-  const branches: [string, [string, string]][] = [
-    ['Blog', ['SEO articles', 'Guest posts']],
-    ['Social', ['Weekly campaigns', 'Creator collabs']],
-    ['Email', ['Monthly newsletter', 'Onboarding drip']],
-    ['Video', ['Product tutorials', 'Customer stories']],
+  const rootRuns: TextRun[] = [
+    { text: 'Content strategy', bold: true },
+    { text: '\nQ3 · grow sign-ups 20%', size: 'sm' },
   ];
-  return buildMindTemplate(
+  const map = buildMindTemplate(
     {
-      label: 'Content strategy',
+      label: runsPlainText(rootRuns),
       // Root of the tree: the strongest preset and the largest text, so the
       // topic anchors the outline.
-      look: { width: 230, height: 96, textSize: 'lg', colorPreset: 'bold' },
-      children: branches.map(([label, leaves]) => ({
-        label,
-        // A gentle tint and medium text between the bold root and the plain
-        // leaves: a legible three-tier hierarchy.
-        look: { width: 170, height: 64, textSize: 'md', colorPreset: 'soft' },
-        children: leaves.map((leaf) => ({
-          label: leaf,
-          look: { width: 200, height: 44, textSize: 'sm' },
-        })),
-      })),
+      look: { width: 300, height: 112, textSize: 'lg', colorPreset: 'bold', richText: rootRuns },
+      children: CONTENT_BRANCHES.map((b, i) => {
+        const hue = MIND_HUES[(i + 1) % MIND_HUES.length]!;
+        return {
+          label: b.label,
+          look: {
+            width: 170,
+            height: 60,
+            textSize: 'md',
+            textBold: true,
+            iconId: b.icon,
+            fillColor: hue.fill,
+            strokeColor: hue.stroke,
+            textColor: hue.text,
+            strokeWidth: 'thick',
+          },
+          connector: { strokeColor: hue.stroke, strokeWidth: 4 },
+          children: b.leaves.map((leaf) => ({
+            label: leaf,
+            look: {
+              width: 220,
+              height: 44,
+              textSize: 'sm',
+              fillColor: '#ffffff',
+              strokeColor: hue.leaf,
+              textColor: '#334155',
+            },
+            connector: { strokeColor: hue.leaf, strokeWidth: 2 },
+          })),
+        };
+      }),
     },
     'tree',
     cx,
     cy,
   );
+  return [
+    ...map,
+    mindHowTo(map, 'Select any idea, then press Tab to add a child or Enter to add a sibling.'),
+  ];
 }
 
 // Bubble map: the Thinking Maps "describe it" map, one topic ringed by the

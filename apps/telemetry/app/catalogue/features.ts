@@ -766,7 +766,8 @@ export const PALETTE_GROUPS_OPENED = chart(
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
       type === 'ToolbarSearch' ||
-      type === 'ToolbarSearchOtherModes',
+      type === 'ToolbarSearchOtherModes' ||
+      type === 'ToolbarSearchUnavailable',
   },
 );
 
@@ -992,6 +993,14 @@ export const SESSION_POLL_OPENED = opened(
   'Poll Button Opened',
   'The Poll button in the bottom bar opened, to ask a question or to read the answers.',
   (t) => t === 'SessionPoll',
+);
+
+// Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
+// laid out counts under Tabs Auto-Arranged.
+export const TIDY_UP_OPENED = opened(
+  'Tidy Up Opened',
+  'The Tidy Up button in the bottom bar opened, to pick a layout for the tab.',
+  (t) => t === 'TidyUp',
 );
 
 export const ACTION_SIGN_IN_NUDGE = opened(

@@ -423,11 +423,44 @@ describe('gantt workstream bars survive theming', () => {
   });
 });
 
+describe('the lane-based process templates give each role its own hue', () => {
+  // Swimlane flowchart and approval workflow (docs/specs/008-canvas/canvas-and-palette.md):
+  // one lane per role, each tinted its own colour, under a title and over a key.
+  const lanesOf = (kind: TemplateKind) =>
+    buildTemplate(kind, 0, 0).filter(
+      (el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape' && el.shape === 'lane',
+    );
+
+  it.each([
+    ['swimlane', ['Customer', 'Sales', 'Warehouse', 'Courier']],
+    ['approval-workflow', ['Requester', 'Manager', 'Finance']],
+  ] as const)('%s: one lane per role, each in its own hue', (kind, roles) => {
+    const lanes = lanesOf(kind);
+    expect(lanes.map((l) => l.label)).toEqual(roles);
+    expect(new Set(lanes.map((l) => l.fillColor)).size).toBe(roles.length);
+    expect(new Set(lanes.map((l) => l.headerFill)).size).toBe(roles.length);
+  });
+
+  it.each(['swimlane', 'approval-workflow'] as const)(
+    '%s: opens with a title and a key',
+    (kind) => {
+      const texts = buildTemplate(kind, 0, 0).filter(
+        (el): el is Extract<Element, { type: 'text' }> => el.type === 'text',
+      );
+      expect(texts.some((t) => t.textSize === 'lg' && t.textBold)).toBe(true);
+      expect(texts.map((t) => t.label)).toContain('Key');
+    },
+  );
+});
+
 describe('system architecture is a vendor-neutral tiered diagram', () => {
   // The logical sibling of Cloud architecture (docs/specs/008-canvas/canvas-and-palette.md): four tier lanes
-  // holding labelled nodes, no vendor marks, every edge pinned and named.
+  // holding labelled nodes, no vendor marks, every edge pinned and named. The
+  // components ride the content layer; the scaffold (lanes, gutter glyphs,
+  // the key's sample lines) is checked apart.
   const els = buildTemplate('system-architecture', 0, 0);
   const shapes = els.filter((el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape');
+  const components = els.filter((el) => el.layerId === 'layer:template:content');
 
   it('stacks the Clients / Edge / Services / Data lanes', () => {
     expect(shapes.filter((el) => el.shape === 'lane').map((el) => el.label)).toEqual([
@@ -439,7 +472,9 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
   });
 
   it('names every node on the node and uses no technology marks', () => {
-    const nodes = shapes.filter((el) => el.shape !== 'lane');
+    const nodes = components.filter(
+      (el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape',
+    );
     expect(nodes.length).toBeGreaterThan(0);
     for (const n of nodes) {
       expect(n.label?.length).toBeGreaterThan(0);
@@ -448,7 +483,7 @@ describe('system architecture is a vendor-neutral tiered diagram', () => {
   });
 
   it('pins and labels every edge', () => {
-    const arrows = els.filter(
+    const arrows = components.filter(
       (el): el is Extract<Element, { type: 'arrow' }> => el.type === 'arrow',
     );
     expect(arrows.length).toBeGreaterThan(0);

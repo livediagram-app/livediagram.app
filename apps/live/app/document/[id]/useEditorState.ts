@@ -151,6 +151,7 @@ import { useElementLinks } from '@/hooks/canvas/useElementLinks';
 import { useElementSelectionActions } from '@/hooks/canvas/useElementSelectionActions';
 import { useElementStyle } from '@/hooks/canvas/useElementStyle';
 import { useStylePreview } from '@/hooks/canvas/useStylePreview';
+import { useCleanupPreview } from '@/hooks/canvas/useCleanupPreview';
 import { useShapeDrawing } from '@/hooks/canvas/useShapeDrawing';
 import { useShareLinks } from '@/hooks/persistence/useShareLinks';
 import { useTabActions } from '@/hooks/persistence/useTabActions';
@@ -1751,13 +1752,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const collabDeepLink = useCollabDeepLinkCapture();
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
-  // entry). See useTabEntryEffects.
+  // entry). See useTabEntryEffects. A tab showing pages frames its first page
+  // instead (set by useIllustratePages below), never the whole row.
+  const frameFirstPageRef = useRef<(() => void) | null>(null);
   const { requestFit } = useTabEntryEffects({
     hydrated,
     activeId,
     elementCount: activeTab.elements.length,
     tabLoaded: loadedTabIds.has(activeId),
-    fitToScreen,
+    fitToScreen: () => (frameFirstPageRef.current ?? fitToScreen)(),
     skipFitForTabRef: skipTabFitRef,
   });
 
@@ -1966,6 +1969,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     toastInfo: toast.info,
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
     framePageRef,
+    frameFirstPageRef,
   });
   // What a locked page holds is inert, as on a locked layer (Illustrate mode only).
   const pageLockedIds = usePageLockedIds(activeTab.elements, illustratePages?.pages ?? null);
@@ -2595,6 +2599,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     requestFit,
     markTabLoaded,
     bringCardTypes: presetCardTypes.bring,
+    seedCards: (creates) => void plan.context.addItems?.(creates),
   });
 
   // One undo step per burst of a continuous control: the background
@@ -3295,6 +3300,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onCommitted: styleMemory.recordEdit,
   });
 
+  // The same idea one level up (docs/specs/008-canvas/layout-cleanup.md "Hover to see it first"):
+  // hovering a Tidy Up tile lays the whole tab out behind the popover, and it only sticks on press.
+  const { previewCleanup, endCleanupPreview } = useCleanupPreview({
+    editsBlocked: structureBlocked,
+    activeId,
+    tabsRef,
+    tickTabs,
+    previewingRef,
+  });
+
   // Element link picker state + the link read/write/follow handlers.
   // See useElementLinks.
   const {
@@ -3847,6 +3862,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,
+    previewCleanup,
+    endCleanupPreview,
     // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
     applyTabFontToAll,

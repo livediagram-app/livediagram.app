@@ -2,11 +2,16 @@
 // which element tiles a query finds, split into the ones the current editor mode's palette offers
 // and the ones only another mode's (or the event-storming notation) does. Pure, so the split and
 // the ranking are tested without a strip.
-import { componentShapeKind, type EditorMode, type Element } from '@livediagram/document';
+import {
+  componentShapeKind,
+  editorModeLabel,
+  type EditorMode,
+  type Element,
+} from '@livediagram/document';
 import { paletteRank } from '@livediagram/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { PALETTE_LAYOUTS, paletteCategoriesFor } from './palette-layouts';
-import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
+import { tileDisplayName, type PaletteTileDef, type PaletteTileSection } from './palette-tile-defs';
 
 export type ElementTileSearch = {
   // The matches the current mode's palette offers, best first. On an empty query: the tiles whose
@@ -15,7 +20,25 @@ export type ElementTileSearch = {
   // The matches only another mode's palette offers, best first; on an empty query, those already
   // on the tab.
   elsewhere: PaletteTileDef[];
+  // The matches bound to another mode's own tools (Plan's cards, boards, views and sheets), shown
+  // greyed out with the reason: listed so they are found, never added outside their mode.
+  unavailable: PaletteTileDef[];
 };
+
+// The categories whose tiles only their own mode adds: too specific to that mode's UI to place
+// anywhere else (docs/specs/007-editor/toolbar-layout.md "Search: every element type").
+const MODE_BOUND_SECTIONS: Partial<Record<PaletteTileSection, EditorMode>> = {
+  'plan-cards': 'plan',
+  'plan-boards': 'plan',
+  'plan-metrics': 'plan',
+  'plan-visualisations': 'plan',
+  'plan-sheets': 'plan',
+};
+
+/** The tile greyed out, its hover card naming the one mode that adds it. */
+function boundToMode(tile: PaletteTileDef, mode: EditorMode): PaletteTileDef {
+  return { ...tile, disabled: { reason: `Only in ${editorModeLabel(mode)} Mode` } };
+}
 
 // --- The element types on the tab --------------------------------------------------------------
 // A tile and an element meet on a signature: the element type, plus the creation-time choice that
@@ -181,8 +204,9 @@ export function mergeByName(
     .map((r) => r.tile);
 }
 
-/** Every element tile, split: the ones the mode's palette offers (layout order) and the ones only
- *  another mode's does. Image-upload tiles are left out without image support, as in every grid. */
+/** Every element tile, split: the ones the mode's palette offers (layout order), the ones only
+ *  another mode's does, and the ones bound to another mode's own tools. Image-upload tiles are left
+ *  out without image support, as in every grid. */
 export function elementTileSections({
   mode,
   hasImage,
@@ -199,15 +223,18 @@ export function elementTileSections({
   const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
   const here = modeElementTiles(mode, planCardTiles).filter(visible);
   const hereIds = new Set(here.map((t) => t.id));
-  const elsewhere = allElementTiles().filter(
-    (t) =>
-      visible(t) &&
-      !hereIds.has(t.id) &&
-      // A document's own card types replace the default ones in Plan: a default type it
-      // dropped is not "elsewhere", it is gone.
-      !(planCardTiles && t.section === 'plan-cards'),
-  );
-  return { here, elsewhere: [...elsewhere, ...drawTiles] };
+  const elsewhere: PaletteTileDef[] = [];
+  const unavailable: PaletteTileDef[] = [];
+  for (const t of allElementTiles()) {
+    if (!visible(t) || hereIds.has(t.id)) continue;
+    // A document's own card types replace the default ones in Plan: a default type it dropped is
+    // not "elsewhere", it is gone.
+    if (planCardTiles && t.section === 'plan-cards') continue;
+    const owner = MODE_BOUND_SECTIONS[t.section];
+    if (owner) unavailable.push(boundToMode(t, owner));
+    else elsewhere.push(t);
+  }
+  return { here, elsewhere: [...elsewhere, ...drawTiles], unavailable };
 }
 
 /** What the Search lists: the query's matches, best first, or before anything is typed, the
@@ -225,11 +252,18 @@ export function searchElementTiles({
   planCardTiles?: readonly PaletteTileDef[];
   drawTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
-  const { here, elsewhere } = elementTileSections(sections);
+  const { here, elsewhere, unavailable } = elementTileSections(sections);
   if (!query.trim()) {
     const seen = new Set<string>();
-    const onTab = tilesOnTab(here, tabElements, seen);
-    return { here: onTab, elsewhere: tilesOnTab(elsewhere, tabElements, seen) };
+    return {
+      here: tilesOnTab(here, tabElements, seen),
+      elsewhere: tilesOnTab(elsewhere, tabElements, seen),
+      unavailable: tilesOnTab(unavailable, tabElements, seen),
+    };
   }
-  return { here: rankTiles(query, here), elsewhere: rankTiles(query, elsewhere) };
+  return {
+    here: rankTiles(query, here),
+    elsewhere: rankTiles(query, elsewhere),
+    unavailable: rankTiles(query, unavailable),
+  };
 }

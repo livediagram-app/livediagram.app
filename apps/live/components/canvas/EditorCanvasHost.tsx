@@ -340,6 +340,10 @@ export function EditorCanvasHost() {
     illustratePages,
     presentArticles,
     loadedTabIds,
+    autoAlignTab,
+    autoLayoutTab,
+    previewCleanup,
+    endCleanupPreview,
   } = useEditorContext();
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
@@ -863,6 +867,18 @@ export function EditorCanvasHost() {
             : () => {
                 setCanvasThemeTab('theme');
                 track('UI', 'Opened', 'ThemePicker');
+              }
+        }
+        // Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"): an
+        // Editor's, so a Participant or Viewer (read-only for structure) and an embed get no button.
+        tidyUp={
+          isReadOnly || embedMode
+            ? undefined
+            : {
+                run: (kind) => (kind === 'align' ? autoAlignTab() : autoLayoutTab(kind)),
+                preview: previewCleanup,
+                endPreview: endCleanupPreview,
+                blocked: activeTabLocked,
               }
         }
         onSelectLayer={setActiveLayer}

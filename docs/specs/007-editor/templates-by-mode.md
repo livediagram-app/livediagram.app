@@ -17,7 +17,7 @@ its own start ([Template starts](start-diagramming.md)).
 - Illustrate templates: Blank Illustration, Article, Slide deck, Logo design, Group card and the
   eight [Illustrate templates](#illustrate-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
-  among them. Plan templates come with no cards: each but Blank Plan sets up a way of working across
+  among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
   several tabs, or a ready-made spreadsheet (the twelve
   [spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)), every tab opening in Plan.
 - Facilitate templates: Blank Session and the twelve [Facilitate templates](#facilitate-templates)
