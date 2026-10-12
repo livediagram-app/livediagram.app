@@ -2599,6 +2599,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     requestFit,
     markTabLoaded,
     bringCardTypes: presetCardTypes.bring,
+    seedCards: (creates) => void plan.context.addItems?.(creates),
   });
 
   // One undo step per burst of a continuous control: the background

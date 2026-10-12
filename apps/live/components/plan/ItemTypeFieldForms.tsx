@@ -34,6 +34,7 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   comments: 'Comments',
   archived: 'Archived',
   flagged: 'Flagged',
+  example: 'Example',
 };
 
 export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {

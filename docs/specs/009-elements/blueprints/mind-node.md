@@ -440,8 +440,8 @@ listener only reads keys while a growth it opened is pending, and lets modified 
 - Menu: "Mind Map" section with `MindFlowTiles` (Tree, Balanced, Downward, Bubble, with
   `MIND_FLOW_HINT` hints) and Tidy Map.
 - After growth the new node is selected, in label editing, and scrolled clear of the side panels.
-- Templates: `mindmap` (bubble, a round root, four branches of two leaves), `mindmap-tree` (tree,
-  a bold root, four tinted branches, two small leaves each), `mindmap-bubble` (bubble, round
+- Templates: `mindmap` (bubble, a round root, five branches of two or three leaves), `mindmap-tree` (tree,
+  a bold root, five branches each in its own hue with a glyph, two or three hue-edged leaves each), `mindmap-bubble` (bubble, round
   nodes, one ring), built by `buildMindTemplate` with parent pointers, the root's `mindFlow`,
   `layoutMindTree` and `MIND_CONNECTOR_LOOK` connectors.
 

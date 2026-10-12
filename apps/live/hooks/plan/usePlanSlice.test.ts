@@ -204,6 +204,38 @@ describe('usePlanSlice', () => {
     expect(write).not.toHaveBeenCalled();
   });
 
+  // docs/specs/026-plan/plan-templates.md "Example cards": Keep Them changes many cards as one write.
+  it('changes many cards as one write, one card as its own patch, and none as no write', () => {
+    const write = vi.fn(async () => true);
+    const { result } = renderHook(() =>
+      usePlanSlice({
+        planItems: { ...(planItems as object), write } as never,
+        itemTypes,
+        editorMode: 'plan',
+        canEdit: true,
+        canVote: true,
+        teamPeople: participants,
+        presence,
+        statusNames,
+        commit: () => {},
+        select: () => {},
+        announce: () => {},
+      }),
+    );
+    const keep = (id: string) => ({ id, patch: { clear: ['example'] } });
+    act(() => result.current.context.patchItems?.([keep('a'), keep('b')]));
+    expect(write).toHaveBeenLastCalledWith({ kind: 'patches', patches: [keep('a'), keep('b')] });
+    act(() => result.current.context.patchItems?.([keep('a')]));
+    expect(write).toHaveBeenLastCalledWith({
+      kind: 'patch',
+      id: 'a',
+      patch: { clear: ['example'] },
+    });
+    write.mockClear();
+    act(() => result.current.context.patchItems?.([]));
+    expect(write).not.toHaveBeenCalled();
+  });
+
   // docs/specs/026-plan/plan-board.md "Breadcrumb": a card opened from inside the panel steps the trail; one
   // opened any other way starts it afresh.
   it('steps the card trail from inside the panel and restarts it from a board', () => {

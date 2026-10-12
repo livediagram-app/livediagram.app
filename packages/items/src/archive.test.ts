@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  EXAMPLE_FIELD,
   isArchived,
+  isExampleItem,
   isFlagged,
   normaliseBoardSetup,
   projectBoard,
@@ -185,6 +187,20 @@ describe('flags', () => {
     expect(isFlagged({ ...(base as object), fields: { flagged: true } } as never)).toBe(true);
     expect(isFlagged({ ...(base as object), fields: { flagged: 'yes' } } as never)).toBe(false);
     expect(isFlagged(base)).toBe(false);
+  });
+});
+
+// docs/specs/026-plan/items.md "Example cards": only `true` under the example field marks an example card.
+describe('example cards', () => {
+  it('reads only true as an example', () => {
+    const base = { fields: { title: 'x' } } as never;
+    expect(isExampleItem({ ...(base as object), fields: { [EXAMPLE_FIELD]: true } } as never)).toBe(
+      true,
+    );
+    expect(
+      isExampleItem({ ...(base as object), fields: { [EXAMPLE_FIELD]: 'yes' } } as never),
+    ).toBe(false);
+    expect(isExampleItem(base)).toBe(false);
   });
 });
 

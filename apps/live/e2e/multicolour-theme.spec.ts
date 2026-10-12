@@ -7,12 +7,13 @@ import {
 } from './fixtures';
 
 // Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) end to end:
-// picking Rainbow on a mind map paints each limb its own palette colour, and
-// the wrapper leaves its trace in the console (blueprint O1). Unit tests prove
+// Rainbow, reset onto a mind map, paints each limb its own palette colour, and
+// the wrappers leave their trace in the console (blueprint O1). Unit tests prove
 // the branch map; only the editor proves the colours reach the canvas.
 
 const CANVAS = '[data-canvas-a11y-root]';
 const SWITCH_LOG = /^\[theme-graph\] switch theme=rainbow elements=\d+ branches=\d+$/;
+const RESET_LOG = /^\[theme-graph\] reset theme=rainbow elements=\d+ branches=\d+$/;
 
 // Rainbow's palette fills (packages/document/src/themes-data.ts), as computed CSS.
 const RAINBOW_FILLS = ['#fee2e2', '#ffedd5', '#fef9c3', '#dcfce7', '#dbeafe', '#f3e8ff'].map(
@@ -37,14 +38,13 @@ test.describe('Multi-colour themes', () => {
     const logs: string[] = [];
     page.on('console', (msg) => logs.push(msg.text()));
 
-    // The Tree mind map: its nodes take the theme's presets, so a theme switch
-    // owns their colours. (The radial Mind map template authors a hue per
-    // branch, which a switch rightly keeps as a customisation, per
-    // docs/specs/011-theme/multicolour-themes.md.)
+    // The Tree mind map authors a hue per branch, which a switch rightly keeps
+    // as a customisation (docs/specs/011-theme/multicolour-themes.md), so
+    // Reset elements to theme hands the limbs to the palette.
     await startTemplateDocument(page, 'Brainstorm', /^Tree mind map/i);
     await dismissQuickTour(page);
-    // The template's own theme carries none of Rainbow's hues, so any found
-    // afterwards came from the switch.
+    // The template's own colours carry none of Rainbow's hues, so any found
+    // afterwards came from the palette.
     expect(await rainbowHues(page)).toBe(0);
 
     await page.getByRole('button', { name: 'Theme and canvas' }).click();
@@ -53,13 +53,17 @@ test.describe('Multi-colour themes', () => {
       .getByRole('button', { name: /^Rainbow/ })
       .first()
       .click();
+    await expect
+      .poll(() => logs, { message: 'the switch leaves its [theme-graph] trace' })
+      .toContainEqual(expect.stringMatching(SWITCH_LOG));
 
+    await page.getByRole('button', { name: 'Reset elements to theme' }).click();
     await expect
       .poll(() => rainbowHues(page), { message: 'limbs take distinct palette colours' })
       .toBeGreaterThanOrEqual(3);
     await expect
-      .poll(() => logs, { message: 'the switch leaves its [theme-graph] trace' })
-      .toContainEqual(expect.stringMatching(SWITCH_LOG));
+      .poll(() => logs, { message: 'the reset leaves its [theme-graph] trace' })
+      .toContainEqual(expect.stringMatching(RESET_LOG));
     expectNoPageErrors(pageErrors);
   });
 });

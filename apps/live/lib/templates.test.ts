@@ -388,10 +388,11 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     Record<TemplateKind, { names: [string, string]; scaffold: number; content: number }>
   > = {
     // Board: 4 column containers, 4 headers, 4 hints, 4 glyphs, the
-    // subtitle, the rail hint and the Shout-outs heading. Stickies: the
-    // title, 9 notes, the mood check, 2 session buttons, the actions
-    // checklist, the shout-out note and its sticker.
-    retrospective: { names: ['Board', 'Stickies'], scaffold: 19, content: 16 },
+    // subtitle, the rail hint, and the numbers, From Sprint 13 and Shout-outs
+    // headings. Stickies: the title, 24 notes, the mood check, 2 session
+    // buttons, the stat row, the two checklists, the shout-out note and its
+    // sticker.
+    retrospective: { names: ['Board', 'Stickies'], scaffold: 21, content: 33 },
     // Axes: how-to, four quadrants of tile, glyph, name and rule, two axis
     // arrows and their six labels, three rail steps and the vote hint.
     // Items: title, eight ideas with their tally discs, and the vote button,
@@ -430,7 +431,10 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // messages (one of them the self-call), the alt frame, its two guards
     // and divider, and the note + its anchor.
     'sequence-diagram': { names: ['Lifelines', 'Messages'], scaffold: 12, content: 22 },
-    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 4, content: 23 },
+    // Tiers: title, caption, four lanes with their blurb and glyph, and the key
+    // (label plus two line samples with their words). Components: 15 nodes
+    // and the 14 edges between them.
+    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 19, content: 29 },
     // Frames: three phones, the how-to and the Notes heading.
     'mobile-wireframe': { names: ['Frames', 'UI'], scaffold: 5, content: 75 },
     // The laptop is lid, display, base and hinge notch.
@@ -443,9 +447,10 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
     // Frames: six panel cards, their number chips and the how-to.
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
-    // Spine + the three-entry status legend stay put; each of the six
-    // milestones brings a dot, a title and a date, plus the Today marker + pill.
-    timeline: { names: ['Spine', 'Milestones'], scaffold: 7, content: 20 },
+    // Title, caption, the two spine runs (done, to come) and the three-entry
+    // status legend stay put; each of the six milestones brings a disc, its
+    // glyph, a date, a title and a detail line, plus the Today marker + pill.
+    timeline: { names: ['Spine', 'Milestones'], scaffold: 10, content: 32 },
     // Title, caption, four phase segments and the arrowhead stay put; each
     // of the six milestones brings a ring, a pinned stem, a date chip and a
     // callout card, and launch day its two stickers.
@@ -789,10 +794,13 @@ describe('board templates', () => {
     const actions = shapes.find((el) => el.shape === 'checklist')?.checklistItems ?? [];
     expect(actions.length).toBeGreaterThan(0);
     expect(actions.every((a) => a.text.split(' · ').length === 3 && !a.done)).toBe(true);
-    // Nine column notes, three per column, each in its column's hue, plus the
-    // shout-out.
+    // Last sprint's actions are checked in under this one's: one done.
+    const last = shapes.filter((el) => el.shape === 'checklist')[1]?.checklistItems ?? [];
+    expect(last.some((a) => a.done)).toBe(true);
+    // Twenty-four column notes, eight per column, each in its column's hue,
+    // plus the shout-out.
     const stickies = tab.elements.filter((el) => el.type === 'sticky');
-    expect(stickies).toHaveLength(10);
+    expect(stickies).toHaveLength(25);
     expect(new Set(stickies.map((el) => el.fillColor)).size).toBe(4);
   });
 

@@ -158,6 +158,13 @@ export function isFlagged(item: Item): boolean {
   return item.fields['flagged'] === true;
 }
 
+// An example card (docs/specs/026-plan/items.md "Example cards"): one a Plan template made to show how its boards run,
+// until Clear Example Cards trashes it or Keep Them takes the flag off.
+export const EXAMPLE_FIELD = 'example';
+export function isExampleItem(item: Item): boolean {
+  return item.fields[EXAMPLE_FIELD] === true;
+}
+
 // The Trash (docs/specs/026-plan/items.md "Trash"): a status no board shows. A trashed item keeps the status
 // it had under `trashedFrom`, so it can be restored to it.
 export const TRASH_STATUS = 'trash';
