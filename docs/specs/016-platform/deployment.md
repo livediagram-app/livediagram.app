@@ -57,11 +57,11 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 ## Deploy
 
-The deploy is split in two: `.github/workflows/deploy-reusable.yml` holds every job below as a **reusable workflow** (`workflow_call`), and two thin callers trigger it — `deploy.yml` for production and `deploy-staging.yml` for staging. Both environments therefore run byte-identical steps; the only difference is the inputs (`wrangler_env`, the MCP origin) and which secrets the caller passes. One body, because a staging deploy that has drifted from production's tests nothing.
+The deploy is split in two: `.github/workflows/deploy-reusable.yml` holds every job below as a **reusable workflow** (`workflow_call`), and two thin callers trigger it — `deploy.yml` for production and `deploy-staging.yml` for staging. Both environments therefore run byte-identical steps; the only difference is the inputs (`wrangler_env`, the MCP origin) and which secrets the caller passes. One body, because a staging deploy that has drifted from production's tests nothing. A third caller, `deploy-preview.yml`, deploys a per-PR preview through the same body ([PR previews](pr-previews.md)).
 
 `.github/workflows/deploy.yml` is **manual-only** (`workflow_dispatch`). It does not chain off CI; trigger it yourself from the Actions tab, where it appears as **Deploy Production** (or `gh workflow run deploy.yml --ref main` — the file name is passed rather than the display name, so a future rename can't stale this out) once CI on `main` is green and you've decided to ship. It checks out and builds whatever the current `main` is at trigger time.
 
-Every `wrangler` invocation in the reusable workflow ends in `${WRANGLER_ENV:+--env "$WRANGLER_ENV"}`, which expands to nothing for production — so production runs exactly the commands it always ran — and to `--env staging` for the staging caller. Shell expansion rather than a GitHub expression, so it reads the same locally as in the log.
+Every `wrangler` invocation in the reusable workflow ends in `${WRANGLER_ENV:+--env "$WRANGLER_ENV"}`, which expands to nothing for production — so production runs exactly the commands it always ran — and to `--env staging` for the staging caller. For a PR preview it is also preceded by `${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"}`, naming the generated `wrangler.preview.toml`; unset for production and staging, so it too expands to nothing. Shell expansion rather than a GitHub expression, so it reads the same locally as in the log.
 
 Jobs:
 

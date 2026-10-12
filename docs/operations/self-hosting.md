@@ -148,6 +148,7 @@ Or just push to `main` and use the bundled GitHub Actions workflows:
 - `.github/workflows/codeql.yml` runs CodeQL security scanning in one job; a fork needs CodeQL default setup off.
 - `.github/workflows/canvas-perf.yml` runs the canvas performance probe nightly and reports through one issue; optional, disable it in a fork that does not want it.
 - `.github/workflows/deploy-reusable.yml` holds the deploy itself — build, then all eight workers (marketing, live, telemetry, help, community, api, mcp, router) in the right order. The `deploy-mcp` job always runs, so a fork without the MCP server removes it or provisions its KV namespace first. It is a reusable workflow, not directly triggerable.
+- `.github/workflows/deploy-preview.yml` and `preview-sweep.yml` run per-PR previews on livediagram.app's own zone ([PR previews](../specs/016-platform/pr-previews.md)). Both gate on the hosted repository's id, so in a fork they skip; delete them if you prefer.
 - `.github/workflows/deploy.yml` calls it for **production**, **manually** from the Actions tab.
 - `.github/workflows/deploy-staging.yml` calls it for **staging**, automatically, whenever CI goes green on `main`.
 

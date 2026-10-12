@@ -145,7 +145,9 @@ Two environments run that same sequence, from one reusable workflow (`deploy-reu
 | Workers | `livediagram-<app>`                        | `livediagram-<app>-staging` (wrangler `[env.staging]`) |
 | Data    | `livediagram` D1 + `livediagram-images` R2 | Its own D1 / R2 / KV — no production data, ever        |
 
-Staging exists mainly so a D1 migration runs against a real remote database one deploy before it reaches the one holding people's documents. It is public but `noindex` (the router stamps `X-Robots-Tag` when its `DEPLOY_ENV` is `staging`). See [Staging environment](../specs/016-platform/staging-environment.md).
+Staging exists mainly so a D1 migration runs against a real remote database one deploy before it reaches the one holding people's documents. It is public but `noindex` (the router stamps `X-Robots-Tag` when its `DEPLOY_ENV` is `staging` or `preview`). See [Staging environment](../specs/016-platform/staging-environment.md).
+
+Every same-repo PR also gets a short-lived **preview** at `pr-<N>.livediagram.app`: its own sites on staging's api, or, when the PR touches the api or carries the `full-preview` label, its own api, D1 and R2 too. Workers are `livediagram-<app>-pr-<N>`, generated from each app's `[env.staging]` block, and are torn down when the PR closes. See [PR previews](../specs/016-platform/pr-previews.md).
 
 Both environments also get the **hosted profile** (`apps/api/hosted-vars.json`: telemetry on, per-owner image caps), which the workflow adds with `wrangler deploy --var` only in livediagram.app's own repository and then reads back off the live api worker. A fork deploys the committed config alone, so it is telemetry-off and uncapped. See [Deployment](../specs/016-platform/deployment.md) "Hosted profile".
 
