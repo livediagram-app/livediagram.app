@@ -121,7 +121,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
   What fits), and the cog closes once one is added; then an Editor's **Change Chart** or **Change Source** (a chart or
   a figure from a Sheet) as compact action buttons. The slot's own actions are a **toolbar** of icon buttons (each named
   in its tooltip) across the top of whichever cog the slot shows, above every section: **Open Tab** (a slot showing a
-  tab, for anyone), then an Editor's **Duplicate Slot**, **Clear Slot** and **Remove Slot** (its span goes to its
+  tab, for anyone), then an Editor's **Move Up** and **Move Down** (stacked on a phone only: On a phone), **Duplicate Slot**, **Clear Slot** and **Remove Slot** (its span goes to its
   neighbour; a row's last slot takes the row with it). **Duplicate Slot** puts a copy just right of the slot, its
   space split as Add Slot to the Right splits it, or in a new row of one below its row when the row is full (or the
   slot too narrow to split); dimmed, its tooltip saying why, for an empty slot and for a Sheet that lives on the
@@ -134,7 +134,11 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
   they fade, a divider's or handle's bar from half its length. Resizing is eased too: on a wide page a row's slots
   change width (a divider dragged a span at a time, a slot added or removed) over the short motion token, and a row's
   height eases when it changes, except under its own drag, which follows the pointer. Under reduced motion all of it
-  is immediate. Nothing is drawn round a slot's edges. Where the slot shows something with a header of its own (a board, a Sheet, a visualisation, a Diagram tab), its cog
+  is immediate. On a touch screen nothing waits for a hover: each slot's grip, each divider and each row handle is
+  shown all the time as a quiet marker (the grip at 70%, a divider's and a handle's bar at full length and 50%, fully
+  shown while it is dragged), with a finger's reach round it (the grip's 44 px tap area; a divider 24 px wide and 64 px
+  tall, a row handle 64 px wide and 24 px tall, each centred on the gap, so the slots' own edges stay theirs), and a
+  finger on any of them carries or resizes rather than scrolling the page. Nothing is drawn round a slot's edges. Where the slot shows something with a header of its own (a board, a Sheet, a visualisation, a Diagram tab), its cog
   sits last among that header's controls; otherwise (a metric, a note, an empty slot) the Slot Settings cog floats at
   the slot's top right on hover.
   Each change is one undo step.
@@ -487,12 +491,15 @@ row's:
 
 Only the drawing changes: the stored rows, spans and heights stay, and the same dashboard on a wide screen is as it was
 laid out. Nothing is resized or carried there: no dividers, no row handle and no grip (the stack is only a way of
-drawing the rows). The page scrolls vertically and its end clears the bottom toolbar and the home indicator's safe area.
+drawing the rows). A slot is reordered from its toolbar instead: **Move Up** and **Move Down** swap what it holds with
+the slot before or after it in the stack's reading order (as the grip's drop on a slot does: the spans stay; one undo
+step each; the cog closes, its slot now holding the other's content). Each is dimmed, saying why, at either end of the
+stack, and where the swap would squeeze either slot below what its content needs on a wide page (What fits). The page scrolls vertically and its end clears the bottom toolbar and the home indicator's safe area.
 Nothing waits for a hover on a touch screen: a slot's floating cog and a link's × are always shown there, and the slot's
 cog, Add to Slot (which offers everything, as the stacked slot takes the height its content needs) and the Dashboard
 Settings cog in the top row all work by tap. A view's header gives way in a narrow slot: its own controls (a Gantt's
 Today, steps and scale) scroll sideways while Maximise and the cog stay in reach. The canvas's zoom cluster, which
-has nothing to offer a dashboard (zoom is off), is not shown on a touch screen.
+has nothing to offer a dashboard (zoom is off), is not shown on a touch screen, a tablet's as a phone's.
 
 ## Showing a tab
 
@@ -511,7 +518,10 @@ deleted." The renderer loads only once a Diagram slot is shown.
 
 ## Moving a slot
 
-An Editor moves a slot by its **grip** (**Move Slot**), a small handle just inside the middle of its top edge, shown on hover.
+An Editor moves a slot by its **grip** (**Move Slot**), a small handle just inside the middle of its top edge, shown on
+hover. On a touch screen it is always shown, and a slot with no header of its own (a metric, a note, an empty slot)
+carries it in its top left corner instead, clear of what the slot shows in its middle (a headed slot keeps it in the
+middle, clear of its title).
 Carried, the slot fades where it was and the zone under the pointer is drawn as a drop's is:
 
 - over another slot's middle: the slot is outlined, and letting go **swaps** what the two hold (their spans stay);
@@ -524,7 +534,9 @@ Carried, the slot fades where it was and the zone under the pointer is drawn as 
 Letting go over itself changes nothing; Escape, or the pointer cancelled (a touch the browser takes for a scroll), puts
 it back, as does leaving the tab mid-move. A finger on the grip carries the slot, never scrolling the page. A row with
 four slots takes no more; at twelve rows no bar is drawn between rows (a slot whose row stays would make a
-thirteenth), so the slot cannot become a row of its own there. Each move is one undo step.
+thirteenth), so the slot cannot become a row of its own there. Carried within 56 px of the page's top or bottom edge,
+the page scrolls that way, faster the closer (up to 14 px a frame), so a slot reaches a row out of view, by finger as
+by mouse. Each move is one undo step.
 
 From the keyboard, the grip is focusable (it shows while focused) and the **arrow keys** swap the slot with its
 neighbour that way: left and right in its row, up and down with the slot in the row above or below whose middle is

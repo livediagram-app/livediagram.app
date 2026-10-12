@@ -3,7 +3,8 @@
 // A slot carried by its grip (docs/specs/026-plan/plan-tabs.md "Moving a slot"): the zone under the pointer is drawn
 // as a drop's is and the slot fades where it was; let go, it moves there (one step). Escape, or the pointer taken away
 // (pointercancel: a touch turned into a scroll, the pen lifted out of range), puts it back; so does the page going
-// away mid-move, which also takes its window listeners with it.
+// away mid-move, which also takes its window listeners with it. Carried near the page's top or bottom edge, the page
+// scrolls that way (faster the closer), so a slot reaches a row out of view, by finger as by mouse.
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import {
   dashboardMoveZone,
@@ -12,6 +13,19 @@ import {
   type ZoneAllowed,
 } from '@/hooks/plan/dashboard-drop';
 import { zoneMark, type ZoneMark } from './drop-zone-mark';
+
+// How near the page's top or bottom edge the pointer scrolls it, and the most it scrolls a frame.
+export const MOVE_SCROLL_EDGE_PX = 56;
+export const MOVE_SCROLL_MAX_PX = 14;
+
+// How far to scroll the page this frame for a pointer at `y`, between its top and bottom: 0 in the middle.
+export function moveScrollStep(y: number, top: number, bottom: number): number {
+  const into = (edge: number) =>
+    Math.min(1, Math.max(0, (MOVE_SCROLL_EDGE_PX - edge) / MOVE_SCROLL_EDGE_PX));
+  if (y < top + MOVE_SCROLL_EDGE_PX) return -Math.ceil(into(y - top) * MOVE_SCROLL_MAX_PX);
+  if (y > bottom - MOVE_SCROLL_EDGE_PX) return Math.ceil(into(bottom - y) * MOVE_SCROLL_MAX_PX);
+  return 0;
+}
 
 export type SlotMoving = {
   slotId: string;
@@ -52,8 +66,24 @@ export function useSlotMove({
         return { slotId, zone, mark, x, y };
       };
       setMoving(at(start.clientX, start.clientY));
-      const onPointerMove = (e: PointerEvent) => setMoving(at(e.clientX, e.clientY));
+      let last = { x: start.clientX, y: start.clientY };
+      const onPointerMove = (e: PointerEvent) => {
+        last = { x: e.clientX, y: e.clientY };
+        setMoving(at(e.clientX, e.clientY));
+      };
+      // Each frame: near an edge, the page scrolls and the zone under the (still) pointer is found again.
+      let frame = requestAnimationFrame(function edge() {
+        const box = root.getBoundingClientRect();
+        const step = moveScrollStep(last.y, box.top, box.bottom);
+        if (step) {
+          const was = root.scrollTop;
+          root.scrollTop += step;
+          if (root.scrollTop !== was) setMoving(at(last.x, last.y));
+        }
+        frame = requestAnimationFrame(edge);
+      });
       const stop = () => {
+        cancelAnimationFrame(frame);
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onUp);
         window.removeEventListener('pointercancel', cancel);
