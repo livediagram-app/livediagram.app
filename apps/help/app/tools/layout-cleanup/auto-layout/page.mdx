@@ -32,7 +32,7 @@ Auto Layout is the structural tidier (the command palette calls it "Auto Layout 
 
 ## Layout styles
 
-One arrangement doesn't fit every diagram, so alongside the smart default there is a command per style. All of them read the same arrow graph and differ only in the shape of the result:
+One arrangement doesn't fit every diagram, so alongside the smart default there is a style for each shape of diagram, each a picture on the **Tidy Up** panel and a command in the palette. All of them read the same arrow graph and differ only in the shape of the result:
 
 - **Auto Layout (tidy up)** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
 - **Auto Layout: Flowchart (down)** and **Auto Layout: Flowchart (right)**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
@@ -44,12 +44,13 @@ If a diagram isn't a perfect tree (a shape with two parents, or a loop), Tree an
 ## Running it
 
 <Step n={1}>
-  Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K) and
-  type **Auto Layout**.
+  In Diagram mode, press the **Tidy Up** button in the bottom-right corner, just left of Layers.
 </Step>
 
 <Step n={2}>
-  Under **Actions**, choose **Auto Layout (tidy up)**, or one of the styles below it.
+  Rest the mouse on a style to see the tab laid out that way, then click the one you want. From the
+  [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto
+  Layout** and choose **Auto Layout (tidy up)** or one of the styles under **Actions**.
 </Step>
 
 <Step n={3}>The whole tab is laid out anew in a single undoable step.</Step>

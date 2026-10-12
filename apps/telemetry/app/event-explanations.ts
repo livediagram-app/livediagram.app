@@ -1076,6 +1076,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Vote button in the bottom bar: the vote set-up while none runs, the Vote panel while one does.',
   'UI|Opened|SessionPoll':
     'Someone opened the Poll button in the bottom bar: the poll composer while none runs, the answers while one does.',
+  'UI|Opened|TidyUp':
+    "Someone opened Diagram mode's Tidy Up button in the bottom bar, the panel of layout styles and Auto-align. What they then picked counts as a tab being auto-arranged.",
   'UI|Opened|BehaviourGroup':
     "Someone opened a category inside the palette's Collaborate tab (formerly Behaviours; session tools like polls, votes, and record-keeping elements). No longer recorded: Facilitate mode offers each of those categories directly in the palette.",
   'UI|Opened|CanvasStyle':

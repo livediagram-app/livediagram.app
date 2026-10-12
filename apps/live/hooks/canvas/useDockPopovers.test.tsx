@@ -25,6 +25,12 @@ describe('useDockPopovers panel-open telemetry', () => {
     ]);
   });
 
+  it('counts a Tidy Up open (docs/specs/008-canvas/layout-cleanup.md "Telemetry")', () => {
+    const { result } = renderHook(() => useDockPopovers({ current: null }));
+    act(() => result.current.handleDockButtonClick('tidy-up', button(), true));
+    expect(trackMock.mock.calls).toEqual([['UI', 'Opened', 'TidyUp']]);
+  });
+
   it('does not count a close', () => {
     const { result } = renderHook(() => useDockPopovers({ current: null }));
     act(() => result.current.handleDockButtonClick('layers', button()));

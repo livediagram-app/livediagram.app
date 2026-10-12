@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Layout Cleanup" description="Two complementary tidiers, one for nudging things into alignment and one for laying a diagram out from scratch." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
 
-When a diagram gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the layout never really happened and you want it computed for you. livediagram has a tool for each, both run from the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how the diagram is wired together.
+When a diagram gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the layout never really happened and you want it computed for you. livediagram has a tool for each, both one press away on the **Tidy Up** button in Diagram mode, and in the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how the diagram is wired together.
 
 <Figure caption="The Cleanup tools take a scattered, mis-sized jumble and turn it into a neat, aligned layout.">
   <CleanupBeforeAfter />
@@ -35,13 +35,15 @@ When a diagram gets messy, you usually want one of two things: either everything
 
 ## How to run them
 
-Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto Layout** or **Auto-align**, and pick the tidier you want under **Actions**. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
+In Diagram mode, press the **Tidy Up** button (the broom in the bottom-right corner, just left of Layers). It opens a panel with a picture of each Auto Layout style (**Smart**, **Flowchart Down**, **Flowchart Right**, **Tree** and **Mindmap**) and **Auto-align** below them. Rest the mouse on one and the tab is laid out that way behind the panel, so you can compare styles before you commit; move away and everything goes back. Click the one you want to keep it.
+
+You can also open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto Layout** or **Auto-align**, and pick the tidier you want under **Actions**. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
 
 <Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
   <SearchCommandPalette />
 </Figure>
 
-The tidiers are for editors: it isn't offered in a view-only session, and it leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
+The tidiers are for editors: they aren't offered to a participant or in a view-only session, and they leave a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
 
 The two tools compose nicely. Auto Layout finishes by running Auto-Align, so a freshly laid-out diagram is also grid-aligned. If you want, you can run Auto Layout to get the structure right, then trust it has already snapped to the grid for you.
 
