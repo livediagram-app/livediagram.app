@@ -14,7 +14,12 @@ import { createViewportStore, type ViewportStore } from '@/lib/viewport-store';
 import type { Selection } from '@/lib/selection-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
-import { computeFitToScreen, computeViewportCenter } from '@/lib/viewport';
+import {
+  computeFitBelow,
+  computeFitToScreen,
+  computeViewportCenter,
+  topChromeInset,
+} from '@/lib/viewport';
 import { viewIsCentredOn } from '@/lib/focus-audience';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { glideViewport } from '@/lib/viewport-glide';
@@ -275,7 +280,13 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     }
     const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
     if (!bbox) return;
-    const { zoom, offset } = computeFitToScreen(rect, bbox);
+    // Fit below the Palette strip laid over the canvas's top, so nothing lands under it.
+    const strip = document
+      .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
+      ?.getBoundingClientRect();
+    const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
+    const { zoom, offset } =
+      inset > 0 ? computeFitBelow(rect, bbox, inset) : computeFitToScreen(rect, bbox);
     setViewportZoom(zoom);
     setViewportOffset(offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);

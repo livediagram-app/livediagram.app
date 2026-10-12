@@ -77,6 +77,18 @@ export function computeFitBelow(
   };
 }
 
+// How much of the canvas's top a floating toolbar covers (the Palette strip laid over it), in screen px, plus a
+// small gap: what a fit leaves clear so nothing lands under the strip. 0 when there is no strip or it sits outside
+// the canvas.
+export const FIT_TOOLBAR_GAP = 8;
+export function topChromeInset(
+  canvas: { top: number; bottom: number },
+  strip: { top: number; bottom: number } | null,
+): number {
+  if (!strip || strip.bottom <= canvas.top || strip.top >= canvas.bottom) return 0;
+  return Math.max(0, strip.bottom - canvas.top) + FIT_TOOLBAR_GAP;
+}
+
 // Canvas-coord position of the viewport centre. With transform
 // `scale(z) translate(offset)` centred on the wrapper, the canvas-
 // coord at viewport centre is just (canvasCentre - offset), because

@@ -10,6 +10,8 @@ import {
   READING_TOP_ROOM,
   computeViewportCenter,
   isContentOffScreen,
+  FIT_TOOLBAR_GAP,
+  topChromeInset,
 } from './viewport';
 
 describe('computeFitToScreen', () => {
@@ -189,5 +191,18 @@ describe('computeReadingFrame', () => {
     expect(zoom).toBeCloseTo(0.468);
     const screenTop = rect.height / 2 + (page.y + offset.y - rect.height / 2) * zoom;
     expect(screenTop).toBeGreaterThan(READING_TOP_ROOM);
+  });
+});
+
+describe('topChromeInset (fit below the Palette strip)', () => {
+  it('leaves the strip’s reach into the canvas plus a gap clear', () => {
+    expect(topChromeInset({ top: 50, bottom: 900 }, { top: 60, bottom: 110 })).toBe(
+      60 + FIT_TOOLBAR_GAP,
+    );
+  });
+
+  it('is 0 with no strip, or a strip outside the canvas', () => {
+    expect(topChromeInset({ top: 50, bottom: 900 }, null)).toBe(0);
+    expect(topChromeInset({ top: 50, bottom: 900 }, { top: 0, bottom: 40 })).toBe(0);
   });
 });
