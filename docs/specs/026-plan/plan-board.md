@@ -43,10 +43,10 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after
   Maximise, for someone who may edit. It selects the board and opens its **element menu** under itself (the menu a
   right-click on the board opens, with the same rules: maximised or filling its tab, no Layer, Size, Rotation or
-  Animation; its **Board** category holds Board Setup, Swimlanes, Supported Cards and Card Layout; no Collaborate or
+  Animation; its **Board** category holds Board Setup, Columns, Swimlanes, Supported Cards and Card Layout; no Collaborate or
   Resources, [Nothing attached to Plan items](plan-mode.md#nothing-attached-to-plan-items)); pressed again it
   closes it. A board a collaborator holds opens nothing. In a Dashboard slot, which opens no element menu, the cog
-  opens **Board Settings** as a popover instead (as a Sheet's and a chart's cogs do): Board Setup, Swimlanes,
+  opens **Board Settings** as a popover instead (as a Sheet's and a chart's cogs do): Board Setup, Columns, Swimlanes,
   Supported Cards and Card Layout, then the slot's **Slot** section ([Dashboard tab](plan-tabs.md#dashboard-tab)),
   one open at a time; someone who may not edit the board sees the slot's own cog there. Telemetry: `Plan` · `Opened` ·
   `BoardSettings`.
@@ -84,11 +84,14 @@ Stored on the element, shared by everyone, undone like any element edit:
 
 Where each is set, so a setting lives with what it changes, never in one central panel:
 
-- **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone) with its **name**, **colour** (a row like the WIP limit's: "Colour" over
+- **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone). On top is a **toolbar**: **Move Left** and **Move Right** at its start, one
+  segmented control of two chevrons (each named by a tooltip; Move Left off on the first column, Move Right on the
+  last), and **Remove** (a column glyph and the word; named Remove Column, rose on hover) at its end, apart from them
+  as it takes the column away. Under it: its **name**, **colour** (a row like the WIP limit's: "Colour" over
   its effect, or "No colour", and the colour's swatch at the row's end; pressed, the
   [colour picker](../004-interface-design/colour-picker.md) opens in its own popover beside it, No colour or any
-  colour, the column popover staying open), **WIP limit**, **Counts as Done**, **Move Left** / **Move Right**, **+ Add Column After**,
-  then two ways to take it away. **Remove Column** (a column glyph) takes it off this board only, at once: the
+  colour, the column popover staying open), **WIP limit**, **Width**, **Counts as Done**, then, one to a row, **+ Add Column
+  After** and **Delete Status**. The two ways to take it away: **Remove Column** (the toolbar's) takes it off this board only, at once: the
   state and its cards stay, so another board's column for it still shows them (where none does, the cards read
   as No status, as any card of a state no board names). **Delete Status** (a bin) deletes the state: when it
   holds cards (out of the Trash, on any board) it first opens a popover anchored to it: "Delete {Name}?", "Its N
@@ -102,16 +105,27 @@ Where each is set, so a setting lives with what it changes, never in one central
   opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
   moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as one
-  **Board** category (a flyout), holding four sub-sections, each a collapsible group under a small uppercase heading,
+  **Board** category (a flyout), holding five sub-sections, each a collapsible group under a small uppercase heading,
   one open at a time (Board Setup when it opens), as the cog shows them: **Board Setup** (its **Title** and **Setup
   Board**; a board on the canvas is added to the slides from its element menu, above; the board itself has no ⋯),
+  **Columns** (below; left out on an All Cards or Archive board and on one not set up yet, which Setup Board sets up),
   **Swimlanes** (**Group Rows By**, one grid: None, Assignee,
   Type, Priority (Status only on an All Cards board), then a row per groupable field, in one [option list](#option-lists), named by the field and drawn with its kind's glyph),
   **Supported Cards** (**Card Types**, below; left out on an Archive board) and **Card Layout** (**Card Size**:
   Minimal, Compact or Detailed; what a card shows at each size is its type's Display, [Card
   display](item-types.md#card-display)). Group Rows By, Card Types and Card Size each open with a one-line info note
   (an "i" in a circle) saying what it does.
-  New columns come from a column's **+ Add Column After**.
+- **The Columns section** (the cog's and the element menu's): an info note ("The board's columns, left to right. Press
+  one to open its settings."), then **On This Board** (a small uppercase heading with a count badge) over an
+  [option list](#option-lists) of the board's columns left to right, a row each: its position number, its colour
+  swatch (a hollow ring for none), its name, a **WIP n** pill when it has a limit, a green **Done** pill on the done
+  column, and a chevron. Pressing a row closes the menu and opens that column's own settings, anchored to its cog
+  (above). Under a hairline, the **column picker** (below) inline, its button reading **Add** (still named Add
+  Column): a column it adds goes at the end, or before the done column when the board ends with it, and the section
+  stays open so several can be added in a row; the row just added is tinted in the brand colour for a moment
+  (1.6 s) as it fades in. At 12 columns the picker gives way to "A board holds up to 12 columns." The document's
+  statuses are worked out only while the section is open. Each add is one board change, one undo step, with the
+  picker's telemetry. Editor only: someone who may not edit sees no cog and no menu.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a row per card type ticked on or off in an [option list](#option-lists) (none
   named is every type). The last one can be turned off too: the board then takes no type, shows no cards, and each
   cell's Add card offers only **Add New Card Type** (stored as an empty `addTypes`). A board shows only cards of those types, and takes only those:
@@ -168,7 +182,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   columns in order, its layout), with **Cancel** and, last, **Save Board**. Saving writes both as one change: a column kept keeps
   its id and settings (name, WIP limit, colour, width), a new one is made as in setup, and one left out leaves this
   board only (its cards keep their state; the done column goes with its column).
-- **The column picker** is how a column is added to a board that has columns (a column's **+ Add Column After**;
+- **The column picker** is how a column is added to a board that has columns (a column's **+ Add Column After**, or
+  the board's **Columns** section;
   a board with none uses Setup Board, above):
   - **Existing statuses**: the statuses the document knows that this board has no column for. Known is: a
     status any board in the document names as a column (on any tab; All Cards and Archive boards aside), a status
@@ -470,7 +485,8 @@ own keys move between them. In Setup Board it wears the board's colours. It is u
 - **Setup Board**: Card Types, Use an Existing State, and the Layout step's Swimlanes and Card Display;
 - **Add a Card**'s card types; a card type's **States**; the **Card Types** panel's rows (each with its own Edit and
   Duplicate, so the same box and rows without a marker); the column picker's Existing Statuses;
-- a column's settings: **Move Left** and **Move Right** are rows, icon left, like the actions under them.
+- a column's settings: **+ Add Column After** and **Delete Status** are rows, icon left (Move Left, Move Right and
+  Remove Column sit on its toolbar); the board's **Columns** section lists its columns one to a row.
 
 Left as they are: the board preset gallery (PlanBoardPicker: large visual previews to compare), the glyph palette
 (GlyphPicker: an icon grid, where a row each would be far too long) and a type's Display size switch (ItemTypeDisplay:

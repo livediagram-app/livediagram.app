@@ -50,3 +50,5 @@ One row per default applied where a spec is silent or qualitative.
 | D44 | plan-board    | How much of the next column a phone shows                  | 48 px (`PHONE_COLUMN_PEEK_PX`, gap included): enough to say there is more to the right without crowding the column in view          |
 | D45 | plan-board    | How far a covering phone board's body runs past its cards  | 8.5 rem plus the safe area (`PHONE_END_CLEARANCE`): the bottom controls' two rows at 390 px, measured 134 px                        |
 | D46 | plan-board    | The least room a phone's header needs beside the menu      | 160 px (`PHONE_ROW_MIN_PX`): a short title, Restore and the cog                                                                     |
+| D47 | plan-board    | Where the Columns section adds a column                    | At the end, or before the done column when the board ends with it (`columnsInsertAfter`): a new state is work in flight, not done   |
+| D48 | plan-board    | How long a column just added from Columns stays tinted     | 1600 ms (`ADDED_TINT_MS`): long enough to spot it in the list, gone before the next add                                             |
