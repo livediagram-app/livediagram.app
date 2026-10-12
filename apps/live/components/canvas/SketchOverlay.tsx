@@ -3,13 +3,14 @@
 import { memo, useMemo } from 'react';
 import {
   SHAPE_DETAIL_STROKE_PX,
+  SKETCH_HATCH_OPACITY,
   sketchElementPaint,
   type BoxedElement,
   type Finish,
 } from '@livediagram/document';
 
 // A sketched element's body on the canvas (docs/specs/008-canvas/finish.md "Sketch"): the hand-drawn outline,
-// hatching or solid fill, and chrome from sketch-element.ts in @livediagram/document, the same drawing the
+// solid fill with faint pencil shading over it, and chrome from sketch-element.ts in @livediagram/document, the same drawing the
 // SVG export emits. It stands in for the wrapper's CSS border and background (element-variant.ts drops them
 // under Sketch) and for the shape's SVG overlay (ShapeContentRouter skips it), and sits under the label.
 
@@ -75,7 +76,13 @@ function SketchOverlayImpl({
     >
       {drawing.solid ? <path d={drawing.solid} fill={fill} /> : null}
       {drawing.hatch ? (
-        <path d={drawing.hatch} stroke={fill} strokeWidth={Math.max(1, strokePx / 2)} {...line} />
+        <path
+          d={drawing.hatch}
+          stroke={stroke}
+          strokeOpacity={SKETCH_HATCH_OPACITY}
+          strokeWidth={Math.max(1, strokePx / 2)}
+          {...line}
+        />
       ) : null}
       {drawing.strokes ? (
         <path

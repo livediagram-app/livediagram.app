@@ -1,10 +1,10 @@
 // A sketched element in the SVG export (docs/specs/008-canvas/finish.md "Sketch"): the same drawing the canvas
 // overlay paints (sketch-element.ts), placed at the element's position. Layers bottom to top: solid fill,
-// hatching, outline, chrome.
+// pencil shading (the stroke colour, faint), outline, chrome.
 import type { Finish } from './finish';
 import type { BoxedElement } from './index';
 import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
-import { sketchElementPaint, type SketchDrawing } from './sketch-element';
+import { SKETCH_HATCH_OPACITY, sketchElementPaint, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -21,7 +21,7 @@ export function svgSketchDrawing(
   if (drawing.solid) parts.push(`<path d="${drawing.solid}" fill="${fill}"/>`);
   if (drawing.hatch)
     parts.push(
-      `<path d="${drawing.hatch}" stroke="${fill}" stroke-width="${r2(Math.max(1, paint.strokePx / 2))}"${line}/>`,
+      `<path d="${drawing.hatch}" stroke="${stroke}" stroke-opacity="${SKETCH_HATCH_OPACITY}" stroke-width="${r2(Math.max(1, paint.strokePx / 2))}"${line}/>`,
     );
   if (drawing.strokes)
     parts.push(

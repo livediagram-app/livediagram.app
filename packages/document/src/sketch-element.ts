@@ -35,11 +35,16 @@ export type SketchDrawing = {
   strokes: string;
   /** Thin chrome (bezels, keys, creases), in the stroke colour at the detail width. */
   details: string;
-  /** Pencil hatching, in the fill colour. */
+  /** Pencil shading over the fill, in the stroke colour at `SKETCH_HATCH_OPACITY`. */
   hatch: string;
-  /** A solid fill (stickies, containers), in the fill colour, under the strokes. */
+  /** The solid fill, in the fill colour, under the shading and the strokes. Every filled element keeps it, so
+   *  its text keeps the contrast it was coloured for on either canvas (light or dark). */
   solid: string;
 };
+
+/** How strongly the pencil shading shows over a filled shape: enough to read as hand-shaded, faint enough
+ *  that the label on it stays readable (docs/specs/008-canvas/finish.md "Sketch"). */
+export const SKETCH_HATCH_OPACITY = 0.3;
 
 export type SketchElementOptions = {
   /** The border width in px (0 draws no outline). */
@@ -114,8 +119,8 @@ export function sketchElement(el: BoxedElement, o: SketchElementOptions): Sketch
       }
       if (outlinePx > 0) strokes.push(sketchStrokes(outline, partSeed));
       if (fillIt && FILLED_ROLES.has(part.role) && outline.area) {
+        solid.push(sketchAreaPath(outline.area));
         if (hatches) hatch.push(sketchHatching(outline.area, partSeed, outlinePx || 2));
-        else solid.push(sketchAreaPath(outline.area));
       }
     });
     return {
@@ -134,7 +139,7 @@ export function sketchElement(el: BoxedElement, o: SketchElementOptions): Sketch
     strokes: outlinePx > 0 ? sketchStrokes(outline, seed) : '',
     details: '',
     hatch: fillIt && hatches && area ? sketchHatching(area, seed, outlinePx || 2) : '',
-    solid: fillIt && !hatches && area ? sketchAreaPath(area) : '',
+    solid: fillIt && area ? sketchAreaPath(area) : '',
   };
 }
 
