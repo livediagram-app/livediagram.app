@@ -47,6 +47,7 @@ import {
   r2,
   supportsShadow,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   svgFontDefs,
   svgShadowDefs,
@@ -241,8 +242,10 @@ export async function renderTabToCanvas(
   );
   // Every caption laid out once, as the canvas and the SVG export do
   // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const bounds = frame ? frame.bounds : contentBounds(els, labels);
   const pad = frame ? 0 : EXPORT_PADDING;
@@ -337,7 +340,8 @@ export async function renderTabToCanvas(
   // would come back in the fallback face unless the font travels INSIDE the
   // markup. Fetched once here and inlined into every fragment below.
   const fontCss =
-    opts.fontCss ?? (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets)));
+    opts.fontCss ??
+    (await embeddedFontFaceCss(exportFontIds(els, tab.font, opts.sheets, tab.finish)));
   // The canvas drawers paint through the DOM's own font set, so wait for it
   // to settle — rasterising mid-swap bakes the fallback face into the PNG.
   await document.fonts?.ready;
@@ -345,7 +349,8 @@ export async function renderTabToCanvas(
   const rasterImages = new Map<string, { image: HTMLImageElement; pad: number }>();
   for (const el of els) {
     if (el.type === 'arrow' || !isBoxed(el)) continue;
-    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded)) continue;
+    if (!boxedNeedsSvgRaster(el, resolveIconArtLoaded, resolveStickerArtLoaded, tab.finish))
+      continue;
     const diag = Math.hypot(el.width, el.height);
     // A shadow sweeps outside the box by its offset + blur (docs/specs/008-canvas/element-shadows.md);
     // grow the raster pad so it isn't clipped, and inline its filter
@@ -364,6 +369,8 @@ export async function renderTabToCanvas(
         resolveIconArt: resolveIconArtLoaded,
         resolveStickerArt: resolveStickerArtLoaded,
         tabFont,
+        tabFinish: tab.finish,
+        sketchBackdrop: backdrops.has(el.id),
         surface,
         items: opts.items,
         itemTypes: opts.itemTypes,
@@ -400,7 +407,7 @@ export async function renderTabToCanvas(
     if (el.type === 'arrow') {
       const svg = svgZoneClipped(
         el.id,
-        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper),
+        svgArrow(el, tab.elements, surface, tabFont, labels, undefined, els, paper, tab.finish),
         clips,
       );
       arrowRun.push(alpha < 1 ? `<g opacity="${r2(alpha)}">${svg}</g>` : svg);
@@ -523,8 +530,10 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers }).map(
     (band) => ({ ...band, elements: band.elements.filter(reaches) }),
   );
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const wrapBand = (layerOpacity: number, inner: string[]): string =>
     layerOpacity < 1
@@ -561,7 +570,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // stylesheet (the live preview, where the page has the faces already).
   const fontDefs = opts.fontCss
     ? `<defs><style type="text/css">${opts.fontCss}</style></defs>`
-    : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font, opts.sheets), writing));
+    : svgFontDefs(withWritingFonts(exportFontIds(els, tab.font, opts.sheets, tab.finish), writing));
   if (fontDefs) parts.push(fontDefs);
   // The writing, over the page and under every element.
   if (writing) parts.push(articleOpsToSvg(writing.ops));
@@ -607,6 +616,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               resolveIconArt: resolveIconArtLoaded,
               resolveStickerArt: resolveStickerArtLoaded,
               tabFont: tab.font,
+              tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
               items: opts.items,
               itemTypes: opts.itemTypes,
@@ -622,7 +633,17 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
         inner.push(
           svgZoneClipped(
             el.id,
-            svgArrow(el, tab.elements, surface, tab.font, labels, undefined, els, paper),
+            svgArrow(
+              el,
+              tab.elements,
+              surface,
+              tab.font,
+              labels,
+              undefined,
+              els,
+              paper,
+              tab.finish,
+            ),
             clips,
           ),
         );
@@ -643,7 +664,7 @@ export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Prom
   const fontCss =
     opts.fontCss ??
     (await embeddedFontFaceCss(
-      withWritingFonts(exportFontIds(els, tab.font, opts.sheets), writing),
+      withWritingFonts(exportFontIds(els, tab.font, opts.sheets, tab.finish), writing),
     ));
   return new Blob([renderTabToSvg(tab, { ...opts, fontCss })], { type: 'image/svg+xml' });
 }

@@ -91,6 +91,7 @@ export const SHAPE_COMMON_FIELDS = [
   'textBold',
   'textItalic',
   'font',
+  'finish',
   'strokeWidth',
   'borderRadius',
   'opacity',

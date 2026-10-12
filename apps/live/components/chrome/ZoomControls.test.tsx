@@ -3,6 +3,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ZOOM_OFF_REASON, ZoomControls } from './ZoomControls';
 
+const touch = vi.hoisted(() => ({ coarse: false }));
+vi.mock('@/hooks/ui/useCoarsePointer', () => ({ useCoarsePointer: () => touch.coarse }));
+
 // docs/specs/026-plan/plan-board.md "Maximised board", "Zoom stands down": the controls stay, disabled, saying why.
 
 afterEach(cleanup);
@@ -50,5 +53,18 @@ describe('ZoomControls', () => {
     expect(container.querySelector('[data-zoom-controls]')).toBeNull();
     rerender(<ZoomControls zoom={1} {...h} pinchOnly />);
     expect(screen.getAllByRole('button', { name: 'Fit to screen' }).length).toBeGreaterThan(0);
+  });
+
+  // A tablet is a touch screen too: wide, so the zoom buttons show, but with zoom off it has nothing to offer either.
+  it('goes on a tablet while zoom is off, and stays under a mouse', () => {
+    const h = handlers();
+    touch.coarse = true;
+    const { container, rerender } = render(<ZoomControls zoom={1} {...h} zoomOff />);
+    expect(container.querySelector('[data-zoom-controls]')).toBeNull();
+    rerender(<ZoomControls zoom={1} {...h} />);
+    expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
+    touch.coarse = false;
+    rerender(<ZoomControls zoom={1} {...h} zoomOff />);
+    expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
   });
 });

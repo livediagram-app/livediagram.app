@@ -256,7 +256,7 @@ every device (`useFocusTrap`).
 the page, and the canvas never scrolls, so a label edited low on a phone was typed behind the
 keyboard. While a text field inside the canvas has focus, each visual-viewport change re-checks
 the caret: below the visible area (less a 24px margin) the canvas pans up by just the overlap
-(`useKeyboardAvoidance`). Phones only. The pan stays when the keyboard closes.
+(`useKeyboardAvoidance`). Any touch screen, a tablet as a phone (`hover: none`, or a phone's width). The pan stays when the keyboard closes. A field in a popover, menu or floating panel stays in view too, by moving its surface ([On-screen keyboard](../004-interface-design/tooltips-hover-cards-popovers.md#on-screen-keyboard)).
 
 **Haptics.** On a touch screen with a Vibration API (Android; Safari has none, so iOS stays silent)
 the editor gives a short buzz for what a finger cannot see land (`lib/haptics.ts`): **press** (15ms)

@@ -33,7 +33,7 @@ export const FORMAT_GROUPS: readonly { id: FormatGroup; label: string; hint: str
     hint: 'Stroke colour, width, pattern, corners, and an arrow’s line',
   },
   { id: 'text', label: 'Text', hint: 'Colour, size, weight, font, alignment' },
-  { id: 'effects', label: 'Effects', hint: 'Shadow, opacity, and animations' },
+  { id: 'effects', label: 'Effects', hint: 'Shadow, finish, opacity, and animations' },
   { id: 'size', label: 'Size', hint: 'Width, height, aspect lock, padding' },
 ];
 
@@ -79,6 +79,7 @@ const FIELD_GROUP: Record<string, FormatGroup> = {
   labelFill: 'text',
   // Effects.
   shadow: 'effects',
+  finish: 'effects',
   opacity: 'effects',
   animation: 'effects',
   animationSpeed: 'effects',

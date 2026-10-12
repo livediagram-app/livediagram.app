@@ -122,7 +122,10 @@ function nextTab(
   built: Exclude<Built, EditRejection>,
   options: ReplaceOptions,
 ): Tab {
-  if (!tab) return built.tab(options.tabId, options.name);
+  if (!tab) {
+    const made = built.tab(options.tabId, options.name);
+    return options.finish ? { ...made, finish: options.finish } : made;
+  }
   return { ...tab, elements: landWorkshopArrivals(tab, built.elements, 'replace') };
 }
 

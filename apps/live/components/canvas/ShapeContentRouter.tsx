@@ -2,7 +2,7 @@ import {
   actorFigureRect,
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
+  finishBorderStroke,
   DEFAULT_BORDER_STYLE,
   defaultFillColor,
   defaultStrokeColor,
@@ -41,6 +41,7 @@ import { LineChartView } from '@/components/canvas/LineChartView';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
@@ -151,6 +152,9 @@ export function ShapeContentRouter({
 }: ShapeContentRouterProps) {
   // The paper under this shape, for colours it doesn't carry (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
+  // A sketched silhouette is the SketchOverlay's (docs/specs/008-canvas/finish.md); Professional thins an
+  // unset border.
+  const finish = useElementFinish((element as { finish?: unknown }).finish);
   return element.type === 'shape' && element.shape === 'sticker' ? (
     // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
     // element colours and gets no caption band — a sticker says what it says
@@ -308,13 +312,13 @@ export function ShapeContentRouter({
       textColor={textColor}
       palette={chartPalette}
     />
-  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) ? (
+  ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && finish !== 'sketch' ? (
     <ShapeSvgOverlay
       shape={element.shape}
       fill={element.fillColor ?? defaultFillColor(element, surface)}
       stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
       strokeWidth={
-        remoteBorderColor ? 3 : BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]
+        remoteBorderColor ? 3 : BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]
       }
       strokeDasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined}
       aspect={element.height > 0 ? element.width / element.height : 1}

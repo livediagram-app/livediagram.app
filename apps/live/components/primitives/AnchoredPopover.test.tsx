@@ -42,6 +42,24 @@ describe('placeAnchored', () => {
   });
 });
 
+// tooltips-hover-cards-popovers.md "On-screen keyboard": a window shrunk under the panel (a keyboard that resizes
+// it) never squeezes it to nothing; it keeps MIN_ROOM_PX (or its own height, when smaller) and is moved into view.
+describe('placeAnchored with almost no room', () => {
+  it('keeps the least room on its side, or the panel’s own height when that is less', async () => {
+    const { MIN_ROOM_PX } = await import('./AnchoredPopover');
+    const short = { width: 1000, height: 420 };
+    const anchor = { left: 0, top: 380, bottom: 400 };
+    expect(placeAnchored(anchor, { width: 300, height: 400 }, short, 'below').maxHeight).toBe(
+      MIN_ROOM_PX,
+    );
+    expect(placeAnchored(anchor, { width: 300, height: 90 }, short, 'below').maxHeight).toBe(90);
+    expect(
+      placeAnchored({ left: 0, top: 10, bottom: 30 }, { width: 300, height: 400 }, view, 'above')
+        .maxHeight,
+    ).toBe(MIN_ROOM_PX);
+  });
+});
+
 describe('AnchoredPopover', () => {
   const draw = () => {
     const anchor = document.createElement('button');

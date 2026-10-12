@@ -29,6 +29,7 @@ import type { Layer } from './layers';
 // Only the BoxedElement union members are imported for local use; the full set
 // (incl. TableCellStyle / LinkCardMeta sub-types) is re-exported just below.
 import type { ArrowElement } from './arrow-types';
+import type { Finish } from './finish';
 export type { Anchor, ArrowEnds, ArrowElement, Endpoint } from './arrow-types';
 export type { ShapeKind } from './shape-kind';
 export { ALL_ANCHORS } from './arrow-types';
@@ -339,6 +340,8 @@ export type Tab = {
   // one; unset = the editor default. Lets a whole tab adopt a font in
   // one move while individual elements can still override.
   font?: string;
+  // Drawing style for every element without its own (docs/specs/008-canvas/finish.md); unset = Flexible.
+  finish?: Finish;
   // Default text size for NEW elements added from the palette on this
   // tab. Unlike `font`, this is a create-time seed — copied onto each
   // new element's own `textSize`, not resolved at render — so changing
@@ -493,6 +496,10 @@ export * from './arrow-style';
 export * from './border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
+export * from './finish';
+export * from './sketch';
+export * from './sketch-element';
+export * from './sketch-backdrop';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';

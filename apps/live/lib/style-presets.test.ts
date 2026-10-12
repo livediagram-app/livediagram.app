@@ -23,6 +23,7 @@ import {
   applyIconWeightToEl,
   applyRotationToEl,
   applyShadowToEl,
+  applyFinishToEl,
   applyStrokeColorToEl,
   applyTextColorToEl,
 } from './style-presets';
@@ -454,5 +455,34 @@ describe('Ink where no name can be stored', () => {
     expect(applyTextColorToEl(table, 'ink')).toBe(table);
     const note = el('sticky', { strokeColor: '#123456' });
     expect(applyStrokeColorToEl(note, 'ink')).toBe(note);
+  });
+});
+
+describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
+  it('sets a finish on shapes, arrows, text, stickies and tables', () => {
+    for (const type of ['shape', 'arrow', 'text', 'sticky', 'table']) {
+      const out = applyFinishToEl(el(type), 'sketch') as { finish?: unknown };
+      expect(out.finish, type).toBe('sketch');
+    }
+  });
+
+  it('stores Flexible when picked, so it beats a Sketch tab', () => {
+    expect((applyFinishToEl(el('shape'), 'flexible') as { finish?: unknown }).finish).toBe(
+      'flexible',
+    );
+  });
+
+  it('Follow Tab (null) removes the key rather than storing a value', () => {
+    const out = applyFinishToEl(el('shape', { finish: 'sketch' }), null);
+    expect('finish' in out).toBe(false);
+    const bare = el('shape');
+    expect(applyFinishToEl(bare, null)).toBe(bare);
+  });
+
+  it('no-ops (same reference) on types without a finish', () => {
+    for (const type of ['freehand', 'image', 'annotation']) {
+      const source = el(type);
+      expect(applyFinishToEl(source, 'sketch'), type).toBe(source);
+    }
   });
 });

@@ -6,8 +6,9 @@ import {
   DEFAULT_BOX_RADIUS_PX,
   MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
+  finishBorderStroke,
+  finishCornerFallbackPx,
   BORDER_STROKE_PX,
-  DEFAULT_BORDER_STROKE,
   DEFAULT_BORDER_STYLE,
   PADDING_PX,
   defaultPadding,
@@ -43,6 +44,9 @@ import { ChairView } from '@/components/canvas/collab/ChairView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
+import { SketchOverlay, useSketchPaint } from '@/components/canvas/SketchOverlay';
+import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@/components/canvas/indicator-items';
@@ -196,6 +200,16 @@ function BoxedElementViewImpl({
   // like the fill and border do (behaviour-skin.ts).
   const own = ownColours(element);
   const textColor = own.text ?? defaultTextColor(element, surface);
+  // The drawing style (docs/specs/008-canvas/finish.md): its own, else the tab's. Under Sketch the body is
+  // the SketchOverlay below, in place of the wrapper's border and background.
+  const finish = useElementFinish((element as { finish?: unknown }).finish);
+  const sketchBackdrop = useIsSketchBackdrop(element.id);
+  const sketch = useSketchPaint(
+    element,
+    finish,
+    own.fill ?? defaultFillColor(element, surface),
+    sketchBackdrop,
+  );
 
   // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
   // floats its note above everything; clicking it (handled in the drag
@@ -274,7 +288,14 @@ function BoxedElementViewImpl({
   const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   // A path in its edit mode shows its nodes, not its box (docs/specs/023-draw-mode/path-tool.md).
   const ringed = isSelected && !(element.type === 'path' && isEditing);
-  const variant = describeVariant(element, ringed, isMultiSelected, remoteBorderColor, surface);
+  const variant = describeVariant(
+    element,
+    ringed,
+    isMultiSelected,
+    remoteBorderColor,
+    surface,
+    finish,
+  );
   // A whiteboard pen stroke and a path are picked by their drawn line, not their box
   // (docs/specs/023-draw-mode/draw-mode.md "Selecting", path-tool.md "Selecting and erasing");
   // once selected, the box drags either as any element, and the line still catches pointers
@@ -297,8 +318,12 @@ function BoxedElementViewImpl({
     element.type === 'shape' ? element.borderRadius : undefined,
     element.width,
     element.height,
-    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes").
-    shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes"), sharper under
+    // Professional (docs/specs/008-canvas/finish.md).
+    finishCornerFallbackPx(
+      shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
+      finish,
+    ),
   );
 
   // An inline icon sits beside the label on a regular shape (the
@@ -490,6 +515,16 @@ function BoxedElementViewImpl({
         ...(passThrough ? { pointerEvents: 'none' as const } : {}),
       }}
     >
+      {/* The hand-drawn body under the content (docs/specs/008-canvas/finish.md "Sketch"). */}
+      {sketch ? (
+        <SketchOverlay
+          paint={sketch}
+          width={element.width}
+          height={element.height}
+          fill={own.fill ?? defaultFillColor(element, surface)}
+          stroke={remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface)}
+        />
+      ) : null}
       <ShapeContentRouter
         element={element}
         artAnimClass={artAnimClass}
@@ -511,6 +546,7 @@ function BoxedElementViewImpl({
           outline here instead (element-variant drops the CSS border to
           match). Solid / dashed / dotted stay on the cheaper CSS path. */}
       {element.type === 'shape' &&
+      !sketch &&
       !isSvgRenderedShape(element.shape) &&
       !remoteBorderColor &&
       !isCssNativeBorderStyle(element.strokeStyle ?? DEFAULT_BORDER_STYLE) ? (
@@ -519,7 +555,7 @@ function BoxedElementViewImpl({
           width={element.width}
           height={element.height}
           stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-          strokeWidth={BORDER_STROKE_PX[element.strokeWidth ?? DEFAULT_BORDER_STROKE]}
+          strokeWidth={BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)]}
           dasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? ''}
           radiusPx={cornerPx}
         />

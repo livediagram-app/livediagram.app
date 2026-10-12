@@ -3,6 +3,7 @@
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livediagram/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
+import type { Finish } from './finish';
 import type { CardSearchFilter, PlanBoardSetup, PlanViewId, SwimlaneBy } from '@livediagram/items';
 import type { EventStormingNoteKind } from './event-storming';
 import type { TextRun } from './rich-text';
@@ -164,6 +165,8 @@ export type ShapeElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
   // A whiteboard marker's named colour (docs/specs/023-draw-mode/draw-mode.md "The colour picker"):
@@ -534,6 +537,8 @@ export type TextElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -703,6 +708,8 @@ export type TableElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   // fillColor tints the cell background; strokeColor draws the grid
   // lines + border; textColor is the cell text.
   fillColor?: string;
@@ -801,6 +808,8 @@ export type StickyElement = {
   // at render time so saved documents round-trip independent of the
   // catalogue's exact font stacks.
   font?: string;
+  // Drawing style (docs/specs/008-canvas/finish.md); unset follows the tab's.
+  finish?: Finish;
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;

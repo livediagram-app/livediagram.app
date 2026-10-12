@@ -78,6 +78,14 @@ export const TAB_TEXT_DEFAULTS = chart(
   { types: ['Font', 'DefaultTextSize'] },
 );
 
+export const TAB_FINISH = chart(
+  'Tab',
+  'Changed',
+  'Tab Finish',
+  'A tab’s finish changed (Flexible, Professional or Sketch), or every element was set back to follow it.',
+  { types: ['Finish', 'FinishToAll'] },
+);
+
 export const TABS_ARRANGED = chart(
   'Tab',
   'Aligned',
@@ -360,6 +368,7 @@ const TAB_CHANGES = [
   TABS_DELETED,
   TABS_DUPLICATED,
   TAB_TEXT_DEFAULTS,
+  TAB_FINISH,
   TABS_ARRANGED,
   TABS_REORDERED,
   TABS_LINKED,
@@ -380,6 +389,7 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_DELETED,
     TABS_DUPLICATED,
     TAB_TEXT_DEFAULTS,
+    TAB_FINISH,
     TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,

@@ -115,6 +115,13 @@ describe('applyReplace on an existing tab', () => {
 });
 
 describe('applyReplace for a new tab', () => {
+  it('gives the new tab the finish asked for (docs/specs/008-canvas/finish.md)', () => {
+    expect(
+      applied(applyReplace(null, { graph }, { ...options, finish: 'sketch' })).tab.finish,
+    ).toBe('sketch');
+    expect(applied(applyReplace(null, { graph }, options)).tab.finish).toBeUndefined();
+  });
+
   it('builds a graph tab with the given id, name and theme', () => {
     const { tab, createdIds } = applied(
       applyReplace(null, { graph }, { ...options, theme: getBuiltInTheme('ocean') }),

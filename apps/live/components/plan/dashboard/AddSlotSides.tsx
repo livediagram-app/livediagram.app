@@ -102,7 +102,10 @@ export function AddSlotSides({
       <span className="px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
         Add a Slot
       </span>
-      <div className="grid grid-cols-[3rem_minmax(0,1fr)_3rem] grid-rows-[1.75rem_4rem_1.75rem] gap-1.5">
+      <div // Above and Below grow to a finger's 44 px on a touch screen (touch-targets.md: a row grows where a pad would
+        // reach into its neighbour).
+        className="grid grid-cols-[3rem_minmax(0,1fr)_3rem] grid-rows-[1.75rem_4rem_1.75rem] gap-1.5 pointer-coarse:grid-rows-[2.75rem_4rem_2.75rem]"
+      >
         <span />
         {side('above', 'Above', true)}
         <span />

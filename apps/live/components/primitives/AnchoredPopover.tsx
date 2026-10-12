@@ -14,6 +14,9 @@ import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
 import { usePopoverLayer } from './popover-stack';
 
 const GAP = 6; // space between the anchor and the panel
+// The least room a panel takes on its side, however little the window leaves it (an on-screen keyboard that shrinks
+// the window must not squeeze it to nothing: useFloatingKeyboardAvoidance moves it into view instead).
+export const MIN_ROOM_PX = 160;
 const FOCUSABLE =
   'input, select, textarea, button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -44,13 +47,14 @@ export function placeAnchored(
   const roomAbove = anchor.top - GAP - EDGE;
   const chosen: AnchoredSide =
     side ?? (roomBelow >= size.height || roomBelow >= roomAbove ? 'below' : 'above');
+  const floor = Math.min(size.height, MIN_ROOM_PX);
   return chosen === 'below'
-    ? { left, side: chosen, top: anchor.bottom + GAP, maxHeight: Math.max(0, roomBelow) }
+    ? { left, side: chosen, top: anchor.bottom + GAP, maxHeight: Math.max(floor, roomBelow) }
     : {
         left,
         side: chosen,
         bottom: viewport.height - (anchor.top - GAP),
-        maxHeight: Math.max(0, roomAbove),
+        maxHeight: Math.max(floor, roomAbove),
       };
 }
 

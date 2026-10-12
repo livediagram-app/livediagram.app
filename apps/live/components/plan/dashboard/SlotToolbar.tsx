@@ -1,21 +1,31 @@
 'use client';
 
 // A Dashboard slot's toolbar (docs/specs/026-plan/plan-tabs.md "Editing"): a row of icon buttons across the top of the
-// item's cog, above its sections: **Open Tab** (a slot showing a tab, anyone), then an Editor's **Duplicate**, **Clear
-// Slot** and **Remove Slot**. Clearing or removing a slot that showed a tab or held a Sheet asks first, under the
+// item's cog, above its sections: **Open Tab** (a slot showing a tab, anyone), then an Editor's **Move Up** and **Move
+// Down** (stacked on a phone, where no grip carries a slot), **Duplicate**, **Clear Slot** and **Remove Slot**. Clearing or removing a slot that showed a tab or held a Sheet asks first, under the
 // toolbar, what goes with it (the tab, the Sheet's cells).
 import { useState, type ReactNode } from 'react';
 import { Button, Tooltip, lucideGlyph } from '@livediagram/ui';
 import {
+  lucideArrowDown,
+  lucideArrowUp,
   lucideCopy,
   lucideEraser,
   lucideExternalLink,
   lucideTrash2,
 } from '@livediagram/icons/lucide';
-import type { DashboardSlot } from '@livediagram/document';
+import {
+  dashboardReadingNeighbour,
+  moveDashboardSlot,
+  type DashboardLayout,
+  type DashboardSlot,
+} from '@livediagram/document';
 import { useDashboard } from './dashboard-context';
+import { swapSlotsWithMotion } from './slot-swap-motion';
 
 const OpenGlyph = lucideGlyph(lucideExternalLink, 16);
+const UpGlyph = lucideGlyph(lucideArrowUp, 16);
+const DownGlyph = lucideGlyph(lucideArrowDown, 16);
 const DuplicateGlyph = lucideGlyph(lucideCopy, 16);
 const ClearGlyph = lucideGlyph(lucideEraser, 16);
 const RemoveGlyph = lucideGlyph(lucideTrash2, 16);
@@ -43,7 +53,8 @@ function ToolButton({
         onClick={() => {
           if (!disabled) onClick();
         }}
-        className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
+        // A finger's tap height on a touch screen (touch-targets.md); the row's buttons sit too close for a full pad.
+        className={`touch-target-y relative flex h-8 w-8 items-center justify-center rounded-md transition ${
           disabled
             ? 'cursor-default text-slate-300 dark:text-slate-600'
             : 'cursor-pointer text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
@@ -58,14 +69,18 @@ function ToolButton({
 export function SlotToolbar({
   rowId,
   slot,
+  stacked = false,
   onClose,
 }: {
   rowId: string;
   slot: DashboardSlot;
+  // Drawn in a phone's stack (condense.ts): Move Up and Move Down are offered.
+  stacked?: boolean;
   // Closes the cog's popover.
   onClose: () => void;
 }) {
-  const { canEdit, actions, openTab, elements, tabs, deleteTab, releaseSheets } = useDashboard();
+  const { canEdit, actions, openTab, elements, tabs, deleteTab, releaseSheets, layout, fit } =
+    useDashboard();
   const [pending, setPending] = useState<'clear' | 'remove' | null>(null);
   const content = slot.content;
   const tabId = content?.type === 'tab' ? content.tabId : null;
@@ -119,6 +134,25 @@ export function SlotToolbar({
     : sheetId
       ? 'A Sheet can’t be duplicated into a slot; show its tab again instead'
       : null;
+  // Up or down the stack: the slot swaps what it holds with the one before or after it in reading order, as the grip's
+  // drop on a slot does (spans stay). Not offered past either end, nor where the swap would squeeze either slot. The two
+  // cards glide past each other (slot-swap-motion.ts).
+  const swapWith = (dir: 'previous' | 'next') => {
+    const to = layout ? dashboardReadingNeighbour(layout, slot.id, dir) : null;
+    if (!to) return null;
+    const swap = (l: DashboardLayout) =>
+      moveDashboardSlot(l, slot.id, { kind: 'slot', slotId: to }, newId);
+    return fit && !fit.keeps(swap) ? null : { to, swap };
+  };
+  const move = (target: { to: string; swap: (l: DashboardLayout) => DashboardLayout }) => {
+    // What it held moves away from this cog: the cog closes, as after a Duplicate.
+    onClose();
+    swapSlotsWithMotion(slot.id, target.to, () =>
+      actions.changeDashboard(target.swap, 'DashboardSlot'),
+    );
+  };
+  const up = stacked && canEdit ? swapWith('previous') : null;
+  const down = stacked && canEdit ? swapWith('next') : null;
   return (
     <div className="border-b border-slate-100 dark:border-slate-800">
       <div role="toolbar" aria-label="Slot" className="flex items-center gap-0.5 px-2 py-1">
@@ -131,6 +165,30 @@ export function SlotToolbar({
               openTab(tabId);
             }}
           />
+        ) : null}
+        {canEdit && stacked ? (
+          <>
+            <ToolButton
+              label="Move Up"
+              icon={<UpGlyph />}
+              disabled={!up}
+              why="Nothing above to swap with"
+              onClick={() => up && move(up)}
+            />
+            <ToolButton
+              label="Move Down"
+              icon={<DownGlyph />}
+              disabled={!down}
+              why="Nothing below to swap with"
+              onClick={() => down && move(down)}
+            />
+            {/* Moving is set apart from the slot's own verbs. */}
+            <span
+              aria-hidden
+              data-toolbar-separator
+              className="mx-1 h-5 w-px bg-slate-200 dark:bg-slate-700"
+            />
+          </>
         ) : null}
         {canEdit ? (
           <>
@@ -188,3 +246,5 @@ export function SlotToolbar({
     </div>
   );
 }
+
+const newId = () => crypto.randomUUID();

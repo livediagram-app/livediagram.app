@@ -342,12 +342,14 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Rotation': 'Someone rotated a selected element to a fixed angle.',
   'Element|Changed|SessionButton':
     'Someone configured what a Session Button element starts when pressed, such as a timer, a poll, or a vote.',
+  'Element|Changed|Finish':
+    "Someone set a selected element's own finish (Flexible, Professional or Sketch), or set it back to follow its tab.",
   'Element|Changed|SankeyAnim':
-    'Someone set or cleared the animation on a selected Sankey diagram (its bands sweeping in, or a current running along them).',
+    'Someone set or cleared the animation on a selected Sankey diagram (Grow, Flow, Cascade, Pulse or Rise), or its speed or repeat.',
   'Element|Changed|SankeyFlows':
-    "Someone edited a Sankey diagram's flows: what moves from where to where, and how much.",
+    "Someone edited a Sankey diagram's flows (what moves from where to where, and how much) or a node's leftover switch.",
   'Element|Changed|SankeyStyle':
-    "Someone changed how a Sankey diagram draws: a node's colour, the band colouring, the column layout, the labels or the unit.",
+    "Someone changed how a Sankey diagram draws: a node's colour, the band colouring, the column layout, the labels, the leftovers or the unit.",
   'Element|Changed|Shadow': 'Someone applied a drop shadow to a selected element, or removed it.',
   'Element|Changed|ShapeMorph':
     'Someone changed a selected shape into a different kind of shape, keeping its size, label, and colours.',
@@ -799,6 +801,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set a tab to open in Illustrate mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
   'Tab|Changed|OpensInPlan':
     "Someone set a tab to open in Plan mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
+  'Tab|Changed|Finish':
+    "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
+  'Tab|Changed|FinishToAll':
+    "Someone pressed Apply to All Elements on the Finish tab, so every element follows the tab's finish again.",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':

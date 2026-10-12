@@ -243,7 +243,21 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
   button with Space held (`onKeyDown` / `onKeyUp` in SheetGrid; an unused Space types a space on release), and one
   finger while not maximised (a second finger ends
   it for the pinch; `swallowClick` drops the tap that follows a pan). Maximised, a finger scrolls natively.
-- Touch: a tap selects a cell; a double-tap edits.
+- Touch (`useSheetTouch.ts`; sheet.md "On a touch screen"): every finger press goes to `useSheetTouch.onTouchDown`
+  instead of the mouse path. A press within `TOUCH_GRIP_HIT_PX` (22) of the selection's corner, while the grid has the
+  keys and no edit is open, begins a `select` drag from the range's top left (the grip). Otherwise the press goes to
+  `useSheetPan.begin` (a pan, or maximised the native scroll; propagation stops either way, so the canvas never sees it)
+  and, on a cell or header, arms `useLongPress`. Its firing calls `pan.release()` (the pan lets go, swallowing
+  nothing), selects what is under the finger unless the selection holds it (`selectFor`, shared with the menus), and
+  watches the finger: past `HOLD_DRAG_PX` (6) it begins a `select` drag from the held cell (`axisSelect` from a header);
+  lifted unmoved it opens the menu (`openMenu`). From a hold or a grip press until the finger lifts a non-passive
+  window `touchmove` listener prevents the page's scroll, and the lift stamps a time: a click within `AFTER_SELECT_MS`
+  (400) of it is not a tap. A non-primary finger cancels the hold (`useLongPress.cancel`). A touch `contextmenu` is
+  prevented and opens nothing. Drags end on `pointercancel` as on `pointerup`.
+- Touch taps (`onClick`, maximised too): a cell selects it, a header its column or row, the corner the whole sheet;
+  an open edit is saved first. A double-tap edits. `SheetSelectionLayer` draws the corner handle
+  `pointer-coarse:scale-[2] pointer-coarse:rounded-full`, shown under a coarse pointer to anyone while the grid has the
+  keys; the viewport carries `[-webkit-touch-callout:none] pointer-coarse:select-none` and the editor `select-text`.
 
 ### Commands
 

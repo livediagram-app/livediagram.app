@@ -414,6 +414,19 @@ export function dashboardNeighbour(
   return other.slots[best]?.id ?? null;
 }
 
+// The slot just before or after this one in reading order (row by row, left to right), the order a phone stacks
+// the dashboard in (plan-tabs.md "On a phone"): Move Up and Move Down swap with it. null at either end.
+export function dashboardReadingNeighbour(
+  layout: DashboardLayout,
+  slotId: string,
+  dir: 'previous' | 'next',
+): string | null {
+  const order = layout.rows.flatMap((row) => row.slots.map((s) => s.id));
+  const i = order.indexOf(slotId);
+  if (i < 0) return null;
+  return order[dir === 'previous' ? i - 1 : i + 1] ?? null;
+}
+
 // Where a moved slot goes (DashboardPage's drag): onto another slot (the two swap what they hold; spans stay), into a
 // gap in a row (`index`, 0 its left end), or between rows as a row of its own (`index`, 0 above the first).
 export type DashboardMoveTarget =

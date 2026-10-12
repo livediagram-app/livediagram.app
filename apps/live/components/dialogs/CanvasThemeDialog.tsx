@@ -1,9 +1,10 @@
 'use client';
 
 // The Tab Look & Feel dialog (docs/specs/011-theme/canvas-and-theme-dialog.md), opened from the paintbrush dock
-// button. One modal, three tabs: Theme (the category-browse picker), Canvas
-// (pattern + colours + opacity) and Font (the tab's default font + the size
-// seeded onto new elements, docs/specs/004-interface-design/fonts.md). Opens on whichever tab the caller
+// button. One modal, four tabs: Theme (the category-browse picker), Canvas
+// (pattern + colours + opacity), Font (the tab's default font + the size
+// seeded onto new elements, docs/specs/004-interface-design/fonts.md) and Finish (how elements are drawn,
+// docs/specs/008-canvas/finish.md). Opens on whichever tab the caller
 // picked; the user can switch freely. Every control applies live to the
 // active tab via its callback — there's no Apply/Cancel, closing just
 // dismisses.
@@ -15,7 +16,7 @@
 
 import { lucideGrid3x3 } from '@livediagram/icons/lucide';
 import { useRef, useState } from 'react';
-import type { BackgroundPattern } from '@livediagram/document';
+import type { BackgroundPattern, Finish } from '@livediagram/document';
 import {
   Glyph,
   lucideGlyph,
@@ -32,8 +33,9 @@ import { FontSelect } from '@/components/palette/FontSelect';
 import { SizeButton } from '@/components/palette/palette-controls';
 import type { TextSize } from '@livediagram/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
+import { FinishTab, FinishTabIcon } from './FinishTab';
 
-export type CanvasThemeTab = 'canvas' | 'theme' | 'font';
+export type CanvasThemeTab = 'canvas' | 'theme' | 'font' | 'finish';
 
 type CanvasThemeDialogProps = {
   tab: CanvasThemeTab;
@@ -65,6 +67,12 @@ type CanvasThemeDialogProps = {
   // Push the tab font + default size onto every existing element on the
   // tab (clears per-element font overrides so they inherit).
   onApplyFontToAll: () => void;
+  // Finish (docs/specs/008-canvas/finish.md). `finish` undefined is Flexible.
+  finish: Finish | undefined;
+  onSetFinish: (finish: Finish) => void;
+  onApplyFinishToAll: () => void;
+  // The tab's own background, unresolved, for the Finish preview's paper.
+  canvasBackground?: string;
   onClose: () => void;
 };
 
@@ -91,6 +99,10 @@ export function CanvasThemeDialog({
   defaultTextSize,
   onSetDefaultTextSize,
   onApplyFontToAll,
+  finish,
+  onSetFinish,
+  onApplyFinishToAll,
+  canvasBackground,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
@@ -165,7 +177,9 @@ export function CanvasThemeDialog({
                       ? 'changingTheBackground'
                       : tab === 'font'
                         ? 'choosingFonts'
-                        : 'changingTheme'
+                        : tab === 'finish'
+                          ? 'choosingAFinish'
+                          : 'changingTheme'
                   }
                 />
                 <DialogCloseButton compact onClick={onClose} />
@@ -196,6 +210,13 @@ export function CanvasThemeDialog({
               >
                 Font
               </TabButton>
+              <TabButton
+                active={tab === 'finish'}
+                onClick={() => onTabChange('finish')}
+                icon={<FinishTabIcon />}
+              >
+                Finish
+              </TabButton>
             </div>
           </div>
 
@@ -209,6 +230,15 @@ export function CanvasThemeDialog({
                 defaultTextSize={defaultTextSize}
                 onSetDefaultTextSize={onSetDefaultTextSize}
                 onApplyFontToAll={onApplyFontToAll}
+              />
+            ) : tab === 'finish' ? (
+              <FinishTab
+                finish={finish}
+                onSetFinish={onSetFinish}
+                onApplyFinishToAll={onApplyFinishToAll}
+                canvasBackground={canvasBackground}
+                themeId={themeId}
+                font={font}
               />
             ) : tab === 'canvas' ? (
               <CanvasStyleControls

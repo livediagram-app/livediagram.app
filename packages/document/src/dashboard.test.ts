@@ -240,6 +240,20 @@ describe('a slot’s neighbour', () => {
     expect(dashboardNeighbour(l, b!.id, 'down')).toBe(below.at(-1)!.id);
     expect(dashboardNeighbour(l, below[0]!.id, 'up')).toBe(a!.id);
   });
+
+  it('finds the slot before and after in reading order, across rows', async () => {
+    const { dashboardReadingNeighbour, newDashboard } = await import('./dashboard');
+    const l = newDashboard(ids());
+    const order = l.rows.flatMap((r) => r.slots.map((s) => s.id));
+    expect(dashboardReadingNeighbour(l, order[0]!, 'previous')).toBeNull();
+    expect(dashboardReadingNeighbour(l, order[0]!, 'next')).toBe(order[1]);
+    // The last of the first row's next is the first of the second.
+    const firstRow = l.rows[0]!.slots.length;
+    expect(dashboardReadingNeighbour(l, order[firstRow - 1]!, 'next')).toBe(order[firstRow]);
+    expect(dashboardReadingNeighbour(l, order[firstRow]!, 'previous')).toBe(order[firstRow - 1]);
+    expect(dashboardReadingNeighbour(l, order.at(-1)!, 'next')).toBeNull();
+    expect(dashboardReadingNeighbour(l, 'missing', 'next')).toBeNull();
+  });
 });
 
 describe('a Title slot', () => {

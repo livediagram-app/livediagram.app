@@ -45,6 +45,8 @@ import { sheetPresenceFor } from './sheet-presence-store';
 import type { SheetActions } from './useSheetActions';
 import type { FormulaInput } from './useFormulaInput';
 import type { SheetPeer } from '@/hooks/sheets/useSheetsBridge';
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
+import { LongPressRing } from '@/components/primitives/LongPressRing';
 
 type Props = {
   elementId: string;
@@ -73,6 +75,8 @@ export function SheetGrid({
   const c = useSheetController();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pointer = useSheetPointer(viewportRef, actions, pointRef);
+  // Under a finger the selection's corner is a grip anyone who can select may drag (useSheetTouch).
+  const coarse = useCoarsePointer();
   const clipboard = useSheetClipboard();
   const total = totalSize(c.geometry);
   // Room under the last row for Add Rows, for someone who may edit.
@@ -410,7 +414,8 @@ export function SheetGrid({
         >
           <div
             ref={viewportRef}
-            className="sticky left-0 top-0 overflow-hidden"
+            // A held finger selects cells, so it never starts the browser's own text selection or callout.
+            className="sticky left-0 top-0 overflow-hidden [-webkit-touch-callout:none] pointer-coarse:select-none"
             style={{ width: c.view.width, height: c.view.height, cursor: pointer.cursor }}
             onPointerDown={pointer.onPointerDown}
             onPointerMove={pointer.onPointerMove}
@@ -441,7 +446,7 @@ export function SheetGrid({
                   scroll={c.scroll}
                   palette={c.palette}
                   selection={c.selection}
-                  showHandle={c.canEdit && !c.editing && c.focused}
+                  showHandle={(c.canEdit || coarse) && !c.editing && c.focused}
                   marquee={c.marquee}
                   outlines={outlines}
                   filter={filter}
@@ -481,9 +486,14 @@ export function SheetGrid({
                 }
               </span>
             </div>
-            <div className="absolute" style={{ left: c.geometry.headW, top: c.geometry.headH }}>
+            <div
+              className="absolute select-text"
+              style={{ left: c.geometry.headW, top: c.geometry.headH }}
+            >
               <SheetCellEditor input={input} fontFamily={fontFamily} />
             </div>
+            {/* A finger held on the cells (useSheetTouch): the hold ring, portalled to the finger. */}
+            <LongPressRing point={pointer.ring} />
             <SheetHeaders
               geometry={c.geometry}
               window={window}

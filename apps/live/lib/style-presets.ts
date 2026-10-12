@@ -22,7 +22,9 @@ import {
   isBoxed,
   supportsBorder,
   supportsShadow,
+  supportsFinish,
   type ArrowFlow,
+  type Finish,
   type ElementShadow,
   type ArrowThickness,
   type BorderRadius,
@@ -236,6 +238,17 @@ export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element
 // link-card) via the shared supportsShadow predicate.
 export function applyShadowToEl(el: Element, shadow: ElementShadow | null): Element {
   return supportsShadow(el) ? { ...el, shadow: shadow ? clampShadow(shadow) : undefined } : el;
+}
+
+// An element's own finish (docs/specs/008-canvas/finish.md). `null` is Follow Tab: the key is removed, never
+// stored as the tab's value, so the element follows a later tab change. Shapes, arrows, text, stickies and
+// tables only.
+export function applyFinishToEl(el: Element, finish: Finish | null): Element {
+  if (!supportsFinish(el)) return el;
+  if (finish) return { ...el, finish } as Element;
+  if (!('finish' in el)) return el;
+  const { finish: _cleared, ...rest } = el as Element & { finish?: Finish };
+  return rest as Element;
 }
 
 // Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is
