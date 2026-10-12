@@ -41,12 +41,7 @@ export {
   themePresetColors,
   themeChartPalette,
 } from '@livediagram/document';
-export type {
-  ThemeId,
-  ThemeDefinition,
-  ThemeCategory,
-  ShapeColorPreset,
-} from '@livediagram/document';
+export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livediagram/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner

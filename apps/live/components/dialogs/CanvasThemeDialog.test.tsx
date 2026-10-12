@@ -27,7 +27,6 @@ const props: ComponentProps<typeof CanvasThemeDialog> = {
   onSetBackgroundAnimationSpeed: vi.fn(),
   themeId: 'default',
   onSetTheme: vi.fn(),
-  onResetElementsToTheme: vi.fn(),
   font: null,
   onSetFont: vi.fn(),
   defaultTextSize: undefined,
@@ -111,14 +110,45 @@ describe('CanvasThemeDialog Finish tab', () => {
 describe('CanvasThemeDialog home', () => {
   const home = (over: Partial<ComponentProps<typeof CanvasThemeDialog>> = {}) =>
     render(<CanvasThemeDialog {...props} tab="looks" {...over} />);
-  const lookNames = ['Everyday', 'Whiteboard', 'Graph Paper', 'Boardroom', 'Notebook', 'Midnight'];
+  const lookNames = [
+    'Everyday',
+    'Whiteboard',
+    'Graph Paper',
+    'Boardroom',
+    'Notebook',
+    'Midnight',
+    'Seaside',
+    'Editorial',
+    'Engineer',
+    'Workshop',
+    'Garden',
+    'Party',
+  ];
 
-  it('offers the six looks, each drawn as a preview', () => {
+  it('offers the twelve looks, each drawn as a preview', () => {
     home();
     for (const name of lookNames) {
       const card = screen.getByRole('button', { name: new RegExp(`^${name}`) });
       expect(card.querySelector('svg'), name).not.toBeNull();
     }
+  });
+
+  it('pages the looks in a carousel of two pages, opening on the current look’s page', () => {
+    const { unmount } = home();
+    const next = screen.getByRole('button', { name: 'Next looks' });
+    const prev = screen.getByRole('button', { name: 'Previous looks' });
+    expect(prev.hasAttribute('disabled')).toBe(true);
+    fireEvent.click(next);
+    expect(next.hasAttribute('disabled')).toBe(true);
+    expect(
+      screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
+    ).toBe('true');
+    unmount();
+    // A tab on a page-two look opens there.
+    home({ themeId: 'rainbow', finish: 'flexible', font: 'oswald', backgroundPattern: 'confetti' });
+    expect(
+      screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
+    ).toBe('true');
   });
 
   it('applies a look on click', () => {

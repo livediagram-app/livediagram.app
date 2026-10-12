@@ -10,7 +10,18 @@ import {
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 
 export type TabLookId =
-  'everyday' | 'whiteboard' | 'graph-paper' | 'boardroom' | 'notebook' | 'midnight';
+  | 'everyday'
+  | 'whiteboard'
+  | 'graph-paper'
+  | 'boardroom'
+  | 'notebook'
+  | 'midnight'
+  | 'seaside'
+  | 'editorial'
+  | 'engineer'
+  | 'workshop'
+  | 'garden'
+  | 'party';
 
 export type TabLook = {
   id: TabLookId;
@@ -25,7 +36,7 @@ export type TabLook = {
   pattern: BackgroundPattern;
 };
 
-/** The six looks, in the order the dialog shows them. */
+/** The looks, in the order the dialog shows them: two carousel pages of six. */
 export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'everyday',
@@ -81,7 +92,64 @@ export const TAB_LOOKS: readonly TabLook[] = [
     font: undefined,
     pattern: 'grid',
   },
+  {
+    id: 'seaside',
+    label: 'Seaside',
+    description: 'Ocean, Flexible, Nunito, waves',
+    theme: 'ocean',
+    finish: 'flexible',
+    font: 'nunito',
+    pattern: 'waves',
+  },
+  {
+    id: 'editorial',
+    label: 'Editorial',
+    description: 'Cream, Professional, Lora serif',
+    theme: 'cream',
+    finish: 'professional',
+    font: 'lora',
+    pattern: 'blank',
+  },
+  {
+    id: 'engineer',
+    label: 'Engineer',
+    description: 'Sky, Professional, engineering grid',
+    theme: 'sky',
+    finish: 'professional',
+    font: 'space-grotesk',
+    pattern: 'engineering',
+  },
+  {
+    id: 'workshop',
+    label: 'Workshop',
+    description: 'Sunset, Sketch, marker pen',
+    theme: 'sunset',
+    finish: 'sketch',
+    font: 'permanent-marker',
+    pattern: 'crosshatch',
+  },
+  {
+    id: 'garden',
+    label: 'Garden',
+    description: 'Forest, Flexible, Poppins, hexagons',
+    theme: 'forest',
+    finish: 'flexible',
+    font: 'poppins',
+    pattern: 'hexagonal',
+  },
+  {
+    id: 'party',
+    label: 'Party',
+    description: 'Rainbow branches, Oswald, confetti',
+    theme: 'rainbow',
+    finish: 'flexible',
+    font: 'oswald',
+    pattern: 'confetti',
+  },
 ];
+
+/** How many looks one carousel page holds. */
+export const LOOKS_PER_PAGE = 6;
 
 export function tabLookById(id: string): TabLook | undefined {
   return TAB_LOOKS.find((l) => l.id === id);

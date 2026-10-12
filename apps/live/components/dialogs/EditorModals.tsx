@@ -42,7 +42,6 @@ export function EditorModals() {
     setBackgroundPatternScale,
     setBackgroundAnimationSpeed,
     setTheme,
-    resetElementsToTheme,
     setTabFont,
     setTabDefaultTextSize,
     applyTabFontToAll,
@@ -94,7 +93,6 @@ export function EditorModals() {
           onSetBackgroundAnimationSpeed={setBackgroundAnimationSpeed}
           themeId={activeTab.theme ?? 'brand'}
           onSetTheme={setTheme}
-          onResetElementsToTheme={resetElementsToTheme}
           font={activeTab.font ?? null}
           onSetFont={setTabFont}
           defaultTextSize={activeTab.defaultTextSize}

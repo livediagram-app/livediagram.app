@@ -1,12 +1,8 @@
-// Card primitives for the theme picker's two-level browse, mirroring
-// template-picker-cards: a selectable ThemeCard (swatch + label) and a
-// ThemeCategoryCard (a sampler of the category's swatches that drills
-// into it). Lifted out of TemplatePicker so the same card renders across
-// the overview and the category detail view.
+// Card primitives for the flat theme list (ThemeBrowser): a selectable ThemeCard (swatch + label), a custom
+// theme's card with its edit / delete actions, and the "New theme" card.
 
 import type { CustomTheme } from '@livediagram/api-schema';
 import { CopyIcon, PencilIcon, PlusIcon, TrashIcon } from '@livediagram/ui';
-import { PickerCard } from '@/components/palette/PickerCard';
 import { type ThemeDefinition } from '@/lib/themes';
 import { themeDescription } from '@/lib/themes-taxonomy';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
@@ -72,43 +68,6 @@ export function ThemeCard({
         </button>
       ) : null}
     </div>
-  );
-}
-
-// The Default quick-pick on the colour-scheme overview, sized + laid out exactly
-// like a ThemeCategoryCard (hero swatch + label + description) so it
-// doesn't read as an odd small tile next to the category cards. Unlike a
-// category card it's directly selectable (click selects; double-click
-// commits) and shows an active state.
-export function ThemeQuickPickCard({
-  theme,
-  label,
-  description,
-  active,
-  onSelect,
-  onCommit,
-}: {
-  theme: ThemeDefinition;
-  label: string;
-  description: string;
-  active: boolean;
-  onSelect: () => void;
-  onCommit: () => void;
-}) {
-  return (
-    <PickerCard
-      active={active}
-      onSelect={onSelect}
-      onCommit={onCommit}
-      label={label}
-      description={description}
-    >
-      <div className="w-full">
-        {/* Match the category cards' 2×2 sampler height (two h-9 rows +
-            gap) so Default doesn't tower over the other tiles on the row. */}
-        <ThemeSwatch theme={theme} heightClass="h-[4.75rem]" />
-      </div>
-    </PickerCard>
   );
 }
 
@@ -193,56 +152,5 @@ export function NewThemeCard({ onClick }: { onClick: () => void }) {
         New theme
       </span>
     </button>
-  );
-}
-
-// A category tile on the theme overview: a 2×2 sampler of the category's
-// swatches as the illustration, plus the label, a count and a one-line
-// description. Clicking it drills into the category.
-export function ThemeCategoryCard({
-  label,
-  description,
-  count,
-  themes,
-  selected,
-  onOpen,
-}: {
-  label: string;
-  description: string;
-  count: number;
-  themes: ThemeDefinition[];
-  // True when the currently-selected theme lives in this category, so the
-  // card reads as "your selection is in here" on the overview.
-  selected: boolean;
-  onOpen: () => void;
-}) {
-  return (
-    <PickerCard
-      active={selected}
-      onSelect={onOpen}
-      ariaLabel={`Browse ${label} themes`}
-      label={label}
-      description={description}
-      count={count}
-    >
-      {/* Always a full 2×2 sampler so categories with fewer than four
-          themes (Formal has one, Custom can have none) keep the same
-          footprint + visual weight as Cool / Warm / etc. — empty slots
-          render as muted placeholders rather than collapsing the grid. */}
-      <div className="grid w-full grid-cols-2 gap-1">
-        {Array.from({ length: 4 }, (_, i) => {
-          const theme = themes[i];
-          return theme ? (
-            <ThemeSwatch key={theme.id} theme={theme} size="sm" />
-          ) : (
-            <span
-              key={`placeholder-${i}`}
-              aria-hidden
-              className="h-9 w-full rounded-md border border-dashed border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50"
-            />
-          );
-        })}
-      </div>
-    </PickerCard>
   );
 }

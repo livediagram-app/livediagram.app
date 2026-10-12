@@ -1,7 +1,7 @@
 // Theme actions for the active tab (docs/specs/011-theme/multicolour-themes.md + /42 + /44), lifted out of
 // useTabCanvas into a sibling hook: applying a theme with the
 // preserve-customs walk, the hard reset when a custom theme is deleted,
-// and the "Reset elements to theme" button. useTabCanvas mounts this
+// useTabCanvas mounts this
 // and folds the three handlers into its return, so callers are
 // unchanged.
 
@@ -21,7 +21,7 @@ export function useTabTheme(deps: {
   activeTab: Tab;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
 }) {
-  const { editsBlocked, activeId, activeTab, commitTabs } = deps;
+  const { editsBlocked, activeId, commitTabs } = deps;
 
   // Applying a theme swaps backdrop colours/pattern, records the theme
   // id (so future element-create calls in `addBoxed` inherit the theme),
@@ -70,26 +70,5 @@ export function useTabTheme(deps: {
     );
   };
 
-  // Force-apply the current theme's element colours to every shape /
-  // text / arrow on the tab, OVERWRITING whatever's currently set —
-  // even custom per-element colours. The standalone counterpart to
-  // setTheme's preserve-customs behaviour; surfaces as a "Reset
-  // elements to theme" button under the Theme accordion.
-  const resetElementsToTheme = () => {
-    if (editsBlocked) return;
-    const theme = getTheme(activeTab.theme);
-    track('Theme', 'Changed', 'ResetElements'); // discrete one-shot recolour to theme
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== activeId) return t;
-        // Hard reset: blank user overrides too. See `resetThemeElement`
-        // in lib/themes.ts for the rule. The graph-aware wrapper
-        // re-rainbows the branches for a multi-colour theme (docs/specs/011-theme/multicolour-themes.md).
-        const elements = resetThemeElementsToTheme(t.elements, theme);
-        return { ...t, elements };
-      }),
-    );
-  };
-
-  return { setTheme, resetTabsUsingTheme, resetElementsToTheme };
+  return { setTheme, resetTabsUsingTheme };
 }

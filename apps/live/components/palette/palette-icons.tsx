@@ -68,18 +68,6 @@ export function StrikethroughIcon() {
   );
 }
 
-// Renders a short horizontal line at the given stroke-width inside the
-// SizeButton frame so the user can pick a thickness preset visually
-// rather than by name.
-export function ResetIcon() {
-  return (
-    <Glyph size={12} units={16}>
-      <path d="M3 8 a5 5 0 1 0 1.5 -3.5" />
-      <polyline points="2,2 4,4.5 6.5,3.5" />
-    </Glyph>
-  );
-}
-
 // Import into / export out of a tab (the tab menu's Content rows).
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);

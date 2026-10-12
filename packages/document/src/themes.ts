@@ -118,14 +118,6 @@ export type ThemeDefinition = {
   extra?: boolean;
 };
 
-// Picker grouping, mirroring the template catalogue's categories. Themes
-// are bucketed by colour temperament so the picker reads as titled
-// sections (Cool / Warm / Neutral / Multi-colour) instead of one flat
-// grid. The mapping lives beside the catalogue so a new theme slots into
-// a section with a one-line edit; the picker renders sections in
-// THEME_CATEGORIES order and skips empties.
-export type ThemeCategory = 'cool' | 'warm' | 'dark' | 'multicolour' | 'formal';
-
 // Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). The Default colour scheme is
 // the only one that reads it: every other scheme paints the same colours for
 // everybody, because those colours are stored in the document.

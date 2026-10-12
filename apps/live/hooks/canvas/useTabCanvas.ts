@@ -176,7 +176,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   // Theme switching + the two theme resets — see useTabTheme (mounted
   // here so the caller's return shape is unchanged).
-  const { setTheme, resetTabsUsingTheme, resetElementsToTheme } = useTabTheme({
+  const { setTheme, resetTabsUsingTheme } = useTabTheme({
     editsBlocked,
     activeId,
     activeTab,
@@ -241,7 +241,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     setBackgroundPattern,
     setTheme,
     resetTabsUsingTheme,
-    resetElementsToTheme,
     setBackgroundColor,
     setBackgroundOpacity,
     setPatternColor,

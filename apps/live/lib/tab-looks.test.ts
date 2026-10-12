@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FONTS, type Element, type Tab } from '@livediagram/document';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
-import { TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
+import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
 import { withThemeApplied } from './tab-theme-apply';
 
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts over a tab's existing settings.
@@ -21,7 +21,7 @@ const tab = (over: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [shape()], ...over }) as Tab;
 
 describe('TAB_LOOKS', () => {
-  it('is the six looks, in order, each built only from settings that exist', () => {
+  it('is two pages of six looks, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
       'Whiteboard',
@@ -29,7 +29,14 @@ describe('TAB_LOOKS', () => {
       'Boardroom',
       'Notebook',
       'Midnight',
+      'Seaside',
+      'Editorial',
+      'Engineer',
+      'Workshop',
+      'Garden',
+      'Party',
     ]);
+    expect(TAB_LOOKS.length).toBe(LOOKS_PER_PAGE * 2);
     for (const look of TAB_LOOKS) {
       expect(resolveTheme(look.theme), look.id).toBeTruthy();
       expect(

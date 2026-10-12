@@ -27,8 +27,6 @@ import {
   tableColorPresets,
   type ThemeDefinition,
 } from './themes';
-import { THEME_CATEGORIES, themeCategory } from './themes-taxonomy';
-import { darkCategorySchemes } from './theme-order';
 import {
   clearCustomThemeRegistry,
   registerCustomTheme,
@@ -76,22 +74,10 @@ describe('THEMES catalogue', () => {
     const brand = THEMES.find((t) => t.id === 'brand');
     expect(brand?.extra).toBeFalsy();
   });
-
-  it('assigns every theme to a known category (the picker groups themes by category)', () => {
-    const known = new Set(THEME_CATEGORIES.map((c) => c.id));
-    for (const t of THEMES) {
-      expect(known.has(themeCategory(t.id))).toBe(true);
-    }
-  });
 });
 
 describe('UML theme (per-shape colours, docs/specs/010-palette/technology-icons.md)', () => {
   const uml = getTheme('uml');
-
-  it('sits in the Formal category', () => {
-    expect(themeCategory('uml')).toBe('formal');
-    expect(THEME_CATEGORIES.some((c) => c.id === 'formal')).toBe(true);
-  });
 
   it('paints a new diamond its decision colour, not the base element colour', () => {
     const diamond = createShape('diamond', 0, 0);
@@ -978,8 +964,8 @@ describe('deriveNewBoxedColours', () => {
 });
 
 describe('multi-colour (rainbow) themes', () => {
-  it('ships five palette themes (all in the Multi-colour category, all extra)', () => {
-    const palettes = THEMES.filter((t) => themeCategory(t.id) === 'multicolour');
+  it('ships five palette themes (all extra)', () => {
+    const palettes = THEMES.filter((t) => !!t.palette);
     expect(palettes).toHaveLength(5);
     for (const t of palettes) {
       expect(t.extra).toBe(true);
@@ -1003,7 +989,7 @@ describe('multi-colour (rainbow) themes', () => {
     // unchanged (and did nothing visible on an empty canvas). Each must
     // shift the canvas colour and/or pattern away from the brand default.
     const brand = THEMES.find((t) => t.id === 'brand')!;
-    for (const t of THEMES.filter((x) => themeCategory(x.id) === 'multicolour')) {
+    for (const t of THEMES.filter((x) => !!x.palette)) {
       const changed =
         t.backgroundColor !== brand.backgroundColor ||
         t.backgroundPattern !== brand.backgroundPattern;
@@ -1094,34 +1080,5 @@ describe('multi-colour (rainbow) themes', () => {
     const [out] = resetThemeElementsToTheme([shape], slate) as [typeof shape];
     expect(out.colorPreset).toBeUndefined();
     expect(out.fillColor).toBe(slate.elementFill ?? undefined);
-  });
-});
-
-// The Dark category leads with Default (docs/specs/008-canvas/canvas-and-palette.md). It is the NEUTRAL dark
-// canvas — greys on near-black, no hue — so it is the one a reader compares
-// the tinted darks (Midnight's blue, Pine's green, Plum's purple) against,
-// and the one most people actually want when they ask for "dark". It leads
-// as Charcoal before the two merged, and it is the SAME entry that leads the
-// catalogue: one scheme, listed in both places under one name.
-//
-// Pinned because this drifted once already, silently: a commit claimed to
-// move Charcoal to the front and only moved it ahead of Pine, because the
-// picker orders by the THEMES array and Midnight sits earlier in it. Order
-// that matters to a user is behaviour, and behaviour gets a test.
-describe('dark colour-scheme order', () => {
-  const darkIds = () => darkCategorySchemes(THEMES).map((t) => t.id);
-
-  it('leads with Default', () => {
-    expect(darkIds()[0]).toBe('brand');
-  });
-
-  it('previews its DARK half there, whatever chrome the reader is in', () => {
-    // The card sits among dark canvases, so it has to look like one; the
-    // reader is being shown what the scheme looks like in that company.
-    expect(darkCategorySchemes(THEMES)[0]?.backgroundColor).toBe('#0d121a');
-  });
-
-  it('keeps the rest of the dark family intact behind it', () => {
-    expect(darkIds()).toEqual(['brand', 'midnight', 'pine', 'plum', 'abyss', 'espresso']);
   });
 });

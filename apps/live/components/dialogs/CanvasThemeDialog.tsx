@@ -21,7 +21,7 @@ import { lucideGlyph, useEscape, useFocusTrap, Portal, DialogCloseButton } from 
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import { DotsIcon, ResetIcon, ScaleIcon } from '@/components/palette/palette-icons';
+import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
 import { FontSelect } from '@/components/palette/FontSelect';
 import { SizeButton } from '@/components/palette/palette-controls';
 import type { TextSize } from '@livediagram/document';
@@ -60,7 +60,6 @@ type CanvasThemeDialogProps = {
   // id (docs/specs/011-theme/custom-themes.md), so it's widened to string; onSetTheme applies either.
   themeId: string;
   onSetTheme: (id: string) => void;
-  onResetElementsToTheme: () => void;
   // Font (docs/specs/004-interface-design/fonts.md). `font` null = the editor default; `defaultTextSize`
   // undefined defaults to medium.
   font: string | null;
@@ -98,7 +97,6 @@ export function CanvasThemeDialog({
   onSetBackgroundAnimationSpeed,
   themeId,
   onSetTheme,
-  onResetElementsToTheme,
   font,
   onSetFont,
   defaultTextSize,
@@ -268,8 +266,8 @@ export function CanvasThemeDialog({
                 onSetBackgroundOpacity={onSetBackgroundOpacity}
                 onSetBackgroundPatternScale={onSetBackgroundPatternScale}
                 onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
-                patternColumns={7}
                 showAllPatterns
+                previewTiles
               />
             ) : (
               <CustomThemePicker
@@ -284,18 +282,6 @@ export function CanvasThemeDialog({
                     Sets the canvas backdrop and recolours every element on this tab to match the
                     theme (sticky notes keep their amber palette).
                   </p>
-                }
-                footer={
-                  <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
-                    <button
-                      type="button"
-                      onClick={onResetElementsToTheme}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/15 dark:hover:text-brand-200"
-                    >
-                      <ResetIcon />
-                      Reset elements to theme
-                    </button>
-                  </div>
                 }
               />
             )}
