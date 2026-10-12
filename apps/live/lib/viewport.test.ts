@@ -201,6 +201,12 @@ describe('topChromeInset (fit below the Palette strip)', () => {
     );
   });
 
+  it('is a whole even number, so a fit at 100% lands on whole pixels', () => {
+    const inset = topChromeInset({ top: 56, bottom: 720 }, { top: 60, bottom: 116.578 });
+    expect(inset % 2).toBe(0);
+    expect(inset).toBeGreaterThanOrEqual(116.578 - 56 + FIT_TOOLBAR_GAP);
+  });
+
   it('is 0 with no strip, or a strip outside the canvas', () => {
     expect(topChromeInset({ top: 50, bottom: 900 }, null)).toBe(0);
     expect(topChromeInset({ top: 50, bottom: 900 }, { top: 0, bottom: 40 })).toBe(0);

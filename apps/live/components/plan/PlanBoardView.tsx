@@ -4,6 +4,7 @@
 // its set-up projected over the document's items into columns, rows and cards. In Plan mode cards
 // take the pointer and the keyboard; in the other modes the board is an element like any other and a
 // double-click opens a card. Everything the board changes goes through PlanContext.
+import { planFontStyle } from '@/lib/plan-font';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { SlotBoardCog } from './SlotBoardCog';
 import { isCardVotableInVote } from '@livediagram/document';
@@ -323,7 +324,7 @@ export function PlanBoardView({
         borderColor: palette.border,
         color: palette.text,
         borderRadius: radius,
-        ...(fontFamily ? { fontFamily } : {}),
+        ...planFontStyle(fontFamily),
       }}
     >
       <PlanBoardHeader

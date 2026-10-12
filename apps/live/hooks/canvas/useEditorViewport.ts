@@ -15,8 +15,8 @@ import type { Selection } from '@/lib/selection-store';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { isBoxed, unionBoxedBounds, type Tab } from '@livediagram/document';
 import {
-  computeFitBelow,
   computeFitToScreen,
+  FIT_TO_SCREEN_PADDING,
   computeViewportCenter,
   topChromeInset,
 } from '@/lib/viewport';
@@ -283,13 +283,19 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
     }
     const bbox = unionBoxedBounds(activeTab.elements, boxedIds);
     if (!bbox) return;
-    // Fit below the Palette strip laid over the canvas's top, so nothing lands under it.
+    // Fit clear of the Palette strip laid over the canvas's top, so nothing lands under it.
     const strip = document
       .querySelector<HTMLElement>('[data-toolbar-palette]:not(.hidden) [data-tour-id="palette"]')
       ?.getBoundingClientRect();
     const inset = topChromeInset(rect, strip && strip.width > 0 ? strip : null);
-    const { zoom, offset } =
-      inset > 0 ? computeFitBelow(rect, bbox, inset) : computeFitToScreen(rect, bbox);
+    // Padded by the strip's depth on every side, not centred below it: the content stays centred (as before the
+    // strip was considered) and clears both the strip and the bottom chrome of the same depth.
+    const { zoom, offset } = computeFitToScreen(
+      rect,
+      bbox,
+      undefined,
+      Math.max(FIT_TO_SCREEN_PADDING, inset),
+    );
     setViewportZoom(zoom);
     setViewportOffset(offset);
   }, [depsRef, setViewportOffset, setViewportZoom]);

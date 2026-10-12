@@ -91,7 +91,9 @@ export function topChromeInset(
   strip: { top: number; bottom: number } | null,
 ): number {
   if (!strip || strip.bottom <= canvas.top || strip.top >= canvas.bottom) return 0;
-  return Math.max(0, strip.bottom - canvas.top) + FIT_TOOLBAR_GAP;
+  // A whole, even number of px: the fit centres the content in the band below, shifting it by half the inset, so
+  // an odd or fractional inset would land every element on a half pixel and blur its edges.
+  return Math.ceil((Math.max(0, strip.bottom - canvas.top) + FIT_TOOLBAR_GAP) / 2) * 2;
 }
 
 // Canvas-coord position of the viewport centre. With transform

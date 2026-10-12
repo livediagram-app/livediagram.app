@@ -68,7 +68,8 @@ export function PagedCarousel<T>({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex min-h-8 items-center justify-between gap-2">
+      {/* px-1 lines the heading up with the tiles, which sit inside their page's p-1. */}
+      <div className="flex min-h-8 items-center justify-between gap-2 px-1">
         {heading}
         {pages.length > 1 ? (
           <div className="flex items-center gap-1" data-tour-id={navTourId}>
@@ -112,15 +113,15 @@ export function PagedCarousel<T>({
         ) : null}
       </div>
       {/* The strip scrolls sideways, so it clips anything drawn past a tile; each page's `p-1` keeps a selected
-          tile's ring and border inside it. The strip pulls out by the same 4px so tiles still line up with the
-          heading. */}
+          tile's ring and border inside it. The strip stays inside its column: pulled out (a negative margin), a
+          parent that clips (the palette panel) cut the left tile's border. */}
       <div
         ref={strip}
         onScroll={(e) => {
           const el = e.currentTarget;
           if (el.clientWidth > 0) setPage(Math.round(el.scrollLeft / el.clientWidth));
         }}
-        className="-mx-1 flex snap-x snap-mandatory items-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="flex snap-x snap-mandatory items-start overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {pages.map((pageItems, i) => (
           <div

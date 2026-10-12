@@ -14,6 +14,8 @@
 // New-document picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
+import { useUiScale } from '@/components/providers/ui-scale';
+import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { useRef, useState } from 'react';
 import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
 import { useEscape, useFocusTrap, Portal, DialogCloseButton } from '@livediagram/ui';
@@ -134,6 +136,7 @@ export function CanvasThemeDialog({
   // phone, the panel's bottom-right corner sits just above the brush and it grows from there. Without the brush (a
   // whiteboard, an embed) or on a phone, it is the centred (phone: full-screen) dialog it always was.
   const anchor = useBrushAnchor();
+  const panelScale = useUiScale('panels');
   // Show Me: the tour of the home, run on this dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me").
   const tour = useTabStyleTour({ showHome: () => (tab === 'looks' ? undefined : go('looks')) });
   // While Show Me runs, Escape is the tour's, never the dialog's.
@@ -169,15 +172,18 @@ export function CanvasThemeDialog({
           // them — the theme grid is exactly the kind of content that wants the
           // whole screen.
           className={`flex max-h-[calc(100%-2rem)] w-[44rem] max-w-[calc(100%-2rem)] flex-col rounded-xl border border-slate-200 bg-white shadow-xl outline-none max-sm:h-full max-sm:max-h-none max-sm:w-full max-sm:max-w-none max-sm:rounded-none max-sm:border-0 dark:border-slate-700 dark:bg-slate-900 ${anchor ? 'fixed animate-fly-up-in shadow-2xl motion-reduce:animate-fade-in' : ''}`}
+          // Drawn at the Panels UI scale like every other panel (docs/specs/007-editor/ui-scale.md); under its
+          // `zoom` the anchored offsets are in the panel's own px, so they are converted (toSurfacePx).
           style={
             anchor
               ? {
-                  right: anchor.right,
-                  bottom: anchor.bottom,
-                  maxHeight: `calc(100% - ${anchor.bottom + 16}px)`,
+                  ...uiScaleStyle(panelScale),
+                  right: toSurfacePx(anchor.right, panelScale),
+                  bottom: toSurfacePx(anchor.bottom, panelScale),
+                  maxHeight: `calc(100% - ${toSurfacePx(anchor.bottom + 16, panelScale)}px)`,
                   transformOrigin: 'bottom right',
                 }
-              : undefined
+              : uiScaleStyle(panelScale)
           }
         >
           {/* The header: the title with help and close on the right; inside a panel, a Back row to the home
