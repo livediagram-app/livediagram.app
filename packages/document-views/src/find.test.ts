@@ -115,7 +115,7 @@ describe('find on odd shapes', () => {
               { from: 'Salary', to: 'Budget', value: 3 },
               { from: 'Budget', to: 'Savings', value: 1 },
               'not a flow',
-            ],
+            ] as never,
           }),
         ] as Element[],
       } as never,
