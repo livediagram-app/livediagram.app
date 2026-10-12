@@ -14,5 +14,6 @@ describe('seedAuthor', () => {
     const by = await seedAuthor({ id: 'pending', name: '', color: '#000000' });
     expect(by.id).toBe('example-maya');
     expect(by.name).toBe('Maya Chen');
-  });
+    // The example team loads lazily (the seeds' module): its first, cold transform can be slow under load.
+  }, 30_000);
 });

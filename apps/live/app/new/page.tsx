@@ -45,7 +45,7 @@ import { markNameConfirmed } from '@/lib/local-identity';
 import { ensureSignedGuestIdentity } from '@/lib/guest-identity';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { templateTabName } from '@/lib/template-tab-name';
-import { buildTemplatedTabs, planTemplateSeedItems, seedToday } from '@/lib/template-builders';
+import { buildTemplatedTabs } from '@/lib/template-builders';
 import { catalogueWithBoardTypes } from '@livediagram/items';
 import {
   templateFamilyOf,
@@ -68,7 +68,7 @@ import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@livediagram/templates';
+import { isBlankTemplate, isPlanTemplateKind } from '@livediagram/templates';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -425,7 +425,13 @@ export default function NewDocumentPage() {
     if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via: 'new' });
     // Its worked example cards, dated from today (docs/specs/026-plan/plan-templates.md "Example cards"): none for
     // any template but a Plan template with boards.
-    const seedItems = templateKind ? planTemplateSeedItems(templateKind, seedToday()) : [];
+    // Loaded only for a Plan template: the example cards' data stays out of /new's first load.
+    const seedItems =
+      templateKind && isPlanTemplateKind(templateKind)
+        ? await import('@livediagram/templates/plan-template-seeds').then((m) =>
+            m.planTemplateSeedItems(templateKind, m.seedToday()),
+          )
+        : [];
     if (seedItems.length) debugLog('[plan] seed cards', { cards: seedItems.length, via: 'new' });
     const tab = tabs
       ? tabs[0]!

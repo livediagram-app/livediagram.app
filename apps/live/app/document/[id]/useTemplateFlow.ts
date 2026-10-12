@@ -4,7 +4,7 @@ import type { ItemCreate } from '@livediagram/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import type { TemplateKind } from '@livediagram/templates';
+import { isPlanTemplateKind, type TemplateKind } from '@livediagram/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -164,8 +164,7 @@ export function useTemplateFlow(opts: {
     // actually picks a template. The ~1700 lines of build* code stays
     // out of the editor's initial chunk; returning users opening an
     // existing document never download it.
-    const { templateTabs, templateCanvasOverrides, planTemplateSeedItems, seedToday } =
-      await import('@/lib/template-builders');
+    const { templateTabs, templateCanvasOverrides } = await import('@/lib/template-builders');
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md): the first lands here.
     const [first, ...rest] = templateTabs(kind);
     const rawElements = first!.build(centre.x, centre.y);
@@ -246,8 +245,12 @@ export function useTemplateFlow(opts: {
     );
     for (const f of followers) markTabLoaded(f.id);
     // A Plan template's boards open on its worked example (docs/specs/026-plan/plan-templates.md "Example cards").
-    const seeds = planTemplateSeedItems(kind, seedToday());
-    if (seeds.length) seedCards(seeds);
+    if (isPlanTemplateKind(kind)) {
+      const { planTemplateSeedItems, seedToday } =
+        await import('@livediagram/templates/plan-template-seeds');
+      const seeds = planTemplateSeedItems(kind, seedToday());
+      if (seeds.length) seedCards(seeds);
+    }
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can
