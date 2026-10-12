@@ -3,11 +3,11 @@
 A **finish** is the drawing style a tab's elements are rendered in: how their lines, corners, fills and lettering
 look, independent of their colours. There are three:
 
-| Finish           | Reads as                      | What it changes                                                                                          |
-| ---------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies            |
-| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows drawn right-angled           |
-| **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, hatched fills, a handwriting font, arrowheads drawn as two loose strokes |
+| Finish           | Reads as                      | What it changes                                                                                                |
+| ---------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies                  |
+| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows drawn right-angled                 |
+| **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, pencil-shaded fills, a handwriting font, arrowheads drawn as two loose strokes |
 
 A finish is a look, never a type: switching it changes no stored geometry, colour or text, and switching back
 restores exactly what was there.
@@ -47,12 +47,13 @@ element leaves unset, plus how a line is drawn (Sketch).
   strokes: straight edges bow and overshoot their corners a little, curves wander. The wobble is seeded by the
   element's id, so an element looks the same on every screen, in every export and after every reload, and only
   changes when its size or kind does.
-- **Fills** of shapes are drawn as diagonal pencil hatching in the fill colour instead of a solid fill. Stickies,
-  frames, lanes, tables, charts and code blocks keep their solid fills: hatching a note or a container makes the
-  writing on it hard to read.
+- **Fills** of shapes keep their solid colour, shaded over with faint diagonal pencil hatching in the outline colour,
+  like coloured pencil on paper. The fill never goes away, so a label keeps the contrast it was coloured for on a
+  light or a dark canvas. Stickies, frames, lanes, tables, charts and code blocks take no shading: a note or a
+  container with lines behind its writing is harder to read.
 - **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
-  centre inside the shape, such as a flowchart key's card under its captions) is not hatched, so what sits on it
-  stays readable. Only a shape that stands alone is hatched.
+  centre inside the shape, such as a flowchart key's card under its captions) is not shaded, so what sits on it
+  stays readable. Only a shape that stands alone is shaded.
 - **Lettering:** an element without its own font is written in the handwriting font (Caveat), whatever font the
   tab has. An element's own font wins. A code block keeps its monospace font.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose

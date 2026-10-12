@@ -63,6 +63,18 @@ describe('renderElementsToSvg in a finish', () => {
     expect(a).toMatch(/<path d="M[^"]+" stroke="[^"]+" stroke-width="[\d.]+" fill="none"/);
   });
 
+  it('Sketch keeps the solid fill under faint shading, so text keeps its contrast', () => {
+    // A pastel node with dark text on a dark canvas: the fill must stay, or the text sits on the canvas.
+    const node = square({ fillColor: '#dbeafe', strokeColor: '#3b82f6', textColor: '#1e3a8a' });
+    const svg = renderElementsToSvg({
+      ...tab([node], 'sketch'),
+      backgroundColor: '#0d121a',
+    } as Tab);
+    const body = svg.slice(svg.indexOf('data-finish="sketch"'));
+    expect(body).toMatch(/<path d="M[^"]+" fill="#dbeafe"\/>/);
+    expect(body).toMatch(/stroke="#3b82f6" stroke-opacity="0.3"/);
+  });
+
   it('Professional letters in Inter', () => {
     expect(renderElementsToSvg(tab([square()], 'professional'))).toMatch(/Inter/);
   });
