@@ -14,7 +14,7 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   the one entry point.
 - A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, **in one strip with the Layers
   button** (Layers on its left) in every mode ([Live app](../007-editor/live-app.md) "Mobile chrome"), and opens
-  the dialog on its home. Its icon is a painter's palette with coloured paint wells, so it reads as "how this tab
+  the dialog on its home. Its icon is a painter's palette with filled paint wells, in the button's own colour like every other chrome icon, so it reads as "how this tab
   looks" at a glance. It shows on **every viewport, mobile included**, and stays hidden in zen mode and in
   read-only / embed views.
 - The header is a title row with the **help icon beside the close button** on the right.
