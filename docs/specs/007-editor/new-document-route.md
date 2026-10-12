@@ -335,13 +335,14 @@ The wizard's first step asks **what you are making**, as the five editor modes, 
 mode's own start ([Template starts](start-diagramming.md)); the marketing site's gallery is where every template is
 browsed before signing up.
 
+- **Heading:** "What are you making today?"
 - **Five mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw, Facilitate,
-  Illustrate, Plan). **Diagram**, first there and where most start, is a wide card marked **Most Popular**; the
-  other four sit two by two (one column on a phone).
+  Illustrate, Plan). **Diagram**, first there and where most start, is the wide card; the other four sit two by two
+  (one column on a phone). The cards carry no badges.
 - **Each card:** the mode's mark and name, a line on what it makes in the words of the work ("Flowcharts, mind maps,
   org charts and architecture, snapped neatly into place."), a fan of its own templates' previews (`PreviewFan`,
-  the mode's Popular shelf less its blank) wider on hover, and three of their names. Its number (1 to 5) shows in
-  its corner.
+  the mode's Popular shelf less its blank) wider on hover, and three of their names. Its number (1 to 5) still
+  chooses it from the keyboard, unprinted.
 - **Choosing a card** moves on to Location with the mode's blank as the selection (`BLANK_TEMPLATE_FOR_MODE`), so
   Create makes an empty tab in that mode, which opens on its start. With the Location step skipped, choosing creates
   at once.

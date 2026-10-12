@@ -94,18 +94,6 @@ function ModeCard({
           <span className="text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             {label}
           </span>
-          {featured ? (
-            <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-              Most Popular
-            </span>
-          ) : null}
-          <kbd
-            aria-hidden
-            className="ml-auto hidden h-5 min-w-5 items-center justify-center rounded border border-slate-200 px-1 text-[10px] font-medium text-slate-400 sm:flex dark:border-slate-700 dark:text-slate-400"
-          >
-            {/* Trimmed to its cap band, so centring lands on the digit, whatever the face (optical-alignment.md). */}
-            <span className="text-optical-centre">{index + 1}</span>
-          </kbd>
         </span>
         <span className="text-[12.5px] leading-snug text-slate-600 dark:text-slate-300">
           {PITCH[mode]}
