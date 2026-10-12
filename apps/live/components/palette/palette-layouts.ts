@@ -194,7 +194,8 @@ const FACILITATE: PaletteLayout = {
     { id: 'my-shapes' },
     { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline') },
+    // A Sankey reports on a flow; a session does not stop to chart one.
+    { id: 'build', tiles: tilesExcept('build', 'tools:lane', 'tools:timeline', 'tools:sankey') },
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },

@@ -64,7 +64,7 @@ describe('template categories', () => {
       mindmaps: 8,
       timelines: 7,
       flowcharts: 5,
-      strategy: 11,
+      strategy: 12,
       hierarchies: 5,
       design: 11,
       presentations: 13,
@@ -100,7 +100,11 @@ describe('template categories', () => {
         (t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === mode,
       ).map((t) => t.kind);
     expect(inMode('spreadsheets', 'diagram')).toEqual([]);
-    expect(inMode('finance', 'diagram').sort()).toEqual(['business-model-canvas', 'funnel']);
+    expect(inMode('finance', 'diagram').sort()).toEqual([
+      'business-model-canvas',
+      'funnel',
+      'sankey',
+    ]);
   });
 });
 

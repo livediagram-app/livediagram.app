@@ -75,6 +75,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'business-model-canvas': null,
   'empathy-map': null,
   funnel: null,
+  sankey: null,
   'okr-tree': null,
   sitemap: null,
   'browser-wireframe': null,

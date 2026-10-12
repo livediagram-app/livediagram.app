@@ -20,6 +20,7 @@ import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
 import type {
   SankeyAlign,
+  SankeyLeftover,
   SankeyAnim,
   SankeyFlow,
   SankeyLinkColor,
@@ -364,6 +365,8 @@ export type ShapeElement = {
   sankeyAlign?: SankeyAlign;
   sankeyValueLabel?: SankeyValueLabel;
   sankeyUnit?: string;
+  sankeyLeftover?: SankeyLeftover;
+  sankeyLeftoverName?: string;
   sankeyAnim?: SankeyAnim;
   sankeyAnimSpeed?: AnimationSpeed;
   sankeyAnimRepeat?: boolean;

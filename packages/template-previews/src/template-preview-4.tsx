@@ -591,6 +591,86 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
           ))}
         </svg>
       );
+    case 'sankey':
+      // Four channels merging into the landing page, splitting to pricing and the blog, on to a trial and a
+      // paid plan; every step's drop-off runs grey to Bounced, the diagram's leftovers. Hover story: the
+      // bands sweep in from the left, as the diagram's Grow animation does.
+      return (
+        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
+          <g className="pv-grow-x" style={pv({ '--pv-at': '200ms' })}>
+            {[
+              {
+                d: 'M7 6 C15.5 6 15.5 8 24 8 L24 20 C15.5 20 15.5 18 7 18 Z',
+                fill: 'rgb(14 165 233)',
+              },
+              {
+                d: 'M7 21 C15.5 21 15.5 20 24 20 L24 26 C15.5 26 15.5 27 7 27 Z',
+                fill: 'rgb(139 92 246)',
+              },
+              {
+                d: 'M7 30 C15.5 30 15.5 26 24 26 L24 29 C15.5 29 15.5 33 7 33 Z',
+                fill: 'rgb(236 72 153)',
+              },
+              {
+                d: 'M7 37 C25.5 37 25.5 14 44 14 L44 18 C25.5 18 25.5 41 7 41 Z',
+                fill: 'rgb(245 158 11)',
+              },
+              {
+                d: 'M27 8 C35.5 8 35.5 6 44 6 L44 14 C35.5 14 35.5 17 27 17 Z',
+                fill: 'rgb(16 185 129)',
+              },
+              {
+                d: 'M27 17 C35.5 17 35.5 22 44 22 L44 28 C35.5 28 35.5 23 27 23 Z',
+                fill: 'rgb(16 185 129)',
+              },
+              {
+                d: 'M47 6 C55.5 6 55.5 8 64 8 L64 12 C55.5 12 55.5 10 47 10 Z',
+                fill: 'rgb(20 184 166)',
+              },
+              {
+                d: 'M67 8 C70.5 8 70.5 9 74 9 L74 11 C70.5 11 70.5 10 67 10 Z',
+                fill: 'rgb(37 99 235)',
+              },
+              {
+                d: 'M27 23 C50.5 23 50.5 30 74 30 L74 36 C50.5 36 50.5 29 27 29 Z',
+                fill: 'rgb(148 163 184)',
+              },
+              {
+                d: 'M47 10 C60.5 10 60.5 36 74 36 L74 44 C60.5 44 60.5 18 47 18 Z',
+                fill: 'rgb(148 163 184)',
+              },
+              {
+                d: 'M47 23 C60.5 23 60.5 44 74 44 L74 47 C60.5 47 60.5 28 47 28 Z',
+                fill: 'rgb(148 163 184)',
+              },
+            ].map((b) => (
+              <path key={b.d} d={b.d} fill={b.fill} fillOpacity="0.45" />
+            ))}
+          </g>
+          {[
+            { x: 4, y: 6, h: 12, fill: 'rgb(14 165 233)' },
+            { x: 4, y: 21, h: 6, fill: 'rgb(139 92 246)' },
+            { x: 4, y: 30, h: 3, fill: 'rgb(236 72 153)' },
+            { x: 4, y: 37, h: 4, fill: 'rgb(245 158 11)' },
+            { x: 24, y: 8, h: 21, fill: 'rgb(16 185 129)' },
+            { x: 44, y: 6, h: 12, fill: 'rgb(20 184 166)' },
+            { x: 44, y: 22, h: 6, fill: 'rgb(132 204 22)' },
+            { x: 64, y: 8, h: 5, fill: 'rgb(37 99 235)' },
+            { x: 74, y: 9, h: 2, fill: 'rgb(30 64 175)' },
+            { x: 74, y: 30, h: 17, fill: 'rgb(100 116 139)' },
+          ].map((n) => (
+            <rect
+              key={`${n.x}-${n.y}`}
+              x={n.x}
+              y={n.y}
+              width="3"
+              height={n.h}
+              rx="0.6"
+              fill={n.fill}
+            />
+          ))}
+        </svg>
+      );
     case 'funnel':
       // Four tiers ramping pale to deep sky, a count rail beside them, and
       // the weakest step's rose chip wired to the drop-off callout.

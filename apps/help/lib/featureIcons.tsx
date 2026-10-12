@@ -998,6 +998,13 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   //
   // A labelled container that sits BEHIND its contents. `lanes` is banded; the
   // label tab is what makes this one a Frame.
+  // Two inputs merging into a node and splitting three ways: the shape of every Sankey.
+  'sankey-diagram': (
+    <Glyph>
+      <path d="M3 5h2M3 13h2M11 7v10M19 4v4M19 11v3M19 17v3" />
+      <path d="M5 4c4 0 2 4 6 4M5 14c4 0 2 2 6 2M11 9c4 0 4-3 8-3M11 12c4 0 4 0 8 1M11 15c4 0 4 3 8 3" />
+    </Glyph>
+  ),
   frames: (
     <Glyph>
       <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" />

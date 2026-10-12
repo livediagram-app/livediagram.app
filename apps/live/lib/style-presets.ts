@@ -34,7 +34,7 @@ import {
   type IconWeight,
   type Padding,
   type ShapeKind,
-  isChartShape,
+  takesChartPalette,
   supportsRotation,
   type ChartPaletteId,
   type CodeThemeId,
@@ -105,7 +105,7 @@ export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
 // ramp is resolved at render, so this never touches the data and a slice the
 // user coloured deliberately keeps its colour.
 export function applyChartPaletteToEl(el: Element, id: ChartPaletteId): Element {
-  if (el.type !== 'shape' || !isChartShape(el.shape)) return el;
+  if (el.type !== 'shape' || !takesChartPalette(el.shape)) return el;
   return { ...el, chartPalette: id };
 }
 

@@ -79,7 +79,10 @@ export function svgSankey(
         `<rect x="${r2(el.x + n.x0)}" y="${r2(el.y + n.y0)}" width="${r2(n.x1 - n.x0)}" height="${r2(Math.max(1, n.y1 - n.y0))}" rx="2" fill="${xmlEscape(f.nodeColor(n.index))}"/>`,
     )
     .join('');
-  const labels = f.labels.map((l) => svgLabel(el, l, f.fontPx, textColor, font)).join('');
+  const labels = f.labels
+    .filter((l) => !l.hidden)
+    .map((l) => svgLabel(el, l, f.fontPx, textColor, font))
+    .join('');
   // The bands' paths are in the element's own space; one translate puts them on the page.
   return (
     (defs.length > 0 ? `<defs>${defs.join('')}</defs>` : '') +

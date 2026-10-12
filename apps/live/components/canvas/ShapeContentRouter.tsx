@@ -11,6 +11,7 @@ import {
   isBarShape,
   isChecklistShape,
   isLegendShape,
+  isSankeyShape,
   isCodeBlockShape,
   isLineShape,
   isPieShape,
@@ -49,6 +50,11 @@ const PlanCardView = dynamic(
 );
 const PlanViewView = dynamic(
   () => import('@/components/plan/views/PlanViewView').then((m) => m.PlanViewView),
+  { ssr: false },
+);
+// A Sankey (docs/specs/009-elements/sankey.md) loads only when one is drawn: most boards have none.
+const SankeyView = dynamic(
+  () => import('@/components/canvas/SankeyView').then((m) => m.SankeyView),
   { ssr: false },
 );
 // A chart drawn from a sheet range reads it through the sheets chunk, loaded only for such a chart.
@@ -117,6 +123,7 @@ export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
     !isBarShape(kind) &&
     !isCodeBlockShape(kind) &&
     !isLegendShape(kind) &&
+    !isSankeyShape(kind) &&
     !isChecklistShape(kind) &&
     !isLineShape(kind)
   );
@@ -283,6 +290,15 @@ export function ShapeContentRouter({
       fontFamily={fontFamily}
       editable={!readOnly && !isLocked}
       onToggle={onToggleChecklistItem}
+    />
+  ) : element.type === 'shape' && isSankeyShape(element.shape) ? (
+    // Sankey diagram (docs/specs/009-elements/sankey.md): flows between nodes, laid out in columns.
+    <SankeyView
+      element={element}
+      fontFamily={fontFamily}
+      textColor={textColor}
+      palette={chartPalette}
+      editable={!readOnly && !isLocked}
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
     // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.

@@ -125,7 +125,8 @@ describe('sankeyLayout', () => {
     }
     for (let c = 0; c < l.columns; c++) {
       const col = l.nodes.filter((n) => n.column === c).sort((a, b) => a.y0 - b.y0);
-      for (let i = 1; i < col.length; i++) expect(col[i]!.y0).toBeGreaterThanOrEqual(col[i - 1]!.y1);
+      for (let i = 1; i < col.length; i++)
+        expect(col[i]!.y0).toBeGreaterThanOrEqual(col[i - 1]!.y1);
     }
   });
 
@@ -143,7 +144,28 @@ describe('sankeyLayout', () => {
     const outs = l.links.filter((b) => b.source === budget.index).sort((a, b) => a.y0 - b.y0);
     expect(outs[0]!.y0 - outs[0]!.width / 2).toBeCloseTo(budget.y0, 1);
     for (let i = 1; i < outs.length; i++)
-      expect(outs[i]!.y0 - outs[i]!.width / 2).toBeCloseTo(outs[i - 1]!.y0 + outs[i - 1]!.width / 2, 1);
+      expect(outs[i]!.y0 - outs[i]!.width / 2).toBeCloseTo(
+        outs[i - 1]!.y0 + outs[i - 1]!.width / 2,
+        1,
+      );
+  });
+
+  it('draws the starter budget without a crossing', () => {
+    // Two bands between the same pair of columns cross when their order flips between the ends.
+    const l = sankeyLayout(SANKEY_DEFAULT_FLOWS, AREA);
+    const crossings = l.links.flatMap((a, i) =>
+      l.links.slice(i + 1).filter((b) => {
+        const sameSpan =
+          l.nodes[a.source]!.column === l.nodes[b.source]!.column &&
+          l.nodes[a.target]!.column === l.nodes[b.target]!.column;
+        return sameSpan && (a.y0 - b.y0) * (a.y1 - b.y1) < 0;
+      }),
+    );
+    expect(crossings).toEqual([]);
+    // And the bands into one node keep together: Needs' two children sit side by side in the last column.
+    const last = l.nodes.filter((n) => n.column === 3).sort((a, b) => a.y0 - b.y0);
+    const names = last.map((n) => n.name);
+    expect(Math.abs(names.indexOf('Rent') - names.indexOf('Groceries'))).toBe(1);
   });
 
   it('totals what leaves the start nodes', () => {
@@ -151,7 +173,9 @@ describe('sankeyLayout', () => {
   });
 
   it('is deterministic', () => {
-    expect(sankeyLayout(SANKEY_DEFAULT_FLOWS, AREA)).toEqual(sankeyLayout(SANKEY_DEFAULT_FLOWS, AREA));
+    expect(sankeyLayout(SANKEY_DEFAULT_FLOWS, AREA)).toEqual(
+      sankeyLayout(SANKEY_DEFAULT_FLOWS, AREA),
+    );
   });
 
   it('never draws a real flow thinner than a pixel', () => {

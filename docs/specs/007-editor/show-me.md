@@ -24,6 +24,7 @@ wrong moment.
 | [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
 | [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
 | [Logo page panel](logo-pages.md#show-me)                               | The page panel's title row, on a logo page                | An Editor (only an Editor has the panel)     |
+| [Sankey Flows dialog](../009-elements/sankey.md#show-me)               | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
 
@@ -67,7 +68,7 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`CardTypeTour`, `ShareTour`, `DashboardTour`, `PhotoReviewTour`, `LogoTour`. Each has its stack (Started,
+`CardTypeTour`, `ShareTour`, `DashboardTour`, `PhotoReviewTour`, `LogoTour`, `SankeyFlowsTour`. Each has its stack (Started,
 Completed, Skipped) on the telemetry dashboard beside the card type tour's, and its explanations.
 
 ## Code

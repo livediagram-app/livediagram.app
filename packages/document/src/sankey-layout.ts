@@ -56,6 +56,8 @@ export type SankeyLinkBand = {
   x1: number;
   /** The closed band outline: two cubic curves joined by the node edges. */
   path: string;
+  /** The band's middle line, source to target: what the Flow animation runs along. */
+  centre: string;
 };
 
 export type SankeyLayout = {
@@ -81,8 +83,17 @@ export function sankeyBandPath(x0: number, y0: number, x1: number, y1: number, w
   );
 }
 
-/** Each node's column: its step from a start node (longest path), end nodes pushed right when justified. */
-function assignColumns(graph: SankeyGraph, align: SankeyAlign): number[] {
+/** The middle line of a band from (x0, y0) to (x1, y1), with the same curve as its outline. */
+export function sankeyCentrePath(x0: number, y0: number, x1: number, y1: number): string {
+  const xm = (x0 + x1) / 2;
+  return `M${r2(x0)},${r2(y0)}C${r2(xm)},${r2(y0)} ${r2(xm)},${r2(y1)} ${r2(x1)},${r2(y1)}`;
+}
+
+/**
+ * Each node's column, by graph node index: its step from a start node (longest path), end nodes pushed right
+ * when justified. The Flows dialog groups its rows by the `'left'` steps, so they read as the diagram does.
+ */
+export function sankeyColumns(graph: SankeyGraph, align: SankeyAlign): number[] {
   const n = graph.nodes.length;
   const depth = new Array<number>(n).fill(0);
   const indeg = new Array<number>(n).fill(0);
@@ -120,7 +131,7 @@ export function sankeyLayout(
   if (gnodes.length === 0)
     return { nodes: [], links: [], skipped: graph.skipped, columns: 0, total: 0 };
 
-  const col = assignColumns(graph, align);
+  const col = sankeyColumns(graph, align);
   const columns = Math.max(...col) + 1;
   const nodeW = Math.max(
     SANKEY_NODE_MIN_WIDTH_PX,
@@ -153,9 +164,10 @@ export function sankeyLayout(
   const y0 = new Array<number>(gnodes.length).fill(0);
   const hOf = (i: number) => Math.max(SANKEY_MIN_BAND_PX, value[i]! * ky);
 
-  // Start: each column stacked largest first, centred, so the first sweep has a sensible order to move.
+  // Start: each column stacked in the order its nodes were first written, centred. The author's order is
+  // the best first guess at theirs, and the sweeps below move it from there.
   for (const c of byCol) {
-    c.sort((a, b) => value[b]! - value[a]! || a - b);
+    c.sort((a, b) => a - b);
     const used = c.reduce((s, i) => s + hOf(i), 0) + (c.length - 1) * pad;
     let y = area.y + (area.h - used) / 2;
     for (const i of c) {
@@ -170,7 +182,21 @@ export function sankeyLayout(
     outgoing[l.source]!.push(li);
     incoming[l.target]!.push(li);
   });
-  const centre = (i: number) => y0[i]! + hOf(i) / 2;
+  const bandW = glinks.map((l) => Math.max(SANKEY_MIN_BAND_PX, l.value * ky));
+  // Keep each node's bands in the order of the nodes at their other end, as they will be drawn.
+  const sortBands = (i: number) => {
+    outgoing[i]!.sort((a, b) => y0[glinks[a]!.target]! - y0[glinks[b]!.target]! || a - b);
+    incoming[i]!.sort((a, b) => y0[glinks[a]!.source]! - y0[glinks[b]!.source]! || a - b);
+  };
+  // How far down its node's side a band starts: the widths of the bands stacked above it.
+  const offsetIn = (list: number[], li: number) => {
+    let off = 0;
+    for (const other of list) {
+      if (other === li) break;
+      off += bandW[other]!;
+    }
+    return off;
+  };
 
   // Push overlapping nodes apart: down from the top, then back up from the bottom edge.
   const resolve = (c: number[]) => {
@@ -188,33 +214,46 @@ export function sankeyLayout(
     }
   };
 
+  // Relaxation, link-aware (as d3-sankey's): a node is pulled to the top at which each of its bands would
+  // run level, from where that band actually leaves (or reaches) the neighbour, not to the neighbour's
+  // middle. Siblings leaving the same node then pull to different heights, so they keep their order and
+  // stop crossing the bands between them. A band spanning more columns pulls harder, being longer to bend.
   for (let sweep = 0; sweep < SANKEY_RELAX_SWEEPS; sweep++) {
     const alpha = Math.pow(0.99, sweep);
-    // Left to right: pull each node toward the value-weighted middle of its sources.
+    gnodes.forEach((_, i) => sortBands(i));
     for (let c = 1; c < columns; c++) {
       for (const i of byCol[c]!) {
         let sum = 0;
         let weight = 0;
         for (const li of incoming[i]!) {
-          sum += centre(glinks[li]!.source) * glinks[li]!.value;
-          weight += glinks[li]!.value;
+          const s = glinks[li]!.source;
+          const level = y0[s]! + offsetIn(outgoing[s]!, li) - offsetIn(incoming[i]!, li);
+          const w = glinks[li]!.value * (col[i]! - col[s]!);
+          sum += level * w;
+          weight += w;
         }
-        if (weight > 0) y0[i]! += (sum / weight - centre(i)) * alpha;
+        if (weight > 0) y0[i]! += (sum / weight - y0[i]!) * alpha;
       }
       resolve(byCol[c]!);
+      for (const i of byCol[c]!) sortBands(i);
+      for (const i of byCol[c - 1]!) sortBands(i);
     }
-    // Right to left: toward the middle of its targets.
     for (let c = columns - 2; c >= 0; c--) {
       for (const i of byCol[c]!) {
         let sum = 0;
         let weight = 0;
         for (const li of outgoing[i]!) {
-          sum += centre(glinks[li]!.target) * glinks[li]!.value;
-          weight += glinks[li]!.value;
+          const t = glinks[li]!.target;
+          const level = y0[t]! + offsetIn(incoming[t]!, li) - offsetIn(outgoing[i]!, li);
+          const w = glinks[li]!.value * (col[t]! - col[i]!);
+          sum += level * w;
+          weight += w;
         }
-        if (weight > 0) y0[i]! += (sum / weight - centre(i)) * alpha;
+        if (weight > 0) y0[i]! += (sum / weight - y0[i]!) * alpha;
       }
       resolve(byCol[c]!);
+      for (const i of byCol[c]!) sortBands(i);
+      if (c + 1 < columns) for (const i of byCol[c + 1]!) sortBands(i);
     }
   }
 
@@ -233,7 +272,6 @@ export function sankeyLayout(
 
   // Band stacking: a node's outgoing bands in the order of their targets top to bottom, its incoming bands
   // in the order of their sources, so neighbouring bands leave and arrive side by side.
-  const bandW = glinks.map((l) => Math.max(SANKEY_MIN_BAND_PX, l.value * ky));
   const sy = new Array<number>(glinks.length).fill(0);
   const ty = new Array<number>(glinks.length).fill(0);
   gnodes.forEach((_, i) => {
@@ -272,6 +310,7 @@ export function sankeyLayout(
       x0,
       x1,
       path: sankeyBandPath(x0, sy[li]!, x1, ty[li]!, bandW[li]!),
+      centre: sankeyCentrePath(x0, sy[li]!, x1, ty[li]!),
     };
   });
 

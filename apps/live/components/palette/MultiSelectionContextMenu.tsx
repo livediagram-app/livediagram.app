@@ -7,7 +7,7 @@ import {
   defaultPadding,
   defaultStrokeColor,
   isBoxed,
-  isChartShape,
+  takesChartPalette,
   isSelfDrawingShape,
   supportsMarkers,
   supportsTextAlign,
@@ -120,7 +120,7 @@ export function MultiSelectionContextMenu({
         // colour per-slice via their Data category). Arrows colour their
         // label via the content Text section, matching the single menu.
         const colourSrcs = boxedSel.filter(
-          (el) => supportsColours(el) && !(el.type === 'shape' && isChartShape(el.shape)),
+          (el) => supportsColours(el) && !(el.type === 'shape' && takesChartPalette(el.shape)),
         );
         // An arrow-only selection still gets Colours (the Line swatch) —
         // matching the single-arrow menu. Mixed selections don't need a

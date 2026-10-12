@@ -702,9 +702,9 @@ export type CanvasProps = {
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
-  // Open the code edit dialog for a code-block shape (docs/specs/009-elements/code-block.md), on
-  // double-click. Omitted for read-only viewers.
-  onEditCode?: (id: string) => void;
+  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
+  // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
+  onOpenEditDialog?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the
   // welcome / new-document surface (where Canvas mounts before

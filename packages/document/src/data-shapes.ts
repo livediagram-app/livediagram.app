@@ -184,6 +184,13 @@ export function isChartShape(kind: ShapeKind): boolean {
   return isPieShape(kind) || isBarShape(kind) || isLineShape(kind);
 }
 
+// The kinds whose Presets grid is a chart palette (docs/specs/009-elements/pie-chart.md "Chart palettes"):
+// the charts, and the Sankey diagram (docs/specs/009-elements/sankey.md), whose nodes take the same ladder.
+// Both colour per datum or per node, so a fill-and-border look has nothing to set on them.
+export function takesChartPalette(kind: ShapeKind): boolean {
+  return isChartShape(kind) || isSankeyShape(kind);
+}
+
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
 // the data charts, the code block, the checklist, and the sticker. They render
 // their own bespoke content (no fill/border box) and carry no editable text

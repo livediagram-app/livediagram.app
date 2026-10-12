@@ -4137,6 +4137,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
+          "sankey": {
+            "additionalProperties": false,
+            "properties": {
+              "fill": {
+                "type": "string"
+              },
+              "stroke": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
           "session-button": {
             "additionalProperties": false,
             "properties": {
@@ -5971,6 +5986,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cell",
       "field",
       "item",
+      "node",
       "code",
       "comment"
     ],
@@ -11329,6 +11345,92 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "SankeyAlign": {
+    "description": "Where the end nodes sit: every end node in the last column, or each node at its own step from the start.",
+    "enum": [
+      "justify",
+      "left"
+    ],
+    "type": "string"
+  },
+  "SankeyAnim": {
+    "description": "Grow sweeps the diagram in from the left; Flow runs a current along every band; Cascade brings the columns in one after another; Pulse sends a slow wave of light across the bands; Rise grows each column's nodes, then fades their bands in. Flow and Pulse loop; the rest play once.",
+    "enum": [
+      "grow",
+      "flow",
+      "cascade",
+      "pulse",
+      "rise"
+    ],
+    "type": "string"
+  },
+  "SankeyFlow": {
+    "additionalProperties": false,
+    "description": "One flow: `value` of something moving from the node named `from` to the node named `to`.",
+    "properties": {
+      "from": {
+        "type": "string"
+      },
+      "to": {
+        "type": "string"
+      },
+      "value": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "from",
+      "to",
+      "value"
+    ],
+    "type": "object"
+  },
+  "SankeyLeftover": {
+    "description": "Whether a node that sends on less than it receives draws the difference as a band to a Leftover node.",
+    "enum": [
+      "show",
+      "hide"
+    ],
+    "type": "string"
+  },
+  "SankeyLinkColor": {
+    "description": "How a flow's band is coloured: its source node, its target node, a blend of both, or one quiet grey.",
+    "enum": [
+      "source",
+      "target",
+      "gradient",
+      "neutral"
+    ],
+    "type": "string"
+  },
+  "SankeyNodeStyle": {
+    "additionalProperties": false,
+    "description": "A node's own settings, by name: its colour, and `leftover: false` when its leftover is switched off (only `false` is ever stored; absent means it draws one while the diagram shows leftovers).",
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "leftover": {
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name"
+    ],
+    "type": "object"
+  },
+  "SankeyValueLabel": {
+    "description": "What a node's label says under its name.",
+    "enum": [
+      "value",
+      "percent",
+      "none"
+    ],
+    "type": "string"
+  },
   "ScalePoint": {
     "additionalProperties": false,
     "properties": {
@@ -11814,6 +11916,45 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rotation": {
         "type": "number"
       },
+      "sankeyAlign": {
+        "$ref": "#/components/schemas/SankeyAlign"
+      },
+      "sankeyAnim": {
+        "$ref": "#/components/schemas/SankeyAnim"
+      },
+      "sankeyAnimRepeat": {
+        "type": "boolean"
+      },
+      "sankeyAnimSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "sankeyFlows": {
+        "items": {
+          "$ref": "#/components/schemas/SankeyFlow"
+        },
+        "type": "array"
+      },
+      "sankeyLeftover": {
+        "$ref": "#/components/schemas/SankeyLeftover"
+      },
+      "sankeyLeftoverName": {
+        "type": "string"
+      },
+      "sankeyLinkColor": {
+        "$ref": "#/components/schemas/SankeyLinkColor"
+      },
+      "sankeyNodes": {
+        "items": {
+          "$ref": "#/components/schemas/SankeyNodeStyle"
+        },
+        "type": "array"
+      },
+      "sankeyUnit": {
+        "type": "string"
+      },
+      "sankeyValueLabel": {
+        "$ref": "#/components/schemas/SankeyValueLabel"
+      },
       "session": {
         "$ref": "#/components/schemas/SessionButtonConfig"
       },
@@ -11973,6 +12114,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "code-block",
       "checklist",
       "legend",
+      "sankey",
       "focus-button",
       "icon",
       "sticker",

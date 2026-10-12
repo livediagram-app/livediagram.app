@@ -12,7 +12,14 @@ import type { ShapeKind } from './shape-kind';
 export type SankeyFlow = { from: string; to: string; value: number };
 
 /** A node's stored look. Only a node somebody recoloured has one; the rest take the palette by order. */
-export type SankeyNodeStyle = { name: string; color?: string };
+/**
+ * A node's own settings, by name: its colour, and `leftover: false` when its leftover is switched off (only
+ * `false` is ever stored; absent means it draws one while the diagram shows leftovers).
+ */
+export type SankeyNodeStyle = { name: string; color?: string; leftover?: boolean };
+
+// A node row worth keeping: one that sets something.
+const setsSomething = (n: SankeyNodeStyle) => Boolean(n.color) || n.leftover === false;
 
 /** How a flow's band is coloured: its source node, its target node, a blend of both, or one quiet grey. */
 export type SankeyLinkColor = 'source' | 'target' | 'gradient' | 'neutral';
@@ -47,9 +54,24 @@ export const SANKEY_VALUE_LABEL_LABELS: Record<SankeyValueLabel, string> = {
 };
 
 /** The entrance and ambient motion: bands sweep in once, or a soft current runs along them. */
-export type SankeyAnim = 'grow' | 'flow';
-export const SANKEY_ANIMS: readonly SankeyAnim[] = ['grow', 'flow'];
-export const SANKEY_LOOPING_ANIMS: readonly SankeyAnim[] = ['flow'];
+/** Whether a node that sends on less than it receives draws the difference as a band to a Leftover node. */
+export type SankeyLeftover = 'show' | 'hide';
+export const SANKEY_LEFTOVERS: readonly SankeyLeftover[] = ['show', 'hide'];
+export const SANKEY_LEFTOVER_LABELS: Record<SankeyLeftover, string> = {
+  show: 'Show',
+  hide: 'Hide',
+};
+/** The end node leftovers run to, unless the diagram names it otherwise. */
+export const SANKEY_LEFTOVER_NAME = 'Leftover';
+
+/**
+ * Grow sweeps the diagram in from the left; Flow runs a current along every band; Cascade brings the columns in
+ * one after another; Pulse sends a slow wave of light across the bands; Rise grows each column's nodes, then
+ * fades their bands in. Flow and Pulse loop; the rest play once.
+ */
+export type SankeyAnim = 'grow' | 'flow' | 'cascade' | 'pulse' | 'rise';
+export const SANKEY_ANIMS: readonly SankeyAnim[] = ['grow', 'flow', 'cascade', 'pulse', 'rise'];
+export const SANKEY_LOOPING_ANIMS: readonly SankeyAnim[] = ['flow', 'pulse'];
 
 // Bounds a stored diagram is held to (validate.ts) and the editor clamps to. 200 flows is far past the
 // point a Sankey stops being readable (published ones rarely pass 60); it exists so a pasted spreadsheet
@@ -60,6 +82,8 @@ export const SANKEY_NAME_MAX = 60;
 export const SANKEY_UNIT_MAX = 8;
 // Values above this are refused: past it, a sum of 200 of them loses whole units in a double.
 export const SANKEY_VALUE_MAX = 1e12;
+/** In and out closer than this balance: amounts are typed to at most a few decimals. */
+export const SANKEY_BALANCE_EPSILON = 1e-9;
 
 // A household budget: the example everyone reads without being told how. Two incomes pool into the
 // budget, which splits into needs, wants and savings, and needs splits again. It shows the three things
@@ -223,7 +247,9 @@ const PREFIX_UNITS = new Set(['$', '£', '€', '¥', '₹', '₩', '₽', '₺'
  */
 export function formatSankeyValue(value: number, unit?: string): string {
   const neg = value < 0;
-  const fixed = Math.abs(value).toFixed(2).replace(/\.?0+$/, '');
+  const fixed = Math.abs(value)
+    .toFixed(2)
+    .replace(/\.?0+$/, '');
   const [whole = '0', frac] = fixed.split('.');
   const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   const num = `${neg ? '-' : ''}${grouped}${frac ? `.${frac}` : ''}`;
@@ -246,4 +272,125 @@ export function sankeyNodeColor(
   name: string,
 ): string | undefined {
   return styles?.find((s) => s.name === name)?.color;
+}
+
+/**
+ * Flows ready to store: names cleaned, at most SANKEY_MAX_FLOWS, values finite and in range. An empty or
+ * zero row is kept (the Flows dialog shows a row being written, and names why it is not drawn yet).
+ */
+export function cleanSankeyFlows(flows: readonly SankeyFlow[]): SankeyFlow[] {
+  return flows.slice(0, SANKEY_MAX_FLOWS).map((f) => ({
+    from: cleanSankeyName(f.from),
+    to: cleanSankeyName(f.to),
+    value: Number.isFinite(f.value)
+      ? Math.max(-SANKEY_VALUE_MAX, Math.min(SANKEY_VALUE_MAX, f.value))
+      : 0,
+  }));
+}
+
+/** Node styles that still name a node of these flows, so recolouring cannot grow the list forever. */
+export function pruneSankeyNodes(
+  nodes: readonly SankeyNodeStyle[] | undefined,
+  flows: readonly SankeyFlow[],
+): SankeyNodeStyle[] | undefined {
+  if (!nodes || nodes.length === 0) return undefined;
+  const live = new Set(sankeyNodeNames(flows));
+  const kept = nodes.filter((n) => setsSomething(n) && live.has(n.name)).slice(0, SANKEY_MAX_NODES);
+  return kept.length > 0 ? kept : undefined;
+}
+
+// One node's row changed by `patch`, keeping what else it sets; a row left setting nothing is dropped.
+function withSankeyNode(
+  nodes: readonly SankeyNodeStyle[] | undefined,
+  name: string,
+  patch: Partial<SankeyNodeStyle>,
+): SankeyNodeStyle[] | undefined {
+  const own = nodes?.find((n) => n.name === name);
+  const rest = (nodes ?? []).filter((n) => n.name !== name);
+  const row: SankeyNodeStyle = { ...own, ...patch, name };
+  if (!row.color) delete row.color;
+  if (row.leftover !== false) delete row.leftover;
+  const next = setsSomething(row) ? [...rest, row] : rest;
+  return next.length > 0 ? next.slice(0, SANKEY_MAX_NODES) : undefined;
+}
+
+/** Sets (or, with no colour, clears) one node's colour, keeping every other node's and its own other settings. */
+export function withSankeyNodeColor(
+  nodes: readonly SankeyNodeStyle[] | undefined,
+  name: string,
+  color: string | undefined,
+): SankeyNodeStyle[] | undefined {
+  return withSankeyNode(nodes, name, { color });
+}
+
+/** Switches one node's leftover on (the default, so nothing is stored) or off. */
+export function withSankeyNodeLeftover(
+  nodes: readonly SankeyNodeStyle[] | undefined,
+  name: string,
+  on: boolean,
+): SankeyNodeStyle[] | undefined {
+  return withSankeyNode(nodes, name, { leftover: on ? undefined : false });
+}
+
+/** Whether a node draws its leftover while the diagram shows leftovers. */
+export function sankeyNodeLeftover(
+  nodes: readonly SankeyNodeStyle[] | undefined,
+  name: string,
+): boolean {
+  return nodes?.find((n) => n.name === name)?.leftover !== false;
+}
+
+/**
+ * Renames a node everywhere: every flow from or to it, and its colour. Renaming onto a name that already
+ * exists merges the two nodes, which is what typing an existing name means.
+ */
+export function renameSankeyNode(
+  flows: readonly SankeyFlow[],
+  nodes: readonly SankeyNodeStyle[] | undefined,
+  from: string,
+  to: string,
+): { flows: SankeyFlow[]; nodes: SankeyNodeStyle[] | undefined } {
+  const was = cleanSankeyName(from);
+  const now = cleanSankeyName(to);
+  if (!was || !now || was === now) return { flows: [...flows], nodes: nodes ? [...nodes] : nodes };
+  const swap = (name: string) => (cleanSankeyName(name) === was ? now : name);
+  const moved = (nodes ?? []).map((n) => (n.name === was ? { ...n, name: now } : n));
+  // A merge keeps the colour the surviving name already had.
+  const seen = new Set<string>();
+  const deduped = moved.filter((n) => !seen.has(n.name) && (seen.add(n.name), true));
+  return {
+    flows: flows.map((f) => ({ ...f, from: swap(f.from), to: swap(f.to) })),
+    nodes: nodes ? deduped : nodes,
+  };
+}
+
+/**
+ * The flows a diagram draws: the stored ones, then, unless leftovers are hidden, one flow per middle node that
+ * sends on less than it receives, carrying the difference to the leftover node (docs/specs/009-elements/sankey.md
+ * "Leftovers"). `stored` is how many of them are stored, so a band at or past it is a leftover. A leftover is
+ * never stored: it follows the amounts as they change. A start or an end node has none, and a node that sends on
+ * more than it receives has none either, nor does a node whose leftover is switched off.
+ */
+export function sankeyDrawnFlows(
+  flows: readonly SankeyFlow[] | undefined,
+  leftover: SankeyLeftover | undefined,
+  leftoverName: string | undefined,
+  nodes?: readonly SankeyNodeStyle[],
+): { flows: SankeyFlow[]; stored: number } {
+  const stored = flows ?? [];
+  if (leftover === 'hide') return { flows: [...stored], stored: stored.length };
+  const to = cleanSankeyName(leftoverName ?? '') || SANKEY_LEFTOVER_NAME;
+  const extra: SankeyFlow[] = [];
+  for (const n of sankeyGraph(stored).nodes) {
+    const diff = n.inflow - n.outflow;
+    if (
+      n.inflow > 0 &&
+      n.outflow > 0 &&
+      diff > SANKEY_BALANCE_EPSILON &&
+      n.name !== to &&
+      sankeyNodeLeftover(nodes, n.name)
+    )
+      extra.push({ from: n.name, to, value: diff });
+  }
+  return { flows: [...stored, ...extra], stored: stored.length };
 }

@@ -23,6 +23,7 @@ Follow the references below only as needed; never upfront.
 - ./reaction-pad.md - when implementing or changing the reaction pad, its face, bursts or their broadcast
 - ./reveal-zone.md - when implementing or changing the reveal zone, its cover, private lift or room-wide reveal
 - ./rich-text-notes.md - when implementing or changing rich-text notes, the note popover or the block-type picker
+- ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
 - ./timeline-rail.md - when implementing or changing the timeline rail, its points, labels or Add point
 - ./web-components.md - when implementing or changing web components, their rows, or legacy group migration

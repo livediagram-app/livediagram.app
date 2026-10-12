@@ -17,6 +17,7 @@
 // burst through `checkpointBurst`.
 // Keeping that policy in one file makes it auditable.
 
+import { useSankeySetters } from '@/hooks/canvas/useSankeySetters';
 import type { Selection } from '@/lib/selection-store';
 import {
   bringElementsToFrontLayer,
@@ -173,6 +174,9 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     applyShapeColorPresetSelected,
     resetShapeStyleSelected,
   } = useShapeStyleSetters({ currentSelectionIds, commit, activeTab, readSelection });
+
+  // The Sankey diagram's writes (docs/specs/009-elements/sankey.md), kept together as one object.
+  const sankey = useSankeySetters({ currentSelectionIds, commit });
 
   const {
     setTextSizeSelected,
@@ -354,6 +358,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     setArrowFieldSelected({ flowRepeat: value ? undefined : false }, 'FlowRepeat');
 
   return {
+    sankey,
     toggleLockSelected,
     toggleAspectLockSelected,
     bringSelectedToFront,

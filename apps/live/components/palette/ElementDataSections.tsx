@@ -94,6 +94,11 @@ import { useContextMenuScaffold } from './useContextMenuScaffold';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
 // Plan pays nothing for it.
+// A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
+const SankeyMenuSections = dynamic(
+  () => import('./SankeyMenuSection').then((m) => m.SankeyMenuSections),
+  { ssr: false },
+);
 const PlanBoardMenuSections = dynamic(
   () => import('./PlanBoardMenuSection').then((m) => m.PlanBoardMenuSections),
   { ssr: false },
@@ -133,6 +138,8 @@ type ElementDataSectionsProps = {
   isCodeBlock: boolean;
   isChecklist: boolean;
   isLegend: boolean;
+  // Sankey diagram (docs/specs/009-elements/sankey.md): its Sankey and Display sections.
+  isSankey: boolean;
   isMindNode: boolean;
   isEntity: boolean;
   isModeButton: boolean;
@@ -183,6 +190,7 @@ export function ElementDataSections({
   isCodeBlock,
   isChecklist,
   isLegend,
+  isSankey,
   isMindNode,
   isEntity,
   isModeButton,
@@ -219,6 +227,7 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isLegend ||
+    isSankey ||
     isMindNode ||
     isEntity ||
     isModeButton ||
@@ -477,6 +486,18 @@ export function ElementDataSections({
                 onPreviewEnd={props.onPreviewStyleEnd}
               />
             </MenuAccordionSection>
+          ) : null}
+          {/* Sankey (docs/specs/009-elements/sankey.md): its flows and node colours, then how it draws. Only
+            for someone who may edit it (an Editor, on an unlocked diagram). */}
+          {isSankey && shapeTarget && props.sankey ? (
+            <SankeyMenuSections
+              target={shapeTarget}
+              handlers={props.sankey}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('sankey')}
+              onPreviewTextSize={props.onPreviewTextSize}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
           ) : null}
           {/* Mind map (docs/specs/009-elements/mind-node.md): the shape the whole map grows in. It sets
             the ROOT's flow, so one pick re-shapes every branch that follows

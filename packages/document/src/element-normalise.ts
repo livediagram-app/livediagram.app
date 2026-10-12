@@ -21,6 +21,7 @@ import { isRecord } from './is-record';
 import {
   cleanSankeyName,
   SANKEY_ALIGNS,
+  SANKEY_LEFTOVERS,
   SANKEY_ANIMS,
   SANKEY_LINK_COLORS,
   SANKEY_MAX_FLOWS,
@@ -118,12 +119,14 @@ function normaliseSankey(el: Raw): Raw {
       .map((n) => ({
         name: cleanSankeyName(str(n.name)),
         ...(typeof n.color === 'string' && n.color ? { color: n.color.slice(0, 64) } : {}),
+        ...(n.leftover === false ? { leftover: false } : {}),
       }));
   const options: [string, readonly string[]][] = [
     ['sankeyLinkColor', SANKEY_LINK_COLORS],
     ['sankeyAlign', SANKEY_ALIGNS],
     ['sankeyValueLabel', SANKEY_VALUE_LABELS],
     ['sankeyAnim', SANKEY_ANIMS],
+    ['sankeyLeftover', SANKEY_LEFTOVERS],
   ];
   for (const [field, values] of options)
     if (out[field] !== undefined && !values.includes(out[field] as string)) delete out[field];
@@ -131,6 +134,11 @@ function normaliseSankey(el: Raw): Raw {
     const unit = str(out.sankeyUnit).trim().slice(0, SANKEY_UNIT_MAX);
     if (unit) out.sankeyUnit = unit;
     else delete out.sankeyUnit;
+  }
+  if (out.sankeyLeftoverName !== undefined) {
+    const name = cleanSankeyName(str(out.sankeyLeftoverName));
+    if (name) out.sankeyLeftoverName = name;
+    else delete out.sankeyLeftoverName;
   }
   return out;
 }

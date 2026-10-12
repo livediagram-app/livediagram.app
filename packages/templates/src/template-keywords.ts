@@ -164,6 +164,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   venn: ['overlap', 'sets', 'compare', 'circles', 'intersection'],
   flywheel: ['growth', 'loop', 'cycle', 'momentum', 'strategy'],
   funnel: ['sales funnel', 'conversion', 'marketing', 'aarrr', 'pipeline', 'stages'],
+  sankey: ['flow diagram', 'energy', 'budget', 'traffic', 'drop-off', 'allocation', 'sankeymatic'],
   'comparison-table': ['compare', 'comparison', 'features', 'options', 'table', 'vs'],
   'stakeholder-map': ['stakeholders', 'power interest', 'influence', 'engagement'],
   'rich-picture': ['systems thinking', 'soft systems', 'problem', 'stakeholders', 'drawing'],

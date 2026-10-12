@@ -13,7 +13,8 @@ import {
 } from '@livediagram/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
-import { getTheme, shapeColorPresets, tableColorPresets } from '@/lib/themes';
+import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
+import { canEditSankey } from '@/lib/sankey-edit';
 import { panelEnabled } from '@/lib/user-preferences';
 
 // Lazy like the other heavy editor chrome: the menu's chunk loads on the
@@ -118,6 +119,9 @@ export function EditorContextMenuHost() {
     setCodeEditOpenForId,
     setCodeWrapSelected,
     setLegendItemsSelected,
+    sankey,
+    setSankeyFlowsOpenForId,
+    can,
     setMindFlowSelected,
     tidyMindMapSelected,
     mindOutline,
@@ -219,6 +223,19 @@ export function EditorContextMenuHost() {
     : null;
   const ctxMemberIds =
     multiSelectedIds.size > 0 ? [...multiSelectedIds] : ctxSelectedEl ? [ctxSelectedEl.id] : [];
+
+  // A Sankey's menu sections (docs/specs/009-elements/sankey.md "The menu"), for someone who may edit it.
+  const sankeyMenu =
+    ctxSelectedEl?.type === 'shape' &&
+    ctxSelectedEl.shape === 'sankey' &&
+    canEditSankey(can, ctxSelectedEl)
+      ? {
+          palette: themeChartPalette(getTheme(activeTab.theme)),
+          onEditFlows: setSankeyFlowsOpenForId,
+          onSetNodeColor: sankey.setSankeyNodeColorSelected,
+          onSetOption: sankey.setSankeyOptionSelected,
+        }
+      : undefined;
 
   // The flow the selected node's MAP grows in (docs/specs/009-elements/mind-node.md). Resolved here
   // because it lives on the tree's root, which the menu cannot walk to from
@@ -357,6 +374,7 @@ export function EditorContextMenuHost() {
       onEditCodeBlock={setCodeEditOpenForId}
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
+      sankey={sankeyMenu}
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}
       onTidyMindMap={tidyMindMapSelected}

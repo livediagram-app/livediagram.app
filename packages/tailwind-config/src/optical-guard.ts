@@ -86,7 +86,13 @@ function bareText(children: ts.NodeArray<ts.JsxChild>, sf: ts.SourceFile): ts.No
     if (ts.isJsxExpression(c) && c.expression !== undefined && !elementOnly(c.expression)) return c;
     if (ts.isJsxElement(c)) {
       const tag = c.openingElement.tagName.getText(sf);
-      if (PLAIN_WRAPPERS.has(tag) && !hasClass(c.openingElement, sf, 'text-optical-centre')) {
+      // Either trimming utility: text-optical-line is text-optical-centre for a truncated label, which
+      // keeps its descenders (theme.css).
+      if (
+        PLAIN_WRAPPERS.has(tag) &&
+        !hasClass(c.openingElement, sf, 'text-optical-centre') &&
+        !hasClass(c.openingElement, sf, 'text-optical-line')
+      ) {
         const inner = bareText(c.children, sf);
         if (inner) return inner;
       }

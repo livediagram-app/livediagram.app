@@ -43,6 +43,18 @@ function searchedTexts(el: Element): [FindField, string[]][] {
           .map((i) => stringField(i, 'text')),
       ),
     ],
+    [
+      'node',
+      [
+        ...new Set(
+          strings(
+            arrayField(el, 'sankeyFlows')
+              .filter(isObject)
+              .flatMap((f) => [stringField(f, 'from'), stringField(f, 'to')]),
+          ),
+        ),
+      ],
+    ],
     ['code', strings([stringField(el, 'code')])],
     ['comment', strings((thread?.comments ?? []).map((c) => stringField(c, 'text')))],
   ];

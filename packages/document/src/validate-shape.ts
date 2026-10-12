@@ -59,6 +59,7 @@ import {
 import { isRecord } from './is-record';
 import {
   SANKEY_ALIGNS,
+  SANKEY_LEFTOVERS,
   SANKEY_ANIMS,
   SANKEY_LINK_COLORS,
   SANKEY_MAX_FLOWS,
@@ -165,7 +166,8 @@ const isSankeyFlow = (item: unknown) =>
 const isSankeyNode = (item: unknown) =>
   isRecord(item) &&
   isStrUpTo(SANKEY_NAME_MAX)(item.name) &&
-  (item.color === undefined || isStrUpTo(64)(item.color));
+  (item.color === undefined || isStrUpTo(64)(item.color)) &&
+  (item.leftover === undefined || item.leftover === false);
 
 const oneOf = (field: string, values: readonly string[]): FieldCheck => ({
   field,
@@ -373,13 +375,19 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   {
     field: 'sankeyNodes',
     valid: rowsOf(SANKEY_MAX_NODES, isSankeyNode),
-    rule: arrayRule(SANKEY_MAX_NODES, '{ name, color? } rows'),
+    rule: arrayRule(SANKEY_MAX_NODES, '{ name, color?, leftover?: false } rows'),
   },
   oneOf('sankeyLinkColor', SANKEY_LINK_COLORS),
   oneOf('sankeyAlign', SANKEY_ALIGNS),
   oneOf('sankeyValueLabel', SANKEY_VALUE_LABELS),
   oneOf('sankeyAnim', SANKEY_ANIMS),
   { field: 'sankeyUnit', valid: isStrUpTo(SANKEY_UNIT_MAX), rule: stringRule(SANKEY_UNIT_MAX) },
+  oneOf('sankeyLeftover', SANKEY_LEFTOVERS),
+  {
+    field: 'sankeyLeftoverName',
+    valid: isStrUpTo(SANKEY_NAME_MAX),
+    rule: stringRule(SANKEY_NAME_MAX),
+  },
   flag('sankeyAnimRepeat'),
 ];
 

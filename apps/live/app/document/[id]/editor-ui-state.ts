@@ -65,6 +65,9 @@ export function useEditorUiState(
   // double-click on the card and by the context menu's Code category (a
   // multi-line editor is too big for the menu, like the line chart's grid).
   const [codeEditOpenForId, setCodeEditOpenForId] = useState<string | null>(null);
+  // Which Sankey's Flows dialog is open (docs/specs/009-elements/sankey.md "The Flows dialog"), or null.
+  // Opened by double-click on the diagram and by the menu's Edit Flows.
+  const [sankeyFlowsOpenForId, setSankeyFlowsOpenForId] = useState<string | null>(null);
 
   return {
     selectionStore,
@@ -85,5 +88,7 @@ export function useEditorUiState(
     setLineDataOpenForId,
     codeEditOpenForId,
     setCodeEditOpenForId,
+    sankeyFlowsOpenForId,
+    setSankeyFlowsOpenForId,
   };
 }

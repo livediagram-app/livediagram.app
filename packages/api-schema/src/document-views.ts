@@ -203,6 +203,7 @@ export const FIND_FIELDS = [
   'cell',
   'field',
   'item',
+  'node',
   'code',
   'comment',
 ] as const;

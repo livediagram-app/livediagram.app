@@ -127,6 +127,8 @@ export const ELEMENT_FIELD_NAMES = {
     'sankeyAlign',
     'sankeyValueLabel',
     'sankeyUnit',
+    'sankeyLeftover',
+    'sankeyLeftoverName',
     'sankeyAnim',
     'sankeyAnimSpeed',
     'sankeyAnimRepeat',

@@ -7,9 +7,11 @@ import {
   ANIMATION_SET_NAME,
   DEFAULT_ANIMATION_SPEED,
   PIE_LOOPING_ANIMS,
+  SANKEY_LOOPING_ANIMS,
   animLoops,
   animationSetsOf,
   isChartShape,
+  isSankeyShape,
   type AnimationSetId,
   type Element,
   type ShapeElement,
@@ -19,6 +21,7 @@ import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
 import { PieAnimTiles } from '@/components/palette/context-menu-rows';
+import { SankeyAnimTiles } from '@/components/palette/context-menu-data-rows';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -41,12 +44,13 @@ type Handlers = Pick<
   | 'onSetFlowSpeed'
   | 'onSetFlowRepeat'
   | 'onPreviewArrowFlow'
+  | 'sankey'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type Category = AnimationSetId | 'icon' | 'chart' | 'arrow';
+type Category = AnimationSetId | 'icon' | 'chart' | 'sankey' | 'arrow';
 const ORDER: readonly Category[] = [
   'shape',
   'sticky',
@@ -55,12 +59,14 @@ const ORDER: readonly Category[] = [
   'table',
   'icon',
   'chart',
+  'sankey',
   'text',
   'arrow',
 ];
-const OWN_NAME: Record<'icon' | 'chart' | 'arrow', string> = {
+const OWN_NAME: Record<'icon' | 'chart' | 'sankey' | 'arrow', string> = {
   icon: 'Icon',
   chart: 'Chart',
+  sankey: 'Sankey',
   arrow: 'Arrow',
 };
 
@@ -74,6 +80,7 @@ export function animationCategoriesOf(elements: readonly Element[]): Category[] 
     if (el.type === 'arrow') present.add('arrow');
     if (el.type === 'shape' && el.shape === 'icon') present.add('icon');
     if (el.type === 'shape' && isChartShape(el.shape)) present.add('chart');
+    if (el.type === 'shape' && isSankeyShape(el.shape)) present.add('sankey');
   }
   return ORDER.filter((c) => present.has(c));
 }
@@ -96,7 +103,8 @@ export function AnimationSections({
   flyoutProps: (id: string) => SectionProps;
   handlers: Handlers;
 }) {
-  const categories = animationCategoriesOf(elements);
+  // A Sankey's animation is offered only where its edits are (h.sankey: an Editor, one diagram selected).
+  const categories = animationCategoriesOf(elements).filter((c) => c !== 'sankey' || !!h.sankey);
   if (categories.length === 0) return null;
   const sections = categories.map((c) => (
     <MenuAccordionSection
@@ -159,6 +167,23 @@ function CategoryBody({
         onSet={h.onSetPieAnim}
         onSetSpeed={h.onSetPieAnimSpeed}
         onSetRepeat={h.onSetPieAnimRepeat}
+      />
+    );
+  }
+  if (category === 'sankey') {
+    const sankey = elements.find(
+      (el): el is ShapeElement => el.type === 'shape' && isSankeyShape(el.shape),
+    );
+    if (!sankey || !h.sankey) return null;
+    const set = h.sankey.onSetOption;
+    return (
+      <SankeyAnimTiles
+        anim={sankey.sankeyAnim ?? null}
+        speed={sankey.sankeyAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
+        repeat={animLoops(sankey.sankeyAnim, sankey.sankeyAnimRepeat, SANKEY_LOOPING_ANIMS)}
+        onSet={(v) => set({ sankeyAnim: v ?? undefined })}
+        onSetSpeed={(v) => set({ sankeyAnimSpeed: v })}
+        onSetRepeat={(v) => set({ sankeyAnimRepeat: v })}
       />
     );
   }

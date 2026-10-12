@@ -103,6 +103,7 @@ export const HELP_ARTICLES = {
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   dataElements: 'palette/tools/data-elements',
+  sankeyDiagram: 'palette/build/sankey-diagram',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -377,6 +378,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   dataElements: {
     title: 'Learn about data elements',
     description: 'Charts and data-driven elements, and how to edit their data.',
+  },
+  sankeyDiagram: {
+    title: 'Learn about Sankey diagrams',
+    description: 'Writing flows, reading the bands, and styling nodes and labels.',
   },
   palette: {
     title: 'Learn about the Palette',
