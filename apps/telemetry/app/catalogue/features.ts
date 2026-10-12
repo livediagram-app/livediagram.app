@@ -994,6 +994,14 @@ export const SESSION_POLL_OPENED = opened(
   (t) => t === 'SessionPoll',
 );
 
+// Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"); what it then
+// laid out counts under Tabs Auto-Arranged.
+export const TIDY_UP_OPENED = opened(
+  'Tidy Up Opened',
+  'The Tidy Up button in the bottom bar opened, to pick a layout for the tab.',
+  (t) => t === 'TidyUp',
+);
+
 export const ACTION_SIGN_IN_NUDGE = opened(
   'Assign Action Nudge',
   'A guest opened Assign Action and was asked to sign in, since actions need an account.',

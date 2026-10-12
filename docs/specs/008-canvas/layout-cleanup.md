@@ -1,12 +1,10 @@
 # Layout cleanup
 
-The [command palette](../007-editor/command-palette.md)'s actions carry the two layout
-tidiers, **Auto Layout** (in each style) and **Auto-align**. The tab / canvas context menu
-used to hold them as a **Cleanup** category; it was removed, since a menu category per tidy
-action does not scale across the editor's modes, and the command palette reaches them from
-anywhere. They are complementary, not duplicates: one snaps current positions, the
-other recomputes them from the graph. Both are editor-only (they mutate) and run a
-single undoable operation.
+The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are one press
+away in Diagram mode on the **Tidy Up** button ([The Tidy Up button](#the-tidy-up-button)), and
+anywhere through the [command palette](../007-editor/command-palette.md)'s actions. They are
+complementary, not duplicates: one snaps current positions, the other recomputes them from the
+graph. Both are editor-only (they mutate) and run a single undoable operation.
 
 ## Locked elements stay put
 
@@ -139,17 +137,9 @@ a component's nodes are positioned:
 
 - The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
   MCP server keep calling it with no style and get Smart, unchanged.
-- **UI:** the command palette carries one command per style (Smart is the plain
-  "Auto Layout (tidy up)", then "Auto Layout: Mindmap", ...). All styles are the same
-  single undoable op.
-
-The transforms live in `lib/tab-cleanup.ts` (`cleanupElements`), which the commands call. (A
-desktop hover preview of each style lived on the removed Cleanup menu rows; with no rows to
-hover, it went with them.)
-
-- **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a
-  flicker. The row also reverts if the menu closes or the section collapses with
-  the pointer still on it, since `pointerleave` does not fire on unmount.
+- **UI:** each style is a tile on the [Tidy Up](#the-tidy-up-button) popover, and the command
+  palette carries one command per style (Smart is the plain "Auto Layout (tidy up)", then
+  "Auto Layout: Mindmap", ...). All styles are the same single undoable op.
 - Tree and Mindmap consume the same directed edge set as the layered layout; on a
   graph that isn't a tree (extra in-edges, cycles) they lay out a BFS/longest-path
   spanning tree and let the extra arrows re-anchor across it (deterministic, never
@@ -157,6 +147,91 @@ hover, it went with them.)
 - Telemetry: the existing `Tab` / `Aligned` event gains the style as its `type`
   (`Smart`, `FlowchartDown`, `FlowchartRight`, `Tree`, `Mindmap`; Auto-align keeps
   the bare event).
+
+## The Tidy Up button
+
+Diagram mode has a **Tidy Up** button in the bottom-right cluster, the segment immediately
+**left of Layers** in the Layers and Theme strip ([Live app](../007-editor/live-app.md)): Tidy Up,
+Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
+than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
+strip's other buttons (one open at a time, a second press or a press outside closes it).
+
+### Where it shows
+
+- **Diagram mode only.** Draw, Facilitate, Illustrate and Plan arrange their content another way
+  (strokes, a session board, pages, boards), so the button is not there; the command palette still
+  reaches the tidiers.
+- **Not on a phone.** The phone cluster is one row of shared width
+  ([Session tools](../012-collaboration/session-tools.md#the-session-strip)), and one more button
+  would wrap it on a narrow screen. A phone tidies through the command palette.
+- **Not in Zen**, not during the welcome flow: the strip itself is hidden there.
+- **A locked tab** shows the button, with every tile inert under a "This tab is locked" note, since
+  unlocking it is the one step that makes the tidiers work.
+
+### Share roles
+
+| Role        | Tidy Up                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| Editor      | Sees the button and uses every tile.                                                          |
+| Participant | No button. A tidy moves every element on the tab, and a Participant never reshapes the board. |
+| Viewer      | No button.                                                                                    |
+
+The gate is the structural one Layers uses (a Participant is read-only for structure,
+[Share roles](../013-workspace/share-roles.md)).
+
+### The popover
+
+A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. Two groups:
+
+1. **Auto Layout**, captioned "Rearrange shapes from the arrows between them.": a two-column grid
+   of five **tiles**, one per style, in this order: Smart, Flowchart Down, Flowchart Right, Tree,
+   Mindmap. Each tile is a small drawing of the layout it makes (boxes and arrows in the brand
+   colours, readable in light and dark), its name, and one line saying what it does:
+
+   | Tile            | Line                         |
+   | --------------- | ---------------------------- |
+   | Smart           | Follows the way you drew it  |
+   | Flowchart Down  | Top to bottom, in layers     |
+   | Flowchart Right | Left to right, in layers     |
+   | Tree            | Parents above their children |
+   | Mindmap         | Branches around a centre     |
+
+2. **Auto-align**, a full-width row under a hairline: its glyph, the name, and "Snap to the grid.
+   Nothing moves far."
+
+Pressing a tile or the row runs that tidier on the active tab (one undoable step, the same command
+the palette runs) and closes the popover. A tab with nothing on it shows the tiles inert under
+"Nothing to tidy yet. Add some shapes and connect them with arrows." The tiles are buttons, reached
+with Tab and pressed with Enter or Space; Escape closes the popover.
+
+### Hover to see it first
+
+On a desktop pointer, hovering a tile (or the Auto-align row) lays the tab out **live behind the
+popover**; the layout only sticks on press, and taking the pointer off the tile puts everything
+back. Five styles that can only be told apart by doing them is five undos to find the one you
+wanted, and the names ("Tree", "Mindmap") describe a shape the author has to imagine. Showing it is
+cheaper than explaining it.
+
+It is the style-preset preview ([Style presets](../010-palette/style-presets.md)) one level up: that
+one previews a look on the selected elements, this one previews a position on all of them, and the
+rules are the same ones for the same reasons.
+
+- The transforms live in `lib/tab-cleanup.ts` (`cleanupElements`), shared by the preview and the
+  command, so a preview is byte-for-byte the layout its press commits.
+- The first hover snapshots the tab. Every hover lays out from that snapshot, so sweeping across the
+  tiles shows each style cleanly rather than stacking them.
+- Preview and revert go through `tickTabs`: present-only, no undo snapshot, and autosave skips the
+  tick (`previewingRef`), so nothing ephemeral is ever persisted or sent to the room.
+- The press ends the preview first and commits second, in one React batch, so undo returns to the
+  layout the author actually had rather than to the preview.
+- **Mouse pointers only.** On touch a tap IS the commit, so a preview would be a flicker. The tile
+  also reverts if the popover closes with the pointer still on it, since `pointerleave` does not
+  fire on unmount.
+
+### Telemetry
+
+Opening the popover sends `UI` / `Opened` / `TidyUp`. A press sends the tidier's own `Tab` /
+`Aligned` event, as the command palette does.
 
 ## Out of scope
 

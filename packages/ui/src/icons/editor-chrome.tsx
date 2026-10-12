@@ -1,10 +1,14 @@
-import { lucideLayers, lucideSlidersHorizontal } from '@livediagram/icons/lucide';
+import {
+  lucideBrushCleaning,
+  lucideLayers,
+  lucideSlidersHorizontal,
+} from '@livediagram/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';
 
 // The editor's bottom chrome (docs/specs/004-interface-design/iconography.md): the canvas cluster
-// (undo / redo, layers, the look-and-feel brush) and the tab bar's settings. Shared
+// (undo / redo, tidy up, layers, the look-and-feel brush) and the tab bar's settings. Shared
 // so the marketing hero's editor mock draws the very same glyphs as the editor it depicts.
 
 export function UndoIcon({ size = 13, ...rest }: IconProps = {}) {
@@ -38,6 +42,9 @@ export function ThemeBrushIcon({ size = 20, ...rest }: IconProps = {}) {
 
 // The Layers button in the bottom-right cluster (20px).
 export const LayersStackIcon = lucideGlyph(lucideLayers, 20);
+
+// The Tidy Up button, left of Layers in Diagram mode (docs/specs/008-canvas/layout-cleanup.md): a broom (20px).
+export const TidyUpIcon = lucideGlyph(lucideBrushCleaning, 20);
 
 // Settings: two sliders, never a cog (a cog's spokes read as a sun, the appearance toggle).
 export const SettingsIcon = lucideGlyph(lucideSlidersHorizontal, 16);

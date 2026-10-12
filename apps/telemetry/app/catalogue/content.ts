@@ -6,7 +6,7 @@ import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
 import { LOGO_TOOL_TYPES } from '../logo-types';
-import { LOCAL_MOVE_OFFERED } from './features';
+import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
 // the table's own switches (docs/specs/017-telemetry/telemetry.md).
@@ -380,6 +380,7 @@ export const TAB_ACTIONS: MetricStack = {
     TABS_DELETED,
     TABS_DUPLICATED,
     TAB_TEXT_DEFAULTS,
+    TIDY_UP_OPENED,
     TABS_ARRANGED,
     TABS_REORDERED,
     TABS_LINKED,
