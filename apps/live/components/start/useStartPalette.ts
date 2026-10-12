@@ -22,8 +22,5 @@ export function useStartPalette(): PlanPalette {
   if (!tab) return planPalette(surface, {});
   // The paper is the tab's canvas as this viewer sees it (its theme's half, docs/specs/011-theme/light-and-dark.md).
   const paper = resolveTabBackdrop(tab).backgroundColor;
-  return planPalette(
-    surface,
-    startPanelColours({ backgroundColor: paper }, getTheme(tab.theme)),
-  );
+  return planPalette(surface, startPanelColours({ backgroundColor: paper }, getTheme(tab.theme)));
 }
