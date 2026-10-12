@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useInsertionEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -100,6 +101,9 @@ export function useIllustratePages(deps: {
   // Given the page-framing call, so a page slide's row frames its page, on this tab or (once it is
   // open) another; set whether or not this tab is in Illustrate mode.
   framePageRef?: RefObject<((pageId: string) => void) | null>;
+  // Given the first-page framing while the tab shows pages (null otherwise), so the fit on landing
+  // on a tab (useTabEntryEffects) frames the first page, not the whole row of pages.
+  frameFirstPageRef?: RefObject<(() => void) | null>;
   // A new document by its flow id, so its writing can take the caret.
   onArticleCreated?: (flow: string) => void;
 }): IllustratePagesView | null {
@@ -158,6 +162,15 @@ export function useIllustratePages(deps: {
       tabId,
       size: placed.pages[0]?.size ?? 'a4',
     });
+  });
+  // The tab's own fit on landing (and a fit asked for with new content) frames the first page too,
+  // so whichever lands last, the view ends on the page rather than the whole row.
+  const { frameFirstPageRef } = deps;
+  useInsertionEffect(() => {
+    if (frameFirstPageRef)
+      frameFirstPageRef.current = on
+        ? () => frame(layOutIllustratePages(illustratePagesOf(activeTab))[0])
+        : null;
   });
   useEffect(() => {
     if (!on || !tabLoaded) return;

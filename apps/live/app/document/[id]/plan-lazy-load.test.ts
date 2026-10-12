@@ -7,8 +7,9 @@ import { describe, expect, it } from 'vitest';
 
 const root = join(__dirname, '..', '..', '..');
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
+// A re-export (`export { x } from '…'`) loads its module as surely as an import does.
 const staticImports = (src: string) =>
-  [...src.matchAll(/^import\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
+  [...src.matchAll(/^(?:import|export)\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
 
 describe('the editor’s first load', () => {
   it('imports the Dashboard page, the board picker and the Sheets host lazily', () => {
@@ -34,6 +35,21 @@ describe('the editor’s first load', () => {
   it('loads the move to a template default folder only at the pick', () => {
     expect(staticImports(read('components/start/useTemplatePickMove.ts'))).not.toContain(
       '@/lib/placement-defaults/move-on-template-pick',
+    );
+  });
+
+  // docs/specs/026-plan/plan-templates.md "Example cards": the cards' data loads only when a Plan template is made.
+  // A static import from /new or the editor seam once added about 12 KiB gzip to /new's first load.
+  it('loads the Plan templates’ example cards only when one is made', () => {
+    for (const always of ['app/new/page.tsx', 'lib/template-builders.ts', 'lib/seed-author.ts'])
+      expect(staticImports(read(always))).not.toContain(
+        '@livediagram/templates/plan-template-seeds',
+      );
+    expect(read('app/new/page.tsx')).toContain(
+      "import('@livediagram/templates/plan-template-seeds')",
+    );
+    expect(read('app/document/[id]/useTemplateFlow.ts')).toContain(
+      "'@livediagram/templates/plan-template-seeds'",
     );
   });
 

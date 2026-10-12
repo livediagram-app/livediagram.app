@@ -438,11 +438,34 @@ describe('ToolbarPalette', () => {
       expect(within(popover).queryByRole('button', { name: 'Add Pie Chart' })).toBeNull();
       expect(popover.textContent).toContain('No Diagram elements match “pie chart”');
       expect(popover.textContent).toContain('Other modes have');
-      const accordion = within(popover).getByRole('button', { name: /Not in Diagram Mode/ });
+      const accordion = within(popover).getByRole('button', { name: /Elements From Other Modes/ });
       expect(accordion.getAttribute('aria-expanded')).toBe('false');
       fireEvent.click(accordion);
       fireEvent.click(within(popover).getByRole('button', { name: 'Add Pie Chart' }));
       expect(h.onAddShape).toHaveBeenCalledWith('pie-chart', expect.anything());
+    });
+
+    it("shows Plan's own elements in other modes, but never adds them", () => {
+      const { h } = show();
+      const popover = openSearch();
+      type(popover, 'gantt');
+      expect(
+        within(popover).queryByRole('button', { name: /Elements From Other Modes/ }),
+      ).toBeNull();
+      const accordion = within(popover).getByRole('button', {
+        name: /Not Available in Diagram Mode/,
+      });
+      expect(accordion.getAttribute('aria-expanded')).toBe('false');
+      fireEvent.click(accordion);
+      const gantt = within(popover).getByRole('button', { name: /Gantt/ });
+      expect(gantt.getAttribute('aria-disabled')).toBe('true');
+      expect(gantt.getAttribute('draggable')).not.toBe('true');
+      fireEvent.click(gantt);
+      fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
+        key: 'Enter',
+      });
+      expect(h.onAddShape).not.toHaveBeenCalled();
+      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
     });
 
     it('lists only the element types on the tab before anything is typed', () => {
@@ -468,7 +491,7 @@ describe('ToolbarPalette', () => {
       const { h } = show();
       const popover = openSearch();
       type(popover, 'marker');
-      fireEvent.click(within(popover).getByRole('button', { name: /Not in Diagram Mode/ }));
+      fireEvent.click(within(popover).getByRole('button', { name: /Elements From Other Modes/ }));
       fireEvent.click(within(popover).getByRole('button', { name: 'Marker 2' }));
       expect(h.onBeginMarker).toHaveBeenCalledWith('second');
       expect(document.querySelector('[data-toolbar-search]')).toBeNull();
@@ -503,7 +526,9 @@ describe('ToolbarPalette', () => {
       const popover = openSearch();
       type(popover, 'zzqqxx');
       expect(popover.textContent).toContain('No elements match “zzqqxx”');
-      expect(within(popover).queryByRole('button', { name: /Not in/ })).toBeNull();
+      expect(
+        within(popover).queryByRole('button', { name: /Elements From Other Modes|Not Available/ }),
+      ).toBeNull();
     });
 
     it('is one strip menu at a time with More, and closes on Escape', () => {
@@ -525,7 +550,7 @@ describe('ToolbarPalette', () => {
       show();
       let popover = openSearch();
       type(popover, 'pie chart');
-      fireEvent.click(within(popover).getByRole('button', { name: /Not in Diagram Mode/ }));
+      fireEvent.click(within(popover).getByRole('button', { name: /Elements From Other Modes/ }));
       fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
       popover = openSearch();
       expect(

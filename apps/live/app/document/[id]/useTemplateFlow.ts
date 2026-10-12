@@ -1,9 +1,10 @@
 import { useEffect, useRef, type Dispatch, type SetStateAction } from 'react';
 import type { EditorMode, Tab } from '@livediagram/document';
+import type { ItemCreate } from '@livediagram/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import type { TemplateKind } from '@livediagram/templates';
+import { isPlanTemplateKind, type TemplateKind } from '@livediagram/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -63,6 +64,8 @@ export function useTemplateFlow(opts: {
   markTabLoaded: (id: string) => void;
   // Adds the card types the template's boards bring, every tab's (usePresetCardTypes' bring).
   bringCardTypes: (elements: Tab['elements']) => void;
+  // Makes a Plan template's example cards (docs/specs/026-plan/plan-templates.md "Example cards"), as one write.
+  seedCards: (creates: readonly ItemCreate[]) => void;
 }) {
   const {
     activeId,
@@ -79,6 +82,7 @@ export function useTemplateFlow(opts: {
     requestFit,
     markTabLoaded,
     bringCardTypes,
+    seedCards,
   } = opts;
 
   // Quick Start belongs to the tab it was opened on. Both entry points
@@ -240,6 +244,13 @@ export function useTemplateFlow(opts: {
       }),
     );
     for (const f of followers) markTabLoaded(f.id);
+    // A Plan template's boards open on its worked example (docs/specs/026-plan/plan-templates.md "Example cards").
+    if (isPlanTemplateKind(kind)) {
+      const { planTemplateSeedItems, seedToday } =
+        await import('@livediagram/templates/plan-template-seeds');
+      const seeds = planTemplateSeedItems(kind, seedToday());
+      if (seeds.length) seedCards(seeds);
+    }
     // The scaffold replaced the tab's content, so frame it. Blank leaves the view where it is.
     if (elements.length > 0) requestFit();
     // Auto-select when a template produces a single element so the user can

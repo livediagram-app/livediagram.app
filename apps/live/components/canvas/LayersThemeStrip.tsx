@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, TidyUpIcon } from '@livediagram/ui';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
@@ -11,22 +11,40 @@ import { ThemeBrushIcon } from '@/components/palette/palette-icons';
 // they sit together in every mode. A mode without Layers (Plan, Illustrate) or a session without
 // the brush (a view-only visitor, a whiteboard) keeps whichever of the two it has.
 //
+// In Diagram mode an Editor's strip starts with Tidy Up (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
+// button"), left of Layers: how the tab is arranged sits with how it looks.
+//
 // Layers opens its panel as a popover above it (docs/specs/006-document/layers.md); the brush
 // opens the CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md).
 export function LayersThemeStrip({
+  tidyUp,
   layers,
   onOpenTheme,
 }: {
+  // The Tidy Up button: its popover's state and toggle. Absent, the strip has none.
+  tidyUp?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Layers button: its popover's state and toggle. Absent, the strip has none.
   layers?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The brush. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
 }) {
-  if (!layers && !onOpenTheme) return null;
+  if (!tidyUp && !layers && !onOpenTheme) return null;
   return (
     <ClusterStrip>
+      {tidyUp ? (
+        <ClusterPopoverSegment
+          label="Tidy Up"
+          hoverTitle="Tidy Up"
+          hoverDescription="Lay this tab out again in one press."
+          icon={<TidyUpIcon />}
+          dataTourId="tidy-up"
+          popoverOpen={tidyUp.open}
+          onTogglePopover={tidyUp.onToggle}
+        />
+      ) : null}
       {layers ? (
         <ClusterPopoverSegment
+          divided={!!tidyUp}
           label="Open Layers"
           hoverTitle="Open Layers"
           hoverDescription="Show this tab's layers."
@@ -47,7 +65,7 @@ export function LayersThemeStrip({
             onClick={onOpenTheme}
             aria-label="Theme and canvas"
             className={`flex h-11 w-11 items-center justify-center transition ${
-              layers ? 'border-l border-slate-100 dark:border-slate-800' : ''
+              layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''
             } ${CLUSTER_CONTROL_REST}`}
           >
             <ThemeBrushIcon />

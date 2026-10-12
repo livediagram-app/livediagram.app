@@ -43,6 +43,7 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
+import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
@@ -390,6 +391,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     newCardPopoverEl,
     cardFinderPopoverEl,
     sessionPopoverEl,
+    tidyUpPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -561,6 +563,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : trashPopoverEl}
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
+      {tidyUpPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
       {paletteShown ? (
@@ -757,6 +760,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 pass no handler), one strip in every mode: see LayersThemeStrip. */}
             {!zenMode ? (
               <LayersThemeStrip
+                // Tidy Up, first in the strip (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
+                tidyUp={
+                  tidyUpOffered({
+                    actions: props.tidyUp,
+                    editorMode: props.editorMode,
+                    zenMode: !!zenMode,
+                  })
+                    ? {
+                        open: activeDockPanel === 'tidy-up',
+                        onToggle: (button) => handleDockButtonClick('tidy-up', button, true),
+                      }
+                    : undefined
+                }
                 layers={
                   !readOnly && panelsOn.layers
                     ? {

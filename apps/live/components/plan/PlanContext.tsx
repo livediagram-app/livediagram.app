@@ -15,6 +15,7 @@ import type {
   ItemCreate,
   ItemMove,
   ItemPatch,
+  ItemPatchOf,
   ItemPerson,
   ItemTypeDef,
   PlanBoardSetup,
@@ -104,6 +105,9 @@ export type PlanContextValue = {
   trashItem: (itemId: string) => void;
   // Many cards to the Trash as one write and one undo step; answers how many went.
   trashItems: (itemIds: readonly string[]) => number;
+  // Many cards changed as one write and one undo step (Keep Them on a template's example cards). Absent outside the
+  // editor's own slice.
+  patchItems?: (patches: readonly ItemPatchOf[]) => void;
   restoreItem: (itemId: string) => void;
   emptyTrash: () => void;
   // A card as a slide of the deck (docs/specs/012-collaboration/presentation-mode.md "Item slides");

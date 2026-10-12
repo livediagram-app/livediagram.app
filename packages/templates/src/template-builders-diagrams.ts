@@ -1,14 +1,13 @@
-// Per-template element builders for the diagram-style templates: pyramid and
-// flywheel, plus re-exports of the Venn, journey map and fishbone. Split out of template-builders.ts to keep each file
+// Per-template element builders for the diagram-style templates: the
+// flywheel, plus re-exports of the Venn, journey map, fishbone and pyramid. Split out of template-builders.ts to keep each file
 // under the ~400-line target; build-template dispatches here. Each builder is
 // pure: (cx, cy) -> Element[].
 //
 // The three timelines moved to ./template-builders-timelines, and the Venn,
-// journey map and fishbone grew into files of their own
-// (./template-builders-venn, -journey, -fishbone); they are re-exported below
+// journey map, fishbone and pyramid grew into files of their own
+// (./template-builders-venn, -journey, -fishbone, -pyramid); they are re-exported below
 // so build-template keeps one import for the family.
 import {
-  createArrow,
   createPinnedArrow,
   createShape,
   createSticky,
@@ -20,142 +19,9 @@ export { buildVenn } from './template-builders-venn';
 
 export { buildJourney } from './template-builders-journey';
 export { buildFishbone } from './template-builders-fishbone';
+export { buildPyramid } from './template-builders-pyramid';
 
 const MUTED = '#64748b';
-
-// A true pyramid: one clean triangle banded into five tiers (Purpose at the
-// peak down to Initiatives at the base). Each band is a triangle sharing the
-// apex and the slope, drawn largest first, so every smaller one covers the
-// top of the one behind it and what shows is exactly that tier's band; the
-// slanted sides line up by construction. The bands ramp from a saturated
-// peak to a pale foundation (kept light enough that the dark ink every light
-// theme gives text stays legible on the locked fills), and a rail on the right gives every tier its
-// guiding question plus a worked answer, so the template teaches the model
-// while it scaffolds a real strategy.
-export function buildPyramid(cx: number, cy: number): Element[] {
-  type Tier = { label: string; question: string; answer: string; fill: string; ink: string };
-  const tiers: Tier[] = [
-    {
-      label: 'Purpose',
-      question: 'Why do we exist?',
-      answer: 'Help every team think out loud, together',
-      fill: '#3b82f6',
-      ink: '#0f172a',
-    },
-    {
-      label: 'Vision',
-      question: 'Where are we going?',
-      answer: 'The first canvas a team opens, by 2028',
-      fill: '#60a5fa',
-      ink: '#0f172a',
-    },
-    {
-      label: 'Strategy',
-      question: 'How will we win?',
-      answer: 'Free, open and faster than a whiteboard',
-      fill: '#93c5fd',
-      ink: '#0f172a',
-    },
-    {
-      label: 'Goals',
-      question: 'What will we hit this year?',
-      answer: '50k weekly teams, NPS 55',
-      fill: '#bfdbfe',
-      ink: '#0f172a',
-    },
-    {
-      label: 'Initiatives',
-      question: 'What are we doing now?',
-      answer: 'Templates, live cursors, a mobile app',
-      fill: '#e0ecff',
-      ink: '#0f172a',
-    },
-  ];
-  const baseW = 1000;
-  const tierH = 112;
-  const H = tiers.length * tierH;
-  const railGap = 64;
-  const railW = 380;
-  // The rail hangs off the right, so shift the pyramid left by half of it to
-  // keep the whole composition centred on (cx, cy).
-  const px = cx - (railGap + railW) / 2;
-  const top = cy - H / 2;
-  // Half-width of the triangle at a given y.
-  const half = (y: number) => ((y - top) / H) * (baseW / 2);
-  // The triangle silhouette spans 2..98% of its box on both axes, so a band
-  // whose visible triangle is h tall and w wide needs a box 1/0.96 larger,
-  // nudged up and left by the 2% inset.
-  const inset = 0.96;
-
-  const bands: Element[] = [];
-  const labels: Element[] = [];
-  tiers.forEach((t, i) => {
-    const y1 = top + (i + 1) * tierH;
-    const visW = half(y1) * 2;
-    const visH = y1 - top;
-    const boxW = visW / inset;
-    const boxH = visH / inset;
-    bands.push({
-      ...createShape('triangle', px - boxW / 2, top - boxH * 0.02),
-      width: boxW,
-      height: boxH,
-      label: '',
-      fillColor: t.fill,
-      // The ramp is the reading order (peak = most enduring), so it
-      // survives a theme switch.
-      themeLockFill: true,
-    });
-
-    // Tier names are overlay text (the funnel's convention): a shape's own
-    // label centres on its box, which here is the whole triangle above the
-    // band. The apex name sits in its lower, wider half.
-    const y0 = y1 - tierH;
-    const nameY = i === 0 ? y1 - 44 : (y0 + y1) / 2 - 18;
-    labels.push({
-      ...createText(px - 120, nameY),
-      width: 240,
-      height: 36,
-      label: t.label,
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'center',
-      textColor: t.ink,
-    });
-
-    // Rail: a dotted leader from the band's slanted edge, then the tier's
-    // guiding question over a muted worked answer.
-    const midY = (y0 + y1) / 2;
-    const railX = px + baseW / 2 + railGap;
-    labels.push({
-      ...createArrow(px + half(midY) + 14, midY, railX - 14, midY),
-      arrowEnds: 'none',
-      strokeStyle: 'dotted',
-      strokeColor: '#cbd5e1',
-      routeBehind: false,
-    });
-    labels.push({
-      ...createText(railX, midY - 32),
-      width: railW,
-      height: 30,
-      label: t.question,
-      textSize: 'md',
-      textBold: true,
-      textAlignX: 'left',
-      textColor: '#1d4ed8',
-    });
-    labels.push({
-      ...createText(railX, midY + 2),
-      width: railW,
-      height: 30,
-      label: t.answer,
-      textSize: 'sm',
-      textAlignX: 'left',
-      textColor: MUTED,
-    });
-  });
-  // Largest band first, so each smaller one paints over the top of it.
-  return [...bands.reverse(), ...labels];
-}
 
 // Flywheel: a worked growth loop for FreshBox (the meal-kit subscription the
 // strategy canvases share) that reads as MOMENTUM, not a static four-up.

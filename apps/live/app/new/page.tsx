@@ -32,6 +32,8 @@ import {
   type CreateIds,
 } from './create-failure';
 import { offlineCreateDocument } from '@/lib/offline/offline-store';
+import { offlineWriteItem } from '@/lib/offline/offline-items';
+import { seedAuthor } from '@/lib/seed-author';
 import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
@@ -66,7 +68,7 @@ import { debugLog } from '@/lib/debug-log';
 import { handStartQuery } from '@/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
 import { handTemplatePick } from '@/lib/placement-defaults/template-pick-handoff';
-import { isBlankTemplate } from '@livediagram/templates';
+import { isBlankTemplate, isPlanTemplateKind } from '@livediagram/templates';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
 // renders the editor itself under the rewritten /document/<id> URL instead of paying for a second page
@@ -421,6 +423,16 @@ export default function NewDocumentPage() {
         )
       : null;
     if (itemTypes) debugLog('[item-types] brought', { types: itemTypes.types.length, via: 'new' });
+    // Its worked example cards, dated from today (docs/specs/026-plan/plan-templates.md "Example cards"): none for
+    // any template but a Plan template with boards.
+    // Loaded only for a Plan template: the example cards' data stays out of /new's first load.
+    const seedItems =
+      templateKind && isPlanTemplateKind(templateKind)
+        ? await import('@livediagram/templates/plan-template-seeds').then((m) =>
+            m.planTemplateSeedItems(templateKind, m.seedToday()),
+          )
+        : [];
+    if (seedItems.length) debugLog('[plan] seed cards', { cards: seedItems.length, via: 'new' });
     const tab = tabs
       ? tabs[0]!
       : {
@@ -455,6 +467,14 @@ export default function NewDocumentPage() {
           },
           Date.now(),
         );
+        // Its example cards, through the same checks the api's create puts them through (offline-items.ts).
+        if (seedItems.length) {
+          await offlineWriteItem(
+            documentId,
+            { kind: 'create', creates: seedItems },
+            await seedAuthor(selfRef.current),
+          );
+        }
       } else {
         // "Always save <these> here" first (docs/specs/013-workspace/default-folders.md).
         await applyAlwaysSave(settings.alwaysSave);
@@ -467,6 +487,7 @@ export default function NewDocumentPage() {
           name: documentName,
           tabs: tabs ?? [tab],
           ...(itemTypes ? { itemTypes } : {}),
+          ...(seedItems.length ? { items: seedItems } : {}),
           // Passed through as given: absent is no choice (a default folder may answer), a null
           // folder the root chosen on purpose (docs/specs/013-workspace/default-folders.md).
           teamId: settings.teamId,

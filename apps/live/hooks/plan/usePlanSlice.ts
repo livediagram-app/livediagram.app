@@ -265,6 +265,18 @@ export function usePlanSlice(opts: {
     },
     [write, planItems.items],
   );
+  // Many cards changed as one write and one undo step (Keep Them on a template's example cards).
+  const patchItems = useCallback(
+    (patches: readonly ItemPatchOf[]) => {
+      if (patches.length === 0) return;
+      void write(
+        patches.length === 1
+          ? { kind: 'patch', id: patches[0]!.id, patch: patches[0]!.patch }
+          : { kind: 'patches', patches: [...patches] },
+      );
+    },
+    [write],
+  );
   const trashItem = useCallback((itemId: string) => void trashItems([itemId]), [trashItems]);
   const restoreItem = useCallback(
     (itemId: string) => {
@@ -524,6 +536,7 @@ export function usePlanSlice(opts: {
       draggingItemId,
       trashItem,
       trashItems,
+      patchItems,
       restoreItem,
       emptyTrash,
       statusNames: opts.statusNames,
@@ -570,6 +583,7 @@ export function usePlanSlice(opts: {
       draggingItemId,
       trashItem,
       trashItems,
+      patchItems,
       restoreItem,
       emptyTrash,
       addItemSlide,
