@@ -204,16 +204,19 @@ Top-level `permissions: contents: read`.
 Every job carries the gate:
 `github.repository_id == '1253158818' && github.event.pull_request.head.repo.full_name == github.repository`.
 
-| Job         | Runs when                                    | Needs    | Does                                                                                                                                                                                                                                                                                        |
-| ----------- | -------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tier`      | action is not `closed`                       |          | Checkout head (`fetch-depth: 0`, `filter: blob:none`), install, `packages/preview-env/scripts/tier.ts`, add label if `add_label`; `permissions: contents: read, pull-requests: write`                                                                                                       |
-| `deploy`    | action is not `closed`                       | `tier`   | `uses: ./.github/workflows/deploy-reusable.yml` with `wrangler_env: preview`, `preview_pr`, `preview_tier`, `environment_name: preview`, `environment_url: previewOrigin`, `mcp_origin: https://mcp-staging.livediagram.app`, `ref: head sha`; secrets `CF_API_TOKEN`, `CF_ACCOUNT_ID` only |
-| `downgrade` | action is not `closed` and tier is `preview` | `deploy` | `packages/preview-env/scripts/teardown.ts --pr N --scope full` (a no-op when nothing full exists)                                                                                                                                                                                           |
-| `teardown`  | action is `closed`                           |          | `packages/preview-env/scripts/teardown.ts --pr N --scope all`                                                                                                                                                                                                                               |
+| Job         | Runs when                                  | Needs            | Does                                                                                                                                                                                                                                                                                        |
+| ----------- | ------------------------------------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tier`      | action is not `closed`                     |                  | Checkout head (`fetch-depth: 0`, `filter: blob:none`), install, `packages/preview-env/scripts/tier.ts`, add label if `add_label`; `permissions: contents: read, pull-requests: write`                                                                                                       |
+| `deploy`    | action is not `closed`                     | `tier`           | `uses: ./.github/workflows/deploy-reusable.yml` with `wrangler_env: preview`, `preview_pr`, `preview_tier`, `environment_name: preview`, `environment_url: previewOrigin`, `mcp_origin: https://mcp-staging.livediagram.app`, `ref: head sha`; secrets `CF_API_TOKEN`, `CF_ACCOUNT_ID` only |
+| `downgrade` | tier is `preview` and the deploy succeeded | `tier`, `deploy` | `packages/preview-env/scripts/teardown.ts --pr N --scope full` (a no-op when nothing full exists); no install, the script imports only Node                                                                                                                                                 |
+| `teardown`  | action is `closed`                         |                  | `packages/preview-env/scripts/teardown.ts --pr N --scope all`                                                                                                                                                                                                                               |
 
 `labeled` / `unlabeled` events for any label other than `full-preview` skip `tier` and
 everything after it (`github.event.label.name == 'full-preview'` or the action is not a
-label event), so labelling a PR for anything else costs nothing.
+label event), so labelling a PR for anything else costs nothing. Such a
+run also takes a concurrency group of its own (`preview-noop-<run id>`): the group is per
+workflow, so sharing `preview-pr-<N>` would let an unrelated label cancel a real deploy
+and then do nothing.
 
 ### Workflow: `deploy-reusable.yml` changes
 
