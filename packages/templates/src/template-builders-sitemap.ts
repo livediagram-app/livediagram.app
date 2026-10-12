@@ -1,27 +1,28 @@
 // The sitemap builder (docs/specs/008-canvas/canvas-and-palette.md "Templates"), split out of
-// ./template-builders-hierarchies (which re-exports it) once it gained page
-// glyphs, section hues and the utility / footer groups. Pure:
-// (cx, cy) -> Element[].
+// ./template-builders-hierarchies (which re-exports it). Pure: (cx, cy) -> Element[].
 
 import {
-  createPinnedArrow,
-  createShape,
   createText,
-  type Anchor,
+  runsPlainText,
+  type ArrowElement,
   type Element,
   type ShapeElement,
+  type TextRun,
 } from '@livediagram/document';
-import { BOTTOM_EXITS, rake } from './template-rake';
+import { buildMindTemplate, mindHowTo, type MindSpec } from './template-builders-mindmaps';
 
-// Sitemap: a real product site's page tree, the way a web team plans one.
-// Home (bold, a house glyph) sits on top. The three top-nav sections hang
-// below it, each in its own hue with a glyph for what it holds, and every
-// page carries a line-art glyph for its page type (a list, an article, a
-// form) plus its route in muted grey underneath, so the boxes read as URLs to
-// build rather than people in an org chart. Pages that live OUTSIDE the nav
-// flank Home on dashed lines: the footer's company pages on the left, the
-// sign-in utility pages on the right. Every connector is a square rake, the
-// sitemap convention: down, across, down, arriving square on the child's top.
+// Sitemap: a real product site's page tree, the way a web team plans one,
+// built from MIND NODES in the downward flow (docs/specs/009-elements/mind-node.md
+// "Templates") so it is a live tree rather than a picture of one: Tab on a
+// section adds a page under it, Enter adds a sibling, and the outline and Tidy
+// Map work on it. Home (bold, a house glyph) sits on top. The three top-nav
+// sections hang below it, each in its own hue with a glyph for what it holds,
+// and every page carries a line-art glyph for its page type plus its route in
+// muted grey on its second line, so the boxes read as URLs to build and the
+// route travels with its page when the map is tidied or grown. The pages that
+// live OUTSIDE the nav hang off Home on dashed lines, the footer's company
+// pages on the far left and the sign-in utility pages on the far right.
+// Plain angled lines, no arrowheads: a sitemap shows structure, not flow.
 type Page = { label: string; icon: string; route: string };
 type Section = {
   label: string;
@@ -76,190 +77,103 @@ const UTILITY: [string, Page[]] = [
 ];
 
 const MUTED = '#64748b';
-// A sitemap shows structure: plain lines, no arrowheads.
-const LINE = { arrowEnds: 'none', arrowStyle: 'angled' } as const;
+const LINE: Partial<ArrowElement> = { arrowEnds: 'none', arrowStyle: 'angled' };
+const OUTSIDE: MindHue = { fill: '#f8fafc', stroke: '#94a3b8', ink: '#334155', leaf: '#cbd5e1' };
+type MindHue = Section['hue'];
+
+// A page: its name over its route in muted grey, on one node.
+const pageRuns = (p: Page): TextRun[] => [
+  { text: p.label },
+  { text: `\n${p.route}`, size: 'sm', color: MUTED },
+];
+
+const pageSpec = (p: Page, hue: MindHue, dashed: boolean): MindSpec => {
+  const runs = pageRuns(p);
+  return {
+    label: runsPlainText(runs),
+    look: {
+      width: 170,
+      height: 60,
+      textSize: 'sm',
+      iconId: p.icon,
+      richText: runs,
+      fillColor: '#ffffff',
+      strokeColor: hue.leaf,
+      textColor: '#334155',
+    },
+    connector: { ...LINE, strokeColor: hue.leaf, ...(dashed ? { strokeStyle: 'dashed' } : {}) },
+  };
+};
+
+const groupSpec = (
+  label: string,
+  icon: string,
+  hue: MindHue,
+  pages: Page[],
+  dashed: boolean,
+): MindSpec => ({
+  label,
+  look: {
+    width: 180,
+    height: 60,
+    textSize: 'md',
+    textBold: true,
+    iconId: icon,
+    fillColor: hue.fill,
+    strokeColor: hue.stroke,
+    textColor: hue.ink,
+    strokeWidth: dashed ? 'medium' : 'thick',
+    ...(dashed ? { strokeStyle: 'dashed' } : {}),
+  },
+  connector: {
+    ...LINE,
+    strokeColor: hue.stroke,
+    strokeWidth: dashed ? 2 : 3,
+    ...(dashed ? { strokeStyle: 'dashed' } : {}),
+  },
+  children: pages.map((p) => pageSpec(p, hue, dashed)),
+});
 
 export function buildSitemap(cx: number, cy: number): Element[] {
-  const homeW = 240;
-  const homeH = 76;
-  const sectionW = 340;
-  const sectionH = 64;
-  const pageW = 150;
-  const pageH = 52;
-  const routeH = 24;
-  const sidePageW = 170;
-  const sidePageH = 44;
-  const sectionPitch = 420;
-  const titleH = 44;
-  const captionH = 28;
-  const levelGap = 76;
-  // Home's row is taller than Home: the flanks stack two pages (and their
-  // routes) level with it, so the row gets extra room above and below and
-  // the rake's elbows still land in open canvas.
-  const flankPitch = sidePageH + routeH + 16;
-  const flankH = flankPitch * 2 - 16;
-  const homeRowPad = (flankH - homeH) / 2;
-  const totalW = sectionPitch * 2 + sectionW;
-  const totalH =
-    titleH + captionH + 40 + flankH + levelGap + 24 + sectionH + levelGap + pageH + routeH;
-  const left = cx - totalW / 2;
-  const top = cy - totalH / 2;
-  const homeY = top + titleH + captionH + 40 + homeRowPad;
-  const sectionY = homeY + homeH + homeRowPad + levelGap + 24;
-  const pageY = sectionY + sectionH + levelGap;
-
-  const elements: Element[] = [
+  const map = buildMindTemplate(
     {
-      ...createText(left, top),
-      width: totalW,
-      height: titleH,
+      label: 'Home',
+      look: { width: 220, height: 72, textSize: 'lg', iconId: 'home', colorPreset: 'bold' },
+      children: [
+        groupSpec(FOOTER[0], 'menu', OUTSIDE, FOOTER[1], true),
+        ...SITE_SECTIONS.map((sec) => groupSpec(sec.label, sec.icon, sec.hue, sec.pages, false)),
+        groupSpec(UTILITY[0], 'settings', OUTSIDE, UTILITY[1], true),
+      ],
+    },
+    'downward',
+    cx,
+    cy,
+  );
+  const nodes = map.filter((el): el is ShapeElement => el.type === 'shape');
+  const left = Math.min(...nodes.map((n) => n.x));
+  const right = Math.max(...nodes.map((n) => n.x + n.width));
+  const top = Math.min(...nodes.map((n) => n.y));
+  return [
+    {
+      ...createText(left, top - 112),
+      width: right - left,
+      height: 44,
       label: 'brightside.app · sitemap',
       textSize: 'lg',
       textBold: true,
       textAlignX: 'left',
     },
     {
-      ...createText(left, top + titleH),
-      width: totalW,
-      height: captionH,
+      ...createText(left, top - 68),
+      width: right - left,
+      height: 28,
       label:
-        'One card per page, grouped under the top nav, with its route beneath. Dashed lines are pages outside the nav.',
+        'One node per page, grouped under the top nav, with its route beneath. Dashed branches are pages outside the nav.',
       textSize: 'sm',
       textColor: MUTED,
       textAlignX: 'left',
     },
+    ...map,
+    mindHowTo(map, 'Select a section, then press Tab to add a page or Enter to add a sibling.'),
   ];
-  const arrows: Element[] = [];
-
-  const home: ShapeElement = {
-    ...createShape('square', cx - homeW / 2, homeY),
-    width: homeW,
-    height: homeH,
-    label: 'Home',
-    textSize: 'lg',
-    iconId: 'home',
-    colorPreset: 'bold',
-  };
-  elements.push(home);
-
-  // A page card with its route in muted grey underneath.
-  const page = (
-    p: Page,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    look: Partial<ShapeElement>,
-  ) => {
-    const card: ShapeElement = {
-      ...createShape('square', x, y),
-      width: w,
-      height: h,
-      label: p.label,
-      textSize: 'sm',
-      iconId: p.icon,
-      ...look,
-    };
-    elements.push(card, {
-      ...createText(x, y + h + 4),
-      width: w,
-      height: routeH,
-      label: p.route,
-      textSize: 'sm',
-      textColor: MUTED,
-      textAlignX: 'center',
-    });
-    return card;
-  };
-
-  // The flanks: two stacked pages either side of Home on dashed lines, each
-  // leaving Home's side from its own point (upper / lower third).
-  const flank = ([caption, pages]: [string, Page[]], side: -1 | 1) => {
-    const x = side === 1 ? cx + homeW / 2 + 120 : cx - homeW / 2 - 120 - sidePageW;
-    const y0 = homeY + homeH / 2 - flankH / 2;
-    elements.push({
-      ...createText(x, y0 - 28),
-      width: sidePageW,
-      height: 24,
-      label: caption,
-      textSize: 'sm',
-      textBold: true,
-      textColor: MUTED,
-      textAlignX: 'left',
-    });
-    pages.forEach((p, i) => {
-      const card = page(p, x, y0 + i * flankPitch, sidePageW, sidePageH, {
-        fillColor: '#ffffff',
-        strokeColor: '#94a3b8',
-        textColor: '#334155',
-      });
-      const out: Anchor = side === 1 ? (i === 0 ? 'ene' : 'ese') : i === 0 ? 'wnw' : 'wsw';
-      // Across, a step in the middle of the gap, across: Home's side and
-      // the page sit at different heights, and a mid-gap step reads as
-      // deliberate where an auto elbow jogged at the card's edge.
-      const from = {
-        x: side === 1 ? home.x + homeW : home.x,
-        y: homeY + homeH * (i === 0 ? 0.25 : 0.75),
-      };
-      const to = { x: side === 1 ? card.x : card.x + sidePageW, y: card.y + sidePageH / 2 };
-      const my = (from.y + to.y) / 2;
-      arrows.push({
-        ...createPinnedArrow(home.id, out, card.id, side === 1 ? 'w' : 'e'),
-        ...LINE,
-        strokeStyle: 'dashed',
-        curvePoints: [
-          { dx: 0, dy: from.y - my },
-          { dx: 0, dy: to.y - my },
-        ],
-      });
-    });
-  };
-  flank(FOOTER, -1);
-  flank(UTILITY, 1);
-
-  SITE_SECTIONS.forEach((section, i) => {
-    const sx = cx + (i - 1) * sectionPitch;
-    const { hue } = section;
-    const sectionEl: ShapeElement = {
-      ...createShape('square', sx - sectionW / 2, sectionY),
-      width: sectionW,
-      height: sectionH,
-      label: section.label,
-      textSize: 'md',
-      textBold: true,
-      iconId: section.icon,
-      fillColor: hue.fill,
-      strokeColor: hue.stroke,
-      textColor: hue.ink,
-      strokeWidth: 'thick',
-    };
-    elements.push(sectionEl);
-    const [anchor, fx] = BOTTOM_EXITS[i]!;
-    arrows.push({
-      ...createPinnedArrow(home.id, anchor, sectionEl.id, 'n'),
-      ...LINE,
-      curvePoints: rake({ x: home.x + homeW * fx, y: homeY + homeH }, { x: sx, y: sectionY }),
-    });
-
-    // Two pages per section, each centred under its own quarter of the
-    // section's bottom edge so its line drops straight.
-    section.pages.forEach((p, j) => {
-      const px = sx + (j === 0 ? -0.25 : 0.25) * sectionW;
-      const card = page(p, px - pageW / 2, pageY, pageW, pageH, {
-        fillColor: '#ffffff',
-        strokeColor: hue.leaf,
-        textColor: '#334155',
-      });
-      arrows.push({
-        ...createPinnedArrow(sectionEl.id, j === 0 ? 'ssw' : 'sse', card.id, 'n'),
-        ...LINE,
-        curvePoints: rake(
-          { x: sx + (j === 0 ? -0.25 : 0.25) * sectionW, y: sectionY + sectionH },
-          { x: px, y: pageY },
-        ),
-      });
-    });
-  });
-
-  return [...elements, ...arrows];
 }

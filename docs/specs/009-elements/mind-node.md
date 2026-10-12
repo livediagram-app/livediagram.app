@@ -461,6 +461,7 @@ it in place, and the new nodes look like the template's own.
 - **Mind map**: the bubble flow; a team-offsite plan, a root with five branches, each in its own hue with a glyph, carrying two or three leaves.
 - **Tree mind map**: the tree flow; a bold root, four tinted branches, two small leaves each.
 - **Bubble map**: the bubble flow with round nodes and a single ring; a brand voice, one adjective and its proof line per bubble, each bubble in its own hue.
+- **Sitemap**: the downward flow; Home over the nav sections and the dashed footer and utility groups, each page carrying its route on its second line ([Templates](../008-canvas/canvas-and-palette.md)).
 
 ## Deleting
 

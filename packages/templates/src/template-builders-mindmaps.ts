@@ -22,14 +22,19 @@ import {
 
 /** One node of a template map: its label, its look, the look of the connector
  *  into it (a branch's colour, say), and what hangs off it. */
-type MindSpec = {
+export type MindSpec = {
   label: string;
   look: Partial<ShapeElement> & { width: number; height: number };
   connector?: Partial<ArrowElement>;
   children?: MindSpec[];
 };
 
-function buildMindTemplate(spec: MindSpec, flow: MindFlow, cx: number, cy: number): Element[] {
+export function buildMindTemplate(
+  spec: MindSpec,
+  flow: MindFlow,
+  cx: number,
+  cy: number,
+): Element[] {
   const nodes: ShapeElement[] = [];
   const connectorLook = new Map<string, Partial<ArrowElement>>();
   const make = (s: MindSpec, parentId?: string): ShapeElement => {
@@ -171,7 +176,7 @@ export function buildMindMap(cx: number, cy: number): Element[] {
 
 // The muted how-to line under a map: the two keys that grow it, which a
 // newcomer would otherwise only find in a hover card.
-function mindHowTo(map: Element[], label: string): Element {
+export function mindHowTo(map: Element[], label: string): Element {
   const nodes = map.filter((el): el is ShapeElement => el.type === 'shape');
   const left = Math.min(...nodes.map((n) => n.x));
   const right = Math.max(...nodes.map((n) => n.x + n.width));
