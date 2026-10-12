@@ -167,7 +167,7 @@ export function TeamMemberRow({
             type="button"
             onClick={() => onRemove(m)}
             aria-label={`Remove ${name}`}
-            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+            className="inline-flex h-7 w-7 items-center justify-center rounded text-slate-300 opacity-0 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:opacity-100 group-hover:opacity-100 dark:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 [@media(hover:none)]:opacity-100"
           >
             <CloseIcon size={11} />
           </button>

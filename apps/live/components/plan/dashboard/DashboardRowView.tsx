@@ -35,6 +35,13 @@ export const ROW_KEY_STEP_BIG_PX = 80;
 const HANDLE_FOCUS =
   'focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded-full';
 
+// A touch screen has no hover to reveal the handles (plan-tabs.md "Editing"): each is a quiet marker, always shown,
+// with a finger's reach (24 px across, centred on the gap) only around its bar, so the slots' own edges stay theirs.
+const TOUCH_DIVIDER =
+  '[@media(hover:none)]:top-1/2 [@media(hover:none)]:h-16 [@media(hover:none)]:w-6 [@media(hover:none)]:-translate-y-1/2 [@media(hover:none)]:opacity-50';
+const TOUCH_ROW_HANDLE =
+  '[@media(hover:none)]:-bottom-[18px] [@media(hover:none)]:left-1/2 [@media(hover:none)]:h-6 [@media(hover:none)]:w-16 [@media(hover:none)]:-translate-x-1/2 [@media(hover:none)]:opacity-50';
+
 type Drag =
   | { kind: 'divider'; index: number; startX: number; spanPx: number; delta: number }
   | { kind: 'height'; startY: number; start: number; height: number };
@@ -205,7 +212,9 @@ export const DashboardRowView = memo(function DashboardRowView({
               aria-valuemax={shown.slots[i]!.span + shown.slots[i + 1]!.span - DASHBOARD_SPAN_MIN}
               aria-valuetext={`${shown.slots[i]!.span} of ${DASHBOARD_SPANS} twelfths`}
               onKeyDown={(e) => dividerKey(e, i)}
-              className={`absolute top-0 z-10 flex h-full w-3 -translate-x-1/2 cursor-col-resize items-center justify-center opacity-0 transition-opacity duration-micro ease-out hover:opacity-100 group-hover/row:opacity-60 motion-reduce:transition-none ${HANDLE_FOCUS}`}
+              // On a touch screen it waits for no hover: a quiet marker always shown, a finger wide and its bar's height
+              // tall in the middle of the gap, taking the finger rather than scrolling the page.
+              className={`absolute top-0 z-10 flex h-full w-3 -translate-x-1/2 cursor-col-resize touch-none items-center justify-center opacity-0 transition-opacity duration-micro ease-out hover:opacity-100 group-hover/row:opacity-60 motion-reduce:transition-none ${TOUCH_DIVIDER} ${drag?.kind === 'divider' && drag.index === i ? '!opacity-100' : ''} ${HANDLE_FOCUS}`}
               // The middle of the gap after `at` twelfths: at/12 of the row, less the half gap the columns before it give up.
               style={{
                 left: `calc(${(at / DASHBOARD_SPANS) * 100}% + ${(at / DASHBOARD_SPANS) * GAP_PX - GAP_PX / 2}px)`,
@@ -220,7 +229,7 @@ export const DashboardRowView = memo(function DashboardRowView({
                 })
               }
             >
-              <span className="h-10 w-1 scale-y-50 rounded-full bg-brand-500 transition-[scale] duration-micro ease-out group-hover/row:scale-y-100 motion-reduce:scale-y-100 motion-reduce:transition-none" />
+              <span className="h-10 w-1 scale-y-50 rounded-full bg-brand-500 transition-[scale] duration-micro ease-out group-hover/row:scale-y-100 motion-reduce:scale-y-100 motion-reduce:transition-none [@media(hover:none)]:scale-y-100" />
             </div>
           ))}
           {fills || condensed ? null : (
@@ -234,7 +243,8 @@ export const DashboardRowView = memo(function DashboardRowView({
               aria-valuemax={DASHBOARD_ROW_H_MAX}
               aria-valuetext={`${shown.height} pixels tall`}
               onKeyDown={heightKey}
-              className={`absolute -bottom-2.5 left-0 z-10 flex h-3 w-full cursor-row-resize items-center justify-center opacity-0 transition-opacity duration-micro ease-out hover:opacity-100 group-hover/row:opacity-60 motion-reduce:transition-none ${HANDLE_FOCUS}`}
+              // On a touch screen, as a divider: a quiet marker always shown, a finger tall and its bar's width wide.
+              className={`absolute -bottom-2.5 left-0 z-10 flex h-3 w-full cursor-row-resize touch-none items-center justify-center opacity-0 transition-opacity duration-micro ease-out hover:opacity-100 group-hover/row:opacity-60 motion-reduce:transition-none ${TOUCH_ROW_HANDLE} ${drag?.kind === 'height' ? '!opacity-100' : ''} ${HANDLE_FOCUS}`}
               onPointerDown={(e) =>
                 begin(e, {
                   kind: 'height',
@@ -244,7 +254,7 @@ export const DashboardRowView = memo(function DashboardRowView({
                 })
               }
             >
-              <span className="h-1 w-10 scale-x-50 rounded-full bg-brand-500 transition-[scale] duration-micro ease-out group-hover/row:scale-x-100 motion-reduce:scale-x-100 motion-reduce:transition-none" />
+              <span className="h-1 w-10 scale-x-50 rounded-full bg-brand-500 transition-[scale] duration-micro ease-out group-hover/row:scale-x-100 motion-reduce:scale-x-100 motion-reduce:transition-none [@media(hover:none)]:scale-x-100" />
             </div>
           )}
         </>

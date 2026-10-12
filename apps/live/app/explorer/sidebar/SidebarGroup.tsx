@@ -37,10 +37,11 @@ export function SidebarGroup({
           {title}
         </h2>
       ) : (
+        // On a touch screen the rows' own 44px already leave air round the words, so a group keeps less above it.
         <h2
           id={titleId}
           className={`relative box-content h-4 px-2 pb-2 text-[10px] font-semibold uppercase leading-4 tracking-wider text-slate-400 ${
-            first ? '' : 'mt-5 pt-1'
+            first ? '' : 'mt-5 pt-1 pointer-coarse:mt-2'
           }`}
         >
           {titles ? title : <span className="sr-only">{title}</span>}

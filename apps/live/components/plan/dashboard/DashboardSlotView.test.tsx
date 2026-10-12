@@ -89,6 +89,28 @@ describe('share roles', () => {
   });
 });
 
+// plan-tabs.md "Moving a slot" (on a touch screen): the grip waits for no hover, has a finger's tap area, and sits in
+// the top left corner of a slot with no header of its own.
+describe('the grip on a touch screen', () => {
+  it('is always shown there, with a finger’s tap area, in an unheaded slot’s corner', () => {
+    show({ id: 's', span: 6 }, { beginMove: vi.fn() });
+    const grip = screen.getByRole('button', { name: 'Move Slot' }).className;
+    expect(grip).toMatch(/\btouch-target\b/);
+    expect(grip).toContain('[@media(hover:none)]:opacity-70');
+    expect(grip).toContain('[@media(hover:none)]:left-2');
+  });
+
+  it('stays in the middle of a headed slot’s top edge, clear of its title', () => {
+    show(
+      { id: 's', span: 6, content: { type: 'tab', tabId: 't' } },
+      { beginMove: vi.fn(), tabs: [] },
+    );
+    const grip = screen.getByRole('button', { name: 'Move Slot' }).className;
+    expect(grip).toContain('[@media(hover:none)]:opacity-70');
+    expect(grip).not.toContain('[@media(hover:none)]:left-2');
+  });
+});
+
 // plan-tabs.md "Sheet Chart": picked, Add to Slot gives way to Choose a Chart; nothing fills the slot until chosen.
 describe('a Sheet Chart from Add to Slot', () => {
   it('asks for its sheet and chart first', () => {

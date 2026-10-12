@@ -35,9 +35,15 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   breadcrumb links, and the telemetry view tabs and their arrows.
 - **A list's rows abut at 44px.** Where links or rows stack closer than 44px, a pad would overlap the
   next row's, so on a touch screen each row is 44px tall and the list drops its gap: the Explorer tree
-  (`SidebarRow`, its chevron taking the row's full height), the site footer's columns, a story beat's
+  (`SidebarRow`, its chevron moved to the row's end as a 44 px disclosure the row's full height), the site footer's columns, a story beat's
   highlights on the landing page, and the help centre's contents and Learn More lists. The list grows
-  taller on a touch screen; under a mouse it keeps its compact rhythm.
+  taller on a touch screen; under a mouse it keeps its compact rhythm. The Explorer tree's words and icons grow with
+  it (15 px words on a 20 px line, 17 px icons, a group keeping 8 px rather than 20 px above its title), so the taller
+  rows read as a phone's list rather than small words far apart.
+- **Nothing waits for a hover on a touch screen.** A control that appears on hover (a row's delete, a card's edit, a
+  theme card's actions, a Dashboard's grip, dividers and row handle) is shown there all the time
+  (`[@media(hover:none)]`), quietly where it would crowd. A canvas comment bubble's quick delete stays hover-only:
+  shown on every bubble it would invite a mistaken tap, and the open thread offers Delete.
 - **Keyboard hints are not drawn on a touch screen.** A tile's always-on shortcut letter (the Palette
   strip, the Draw dock and its flyouts, a picker's corner key) teaches a key there is no keyboard to
   press, so it carries `pointer-coarse:hidden`; `aria-keyshortcuts` stays for a paired keyboard.

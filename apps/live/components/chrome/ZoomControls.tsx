@@ -1,3 +1,4 @@
+import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
@@ -72,10 +73,12 @@ export function ZoomControls({
 }: ZoomControlsProps) {
   const copy = ZOOM_COPY[zoomScope];
   const why = (description: string) => (zoomOff ? ZOOM_OFF_REASON : description);
-  // On a touch screen (pinch zooms) with zoom off (a Dashboard, a covering board) all that is left is a disabled Fit:
-  // nothing to offer, so the cluster goes rather than sit over the page (plan-tabs.md "On a phone").
+  // On a touch screen (pinch zooms; a tablet too, not only a phone) with zoom off (a Dashboard, a covering board) all
+  // that is left is a disabled level: nothing to offer, so the cluster goes rather than sit over the page (plan-tabs.md
+  // "On a phone").
+  const touch = useCoarsePointer();
   if (
-    pinchOnly &&
+    (pinchOnly || touch) &&
     zoomOff &&
     !(onIsoOrbit && onIsoReset) &&
     !(onToggleZen && (zenActive || zenEnterHere))

@@ -26,6 +26,8 @@ type Pan = {
 export type SheetPan = {
   // Starts a pan for this press when it is one; true when it took the press.
   begin: (e: React.PointerEvent, opts: { maximised: boolean }) => boolean;
+  // Lets go of a pan in progress, unmoved or not, swallowing nothing (a held finger now selects instead).
+  release: () => void;
   // A bare Space in the grid (not typing) is held for Space-drag instead of typing a space; it is typed on release
   // when no pan happened. True when the key was taken.
   onKeyDown: (e: React.KeyboardEvent) => boolean;
@@ -95,6 +97,7 @@ function createSheetPan(scroller: () => HTMLElement | null): SheetPan & { dispos
 
   return {
     dispose: () => void end(),
+    release: () => void end(),
     begin: (e, { maximised }) => {
       const el = scroller();
       if (!el) return false;
