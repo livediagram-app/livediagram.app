@@ -766,7 +766,8 @@ export const PALETTE_GROUPS_OPENED = chart(
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
       type === 'ToolbarSearch' ||
-      type === 'ToolbarSearchOtherModes',
+      type === 'ToolbarSearchOtherModes' ||
+      type === 'ToolbarSearchUnavailable',
   },
 );
 
