@@ -18,6 +18,7 @@ import {
 } from './colors';
 import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
 import { fontIdsUsed, resolveFontStack } from './fonts';
+import { elementFontId, isFinish, type Finish } from './finish';
 import { hasRichFormatting } from './rich-text';
 import { iconCaptionBand } from './icon-size';
 import { fontSizeFor, labelMaxWidth } from './svg-render-primitives';
@@ -103,6 +104,10 @@ export type BoxedExportOptions = {
   resolveIconArt?: ResolveIconArt;
   resolveStickerArt?: ResolveStickerArt;
   tabFont?: string;
+  // The tab's finish (docs/specs/008-canvas/finish.md), for elements without their own.
+  tabFinish?: Finish;
+  // Something sits on this shape (sketch-backdrop.ts): under Sketch it keeps a solid fill.
+  sketchBackdrop?: boolean;
   // The paper the export is being drawn on, for elements that carry no
   // colours of their own (docs/specs/007-editor/live-app.md). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
@@ -132,8 +137,23 @@ export type ResolvePlanArt = (el: BoxedElement & { type: 'shape' }) => string | 
 // (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The
 // same ladder the canvas walks — an export that resolved it differently
 // would hand out a picture of a canvas nobody has.
-export function exportFontFamily(el: BoxedElement, tabFont?: string): string | undefined {
-  return resolveFontStack(el.font ?? eventStormingNoteFont(el)) ?? resolveFontStack(tabFont);
+// Under the Sketch finish an element without a face of its own writes in the handwriting font, whatever
+// the tab's (docs/specs/008-canvas/finish.md).
+export function exportFontFamily(
+  el: BoxedElement,
+  tabFont?: string,
+  tabFinish?: Finish,
+): string | undefined {
+  return (
+    resolveFontStack(el.font ?? eventStormingNoteFont(el)) ??
+    resolveFontStack(elementFontId({ finish: finishOf(el) }, tabFont, tabFinish))
+  );
+}
+
+/** An element's own finish, on the kinds that carry one. */
+export function finishOf(el: object): Finish | undefined {
+  const own = (el as { finish?: unknown }).finish;
+  return isFinish(own) ? own : undefined;
 }
 
 // Every font id an export of these elements will paint with — what they
@@ -141,14 +161,29 @@ export function exportFontFamily(el: BoxedElement, tabFont?: string): string | u
 // workshop note. The list a file's embedded (or declared) webfaces come
 // from, so an export ships exactly the faces it uses.
 export function exportFontIds(
-  elements: readonly { type: string; font?: string; esKind?: unknown; fillColor?: string }[],
+  elements: readonly {
+    type: string;
+    font?: string;
+    finish?: unknown;
+    esKind?: unknown;
+    fillColor?: string;
+  }[],
   tabFont?: string,
   // The Sheet windows drawn (docs/specs/029-sheets/sheet.md "Formatting"): a cell's own font is painted too.
   sheets?: ReadonlyMap<string, { cells: readonly { font?: string }[] }>,
+  tabFinish?: Finish,
 ): string[] {
   const boxed = elements.filter((el) => el.type !== 'arrow') as BoxedElement[];
   const cellFonts = [...(sheets?.values() ?? [])].flatMap((m) => m.cells.map((c) => c.font));
-  return fontIdsUsed(boxed, tabFont, [...boxed.map(eventStormingNoteFont), ...cellFonts]);
+  // What each element letters in when it has no face of its own: the handwriting font under Sketch.
+  const finishFonts = elements.map((el) =>
+    el.font ? undefined : elementFontId(el, undefined, tabFinish),
+  );
+  return fontIdsUsed(boxed, tabFont, [
+    ...boxed.map(eventStormingNoteFont),
+    ...cellFonts,
+    ...finishFonts,
+  ]);
 }
 
 export function describeBoxedExport(
@@ -159,7 +194,7 @@ export function describeBoxedExport(
   // A stock colour stored by name is drawn in its version for this page.
   const el = resolveStockColours(source, surface);
   const { resolveImageHref, resolveIconArt, resolveStickerArt } = opts;
-  const fontFamily = exportFontFamily(el, opts.tabFont);
+  const fontFamily = exportFontFamily(el, opts.tabFont, opts.tabFinish);
   const opacity = el.opacity ?? 1;
   if (el.type === 'image') {
     // Mirror ImageElementView: borderRadius drives the corner clip (avatar

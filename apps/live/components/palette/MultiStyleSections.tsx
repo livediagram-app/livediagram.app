@@ -17,6 +17,7 @@ import {
   type Element,
   type ElementShadow,
   type ShapeElement,
+  supportsFinish,
 } from '@livediagram/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import {
@@ -29,6 +30,7 @@ import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-men
 import { ColourRow } from '@/components/palette/context-menu-rows';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { ShadowSection } from '@/components/palette/ShadowSection';
+import { FinishSection, resolveOwnFinish } from '@/components/palette/FinishSection';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { BorderControls } from '@/components/palette/BorderControls';
@@ -87,6 +89,9 @@ export function MultiStyleSections({
   // element that carries no colour of its own (docs/specs/007-editor/live-app.md).
   const surface = useCanvasSurface();
   // First line-art icon: gates + feeds the Weight row, which applies to every line-art icon.
+  // First member that takes a finish (shape, arrow, text, sticky, table): gates + feeds the Finish tiles,
+  // whose commit sets every such member (docs/specs/008-canvas/finish.md).
+  const finishSrc = [...boxedSel, ...(arrowSrc ? [arrowSrc] : [])].find(supportsFinish);
   const lineIconSrc = boxedSel.find(
     (el): el is ShapeElement =>
       el.type === 'shape' && el.shape === 'icon' && !isTechIconId(el.iconId),
@@ -207,6 +212,16 @@ export function MultiStyleSections({
           onSetShadow={props.onSetShadow}
           onCommitPreset={props.onCommitShadow}
           onPreviewPreset={props.onPreviewShadow}
+          onPreviewEnd={props.onPreviewStyleEnd}
+        />
+      ) : null}
+      {/* Finish (docs/specs/008-canvas/finish.md): how the element is drawn, last in the style band. */}
+      {part === 'style' && finishSrc ? (
+        <FinishSection
+          finish={resolveOwnFinish(finishSrc)}
+          section={sectionProps('m-finish')}
+          onCommit={props.onCommitFinish}
+          onPreview={props.onPreviewFinish}
           onPreviewEnd={props.onPreviewStyleEnd}
         />
       ) : null}

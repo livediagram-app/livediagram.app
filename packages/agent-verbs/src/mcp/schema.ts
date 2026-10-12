@@ -18,6 +18,8 @@ import {
 } from '@livediagram/api-schema';
 import {
   ANCHORS,
+  FINISHES,
+  type Finish,
   CODE_LANGUAGES,
   CODE_MAX_LENGTH,
   CODE_THEMES,
@@ -84,6 +86,8 @@ const ELEMENT_SCHEMA_HINT =
   `${anchors}; preferred, so arrows track their shapes) or ` +
   '{ "kind": "free", "x", "y" }; an arrow may carry a "label". ' +
   'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
+  'Any element may carry "finish" ("flexible", "professional" or "sketch") to be drawn ' +
+  'differently from its tab. ' +
   CONTENT_KINDS;
 
 export function elementSchemaDoc(): string {
@@ -253,6 +257,15 @@ const themeField = z
     'Preset theme id that paints the whole diagram + canvas. One of: ' +
       `${themeIds}. Omit per-element colours and let the theme own them. ` +
       'Defaults to "brand".',
+  );
+
+const finishField = z
+  .enum(FINISHES as unknown as [Finish, ...Finish[]])
+  .optional()
+  .describe(
+    'How the tab is drawn (docs/specs/008-canvas/finish.md): "flexible" (the default), "professional" ' +
+      '(crisp corners, thin lines, no shadows) or "sketch" (hand-drawn lines, hatched fills, a ' +
+      'handwriting font). An element can carry its own "finish" too.',
   );
 
 // Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): the LOW-BURDEN path. Give just the
@@ -473,6 +486,7 @@ export const createDocumentShape = {
   tab: tabShape.optional().describe('A single tab — accepted as an alias for tabs: [tab].'),
   layout: layoutField,
   theme: themeField,
+  finish: finishField,
   // Making a document is a use (docs/specs/015-api/mcp-server.md §4.3).
   markUsed: z
     .boolean()
@@ -495,6 +509,7 @@ export const addTabShape = {
   template: templateField,
   layout: layoutField,
   theme: themeField,
+  finish: finishField,
 };
 
 export const updateDocumentShape = {

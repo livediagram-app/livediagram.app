@@ -13,6 +13,7 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   type CanvasSurface,
   type Deck,
@@ -106,12 +107,16 @@ export function useSlideThumbnails(
         const bars = pageWritingBars(page);
         if (bars.length) parts.push(articleOpsToSvg(bars));
       }
+      // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+      const backdrops = sketchBackdropIds(elements, tab.finish);
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(
             svgBoxed(el, {
               ...art,
               tabFont: tab.font,
+              tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
               ...(items ? { items } : {}),
               ...(itemTypes ? { itemTypes } : {}),
@@ -121,7 +126,7 @@ export function useSlideThumbnails(
       }
       // Labels are laid out against the whole tab, as the canvas lays them out.
       const labels = arrowLabelPass(tab.elements, {
-        fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+        fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
       });
       for (const el of elements) {
         // Arrows resolve their endpoints against the WHOLE tab, not just the
@@ -138,6 +143,8 @@ export function useSlideThumbnails(
               labels,
               `lvd-slide-${slide.id}-ko-`,
               elements,
+              undefined,
+              tab.finish,
             ),
           );
       }

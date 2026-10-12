@@ -9,7 +9,9 @@
 
 import {
   isBoxed,
+  supportsFinish,
   type BackgroundPattern,
+  type Finish,
   type Element,
   type Tab,
   type TextSize,
@@ -121,6 +123,30 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     track('Tab', 'Changed', 'Font');
   };
 
+  // The tab's finish (docs/specs/008-canvas/finish.md): how every element without its own is drawn. Flexible
+  // is stored when picked, like any other value; one undo step.
+  const setTabFinish = (finish: Finish) => {
+    if (editsBlocked) return;
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, finish } : t)));
+    track('Tab', 'Changed', 'Finish');
+  };
+
+  // "Apply to All Elements" on the Finish tab: clear every element's own finish, so the whole tab follows
+  // the tab's again. One undo step; a tab where nothing has its own finish writes nothing.
+  const applyTabFinishToAll = () => {
+    if (editsBlocked) return;
+    if (!activeTab.elements.some((el) => supportsFinish(el) && 'finish' in el)) return;
+    commit((els) =>
+      els.map((el) => {
+        if (!supportsFinish(el) || !('finish' in el)) return el;
+        const next = { ...el } as Element & { finish?: Finish };
+        delete next.finish;
+        return next;
+      }),
+    );
+    track('Tab', 'Changed', 'FinishToAll');
+  };
+
   // Tab default text size (docs/specs/004-interface-design/fonts.md): seeded onto NEW palette elements.
   const setTabDefaultTextSize = (size: TextSize) => {
     if (editsBlocked) return;
@@ -198,6 +224,8 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     applyTabFontToAll,
     setTabFont,
     setTabDefaultTextSize,
+    setTabFinish,
+    applyTabFinishToAll,
     setBackgroundPattern,
     setTheme,
     resetTabsUsingTheme,

@@ -192,6 +192,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   rotation: '#7c3aed',
   animations: '#f43f5e',
   shadows: '#475569',
+  finish: '#0d9488',
   'quick-style-panel': '#db2777',
   locking: '#94a3b8',
   'element-indicators': '#f97316',

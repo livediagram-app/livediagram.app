@@ -9,8 +9,10 @@
 // the canvas's zoom transform, so what it reports is in canvas px at any zoom.
 
 import {
+  elementFontId,
   resolveFontStack,
   runsFromPlainText,
+  type Finish,
   type TextElement,
   type TextRun,
 } from '@livediagram/document';
@@ -86,10 +88,17 @@ export function measureTextHug(
 }
 
 // The measure for a text box as the canvas draws it, outside an edit: its own runs, in its own
-// face or else the tab's (the fallback the canvas uses, docs/specs/004-interface-design/fonts.md).
+// face or else the tab's (the fallback the canvas uses, docs/specs/004-interface-design/fonts.md), or the
+// handwriting font under the Sketch finish (docs/specs/008-canvas/finish.md).
 export function measureDrawnText(
   tabFont: string | undefined,
+  tabFinish?: Finish,
 ): (el: TextElement) => MeasureTextBlock {
   return (el) =>
-    measureTextHug(el, labelRuns(el), resolveFontStack(el.font) ?? resolveFontStack(tabFont));
+    measureTextHug(
+      el,
+      labelRuns(el),
+      resolveFontStack(el.font) ??
+        resolveFontStack(elementFontId({ finish: el.finish }, tabFont, tabFinish)),
+    );
 }

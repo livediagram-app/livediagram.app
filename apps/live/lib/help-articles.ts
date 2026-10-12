@@ -66,6 +66,7 @@ export const HELP_ARTICLES = {
   changingTheBackground: 'canvas/the-canvas/changing-the-background',
   themes: 'canvas/themes',
   changingTheme: 'canvas/themes/changing-theme',
+  choosingAFinish: 'canvas/finish',
   customThemes: 'canvas/themes/custom-themes',
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
@@ -299,6 +300,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   customThemes: {
     title: 'Learn about custom themes',
     description: 'Build your own palette and reuse it across documents.',
+  },
+  choosingAFinish: {
+    title: 'Learn about finishes',
+    description: 'Drawing a tab crisp and print-ready, or sketched by hand.',
   },
   choosingFonts: {
     title: 'Learn about fonts',

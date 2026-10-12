@@ -7,6 +7,7 @@
 // without a scaled stroke. A silhouette changes in the table, never here.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import { actorFigureRect } from './actor-figure';
+import { finishBorderStroke, type Finish } from './finish';
 import type { BoxedElement, FreehandElement, PathElement, ShapeKind } from './index';
 import { isCompoundPath, pathElementD } from './path-element';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -116,11 +117,12 @@ export function svgShapeSilhouette(
   el: BoxedElement & { type: 'shape' },
   fill: string,
   stroke: string,
+  finish: Finish = 'flexible',
 ): string | null {
   if (!hasShapeSilhouette(el.shape)) return null;
   const geometry = shapeGeometry(el.shape, el.height > 0 ? el.width / el.height : 1);
   if (!geometry) return null;
-  const strokeWidth = BORDER_STROKE_PX[el.strokeWidth ?? 'medium'] || 2;
+  const strokeWidth = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)] || 2;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;
   // Mapped into the box rather than nested in a stretched <svg>, so no
   // renderer scales the stroke (svg-shape-fit.ts).

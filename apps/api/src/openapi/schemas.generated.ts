@@ -846,6 +846,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "exactStart": {
         "type": "boolean"
       },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
       "flow": {
         "$ref": "#/components/schemas/ArrowFlow"
       },
@@ -2110,6 +2113,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elements": {
         "items": {},
         "type": "array"
+      },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
       },
       "graph": {},
       "layout": {
@@ -6033,6 +6039,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "elision"
     ],
     "type": "object"
+  },
+  "Finish": {
+    "enum": [
+      "flexible",
+      "professional",
+      "sketch"
+    ],
+    "type": "string"
   },
   "Folder": {
     "additionalProperties": false,
@@ -11541,6 +11555,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fillSwatch": {
         "$ref": "#/components/schemas/QuickSwatchSlot"
       },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
       "fixedSize": {
         "type": "boolean"
       },
@@ -12919,6 +12936,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fillColor": {
         "type": "string"
       },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
       "fixedSize": {
         "type": "boolean"
       },
@@ -13157,6 +13177,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "esLanesSettled": {
         "type": "boolean"
       },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
+      },
       "folder": {
         "type": "string"
       },
@@ -13276,6 +13299,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "esLanesSettled": {
         "type": "boolean"
+      },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
       },
       "folder": {
         "type": "string"
@@ -13563,6 +13589,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "fillColor": {
         "type": "string"
+      },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
       },
       "font": {
         "type": "string"
@@ -14310,6 +14339,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "fillColor": {
         "type": "string"
+      },
+      "finish": {
+        "$ref": "#/components/schemas/Finish"
       },
       "font": {
         "type": "string"

@@ -1486,6 +1486,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="4" y="4" width="12" height="12" rx="2" />
     </Glyph>
   ),
+  // How an element is drawn: one box whose left half is a clean ruled edge and whose right half is two loose
+  // hand-drawn strokes, the crisp and the sketched finish in one outline.
+  finish: (
+    <Glyph>
+      <path d="M12 4H5.5a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 5.5 20H12" />
+      <path d="M11 3.6q5 -.6 9.2 .6M19.6 3.4q.8 8.4 -.2 17M20.4 19.6q-4.4 .8 -9.2 .2" />
+      <path d="M12.4 4.6q4 -.2 7 .4M18.8 5.2q.4 7 -.2 13.6" opacity="0.6" />
+    </Glyph>
+  ),
   // A selected box with a slim panel of swatches beside it: the panel is what
   // the article is about, so it carries the dots and the selection stays plain.
   'quick-style-panel': (

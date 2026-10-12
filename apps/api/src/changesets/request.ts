@@ -13,14 +13,20 @@ import {
   type EditOperation,
   type ReplaceBody,
 } from '@livediagram/edit-operations';
-import { isRecord, ELEMENT_FINGERPRINT_LENGTH, type GraphInput } from '@livediagram/document';
+import {
+  isFinish,
+  isRecord,
+  ELEMENT_FINGERPRINT_LENGTH,
+  type Finish,
+  type GraphInput,
+} from '@livediagram/document';
 
 // A changeset request as the route receives it (docs/specs/024-agents/blueprints/agent-changesets.md
 // "Interfaces and contracts"), checked member by member before anything is read. Pure.
 
 export type ChangesetBody =
   | { kind: 'operations'; operations: EditOperation[] }
-  | { kind: 'replace'; replace: ReplaceBody; theme?: string; name?: string };
+  | { kind: 'replace'; replace: ReplaceBody; theme?: string; finish?: Finish; name?: string };
 
 export type ParsedChangeset = {
   body: ChangesetBody;
@@ -147,6 +153,8 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
   }
   if (raw.theme !== undefined && typeof raw.theme !== 'string')
     return bad('"replace.theme" must be a string');
+  if (raw.finish !== undefined && !isFinish(raw.finish))
+    return bad('"replace.finish" is "flexible", "professional" or "sketch"');
   if (raw.name !== undefined && typeof raw.name !== 'string')
     return bad('"replace.name" must be a string');
   const layout = raw.layout === 'auto' || raw.layout === 'preserve' ? raw.layout : undefined;
@@ -157,6 +165,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     kind: 'replace',
     replace,
     ...(typeof raw.theme === 'string' ? { theme: raw.theme } : {}),
+    ...(isFinish(raw.finish) ? { finish: raw.finish } : {}),
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
   };
 }

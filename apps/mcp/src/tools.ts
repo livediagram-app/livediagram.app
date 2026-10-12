@@ -168,6 +168,8 @@ export function registerTools(server: McpServer, env: Env): void {
       }
       tabs.push(buildTab(tabId, t.name, (candidate as Tab).elements, args.layout, args.theme));
     }
+    // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
+    if (args.finish) for (const t of tabs) t.finish = args.finish;
     const id = crypto.randomUUID();
     // Tag the document as made by AI (docs/specs/013-workspace/folders.md): the Explorer's Made by AI
     // filter and badge read source != null, wherever the document is filed.
@@ -246,6 +248,7 @@ export function registerTools(server: McpServer, env: Env): void {
           ...(args.elements ? { elements: args.elements } : {}),
           ...(args.layout ? { layout: args.layout } : {}),
           ...(themeId ? { theme: themeId } : {}),
+          ...(args.finish ? { finish: args.finish } : {}),
           name: args.name,
         }),
       });

@@ -33,6 +33,7 @@ import {
   type QuickSwatchSlot,
   type BoxedElement,
   type ElementShadow,
+  type Finish,
   type IconAnimation,
   type IconSize,
   type IconWeight,
@@ -78,6 +79,9 @@ function uniformRunValue<K extends keyof TextRun>(
   if (first === undefined) return undefined;
   return runs.every((r) => r[key] === first) ? first : undefined;
 }
+
+// The boxed kinds that carry a finish (docs/specs/008-canvas/finish.md).
+const FINISH_KINDS: ReadonlySet<string> = new Set(['shape', 'text', 'sticky', 'table']);
 
 // Boxed (shape / text / sticky / ...) painter projection. Carries every
 // formatting field the source's kind renders: size + aspect lock +
@@ -169,6 +173,8 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
   }
   if (RADIUS_KINDS.has(kind)) out.borderRadius = ext.borderRadius;
   if (kind === 'table') out.headerTextColor = ext.headerTextColor;
+  // The finish (docs/specs/008-canvas/finish.md), on the kinds that carry one; unset copies Follow Tab.
+  if (FINISH_KINDS.has(kind)) out.finish = (source as { finish?: Finish }).finish;
   // A text element's quick-swatch binding, beside its colour; not when a
   // uniform run colour is what was painted, which the slot does not describe.
   if (kind === 'text') out.textSwatch = uniformRunValue(rt, 'color') ? undefined : ext.textSwatch;
@@ -229,6 +235,7 @@ export function paintableArrowFields(source: ArrowElement): Partial<ArrowElement
     textStrikethrough: source.textStrikethrough,
     labelFill: source.labelFill,
     font: source.font,
+    finish: source.finish,
   };
 }
 

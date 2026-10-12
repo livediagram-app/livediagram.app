@@ -14,6 +14,7 @@ import {
   elementFingerprint,
   resolveRef,
   type Element,
+  type Finish,
   type Tab,
 } from '@livediagram/document';
 import { ApiError, apiJson } from './api';
@@ -110,6 +111,7 @@ export function replaceBodyFrom(args: {
   elements?: unknown[];
   layout?: 'auto' | 'preserve';
   theme?: string;
+  finish?: Finish;
   name?: string;
 }): ChangesetReplaceBody {
   const source = args.graph
@@ -123,6 +125,7 @@ export function replaceBodyFrom(args: {
     ...source,
     ...(args.layout ? { layout: args.layout } : {}),
     ...(args.theme ? { theme: args.theme } : {}),
+    ...(args.finish ? { finish: args.finish } : {}),
     ...(args.name ? { name: args.name } : {}),
   };
 }

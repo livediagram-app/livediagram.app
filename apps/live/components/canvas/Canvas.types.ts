@@ -14,6 +14,7 @@ import type {
   EmbedProvider,
   EsSide,
   EventStormingNoteKind,
+  Finish,
   FrameHandle,
   RecognisedShape,
 } from '@livediagram/document';
@@ -76,6 +77,8 @@ export type CanvasProps = {
   // own `font` render in this; undefined = the editor default. Used by
   // the inline label editor (CanvasElementsLayer) for font inheritance.
   tabFont?: string;
+  // The tab's finish (docs/specs/008-canvas/finish.md); undefined is Flexible.
+  tabFinish?: Finish;
   mainRef: Ref<HTMLElement>;
   setViewportOffset: (offset: { x: number; y: number }) => void;
   // The view itself is not a prop: it lives in the viewport store, read where it shows
