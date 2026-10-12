@@ -35,7 +35,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   breadcrumb links, and the telemetry view tabs and their arrows.
 - **A list's rows abut at 44px.** Where links or rows stack closer than 44px, a pad would overlap the
   next row's, so on a touch screen each row is 44px tall and the list drops its gap: the Explorer tree
-  (`SidebarRow`, its chevron taking the row's full height), the site footer's columns, a story beat's
+  (`SidebarRow`, its chevron moved to the row's end as a 44 px disclosure the row's full height), the site footer's columns, a story beat's
   highlights on the landing page, and the help centre's contents and Learn More lists. The list grows
   taller on a touch screen; under a mouse it keeps its compact rhythm. The Explorer tree's words and icons grow with
   it (15 px words on a 20 px line, 17 px icons, a group keeping 8 px rather than 20 px above its title), so the taller

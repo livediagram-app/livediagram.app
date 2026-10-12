@@ -9,7 +9,8 @@ import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
 // is [indent][chevron gutter][icon][label][badge][trailing], with its child
 // rows in a `group` beneath while expanded. The gutter is reserved on every
 // row, so every icon at a level sits on one column whether or not its row
-// can expand. Keyboard handling lives on the sidebar's `nav`
+// can expand. On a touch screen the chevron moves to the row's end instead
+// and no row reserves a gutter, so the icons sit under the group's title. Keyboard handling lives on the sidebar's `nav`
 // (useTreeNavigation), which finds the parts by their data attributes.
 
 // Indent per tree level.
@@ -89,9 +90,9 @@ export function SidebarRow({
           {description}
         </span>
       ) : null}
-      {/* On a touch screen the row is 44px tall and its chevron takes the row's full height
-          (touch-targets.md), so a thumb lands on the row it means; its words and icon read at a phone
-          list's size (15px, 17px), so the 44px rows read as a list rather than small words far apart. */}
+      {/* On a touch screen the row is 44px tall (touch-targets.md) and its chevron is a 44px disclosure
+          at the row's end, the row's full height, so a thumb lands on the row it means and no empty gutter
+          pushes the icons in; its words and icon read at a phone list's size (15px, 17px). */}
       <div
         data-tree-row
         {...rowProps}
@@ -111,8 +112,10 @@ export function SidebarRow({
             e.stopPropagation();
             if (expandable) onToggleExpand?.();
           }}
-          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition pointer-coarse:h-auto pointer-coarse:w-7 pointer-coarse:self-stretch ${
-            expandable ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200' : ''
+          className={`flex h-5 w-5 shrink-0 items-center justify-center text-slate-400 transition pointer-coarse:order-last pointer-coarse:-mr-1 pointer-coarse:h-auto pointer-coarse:w-11 pointer-coarse:self-stretch ${
+            expandable
+              ? 'cursor-pointer hover:text-slate-700 dark:hover:text-slate-200'
+              : 'pointer-coarse:hidden'
           }`}
         >
           {expandable ? <TreeChevronIcon open={expanded} /> : null}

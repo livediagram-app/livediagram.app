@@ -152,6 +152,11 @@ Every row reserves a fixed **chevron gutter** before its icon, whether or not it
 icon sits on one column, and an expandable row (My documents, a team, Library) lines up with a plain one (Home, Trash,
 New team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
 
+On a touch screen the chevron moves to the row's far end instead, after any trailing action, as a disclosure the full
+row's height and 44 px wide, and no row reserves a gutter. Every icon at a level then sits on the column of its
+group's title, as in a phone's settings list, rather than behind an empty gutter the size of a thumb; nesting still
+indents one step a level.
+
 ## Keyboard and ARIA
 
 The sidebar follows the WAI-ARIA tree pattern, one tree per group:
