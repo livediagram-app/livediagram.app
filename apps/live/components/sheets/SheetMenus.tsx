@@ -271,7 +271,11 @@ function FilterMenu({
         }}
       />
       <ContextMenuDivider />
-      <div className="w-64 px-3 py-1.5 text-[12px]" onKeyDown={(e) => e.stopPropagation()}>
+      {/* As wide as the menu, never wider: a wider panel spilled its fields, counts and OK past the menu's edge. */}
+      <div
+        className="w-full min-w-0 px-3 py-1.5 text-[12px]"
+        onKeyDown={(e) => e.stopPropagation()}
+      >
         <div className="mb-1 font-semibold">Filter by Values</div>
         <input
           aria-label="Search values"
@@ -311,8 +315,8 @@ function FilterMenu({
                     setKept(next);
                   }}
                 />
-                <span className="truncate">{v.text || '(Blanks)'}</span>
-                <span className="ml-auto" style={{ color: c.palette.muted }}>
+                <span className="min-w-0 truncate">{v.text || '(Blanks)'}</span>
+                <span className="ml-auto shrink-0" style={{ color: c.palette.muted }}>
                   {v.count}
                 </span>
               </label>

@@ -490,6 +490,23 @@ describe('the filter menu', () => {
     fireEvent.click(btn('OK'));
     expect(cond()).toEqual({ op: 'empty' });
   });
+
+  // The panel was wider than the menu (w-64 in a w-56 card): its search, condition, counts and OK hung past the
+  // menu's right edge, drawn over the grid with no card behind them.
+  it('fits its panel inside the menu, a long value cut short beside its count', async () => {
+    await open();
+    const menu = screen.getByRole('dialog', { name: 'Filter column' });
+    expect(menu.className).toMatch(/\bw-56\b/);
+    const panel = screen.getByLabelText('Search values').parentElement!;
+    expect(panel.className).toMatch(/\bw-full\b/);
+    expect(panel.className).toMatch(/\bmin-w-0\b/);
+    expect(menu.querySelector('.w-64')).toBeNull();
+    const [label, count] = within(screen.getAllByRole('listitem')[0]!)
+      .getByRole('checkbox')
+      .parentElement!.querySelectorAll('span');
+    expect(label!.className).toMatch(/\bmin-w-0\b.*\btruncate\b/);
+    expect(count!.className).toMatch(/\bshrink-0\b/);
+  });
 });
 
 describe('the sort dialog', () => {
