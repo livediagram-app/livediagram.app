@@ -19,7 +19,7 @@ export function LooksCarousel({
   onPickLook: (id: TabLookId) => void;
   headingClass: string;
 }) {
-  // Each look's preview is fixed for an appearance, so the twelve are drawn once per open (again if the viewer's mode
+  // Each look's preview is fixed for an appearance, so they are drawn once per open (again if the viewer's mode
   // changes: they draw in its half).
   const { appearance } = useAppearance();
   const previews = useMemo(

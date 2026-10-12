@@ -56,6 +56,9 @@ A brand-new element dropped on a multi-colour-themed tab has no place in the arr
 
 Theme cards (the Theme accordion grid and the welcome / template picker grid) render through a shared `ThemeSwatch` component. The swatch is a miniature diagram in the theme's own colours: a titled node flowing into two others over the theme's backdrop. A single-colour theme draws all three nodes in its element colours; a multi-colour theme gives the three nodes its first three palette entries (cycling when the palette is shorter), so the card reads as "many colours" at a glance. The swatch is decorative (`aria-hidden`); the card's own text names the theme.
 
+Six of the Tab Style dialog's one-click looks use these themes (and UML), so a multi-colour tab is one click away
+([Canvas + Theme dialog](canvas-and-theme-dialog.md) "Looks").
+
 ## Telemetry
 
 Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)); the multi-colour themes reuse that with their own labels, so no enum change is needed.

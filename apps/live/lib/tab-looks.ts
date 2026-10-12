@@ -21,7 +21,13 @@ export type TabLookId =
   | 'engineer'
   | 'workshop'
   | 'garden'
-  | 'studio';
+  | 'studio'
+  | 'carnival'
+  | 'doodle'
+  | 'daydream'
+  | 'lagoon'
+  | 'textbook'
+  | 'poster';
 
 export type TabLook = {
   id: TabLookId;
@@ -38,7 +44,9 @@ export type TabLook = {
   patternOpacity?: number;
 };
 
-/** The looks, in the order the dialog shows them: two carousel pages of six. */
+/** The looks, in the order the dialog shows them: three carousel pages of six. Everyday stays first; the rest are in
+ *  a fixed, interleaved order (never shuffled at runtime) that puts two multi-colour looks (Rainbow, Pastel, Tropical,
+ *  UML) on every page and never sets two neighbours on a page in the same theme or finish. */
 export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'everyday',
@@ -50,6 +58,16 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'grid',
   },
   {
+    id: 'textbook',
+    label: 'Textbook',
+    description: 'UML, Professional, Oswald, graph',
+    theme: 'uml',
+    finish: 'professional',
+    font: 'oswald',
+    pattern: 'graph',
+    patternOpacity: 0.5,
+  },
+  {
     id: 'whiteboard',
     label: 'Whiteboard',
     description: 'Sketch, handwriting, plain white',
@@ -59,13 +77,14 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'blank',
   },
   {
-    id: 'graph-paper',
-    label: 'Graph Paper',
-    description: 'Indigo, Professional, mono type',
-    theme: 'indigo',
-    finish: 'professional',
-    font: 'roboto-mono',
-    pattern: 'graph',
+    id: 'carnival',
+    label: 'Carnival',
+    description: 'Rainbow, Flexible, Poppins, confetti',
+    theme: 'rainbow',
+    finish: 'flexible',
+    font: 'poppins',
+    pattern: 'confetti',
+    patternOpacity: 0.5,
   },
   {
     id: 'boardroom',
@@ -86,15 +105,6 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'lines',
   },
   {
-    id: 'midnight',
-    label: 'Midnight',
-    description: 'Midnight, Flexible, grid',
-    theme: 'midnight',
-    finish: 'flexible',
-    font: undefined,
-    pattern: 'grid',
-  },
-  {
     id: 'seaside',
     label: 'Seaside',
     description: 'Ocean, Flexible, Nunito, waves',
@@ -102,6 +112,15 @@ export const TAB_LOOKS: readonly TabLook[] = [
     finish: 'flexible',
     font: 'nunito',
     pattern: 'waves',
+  },
+  {
+    id: 'doodle',
+    label: 'Doodle',
+    description: 'Rainbow, Sketch, Caveat, plain paper',
+    theme: 'rainbow',
+    finish: 'sketch',
+    font: 'caveat',
+    pattern: 'blank',
   },
   {
     id: 'editorial',
@@ -113,13 +132,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'blank',
   },
   {
-    id: 'engineer',
-    label: 'Engineer',
-    description: 'Sky, Professional, engineering grid',
-    theme: 'sky',
-    finish: 'professional',
-    font: 'space-grotesk',
-    pattern: 'engineering',
+    id: 'midnight',
+    label: 'Midnight',
+    description: 'Midnight, Flexible, grid',
+    theme: 'midnight',
+    finish: 'flexible',
+    font: undefined,
+    pattern: 'grid',
   },
   {
     id: 'workshop',
@@ -132,14 +151,52 @@ export const TAB_LOOKS: readonly TabLook[] = [
     patternOpacity: 0.6,
   },
   {
-    id: 'garden',
-    label: 'Garden',
-    description: 'Forest, Flexible, Poppins, hexagons',
-    theme: 'forest',
-    finish: 'flexible',
-    font: 'poppins',
-    pattern: 'hexagonal',
+    id: 'poster',
+    label: 'Poster',
+    description: 'Tropical, Professional, Abril, diagonal',
+    theme: 'tropical',
+    finish: 'professional',
+    font: 'abril-fatface',
+    pattern: 'diagonal',
     patternOpacity: 0.4,
+  },
+  {
+    id: 'graph-paper',
+    label: 'Graph Paper',
+    description: 'Indigo, Professional, mono type',
+    theme: 'indigo',
+    finish: 'professional',
+    font: 'roboto-mono',
+    pattern: 'graph',
+  },
+  {
+    id: 'daydream',
+    label: 'Daydream',
+    description: 'Pastel, Flexible, Nunito, dotted paper',
+    theme: 'pastel',
+    finish: 'flexible',
+    font: 'nunito',
+    pattern: 'grid',
+    patternOpacity: 0.6,
+  },
+  {
+    id: 'engineer',
+    label: 'Engineer',
+    description: 'Sky, Professional, engineering grid',
+    theme: 'sky',
+    finish: 'professional',
+    font: 'space-grotesk',
+    pattern: 'engineering',
+  },
+  {
+    id: 'lagoon',
+    label: 'Lagoon',
+    description: 'Tropical, Flexible, Space Grotesk, ripples',
+    theme: 'tropical',
+    finish: 'flexible',
+    font: 'space-grotesk',
+    pattern: 'ripple',
+    patternOpacity: 0.5,
   },
   {
     id: 'studio',
@@ -149,6 +206,16 @@ export const TAB_LOOKS: readonly TabLook[] = [
     finish: 'professional',
     font: 'roboto-slab',
     pattern: 'isometric',
+  },
+  {
+    id: 'garden',
+    label: 'Garden',
+    description: 'Forest, Flexible, Poppins, hexagons',
+    theme: 'forest',
+    finish: 'flexible',
+    font: 'poppins',
+    pattern: 'hexagonal',
+    patternOpacity: 0.4,
   },
 ];
 
