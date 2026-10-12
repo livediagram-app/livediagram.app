@@ -29,6 +29,7 @@ import { ruleHitAt } from './rules/sheet-rule-draw';
 import { FILL_HANDLE_PX, fillHandleAt } from './SheetSelectionLayer';
 import type { SheetActions } from './useSheetActions';
 import { useSheetPan } from './useSheetPan';
+import { TOUCH_GRIP_HIT_PX, useSheetTouch } from './useSheetTouch';
 
 const DRAG_START_PX = 4;
 const AUTOSCROLL_EDGE_PX = 24;
@@ -107,13 +108,16 @@ export function useSheetPointer(
   const hitAt = (x: number, y: number): Hit =>
     hitTest(latest.current.geometry, x, y, latest.current.scroll);
 
-  const onHandle = (x: number, y: number) => {
+  // The fill handle under a mouse; on a touch screen the same corner is the selection's grip (useSheetTouch), which
+  // anyone who can select may drag, with a finger's reach.
+  const onHandle = (x: number, y: number, grip = false) => {
     const cc = latest.current;
-    if (!cc.canEdit || cc.editing) return false;
+    if (cc.editing || (grip ? !cc.focused : !cc.canEdit)) return false;
+    const reach = grip ? TOUCH_GRIP_HIT_PX : FILL_HANDLE_PX;
     const h = fillHandleAt(cc.geometry, cc.selectionNow(), cc.scroll);
     return (
-      Math.abs(x - latest.current.geometry.headW - h.x) <= FILL_HANDLE_PX &&
-      Math.abs(y - latest.current.geometry.headH - h.y) <= FILL_HANDLE_PX
+      Math.abs(x - latest.current.geometry.headW - h.x) <= reach &&
+      Math.abs(y - latest.current.geometry.headH - h.y) <= reach
     );
   };
 
@@ -290,6 +294,7 @@ export function useSheetPointer(
     setPreview(null);
     window.removeEventListener('pointermove', listeners.move);
     window.removeEventListener('pointerup', listeners.up);
+    window.removeEventListener('pointercancel', listeners.up);
     const cc = latest.current;
     if (!d) return;
     // Paint Format: the range just selected takes the held formats (sheet.md "Paint Format").
@@ -356,11 +361,13 @@ export function useSheetPointer(
   useAssignRef(onMove, follow);
   useAssignRef(onUp, finish);
 
-  const begin = (d: Drag, e: React.PointerEvent) => {
+  // A cancelled pointer (the browser took the gesture) ends the drag where it last was.
+  const begin = (d: Drag, e: { clientX: number; clientY: number }) => {
     drag.current = d;
     pointer.current = local(e.clientX, e.clientY);
     window.addEventListener('pointermove', listeners.move);
     window.addEventListener('pointerup', listeners.up);
+    window.addEventListener('pointercancel', listeners.up);
     timer.current = setInterval(() => onTick.current(), 50);
   };
 
@@ -368,6 +375,7 @@ export function useSheetPointer(
     () => () => {
       window.removeEventListener('pointermove', listeners.move);
       window.removeEventListener('pointerup', listeners.up);
+      window.removeEventListener('pointercancel', listeners.up);
       if (timer.current) clearInterval(timer.current);
     },
     [listeners],
@@ -376,7 +384,9 @@ export function useSheetPointer(
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     const cc = latest.current;
     if (!cc.interactive) return;
-    // Panning the cells (useSheetPan): the middle or right button, Space with the left, a finger.
+    // A finger pans, holds or drags the grip (useSheetTouch).
+    if (e.pointerType === 'touch') return touch.onTouchDown(e);
+    // Panning the cells (useSheetPan): the middle or right button, Space with the left.
     if (pan.begin(e, { maximised: cc.maximised })) return;
     e.stopPropagation();
     if (e.button === 2) return;
@@ -530,6 +540,8 @@ export function useSheetPointer(
     if (!cc.interactive) return;
     e.preventDefault();
     e.stopPropagation();
+    // A finger's long press opens the menu on its release, unmoved (useSheetTouch), not on the browser's own.
+    if ((e.nativeEvent as PointerEvent).pointerType === 'touch') return;
     // A right drag that panned opens nothing; a right press still deciding (the menu arrives on press on a Mac)
     // opens the menu when it is released unmoved.
     if (pan.swallowContextMenu()) return;
@@ -541,17 +553,14 @@ export function useSheetPointer(
     openMenu(clientX, clientY);
   };
 
-  const openMenu = (clientX: number, clientY: number) => {
+  // What a menu (or a held finger) acts on: the cell or header under it, unless the selection already holds it.
+  const selectFor = (h: Hit) => {
     const cc = latest.current;
-    const e = { clientX, clientY };
-    const { x, y } = local(e.clientX, e.clientY);
-    const h = hitAt(x, y);
     if (h.kind === 'cell') {
       const inSel = cc
         .selectionNow()
         .ranges.some((g) => h.r >= g.r1 && h.r <= g.r2 && h.c >= g.c1 && h.c <= g.c2);
       if (!inSel) cc.setSelection(single({ r: h.r, c: h.c }));
-      cc.setMenu({ kind: 'cell', x: e.clientX, y: e.clientY });
     } else if (h.kind === 'col' || h.kind === 'row') {
       const axis = h.kind === 'col' ? 'c' : 'r';
       const index = h.kind === 'col' ? h.c : h.r;
@@ -567,24 +576,76 @@ export function useSheetPointer(
         cc.setSelection(
           axis === 'c' ? selectCols(index, index, cc.grid) : selectRows(index, index, cc.grid),
         );
-      cc.setMenu({ kind: 'header', axis, index, x: e.clientX, y: e.clientY });
     }
   };
 
-  // A tap on a touch screen selects the cell under it (the finger's drag pans the cells, useSheetPan).
+  const openMenu = (clientX: number, clientY: number) => {
+    const cc = latest.current;
+    const { x, y } = local(clientX, clientY);
+    const h = hitAt(x, y);
+    selectFor(h);
+    if (h.kind === 'cell') cc.setMenu({ kind: 'cell', x: clientX, y: clientY });
+    else if (h.kind === 'col' || h.kind === 'row')
+      cc.setMenu({
+        kind: 'header',
+        axis: h.kind === 'col' ? 'c' : 'r',
+        index: h.kind === 'col' ? h.c : h.r,
+        x: clientX,
+        y: clientY,
+      });
+  };
+
+  const touch = useSheetTouch({
+    interactive: c.interactive,
+    maximised: c.maximised,
+    pan,
+    local,
+    hitAt,
+    onGrip: (x, y) => onHandle(x, y, true),
+    grab: (h) => {
+      if (latest.current.editing) actions.commitEdit('none');
+      selectFor(h);
+    },
+    extend: (from, clientX, clientY) => {
+      const cc = latest.current;
+      cc.focusGrid();
+      if (from === 'grip') {
+        // The grip drags the range's far corner: its top left stays put.
+        const now = cc.selectionNow();
+        const last = now.ranges[now.ranges.length - 1]!;
+        cc.setSelection({ ...now, anchor: { r: last.r1, c: last.c1 } });
+        begin({ kind: 'select', additive: false }, { clientX, clientY });
+      } else if (from.kind === 'cell') {
+        cc.setSelection(single({ r: from.r, c: from.c }));
+        begin({ kind: 'select', additive: false }, { clientX, clientY });
+      } else {
+        const axis = from.kind === 'col' ? 'c' : 'r';
+        const index = from.kind === 'col' ? from.c : from.r;
+        cc.setSelection(
+          axis === 'c' ? selectCols(index, index, cc.grid) : selectRows(index, index, cc.grid),
+        );
+        begin({ kind: 'axisSelect', axis, from: index }, { clientX, clientY });
+      }
+    },
+    openMenu,
+  });
+
+  // A tap on a touch screen selects the cell, row or column under it, or the whole sheet from the corner (a finger's
+  // drag pans the cells, useSheetPan, or scrolls them maximised).
   const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const cc = latest.current;
-    if (!cc.interactive || cc.maximised || (e.nativeEvent as PointerEvent).pointerType !== 'touch')
-      return;
+    if (!cc.interactive || (e.nativeEvent as PointerEvent).pointerType !== 'touch') return;
     e.stopPropagation();
-    if (pan.swallowClick()) return;
+    if (pan.swallowClick() || touch.swallowTap()) return;
     const { x, y } = local(e.clientX, e.clientY);
     const h = hitAt(x, y);
-    if (h.kind === 'cell') {
-      if (cc.editing) actions.commitEdit('none');
-      cc.setSelection(single({ r: h.r, c: h.c }));
-      cc.focusGrid();
-    }
+    if (h.kind === 'none') return;
+    if (cc.editing) actions.commitEdit('none');
+    if (h.kind === 'cell') cc.setSelection(single({ r: h.r, c: h.c }));
+    else if (h.kind === 'col') cc.setSelection(selectCols(h.c, h.c, cc.grid));
+    else if (h.kind === 'row') cc.setSelection(selectRows(h.r, h.r, cc.grid));
+    else cc.setSelection(selectAllCells(cc.grid));
+    cc.focusGrid();
   };
 
   return {
@@ -597,6 +658,7 @@ export function useSheetPointer(
     cursor,
     preview,
     hover,
+    ring: touch.ring,
     normaliseRange,
   };
 }

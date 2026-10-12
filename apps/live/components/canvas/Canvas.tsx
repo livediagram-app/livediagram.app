@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic';
 import type { View } from '@/lib/viewport-store';
 import { CanvasMenu } from './canvas-menu-context';
-import { Portal } from '@livediagram/ui';
+import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useByValue } from '@/hooks/ui/useByValue';
 import { sameSitters, sittersByChair } from '@/lib/chair-sitters';
@@ -1086,22 +1086,8 @@ function CanvasView(props: CanvasProps) {
         {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
           (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
         {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
-          press-and-hold affordance that opens the context menu on touch.
-          Portaled to escape the canvas's pan/zoom transform so its fixed
-          position is viewport-relative. Reveals only after a deliberate hold
-          and completes as the context menu opens. */}
-        {surface.canvasLongPress.pressPoint ? (
-          <Portal>
-            <div
-              aria-hidden
-              className="animate-longpress-hold pointer-events-none fixed z-[var(--z-toast)] h-9 w-9 rounded-full border-2 border-brand-500/70"
-              style={{
-                left: surface.canvasLongPress.pressPoint.x,
-                top: surface.canvasLongPress.pressPoint.y,
-              }}
-            />
-          </Portal>
-        ) : null}
+          press-and-hold affordance that opens the context menu on touch. */}
+        <LongPressRing point={surface.canvasLongPress.pressPoint} />
       </main>
     </CanvasMenu.Provider>
   );
