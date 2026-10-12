@@ -8,22 +8,30 @@ import { isPlanTabKind } from './tab-kind';
 // Every editor mode, in the order the interface lists them (the mode switch, the tab menu's Opens
 // in). The one place a mode is declared: a further mode is one entry here.
 export const EDITOR_MODE_CATALOGUE = [
-  { id: 'diagram', label: 'Diagram', description: 'Shapes, arrows, the palette and snapping.' },
-  { id: 'draw', label: 'Draw', description: 'Pens, the eraser and shape recognition.' },
+  {
+    id: 'diagram',
+    label: 'Diagram',
+    description: 'Flowcharts, architecture and org charts with snapping shapes.',
+  },
+  {
+    id: 'draw',
+    label: 'Draw',
+    description: 'Sketch freehand with pens, tidied into shapes as you go.',
+  },
   {
     id: 'facilitate',
     label: 'Facilitate',
-    description: 'Run a session with your team: timers, votes, polls and reveals.',
+    description: 'Run a live session: timers, votes, polls and reveals.',
   },
   {
     id: 'illustrate',
     label: 'Illustrate',
-    description: 'Pages: infographics, slides, articles and logos.',
+    description: 'Lay out slides, infographics, articles and logos on pages.',
   },
   {
     id: 'plan',
     label: 'Plan',
-    description: 'Boards of items: columns, cards and the work moving through them.',
+    description: 'Boards of cards moving through columns, with types and fields.',
   },
 ] as const satisfies readonly { id: string; label: string; description: string }[];
 
@@ -36,7 +44,7 @@ export function editorModeLabel(mode: EditorMode): string {
   return EDITOR_MODE_CATALOGUE.find((m) => m.id === mode)!.label;
 }
 
-/** "Pens, the eraser and shape recognition.": what the mode brings into focus. */
+/** "Sketch freehand with pens, tidied into shapes as you go.": what the mode is for. */
 export function editorModeDescription(mode: EditorMode): string {
   return EDITOR_MODE_CATALOGUE.find((m) => m.id === mode)!.description;
 }

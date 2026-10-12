@@ -28,7 +28,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The mode resolver           | `resolveEditorMode({ tab, canEdit })`, `apps/live/lib/editor-mode-store.ts`                                                                                                                                               |
 | A collaborator's switch     | `peerModeSwitchOf(op)`, `peerModeSwitchMessage(name, mode)` (`apps/live/lib/peer-mode-switch.ts`); `useRoomConnection` `receivePeerModeSwitch`                                                                            |
 | May this person edit        | `useViewPreview(...).canEdit`, `apps/live/app/document/[id]/useViewPreview.ts`                                                                                                                                            |
-| The mode switch             | `EditorModeSwitch` (chip `ModeMenuChip`; `labelled` on a start panel's rail, `StartModeSwitch`), `apps/live/components/chrome/editor-mode/`                                                                               |
+| The mode switch             | `EditorModeSwitch` (chip `ModeMenuChip`, menu `ModeMenu` + `ModePreviewArt`; `labelled` on a start panel's rail, `StartModeSwitch`), `apps/live/components/chrome/editor-mode/`                                           |
 | The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                                                  |
 | The tab pill's mode icon    | `TabModeIcon`, `apps/live/components/chrome/editor-mode/`                                                                                                                                                                 |
 | Each mode's mark            | `EDITOR_MODE_ICONS` (`packages/ui/src/icons/drawing-kinds.tsx`), one per mode, Facilitate's `FlipchartIcon`, read straight by the chip, the menu rows and the pill                                                        |
@@ -58,6 +58,9 @@ activity, the template and Draw mode's dock (`useWhiteboard`, `WhiteboardDock`),
 | `WHITEBOARD_UNSET_PATTERN` | `'blank'`                                   | Written on a migrated board with no pattern      |
 | `WHITEBOARD_INKED_SHAPES`  | square, circle, triangle, diamond           | The shapes a migrated board inks                 |
 | Shift+D                    | `EDITOR_MODE_KEYSHORTCUT`                   | `editor-mode-copy.ts`; spec "The mode switch"    |
+| `MODE_TINT`                | sky, orange, violet, pink, emerald          | `mode-menu-copy.ts`; spec "The mode switch"      |
+| `MODE_TOOLS`               | 4-5 tool names per mode                     | `mode-menu-copy.ts`; the preview's chips         |
+| Mode menu preview width    | 288 px (`w-72`), list 192 px (`w-48`)       | `ModeMenu`; shown from 640 px (`sm`)             |
 | `LEGACY_WHITEBOARD_KIND`   | `'whiteboard'`                              | The stored kind read as a Draw-opening tab       |
 
 A further mode is one catalogue entry plus its icon in `EDITOR_MODE_ICONS`
@@ -240,6 +243,22 @@ export function editorModeShortcut(
 onChange, newTabIn, crossPlan, lockedReason })` (`lockedReason` only while it cannot switch).
 - `ModeMenuChip({ ..., labelled? })`: `labelled` (a start panel's rail) shows the name, is named
   "Tab mode: <Label>" and carries no tour anchor.
+- `ModeMenu({ mode, modes, keyLeadsTo, chip, initialFocus, hostZoom, onChange, onClose, crossPlan,
+lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip` in both places:
+  - `actionOf(option): ModeMenuAction`: `'current'` for `mode`; `'switch'` unless locked (a
+    `lockedReason`, or `!crossPlan && crossesPlan(mode, option)`); else `'new-tab'` with
+    `onLockedPick`, `'inert'` without. Choosing (row or preview button) does nothing when inert,
+    else closes, then `onLockedPick` for `'new-tab'` or `onChange` for `'switch'`.
+  - Rows: `menuitemradio`, `data-mode-row`, `aria-describedby` to a span holding
+    `editorModeDescription` (plus " Opens in a new tab." on a `'new-tab'` row), visible under the
+    name below `sm` and `sm:sr-only` above; a `MODE_TINT` tile, a check on the current row, an
+    `OpenIcon` (`data-new-tab-mark`) on a `'new-tab'` row.
+  - `shown` (initially `mode`) follows `onPointerEnter` and `onFocus` of a row.
+  - `ModePreview` (`data-mode-preview`, `aria-hidden`, `hidden sm:flex`): `ModePreviewArt` on the
+    tint, the name with `ModeKeyHint` when `shown === keyLeadsTo && !lockedReason`, the
+    description, `MODE_TOOLS` chips and a `tabIndex={-1}` button labelled
+    `modeMenuActionLabel(action, label)` ("Switch to X", "Open a New X Tab", "Current Mode",
+    "Can’t Switch Here"), disabled unless `'switch'` or `'new-tab'`.
 - Placement: inside `ToolbarExplorerButton`, after the menu button, in its corner card; not on a
   phone (`phone ? null`), where the tab menu's Mode switches. That card carries `data-floating-panel`, so the
   canvas's capture-phase pen gesture (`useCanvasSurfaceGestures`) skips a press there: with a Draw

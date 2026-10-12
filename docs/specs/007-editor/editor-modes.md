@@ -49,18 +49,41 @@ where it is and changes only how the next mark is made.
   - It stays up in Draw mode, so the switch never moves when the mode
     changes.
   - Not in the tab bar or the Explorer.
-- **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing the
-  current mode's icon and a chevron, on the faint tint the
-  editor's menu-like controls use. A press opens a menu **below** it, hanging
-  from its left edge, beside the menu button, with one compact row per mode at the palette dropdowns' size: its
-  icon and name, a check on the current mode and **Shift+D** on the row the
-  key leads to. Choosing a row switches and closes the menu; Escape or a
-  press outside closes it.
-  - **No hover card:** it would cover the menu the chip opens.
+- **A dropdown chip** (`EditorModeSwitch`): a fixed-width chip showing only the current mode's
+  icon and a chevron, never its name, on the faint tint the editor's menu-like controls use. A press opens the **mode menu** below it, hanging from its left edge, beside the menu button.
+  Choosing a row switches and closes the menu; Escape or a press outside closes it.
+  - **No hover card:** it would cover the menu the chip opens. The menu's preview does that job.
   - Semantics: a menu button (`aria-haspopup="menu"`, `aria-expanded`) named
     "Editor mode: Diagram", over a `menu` of `menuitemradio` rows; arrow keys
     open it and move within it, wrapping, Home and End jump.
   - The same for everyone, power user mode or not.
+- **The mode menu** is two panes: a **list** of the modes and a **preview** of one.
+  - **The list:** one row per mode in catalogue order, each its mark on a small tile in the
+    mode's tint, its name, then a check on the current mode, or a **New tab** mark on a mode across
+    Plan's line ("Plan stands apart").
+  - **The preview** shows the row under the pointer, else the focused row, else the current mode:
+    a picture of the mode's work on its tint, its name with **Shift+D** when the key leads there,
+    its **description** (one line on what the mode is for, from the mode catalogue), the mode's
+    **main tools** as small chips, and one button that does what choosing the row does:
+    **Switch to <Mode>**, **Open a New <Mode> Tab** across Plan's line, **Current Mode** (inert)
+    on the current one, or **Can’t Switch Here** (inert) on a locked row.
+  - The preview is for the pointer: assistive technology hears each row's name and description
+    on the row itself, and the preview is hidden from it.
+  - **Narrow (under 640px wide):** the preview is left out and the list stands alone, each row
+    showing its description under its name.
+  - **Each mode has a tint**, used only by the mode menu (the list's tiles and the preview's
+    picture): Diagram sky, Draw orange, Facilitate violet, Illustrate pink, Plan
+    emerald. The current row and the focus ring stay the brand colour.
+- **The mode descriptions** say what each mode is for, in the catalogue (`EDITOR_MODE_CATALOGUE`):
+  - Diagram: "Flowcharts, architecture and org charts with snapping shapes."
+  - Draw: "Sketch freehand with pens, tidied into shapes as you go."
+  - Facilitate: "Run a live session: timers, votes, polls and reveals."
+  - Illustrate: "Lay out slides, infographics, articles and logos on pages."
+  - Plan: "Boards of cards moving through columns, with types and fields."
+- **The same switch everywhere it switches a tab's mode:** the top chrome's chip, and every start
+  panel's rail ([Template starts](start-diagramming.md) "Changing mode"), where the chip is named
+  and full width (the rail has no chrome around it to explain an icon) and opens the same menu. The tab menu's mode rows stay names only, so that menu stays
+  short; the New Document wizard's mode cards are a choice of what to make, not a switch.
 - **One mode chosen:** Diagram, Draw, Facilitate, Illustrate or Plan.
   Exactly one is active.
 - **Switching is instant and lossless:** no dialog, no reload, and no element changes (the tab's
@@ -71,9 +94,9 @@ where it is and changes only how the next mark is made.
   visitor, and everyone on a locked tab, sees no switch and sees the tab in its mode.
 - **Not on event-storming boards:** the tab kind keeps its own tools and
   notation, and shows no switch.
-- **Zero layout shift:** the switch has a fixed size, and nothing next to it
-  moves when the mode changes.
-- **Shift+D** moves to the next mode, wrapping round, shown in the switch's menu, `aria-keyshortcuts` and Settings ›
+- **Zero layout shift:** the switch has a fixed size, and
+  nothing next to it moves when the mode changes.
+- **Shift+D** moves to the next mode, wrapping round, shown in the switch's preview, `aria-keyshortcuts` and Settings ›
   Keyboard; a switch by key is announced politely ("Draw mode"). It obeys
   the character-key shortcuts setting.
 - **Accessible:** reachable by keyboard, its state exposed to assistive
