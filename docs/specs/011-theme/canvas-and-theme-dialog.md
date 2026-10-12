@@ -69,9 +69,10 @@ The table is in the order the carousel shows them, six to a page:
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
-  The sample is coloured with its two boxes as separate branches (its arrow is put back on its pins after), so a
-  multi-colour look's card shows two of its palette colours rather than the trunk neutral and one hue; a
-  single-colour look draws exactly as before (`apps/live/lib/look-preview.ts`).
+  The sample is coloured with its two boxes as separate branches, taking the palette's first and fourth colours
+  (across the wheel: Rainbow's red and green, Tropical's teal and orange), and its arrow is put back on its pins
+  after; so a multi-colour look's card shows two contrasting palette colours rather than the trunk neutral and one
+  hue. Single-colour and per-shape (UML) looks draw exactly as they would without it (`apps/live/lib/look-preview.ts`).
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
   (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
   element's own finish or font still wins over the tab's.
