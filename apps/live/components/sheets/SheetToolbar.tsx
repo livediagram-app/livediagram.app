@@ -41,18 +41,26 @@ const SEPARATOR_PX = 17;
 const CHEVRON_PX = 12;
 // Search at the far right: its glyph, its word and a divider before it, kept out of the room the buttons share.
 const SEARCH_PX = 112;
+// On a phone the row packs tighter so more of the category shows before More: half the gap, slimmer dividers
+// (mx-0.5), no menu chevrons, the switcher and the function families their glyph alone (named by the tooltip), and no
+// Search (All Functions… still lists every function).
+const PHONE_GAP_PX = 4;
+const PHONE_SEPARATOR_PX = 9;
+// The row's own padding and its divider from the switcher, kept out of the room.
+const ROW_INSET_PX = 16;
+const PHONE_ROW_INSET_PX = 14;
 
 // The category last picked, for this session: every Sheet opens on it.
 let lastCategory: ToolbarCategoryId = 'text';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
-const widthOf = (b: ToolbarButton, labelled = false) =>
-  GAP_PX +
-  (b.separatorBefore ? SEPARATOR_PX : 0) +
-  (b.menu && !b.control ? CHEVRON_PX : 0) +
+const widthOf = (b: ToolbarButton, labelled = false, phone = false) =>
+  (phone ? PHONE_GAP_PX : GAP_PX) +
+  (b.separatorBefore ? (phone ? PHONE_SEPARATOR_PX : SEPARATOR_PX) : 0) +
+  (b.menu && !b.control && !phone ? CHEVRON_PX : 0) +
   (b.control
     ? (b.controlPx ?? BUTTON_PX)
-    : b.text
+    : b.text && !phone
       ? Math.max(BUTTON_PX, b.text.length * WORD_CHAR_PX + 16 + (b.icon ? WORD_GLYPH_PX : 0))
       : BUTTON_PX + (labelled && !b.glyphOnly ? b.label.length * LABEL_CHAR_PX + LABEL_GAP_PX : 0));
 
@@ -86,6 +94,7 @@ export function SheetToolbar({
   const endRef = useRef<HTMLSpanElement | null>(null);
   const [room, setRoom] = useState(1000);
   const hasEnd = !!end;
+  const phone = useIsMobileViewport();
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -94,8 +103,8 @@ export function SheetToolbar({
         el.clientWidth -
           (switcher.current?.offsetWidth ?? 0) -
           (endRef.current?.offsetWidth ?? 0) -
-          16 -
-          SEARCH_PX,
+          (phone ? PHONE_ROW_INSET_PX : ROW_INSET_PX) -
+          (phone ? 0 : SEARCH_PX),
       );
     measure();
     const ro = new ResizeObserver(measure);
@@ -103,18 +112,23 @@ export function SheetToolbar({
     if (switcher.current) ro.observe(switcher.current);
     if (endRef.current) ro.observe(endRef.current);
     return () => ro.disconnect();
-  }, [hasEnd]);
-  const all = category.buttons;
+  }, [hasEnd, phone]);
+  // On a phone a wide control with a menu (the colour swatches, Font, Font Size's stepper) is its glyph opening that
+  // menu, so the rest of the category still has room beside it.
+  const all = phone
+    ? category.buttons.map((b) =>
+        b.control && b.menu ? { ...b, control: undefined, controlPx: undefined } : b,
+      )
+    : category.buttons;
   // Labels beside the glyphs when the whole category fits with them (a wide Sheet on a desktop); on a phone, or
   // when they would not all fit, glyphs alone with tooltips, folding into More as needed.
-  const phone = useIsMobileViewport();
   const labels = !phone && all.reduce((n, b) => n + widthOf(b, true), 0) <= room;
   let used = 0;
   let fits = 0;
   for (let i = 0; i < all.length; i++) {
     const reserve = i < all.length - 1 ? MORE_PX : 0;
-    if (used + widthOf(all[i]!) + reserve > room) break;
-    used += widthOf(all[i]!);
+    if (used + widthOf(all[i]!, false, phone) + reserve > room) break;
+    used += widthOf(all[i]!, false, phone);
     fits++;
   }
   const shown = all.slice(0, fits);
@@ -173,7 +187,7 @@ export function SheetToolbar({
             }
           }}
         >
-          {b.text ? (
+          {b.text && !phone ? (
             <span className="flex items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold">
               {b.icon ? (
                 <span aria-hidden className="flex items-center [&_svg]:size-4">
@@ -188,7 +202,7 @@ export function SheetToolbar({
           {labels && !b.text && !b.glyphOnly ? (
             <span className="ml-1 whitespace-nowrap text-[12px] font-medium">{b.label}</span>
           ) : null}
-          {b.menu ? <ChevronIcon /> : null}
+          {b.menu && !phone ? <ChevronIcon /> : null}
         </button>
       </Tooltip>
     );
@@ -217,11 +231,12 @@ export function SheetToolbar({
       onPointerDown={stop}
       onDoubleClick={stop}
     >
-      <div ref={switcher} className="flex shrink-0 items-center pr-1.5">
+      <div ref={switcher} className={`flex shrink-0 items-center ${phone ? 'pr-1' : 'pr-1.5'}`}>
         <PaletteDropdown
           ariaLabel="Toolbar category"
           value={category.id}
           variant="toolbar"
+          iconOnly={phone}
           // On a desktop a resting mouse opens it: the categories are the toolbar's own tabs.
           openOnHover
           autoHeight
@@ -235,15 +250,15 @@ export function SheetToolbar({
           motion); each is wrapped so it can move (a tooltip's wrapper is display: contents). */}
       <div
         key={category.id}
-        className={`flex items-center gap-2 pl-2${switched ? ' lvd-cascade' : ''}`}
+        className={`flex items-center ${phone ? 'gap-1 pl-1' : 'gap-2 pl-2'}${switched ? ' lvd-cascade' : ''}`}
         style={{ borderLeft: `1px solid ${c.palette.cardBorder}` }}
       >
         {shown.map((b) => (
-          <span key={b.id} className="flex shrink-0 items-center gap-2">
+          <span key={b.id} className={`flex shrink-0 items-center ${phone ? 'gap-1' : 'gap-2'}`}>
             {b.separatorBefore ? (
               <span
                 aria-hidden
-                className="mx-1 h-5 w-px shrink-0"
+                className={`${phone ? 'mx-0.5' : 'mx-1'} h-5 w-px shrink-0`}
                 style={{ backgroundColor: c.palette.cardBorder }}
               />
             ) : null}
@@ -264,27 +279,32 @@ export function SheetToolbar({
           </button>
         </Tooltip>
       ) : null}
-      <span
-        aria-hidden
-        className={`${folded.length ? '' : 'ml-auto '}mx-1 h-5 w-px shrink-0`}
-        style={{ backgroundColor: c.palette.cardBorder }}
-      />
-      <Tooltip label="Search for a function">
-        <button
-          ref={searchButton}
-          type="button"
-          aria-label="Search"
-          aria-haspopup="menu"
-          aria-expanded={searchAt !== null}
-          className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
-          onClick={(e) => setSearchAt(e.currentTarget)}
-        >
-          <span aria-hidden className="flex items-center [&_svg]:size-4">
-            <SearchIcon />
-          </span>
-          Search
-        </button>
-      </Tooltip>
+      {/* Search, not on a phone: its room goes to the category's buttons. */}
+      {phone ? null : (
+        <>
+          <span
+            aria-hidden
+            className={`${folded.length ? '' : 'ml-auto '}mx-1 h-5 w-px shrink-0`}
+            style={{ backgroundColor: c.palette.cardBorder }}
+          />
+          <Tooltip label="Search for a function">
+            <button
+              ref={searchButton}
+              type="button"
+              aria-label="Search"
+              aria-haspopup="menu"
+              aria-expanded={searchAt !== null}
+              className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md px-2 text-[13px] font-semibold transition hover:bg-black/5 dark:hover:bg-white/10"
+              onClick={(e) => setSearchAt(e.currentTarget)}
+            >
+              <span aria-hidden className="flex items-center [&_svg]:size-4">
+                <SearchIcon />
+              </span>
+              Search
+            </button>
+          </Tooltip>
+        </>
+      )}
       {end ? (
         // The header's controls, the cog last, after Search (sheet-toolbar-end.ts).
         <span

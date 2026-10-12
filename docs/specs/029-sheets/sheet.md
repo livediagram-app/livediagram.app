@@ -262,6 +262,10 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
   its name beside it (a wide Sheet on a desktop), the names show and the tooltips are dropped. On a phone, or when
   they would not fit, glyphs alone; buttons that still do not fit fold from the right into a **More** (⋯) menu, so
   it never wraps.
+- On a phone the toolbar packs tighter so each category shows as much as it can before More: there is no Search
+  (All Functions… still lists every function), the gaps and dividers are slimmer, menu buttons drop their chevron,
+  the switcher and the function families are their glyph alone (named by the tooltip), and the wide controls (the
+  colour swatches, Font, Font Size's stepper) are their glyph opening the menu they open from More.
 - Each button reads the selection's active cell (Bold pressed when it is bold) and acts on the whole selection.
 - Undo and Redo are the canvas's own (its controls and the keys), not repeated in the toolbar.
 
