@@ -139,7 +139,10 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
   fixed ancestor short of a whole-screen layer) has focus on a touch screen, every change of the visible area
   (`visualViewport` resize and scroll, focus in and out) checks it again, after the frame's own placement.
 - The surface moves into the visible area, 8 px clear of its edges: all of it when it fits there, else just far enough
-  to show the field, never past the surface's top. A surface that scrolls first scrolls the field into its own view.
+  to show the field, never past the surface's top. A surface capped at the room its placement had, so that it scrolls,
+  first grows to its content's height or the visible area's, whichever is less, and so moves up whole rather than
+  cutting a line under its top edge; one still taller then scrolls the field into its own view. It gets its own cap
+  back when the field lets go.
 - It moves by a `translateY` put in front of its own transform, so its placement is untouched; when the field lets go
   of focus or the keyboard goes, it returns to where its placement puts it.
 - A panel anchored to a control (`AnchoredPopover`) never shrinks below 160 px of room on its side (or its own height,

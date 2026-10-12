@@ -97,6 +97,28 @@ describe('checkFloatingField', () => {
     expect(panel.style.transform).toBe('scale(1)');
   });
 
+  // A popover capped at the little room its placement had grows to the visible band while its field has focus, so it
+  // moves up whole rather than scrolling a clipped line under its top edge, and gets its own cap back after.
+  it('grows a capped popover to its content within the visible band, and restores its cap', () => {
+    viewport(400);
+    const { panel, input } = popover(500);
+    panel.style.maxHeight = '120px';
+    Object.defineProperty(panel, 'scrollHeight', { configurable: true, value: 300 });
+    Object.defineProperty(panel, 'clientHeight', { configurable: true, value: 120 });
+    Object.defineProperty(panel, 'offsetHeight', { configurable: true, value: 122 });
+    input.focus();
+    checkFloatingField();
+    expect(panel.style.maxHeight).toBe('302px');
+    input.blur();
+    checkFloatingField();
+    expect(panel.style.maxHeight).toBe('120px');
+    // Never past the band itself.
+    viewport(200);
+    input.focus();
+    checkFloatingField();
+    expect(panel.style.maxHeight).toBe(`${200 - 2 * M}px`);
+  });
+
   it('leaves a field outside any floating surface, and a button, alone', () => {
     viewport(400);
     const input = document.createElement('input');

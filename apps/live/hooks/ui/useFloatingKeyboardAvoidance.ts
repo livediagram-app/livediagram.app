@@ -8,8 +8,10 @@ import { VIEWPORT_EDGE_MARGIN } from '@/lib/clamp-to-viewport';
 // placed against the window, but a touch screen's keyboard covers the bottom of the VISUAL viewport, so a field low on
 // the screen (a Sheet chart's Range, a slot's picker) went under it, out of view, as soon as it was tapped. While a
 // text field inside such a surface has focus on a touch screen, every visual-viewport change re-checks it: the whole
-// surface moves into the visible area when it fits there, else just far enough to show the field. When the field
-// lets go of focus, or the keyboard goes, the surface returns to where its own placement put it.
+// surface moves into the visible area when it fits there, else just far enough to show the field. A surface capped
+// at the little room its placement had (an anchored popover low on a short window) first grows to the visible band, so
+// it moves up whole instead of scrolling a clipped line under its top edge. When the field lets go of focus, or the
+// keyboard goes, the surface returns to where, and to the size, its own placement put it.
 
 // What counts as a floating surface: the shared popover, panel, sheet and menu primitives, and any dialog.
 export const FLOATING_SURFACE =
@@ -70,6 +72,23 @@ function revealWithin(surface: HTMLElement, field: HTMLElement) {
 
 // The lift each surface carries now, and the inline transform it had before it.
 const lifted = new Map<HTMLElement, { dy: number; base: string }>();
+// The inline max-height each grown surface had before it grew.
+const grown = new Map<HTMLElement, string>();
+
+// Lets a surface that scrolls because its placement capped it take up to `room` px, its content's full height at most.
+function grow(el: HTMLElement, room: number) {
+  if (el.scrollHeight <= el.clientHeight + 1) return;
+  if (!grown.has(el)) grown.set(el, el.style.maxHeight);
+  const frame = el.offsetHeight - el.clientHeight; // borders
+  el.style.maxHeight = `${Math.max(el.clientHeight, Math.min(el.scrollHeight + frame, room))}px`;
+}
+
+function shrink(el: HTMLElement) {
+  const was = grown.get(el);
+  if (was === undefined) return;
+  el.style.maxHeight = was;
+  grown.delete(el);
+}
 
 function apply(el: HTMLElement, dy: number) {
   const was = lifted.get(el);
@@ -85,6 +104,7 @@ function apply(el: HTMLElement, dy: number) {
 
 export function releaseAll(except?: HTMLElement | null) {
   for (const el of [...lifted.keys()]) if (el !== except) apply(el, 0);
+  for (const el of [...grown.keys()]) if (el !== except) shrink(el);
 }
 
 export function checkFloatingField() {
@@ -97,6 +117,7 @@ export function checkFloatingField() {
   const was = lifted.get(surface);
   if (was && !surface.style.transform.startsWith(`translateY(${-was.dy}px)`))
     lifted.delete(surface);
+  grow(surface, vv.height - 2 * VIEWPORT_EDGE_MARGIN);
   revealWithin(surface, field);
   // Where both would be without the lift this surface carries now.
   const dy = lifted.get(surface)?.dy ?? 0;
