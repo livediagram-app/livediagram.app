@@ -313,9 +313,33 @@ category dropdown, in its toolbar style, a tile grid), and to its right the chos
 - The selection is drawn as a tinted range with a brand border, the active cell unshaded, with a **fill handle**
   (a small square) at the selection's bottom right. The column letters and row numbers it crosses are tinted, in
   the focus colour with an edge towards the cells; a whole selected row or column's header is solid.
+- **On a touch screen** ([On a touch screen](#on-a-touch-screen)) a finger held still on a cell grabs it, and dragging
+  on selects the range; the selection's corner is a round **grip** that drags the range's far corner.
 - The bottom of the sheet shows, for a selection of more than one number, **Sum**, **Average** and **Count**, as a
   spreadsheet's status bar does (each name quiet, its number in ink, with a small arrow); a press on it picks which show, from those and **Min** and **Max** (the pick is the
   person's own, kept in their browser). It counts the rows a filter shows, and gives up past 100,000 cells.
+
+### On a touch screen
+
+A finger has no hover and no right button, and its drag pans the cells, so selecting by touch works by holding:
+
+- **A tap** selects the cell under it; on a column letter or row number, that column or row; on the corner, the
+  whole sheet. A tap saves an edit in progress first.
+- **A drag** pans the cells (scrolls them, maximised), as [Panning](#panning) says; it never selects.
+- **A finger held still** (the editor's long press, 500 ms, moving less than 10 px) **grabs** what is under it: the
+  hold ring shows at the finger, a short buzz where the device has one, and the cell is selected (a cell already in
+  the selection keeps the selection). Then:
+  - **dragged on** (6 px or more), it selects from the held cell to the finger, a range, as a mouse drag does, the grid
+    scrolling near its edges; held on a column letter or row number, it selects across columns or rows;
+  - **let go unmoved**, it opens the cell's (or the header's) menu at the finger, the browser's own long-press menu
+    never showing.
+- **The grip**: the selection's corner handle is drawn round and twice the size (14 px), and a finger within 22 px of
+  it drags the range's far corner (its top left stays put), for anyone who can select, viewers too. Fill by dragging is
+  for a mouse or pen; on a touch screen **Ctrl+D** (Fill Down, with a keyboard) or the menu's commands fill.
+- While a finger selects (from the hold or the grip until it lifts) the page never scrolls under it; a second finger
+  is never a hold (it is the pinch, the canvas's or the browser's).
+- The release that ends a finger's selection is not a tap.
+- The cells take no text selection or callout from a long press; the cell editor still selects its own text.
 
 ### Editing
 

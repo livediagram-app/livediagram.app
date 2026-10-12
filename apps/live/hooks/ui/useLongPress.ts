@@ -29,6 +29,8 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
   // reveal delay, for the caller to render a "hold" affordance. null when no
   // press is being held (or it is still within the quick-tap window).
   pressPoint: { x: number; y: number } | null;
+  // Lets go of a press still being held (a second finger joined it: a pinch, not a long press).
+  cancel: () => void;
 } {
   const timers = useRef<{
     fire: ReturnType<typeof setTimeout> | null;
@@ -37,6 +39,9 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
   const [pressPoint, setPressPoint] = useState<{ x: number; y: number } | null>(null);
   // Read the latest callback without re-arming listeners each render.
   const cbRef = useLatest(onLongPress);
+
+  // The armed press's own cleanup, so `cancel` can take its listeners off too.
+  const armed = useRef<(() => void) | null>(null);
 
   const clearTimers = () => {
     if (timers.current.fire !== null) clearTimeout(timers.current.fire);
@@ -61,12 +66,15 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
         cleanup();
     };
     const cleanup = () => {
+      armed.current = null;
       clearTimers();
       setPressPoint(null);
       window.removeEventListener('pointermove', cancelOnMove);
       window.removeEventListener('pointerup', cleanup);
       window.removeEventListener('pointercancel', cleanup);
     };
+    armed.current?.();
+    armed.current = cleanup;
     window.addEventListener('pointermove', cancelOnMove);
     window.addEventListener('pointerup', cleanup);
     window.addEventListener('pointercancel', cleanup);
@@ -82,5 +90,7 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
     }, LONG_PRESS_MS);
   };
 
-  return { onPointerDown, pressPoint };
+  const cancel = () => armed.current?.();
+
+  return { onPointerDown, pressPoint, cancel };
 }

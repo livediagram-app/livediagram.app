@@ -305,7 +305,7 @@ function GalleryTile({
         type="button"
         onClick={onDelete}
         aria-label={`Delete ${image.originalName ?? 'image'}`}
-        className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-slate-500 shadow transition hover:bg-slate-100 hover:text-slate-700 group-hover:block dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+        className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-slate-500 shadow transition hover:bg-slate-100 hover:text-slate-700 group-hover:block focus-visible:block [@media(hover:none)]:block dark:bg-slate-900/90 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
       >
         <TrashIcon />
       </button>

@@ -198,7 +198,7 @@ function CardFinderBody({
                           plan.trashItem(it.id);
                           plan.announce(`#${it.key} moved to the Trash`);
                         }}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100"
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 focus-visible:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 sm:opacity-0 sm:focus-visible:opacity-100 sm:group-hover/row:opacity-100 sm:[@media(hover:none)]:opacity-100"
                       >
                         <TrashIcon size={14} />
                       </button>
