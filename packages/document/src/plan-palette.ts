@@ -2,7 +2,7 @@
 // canvas and the SVG export both draw from here, so a board looks the same in both. With no colours of
 // its own a board takes the surface's neutral set; with them (a tab theme stamps them, Quick Style and
 // the colour pickers set them, a theme switch rewrites them) its fill is the board, its stroke the
-// border and focus, its text the ink, and the columns, cards and muted ink are mixed from those. Ink
+// focus and (mixed into the fill) the border, its text the ink, and the columns, cards and muted ink are mixed from those. Ink
 // that would not read on the fill is swapped for a readable one.
 import { contrastRatio, hexToRgb, isLightColor, type CanvasSurface } from './colors';
 import { mixHex } from './svg-render-face-kit';
@@ -87,6 +87,9 @@ const INK_CONTRAST = 4.5;
 const hex = (v: string | null | undefined): string | undefined =>
   v && hexToRgb(v) ? v : undefined;
 
+/** How much of an accent a board's, sheet's or start panel's border keeps, mixed into its paper. */
+export const PLAN_BORDER_ACCENT_SHARE = 0.35;
+
 export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): PlanPalette {
   const base = surface === 'dark' ? DARK : LIGHT;
   const preset = planPresetColours(own.preset, surface);
@@ -99,7 +102,13 @@ export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): P
   const wanted = ink ?? base.text;
   const text =
     contrastRatio(wanted, paper) >= INK_CONTRAST ? wanted : light ? LIGHT.text : DARK.text;
-  const border = stroke ?? (fill ? mixHex(text, paper, 0.16) : base.border);
+  // An accent border is mixed into the paper (PLAN_BORDER_ACCENT_SHARE): at a board's or sheet's size the full accent
+  // reads heavy, so the lines stay quiet and the full accent is kept for focus.
+  const border = stroke
+    ? mixHex(stroke, paper, PLAN_BORDER_ACCENT_SHARE)
+    : fill
+      ? mixHex(text, paper, 0.16)
+      : base.border;
   return {
     surface: paper,
     border,

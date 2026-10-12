@@ -72,7 +72,7 @@ describe('renderElementsToSvg in a finish', () => {
     } as Tab);
     const body = svg.slice(svg.indexOf('data-finish="sketch"'));
     expect(body).toMatch(/<path d="M[^"]+" fill="#dbeafe"\/>/);
-    expect(body).toMatch(/stroke="#3b82f6" stroke-opacity="0.3"/);
+    expect(body).toMatch(/stroke="#3b82f6" stroke-opacity="0.15"/);
   });
 
   it('Professional letters in Inter', () => {

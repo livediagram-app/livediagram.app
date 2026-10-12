@@ -767,7 +767,8 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - A board and a Plan card follow the tab's theme and their own style, like any shape: a theme stamps their fill,
   stroke and text colours when they are made and rewrites them on a theme switch, and Quick Style, the colour
-  pickers and the style presets set them. The board's fill is its surface, its stroke its border and focus
+  pickers and the style presets set them. The board's fill is its surface, its stroke its focus and, mixed 35% into the fill so the lines stay quiet
+  (`PLAN_BORDER_ACCENT_SHARE`; sheets and the start panel share it), its border
   colour, its text colour its ink; columns, cards, card borders and muted text are mixed from those. Ink that
   would not read on the fill is swapped for a readable one. With no colours of their own (the Default theme)
   they take the canvas surface's neutral set, light or dark.
