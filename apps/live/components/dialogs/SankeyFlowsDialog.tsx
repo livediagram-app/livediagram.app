@@ -56,7 +56,7 @@ export function SankeyFlowsDialog({
 }: {
   element: ShapeElement;
   palette?: readonly string[];
-  onCommit: (flows: SankeyFlow[], nodes?: SankeyNodeStyle[]) => void;
+  onCommit: (flows: SankeyFlow[], nodes: SankeyNodeStyle[] | undefined) => void;
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<Tab>('table');
@@ -72,7 +72,9 @@ export function SankeyFlowsDialog({
   // What was last stored (the flows and node colours), so a store that would change nothing is skipped.
   const lastStored = useRef(JSON.stringify([flowsToStore(rows), element.sankeyNodes ?? null]));
 
-  const store = (next: SankeyDraftRow[], nextNodes = nodes) => {
+  // Stores the rows with these node settings. Not a default parameter: switching the last leftover back on leaves
+  // the nodes undefined, which a default would quietly swap for the old settings, and the store would be skipped.
+  const storeWith = (next: SankeyDraftRow[], nextNodes: SankeyNodeStyle[] | undefined) => {
     setRows(next);
     const flows = flowsToStore(next);
     const key = JSON.stringify([flows, nextNodes ?? null]);
@@ -80,6 +82,7 @@ export function SankeyFlowsDialog({
     lastStored.current = key;
     onCommit(flows, nextNodes);
   };
+  const store = (next: SankeyDraftRow[]) => storeWith(next, nodes);
 
   const switchTab = (next: Tab) => {
     if (next === tab) return;
@@ -121,7 +124,7 @@ export function SankeyFlowsDialog({
     const renamed = renameSankeyNode(flowsToStore(rows), nodes, from, to);
     const next = rowsFromFlows(renamed.flows);
     setNodes(renamed.nodes);
-    store(next, renamed.nodes);
+    storeWith(next, renamed.nodes);
     if (tab === 'text') setText(sankeyFlowsToText(renamed.flows));
   };
 
@@ -258,7 +261,7 @@ export function SankeyFlowsDialog({
                 onSetLeftover={(name, on) => {
                   const next = withSankeyNodeLeftover(nodes, name, on);
                   setNodes(next);
-                  store(rows, next);
+                  storeWith(rows, next);
                 }}
                 onRows={setRows}
                 onCommit={(next) => store(next)}

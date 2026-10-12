@@ -29,10 +29,20 @@ describe('useSankeySetters', () => {
   it('stores the dialog’s flows on the diagram it was opened for, cleaned, pruning stale colours', () => {
     trackMock.mockClear();
     const { s, sankey } = setup([]);
-    s.setSankeyFlows('s1', [{ from: ' A ', to: 'B', value: 2 }]);
+    s.setSankeyFlows(
+      's1',
+      [{ from: ' A ', to: 'B', value: 2 }],
+      [{ name: 'Rent', color: '#111111' }],
+    );
     expect(sankey().sankeyFlows).toEqual([{ from: 'A', to: 'B', value: 2 }]);
     expect(sankey().sankeyNodes).toBeUndefined();
     expect(trackMock).toHaveBeenCalledWith('Element', 'Changed', 'SankeyFlows');
+  });
+
+  it('clears the nodes when the dialog says none, never keeping the old ones', () => {
+    const { s, sankey } = setup([]);
+    s.setSankeyFlows('s1', [{ from: 'Rent', to: 'B', value: 2 }], undefined);
+    expect(sankey().sankeyNodes).toBeUndefined();
   });
 
   it('sets and clears a node colour on the selected diagrams only', () => {

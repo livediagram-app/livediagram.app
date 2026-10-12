@@ -44,8 +44,14 @@ export function useSankeySetters({
 }) {
   const patchSelected = makeShapePatcher({ currentSelectionIds, commit, matches: isSankeyShape });
 
-  // The whole flow list (and, after a rename, the node colours that moved with it) at once.
-  const setSankeyFlows = (id: string, flows: SankeyFlow[], nodes?: SankeyNodeStyle[]) => {
+  // The whole flow list and the nodes' own settings (colours, leftover switches) at once, as the Flows dialog holds
+  // them. `nodes` is the whole set, never "unchanged": undefined means no node sets anything, so switching the last
+  // leftover back on clears it rather than keeping the old row.
+  const setSankeyFlows = (
+    id: string,
+    flows: SankeyFlow[],
+    nodes: SankeyNodeStyle[] | undefined,
+  ) => {
     const clean = cleanSankeyFlows(flows);
     commit((els) =>
       els.map((el) =>
@@ -53,7 +59,7 @@ export function useSankeySetters({
           ? {
               ...el,
               sankeyFlows: clean,
-              sankeyNodes: pruneSankeyNodes(nodes ?? el.sankeyNodes, clean),
+              sankeyNodes: pruneSankeyNodes(nodes, clean),
             }
           : el,
       ),
