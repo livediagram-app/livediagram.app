@@ -267,7 +267,7 @@ export function SankeyFlowsTable() {
     );
   };
   return (
-    <Scene w={420} h={330} bg="plain">
+    <Scene w={420} h={354} bg="plain">
       <Label x={x} y={16} size={9} weight={600} tone="muted">
         Step 1
       </Label>
@@ -288,7 +288,7 @@ export function SankeyFlowsTable() {
       )}
       <rect
         x={x}
-        y={262}
+        y={284}
         width={w}
         height={58}
         rx={7}
@@ -296,7 +296,7 @@ export function SankeyFlowsTable() {
         strokeDasharray="5 3"
         strokeWidth={1.5}
       />
-      <Label x={x + 12} y={276} size={10} weight={600} tone="accent">
+      <Label x={x + 12} y={298} size={10} weight={600} tone="accent">
         Add a Flow
       </Label>
       {[
@@ -307,13 +307,13 @@ export function SankeyFlowsTable() {
         <g key={ph as string}>
           <rect
             x={rx as number}
-            y={288}
+            y={310}
             width={rw as number}
             height={20}
             rx={4}
             className="fill-white stroke-slate-200"
           />
-          <Label x={(rx as number) + 8} y={298} size={9} tone="muted">
+          <Label x={(rx as number) + 8} y={320} size={9} tone="muted">
             {ph as string}
           </Label>
         </g>
