@@ -47,29 +47,32 @@ A board placed from the picker starts **empty**: its columns are its own, so car
 
 ## Columns
 
-<Figure caption="A column's cog opens its settings, from its name and colour down to Remove Column and Delete Status.">
+<Figure caption="A column's cog opens its settings: a toolbar to move or remove it, then its name and colour down to Delete Status.">
   <PlanColumnSettingsScene />
 </Figure>
 
-When you add a column with a column's **+ Add Column After**, the picker lists under **Existing Statuses** every status your document already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column**: if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
+Add a column from the board's cog (**Columns**, below) or from a column's own **+ Add Column After**. Either way the picker lists under **Existing Statuses** every status your document already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column** (**Add** in the board's cog): if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
 
-Hover a column's head and press its cog (always there on a touch screen) to:
+Hover a column's head and press its cog (always there on a touch screen). Along the top, a toolbar holds **Move Left** and **Move Right** on the left and **Remove** on the right. Below it you can:
 
 - **Rename** it and give it a **colour** (none, one of ten, or a custom colour).
 - Set a **WIP Limit**: the count turns amber when the column holds more. It warns; it never refuses a card.
 - Make it **Counts as Done**, so its cards fill the board's Completion and count as done in charts.
 - Set its **Width**: one, two or three slots across the board.
-- **Move Left** or **Move Right**, or **Add Column After**.
-- **Remove Column** takes the column off this board only: the state and its cards stay, so another board's column for it still shows them.
-- **Delete Status** deletes the state itself: when it holds cards, it asks where they go (to another column, or to the **Trash**, where you can restore them), then the state's column comes off every board. A board's last column can't be removed or deleted.
+- **Add Column After** this one.
+
+**Remove** takes the column off this board only: the state and its cards stay, so another board's column for it still shows them.
+
+**Delete Status** (the last row) deletes the state itself: when it holds cards, it asks where they go (to another column, or to the **Trash**, where you can restore them), then the state's column comes off every board. A board's last column can't be removed or deleted.
 
 A board holds up to 12 columns. A new Blank board shows **Setup Board**: first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want, then its **Layout**: its **Swimlanes**, its **Card Display** and **Fill Tab**. The Layout step starts as the board is now, so you can press straight through it. **Create Board** sets it all up in one step, and everything can change later from the board's cog.
 
 ## The Board's Own Settings
 
-Press the cog at the top right of the board (**Board Settings**), or right-click the board: both open the board's menu. Its **Board** category holds four sections, one open at a time (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board**):
+Press the cog at the top right of the board (**Board Settings**), or right-click the board: both open the board's menu. Its **Board** category holds five sections, one open at a time (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board** or **Columns**):
 
 - **Board Setup:** the board's name, **Setup Board**, which opens the setup screen again filled in with the board as it is, so you can change its card types, columns and layout in one go (**Save Board** keeps each kept column's settings), and **Fill Tab** (below). To put the whole board in the [Slide Deck](/help/selection-modes/slide-deck/), press **Add to Slides** in the board's header, left of Focus.
+- **Columns:** the board's columns, left to right, each with its colour and any WIP limit, and a **Done** tag on the done column. Press one to open its own settings. Under them, add a column: pick one of your **Existing Statuses** or type a new name and press **Add**. New columns go at the end, before **Done** when the board ends with it, and you can add several in a row.
 - **Swimlanes:** **Group Rows By**, one list: **None**, **Assignee**, **Type** or **Priority**, then a row per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Projects), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. There is no Status row grouping on a board, since its columns already are its statuses (an All Cards board, which has one column, groups its rows by status).
 - **Supported Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Stories, Tasks and Bugs; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again). You can turn them all off, then add one with **Add New Card Type** under any column's **+ Add card**. A board whose chosen types have all since been deleted shows every type again.
 - **Card Layout:** the **Card Size** (**Minimal**, **Compact** or **Detailed**). What a card shows at each size is set per card type, in its [Display](/help/canvas/plan-mode/card-types/) tab.

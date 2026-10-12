@@ -1,11 +1,12 @@
 'use client';
 
 // A column's settings (docs/specs/026-plan/plan-board.md "The board set-up"): the popover a column's cog
-// opens, hanging under the cog. Its name as the header; colour, WIP limit (a stepper) and Counts as
-// Done (a switch); move left or right; add a
-// column after it (the column picker: an existing status, or a new one); remove it, first asking where its cards go when it has any. Each change is one
-// element edit, made as it happens. Escape or an outside press closes it; on a phone it is a sheet.
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+// opens, hanging under the cog. A toolbar on top (Move Left and Move Right at the start, Remove Column at the end),
+// then its name as the header; colour, WIP limit (a stepper), width and Counts as Done (a switch); add a column
+// after it (the column picker: an existing status, or a new one); delete its status, first asking where its cards
+// go when it has any. Each change is one element edit, made as it happens. Escape or an outside press closes it;
+// on a phone it is a sheet.
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   COLUMN_WIDTHS,
   isTrashed,
@@ -22,7 +23,7 @@ import {
   useEscape,
 } from '@livediagram/ui';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
-import { Portal, lucideGlyph } from '@livediagram/ui';
+import { Portal, Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideBetweenVerticalEnd } from '@livediagram/icons/lucide';
 
 // Remove Column's glyph: a column taken out from between its neighbours.
@@ -44,6 +45,7 @@ import {
   reuseColumnStatus,
 } from './board-setup-edits';
 import { requestColumnSettings } from './column-settings-request';
+import { COLUMN_MOVE_MS } from './column-move-flip';
 import { AddColumnPickerPopover } from './AddColumnPickerPopover';
 import {
   addStatusColumn,
@@ -67,6 +69,17 @@ const COLUMN_STANDARD = [standardGroup('strong', 'light', 'hex')];
 // The popover's width: its rows (the colour now a swatch, the picker in its own popover) need no more.
 const WIDTH = 288;
 const GAP = 6;
+// How long past the column's glide the popover keeps following its cog (a frame or two of slack).
+const FOLLOW_SLACK_MS = 40;
+
+// The popover's place: under its cog, right edges aligned and kept on screen, or above it when there is no room below.
+function placeUnder(a: DOMRect, height: number): { left: number; top: number } {
+  const left = Math.max(EDGE, Math.min(a.right - WIDTH, window.innerWidth - WIDTH - EDGE));
+  const below = a.bottom + GAP;
+  const top =
+    below + height + EDGE <= window.innerHeight ? below : Math.max(EDGE, a.top - GAP - height);
+  return { left, top };
+}
 
 const STEP =
   'w-8 text-[15px] text-slate-600 transition enabled:hover:bg-slate-100 disabled:opacity-35 dark:text-slate-300 dark:enabled:hover:bg-slate-800';
@@ -147,12 +160,31 @@ export function PlanColumnPopover({
   useLayoutEffect(() => {
     const a = getAnchor()?.getBoundingClientRect();
     if (!a) return;
-    const h = box.current?.offsetHeight ?? 0;
-    const left = Math.max(EDGE, Math.min(a.right - WIDTH, window.innerWidth - WIDTH - EDGE));
-    const below = a.bottom + GAP;
-    const top = below + h + EDGE <= window.innerHeight ? below : Math.max(EDGE, a.top - GAP - h);
-    setPos({ left, top });
+    setPos(placeUnder(a, box.current?.offsetHeight ?? 0));
   }, [getAnchor]);
+  // Moved left or right, the column glides to its new place (column-move-flip.ts): the popover goes with its cog
+  // frame by frame (written straight to its style, no render a frame), then settles where the cog lands.
+  const moved = useRef(at);
+  useEffect(() => {
+    if (moved.current === at) return;
+    moved.current = at;
+    // A phone's sheet stays put at the bottom of the screen.
+    if (mobile) return;
+    const end = performance.now() + COLUMN_MOVE_MS + FOLLOW_SLACK_MS;
+    let frame = 0;
+    const follow = () => {
+      const a = getAnchor()?.getBoundingClientRect();
+      const p = a ? placeUnder(a, box.current?.offsetHeight ?? 0) : null;
+      if (p && box.current) {
+        box.current.style.left = `${p.left}px`;
+        box.current.style.top = `${p.top}px`;
+      }
+      if (performance.now() < end) frame = requestAnimationFrame(follow);
+      else if (p) setPos(p);
+    };
+    frame = requestAnimationFrame(follow);
+    return () => cancelAnimationFrame(frame);
+  }, [at, getAnchor, mobile]);
   // A press in the picker (portalled) is not outside, and Escape is the picker's while it is open.
   useClickOutside(
     box,
@@ -180,6 +212,50 @@ export function PlanColumnPopover({
       className={mobile ? 'flex flex-col px-1 pb-2' : 'flex flex-col'}
       onKeyDown={(e) => e.stopPropagation()}
     >
+      {/* The column's quick actions (docs/specs/026-plan/plan-board.md "A column's own settings"): Move Left and Move
+          Right at the start, Remove Column at the end, apart from them as it takes the column away. Remove Column
+          takes it off this board only: the state and its cards stay, so another board's column for it still shows
+          them. */}
+      <div
+        role="toolbar"
+        aria-label="Column actions"
+        className="flex items-center justify-between gap-2 border-b border-slate-100 bg-slate-50/70 px-2 py-1.5 dark:border-slate-800 dark:bg-slate-800/30"
+      >
+        {/* Move Left and Move Right, one segmented control as the width's is. */}
+        <div className="flex h-8 overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+          <ToolbarButton
+            label="Move Left"
+            disabled={at <= 0}
+            onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
+          >
+            <ChevronLeftIcon size={16} />
+          </ToolbarButton>
+          <span aria-hidden className="w-px bg-slate-200 dark:bg-slate-700" />
+          <ToolbarButton
+            label="Move Right"
+            disabled={at >= setup.columns.length - 1}
+            onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
+          >
+            <ChevronRightIcon size={16} />
+          </ToolbarButton>
+        </div>
+        {others.length > 0 ? (
+          <Tooltip label="Remove Column">
+            <button
+              type="button"
+              aria-label="Remove Column"
+              className="touch-target flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-medium text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 motion-reduce:transition-none dark:text-slate-300 dark:hover:bg-rose-500/10 dark:hover:text-rose-300"
+              onClick={() => {
+                onChange(removeColumn(setup, column.id), 'ColumnRemoved');
+                onClose(false);
+              }}
+            >
+              <ColumnOffIcon />
+              Remove
+            </button>
+          </Tooltip>
+        ) : null}
+      </div>
       <div className="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
         <span
           aria-hidden
@@ -350,25 +426,7 @@ export function PlanColumnPopover({
         </SwitchRow>
       </div>
       <div className="border-t border-slate-100 px-1.5 py-1.5 dark:border-slate-800">
-        {/* One to a row, icon left, as the actions under them are (docs/specs/026-plan/plan-board.md "Option lists"). */}
-        <button
-          type="button"
-          className={ROW}
-          disabled={at <= 0}
-          onClick={() => onChange(moveColumn(setup, column.id, -1), 'ColumnReordered')}
-        >
-          <ChevronLeftIcon size={16} className="text-slate-400" />
-          Move Left
-        </button>
-        <button
-          type="button"
-          className={ROW}
-          disabled={at >= setup.columns.length - 1}
-          onClick={() => onChange(moveColumn(setup, column.id, 1), 'ColumnReordered')}
-        >
-          <ChevronRightIcon size={16} className="text-slate-400" />
-          Move Right
-        </button>
+        {/* The rest one to a row, icon left (docs/specs/026-plan/plan-board.md "Option lists"). */}
         <button
           ref={addButton}
           type="button"
@@ -410,22 +468,7 @@ export function PlanColumnPopover({
             }}
           />
         ) : null}
-        {/* Remove Column takes it off this board only: the state and its cards stay, so another board's column
-            for it still shows them. Delete Status deletes the state: its cards go where asked, and every board's
-            column for it goes. */}
-        {others.length > 0 ? (
-          <button
-            type="button"
-            className={ROW}
-            onClick={() => {
-              onChange(removeColumn(setup, column.id), 'ColumnRemoved');
-              onClose(false);
-            }}
-          >
-            <ColumnOffIcon />
-            Remove Column
-          </button>
-        ) : null}
+        {/* Delete Status deletes the state: its cards go where asked, and every board's column for it goes. */}
         {others.length > 0 ? (
           <button
             type="button"
@@ -493,5 +536,32 @@ export function PlanColumnPopover({
         {body}
       </div>
     </Portal>
+  );
+}
+
+// A Move button on the column's toolbar: an icon square in the segmented control, its name as a tooltip.
+function ToolbarButton({
+  label,
+  disabled = false,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        disabled={disabled}
+        className="touch-target flex w-9 items-center justify-center text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:text-slate-300 motion-reduce:transition-none dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-50 dark:disabled:text-slate-600"
+        onClick={onClick}
+      >
+        {children}
+      </button>
+    </Tooltip>
   );
 }
