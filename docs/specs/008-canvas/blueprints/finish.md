@@ -137,9 +137,9 @@ export function pathEndTangents(
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.
-- Palette: `components/palette/palette-tile-finish.ts` `tileTakesFinish(action)` (shape kinds other than `icon` and
-  self-painting kinds, plus sticky, text, table, arrow) and `paletteFinishClass(finish)`; `IconButton` adds the class to
-  the glyph wrapper from `useTabFinish()`. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
+- Palette: `components/palette/palette-tile-finish.ts` `paletteFinishClass(finish, action?)` (Sketch for every tile;
+  Professional for every tile but `tech-icon` and `sticker`); `IconButton` adds the class to the glyph wrapper from
+  `useTabFinish()` when given the tile's `finishAction`, and `StickerPickerTab` wraps each sticker's art in it. `app/globals.css`: `.palette-finish-professional` (mitre joins, 1 px
   strokes, `rx: 0`) and `.palette-finish-sketch` (`filter: url(#lvd-sketch-tile)`).
   `components/canvas/SketchFilterDefs.tsx` renders that filter once in `EditorView`: two `feTurbulence` +
   `feDisplacementMap` passes (seeds 7 and 23, base frequency 0.12 and 0.1, scale 3), merged.
@@ -263,20 +263,20 @@ per command letter.
 
 ## Constants and configuration
 
-| Constant                 | Value  | Provenance                                                                | Safe range              |
-| ------------------------ | ------ | ------------------------------------------------------------------------- | ----------------------- |
-| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback)                  | 0 to 4                  |
-| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                                              | any sans font id        |
-| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                                     | 0.5 to 3                |
-| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails                              | 0 to 4                  |
-| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)                                | 0 to 0.03               |
-| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                                        | 1 to 8                  |
-| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14                       | 12 to 28                |
-| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                     | 1 to 3                  |
-| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                            | -60 to -30              |
-| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                                  | 100 to 600              |
-| `SKETCH_HATCH_OPACITY`   | 0.15   | shading that reads without distracting (softened from 0.3 on feedback)    | 0.1 to 0.45             |
-| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                          | any handwriting font id |
+| Constant                 | Value  | Provenance                                                             | Safe range              |
+| ------------------------ | ------ | ---------------------------------------------------------------------- | ----------------------- |
+| `PROFESSIONAL_CORNER_PX` | 0      | square, the clearest break from Flexible (user feedback)               | 0 to 4                  |
+| `PROFESSIONAL_FONT_ID`   | inter  | the catalogue's neutral sans                                           | any sans font id        |
+| `SKETCH_JITTER_PX`       | 1.5    | rough.js roughness 1 reads at ~1-2 px                                  | 0.5 to 3                |
+| `SKETCH_OVERSHOOT_PX`    | 2      | visible corner crossings without stray tails                           | 0 to 4                  |
+| `SKETCH_BOW_SHARE`       | 0.02   | a visible bow on long edges (tuned by eye)                             | 0 to 0.03               |
+| `SKETCH_BOW_MAX_PX`      | 5      | stops long edges from looking bent                                     | 1 to 8                  |
+| `SKETCH_CURVE_STEP_PX`   | 20     | smooth under the spline, half the string work of 14                    | 12 to 28                |
+| `SKETCH_CURVE_JITTER_PX` | 2      | eased wander reads like a hand at 2 px (tuned by eye)                  | 1 to 3                  |
+| `SKETCH_HATCH_ANGLE_DEG` | -41    | rough.js default hachure angle                                         | -60 to -30              |
+| `SKETCH_HATCH_MAX_LINES` | 300    | caps cost on huge shapes                                               | 100 to 600              |
+| `SKETCH_HATCH_OPACITY`   | 0.15   | shading that reads without distracting (softened from 0.3 on feedback) | 0.1 to 0.45             |
+| `SKETCH_FONT_ID`         | caveat | the catalogue's handwriting font                                       | any handwriting font id |
 
 ## Assets and external resources
 

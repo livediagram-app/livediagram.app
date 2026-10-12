@@ -96,9 +96,9 @@ Draws exactly as livediagram did before finishes existed.
 ## Where it shows
 
 - **The canvas and every export** (SVG, PNG, PDF, thumbnails, the Map, live images) draw each element in its finish.
-- **The palette** previews the tab's finish on the tiles that place elements with one (shapes, text, stickies,
-  arrows, tables): under Professional the glyphs are square and fine, under Sketch they are drawn wobbly and
-  doubled. Icons, media, tools and self-painting faces keep their glyphs, as their elements keep their looks.
+- **The palette** previews the tab's finish on every tile, the sticker picker's included: under Professional the
+  glyphs are square and fine, under Sketch they are drawn wobbly and doubled. Full-colour art (technology icons,
+  stickers) keeps its weight under Professional, as on the canvas, and wobbles under Sketch.
 
 ## Share roles
 
