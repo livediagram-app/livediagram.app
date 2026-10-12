@@ -338,7 +338,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   - **let go unmoved**, it opens the cell's (or the header's) menu at the finger, the browser's own long-press menu
     never showing.
 - **The grip**: the selection's corner handle is drawn round and twice the size (14 px), and a finger within 22 px of
-  it drags the range's far corner (its top left stays put), for anyone who can select, viewers too. Fill by dragging is
+  it drags the range's far corner (its top left stays put) once it moves 6 px, for anyone who can select, viewers too;
+  lifted unmoved it is a tap, selecting the cell under it. Fill by dragging is
   for a mouse or pen; on a touch screen **Ctrl+D** (Fill Down, with a keyboard) or the menu's commands fill.
 - While a finger selects (from the hold or the grip until it lifts) the page never scrolls under it; a second finger
   is never a hold (it is the pinch, the canvas's or the browser's).

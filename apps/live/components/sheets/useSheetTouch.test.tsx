@@ -165,9 +165,29 @@ describe('the selection’s grip', () => {
     // The range's bottom right corner, a finger's width off.
     const corner = { clientX: ROW_HEADER_PX + 3 * 100 + 12, clientY: COL_HEADER_PX + 3 * 24 + 10 };
     finger(h, corner);
+    // The first move past HOLD_DRAG_PX takes the grip; the drag follows from there.
+    move(cellPoint(5, 4));
     move(cellPoint(5, 4));
     lift(cellPoint(5, 4));
     expect(sel(h).ranges).toEqual([{ r1: 1, c1: 1, r2: 5, c2: 4 }]);
+  });
+
+  // A tap beside the grip (a cell just past the range's corner) selects that cell, as any tap does.
+  it('lets a finger that lifts unmoved tap the cell under it', async () => {
+    const h = await mountGrid();
+    act(() => {
+      h.c().setFocused(true);
+      h.c().setSelection({
+        ranges: [{ r1: 1, c1: 1, r2: 2, c2: 2 }],
+        active: { r: 1, c: 1 },
+        anchor: { r: 1, c: 1 },
+      });
+    });
+    const beside = { clientX: ROW_HEADER_PX + 3 * 100 + 12, clientY: COL_HEADER_PX + 3 * 24 + 10 };
+    finger(h, beside);
+    lift(beside);
+    tap(h, beside);
+    expect(sel(h).ranges).toEqual([{ r1: 3, c1: 3, r2: 3, c2: 3 }]);
   });
 
   it('is not there while the grid does not have the keys', async () => {
