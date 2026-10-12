@@ -38,11 +38,10 @@ const props: ComponentProps<typeof CanvasThemeDialog> = {
   onSetFont: vi.fn(),
   defaultTextSize: undefined,
   onSetDefaultTextSize: vi.fn(),
-  onApplyFontToAll: vi.fn(),
   finish: undefined,
   onSetFinish: vi.fn(),
-  onApplyFinishToAll: vi.fn(),
   onApplyLook: vi.fn(),
+  tabId: 't1',
   onClose: vi.fn(),
 };
 
@@ -103,13 +102,6 @@ describe('CanvasThemeDialog Finish tab', () => {
     expect(screen.getByRole('img', { name: /Sketch finish/ }).innerHTML).toContain(
       'data-finish="sketch"',
     );
-  });
-
-  it('Apply to All Elements clears the elements’ own finishes', () => {
-    const onApplyFinishToAll = vi.fn();
-    render(<CanvasThemeDialog {...props} tab="finish" onApplyFinishToAll={onApplyFinishToAll} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Apply to All Elements' }));
-    expect(onApplyFinishToAll).toHaveBeenCalledTimes(1);
   });
 });
 

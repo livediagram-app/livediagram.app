@@ -51,29 +51,30 @@ describe('useTabCanvas finish', () => {
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Finish');
   });
 
-  it('Apply to All clears every element’s own finish and leaves the rest alone', () => {
-    track.mockClear();
-    const plain = box('c');
-    const h = setup([box('a', { finish: 'sketch' }), box('b', { finish: 'flexible' }), plain]);
-    h.api.applyTabFinishToAll();
-    expect(h.commit).toHaveBeenCalledTimes(1);
-    for (const el of h.els()) expect('finish' in el, el.id).toBe(false);
-    expect(h.els()[2]).toBe(plain);
-    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'FinishToAll');
+  it('makes every element follow the new finish, in the same step', () => {
+    const h = setup([box('a', { finish: 'sketch' }), box('b')]);
+    h.api.setTabFinish('professional');
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    for (const el of h.tabs()[0]!.elements) expect('finish' in el, el.id).toBe(false);
   });
 
-  it('Apply to All writes nothing when no element has its own finish', () => {
-    const h = setup([box('a')]);
-    h.api.applyTabFinishToAll();
-    expect(h.commit).not.toHaveBeenCalled();
+  it('letters every element in the new font, and sizes every one at the new size', () => {
+    const h = setup([box('a', { font: 'lora', textSize: 'sm' }), box('b')]);
+    h.api.setTabFont('inter');
+    expect(h.tabs()[0]!.font).toBe('inter');
+    for (const el of h.tabs()[0]!.elements) expect('font' in el, el.id).toBe(false);
+    h.api.setTabDefaultTextSize('lg');
+    expect(h.tabs()[0]!.defaultTextSize).toBe('lg');
+    for (const el of h.tabs()[0]!.elements)
+      expect((el as { textSize?: string }).textSize, el.id).toBe('lg');
   });
 
   it('does nothing when edits are blocked (a Participant or Viewer)', () => {
     const h = setup([box('a', { finish: 'sketch' })], true);
     h.api.setTabFinish('professional');
-    h.api.applyTabFinishToAll();
+    h.api.setTabFont('inter');
+    h.api.setTabDefaultTextSize('lg');
     expect(h.commitTabs).not.toHaveBeenCalled();
-    expect(h.commit).not.toHaveBeenCalled();
   });
 });
 

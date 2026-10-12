@@ -82,8 +82,8 @@ export const TAB_FINISH = chart(
   'Tab',
   'Changed',
   'Tab Finish',
-  'A tab’s finish changed (Flexible, Professional or Sketch), or every element was set back to follow it.',
-  { types: ['Finish', 'FinishToAll'] },
+  'A tab’s finish changed (Flexible, Professional or Sketch).',
+  { types: ['Finish'] },
 );
 
 export const TAB_LOOKS_PICKED = chart(

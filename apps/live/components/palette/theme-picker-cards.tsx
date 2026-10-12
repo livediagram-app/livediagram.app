@@ -7,6 +7,8 @@ import { type ThemeDefinition } from '@/lib/themes';
 import { themeDescription } from '@/lib/themes-taxonomy';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
+import { usePreviewHover } from '@/components/dialogs/TabStylePreviewContext';
+import { withThemeApplied } from '@/lib/tab-theme-apply';
 
 // A single selectable theme tile. Click selects; double-click is the
 // commit shortcut (select + Create in one gesture).
@@ -25,6 +27,8 @@ export function ThemeCard({
   onCommit: () => void;
   onCopy?: () => void;
 }) {
+  // Hover previews the theme on the tab, inside Tab Style (TabStylePreviewContext).
+  const previewHover = usePreviewHover((t) => withThemeApplied(t, theme.id));
   const description = themeDescription(theme.id);
   return (
     <div
@@ -39,6 +43,7 @@ export function ThemeCard({
         type="button"
         onClick={onSelect}
         onDoubleClick={onCommit}
+        {...previewHover}
         aria-pressed={active}
         className="flex flex-col items-start gap-1.5 p-2 text-left"
       >
@@ -90,6 +95,8 @@ export function CustomThemeCard({
   onEdit: () => void;
   onDelete: () => void;
 }) {
+  // Hover previews the theme on the tab, inside Tab Style (TabStylePreviewContext).
+  const previewHover = usePreviewHover((t) => withThemeApplied(t, theme.id));
   return (
     <div
       className={
@@ -103,6 +110,7 @@ export function CustomThemeCard({
         type="button"
         onClick={onApply}
         onDoubleClick={onCommit}
+        {...previewHover}
         aria-pressed={active}
         className="flex flex-col items-center gap-1"
         aria-label={theme.name}

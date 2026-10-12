@@ -675,6 +675,8 @@ function CanvasView(props: CanvasProps) {
           // ink is tuned for light paper and vanishes on a dark wall. Flagged
           // here so the peel's CSS can respond without knowing about themes.
           data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
+          // The Tab Style colour ease scopes to the canvas (lib/tab-style-preview.ts).
+          data-canvas-root=""
           onContextMenuCapture={surface.onContextMenuCapture}
           onContextMenu={surface.onContextMenu}
           onPointerUp={surface.onContextMenuPointerUp}

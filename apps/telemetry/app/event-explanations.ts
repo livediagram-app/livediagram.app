@@ -805,8 +805,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional or Sketch) from Tab Look & Feel.",
-  'Tab|Changed|FinishToAll':
-    "Someone pressed Apply to All Elements on the Finish tab, so every element follows the tab's finish again.",
   'Tab|Changed|DefaultTextSize':
     "Someone changed a tab's default text size, used for new elements added to it.",
   'Tab|Changed|Font':

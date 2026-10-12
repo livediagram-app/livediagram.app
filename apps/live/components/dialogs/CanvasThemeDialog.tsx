@@ -31,11 +31,21 @@ import type { TextSize } from '@livediagram/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
+import { TabStylePreviewProvider } from './TabStylePreviewContext';
+import { easeNextStyleChange } from '@/lib/tab-style-preview';
 import { LooksHome } from './LooksHome';
 import { activeLookId } from '@/lib/tab-looks';
 
 // 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
 export type CanvasThemeTab = 'looks' | 'canvas' | 'theme' | 'font' | 'finish';
+
+// A setter whose change the canvas eases into rather than snaps to.
+const eased =
+  <A,>(fn: (a: A) => void) =>
+  (a: A) => {
+    easeNextStyleChange();
+    fn(a);
+  };
 
 const PANEL_TITLES: Record<Exclude<CanvasThemeTab, 'looks'>, string> = {
   theme: 'Colours',
@@ -70,17 +80,15 @@ type CanvasThemeDialogProps = {
   onSetFont: (font: string | null) => void;
   defaultTextSize: TextSize | undefined;
   onSetDefaultTextSize: (size: TextSize) => void;
-  // Push the tab font + default size onto every existing element on the
-  // tab (clears per-element font overrides so they inherit).
-  onApplyFontToAll: () => void;
   // Finish (docs/specs/008-canvas/finish.md). `finish` undefined is Flexible.
   finish: Finish | undefined;
   onSetFinish: (finish: Finish) => void;
-  onApplyFinishToAll: () => void;
   // The tab's own background, unresolved, for the Finish preview's paper.
   canvasBackground?: string;
   // Looks: set the tab's theme, finish, font and pattern at once (lib/tab-looks.ts).
   onApplyLook: (id: string) => void;
+  // The tab being styled, which the hover preview draws (TabStylePreviewContext).
+  tabId: string;
   onClose: () => void;
 };
 
@@ -105,17 +113,18 @@ export function CanvasThemeDialog({
   onSetFont,
   defaultTextSize,
   onSetDefaultTextSize,
-  onApplyFontToAll,
   finish,
   onSetFinish,
-  onApplyFinishToAll,
   canvasBackground,
-  onApplyLook,
+  onApplyLook: applyLook,
+  tabId,
   onClose,
 }: CanvasThemeDialogProps) {
   // Mount-open modal: silence the canvas shortcut/paste listeners
   // behind it (see lib/modal-guard).
   useModalGuard(true);
+  // Every pick eases the canvas into its new colours (lib/tab-style-preview.ts), a tap as much as a hover.
+  const onApplyLook = eased(applyLook);
   // How the next view arrives: the first one only fades (the dialog has its own entrance), then a move into a panel
   // slides forward and a move home slides back.
   const [enter, setEnter] = useState<'fade' | 'forward' | 'back'>('fade');
@@ -218,82 +227,82 @@ export function CanvasThemeDialog({
           <div className="min-h-[20rem] overflow-y-auto px-5 pb-4 pt-2">
             {/* The home and its panels swap through an easing height and a short slide: into a panel from the
                 right, back home from the left (AnimatedHeightBox). */}
-            <AnimatedHeightBox viewKey={tab} enter={enter}>
-              {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
+            <TabStylePreviewProvider tabId={tabId}>
+              <AnimatedHeightBox viewKey={tab} enter={enter}>
+                {/* Inside a panel: the shared breadcrumb back to the home, the panel named in its chip, as the
                 import / export panels do (docs/specs/011-theme/canvas-and-theme-dialog.md "Fine-tune"). */}
-              {tab !== 'looks' ? (
-                <BackBar
-                  label="Tab Style"
-                  current={PANEL_TITLES[tab]}
-                  onClick={() => go('looks')}
-                />
-              ) : null}
-              {tab === 'looks' ? (
-                <LooksHome
-                  activeLook={activeLookId({
-                    theme: themeId,
-                    finish,
-                    font: font ?? undefined,
-                    backgroundPattern,
-                    backgroundOpacity,
-                  })}
-                  onPickLook={onApplyLook}
-                  themeId={themeId}
-                  finish={resolveFinish(finish, undefined)}
-                  font={font}
-                  defaultTextSize={defaultTextSize}
-                  pattern={backgroundPattern}
-                  backgroundOpacity={backgroundOpacity}
-                  onOpenPanel={go}
-                />
-              ) : tab === 'font' ? (
-                <TextTab
-                  font={font}
-                  onSetFont={onSetFont}
-                  defaultTextSize={defaultTextSize}
-                  onSetDefaultTextSize={onSetDefaultTextSize}
-                  onApplyFontToAll={onApplyFontToAll}
-                  finish={resolveFinish(finish, undefined)}
-                  canvasBackground={canvasBackground}
-                  themeId={themeId}
-                />
-              ) : tab === 'finish' ? (
-                <FinishTab
-                  finish={finish}
-                  onSetFinish={onSetFinish}
-                  onApplyFinishToAll={onApplyFinishToAll}
-                  canvasBackground={canvasBackground}
-                  themeId={themeId}
-                  font={font}
-                />
-              ) : tab === 'canvas' ? (
-                <CanvasStyleControls
-                  backgroundPattern={backgroundPattern}
-                  backgroundColor={backgroundColor}
-                  patternColor={patternColor}
-                  backgroundOpacity={backgroundOpacity}
-                  backgroundPatternScale={backgroundPatternScale}
-                  backgroundAnimationSpeed={backgroundAnimationSpeed}
-                  onSetBackgroundPattern={onSetBackgroundPattern}
-                  onSetBackgroundColor={onSetBackgroundColor}
-                  onSetPatternColor={onSetPatternColor}
-                  onSetBackgroundOpacity={onSetBackgroundOpacity}
-                  onSetBackgroundPatternScale={onSetBackgroundPatternScale}
-                  onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
-                  showAllPatterns
-                  previewTiles
-                />
-              ) : (
-                <CustomThemePicker
-                  themeId={themeId}
-                  onSelect={onSetTheme}
-                  onCommit={(id) => {
-                    onSetTheme(id);
-                    onClose();
-                  }}
-                />
-              )}
-            </AnimatedHeightBox>
+                {tab !== 'looks' ? (
+                  <BackBar
+                    label="Tab Style"
+                    current={PANEL_TITLES[tab]}
+                    onClick={() => go('looks')}
+                  />
+                ) : null}
+                {tab === 'looks' ? (
+                  <LooksHome
+                    activeLook={activeLookId({
+                      theme: themeId,
+                      finish,
+                      font: font ?? undefined,
+                      backgroundPattern,
+                      backgroundOpacity,
+                    })}
+                    onPickLook={onApplyLook}
+                    themeId={themeId}
+                    finish={resolveFinish(finish, undefined)}
+                    font={font}
+                    defaultTextSize={defaultTextSize}
+                    pattern={backgroundPattern}
+                    backgroundOpacity={backgroundOpacity}
+                    onOpenPanel={go}
+                  />
+                ) : tab === 'font' ? (
+                  <TextTab
+                    font={font}
+                    onSetFont={eased(onSetFont)}
+                    defaultTextSize={defaultTextSize}
+                    onSetDefaultTextSize={eased(onSetDefaultTextSize)}
+                    finish={resolveFinish(finish, undefined)}
+                    canvasBackground={canvasBackground}
+                    themeId={themeId}
+                  />
+                ) : tab === 'finish' ? (
+                  <FinishTab
+                    finish={finish}
+                    onSetFinish={eased(onSetFinish)}
+                    canvasBackground={canvasBackground}
+                    themeId={themeId}
+                    font={font}
+                  />
+                ) : tab === 'canvas' ? (
+                  <CanvasStyleControls
+                    backgroundPattern={backgroundPattern}
+                    backgroundColor={backgroundColor}
+                    patternColor={patternColor}
+                    backgroundOpacity={backgroundOpacity}
+                    backgroundPatternScale={backgroundPatternScale}
+                    backgroundAnimationSpeed={backgroundAnimationSpeed}
+                    onSetBackgroundPattern={eased(onSetBackgroundPattern)}
+                    onSetBackgroundColor={onSetBackgroundColor}
+                    onSetPatternColor={onSetPatternColor}
+                    onSetBackgroundOpacity={onSetBackgroundOpacity}
+                    onSetBackgroundPatternScale={onSetBackgroundPatternScale}
+                    onSetBackgroundAnimationSpeed={onSetBackgroundAnimationSpeed}
+                    showAllPatterns
+                    previewTiles
+                  />
+                ) : (
+                  <CustomThemePicker
+                    themeId={themeId}
+                    onSelect={eased(onSetTheme)}
+                    onCommit={(id) => {
+                      onSetTheme(id);
+                      onClose();
+                    }}
+                  />
+                )}
+              </AnimatedHeightBox>
+            </TabStylePreviewProvider>
           </div>
         </div>
       </div>

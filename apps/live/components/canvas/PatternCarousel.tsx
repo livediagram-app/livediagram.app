@@ -11,6 +11,8 @@ import type { BackgroundPattern } from '@livediagram/document';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import type { PatternEntry } from '@/components/palette/palette-controls';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
+import { withTabPattern } from '@/lib/tab-style-transforms';
+import { usePreviewHover } from '@/components/dialogs/TabStylePreviewContext';
 
 const headingClass = 'text-[10px] font-medium text-slate-500 dark:text-slate-300';
 
@@ -43,6 +45,7 @@ export function PatternCarousel({
       renderItem={(p) => (
         <HoverCard key={p.id} title={p.label} description={p.description}>
           <PatternPreviewTile
+            pattern={p.id}
             active={active === p.id}
             label={p.shortLabel}
             onClick={() => onPick(p.id)}
@@ -62,24 +65,29 @@ export function PatternCarousel({
 
 // One pattern option: the pattern drawn for real on the tab's canvas colour, its name beneath.
 function PatternPreviewTile({
+  pattern,
   active,
   label,
   onClick,
   style,
   children,
 }: {
+  pattern: BackgroundPattern;
   active: boolean;
   label: string;
   onClick: () => void;
   style: CSSProperties;
   children?: ReactNode;
 }) {
+  // Hover draws the tab's canvas in this pattern (TabStylePreviewContext).
+  const previewHover = usePreviewHover((t) => withTabPattern(t, pattern));
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
       aria-label={label}
+      {...previewHover}
       className={`flex w-full cursor-pointer flex-col gap-1 rounded-lg p-1 text-left transition ${
         active
           ? 'bg-brand-100 text-brand-700 ring-2 ring-brand-500 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-400'

@@ -44,9 +44,7 @@ export function EditorModals() {
     setTheme,
     setTabFont,
     setTabDefaultTextSize,
-    applyTabFontToAll,
     setTabFinish,
-    applyTabFinishToAll,
     applyTabLook,
   } = useEditorContext();
 
@@ -97,12 +95,11 @@ export function EditorModals() {
           onSetFont={setTabFont}
           defaultTextSize={activeTab.defaultTextSize}
           onSetDefaultTextSize={setTabDefaultTextSize}
-          onApplyFontToAll={applyTabFontToAll}
           finish={activeTab.finish}
           onSetFinish={setTabFinish}
-          onApplyFinishToAll={applyTabFinishToAll}
           canvasBackground={activeTab.backgroundColor}
           onApplyLook={applyTabLook}
+          tabId={activeTab.id}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}

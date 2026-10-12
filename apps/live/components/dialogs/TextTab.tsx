@@ -6,10 +6,11 @@
 // to All Elements.
 
 import { FONTS, type Finish, type TextSize } from '@livediagram/document';
-import { Button } from '@livediagram/ui';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { ScaleIcon } from '@/components/palette/palette-icons';
 import { TabStylePreview } from './TabStylePreview';
+import { usePreviewHover } from './TabStylePreviewContext';
+import { withTabFont, withTabTextSize } from '@/lib/tab-style-transforms';
 
 const sectionLabel =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
@@ -38,7 +39,6 @@ export function TextTab({
   onSetFont,
   defaultTextSize,
   onSetDefaultTextSize,
-  onApplyFontToAll,
   finish,
   canvasBackground,
   themeId,
@@ -48,7 +48,6 @@ export function TextTab({
   onSetFont: (font: string | null) => void;
   defaultTextSize: TextSize | undefined;
   onSetDefaultTextSize: (size: TextSize) => void;
-  onApplyFontToAll: () => void;
   // The tab's look, so the preview is the tab's own.
   finish: Finish;
   canvasBackground: string | undefined;
@@ -87,39 +86,15 @@ export function TextTab({
       <div className="flex flex-col gap-2">
         <h3 className={sectionLabel}>Size of New Text</h3>
         <div role="radiogroup" aria-label="Size of new text" className="grid grid-cols-4 gap-2">
-          {SIZES.map((s) => {
-            const on = size === s.size;
-            return (
-              <button
-                key={s.size}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                onClick={() => onSetDefaultTextSize(s.size)}
-                className={`flex h-16 flex-col items-center justify-center gap-1 rounded-lg border transition ${
-                  on
-                    ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
-                    : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60'
-                }`}
-              >
-                <span
-                  aria-hidden
-                  className="flex h-7 items-end font-semibold leading-none"
-                  style={s.letterPx ? { fontSize: s.letterPx } : undefined}
-                >
-                  {s.letterPx ? 'A' : <ScaleIcon />}
-                </span>
-                <span className="text-[11px] font-medium">{s.label}</span>
-              </button>
-            );
-          })}
+          {SIZES.map((s) => (
+            <SizeTile
+              key={s.size}
+              option={s}
+              active={size === s.size}
+              onPick={() => onSetDefaultTextSize(s.size)}
+            />
+          ))}
         </div>
-      </div>
-
-      <div className="border-t border-slate-100 pt-3 dark:border-slate-800">
-        <Button variant="secondary" size="xs" onClick={onApplyFontToAll}>
-          Apply to All Elements
-        </Button>
       </div>
     </div>
   );
@@ -134,12 +109,15 @@ function TypefaceCard({
   active: boolean;
   onPick: () => void;
 }) {
+  // Hover letters the tab in this face (TabStylePreviewContext).
+  const previewHover = usePreviewHover((t) => withTabFont(t, option.id));
   return (
     <button
       type="button"
       aria-pressed={active}
       aria-label={option.label}
       onClick={onPick}
+      {...previewHover}
       className={`flex flex-col items-start gap-0.5 rounded-lg border px-3 py-2.5 text-left transition ${
         active
           ? 'border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-500/15'
@@ -160,6 +138,42 @@ function TypefaceCard({
         {option.label}
       </span>
       <span className="text-[11px] text-slate-500 dark:text-slate-400">{option.kind}</span>
+    </button>
+  );
+}
+
+function SizeTile({
+  option,
+  active,
+  onPick,
+}: {
+  option: (typeof SIZES)[number];
+  active: boolean;
+  onPick: () => void;
+}) {
+  // Hover sizes the tab's text at this size (TabStylePreviewContext).
+  const previewHover = usePreviewHover((t) => withTabTextSize(t, option.size));
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onPick}
+      {...previewHover}
+      className={`flex h-16 flex-col items-center justify-center gap-1 rounded-lg border transition ${
+        active
+          ? 'border-brand-500 bg-brand-50 text-brand-800 dark:border-brand-400 dark:bg-brand-500/15 dark:text-brand-100'
+          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60'
+      }`}
+    >
+      <span
+        aria-hidden
+        className="flex h-7 items-end font-semibold leading-none"
+        style={option.letterPx ? { fontSize: option.letterPx } : undefined}
+      >
+        {option.letterPx ? 'A' : <ScaleIcon />}
+      </span>
+      <span className="text-[11px] font-medium">{option.label}</span>
     </button>
   );
 }

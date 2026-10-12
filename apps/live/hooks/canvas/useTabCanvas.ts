@@ -8,8 +8,6 @@
 // `checkpointBurst` (see useBurstCheckpoint).
 
 import {
-  isBoxed,
-  supportsFinish,
   type BackgroundPattern,
   type Finish,
   type Element,
@@ -21,6 +19,12 @@ import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-ch
 import { cleanupElements } from '@/lib/tab-cleanup';
 import { useTabTheme } from './useTabTheme';
 import { tabLookById, withLookApplied } from '@/lib/tab-looks';
+import {
+  withTabFinish,
+  withTabFont,
+  withTabPattern,
+  withTabTextSize,
+} from '@/lib/tab-style-transforms';
 import { useDebouncedCanvasTelemetry } from './useDebouncedCanvasTelemetry';
 
 type TabCanvasDeps = {
@@ -88,39 +92,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // `font` renders in this. null clears it back to the editor default.
   const setTabFont = (font: string | null) => {
     if (editsBlocked) return;
-    commitTabs((ts) =>
-      ts.map((t) => {
-        if (t.id !== activeId) return t;
-        if (!font) {
-          const copy = { ...t };
-          delete copy.font;
-          return copy;
-        }
-        return { ...t, font };
-      }),
-    );
-    track('Tab', 'Changed', 'Font');
-  };
-
-  // "Apply to all elements" in the Font category (docs/specs/004-interface-design/fonts.md): push the tab's
-  // font + default size onto every existing text-bearing element, so the whole
-  // tab reads in one typeface/size. Clears each element's per-element `font`
-  // override (elements with no font inherit the tab font at render) and sets
-  // `textSize` to the tab default. One undoable op via `commit`. Per-run
-  // rich-text bold/italic/colour is left intact; only the element-level font +
-  // size are reset.
-  const applyTabFontToAll = () => {
-    if (editsBlocked) return;
-    if (activeTab.elements.length === 0) return;
-    const size: TextSize = activeTab.defaultTextSize ?? 'md';
-    commit((els) =>
-      els.map((el) => {
-        if (!isBoxed(el) && el.type !== 'arrow') return el;
-        const next = { ...el, textSize: size } as Element & { font?: string };
-        delete next.font;
-        return next;
-      }),
-    );
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withTabFont(t, font) : t)));
     track('Tab', 'Changed', 'Font');
   };
 
@@ -128,7 +100,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // is stored when picked, like any other value; one undo step.
   const setTabFinish = (finish: Finish) => {
     if (editsBlocked) return;
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, finish } : t)));
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withTabFinish(t, finish) : t)));
     track('Tab', 'Changed', 'Finish');
   };
 
@@ -142,34 +114,16 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? withLookApplied(t, look) : t)));
   };
 
-  // "Apply to All Elements" on the Finish tab: clear every element's own finish, so the whole tab follows
-  // the tab's again. One undo step; a tab where nothing has its own finish writes nothing.
-  const applyTabFinishToAll = () => {
-    if (editsBlocked) return;
-    if (!activeTab.elements.some((el) => supportsFinish(el) && 'finish' in el)) return;
-    commit((els) =>
-      els.map((el) => {
-        if (!supportsFinish(el) || !('finish' in el)) return el;
-        const next = { ...el } as Element & { finish?: Finish };
-        delete next.finish;
-        return next;
-      }),
-    );
-    track('Tab', 'Changed', 'FinishToAll');
-  };
-
   // Tab default text size (docs/specs/004-interface-design/fonts.md): seeded onto NEW palette elements.
   const setTabDefaultTextSize = (size: TextSize) => {
     if (editsBlocked) return;
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? { ...t, defaultTextSize: size } : t)));
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withTabTextSize(t, size) : t)));
     track('Tab', 'Changed', 'DefaultTextSize');
   };
 
   const setBackgroundPattern = (pattern: BackgroundPattern) => {
     if (editsBlocked) return;
-    commitTabs((ts) =>
-      ts.map((t) => (t.id === activeId ? { ...t, backgroundPattern: pattern } : t)),
-    );
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withTabPattern(t, pattern) : t)));
     // Telemetry (docs/specs/017-telemetry/telemetry.md): `type` is the pattern preset, never content.
     track('Canvas', 'Changed', titleCaseType(pattern));
   };
@@ -232,11 +186,9 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   return {
     autoAlignTab,
     autoLayoutTab,
-    applyTabFontToAll,
     setTabFont,
     setTabDefaultTextSize,
     setTabFinish,
-    applyTabFinishToAll,
     applyTabLook,
     setBackgroundPattern,
     setTheme,

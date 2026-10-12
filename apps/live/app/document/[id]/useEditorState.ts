@@ -2613,9 +2613,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const {
     autoAlignTab,
     autoLayoutTab,
-    applyTabFontToAll,
     setTabFinish,
-    applyTabFinishToAll,
     applyTabLook,
     setTabFont,
     setTabDefaultTextSize,
@@ -3867,9 +3865,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     endCleanupPreview,
     // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running this session.
     facilitator,
-    applyTabFontToAll,
     setTabFinish,
-    applyTabFinishToAll,
     applyTabLook,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,

@@ -8,7 +8,14 @@ import { useMemo } from 'react';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
-import { LOOKS_PER_PAGE, TAB_LOOKS, type LookLike, type TabLookId } from '@/lib/tab-looks';
+import {
+  LOOKS_PER_PAGE,
+  TAB_LOOKS,
+  withLookApplied,
+  type LookLike,
+  type TabLookId,
+} from '@/lib/tab-looks';
+import { usePreviewHover } from './TabStylePreviewContext';
 
 export function LooksCarousel({
   activeLook,
@@ -102,11 +109,16 @@ function LookCard({
   paper: string | undefined;
   onPick: () => void;
 }) {
+  // Hover draws the tab in this look (the Current card is the tab already).
+  const previewHover = usePreviewHover((t) =>
+    look.id === 'current' ? t : withLookApplied(t, look),
+  );
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onPick}
+      {...previewHover}
       className={`flex flex-col overflow-hidden rounded-lg text-left transition ${
         active
           ? 'border-2 border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-500/15'
