@@ -389,7 +389,9 @@ actions, snapping, export, putting content onto a page, page slides) is
 - **Turning, adding and deleting animate:** the sheets ease to their new places
   and shapes over 200 ms (none under reduced motion).
 - **Centred in the viewport:** entering Illustrate mode or opening a tab in it
-  fits the first page itself (`illustratePageFitBox(page)`), and going to a page
+  fits the first page itself (`illustratePageFitBox(page)`), never the whole row of
+  pages: the tab's own fit on landing, and the fit after a template or an import
+  lands on it, frame the first page too (only Fit to Screen fits everything), and going to a page
   (its label, the page navigator, a new page) fits that page, so whatever its shape
   (a landscape slide on a wide screen too) it fills the view; turning or resizing a
   page re-fits it. Where the Toolbar strip lies over
