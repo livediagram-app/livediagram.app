@@ -34,28 +34,32 @@ and staging names are therefore never matched).
 
 ## Modules
 
-| File                                       | Responsibility                                                                    |
-| ------------------------------------------ | --------------------------------------------------------------------------------- |
-| `packages/preview-env/package.json`        | `@livediagram/preview-env`, private, Node-only CI tooling; depends on `smol-toml` |
-| `packages/preview-env/src/names.ts`        | Constants, `parsePrNumber`, every name function, `ownerOf`                        |
-| `packages/preview-env/src/apps.ts`         | `PreviewApp`, `TIER_APPS`, `inTier`                                               |
-| `packages/preview-env/src/config.ts`       | `previewConfig` and its rewrite rules (pure: TOML object in, TOML object out)     |
-| `packages/preview-env/src/tier.ts`         | `parseTurboLs`, `decideTier`                                                      |
-| `packages/preview-env/src/teardown.ts`     | `teardownPlan`, `isNotFound`                                                      |
-| `packages/preview-env/src/sweep.ts`        | `sweepTargets`                                                                    |
-| `packages/preview-env/src/log.ts`          | `logLine`, the one log format                                                     |
-| `packages/preview-env/scripts/config.ts`   | CLI: reads `wrangler.toml`, writes `wrangler.preview.toml`                        |
-| `packages/preview-env/scripts/tier.ts`     | CLI: runs turbo, prints `tier=` and `add_label=` for `$GITHUB_OUTPUT`             |
-| `packages/preview-env/scripts/d1.ts`       | CLI: ensures the PR's D1 exists, prints its id                                    |
-| `packages/preview-env/scripts/teardown.ts` | CLI: runs a teardown plan through wrangler and the Cloudflare REST API            |
-| `packages/preview-env/scripts/sweep.ts`    | CLI: lists resources and open PRs, tears down each sweep target                   |
-| `apps/api/scripts/hosted-vars.mjs`         | `ENVIRONMENTS` gains `preview`; `hostedEnvironment('preview')`                    |
-| `apps/api/hosted-vars.json`                | `environments.preview`, every value `""`                                          |
-| `apps/router/src/index.ts`                 | `NOINDEX_ENVS` = `staging`, `preview`                                             |
-| `.github/workflows/deploy-reusable.yml`    | Inputs `preview_pr`, `preview_tier`; config generation; tier-aware job conditions |
-| `.github/workflows/deploy-preview.yml`     | PR events → gate, tier, deploy, downgrade, teardown                               |
-| `.github/workflows/preview-sweep.yml`      | Daily and on demand: `scripts/sweep.ts`                                           |
-| `apps/*/.gitignore` or root `.gitignore`   | `wrangler.preview.toml`                                                           |
+| File                                         | Responsibility                                                                    |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| `packages/preview-env/package.json`          | `@livediagram/preview-env`, private, Node-only CI tooling; depends on `smol-toml` |
+| `packages/preview-env/src/names.ts`          | Constants, `parsePrNumber`, every name function, `ownerOf`                        |
+| `packages/preview-env/src/apps.ts`           | `PreviewApp`, `TIER_APPS`, `inTier`                                               |
+| `packages/preview-env/src/config.ts`         | `previewConfig` and its rewrite rules (pure: TOML object in, TOML object out)     |
+| `packages/preview-env/src/tier.ts`           | `parseTurboLs`, `decideTier`                                                      |
+| `packages/preview-env/src/teardown.ts`       | `teardownPlan`, `isNotFound`                                                      |
+| `packages/preview-env/src/sweep.ts`          | `sweepTargets`                                                                    |
+| `packages/preview-env/src/log.ts`            | `logLine`, the one log format                                                     |
+| `packages/preview-env/scripts/config.ts`     | CLI: reads `wrangler.toml`, writes `wrangler.preview.toml`                        |
+| `packages/preview-env/scripts/check.ts`      | `staging:check`: dry-runs the generated api and router configs, both tiers        |
+| `packages/preview-env/scripts/args.ts`       | `--name value` parsing shared by the CLIs                                         |
+| `packages/preview-env/scripts/tier.ts`       | CLI: runs turbo, prints `tier=` and `add_label=` for `$GITHUB_OUTPUT`             |
+| `packages/preview-env/scripts/d1.ts`         | CLI: ensures the PR's D1 exists, prints its id                                    |
+| `packages/preview-env/scripts/r2.ts`         | CLI: ensures the PR's R2 bucket exists                                            |
+| `packages/preview-env/scripts/cloudflare.ts` | The REST calls: list and delete workers, D1, R2 buckets and objects               |
+| `packages/preview-env/scripts/teardown.ts`   | CLI: runs a teardown plan through `cloudflare.ts`                                 |
+| `packages/preview-env/scripts/sweep.ts`      | CLI: lists resources and open PRs, tears down each sweep target                   |
+| `apps/api/scripts/hosted-vars.mjs`           | `ENVIRONMENTS` gains `preview`; `hostedEnvironment('preview')`                    |
+| `apps/api/hosted-vars.json`                  | `environments.preview`, every value `""`                                          |
+| `apps/router/src/index.ts`                   | `NOINDEX_ENVS` = `staging`, `preview`                                             |
+| `.github/workflows/deploy-reusable.yml`      | Inputs `preview_pr`, `preview_tier`; config generation; tier-aware job conditions |
+| `.github/workflows/deploy-preview.yml`       | PR events → gate, tier, deploy, downgrade, teardown                               |
+| `.github/workflows/preview-sweep.yml`        | Daily and on demand: `packages/preview-env/scripts/sweep.ts`                      |
+| `apps/*/.gitignore` or root `.gitignore`     | `wrangler.preview.toml`                                                           |
 
 ## Interfaces and contracts
 
@@ -108,7 +112,7 @@ export type TeardownStep =
   | { kind: 'r2'; name: string } // empty, then delete
   | { kind: 'd1'; name: string };
 export function teardownPlan(pr: PrNumber, scope: TeardownScope): TeardownStep[];
-export function isNotFound(stderr: string): boolean;
+export function isNotFound(outcome: { status: number; errors?: { code: number }[] }): boolean;
 
 // src/sweep.ts
 export function sweepTargets(
@@ -201,10 +205,10 @@ Every job carries the gate:
 
 | Job         | Runs when                                    | Needs    | Does                                                                                                                                                                                                                                                                                        |
 | ----------- | -------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tier`      | action is not `closed`                       |          | Checkout head (`fetch-depth: 0`, `filter: blob:none`), install, `scripts/tier.ts`, add label if `add_label`; `permissions: contents: read, pull-requests: write`                                                                                                                            |
+| `tier`      | action is not `closed`                       |          | Checkout head (`fetch-depth: 0`, `filter: blob:none`), install, `packages/preview-env/scripts/tier.ts`, add label if `add_label`; `permissions: contents: read, pull-requests: write`                                                                                                       |
 | `deploy`    | action is not `closed`                       | `tier`   | `uses: ./.github/workflows/deploy-reusable.yml` with `wrangler_env: preview`, `preview_pr`, `preview_tier`, `environment_name: preview`, `environment_url: previewOrigin`, `mcp_origin: https://mcp-staging.livediagram.app`, `ref: head sha`; secrets `CF_API_TOKEN`, `CF_ACCOUNT_ID` only |
-| `downgrade` | action is not `closed` and tier is `preview` | `deploy` | `scripts/teardown.ts --pr N --scope full` (a no-op when nothing full exists)                                                                                                                                                                                                                |
-| `teardown`  | action is `closed`                           |          | `scripts/teardown.ts --pr N --scope all`                                                                                                                                                                                                                                                    |
+| `downgrade` | action is not `closed` and tier is `preview` | `deploy` | `packages/preview-env/scripts/teardown.ts --pr N --scope full` (a no-op when nothing full exists)                                                                                                                                                                                           |
+| `teardown`  | action is `closed`                           |          | `packages/preview-env/scripts/teardown.ts --pr N --scope all`                                                                                                                                                                                                                               |
 
 `labeled` / `unlabeled` events for any label other than `full-preview` skip `tier` and
 everything after it (`github.event.label.name == 'full-preview'` or the action is not a
@@ -215,35 +219,40 @@ label event), so labelling a PR for anything else costs nothing.
 New inputs `preview_pr` (string, default `''`) and `preview_tier` (string, default `''`).
 With both empty every command expands to exactly what it is today.
 
-| Job                                                | Change                                                                                                                                                                                                                                               |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| all deploy jobs                                    | When `preview_pr` is set, a step runs `scripts/config.ts --app <app> --pr N --tier T` and sets `WRANGLER_CONFIG=wrangler.preview.toml`; every `wrangler` call gains `${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"}`                                |
-| `build`                                            | `NEXT_PUBLIC_BUILD_ID` is empty when `preview_tier == 'preview'`; the hosted profile and its build check run with `--env preview`                                                                                                                    |
-| `deploy-api`                                       | `if: inputs.preview_tier != 'preview'`. Full tier adds, before config generation: `scripts/d1.ts --pr N` (output `d1_id`), `wrangler r2 bucket create r2Name` unless it exists, and syncs a fresh `GUEST_ID_HMAC_SECRET` from `openssl rand -hex 32` |
-| `deploy-mcp`                                       | `if: inputs.preview_pr == ''`                                                                                                                                                                                                                        |
-| `deploy-live`, `deploy-community`, `deploy-router` | `if: ${{ !failure() && !cancelled() }}`, because `deploy-api` may be skipped                                                                                                                                                                         |
+| Job                                                | Change                                                                                                                                                                                                                                                                                                |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| all deploy jobs                                    | When `preview_pr` is set, a step runs `packages/preview-env/scripts/config.ts --app <app> --pr N --tier T` and sets `WRANGLER_CONFIG=wrangler.preview.toml`; every `wrangler` call gains `${WRANGLER_CONFIG:+--config "$WRANGLER_CONFIG"}`                                                            |
+| `build`                                            | `NEXT_PUBLIC_BUILD_ID` is empty when `preview_tier == 'preview'`; the hosted profile and its build check run with `--env preview`                                                                                                                                                                     |
+| `deploy-api`                                       | `if: inputs.preview_tier != 'preview'`. Full tier adds, before config generation: `packages/preview-env/scripts/d1.ts --pr N` (output `d1_id`), `packages/preview-env/scripts/r2.ts --pr N` (creates `r2Name` unless it exists), and syncs a fresh `GUEST_ID_HMAC_SECRET` from `openssl rand -hex 32` |
+| `deploy-mcp`                                       | `if: inputs.preview_pr == ''`                                                                                                                                                                                                                                                                         |
+| `deploy-live`, `deploy-community`, `deploy-router` | `if: ${{ !failure() && !cancelled() }}`, because `deploy-api` may be skipped                                                                                                                                                                                                                          |
 
 ### Teardown (`teardownPlan`)
 
 | Scope  | Steps, in order                                                                           |
 | ------ | ----------------------------------------------------------------------------------------- |
-| `all`  | worker router, marketing, live, telemetry, help, community, api; r2 `r2Name`; d1 `d1Name` |
+| `all`  | worker router, community, marketing, live, telemetry, help, api; r2 `r2Name`; d1 `d1Name` |
 | `full` | worker api; r2 `r2Name`; d1 `d1Name`                                                      |
 
-Router first releases the hostname before anything it routes to disappears. The CLI runs
-each step and continues past a step whose error `isNotFound`, so every teardown is
+`TEARDOWN_ORDER` deletes a worker before anything it binds: router first (it binds
+every other worker and releases the hostname), community before api. The CLI runs
+each step and continues past a step that `isNotFound`, so every teardown is
 idempotent and a rerun finishes what a failed one started. Any other error stops the run
 non-zero after logging the step.
 
-R2 emptying lists objects through the REST API
-(`GET /accounts/{account}/r2/buckets/{bucket}/objects`, cursor-paginated) and deletes
-each, then `wrangler r2 bucket delete`. Workers: `wrangler delete --name <name> --force`.
-D1: `wrangler d1 delete <name> --skip-confirmation`.
+Every deletion is a Cloudflare REST call (`packages/preview-env/scripts/cloudflare.ts`), not a wrangler
+command, so not-found is a status code rather than parsed output: `isNotFound` is a 404,
+or a not-found code (`NOT_FOUND_CODES`: 10007 script, 10006 bucket, 7404 database).
+Worker: `DELETE /accounts/{a}/workers/scripts/{name}?force=true`. R2: list objects
+(`GET .../r2/buckets/{name}/objects`), delete each, repeat until empty (at most
+`MAX_EMPTY_PASSES` = 100 passes of 1000), then
+`DELETE .../r2/buckets/{name}`. D1: find the id by name (`GET .../d1/database?name=`),
+then `DELETE .../d1/database/{id}`.
 
 ### Sweep
 
 `preview-sweep.yml` runs on `schedule: '0 4 * * *'` and `workflow_dispatch`, same gate on
-the repository id. `scripts/sweep.ts` lists worker scripts, D1 databases and R2 buckets
+the repository id. `packages/preview-env/scripts/sweep.ts` lists worker scripts, D1 databases and R2 buckets
 through the REST API, lists open PRs with `gh pr list --state open --json number`, and
 runs `teardownPlan(pr, 'all')` for each of `sweepTargets(names, openPrs)`.
 
@@ -310,25 +319,25 @@ The tier job also writes the tier and the reason to the run's step summary.
 
 ## Testing
 
-| Spec rule                                                    | Test                                                                                                |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| Names derive from the PR number only                         | `names.test.ts`: each function; `parsePrNumber` rejects 0, -1, 1.5, `'12a'`, `MAX_PR_NUMBER + 1`    |
-| Sweeper never touches production or staging                  | `names.test.ts`: `ownerOf` on every production and staging worker, D1, R2 name is `null`            |
-| Config generated from `[env.staging]`, every app, both tiers | `config.test.ts`: reads each real `apps/*/wrangler.toml`, asserts names, services, routes, triggers |
-| A Preview binds staging's api                                | `config.test.ts`: router and community services keep `livediagram-api-staging` on `preview`         |
-| A Full preview never points at staging                       | `config.test.ts`: no string ending `-staging` anywhere in api, router or community on `full`        |
-| No crons on a preview api                                    | `config.test.ts`: `env.preview.triggers.crons` is `[]`                                              |
-| Unknown bindings fail                                        | `config.test.ts`: one case per `PreviewError` code                                                  |
-| Tier from graph or label                                     | `tier.test.ts`: the four rows of the decision table; `parseTurboLs` on real and malformed output    |
-| Teardown order and idempotence                               | `teardown.test.ts`: both plans; `isNotFound` on wrangler's real not-found messages                  |
-| Sweep targets closed PRs only                                | `sweep.test.ts`: open, closed, mixed, non-preview names                                             |
-| noindex on previews                                          | `apps/router` test: `preview` stamps the header; 101 untouched                                      |
-| Hosted profile has a preview entry                           | `apps/api` hosted-vars test: `preview` resolves, all per-env values unset                           |
-| Generated configs stay deployable                            | `preview:check` (turbo task): `wrangler deploy --dry-run` on every generated config, both tiers     |
-| Production and staging unchanged                             | Verify step: the reusable workflow's expanded commands diffed with empty preview inputs             |
+| Spec rule                                                    | Test                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Names derive from the PR number only                         | `names.test.ts`: each function; `parsePrNumber` rejects 0, -1, 1.5, `'12a'`, `MAX_PR_NUMBER + 1`                                                                                                                                      |
+| Sweeper never touches production or staging                  | `names.test.ts`: `ownerOf` on every production and staging worker, D1, R2 name is `null`                                                                                                                                              |
+| Config generated from `[env.staging]`, every app, both tiers | `config.test.ts`: reads each real `apps/*/wrangler.toml`, asserts names, services, routes, triggers                                                                                                                                   |
+| A Preview binds staging's api                                | `config.test.ts`: router and community services keep `livediagram-api-staging` on `preview`                                                                                                                                           |
+| A Full preview never points at staging                       | `config.test.ts`: no string ending `-staging` anywhere in api, router or community on `full`                                                                                                                                          |
+| No crons on a preview api                                    | `config.test.ts`: `env.preview.triggers.crons` is `[]`                                                                                                                                                                                |
+| Unknown bindings fail                                        | `config.test.ts`: one case per `PreviewError` code                                                                                                                                                                                    |
+| Tier from graph or label                                     | `tier.test.ts`: the four rows of the decision table; `parseTurboLs` on real and malformed output                                                                                                                                      |
+| Teardown order and idempotence                               | `teardown.test.ts`: both plans; `isNotFound` on 404s, each not-found code, and other errors                                                                                                                                           |
+| Sweep targets closed PRs only                                | `sweep.test.ts`: open, closed, mixed, non-preview names                                                                                                                                                                               |
+| noindex on previews                                          | `apps/router` test: `preview` stamps the header; 101 untouched                                                                                                                                                                        |
+| Hosted profile has a preview entry                           | `apps/api` hosted-vars test: `preview` resolves, all per-env values unset                                                                                                                                                             |
+| Generated configs stay deployable                            | `staging:check` (this package's, run by CI's existing staging config step): `wrangler deploy --dry-run` on the generated api and router configs, both tiers (the sites need a build to dry-run; `config.test.ts` pins their bindings) |
+| Production and staging unchanged                             | Verify step: the reusable workflow's expanded commands diffed with empty preview inputs                                                                                                                                               |
 
 `src/` coverage threshold 100%, as `@livediagram/licences`; `scripts/` is IO, proven by
-`preview:check` and the Verify phase.
+`staging:check` and the Verify phase.
 
 ## Constants and configuration
 
