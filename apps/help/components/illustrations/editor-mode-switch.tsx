@@ -27,7 +27,7 @@ export function ModeSwitchScene() {
   const listW = 118;
   const pw = 210;
   const rowH = 28;
-  const menuH = MODES.length * rowH + 24;
+  const menuH = MODES.length * rowH + 12;
   const shown = 1;
   const px = mx + listW;
   return (
