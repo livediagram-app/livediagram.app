@@ -35,6 +35,8 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Lines:** an unset border width draws at 1 px (Thin) instead of 2 px; an unset arrow thickness draws at 1 px.
 - **Shadows:** the default soft shadow on boxed shapes and the paper peel under stickies are not drawn. An
   element's own shadow ([Element shadows](element-shadows.md)) still draws.
+- **Icons:** a line-art icon without its own weight draws Thin (0.75 px) instead of Regular. A weight picked on the
+  icon wins. Technology icons and stickers are full-colour art and draw as they are.
 - **Lettering:** an element without its own font, on a tab without one, is written in Inter. A font picked on the
   element or the tab wins.
 - **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
@@ -62,7 +64,10 @@ element leaves unset, plus how a line is drawn (Sketch).
   Server-rendered PNG previews (the MCP's inline images, the CLI) letter every font in Inter, so there the
   hand-drawn lines carry the look and the lettering does not; browser exports use the real font.
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the hand-drawn line.
-- **Not affected:** freehand strokes (already hand-drawn), images, icons, and the faces of self-painting elements
+- **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through the same
+  hand-drawn wobble as the palette's Sketch tiles, so their lines tremble like pencil. The canvas and browser exports
+  both draw it (an SVG displacement filter, defined once per export and only when something needs it).
+- **Not affected:** freehand strokes (already hand-drawn), images, and the faces of self-painting elements
   (charts, checklists, progress, code) other than their lettering.
 - **Selection, hit testing, anchors and snapping** use the element's true geometry, never the wobble, so a
   sketched element is selected, connected and aligned exactly as a Flexible one.

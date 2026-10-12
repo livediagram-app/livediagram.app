@@ -1,8 +1,8 @@
 // A sketched element in the SVG export (docs/specs/008-canvas/finish.md "Sketch"): the same drawing the canvas
 // overlay paints (sketch-element.ts), placed at the element's position. Layers bottom to top: solid fill,
 // pencil shading (the stroke colour, faint), outline, chrome.
-import type { Finish } from './finish';
-import type { BoxedElement } from './index';
+import { finishWobblesArt, resolveFinish, type Finish } from './finish';
+import type { BoxedElement, Element } from './index';
 import { SHAPE_DETAIL_STROKE_PX } from './shape-geometry';
 import { SKETCH_HATCH_OPACITY, sketchElementPaint, type SketchDrawing } from './sketch-element';
 import type { ExportShape } from './svg-render-describe';
@@ -53,4 +53,26 @@ export function svgSketchedBody(
     strokePx: paint.strokePx,
     dash: paint.dash,
   });
+}
+
+/** The id of the hand-drawn wobble icons and stickers are drawn through under Sketch, in an export. */
+export const SKETCH_ART_FILTER_ID = 'lvd-sketch-art';
+
+/** The wobble's <defs> (the canvas's SketchFilterDefs, the same two passes) when an element on the tab draws through
+ *  it, else empty. */
+export function svgSketchArtDefs(elements: readonly Element[], tabFinish: unknown): string {
+  const needs = elements.some(
+    (el) =>
+      finishWobblesArt(el as { type: string; shape?: string }) &&
+      resolveFinish((el as { finish?: unknown }).finish, tabFinish) === 'sketch',
+  );
+  if (!needs) return '';
+  return (
+    `<defs><filter id="${SKETCH_ART_FILTER_ID}" x="-15%" y="-15%" width="130%" height="130%">` +
+    `<feTurbulence type="fractalNoise" baseFrequency="0.12" numOctaves="2" seed="7" result="n1"/>` +
+    `<feDisplacementMap in="SourceGraphic" in2="n1" scale="3" xChannelSelector="R" yChannelSelector="G" result="p1"/>` +
+    `<feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="2" seed="23" result="n2"/>` +
+    `<feDisplacementMap in="SourceGraphic" in2="n2" scale="3" xChannelSelector="G" yChannelSelector="R" result="p2"/>` +
+    `<feMerge><feMergeNode in="p1"/><feMergeNode in="p2"/></feMerge></filter></defs>`
+  );
 }

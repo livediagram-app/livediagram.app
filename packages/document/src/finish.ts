@@ -6,6 +6,7 @@
 // font) plus how a line is drawn (Sketch, see sketch.ts). An explicit pick on the element always wins. Pure
 // functions, read by the canvas and every export so the two agree.
 import type { ArrowStyle, ArrowThickness } from './arrow-style';
+import { DEFAULT_ICON_WEIGHT, type IconWeight } from './icon-weight';
 import type { BorderStroke } from './border-style';
 import { DEFAULT_BORDER_STROKE } from './border-style';
 import { SELF_PAINTING_SHAPES } from './colors';
@@ -100,6 +101,17 @@ export function elementFontId(
   tabFinish: unknown,
 ): string | undefined {
   return finishFontId(el.font, tabFont, resolveFinish(el.finish, tabFinish));
+}
+
+/** A line-art icon's weight: its own, else Thin under Professional, else the default. */
+export function finishIconWeight(own: IconWeight | undefined, finish: Finish): IconWeight {
+  return own ?? (finish === 'professional' ? 'thin' : DEFAULT_ICON_WEIGHT);
+}
+
+/** Whether an element is art Sketch draws through the hand-drawn wobble rather than redrawing it: icons (line art
+ *  and technology marks) and stickers. */
+export function finishWobblesArt(el: { type: string; shape?: string }): boolean {
+  return el.type === 'shape' && (el.shape === 'icon' || el.shape === 'sticker');
 }
 
 /** Whether a freshly drawn arrow may take a draw-time avoidance curve. */

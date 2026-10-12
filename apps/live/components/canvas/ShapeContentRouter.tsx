@@ -1,4 +1,6 @@
 import {
+  finishIconWeight,
+  finishWobblesArt,
   actorFigureRect,
   BORDER_DASH_ARRAY,
   BORDER_STROKE_PX,
@@ -29,6 +31,7 @@ import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { StickerView } from '@/components/canvas/StickerView';
+import { SKETCH_TILE_FILTER_ID } from '@/components/palette/palette-tile-finish';
 import { ProgressView } from '@/components/canvas/ProgressView';
 import { RailView } from '@/components/canvas/RailView';
 import { RatingView } from '@/components/canvas/RatingView';
@@ -155,6 +158,16 @@ export function ShapeContentRouter({
   // A sketched silhouette is the SketchOverlay's (docs/specs/008-canvas/finish.md); Professional thins an
   // unset border.
   const finish = useElementFinish((element as { finish?: unknown }).finish);
+  // Icons and stickers under Sketch draw through the shared hand-drawn wobble (SketchFilterDefs), their art kept.
+  const wobble = finish === 'sketch' && finishWobblesArt(element);
+  const art = (node: ReactNode) =>
+    wobble ? (
+      <div className="h-full w-full" style={{ filter: `url(#${SKETCH_TILE_FILTER_ID})` }}>
+        {node}
+      </div>
+    ) : (
+      node
+    );
   return element.type === 'shape' && element.shape === 'sticker' ? (
     // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
     // element colours and gets no caption band — a sticker says what it says
@@ -162,40 +175,49 @@ export function ShapeContentRouter({
     // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
     // a sticker's silhouette needs a drop-shadow, not the wrapper's
     // box-shadow, which would ring its bounding rectangle.
-    <StickerView stickerId={element.stickerId} animClass={artAnimClass} />
+    art(<StickerView stickerId={element.stickerId} animClass={artAnimClass} />)
   ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
     // Technology (brand) icon: a fixed-colour tile + white glyph
     // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
     // resolves in the tech catalogue, so it renders coloured rather
     // than stroke-tinted.
-    <TechIconGlyph
-      iconId={element.iconId}
-      hasLabel={(element.label ?? '').trim().length > 0}
-      size={element.iconSize}
-      labelAlignX={element.textAlignX ?? 'center'}
-      labelAlignY={element.textAlignY ?? 'bottom'}
-      animation={element.iconAnimation}
-      animationSpeed={element.iconAnimationSpeed}
-      animationRepeat={element.iconAnimationRepeat}
-    />
+    art(
+      <TechIconGlyph
+        iconId={element.iconId}
+        hasLabel={(element.label ?? '').trim().length > 0}
+        size={element.iconSize}
+        labelAlignX={element.textAlignX ?? 'center'}
+        labelAlignY={element.textAlignY ?? 'bottom'}
+        animation={element.iconAnimation}
+        animationSpeed={element.iconAnimationSpeed}
+        animationRepeat={element.iconAnimationRepeat}
+      />,
+    )
   ) : element.type === 'shape' && element.shape === 'icon' ? (
     // Curated glyph: line art tinted by the element's stroke
     // colour. Rendered separately from ShapeSvgOverlay because it
     // keeps aspect ratio (the catalogue art must not warp) and is
     // data-driven by `iconId`.
-    <IconGlyph
-      iconId={element.iconId}
-      stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-      strokeWidth={remoteBorderColor ? ICON_REMOTE_HIGHLIGHT_PX : iconWeightPx(element.iconWeight)}
-      hasLabel={(element.label ?? '').trim().length > 0}
-      labelAlignX={element.textAlignX ?? 'center'}
-      labelAlignY={element.textAlignY ?? 'bottom'}
-      // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
-      // menu; undefined = static.
-      animation={element.iconAnimation}
-      animationSpeed={element.iconAnimationSpeed}
-      animationRepeat={element.iconAnimationRepeat}
-    />
+    art(
+      <IconGlyph
+        iconId={element.iconId}
+        stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
+        // Professional draws an icon that sets no weight thin (docs/specs/008-canvas/finish.md).
+        strokeWidth={
+          remoteBorderColor
+            ? ICON_REMOTE_HIGHLIGHT_PX
+            : iconWeightPx(finishIconWeight(element.iconWeight, finish))
+        }
+        hasLabel={(element.label ?? '').trim().length > 0}
+        labelAlignX={element.textAlignX ?? 'center'}
+        labelAlignY={element.textAlignY ?? 'bottom'}
+        // Per-icon looping animation (docs/specs/008-canvas/canvas-and-palette.md). Picked from the icon context
+        // menu; undefined = static.
+        animation={element.iconAnimation}
+        animationSpeed={element.iconAnimationSpeed}
+        animationRepeat={element.iconAnimationRepeat}
+      />,
+    )
   ) : element.type === 'shape' && isProgressShape(element.shape) ? (
     // Progress elements (docs/specs/009-elements/progress.md): a bar / donut showing element.progress.
     // The fill takes the stroke accent; the track takes the fill colour.
