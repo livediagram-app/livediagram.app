@@ -11,23 +11,43 @@ migration against the database `main` is heading for.
 
 ## Two tiers
 
-|                 | Preview                                             | Full preview                                               |
-| --------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| When            | Every same-repo PR                                  | PR carries the **`full-preview`** label                    |
-| Own workers     | router, marketing, live, telemetry, help, community | the same, plus **api**                                     |
-| api it talks to | **staging's** (`livediagram-api-staging`)           | its own (`livediagram-api-pr-<N>`)                         |
-| D1 / R2         | staging's, through staging's api                    | its own `livediagram-pr-<N>` / `livediagram-images-pr-<N>` |
-| Migrations      | none run                                            | the PR's migrations, against its own empty D1              |
-| Good for        | frontend, copy, help, marketing changes             | api routes, Durable Objects, migrations                    |
+|                 | Preview                                             | Full preview                                                |
+| --------------- | --------------------------------------------------- | ----------------------------------------------------------- |
+| When            | Every same-repo PR                                  | PR touches the api, or carries the **`full-preview`** label |
+| Own workers     | router, marketing, live, telemetry, help, community | the same, plus **api**                                      |
+| api it talks to | **staging's** (`livediagram-api-staging`)           | its own (`livediagram-api-pr-<N>`)                          |
+| D1 / R2         | staging's, through staging's api                    | its own `livediagram-pr-<N>` / `livediagram-images-pr-<N>`  |
+| Migrations      | none run                                            | the PR's migrations, against its own empty D1               |
+| Good for        | frontend, copy, help, marketing changes             | api routes, Durable Objects, migrations                     |
 
 A **Preview** is cheap: six static-asset and routing workers, no data of its own. Its
 documents are staging documents, so whatever a reviewer makes there also appears on
 staging. A **Full preview** adds an api worker with its own database and bucket, so the
 PR's server code and migrations run end to end in isolation.
 
-Adding the label upgrades the PR's preview on the next run (the label event is itself a
-run). Removing it downgrades: the router is redeployed pointing at staging's api, then
-the PR's api worker, D1 and R2 are deleted.
+### Choosing the tier
+
+A PR gets a Full preview when **either** holds:
+
+- **It touches the api.** Turbo's package graph decides: `@livediagram/api` is among the
+  packages the PR changes or that depend on a changed package
+  (`turbo ls --filter='...[<base>...<head>]'`). Migrations live in `apps/api/migrations/`,
+  so a migration always counts, and so does a change to any shared package the api
+  bundles (`document`, `templates`, `items`, ...), because that is what can break the api
+  deploy after merge. Over the last 40 merges to `main` this matched 15 (38%); files under
+  `apps/api/` alone would have matched 9, and migrations 1.
+- **It carries the `full-preview` label**, added by hand to force one.
+
+When the graph matches, the workflow adds the label itself, so the reason a PR has a full
+preview is visible on the PR. A label added with the workflow's own token starts no new
+run, so the tier is decided and deployed in the same run. The rule is "graph **or**
+label", so removing an auto-added label from a PR that still touches the api has no
+effect: the next push adds it back.
+
+The tier is re-decided on every run. Adding the label upgrades the PR on that run (the
+label event is itself a run). A PR that stops matching and has no label downgrades: the
+router is redeployed pointing at staging's api, then the PR's api worker, D1 and R2 are
+deleted.
 
 ### What a preview never includes
 
@@ -126,6 +146,8 @@ differ from staging's would stop telling you anything about how the change deplo
 
 ## Trust
 
+- Only the job that decides the tier holds `pull-requests: write`, to add the label; it runs
+  turbo over the checked-out tree and nothing else. Every deploy job stays `contents: read`.
 - Runs only when the PR's head repository is this repository. A fork's PR never gets a
   preview: `pull_request` runs from forks receive no secrets, and the job skips cleanly
   rather than failing. `pull_request_target` is never used.
