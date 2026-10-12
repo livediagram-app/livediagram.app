@@ -40,6 +40,19 @@ describe('applyCollisionAvoidance', () => {
     expect(out.find((e) => e.id === 'mid')).toBe(out.find((e) => e.id === 'mid'));
   });
 
+  it('keeps a Professional arrow straight, from its tab or its own finish', () => {
+    const els = scene();
+    expect(applyCollisionAvoidance(els, 'arr', 'professional')).toBe(els);
+    const own = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'professional' as const } : e));
+    expect(applyCollisionAvoidance(own, 'arr')).toBe(own);
+    // An arrow's own Flexible beats a Professional tab.
+    const flexible = els.map((e) => (e.id === 'arr' ? { ...e, finish: 'flexible' as const } : e));
+    const out = applyCollisionAvoidance(flexible, 'arr', 'professional');
+    expect((out.find((e) => e.id === 'arr') as ArrowElement).arrowStyle).toBe('curved');
+    // Sketch bows like Flexible.
+    expect(applyCollisionAvoidance(els, 'arr', 'sketch')).not.toBe(els);
+  });
+
   it('leaves the arrow alone when the chord is clear', () => {
     const els = scene().filter((e) => e.id !== 'mid');
     const out = applyCollisionAvoidance(els, 'arr');

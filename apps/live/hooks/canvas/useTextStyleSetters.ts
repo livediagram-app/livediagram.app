@@ -16,7 +16,7 @@ type TextStyleSetterDeps = {
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // The tab being edited, for its font. A text box that fits or wraps hugs its text through every
   // change to how it is drawn (docs/specs/007-editor/editor-modes.md "A text box's sizing").
-  activeTab: Pick<Tab, 'font'>;
+  activeTab: Pick<Tab, 'font' | 'finish'>;
 };
 
 // The selection-wide label text setters (size / font / alignment + the
@@ -33,7 +33,7 @@ export function useTextStyleSetters({
   // A text-metrics change, committed with every hugging text box it touched re-hugged to its text
   // in the same step.
   const commitHugging = (ids: Set<string>, map: (els: Element[]) => Element[]) => {
-    const measure = measureDrawnText(activeTab.font);
+    const measure = measureDrawnText(activeTab.font, activeTab.finish);
     commit((els) =>
       map(els).map((el) =>
         ids.has(el.id) && hugsText(el) ? { ...el, ...hugTextSize(el, measure(el)) } : el,

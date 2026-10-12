@@ -24,6 +24,8 @@ import {
   svgShapeSilhouette,
 } from './svg-render-shapes';
 import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from './border-style';
+import { finishCornerFallbackPx, resolveFinish, type Finish } from './finish';
+import { svgSketchedBody } from './svg-render-sketch';
 import { canvasSurface } from './colors';
 import { svgIconShape, svgImageShape } from './svg-render-image-icon';
 import { DIAMOND_POINTS } from './shape-geometry';
@@ -105,6 +107,7 @@ import {
   EXPORT_PADDING,
   exportFontFamily,
   exportFontIds,
+  finishOf,
   type BoxedExportOptions,
   type ResolveIconArt,
   type ResolveImageHref,
@@ -162,7 +165,11 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
   // colour and face, so a chart's key and a rail's captions read like every
   // other label on the canvas.
   const labelColor = label?.color ?? defaultTextColor(el, surface);
-  const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont);
+  const fontFamily = label?.fontFamily ?? exportFontFamily(el, opts.tabFont, opts.tabFinish);
+  // The drawing style (docs/specs/008-canvas/finish.md): Professional's borders and corners, Sketch's
+  // hand-drawn body. Null when this element is not sketched.
+  const finish = resolveFinish(finishOf(el), opts.tabFinish);
+  const sketch = finish === 'sketch' ? svgSketchedBody(el, shape, finish) : null;
   const opAttr = opacity !== 1 ? ` opacity="${r2(opacity)}"` : '';
   // Rotation applies to the whole element (body + label) about its centre,
   // exactly like the canvas wrapper's CSS rotate.
@@ -182,7 +189,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
     // The real grid (tracks / headers / zebra / per-cell text), not a
     // box-with-nothing. Tables carry no element label; the cells are the
     // content.
-    return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}</g>`;
+    return `<g${opAttr}${rotAttr}>${svgTableShape(el, surface)}${sketch ?? ''}</g>`;
   }
   if (el.type === 'freehand' && shape.kind === 'rect') {
     // The sketch's actual polyline instead of its bounding box.
@@ -240,14 +247,16 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
           ` fill="${EXPORT_IMAGE_FILL}" stroke="${EXPORT_IMAGE_STROKE}" stroke-width="1.5" stroke-dasharray="4 4"/>`) +
       // A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image.
       (el.type === 'image' ? svgHeroCaption(el, fontFamily) : '');
+  } else if (sketch && (shape.kind === 'ellipse' || shape.kind === 'diamond')) {
+    shapeStr = sketch;
   } else if (shape.kind === 'ellipse') {
     // Inset by half the border, as the canvas's CSS border sits inside.
-    const b = el.type === 'shape' ? borderOf(el) : { width: 1.5, dash: null };
+    const b = el.type === 'shape' ? borderOf(el, finish) : { width: 1.5, dash: null };
     shapeStr = `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(Math.max(0, el.width / 2 - b.width / 2))}" ry="${r2(Math.max(0, el.height / 2 - b.width / 2))}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)}/>`;
   } else if (shape.kind === 'diamond') {
     // Native at element coordinates, from the shared table's points, inset
     // by half the border so the tips stay inside the box (strokeInside).
-    const b = el.type === 'shape' ? borderOf(el) : { width: 1.5, dash: null };
+    const b = el.type === 'shape' ? borderOf(el, finish) : { width: 1.5, dash: null };
     const inset = b.width / 2;
     const points = scaledPolygonPoints(
       DIAMOND_POINTS,
@@ -264,7 +273,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
     // stadium's full pill radius as the one native special case.
     const silhouette =
       el.type === 'shape' && hasShapeSilhouette(el.shape)
-        ? svgShapeSilhouette(el, shape.fill, shape.stroke)
+        ? svgShapeSilhouette(el, shape.fill, shape.stroke, finish)
         : null;
     const rx =
       el.type === 'shape' && el.shape === 'stadium'
@@ -277,7 +286,12 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
             // that honours its corner-radius pick (a round bubble-map node).
             el.type === 'shape' && el.shape === 'mind-node'
             ? Math.min(
-                cornerRadiusPx(el.borderRadius, el.width, el.height, MIND_NODE_RADIUS_PX),
+                cornerRadiusPx(
+                  el.borderRadius,
+                  el.width,
+                  el.height,
+                  finishCornerFallbackPx(MIND_NODE_RADIUS_PX, finish),
+                ),
                 Math.min(el.width, el.height) / 2,
               )
             : 6;
@@ -303,6 +317,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
     // IS its figure.
     const selfPainting = el.type === 'shape' && SELF_PAINTING_SHAPES.has(el.shape);
     const box =
+      sketch ??
       silhouette ??
       (selfPainting && face
         ? ''
@@ -315,6 +330,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
               shape.fill,
               shape.stroke,
               el.shape === 'stadium' || el.shape === 'mind-node' ? rx : undefined,
+              finish,
             )
           : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
     // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md) and a
@@ -425,8 +441,11 @@ export function boxedNeedsSvgRaster(
   el: BoxedElement,
   resolveIconArt?: ResolveIconArt,
   resolveStickerArt?: ResolveStickerArt,
+  // The tab's finish (docs/specs/008-canvas/finish.md): the canvas drawers know only Flexible's borders.
+  tabFinish?: Finish,
 ): boolean {
   if (el.rotation) return true;
+  if (resolveFinish(finishOf(el), tabFinish) !== 'flexible') return true;
   // A shadow renders via an feDropShadow filter def (docs/specs/008-canvas/element-shadows.md), which the
   // PNG canvas drawers can't reproduce natively.
   if (supportsShadow(el) && el.shadow) return true;
@@ -481,7 +500,7 @@ export function renderElementsToSvg(
   const visible = visibleLayerElements(tab.elements, tab.layers);
   // Every caption laid out once, in document order, so labels see each other.
   const labels = arrowLabelPass(tab.elements, {
-    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+    fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const bounds = contentBounds(visible, labels);
   const vbX = bounds.x - padding;
@@ -505,7 +524,7 @@ export function renderElementsToSvg(
   const chartPalette = themeChartPalette(
     getBuiltInTheme(tab.theme, surface === 'dark' ? 'dark' : 'light'),
   );
-  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font, opts.sheets));
+  const fontDefs = svgFontDefs(exportFontIds(visible, tab.font, opts.sheets, tab.finish));
   if (fontDefs) parts.push(fontDefs);
   // Element-shadow filter defs (docs/specs/008-canvas/element-shadows.md); empty string when none.
   const shadowDefs = svgShadowDefs(visible);
@@ -516,12 +535,13 @@ export function renderElementsToSvg(
   for (const band of layerBands(tab.elements, tab.layers)) {
     const inner = band.elements.map((el) =>
       el.type === 'arrow'
-        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg)
+        ? svgArrow(el, tab.elements, surface, tab.font, labels, undefined, visible, bg, tab.finish)
         : svgBoxed(el, {
             resolveImageHref: opts.resolveImageHref,
             resolveIconArt: opts.resolveIconArt,
             resolveStickerArt: opts.resolveStickerArt,
             tabFont: tab.font,
+            tabFinish: tab.finish,
             surface,
             paper: bg,
             chartPalette,

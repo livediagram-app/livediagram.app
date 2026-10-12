@@ -10,6 +10,7 @@ import {
   finishCurvesNewArrows,
   finishDrawsDefaultShadow,
   finishFontId,
+  supportsFinish,
   finishHatches,
   isFinish,
   resolveFinish,
@@ -85,14 +86,27 @@ describe('finishHatches', () => {
   it('hatches a filled shape', () => {
     expect(finishHatches(createShape('square', 0, 0), '#ffffff')).toBe(true);
     expect(finishHatches(createShape('diamond', 0, 0), '#ffffff')).toBe(true);
+    expect(finishHatches(createShape('stadium', 0, 0), '#ffffff')).toBe(true);
+    expect(finishHatches(createShape('cloud', 0, 0), '#ffffff')).toBe(true);
   });
 
   it('keeps containers, self-painting kinds, see-through fills and non-shapes solid', () => {
     expect(finishHatches(createShape('frame', 0, 0), '#ffffff')).toBe(false);
     expect(finishHatches(createShape('lane', 0, 0), '#ffffff')).toBe(false);
     expect(finishHatches(createShape('bar-chart', 0, 0), '#ffffff')).toBe(false);
+    expect(finishHatches(createShape('agenda', 0, 0), '#ffffff')).toBe(false);
+    expect(finishHatches(createShape('page', 0, 0), '#ffffff')).toBe(false);
     expect(finishHatches(createShape('square', 0, 0), 'transparent')).toBe(false);
     expect(finishHatches(createSticky(0, 0), '#fde68a')).toBe(false);
     expect(finishHatches(createText(0, 0), '#ffffff')).toBe(false);
+  });
+});
+
+describe('supportsFinish', () => {
+  it('takes shapes, arrows, text, stickies and tables only', () => {
+    for (const type of ['shape', 'arrow', 'text', 'sticky', 'table'])
+      expect(supportsFinish({ type }), type).toBe(true);
+    for (const type of ['freehand', 'image', 'path', 'annotation', 'link-card'])
+      expect(supportsFinish({ type }), type).toBe(false);
   });
 });

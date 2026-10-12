@@ -7,7 +7,9 @@ import { affectedArrows, buildArrowLinks, previewArrowGeometry } from './drag-af
 import { useDragPreview } from '@/lib/drag-preview';
 import { useFontEpoch } from './useFontEpoch';
 import {
-  eventStormingNoteFont,
+  elementFontId,
+  arrowLabelFontStack,
+  exportFontFamily,
   resolveFontStack,
   isSelectionMode,
   alignmentCoordinates,
@@ -191,6 +193,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     shiftDupGhostIds,
     voteReview,
     tabFont,
+    tabFinish,
     tabLocked,
     tabSummaries,
     quickRingOpen,
@@ -315,8 +318,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
   useFontEpoch();
-  // Resolved tab default font once; per-element falls back to it (docs/specs/004-interface-design/fonts.md).
-  const tabFontStack = resolveFontStack(tabFont);
+  // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
+  // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
+  const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
   // Highest dot count on the tab (docs/specs/012-collaboration/session-tools.md), computed once so each element's
   // vote pill can flag itself a winner once results are revealed.
   const voteMax = tabVote
@@ -673,7 +677,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                         onDeleteCurvePoint={h.onDeleteCurvePoint}
                         onBeginElbowDrag={h.onBeginArrowElbowDrag}
                         onBeginLabelDrag={h.onBeginArrowLabelDrag}
-                        fontFamily={resolveFontStack(element.font) ?? tabFontStack}
+                        fontFamily={arrowLabelFontStack(element, tabFont, tabFinish)}
                       />
                     </svg>
                     <FreeArrowFrame
@@ -731,9 +735,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
                   // A workshop note writes in marker (docs/specs/021-event-storming/event-storming.md): the notation names
                   // the face, so it outranks the tab default — but not an explicit
                   // per-element font, which is a deliberate author choice.
-                  fontFamily={
-                    resolveFontStack(element.font ?? eventStormingNoteFont(element)) ?? tabFontStack
-                  }
+                  // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
+                  fontFamily={exportFontFamily(element, tabFont, tabFinish)}
                 />
               );
             })}

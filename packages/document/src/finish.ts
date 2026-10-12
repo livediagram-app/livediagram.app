@@ -10,6 +10,7 @@ import type { BorderStroke } from './border-style';
 import { DEFAULT_BORDER_STROKE } from './border-style';
 import { SELF_PAINTING_SHAPES } from './colors';
 import type { Element } from './index';
+import { shapeGeometry } from './shape-geometry';
 
 export type Finish = 'flexible' | 'professional' | 'sketch';
 
@@ -25,6 +26,19 @@ export const SKETCH_FONT_ID = 'caveat';
 
 export function isFinish(v: unknown): v is Finish {
   return v === 'flexible' || v === 'professional' || v === 'sketch';
+}
+
+/** The element types that carry their own finish (the spec's "Where it is set"). */
+export const FINISH_ELEMENT_TYPES: ReadonlySet<Element['type']> = new Set([
+  'shape',
+  'arrow',
+  'text',
+  'sticky',
+  'table',
+]);
+
+export function supportsFinish(el: { type: string }): boolean {
+  return FINISH_ELEMENT_TYPES.has(el.type as Element['type']);
 }
 
 /** The finish an element is drawn in: its own, else its tab's, else Flexible. A stored value that is not
@@ -72,19 +86,32 @@ export function finishFontId(
   return own ?? (finish === 'sketch' ? SKETCH_FONT_ID : tab);
 }
 
+/** The font id an element is lettered in, from the element and its tab (finishFontId over the element's
+ *  drawn finish). */
+export function elementFontId(
+  el: { font?: string; finish?: unknown },
+  tabFont: string | undefined,
+  tabFinish: unknown,
+): string | undefined {
+  return finishFontId(el.font, tabFont, resolveFinish(el.finish, tabFinish));
+}
+
 /** Whether a freshly drawn arrow may take a draw-time avoidance curve. */
 export function finishCurvesNewArrows(finish: Finish): boolean {
   return finish !== 'professional';
 }
 
-// Containers and notes keep a solid fill under Sketch: hatching behind writing makes it hard to read.
-const SOLID_UNDER_SKETCH = new Set<string>(['frame', 'lane', 'page']);
+// The plain boxes whose fill Sketch hatches; every drawn silhouette but the frame hatches too. Cards, panels,
+// buttons, records, pages, lanes and frames keep a solid fill under a sketched edge: hatching behind their
+// faces and rows makes them hard to read.
+const HATCHED_BOXES = new Set<string>(['square', 'circle', 'stadium', 'mind-node']);
 
 /** Whether a Sketch element's fill (`fill`, already resolved) is drawn as hatching rather than solid:
- *  shapes only, never containers or self-painting kinds, and never a see-through fill. */
+ *  plain shapes only, and never a see-through fill. */
 export function finishHatches(element: Element, fill: string): boolean {
   if (element.type !== 'shape') return false;
-  if (SOLID_UNDER_SKETCH.has(element.shape) || SELF_PAINTING_SHAPES.has(element.shape))
-    return false;
+  if (SELF_PAINTING_SHAPES.has(element.shape)) return false;
+  const drawn = element.shape !== 'frame' && shapeGeometry(element.shape) !== null;
+  if (!HATCHED_BOXES.has(element.shape) && !drawn) return false;
   return fill !== 'transparent' && fill !== 'none';
 }

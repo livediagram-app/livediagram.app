@@ -25,6 +25,7 @@ import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
 import type { MapSize } from '@/lib/user-preferences';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { selectionBoxColors } from '@/lib/selection-box';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';
 
@@ -159,6 +160,7 @@ export function Minimap({
   // resolves every unstyled colour against it, so a Behaviour card that is a
   // dark card on a dark canvas is a dark card here too, not the light skin.
   const surface = useCanvasSurface();
+  const tabFinish = useTabFinish();
   const viewColors = selectionBoxColors(accentColor, surface);
   // Re-render once the async icon catalogues land so Technology marks pop in.
   const iconsLoaded = useIconCatalogs();
@@ -198,7 +200,7 @@ export function Minimap({
     const resolveIconArt = iconsLoaded ? resolveIconArtLoaded : NO_ART;
     const resolveStickerArt = iconsLoaded ? resolveStickerArtLoaded : NO_ART;
     const labels = arrowLabelPass(drawn, {
-      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont),
+      fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
     });
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
@@ -210,6 +212,7 @@ export function Minimap({
           resolveIconArt,
           resolveStickerArt,
           tabFont,
+          tabFinish,
           surface: pageSurfaces?.get(el.id) ?? surface,
         }),
       );
@@ -225,6 +228,9 @@ export function Minimap({
           tabFont,
           labels,
           'lvd-minimap-ko-',
+          undefined,
+          undefined,
+          tabFinish,
         ),
       );
       corners.push(endpointPosition(el.from, drawn), endpointPosition(el.to, drawn));
@@ -250,7 +256,7 @@ export function Minimap({
     };
     // `writing` changes with the documents' text, which the bars read off the editors.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elements, pages, tabFont, iconsLoaded, surface, writing, laidOut]);
+  }, [elements, pages, tabFont, tabFinish, iconsLoaded, surface, writing, laidOut]);
 
   const recentreToClient = (clientX: number, clientY: number) => {
     const svg = svgRef.current;

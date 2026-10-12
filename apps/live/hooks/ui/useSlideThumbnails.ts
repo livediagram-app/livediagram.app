@@ -112,6 +112,7 @@ export function useSlideThumbnails(
             svgBoxed(el, {
               ...art,
               tabFont: tab.font,
+              tabFinish: tab.finish,
               surface,
               ...(items ? { items } : {}),
               ...(itemTypes ? { itemTypes } : {}),
@@ -121,7 +122,7 @@ export function useSlideThumbnails(
       }
       // Labels are laid out against the whole tab, as the canvas lays them out.
       const labels = arrowLabelPass(tab.elements, {
-        fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font),
+        fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
       });
       for (const el of elements) {
         // Arrows resolve their endpoints against the WHOLE tab, not just the
@@ -138,6 +139,8 @@ export function useSlideThumbnails(
               labels,
               `lvd-slide-${slide.id}-ko-`,
               elements,
+              undefined,
+              tab.finish,
             ),
           );
       }

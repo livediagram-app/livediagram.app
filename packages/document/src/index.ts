@@ -498,6 +498,7 @@ export * from './border-style';
 export * from './shadow';
 export * from './finish';
 export * from './sketch';
+export * from './sketch-element';
 // Which elements can be rotated (an annotation marker cannot).
 export * from './rotation';
 export * from './shape-marker';

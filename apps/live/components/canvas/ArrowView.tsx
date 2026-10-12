@@ -24,6 +24,7 @@ import { ArrowLabel } from './ArrowLabel';
 import { SelectedArrowHandles } from './SelectedArrowHandles';
 import { ArrowGripsPortal } from './SelectionGripsLayer';
 import { ArrowFlowOverlays, useArrowFlow } from './arrow-flow';
+import { useArrowFinish } from './arrow-finish';
 import { BRAND_600 } from './arrow-handle-style';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -215,8 +216,11 @@ function ArrowViewImpl({
   // selected on a coloured arrow.
   const baseStroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
   // Per-arrow thickness with a small selected-state bump so the user
-  // can tell the difference between "selected" and "thicker stroke".
-  const baseStrokeWidth = arrow.strokeWidth ?? 2;
+  // can tell the difference between "selected" and "thicker stroke". The finish thins an unset width
+  // under Professional and draws the line by hand under Sketch (docs/specs/008-canvas/finish.md).
+  const { baseStrokeWidth, sketch } = useArrowFinish(arrow, pathD);
+  // Sketched heads replace the markers; circles and diamonds keep theirs.
+  const headMarker = sketch?.sketchedHeads ? undefined : markerUrl;
   const strokeWidth = isSelected ? baseStrokeWidth + 0.5 : baseStrokeWidth;
   const hitCursor = isPaintMode ? 'copy' : 'pointer';
   // The line bends where it is grabbed, so an editable line says so.
@@ -338,7 +342,8 @@ function ArrowViewImpl({
       ) : null}
       <path
         ref={flowPathRef}
-        d={pathD}
+        // The selection halo above and the hit band below keep the true path; only the ink is sketched.
+        d={sketch?.line ?? pathD}
         // The break itself. The hit band below is deliberately NOT masked:
         // the arrow stays clickable across the gap, so selecting one that
         // runs behind a box doesn't require finding a visible stub.
@@ -361,11 +366,11 @@ function ArrowViewImpl({
           flowPathDash ?? BORDER_DASH_ARRAY[arrow.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined
         }
         markerStart={
-          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? markerUrl : undefined
+          arrow.arrowEnds === 'from' || arrow.arrowEnds === 'both' ? headMarker : undefined
         }
         markerEnd={
           arrow.arrowEnds === 'to' || arrow.arrowEnds === 'both' || arrow.arrowEnds === undefined
-            ? markerUrl
+            ? headMarker
             : undefined
         }
         style={
@@ -389,6 +394,18 @@ function ArrowViewImpl({
           } as React.CSSProperties
         }
       />
+      {sketch?.heads ? (
+        <path
+          d={sketch.heads}
+          mask={behindMask}
+          fill="none"
+          stroke={ownHeadColor ?? baseStroke}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ pointerEvents: 'none' }}
+        />
+      ) : null}
 
       <path
         // The wide transparent hit band. Carries data-element-id so DOM

@@ -550,6 +550,7 @@ export function EditorCanvasHost() {
         tabBackgroundAnimationSpeed={activeTab.backgroundAnimationSpeed ?? 1}
         tabPatternColor={backdrop.patternColor}
         tabFont={activeTab.font}
+        tabFinish={activeTab.finish}
         mainRef={canvasMainRef}
         isPinchingRef={isPinchingRef}
         setViewportZoom={setViewportZoom}

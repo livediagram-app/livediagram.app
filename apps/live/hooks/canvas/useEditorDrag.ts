@@ -473,7 +473,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
               ? {
                   mode: drag.mode,
                   constrain: drag.aspectLocked || e.shiftKey,
-                  measure: measureDrawnText(activeTab.font),
+                  measure: measureDrawnText(activeTab.font, activeTab.finish),
                 }
               : null;
           tick((els) =>
@@ -609,7 +609,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
         ) <= 6;
       if (drag?.kind === 'arrow-endpoint' && drag.end === 'to' && !drag.reposition && !tapStill) {
         const arrowId = drag.arrowId;
-        previewTick((els) => applyCollisionAvoidance(els, arrowId));
+        previewTick((els) =>
+          applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
+        );
       }
       // The gesture's result, as the release logic below reads it, then written in one change before
       // anything else writes (docs/specs/008-canvas/drag-preview.md).
@@ -822,7 +824,9 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       // written, as the press-drag end in onUp above does.
       if (drag.end === 'to' && !drag.reposition) {
         const arrowId = drag.arrowId;
-        previewTick((els) => applyCollisionAvoidance(els, arrowId));
+        previewTick((els) =>
+          applyCollisionAvoidance(els, arrowId, depsRef.current.activeTab.finish),
+        );
       }
       commitPreview();
       // The endpoint already tracks the cursor (last pointermove); this

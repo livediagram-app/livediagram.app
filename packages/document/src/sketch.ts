@@ -502,6 +502,12 @@ export function sketchStrokes(outline: SketchOutline, seed: number, passes: 1 | 
   return out.join(' ');
 }
 
+/** A closed area as a plain filled path (the solid fill under a sketched outline). */
+export function sketchAreaPath(area: readonly Pt[]): string {
+  if (area.length < 3) return '';
+  return `M ${area.map(fmt).join(' L ')} Z`;
+}
+
 /** The hatching gap for a border width: rough.js's four strokes apart, kept between 6 and 12 px. */
 export function sketchHatchGap(strokePx: number): number {
   return clamp(4 * strokePx, HATCH_GAP_MIN_PX, HATCH_GAP_MAX_PX);

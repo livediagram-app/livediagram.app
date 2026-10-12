@@ -1,7 +1,9 @@
 import {
   collisionAvoidingCurveOffset,
   endpointPosition,
+  finishCurvesNewArrows,
   isBoxed,
+  resolveFinish,
   type AvoidanceObstacle,
   type Element,
 } from '@livediagram/document';
@@ -12,10 +14,16 @@ import {
 // geometry helper picks. One-shot at the end of the creation gesture; the
 // result is an ordinary curved arrow the user can adjust or straighten
 // with the existing handles. Pure elements map so the drag hook can run it
-// through `commit` inside the same gesture (same undo step).
-export function applyCollisionAvoidance(els: Element[], arrowId: string): Element[] {
+// through `commit` inside the same gesture (same undo step). An arrow drawn in the Professional finish
+// stays straight (docs/specs/008-canvas/finish.md).
+export function applyCollisionAvoidance(
+  els: Element[],
+  arrowId: string,
+  tabFinish?: unknown,
+): Element[] {
   const arrow = els.find((e) => e.id === arrowId);
   if (!arrow || arrow.type !== 'arrow') return els;
+  if (!finishCurvesNewArrows(resolveFinish(arrow.finish, tabFinish))) return els;
   // Only untouched-default arrows: a style the creation flow (or the user,
   // mid-gesture) already chose wins.
   if (arrow.arrowStyle !== undefined || arrow.curveOffset || arrow.curvePoints) return els;
