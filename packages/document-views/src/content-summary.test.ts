@@ -95,4 +95,19 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(shapeAt('square', 'x', 0, 0))).toBeNull();
     expect(contentSummaryOf(createText(0, 0))).toBeNull();
   });
+
+  it("counts a Sankey's flows and the distinct nodes they join, as the diagram matches names", () => {
+    expect(
+      contentSummaryOf(
+        shape('sankey' as never, {
+          sankeyFlows: [
+            { from: 'Salary', to: 'Budget ', value: 3 },
+            { from: ' Budget', to: 'Rent', value: 1 },
+            { from: 'Rent' },
+            'not a flow',
+          ],
+        }),
+      ),
+    ).toBe('flows=3 nodes=3');
+  });
 });
