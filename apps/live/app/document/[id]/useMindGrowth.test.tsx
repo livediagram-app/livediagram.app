@@ -2,7 +2,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { useState } from 'react';
-import { createShape, type Tab } from '@livediagram/document';
+import {
+  MIND_SIBLING_GAP_Y,
+  createShape,
+  fitMindNodeHeight,
+  type Element,
+  type ShapeElement,
+  type Tab,
+} from '@livediagram/document';
 import { resetMindHandoff } from '@/lib/mind-handoff';
 import { useMindGrowth } from './useMindGrowth';
 
@@ -17,6 +24,9 @@ function setup() {
   const setSelectedId = vi.fn();
   const hook = renderHook(() => {
     const [tabs, setTabs] = useState<Tab[]>([startTab()]);
+    // Another commit landing first, as the label editor's does just before its Tab / Enter.
+    const patch = (map: (els: Element[]) => Element[]) =>
+      setTabs((ts) => ts.map((t) => ({ ...t, elements: map(t.elements) })));
     const api = useMindGrowth({
       editsBlocked: false,
       activeId: 't',
@@ -26,7 +36,7 @@ function setup() {
       setEditingId,
       scrollIntoView: () => {},
     });
-    return { api, tab: tabs[0]! };
+    return { api, tab: tabs[0]!, patch };
   });
   return { hook, setEditingId, setSelectedId };
 }
@@ -74,5 +84,23 @@ describe('useMindGrowth', () => {
   it('leaves any other node to the usual Escape', () => {
     const { hook } = setup();
     expect(hook.result.current.api.escapeGrownMindNode('root')).toBe(false);
+  });
+
+  it('places the new node against the map as it stands in the commit, clear of a node just grown taller', () => {
+    const { hook, setSelectedId } = setup();
+    act(() => hook.result.current.api.growMindNode('root', 'child'));
+    const first = grownId(setSelectedId);
+    // The label commit grows the node (docs/specs/009-elements/mind-node.md "A node grows to fit
+    // its label"), then Enter grows a sibling, before any re-render.
+    act(() => {
+      hook.result.current.patch((els) => fitMindNodeHeight(els, first, 220));
+      hook.result.current.api.growMindNode(first, 'sibling');
+    });
+    const els = hook.result.current.tab.elements;
+    const at = (id: string) => els.find((e) => e.id === id) as ShapeElement;
+    const tall = at(first);
+    const next = at(grownId(setSelectedId));
+    expect(tall.height).toBe(220);
+    expect(next.y - (tall.y + tall.height)).toBe(MIND_SIBLING_GAP_Y);
   });
 });

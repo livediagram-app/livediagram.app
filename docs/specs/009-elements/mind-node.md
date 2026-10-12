@@ -7,6 +7,8 @@ from the keyboard.
 
 - **Tab** on a selected node adds a **child**.
 - **Enter** adds a **sibling** directly after it.
+- **Shift+Enter**, while typing a node's label, starts a **new line** in it (see "New lines"
+  below).
 
 The same two actions are one click away, for anyone who doesn't know the keys:
 **Add Child** and **Add Sibling** buttons on the node's selection toolbar (after
@@ -14,7 +16,8 @@ Edit text), and the same two options on its quick-connect "+" ring. On a mind
 node the ring holds only those two and Duplicate: a free arrow, a freehand
 sketch or a loose text label is not how a map grows, so Arrow, Pencil and Text
 are left off it (they stay on every other element's ring). Each names
-its shortcut in its hover card. The toolbar buttons are not offered on a locked
+its shortcut in its hover card, and Add Sibling's also says that Shift+Enter starts a new line
+while typing, since that is the key someone reaching for Enter to break a line needs to find. The toolbar buttons are not offered on a locked
 node (growing re-lays the map) or to a Viewer. A Participant grows a map too, from Tab and Enter or the toolbar's
 Add child and Add sibling ([Share roles](../013-workspace/share-roles.md)); the quick-connect ring stays an Editor's.
 
@@ -65,6 +68,26 @@ owns which.
 Default size **250×80**: wide enough for a phrase. 170×48 fits a couple of words
 and makes anything longer wrap or overflow, which is not what people type into a
 mind map.
+
+### A node grows to fit its label
+
+A label with more lines than the node has room for (lines started with Shift+Enter, or a long
+line wrapping) makes the node **taller**, never wider: the width is the map's rhythm, the
+height is the content's. The lines are measured the way the label draws them (its size, font,
+weight and formatting, at the node's width less its padding; a node sized **Auto** measures at
+the size its editor types in), and the node's height becomes the lines' height plus its padding,
+rounded up to a whole pixel.
+
+- **While typing**, the node grows with each line, so the editor never types into hidden lines.
+  Nothing is written per keystroke: the grown size is drawn locally until the edit commits.
+- **On commit**, the grown height is written with the label, in the same commit (one undo step).
+  The same holds for a label written by the typing-ahead handoff (below), which never opens an
+  editor.
+- The node grows **downward** (its top stays put). If the map was tidy before, it is laid out
+  again around the taller node in the same commit, so siblings never overlap it and the map stays
+  tidy; a hand-arranged map is left where it is.
+- A node **never shrinks** on its own: deleting lines leaves the height it had, the way a resized
+  node keeps the size it was given. Resizing it is how it gets shorter.
 
 ### A tidy map stays tidy
 
@@ -184,6 +207,19 @@ and both listeners sit on `window`. The traversal one is mounted first, so the
 selected element gets first refusal on the key; otherwise pressing Tab on a mind
 node would cycle the tab's elements instead of growing a branch.
 Shift+Tab stays traversal, since only plain Tab grows.
+
+### New lines
+
+A label with several lines is still one node, so a line break needs a key of its own. Inside a
+mind node's label editor **Shift+Enter starts a new line**, the convention of chat apps and
+outliners (and of Edit Outline's rows, below), and plain **Enter** keeps committing the label and
+adding a sibling, so typing a map from the keyboard is unchanged. Shift+Enter typed ahead, before
+the new node's editor is on screen, is a new line in that node's label too. On a selected node
+with no editor open, Shift+Enter does nothing mind-specific (only plain Enter grows). The
+Keyboard settings list carries it as its own row, beside Tab and Enter on a mind node.
+
+The newline is stored as a `\n` in the label (and its formatted runs), drawn as a line break on
+the canvas and in exports, and the node grows to fit (see "A node grows to fit its label").
 
 ### Typing ahead
 

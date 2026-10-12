@@ -10,15 +10,18 @@
 
 import {
   elementFontId,
+  type BoxedElement,
   resolveFontStack,
   runsFromPlainText,
   type Finish,
+  type ShapeElement,
   type TextElement,
   type TextRun,
 } from '@livediagram/document';
 import { applyCss } from '@/components/rich-text/rich-text-format';
 import { effectiveRunStyle, labelRunPx } from '@/components/canvas/label-style';
 import { TEXT_HUG_LEADING, textHugFontPx, type MeasureTextBlock } from '@/lib/text-hug';
+import { mindLabelFontPx } from '@/lib/mind-label-fit';
 
 const MEASURER_ATTR = 'data-text-hug-measurer';
 
@@ -44,8 +47,9 @@ function measurer(): HTMLDivElement {
 }
 
 // The runs a label draws: its rich runs when it has them, else its plain text as one run.
-export function labelRuns(el: TextElement): TextRun[] {
-  return el.richText && el.richText.length > 0 ? el.richText : runsFromPlainText(el.label ?? '');
+export function labelRuns(el: BoxedElement): TextRun[] {
+  const rich = (el as { richText?: TextRun[] }).richText;
+  return rich && rich.length > 0 ? rich : runsFromPlainText(el.label ?? '');
 }
 
 // A measure for this element's text: its runs as the label draws them, or the live editor's
@@ -55,19 +59,34 @@ export function measureTextHug(
   content: TextRun[] | HTMLElement,
   fontFamily: string | undefined,
 ): MeasureTextBlock {
+  return measureLabelBlock(el, content, fontFamily, textHugFontPx(el), el.textScale ?? 1);
+}
+
+// The same measure for any boxed element's single-line-style label (medium weight, tight
+// leading) drawn at `fontPx`, its runs' own sizes scaled by `runScale`. A mind node's label
+// measures through it to grow to fit (lib/mind-label-fit.ts). Wordmark fields are a text box's;
+// on any other element they read as unset.
+export function measureLabelBlock(
+  el: BoxedElement,
+  content: TextRun[] | HTMLElement,
+  fontFamily: string | undefined,
+  fontPx: number,
+  runScale = 1,
+): MeasureTextBlock {
+  const word = el as Partial<Pick<TextElement, 'letterSpacing' | 'fontWeight' | 'textCase'>>;
   return (width, fixed) => {
     const node = measurer();
-    const runPx = labelRunPx(false, el.textScale ?? 1);
-    node.style.fontSize = `${textHugFontPx(el)}px`;
+    const runPx = labelRunPx(false, runScale);
+    node.style.fontSize = `${fontPx}px`;
     node.style.fontFamily = fontFamily ?? '';
     node.style.width = fixed ? `${width}px` : 'max-content';
     node.style.maxWidth = `${width}px`;
     // Wordmark type (docs/specs/007-editor/logo-pages.md): tracked, weighted and cased text hugs
     // the width it draws at. Reset every time: the measurer is shared.
-    node.style.letterSpacing = el.letterSpacing ? `${el.letterSpacing}em` : '';
-    node.style.fontWeight = String(el.fontWeight ?? 500);
+    node.style.letterSpacing = word.letterSpacing ? `${word.letterSpacing}em` : '';
+    node.style.fontWeight = String(word.fontWeight ?? 500);
     node.style.textTransform =
-      el.textCase === 'upper' ? 'uppercase' : el.textCase === 'lower' ? 'lowercase' : '';
+      word.textCase === 'upper' ? 'uppercase' : word.textCase === 'lower' ? 'lowercase' : '';
     if (Array.isArray(content)) {
       node.replaceChildren(
         ...content.map((run) => {
@@ -87,18 +106,40 @@ export function measureTextHug(
   };
 }
 
-// The measure for a text box as the canvas draws it, outside an edit: its own runs, in its own
-// face or else the tab's (the fallback the canvas uses, docs/specs/004-interface-design/fonts.md), or the
-// handwriting font under the Sketch finish (docs/specs/008-canvas/finish.md).
+// The face a label is drawn in outside an edit: its own, or else the tab's (the fallback the
+// canvas uses, docs/specs/004-interface-design/fonts.md), or the handwriting font under the
+// Sketch finish (docs/specs/008-canvas/finish.md).
+function drawnLabelFont(
+  el: TextElement | ShapeElement,
+  tabFont: string | undefined,
+  tabFinish: Finish | undefined,
+): string | undefined {
+  return (
+    resolveFontStack(el.font) ??
+    resolveFontStack(elementFontId({ finish: el.finish }, tabFont, tabFinish))
+  );
+}
+
+// The measure for a text box as the canvas draws it, outside an edit: its own runs in the face
+// it is drawn in.
 export function measureDrawnText(
   tabFont: string | undefined,
   tabFinish?: Finish,
 ): (el: TextElement) => MeasureTextBlock {
+  return (el) => measureTextHug(el, labelRuns(el), drawnLabelFont(el, tabFont, tabFinish));
+}
+
+// The same for a mind node's label, at the size it draws (or, sized Auto, types) at
+// (docs/specs/009-elements/mind-node.md "A node grows to fit its label").
+export function measureDrawnMindLabel(
+  tabFont: string | undefined,
+  tabFinish?: Finish,
+): (el: ShapeElement) => MeasureTextBlock {
   return (el) =>
-    measureTextHug(
+    measureLabelBlock(
       el,
       labelRuns(el),
-      resolveFontStack(el.font) ??
-        resolveFontStack(elementFontId({ finish: el.finish }, tabFont, tabFinish)),
+      drawnLabelFont(el, tabFont, tabFinish),
+      mindLabelFontPx(el),
     );
 }

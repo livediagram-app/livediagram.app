@@ -38,6 +38,7 @@ import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline
 import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
+import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { ChairView } from '@/components/canvas/collab/ChairView';
@@ -360,6 +361,8 @@ function BoxedElementViewImpl({
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
+  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
+  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
   const labelPadding = uprightStrip
     ? // A one-line strip has no room for a roomy padding across it.
@@ -400,6 +403,7 @@ function BoxedElementViewImpl({
     labelAnimClass,
     textHug.label,
     textAnim,
+    mindFit.onLiveText,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -474,7 +478,7 @@ function BoxedElementViewImpl({
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,
-        height: textHug.box?.height ?? element.height,
+        height: textHug.box?.height ?? mindFit.height ?? element.height,
         color: textColor,
         // Layer-scoped vote (docs/specs/012-collaboration/vote-layer-scope.md): elements off the votable layer stay
         // VISIBLE — you still need the canvas's context to judge what

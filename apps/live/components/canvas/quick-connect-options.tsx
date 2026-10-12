@@ -83,7 +83,10 @@ export const MIND_CHILD_OPTION: Option = {
 export const MIND_SIBLING_OPTION: Option = {
   kind: 'mind-sibling',
   label: 'Add Sibling',
-  description: 'Add a node beside this one, under the same parent. Shortcut: Enter.',
+  // Enter grows rather than breaking a line, so the key for a new line is named where someone
+  // looking for it would find it (docs/specs/009-elements/mind-node.md "New lines").
+  description:
+    'Add a node beside this one, under the same parent. Shortcut: Enter. While typing a label, Shift+Enter starts a new line.',
   icon: <MindSiblingIcon />,
 };
 

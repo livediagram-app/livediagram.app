@@ -480,6 +480,7 @@ export * from './mind-flow';
 export * from './mind-map';
 export * from './mind-layout';
 export * from './mind-grow';
+export * from './mind-fit';
 export * from './mind-outline-text';
 export * from './mind-outline-marks';
 export * from './mind-outline';
