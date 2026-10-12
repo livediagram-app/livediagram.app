@@ -21,6 +21,7 @@ import {
   lucideGlyph,
   noMatchTitle,
   safeInset,
+  SheetHandle,
   useSheetDrag,
 } from '@livediagram/ui';
 import {
@@ -295,16 +296,13 @@ export function StartPanel<C extends string>({
           } as CSSProperties
         }
       >
-        {/* The grab handle, phone only, as every phone sheet has: the full width of the sheet, 24px tall
-            (BottomSheet's). Dragged down it closes a panel that can close; one that cannot settles back. */}
-        <div
-          aria-hidden
-          data-sheet-handle=""
-          {...sheet.handleProps}
-          className="flex h-6 shrink-0 cursor-grab touch-none items-center justify-center sm:hidden"
-        >
-          <span className="h-1 w-10 rounded-full" style={{ backgroundColor: palette.border }} />
-        </div>
+        {/* The grab handle, phone only, as every phone sheet has (BottomSheet's). Dragged down it closes a panel that
+            can close; one that cannot settles back. */}
+        <SheetHandle
+          handleProps={sheet.handleProps}
+          className="sm:hidden"
+          pillColor={palette.border}
+        />
         <header
           // Room on the right for the help and × pinned in the corner.
           className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pt-1"
