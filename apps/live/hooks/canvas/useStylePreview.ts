@@ -40,6 +40,7 @@ import type {
   IconAnimation,
   IconPosition,
   ElementShadow,
+  Finish,
   IconSize,
   IconWeight,
   Padding,
@@ -62,6 +63,7 @@ import {
   applyFillColorToEl,
   applyFontToEl,
   applyShadowToEl,
+  applyFinishToEl,
   applyIconSizeToEl,
   applyIconWeightToEl,
   applyInlineIconToEl,
@@ -268,6 +270,9 @@ export function useStylePreview(deps: {
     previewShadow: (v: ElementShadow | null) => previewStyle((el) => applyShadowToEl(el, v)),
     commitShadow: (v: ElementShadow | null) =>
       commitStyle((el) => applyShadowToEl(el, v), 'Shadow'),
+    // Finish tiles (docs/specs/008-canvas/finish.md); `null` is Follow Tab.
+    previewFinish: (v: Finish | null) => previewStyle((el) => applyFinishToEl(el, v)),
+    commitFinish: (v: Finish | null) => commitStyle((el) => applyFinishToEl(el, v), 'Finish'),
     // Rotation angle tiles (fixed 45° steps).
     previewRotation: (deg: number) => previewStyle((el) => applyRotationToEl(el, deg)),
     commitRotation: (deg: number) => commitStyle((el) => applyRotationToEl(el, deg), 'Rotation'),

@@ -100,7 +100,7 @@ export function pathEndTangents(
 - `describeVariant(..., surface, finish)`: Professional drops `shadow-sm`, the sticky peel and uses the Professional
   corner / stroke fallbacks; Sketch makes the wrapper's background transparent and its border none for CSS shapes,
   stickies and drops the peel.
-- `components/canvas/SketchOutlineOverlay.tsx`: an absolutely positioned pixel-space `<svg>` (`viewBox="0 0 w h"`)
+- `components/canvas/SketchOverlay.tsx`: an absolutely positioned pixel-space `<svg>` (`viewBox="0 0 w h"`)
   drawing hatching (or a solid area for stickies / frames / lanes / tables) then the sketch strokes, memoised on
   `(id, kind, width, height, strokePx, radius, dash)`; used for CSS shapes, stickies and tables.
 - `ShapeSvgOverlay` takes `finish` and `width` / `height`; in Sketch it fits each part into pixels (`fitShapePart`)

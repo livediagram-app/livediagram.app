@@ -178,7 +178,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 30,
+    articleCount: 31,
     kind: 'feature',
   },
   {
@@ -2042,6 +2042,15 @@ export const articles: Article[] = [
     title: 'Element Shadows',
     description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
     keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
+    category: 'Canvas',
+    categorySlug: 'canvas',
+  },
+  {
+    slug: 'finish',
+    title: 'Choosing a Finish',
+    description: 'Draw a tab or an element Flexible, Professional or hand-drawn Sketch.',
+    keywords:
+      'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing',
     category: 'Canvas',
     categorySlug: 'canvas',
   },

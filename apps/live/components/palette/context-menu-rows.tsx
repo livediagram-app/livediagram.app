@@ -58,10 +58,17 @@ export function BorderGrid({
   children,
 }: {
   label: string;
-  cols: 3 | 4 | 5;
+  cols: 2 | 3 | 4 | 5;
   children: ReactNode;
 }) {
-  const colClass = cols === 5 ? 'grid-cols-5' : cols === 4 ? 'grid-cols-4' : 'grid-cols-3';
+  const colClass =
+    cols === 5
+      ? 'grid-cols-5'
+      : cols === 4
+        ? 'grid-cols-4'
+        : cols === 3
+          ? 'grid-cols-3'
+          : 'grid-cols-2';
   return (
     <div className="mb-1.5 last:mb-0">
       <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">

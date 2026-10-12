@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
 
@@ -32,6 +32,9 @@ const props = {
   defaultTextSize: undefined,
   onSetDefaultTextSize: vi.fn(),
   onApplyFontToAll: vi.fn(),
+  finish: undefined,
+  onSetFinish: vi.fn(),
+  onApplyFinishToAll: vi.fn(),
   onClose: vi.fn(),
 };
 
@@ -53,5 +56,40 @@ describe('CanvasThemeDialog placement', () => {
     Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
     render(<CanvasThemeDialog {...props} />);
     expect(screen.getByRole('dialog', { name: 'Tab look and feel' }).style.right).toBe('');
+  });
+});
+
+// docs/specs/008-canvas/finish.md "Where it is set": the Finish tab sets the tab's finish and clears every
+// element's own.
+describe('CanvasThemeDialog Finish tab', () => {
+  it('is in the tab strip and opens on request', () => {
+    const onTabChange = vi.fn();
+    render(<CanvasThemeDialog {...props} onTabChange={onTabChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Finish' }));
+    expect(onTabChange).toHaveBeenCalledWith('finish');
+  });
+
+  it('presses Flexible for a tab without a finish, and sets the one clicked', () => {
+    const onSetFinish = vi.fn();
+    render(<CanvasThemeDialog {...props} tab="finish" onSetFinish={onSetFinish} />);
+    expect(screen.getByRole('button', { name: 'Flexible' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Sketch' }));
+    expect(onSetFinish).toHaveBeenCalledWith('sketch');
+  });
+
+  it("presses the tab's finish", () => {
+    render(<CanvasThemeDialog {...props} tab="finish" finish="professional" />);
+    expect(screen.getByRole('button', { name: 'Professional' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    );
+  });
+
+  it('Apply to All Elements clears the elements’ own finishes', () => {
+    const onApplyFinishToAll = vi.fn();
+    render(<CanvasThemeDialog {...props} tab="finish" onApplyFinishToAll={onApplyFinishToAll} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Apply to All Elements' }));
+    expect(onApplyFinishToAll).toHaveBeenCalledTimes(1);
   });
 });

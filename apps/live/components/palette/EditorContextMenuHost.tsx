@@ -95,6 +95,8 @@ export function EditorContextMenuHost() {
     setShadowSelected,
     previewShadow,
     commitShadow,
+    previewFinish,
+    commitFinish,
     previewRotation,
     commitRotation,
     commitMarker,
@@ -334,6 +336,8 @@ export function EditorContextMenuHost() {
       onSetShadow={setShadowSelected}
       onPreviewShadow={previewShadow}
       onCommitShadow={commitShadow}
+      onPreviewFinish={previewFinish}
+      onCommitFinish={commitFinish}
       onPreviewRotation={previewRotation}
       onCommitRotation={commitRotation}
       onSetMarker={commitMarker}

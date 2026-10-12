@@ -24,6 +24,7 @@ import type {
   ChartPaletteId,
   CodeThemeId,
   ElementShadow,
+  Finish,
   Layer,
   LegendItem,
   MindFlow,
@@ -157,6 +158,9 @@ export type EditorContextMenuProps = {
   onSetShadow: (shadow: ElementShadow | null) => void;
   onPreviewShadow: (shadow: ElementShadow | null) => void;
   onCommitShadow: (shadow: ElementShadow | null) => void;
+  // Finish tiles (docs/specs/008-canvas/finish.md): hover previews, click commits; `null` is Follow Tab.
+  onPreviewFinish: (finish: Finish | null) => void;
+  onCommitFinish: (finish: Finish | null) => void;
   onPreviewRotation: (deg: number) => void;
   onCommitRotation: (deg: number) => void;
   // Status markers (docs/specs/009-elements/shape-markers.md): set / clear the shape's marker glyph and its

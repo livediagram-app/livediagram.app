@@ -46,6 +46,8 @@ export function EditorModals() {
     setTabFont,
     setTabDefaultTextSize,
     applyTabFontToAll,
+    setTabFinish,
+    applyTabFinishToAll,
   } = useEditorContext();
 
   return (
@@ -97,6 +99,9 @@ export function EditorModals() {
           defaultTextSize={activeTab.defaultTextSize}
           onSetDefaultTextSize={setTabDefaultTextSize}
           onApplyFontToAll={applyTabFontToAll}
+          finish={activeTab.finish}
+          onSetFinish={setTabFinish}
+          onApplyFinishToAll={applyTabFinishToAll}
           onClose={() => setCanvasThemeTab(null)}
         />
       ) : null}
