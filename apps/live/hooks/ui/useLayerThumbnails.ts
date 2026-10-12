@@ -10,6 +10,7 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   type Element,
   type Layer,
@@ -53,6 +54,8 @@ export function useLayerThumbnails(
     const labels = arrowLabelPass(elements, {
       fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
     });
+    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+    const backdrops = sketchBackdropIds(elements, tabFinish);
     for (const band of layerBands(elements, layers, { includeHidden: true })) {
       const parts: string[] = [];
       for (const el of band.elements) {
@@ -62,6 +65,7 @@ export function useLayerThumbnails(
               ...art,
               tabFont,
               tabFinish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
             }),
           );

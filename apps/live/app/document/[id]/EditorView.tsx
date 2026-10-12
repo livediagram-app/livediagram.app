@@ -17,6 +17,7 @@ import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { CanvasFinishProvider } from '@/components/canvas/CanvasFinishContext';
+import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
@@ -505,6 +506,8 @@ export function EditorView() {
           {/* The active tab's finish (docs/specs/008-canvas/finish.md), for the menus and panels; each
               canvas provides its own tab's again. */}
           <CanvasFinishProvider finish={activeTab.finish}>
+            {/* The wobble Sketch palette tiles are drawn through (palette-tile-finish.ts). */}
+            <SketchFilterDefs />
             {/* Plan boards and cards, and the dialogs that draw them (exports), read the items and
               their actions here (docs/specs/026-plan/plan-board.md). */}
             <PlanProvider value={ctx.plan.context}>

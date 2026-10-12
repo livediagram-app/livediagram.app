@@ -897,3 +897,19 @@ html[data-presenting][data-hide-pointer][data-pointer-idle] [data-presentation-s
 :root.reduce-motion .changeset-reveal {
   animation: none !important;
 }
+
+/* Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md, palette-tile-finish.ts). Professional:
+   square corners, fine mitred lines. Sketch: the shared wobble filter (SketchFilterDefs). */
+.palette-finish-professional svg {
+  stroke-linejoin: miter;
+}
+.palette-finish-professional svg :where(path, rect, circle, ellipse, polygon, polyline, line) {
+  stroke-width: 1px;
+}
+.palette-finish-professional svg rect {
+  rx: 0;
+  ry: 0;
+}
+.palette-finish-sketch svg {
+  filter: url(#lvd-sketch-tile);
+}

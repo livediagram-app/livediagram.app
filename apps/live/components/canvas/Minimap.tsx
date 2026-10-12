@@ -11,6 +11,7 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   svgShadowDefs,
   elementPageSurfaces,
@@ -204,6 +205,8 @@ export function Minimap({
     });
     // Boxed first (frames behind their contents), then arrows on top —
     // matching the canvas z-order.
+    // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+    const backdrops = sketchBackdropIds(drawn, tabFinish);
     for (const el of framesFirst(drawn)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
@@ -213,6 +216,7 @@ export function Minimap({
           resolveStickerArt,
           tabFont,
           tabFinish,
+          sketchBackdrop: backdrops.has(el.id),
           surface: pageSurfaces?.get(el.id) ?? surface,
         }),
       );

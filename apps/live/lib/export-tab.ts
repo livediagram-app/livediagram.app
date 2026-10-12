@@ -47,6 +47,7 @@ import {
   r2,
   supportsShadow,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   svgFontDefs,
   svgShadowDefs,
@@ -241,6 +242,8 @@ export async function renderTabToCanvas(
   );
   // Every caption laid out once, as the canvas and the SVG export do
   // (docs/specs/008-canvas/arrow-labels.md); the bounds include the plates.
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
@@ -367,6 +370,7 @@ export async function renderTabToCanvas(
         resolveStickerArt: resolveStickerArtLoaded,
         tabFont,
         tabFinish: tab.finish,
+        sketchBackdrop: backdrops.has(el.id),
         surface,
         items: opts.items,
         itemTypes: opts.itemTypes,
@@ -526,6 +530,8 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const bands = layerBands(tab.elements, tab.layers, { includeHidden: opts.hiddenLayers }).map(
     (band) => ({ ...band, elements: band.elements.filter(reaches) }),
   );
+  // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+  const backdrops = sketchBackdropIds(els, tab.finish);
   const labels = arrowLabelPass(tab.elements, {
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
@@ -611,6 +617,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
               resolveStickerArt: resolveStickerArtLoaded,
               tabFont: tab.font,
               tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
               items: opts.items,
               itemTypes: opts.itemTypes,

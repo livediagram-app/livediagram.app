@@ -49,9 +49,9 @@ const finishOfRow = (id: string): Finish | null => (isFinish(id) ? id : null);
 
 /** One line on what each finish does, under its name. */
 export const FINISH_DETAILS: Record<Finish, string> = {
-  flexible: 'Soft corners and gentle shadows',
-  professional: 'Square corners, fine lines, crisp type',
-  sketch: 'Drawn by hand, with hatching',
+  flexible: 'Soft and rounded',
+  professional: 'Square and fine',
+  sketch: 'Drawn by hand',
 };
 
 // The Plan-style option list (docs/specs/026-plan/plan-board.md "Option lists"): one full-width row per choice.
@@ -59,7 +59,7 @@ const FINISH_ROWS: OptionRow[] = [
   {
     id: FOLLOW_TAB,
     label: 'Follow Tab',
-    detail: 'Drawn in the tab’s finish',
+    detail: 'As the tab is',
     icon: <LinkIcon />,
   },
   ...FINISHES.map((f) => ({

@@ -13,6 +13,7 @@ import {
   arrowLabelFontStack,
   arrowLabelPass,
   svgArrow,
+  sketchBackdropIds,
   svgBoxed,
   type CanvasSurface,
   type Deck,
@@ -106,6 +107,8 @@ export function useSlideThumbnails(
         const bars = pageWritingBars(page);
         if (bars.length) parts.push(articleOpsToSvg(bars));
       }
+      // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
+      const backdrops = sketchBackdropIds(elements, tab.finish);
       for (const el of elements) {
         if (el.type !== 'arrow') {
           parts.push(
@@ -113,6 +116,7 @@ export function useSlideThumbnails(
               ...art,
               tabFont: tab.font,
               tabFinish: tab.finish,
+              sketchBackdrop: backdrops.has(el.id),
               surface,
               ...(items ? { items } : {}),
               ...(itemTypes ? { itemTypes } : {}),
