@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { outlineOfBox, outlineOfPath, sketchHatching, sketchSeed, sketchStrokes } from './sketch';
 
 // docs/specs/008-canvas/finish.md "Performance": one element's strokes and hatching under 0.2 ms at an
 // ordinary size, a 20000 px element (the largest the Size category allows) under 2 ms. Measured on an M-series
 // laptop at about 0.06 ms and 0.3 ms; the limits below are those budgets with headroom for a loaded CI runner,
-// the fastest of several rounds so one stall does not fail the build.
+// the fastest of several rounds so one stall does not fail the build. Timed in CPU time, not wall-clock: under
+// turbo's parallel suites on CI, wall-clock also counted waiting for a core and read 0.76 ms (cpu-time.js).
 const fastest = (fn: () => void, rounds = 5, perRound = 200): number => {
   for (let i = 0; i < 50; i++) fn();
   let best = Infinity;
   for (let r = 0; r < rounds; r++) {
-    const started = performance.now();
-    for (let i = 0; i < perRound; i++) fn();
-    best = Math.min(best, (performance.now() - started) / perRound);
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < perRound; i++) fn();
+    });
+    best = Math.min(best, ms / perRound);
   }
   return best;
 };
