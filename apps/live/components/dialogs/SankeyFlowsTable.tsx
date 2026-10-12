@@ -253,10 +253,7 @@ export function SankeyFlowsTable({
       {layout.levels.length > 0 ? (
         <div className="flex flex-col gap-4">
           {layout.levels.map((level, li) => (
-            <section
-              key={level.step}
-              aria-labelledby={`${listId}-step-${level.step}`}
->
+            <section key={level.step} aria-labelledby={`${listId}-step-${level.step}`}>
               <h3
                 id={`${listId}-step-${level.step}`}
                 className="mb-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400"

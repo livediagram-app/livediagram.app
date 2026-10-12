@@ -8,7 +8,12 @@
 // Blank lines and lines starting with // or ' (SankeyMATIC's comment mark) are skipped. A header row such
 // as "from,to,value" is skipped because its value is not a number.
 
-import { cleanSankeyName, SANKEY_MAX_FLOWS, SANKEY_VALUE_MAX, type SankeyFlow } from './sankey-model';
+import {
+  cleanSankeyName,
+  SANKEY_MAX_FLOWS,
+  SANKEY_VALUE_MAX,
+  type SankeyFlow,
+} from './sankey-model';
 
 export type SankeyTextResult = {
   flows: SankeyFlow[];
