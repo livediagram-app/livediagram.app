@@ -353,42 +353,9 @@ export const stickyGridHeight = (
   return rows * noteH + (rows - 1) * gap;
 };
 
-// The height of a column holding `notes` stickies, header to bottom padding.
-export const retroColumnHeight = (notes: number, stickyH: number = RETRO.stickyH) =>
-  RETRO.pad +
-  RETRO.headerH +
-  RETRO.hintH +
-  RETRO.stickyGap +
-  notes * stickyH +
-  (notes - 1) * RETRO.stickyGap +
-  RETRO.pad;
-
 // The top of the notes inside a column that starts at `top`.
 export const retroNotesTop = (top: number) =>
   top + RETRO.pad + RETRO.headerH + RETRO.hintH + RETRO.stickyGap;
-
-// A full note column: container, header and a stack of stickies.
-export function retroColumn(
-  x: number,
-  top: number,
-  height: number,
-  col: { label: string; hint: string; icon: string; hue: RetroHue; notes: readonly string[] },
-  width: number = RETRO.colW,
-): Element[] {
-  const { pad } = RETRO;
-  return [
-    retroPanel(x, top, width, height, col.hue),
-    ...retroHeader(x, top, width, col.label, col.hint, col.icon, col.hue.headerColor),
-    ...stickyStack(
-      x + pad,
-      retroNotesTop(top),
-      width - pad * 2,
-      RETRO.stickyH,
-      col.notes,
-      col.hue.sticky,
-    ),
-  ];
-}
 
 // A checklist sized to its rows; every line reads "what · who · when".
 export function actionChecklist(
