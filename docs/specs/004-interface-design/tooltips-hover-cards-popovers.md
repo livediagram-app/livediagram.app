@@ -147,6 +147,8 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
   of focus or the keyboard goes, it returns to where its placement puts it.
 - A panel anchored to a control (`AnchoredPopover`) never shrinks below 160 px of room on its side (or its own height,
   when less), however little the window leaves it, so a keyboard that shrinks the window cannot squeeze it to nothing.
+- A modal `Dialog` first fits itself to the visible area (live-app.md "A dialog stays above the on-screen keyboard"),
+  so it fits there and the move above has nothing left to do.
 - Under a mouse nothing listens: no keyboard rises over the page.
 - The canvas's own fields (a label being typed) pan the canvas instead, on a tablet as on a phone
   ([Mobile chrome](../007-editor/live-app.md)).

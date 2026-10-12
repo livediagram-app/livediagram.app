@@ -379,6 +379,10 @@ Team offsite
   quiet line counts what Save will do: "3 added, 1 renamed, 2 removed", or "No changes".
 - **On a phone** the dialog rises as a sheet (see live-app.md "Working dialogs rise as sheets on a
   phone"), and the toolbar is the way to indent, outdent and break a line.
+- **With the on-screen keyboard up** (a phone or a tablet) the dialog stays whole inside the
+  visible area above the keyboard, its rows scrolling, the row being edited in view; moving the
+  page or dragging the sheet never puts it under the keyboard (see live-app.md "A dialog stays
+  above the on-screen keyboard").
 
 **What it reads.** Pasted text, and the outline the rows are saved through (the root on the
 first line, every other node a `- ` bullet two spaces deeper than its parent, a node's further
