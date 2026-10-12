@@ -6,7 +6,7 @@
 // after it (the column picker: an existing status, or a new one); delete its status, first asking where its cards
 // go when it has any. Each change is one element edit, made as it happens. Escape or an outside press closes it;
 // on a phone it is a sheet.
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   COLUMN_WIDTHS,
   isTrashed,
@@ -45,6 +45,7 @@ import {
   reuseColumnStatus,
 } from './board-setup-edits';
 import { requestColumnSettings } from './column-settings-request';
+import { COLUMN_MOVE_MS } from './column-move-flip';
 import { AddColumnPickerPopover } from './AddColumnPickerPopover';
 import {
   addStatusColumn,
@@ -68,6 +69,17 @@ const COLUMN_STANDARD = [standardGroup('strong', 'light', 'hex')];
 // The popover's width: its rows (the colour now a swatch, the picker in its own popover) need no more.
 const WIDTH = 288;
 const GAP = 6;
+// How long past the column's glide the popover keeps following its cog (a frame or two of slack).
+const FOLLOW_SLACK_MS = 40;
+
+// The popover's place: under its cog, right edges aligned and kept on screen, or above it when there is no room below.
+function placeUnder(a: DOMRect, height: number): { left: number; top: number } {
+  const left = Math.max(EDGE, Math.min(a.right - WIDTH, window.innerWidth - WIDTH - EDGE));
+  const below = a.bottom + GAP;
+  const top =
+    below + height + EDGE <= window.innerHeight ? below : Math.max(EDGE, a.top - GAP - height);
+  return { left, top };
+}
 
 const STEP =
   'w-8 text-[15px] text-slate-600 transition enabled:hover:bg-slate-100 disabled:opacity-35 dark:text-slate-300 dark:enabled:hover:bg-slate-800';
@@ -148,12 +160,31 @@ export function PlanColumnPopover({
   useLayoutEffect(() => {
     const a = getAnchor()?.getBoundingClientRect();
     if (!a) return;
-    const h = box.current?.offsetHeight ?? 0;
-    const left = Math.max(EDGE, Math.min(a.right - WIDTH, window.innerWidth - WIDTH - EDGE));
-    const below = a.bottom + GAP;
-    const top = below + h + EDGE <= window.innerHeight ? below : Math.max(EDGE, a.top - GAP - h);
-    setPos({ left, top });
+    setPos(placeUnder(a, box.current?.offsetHeight ?? 0));
   }, [getAnchor]);
+  // Moved left or right, the column glides to its new place (column-move-flip.ts): the popover goes with its cog
+  // frame by frame (written straight to its style, no render a frame), then settles where the cog lands.
+  const moved = useRef(at);
+  useEffect(() => {
+    if (moved.current === at) return;
+    moved.current = at;
+    // A phone's sheet stays put at the bottom of the screen.
+    if (mobile) return;
+    const end = performance.now() + COLUMN_MOVE_MS + FOLLOW_SLACK_MS;
+    let frame = 0;
+    const follow = () => {
+      const a = getAnchor()?.getBoundingClientRect();
+      const p = a ? placeUnder(a, box.current?.offsetHeight ?? 0) : null;
+      if (p && box.current) {
+        box.current.style.left = `${p.left}px`;
+        box.current.style.top = `${p.top}px`;
+      }
+      if (performance.now() < end) frame = requestAnimationFrame(follow);
+      else if (p) setPos(p);
+    };
+    frame = requestAnimationFrame(follow);
+    return () => cancelAnimationFrame(frame);
+  }, [at, getAnchor, mobile]);
   // A press in the picker (portalled) is not outside, and Escape is the picker's while it is open.
   useClickOutside(
     box,

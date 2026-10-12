@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { presetSetup, statusColumn } from '@livediagram/items';
 import { PlanColumnPopover } from './PlanColumnPopover';
@@ -69,5 +69,35 @@ describe('the column toolbar', () => {
       ['done', 'todo'],
     );
     expect(fns.onChange.mock.lastCall![1]).toBe('ColumnReordered');
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "A column's own settings": the popover goes with its column as it glides.
+describe('the popover following its column', () => {
+  it('settles under the cog’s new place once the column has moved', async () => {
+    const cog = document.createElement('button');
+    document.body.append(cog);
+    let right = 300;
+    cog.getBoundingClientRect = () =>
+      ({ left: right - 24, right, top: 40, bottom: 64, width: 24, height: 24 }) as DOMRect;
+    const props = {
+      getAnchor: () => cog,
+      onMoveCards: () => {},
+      onTrashCards: () => {},
+      onChange: vi.fn(),
+      onClose: vi.fn(),
+    };
+    const { rerender } = render(
+      <PlanColumnPopover {...props} setup={setup} column={setup.columns[0]!} />,
+    );
+    const box = () => screen.getByRole('dialog', { name: 'To Do column' });
+    expect(box().style.left).toBe(`${300 - 288}px`);
+    // Moved right: the board re-renders with the column second, and the cog has travelled.
+    right = 600;
+    const moved = { ...setup, columns: [setup.columns[1]!, setup.columns[0]!] };
+    rerender(<PlanColumnPopover {...props} setup={moved} column={moved.columns[1]!} />);
+    await act(() => new Promise((r) => setTimeout(r, 400)));
+    expect(box().style.left).toBe(`${600 - 288}px`);
+    cog.remove();
   });
 });

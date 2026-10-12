@@ -52,3 +52,4 @@ One row per default applied where a spec is silent or qualitative.
 | D46 | plan-board    | The least room a phone's header needs beside the menu      | 160 px (`PHONE_ROW_MIN_PX`): a short title, Restore and the cog                                                                     |
 | D47 | plan-board    | Where the Columns section adds a column                    | At the end, or before the done column when the board ends with it (`columnsInsertAfter`): a new state is work in flight, not done   |
 | D48 | plan-board    | How long a column just added from Columns stays tinted     | 1600 ms (`ADDED_TINT_MS`): long enough to spot it in the list, gone before the next add                                             |
+| D49 | plan-board    | How a moved column glides                                  | 240 ms on cubic-bezier(0.2, 0, 0, 1) (`COLUMN_MOVE_MS`, `COLUMN_MOVE_EASING`): long enough to follow, short enough to repeat        |

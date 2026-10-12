@@ -94,6 +94,16 @@ PlanColumnPopover.tsx    a column's settings popover. On top a role=toolbar "Col
                          (column-settings-request.ts, a one-shot module request read on the head's mount) and
                          closes, and the new popover selects its name (`selectName`)
 board-setup-edits.ts     the set-up's edits as pure functions (rename, recolour, WIP, done, move, add, remove)
+column-move-flip.ts      a column moved left or right glides (FLIP): `captureColumns(root)` notes each `[data-plan-column]`
+                         part's offsetLeft (the head in PlanColumnHeader, each cell in PlanBoardView); `playColumnMove`
+                         animates each from its old left via `el.animate` translateX → 0 over COLUMN_MOVE_MS (240) on
+                         COLUMN_MOVE_EASING; the moved column's parts also carry zIndex 2 and a boxShadow that fades.
+                         `useColumnMoveFlip(gridRef, order)` gives `beforeMove(columnId)` (PlanBoardView calls it for a
+                         `ColumnReordered` change; nothing under prefersReducedMotion) and `isMoving()`, true until the
+                         glide ends, passed to usePlanCardFlip as `hold` so cards are measured but not played.
+                         PlanColumnPopover follows: when its column's index changes it re-places itself under the cog
+                         each animation frame (style written directly) for COLUMN_MOVE_MS + 40 ms, then setPos; not on a
+                         phone
 BoardColumnsSection.tsx  the board's Columns section (cog and element menu): InfoNote, "On This Board" + count, an `ol`
                          option list of the columns (number, StatusSwatch, name, WIP n / Done pills, chevron), each row
                          a button "Open {Name} settings" that calls onClose then requestColumnSettings(id); then the

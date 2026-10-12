@@ -87,7 +87,11 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone). On top is a **toolbar**: **Move Left** and **Move Right** at its start, one
   segmented control of two chevrons (each named by a tooltip; Move Left off on the first column, Move Right on the
   last), and **Remove** (a column glyph and the word; named Remove Column, rose on hover) at its end, apart from them
-  as it takes the column away. Under it: its **name**, **colour** (a row like the WIP limit's: "Colour" over
+  as it takes the column away. A move glides: the column slides to its new place over 240 ms (a quick start, a soft
+  landing), lifted above its neighbour on a soft shadow that settles as it lands, while the neighbour slides the other
+  way and the cards ride along in their cells (they do not glide on their own as well); the popover goes with its cog
+  frame by frame and settles under it. A reorder that arrives from a collaborator jumps, and reduced motion jumps. On a
+  phone the sheet stays put. Under it: its **name**, **colour** (a row like the WIP limit's: "Colour" over
   its effect, or "No colour", and the colour's swatch at the row's end; pressed, the
   [colour picker](../004-interface-design/colour-picker.md) opens in its own popover beside it, No colour or any
   colour, the column popover staying open), **WIP limit**, **Width**, **Counts as Done**, then, one to a row, **+ Add Column
