@@ -16,6 +16,7 @@ Scope, by file:
 | `packages/document/src/mind-outline-text.ts`                 | `mindOutlineText`, `mindOutlineEntryText`, `mindOutlineLines`, `parseMindOutline`, `mindOutlineNodeText`: outline to and from text |
 | `packages/document/src/mind-outline-marks.ts`                | `mindNodeMarks`, `mindMarkdownToMarks`, `mindMarksToMarkdown`, `restyleMindNode`, `mindRichTextFor`: bold / italic / underline     |
 | `packages/document/src/mind-outline.ts`                      | `summariseMindOutline`, `applyMindOutline`: match nodes, apply, re-lay out on a structure change                                   |
+| `packages/document/src/mind-connector-route.ts`              | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
 | `packages/document/src/anchor-choice.ts`                     | `bestAnchorTowards`: the bubble flow's connector faces                                                                             |
 | `packages/document/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                                                                       |
 | `packages/document/src/element-types.ts`                     | `mindParentId`, `mindFlow`                                                                                                         |
@@ -333,6 +334,31 @@ export function mindConnectorAnchors(
   child: ShapeElement,
 ): [Anchor, Anchor];
 
+// packages/document/src/mind-connector-route.ts
+export type MindConnectorRoute =
+  | { style: 'angled'; corners: Point[] } // absolute, from-to order; [] when the ends line up
+  | { style: 'straight'; corners: [] }; // bubble
+export function isDefaultMindConnectorLook(arrow: ArrowElement): boolean;
+// arrowStyle === 'curved' && !curveOffset && !curvePoints?.length
+export function finishMindConnectorRoute(
+  arrow: ArrowElement,
+  elements: readonly Element[] | ElementIndex,
+  finish: Finish,
+): MindConnectorRoute | null;
+// null unless finish is 'professional', the look is default, both ends are pinned to mind nodes and
+// one is the other's mindParentId (either direction). Bubble (the root's flow): straight. Otherwise
+// the parent's face P and the child's face C must be opposite (e/w or n/s; else angled, no corners,
+// the plain one-elbow line). Trunk = (P + F) / 2 along the axis, F the nearest face, on P's side,
+// of the parent's children whose centre is on that side (C itself when it is tucked back over P).
+// Across (e/w): [(trunk, P.y), (trunk, C.y)]; down (n/s): [(P.x, trunk), (C.x, trunk)]; [] when
+// |C - P| < 1 across the other axis. Reversed for a child-to-parent connector.
+export function finishRoutedArrow(arrow, elements, finish): ArrowElement;
+// the same object when not routed; else a copy with arrowStyle 'angled' (or 'straight' for bubble
+// and for lined-up ends), curvePoints as chord-midpoint deltas of the corners, curveOffset and
+// elbowOffset cleared, exactStart and exactEnd true.
+export function finishArrowEnds(arrow, elements, finish): { arrow: ArrowElement; from: Point; to: Point };
+// routed: the drawn arrow and the raw anchors (no fan); else the arrow and its fanned ends.
+
 // packages/document/src/mind-map.ts
 export type MindShift = { id: ElementId; dy: number };
 export function makeRoom(
@@ -457,6 +483,12 @@ listener only reads keys while a growth it opened is pending, and lets modified 
   early unless the node actually grows; when it does on a tidy map it costs one
   `isMindTreeTidy` plus one `relayoutMindMap` (0.5 ms at 100 nodes, 2.6 ms at 300, 38 ms at
   1 000).
+- Professional routing: children by parent and each node's flow are indexed once per element index
+  (`WeakMap` keyed on the index the canvas rebuilds per change), so routing every connector is
+  `O(n)` per render, a deep chain included. Measured (`cpuMsOf`): 2,000-node map 8 to 26 ms against
+  17 to 21 ms for Flexible's fan; 1,000-deep chain 1.5 to 4.6 ms. Guarded at 100 ms each by
+  `mind-connector-route.perf.test.ts`. A drag preview re-derives only the arrows pinned to moved
+  nodes, so a sibling's trunk catches up on drop.
 
 ## Presentation and UX
 
@@ -542,6 +574,9 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 | Copy re-parents children                              | re-parents a copied mind child onto its copied parent; leaves a mind parent OUTSIDE the copied set alone | `packages/document/src/factories.test.ts`                                                      |
 | Duplicate re-parents                                  | re-parents a copied mind-map child onto the copied parent                                                | `apps/live/hooks/canvas/useElementDuplication.test.tsx`                                        |
 | Export rounds the node                                | rounds a mind node the way the canvas does                                                               | `packages/document/src/svg-render.test.ts`                                                     |
+| Professional: bracket per flow, picks win, export     | finishMindConnectorRoute; finishArrowEnds; svgArrow under a finish                                       | `packages/document/src/mind-connector-route.test.ts`          |
+| Professional routing stays linear                     | mind connector routing cost (two cases)                                                                  | `packages/document/src/mind-connector-route.perf.test.ts`     |
+| Professional frame has no handles                     | deriveArrowViewFrame in a finish                                                                         | `apps/live/components/canvas/arrow-view-frame.test.ts`        |
 | Radius control offered; unset shows Medium            | supportsBorderRadius is true for a mind node; shownBorderRadius                                          | `packages/document/src/colors.test.ts`                                                         |
 | Canvas Tab / Enter grow, guards                       | none [GA14]                                                                                              |                                                                                                |
 | Editor Enter / Tab commit then grow; Shift+Enter line | a mind node's label editor (five cases)                                                                  | `apps/live/components/canvas/RichTextEditor.mind-keys.test.tsx`                                |

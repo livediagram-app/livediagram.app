@@ -21,16 +21,15 @@ import {
 import { BORDER_DASH_ARRAY } from './border-style';
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from './canvas-colors';
 import { defaultArrowLabelColor, defaultArrowStrokeColor, type CanvasSurface } from './colors';
-import { arrowEndpointSpread } from './arrow-endpoint-spread';
 import { ROUTE_BEHIND_MARGIN, routeBehindHoles, routeBehindQueryRect } from './arrow-behind';
 import { elementGridFor, queryElementGrid } from './element-grid';
-import { endpointPosition } from './geometry';
 import { svgWrappedLabel } from './svg-render-labels';
 import { resolveStockColours } from './stock-colours';
 import { KNOCKOUT_RADIUS_PX, arrowLabelPass, type ArrowLabelPass } from './arrow-label-layout';
 import type { Rect } from './geometry-primitives';
 import { resolveFontStack } from './fonts';
 import { elementFontId, resolveFinish, type Finish } from './finish';
+import { finishArrowEnds } from './mind-connector-route';
 import { sketchArrow } from './sketch-element';
 import { r2, xmlEscape } from './svg-render-primitives';
 import type { ArrowElement, Element } from './index';
@@ -153,18 +152,14 @@ export function svgArrow(
   tabFinish?: Finish,
 ): string {
   // A stock colour stored by name is drawn in its version for this page.
-  const arrow = resolveStockColours(source, surface);
-  // Same converging-fan offset the live canvas applies (see
-  // arrow-endpoint-spread.ts), so exports match what's on screen.
-  const rawFrom = endpointPosition(arrow.from, elements);
-  const rawTo = endpointPosition(arrow.to, elements);
-  const fromSpread = arrowEndpointSpread(arrow.id, 'from', elements);
-  const toSpread = arrowEndpointSpread(arrow.id, 'to', elements);
-  const from = { x: rawFrom.x + fromSpread.x, y: rawFrom.y + fromSpread.y };
-  const to = { x: rawTo.x + toSpread.x, y: rawTo.y + toSpread.y };
+  const stocked = resolveStockColours(source, surface);
+  // Professional thins an arrow that sets no width and draws a mind map's connectors right-angled; Sketch
+  // draws it by hand (docs/specs/008-canvas/finish.md).
+  const finish = resolveFinish(stocked.finish, tabFinish);
+  // The same ends the live canvas resolves (the converging-fan offset of arrow-endpoint-spread.ts, or a
+  // finish's exact route), so exports match what's on screen.
+  const { arrow, from, to } = finishArrowEnds(stocked, elements, finish);
   const stroke = arrow.strokeColor ?? defaultArrowStrokeColor(surface);
-  // Professional thins an arrow that sets no width; Sketch draws it by hand (docs/specs/008-canvas/finish.md).
-  const finish = resolveFinish(arrow.finish, tabFinish);
   const lw = arrow.strokeWidth ?? (finish === 'professional' ? ARROW_THICKNESS_PX.thin : 2);
   const op = arrow.opacity ?? 1;
   const opAttr = op !== 1 ? ` opacity="${r2(op)}"` : '';

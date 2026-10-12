@@ -7,8 +7,10 @@ import {
   curveAnchorPoints,
   curveControlPoint,
   endpointPosition,
+  finishMindConnectorRoute,
   arrowRoutePoints,
   planArrowBend,
+  resolveFinish,
   type ArrowElement,
   type FrameHandle,
 } from '@livediagram/document';
@@ -201,6 +203,10 @@ export function useArrowDragHandlers({
     if (!r) return;
     const { d, arrow } = r;
     if (arrow.locked === true || d.layerInertIds.has(arrowId) || d.isReadOnly) return;
+    // A mind connector the finish routes is the map's shape, not the arrow's: there is no stored bend
+    // to drag (docs/specs/009-elements/mind-node.md "Connectors").
+    const finish = resolveFinish(arrow.finish, d.activeTab.finish);
+    if (finishMindConnectorRoute(arrow, d.activeTab.elements, finish)) return;
     // The arrow's <svg> spans the transformed canvas wrapper, so its rect maps
     // the pointer into canvas coordinates exactly as the wrapper's does.
     const svg = e.currentTarget.ownerSVGElement;

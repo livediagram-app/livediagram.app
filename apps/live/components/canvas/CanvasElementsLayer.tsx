@@ -12,6 +12,7 @@ import {
   arrowLabelFontStack,
   exportFontFamily,
   resolveFontStack,
+  resolveFinish,
   isSelectionMode,
   alignmentCoordinates,
   buildElementIndex,
@@ -484,10 +485,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     if (!elementIndex) return out;
     const grid = gridTracker.gridFor(drawnElements);
     for (const el of drawnElements) {
-      if (el.type === 'arrow') out.set(el.id, arrowViewGeometry(el, elementIndex, grid));
+      if (el.type === 'arrow')
+        out.set(
+          el.id,
+          arrowViewGeometry(el, elementIndex, grid, resolveFinish(el.finish, tabFinish)),
+        );
     }
     return out;
-  }, [drawnElements, elementIndex, gridTracker]);
+  }, [drawnElements, elementIndex, gridTracker, tabFinish]);
   // A drag in progress, ours or a collaborator's (docs/specs/008-canvas/drag-preview.md): the elements
   // it changes are drawn from it, and only the arrows depending on them are re-derived; the maps
   // above stay as built from the document.
@@ -527,7 +532,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       for (const id of ids) {
         const arrow = index.get(id);
         if (!arrow || arrow.type !== 'arrow') continue;
-        geometry.set(id, previewArrowGeometry(arrow, index, grid, overlay));
+        geometry.set(id, previewArrowGeometry(arrow, index, grid, overlay, tabFinish));
         if (arrow.label) {
           const base = arrowLabels.renderOf(id);
           const layout = arrowLabels.draftLayout(arrow, arrow.label, virtual);
@@ -542,7 +547,16 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       }
     }
     return { shown, geometry, labels };
-  }, [overlay, ordered, elementIndex, arrowLinks, gridTracker, drawnElements, arrowLabels]);
+  }, [
+    overlay,
+    ordered,
+    elementIndex,
+    arrowLinks,
+    gridTracker,
+    drawnElements,
+    arrowLabels,
+    tabFinish,
+  ]);
   const shownOrder = preview?.shown ?? ordered;
   // The grips layer's portal hosts (docs/specs/008-canvas/canvas-and-palette.md "Resize"), set once
   // it mounts; every element view portals its grips into them.

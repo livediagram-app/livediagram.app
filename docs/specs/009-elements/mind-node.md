@@ -197,6 +197,35 @@ direction, asks the shared chooser (`bestAnchorTowards`). A re-layout
 (tidy growth, Tidy Map, a flow change) re-anchors the map's connectors by the
 same rule.
 
+### In the Professional finish
+
+The Professional finish ([Finish](../008-canvas/finish.md)) draws a map's connectors right-angled, and neat:
+
+- **Tree and balanced:** every connector off one parent leaves the same point on the parent's side face,
+  runs out to one shared **trunk** halfway across the gap between the parent and its nearest child on that
+  side, runs along the trunk, and turns once more straight into the child's facing side. A column of siblings
+  reads as one bracket, with no jogs at the card edges and no diagonals. A child level with its parent is
+  one straight run. A child dragged further out still turns on the trunk, so the bracket holds.
+- **Downward:** every connector leaves the middle of the parent's bottom, drops to one horizontal **bus**
+  halfway down the gap to the nearest child, runs along it, and drops straight into the middle of each
+  child's top. A child directly below is one straight drop.
+- **Bubble:** straight spokes from face to face. A bubble map fans every way, so a right angle there would
+  cross its own branches; a straight spoke is the neat line.
+
+This is how the finish draws the map, not what is stored: the connectors stay curved, so switching the tab
+back to Flexible or Sketch shows the curves, and growth under Professional copies the curved look and is
+drawn the same right-angled way. Only a connector still in the map's **default look** (curved, never bowed
+or bent by hand) is routed. One that was given another style (straight, angled), a bow or a bend keeps it,
+because a pick on an element wins in every finish; one given its own Flexible finish keeps its curve, which
+is how to keep a curve on a Professional tab. A connector whose faces were re-pinned so they no longer face
+each other is drawn as a plain one-elbow angled line.
+
+A routed connector has no bow, elbow or bend handles, and dragging its line does not bend it: the shape is
+the map's, worked out from where the nodes are, so it follows every move. Its ends start and end exactly on
+the faces rather than in the fan that spreads arrows sharing an anchor, which is what lets siblings share one
+trunk. Routing is the same on the canvas and in every export, and costs one pass over the board per render
+(a 2,000-node map routes in about 10 to 25 ms of CPU, about what the fan costs in Flexible).
+
 ## Keyboard
 
 Tab and Enter fire off the **selected** node, with no label editor open, and

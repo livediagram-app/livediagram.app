@@ -477,6 +477,7 @@ export * from './animation-membership';
 export * from './arrow-avoidance';
 export * from './nearest-towards';
 export * from './mind-flow';
+export * from './mind-connector-route';
 export * from './mind-map';
 export * from './mind-layout';
 export * from './mind-grow';
