@@ -1,5 +1,5 @@
 import type { BorderStroke, BorderStyle } from './border-style';
-import { isLightColor, shade, tint } from './colors';
+import { canvasSurface, isLightColor, shade, tint } from './colors';
 import type { Element } from './index';
 import type { ThemeDefinition } from './themes';
 
@@ -127,6 +127,11 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
   // A readable label colour for a filled tile: white on a dark fill, a deep
   // shade of the fill on a light one.
   const labelOn = (fill: string) => (isLightColor(fill) ? shade(fill, 0.6) : '#ffffff');
+  // A theme's dark half (docs/specs/011-theme/light-and-dark.md) takes the quiet tiers toward its canvas instead of
+  // toward white: a pale card on a dark canvas glares.
+  const dark = canvasSurface(theme.backgroundColor) === 'dark';
+  const quiet = (c: string, amount: number) => (dark ? shade(c, amount) : tint(c, amount));
+  const ink = (c: string, amount: number) => (dark ? tint(c, amount) : shade(c, amount));
 
   const pool: ShapeColorPreset[] = [];
   // ── Theme: the accent, quiet → loud ──
@@ -146,9 +151,9 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
       pool.push({
         id: `branch-${i}`,
         name: 'Branch',
-        fill: tint(entry.stroke, 0.8),
+        fill: quiet(entry.stroke, 0.8),
         stroke: entry.stroke,
-        text: shade(entry.stroke, 0.45),
+        text: ink(entry.stroke, 0.45),
         borderStroke: 'medium',
         borderStyle: 'solid',
       });
@@ -158,18 +163,18 @@ export function shapeColorPresets(theme: ThemeDefinition): ShapeColorPreset[] {
     {
       id: 'soft',
       name: 'Soft',
-      fill: tint(accent, 0.85),
-      stroke: tint(accent, 0.4),
-      text: shade(accent, 0.5),
+      fill: quiet(accent, 0.85),
+      stroke: dark ? accent : tint(accent, 0.4),
+      text: ink(accent, 0.5),
       borderStroke: 'thin',
       borderStyle: 'solid',
     },
     {
       id: 'tinted',
       name: 'Tinted',
-      fill: tint(accent, 0.6),
+      fill: quiet(accent, 0.6),
       stroke: accent,
-      text: shade(accent, 0.45),
+      text: ink(accent, 0.6),
       borderStroke: 'medium',
       borderStyle: 'solid',
     },

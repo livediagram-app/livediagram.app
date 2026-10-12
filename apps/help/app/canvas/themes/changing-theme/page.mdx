@@ -6,13 +6,13 @@ import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
 export const metadata = helpMetadata({
   title: 'Changing the Theme',
   description:
-    'Open the Tab Style dialog, pick a look or browse themes by category, and apply one live to recolour the whole tab.',
+    'Open the Tab Style dialog, preview a look or a theme by hovering it, and click to recolour the whole tab.',
   path: '/help/canvas/themes/changing-theme/',
 });
 
 <ArticleLayout
   title="Changing the Theme"
-  description="Use the Tab Style dialog to browse themes by category and apply one live to the active tab."
+  description="Use the Tab Style dialog to preview looks and themes on the canvas and apply one to the active tab."
   categoryTitle="Canvas"
   categorySlug="canvas"
   parentArticle={{ title: "Themes", slug: "themes" }}
@@ -21,7 +21,7 @@ export const metadata = helpMetadata({
 
 Changing a diagram's look is a matter of picking a new theme and watching the canvas update. livediagram brings the theme picker front and centre in a dedicated dialog, so there is plenty of room to compare looks.
 
-<Figure caption="The Colours panel of the Tab Style dialog, with a card for each category and Reset elements to theme beneath.">
+<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
   <LookAndFeelTheme />
 </Figure>
 
@@ -31,43 +31,45 @@ Click the **Theme & canvas** button in the bottom-right corner of the editor, be
 
 The button only appears for people who can edit the tab, so it is missing for a Participant or a Viewer on a shared link, in an embed, in zen mode, and in [Draw mode](/help/canvas/draw-mode/).
 
-The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies live to the active tab, and closing it (with the X, the Escape key, or a click outside it) simply dismisses it without rolling anything back. Undo takes a theme change back like any other edit.
+The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies to the active tab as you click, and closing it (with the X, the Escape key, or a click outside it) simply dismisses it without rolling anything back. Undo takes a theme change back like any other edit. **Show Me** in the dialog's title row takes you on a short tour of it.
+
+## Hover to Preview
+
+With a mouse, hover any option in the dialog (a look, a theme, a finish, a typeface, a text size or a pattern) and the canvas behind it shows the tab in that option, easing the colours across. Move away and the tab goes back to how it was; nothing is saved until you click. On a touch screen there is no hover, so a tap applies the option straight away (and Undo takes it back).
 
 ## Picking a Look
 
-A look restyles the whole tab in one click. Each one sets four things together: the theme, the [finish](/help/canvas/finish/), the tab font and the canvas pattern. There are six: **Everyday**, **Whiteboard**, **Graph Paper**, **Boardroom**, **Notebook** and **Midnight**. Each card shows a small sample diagram drawn in that look, with a line on what it is for.
+A look restyles the whole tab in one click. Each one sets four things together: the theme, the [finish](/help/canvas/finish/), the tab font and the canvas pattern. There are twelve, six to a page of the carousel: **Everyday**, **Whiteboard**, **Graph Paper**, **Boardroom**, **Notebook**, **Midnight**, **Seaside**, **Editorial**, **Engineer**, **Workshop**, **Garden** and **Studio**. Each card shows a small sample diagram drawn in that look, with a line on what it is made of.
 
-Picking a look counts as one change, so a single undo takes it back. Elements that carry their own finish or font keep them. A look's card stays selected while the tab still matches it; change any of the four settings yourself and no look is selected, because the tab now has its own mix.
+Picking a look counts as one change, so a single undo takes it back. Elements that carry their own finish or font keep them. A look's card stays selected while the tab still matches it. Change any of the four settings yourself and the tab has its own mix: a **Current** card then leads the carousel, showing the tab as it is.
 
 ## Fine-tuning
 
-Below the looks, **Fine-tune** lists four rows, each showing its current setting: **Colours** (the theme), **Finish**, **Text** (the tab's font and default text size) and **Canvas** (the backdrop pattern). Press a row to open that panel in place, and **Back** to return to the home. The **Canvas** panel holds the [backdrop pattern and colours](/help/canvas/the-canvas/changing-the-background/), the **Text** panel the [tab's default font](/help/canvas/text-and-fonts/choosing-fonts/), and the **Finish** panel the tab's [finish](/help/canvas/finish/). The rest of this article covers the **Colours** panel, where you pick a theme on its own.
+Below the looks, **Fine-tune** lists four rows, each showing its current setting: **Colours** (the theme), **Finish**, **Text** (the tab's font and text size) and **Canvas** (the backdrop pattern). Press a row to open that panel in place; the bar across its top (**Tab Style**, with the panel's name beside it) takes you back to the home. The **Canvas** panel holds the [backdrop pattern and colours](/help/canvas/the-canvas/changing-the-background/), the **Text** panel the [tab's font and text size](/help/canvas/text-and-fonts/choosing-fonts/), and the **Finish** panel the tab's [finish](/help/canvas/finish/). The rest of this article covers the **Colours** panel, where you pick a theme on its own.
 
-## Browsing by Category
+## Picking a Theme
 
-The Colours panel opens on an overview: a **Default** quick-pick plus a card for each category (**Formal**, **Cool**, **Warm**, **Dark** and **Multi-colour**), alongside a **Custom** category for your own [saved themes](/help/canvas/themes/custom-themes/). If the tab already uses a theme from a category, the panel opens straight into that category.
+The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the rest of the twenty-four built-in themes, then your own [custom themes](/help/canvas/themes/custom-themes/) and a **New theme** card. It opens on the page holding the tab's current theme; the arrows or the page dots move between pages.
 
 <Step n={1}>
-  Click a category to drill into its themes. **All themes** at the top steps back out.
+  Hover a theme to preview it on the canvas.
 </Step>
 
 <Step n={2}>
-  Click a theme to apply it live. Double-click a theme to apply it and close the dialog in one move.
+  Click a theme to apply it. Double-click a theme to apply it and close the dialog in one move.
 </Step>
 
-The themes inside a category are shuffled each time you open the dialog, so different ones greet you first. While you browse the Dark themes in light chrome (or a light category in dark chrome), a **Turn on Dark mode** (or **Turn on Light mode**) switch below the grid matches the editor's own appearance to what you are looking at.
+Every theme works in light and dark mode: each person sees the tab in their own [appearance's](/help/tools/dark-mode/) version of the theme, so you can pick any theme without thinking about who works in which mode.
 
 To build on a built-in theme, hover its card and press **Copy**: the theme builder opens with its colours filled in, ready to save as a [custom theme](/help/canvas/themes/custom-themes/).
 
 ## Recolouring Elements
 
-Applying a theme recolours the tab's backdrop and the elements on it, but keeps colours you have hand-set, so deliberate customisations survive the switch. That goes for the backdrop too: a canvas colour, pattern or pattern opacity you chose yourself stays put. Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. Sticky notes keep their own note colours.
-
-If you want a clean slate, **Reset elements to theme** at the bottom of the Colours panel repaints every element on the tab to the theme's defaults, overriding your customisations. A shape carrying a [style preset](/help/palette/shapes/style-presets/) keeps its preset, redrawn in the theme's colours.
+Applying a theme recolours the tab's backdrop and the elements on it, but keeps colours you have hand-set, so deliberate customisations survive the switch. That goes for the backdrop too: a canvas colour, pattern or pattern opacity you chose yourself stays put. Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. Sticky notes keep their own note colours. A shape carrying a [style preset](/help/palette/shapes/style-presets/) moves to the new theme's version of that preset, and **Reset to Default** in a shape's presets brings a hand-coloured shape back to the theme's colours.
 
 <Tip>
-  Use double-click to apply and close once you have found the theme you want, and single clicks
-  while you are still comparing options.
+  Hover to compare themes without changing anything, then double-click the one you want to apply it
+  and close the dialog.
 </Tip>
 
 </ArticleLayout>

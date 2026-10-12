@@ -67,7 +67,12 @@ export function computeFitBelow(
   maxZoom: number = FIT_TO_SCREEN_MAX_AT_FIT,
 ): { zoom: number; offset: Offset } {
   const inset = Math.max(0, Math.min(insetTop, rect.height / 2));
-  const { zoom } = computeFitToScreen({ ...rect, height: rect.height - inset }, bbox, maxZoom);
+  // Fields read one by one, never spread: a DOMRect's are prototype getters a spread drops.
+  const { zoom } = computeFitToScreen(
+    { width: rect.width, height: rect.height - inset },
+    bbox,
+    maxZoom,
+  );
   return {
     zoom,
     offset: {

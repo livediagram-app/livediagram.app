@@ -206,3 +206,19 @@ describe('topChromeInset (fit below the Palette strip)', () => {
     expect(topChromeInset({ top: 50, bottom: 900 }, { top: 0, bottom: 40 })).toBe(0);
   });
 });
+
+describe('computeFitBelow with a DOMRect-like rect', () => {
+  it('reads getter fields (a spread drops them and the zoom went NaN)', () => {
+    const rect = Object.create({
+      get width() {
+        return 1000;
+      },
+      get height() {
+        return 800;
+      },
+    }) as { width: number; height: number };
+    const { zoom, offset } = computeFitBelow(rect, { x: 0, y: 0, width: 400, height: 300 }, 60);
+    expect(Number.isFinite(zoom)).toBe(true);
+    expect(Number.isFinite(offset.x) && Number.isFinite(offset.y)).toBe(true);
+  });
+});

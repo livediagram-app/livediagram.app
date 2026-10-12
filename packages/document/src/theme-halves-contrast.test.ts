@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from './colors';
-import { THEME_LINE_CONTRAST, THEME_TEXT_CONTRAST, themeHalf } from './theme-halves';
+import { canvasSurface, contrastRatio } from './colors';
+import {
+  THEME_LINE_CONTRAST,
+  THEME_TEXT_CONTRAST,
+  themeColourMap,
+  themeHalf,
+} from './theme-halves';
+import { shapeColorPresets } from './theme-presets';
 import { THEMES } from './themes-data';
 import type { Appearance, ThemeDefinition } from './themes';
 
@@ -39,4 +45,21 @@ describe('every theme is accessible in both halves', () => {
       });
     }
   }
+});
+
+describe('colour presets follow the viewer’s half', () => {
+  const mono = THEMES.find((t) => t.id === 'mono')!;
+  const softIn = (a: Appearance) =>
+    shapeColorPresets(themeHalf(mono, a)).find((p) => p.id === 'soft')!;
+
+  it('a dark half derives its quiet tiers toward the canvas, not white', () => {
+    expect(canvasSurface(softIn('dark').fill)).toBe('dark');
+    expect(canvasSurface(softIn('light').fill)).toBe('light');
+  });
+
+  it('a Soft shape written in light draws as dark’s Soft for a dark viewer', () => {
+    const map = themeColourMap(mono, 'dark');
+    expect(map.get(softIn('light').fill.toLowerCase())).toBe(softIn('dark').fill);
+    expect(map.get(softIn('light').text.toLowerCase())).toBe(softIn('dark').text);
+  });
 });

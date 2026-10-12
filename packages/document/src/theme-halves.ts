@@ -6,6 +6,7 @@ import { canvasSurface, contrastRatio } from './colors';
 import { hexOklch, oklchHex } from './pen-colours';
 import { DEFAULT_SCHEME_ID, defaultScheme, type Appearance, type ThemeDefinition } from './themes';
 import type { ShapeKind } from './index';
+import { shapeColorPresets } from './theme-presets';
 
 type Role = 'background' | 'pattern' | 'fill' | 'stroke' | 'text';
 
@@ -161,6 +162,21 @@ export function themeColourMap(
       const key = from.toLowerCase();
       if (!map.has(key)) map.set(key, to);
     });
+  }
+  // Then the theme's colour presets (Soft, Tinted, a branch card, ...), each mapped to the same preset in the
+  // target half, so a preset-styled shape follows the viewer's half too.
+  const targetPresets = new Map(
+    shapeColorPresets(themeHalf(theme, appearance)).map((p) => [p.id, p] as const),
+  );
+  for (const half of [theme, themeHalf(theme, 'light'), themeHalf(theme, 'dark')]) {
+    for (const p of shapeColorPresets(half)) {
+      const to = targetPresets.get(p.id);
+      if (!to) continue;
+      for (const k of ['fill', 'stroke', 'text'] as const) {
+        const key = p[k].toLowerCase();
+        if (!map.has(key)) map.set(key, to[k]);
+      }
+    }
   }
   MAPS.set(theme, { ...MAPS.get(theme), [appearance]: map });
   return map;

@@ -269,8 +269,11 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   }, [deps.activeTab.elements, deps]);
 
   const fitToScreen = useCallback(() => {
-    const rect = canvasMainRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    const box = canvasMainRef.current?.getBoundingClientRect();
+    if (!box) return;
+    // Plain numbers: a DOMRect's fields are prototype getters, so spreading one (computeFitBelow does) loses them
+    // and the zoom comes out NaN.
+    const rect = { width: box.width, height: box.height, top: box.top, bottom: box.bottom };
     const { activeTab } = depsRef.current;
     const boxedIds = new Set(activeTab.elements.filter(isBoxed).map((el) => el.id));
     if (boxedIds.size === 0) {
