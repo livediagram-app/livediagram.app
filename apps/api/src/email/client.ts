@@ -46,6 +46,11 @@ type EmailMessage = {
   unsubscribeUrl?: string;
 };
 
+// The longest a send may wait on Resend, which answers in well under a second. Sends run in the daily
+// email cron and in waitUntil after a response: a hung call held the whole cron batch behind it.
+// A timed-out send is a failed send, logged like any other. Safe range: 3 s to 30 s.
+export const EMAIL_SEND_TIMEOUT_MS = 10_000;
+
 export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: boolean }> {
   if (!emailEnabled(env)) return { sent: false };
   try {
@@ -65,6 +70,7 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
         html: msg.html,
         ...(msg.unsubscribeUrl ? { headers } : {}),
       }),
+      signal: AbortSignal.timeout(EMAIL_SEND_TIMEOUT_MS),
     });
     // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side
     // because nothing about an email reaches a browser: the send happens in a

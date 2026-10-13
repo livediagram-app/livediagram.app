@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import { chatCompletions, chatCompletionsUrl, providerOf } from './ai-client';
+import {
+  AI_PROVIDER_TIMEOUT_MS,
+  chatCompletions,
+  chatCompletionsUrl,
+  providerOf,
+} from './ai-client';
 import { GOOGLE_BASE_URL } from './ai-provider';
 import type { Env } from './types';
 
@@ -48,6 +53,41 @@ describe('chatCompletions', () => {
   it('hands the provider’s response back untouched, failures included', async () => {
     globalThis.fetch = vi.fn(async () => new Response('nope', { status: 429 })) as typeof fetch;
     expect((await chatCompletions(provider, {})).status).toBe(429);
+  });
+});
+
+// A provider that never starts answering is abandoned, once, rather than holding the request open; one
+// that has started is never cut, however long its stream runs.
+describe('chatCompletions timeout', () => {
+  // A fetch that answers only when its signal aborts, as a hung provider would.
+  const hanging = vi.fn(
+    (_url: string, init: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        init.signal!.addEventListener('abort', () => reject(init.signal!.reason));
+      }),
+  );
+
+  it('gives up on a provider that never answers, without a second wait', async () => {
+    vi.useFakeTimers();
+    hanging.mockClear();
+    globalThis.fetch = hanging as unknown as typeof fetch;
+    const call = chatCompletions(provider, {});
+    const settled = expect(call).rejects.toMatchObject({ name: 'TimeoutError' });
+    await vi.advanceTimersByTimeAsync(AI_PROVIDER_TIMEOUT_MS);
+    await settled;
+    expect(hanging).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves an answer that has started alone', async () => {
+    vi.useFakeTimers();
+    let signal: AbortSignal | undefined;
+    globalThis.fetch = vi.fn(async (_url: string, init: RequestInit) => {
+      signal = init.signal ?? undefined;
+      return new Response('{}', { status: 200 });
+    }) as unknown as typeof fetch;
+    await chatCompletions(provider, {});
+    await vi.advanceTimersByTimeAsync(AI_PROVIDER_TIMEOUT_MS * 2);
+    expect(signal?.aborted).toBe(false);
   });
 });
 

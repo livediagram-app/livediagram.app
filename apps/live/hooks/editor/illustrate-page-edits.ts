@@ -45,7 +45,6 @@ import {
   type Tab,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
-import { buildPageLayoutOver } from '@livediagram/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
@@ -85,7 +84,8 @@ export type IllustratePageEdits = {
   canMove: (pageId: string, by: -1 | 1) => boolean;
   // Puts a layout onto the page in place of everything on it (the panel asks first when there is
   // anything to replace).
-  applyLayout: (pageId: string, layout: PageLayoutId) => void;
+  // Resolves once the layout is placed (its builders load on the first apply).
+  applyLayout: (pageId: string, layout: PageLayoutId) => Promise<void>;
   // How many elements are on the page.
   contentCount: (pageId: string) => number;
   // A fill hovered in the panel: what is on the page drawn re-inked as the press would re-ink it
@@ -442,9 +442,12 @@ export function illustratePageEdits({
 
   // Laid out in the page's content box (the page less its margins), the page's own words and
   // pictures carried into it (docs/specs/007-editor/illustrate-pages.md "Content carries over"),
-  // one tab edit.
-  const applyLayout = (pageId: string, layoutId: PageLayoutId) => {
+  // one tab edit. The layout builders (every page layout set) load on the first apply rather than
+  // with the editor: the pickers that offer a layout load them already to draw their thumbnails,
+  // so by the time one is applied the module is in hand.
+  const applyLayout = async (pageId: string, layoutId: PageLayoutId): Promise<void> => {
     if (refusedLocked(pageId, 'layout')) return;
+    const { buildPageLayoutOver } = await import('@livediagram/templates/page-layout-build');
     track('Tab', 'Changed', 'PageLayout');
     commitTab((t) => {
       const pages = layOutIllustratePages(illustratePagesOf(t));

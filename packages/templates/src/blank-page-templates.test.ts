@@ -4,7 +4,8 @@ import { BLANK_PAGE_TEMPLATE_KINDS, blankPageTemplateOverrides } from './blank-p
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
 import { isBlankTemplate, templateEditorMode } from './template-modes';
-import { templateCanvasOverrides, untitledNameForTemplate } from './templates';
+import { templateCanvasOverrides } from './template-canvas-overrides';
+import { untitledNameForTemplate } from './templates';
 
 // docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind".
 const KINDS = Object.keys(BLANK_PAGE_TEMPLATE_KINDS) as (keyof typeof BLANK_PAGE_TEMPLATE_KINDS)[];

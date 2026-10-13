@@ -2649,3 +2649,25 @@ describe('DocumentRoom agent presence (docs/specs/024-agents/agent-presence.md)'
     expect(woken.agents.live().map((r) => r.tokenId)).toEqual(['tok_1']);
   });
 });
+
+// docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive": the runtime answers the client's ping
+// itself, so a keepalive never wakes the room.
+describe('DocumentRoom keepalive', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('asks the runtime to answer ping with pong', () => {
+    class Pair {
+      request: string;
+      response: string;
+      constructor(request: string, response: string) {
+        this.request = request;
+        this.response = response;
+      }
+    }
+    vi.stubGlobal('WebSocketRequestResponsePair', Pair);
+    const state = makeState();
+    const setWebSocketAutoResponse = vi.fn();
+    new DocumentRoom({ ...state, setWebSocketAutoResponse } as unknown as DurableObjectState);
+    expect(setWebSocketAutoResponse).toHaveBeenCalledWith(new Pair('ping', 'pong'));
+  });
+});

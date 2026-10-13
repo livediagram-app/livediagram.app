@@ -387,7 +387,7 @@ export function IllustratePages({
                   <PageLayoutsButton
                     page={page}
                     labelled={labelled}
-                    onApply={(layout) => edit.applyLayout(page.id, layout)}
+                    onApply={(layout) => void edit.applyLayout(page.id, layout)}
                     onChangeTheme={onOpenTheme}
                     onPreview={(layout) =>
                       view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
@@ -494,7 +494,7 @@ export function IllustratePages({
               <EmptyPageLayouts
                 page={page}
                 zoom={zoom}
-                onApply={(layout) => edit.applyLayout(page.id, layout)}
+                onApply={(layout) => void edit.applyLayout(page.id, layout)}
                 onChangeTheme={onOpenTheme}
                 onHide={() => {
                   track('UI', 'Closed', 'EmptyPageLayouts');

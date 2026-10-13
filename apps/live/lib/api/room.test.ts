@@ -3,7 +3,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
-import { connectRoom, ROOM_SEQUENCE_ACK_TIMEOUT_MS, roomQueryString } from './room';
+import {
+  connectRoom,
+  ROOM_KEEPALIVE_IDLE_MS,
+  ROOM_KEEPALIVE_TIMEOUT_MS,
+  ROOM_SEQUENCE_ACK_TIMEOUT_MS,
+  roomQueryString,
+} from './room';
 
 describe('roomQueryString (realtime auth params, docs/specs/014-identity/auth-and-guest-access.md + docs/specs/013-workspace/share-password.md)', () => {
   it('maps each identifier to its short key', () => {
@@ -547,5 +553,108 @@ describe('connectRoom when the document is trashed', () => {
 
     expect(onDocumentTrashed).not.toHaveBeenCalled();
     expect(ClosingSocket.all).toHaveLength(2);
+  });
+});
+
+// docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive": a socket that dies without a close event
+// is found by an unanswered ping and reconnected; quiet alone never drops one.
+describe('connectRoom keepalive', () => {
+  class Socket {
+    static OPEN = 1;
+    static all: Socket[] = [];
+    readyState = 0;
+    sent: string[] = [];
+    closed = false;
+    private listeners: Record<string, ((e: { data?: string; code?: number }) => void)[]> = {};
+    url: string;
+    constructor(url = '') {
+      this.url = url;
+      Socket.all.push(this);
+    }
+    addEventListener(type: string, fn: (e: { data?: string }) => void) {
+      (this.listeners[type] ??= []).push(fn);
+    }
+    send(data: string) {
+      this.sent.push(data);
+    }
+    close() {
+      this.closed = true;
+      this.readyState = 2;
+    }
+    fire(type: string, e: { data?: string; code?: number } = {}) {
+      if (type === 'open') this.readyState = 1;
+      for (const fn of this.listeners[type] ?? []) fn(e);
+    }
+    pings() {
+      return this.sent.filter((d) => d === 'ping').length;
+    }
+  }
+  beforeEach(() => {
+    Socket.all = [];
+    vi.stubGlobal('WebSocket', Socket);
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+  const connect = () =>
+    connectRoom('d1', { id: 'me', name: 'Me', color: '#000' }, { onPresence() {}, onOp() {} });
+
+  it('pings an idle socket, and an answer keeps it', () => {
+    const room = connect();
+    const s = Socket.all[0]!;
+    s.fire('open');
+    vi.advanceTimersByTime(ROOM_KEEPALIVE_IDLE_MS);
+    expect(s.pings()).toBe(1);
+    s.fire('message', { data: 'pong' });
+    vi.advanceTimersByTime(ROOM_KEEPALIVE_TIMEOUT_MS * 2);
+    expect(s.closed).toBe(false);
+    expect(Socket.all).toHaveLength(1);
+    room.close();
+  });
+
+  it('sends no ping while traffic arrives', () => {
+    const room = connect();
+    const s = Socket.all[0]!;
+    s.fire('open');
+    for (let i = 0; i < 10; i++) {
+      vi.advanceTimersByTime(ROOM_KEEPALIVE_IDLE_MS / 2);
+      s.fire('message', { data: JSON.stringify({ kind: 'presence', participants: [] }) });
+    }
+    expect(s.pings()).toBe(0);
+    room.close();
+  });
+
+  it('drops a socket whose ping goes unanswered, and reconnects', () => {
+    const room = connect();
+    const s = Socket.all[0]!;
+    s.fire('open');
+    vi.advanceTimersByTime(ROOM_KEEPALIVE_IDLE_MS + ROOM_KEEPALIVE_TIMEOUT_MS + 5_000);
+    expect(s.closed).toBe(true);
+    vi.advanceTimersByTime(1_000);
+    expect(Socket.all).toHaveLength(2);
+    // The dead socket's own close event, when it finally comes, starts nothing more.
+    s.fire('close', { code: 1006 });
+    vi.advanceTimersByTime(1_000);
+    expect(Socket.all).toHaveLength(2);
+    room.close();
+  });
+
+  it('never drops a quiet socket whose pings are answered, however slow its timers run', () => {
+    const room = connect();
+    const s = Socket.all[0]!;
+    s.fire('open');
+    // A background tab: the browser runs the tick once a minute. The clock jumps between ticks with no tick in
+    // between, and each ping's pong arrives at once, long before the next (late) tick looks.
+    for (let i = 0; i < 5; i++) {
+      vi.setSystemTime(Date.now() + 55_000);
+      vi.advanceTimersByTime(5_000);
+      if (s.sent.at(-1) === 'ping') s.fire('message', { data: 'pong' });
+    }
+    expect(s.pings()).toBeGreaterThan(1);
+    expect(s.closed).toBe(false);
+    expect(Socket.all).toHaveLength(1);
+    room.close();
   });
 });

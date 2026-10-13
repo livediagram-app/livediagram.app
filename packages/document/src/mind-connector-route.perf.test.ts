@@ -24,20 +24,27 @@ const link = (from: string, to: string): ArrowElement => ({
   ...MIND_CONNECTOR_LOOK,
 });
 
-// The fastest of a few passes, as the sketch budgets take: the first pass pays the JIT's warm-up,
-// which on a CI runner under coverage cost 112 ms for work that runs in under 10 ms warm. The budget
-// still sits far below what a quadratic routing pass would take on these sizes.
+// Untimed warm-up passes, then the fastest of a few timed ones. `cpuUsage` is the whole process, so
+// while V8 is still compiling and collecting on its background threads a pass is billed for them: under
+// coverage a pass that runs in 7 ms of wall time measured 30 ms of CPU, and on a CI runner the third
+// pass still came in at 105 to 112 ms. Once warm it is 7 ms locally under coverage. The budget still
+// sits far below what a quadratic routing pass would take on these sizes.
+const WARM_UP_PASSES = 3;
 const PASSES = 3;
 
+function routeOnce(els: Element[]): void {
+  const index = buildElementIndex(els);
+  for (const el of els) if (el.type === 'arrow') finishArrowEnds(el, index, 'professional');
+}
+
 function routeAll(els: Element[]): number {
+  for (let pass = 0; pass < WARM_UP_PASSES; pass++) routeOnce(els);
   let best = Infinity;
-  for (let pass = 0; pass < PASSES; pass++) {
-    const ms = cpuMsOf(() => {
-      const index = buildElementIndex(els);
-      for (const el of els) if (el.type === 'arrow') finishArrowEnds(el, index, 'professional');
-    });
-    best = Math.min(best, ms);
-  }
+  for (let pass = 0; pass < PASSES; pass++)
+    best = Math.min(
+      best,
+      cpuMsOf(() => routeOnce(els)),
+    );
   return best;
 }
 
