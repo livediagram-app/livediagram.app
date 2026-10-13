@@ -915,8 +915,32 @@ swipe, with no X.
   less margins of 7% of its short side), so it fits any size and orientation.
 - **A press places the layout straight away**, never asking first, empty page or not: onto a page
   with content it removes every element whose centre is on the page (and arrows pinned to one,
-  and in turn arrows riding a removed arrow), then places the layout. It is one change, one undo
-  step, so Undo brings the page's content back.
+  and in turn arrows riding a removed arrow), then places the layout with **what was written
+  there carried into it** (below). It is one change, one undo step, so Undo brings the page's
+  content back.
+- **Content carries over** (`carryPageContent`): the words, pictures and figures a person put on
+  the page move into the new layout's matching places, each taking its new place's position, size
+  and look, so changing a page's layout never means retyping it. The same holds on slide and logo
+  pages (a wordmark's name carries into the next wordmark).
+  - **Only what was written carries.** Placeholder words from any layout ("Your big headline"), an
+    empty image placeholder, or a chart, stat row or icon left as a layout made it, stay behind:
+    switching between untouched layouts shows each one's own placeholders.
+  - **Words go by role.** The page's text sorts into its **title** (its most prominent words), its
+    **large** lines (a subtitle, a lead, a statement: type at least as large as the large text
+    size) and its **body** (the rest), each in reading order (top to bottom, then left to right).
+    The title lands in the new title, the first large line in the first large line, and so on.
+    **Figures** ("73%", "12k", "$4.2M", "2026") are a role of their own and land only in figures.
+    Words left over once their role is full take the nearest role that still has room (a title
+    then large then body; large then body then title; body then large then title).
+  - **Pictures go to pictures**, the largest first into the largest place, filling it (cropped).
+  - **The same element carries its data**: a stat row's stats, a chart's figures, a callout's
+    title and words, a progress bar's value, a checklist's items, an icon's icon, each into the
+    next element of the same kind in reading order.
+  - **Words fit their new place**: carried words keep the place's type, shrinking (never growing)
+    only when they would overflow it, and never below 40% of the place's own size.
+  - Whatever finds no place goes with the rest of the page's content (Undo brings it back).
+  - An agent's `layout` change (the MCP tools) stays a plain replace: an agent writes its own
+    words afterwards, by element id.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
 - **The Layout button**: an infographic or slide page's title bar always holds a **Layout**
@@ -944,9 +968,10 @@ swipe, with no X.
   or in zen, or when the page is too small on screen to hold it.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
-  page's own content is hidden meanwhile (left out of the page clip), so the two never mix. It is
-  a picture only: nothing is placed and nothing enters the history; leaving the tiles (or closing
-  the panel) takes it away.
+  page's own content is hidden meanwhile (left out of the page clip), so the two never mix. The
+  preview already holds the carried content (the page's words and pictures in their new places),
+  so it shows exactly what a press lands. It is a picture only: nothing is placed and nothing
+  enters the history; leaving the tiles (or closing the panel) takes it away.
 - **Tiles are the real layout**: each tile draws the layout as built for this page's size and
   orientation and rendered as it lands: in the tab's theme and font, its placeholder words, icons
   and charts, on the page's own background, through the same renderer the exports use. Only

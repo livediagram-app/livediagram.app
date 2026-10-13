@@ -24,11 +24,21 @@ const link = (from: string, to: string): ArrowElement => ({
   ...MIND_CONNECTOR_LOOK,
 });
 
+// The fastest of a few passes, as the sketch budgets take: the first pass pays the JIT's warm-up,
+// which on a CI runner under coverage cost 112 ms for work that runs in under 10 ms warm. The budget
+// still sits far below what a quadratic routing pass would take on these sizes.
+const PASSES = 3;
+
 function routeAll(els: Element[]): number {
-  return cpuMsOf(() => {
-    const index = buildElementIndex(els);
-    for (const el of els) if (el.type === 'arrow') finishArrowEnds(el, index, 'professional');
-  });
+  let best = Infinity;
+  for (let pass = 0; pass < PASSES; pass++) {
+    const ms = cpuMsOf(() => {
+      const index = buildElementIndex(els);
+      for (const el of els) if (el.type === 'arrow') finishArrowEnds(el, index, 'professional');
+    });
+    best = Math.min(best, ms);
+  }
+  return best;
 }
 
 describe('mind connector routing cost', () => {
