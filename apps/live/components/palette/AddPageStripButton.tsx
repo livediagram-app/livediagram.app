@@ -37,6 +37,8 @@ export function AddPageStripButton({
           aria-expanded={open}
           // A press on the + itself toggles the popover rather than counting as outside it.
           data-add-page-trigger
+          // The Illustrate tour's Add a Page step, while the + after the last page is out of the window.
+          data-tour-id="add-page-strip"
           onClick={() => setOpen((o) => !o)}
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition focus-visible:outline-2 focus-visible:outline-brand-600 ${
             open ? TOOLBAR_CONTROL_PRESSED : TOOLBAR_CONTROL_REST

@@ -48,7 +48,13 @@ import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { usePageImageSources } from './page-image-access';
 import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
-import { LogoShowMeButton, LogoTourStage, useLogoTour } from '@/components/tour/LogoTour';
+import {
+  PAGE_TOUR_HELP,
+  PageShowMeButton,
+  PageTourStage,
+  usePageTour,
+} from '@/components/tour/PageTour';
+import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { AddPageButton } from './AddPageButton';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
@@ -174,14 +180,12 @@ export function IllustratePages({
     [opened],
   );
   const toggle = (id: string) => setOpened((o) => (o?.id === id ? null : { id, tab: 'page' }));
-  // Show Me on a logo page (logo-pages.md "Show Me"): it reopens this page's panel on Layouts, afresh, for its first step.
-  const logoTour = useLogoTour(
-    {
-      openLayouts: (id) => setOpened({ id, tab: 'layouts', seq: Date.now() }),
-      closePanel: () => setOpened(null),
-    },
-    (id) => !!edit && pages.some((p) => p.id === id),
+  // Show Me on a page (illustrate-tour.md, show-me.md): its kind's track, ended with its page (gone or locked).
+  const pageTour = usePageTour(
+    (id) => !!edit && pages.some((p) => p.id === id && p.locked !== true),
   );
+  // A tour opens a page's panel on the tab a step is about, afresh, or closes it (lib/page-panel-request.ts).
+  useFollowPagePanelRequests(setOpened);
   // The page toolbar's Article Style button opens the page's panel on Style.
   const styleRequest = useStylePanelRequest();
   const [seenStyleRequest, setSeenStyleRequest] = useState(styleRequest.seq);
@@ -288,6 +292,9 @@ export function IllustratePages({
             key={page.id}
             data-illustrate-page={page.orientation}
             data-illustrate-page-id={page.id}
+            // The Illustrate tour picks its track from the page's kind (docs/specs/007-editor/illustrate-tour.md).
+            data-illustrate-page-kind={pageKindOf(page)}
+            data-illustrate-page-locked={locked ? '' : undefined}
             className={`pointer-events-none absolute transition-[left,top,width,height,opacity] duration-200 ease-out motion-reduce:transition-none ${
               drag.reorder?.pageIds.includes(page.id) ? 'opacity-60' : ''
             } ${
@@ -528,10 +535,20 @@ export function IllustratePages({
             view.setLayoutPreview(layout ? { pageId: open.id, layout } : null)
           }
           onClose={close}
+          // A locked page has nothing to show: its controls are held (illustrate-pages.md "Locking a page").
           showMe={
-            open.kind === 'logo' ? (
-              <LogoShowMeButton tour={logoTour.tour} onStart={() => logoTour.freeze(open.id)} />
-            ) : undefined
+            open.locked === true
+              ? undefined
+              : {
+                  button: (
+                    <PageShowMeButton
+                      tour={pageTour.tour}
+                      kind={pageKindOf(open)}
+                      onStart={() => pageTour.freeze(open.id, pageKindOf(open))}
+                    />
+                  ),
+                  article: PAGE_TOUR_HELP[pageKindOf(open)].article,
+                }
           }
           articleStyle={(part) =>
             open.flow && articles?.flows[open.flow] ? (
@@ -548,7 +565,7 @@ export function IllustratePages({
           }
         />
       ) : null}
-      <LogoTourStage tour={logoTour.tour} />
+      <PageTourStage tour={pageTour.tour} kind={pageTour.kind} />
     </>
   );
 }

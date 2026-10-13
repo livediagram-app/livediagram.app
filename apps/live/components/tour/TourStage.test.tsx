@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TourStepOf } from './tour-step';
 import type { TourEngine } from './useTourEngine';
 import { TourStage } from './TourStage';
-import { PlanTourArt } from './PlanTourArt';
+import { BoardsTourArt } from './art/plan-tour-art';
 // The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
 vi.mock('@/components/start/useStartPalette', async () => {
   const { planPalette } = await import('@livediagram/document');
@@ -59,7 +59,7 @@ describe('TourStage', () => {
       <TourStage
         engine={welcome}
         copy={{ welcomeEyebrow: 'Plan tour', finish: 'Start planning', helpHref: '/help/x/' }}
-        welcomeArt={<PlanTourArt />}
+        welcomeArt={<BoardsTourArt />}
       />,
     );
     expect(screen.getByText('Plan tour')).toBeTruthy();

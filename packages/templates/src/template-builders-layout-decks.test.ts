@@ -35,14 +35,14 @@ describe('the slide deck templates built from layouts', () => {
       expect(motion.slice(1, -1).every((m) => m === undefined)).toBe(true);
     });
 
-    it(`${kind}: writes its own text, none of the layouts' samples, and notes each slide`, () => {
+    it(`${kind}: writes its own text, none of the layouts' samples, and no element notes`, () => {
       const els = buildLayoutDeck(kind);
       const labels = els.map((e) => (e as { label?: string }).label).filter(Boolean);
       for (const sample of ['Alex Morgan', 'The next ten years', 'Three reasons it works']) {
         expect(labels).not.toContain(sample);
       }
       const notes = els.filter((e) => (e as { note?: string }).note);
-      expect(notes).toHaveLength(LAYOUT_DECKS[kind].slides.length);
+      expect(notes).toHaveLength(0);
     });
   }
 });

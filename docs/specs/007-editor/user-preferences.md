@@ -258,19 +258,24 @@ type UserPreferences = {
   // in Settings as Tours › "Diagram Tour" (inverted); turning it on and closing
   // Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
-  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the Diagram
-  // tour's. Surfaced in Settings as Tours › "Plan Tour" (inverted); turning it on from off and closing
-  // Settings reruns the tour in Plan. Missing / undefined === not seen.
+  // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
+  // mode is on (lib/tour-tracks.ts); set with every track by Settings' Tours › "Plan Tour" switched off.
   planTourSeen?: boolean;
+  // The Plan tour tracks (Boards, Sheets) whose offer has been answered (taken, skipped or declined), so each offers
+  // itself once ever. Cleared with `planTourSeen` when the Settings switch is turned on.
+  planTourTracks?: PlanTourTrack[];
   // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
   // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
   facilitateTourSeen?: boolean;
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing / undefined === not seen.
+  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `planTourSeen`: true counts every
+  // page kind's track as seen while Power user mode is on. Set with every kind by Settings' Tours › "Illustrate Tour".
   illustrateTourSeen?: boolean;
+  // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
+  // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
+  illustrateTourKinds?: PageKind[];
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -758,13 +763,16 @@ and the dialog stays as the one complete, browsable index of them.
   (TourHost also needs the per-tab pending flag, which only `/new` sets), closing the dialog with the switch
   on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
   on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
-  for a Diagram tab. **Plan Tour** is
-  inverted against `planTourSeen` the same way; it needs no handoff flag (the Plan tour offers itself in
+  for a Diagram tab. **Plan Tour** is a
+  tour of several tracks (`apps/live/lib/tour-tracks.ts`): on while a track is still owed, off answering every
+  track (`planTourTracks`), on forgetting them; it needs no handoff flag (the Plan tour offers itself in
   Plan once a board or Sheet is open), so closing the dialog only reruns it, when it was turned on from off
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
   `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), and **Illustrate Tour** against `illustrateTourSeen`
-  ([Illustrate tour](illustrate-tour.md)).
+  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), and **Illustrate Tour** is built as Plan Tour is
+  ([Illustrate tour](illustrate-tour.md)), one track per page kind: `illustrateTourKinds` lists the kinds answered.
+  A multi-track tour's old single flag (`planTourSeen`, `illustrateTourSeen`) counts every track only while Power
+  user mode is on, so an answer given before the tour split offers each track once more.
 
   **Toggle groups.** Several related switches that share one description are
   one `toggleGroup` row: the label and description over a row of **chips**, one

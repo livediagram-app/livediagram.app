@@ -2,7 +2,7 @@
 
 // The Facilitate tour's welcome card hero (docs/specs/012-collaboration/facilitate-tour.md "The steps"): a
 // flipchart on its easel with two sticky notes landing on the pad in turn, and a timer beside it counting
-// down, with the tour's spark motif. The welcome art's recipe (TourWelcomeArt, PlanTourArt): pure inline SVG
+// down, with the tour's spark motif. The welcome art's recipe (TourWelcomeArt, art/TourArtFrame): pure inline SVG
 // + CSS keyframes, Tailwind fill/stroke classes for light and dark, looping with the `animation` shorthand
 // and `infinite`, and still under reduced motion (the global collapse in globals.css, plus its own
 // `animation: none`).

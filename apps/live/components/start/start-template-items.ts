@@ -46,6 +46,18 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
 // Recommended leaves these to their group (Timeline, under Timelines).
 const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 
+// Start Illustrating's Recommended opens on two blanks of a page kind in place of the Popular shelf's Blank Illustration
+// and Article: a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
+// "Recommended and groups"). The shelf itself, shared with the Quick Start and the gallery, is unchanged.
+const RECOMMENDED_SWAPS: Partial<
+  Record<TemplateStartMode, ReadonlyMap<TemplateKind, TemplateKind>>
+> = {
+  illustrate: new Map<TemplateKind, TemplateKind>([
+    ['blank-illustration', 'blank-infographic'],
+    ['article', 'blank-article'],
+  ]),
+};
+
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
@@ -184,7 +196,9 @@ function build(mode: TemplateStartMode): TemplateStart {
     id: 'recommended',
     name: 'Recommended',
     line: RECOMMENDED_LINE[mode],
-    kinds: popularKindsFor(mode).filter((k) => !NOT_RECOMMENDED.has(k)),
+    kinds: popularKindsFor(mode)
+      .filter((k) => !NOT_RECOMMENDED.has(k))
+      .map((k) => RECOMMENDED_SWAPS[mode]?.get(k) ?? k),
   };
   const rest: TemplateStartGroup[] =
     mode === 'diagram'

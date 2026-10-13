@@ -14,8 +14,17 @@ describe.each(MODES)('the %s template start', (mode) => {
   it("leads with Recommended, the mode's Popular shelf, its blank first, Timeline left out", () => {
     const recommended = start.groups[0]!;
     expect(recommended.id).toBe('recommended');
-    expect(recommended.kinds).toEqual(popularKindsFor(mode).filter((k) => k !== 'timeline'));
-    expect(recommended.kinds[0]).toBe(start.blank);
+    // Start Illustrating swaps Blank Illustration and Article for Blank Infographic and Blank Article.
+    const swap: Partial<Record<string, string>> =
+      mode === 'illustrate'
+        ? { 'blank-illustration': 'blank-infographic', article: 'blank-article' }
+        : {};
+    expect(recommended.kinds).toEqual(
+      popularKindsFor(mode)
+        .filter((k) => k !== 'timeline')
+        .map((k) => swap[k] ?? k),
+    );
+    if (mode !== 'illustrate') expect(recommended.kinds[0]).toBe(start.blank);
   });
 
   it('shows only groups holding a template, and only the mode’s templates', () => {
@@ -111,14 +120,18 @@ describe('Start Illustrating', () => {
       articles: 'blank-article',
       logos: 'blank-logo',
     });
-    // Each once in its group, and none in Recommended but Blank Slide Deck, which takes the Slide
-    // Deck's place there.
+    // Recommended leads with Blank Infographic and Blank Article, then Blank Slide Deck in the Slide Deck's place;
+    // Blank Illustration and the Article template are left out of it, and Blank Logo stays in its group alone.
     const recommended = TEMPLATE_STARTS.illustrate.groups[0]!.kinds;
-    expect(recommended).toContain('blank-slide-deck');
-    expect(recommended).not.toContain('slide-deck');
-    for (const k of ['blank-infographic', 'blank-article', 'blank-logo'] as const) {
+    expect(recommended.slice(0, 3)).toEqual([
+      'blank-infographic',
+      'blank-article',
+      'blank-slide-deck',
+    ]);
+    for (const k of ['blank-illustration', 'article', 'slide-deck', 'blank-logo'] as const)
       expect(recommended).not.toContain(k);
-      expect(TEMPLATE_STARTS.illustrate.groups.filter((g) => g.kinds.includes(k))).toHaveLength(1);
-    }
+    expect(
+      TEMPLATE_STARTS.illustrate.groups.filter((g) => g.kinds.includes('blank-logo')),
+    ).toHaveLength(1);
   });
 });

@@ -23,7 +23,7 @@ wrong moment.
 | [Share dialog](live-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
 | [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
 | [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
-| [Logo page panel](logo-pages.md#show-me)                               | The page panel's title row, on a logo page                | An Editor (only an Editor has the panel)     |
+| [Page panel](illustrate-tour.md#where-it-appears)                      | The page panel's title row, on every unlocked page        | An Editor (only an Editor has the panel)     |
 | [Sankey Flows dialog](../009-elements/sankey.md#show-me)               | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 | [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me)    | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
 
@@ -52,10 +52,10 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   is right from the first step; a target that still never appears skips its step.
 - **Escape belongs to the tour** while it runs over a dialog or an overlay (the card type editor, the Share dialog,
   the photo review): it never closes the surface under it. The surface stops closing on Escape for the duration;
-  the tour's own Skip ends it. A tour on the page itself (a dashboard, a logo page) leaves Escape to the page.
+  the tour's own Skip ends it. A tour on the page itself (a dashboard, a page) leaves Escape to the page.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
   ends the tour with it and sends no Ended event. So does losing it while it stays mounted: a dashboard covered by
-  a maximised slot or no longer editable, a logo page deleted or no longer editable; whatever a step was showing
+  a maximised slot or no longer editable, a page deleted, locked or no longer editable; whatever a step was showing
   (a slot's grip and cog) is put back. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
 - **Layer.** Over a dialog the ring draws just above the dialog and below the menus its controls open, so those
   stay lit (`layer` `modal`); over the editor's own chrome it draws at the overlay layer.
@@ -69,7 +69,8 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`CardTypeTour`, `ShareTour`, `DashboardTour`, `PhotoReviewTour`, `LogoTour`, `SankeyFlowsTour`, `TabStyleTour`. Each has its stack (Started,
+`CardTypeTour`, `ShareTour`, `DashboardTour`, `PhotoReviewTour`, `LogoTour`, `SlideTour`, `InfographicTour`,
+`ArticleTour`, `SankeyFlowsTour`, `TabStyleTour`. Each has its stack (Started,
 Completed, Skipped) on the telemetry dashboard beside the card type tour's, and its explanations.
 
 ## Code
@@ -79,5 +80,5 @@ each surface keeps its steps in `<surface>-tour-steps.ts` and its literal teleme
 the dashboard's emitter scan reads every event. `revealTour` (`tour-dom.ts`) scrolls a step's control into view in
 its scrolling panel. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes
 them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the photo
-review, the logo page panel) imports its steps at the press (`onStart` returns the promise the tour waits for), so
+review, the page panel) imports its steps at the press (`onStart` returns the promise the tour waits for), so
 their copy stays out of that load; `show-me-lazy-load.test.ts` keeps it so.

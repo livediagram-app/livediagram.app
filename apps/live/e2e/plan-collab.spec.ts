@@ -32,7 +32,7 @@ async function openAs(
       }
       localStorage.setItem(
         'livediagram:user-preferences:v1',
-        JSON.stringify({ planTourSeen: true }),
+        JSON.stringify({ planTourSeen: true, planTourTracks: ['boards', 'sheets'] }),
       );
     },
     { o: owner, sig: owner ? guestSigFor(owner) : null },

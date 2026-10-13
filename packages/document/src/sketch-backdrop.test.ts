@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import { sketchBackdropIds } from './sketch-backdrop';
 import type { Element } from './index';
 
@@ -44,9 +45,10 @@ describe('sketchBackdropIds', () => {
     for (let i = 0; i < 2000; i++)
       els.push(shape(`s${i}`, (i % 40) * 100, Math.floor(i / 40) * 100, 160, 160));
     sketchBackdropIds(els, 'sketch');
-    const t0 = performance.now();
-    for (let r = 0; r < 5; r++) sketchBackdropIds(els, 'sketch');
-    const ms = (performance.now() - t0) / 5;
+    // CPU time, not wall time: the parallel suite starves a wall-clock budget (#586).
+    const ms = Math.min(
+      ...[0, 1, 2, 3, 4].map(() => cpuMsOf(() => void sketchBackdropIds(els, 'sketch'))),
+    );
     expect(ms).toBeLessThan(25);
   });
 });
