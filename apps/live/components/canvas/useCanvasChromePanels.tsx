@@ -177,6 +177,7 @@ export function useCanvasChromePanels({
     onTeamFolders,
     onResetCommentsPanel,
     readOnly,
+    takePart,
     selfParticipant,
     setActiveDockAnchor,
     setActiveDockPanel,
@@ -501,6 +502,7 @@ export function useCanvasChromePanels({
         onClose={closeDockPanel}
         session={sessionTools}
         readOnly={!!readOnly}
+        canVote={!readOnly || !!takePart}
         holdOpen={!isMobile}
         voteSelfId={participantKey(selfParticipant)}
         pollPanel={pollPanel}

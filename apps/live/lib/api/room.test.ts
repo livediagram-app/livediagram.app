@@ -222,6 +222,51 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     ]);
   });
 
+  // A longer outage (a laptop asleep, wifi gone for a minute) outlasts the backoff's attempts: the
+  // connector then waits for the network or the tab and starts again, rather than staying down for good.
+  it('starts a fresh round of attempts once back online after using them all up', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    FakeSocket.all[0]!.fire('open');
+    FakeSocket.all[0]!.fire('close');
+    for (let i = 0; i < 6; i++) {
+      vi.runOnlyPendingTimers();
+      FakeSocket.all[FakeSocket.all.length - 1]!.fire('close');
+    }
+    vi.runAllTimers();
+    const parkedAt = FakeSocket.all.length;
+    expect(parkedAt).toBe(7);
+    // Still hidden: a tab in the background waits until it is shown.
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(FakeSocket.all).toHaveLength(parkedAt);
+    visibility.mockReturnValue('visible');
+    window.dispatchEvent(new Event('online'));
+    expect(FakeSocket.all).toHaveLength(parkedAt + 1);
+    // A second wake while that round runs starts nothing more.
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(FakeSocket.all).toHaveLength(parkedAt + 1);
+    visibility.mockRestore();
+    room.close();
+  });
+
+  it('starts nothing on a wake while it still has attempts, nor once closed', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {} },
+    );
+    FakeSocket.all[0]!.fire('open');
+    window.dispatchEvent(new Event('online'));
+    expect(FakeSocket.all).toHaveLength(1);
+    room.close();
+    window.dispatchEvent(new Event('online'));
+    expect(FakeSocket.all).toHaveLength(1);
+  });
+
   it('reconnects with a freshly minted ticket, since the room spends each one it admits', async () => {
     const mintTicket = vi.fn(async () => 'second');
     connectRoom(

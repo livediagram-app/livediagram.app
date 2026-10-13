@@ -29,11 +29,14 @@ import { sameOriginPath } from '@/lib/same-origin-path';
 export function AuthCard({
   subtitle,
   error,
+  notice,
   children,
   footer,
 }: {
   subtitle: string;
   error: string;
+  // Good news for the person (a new code is on its way): a calm status line, never the error box. An error wins.
+  notice?: string;
   children: ReactNode;
   footer?: ReactNode;
 }) {
@@ -52,8 +55,18 @@ export function AuthCard({
           </div>
 
           {error ? (
-            <div className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+            <div
+              role="alert"
+              className="mb-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+            >
               {error}
+            </div>
+          ) : notice ? (
+            <div
+              role="status"
+              className="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+            >
+              {notice}
             </div>
           ) : null}
 
@@ -385,8 +398,17 @@ export function OrDivider() {
 
 export function messageOf(err: unknown, fallback: string): string {
   if (err && typeof err === 'object' && 'errors' in err) {
-    const list = (err as { errors: Array<{ message: string }> }).errors;
-    if (Array.isArray(list)) return list.map((e) => e.message).join(', ');
+    // Clerk's `longMessage` is the sentence written for people ("Enter a valid email address."); `message` is
+    // its terse form ("is invalid"), so it is only the fallback.
+    const list = (err as { errors: Array<{ message?: string; longMessage?: string }> }).errors;
+    if (Array.isArray(list)) {
+      const joined = list
+        .map((e) => e.longMessage || e.message)
+        .filter(Boolean)
+        .join(', ');
+      // An empty list still failed: say so rather than show no error at all.
+      return joined || fallback;
+    }
   }
   if (err instanceof Error) return err.message;
   return fallback;

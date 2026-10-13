@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/document';
+import { createArrow, type Element, type StickyElement, type Tab } from '@livediagram/document';
 import { DEFAULT_FORMAT_CONFIG, type FormatMode } from '@/lib/format-config';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { useElementHelpers } from './useElementHelpers';
 
-vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
+vi.mock('@/lib/telemetry', () => telemetry);
 
 // A row of three 200x200 notes with 72 gaps.
 const note = (id: string, x: number): StickyElement =>
@@ -120,8 +121,9 @@ describe('addBoxedAt with an insertion slot (docs/specs/021-event-storming/event
 // The Format tool is the only painter (docs/specs/008-canvas/format-panel.md): its
 // Mode alone decides whether the brush stays loaded after a paint.
 describe('applyFormatFromSource', () => {
-  function paintHarness(mode: FormatMode) {
-    const tab: Tab = { id: 't1', name: 'Tab 1', elements: ROW } as Tab;
+  function paintHarness(mode: FormatMode, source = 'a') {
+    const line: Element = { ...createArrow(0, 0, 10, 0), id: 'line' };
+    const tab: Tab = { id: 't1', name: 'Tab 1', elements: [...ROW, line] } as Tab;
     const commit = vi.fn();
     const setFormatSourceId = vi.fn();
     const { result } = renderHook(() =>
@@ -130,7 +132,7 @@ describe('applyFormatFromSource', () => {
         activeId: 't1',
         activeTab: tab,
         editsBlocked: false,
-        formatSourceId: 'a',
+        formatSourceId: source,
         formatConfig: { ...DEFAULT_FORMAT_CONFIG, mode },
         getViewportCenter: () => ({ x: 0, y: 0 }),
         commit,
@@ -154,6 +156,23 @@ describe('applyFormatFromSource', () => {
     const { paint, commit, setFormatSourceId } = paintHarness('once');
     paint('b');
     expect(commit).toHaveBeenCalledTimes(1);
+    expect(setFormatSourceId).toHaveBeenCalledWith(null);
+  });
+
+  it('keeps a Paint once brush loaded on a tap that paints nothing', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('once');
+    telemetry.track.mockClear();
+    paint('a'); // the source itself
+    paint('line'); // the other kind: a note's look onto an arrow
+    expect(commit).not.toHaveBeenCalled();
+    expect(setFormatSourceId).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+  });
+
+  it('empties the brush once its source is gone', () => {
+    const { paint, commit, setFormatSourceId } = paintHarness('keep', 'deleted');
+    paint('b');
+    expect(commit).not.toHaveBeenCalled();
     expect(setFormatSourceId).toHaveBeenCalledWith(null);
   });
 });

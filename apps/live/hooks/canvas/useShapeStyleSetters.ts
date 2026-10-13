@@ -67,13 +67,14 @@ export function useShapeStyleSetters({
   // proportion comes from SHAPE_DEFAULT_SIZE (the canonical look each
   // shape ships with); we keep the element's current visual area so it
   // doesn't jump in size, just snaps the width:height back to default,
-  // and recentre about the old centre so it doesn't drift.
+  // and recentre about the old centre so it doesn't drift. Every shape of a multi-selection resets (the
+  // multi-selection menu offers it); a locked one keeps its size, as on a drag handle.
   const resetAspectRatioSelected = () => {
-    const { selectedId } = readSelection();
-    if (!selectedId) return;
+    const ids = currentSelectionIds();
+    if (ids.size === 0) return;
     commit((els) =>
       els.map((el) => {
-        if (el.id !== selectedId || el.type !== 'shape') return el;
+        if (!ids.has(el.id) || el.type !== 'shape' || el.locked === true) return el;
         const def = SHAPE_DEFAULT_SIZE[el.shape];
         const ratio = def.width / def.height;
         const area = el.width * el.height;

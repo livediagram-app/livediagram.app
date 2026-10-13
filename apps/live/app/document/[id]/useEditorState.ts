@@ -13,6 +13,7 @@ import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { usePlanTourLeftovers } from '@/hooks/plan/usePlanTourLeftovers';
 import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
@@ -1309,7 +1310,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTabLoadErrors,
     retryNonce: tabLoadRetryNonce,
     lastSavedTabsRef,
-    resetTabs,
+    applyLoaded: applyRemoteOp,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
   // A Plan document's statuses are read from every tab: load the rest once (usePlanTabSweep).
@@ -1860,6 +1861,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       activeTab.elements.some(
         (e) => e.id === elementId && e.type === 'shape' && e.shape === 'action-card',
       ),
+    actionCount: (elementId) => {
+      const el = activeTab.elements.find((e) => e.id === elementId);
+      return el && isBoxed(el) ? elementActions(el).length : 0;
+    },
     // The signed-in account, or the hydrated guest participant identity
     // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {
@@ -3482,9 +3487,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelToCheckpoint,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     onPlanCardDroppedOnBoard: editsBlocked ? undefined : plan.dropPlanCardOnBoard,
-    // Click (not drag) on an annotation marker opens its note editor
-    // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
-    onAnnotationClicked: editsBlocked ? undefined : openNote,
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
@@ -3656,7 +3658,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onZoomReset: () => setViewportZoom(1),
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
-    onOpenSearch: () => dialogs.setSearchOpen(true),
+    onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
     // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").
