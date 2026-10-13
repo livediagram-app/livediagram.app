@@ -1107,8 +1107,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'guest-list': 'grid',
   'grade-book': 'grid',
   'habit-tracker': 'grid',
-  'mobile-wireframe': 'graph',
-  'laptop-wireframe': 'graph',
   venn: 'blank',
   flywheel: 'blank',
   pyramid: 'blank',
@@ -1145,13 +1143,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'business-model-canvas': 'graph',
   'okr-tree': 'graph',
   sitemap: 'graph',
-  'browser-wireframe': 'graph',
   'cloud-architecture': 'graph',
   'uml-class': 'graph',
   'state-machine': 'graph',
-  // A floor plan IS a scale drawing, so graph paper is doing its literal
-  // job here: the squares read as the metre grid the rooms are drawn on.
-  'floor-plan': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
   'lean-coffee': 'grid',
@@ -1163,7 +1157,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'empathy-map': 'grid',
   funnel: 'blank',
   sankey: 'blank',
-  storyboard: 'crosshatch',
   // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
   // The Draw templates start on the whiteboard's board too.

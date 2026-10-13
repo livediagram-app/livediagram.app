@@ -34,6 +34,7 @@ import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
 import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
+import { buildOnDesignPage } from './template-design-pages';
 import {
   buildPrioritizationMatrix,
   buildRetrospective,
@@ -162,9 +163,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'pyramid':
       return buildPyramid(cx, cy);
     case 'mobile-wireframe':
-      return buildMobileWireframe(cx, cy);
+      return buildOnDesignPage('mobile-wireframe', buildMobileWireframe);
     case 'laptop-wireframe':
-      return buildLaptopWireframe(cx, cy);
+      return buildOnDesignPage('laptop-wireframe', buildLaptopWireframe);
     case 'slide-deck':
       return buildSlideDeck(cx, cy);
     case 'flywheel':
@@ -234,9 +235,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'sitemap':
       return buildSitemap(cx, cy);
     case 'browser-wireframe':
-      return buildBrowserWireframe(cx, cy);
+      return buildOnDesignPage('browser-wireframe', buildBrowserWireframe);
     case 'storyboard':
-      return buildStoryboard(cx, cy);
+      return buildOnDesignPage('storyboard', buildStoryboard);
     case 'cloud-architecture':
       return buildCloudArchitecture(cx, cy);
     case 'uml-class':
@@ -244,7 +245,7 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'state-machine':
       return buildStateMachine(cx, cy);
     case 'floor-plan':
-      return buildFloorPlan(cx, cy);
+      return buildOnDesignPage('floor-plan', buildFloorPlan);
     case 'event-storming':
       return buildEventStorming(cx, cy);
     // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its

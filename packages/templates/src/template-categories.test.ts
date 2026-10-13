@@ -100,11 +100,7 @@ describe('template categories', () => {
         (t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === mode,
       ).map((t) => t.kind);
     expect(inMode('spreadsheets', 'diagram')).toEqual([]);
-    expect(inMode('finance', 'diagram').sort()).toEqual([
-      'business-model-canvas',
-      'funnel',
-      'sankey',
-    ]);
+    expect(inMode('finance', 'diagram').sort()).toEqual(['funnel', 'sankey']);
   });
 });
 

@@ -16,6 +16,7 @@ import { versusPages } from './template-builders-versus';
 import { socialCarouselPages } from './template-builders-social-carousel';
 import { layoutDeckPages } from './template-builders-layout-decks';
 import type { TemplateKind } from './templates';
+import { designTemplatePages, isDesignTemplate } from './template-design-pages';
 
 /** The pages a template opens on, or undefined for a template drawn on the open canvas. */
 export function templatePages(kind: TemplateKind): IllustratePage[] | undefined {
@@ -48,6 +49,6 @@ export function templatePages(kind: TemplateKind): IllustratePage[] | undefined 
     case 'workshop-kickoff':
       return layoutDeckPages(kind);
     default:
-      return undefined;
+      return isDesignTemplate(kind) ? designTemplatePages(kind) : undefined;
   }
 }

@@ -47,19 +47,36 @@ describe.each(MODES)('the %s template start', (mode) => {
 });
 
 describe('Start Facilitating', () => {
-  it('groups by the session run: Retrospectives, Meetings, Workshops, Decisions', () => {
+  it('groups by the session run: Retrospectives, Meetings, Workshops, Planning, Strategy, Decisions', () => {
     expect(TEMPLATE_STARTS.facilitate.groups.map((g) => g.id)).toEqual([
       'recommended',
       'retrospectives',
       'meetings',
       'workshops',
+      'planning',
+      'strategy',
       'decisions',
+    ]);
+    // The boards a team fills in together, moved from Diagram.
+    const group = (id: string) => TEMPLATE_STARTS.facilitate.groups.find((g) => g.id === id)!.kinds;
+    expect(group('retrospectives')).toContain('incident-postmortem');
+    expect(group('workshops')).toContain('user-persona');
+    expect(group('planning')).toEqual([
+      'objectives-planner',
+      'roadmap',
+      'raci-matrix',
+      'user-story-map',
+    ]);
+    expect(group('strategy')).toEqual([
+      'business-model-canvas',
+      'stakeholder-map',
+      'opportunity-solution-tree',
     ]);
   });
 });
 
 describe('Start Illustrating', () => {
-  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos', () => {
+  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos, Design', () => {
     expect(TEMPLATE_STARTS.illustrate.groups.map((g) => g.name)).toEqual([
       'Recommended',
       'Slides',
@@ -67,11 +84,19 @@ describe('Start Illustrating', () => {
       'Articles',
       'Posters and Social',
       'Logos',
+      'Design',
     ]);
     // A carousel is posted, not presented.
     const group = (id: string) => TEMPLATE_STARTS.illustrate.groups.find((g) => g.id === id)!.kinds;
     expect(group('slides')).not.toContain('social-carousel');
     expect(group('posters')).toContain('social-carousel');
+    expect(group('design')).toEqual([
+      'browser-wireframe',
+      'laptop-wireframe',
+      'mobile-wireframe',
+      'storyboard',
+      'floor-plan',
+    ]);
     expect(TEMPLATE_STARTS.illustrate.blank).toBe('blank-illustration');
   });
 
