@@ -156,8 +156,9 @@ export function labelBoxSize(
   label: string | undefined,
   shape: string,
   look?: GraphLook,
+  hasIcon = false,
 ): { width: number; height: number } {
-  if (look) return lookBoxSize(label, coerceShapeKind(shape), look);
+  if (look) return lookBoxSize(label, coerceShapeKind(shape), look, hasIcon);
   const base = SHAPE_DEFAULT_SIZE[coerceShapeKind(shape)];
   const text = (label ?? '').trim();
   if (!text) return { width: base.width, height: base.height };
@@ -176,15 +177,19 @@ function lookBoxSize(
   label: string | undefined,
   kind: string,
   look: GraphLook,
+  hasIcon: boolean,
 ): { width: number; height: number } {
   const base = SHAPE_DEFAULT_SIZE[kind as keyof typeof SHAPE_DEFAULT_SIZE];
   const floor = LOOK_FLOOR[kind] ?? base;
   const text = (label ?? '').trim();
   if (!text) return { ...floor };
   const px = LOOK_FONT_PX[look.textSize];
+  // An inline icon beside the label takes its glyph and gap (inlineIconMetrics: about 1.6 × the font, a third
+  // of that again between).
+  const iconRoom = hasIcon ? Math.round(px * 1.6 * 1.32) : 0;
   const roomy =
     kind === 'diamond' ? 1.5 : kind === 'parallelogram' || kind === 'hexagon' ? 1.15 : 1;
-  const textW = glyphUnits(text) * px * GLYPH_EM * roomy;
+  const textW = glyphUnits(text) * px * GLYPH_EM * roomy + iconRoom;
   const pad = 48;
   const width = Math.round(
     Math.min(LOOK_MAX_W[look.textSize] * roomy, Math.max(floor.width, textW + pad)),
@@ -255,7 +260,7 @@ export function graphToElements(
         ...(n.note ? { note: n.note } : {}),
       };
     }
-    const { width, height } = labelBoxSize(n.label, shape, look);
+    const { width, height } = labelBoxSize(n.label, shape, look, !!(n as { icon?: string }).icon);
     return {
       id: n.id,
       type: 'shape' as const,
