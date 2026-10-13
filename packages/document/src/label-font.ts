@@ -19,11 +19,11 @@ import type { RunSize } from './rich-text';
 
 /**
  * The Size slider's range (docs/specs/004-interface-design/fonts.md "Text size"): an exact
- * size is a whole px from 6 to 30. 6 is the smallest that still reads at 100% zoom; 30 sits
- * just under the Large preset (32), which stays reachable as a preset on older elements.
+ * size is a whole px from 6 to 48. 6 is the smallest that still reads at 100% zoom; 48 is a
+ * headline, past every preset (a label's Large is 32), so any older size has a place on it.
  */
 export const TEXT_PX_MIN = 6;
-export const TEXT_PX_MAX = 30;
+export const TEXT_PX_MAX = 48;
 
 /** Whether a size is an exact px from the slider rather than a named preset. */
 export function isTextPx(size: TextSize | undefined): size is number {

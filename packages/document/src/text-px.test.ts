@@ -19,13 +19,13 @@ import { svgBoxed } from './svg-render';
 import { createShape } from './factories';
 
 describe('the Text Size range', () => {
-  it('runs 6 to 30 px', () => {
-    expect([TEXT_PX_MIN, TEXT_PX_MAX]).toEqual([6, 30]);
+  it('runs 6 to 48 px', () => {
+    expect([TEXT_PX_MIN, TEXT_PX_MAX]).toEqual([6, 48]);
   });
 
   it('clamps and rounds a slider value into whole px', () => {
     expect(clampTextPx(3)).toBe(6);
-    expect(clampTextPx(44)).toBe(30);
+    expect(clampTextPx(64)).toBe(48);
     expect(clampTextPx(17.6)).toBe(18);
     expect(clampTextPx(Number.NaN)).toBe(TEXT_PX_MIN);
   });
@@ -37,8 +37,8 @@ describe('the Text Size range', () => {
   });
 
   it('accepts the presets and whole px in range, nothing else', () => {
-    for (const ok of ['scale', 'sm', 'md', 'lg', 6, 18, 30]) expect(isTextSize(ok)).toBe(true);
-    for (const bad of ['xl', 5, 31, 12.5, '18', null, undefined])
+    for (const ok of ['scale', 'sm', 'md', 'lg', 6, 18, 48]) expect(isTextSize(ok)).toBe(true);
+    for (const bad of ['xl', 5, 49, 12.5, '18', null, undefined])
       expect(isTextSize(bad)).toBe(false);
   });
 });

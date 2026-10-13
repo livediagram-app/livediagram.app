@@ -20,6 +20,7 @@ export function PreviewSliderRow({
   onCommit,
   onPreviewEnd,
   action,
+  trailing,
 }: {
   label: string;
   min: number;
@@ -36,6 +37,7 @@ export function PreviewSliderRow({
   // Ends the preview without a change (a drag let go where it began).
   onPreviewEnd?: () => void;
   action?: ReactNode;
+  trailing?: ReactNode;
 }) {
   // The drag under way: where it started and where it is; null at rest (the element's own value
   // shows). The start is kept because the preview writes the live element as the thumb moves, so by
@@ -67,37 +69,18 @@ export function PreviewSliderRow({
       }}
       onRelease={commit}
       action={action}
+      trailing={trailing}
     />
   );
 }
 
-// The quiet text button a slider row carries at its label's end (Flat on the Arc, Scale on Text Size).
-export function SliderRowAction({
-  label,
-  active,
-  onClick,
-  onPointerEnter,
-  onPointerLeave,
-}: {
-  label: string;
-  // A toggle's state; leave unset for a one-shot action.
-  active?: boolean;
-  onClick: () => void;
-  onPointerEnter?: (e: React.PointerEvent) => void;
-  onPointerLeave?: (e: React.PointerEvent) => void;
-}) {
+// The quiet text button a slider row carries at its label's end (Flat on the Arc).
+export function SliderRowAction({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
-      aria-pressed={active}
       onClick={onClick}
-      onPointerEnter={onPointerEnter}
-      onPointerLeave={onPointerLeave}
-      className={`rounded px-1 text-[10px] font-semibold transition ${
-        active
-          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-          : 'text-brand-600 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10'
-      }`}
+      className="rounded px-1 text-[10px] font-semibold text-brand-600 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
     >
       {label}
     </button>

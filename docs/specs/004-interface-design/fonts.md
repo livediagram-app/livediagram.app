@@ -68,26 +68,29 @@ A label's size (`textSize`) is **Scale** or an **exact px**. It is chosen on one
 
 The control:
 
-- **Scale** is a toggle at the end of the control's label row, pressed while the size is Scale.
-  It keeps its meaning per surface: a note fills its box, a table cell tracks the row height, a
-  single-line label draws at a middling fixed px.
-- **The slider** runs **6 to 30 px in whole px** (`TEXT_PX_MIN` / `TEXT_PX_MAX`), with labelled
-  breakpoints at **6, 12, 18, 24 and 30** under the track. It previews as it moves (where the
+- **The slider** runs **6 to 48 px in whole px** (`TEXT_PX_MIN` / `TEXT_PX_MAX`), with labelled
+  breakpoints at **6, 12, 24, 36 and 48** under the track (five, since a menu flyout's track is
+  narrow). 48 sits past every
+  preset (a label's Large is 32px), so any older size has a place on it. It previews as it moves (where the
   surface has a preview) and commits **once, when let go**, so a drag is one undo step; letting go
   where it began commits nothing. The arrow keys step it one px at a time.
 - **The readout** beside the slider says the px (`18px`), **Scale**, or **Mixed** for a
   multi-selection whose sizes differ.
+- **Scale** is an icon toggle (the double-headed arrow, tooltip "Scale") to the right of the
+  slider and its readout, pressed while the size is Scale. It keeps its meaning per surface: a
+  note fills its box, a table cell tracks the row height, a single-line label draws at a middling
+  fixed px.
 
 An exact px **draws at that px on every surface**: a shape label, a note, an arrow caption, a table
 cell, a chart key and a Sankey's labels alike, on the canvas and in every export. Earlier documents
 and templates still carry the named presets **Small / Medium / Large** (`sm` / `md` / `lg`); they
 render exactly as before, each on its surface's own scale (a label's Large is 32px, a note's 22px).
-The slider shows a preset at the px it draws at on that surface, the thumb clamped to the range
-and the readout unclamped (a label's Large reads `32px` with the thumb at 30). Touching the slider
+The slider shows a preset at the px it draws at on that surface (a label's Large reads `32px`
+with the thumb at 32). Touching the slider
 replaces the preset with a px; nothing converts presets on load.
 
 Agents write the same values through the `text` alias: `sm`, `md`, `lg`, `scale`, or a whole px
-from 6 to 30 (`text=18`). Anything else is refused with that list.
+from 6 to 48 (`text=18`). Anything else is refused with that list.
 
 A **marker's** size (`markerSize`) is not a text size: it stays the four presets (Scale / Small /
 Medium / Large dots), since a marker is a glyph and not a line of type

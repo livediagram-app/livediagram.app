@@ -1,7 +1,8 @@
 'use client';
 
-// The one Text Size control (docs/specs/004-interface-design/fonts.md "Text size"): Scale, and a
-// slider of whole px from TEXT_PX_MIN to TEXT_PX_MAX with labelled breakpoints. Every place a
+// The one Text Size control (docs/specs/004-interface-design/fonts.md "Text size"): a slider of
+// whole px from TEXT_PX_MIN to TEXT_PX_MAX with labelled breakpoints, and a Scale icon toggle to
+// its right. Every place a
 // label's size is chosen uses it: an element's Text flyout (single and multi selection), an
 // arrow's caption, a table cell, a chart key and a Legend, a Sankey's labels, and the tab's size
 // for new text. The slider previews as it moves and commits once when let go, so a drag is one
@@ -17,10 +18,16 @@ import {
   type TextSizePreset,
 } from '@livediagram/document';
 import { onMouseHover } from '@/components/primitives/hover-preview';
-import { PreviewSliderRow, SliderRowAction } from '@/components/primitives/PreviewSliderRow';
+import { Tooltip } from '@livediagram/ui';
+import { PreviewSliderRow } from '@/components/primitives/PreviewSliderRow';
+import { ScaleIcon } from './palette-icons';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
-/** The slider's labelled breakpoints, evenly spaced across its range. */
-export const TEXT_SIZE_TICKS: readonly number[] = [6, 12, 18, 24, 30];
+/**
+ * The slider's labelled breakpoints: the ends, then every 12 px from 12. Five labels, because the
+ * track in a menu flyout is only ~110px wide and eight crowded into one run of digits.
+ */
+export const TEXT_SIZE_TICKS: readonly number[] = [6, 12, 24, 36, 48];
 
 /** The px a size draws at on this control's surface, where it is not already a px. */
 export type PresetPx = (preset: TextSizePreset) => number;
@@ -38,8 +45,8 @@ export function presetPxFor(type: string): PresetPx {
 
 /**
  * Where the thumb sits for a stored size. A px is itself; a preset (an element sized before the
- * slider, or a template's) sits at the px it draws at here, clamped into the range (Large is 32 on
- * a label, past the slider's end); Scale and Mixed sit at Medium's px.
+ * slider, or a template's) sits at the px it draws at here, clamped into the range; Scale and
+ * Mixed sit at Medium's px.
  */
 export function textSizeThumbPx(size: TextSize | null, presetPx: PresetPx): number {
   if (typeof size === 'number') return clampTextPx(size);
@@ -47,7 +54,7 @@ export function textSizeThumbPx(size: TextSize | null, presetPx: PresetPx): numb
   return clampTextPx(presetPx(size));
 }
 
-/** The readout at rest: Scale, Mixed, or the px the size draws at (unclamped, so Large reads 32px). */
+/** The readout at rest: Scale, Mixed, or the px the size draws at. */
 export function textSizeReadout(size: TextSize | null, presetPx: PresetPx): string {
   if (size === null) return 'Mixed';
   if (size === 'scale') return 'Scale';
@@ -91,15 +98,25 @@ export function TextSizeControl({
       onPreview={onPreview}
       onCommit={(v) => onSet(clampTextPx(v))}
       onPreviewEnd={onPreviewEnd}
-      action={
+      trailing={
         withScale ? (
-          <SliderRowAction
-            label="Scale"
-            active={isScale}
-            onClick={() => onSet('scale')}
-            onPointerEnter={onPreview ? onMouseHover(() => onPreview('scale')) : undefined}
-            onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
-          />
+          <Tooltip label="Scale">
+            <button
+              type="button"
+              aria-label="Scale"
+              aria-pressed={isScale}
+              onClick={() => onSet('scale')}
+              onPointerEnter={onPreview ? onMouseHover(() => onPreview('scale')) : undefined}
+              onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition ${
+                isScale
+                  ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+                  : TOOLBAR_CONTROL_REST
+              }`}
+            >
+              <ScaleIcon />
+            </button>
+          </Tooltip>
         ) : undefined
       }
     />

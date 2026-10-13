@@ -41,7 +41,7 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.
 - Under the placement tiles (while the legend is on), **Text Size** (the one
-  [Text Size](../004-interface-design/fonts.md#text-size) slider, 6 to 30 px, without Scale) sets the
+  [Text Size](../004-interface-design/fonts.md#text-size) slider, 6 to 48 px, without Scale) sets the
   key's row size. It writes the element's ordinary `textSize` (a chart has no label, so the Text
   flyout never offers it) and reads through `legendFontPx` (`label-font.ts`): a px is itself, and
   the presets earlier charts carry read 11 / 14 / 18px, with Medium the default. A key is not a name, so it has its own scale rather than

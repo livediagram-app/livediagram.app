@@ -113,7 +113,7 @@ root, scoped to the canvas), so it costs nothing the rest of the time. Reduced m
 The tab's typography ([Fonts](../004-interface-design/fonts.md)): a **preview** of the sample diagram lettered in
 the tab's font at the size new text takes; the **Typeface** specimen cards ("Aa" and the name in each face, with its
 style), six to a carousel page (three to a row, two rows), "Editor default" first; and **Size of New Text** on the one
-[Text Size](../004-interface-design/fonts.md#text-size) control (Scale, or a 6 to 30 px slider), the preview following the slider as
+[Text Size](../004-interface-design/fonts.md#text-size) control (Scale, or a 6 to 48 px slider), the preview following the slider as
 it moves. Picking a typeface or a size **applies to the whole tab at
 once**: the tab's setting, and every element following it again (an element's own font is cleared, every
 text-bearing element takes the size). There is no separate apply action.

@@ -211,7 +211,7 @@ Control groups (rendered as context-menu categories, hidden when their gate does
   - Back — send to bottom of the z-order.
   - Opacity slider — 0–100% on the element's `opacity` field. Folded into Layer (was a standalone "Appearance" accordion until the merge — single-control accordions weren't worth the extra header).
 - **Text** _(boxed elements only)_
-  - Text size — Scale, or a 6 to 30 px slider. See [Text size](#text-size).
+  - Text size — Scale, or a 6 to 48 px slider. See [Text size](#text-size).
   - Text alignment — 3 × 3 grid. See [Text alignment](#text-alignment).
   - Bold / Italic / Underline / Strikethrough toggles.
 - **Colours**
@@ -1218,7 +1218,7 @@ Each boxed element carries a `textSize` setting controlling how its label render
 | Value                | Behaviour                                                                                                                           |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `'scale'`            | Label auto-scales to fit the box (current SVG fit-to-bounds for shapes / text; multi-line wrap at a small default font for sticky). |
-| a number, 6 to 30    | An exact px from the Text Size slider, the same px on every surface.                                                                |
+| a number, 6 to 48    | An exact px from the Text Size slider, the same px on every surface.                                                                |
 | `'sm'` `'md'` `'lg'` | The named presets earlier documents and templates carry: fixed small / medium / large, each on its surface's own scale.             |
 
 Set from the element context menu's Text flyout on the one Text Size control ([Fonts](../004-interface-design/fonts.md#text-size)). When set to a fixed size (a px or a preset), content is centered and wraps on its newlines (and, for stickies, soft-wraps). Resizing the element does not change the font — only `scale` reacts to box size.

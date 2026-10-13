@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The one Text Size control (docs/specs/004-interface-design/fonts.md "Text size"): Scale, and a
-// 6 to 30 px slider that previews as it moves and commits once when let go.
+// The one Text Size control (docs/specs/004-interface-design/fonts.md "Text size"): a 6 to 48 px
+// slider that previews as it moves and commits once when let go, and a Scale icon toggle.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -53,7 +53,8 @@ describe('textSizeThumbPx / textSizeReadout', () => {
 
   it('puts a preset at the px it draws at, clamped to the range, and reads the true px', () => {
     expect(textSizeThumbPx('sm', labelPx)).toBe(LABEL_FONT_PX.sm);
-    expect(textSizeThumbPx('lg', labelPx)).toBe(30);
+    expect(textSizeThumbPx('lg', labelPx)).toBe(LABEL_FONT_PX.lg);
+    expect(textSizeThumbPx(60, labelPx)).toBe(48);
     expect(textSizeReadout('lg', labelPx)).toBe(`${LABEL_FONT_PX.lg}px`);
   });
 
@@ -75,12 +76,12 @@ describe('presetPxFor', () => {
 });
 
 describe('TextSizeControl', () => {
-  it('runs 6 to 30 in whole px with labelled breakpoints', () => {
+  it('runs 6 to 48 in whole px with labelled breakpoints', () => {
     const { slider } = renderControl('md');
     expect(slider.getAttribute('min')).toBe('6');
-    expect(slider.getAttribute('max')).toBe('30');
+    expect(slider.getAttribute('max')).toBe('48');
     expect(slider.getAttribute('step')).toBe('1');
-    expect(TEXT_SIZE_TICKS).toEqual([6, 12, 18, 24, 30]);
+    expect(TEXT_SIZE_TICKS).toEqual([6, 12, 24, 36, 48]);
     for (const t of TEXT_SIZE_TICKS) expect(screen.getByText(String(t))).toBeTruthy();
   });
 
@@ -105,7 +106,7 @@ describe('TextSizeControl', () => {
     expect(onPreviewEnd).toHaveBeenCalled();
   });
 
-  it('sets Scale from its toggle, pressed while the size is Scale', () => {
+  it('sets Scale from its icon toggle, pressed while the size is Scale', () => {
     const { onSet } = renderControl('scale');
     const scale = screen.getByRole('button', { name: 'Scale' });
     expect(scale.getAttribute('aria-pressed')).toBe('true');
