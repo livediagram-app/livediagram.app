@@ -36,35 +36,41 @@ narrowing the carousel to the looks of that finish, paged afresh from its first 
 tab's look when it is among them). It is the viewer's own, for this open of the dialog only (not stored), and
 changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
-The table is in the order the carousel shows them, six to a page:
+The table is in the order the carousel shows them after the Mashup card, six to a page:
 
-| Look        | Theme    | Finish       | Tab font         | Pattern     | Pattern strength |
-| ----------- | -------- | ------------ | ---------------- | ----------- | ---------------- |
-| Everyday    | Default  | Flexible     | (none)           | Grid        | (kept)           |
-| Textbook    | UML      | Professional | Oswald           | Graph       | 50%              |
-| Whiteboard  | Mono     | Sketch       | (none)           | Blank       | (kept)           |
-| Spectrum    | Rainbow  | Flexible     | Inter            | Grid        | 50%              |
-| Boardroom   | Steel    | Professional | Inter            | Blank       | (kept)           |
-| Notebook    | Mocha    | Sketch       | (none)           | Lines       | (kept)           |
-| Seaside     | Ocean    | Flexible     | Nunito           | Waves       | (kept)           |
-| Doodle      | Rainbow  | Sketch       | Caveat           | Blank       | (kept)           |
-| Editorial   | Cream    | Professional | Lora             | Blank       | (kept)           |
-| Midnight    | Midnight | Flexible     | (none)           | Grid        | (kept)           |
-| Workshop    | Sand     | Sketch       | Permanent Marker | Grid        | 60%              |
-| Poster      | Tropical | Professional | Abril Fatface    | Diagonal    | 40%              |
-| Graph Paper | Indigo   | Professional | Roboto Mono      | Graph       | (kept)           |
-| Daydream    | Pastel   | Flexible     | Nunito           | Grid        | 60%              |
-| Engineer    | Sky      | Professional | Space Grotesk    | Engineering | (kept)           |
-| Lagoon      | Tropical | Flexible     | Space Grotesk    | Ripple      | 50%              |
-| Studio      | Lavender | Professional | Roboto Slab      | Isometric   | (kept)           |
-| Garden      | Forest   | Flexible     | Poppins          | Hexagonal   | 40%              |
+| Look            | Theme    | Finish       | Tab font         | Pattern      | Pattern strength |
+| --------------- | -------- | ------------ | ---------------- | ------------ | ---------------- |
+| Everyday        | Default  | Flexible     | (none)           | Grid         | (kept)           |
+| Textbook        | UML      | Professional | Oswald           | Graph        | 50%              |
+| Whiteboard      | Mono     | Sketch       | (none)           | Blank        | (kept)           |
+| Spectrum        | Rainbow  | Flexible     | Inter            | Grid         | 50%              |
+| Boardroom       | Steel    | Professional | Inter            | Blank        | (kept)           |
+| Notebook        | Mocha    | Sketch       | (none)           | Lines        | (kept)           |
+| Seaside         | Ocean    | Flexible     | Nunito           | Waves        | (kept)           |
+| Doodle          | Rainbow  | Sketch       | Caveat           | Blank        | (kept)           |
+| Editorial       | Cream    | Professional | Lora             | Blank        | (kept)           |
+| Midnight        | Midnight | Flexible     | (none)           | Grid         | (kept)           |
+| Poster          | Tropical | Professional | Abril Fatface    | Diagonal     | 40%              |
+| Workshop        | Sand     | Sketch       | Permanent Marker | Grid         | 60%              |
+| Graph Paper     | Indigo   | Professional | Roboto Mono      | Graph        | (kept)           |
+| Daydream        | Pastel   | Flexible     | Nunito           | Grid         | 60%              |
+| Engineer        | Sky      | Professional | Space Grotesk    | Engineering  | (kept)           |
+| Lagoon          | Tropical | Flexible     | Space Grotesk    | Ripple       | 50%              |
+| Studio          | Lavender | Professional | Roboto Slab      | Isometric    | (kept)           |
+| Garden          | Forest   | Flexible     | Poppins          | Hexagonal    | 40%              |
+| Billboard       | Sunset   | Professional | Oswald           | Stripes      | 40%              |
+| Patchwork       | Pastel   | Sketch       | Lora             | Checkerboard | 30%              |
+| Northern Lights | Abyss    | Flexible     | Poppins          | Aurora       | 60%              |
+| Coffeehouse     | Espresso | Sketch       | Caveat           | Bricks       | 40%              |
+| Schematic       | UML      | Professional | Roboto Mono      | Crosshatch   | 40%              |
 
-- **Multi-colour looks.** Six looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
+- **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
   different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on a
   quiet dot grid), Doodle a bold hand-drawn rainbow, Daydream soft
   pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
-  diagonals, and Textbook a crisp colour-coded notation on graph paper. A dark-mode viewer sees each in its theme's
+  diagonals, Textbook a crisp colour-coded notation on graph paper, Patchwork pastel branches sketched on soft
+  checks, and Schematic the UML colours in a monospace on a crosshatch. A dark-mode viewer sees each in its theme's
   dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
 - **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
   is what an untouched tab reads as). The rest follow a fixed, interleaved
@@ -77,7 +83,10 @@ The table is in the order the carousel shows them, six to a page:
   migrates.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
-  Mashup card and the eighteen looks make four pages, the last holding Garden alone.
+  Mashup card and the twenty-three looks fill four pages.
+- **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each bring a theme or a
+  pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
+  four is new ground rather than a reshuffle.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
@@ -101,12 +110,12 @@ and the user can keep pressing it to regenerate.
 - **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
   whole built-in catalogue, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
   with its strength from the patterns the looks use, so a busy pattern keeps the soft strength its look gave it.
-  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over eleven
+  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over fifteen
   thousand combinations).
 - **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every
   mashup does too: a dark-mode viewer sees it in its theme's dark half, with the same contrast floor as the looks
   (`apps/live/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
-- **Always new.** A roll that equals one of the eighteen looks, or the mashup the card already shows, is rolled
+- **Always new.** A roll that equals one of the named looks, or the mashup the card already shows, is rolled
   again (up to `MASHUP_REROLLS` times), so a press always changes the tab and never lands on a named look.
 - **The card.** Like a look's card (the sample diagram drawn in the mashup, in the viewer's half), named **Mashup**
   with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Caveat, waves").
