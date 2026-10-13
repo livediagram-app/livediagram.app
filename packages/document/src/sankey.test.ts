@@ -202,9 +202,12 @@ describe('sankeyLayout', () => {
     const worst: SankeyFlow[] = [];
     for (let i = 0; i < SANKEY_MAX_FLOWS; i++)
       worst.push(flow(`c${i % 4}-${i % 30}`, `c${(i % 4) + 1}-${(i * 7) % 30}`, 1 + (i % 13)));
-    const t0 = performance.now();
-    for (let k = 0; k < 20; k++) sankeyLayout(worst, { x: 0, y: 0, w: 1200, h: 800 });
-    const per = (performance.now() - t0) / 20;
+    // CPU time, not wall-clock (cpuMsOf): a CI runner shared with other suites pushed the wall-clock
+    // reading over budget (18 ms) with nothing in the layout changed.
+    const per =
+      cpuMsOf(() => {
+        for (let k = 0; k < 20; k++) sankeyLayout(worst, { x: 0, y: 0, w: 1200, h: 800 });
+      }) / 20;
     expect(per).toBeLessThan(16);
   });
 });
