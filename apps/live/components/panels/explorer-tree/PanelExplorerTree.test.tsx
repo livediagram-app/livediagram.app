@@ -59,6 +59,7 @@ function Harness({
   return (
     <PanelExplorerTree
       section={section}
+      rootLabel="My documents"
       tree={tree}
       shared={shared}
       ownIndex={{
@@ -76,16 +77,20 @@ function Harness({
   );
 }
 
-const topRows = () =>
-  [...screen.getByRole('tree').querySelectorAll(':scope > [role="treeitem"]')].map((el) =>
-    el.getAttribute('data-tree-label'),
-  );
-const item = (name: string | RegExp) => screen.getByRole('treeitem', { name });
-const activate = (name: string | RegExp) =>
-  fireEvent.click(item(name).querySelector('[data-tree-row] [data-tree-activate]')!);
+const rows = () =>
+  [...document.querySelectorAll('[data-pane-row]')].map((el) => el.getAttribute('aria-label'));
+const row = (name: string | RegExp) => screen.getByRole('button', { name });
 
 const assign = vi.fn();
 beforeEach(() => {
+  // Thumbnails load as they scroll into view.
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
   assign.mockReset();
   track.mockReset();
   vi.stubGlobal('location', { ...window.location, assign });
@@ -96,22 +101,24 @@ afterEach(() => {
 });
 
 describe('PanelExplorerTree', () => {
-  it('shows My documents as its root folders, then its root documents, folders opening in place', () => {
+  it('shows My documents as its folders, then its documents, a folder opening in place under a breadcrumb', () => {
     render(<Harness section={{ kind: 'mine' }} />);
-    expect(topRows()).toEqual(['Projects', 'Loose notes']);
+    expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(screen.queryByText('Unsorted')).toBeNull();
-    activate('Projects');
-    expect(item('Plan').getAttribute('aria-selected')).toBe('true');
+    fireEvent.click(row('Projects'));
+    expect(rows()).toEqual(['Plan']);
+    expect(row('Plan').getAttribute('aria-current')).toBe('true');
+    const path = screen.getByRole('navigation', { name: 'Folder path' });
+    expect(path.textContent).toBe('My documents›Projects');
+    fireEvent.click(screen.getByRole('button', { name: 'My documents' }));
+    expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(assign).not.toHaveBeenCalled();
   });
 
   it('marks a document in this browser Local only, with what it means', () => {
     render(<Harness section={{ kind: 'browser' }} />);
-    expect(topRows()).toEqual(['Workshop notes']);
-    const local = item('Workshop notes');
-    expect(local.querySelector('a')?.textContent).toContain('Local only');
-    const id = local.getAttribute('aria-describedby');
-    expect(document.getElementById(id!)?.textContent).toBe(LOCAL_ONLY_DESCRIPTION);
+    expect(rows()).toEqual([`Workshop notes. ${LOCAL_ONLY_DESCRIPTION}`]);
+    expect(screen.getByText('Local only')).toBeTruthy();
   });
 
   it('lists what is shared with the reader', () => {
@@ -119,7 +126,7 @@ describe('PanelExplorerTree', () => {
       { id: 's1', name: 'Their board', shareCode: 'abc', role: 'view', savedAt: 1 },
     ] as unknown as SharedWithItem[];
     render(<Harness section={{ kind: 'shared' }} shared={shared} />);
-    expect(topRows()).toEqual(['Their board']);
+    expect(rows()).toEqual(['Their board']);
   });
 
   it("shows a team's root documents", () => {
@@ -130,14 +137,14 @@ describe('PanelExplorerTree', () => {
         teamDocs={[doc('t-d1', 'Guild charter', { ownerId: 'them' })]}
       />,
     );
-    expect(topRows()).toEqual(['Guild charter']);
+    expect(rows()).toEqual(['Guild charter']);
   });
 
-  it('says so when a section is empty', () => {
+  it('says so in the Explorer empty state when a place is empty', () => {
     render(<Harness section={{ kind: 'shared' }} />);
-    expect(screen.getByText('Nothing shared with you yet')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Nothing shared with you yet' })).toBeTruthy();
     cleanup();
     render(<Harness section={{ kind: 'browser' }} offline={[]} />);
-    expect(screen.getByText('No documents in this browser')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Nothing in this browser' })).toBeTruthy();
   });
 });

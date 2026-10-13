@@ -11,6 +11,7 @@ import { DocumentActionsMenu } from '@/app/explorer/document-row-shared';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import { useDocumentVisibility } from '@/hooks/editor/document-visibility-store';
+import { PencilIcon } from '@/components/primitives/explorer-icons';
 import type { DocumentListItem } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
@@ -73,20 +74,29 @@ export function ExplorerCurrentDocument({
             className="w-full rounded border border-brand-300 bg-white px-1.5 py-0.5 text-sm font-semibold text-slate-900 dark:border-brand-400 dark:bg-slate-800 dark:text-slate-50"
           />
         ) : onRename ? (
+          // Fitted to the name: hovering underlines it and shows the pencil, never a block of fill.
           <button
             type="button"
             aria-label={`Rename ${name}`}
             onClick={() => setEditing(true)}
-            className="-ml-1.5 min-w-0 cursor-text truncate rounded px-1.5 py-0.5 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-200/60 focus-visible:outline-2 focus-visible:outline-brand-500 pointer-coarse:py-2 dark:text-slate-50 dark:hover:bg-slate-700/60"
+            className="group/name flex max-w-full cursor-text items-center gap-1.5 self-start rounded text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
           >
-            {name}
+            <span className="min-w-0 truncate text-[15px] font-semibold text-slate-900 decoration-slate-400 decoration-dotted underline-offset-4 group-hover/name:underline dark:text-slate-50 dark:decoration-slate-500">
+              {name}
+            </span>
+            <span
+              aria-hidden
+              className="shrink-0 text-slate-400 opacity-0 transition group-hover/name:opacity-100 group-focus-visible/name:opacity-100 dark:text-slate-500"
+            >
+              <PencilIcon size={12} />
+            </span>
           </button>
         ) : (
           <button
             type="button"
             onClick={onOpen}
             aria-current="true"
-            className="min-w-0 truncate text-left text-sm font-semibold text-slate-900 dark:text-slate-50"
+            className="min-w-0 self-start truncate text-left text-[15px] font-semibold text-slate-900 dark:text-slate-50"
           >
             {name}
           </button>
@@ -103,7 +113,7 @@ export function ExplorerCurrentDocument({
             offline={visibility.offline}
             community={visibility.community}
             onManage={visibility.onManage}
-            align="end"
+            portal
           />
         ) : null}
         {hasMenu && !editing ? (

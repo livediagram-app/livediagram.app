@@ -17,17 +17,15 @@ afterEach(() => {
 });
 
 describe('useExplorerPanelSection', () => {
-  it('opens on the space holding the open document, then remembers a pick', () => {
-    const { result, unmount } = renderHook(() =>
-      useExplorerPanelSection(groups, { kind: 'browser' }),
-    );
-    expect(result.current[0]).toEqual({ kind: 'browser' });
+  it('opens on Home, then remembers a pick', () => {
+    const { result, unmount } = renderHook(() => useExplorerPanelSection(groups));
+    expect(result.current[0]).toEqual({ kind: 'home' });
     act(() => result.current[1]({ kind: 'timeline' }));
     expect(result.current[0]).toEqual({ kind: 'timeline' });
     expect(localStorage.getItem(PANEL_SECTION_STORAGE_KEY)).toBe('timeline');
     expect(track).toHaveBeenCalledWith('UI', 'Selected', 'ExplorerPanel.Timeline');
     unmount();
-    const again = renderHook(() => useExplorerPanelSection(groups, { kind: 'browser' }));
+    const again = renderHook(() => useExplorerPanelSection(groups));
     expect(again.result.current[0]).toEqual({ kind: 'timeline' });
   });
 
@@ -38,8 +36,8 @@ describe('useExplorerPanelSection', () => {
     vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new Error('blocked');
     });
-    const { result } = renderHook(() => useExplorerPanelSection(groups, null));
-    expect(result.current[0]).toEqual({ kind: 'mine' });
+    const { result } = renderHook(() => useExplorerPanelSection(groups));
+    expect(result.current[0]).toEqual({ kind: 'home' });
     act(() => result.current[1]({ kind: 'trash' }));
     expect(result.current[0]).toEqual({ kind: 'trash' });
   });

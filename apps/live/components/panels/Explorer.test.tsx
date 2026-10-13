@@ -70,12 +70,15 @@ afterEach(() => {
 });
 
 describe('Explorer', () => {
-  it('opens on the space holding the open document, under its Current Document card', () => {
+  it('opens on Home under its Current Document card, and lists My documents when picked', async () => {
     show();
     expect(screen.getByRole('region', { name: 'Current document' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Rename Roadmap' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Home' })).toBeTruthy();
+    expect(await screen.findByText('home view')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'My documents' }));
     expect(screen.getByRole('heading', { name: 'My documents' })).toBeTruthy();
-    expect(screen.getByRole('treeitem', { name: 'Budget' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Budget' })).toBeTruthy();
   });
 
   it('shows the picked section in the pane, never leaving the editor', async () => {

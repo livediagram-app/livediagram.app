@@ -282,8 +282,9 @@ export function VisibilityLegend({
   align = 'center',
 }: {
   current: ShareState;
-  // Centred under the pill (the header), or its right edge on the pill's (the Explorer's card, at a panel's edge).
-  align?: 'center' | 'end';
+  // Centred under the pill (the header), or laid out by a host that places it (`floating`: the Explorer's card portals
+  // it over the panel, whose scroll would clip it).
+  align?: 'center' | 'floating';
   // Opens Share; absent where the reader may not change who can see the document.
   onManage?: () => void;
 }) {
@@ -295,8 +296,8 @@ export function VisibilityLegend({
     <div
       aria-hidden
       data-visibility-legend=""
-      className={`absolute top-full z-10 w-[20rem] max-w-[calc(100vw-2rem)] pt-2 text-left ${
-        align === 'end' ? 'right-0' : 'left-1/2 -translate-x-1/2'
+      className={`w-[20rem] max-w-[calc(100vw-2rem)] pt-2 text-left ${
+        align === 'floating' ? '' : 'absolute top-full z-10 left-1/2 -translate-x-1/2'
       }`}
     >
       <div className="animate-dialog-in overflow-hidden rounded-xl border border-slate-200 bg-white pb-3 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50">

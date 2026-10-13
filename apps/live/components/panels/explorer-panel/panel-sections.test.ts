@@ -7,7 +7,6 @@ import {
   sectionLabel,
   sectionPage,
   sectionTelemetryRow,
-  type PanelSection,
 } from './panel-sections';
 
 // docs/specs/013-workspace/explorer-structure.md "The rail": every section a mode of the pane.
@@ -51,17 +50,12 @@ describe('the editor Explorer sections', () => {
     expect(sectionTelemetryRow({ kind: 'shared' })).toBe('SharedWithMe');
   });
 
-  it('shows the remembered section while it exists, else the space holding the open document', () => {
-    const team: PanelSection = { kind: 'team', id: 't1' };
-    expect(resolveSection({ remembered: { kind: 'inbox' }, groups, currentSpace: team })).toEqual({
-      kind: 'inbox',
-    });
+  it('shows the remembered section while it exists, else Home', () => {
+    expect(resolveSection({ remembered: { kind: 'inbox' }, groups })).toEqual({ kind: 'inbox' });
     // A team left since it was remembered.
-    expect(
-      resolveSection({ remembered: { kind: 'team', id: 'gone' }, groups, currentSpace: team }),
-    ).toEqual(team);
-    expect(resolveSection({ remembered: null, groups, currentSpace: null })).toEqual({
-      kind: 'mine',
+    expect(resolveSection({ remembered: { kind: 'team', id: 'gone' }, groups })).toEqual({
+      kind: 'home',
     });
+    expect(resolveSection({ remembered: null, groups })).toEqual({ kind: 'home' });
   });
 });

@@ -1,8 +1,7 @@
 'use client';
 
 // The section the editor's Explorer shows (docs/specs/013-workspace/explorer-structure.md "The rail"): remembered for
-// this viewer in this browser, a convenience only, so storage that throws or is empty falls back to the space holding
-// the open document.
+// this viewer in this browser, a convenience only, so storage that throws or is empty falls back to Home.
 import { useCallback, useState } from 'react';
 import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import {
@@ -34,10 +33,9 @@ function remember(section: PanelSection): void {
 
 export function useExplorerPanelSection(
   groups: PanelSectionGroup[],
-  currentSpace: PanelSection | null,
 ): [PanelSection, (next: PanelSection) => void] {
   const [picked, setPicked] = useState<PanelSection | null>(readRemembered);
-  const section = resolveSection({ remembered: picked, groups, currentSpace });
+  const section = resolveSection({ remembered: picked, groups });
   const pick = useCallback((next: PanelSection) => {
     trackSidebar(sectionTelemetryRow(next), 'panel');
     remember(next);

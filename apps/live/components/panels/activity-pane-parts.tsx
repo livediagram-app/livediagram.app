@@ -285,9 +285,10 @@ function PlaceChip({ place }: { place: DocumentPlace }) {
 
 // Nothing outstanding anywhere. No New Document CTA: a new document puts
 // nothing on this page; assigning an action or commenting does.
-export function ActivityEmptyState() {
+export function ActivityEmptyState({ compact = false }: { compact?: boolean } = {}) {
   return (
     <EmptyState
+      compact={compact}
       icon={<InboxIcon />}
       title="Nothing waiting on you"
       description="Open actions and Plan cards assigned to you, actions you assigned, and comment threads you're in, collect here across every document."

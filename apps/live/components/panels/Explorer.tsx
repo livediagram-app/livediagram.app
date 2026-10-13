@@ -23,10 +23,10 @@ import { ExplorerCurrentDocument } from '@/components/panels/explorer-panel/Expl
 import { useExplorerPanelSection } from '@/components/panels/explorer-panel/useExplorerPanelSection';
 import {
   panelSectionGroups,
-  type PanelSection,
+  sectionKey,
+  sectionLabel,
 } from '@/components/panels/explorer-panel/panel-sections';
 import { sidebarDivider } from '@/app/explorer/sidebar/sidebar-structure';
-import { isLocalOnly } from '@/lib/document-space';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
@@ -214,16 +214,7 @@ function ExplorerImpl({
     () => panelSectionGroups({ teams, hasBrowserDocuments: offlineDocuments.length > 0 }),
     [teams, offlineDocuments.length],
   );
-  const currentSpace: PanelSection | null = current
-    ? isLocalOnly(current)
-      ? { kind: 'browser' }
-      : { kind: 'mine' }
-    : currentTeam
-      ? { kind: 'team', id: currentTeam.team.id }
-      : currentShared
-        ? { kind: 'shared' }
-        : null;
-  const [section, pick] = useExplorerPanelSection(groups, currentSpace);
+  const [section, pick] = useExplorerPanelSection(groups);
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = !asPopover || popoverOpen === true;
   useEffect(() => {
@@ -348,13 +339,18 @@ function ExplorerImpl({
             section={section}
             teamName={teamName}
             ownerId={ownerId}
+            currentDocumentId={currentDocumentId}
+            onOpenDocument={onOpenDocument}
             onPick={pick}
             onNewFolder={newFolder}
             onLibraryChanged={onLibraryChanged ?? NOOP}
             tree={
               isTreeSection(section) ? (
                 <PanelExplorerTree
+                  // A new section opens at its root.
+                  key={sectionKey(section)}
                   section={section}
+                  rootLabel={sectionLabel(section, teamName)}
                   tree={tree}
                   busy={loading}
                   shared={shared}
@@ -368,7 +364,7 @@ function ExplorerImpl({
             }
             // Sign-in prompt for signed-out guests; an onboarding notice, so Minimal chrome drops it
             // (docs/specs/007-editor/power-user-mode.md).
-            footer={minimalChrome ? null : <SignInPrompt />}
+            footer={minimalChrome ? null : <SignInPrompt bar />}
           />
         </div>
 

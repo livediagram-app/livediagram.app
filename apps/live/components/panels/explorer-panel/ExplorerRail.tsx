@@ -113,13 +113,16 @@ export function ExplorerRail({
           <span aria-hidden className="flex shrink-0 items-center opacity-80">
             {icon}
           </span>
-          <span className={`text-optical-centre ${phone ? '' : 'min-w-0 flex-1 truncate'}`}>
+          <span
+            // Trimmed to its cap band only in a phone's chip: a truncated row label trimmed so loses its descenders.
+            className={phone ? 'text-optical-centre' : 'min-w-0 flex-1 truncate'}
+          >
             {label}
           </span>
           {badge ? (
             <span
               aria-hidden
-              className="text-optical-centre rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+              className="rounded-full bg-slate-200/70 px-1.5 text-[10px] font-semibold leading-4 text-slate-600 dark:bg-slate-700 dark:text-slate-200"
             >
               {badge}
             </span>

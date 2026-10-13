@@ -115,19 +115,15 @@ export function sectionTelemetryRow(s: PanelSection): SidebarTelemetryRow {
   return rows[s.kind];
 }
 
-// The section to show: the remembered one while it still exists, else the space holding the open document (This
-// browser for a Local only document, its team for a team document), else My documents.
+// The section to show: the remembered one while it still exists (a team left since is not), else Home.
 export function resolveSection({
   remembered,
   groups,
-  currentSpace,
 }: {
   remembered: PanelSection | null;
   groups: PanelSectionGroup[];
-  currentSpace: PanelSection | null;
 }): PanelSection {
   const keys = new Set(groups.flatMap((g) => g.sections.map(sectionKey)));
   if (remembered && keys.has(sectionKey(remembered))) return remembered;
-  if (currentSpace && keys.has(sectionKey(currentSpace))) return currentSpace;
-  return { kind: 'mine' };
+  return { kind: 'home' };
 }
