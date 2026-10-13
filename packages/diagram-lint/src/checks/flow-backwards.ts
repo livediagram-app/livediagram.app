@@ -45,7 +45,9 @@ export const flowBackwards: Check = (ctx) => {
       const at = queue.shift()!;
       for (const next of out.get(at) ?? []) {
         if (next === to) return true;
-        if (!seen.has(next)) seen.add(next) && queue.push(next);
+        if (seen.has(next)) continue;
+        seen.add(next);
+        queue.push(next);
       }
     }
     return false;
