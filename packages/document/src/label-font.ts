@@ -14,11 +14,36 @@
 //  - MULTI-LINE, what a sticky note wears: sized to fit a few lines of
 //    writing, so it runs smaller at every preset.
 
-import type { TextSize } from './index';
+import type { TextSize, TextSizePreset } from './index';
 import type { RunSize } from './rich-text';
 
+/**
+ * The Size slider's range (docs/specs/004-interface-design/fonts.md "Text size"): an exact
+ * size is a whole px from 6 to 48. 6 is the smallest that still reads at 100% zoom; 48 is a
+ * headline, past every preset (a label's Large is 32), so any older size has a place on it.
+ */
+export const TEXT_PX_MIN = 6;
+export const TEXT_PX_MAX = 48;
+
+/** Whether a size is an exact px from the slider rather than a named preset. */
+export function isTextPx(size: TextSize | undefined): size is number {
+  return typeof size === 'number';
+}
+
+/** A slider value made safe to store: a whole px clamped to the slider's range. */
+export function clampTextPx(px: number): number {
+  if (!Number.isFinite(px)) return TEXT_PX_MIN;
+  return Math.min(TEXT_PX_MAX, Math.max(TEXT_PX_MIN, Math.round(px)));
+}
+
+/** Whether a stored value is a size this model accepts: a preset or a slider px. */
+export function isTextSize(v: unknown): v is TextSize {
+  if (typeof v === 'number') return Number.isInteger(v) && v >= TEXT_PX_MIN && v <= TEXT_PX_MAX;
+  return v === 'scale' || v === 'sm' || v === 'md' || v === 'lg';
+}
+
 /** A shape / text element's label. */
-export const LABEL_FONT_PX: Record<TextSize, number> = {
+export const LABEL_FONT_PX: Record<TextSizePreset, number> = {
   sm: 14,
   md: 22,
   lg: 32,
@@ -28,7 +53,7 @@ export const LABEL_FONT_PX: Record<TextSize, number> = {
 };
 
 /** A sticky note's label, which runs smaller at every preset. */
-export const NOTE_FONT_PX: Record<TextSize, number> = {
+export const NOTE_FONT_PX: Record<TextSizePreset, number> = {
   sm: 12,
   md: 16,
   lg: 22,
@@ -58,9 +83,11 @@ export function runFontPx(size: RunSize, multiline = false): number {
  *
  * `multiline` is the sticky note: the one element type whose label is a block
  * of writing rather than a name. Absent `textSize` means the default preset,
- * which is `md`.
+ * which is `md`. An exact px size draws at that px on either scale.
  */
 export function labelFontPx(textSize: TextSize | undefined, multiline = false): number {
+  // An exact size is the same px on every scale: what the slider says is what draws.
+  if (isTextPx(textSize)) return textSize;
   const table = multiline ? NOTE_FONT_PX : LABEL_FONT_PX;
   return table[textSize ?? 'md'];
 }
@@ -75,7 +102,7 @@ export function labelFontPx(textSize: TextSize | undefined, multiline = false): 
  * (13px on the card) with no control at all, which read as too small.
  * 'scale' has nothing to fit here, so it draws at the default.
  */
-export const LEGEND_FONT_PX: Record<TextSize, number> = {
+export const LEGEND_FONT_PX: Record<TextSizePreset, number> = {
   sm: 11,
   md: 14,
   lg: 18,
@@ -84,5 +111,6 @@ export const LEGEND_FONT_PX: Record<TextSize, number> = {
 
 /** The px a legend row renders at. Absent `textSize` means `md`. */
 export function legendFontPx(textSize: TextSize | undefined): number {
+  if (isTextPx(textSize)) return textSize;
   return LEGEND_FONT_PX[textSize ?? 'md'];
 }

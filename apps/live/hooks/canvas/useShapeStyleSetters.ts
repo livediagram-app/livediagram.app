@@ -10,7 +10,7 @@ import {
   type ShapeKind,
   type ShapeMarker,
   type Tab,
-  type TextSize,
+  type TextSizePreset,
 } from '@livediagram/document';
 import { getTheme, type ShapeColorPreset } from '@/lib/themes';
 import {
@@ -187,11 +187,11 @@ export function useShapeStyleSetters({
     track('Element', 'Changed', telemetryType);
   };
   // Status markers (docs/specs/009-elements/shape-markers.md). A glyph shown inside the shape, left of its
-  // label; `null` clears it. `markerSize` is a TextSize bucket ('scale' tracks
+  // label; `null` clears it. `markerSize` is a TextSize preset ('scale' tracks
   // the element's text). Shapes only.
   const setMarkerSelected = (marker: ShapeMarker | null) =>
     setShapeFieldSelected({ marker: marker ?? undefined }, 'Marker');
-  const setMarkerSizeSelected = (size: TextSize) =>
+  const setMarkerSizeSelected = (size: TextSizePreset) =>
     setShapeFieldSelected({ markerSize: size }, 'MarkerSize');
 
   // A preset is one complete look (docs/specs/010-palette/style-presets.md): in a single history step it writes

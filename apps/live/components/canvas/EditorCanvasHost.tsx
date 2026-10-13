@@ -351,6 +351,7 @@ export function EditorCanvasHost() {
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
+    assessCleanupKind,
   } = useEditorContext();
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
@@ -898,9 +899,11 @@ export function EditorCanvasHost() {
           isReadOnly || embedMode
             ? undefined
             : {
-                run: (kind) => (kind === 'align' ? autoAlignTab() : autoLayoutTab(kind)),
+                run: (kind, judged) =>
+                  kind === 'align' ? autoAlignTab({ judged }) : autoLayoutTab(kind, { judged }),
                 preview: previewCleanup,
                 endPreview: endCleanupPreview,
+                assess: assessCleanupKind,
                 blocked: activeTabLocked,
               }
         }

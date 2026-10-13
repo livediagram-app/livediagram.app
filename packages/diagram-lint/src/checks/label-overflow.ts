@@ -24,7 +24,8 @@ export const labelOverflow: Check = (ctx) =>
     const holds = Math.max(1, Math.floor(room.height / (px * LABEL_LINE_HEIGHT)));
     if (lines <= holds) return [];
     const ref = refOf(ctx, box.id);
-    const larger = box.textSize === 'md' || box.textSize === 'lg';
+    // Bigger than Small (a preset or an exact px), so dropping to Small is a fix worth offering.
+    const larger = px > fontSizeFor('sm', box.type === 'sticky');
     return [
       {
         code: 'label-overflow' as const,

@@ -68,6 +68,7 @@ import type {
   TextAlignX,
   TextAlignY,
   TextSize,
+  TextSizePreset,
 } from './index';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
@@ -462,9 +463,9 @@ export type ShapeElement = {
   cellComments?: CellCommentThreads;
   // Status marker (docs/specs/009-elements/shape-markers.md): a small glyph (traffic-light dot / checkbox) shown
   // just left of the label, or centred when the shape has no label. `markerSize`
-  // is a TextSize bucket where 'scale' tracks the element's text size.
+  // is a TextSize preset where 'scale' tracks the element's text size (never a px: a marker is a dot).
   marker?: ShapeMarker;
-  markerSize?: TextSize;
+  markerSize?: TextSizePreset;
   aspectLocked?: boolean;
   opacity?: number; // 0..1, defaults to 1
   // Drop shadow (docs/specs/008-canvas/element-shadows.md). Absent = no shadow; see shadow.ts.

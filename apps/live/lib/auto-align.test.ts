@@ -40,22 +40,29 @@ describe('autoAlignElement', () => {
     expect(out.y % AUTO_ALIGN_GRID).toBe(0);
   });
 
-  it('keeps circles square by snapping to the larger side', () => {
+  it('keeps a square circle square by snapping to the larger side', () => {
     const out = autoAlignElement(
-      square({ shape: 'circle', width: 97, height: 52 }),
+      square({ shape: 'circle', width: 97, height: 93 }),
     ) as ShapeElement;
-    // 97 -> 100, 52 -> 50; larger side wins so both become 100.
+    // 97 -> 100, 93 -> 90; drawn square, so the larger side wins for both.
     expect(out.width).toBe(100);
     expect(out.height).toBe(100);
   });
 
-  it('keeps diamonds square the same way', () => {
+  it('keeps a wide diamond wide: a flowchart decision is never squared', () => {
     const out = autoAlignElement(
-      square({ shape: 'diamond', width: 43, height: 100 }),
+      square({ shape: 'diamond', width: 210, height: 116 }),
     ) as ShapeElement;
-    // 43 -> 40, 100 -> 100; larger side wins.
+    expect(out.width).toBe(210);
+    expect(out.height).toBe(120);
+  });
+
+  it('keeps an oval circle oval', () => {
+    const out = autoAlignElement(
+      square({ shape: 'circle', width: 97, height: 52 }),
+    ) as ShapeElement;
     expect(out.width).toBe(100);
-    expect(out.height).toBe(100);
+    expect(out.height).toBe(50);
   });
 
   it('preserves an explicit aspect-lock by anchoring on the larger axis change', () => {

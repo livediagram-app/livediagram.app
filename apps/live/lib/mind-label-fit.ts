@@ -5,7 +5,7 @@
 // growing the node and keeping its map tidy is the document package's (fitMindNodeHeight).
 
 import {
-  LABEL_FONT_PX,
+  labelFontPx,
   PADDING_PX,
   defaultPadding,
   fitMindNodeHeight,
@@ -20,7 +20,7 @@ import type { MeasureTextBlock } from '@/lib/text-hug';
 // fitted to the box once committed, but is typed at the middling fixed px, which is what has to
 // fit while typing, so it is measured at that.
 export function mindLabelFontPx(el: ShapeElement): number {
-  return LABEL_FONT_PX[el.textSize ?? 'scale'];
+  return labelFontPx(el.textSize ?? 'scale');
 }
 
 // Canvas px between the node's edge and its label, on every side (as BoxedElementView pads it).

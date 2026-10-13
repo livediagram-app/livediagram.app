@@ -8,6 +8,8 @@ import {
   LIVE_ELEMENT_FIELDS,
   SHAPE_KINDS,
   STICKY_PRESETS,
+  TEXT_PX_MAX,
+  TEXT_PX_MIN,
   THEMES,
   type Element,
 } from '@livediagram/document';
@@ -71,7 +73,7 @@ function aliasValue(el: Element, alias: ReturnType<typeof aliasesOf>[number]): s
     case 'border':
       return BORDER_STYLES.join('|');
     case 'text':
-      return TEXT_SIZES.join('|');
+      return `${TEXT_SIZES.join('|')}|${TEXT_PX_MIN}-${TEXT_PX_MAX}`;
     case 'line':
       return ARROW_STYLES.join('|');
   }

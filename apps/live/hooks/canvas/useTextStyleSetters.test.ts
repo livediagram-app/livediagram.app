@@ -9,7 +9,10 @@ import { useTextStyleSetters } from './useTextStyleSetters';
 // label px, one line of 1.25 leading.
 vi.mock('@/components/canvas/text-hug-measure', () => ({
   measureDrawnText: () => (el: TextElement) => () => {
-    const px = { sm: 14, md: 22, lg: 32, scale: 16 }[el.textSize ?? 'scale'] * (el.textScale ?? 1);
+    const size = el.textSize ?? 'scale';
+    const px =
+      (typeof size === 'number' ? size : { sm: 14, md: 22, lg: 32, scale: 16 }[size]) *
+      (el.textScale ?? 1);
     const bold = el.textBold ? 1.2 : 1;
     return { width: (((el.label ?? '').length * 10 * px) / 14) * bold, height: px * 1.25 };
   },

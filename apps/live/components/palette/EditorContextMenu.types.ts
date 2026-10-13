@@ -45,6 +45,7 @@ import type {
   ShapeMarker,
   TablePreset,
   TextSize,
+  TextSizePreset,
 } from '@livediagram/document';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
@@ -167,9 +168,9 @@ export type EditorContextMenuProps = {
   // Status markers (docs/specs/009-elements/shape-markers.md): set / clear the shape's marker glyph and its
   // size. Commit + hover-preview pairs, like the border tiles above.
   onSetMarker: (value: ShapeMarker | null) => void;
-  onSetMarkerSize: (value: TextSize) => void;
+  onSetMarkerSize: (value: TextSizePreset) => void;
   onPreviewMarker: (value: ShapeMarker | null) => void;
-  onPreviewMarkerSize: (value: TextSize) => void;
+  onPreviewMarkerSize: (value: TextSizePreset) => void;
   // Timeline rail (docs/specs/009-elements/timeline-rail.md): set the rail's point count.
   onSetRailCount: (count: number) => void;
   // Rating (docs/specs/009-elements/rating.md): the star score + its animation.

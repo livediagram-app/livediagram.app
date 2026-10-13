@@ -66,7 +66,8 @@ The table is in the order the carousel shows them, six to a page:
   pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
   diagonals, and Textbook a crisp colour-coded notation on graph paper. A dark-mode viewer sees each in its theme's
   dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
-- **Order.** Everyday is always first (it is what an untouched tab reads as). The rest follow a fixed, interleaved
+- **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
+  is what an untouched tab reads as). The rest follow a fixed, interleaved
   order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds two multi-colour looks,
   and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
   rather than the colourful looks clumping on one page. `apps/live/lib/tab-looks.test.ts` locks both rules.
@@ -75,8 +76,8 @@ The table is in the order the carousel shows them, six to a page:
   that once picked Carnival keeps its four settings and simply reads as its own mix (no card selected); nothing
   migrates.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
-- The looks sit in a **carousel**, six to a page (three columns, two on a phone), three pages, with arrows and page
-  dots.
+- The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
+  Mashup card and the eighteen looks make four pages, the last holding Garden alone.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
@@ -91,6 +92,34 @@ The table is in the order the carousel shows them, six to a page:
   selected; the tab simply has its own mix.
 - **Share roles:** an Editor picks looks. A Participant or Viewer never reaches the dialog (it is only offered on
   an editable tab, and the tab setters refuse a blocked session), so neither can apply a look.
+
+### Mashup
+
+The carousel's first card is **Mashup**, a random look generator: each press dresses the tab in a new, random look,
+and the user can keep pressing it to regenerate.
+
+- **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
+  whole built-in catalogue, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
+  with its strength from the patterns the looks use, so a busy pattern keeps the soft strength its look gave it.
+  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over eleven
+  thousand combinations).
+- **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every
+  mashup does too: a dark-mode viewer sees it in its theme's dark half, with the same contrast floor as the looks
+  (`apps/live/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
+- **Always new.** A roll that equals one of the eighteen looks, or the mashup the card already shows, is rolled
+  again (up to `MASHUP_REROLLS` times), so a press always changes the tab and never lands on a named look.
+- **The card.** Like a look's card (the sample diagram drawn in the mashup, in the viewer's half), named **Mashup**
+  with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Caveat, waves").
+  The dialog opens with a fresh roll on the card that is not applied yet, so the first press applies exactly what the
+  card shows. While the tab wears the card's mashup the card is selected, and the next press rolls a new one and
+  applies it. Its accessible name is "Mashup: a random look, press for another".
+- **Finish filter.** The card stays first under any filter; with a finish chosen, the mashup rolls within that
+  finish (a card showing another finish rolls afresh when the filter changes).
+- **Not stored**, like any look: the tab carries the four ordinary settings. Reopening the dialog shows a fresh roll,
+  and a tab still wearing an earlier mashup simply has its own mix (no card selected).
+- Applying a mashup is one undo step, exactly as a look is (`withLookApplied`).
+- **Share roles:** as for looks, an Editor rolls mashups; a Participant or Viewer never reaches the dialog.
+- **Telemetry:** a mashup press fires `track('Tab', 'Changed', 'Mashup')` in place of the `Look` event.
 
 ### Fine-tune
 
@@ -112,8 +141,9 @@ root, scoped to the canvas), so it costs nothing the rest of the time. Reduced m
 
 The tab's typography ([Fonts](../004-interface-design/fonts.md)): a **preview** of the sample diagram lettered in
 the tab's font at the size new text takes; the **Typeface** specimen cards ("Aa" and the name in each face, with its
-style), six to a carousel page (three to a row, two rows), "Editor default" first; and **Size of New Text** as four tiles (Small, Medium,
-Large, Scale), each drawing a letter at that size. Picking a typeface or a size **applies to the whole tab at
+style), six to a carousel page (three to a row, two rows), "Editor default" first; and **Size of New Text** on the one
+[Text Size](../004-interface-design/fonts.md#text-size) control (Scale, or a 6 to 48 px slider), the preview following the slider as
+it moves. Picking a typeface or a size **applies to the whole tab at
 once**: the tab's setting, and every element following it again (an element's own font is cleared, every
 text-bearing element takes the size). There is no separate apply action.
 
@@ -189,7 +219,7 @@ TabStyleTourCompleted` / `TabStyleTourSkipped`.
 ## Telemetry
 
 Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button, Change Theme) or
-`track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')`;
+`track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')` (a Mashup press, `track('Tab', 'Changed', 'Mashup')`);
 the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (the Apply to All actions, and their
 `FinishToAll` and `ResetElements` events, are gone)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).

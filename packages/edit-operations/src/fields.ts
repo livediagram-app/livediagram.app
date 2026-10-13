@@ -6,6 +6,9 @@
 import type { EditRejection, EditWarning } from '@livediagram/api-schema';
 import {
   BORDER_DASH_ARRAY,
+  isTextSize,
+  TEXT_PX_MAX,
+  TEXT_PX_MIN,
   ELEMENT_FIELD_NAMES,
   LIVE_ELEMENT_FIELDS,
   coerceShapeKind,
@@ -39,6 +42,8 @@ export const FIELD_ALIASES = [
 type Alias = (typeof FIELD_ALIASES)[number];
 
 export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
+/** What the `text` alias takes, as the format line and a rejection spell it. */
+export const TEXT_SIZE_VALUES = `${TEXT_SIZES.join(' ')} or a px from ${TEXT_PX_MIN} to ${TEXT_PX_MAX}`;
 export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
 export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
@@ -257,11 +262,14 @@ function writeAlias(
         return text(`one of ${BORDER_STYLES.join(' ')}`);
       patch.strokeStyle = value;
       return null;
-    case 'text':
-      if (value !== null && !oneOf(TEXT_SIZES, value))
-        return { ...text(`one of ${TEXT_SIZES.join(' ')}`) };
-      patch.textSize = value;
+    case 'text': {
+      // A preset, or an exact whole px from the Size slider's range (docs/specs/004-interface-design/fonts.md
+      // "Text size"), written as a number or a numeric string ("18").
+      const size = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
+      if (size !== null && !isTextSize(size)) return { ...text(`one of ${TEXT_SIZE_VALUES}`) };
+      patch.textSize = size;
       return null;
+    }
     case 'line':
       if (value !== null && !oneOf(ARROW_STYLES, value))
         return text(`one of ${ARROW_STYLES.join(' ')}`);

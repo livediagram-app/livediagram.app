@@ -103,7 +103,11 @@ export type ElementId = string;
 
 // --- Shared boxed-element fields ------------------------------------------
 
-export type TextSize = 'scale' | 'sm' | 'md' | 'lg';
+// A label's size (docs/specs/004-interface-design/fonts.md "Text size"): one of the named
+// presets ('scale' fits a note's text to its box), or an exact whole px from the Size slider,
+// TEXT_PX_MIN to TEXT_PX_MAX (label-font.ts).
+export type TextSizePreset = 'scale' | 'sm' | 'md' | 'lg';
+export type TextSize = TextSizePreset | number;
 
 // Padding between the element's box and its label. Stored as a t-shirt
 // size for round-trip simplicity; the renderer converts to px.
@@ -503,6 +507,7 @@ export * from './arrow-label-wrap';
 export * from './arrow-bend';
 export * from './arrow-scale';
 export * from './label-font';
+export * from './table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
 export * from './border-style';
@@ -620,6 +625,8 @@ export * from './element-fields';
 
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
+// The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
+export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';

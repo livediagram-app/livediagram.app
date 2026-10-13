@@ -8,9 +8,11 @@ import {
   viewElementInTheme,
   type Appearance,
   type Element,
+  sketchRandom,
   type Tab,
 } from '@livediagram/document';
-import { TAB_LOOKS, withLookApplied } from './tab-looks';
+import { rollMashup } from './look-mashup';
+import { TAB_LOOKS, withLookApplied, type TabLook } from './tab-looks';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 
 // docs/specs/011-theme/canvas-and-theme-dialog.md "Looks": every one-click look stays readable in both appearances.
@@ -53,10 +55,17 @@ const hex = (c: string) => {
 };
 const below = (fg: string, bg: string, min: number) => !(contrastRatio(hex(fg), hex(bg)) >= min);
 
-describe('every look is accessible in both appearances', () => {
-  for (const look of TAB_LOOKS) {
+// The Mashup card's random looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Mashup"), a seeded spread of them.
+const MASHUP_SAMPLES = 120;
+const mashupRandom = sketchRandom(42);
+const mashups: TabLook[] = Array.from({ length: MASHUP_SAMPLES }, () =>
+  rollMashup({ random: mashupRandom }),
+);
+
+describe('every look and mashup is accessible in both appearances', () => {
+  for (const [i, look] of [...TAB_LOOKS, ...mashups].entries()) {
     for (const appearance of ['light', 'dark'] as Appearance[]) {
-      it(`${look.id} (${appearance})`, () => {
+      it(`${look.id === 'mashup' ? `mashup ${i} (${look.description})` : look.id} (${appearance})`, () => {
         const styled = withLookApplied(tab(), look);
         const map = themeViewMap(styled.theme, appearance);
         const canvas = resolveTabBackdrop(styled, appearance).backgroundColor;

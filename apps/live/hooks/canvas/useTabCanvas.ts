@@ -16,9 +16,10 @@ import {
 } from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import { cleanupElements } from '@/lib/tab-cleanup';
+import type { CleanupKind } from '@/lib/tab-cleanup';
+import { withTidyEngine, type TidyEngine } from '@/lib/tidy-engine';
 import { useTabTheme } from './useTabTheme';
-import { tabLookById, withLookApplied } from '@/lib/tab-looks';
+import { tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import {
   withTabFinish,
   withTabFont,
@@ -31,6 +32,9 @@ type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every
   // handler no-ops when set.
   editsBlocked: boolean;
+  // Shows a short notice (a toast): a tidier refused because it would change nothing or damage
+  // the drawing says so rather than doing nothing silently.
+  notify?: (message: string) => void;
   activeId: string;
   activeTab: Tab;
   // History-aware element mutator. Used by auto-align and auto-layout.
@@ -47,7 +51,16 @@ type TabCanvasDeps = {
 };
 
 export function useTabCanvas(deps: TabCanvasDeps) {
-  const { editsBlocked, activeId, activeTab, commit, commitTabs, tickTabs, checkpointBurst } = deps;
+  const {
+    editsBlocked,
+    activeId,
+    activeTab,
+    commit,
+    commitTabs,
+    tickTabs,
+    checkpointBurst,
+    notify,
+  } = deps;
 
   // Shared body of the slider setters: one undoable step per gesture
   // (checkpoint when its burst opens), then history-less ticks for the
@@ -61,31 +74,50 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // unmount / page hide so the last drag isn't lost (docs/specs/017-telemetry/telemetry.md).
   const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
-  const autoAlignTab = () => {
+  // A tidier that would change nothing or damage the drawing is refused with a notice
+  // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"). The Tidy Up popover
+  // judges first and greys such a tidier out, so its presses arrive `judged`; the command palette's
+  // are judged here, on the live tab (no preview is on screen there). The tidiers load on demand
+  // (lib/tidy-engine.ts): already there after the popover opens, fetched at the press otherwise.
+  const refused = (engine: TidyEngine, kind: CleanupKind, judged: boolean | undefined): boolean => {
+    if (judged) return false;
+    const verdict = engine.assessCleanup(activeTab.elements, kind, activeTab.layers);
+    const name = kind === 'align' ? 'Auto-align' : AUTO_LAYOUT_CHOICES[kind].tileName;
+    const notice = engine.verdictNotice(name, verdict);
+    if (notice) notify?.(notice);
+    return notice !== null;
+  };
+
+  const autoAlignTab = (opts: { judged?: boolean } = {}) => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
-    // `commit` snapshots the pre-align state, so undo restores it.
-    commit((els) => cleanupElements(els, 'align', activeTab.layers));
-    track('Tab', 'Aligned');
+    withTidyEngine((engine) => {
+      if (refused(engine, 'align', opts.judged)) return;
+      // `commit` snapshots the pre-align state, so undo restores it.
+      commit((els) => engine.cleanupElements(els, 'align', activeTab.layers));
+      track('Tab', 'Aligned');
+    });
   };
 
   // Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md, GitHub #12): recompute element
   // positions from the arrow graph rather than merely grid-snapping current
   // positions like Auto-align. `choice` picks the layout style (docs/specs/008-canvas/layout-cleanup.md
   // "Layout styles"): the smart layered default, a forced-direction
-  // flowchart, tree, or mindmap. Pins the laid-out block to the diagram's
-  // current top-left so it stays where the user is looking instead of
-  // jumping to the origin, and grid-snaps the result (the same final pass
-  // the AI-apply path uses). One undoable op via `commit`.
-  const autoLayoutTab = (choice: AutoLayoutChoice = 'smart') => {
+  // flowchart, tree, or mindmap. The tidy profile lands the laid-out block
+  // where the shapes were, clear of what it does not move, with centres on the
+  // grid. One undoable op via `commit`.
+  const autoLayoutTab = (choice: AutoLayoutChoice = 'smart', opts: { judged?: boolean } = {}) => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
-    // Everything the layout needs, including the origin it pins to, is read
-    // inside the updater from the elements it is given: a commit taken while a
-    // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
-    // so `current` is the true pre-hover state and undo returns there.
-    commit((current) => cleanupElements(current, choice, activeTab.layers));
-    track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
+    withTidyEngine((engine) => {
+      if (refused(engine, choice, opts.judged)) return;
+      // Everything the layout needs, including the origin it pins to, is read
+      // inside the updater from the elements it is given: a commit taken while a
+      // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
+      // so `current` is the true pre-hover state and undo returns there.
+      commit((current) => engine.cleanupElements(current, choice, activeTab.layers));
+      track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
+    });
   };
 
   // Tab default font (docs/specs/004-interface-design/fonts.md): every text element without its own
@@ -106,11 +138,12 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   // A look (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the tab's theme, finish, font and pattern at
   // once, as one undo step. The theme lands exactly as picking it does (withThemeApplied).
-  const applyTabLook = (id: string) => {
+  // A named look comes by id; the Mashup card's random look (lib/look-mashup.ts) comes whole.
+  const applyTabLook = (lookOrId: string | TabLook) => {
     if (editsBlocked) return;
-    const look = tabLookById(id);
+    const look = typeof lookOrId === 'string' ? tabLookById(lookOrId) : lookOrId;
     if (!look) return;
-    track('Tab', 'Changed', 'Look');
+    track('Tab', 'Changed', look.id === 'mashup' ? 'Mashup' : 'Look');
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? withLookApplied(t, look) : t)));
   };
 

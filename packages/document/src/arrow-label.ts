@@ -14,6 +14,8 @@ import type { TextSize } from './index';
 // (sm 12 / md 14 / lg 20 / scale 18). Default 'sm' keeps the historic
 // 12px label size for arrows authored before the field existed.
 export function arrowLabelFontSize(size: TextSize | undefined): number {
+  // An exact size from the Size slider is the caption's own px.
+  if (typeof size === 'number') return size;
   switch (size) {
     case 'lg':
       return 20;

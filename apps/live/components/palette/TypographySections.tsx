@@ -1,12 +1,12 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { FontGlyph } from '@/components/rich-text/rich-text-toolbar-icons';
-import { DotsIcon, NonePaddingIcon, PaddingIcon, ScaleIcon } from './palette-icons';
-import { FONTS, resolveFontStack } from '@livediagram/document';
+import { DotsIcon, NonePaddingIcon, PaddingIcon } from './palette-icons';
+import { TextSizeControl, type PresetPx } from './TextSizeControl';
+import { FONTS, legendFontPx, resolveFontStack } from '@livediagram/document';
 import type { Padding, TextSize } from '@livediagram/document';
 
 // The typography controls — Font / Size / Padding — as three collapsible
@@ -18,13 +18,6 @@ import type { Padding, TextSize } from '@livediagram/document';
 // at-most-one-open state), the current values for the active-tile highlight,
 // and the setters.
 
-const TEXT_SIZE_OPTIONS: { key: TextSize; label: string; icon: ReactNode }[] = [
-  { key: 'scale', label: 'Scale', icon: <ScaleIcon /> },
-  { key: 'sm', label: 'Small', icon: <DotsIcon count={1} /> },
-  { key: 'md', label: 'Medium', icon: <DotsIcon count={2} /> },
-  { key: 'lg', label: 'Large', icon: <DotsIcon count={3} /> },
-];
-
 const TEXT_PADDING_OPTIONS: { key: Padding; label: string }[] = [
   { key: 'none', label: 'None' },
   { key: 'sm', label: 'Small' },
@@ -32,58 +25,11 @@ const TEXT_PADDING_OPTIONS: { key: Padding; label: string }[] = [
   { key: 'lg', label: 'Large' },
 ];
 
-// The Size tiles on their own, for a menu section that owns a text size but
-// not a label: a chart's key and a Legend card (docs/specs/009-elements/pie-chart.md), which have no Text
-// flyout because they have no label to type. `withScale` is off there, since
-// a key has nothing to fit its text to.
-export function TextSizeTiles({
-  current,
-  onSet,
-  onPreview,
-  onPreviewEnd,
-  withScale = true,
-}: {
-  current: TextSize | null;
-  onSet: (size: TextSize) => void;
-  onPreview?: (size: TextSize) => void;
-  onPreviewEnd?: () => void;
-  withScale?: boolean;
-}) {
-  const options = withScale
-    ? TEXT_SIZE_OPTIONS
-    : TEXT_SIZE_OPTIONS.filter((s) => s.key !== 'scale');
-  return (
-    <MenuTileGrid cols={withScale ? 2 : 3}>
-      {options.map((s) => (
-        <MenuTile
-          key={s.key}
-          active={current === s.key}
-          label={s.label}
-          icon={s.icon}
-          {...(onPreview
-            ? {
-                onPointerEnter: onMouseHover(() => onPreview(s.key)),
-                onPointerLeave: onMouseHover(() => onPreviewEnd?.()),
-              }
-            : {})}
-          onClick={() => onSet(s.key)}
-        />
-      ))}
-    </MenuTileGrid>
-  );
-}
-
-// A key's Text Size (docs/specs/009-elements/pie-chart.md), captioned the way the Chart section captions its
-// Legend placement tiles, so it can sit under them or under a Legend's rows.
-export function LegendTextSize(props: Omit<Parameters<typeof TextSizeTiles>[0], 'withScale'>) {
-  return (
-    <>
-      <p className="px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-        Text Size
-      </p>
-      <TextSizeTiles {...props} withScale={false} />
-    </>
-  );
+// A key's Text Size (docs/specs/009-elements/pie-chart.md): the one Text Size control with no Scale,
+// since a key has no label to fit, for a menu section that owns a text size but not a label (a
+// chart's key, a Legend card, a Sankey's labels). Its presets read the legend's own scale.
+export function LegendTextSize(props: Omit<Parameters<typeof TextSizeControl>[0], 'withScale'>) {
+  return <TextSizeControl {...props} presetPx={props.presetPx ?? legendFontPx} withScale={false} />;
 }
 
 type AccordionProps = {
@@ -95,6 +41,7 @@ type AccordionProps = {
 export function TypographySections({
   currentFont,
   currentSize,
+  presetPx,
   padding,
   onSetFont,
   onSetSize,
@@ -108,6 +55,8 @@ export function TypographySections({
   currentFont: string | null;
   // null = mixed / unset (no tile highlighted), e.g. a multi-run text selection.
   currentSize: TextSize | null;
+  // The scale the selection's presets draw on (presetPxFor), for the slider's thumb and readout.
+  presetPx: PresetPx;
   padding: Padding;
   onSetFont: (font: string | null) => void;
   onSetSize: (size: TextSize) => void;
@@ -147,8 +96,9 @@ export function TypographySections({
         </MenuTileGrid>
       </MenuAccordionSection>
       <MenuAccordionSection title="Size" icon={<DotsIcon count={2} />} {...sectionProps('size')}>
-        <TextSizeTiles
+        <TextSizeControl
           current={currentSize}
+          presetPx={presetPx}
           onSet={onSetSize}
           onPreview={onPreviewSize}
           onPreviewEnd={onPreviewEnd}

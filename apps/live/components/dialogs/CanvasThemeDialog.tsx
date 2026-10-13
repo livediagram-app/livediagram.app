@@ -35,7 +35,7 @@ import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';
 import { easeNextStyleChange } from '@/lib/tab-style-ease';
 import { LooksHome } from './LooksHome';
-import { activeLookId } from '@/lib/tab-looks';
+import { activeLookId, type LookSettings, type TabLook } from '@/lib/tab-looks';
 
 // 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
 export type CanvasThemeTab = 'looks' | 'canvas' | 'theme' | 'font' | 'finish';
@@ -87,7 +87,8 @@ type CanvasThemeDialogProps = {
   // The tab's own background, unresolved, for the Finish preview's paper.
   canvasBackground?: string;
   // Looks: set the tab's theme, finish, font and pattern at once (lib/tab-looks.ts).
-  onApplyLook: (id: string) => void;
+  // A named look's id, or the Mashup card's random look whole.
+  onApplyLook: (look: string | TabLook) => void;
   onClose: () => void;
 };
 
@@ -123,6 +124,14 @@ export function CanvasThemeDialog({
   useModalGuard(true);
   // Every pick eases the canvas into its new colours (lib/tab-style-ease.ts).
   const onApplyLook = eased(applyLook);
+  // The tab's four look settings: which look (or mashup) it wears.
+  const lookSettings: LookSettings = {
+    theme: themeId,
+    finish,
+    font: font ?? undefined,
+    backgroundPattern,
+    backgroundOpacity,
+  };
   // How the next view arrives: the first one only fades (the dialog has its own entrance), then a move into a panel
   // slides forward and a move home slides back.
   const [enter, setEnter] = useState<'fade' | 'forward' | 'back'>('fade');
@@ -241,13 +250,8 @@ export function CanvasThemeDialog({
               ) : null}
               {tab === 'looks' ? (
                 <LooksHome
-                  activeLook={activeLookId({
-                    theme: themeId,
-                    finish,
-                    font: font ?? undefined,
-                    backgroundPattern,
-                    backgroundOpacity,
-                  })}
+                  settings={lookSettings}
+                  activeLook={activeLookId(lookSettings)}
                   onPickLook={onApplyLook}
                   themeId={themeId}
                   finish={resolveFinish(finish, undefined)}

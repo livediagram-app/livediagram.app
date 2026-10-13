@@ -48,7 +48,7 @@ import type { PageLayoutId } from '@livediagram/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
-import { lockedElementIds } from '@/lib/tab-cleanup';
+import { lockedElementIds } from '@/lib/locked-element-ids';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
