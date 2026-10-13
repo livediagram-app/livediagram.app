@@ -3482,9 +3482,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     cancelToCheckpoint,
     onIconElementDroppedOnShape: editsBlocked ? undefined : dropIconElementOnShape,
     onPlanCardDroppedOnBoard: editsBlocked ? undefined : plan.dropPlanCardOnBoard,
-    // Click (not drag) on an annotation marker opens its note editor
-    // (docs/specs/009-elements/annotations.md). Blocked alongside other edits on a locked / read-only tab.
-    onAnnotationClicked: editsBlocked ? undefined : openNote,
     autoRebindArrowsRef,
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
