@@ -109,6 +109,34 @@ const PRESENTATION_FIELDS = (() => {
   return [...block.matchAll(/^ {2}([a-zA-Z]+)\??:/gm)].map((m) => `Presentation-${m[1]}`);
 })();
 
+// The Settings dialog's presenter rows (settings-catalogue.ts presentingToggle / presentingChoice): a toggle sends
+// `Presentation-<field>On|Off` for each boolean field, a choice `Presentation-<field><Option>` (choiceTelemetryType).
+const PRESENTATION_SETTINGS = (() => {
+  const source = read('live/lib/presentation-config.ts');
+  const start = source.indexOf('export type PresentationConfig = {');
+  const block = source.slice(start, source.indexOf('\n};', start));
+  const fields = [...block.matchAll(/^ {2}([a-zA-Z]+)\??: ([A-Za-z]+);/gm)].map(
+    (m) => [m[1]!, m[2]!] as const,
+  );
+  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+  const unionOf = (type: string) => {
+    const m = new RegExp(`export type ${type} = ([^;]+);`).exec(source);
+    return m ? [...m[1]!.matchAll(/'([^']+)'/g)].map((x) => x[1]!) : [];
+  };
+  const seconds = [...source.matchAll(/\{ seconds: (\d+),/g)].map((m) => m[1]!);
+  return {
+    toggled: fields
+      .filter(([, type]) => type === 'boolean')
+      .flatMap(([f]) => [`Presentation-${f}On`, `Presentation-${f}Off`]),
+    changed: [
+      ...fields
+        .filter(([, type]) => type !== 'boolean' && type !== 'number')
+        .flatMap(([f, type]) => unionOf(type).map((o) => `Presentation-${f}${cap(o)}`)),
+      ...seconds.map((n) => `Presentation-autoAdvanceSeconds${n}`),
+    ],
+  };
+})();
+
 // The photo import's detector tokens (apps/live photo-model/telemetry.ts):
 // PhotoDetectHybrid<Backend> or PhotoDetectClassical<Reason>.
 const PHOTO_DETECTORS = (() => {
@@ -339,6 +367,12 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: ELEMENT_WHY,
   },
   'apps/live/app/document/[id]/useSlideDeck.ts UI·Changed': { values: PRESENTATION_FIELDS },
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Toggled': {
+    values: PRESENTATION_SETTINGS.toggled,
+  },
+  'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
+    values: PRESENTATION_SETTINGS.changed,
+  },
   // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.
   'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
