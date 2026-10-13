@@ -18,7 +18,7 @@ export function pageTourSteps(kind: PageKind, now: PageTourNow): PageTourStep[] 
     case 'slide':
       return slideTourSteps();
     case 'article':
-      return articleTourSteps(now);
+      return articleTourSteps();
     case 'logo':
       return logoTourSteps(now.combineShowing);
     default:

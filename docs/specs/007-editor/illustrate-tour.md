@@ -35,11 +35,12 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
 - **Once ever per kind, per person**, through the synced `illustrateTourKinds` user preference
   ([User preferences](user-preferences.md)): the kinds whose track has been taken, skipped mid-way or declined.
   Each never offers itself again, on any device; a page of another kind still offers its own.
-  `illustrateTourSeen` true counts every kind as toured (Settings' switch off, [Power user mode](power-user-mode.md)),
-  and is set once all four kinds are.
+  `illustrateTourSeen` true counts every kind as toured only while [Power user mode](power-user-mode.md) is on: an
+  answer given before the tour offered each kind once named no kind, so each kind is offered once more
+  (`apps/live/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
 - **Replayable from Settings**: the **Illustrate Tour** switch in Settings' **Tours** category, built as the other
-  tours' are (on means "not seen yet"). Turning it on clears both preferences, so every kind offers its track
-  again; closing Settings runs the track for the page on screen straight away when the person is in Illustrate,
+  tours' are (on means a kind is still owed). Turning it off answers every kind; turning it on clears both
+  preferences, so every kind offers its track again; closing Settings runs the track for the page on screen straight away when the person is in Illustrate,
   or offers it the next time they enter Illustrate.
 - **Replayable from the page**: every page's panel carries **Show Me**, which runs that page's track on demand
   ([Show Me](show-me.md)), wherever the offer stands.
@@ -53,7 +54,15 @@ while its step is up is theirs, kept as any pick is (one edit, undoable).
 ## The steps
 
 A welcome card, then the track's steps, then its outro card; the bookend cards sit outside the step count. Each
-step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's.
+step rings one control of the tour page (or the Slide Deck), held by its own page rather than the first page's,
+never the whole page: a ring that size would light most of the screen, so a step about the page itself is a card
+on its own (centred, counted, no ring), and a popover step rings its title-bar button until the popover shows.
+
+The welcome card names its page kind, never the mode: eyebrow **Slides tour**, **Infographic tour**, **Article
+tour** or **Logo tour**, over an illustration of that kind (`components/tour/art/illustrate-tour-art.tsx`): a
+slide whose words and picture trade sides as layouts are picked beside it, with a Present button; an infographic
+page whose band, headline, bars and ring chart fill in; an article page written line by line, its next page
+behind; a logo's two shapes meeting on the page's guides, its wordmark appearing.
 The exact strings live in `apps/live/components/tour/<kind>-tour-steps.ts`.
 
 **A step that opens a popover** (Layout, Background, the Slide Deck) opens it once on entering, by pressing its
@@ -92,9 +101,9 @@ Layouts) and closes it on leaving.
 ### Article track
 
 0. **Getting started with articles?** (offer): a quick look at writing an article.
-1. **Write on the Page** (the page): click to write, `/` for blocks; full pages flow onto the next.
-2. **The Page Toolbar** (the article's page toolbar while it shows; otherwise a centred card saying where it
-   appears).
+1. **Write on the Page** (a centred card, no ring): click to write, `/` for blocks; full pages flow onto the next.
+2. **The Page Toolbar** (the article's page toolbar, held up on the tour page through the step: it otherwise shows
+   only while a page is hovered or written on).
 3. **Article Style** (the page's panel, opened on Style): looks, accent, margins, page numbers, for every page of
    the article.
 4. **Fonts and Spacing** (the panel, opened on Text).
@@ -136,8 +145,8 @@ The Draw tour's funnel, with its own tokens; the track shows in the step tokens:
 
 ## Power user mode
 
-[Power user mode](power-user-mode.md) marks the Illustrate tour seen (`illustrateTourSeen`, every kind) alongside the
-Diagram, Plan, Facilitate and Draw tours.
+[Power user mode](power-user-mode.md) marks the Illustrate tour seen (`illustrateTourSeen`, every kind while the mode
+is on) alongside the Diagram, Plan, Facilitate and Draw tours.
 
 ## Code
 

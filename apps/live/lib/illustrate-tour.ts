@@ -1,4 +1,5 @@
 import type { PageKind } from '@livediagram/document';
+import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // The Illustrate tour's relaunch signal (docs/specs/007-editor/illustrate-tour.md "Where it appears"): the Settings
@@ -12,7 +13,8 @@ export function requestIllustrateTourRelaunch(): void {
 }
 
 // Each page kind offers its own track once (docs/specs/007-editor/illustrate-tour.md "Where it appears"):
-// `illustrateTourSeen` counts every kind as seen; otherwise `illustrateTourKinds` lists the kinds answered.
+// `illustrateTourKinds` lists the kinds answered; `illustrateTourSeen` counts them all only for a power user
+// (tourTrackSeen).
 export const ILLUSTRATE_TOUR_KINDS: readonly PageKind[] = [
   'slide',
   'infographic',
@@ -24,12 +26,15 @@ export function illustrateKindSeen(
   prefs: UserPreferences | null | undefined,
   kind: PageKind,
 ): boolean {
-  return prefs?.illustrateTourSeen === true || (prefs?.illustrateTourKinds ?? []).includes(kind);
+  return tourTrackSeen(prefs, prefs?.illustrateTourKinds, prefs?.illustrateTourSeen, kind);
 }
 
-/** The preferences with `kind` answered; once every kind is, the whole tour counts as seen. */
+/** Whether any kind's track is still owed: what the Settings row's switch shows. */
+export function illustrateTourOwed(prefs: UserPreferences | null | undefined): boolean {
+  return ILLUSTRATE_TOUR_KINDS.some((k) => !illustrateKindSeen(prefs, k));
+}
+
+/** The preferences with `kind` answered. */
 export function markIllustrateKindSeen(prefs: UserPreferences, kind: PageKind): UserPreferences {
-  const kinds = [...new Set([...(prefs.illustrateTourKinds ?? []), kind])];
-  const all = ILLUSTRATE_TOUR_KINDS.every((k) => kinds.includes(k));
-  return { ...prefs, illustrateTourKinds: kinds, ...(all ? { illustrateTourSeen: true } : {}) };
+  return { ...prefs, illustrateTourKinds: withTracksAnswered(prefs.illustrateTourKinds, [kind]) };
 }

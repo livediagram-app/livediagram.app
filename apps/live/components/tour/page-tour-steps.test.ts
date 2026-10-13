@@ -2,6 +2,7 @@
 // The Illustrate tour's tracks (docs/specs/007-editor/illustrate-tour.md "The steps"): one per page kind, as Show Me
 // runs them and behind a welcome card as the tour offers them, left without a control that is not on screen.
 import { describe, expect, it } from 'vitest';
+import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourApi } from './page-tour-api';
 import {
   illustrateTourSteps,
@@ -12,7 +13,7 @@ import {
 import { illustrateTourStepTelemetryType } from './IllustrateTourHost';
 
 const api: PageTourApi = { pageId: 'p1', openPanel: () => {}, closePanel: () => {} };
-const NOW = { combineShowing: false, toolbarShowing: false };
+const NOW = { combineShowing: false };
 const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
@@ -60,14 +61,13 @@ describe('the tracks', () => {
     ]);
   });
 
-  it('points at the article toolbar while it shows, and says where it appears otherwise', () => {
-    const toolbar = (showing: boolean) =>
-      pageTourSteps('article', { ...NOW, toolbarShowing: showing }).find(
-        (s) => s.id === 'toolbar',
-      )!;
-    expect(toolbar(true).selector?.(api)).toBe('[data-page-toolbar]');
-    expect(toolbar(false).selector ?? toolbar(false).target).toBeUndefined();
-    expect(toolbar(false).body).toMatch(/^While you write/);
+  it('holds the article toolbar up on the tour page through its step', () => {
+    const toolbar = pageTourSteps('article', NOW).find((s) => s.id === 'toolbar')!;
+    expect(toolbar.selector?.(api)).toBe('[data-page-toolbar]');
+    void toolbar.prepare?.(api);
+    expect(readPinnedPageToolbar()).toBe('p1');
+    toolbar.cleanup?.(api);
+    expect(readPinnedPageToolbar()).toBeNull();
   });
 
   it('holds every control to the tour page, never the first page', () => {

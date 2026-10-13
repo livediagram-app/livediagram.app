@@ -2,6 +2,7 @@
 // Show Me on a page (docs/specs/007-editor/illustrate-tour.md, show-me.md, logo-pages.md "Show Me"): every page's panel
 // runs its kind's track on that page, opening the real controls a step is about and closing them again.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutIllustratePages, pageKindOf, type IllustratePage } from '@livediagram/document';
@@ -236,14 +237,21 @@ describe('an infographic’s Show Me', () => {
 });
 
 describe('an article’s Show Me', () => {
-  it('says where the toolbar appears, then opens Style and Text', async () => {
+  it('holds the page toolbar up on its step, then opens Style and Text', async () => {
     render(<Page of={page('article')} />);
+    // The toolbar as PageToolbar draws it; the step pins it to the tour page (it shows on hover otherwise).
+    const bar = document.createElement('div');
+    bar.setAttribute('data-page-toolbar', '');
+    document.body.append(bar);
     await showMe();
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'ArticleTour');
     await shows(() => expect(stepDialog(/Write on the Page/)).toBeTruthy());
     await next();
     await shows(() => expect(stepDialog(/The Page Toolbar/)).toBeTruthy());
+    expect(readPinnedPageToolbar()).not.toBeNull();
     await next();
+    await shows(() => expect(readPinnedPageToolbar()).toBeNull());
+    bar.remove();
     await shows(() => expect(stepDialog(/Article Style/)).toBeTruthy());
     expect(screen.getByText('style section')).toBeTruthy();
     await next();

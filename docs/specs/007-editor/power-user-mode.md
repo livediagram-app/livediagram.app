@@ -27,6 +27,9 @@ Switching the mode **on** writes these values, once:
 | AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
+The Plan and Illustrate tours offer each of their tracks once (`planTourTracks`, `illustrateTourKinds`); their seen
+flag counts every track only while the mode is on, so switching it off gives back every track not yet answered.
+
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
 ([Motion](../004-interface-design/motion.md)).
 

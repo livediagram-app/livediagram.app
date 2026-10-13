@@ -10,6 +10,8 @@ import {
   type UserPreferences,
 } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
+import { ILLUSTRATE_TOUR_KINDS, illustrateTourOwed } from '@/lib/illustrate-tour';
+import { PLAN_TOUR_TRACKS, planTourOwed } from '@/lib/plan-tour';
 import {
   readElementIndicatorStyle,
   withElementIndicatorStyle,
@@ -411,6 +413,26 @@ function tourSwitch(
     ...row,
     read: (p) => p[key] !== true,
     write: (p, v) => ({ ...p, [key]: !v }),
+  };
+}
+
+// A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
+// forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
+function tourTracksSwitch(
+  key: 'planTourSeen' | 'illustrateTourSeen',
+  tracksKey: 'planTourTracks' | 'illustrateTourKinds',
+  tracks: readonly string[],
+  owed: (p: UserPreferences) => boolean,
+  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
+): SettingsToggleRowSpec {
+  return {
+    ...tourSwitch(key, row),
+    read: owed,
+    write: (p, v) => {
+      if (!v) return { ...p, [key]: true, [tracksKey]: [...tracks] };
+      const { [tracksKey]: _answered, ...rest } = p;
+      return { ...rest, [key]: false };
+    },
   };
 }
 
@@ -941,12 +963,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
         helpArticle: 'diagramTour',
       }),
-      tourSwitch('planTourSeen', {
+      tourTracksSwitch('planTourSeen', 'planTourTracks', PLAN_TOUR_TRACKS, planTourOwed, {
         label: 'Plan Tour',
         event: { category: 'UI', on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' },
         keywords:
           'tour walkthrough onboarding tutorial plan board kanban cards sheet spreadsheet replay',
-        description: 'Once a board or a sheet is open in Plan.',
+        description: 'The first time you work on a board, and on a sheet, in Plan.',
         helpArticle: 'planTour',
       }),
       tourSwitch('facilitateTourSeen', {
@@ -963,8 +985,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you work in Draw.',
         helpArticle: 'drawTour',
       }),
-      {
-        ...tourSwitch('illustrateTourSeen', {
+      tourTracksSwitch(
+        'illustrateTourSeen',
+        'illustrateTourKinds',
+        ILLUSTRATE_TOUR_KINDS,
+        illustrateTourOwed,
+        {
           label: 'Illustrate Tour',
           event: { category: 'UI', on: 'IllustrateTourSeenOff', off: 'IllustrateTourSeenOn' },
           keywords:
@@ -972,15 +998,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           description:
             'The first time you work on each kind of page: slides, infographics, articles and logos.',
           helpArticle: 'illustrateTour',
-        }),
-        // One track per page kind (docs/specs/007-editor/illustrate-tour.md): on forgets the kinds answered, so every
-        // kind offers its track again; off marks them all seen.
-        write: (p: UserPreferences, v: boolean) => {
-          if (!v) return { ...p, illustrateTourSeen: true };
-          const { illustrateTourKinds: _answered, ...rest } = p;
-          return { ...rest, illustrateTourSeen: false };
         },
-      },
+      ),
     ],
   },
   {

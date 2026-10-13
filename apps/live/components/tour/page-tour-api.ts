@@ -21,6 +21,4 @@ export type PageTourStep = TourStepOf<PageTourApi> & {
 export type PageTourNow = {
   // Two or more shapes selected, so a logo page's Combine shows.
   combineShowing: boolean;
-  // An article's page toolbar is on screen.
-  toolbarShowing: boolean;
 };

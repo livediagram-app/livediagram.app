@@ -16,10 +16,10 @@ import { rebaseUserPreferences } from '@/lib/user-preferences';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { resetPageTour, tidyPageTour } from './page-tour-dom';
 import { pickTourPage, type TourPage } from './illustrate-tour-page';
-import { combineShowing, PAGE_PANEL, PAGE_TOUR_HELP, toolbarShowing } from './PageTour';
+import { combineShowing, PAGE_PANEL, PAGE_TOUR_HELP } from './PageTour';
 import { isOnScreen } from './tour-dom';
 import { stepTelemetryType } from './tour-step';
-import { IllustrateTourArt } from './IllustrateTourArt';
+import { IllustrateTourArt } from './art/illustrate-tour-art';
 import { TourStage } from './TourStage';
 import { useTourEngine, type TourOutcome } from './useTourEngine';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
@@ -35,6 +35,14 @@ export const OFFER_LOOKS = 12;
 export function illustrateTourStepTelemetryType(kind: PageKind, stepId: string): string {
   return stepTelemetryType('IllustrateTourStep', `${kind}-${stepId}`);
 }
+
+// Each welcome card names its page kind's track, never the mode.
+const EYEBROW: Record<PageKind, string> = {
+  slide: 'Slides tour',
+  infographic: 'Infographic tour',
+  article: 'Article tour',
+  logo: 'Logo tour',
+};
 
 const FINISH: Record<PageKind, string> = {
   slide: 'Start presenting',
@@ -159,7 +167,7 @@ export function IllustrateTourHost() {
         setSteps(
           illustrateTourSteps(
             page.kind,
-            { combineShowing: combineShowing(), toolbarShowing: toolbarShowing() },
+            { combineShowing: combineShowing() },
             { pageId: page.pageId, ...PAGE_PANEL },
             isOnScreen,
           ),
@@ -211,13 +219,13 @@ export function IllustrateTourHost() {
   return (
     <TourStage
       engine={engine}
-      ariaPrefix="Illustrate tour"
+      ariaPrefix={EYEBROW[subject.kind]}
       copy={{
-        welcomeEyebrow: 'Illustrate tour',
+        welcomeEyebrow: EYEBROW[subject.kind],
         helpHref: helpArticleHref(PAGE_TOUR_HELP[subject.kind].article),
         finish: FINISH[subject.kind],
       }}
-      welcomeArt={<IllustrateTourArt />}
+      welcomeArt={<IllustrateTourArt kind={subject.kind} />}
     />
   );
 }

@@ -30,7 +30,10 @@ draws them.
 ### Recommended and groups
 
 Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the Quick Start leads with), **its blank
-first**, less **Timeline**, which is left to its group. The groups (`components/start/start-template-items.ts`,
+first**, less **Timeline**, which is left to its group. Start Illustrating swaps two of the shelf's picks for blanks
+of a page kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank
+Illustration and **Blank Article** in place of the Article template, so it leads Blank Infographic, Blank Article,
+Blank Slide Deck. The shelf itself (the Quick Start's and the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`):
 
 - **Diagram:** the catalogue's categories that hold a Diagram template ([Canvas and
@@ -44,8 +47,8 @@ first**, less **Timeline**, which is left to its group. The groups (`components/
   page of the kind meant.
 
 A template of the mode in none of its groups is placed in the last group, so every listed template is reachable.
-The blank appears only in Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab
-empty.
+The blank appears only in Recommended (Illustrate's, Blank Illustration, not at all: closing the panel leaves the
+same empty tab). Choosing the blank closes the panel, as the × does, since it leaves the tab empty.
 
 ## When it shows
 

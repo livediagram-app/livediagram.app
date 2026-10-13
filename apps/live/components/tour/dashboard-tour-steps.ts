@@ -28,21 +28,27 @@ const ROWS: DashboardTourStep = {
   id: 'rows',
   title: 'Rows of Slots',
   body: 'A dashboard is rows of slots, side by side. Drag the line between two slots to share the row out differently, or a row’s bottom edge to make it taller.',
-  selector: () => '[data-dashboard-row]',
+  // A card on its own, no ring: one round a row runs the page's width.
 };
 
 const FILL: DashboardTourStep = {
   id: 'fill',
   title: 'Fill a Slot',
   body: 'Add to Slot picks what it shows: one of this document’s tabs, a new board or Sheet, a metric, a chart from a Sheet, a note or links. Or drag a tile from the palette onto it.',
-  selector: () => FIRST_EMPTY_SLOT,
+  // The slot's Add to Slot, not the slot: a ring round a slot lights a large part of the page.
+  selector: () => `${FIRST_EMPTY_SLOT} [aria-haspopup="dialog"]`,
 };
 
 const SLOT: DashboardTourStep = {
   id: 'slot',
   title: 'Change or Move a Slot',
   body: 'Its cog changes what it shows, duplicates, clears or removes it, or adds a slot beside it. Drag the grip on its top edge to swap it with another slot.',
-  selector: () => FIRST_FILLED_SLOT,
+  // The slot's own cog, shown as on hover through the step, else its Move grip (a board or Sheet in a slot carries
+  // its own cog); never the whole slot.
+  selector: () => {
+    const cog = `${FIRST_FILLED_SLOT} [aria-label="Slot Settings"]`;
+    return document.querySelector(cog) ? cog : `${FIRST_FILLED_SLOT} [aria-label="Move Slot"]`;
+  },
   prepare: revealSlot,
   cleanup: hideSlot,
 };

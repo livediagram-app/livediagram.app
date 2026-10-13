@@ -1,6 +1,7 @@
 // The DOM a page's tour steps point at (docs/specs/007-editor/illustrate-tour.md "The steps"): the tour page and its
 // title-bar controls, held by that page rather than the first page, and its title-bar popovers (Layout, Background),
 // opened once by pressing their real button and closed again on leaving the step.
+import { pinPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import { waitForSelector } from './tour-dom';
 
 /** The tour page's sheet. */
@@ -58,7 +59,9 @@ export function closeTitlePopover(pageId: string, name: string): void {
 
 /** The popover while it is open, else the tour page: after a pick closes it, the ring shows what landed. */
 export function pageOrPopover(pageId: string, name: string): string {
-  return document.querySelector(titlePopover(name)) ? titlePopover(name) : pageSheet(pageId);
+  // Before the popover shows (or once a pick closed it), its title-bar button: never the whole page, whose ring
+  // would light most of the screen.
+  return document.querySelector(titlePopover(name)) ? titlePopover(name) : pageButton(pageId, name);
 }
 
 // The Slide Deck, opened from the Slides button in the bottom-right cluster.
@@ -86,6 +89,7 @@ export function tidyPageTour(pageId: string): void {
   closeTitlePopover(pageId, 'Layout');
   closeTitlePopover(pageId, 'Background');
   closeSlideDeck();
+  pinPageToolbar(null);
 }
 
 /** Forgets what an earlier tour opened (one that ended with its page unmounted under it): each run starts clean. */

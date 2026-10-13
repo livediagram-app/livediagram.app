@@ -24,7 +24,6 @@ export const PAGE_PANEL: Pick<PageTourApi, 'openPanel' | 'closePanel'> = {
 /** Whether Combine shows: two or more shapes selected on a logo page. */
 export const combineShowing = () =>
   document.querySelector('[aria-label="Combine shapes"]') !== null;
-export const toolbarShowing = () => isOnScreen('[data-page-toolbar]');
 
 type Frozen = { pageId: string; kind: PageKind };
 
@@ -75,12 +74,7 @@ export function usePageTour(editable: (pageId: string) => boolean): {
   const freeze = async (pageId: string, kind: PageKind) => {
     const { shownPageTourSteps, resetPageTour } = await import('./page-tour-steps');
     const api = { pageId, ...PAGE_PANEL };
-    const next = shownPageTourSteps(
-      kind,
-      { combineShowing: combineShowing(), toolbarShowing: toolbarShowing() },
-      api,
-      isOnScreen,
-    );
+    const next = shownPageTourSteps(kind, { combineShowing: combineShowing() }, api, isOnScreen);
     resetPageTour();
     // The panel Show Me was pressed in makes way for the page: a step that is about the panel opens it again.
     PAGE_PANEL.closePanel();

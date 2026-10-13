@@ -22,6 +22,7 @@ vi.mock('@/lib/telemetry', () => ({ track }));
 const stage = vi.hoisted(() => ({
   engine: null as TourEngine<PageTourApi> | null,
   helpHref: '' as string | undefined,
+  eyebrow: '' as string | undefined,
 }));
 vi.mock('./TourStage', () => ({
   TourStage: ({
@@ -29,10 +30,11 @@ vi.mock('./TourStage', () => ({
     copy,
   }: {
     engine: TourEngine<PageTourApi>;
-    copy: { helpHref?: string };
+    copy: { helpHref?: string; welcomeEyebrow?: string };
   }) => {
     stage.engine = engine;
     stage.helpHref = copy.helpHref;
+    stage.eyebrow = copy.welcomeEyebrow;
     return null;
   },
 }));
@@ -128,7 +130,15 @@ describe('IllustrateTourHost offer', () => {
   });
 
   it.each([
-    ['seen', { userPreferences: { tourSeen: true, illustrateTourSeen: true } }],
+    [
+      'seen',
+      {
+        userPreferences: {
+          tourSeen: true,
+          illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+        },
+      },
+    ],
     ['read-only', { isReadOnly: true }],
     ['locked', { activeTab: { id: 'tab1', locked: true } }],
     ['not hydrated', { hydrated: false }],
@@ -172,7 +182,12 @@ describe('IllustrateTourHost offer', () => {
   });
 
   it('reruns from Settings in Illustrate', async () => {
-    editor({ userPreferences: { tourSeen: true, illustrateTourSeen: true } });
+    editor({
+      userPreferences: {
+        tourSeen: true,
+        illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+      },
+    });
     const { rerender } = render(<IllustrateTourHost />);
     await wait(2000);
     expect(offered()).toBe(false);
@@ -226,18 +241,25 @@ describe('IllustrateTourHost end', () => {
     );
   });
 
-  it('marks the whole tour seen once the last kind is answered', async () => {
+  it('adds the last kind answered to the list', async () => {
     await start({
       userPreferences: { illustrateTourKinds: ['infographic', 'article', 'logo'] },
     });
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      {
-        illustrateTourKinds: ['infographic', 'article', 'logo', 'slide'],
-        illustrateTourSeen: true,
-      },
+      { illustrateTourKinds: ['infographic', 'article', 'logo', 'slide'] },
       'me',
     );
+  });
+
+  it('offers again to someone who answered the single tour before it split', async () => {
+    await start({ userPreferences: { tourSeen: true, illustrateTourSeen: true } });
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'IllustrateTourOffer');
+  });
+
+  it('names the page kind on its welcome card, never the mode', async () => {
+    await start();
+    expect(stage.eyebrow).toBe('Slides tour');
   });
 
   it('runs the track of the tour page’s kind', async () => {
