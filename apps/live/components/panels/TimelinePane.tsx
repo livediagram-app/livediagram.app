@@ -41,28 +41,44 @@ export function TimelinePane({
     onDismiss: feed.dismiss,
     entityMenu: entityMenus.menuFor,
   });
-  const stackSlots = useTimelineStackSlots({ onDismiss: feed.dismiss });
   return (
     <>
       {entityMenus.dialogs}
-      <Timeline
-        controls={feed.controls}
-        viewerId={ownerId}
-        renderers={TIMELINE_RENDERERS}
-        cardSlots={cardSlots}
-        stackSlots={stackSlots}
-        loading={feed.loading}
-        isEmpty={feed.events.length === 0}
-        emptyState={<TimelineEmptyState />}
-        error={feed.error}
-        onRetry={feed.retry}
-        hasMore={feed.hasMore}
-        loadingMore={feed.loadingMore}
-        onLoadMore={feed.loadMore}
-        lastSeenAt={feed.lastSeenAt}
-        focusEventId={feed.focusEventId}
-        onStackExpand={() => track('Timeline', 'Opened', 'Stack')}
-      />
+      <TimelineFeedView feed={feed} ownerId={ownerId} cardSlots={cardSlots} />
     </>
+  );
+}
+
+// The feed itself, without the card menus: the editor's Explorer shows it outside the Explorer page's context, which
+// those menus need (docs/specs/013-workspace/explorer-structure.md "The pane"); its Open Page has them.
+export function TimelineFeedView({
+  feed,
+  ownerId,
+  cardSlots,
+}: {
+  feed: TimelineFeed;
+  ownerId: string;
+  cardSlots?: ReturnType<typeof useTimelineCardSlots>;
+}) {
+  const stackSlots = useTimelineStackSlots({ onDismiss: feed.dismiss });
+  return (
+    <Timeline
+      controls={feed.controls}
+      viewerId={ownerId}
+      renderers={TIMELINE_RENDERERS}
+      {...(cardSlots ? { cardSlots } : {})}
+      stackSlots={stackSlots}
+      loading={feed.loading}
+      isEmpty={feed.events.length === 0}
+      emptyState={<TimelineEmptyState />}
+      error={feed.error}
+      onRetry={feed.retry}
+      hasMore={feed.hasMore}
+      loadingMore={feed.loadingMore}
+      onLoadMore={feed.loadMore}
+      lastSeenAt={feed.lastSeenAt}
+      focusEventId={feed.focusEventId}
+      onStackExpand={() => track('Timeline', 'Opened', 'Stack')}
+    />
   );
 }

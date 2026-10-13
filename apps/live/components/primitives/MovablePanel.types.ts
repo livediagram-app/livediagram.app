@@ -111,6 +111,9 @@ export type MovablePanelProps = {
   // The popover's width class (default w-64); a wider one names its width in useDockPopovers too, so it
   // is placed whole on the canvas.
   popoverWidth?: string;
+  // The popover's stacking layer (a z-* class); the dock's toolbar layer by default. A wide popover that reaches the
+  // canvas's centre trays (the Explorer) sits just above them.
+  popoverLayer?: string;
   // Whether the button that owns this popover has it open.
   popoverOpen?: boolean;
   // Close the popover on any press outside it, as a menu does. The button

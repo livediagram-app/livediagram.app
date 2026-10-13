@@ -1,6 +1,7 @@
 'use client';
 
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
+import { ProductNavLinks } from '@livediagram/ui';
 import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -11,8 +12,21 @@ import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ExplorerHeaderMenu } from '@/components/panels/ExplorerHeaderMenu';
-import { DocumentRow } from '@/components/panels/DocumentRow';
-import { PanelExplorerTree } from '@/components/panels/explorer-tree/PanelExplorerTree';
+import {
+  isTreeSection,
+  PanelExplorerTree,
+} from '@/components/panels/explorer-tree/PanelExplorerTree';
+import type { PanelTree } from '@/components/panels/explorer-tree/PanelTreeContext';
+import { ExplorerRail } from '@/components/panels/explorer-panel/ExplorerRail';
+import { ExplorerPanelPane } from '@/components/panels/explorer-panel/ExplorerPanelPane';
+import { ExplorerCurrentDocument } from '@/components/panels/explorer-panel/ExplorerCurrentDocument';
+import { useExplorerPanelSection } from '@/components/panels/explorer-panel/useExplorerPanelSection';
+import {
+  panelSectionGroups,
+  type PanelSection,
+} from '@/components/panels/explorer-panel/panel-sections';
+import { sidebarDivider } from '@/app/explorer/sidebar/sidebar-structure';
+import { isLocalOnly } from '@/lib/document-space';
 
 import type { ExplorerProps } from './Explorer.types';
 import { useExplorerViewModel } from './useExplorerViewModel';
@@ -62,6 +76,7 @@ function ExplorerImpl({
   onToggleRecentExclusion,
   favouriteIds,
   onToggleFavourite,
+  onLibraryChanged,
 }: ExplorerProps) {
   const minimalChrome = useMinimalChrome();
   // Mobile viewport ⇒ render nothing. Mobile users reach the
@@ -163,6 +178,107 @@ function ExplorerImpl({
     setMoveTarget({ id: documentId, teamId: null });
   };
 
+  const tree: PanelTree = {
+    ownerId,
+    currentDocumentId,
+    exitingDocumentIds,
+    expanded: expandedFolders,
+    onToggle: toggleFolder,
+    onOpenDocument,
+    onDeleteDocument: openDeleteConfirm,
+    onDuplicateDocument,
+    onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
+    // A team row's move opens the picker for that team; the pick then routes through
+    // the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
+    onMoveTeamDocumentRequest: onMoveDocumentTo
+      ? (id, teamId) => setMoveTarget({ id, teamId })
+      : undefined,
+    onMoveDocumentToFolder,
+    onDismissShared,
+    favouriteIds,
+    onToggleFavourite,
+    recentExcludedIds,
+    onToggleRecentExclusion,
+    pendingRenameFolderId,
+    onRenameFolderCommitted: clearPendingRename,
+    onRenameFolder,
+    onDeleteFolder,
+    onCreateChild: (parentId) => void handleCreateChild(parentId),
+    onTeamFolders,
+    onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
+  };
+
+  // The rail's sections, and the one shown: remembered, else the space holding the open document.
+  const divider = sidebarDivider(minimalChrome);
+  const groups = useMemo(
+    () => panelSectionGroups({ teams, hasBrowserDocuments: offlineDocuments.length > 0 }),
+    [teams, offlineDocuments.length],
+  );
+  const currentSpace: PanelSection | null = current
+    ? isLocalOnly(current)
+      ? { kind: 'browser' }
+      : { kind: 'mine' }
+    : currentTeam
+      ? { kind: 'team', id: currentTeam.team.id }
+      : currentShared
+        ? { kind: 'shared' }
+        : null;
+  const [section, pick] = useExplorerPanelSection(groups, currentSpace);
+  const teamName = (id: string) => teams.find((t) => t.id === id)?.name;
+  const badges: Record<string, number | undefined> = {
+    shared: shared.length || undefined,
+    browser: offlineDocuments.length || undefined,
+  };
+  // New Folder at the root of My documents or of the team shown.
+  const newFolder =
+    section.kind === 'mine' && onCreateFolder
+      ? () =>
+          void onCreateFolder({ name: 'New folder', parentId: null }).then((folder) => {
+            if (folder) setPendingRenameFolderId(folder.id);
+          })
+      : section.kind === 'team' && onTeamFolders
+        ? () => void handleCreateTeamChild(section.id, null)
+        : undefined;
+
+  const currentCard = current ? (
+    <DocumentRowShell exiting={exitingDocumentIds.has(current.id)}>
+      <ExplorerCurrentDocument
+        item={current}
+        ownerId={ownerId}
+        onOpen={() => onOpenDocument(current.id)}
+        onRename={onRenameCurrent}
+        onDelete={openDeleteConfirm ? (anchor) => openDeleteConfirm(current.id, anchor) : undefined}
+        onDuplicate={onDuplicateDocument ? () => onDuplicateDocument(current.id) : undefined}
+        onMoveRequest={onMoveDocumentToFolder ? () => openMovePicker(current.id) : undefined}
+      />
+    </DocumentRowShell>
+  ) : currentTeam ? (
+    <ExplorerCurrentDocument
+      item={currentTeam}
+      ownerId={ownerId}
+      onOpen={() => onOpenDocument(currentTeam.id)}
+      onRename={onRenameCurrent}
+      // Any joined member may delete a team document (docs/specs/013-workspace/team-shared-documents.md); the api
+      // enforces team membership.
+      onDelete={
+        openDeleteConfirm ? (anchor) => openDeleteConfirm(currentTeam.id, anchor) : undefined
+      }
+      onMoveRequest={
+        onMoveDocumentTo
+          ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
+          : undefined
+      }
+    />
+  ) : currentShared ? (
+    <ExplorerCurrentDocument
+      item={{ ...currentShared, folderId: null, shareCode: null, ownerId: '' }}
+      ownerId={ownerId}
+      // The share code authorises the thumbnail (docs/specs/006-document/document-snapshots.md).
+      thumbnailShareCode={currentShared.shareCode}
+      onOpen={() => onOpenDocument(currentShared.id, currentShared.shareCode)}
+    />
+  ) : null;
+
   return (
     <MovablePanel
       helpArticle="explorerPanel"
@@ -175,7 +291,10 @@ function ExplorerImpl({
       // without leaving the canvas. On desktop it stays in the
       // top-left corner.
       defaultCorner={isMobile ? 'top-banner' : 'top-left'}
-      width={isMobile ? 'w-auto' : 'w-64'}
+      // Wide enough on a desktop for the rail beside a pane of the Explorer page's own views.
+      width={isMobile ? 'w-auto' : 'w-[38rem] max-w-[calc(100vw-2rem)]'}
+      popoverWidth={isMobile ? 'w-[calc(100vw-1rem)]' : 'w-[38rem]'}
+      popoverLayer="z-[calc(var(--z-chrome)+1)]"
       onReset={onReset}
       onMoveTo={onMoveTo}
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /
@@ -196,123 +315,61 @@ function ExplorerImpl({
       dismissOnOutside={dismissOnOutside}
       collapsible
     >
-      <div className="flex flex-col gap-2 px-2.5 pb-2.5 pt-1">
-        {(current ?? currentTeam ?? currentShared) ? (
-          <div className="flex flex-col gap-1 rounded-xl bg-slate-50 p-2 ring-1 ring-slate-200/60 dark:bg-slate-800/50 dark:ring-slate-700/60">
-            <p className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-white">
-              Current Document
-            </p>
-            <ul className="flex flex-col gap-0.5 overflow-hidden">
-              {current ? (
-                <DocumentRowShell exiting={exitingDocumentIds.has(current.id)}>
-                  <DocumentRow
-                    item={current}
-                    ownerId={ownerId}
-                    active
-                    draggable={!!onMoveDocumentToFolder}
-                    onOpen={() => onOpenDocument(current.id)}
-                    onRename={onRenameCurrent}
-                    onDelete={
-                      openDeleteConfirm
-                        ? (anchor) => openDeleteConfirm(current.id, anchor)
-                        : undefined
-                    }
-                    onDuplicate={
-                      onDuplicateDocument ? () => onDuplicateDocument(current.id) : undefined
-                    }
-                    onMoveRequest={
-                      onMoveDocumentToFolder ? () => openMovePicker(current.id) : undefined
-                    }
-                  />
-                </DocumentRowShell>
-              ) : currentTeam ? (
-                <li className="animate-slide-row-in overflow-hidden">
-                  <DocumentRow
-                    item={currentTeam}
-                    ownerId={ownerId}
-                    active
-                    onOpen={() => onOpenDocument(currentTeam.id)}
-                    onRename={onRenameCurrent}
-                    // Any joined member may delete a team document
-                    // (docs/specs/013-workspace/team-shared-documents.md); the api enforces team membership.
-                    onDelete={
-                      openDeleteConfirm
-                        ? (anchor) => openDeleteConfirm(currentTeam.id, anchor)
-                        : undefined
-                    }
-                    // Change Folder for a team document (docs/specs/013-workspace/team-shared-documents.md): opens the
-                    // move picker on this team's tree, with My documents + the
-                    // other teams one Back away. Routed through the
-                    // scope-aware onMoveDocumentTo.
-                    onMoveRequest={
-                      onMoveDocumentTo
-                        ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
-                        : undefined
-                    }
-                  />
-                </li>
-              ) : currentShared ? (
-                <li className="animate-slide-row-in overflow-hidden">
-                  <DocumentRow
-                    item={{ ...currentShared, folderId: null, shareCode: null, ownerId: '' }}
-                    ownerId={ownerId}
-                    // item.shareCode is nulled (no "has a share link"
-                    // badge for a shared-with-me row), so authorise the
-                    // thumbnail via the share code separately (docs/specs/006-document/document-snapshots.md).
-                    thumbnailShareCode={currentShared.shareCode}
-                    active
-                    onOpen={() => onOpenDocument(currentShared.id, currentShared.shareCode)}
-                  />
-                </li>
-              ) : null}
-            </ul>
-          </div>
-        ) : null}
+      <div className="flex min-h-0 flex-col">
+        {currentCard ? <div className="px-2.5 pb-2.5 pt-1">{currentCard}</div> : null}
 
-        {/* The sidebar's three groups, Overview, Spaces and More, built from the same rows and
-            keyboard model (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel). */}
-        <PanelExplorerTree
-          tree={{
-            ownerId,
-            currentDocumentId,
-            exitingDocumentIds,
-            expanded: expandedFolders,
-            onToggle: toggleFolder,
-            onOpenDocument,
-            onDeleteDocument: openDeleteConfirm,
-            onDuplicateDocument,
-            onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
-            // A team row's move opens the picker for that team; the pick then routes through
-            // the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
-            onMoveTeamDocumentRequest: onMoveDocumentTo
-              ? (id, teamId) => setMoveTarget({ id, teamId })
-              : undefined,
-            onMoveDocumentToFolder,
-            onDismissShared,
-            favouriteIds,
-            onToggleFavourite,
-            recentExcludedIds,
-            onToggleRecentExclusion,
-            pendingRenameFolderId,
-            onRenameFolderCommitted: clearPendingRename,
-            onRenameFolder,
-            onDeleteFolder,
-            onCreateChild: (parentId) => void handleCreateChild(parentId),
-            onTeamFolders,
-            onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
-          }}
-          busy={loading}
-          shared={shared}
-          ownIndex={{ foldersByParent, documentsByFolder }}
-          offlineDocuments={offlineDocuments}
-          teams={teams}
-          foldersByTeam={foldersByTeam}
-          documentsByTeam={documentsByTeam}
+        {/* The rail and the pane (docs/specs/013-workspace/explorer-structure.md "The editor's Explorer"): side by side
+            on a desktop, the rail a row of section chips over the pane on a phone. */}
+        <div
+          className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
+            isMobile ? 'max-h-[60vh] flex-col' : 'h-[min(30rem,62vh)]'
+          }`}
+        >
+          <ExplorerRail
+            groups={groups}
+            selected={section}
+            onPick={pick}
+            badges={badges}
+            teamName={teamName}
+            divider={divider}
+            phone={isMobile}
+            onDropToMyDocuments={
+              onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined
+            }
+          />
+          <ExplorerPanelPane
+            section={section}
+            teamName={teamName}
+            ownerId={ownerId}
+            onPick={pick}
+            onNewFolder={newFolder}
+            onLibraryChanged={onLibraryChanged ?? NOOP}
+            tree={
+              isTreeSection(section) ? (
+                <PanelExplorerTree
+                  section={section}
+                  tree={tree}
+                  busy={loading}
+                  shared={shared}
+                  ownIndex={{ foldersByParent, documentsByFolder }}
+                  offlineDocuments={offlineDocuments}
+                  teams={teams}
+                  foldersByTeam={foldersByTeam}
+                  documentsByTeam={documentsByTeam}
+                />
+              ) : null
+            }
+            // Sign-in prompt for signed-out guests; an onboarding notice, so Minimal chrome drops it
+            // (docs/specs/007-editor/power-user-mode.md).
+            footer={minimalChrome ? null : <SignInPrompt />}
+          />
+        </div>
+
+        {/* The product's surfaces, which the editor header no longer carries as a menu. */}
+        <ProductNavLinks
+          current="editor"
+          className="overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70"
         />
-
-        {/* Sign-in prompt for signed-out guests; an onboarding notice, so
-            Minimal chrome drops it (docs/specs/007-editor/power-user-mode.md). */}
-        {minimalChrome ? null : <SignInPrompt />}
       </div>
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
@@ -415,5 +472,7 @@ function ExplorerImpl({
     </MovablePanel>
   );
 }
+
+const NOOP = () => {};
 
 export const Explorer = memo(ExplorerImpl);

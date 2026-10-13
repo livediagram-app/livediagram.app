@@ -1,5 +1,6 @@
 'use client';
 
+import { usePublishDocumentVisibility } from '@/hooks/editor/document-visibility-store';
 import { CanvasFocusProvider } from '@/hooks/canvas/useCanvasFocus';
 import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
@@ -345,6 +346,25 @@ export function EditorView() {
     appearance,
   );
 
+  // The same visibility for the Explorer panel's Current Document card (document-visibility-store).
+  const headerCommunity = documentIsPublic({
+    communityOn,
+    ownPostState: communityState,
+    communitySession: sessionCommunity !== null,
+  });
+  usePublishDocumentVisibility(
+    documentShareable,
+    !!documentTeamId,
+    isOffline,
+    headerCommunity,
+    isOwner && hydrated
+      ? () => {
+          setShareDialogOpen(true);
+          track('UI', 'Opened', 'Share');
+        }
+      : undefined,
+  );
+
   // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
   // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.
@@ -356,11 +376,7 @@ export function EditorView() {
           hideTitle={anyWelcomeOpen}
           showShare={isOwner && hydrated && !anyWelcomeOpen}
           shareable={documentShareable}
-          community={documentIsPublic({
-            communityOn,
-            ownPostState: communityState,
-            communitySession: sessionCommunity !== null,
-          })}
+          community={headerCommunity}
           teamDocument={!!documentTeamId}
           offline={isOffline}
           // Visitors see "Make a copy" instead of "Share": same slot,

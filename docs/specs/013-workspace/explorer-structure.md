@@ -185,31 +185,86 @@ and the backdrop.
 
 ## The editor's Explorer
 
-The editor's Explorer, the popover under the menu button ([Folders: the editor's Explorer](folders.md#the-editors-explorer-editor--new)), shows
-the same three groups, built from the same rows, layout rules and keyboard model, at the panel's width. Under its
-Current Document card it holds one `nav` named "Explorer" with Overview, Spaces and More, in place of the tabs it had.
+The editor's Explorer, the panel under the menu button ([Folders: the editor's Explorer](folders.md#the-editors-explorer-editor--new)),
+is a small Explorer page beside the canvas: the same groups, rows and views, without leaving the document. It replaced
+a single stacked tree, which was cramped and sent half its rows off to the Explorer page.
 
-What differs is what a row does in an editor, where leaving the document is a bigger step:
+### Layout
 
-- **Rows with documents open in place.** Shared with me, My documents, each folder, each team and This browser
-  expand to show their documents as rows beneath them; My documents and a team show their root folders, then their
-  root documents. My documents with nothing in it goes to its Explorer page, as an empty team does. Shared with me with nothing shared, and a team
-  with nothing in it, go to their Explorer page instead. Activating such a row expands or collapses it; it
-  never leaves the editor. A document row opens the document, carries the document menu (`⋯`, right-click,
-  Shift+F10), its favourite star and, for an offline document, the Local only pill. The open document's row is the
-  selected one.
-- **Rows without documents go to the Explorer.** Home, Inbox, Timeline, the Library pages and Trash open their Explorer page.
-- **No team management.** The panel shows no Invites row, no New team row and no sign-in nudge: answering invites and
-  creating teams happen in the Explorer, and the panel keeps its own sign-in notice under the tree.
-- **Compact on open.** Every expandable row starts collapsed (My documents included), so the panel opens at its
-  smallest; expansion lasts as long as the editor is open.
-- **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto My documents to file
-  it at the root; a drag resting on a row with a chevron opens or closes it
-  ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)). On the Explorer page every folder, My
-  documents and each team take a dropped document ([Folders: standalone page](folders.md#standalone-explorer-page)). A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
-  the session may use; My documents carries its Use as default for menu.
-- Group titles and separators follow Minimal chrome exactly as in the sidebar.
-- The tree scrolls inside the panel when it is taller than the space it has.
+Top to bottom:
+
+1. **The panel header**: "Explorer", the `⋯` menu ([Folders](folders.md#the-editors-explorer-editor--new)) and Help.
+2. **The Current Document card**, when a document is open: its thumbnail, the label "Current Document", the
+   document's **name**, "Updated <relative time>", and at the card's right the document's **visibility badge** (the
+   editor header's badge: Private, Shared, Team, Public or Local only, with its legend, [Offline Mode](../006-document/offline-mode.md))
+   above its `⋯` (the document menu).
+   - **Click the name to rename it**, for someone who may rename the document (an Editor of their own or a shared
+     document); the name becomes a text field in place: Enter or leaving it saves, Escape keeps the old name, an empty
+     name keeps the old one. For anyone else it is plain text.
+3. **The rail and the pane**, side by side on a desktop: the rail on the left lists the sections, the pane on the right
+   shows the picked one.
+4. **The footer**: the product's surfaces as links, one row: **Welcome**, **Explorer** (the Explorer page),
+   **Community** (while the Community is on), **Help**, **Telemetry**. They are the product menu's entries; the editor
+   header carries no product menu ([Live app: header](../007-editor/live-app.md)).
+5. **The sign-in notice** for a signed-out guest, at the foot of the pane (Minimal chrome drops it).
+
+### The rail
+
+The rail is the sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
+Shared with me; My documents and each team; This browser, Library and Trash. Entries carry the sidebar's badges. No
+Invites, New team or sign-in nudge: those are the Explorer page's.
+
+- **Every entry is a mode of the pane.** Picking one shows it in the pane; none leaves the editor. The picked entry is
+  marked (`aria-current`) and is remembered for this viewer in this browser, so the panel reopens on it.
+- **First open** shows the space holding the open document: This browser for a Local only document, the team for a
+  team document, else My documents.
+- Group titles and separators follow Minimal chrome as in the sidebar.
+
+### The pane
+
+A header (the section's name, **Open Page** to its Explorer page, and the section's own action) over its content,
+which scrolls inside the pane:
+
+| Section        | The pane shows                                                                        | Action     |
+| -------------- | ------------------------------------------------------------------------------------- | ---------- |
+| Home           | Home's own view ([Explorer Home](explorer-home.md)): Jump back in, What happened      | None       |
+| Inbox          | The Inbox ([Inbox](inbox.md))                                                         | None       |
+| Timeline       | The Timeline ([Timeline](timeline.md))                                                | None       |
+| Shared with me | The documents shared with the reader, as document rows                                | None       |
+| My documents   | The root folders, then the root documents, as the tree's rows: folders open in place  | New Folder |
+| A team         | The team's root folders, then its root documents, the same way                        | New Folder |
+| This browser   | The documents saved only in this browser                                              | None       |
+| Library        | Three tabs: Image Gallery, Themes, Shape Libraries, each the Explorer page's own view | None       |
+| Trash          | The Trash ([Trash](trash.md)): restore or delete forever                              | None       |
+
+- **Rows with documents** keep the tree's behaviour: a document row opens the document, carries the document menu
+  (`⋯`, right-click, Shift+F10), its favourite star and, for an offline document, the Local only pill; the open
+  document's row is the selected one. A folder row opens in place.
+- **Filing.** One of the reader's own document rows drags onto a personal folder row, or onto the My documents rail
+  entry to file it at the root; a drag resting on a folder row opens or closes it
+  ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)). A personal folder row carries the folder menu
+  plus Show in Explorer; a team folder row carries the team folder verbs the session may use; My documents carries its
+  Use as default for menu.
+- **An empty section** says so in a line ("Nothing shared with you yet", "No documents in this browser") with Open Page.
+- **Loading** shows the section's skeleton rows; a failed read shows the section's error line with Try Again.
+- The views load only when their section is first shown, so opening the editor costs nothing more.
+
+### On a phone
+
+The panel is the full-width banner at the top of the canvas. The rail becomes a **row of section chips** under the
+Current Document card, scrolling sideways, the picked chip filled; the pane fills the rest of the panel's height and
+the footer links scroll sideways. Every chip, row and link is at least 44 px tall.
+
+### Keyboard and ARIA
+
+The rail is a `nav` named "Explorer sections" of buttons; Up and Down move between entries (Left and Right on a phone's
+chip row), Enter or Space picks one. The pane's tree is a `nav` named "Explorer" with the sidebar's tree keyboard
+model ([Keyboard and ARIA](#keyboard-and-aria)). The footer is a `nav` named "Go to".
+
+### Who may do what
+
+The panel is the reader's own: it lists their documents and views whatever the open document's share role. Renaming
+from the card follows the editor's rename (an Editor only); a Participant or Viewer sees the name as text.
 
 ## Local only documents
 

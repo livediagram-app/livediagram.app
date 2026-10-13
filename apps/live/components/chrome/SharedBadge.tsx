@@ -43,7 +43,10 @@ export function SharedBadge({
   offline,
   community,
   onManage,
+  align = 'center',
 }: {
+  // Where its legend opens (VisibilityLegend).
+  align?: 'center' | 'end';
   // Opens Share: the pill becomes a button and its legend offers Change Who Can See This. Absent where the
   // reader may not change who can see the document.
   onManage?: () => void;
@@ -117,7 +120,7 @@ export function SharedBadge({
           creates its own stacking context and doesn't clip overflow (the
           AuthControls menu relies on the same), so no portal is needed. */}
       {/* Every visibility state with its meaning, the current one marked (VisibilityLegend). */}
-      {open ? <VisibilityLegend current={state} onManage={manage} /> : null}
+      {open ? <VisibilityLegend current={state} onManage={manage} align={align} /> : null}
     </span>
   );
 }

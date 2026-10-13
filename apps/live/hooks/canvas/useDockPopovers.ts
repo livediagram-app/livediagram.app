@@ -33,6 +33,8 @@ export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'session-poll': 288,
   // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 320,
+  // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
+  explorer: 608,
 };
 
 // 'slides': the Slide Deck panel over its cluster button in Illustrate mode. 'card-types': the Card
