@@ -31,7 +31,14 @@ export {
   MinimizeIcon,
   SearchIcon,
 } from './navigation';
-export { CircleXIcon, PrivateDotIcon, SharedDotIcon, SparkleIcon, TabsLabelIcon } from './status';
+export {
+  CircleXIcon,
+  PrivateDotIcon,
+  SharedDotIcon,
+  SparkleIcon,
+  TabsLabelIcon,
+  TeamIcon,
+} from './status';
 export {
   ActionIcon,
   CommentIcon,

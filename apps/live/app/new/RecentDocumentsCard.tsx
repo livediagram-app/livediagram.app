@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useEffectEvent, useState } from 'react';
-import { apiListDocuments } from '@/lib/api-client';
+import { apiListDocumentsWithTeamRecent } from '@/lib/api-client';
 import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { Glyph } from '@livediagram/ui';
+import { Glyph, TeamIcon } from '@livediagram/ui';
+import type { DocumentSummary } from '@livediagram/api-schema';
 
-type RecentItem = { id: string; name: string; savedAt: number | null };
+// teamName: the team whose library holds it, for its team mark; null for your own.
+type RecentItem = { id: string; name: string; savedAt: number | null; teamName: string | null };
 
 // A small "jump back in" card that pops out to the RIGHT of the new-document
 // wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved documents the user
-// owns. Deliberately separate from the create flow: it's a side affordance
+// owns or that sit in a team they have joined (docs/specs/019-marketing/returning-visitor.md). Deliberately separate from the create flow: it's a side affordance
 // for returning users, hidden entirely for someone with no documents yet
 // (and on narrow viewports where the wizard already fills the width). Each
 // row opens that document directly.
@@ -38,14 +40,23 @@ export function RecentDocumentsCard({
   useEffect(() => {
     if (!ownerId) return;
     let cancelled = false;
-    void apiListDocuments(ownerId)
-      .then((list) => {
+    void apiListDocumentsWithTeamRecent(ownerId)
+      .then(({ documents, teamRecent }) => {
         if (cancelled) return;
-        reportCount(list.length);
-        const top = [...list]
+        // A team member with nothing of their own is not new: their team's documents count.
+        reportCount(documents.length + teamRecent.length);
+        const item = (d: DocumentSummary, teamName: string | null): RecentItem => ({
+          id: d.id,
+          name: d.name,
+          savedAt: d.savedAt ?? null,
+          teamName,
+        });
+        const top = [
+          ...documents.map((d) => item(d, null)),
+          ...teamRecent.map((d) => item(d, d.teamName)),
+        ]
           .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
-          .slice(0, 5)
-          .map((d) => ({ id: d.id, name: d.name, savedAt: d.savedAt ?? null }));
+          .slice(0, 5);
         setRecent(top);
       })
       .catch(() => {
@@ -83,8 +94,14 @@ export function RecentDocumentsCard({
               className="group flex items-center gap-2 rounded-lg px-2.5 py-2 transition hover:bg-brand-50 dark:hover:bg-brand-500/10"
             >
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="truncate text-xs font-medium text-slate-700 group-hover:text-brand-700 dark:text-slate-200 dark:group-hover:text-brand-200">
-                  {d.name || 'Untitled document'}
+                <span className="flex min-w-0 items-center gap-1 text-xs font-medium text-slate-700 group-hover:text-brand-700 dark:text-slate-200 dark:group-hover:text-brand-200">
+                  {d.teamName != null ? (
+                    <span className="shrink-0 text-slate-400 group-hover:text-brand-500">
+                      <TeamIcon size={12} />
+                      <span className="sr-only">{`${d.teamName} team: `}</span>
+                    </span>
+                  ) : null}
+                  <span className="truncate">{d.name || 'Untitled document'}</span>
                 </span>
                 {d.savedAt != null ? (
                   <span className="text-[10px] text-slate-400">

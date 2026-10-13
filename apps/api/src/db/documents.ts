@@ -58,7 +58,7 @@ type DocumentRow = {
   community_state?: string | null;
 } & RecordedIntentRow;
 
-type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
+export type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
   // Read through the document_tabs link table (migration 0011 /
@@ -135,7 +135,7 @@ const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size
 // grows with the document.
-const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
+export const DOCUMENT_SUMMARY_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}, ${firstTabCountSql('documents.id')}, ${documentStatsSql('documents.id')}`;
 
 // Gate-only projection: the columns access checks need (owner + team +
 // name for notifications) in ONE query — no participant join, no tab
@@ -211,7 +211,7 @@ export async function getDocument(env: Env, id: string): Promise<DocumentDTO | n
   return row ? rowToDocument(env, row) : null;
 }
 
-function rowToSummary(row: SummaryRow): DocumentSummary {
+export function rowToSummary(row: SummaryRow): DocumentSummary {
   return {
     id: row.id,
     ownerId: row.owner_id,

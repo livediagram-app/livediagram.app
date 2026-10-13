@@ -19,12 +19,19 @@ The marketing site is static and fast; it does not load Clerk and does not call 
 the server who you are. Instead **the editor leaves a note** in the browser for the landing page to read,
 on the same origin (the router serves `/` and `/explorer` from one host).
 
-- **What:** up to six diagrams, newest save first: id, name, last saved time. Stored in `localStorage`
-  under `livediagram:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt }] }`.
-- **Which:** the documents the editor lists for you (`GET /api/documents` plus this browser's Offline
-  Mode documents), most recently saved first, leaving out **empty** documents (nothing drawn, nothing to
-  come back to) and any you have **hidden from Recent** ([Hide from Recent](../013-workspace/hide-from-recent.md)).
-  The same order the /new page's Jump back in card uses.
+- **What:** up to six diagrams, newest save first: id, name, last saved time, the mode it opens in, and
+  the team whose library holds it (null for your own). Stored in `localStorage` under
+  `livediagram:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt, mode, teamName }] }`. A
+  note written before `teamName` reads as your own diagrams.
+- **Which:** your documents and your teams', merged by save: the personal library the editor lists for
+  you (`GET /api/documents` plus this browser's Offline Mode documents) and, from the same request
+  (`?include=team-recent`), the twelve newest documents in the libraries of the teams you have
+  **joined** (never one you are only invited to; [Team shared documents](../013-workspace/team-shared-documents.md)).
+  Twelve is the note's six twice over, so a few hidden from Recent still leave six. Most recently saved
+  first, leaving out **empty** documents (nothing drawn, nothing to come back to) and any you have
+  **hidden from Recent** ([Hide from Recent](../013-workspace/hide-from-recent.md)). The /new page's Jump
+  back in card shows the same merge. Documents shared with you by link are not in it: they open through
+  their link, which the note does not hold.
 - **When:** every time the editor lists your documents (the Explorer, the editor, the /new page), so it
   is as fresh as your last visit to the app, and again at once when you hide a diagram from Recent or
   return one to it. With none left to show, the note is removed.
@@ -53,6 +60,8 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   thumbnail box takes the diagram's own background colour, as the Explorer's cards do; with no thumbnail,
   a quiet placeholder with the diagram glyph. Hovering a tile lifts it and rings it in brand, as the
   overview's frames do. Fewer than six diagrams shows only those.
+- **Team mark:** a diagram from a team's library has the team icon (the Explorer's team mark) before its
+  name, quiet slate, brand on hover with the name; your own diagrams have none.
 - **Pressing a tile** opens the diagram (`/document/<id>`). On a peeking (off-centre) window a press
   centres the window instead, as everywhere on the stage.
 - **Explorer Home link** under the tiles: "Open Explorer Home ›", to `/explorer/home`.
@@ -76,7 +85,11 @@ the cache answers.
 
 No new request on the landing page: one `localStorage` read and at most six Cache Storage reads, after
 hydration. The landing page loads no Clerk, no api client. The editor's side costs one `localStorage`
-write per document list, and a thumbnail fetch only for a recent diagram whose save time changed.
+write per document list, and a thumbnail fetch only for a recent diagram whose save time changed. The
+team documents ride the editor's existing document list (no new request): one more query on the api,
+which reads each joined team document's first-tab count to skip the empty ones and draws the full
+summary for the twelve it keeps, so it grows with the size of your teams' libraries (about 1 ms at
+1,000 team documents, 9 ms at 10,000, measured on SQLite).
 
 ## Appearance
 
