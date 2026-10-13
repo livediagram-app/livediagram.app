@@ -6,12 +6,13 @@ import {
   type ShapeMarker,
   type TextAlignX,
   type TextAlignY,
+  labelFontPx,
   type TextSize,
+  type TextSizePreset,
 } from '@livediagram/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,
-  FIXED_FONT_PX,
   labelRunPx,
   labelTextStyleCss,
   TEXT_ALIGN,
@@ -50,7 +51,7 @@ export function ShapeInlineIconLayout({
   showIcon?: boolean;
   // Optional status marker (docs/specs/009-elements/shape-markers.md), drawn immediately left of the label.
   marker?: ShapeMarker;
-  markerSize?: TextSize;
+  markerSize?: TextSizePreset;
   position: IconPosition;
   iconStroke: string;
   isEditing: boolean;
@@ -190,7 +191,7 @@ export function ShapeInlineIconLayout({
 
 // Fixed marker sizes (px) for the small / medium / large buckets; 'scale'
 // tracks the label font size instead (see above).
-const MARKER_FIXED_PX: Record<Exclude<TextSize, 'scale'>, number> = {
+const MARKER_FIXED_PX: Record<Exclude<TextSizePreset, 'scale'>, number> = {
   sm: 12,
   md: 18,
   lg: 26,
@@ -213,12 +214,12 @@ export function inlineIconMetrics(
   label: string,
   textSize: TextSize,
 ): { fontSize: number; iconSize: number; elementIconSize: number } {
-  // Fixed sizes reuse element-labels' FIXED_FONT_PX; 'scale' has no fixed px,
+  // A preset or an exact px is the label's own size; 'scale' has no fixed px,
   // so derive a reasonable size from the box for the inline icon+label case.
   const fontSize =
     textSize === 'scale'
       ? Math.max(12, Math.min(element.height * 0.26, 26))
-      : FIXED_FONT_PX[textSize];
+      : labelFontPx(textSize);
   // Element-proportional size: a fraction of the shorter side, clamped so
   // it's neither a speck nor dominant. Used as the ceiling (and as the
   // size itself for an icon with no label — nothing to scale against).

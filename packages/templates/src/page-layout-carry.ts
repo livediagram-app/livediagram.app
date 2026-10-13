@@ -5,6 +5,7 @@
 // its pinned arrows hold) with the carried content out.
 import {
   LABEL_FONT_PX,
+  labelFontPx,
   type Element,
   type ImageElement,
   type ShapeElement,
@@ -157,7 +158,7 @@ function labelOf(el: { label?: string }): string {
 
 // The px a text is set in: its size times its scale.
 function typePx(el: TextElement): number {
-  return LABEL_FONT_PX[el.textSize ?? 'md'] * (el.textScale ?? 1);
+  return labelFontPx(el.textSize) * (el.textScale ?? 1);
 }
 
 function isFigure(label: string): boolean {

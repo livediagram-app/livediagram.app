@@ -53,6 +53,7 @@ import { MenuTile } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 import { TypographySections } from './TypographySections';
+import { presetPxFor } from './TextSizeControl';
 import { WordmarkSection } from './WordmarkSection';
 
 import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
@@ -349,6 +350,7 @@ export function ElementAppearanceSections({
             <TypographySections
               currentFont={(target as { font?: string }).font ?? null}
               currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
+              presetPx={presetPxFor(target.type)}
               padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
               onSetFont={props.onSetFont}
               onSetSize={props.onSetTextSize}

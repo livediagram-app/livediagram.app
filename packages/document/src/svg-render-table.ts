@@ -6,14 +6,10 @@
 // thumbnail, and the MCP inline render via svgBoxed.
 import { BORDER_DASH_ARRAY, BORDER_STROKE_PX } from './border-style';
 import { defaultStrokeColor, defaultTextColor, type CanvasSurface } from './colors';
-import { PADDING_PX, type TableElement, type TextSize } from './index';
+import { PADDING_PX, type TableElement } from './index';
+import { tableCellFontPx } from './table-cell-font';
 import { tableHeaderColours } from './table-header-colours';
 import { LABEL_LINE_HEIGHT, labelMeasure, r2, wrapLabel, xmlEscape } from './svg-render-primitives';
-
-// Cell font size per preset, mirroring TableView's CELL_FONT_PX; 'scale'
-// tracks the row height like the editor.
-const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16 };
-const scaleCellFontPx = (rowH: number): number => Math.max(9, Math.min(40, Math.round(rowH * 0.4)));
 
 // Track sizes for one axis: pinned entries keep their px, the rest share
 // whatever remains evenly (the CSS `minmax(0, 1fr)` behaviour TableView's
@@ -54,8 +50,7 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
   const xs = cumulative(tableTrackSizes(el.width, cols, el.colWidths)).map((v) => el.x + v);
   const ys = cumulative(tableTrackSizes(el.height, rows, el.rowHeights)).map((v) => el.y + v);
   const rowH = rows > 0 ? el.height / rows : el.height;
-  const baseFontPx =
-    el.textSize === 'scale' ? scaleCellFontPx(rowH) : (CELL_FONT_PX[el.textSize ?? 'md'] ?? 13);
+  const baseFontPx = tableCellFontPx(el.textSize, rowH);
   const alignX = el.textAlignX ?? 'center';
   const alignY = el.textAlignY ?? 'middle';
 
@@ -100,11 +95,7 @@ export function svgTableShape(el: TableElement, surface: CanvasSurface = 'light'
 
       const text = el.cells[r]?.[c] ?? '';
       if (!text) continue;
-      const fontPx = cs?.textSize
-        ? cs.textSize === 'scale'
-          ? scaleCellFontPx(rowH)
-          : (CELL_FONT_PX[cs.textSize as TextSize] ?? baseFontPx)
-        : baseFontPx;
+      const fontPx = tableCellFontPx(cs?.textSize, rowH, baseFontPx);
       const bold = isHeader || (cs?.bold ?? el.textBold) === true;
       const weight = isHeader ? 700 : bold ? 600 : 400;
       const italic = (cs?.italic ?? el.textItalic) === true;

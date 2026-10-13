@@ -6,7 +6,7 @@ import { chartMarkInk } from './chart-ink';
 import { chartPaletteColors } from './chart-palettes';
 import { isLightColor } from './colors';
 import { PIE_PALETTE } from './data-shapes';
-import type { ShapeElement, TextSize } from './index';
+import type { ShapeElement, TextSize, TextSizePreset } from './index';
 import {
   sankeyLayout,
   type SankeyLayout,
@@ -24,7 +24,12 @@ import {
 } from './sankey-model';
 
 /** The node labels' size per Text Size: smaller than a shape label, since a diagram holds many. */
-export const SANKEY_LABEL_PX: Record<TextSize, number> = { sm: 10, md: 12, lg: 15, scale: 12 };
+export const SANKEY_LABEL_PX: Record<TextSizePreset, number> = {
+  sm: 10,
+  md: 12,
+  lg: 15,
+  scale: 12,
+};
 export const SANKEY_EDGE_PAD_PX = 8; // kept clear inside the box on every side
 export const SANKEY_BAND_OPACITY = 0.42; // bands at rest: present, but the nodes still lead
 export const SANKEY_BAND_FOCUS_OPACITY = 0.78; // the hovered band, or every band of a hovered node
@@ -45,6 +50,8 @@ export function sankeyLabelHalo(textColor: string): string {
 }
 
 export function sankeyLabelPx(textSize: TextSize | undefined): number {
+  // An exact size from the slider draws at that px, as every other label does.
+  if (typeof textSize === 'number') return textSize;
   return SANKEY_LABEL_PX[textSize ?? 'md'];
 }
 

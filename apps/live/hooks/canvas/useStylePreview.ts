@@ -50,6 +50,7 @@ import type {
   TextAlignX,
   TextAlignY,
   TextSize,
+  TextSizePreset,
 } from '@livediagram/document';
 import {
   applyArrowPresetToEl,
@@ -293,8 +294,8 @@ export function useStylePreview(deps: {
     // Status markers (docs/specs/009-elements/shape-markers.md) + their size row.
     previewMarker: (v: ShapeMarker | null) => previewStyle((el) => applyMarkerToEl(el, v)),
     commitMarker: (v: ShapeMarker | null) => commitStyle((el) => applyMarkerToEl(el, v), 'Marker'),
-    previewMarkerSize: (v: TextSize) => previewStyle((el) => applyMarkerSizeToEl(el, v)),
-    commitMarkerSize: (v: TextSize) =>
+    previewMarkerSize: (v: TextSizePreset) => previewStyle((el) => applyMarkerSizeToEl(el, v)),
+    commitMarkerSize: (v: TextSizePreset) =>
       commitStyle((el) => applyMarkerSizeToEl(el, v), 'MarkerSize'),
     // Text alignment 3×3 grid + text size tiles.
     previewTextAlign: (x: TextAlignX, y: TextAlignY) =>

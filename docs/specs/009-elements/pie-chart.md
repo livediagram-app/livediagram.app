@@ -40,11 +40,11 @@ the same 1-D data model, while the line chart carries a 2-D dataset (see Model).
   vertical strip for a left/right legend or a horizontal band for a top/bottom
   one, and the chart body fills the remaining `area`; `ChartLegend` stacks in a
   column on the side, or wraps in a centred row on top/bottom.
-- Under the placement tiles (while the legend is on), **Text Size**
-  (**Small / Medium / Large**) sets the key's row size. It writes the element's
-  ordinary `textSize` (a chart has no label, so the Text flyout never offers
-  it) and reads through `legendFontPx` (`label-font.ts`): 11 / 14 / 18px, with
-  Medium the default. A key is not a name, so it has its own scale rather than
+- Under the placement tiles (while the legend is on), **Text Size** (the one
+  [Text Size](../004-interface-design/fonts.md#text-size) slider, 6 to 48 px, without Scale) sets the
+  key's row size. It writes the element's ordinary `textSize` (a chart has no label, so the Text
+  flyout never offers it) and reads through `legendFontPx` (`label-font.ts`): a px is itself, and
+  the presets earlier charts carry read 11 / 14 / 18px, with Medium the default. A key is not a name, so it has its own scale rather than
   the label one. An absent `textSize` reads as Medium.
 - The **Animation** category carries the chart-specific animations
   (None / Grow / Pop / Spin / Pulse, with a **Speed** row + **Repeat** toggle)
@@ -178,7 +178,7 @@ the next colour rather than leaving a blank swatch to go and fill in. Setting a
 legend's own `chartPalette` re-colours every uncoloured row, so a legend and a
 chart set to the same palette stay in step.
 
-The **Legend** section also carries **Text Size** (Small / Medium / Large), on
+The **Legend** section also carries **Text Size** (the same slider, without Scale), on
 the same `legendFontPx` scale as a chart's key, so a Legend beside a chart can
 match it. The dot and row pitch scale with it.
 
