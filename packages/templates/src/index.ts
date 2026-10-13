@@ -3,6 +3,7 @@
 // per-template element builders. Shared by the editor's picker and the
 // MCP worker so the two can't drift.
 export * from './templates';
+export * from './template-canvas-overrides';
 export * from './template-modes';
 export * from './template-categories';
 export { templateKeywords } from './template-keywords';
@@ -14,7 +15,7 @@ export {
   popularKindsFor,
   type PopularChoice,
 } from './popular';
-export { isUntitledDocumentName } from './legacy-untitled';
+export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
 export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export { templateFamilyOf } from './template-families';

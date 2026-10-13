@@ -8,6 +8,7 @@ export * from './standout';
 export * from './rows';
 export * from './truth';
 export * from './detect';
+export * from './normalised';
 export * from './hybrid';
 export * from './model-cues';
 export * from './working-size';
