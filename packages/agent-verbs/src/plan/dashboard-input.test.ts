@@ -51,6 +51,18 @@ describe('resolveDashboardInput', () => {
     expect(resolveDashboardInput({}, TABS, types)).toEqual({ ok: true, spec: {} });
   });
 
+  it('groups by a built-in grouping with no field', () => {
+    const r = resolveDashboardInput(
+      { charts: [{ view: 'workload', groupBy: 'priority' }] },
+      TABS,
+      types,
+    );
+    expect(r.ok && r.spec.charts?.[0]).toEqual({
+      view: 'workload',
+      settings: { swimlaneBy: 'priority' },
+    });
+  });
+
   it('shows every Board and Sheet tab for "every"', () => {
     const r = resolveDashboardInput({ tabs: 'every' }, TABS, types);
     expect(r.ok && r.spec.tabs?.map((t) => t.tabId)).toEqual(['t1', 't2']);

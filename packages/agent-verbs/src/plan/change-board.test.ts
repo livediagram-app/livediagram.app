@@ -26,6 +26,13 @@ describe('swimlanesNamed', () => {
     });
   });
 
+  it('names only the built-in groupings when no field can group', () => {
+    const r = swimlanesNamed('Mood', []);
+    expect(!r.ok && r.message).toBe(
+      'No swimlanes "Mood". Swimlanes: none, assignee, type, priority, status.',
+    );
+  });
+
   it('refuses anything else, naming what there is', () => {
     const r = swimlanesNamed('Mood', [...ITEM_TYPES, BUG]);
     expect(r).toMatchObject({ ok: false, code: 'board_invalid' });

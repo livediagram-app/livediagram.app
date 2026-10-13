@@ -543,6 +543,25 @@ describe('apiRefusalOf', () => {
 });
 
 describe('change lines', () => {
+  it('reads back a stored value: a list by its length, a long text cut, a number or flag as written', async () => {
+    const { api: a } = api();
+    const long = 'x'.repeat(80);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [
+        { op: 'set', item: '#1', fields: { labels: ['a', 'b'], description: long } },
+        { op: 'set', item: '#1', fields: { labels: ['a'], estimate: 3, parent: '#2' } },
+      ],
+      await readPlanState(a, D),
+    );
+    expect(r.applied[0]).toContain('labels = 2 entries');
+    expect(r.applied[0]).toContain('…');
+    expect(r.applied[1]).toContain('labels = 1 entry');
+    expect(r.applied[1]).toContain('estimate = 3');
+    expect(r.applied[1]).toContain('= #2');
+  });
+
   it('clears a value a removed field left behind, by its key', async () => {
     const left = [item(1, 'aaa111', { title: 'Old', status: 'todo~x', 'f-browser': 'Safari' })];
     const { api: a, seen } = api({ [`/documents/${D}/items`]: { items: left, rev: 1 } });
@@ -653,6 +672,37 @@ describe('changeBoard', () => {
     // An empty list takes none, as in the editor, rather than every type.
     const none = await changeBoard(a, D, { board: 'b1', types: [] }, 'cli');
     expect(none).toMatchObject({ ok: true, takes: [] });
+  });
+
+  it('sets swimlanes by name, the card size and fields, and the done column', async () => {
+    const { api: a, seen } = api();
+    const r = await changeBoard(
+      a,
+      D,
+      {
+        board: 'Sprint',
+        swimlanes: 'Severity',
+        cardSize: 'compact',
+        cardFields: ['Number'],
+        doneColumn: 'Done',
+        renameColumns: { 'To Do': 'Ready' },
+      },
+      'mcp',
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r).toMatchObject({ cardSize: 'compact', cardFields: ['Number'] });
+    const setup = (
+      seen[0]!.body as { operations: { fields: { planBoard: Record<string, unknown> } }[] }
+    ).operations[0]!.fields.planBoard;
+    expect(setup).toMatchObject({
+      swimlaneBy: 'field',
+      swimlaneField: 'f-sev',
+      cardSize: 'compact',
+    });
+    expect(await changeBoard(a, D, { board: 'Sprint', swimlanes: 'Mood' }, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'board_invalid',
+    });
   });
 
   it('refuses an unknown or ambiguous board, type or column list', async () => {

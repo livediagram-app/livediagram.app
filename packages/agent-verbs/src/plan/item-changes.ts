@@ -107,11 +107,14 @@ function storedText(value: unknown, items: readonly Item[]): string {
   if (typeof value === 'string') {
     const linked = items.find((i) => i.id === value);
     if (linked) return `#${linked.key}`;
-    const one = value.split('\n')[0]!;
-    return JSON.stringify(one.length > SET_VALUE_MAX ? `${one.slice(0, SET_VALUE_MAX - 1)}…` : one);
+    return JSON.stringify(cut(value.split('\n')[0]!));
   }
-  return typeof value === 'object' && value !== null ? 'set' : String(value);
+  // A number or flag as written; anything else as its JSON, cut.
+  return cut(String(JSON.stringify(value)));
 }
+
+const cut = (text: string) =>
+  text.length > SET_VALUE_MAX ? `${text.slice(0, SET_VALUE_MAX - 1)}…` : text;
 
 function setNote(
   set: Readonly<Record<string, unknown>>,

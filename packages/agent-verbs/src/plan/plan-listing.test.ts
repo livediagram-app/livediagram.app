@@ -53,5 +53,24 @@ describe('listedType', () => {
     expect(bug.custom[0]).toMatchObject({ name: 'Severity', onCard: true });
     expect(bug.display['compact']).toEqual({ belowTitle: ['Severity'] });
     expect(bug.fields).not.toContain(bug.custom[0]!.id);
+    // A Default State no board names reads as its status; a link field names its target; a currency its code.
+    expect(
+      listedType({ ...r.catalogue!.types.find((t) => t.label === 'Bug')!, defaultStatus: 'gone' })
+        .defaultStatus,
+    ).toBe('gone');
+    const deal = listedType({
+      ...ITEM_TYPES[1]!,
+      id: 'deal',
+      label: 'Deal',
+      fields: ['title', 'status', 'f-v', 'f-c'],
+      custom: [
+        { id: 'f-v', label: 'Value', kind: 'currency' },
+        { id: 'f-c', label: 'Company', kind: 'card', linkType: 'project' },
+      ],
+    });
+    expect(deal.custom).toEqual([
+      { id: 'f-v', name: 'Value', kind: 'currency', currency: 'GBP' },
+      { id: 'f-c', name: 'Company', kind: 'card', linkType: 'project' },
+    ]);
   });
 });

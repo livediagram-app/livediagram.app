@@ -183,8 +183,9 @@ export async function changeBoard(
       columns: reshaped.setup.columns.map((c) => ({ name: c.name, status: c.status })),
       takes: reshaped.setup.addTypes ? reshaped.setup.addTypes.map(label) : 'every type',
       cardSize: reshaped.setup.cardSize ?? 'detailed',
+      // A board's card fields are built-in fields only (normaliseBoardSetup keeps CARD_FIELDS alone).
       cardFields: reshaped.setup.cardFields.map(
-        (f) => CARD_FIELD_LABELS[f as keyof typeof CARD_FIELD_LABELS] ?? f,
+        (f) => CARD_FIELD_LABELS[f as keyof typeof CARD_FIELD_LABELS],
       ),
       changesetId: answer.changeset?.id ?? null,
       rev: answer.changeset?.rev ?? null,
