@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react';
 import { HoverCard } from '@livediagram/ui';
 import { CLUSTER_STRIP, CLUSTER_CONTROL_REST } from '@/components/canvas/cluster-strip';
-import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
+import { useDockNames } from '@/hooks/ui/useDockNames';
 
 // A bottom-right cluster button that opens a panel as a popover hanging ABOVE it, as the Layers
 // button does, and shows pressed while it is open: Slides in Illustrate mode, Card Types in Plan
@@ -26,8 +26,8 @@ type SegmentProps = {
   dataTourId?: string;
   // A segment after the first in a strip: a hairline parts it from the one before.
   divided?: boolean;
-  // Its name beside its icon on a desktop (Contents, Slides, Timer, Vote, Poll); a phone shows the
-  // icon alone. Absent, the button is its icon on every screen.
+  // Its name beside its icon on a wide desktop (useDockNames); narrower, the icon alone. Absent,
+  // the button is its icon on every screen.
   name?: string;
 };
 
@@ -67,8 +67,7 @@ export function ClusterPopoverSegment({
   divided = false,
   name,
 }: SegmentProps) {
-  const mobile = useIsMobileViewport();
-  const named = !!name && !mobile;
+  const named = useDockNames() && !!name;
   const button = (
     <button
       ref={buttonRef}

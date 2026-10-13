@@ -242,9 +242,15 @@ describe('the export draws charts as the canvas does', () => {
   it('draws the series and labels adapted on a dark ground', () => {
     const svg = svgLineChart(el, '#475569', undefined, undefined, [DARK]);
     expect(svg).not.toContain('stroke="#334155"');
-    const stroke = /polyline[^>]*stroke="(#[0-9a-f]{6})"/.exec(svg)![1]!;
+    // A tag's attribute, read by slicing the tag out first (no backtracking pattern over the markup).
+    const attrOf = (tagStart: number, attr: string) => {
+      const tag = svg.slice(tagStart, svg.indexOf('>', tagStart));
+      const at = tag.indexOf(`${attr}="`);
+      return tag.slice(at + attr.length + 2, at + attr.length + 9);
+    };
+    const stroke = attrOf(svg.indexOf('<polyline'), 'stroke');
     expect(contrastRatio(stroke, DARK)).toBeGreaterThanOrEqual(CHART_MARK_CONTRAST);
-    const label = /<text[^>]*fill="(#[0-9a-f]{6})"[^>]*>Jan</.exec(svg)![1]!;
+    const label = attrOf(svg.lastIndexOf('<text', svg.indexOf('>Jan<')), 'fill');
     expect(contrastRatio(label, DARK)).toBeGreaterThanOrEqual(CHART_TEXT_CONTRAST);
   });
 
