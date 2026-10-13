@@ -20,8 +20,17 @@ const box = (extra: Partial<ShapeElement> = {}): ShapeElement => ({
   iconId: 'database',
   ...extra,
 });
-const textX = (svg: string) => Number(/<text[^>]* x="([\d.]+)"/.exec(svg)![1]);
-const iconX = (svg: string) => Number(/<svg x="([\d.]+)"/.exec(svg)![1]);
+// The first `tag`'s `attr`, read by indexOf (a [^>]* pattern backtracks on a long run of tags).
+const attrOf = (svg: string, tag: string, attr: string): number => {
+  const at = svg.indexOf(`<${tag}`);
+  const end = svg.indexOf('>', at);
+  const head = svg.slice(at, end);
+  const key = ` ${attr}="`;
+  const from = head.indexOf(key) + key.length;
+  return Number(head.slice(from, head.indexOf('"', from)));
+};
+const textX = (svg: string) => attrOf(svg, 'text', 'x');
+const iconX = (svg: string) => attrOf(svg, 'svg', 'x');
 
 describe('inline icons in an export', () => {
   it('draws the glyph left of the label by default and moves the label aside', () => {
@@ -39,8 +48,8 @@ describe('inline icons in an export', () => {
 
   it('stacks the glyph above the label for iconPosition above', () => {
     const svg = svgBoxed(box({ iconPosition: 'above', height: 120 }), { resolveIconArt });
-    const iconY = Number(/<svg x="[\d.]+" y="([\d.]+)"/.exec(svg)![1]);
-    const textY = Number(/<text[^>]* y="([\d.]+)"/.exec(svg)![1]);
+    const iconY = attrOf(svg, 'svg', 'y');
+    const textY = attrOf(svg, 'text', 'y');
     expect(iconY).toBeLessThan(textY);
   });
 

@@ -44,7 +44,12 @@ import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
 import { layoutStormGraph } from './graph-storm';
 import { parseMermaid } from './mermaid';
-import { isSequenceDiagram, parseSequenceDiagram, type SequenceDiagram } from './mermaid-sequence';
+import {
+  afterWord,
+  isSequenceDiagram,
+  parseSequenceDiagram,
+  type SequenceDiagram,
+} from './mermaid-sequence';
 import { layoutSequence } from './sequence-layout';
 import { graphTooLargeError } from './graph-limits';
 import type { Element } from './index';
@@ -337,10 +342,11 @@ export function graphFromMermaid(
   // Mermaid's front matter (`---` / `title: …` / `---`) heads the diagram, as `title` does on a graph.
   const front = /^\s*---\r?\n([\s\S]*?)\r?\n---\s*\r?\n/.exec(text);
   const title = front
-    ? /^title:\s*(.+)$/m
-        .exec(front[1]!)?.[1]
-        ?.trim()
-        .replace(/^["']|["']$/g, '')
+    ? front[1]!
+        .split(/\r?\n/)
+        .map((l) => afterWord(l.trim(), 'title', ':'))
+        .find((t) => !!t)
+        ?.replace(/^["']|["']$/g, '')
     : undefined;
   const parsed = parseMermaid(front ? text.slice(front[0].length) : text);
   if (!parsed.ok) return parsed;

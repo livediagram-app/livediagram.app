@@ -49,6 +49,54 @@ const ARROWS: readonly [string, SequenceMessageKind][] = [
 
 const clip = (t: string) => t.trim().slice(0, TEXT_MAX);
 
+// Each line is read by prefixes and indexOf, never a backtracking pattern, so a long run of spaces in an agent's text
+// costs a line's length (CodeQL "polynomial regular expression").
+
+// The text after `word` and a separator (a colon or white space), trimmed; null when the line does not start so.
+export function afterWord(line: string, word: string, separators = ': \t'): string | null {
+  if (!line.startsWith(word) || line.length === word.length) return null;
+  return separators.includes(line[word.length]!) ? line.slice(word.length + 1).trim() : null;
+}
+
+// The first white-space-separated word and what follows it, trimmed.
+function splitWord(text: string): [string, string] {
+  const t = text.trim();
+  const at = t.search(/\s/);
+  return at < 0 ? [t, ''] : [t.slice(0, at), t.slice(at).trim()];
+}
+
+// A participant or actor line: its name, and its alias after "as".
+function readDeclared(line: string): { actor: boolean; name: string; alias?: string } | null {
+  const [kind, rest] = splitWord(line);
+  if ((kind !== 'participant' && kind !== 'actor') || !rest) return null;
+  const [name, tail] = splitWord(rest);
+  if (!tail) return { actor: kind === 'actor', name };
+  const [as, alias] = splitWord(tail);
+  return as === 'as' && alias ? { actor: kind === 'actor', name, alias } : null;
+}
+
+const NOTE_PLACES = [
+  ['over ', 'over'],
+  ['left of ', 'left'],
+  ['right of ', 'right'],
+] as const;
+
+// A note line: where it sits, over whom, and its text.
+function readNote(
+  line: string,
+): { placement: 'over' | 'left' | 'right'; who: string; text: string } | null {
+  const lower = line.toLowerCase();
+  if (!lower.startsWith('note ')) return null;
+  const rest = line.slice(5).trimStart();
+  const place = NOTE_PLACES.find(([p]) => rest.toLowerCase().startsWith(p));
+  if (!place) return null;
+  const after = rest.slice(place[0].length);
+  const colon = after.indexOf(':');
+  if (colon <= 0) return null;
+  const who = after.slice(0, colon).trim();
+  return who ? { placement: place[1], who, text: after.slice(colon + 1).trim() } : null;
+}
+
 export function isSequenceDiagram(text: string): boolean {
   return /^\s*(?:---[\s\S]*?---\s*)?sequenceDiagram\b/.test(text);
 }
@@ -88,8 +136,8 @@ export function parseSequenceDiagram(
       continue;
     }
     if (inFrontMatter) {
-      const t = /^title:\s*(.+)$/.exec(line);
-      if (t) title = clip(t[1]!.replace(/^["']|["']$/g, ''));
+      const t = afterWord(line, 'title', ':');
+      if (t) title = clip(t.replace(/^["']|["']$/g, ''));
       continue;
     }
     if (!started) {
@@ -100,14 +148,14 @@ export function parseSequenceDiagram(
       autonumber = true;
       continue;
     }
-    const titled = /^title[:\s]\s*(.+)$/.exec(line);
+    const titled = afterWord(line, 'title');
     if (titled) {
-      title = clip(titled[1]!);
+      title = clip(titled);
       continue;
     }
-    const declared = /^(participant|actor)\s+([^\s]+)(?:\s+as\s+(.+))?$/.exec(line);
+    const declared = readDeclared(line);
     if (declared) {
-      meet(declared[2]!, declared[3], declared[1] === 'actor');
+      meet(declared.name, declared.alias, declared.actor);
       continue;
     }
     const activation = /^(activate|deactivate)\s+([^\s]+)$/.exec(line);
@@ -115,19 +163,14 @@ export function parseSequenceDiagram(
       items.push({ kind: activation[1] as 'activate' | 'deactivate', who: meet(activation[2]!) });
       continue;
     }
-    const note = /^note\s+(over|left of|right of)\s+([^:]+):\s*(.*)$/i.exec(line);
+    const note = readNote(line);
     if (note) {
-      const placement = note[1]!.toLowerCase().startsWith('over')
-        ? 'over'
-        : note[1]!.toLowerCase().startsWith('left')
-          ? 'left'
-          : 'right';
-      const who = note[2]!.split(',').map((w) => meet(w));
+      const who = note.who.split(',').map((w) => meet(w));
       items.push({
         kind: 'note',
-        placement,
+        placement: note.placement,
         who,
-        text: clip(note[3]!.replace(/<br\s*\/?>/gi, '\n')),
+        text: clip(note.text.replace(/<br\s*\/?>/gi, '\n')),
       });
       continue;
     }
