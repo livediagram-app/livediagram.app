@@ -4,15 +4,10 @@ import { CountBadge, DialogCloseButton } from '@livediagram/ui';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { Dialog } from '@/components/dialogs/Dialog';
-import {
-  apiDeleteImage,
-  apiFetchImageDataUrl,
-  apiListImages,
-  type ImageSummary,
-} from '@/lib/api-client';
+import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
 import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
-import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useConfirm } from '@/hooks/ui/useConfirm';
+import { useImageGallery } from '@/hooks/ui/useImageGallery';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
@@ -63,25 +58,16 @@ export function ImagePicker({
   uploadOnly = false,
 }: ImagePickerProps) {
   const [tab, setTab] = useState<'upload' | 'gallery' | 'search'>('upload');
-  const [gallery, setGallery] = useState<ImageSummary[] | null>(null);
-  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const {
+    gallery,
+    setGallery,
+    error: galleryError,
+    setError: setGalleryError,
+    pick,
+  } = useImageGallery(ownerId, documentId, !uploadOnly);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const confirm = useConfirm();
-
-  useEffect(() => {
-    if (uploadOnly) return;
-    apiListImages(ownerId)
-      .then((list) => {
-        if (list === null) {
-          setGalleryError('Image uploads are not enabled on this deployment.');
-          setGallery([]);
-          return;
-        }
-        setGallery(list);
-      })
-      .catch(() => setGalleryError('Could not load your gallery.'));
-  }, [ownerId, uploadOnly]);
 
   const handleFile = async (file: File) => {
     setUploadError(null);
@@ -130,22 +116,9 @@ export function ImagePicker({
     return () => document.removeEventListener('paste', onPaste);
   }, []);
 
-  // Gallery picks re-home for offline documents (docs/specs/006-document/offline-mode.md): a bare gallery id
-  // inside an offline document would break once the server's 30-day unused-
-  // image cleanup reaps it (nothing server-side references it), so the bytes
-  // are fetched and embedded as a data URI instead, exactly like Take
-  // Offline does for existing references.
   const selectFromGallery = async (image: ImageSummary) => {
-    if (!isOfflineIdSync(documentId)) {
-      onSelect(image);
-      return;
-    }
-    const href = await apiFetchImageDataUrl(ownerId, image.id).catch(() => null);
-    if (!href) {
-      setGalleryError('Could not load that image for offline use. Check your connection.');
-      return;
-    }
-    onSelect({ ...image, id: href });
+    const picked = await pick(image);
+    if (picked) onSelect(picked);
   };
 
   const handleDelete = async (image: ImageSummary) => {

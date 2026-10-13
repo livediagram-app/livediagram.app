@@ -430,16 +430,19 @@ An infographic, slide or article page can be painted with a picture:
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
 - **The Image category**, while the page has no picture: a search field and its results (the image
-  picker's Search, [Image search](../009-elements/image-search.md), three tiles across) and under
-  them **Upload an Image** (a file, as the picker's Upload takes one: the same types and size
-  limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
+  picker's Search, [Image search](../009-elements/image-search.md), three tiles across), under
+  them **Choose From My Images** (the person's own gallery, three tiles across, in a popover that
+  opens beside the panel so the panel stays in view; one press picks and closes it; an offline
+  document embeds the picture as the picker's Gallery does) and **Upload an Image** (a file, as
+  the picker's Upload takes one: the same types and size limit). Once the page has a picture: the picture in a strip with **Remove** (back to the paper,
   one edit), its **Credit** line when it came from a search (the image element's Credit row: the
   text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
-  search and Upload again under **Replace Image**.
+  search, Choose From My Images and Upload again under **Replace Image**.
 - **The search suits a page.** It asks Openverse only for pictures of the page's shape
   (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
-  `square` for a square page) and large ones (`size=large`), so a result covers the page without
-  a blurry or lopsided crop. Everything else is the picker's search: the licences, no mature
+  `square` for a square page), so a result covers the page without a lopsided crop. It does not
+  ask for large ones (`size=large`): Openverse cannot render thumbnails for most of those, so every
+  result drew broken. Everything else is the picker's search: the licences, no mature
   results, Load more, the loading, error and empty states, the footer credit.
 - **Hover previews**: hovering or focusing a result paints its Openverse thumbnail on the page
   under the overlay a pick would get; leaving the results puts the page back. A press downloads

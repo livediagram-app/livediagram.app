@@ -2,7 +2,7 @@
 
 // The Background section's Image category (docs/specs/007-editor/illustrate-pages.md "Image
 // backgrounds"): the page's picture with its credit, its Overlay, Strength and Position, then the
-// image search (asking for the page's shape) and Upload an Image to pick or replace it. A
+// image search (asking for the page's shape), Choose From My Images and Upload an Image to pick or replace it. A
 // hovered result, overlay or position previews on the page; a pick, an upload or a press commits
 // one edit. Not offered on a logo page (page-background-section).
 import { useRef, useState, type ReactNode } from 'react';
@@ -19,6 +19,7 @@ import {
 } from '@livediagram/document';
 import { Button } from '@livediagram/ui';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
+import { PageGalleryPicker } from './PageGalleryPicker';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import { MenuSliderRow } from '@/components/primitives/MenuSliderRow';
 import { useImageBlobUrl } from '@/hooks/persistence/useImageBlobUrl';
@@ -104,8 +105,11 @@ export function ImageBackgroundChoices({
   }
 
   // One edit: the picture with its tone, its credit (a search pick's), and the overlay in force.
-  const land = async (picked: PickedImage, toneFrom: string) => {
-    const tone = (await sampleImageTone(toneFrom)) ?? (await storedTone(picked.id));
+  // `toneFrom`: a picture already in hand to read the tone off (a search thumbnail, the uploaded file), else the
+  // stored picture is read (a gallery pick).
+  const land = async (picked: PickedImage, toneFrom: string | null) => {
+    const tone =
+      (toneFrom ? await sampleImageTone(toneFrom) : undefined) ?? (await storedTone(picked.id));
     onPick({
       kind: 'image',
       imageId: picked.id,
@@ -197,6 +201,15 @@ export function ImageBackgroundChoices({
         onPicked={(picked, result) => {
           onPreview(null);
           void land(picked, result.thumbnail);
+        }}
+      />
+      <PageGalleryPicker
+        ownerId={access.ownerId}
+        documentId={access.documentId}
+        disabled={busy}
+        onPicked={(picked) => {
+          onPreview(null);
+          void land(picked, null);
         }}
       />
       <input
