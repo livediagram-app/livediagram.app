@@ -334,11 +334,20 @@ export function graphFromMermaid(
       ? { ok: true, graph: { nodes: [], edges: [], style: 'sequence', sequence: read.diagram } }
       : read;
   }
-  const parsed = parseMermaid(text);
+  // Mermaid's front matter (`---` / `title: …` / `---`) heads the diagram, as `title` does on a graph.
+  const front = /^\s*---\r?\n([\s\S]*?)\r?\n---\s*\r?\n/.exec(text);
+  const title = front
+    ? /^title:\s*(.+)$/m
+        .exec(front[1]!)?.[1]
+        ?.trim()
+        .replace(/^["']|["']$/g, '')
+    : undefined;
+  const parsed = parseMermaid(front ? text.slice(front[0].length) : text);
   if (!parsed.ok) return parsed;
   return {
     ok: true,
     graph: {
+      ...(title ? { title: title.slice(0, 120) } : {}),
       nodes: parsed.graph.nodes,
       edges: parsed.graph.edges,
       groups: parsed.graph.clusters,

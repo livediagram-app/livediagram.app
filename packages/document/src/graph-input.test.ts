@@ -168,6 +168,12 @@ describe('Mermaid', () => {
     expect(r.error).toMatch(/flowcharts/);
   });
 
+  it("heads the diagram with Mermaid front matter's title", () => {
+    const r = resolveGraphInput({ mermaid: '---\ntitle: Checkout\n---\nflowchart TD\n  A --> B' });
+    expect(r.graph?.title).toBe('Checkout');
+    expect(r.graph?.nodes.map((n) => n.id)).toEqual(['A', 'B']);
+  });
+
   it('reads a sequence diagram as a sequence graph', () => {
     const r = resolveGraphInput({ mermaid: 'sequenceDiagram\n  A->>B: hi' });
     expect(r.graph?.style).toBe('sequence');

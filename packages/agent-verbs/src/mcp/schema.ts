@@ -480,7 +480,8 @@ const mermaidField = z
       'participant / actor, ->> calls, -) async, -->> replies, +/- activations, Note over, alt/else, loop, ' +
       'opt, par, autonumber, title). Parsed into the same graph as the "graph" input: subgraphs become ' +
       'groups, the direction is kept, and the same label limit applies; a sequence diagram is drawn with ' +
-      'lifelines, activation bars, notes and fragments. Provide one of graph, mermaid, elements or template.',
+      'lifelines, activation bars, notes and fragments. Front matter (---, title: Text, ---) titles any of them. ' +
+      'Provide one of graph, mermaid, elements or template.',
   );
 
 // Icon search (docs/specs/015-api/mcp-server.md §4.5a): the ids "iconId" takes, found by what they show.

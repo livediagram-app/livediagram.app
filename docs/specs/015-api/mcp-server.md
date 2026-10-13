@@ -510,7 +510,8 @@ flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-impo
 `sequenceDiagram` by the agents' sequence reader ([Sequence diagrams](../020-import-export/mermaid.md#sequence-diagrams-agents),
 drawn with lifelines, activation bars, notes and fragments as `style: "sequence"`), into the same
 graph, its direction and subgraphs becoming `direction` and `groups`, and then
-takes the same path, label cap included. A dialect it cannot read comes back as
+takes the same path, label cap included. Mermaid's front matter title (`---` / `title: Checkout` / `---`) heads the
+diagram as `title` does on a graph, in every dialect. A dialect it cannot read comes back as
 an error naming what is supported.
 
 The translation (`graphToElements`, the sizing, the clustered layout) is pure
