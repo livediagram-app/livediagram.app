@@ -34,7 +34,7 @@ describe('customFieldText', () => {
     expect(customFieldText(field('number'), 'x')).toBeNull();
     expect(customFieldText(field('date'), '2026-10-30')).toBe(dayLabel('2026-10-30', 'medium'));
     expect(customFieldText(field('date'), 3)).toBeNull();
-    expect(customFieldText(field('link'), 'https://www.sentry.io/x')).toBe('sentry.io');
+    expect(customFieldText(field('link'), 'https://www.sentry.io/x')).toBe('sentry.io/x');
     expect(customFieldText(field('link'), 3)).toBeNull();
     expect(customFieldText(field('currency', { currency: 'GBP' }), 12)).toBe(
       currencyText(12, 'GBP'),
@@ -66,9 +66,13 @@ describe('currencyText', () => {
 
 describe('linkHost', () => {
   it('shows a site without www, and an address without its scheme otherwise', () => {
-    expect(linkHost('https://www.example.com/a')).toBe('example.com');
+    expect(linkHost('https://www.example.com/a')).toBe('example.com/a');
     expect(linkHost('http://not a url')).toBe('not a url');
     expect(linkHost('mailto:')).toBe('mailto:');
+    // Links to one site told apart by their last step.
+    expect(linkHost('https://acme.sentry.io/issues/4521/')).toBe('acme.sentry.io/…/4521');
+    expect(linkHost('https://acme.test/')).toBe('acme.test');
+    expect(linkHost('file:///tmp/a')).toBe('file:///tmp/a');
   });
 });
 
