@@ -99,7 +99,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   alone on an infographic page, with no tab switch (its Layout, Background and Tidy are the
   buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its
   Layout is the button beside the cog); an article page:
-  **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
+  **Page** alone (its Style, Text and Background are the buttons beside the cog, [Article pages](article-pages.md) "Article style");
   a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
   "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
@@ -494,7 +494,10 @@ the lock, a logo page's Mirror and Guides; Tidy is always its icon alone) name t
 the page is wide enough on screen to hold them named and still leave the label its least room
 (40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
-An infographic or slide page's title bar holds a **Background** button before its lock and cog,
+An article page's title bar holds **Style** and **Text** before its Background
+([Article pages](article-pages.md) "Article style").
+
+An infographic, slide or article page's title bar holds a **Background** button before its lock and cog,
 the cog's size with a tooltip, for someone who may edit (an Editor; a Participant or Viewer sees
 no title-bar controls), as a logo page holds its Guides ([Logo pages](logo-pages.md) "Beside the
 cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (a
