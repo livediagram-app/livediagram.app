@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livediagram/document';
 import { FINISH_PREVIEW_ELEMENTS } from './finish-preview';
-import { lookPreviewSvg, lookPreviewTab } from './look-preview';
+import { firstSelfClosingRect, lookPreviewSvg, lookPreviewTab } from './look-preview';
 import { resolveTheme } from './themes';
 import { TAB_LOOKS, activeLookId, tabLookById } from './tab-looks';
 
@@ -48,5 +48,26 @@ describe('lookPreviewSvg', () => {
     expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'whiteboard')!)).toContain(
       'data-finish="sketch"',
     );
+  });
+});
+
+describe('firstSelfClosingRect', () => {
+  it('finds the first self-closing rect, skipping an open one', () => {
+    const svg = '<svg><rect width="1"><rect x="0" /><rect y="1"/></svg>';
+    const hit = firstSelfClosingRect(svg)!;
+    expect(svg.slice(hit.index, hit.index + hit.length)).toBe('<rect x="0" />');
+  });
+
+  it('returns null when none closes itself', () => {
+    expect(firstSelfClosingRect('<svg><rect >')).toBeNull();
+    expect(firstSelfClosingRect('<rect x="1"')).toBeNull();
+    expect(firstSelfClosingRect('<svg/>')).toBeNull();
+  });
+
+  it('stays linear on a run of unclosed rects', () => {
+    const svg = '<rect '.repeat(200_000);
+    const t0 = performance.now();
+    expect(firstSelfClosingRect(svg)).toBeNull();
+    expect(performance.now() - t0).toBeLessThan(200);
   });
 });
