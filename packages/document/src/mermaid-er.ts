@@ -75,11 +75,15 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
       const ends: GraphEdge['ends'] =
         fromMany && toMany ? 'both' : toMany ? 'to' : fromMany ? 'from' : 'none';
       const dashed = rel[3] === '..';
-      const label = rel[6] ? decodeLabel(rel[6]) : undefined;
+      // The multiplicity in words beside the verb, as the ER template writes it ("places · 1 : 0..*"): the
+      // arrowheads alone said "many" but never "at least one" or "optional".
+      const said = rel[6] ? decodeLabel(rel[6]) : '';
+      const multiplicity = `${multiplicityOf(rel[2]!)} : ${multiplicityOf(rel[4]!)}`;
+      const label = said ? `${said} · ${multiplicity}` : multiplicity;
       edges.push({
         from,
         to,
-        ...(label ? { label } : {}),
+        label,
         ...(dashed ? { line: 'dashed' as const } : {}),
         ends,
         ...(fromMany || toMany ? { head: 'cross' as const } : {}),
@@ -97,4 +101,12 @@ export function parseErDiagram(rawLines: string[]): ParseMermaidResult {
   }
   // ER has no direction syntax; the layered TB flow reads best.
   return { ok: true, graph: { nodes: [...nodes.values()], edges }, direction: 'TB' };
+}
+
+// A cardinality token in UML multiplicity: `|o` / `o|` zero or one, `||` exactly one, `}o` / `o{` zero or more,
+// `}|` / `|{` one or more.
+function multiplicityOf(token: string): string {
+  const many = token.includes('{') || token.includes('}');
+  const optional = token.includes('o');
+  return many ? (optional ? '0..*' : '1..*') : optional ? '0..1' : '1';
 }

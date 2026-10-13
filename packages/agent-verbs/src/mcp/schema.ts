@@ -423,7 +423,7 @@ const graphField = z
         'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
       ),
     style: z
-      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm'])
+      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])
       .optional()
       .describe(
         'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
@@ -433,7 +433,9 @@ const graphField = z
           'node order, clockwise from the top; a node with no edge sits at its centre) or "storm" (an ' +
           'event-storming board: each node a workshop note of its esKind, one column per domain event in the ' +
           'order the edges imply, each kind on its own lane, no arrows; a new tab becomes an event-storming ' +
-          'board). With groups the layout is flow unless it is lanes.',
+          'board) or "sequence" (a sequence diagram: the nodes the participants, a node shaped actor a stick ' +
+          'figure; the edges the messages in order, a dashed edge a reply; Mermaid sequenceDiagram text says ' +
+          'more: activations, notes, alt/loop fragments). With groups the layout is flow unless it is lanes.',
       ),
     lines: z
       .enum(['straight', 'angled', 'curved'])
@@ -474,9 +476,11 @@ const mermaidField = z
   .optional()
   .describe(
     'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs), a state ' +
-      'diagram (stateDiagram) or an ER diagram (erDiagram). Parsed into the same graph as the ' +
-      '"graph" input: subgraphs become groups, the direction is kept, and the same label limit ' +
-      'applies. Provide one of graph, mermaid, elements or template.',
+      'diagram (stateDiagram), an ER diagram (erDiagram) or a sequence diagram (sequenceDiagram: ' +
+      'participant / actor, ->> calls, -) async, -->> replies, +/- activations, Note over, alt/else, loop, ' +
+      'opt, par, autonumber, title). Parsed into the same graph as the "graph" input: subgraphs become ' +
+      'groups, the direction is kept, and the same label limit applies; a sequence diagram is drawn with ' +
+      'lifelines, activation bars, notes and fragments. Provide one of graph, mermaid, elements or template.',
   );
 
 // Icon search (docs/specs/015-api/mcp-server.md §4.5a): the ids "iconId" takes, found by what they show.

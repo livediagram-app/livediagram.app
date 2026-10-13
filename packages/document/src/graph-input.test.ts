@@ -164,8 +164,14 @@ describe('Mermaid', () => {
   });
 
   it('names what it supports when it cannot read a dialect', () => {
-    const r = resolveGraphInput({ mermaid: 'sequenceDiagram\n  A->>B: hi' });
+    const r = resolveGraphInput({ mermaid: 'pie\n  "A": 1' });
     expect(r.error).toMatch(/flowcharts/);
+  });
+
+  it('reads a sequence diagram as a sequence graph', () => {
+    const r = resolveGraphInput({ mermaid: 'sequenceDiagram\n  A->>B: hi' });
+    expect(r.graph?.style).toBe('sequence');
+    expect(r.graph?.sequence?.participants.map((p) => p.id)).toEqual(['A', 'B']);
   });
 
   it('prefers graph over mermaid, and gives nothing for neither', () => {

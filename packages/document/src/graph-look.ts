@@ -713,3 +713,67 @@ export function stackBuses(
     };
   });
 }
+
+// Labels on elbows (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): an elbow's midpoint sits on the
+// channel it shares with its neighbours, so their labels landed on one another. Each labelled elbow puts its label
+// on a run that is its own, no other labelled arrow running along it: the drop into its target first, then the leg
+// out of its source, then its longest; centred on the run, on the line. Every label is given the width of its text,
+// so a short caption stays on one line on a vertical run.
+export function placeElbowLabels(elements: Element[]): Element[] {
+  const labelled = elements.filter(
+    (el): el is ArrowElement =>
+      el.type === 'arrow' &&
+      !!el.label &&
+      el.arrowStyle === 'angled' &&
+      (el.curvePoints?.length ?? 0) > 0,
+  );
+  if (labelled.length === 0) return elements;
+  const pathOf = (a: ArrowElement): Pt[] => {
+    const from = endAt(a, 'from', elements);
+    const to = endAt(a, 'to', elements);
+    const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+    return [from, ...a.curvePoints!.map((p) => ({ x: mid.x + p.dx, y: mid.y + p.dy })), to];
+  };
+  const paths = new Map(labelled.map((a) => [a.id, pathOf(a)]));
+  const overlap = (p0: number, p1: number, q0: number, q1: number) =>
+    Math.min(Math.max(p0, p1), Math.max(q0, q1)) > Math.max(Math.min(p0, p1), Math.min(q0, q1));
+  // Whether a run (a to b) lies along a run of another labelled arrow: the same line within LABEL_CLEAR, overlapping.
+  const shared = (id: string, a: Pt, b: Pt) =>
+    labelled.some((o) => {
+      if (o.id === id) return false;
+      const q = paths.get(o.id)!;
+      return q.slice(1).some((c, i) => {
+        const d = q[i]!;
+        if (Math.abs(a.x - b.x) < 1 && Math.abs(c.x - d.x) < 1 && Math.abs(a.x - c.x) < LABEL_CLEAR)
+          return overlap(a.y, b.y, c.y, d.y);
+        if (Math.abs(a.y - b.y) < 1 && Math.abs(c.y - d.y) < 1 && Math.abs(a.y - c.y) < LABEL_CLEAR)
+          return overlap(a.x, b.x, c.x, d.x);
+        return false;
+      });
+    });
+  const placed = new Map<string, ArrowElement>();
+  for (const a of labelled) {
+    const pts = paths.get(a.id)!;
+    const lens = pts.slice(1).map((p, i) => Math.hypot(p.x - pts[i]!.x, p.y - pts[i]!.y));
+    const total = lens.reduce((s, l) => s + l, 0);
+    if (total <= 0) continue;
+    const last = lens.length - 1;
+    const byLength = lens.map((_, i) => i).sort((p, q) => lens[q]! - lens[p]!);
+    const seg =
+      [last, 0, ...byLength].find((i) => lens[i]! > 30 && !shared(a.id, pts[i]!, pts[i + 1]!)) ??
+      byLength[0]!;
+    const before = lens.slice(0, seg).reduce((s, l) => s + l, 0);
+    placed.set(a.id, {
+      ...a,
+      labelOffset: { t: Number(((before + lens[seg]! / 2) / total).toFixed(4)), offset: 0 },
+      labelMaxWidth: Math.ceil(labelWidth(a.label!)),
+    });
+  }
+  return elements.map((el) => placed.get(el.id) ?? el);
+}
+
+// How close two runs may be before a label on one would sit on the other: a label's height and some.
+const LABEL_CLEAR = 22;
+
+// A caption's one-line width at the arrow label's default size, with room for its plate.
+const labelWidth = (label: string) => Math.min(260, label.length * 12 * 0.56 + 18);

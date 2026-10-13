@@ -634,6 +634,13 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export {
+  isSequenceDiagram,
+  parseSequenceDiagram,
+  SEQUENCE_MAX_ITEMS,
+  SEQUENCE_MAX_PARTICIPANTS,
+  type SequenceDiagram,
+} from './mermaid-sequence';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';

@@ -31,9 +31,9 @@ imported), so exporting back to `stateDiagram` / `erDiagram` would mean
 guessing meaning from geometry — the flowchart export preserves the
 connection graph, which is the part that's real.
 
-Non-graph Mermaid types (sequence, gantt, pie, journey, timeline, quadrant)
-and class diagrams remain out of scope; importing one reports a clear error
-naming the supported types.
+Sequence diagrams are drawn by the agents' graph input only (below, [Sequence diagrams](#sequence-diagrams-agents));
+the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant)
+and class diagrams remain out of scope; importing one reports a clear error naming the supported types.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
 theme owns colours — Mermaid styling is skipped, never an error) and true
@@ -128,11 +128,37 @@ LR` line sets the layout direction (TB default).
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
   it to "SHARE_LINK text code text document_id…").
-- **Relationships**: `A ||--o{ B : label` becomes an edge labelled `label`.
+- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with the verb and the multiplicity in words,
+  as the ER template writes it: `label · 1 : 0..*` (`|o` zero or one `0..1`, `||` exactly one `1`, `}o` zero or
+  more `0..*`, `}|` one or more `1..*`; with no verb, the multiplicity alone).
   Cardinality maps onto arrow ends: a "many" side (crow's foot, `{` / `}`)
   gets an open-V arrowhead on that end (`ends`: the many side(s), `head:
 'cross'`); one-to-one relationships render headless. Non-identifying
   (dotted `..`) relationships render dashed.
+
+## Sequence diagrams (agents)
+
+The MCP's `mermaid` input (and graph input's `style: "sequence"`, [MCP server](../015-api/mcp-server.md) §4.7) takes
+a `sequenceDiagram` and draws it the way the sequence diagram template does.
+
+- **Syntax**: `participant A` / `participant A as Label`, `actor A` (a UML stick figure with its name beneath);
+  participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
+  head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
+  `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
+  `activate B` / `deactivate B` start and end activations. `Note over A,B: text`, `Note right of A: text`,
+  `Note left of A: text`. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
+  each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
+  diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
+- **Activations without markers**: a call to another participant activates it from that message until it replies
+  to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
+  stepped right. Nested activations step right by half a bar.
+- **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
+  pitch wide enough for the longest message between neighbours; messages a row each, edge to edge of the activation
+  bars, labels above their line; a self-call loops out of the bar and back into its nested one; a note is a sticky
+  over or beside its participants; a fragment is a frame across every lifeline with its operator as its label and
+  each guard in muted text, operands split by a dashed divider.
+- **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
+  naming the limit.
 
 ## The engine lives in `packages/document`
 

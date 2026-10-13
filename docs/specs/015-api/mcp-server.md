@@ -450,7 +450,9 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
   the box; an id that names none is refused.
 - **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
-  twice along the flow.
+  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus; a labelled
+  arrow keeps its own ends, and its label sits on a run no other labelled arrow shares (the drop into its target,
+  else the leg out of its source, else its longest run), one line wide.
 - **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
   the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
@@ -477,7 +479,8 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   branch tinted in its own hue with its icon; leaves white and edged in their branch's hue; curved connectors in
   the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
-  a node outside every group gets an unnamed lane), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
+  a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
+  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, a node with no edge at all at the ring's centre, a node given no
   shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
@@ -503,7 +506,9 @@ unrelated box passes behind it with a gap, on the canvas and in the preview
 ([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
 
 **`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
-flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)) into the same
+flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)), or for a
+`sequenceDiagram` by the agents' sequence reader ([Sequence diagrams](../020-import-export/mermaid.md#sequence-diagrams-agents),
+drawn with lifelines, activation bars, notes and fragments as `style: "sequence"`), into the same
 graph, its direction and subgraphs becoming `direction` and `groups`, and then
 takes the same path, label cap included. A dialect it cannot read comes back as
 an error naming what is supported.
