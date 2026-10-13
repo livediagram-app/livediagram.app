@@ -33,6 +33,7 @@ import {
   serialFromMs,
   setFilterCondition,
   single,
+  sortFilter,
   sortRange,
   sortSheet,
   stepDecimals,
@@ -321,6 +322,14 @@ export function useSheetActions() {
       // ---- Sort, filter, freeze ----
       sortColumn(ascending: boolean) {
         const w = sortSheet(c.workbook, c.sheet.id, sel().active.c, ascending);
+        if (w) {
+          c.write(w, 'Sort');
+          c.announce(ascending ? 'Sorted A to Z' : 'Sorted Z to A');
+        }
+      },
+      // A filter column's own sort: the filter's rows under its header, by that column (not the active cell's).
+      sortFilter(colId: string, ascending: boolean) {
+        const w = sortFilter(c.workbook, c.sheet.id, colId, ascending);
         if (w) {
           c.write(w, 'Sort');
           c.announce(ascending ? 'Sorted A to Z' : 'Sorted Z to A');

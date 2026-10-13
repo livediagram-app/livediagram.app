@@ -267,7 +267,9 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 to an engine command builder (`commands.ts`) and then the controller's write (`store.write`, plus `track('Sheet',
 'Changed', kind)`); e.g. `bold()` → `formatRange(sel,
 { b: !activeBold || null })`; `insertRowsAbove(n)` → layout `insertRows` after the row above with new ids;
-`sortColumn(dir)` → `sortSheetRows`; `merge('all')` → layout `merge` plus cleared cells after a confirm when any
+`sortColumn(dir)` → `sortSheet` (the active cell's column); `sortFilter(colId, dir)` (the filter menu's sort) →
+`sortFilter`, the filter's rows under its header by that column, its bottom row id carried to the row now in that
+place; `merge('all')` → layout `merge` plus cleared cells after a confirm when any
 non-top-left cell holds an input.
 
 ### Clipboard
@@ -377,7 +379,9 @@ interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props ev
 ### Headers and status bar
 
 - `SheetHeaders` draws the unhide markers between the neighbours of hidden lines even with headers hidden (at the
-  grid's own edge then), so hidden lines can always come back.
+  grid's own edge then), so hidden lines can always come back. It reads `Geometry.userHiddenRow` (the layout's
+  `hiddenRows`), not `hiddenRow` (which also counts the filter's rows, drawn at no height): a filtered-out row gets no
+  marker.
 - The status bar's totals pick opens in the shared `AnchoredPopover` (`STATS_MENU_PX` wide).
 
 ### Presence

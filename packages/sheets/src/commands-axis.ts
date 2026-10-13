@@ -2,13 +2,13 @@
 // "Sort", "Freeze", "Filter"), as pure builders to a layout write. New rows and columns get ids made here.
 import type { GridRange } from './address';
 import { makeAxisIds, type Rand } from './ids';
-import { idRangeOf } from './layout';
+import { idRangeOf, layoutIndex, posRangeOf } from './layout';
 import { SHEET_COLS_MAX, SHEET_ROWS_MAX } from './limits';
 import { cellKey, type FilterCondition, type Sheet } from './sheet';
 import { sortedOrder, type SortKey } from './sort';
 import { shiftForCopy } from './formula/stored';
 import { scalarOf } from './formula/values';
-import type { CellChange, SheetWrite } from './store';
+import type { CellChange, LayoutChange, SheetWrite } from './store';
 import type { Workbook } from './engine/workbook';
 import { currentRegion, type Grid } from './selection';
 
@@ -131,6 +131,34 @@ export function sortSheet(
     { col, ascending },
   ]);
   return { kind: 'layout', changes: [{ k: 'orderRows', ids: order.map((i) => rows[i]!) }] };
+}
+
+// A filter column's Sort A to Z / Z to A (sheet.md "Filter"): the filter's rows under its header, whole, by that
+// column, whichever cell is active. The header row stays on top. The filter is held by its corner rows' ids, so when
+// its last row moves, the filter's end goes to the row now in that place: it covers the same rows on screen.
+export function sortFilter(
+  wb: Workbook,
+  sheetId: string,
+  colId: string,
+  ascending: boolean,
+): SheetWrite | null {
+  const sheet = wb.sheet(sheetId);
+  const filter = sheet?.layout.filter;
+  if (!sheet || !filter) return null;
+  const box = posRangeOf(sheet.layout, filter);
+  const col = layoutIndex(sheet.layout).colPos.get(colId);
+  if (!box || col === undefined) return null;
+  const start = box.r1 + 1;
+  const rows = sheet.layout.rows.slice(start, box.r2 + 1);
+  if (rows.length < 2) return null;
+  const order = sortedOrder(rows.length, (i) => scalarOf(wb.value(sheetId, start + i, col)), [
+    { col, ascending },
+  ]);
+  const ids = order.map((i) => rows[i]!);
+  const changes: LayoutChange[] = [{ k: 'orderRows', ids }];
+  const last = ids[ids.length - 1]!;
+  if (last !== filter.r2) changes.push({ k: 'filter', filter: { ...filter, r2: last } });
+  return { kind: 'layout', changes };
 }
 
 // Sort Range: only the selection's cells move (inputs and formats), each formula shifted with its row.

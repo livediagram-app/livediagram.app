@@ -257,7 +257,7 @@ function FilterMenu({
         label="Sort A to Z"
         icon={<SortIcon />}
         onClick={() => {
-          actions.sortColumn(true);
+          actions.sortFilter(colId, true);
           onClose();
         }}
       />
@@ -266,7 +266,7 @@ function FilterMenu({
         label="Sort Z to A"
         icon={<SortIcon />}
         onClick={() => {
-          actions.sortColumn(false);
+          actions.sortFilter(colId, false);
           onClose();
         }}
       />

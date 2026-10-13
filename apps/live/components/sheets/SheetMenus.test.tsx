@@ -491,6 +491,19 @@ describe('the filter menu', () => {
     expect(cond()).toEqual({ op: 'empty' });
   });
 
+  // It sorted by the active cell's column and moved the header into the data, taking the filter's buttons with it.
+  it("sorts by its own column, not the active cell's, and keeps the header on top", async () => {
+    await open();
+    const colB = layout(h).cols[1]!;
+    act(() => h.ctl().setMenu({ kind: 'filter', colId: colB, x: 5, y: 5 }));
+    fireEvent.click(btn('Sort Z to A'));
+    expect(h.announce).toHaveBeenCalledWith('Sorted Z to A');
+    expect([h.value('A1'), h.value('B1')]).toEqual(['Fruit', 'n']);
+    expect([h.value('B2'), h.value('B3')]).toEqual([9, 1]);
+    const f = layout(h).filter!;
+    expect([f.r1, f.r2]).toEqual([layout(h).rows[0], layout(h).rows[4]]);
+  });
+
   // The panel was wider than the menu (w-64 in a w-56 card): its search, condition, counts and OK hung past the
   // menu's right edge, drawn over the grid with no card behind them.
   it('fits its panel inside the menu, a long value cut short beside its count', async () => {
