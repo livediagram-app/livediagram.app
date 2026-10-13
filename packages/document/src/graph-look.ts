@@ -10,6 +10,7 @@
 
 import { edgeKey } from './auto-layout';
 import { arrowEndpointSpread } from './arrow-endpoint-spread';
+import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 import { anchorPosition, endpointPosition } from './geometry';
 import type { GraphEdge, GraphNode } from './graph-authoring';
 import {
@@ -193,6 +194,8 @@ export function routeLoops(
 ): Element[] {
   const boxes = new Map(elements.filter(isBoxed).map((b) => [b.id, b as BoxedElement] as const));
   const solid = [...boxes.values()].filter((b) => !isBackdrop(b));
+  // The solid boxes by place, so each arrow is tested against the boxes near its path, not every box.
+  const solidGrid = rectGrid(solid, 0);
   const main = (b: BoxedElement) => (axis === 'TB' ? b.y + b.height / 2 : b.x + b.width / 2);
   const spanOf = (b: BoxedElement): [number, number] =>
     axis === 'TB' ? [b.y, b.y + b.height] : [b.x, b.x + b.width];
@@ -209,7 +212,7 @@ export function routeLoops(
     const [f, t] = [pinnedId(el.from), pinnedId(el.to)];
     if (!f || !t || f === t || flat.has(edgeKey(f, t)) || !boxes.has(f) || !boxes.has(t))
       return false;
-    return backward(el) || crossesABox(el, elements, solid);
+    return backward(el) || crossesABox(el, elements, solidGrid);
   });
   if (loops.length === 0) return elements;
 
@@ -358,16 +361,23 @@ function bestRoute(
 }
 
 // Whether an arrow's drawn path (its ends and bends) passes through a box it does not connect.
-function crossesABox(arrow: ArrowElement, elements: Element[], solid: BoxedElement[]): boolean {
+function crossesABox(arrow: ArrowElement, elements: Element[], solid: RectGrid): boolean {
   const from = endAt(arrow, 'from', elements);
   const to = endAt(arrow, 'to', elements);
   const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
   const bends = arrow.arrowStyle === 'angled' ? (arrow.curvePoints ?? []) : [];
   const path = [from, ...bends.map((p) => ({ x: mid.x + p.dx, y: mid.y + p.dy })), to];
   const ends = new Set([pinnedId(arrow.from), pinnedId(arrow.to)]);
-  return solid.some(
-    (b) => !ends.has(b.id) && path.slice(1).some((p, i) => segmentHitsBox(path[i]!, p, b)),
-  );
+  return path.slice(1).some((p, i) => {
+    const a = path[i]!;
+    const near = solid.near(
+      Math.min(a.x, p.x),
+      Math.min(a.y, p.y),
+      Math.max(a.x, p.x),
+      Math.max(a.y, p.y),
+    ) as BoxedElement[];
+    return near.some((b) => !ends.has(b.id) && segmentHitsBox(a, p, b));
+  });
 }
 
 // Whether the segment a→b passes through `box` shrunk by `inset` (positive: grazing is not hitting; negative: the
