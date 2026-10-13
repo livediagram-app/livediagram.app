@@ -1,6 +1,7 @@
 'use client';
 
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
@@ -185,6 +186,7 @@ export function EditorCanvasHost() {
     createFolder,
     deleteCurvePoint,
     deleteDocument,
+    refreshOwnDocuments,
     deleteFolder,
     deleteMultiSelected,
     deleteSelected,
@@ -347,6 +349,7 @@ export function EditorCanvasHost() {
     autoLayoutTab,
     previewCleanup,
     endCleanupPreview,
+    assessCleanupKind,
   } = useEditorContext();
   // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
   // rules into focus; the board look keys on it through hasBoardLook.
@@ -893,9 +896,11 @@ export function EditorCanvasHost() {
           isReadOnly || embedMode
             ? undefined
             : {
-                run: (kind) => (kind === 'align' ? autoAlignTab() : autoLayoutTab(kind)),
+                run: (kind, judged) =>
+                  kind === 'align' ? autoAlignTab({ judged }) : autoLayoutTab(kind, { judged }),
                 preview: previewCleanup,
                 endPreview: endCleanupPreview,
+                assess: assessCleanupKind,
                 blocked: activeTabLocked,
               }
         }
@@ -956,12 +961,7 @@ export function EditorCanvasHost() {
             setExportScope('tab');
             setExportOpen(true);
           },
-          onSearch: () => {
-            setSearchOpen(true);
-            // Same prefetch as the bottom bar's Search: element matches
-            // cover tabs not yet visited (docs/specs/008-canvas/canvas-and-palette.md).
-            void loadAllTabs();
-          },
+          onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
           onOpenSettings: () => {
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
@@ -978,6 +978,7 @@ export function EditorCanvasHost() {
           if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
         }}
         onDeleteDocument={deleteDocument}
+        onLibraryChanged={refreshOwnDocuments}
         onDuplicateDocument={(id) => void duplicateDocument(id)}
         onCreateFolder={createFolder}
         onRenameFolder={renameFolder}

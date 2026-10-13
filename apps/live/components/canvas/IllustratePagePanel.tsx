@@ -258,7 +258,7 @@ export function IllustratePagePanel({
             page={page}
             onApply={(layout) => {
               onLayoutPreview(null);
-              edit.applyLayout(page.id, layout);
+              void edit.applyLayout(page.id, layout);
               onClose(false);
             }}
             onPreview={onLayoutPreview}

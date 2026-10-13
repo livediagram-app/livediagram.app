@@ -133,15 +133,33 @@ describe('Illustrate page edits', () => {
     expect(illustratePagesOf(h.tab())[1]!.background).toBeUndefined();
   });
 
-  it('replaces a page with a layout inside its margins, leaving other pages alone', () => {
+  it('replaces a page with a layout inside its margins, leaving other pages alone', async () => {
     const h = harness(twoPages());
     expect(h.edits().contentCount('page-1')).toBe(1);
-    h.edits().applyLayout('page-1', 'key-stats');
+    await h.edits().applyLayout('page-1', 'key-stats');
     const els = h.tab().elements;
     expect(els.some((e) => e.id === 'a')).toBe(false);
     expect(els.some((e) => e.id === 'b')).toBe(true);
     expect(h.edits().contentCount('page-1')).toBe(els.length - 1);
     expect(h.onLayoutPlaced).toHaveBeenCalled();
+  });
+
+  it('carries what was written on the page into the new layout', async () => {
+    const h = harness(twoPages());
+    await h.edits().applyLayout('page-1', 'title');
+    const written = h
+      .tab()
+      .elements.map((e) =>
+        e.type === 'text' && e.label === 'Your big headline' ? { ...e, label: 'Q3 Results' } : e,
+      );
+    h.commitTabs((ts) => [{ ...ts[0]!, elements: written }]);
+    await h.edits().applyLayout('page-1', 'poster');
+    const labels = h.tab().elements.flatMap((e) => (e.type === 'text' ? [e.label] : []));
+    expect(labels).toContain('Q3 Results');
+    // The poster's own placeholder headline gave its place up.
+    expect(labels).not.toContain('Make it bold');
+    // The other page's content stays where it is.
+    expect(h.tab().elements.some((e) => e.id === 'b')).toBe(true);
   });
 
   it('frames a turned or resized page again, as the view frames the page itself', () => {
@@ -153,9 +171,9 @@ describe('Illustrate page edits', () => {
     expect(h.onGoTo).toHaveBeenLastCalledWith('page-1');
   });
 
-  it('re-fits a full page into the page when it turns, text scaling with it', () => {
+  it('re-fits a full page into the page when it turns, text scaling with it', async () => {
     const h = harness(twoPages());
-    h.edits().applyLayout('page-1', 'top-tips');
+    await h.edits().applyLayout('page-1', 'top-tips');
     h.edits().setOrientation('page-1', 'landscape');
     const [page] = layOutIllustratePages(illustratePagesOf(h.tab()));
     const r = page!.rect;
@@ -368,7 +386,7 @@ describe('locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a p
     expect(illustratePagesOf(h.tab())[0]!.locked).toBeUndefined();
   });
 
-  it('refuses every edit of a locked page, and duplicates it unlocked', () => {
+  it('refuses every edit of a locked page, and duplicates it unlocked', async () => {
     const h = harness(twoPages());
     h.edits().setLocked('page-1', true);
     const before = h.tab();
@@ -376,7 +394,7 @@ describe('locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a p
     h.edits().setOrientation('page-1', 'landscape');
     h.edits().setSize('page-1', 'a3');
     h.edits().setBackground('page-1', { fill: { kind: 'solid', color: '#000000' } });
-    h.edits().applyLayout('page-1', 'top-tips');
+    await h.edits().applyLayout('page-1', 'top-tips');
     h.edits().removePage?.('page-1');
     expect(h.tab()).toBe(before);
     h.edits().duplicatePage?.('page-1');

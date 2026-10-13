@@ -1,22 +1,16 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent, RefObject } from 'react';
 import { renderUnits } from './animated-words';
 import type { TextAnimView } from './useTextAnimation';
-import type { ElementLink, TableCellStyle, TableElement } from '@livediagram/document';
+import {
+  tableCellFontPx,
+  type ElementLink,
+  type TableCellStyle,
+  type TableElement,
+} from '@livediagram/document';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { describeLink } from '@/lib/link-label';
 import { HoverCard } from '@livediagram/ui';
-
-// Cell font size per preset (element-space px; the canvas zoom scales
-// it like everything else). 'scale' has no per-element basis on a grid,
-// so it reads as the medium size.
-export const CELL_FONT_PX: Record<string, number> = { sm: 11, md: 13, lg: 16, scale: 13 };
-
-// 'scale' cell text tracks the row height (~40%), clamped to a legible range,
-// so it grows / shrinks as the table is resized. Shared by the table-wide
-// default and the per-cell override so the two can't drift.
-export const scaleCellFontPx = (rowH: number): number =>
-  Math.max(9, Math.min(40, Math.round(rowH * 0.4)));
 
 // Key for the shift-click multi-cell selection set.
 export const cellKey = (r: number, c: number): string => `${r}:${c}`;
@@ -153,11 +147,7 @@ export function TableCellView({
   const cellAlignX = cs?.alignX ?? alignX;
   const cellJustify =
     cellAlignX === 'left' ? 'flex-start' : cellAlignX === 'right' ? 'flex-end' : 'center';
-  const cellFontPx = cs?.textSize
-    ? cs.textSize === 'scale'
-      ? scaleCellFontPx(rowH)
-      : (CELL_FONT_PX[cs.textSize] ?? fontPx)
-    : fontPx;
+  const cellFontPx = tableCellFontPx(cs?.textSize, rowH, fontPx);
   const isEditingCell = editing?.r === r && editing?.c === c;
   return (
     <div

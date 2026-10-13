@@ -12,14 +12,25 @@ export function EmptyState({
   title,
   description,
   children,
+  compact = false,
 }: {
   icon: ReactNode;
   title: string;
   description: string;
   children?: ReactNode;
+  // Inside a narrow pane (the editor's Explorer): the same parts, smaller and without the card frame, so it sits
+  // calmly in the pane rather than filling it.
+  compact?: boolean;
 }) {
   return (
-    <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/70 px-6 py-16 text-center dark:border-slate-700 dark:from-slate-900 dark:to-slate-900/60">
+    <div
+      data-empty-state={compact ? 'compact' : 'page'}
+      className={`relative flex flex-col items-center justify-center overflow-hidden text-center ${
+        compact
+          ? 'px-4 py-10'
+          : 'rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50/70 px-6 py-16 dark:border-slate-700 dark:from-slate-900 dark:to-slate-900/60'
+      }`}
+    >
       {/* Faint mini-diagram motif (two shapes + an elbow connector) — the
           product's own visual language as a quiet backdrop. */}
       <svg
@@ -28,7 +39,7 @@ export function EmptyState({
         height="130"
         viewBox="0 0 240 130"
         fill="none"
-        className="pointer-events-none absolute top-8 text-slate-900 opacity-[0.04] dark:text-white"
+        className={`pointer-events-none absolute text-slate-900 opacity-[0.04] dark:text-white ${compact ? 'top-2' : 'top-8'}`}
       >
         <rect x="34" y="34" width="60" height="34" rx="7" fill="currentColor" />
         <rect x="150" y="64" width="60" height="34" rx="7" fill="currentColor" />
@@ -36,27 +47,39 @@ export function EmptyState({
       </svg>
 
       {/* Floating icon badge over a pulsing double ring. */}
-      <div className="relative mb-5 flex h-20 w-20 items-center justify-center">
+      <div
+        className={`relative flex items-center justify-center ${compact ? 'mb-4 h-14 w-14' : 'mb-5 h-20 w-20'}`}
+      >
         <span
           aria-hidden
-          className="animate-empty-ring absolute inset-0 rounded-3xl bg-brand-400/30"
+          className={`animate-empty-ring absolute inset-0 bg-brand-400/30 ${compact ? 'rounded-2xl' : 'rounded-3xl'}`}
         />
         <span
           aria-hidden
-          className="animate-empty-ring absolute inset-0 rounded-3xl bg-brand-400/20 [animation-delay:1.3s]"
+          className={`animate-empty-ring absolute inset-0 bg-brand-400/20 [animation-delay:1.3s] ${compact ? 'rounded-2xl' : 'rounded-3xl'}`}
         />
-        <span className="animate-empty-float relative flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/30 [&_svg]:h-7 [&_svg]:w-7">
+        <span
+          className={`animate-empty-float relative flex items-center justify-center bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/30 ${
+            compact
+              ? 'h-11 w-11 rounded-xl [&_svg]:h-5 [&_svg]:w-5'
+              : 'h-16 w-16 rounded-2xl [&_svg]:h-7 [&_svg]:w-7'
+          }`}
+        >
           {icon}
         </span>
       </div>
 
-      <h2 className="relative text-base font-semibold text-slate-900 dark:text-slate-100">
+      <h2
+        className={`relative font-semibold text-slate-900 dark:text-slate-100 ${compact ? 'text-sm' : 'text-base'}`}
+      >
         {title}
       </h2>
-      <p className="relative mt-1.5 max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+      <p
+        className={`relative mt-1.5 max-w-sm leading-relaxed text-slate-500 dark:text-slate-400 ${compact ? 'text-xs' : 'text-sm'}`}
+      >
         {description}
       </p>
-      {children ? <div className="relative mt-5">{children}</div> : null}
+      {children ? <div className={`relative ${compact ? 'mt-4' : 'mt-5'}`}>{children}</div> : null}
     </div>
   );
 }

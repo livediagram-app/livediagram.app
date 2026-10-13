@@ -44,6 +44,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  type TextSizePreset,
   clampLetterSpacing,
   clampTextArc,
   type FontWeight,
@@ -292,7 +293,7 @@ export function applyMarkerToEl(el: Element, marker: ShapeMarker | null): Elemen
   return el.type === 'shape' ? { ...el, marker: marker ?? undefined } : el;
 }
 
-export function applyMarkerSizeToEl(el: Element, size: TextSize): Element {
+export function applyMarkerSizeToEl(el: Element, size: TextSizePreset): Element {
   return el.type === 'shape' ? { ...el, markerSize: size } : el;
 }
 

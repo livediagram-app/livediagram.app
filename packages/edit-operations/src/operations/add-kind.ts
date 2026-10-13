@@ -19,6 +19,7 @@ import {
   resolveActiveLayerId,
   type BoxedElement,
   type Element,
+  type TextSize,
   type ThemeDefinition,
 } from '@livediagram/document';
 import { writeFieldsOnto } from '../fields';
@@ -70,17 +71,17 @@ export function buildKind(kind: string): Built | { refusal: string } {
 function peerLook(
   state: EditState,
   shape: string,
-): { textSize: 'sm' | 'md' | 'lg' | 'scale'; width: number; height: number } | null {
+): { textSize: TextSize; width: number; height: number } | null {
   const peers = [...state.byId.values()].filter(
     (e): e is Extract<Element, { type: 'shape' }> =>
       e.type === 'shape' && e.shape === shape && shape !== 'frame' && shape !== 'lane',
   );
   if (peers.length === 0) return null;
-  const counts = new Map<string, number>();
+  // A preset or an exact px size, counted as it is stored.
+  const counts = new Map<TextSize, number>();
   for (const p of peers)
     counts.set(p.textSize ?? 'scale', (counts.get(p.textSize ?? 'scale') ?? 0) + 1);
-  const textSize = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]![0] as
-    'sm' | 'md' | 'lg' | 'scale';
+  const textSize = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]![0];
   const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
   return {
     textSize,

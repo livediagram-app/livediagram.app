@@ -23,7 +23,8 @@ import {
   ActivityThreadRow,
 } from './activity-pane-parts';
 
-export function ActivityPane({ feed }: { feed: ActivityFeed }) {
+// `compact`: inside the editor's Explorer pane, the small empty state.
+export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; compact?: boolean }) {
   // Once per visit to the section, not per fetch: the feed re-reads on
   // return-to-tab and a guest signing in, neither of which is a visit.
   useEffect(() => {
@@ -33,7 +34,7 @@ export function ActivityPane({ feed }: { feed: ActivityFeed }) {
   if (feed.loading) return <SkeletonRows />;
   if (feed.error) return <ActivityFailedState onRetry={feed.retry} />;
   const total = feed.assignedToMe.length + feed.youAssigned.length + feed.threads.length;
-  if (total === 0) return <ActivityEmptyState />;
+  if (total === 0) return <ActivityEmptyState compact={compact} />;
 
   return (
     <div>

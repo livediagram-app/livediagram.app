@@ -3,7 +3,7 @@
 // and every export left it out, so a flowchart template's cart and card glyphs, and an agent's preview, came out
 // bare. The metrics are shared with the canvas so the two agree on where the icon is.
 
-import { LABEL_FONT_PX } from './label-font';
+import { labelFontPx } from './label-font';
 import { labelMeasure, wrapLabel } from './svg-render-primitives';
 import type { ExportIconArt } from './svg-render-describe';
 import type { ExportLabel } from './svg-render-labels';
@@ -23,7 +23,7 @@ export function inlineIconMetrics(
   const fontSize =
     textSize === 'scale'
       ? Math.max(12, Math.min(element.height * 0.26, 26))
-      : LABEL_FONT_PX[textSize];
+      : labelFontPx(textSize);
   // Element-proportional size: a fraction of the shorter side, clamped so it's neither a speck nor dominant. The
   // ceiling, and the size itself for an icon with no label.
   const elementIconSize = Math.max(

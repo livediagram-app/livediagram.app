@@ -9,6 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
+  type TextSizePreset,
 } from '@livediagram/document';
 import {
   ALIGN_ITEMS,
@@ -51,7 +52,7 @@ export function ShapeInlineIconLayout({
   showIcon?: boolean;
   // Optional status marker (docs/specs/009-elements/shape-markers.md), drawn immediately left of the label.
   marker?: ShapeMarker;
-  markerSize?: TextSize;
+  markerSize?: TextSizePreset;
   position: IconPosition;
   iconStroke: string;
   isEditing: boolean;
@@ -191,7 +192,7 @@ export function ShapeInlineIconLayout({
 
 // Fixed marker sizes (px) for the small / medium / large buckets; 'scale'
 // tracks the label font size instead (see above).
-const MARKER_FIXED_PX: Record<Exclude<TextSize, 'scale'>, number> = {
+const MARKER_FIXED_PX: Record<Exclude<TextSizePreset, 'scale'>, number> = {
   sm: 12,
   md: 18,
   lg: 26,

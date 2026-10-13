@@ -3,7 +3,7 @@
 // A folder just created opens renaming (docs/specs/013-workspace/folders.md): the row enters rename
 // mode and tells the tree, once, so the request clears; clearing it leaves the rename open.
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PanelFolderItem, type PanelFolder } from './PanelFolderItem';
 import { PanelTreeProvider, type PanelTree } from './PanelTreeContext';
@@ -31,11 +31,13 @@ function tree(over: Partial<PanelTree> = {}): PanelTree {
 
 const node = (t: PanelTree) => (
   <PanelTreeProvider value={t}>
-    <ul role="tree" aria-label="Spaces">
+    <ul aria-label="My documents">
       <PanelFolderItem
         folder={folder}
-        depth={1}
-        index={{ foldersByParent: new Map(), documentsByFolder: new Map() }}
+        index={{
+          foldersByParent: new Map([['f1', [{ id: 'f2', name: 'Drafts', parentId: 'f1' }]]]),
+          documentsByFolder: new Map(),
+        }}
       />
     </ul>
   </PanelTreeProvider>
@@ -71,5 +73,15 @@ describe('PanelFolderItem rename request', () => {
     render(node(tree({ pendingRenameFolderId: 'other', onRenameFolderCommitted: committed })));
     expect(renameInput()).toBeNull();
     expect(committed).not.toHaveBeenCalled();
+  });
+});
+
+describe('PanelFolderItem in the pane', () => {
+  it('opens the folder in the pane and counts what it holds', () => {
+    const onOpenFolder = vi.fn();
+    render(node(tree({ onOpenFolder })));
+    expect(screen.getByText('1 folder · 0 documents')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Specs' }));
+    expect(onOpenFolder).toHaveBeenCalledWith('f1');
   });
 });

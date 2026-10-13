@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 
-// The floating Explorer panel's tree (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel).
+// The editor's Explorer pane's rows for a section that holds documents (docs/specs/013-workspace/explorer-structure.md
+// "The pane").
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
-import { MinimalChromeProvider } from '@/components/providers/minimal-chrome';
 import { LOCAL_ONLY_DESCRIPTION } from '@/components/primitives/LocalOnlyPill';
-import { PanelExplorerTree } from './PanelExplorerTree';
+import { PanelExplorerTree, type PanelTreeSection } from './PanelExplorerTree';
 import type { PanelTree } from './PanelTreeContext';
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
@@ -31,10 +31,17 @@ const NOTES = doc('d2', 'Loose notes');
 const LOCAL = doc('l1', 'Workshop notes', { ownerId: 'offline' });
 
 function Harness({
+  section,
   offline = [LOCAL],
   teams = [] as { id: string; name: string }[],
   shared = [] as SharedWithItem[],
-  minimal = false,
+  teamDocs = [] as DocumentListItem[],
+}: {
+  section: PanelTreeSection;
+  offline?: DocumentListItem[];
+  teams?: { id: string; name: string }[];
+  shared?: SharedWithItem[];
+  teamDocs?: DocumentListItem[];
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const tree: PanelTree = {
@@ -50,36 +57,40 @@ function Harness({
     onCreateTeamChild: vi.fn(),
   };
   return (
-    <MinimalChromeProvider value={minimal}>
-      <PanelExplorerTree
-        tree={tree}
-        shared={shared}
-        ownIndex={{
-          foldersByParent: new Map([[null, [{ id: 'f1', name: 'Projects', parentId: null }]]]),
-          documentsByFolder: new Map([
-            [null, [NOTES]],
-            ['f1', [PLAN]],
-          ]),
-        }}
-        offlineDocuments={offline}
-        teams={teams}
-        foldersByTeam={new Map()}
-        documentsByTeam={new Map()}
-      />
-    </MinimalChromeProvider>
+    <PanelExplorerTree
+      section={section}
+      rootLabel="My documents"
+      tree={tree}
+      shared={shared}
+      ownIndex={{
+        foldersByParent: new Map([[null, [{ id: 'f1', name: 'Projects', parentId: null }]]]),
+        documentsByFolder: new Map([
+          [null, [NOTES]],
+          ['f1', [PLAN]],
+        ]),
+      }}
+      offlineDocuments={offline}
+      teams={teams}
+      foldersByTeam={new Map()}
+      documentsByTeam={new Map(teams.map((t) => [t.id, teamDocs]))}
+    />
   );
 }
 
-const topRows = (group: string) =>
-  [...screen.getByRole('tree', { name: group }).querySelectorAll(':scope > [role="treeitem"]')].map(
-    (el) => el.getAttribute('data-tree-label'),
-  );
-const item = (name: string | RegExp) => screen.getByRole('treeitem', { name });
-const activate = (name: string | RegExp) =>
-  fireEvent.click(item(name).querySelector('[data-tree-row] [data-tree-activate]')!);
+const rows = () =>
+  [...document.querySelectorAll('[data-pane-row]')].map((el) => el.getAttribute('aria-label'));
+const row = (name: string | RegExp) => screen.getByRole('button', { name });
 
 const assign = vi.fn();
 beforeEach(() => {
+  // Thumbnails load as they scroll into view.
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
   assign.mockReset();
   track.mockReset();
   vi.stubGlobal('location', { ...window.location, assign });
@@ -90,97 +101,51 @@ afterEach(() => {
 });
 
 describe('PanelExplorerTree', () => {
-  it('shows the three groups in place of the tabs', () => {
-    render(<Harness />);
-    expect(screen.getAllByRole('heading').map((h) => h.textContent)).toEqual([
-      'Overview',
-      'Spaces',
-      'More',
-    ]);
-    expect(screen.queryByRole('tab')).toBeNull();
-  });
-
-  it('keeps Overview, and leaves invites, team creation and the nudge to the Explorer', () => {
-    render(<Harness teams={[{ id: 't1', name: 'Design guild' }]} />);
-    expect(topRows('Overview')).toEqual(['Home', 'Inbox', 'Timeline', 'Shared with me']);
-    expect(topRows('Spaces')).toEqual(['My documents', 'Design guild']);
-    expect(screen.queryByText('New team')).toBeNull();
-    expect(screen.queryByText(/Sign in to access Teams/)).toBeNull();
-  });
-
-  it('shows This browser only while it holds documents', () => {
-    render(<Harness />);
-    expect(topRows('More')).toEqual(['This browser', 'Library', 'Trash']);
-    cleanup();
-    render(<Harness offline={[]} />);
-    expect(topRows('More')).toEqual(['Library', 'Trash']);
-  });
-
-  it('opens compact, then opens My documents in place to its folders, then its documents', () => {
-    render(<Harness />);
-    expect(item('My documents').getAttribute('aria-expanded')).toBe('false');
-    activate('My documents');
-    expect(item('My documents').getAttribute('aria-expanded')).toBe('true');
-    const children = [
-      ...item('My documents').querySelectorAll(':scope > [role="group"] > [role="treeitem"]'),
-    ].map((el) => el.getAttribute('data-tree-label'));
-    expect(children).toEqual(['Projects', 'Loose notes']);
+  it('shows My documents as its folders, then its documents, a folder opening in place under the back bar', () => {
+    render(<Harness section={{ kind: 'mine' }} />);
+    expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(screen.queryByText('Unsorted')).toBeNull();
-    expect(screen.queryByText('Generated')).toBeNull();
-    activate('Projects');
-    expect(item('Plan').getAttribute('aria-selected')).toBe('true');
+    fireEvent.click(row('Projects'));
+    expect(rows()).toEqual(['Plan']);
+    expect(row('Plan').getAttribute('aria-current')).toBe('true');
+    // The import and export screens' back bar: back to the root, the folder as its chip.
+    const back = screen.getByRole('button', { name: /^My documents/ });
+    expect(back.textContent).toContain('Projects');
+    fireEvent.click(back);
+    expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(assign).not.toHaveBeenCalled();
   });
 
   it('marks a document in this browser Local only, with what it means', () => {
-    render(<Harness />);
-    activate(/^This browser/);
-    const local = item('Workshop notes');
-    expect(local.querySelector('a')?.textContent).toContain('Local only');
-    const id = local.getAttribute('aria-describedby');
-    expect(document.getElementById(id!)?.textContent).toBe(LOCAL_ONLY_DESCRIPTION);
+    render(<Harness section={{ kind: 'browser' }} />);
+    expect(rows()).toEqual([`Workshop notes. ${LOCAL_ONLY_DESCRIPTION}`]);
+    expect(screen.getByText('Local only')).toBeTruthy();
   });
 
-  it('sends rows without documents to their Explorer page', () => {
-    render(<Harness />);
-    activate('Home');
-    activate('Inbox');
-    activate('Timeline');
-    activate('Trash');
-    expect(assign.mock.calls).toEqual([
-      ['/explorer/home'],
-      ['/explorer/inbox'],
-      ['/explorer/timeline'],
-      ['/explorer/trash'],
-    ]);
-    expect(track.mock.calls.map((c) => c[2])).toEqual([
-      'ExplorerPanel.Home',
-      'ExplorerPanel.Inbox',
-      'ExplorerPanel.Timeline',
-      'ExplorerPanel.Trash',
-    ]);
-  });
-
-  it('sends Shared with me to its Explorer page when nothing is shared', () => {
-    render(<Harness />);
-    expect(item('Shared with me').hasAttribute('aria-expanded')).toBe(false);
-    activate('Shared with me');
-    expect(assign.mock.calls).toEqual([['/explorer/shared']]);
-  });
-
-  it('opens Shared with me in place when something is shared', () => {
+  it('lists what is shared with the reader', () => {
     const shared = [
       { id: 's1', name: 'Their board', shareCode: 'abc', role: 'view', savedAt: 1 },
     ] as unknown as SharedWithItem[];
-    render(<Harness shared={shared} />);
-    activate(/^Shared with me/);
-    expect(item('Their board')).toBeTruthy();
-    expect(assign).not.toHaveBeenCalled();
+    render(<Harness section={{ kind: 'shared' }} shared={shared} />);
+    expect(rows()).toEqual(['Their board']);
   });
 
-  it('swaps titles for hairlines under Minimal chrome, none above the first group', () => {
-    const { container } = render(<Harness minimal />);
-    expect(container.querySelectorAll('[data-sidebar-separator]')).toHaveLength(2);
-    expect(screen.getByRole('heading', { name: 'Overview' }).className).toMatch(/\bsr-only\b/);
+  it("shows a team's root documents", () => {
+    render(
+      <Harness
+        section={{ kind: 'team', id: 't1' }}
+        teams={[{ id: 't1', name: 'Design guild' }]}
+        teamDocs={[doc('t-d1', 'Guild charter', { ownerId: 'them' })]}
+      />,
+    );
+    expect(rows()).toEqual(['Guild charter']);
+  });
+
+  it('says so in the Explorer empty state when a place is empty', () => {
+    render(<Harness section={{ kind: 'shared' }} />);
+    expect(screen.getByRole('heading', { name: 'Nothing shared with you yet' })).toBeTruthy();
+    cleanup();
+    render(<Harness section={{ kind: 'browser' }} offline={[]} />);
+    expect(screen.getByRole('heading', { name: 'Nothing in this browser' })).toBeTruthy();
   });
 });

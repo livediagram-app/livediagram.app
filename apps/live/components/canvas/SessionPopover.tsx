@@ -30,6 +30,8 @@ export type SessionPopoverProps = {
   session: SessionToolsProps;
   // A view-role visitor: running tools only, read-only.
   readOnly: boolean;
+  // Casts dots in a running vote: an Editor, or a read-only Participant (docs/specs/013-workspace/share-roles.md).
+  canVote: boolean;
   // A running vote's or poll's popover stays open until its button closes it, rather than on any
   // press outside it (desktop; on a phone it would sit over the canvas being voted on). The timer
   // always closes on a press outside: its clock is on its button.
@@ -59,6 +61,7 @@ export function SessionPopover({
   onClose,
   session,
   readOnly,
+  canVote,
   holdOpen,
   voteSelfId,
   pollPanel,
@@ -84,6 +87,7 @@ export function SessionPopover({
         onPrevResult={vote.onPrevResult}
         onDoneReview={vote.onDoneReview}
         readOnly={readOnly}
+        canVote={canVote}
         popoverAnchor={anchor}
         onPopoverClose={onClose}
         dismissOnOutside={!holdOpen}

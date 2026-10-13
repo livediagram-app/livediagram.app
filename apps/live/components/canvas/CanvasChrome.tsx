@@ -686,7 +686,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   timer={props.sessionTools.timer}
                   voteRunning={!!props.tabVote}
                   voteDotsLeft={
-                    props.tabVote?.active && !readOnly
+                    // A Participant votes too (docs/specs/013-workspace/share-roles.md), so it sees its dots left.
+                    props.tabVote?.active && (!readOnly || props.takePart)
                       ? Math.max(
                           0,
                           props.tabVote.votesPerPerson -

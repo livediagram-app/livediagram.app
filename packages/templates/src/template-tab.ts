@@ -6,7 +6,8 @@
 import { buildTab, getBuiltInTheme, stampTabKind, type Tab } from '@livediagram/document';
 import { withBlankPageThemed } from './blank-page-templates';
 import { buildTemplate, templateTabs } from './build-template';
-import { TEMPLATES, isTemplateKind, templateCanvasOverrides, type TemplateKind } from './templates';
+import { TEMPLATES, isTemplateKind, type TemplateKind } from './templates';
+import { templateCanvasOverrides } from './template-canvas-overrides';
 
 // A template argument resolved against the catalogue; null for an unknown kind, so the caller can
 // answer with the valid kinds and the model corrects itself without another round trip.

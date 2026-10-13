@@ -84,6 +84,8 @@ export type ExplorerProps = {
   // = the team tree is browse-only.
   onTeamFolders?: TeamFolderHandlers;
   onMoveDocumentToFolder?: (documentId: string, folderId: string | null) => void;
+  // The panel's Trash restored or deleted a document: the host refetches its lists.
+  onLibraryChanged?: () => void;
   // Scope-aware move (docs/specs/013-workspace/team-shared-documents.md): routes a pick that involves a team on
   // either side (re-folder within a team, personal -> team, team ->
   // personal). When wired, the move picker offers every space.

@@ -2,7 +2,6 @@ import { useState, type ReactNode } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
 import {
   Brand,
-  ProductNav,
   HoverCard,
   SOLID_BRAND_DARK_CONTROL,
   Glyph,
@@ -69,6 +68,9 @@ type EditorHeaderProps = {
   renameNonce?: number;
   // The role pill (docs/specs/007-editor/live-app.md#role-pill), after the visibility badge.
   rolePill?: ReactNode;
+  // The Present button (docs/specs/012-collaboration/presentation-mode.md "The header's Present
+  // button"): passed only while the deck has a presentable slide, so absent means no button.
+  present?: { slideCount: number; starting: boolean; onPresent: () => void };
 };
 
 export function EditorHeader({
@@ -88,6 +90,7 @@ export function EditorHeader({
   onRename,
   renameNonce = 0,
   rolePill,
+  present,
 }: EditorHeaderProps) {
   const [editing, setEditing] = useState(false);
 
@@ -124,7 +127,6 @@ export function EditorHeader({
           wordmarkClassName="hidden sm:inline"
           className="relative touch-target"
         />
-        <ProductNav current="editor" />
       </div>
       <div className="flex flex-1 items-center justify-start sm:justify-center">
         {hideTitle ? null : editing && !readOnly ? (
@@ -186,6 +188,26 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
+        {present ? (
+          <HoverCard
+            title="Present"
+            description={`Present the slide deck: ${present.slideCount} ${
+              present.slideCount === 1 ? 'slide' : 'slides'
+            }.`}
+          >
+            <button
+              type="button"
+              onClick={present.onPresent}
+              disabled={present.starting}
+              className={`${HEADER_ACTION_BTN} text-slate-600 enabled:hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60 dark:text-slate-200 dark:enabled:hover:bg-slate-800`}
+            >
+              <HeaderGlyph>
+                <PresentIcon />
+              </HeaderGlyph>
+              <span>{present.starting ? 'Starting' : 'Present'}</span>
+            </button>
+          </HoverCard>
+        ) : null}
         {showShare ? (
           <HoverCard
             title={shareable ? 'Shared' : 'Share'}
@@ -213,9 +235,10 @@ export function EditorHeader({
             </button>
           </HoverCard>
         ) : null}
-        {/* Explorer + Help used to sit here as top-right links; both now live
-            in the ProductNav apps menu next to the logo, so the header keeps
-            just its primary actions. */}
+        {/* Explorer + Help used to sit here as top-right links; the product's
+            surfaces now live in the Explorer panel's footer
+            (docs/specs/013-workspace/explorer-structure.md "Layout"), so the
+            header keeps just its primary actions. */}
         <AuthControls onOpenAccount={onOpenAccount} />
       </div>
     </header>
@@ -227,6 +250,14 @@ function CopyIcon() {
     <Glyph size={13} units={16}>
       <rect x="5" y="5" width="8" height="8.5" rx="1.5" />
       <path d="M3 11V3.5A1.5 1.5 0 0 1 4.5 2H10" />
+    </Glyph>
+  );
+}
+
+function PresentIcon() {
+  return (
+    <Glyph size={13} units={16}>
+      <path d="M5 3.2v9.6a.6.6 0 0 0 .9.5l7.4-4.8a.6.6 0 0 0 0-1L5.9 2.7a.6.6 0 0 0-.9.5Z" />
     </Glyph>
   );
 }

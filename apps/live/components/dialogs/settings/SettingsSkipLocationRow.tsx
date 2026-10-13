@@ -2,14 +2,14 @@
 
 import { readSkipLocationStep, turnOffSkipLocationStep } from '@/lib/skip-location-step';
 import type { UserPreferences } from '@/lib/user-preferences';
-import { SettingsRowShell } from './SettingsRowShell';
+import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsSkipLocationRowSpec } from './settings-catalogue';
-import { PLACEMENT_ROW_BUTTON } from './SettingsPlacementDefaultRow';
 
-// Settings > Documents > Where New Documents Go > Skip the Location Step
-// (docs/specs/013-workspace/default-folders.md "Settings"): where every new document is saved while
-// the New Document wizard skips its Location step, with Turn Off; or that it is off. The same card
-// as the default folder rows beneath it.
+// Settings > Documents > New Documents > Always Save in One Place
+// (docs/specs/013-workspace/default-folders.md "Settings"): while the New Document wizard skips its
+// Location step, where every new document is saved, with Turn Off; otherwise that it is off and
+// where it is turned on. A status pill says which at a glance. It is turned on from the wizard,
+// where the place is chosen, so there is no switch to flip on here.
 export function SettingsSkipLocationRow({
   row,
   settings,
@@ -23,36 +23,45 @@ export function SettingsSkipLocationRow({
   return (
     <SettingsRowShell
       row={row}
-      wrapper={() => (
-        <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
-          <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-sm font-medium text-slate-800 dark:text-slate-100">
-              {row.label}
+      descriptionContent={
+        step ? (
+          <>
+            New documents go straight to{' '}
+            <span className="font-semibold text-slate-700 dark:text-slate-200">
+              {step.placeName}
             </span>
-            <span className="text-xs text-slate-600 dark:text-slate-300">
-              {step ? (
-                <>
-                  New documents are saved in{' '}
-                  <span className="font-semibold text-slate-800 dark:text-slate-100">
-                    {step.placeName}
-                  </span>
-                </>
-              ) : (
-                'Off: the New Document wizard asks where each document goes.'
-              )}
-            </span>
-          </div>
+            , without the wizard asking where.
+          </>
+        ) : (
+          <>
+            The New Document wizard asks where each document goes. To skip that, tick “Always save
+            new documents in…” on its Location step.
+          </>
+        )
+      }
+      control={
+        <>
+          <span
+            data-skip-location-status
+            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+              step
+                ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+                : 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300'
+            }`}
+          >
+            {step ? 'On' : 'Off'}
+          </span>
           {step ? (
             <button
               type="button"
-              className={PLACEMENT_ROW_BUTTON}
+              className={SETTINGS_ROW_BUTTON}
               onClick={() => onChange(turnOffSkipLocationStep(settings))}
             >
               Turn Off
             </button>
           ) : null}
-        </div>
-      )}
+        </>
+      }
     />
   );
 }

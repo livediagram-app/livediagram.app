@@ -27,7 +27,7 @@ Draw tour's rules hold.
 - **Once ever per person**, through the synced `illustrateTourSeen` user preference
   ([User preferences](user-preferences.md)): taken, skipped mid-way or declined, it never offers itself again, on
   any device.
-- **Replayable from Settings**: the **Illustrate** switch in the Accessibility category's **Onboarding Tutorials** control,
+- **Replayable from Settings**: the **Illustrate Tour** switch in Settings' **Tours** category,
   beside **Draw** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings
   runs the tour straight away when the person is in Illustrate, or offers it the next time they enter Illustrate.
 

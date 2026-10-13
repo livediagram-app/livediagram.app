@@ -26,7 +26,7 @@ Facilitate tour's rules hold.
 - **Once ever per person**, through the synced `drawTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Draw** switch in the Accessibility category's **Onboarding Tutorials** control, beside
+- **Replayable from Settings**: the **Draw Tour** switch in Settings' **Tours** category, beside
   **Facilitate** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs
   the tour straight away when the person is in Draw, or offers it the next time they enter Draw.
 

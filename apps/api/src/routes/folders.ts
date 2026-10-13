@@ -76,13 +76,23 @@ export async function handleFolders(ctx: RouteContext): Promise<Response> {
         if (teamId ? parent.teamId !== teamId : parent.teamId !== null || parent.ownerId !== owner)
           return notFound();
       }
-      const folder = await createFolder(env, {
-        id: newId,
-        ownerId: owner,
-        parentId: parentId ?? null,
-        name,
-        teamId,
-      });
+      let folder: FolderDTO;
+      try {
+        folder = await createFolder(env, {
+          id: newId,
+          ownerId: owner,
+          parentId: parentId ?? null,
+          name,
+          teamId,
+        });
+      } catch (err) {
+        // An id already taken (a retried create, or a client reusing one) is the caller's conflict, not a 500.
+        if (err instanceof Error && /UNIQUE constraint failed: folders\.id/.test(err.message)) {
+          console.info('[folders] create refused: id already exists');
+          return conflict('folder_exists');
+        }
+        throw err;
+      }
       ctx.waitUntil?.(recordFolderCreated(env, { id: folder.id, name: folder.name }, owner));
       return json({ folder }, { status: 201 });
     }

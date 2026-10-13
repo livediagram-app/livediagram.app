@@ -1140,6 +1140,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the Notifications category in the Settings dialog.',
   'UI|Opened|SettingsPanels': 'Someone opened the Panels category in the Settings dialog.',
   'UI|Opened|SettingsPrivacy': 'Someone opened the Privacy category in the Settings dialog.',
+  'UI|Opened|SettingsTours': 'Someone opened the Tours category in the Settings dialog.',
   'UI|Opened|SettingsTokens': 'Someone opened the API Tokens category in the Settings dialog.',
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
@@ -1180,15 +1181,15 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Onboarding Tutorials › "Diagram" ("Welcome", when it was the welcome tour, until October 2026).',
+    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|IllustrateTourOffer':
-    'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Onboarding Tutorials › "Illustrate".',
+    'The Illustrate tour was offered: as its own card the first time someone worked in Illustrate mode, or replayed from Settings\' Tours › "Illustrate Tour".',
   'UI|Opened|DrawTourOffer':
-    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Onboarding Tutorials › "Draw".',
+    'The Draw tour was offered: as its own card the first time someone worked in Draw mode, or replayed from Settings\' Tours › "Draw Tour".',
   'UI|Opened|FacilitateTourOffer':
-    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Onboarding Tutorials › "Facilitate". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
+    'The Facilitate tour was offered: as its own card the first time someone worked in Facilitate mode, or replayed from Settings\' Tours › "Facilitate Tour". Until October 2026 it was also offered on the welcome tour\'s closing card ("Show me Facilitate").',
   'UI|Opened|PlanTourOffer':
-    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Onboarding Tutorials › "Plan".',
+    'The Plan tour\'s offer card was shown, the first time someone worked in Plan mode with a board or sheet open, or replayed from Settings\' Tours › "Plan Tour".',
   'UI|Opened|activity':
     "Someone opened the help article about the Explorer's Inbox, from a help link or a search result.",
   'UI|Opened|api-tokens':
@@ -1312,6 +1313,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|MinimalPanelsOn':
     'Someone switched the panel layout to Minimal, from the quick toggle rather than the Settings dialog. No longer recorded: the Minimal layout was removed.',
   'UI|Toggled|MinimapOff': 'Someone turned off the minimap, in Settings > Editor.',
+  'UI|Toggled|DockButtonNamesOff':
+    'Someone turned off Button Labels in Settings > Appearance, so the bottom-right buttons show icons alone on a wide desktop.',
+  'UI|Toggled|DockButtonNamesOn':
+    'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
@@ -1399,25 +1404,25 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|TelemetryOn':
     'Someone opted in to sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Diagram" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
+    'Someone switched on Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, marking the Diagram tour as not yet seen and relaunching it on a Diagram tab.',
   'UI|Toggled|TourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Diagram" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
+    'Someone switched off Tours › "Diagram Tour" ("Welcome" until October 2026) in Settings, or the tour resolved on its own, marking it as seen so it won\'t be offered again.',
   'UI|Toggled|IllustrateTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Illustrate" in Settings, marking the Illustrate tour as not yet seen.',
+    'Someone switched on Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as not yet seen.',
   'UI|Toggled|IllustrateTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Illustrate" in Settings, marking the Illustrate tour as seen.',
+    'Someone switched off Tours › "Illustrate Tour" in Settings, marking the Illustrate tour as seen.',
   'UI|Toggled|DrawTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Draw" in Settings, marking the Draw tour as not yet seen.',
+    'Someone switched on Tours › "Draw Tour" in Settings, marking the Draw tour as not yet seen.',
   'UI|Toggled|DrawTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Draw" in Settings, marking the Draw tour as seen.',
+    'Someone switched off Tours › "Draw Tour" in Settings, marking the Draw tour as seen.',
   'UI|Toggled|FacilitateTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Facilitate" in Settings, marking the Facilitate tour as not yet seen.',
+    'Someone switched on Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as not yet seen.',
   'UI|Toggled|FacilitateTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Facilitate" in Settings, marking the Facilitate tour as seen.',
+    'Someone switched off Tours › "Facilitate Tour" in Settings, marking the Facilitate tour as seen.',
   'UI|Toggled|PlanTourSeenOff':
-    'Someone switched on Onboarding Tutorials › "Plan" in Settings, marking the Plan tour as not yet seen.',
+    'Someone switched on Tours › "Plan Tour" in Settings, marking the Plan tour as not yet seen.',
   'UI|Toggled|PlanTourSeenOn':
-    'Someone switched off Onboarding Tutorials › "Plan" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
+    'Someone switched off Tours › "Plan Tour" in Settings, marking the Plan tour as seen so it won\'t be offered again.',
   'UI|Toggled|ZenModeOff': "Someone turned off zen mode, restoring the editor's chrome.",
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",

@@ -38,12 +38,11 @@ function renderSingle(minimal = false, powerUser = minimal) {
   );
 }
 
-function renderMulti(minimal = false, powerUser = minimal) {
+function renderMulti(minimal = false, powerUser = minimal, allLocked = false) {
   render(
     <MinimalChromeProvider value={minimal} powerUser={powerUser}>
       <MultiSelectionToolbar
-        anyLocked={false}
-        allLocked={false}
+        allLocked={allLocked}
         selectedElements={[]}
         onDuplicate={() => {}}
         onDelete={() => {}}
@@ -187,5 +186,21 @@ describe('SelectionPopover tap areas', () => {
     expect(bar.className).toContain('[&_.h-8]:relative');
     expect(bar.className).not.toMatch(/\[&_\.h-8\]:touch-target(\s|$)/);
     expect(screen.getByRole('button', { name: 'Duplicate' }).className).toMatch(/\bh-8\b/);
+  });
+});
+
+// A click locks every member unless all are locked already, so the button says what it will do: Lock for a
+// mixed selection, Unlock only for a fully locked one.
+describe('MultiSelectionToolbar lock', () => {
+  it('offers Lock for a selection that is only partly locked', () => {
+    setTouch(false);
+    renderMulti(false, false, false);
+    expect(screen.getByRole('button', { name: 'Lock selected elements' })).toBeTruthy();
+  });
+
+  it('offers Unlock once every member is locked', () => {
+    setTouch(false);
+    renderMulti(false, false, true);
+    expect(screen.getByRole('button', { name: 'Unlock selected elements' })).toBeTruthy();
   });
 });

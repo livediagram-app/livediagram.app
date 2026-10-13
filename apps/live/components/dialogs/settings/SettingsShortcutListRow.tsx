@@ -17,26 +17,18 @@ export function SettingsShortcutListRow({ row }: { row: SettingsShortcutListRowS
     SHORTCUT_SECTIONS[0]?.heading ?? null,
   );
   return (
-    <SettingsRowShell
-      row={row}
-      wrapper={(label) => (
-        <div className="flex flex-col rounded-xl border border-slate-200 bg-white px-3.5 pt-3 pb-1 dark:border-slate-700 dark:bg-slate-800">
-          {label}
-          <div className="mt-1 divide-y divide-slate-100 dark:divide-slate-700">
-            {SHORTCUT_SECTIONS.map((section) => (
-              <ShortcutGroup
-                key={section.heading}
-                section={section}
-                open={openHeading === section.heading}
-                onToggle={() =>
-                  setOpenHeading((h) => (h === section.heading ? null : section.heading))
-                }
-              />
-            ))}
-          </div>
-        </div>
-      )}
-    />
+    <SettingsRowShell row={row}>
+      <div className="-mb-2 divide-y divide-slate-100 dark:divide-slate-700">
+        {SHORTCUT_SECTIONS.map((section) => (
+          <ShortcutGroup
+            key={section.heading}
+            section={section}
+            open={openHeading === section.heading}
+            onToggle={() => setOpenHeading((h) => (h === section.heading ? null : section.heading))}
+          />
+        ))}
+      </div>
+    </SettingsRowShell>
   );
 }
 

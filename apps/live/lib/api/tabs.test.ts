@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
+import { SAVE_TIMEOUT_BASE_MS, saveTimeoutMs } from './core';
 
 vi.mock('../offline/offline-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../offline/offline-store')>()),
@@ -224,9 +225,29 @@ describe('the changeset seen revision', () => {
     expect(await apiSaveTab('owner-1', 'diag-1', makeTab('a'))).toBeNull();
   });
 
+  // docs/specs/006-document/per-tab-storage.md "Retrying a failed save": a save left hanging no longer holds the
+  // tab's later saves behind it; it is abandoned after a bound sized to its body.
+  it('a save carries a timeout sized to its body', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    const tab = makeTab('a', { name: 'x'.repeat(64 * 1024) });
+    await apiSaveTab('owner-1', 'diag-1', tab);
+    const bytes = new TextEncoder().encode(String(calls.at(-1)!.init.body)).byteLength;
+    expect(timeout).toHaveBeenCalledWith(saveTimeoutMs(bytes));
+    expect(calls.at(-1)!.init.signal).toBeInstanceOf(AbortSignal);
+    timeout.mockRestore();
+  });
+
   it('a revisioned load answers the tab and its revision, the revision kept out of the tab', async () => {
     const loaded = await apiLoadTabRevisioned('owner-1', 'diag-1', 't1', null);
     expect(loaded?.rev).toBe(7);
     expect(loaded?.tab).toEqual({ id: 't1', name: 'T', elements: [] });
+  });
+});
+
+describe('saveTimeoutMs', () => {
+  it('is the base for an empty body, and grows with the body at the slow-uplink rate', () => {
+    expect(saveTimeoutMs(0)).toBe(SAVE_TIMEOUT_BASE_MS);
+    // The largest tab (just under 2 MB) still gets over two minutes on a slow uplink.
+    expect(saveTimeoutMs(2 * 1024 * 1024)).toBe(SAVE_TIMEOUT_BASE_MS + 128_000);
   });
 });

@@ -1,22 +1,36 @@
 'use client';
 
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useDefaultFolderMenus } from '@/hooks/persistence/useDefaultFolderMenus';
 import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
-import { useMinimalChrome } from '@/components/providers/minimal-chrome';
-import { sidebarDivider, sidebarGroups } from '@/app/explorer/sidebar/sidebar-structure';
-import { useTreeNavigation } from '@/app/explorer/sidebar/useTreeNavigation';
-import type { PanelFolder, PanelFolderIndex } from './PanelFolderItem';
-import { PanelMoreGroup } from './PanelMoreGroup';
-import { PanelOverviewGroup } from './PanelOverviewGroup';
-import { PanelSpacesGroup } from './PanelSpacesGroup';
+import { sharedToPaneDocument, type PaneDocument, type SelectedNode } from '@/app/explorer/views';
+import { EmptyPane } from '@/app/explorer/ExplorerEmptyState';
+import { BackBar } from '@/components/primitives/BackBar';
+import { groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
+import type { PanelSection } from '../explorer-panel/panel-sections';
+import { PaneGrid, PaneList, PaneSkeleton } from '../explorer-panel/pane-parts';
+import { PanelFolderItem, type PanelFolder, type PanelFolderIndex } from './PanelFolderItem';
+import { PanelDocumentItem } from './PanelDocumentItem';
 import { PanelTreeProvider, type PanelTree } from './PanelTreeContext';
 
-// The floating Explorer panel's tree (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel):
-// the sidebar's three groups, built from the same rows, layout rules and keyboard model, at
-// the panel's width. Rows with documents open in place; the others go to the Explorer. The
-// tree scrolls inside the panel when it is taller than the room it has.
+export type PanelTreeSection = Extract<
+  PanelSection,
+  { kind: 'mine' } | { kind: 'team' } | { kind: 'browser' } | { kind: 'shared' }
+>;
+
+export const isTreeSection = (s: PanelSection): s is PanelTreeSection =>
+  s.kind === 'mine' || s.kind === 'team' || s.kind === 'browser' || s.kind === 'shared';
+
+const NO_FOLDERS: PanelFolder[] = [];
+const NO_DOCUMENTS: DocumentListItem[] = [];
+
+// The rows of one of the editor's Explorer sections that hold documents (docs/specs/013-workspace/explorer-structure.md
+// "The pane"): My documents' and a team's folders then documents, opening a folder in place under a breadcrumb back
+// to the space's root; This browser's documents; what is shared with the reader. Each empty place says so in the
+// Explorer's own empty state.
 export function PanelExplorerTree({
+  section,
+  rootLabel,
   tree,
   busy = false,
   shared,
@@ -26,18 +40,21 @@ export function PanelExplorerTree({
   foldersByTeam,
   documentsByTeam,
 }: {
+  section: PanelTreeSection;
+  // The space's name, the breadcrumb's first step.
+  rootLabel: string;
   tree: PanelTree;
   // The document lists are still loading.
   busy?: boolean;
   shared: SharedWithItem[];
+  // The reader's own tree, this browser's documents excluded.
   ownIndex: PanelFolderIndex;
   offlineDocuments: DocumentListItem[];
   teams: { id: string; name: string }[];
   foldersByTeam: Map<string, PanelFolder[]>;
   documentsByTeam: Map<string, DocumentListItem[]>;
 }) {
-  // The reader's default folders (docs/specs/013-workspace/default-folders.md): the panel's folder
-  // menus and My documents' menu check and set them; its rows show the marker.
+  // The reader's default folders (docs/specs/013-workspace/default-folders.md): the folder menus check and set them.
   const defaultFolders = useDefaultFolderMenus(
     tree.ownerId,
     useMemo(
@@ -49,57 +66,93 @@ export function PanelExplorerTree({
       [ownIndex, foldersByTeam, teams],
     ),
   );
-  const navRef = useRef<HTMLElement>(null);
-  const keyboard = useTreeNavigation(navRef);
-  const divider = sidebarDivider(useMinimalChrome());
-  const groups = sidebarGroups({
-    // Teams exist only for a signed-in reader.
-    signedIn: teams.length > 0,
-    signInAvailable: false,
-    pendingInvites: 0,
-    offlineDocuments: offlineDocuments.length,
-    selected: null,
-    surface: 'panel',
-  });
+  const team = section.kind === 'team' ? teams.find((t) => t.id === section.id) : undefined;
+  const teamFolders = (team && foldersByTeam.get(team.id)) || NO_FOLDERS;
+  const teamDocuments = (team && documentsByTeam.get(team.id)) || NO_DOCUMENTS;
+  const teamIndex = useMemo<PanelFolderIndex>(
+    () => ({
+      foldersByParent: indexFolders(teamFolders).childrenByParent,
+      documentsByFolder: groupDocumentsByFolder(teamDocuments),
+    }),
+    [teamFolders, teamDocuments],
+  );
+  // The folder open in the pane, null at the space's root. The host keys this component by section, so a new
+  // section starts at its root.
+  const [folderId, setFolderId] = useState<string | null>(null);
+  const draggable = !!tree.onMoveDocumentToFolder;
+
+  const value = { ...tree, defaultFolders, onOpenFolder: setFolderId };
+  let body: React.ReactNode;
+  if (section.kind === 'browser' || section.kind === 'shared') {
+    const docs: PaneDocument[] =
+      section.kind === 'browser' ? offlineDocuments : shared.map(sharedToPaneDocument);
+    body = docs.length ? (
+      <PaneList label={rootLabel}>
+        {docs.map((d) => (
+          <PanelDocumentItem key={d.id} document={d} />
+        ))}
+      </PaneList>
+    ) : (
+      <EmptyPane compact selected={{ kind: section.kind === 'browser' ? 'offline' : 'shared' }} />
+    );
+  } else {
+    const index = section.kind === 'team' ? teamIndex : ownIndex;
+    const byId = new Map([...index.foldersByParent.values()].flat().map((f) => [f.id, f]));
+    // A folder deleted (or moved away) while open: back to the root.
+    const here = folderId && byId.has(folderId) ? folderId : null;
+    const trail: PanelFolder[] = [];
+    for (
+      let f = here ? byId.get(here) : undefined;
+      f;
+      f = f.parentId ? byId.get(f.parentId) : undefined
+    )
+      trail.unshift(f);
+    const folders = index.foldersByParent.get(here) ?? [];
+    const docs = index.documentsByFolder.get(here) ?? [];
+    const empty: SelectedNode = here ? { kind: 'folder', id: here } : { kind: 'all' };
+    body = (
+      <div className="flex flex-col gap-1">
+        {/* The import and export screens' back bar: back to the folder above (or the space's root), the folder open
+            here as its chip. */}
+        {trail.length ? (
+          <BackBar
+            gap="tight"
+            label={trail.at(-2)?.name ?? rootLabel}
+            current={trail.at(-1)!.name}
+            onClick={() => setFolderId(trail.at(-2)?.id ?? null)}
+          />
+        ) : null}
+        {folders.length + docs.length ? (
+          // Keyed by the folder open, so opening one slides its contents in.
+          <div key={here ?? 'root'} className="flex animate-view-forward flex-col gap-3">
+            {folders.length ? (
+              <PaneGrid label={`Folders in ${trail.at(-1)?.name ?? rootLabel}`}>
+                {folders.map((f) => (
+                  <PanelFolderItem key={f.id} folder={f} index={index} team={team} />
+                ))}
+              </PaneGrid>
+            ) : null}
+            {docs.length ? (
+              <PaneList label={trail.at(-1)?.name ?? rootLabel}>
+                {docs.map((d) => (
+                  <PanelDocumentItem
+                    key={d.id}
+                    document={team ? { ...d, team } : d}
+                    draggable={!team && draggable}
+                  />
+                ))}
+              </PaneList>
+            ) : null}
+          </div>
+        ) : (
+          <EmptyPane compact cta={false} selected={empty} />
+        )}
+      </div>
+    );
+  }
   return (
-    <PanelTreeProvider value={{ ...tree, defaultFolders }}>
-      <nav
-        ref={navRef}
-        aria-label="Explorer"
-        aria-busy={busy || undefined}
-        {...keyboard}
-        // Down only: a row's ⋯ tap area (touch-target) reaches past the right edge, and a free x
-        // axis made the tree scroll sideways by it.
-        className="scrollbar-slim max-h-[60vh] overflow-y-auto overflow-x-hidden"
-      >
-        {groups.map(({ id, rows }, i) => {
-          const first = i === 0;
-          if (id === 'overview')
-            return <PanelOverviewGroup key={id} divider={divider} first={first} shared={shared} />;
-          if (id === 'spaces')
-            return (
-              <PanelSpacesGroup
-                key={id}
-                rows={rows}
-                divider={divider}
-                first={first}
-                ownIndex={ownIndex}
-                teams={teams}
-                foldersByTeam={foldersByTeam}
-                documentsByTeam={documentsByTeam}
-              />
-            );
-          return (
-            <PanelMoreGroup
-              key={id}
-              rows={rows}
-              divider={divider}
-              first={first}
-              offlineDocuments={offlineDocuments}
-            />
-          );
-        })}
-      </nav>
+    <PanelTreeProvider value={value}>
+      {busy && section.kind !== 'shared' ? <PaneSkeleton /> : body}
     </PanelTreeProvider>
   );
 }

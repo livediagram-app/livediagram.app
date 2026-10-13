@@ -160,12 +160,15 @@ describe('messageOf', () => {
     expect(messageOf(err, 'fallback')).toBe('Incorrect verification code');
   });
 
-  it('returns the empty string when Clerk returns an empty errors array', () => {
-    // Edge: a malformed Clerk response with `errors: []`. The empty
-    // join produces "" rather than falling through to the fallback,
-    // matching the current implementation (the empty array IS the
-    // signal we matched the Clerk shape).
-    expect(messageOf({ errors: [] }, 'fallback')).toBe('');
+  it('falls back when Clerk returns an empty errors array, so a failure never shows no message', () => {
+    expect(messageOf({ errors: [] }, 'fallback')).toBe('fallback');
+  });
+
+  it("prefers Clerk's longMessage, written for people, over its terse message", () => {
+    const err = {
+      errors: [{ message: 'is invalid', longMessage: 'Enter a valid email address.' }],
+    };
+    expect(messageOf(err, 'fallback')).toBe('Enter a valid email address.');
   });
 
   it('falls through to the next branch when `errors` is not an array', () => {

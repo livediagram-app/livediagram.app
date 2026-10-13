@@ -137,7 +137,7 @@ PlanCardView.tsx         the plan-card element body (themed; a lone card's fill 
 PlanModal.tsx            the Plan forms' modal (through Dialog) and SheetRow; fields are the shared TextInput/TextArea `compact`
 plan-board-moves.ts      the move a drop makes (boardMoveFor)
 PlanSheetsHost.tsx       renders the open item panel or type editor
-../palette/PlanBoardMenuSection.tsx  the board's Board flyout and cog panel: PLAN_BOARD_SECTIONS (Board Setup, Columns,
+../palette/PlanBoardMenuSection.tsx  the board menu's five flyout rows and the slot cog panel: PLAN_BOARD_SECTIONS (Board Setup, Columns,
                          Swimlanes, Supported Cards, Card Layout; Columns `shows` only with columns and not All
                          Cards / Archive), each Body given `open` so it can defer work while shut
 ItemPanel.tsx            item panel: Dialog size 3xl (60rem), header (type, key, labelled Help, ItemPanelMenu ⋯ of Duplicate / Archive / Delete, close), main column

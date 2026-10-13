@@ -83,5 +83,15 @@ export function useLayerRowDrag({
     setDropTargetId(null);
   };
 
-  return { dragId, dropTargetId, rowPointerDown, rowPointerMove, rowPointerUp };
+  // Which edge of the target the insertion line sits on. Rows list top layer first, so a target
+  // higher in the stack (a larger data index) sits ABOVE the dragged row on screen, and the row
+  // lands above it; a lower target means it lands below.
+  const dropEdge: 'top' | 'bottom' | null = (() => {
+    if (!dragId || !dropTargetId) return null;
+    const from = layers.findIndex((l) => l.id === dragId);
+    const to = layers.findIndex((l) => l.id === dropTargetId);
+    return to > from ? 'top' : 'bottom';
+  })();
+
+  return { dragId, dropTargetId, dropEdge, rowPointerDown, rowPointerMove, rowPointerUp };
 }

@@ -25,12 +25,14 @@ const SPOTLIGHT_STEP = 1.25;
 const clampRadius = (r: number) =>
   Math.round(Math.max(SPOTLIGHT_MIN_RADIUS, Math.min(SPOTLIGHT_MAX_RADIUS, r)));
 
-export function useSpotlight() {
+// `initialRadius`: the radius of the Size preset the person last picked (useSpotlightConfig), so the light opens at the
+// size they chose rather than always at Medium. Read once; the session's clicks own the radius from then on.
+export function useSpotlight(initialRadius: number = SPOTLIGHT_DEFAULT_RADIUS) {
   // Light centre in <main>-relative px. Null until the pointer first moves
   // over the canvas; the overlay centres the beam in the meantime so the
   // shroud is visible the instant the tool is picked.
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-  const [radius, setRadius] = useState(SPOTLIGHT_DEFAULT_RADIUS);
+  const [radius, setRadius] = useState(() => clampRadius(initialRadius));
   const grow = () => setRadius((r) => clampRadius(r * SPOTLIGHT_STEP));
   const shrink = () => setRadius((r) => clampRadius(r / SPOTLIGHT_STEP));
   // The Spotlight Panel's Size row (docs/specs/008-canvas/spotlight-panel.md) sets the radius outright; the

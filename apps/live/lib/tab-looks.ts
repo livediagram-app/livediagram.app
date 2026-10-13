@@ -27,7 +27,9 @@ export type TabLookId =
   | 'daydream'
   | 'lagoon'
   | 'textbook'
-  | 'poster';
+  | 'poster'
+  // The Mashup card's random look (lib/look-mashup.ts): never in TAB_LOOKS, so never an activeLookId answer.
+  | 'mashup';
 
 export type TabLook = {
   id: TabLookId;
@@ -237,23 +239,27 @@ export function withLookApplied(tab: Tab, look: TabLook): Tab {
   return next;
 }
 
-/** The look the tab's settings match, or undefined when it has its own mix. Unset settings read as what they
- *  draw: the Default theme, Flexible, no font, the grid. A pattern's strength counts only for a look that sets one
- *  (a template's softened grid is still Everyday). */
-export function activeLookId(
-  tab: Pick<Tab, 'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'>,
-): TabLookId | undefined {
-  const theme = tab.theme ?? 'brand';
-  const finish = resolveFinish(tab.finish, undefined);
-  const font = tab.font || undefined;
-  const pattern = tab.backgroundPattern ?? 'grid';
+/** The four settings a look sets, as a tab holds them. */
+export type LookSettings = Pick<
+  Tab,
+  'theme' | 'finish' | 'font' | 'backgroundPattern' | 'backgroundOpacity'
+>;
+
+/** Whether the tab's settings are the look's. Unset settings read as what they draw: the Default theme, Flexible,
+ *  no font, the grid. A pattern's strength counts only for a look that sets one (a template's softened grid is still
+ *  Everyday). */
+export function lookMatches(tab: LookSettings, look: TabLook): boolean {
   const opacity = tab.backgroundOpacity ?? 1;
-  return TAB_LOOKS.find(
-    (l) =>
-      l.theme === theme &&
-      l.finish === finish &&
-      l.font === font &&
-      l.pattern === pattern &&
-      (l.patternOpacity === undefined || Math.abs(l.patternOpacity - opacity) < 0.001),
-  )?.id;
+  return (
+    look.theme === (tab.theme ?? 'brand') &&
+    look.finish === resolveFinish(tab.finish, undefined) &&
+    look.font === (tab.font || undefined) &&
+    look.pattern === (tab.backgroundPattern ?? 'grid') &&
+    (look.patternOpacity === undefined || Math.abs(look.patternOpacity - opacity) < 0.001)
+  );
+}
+
+/** The look the tab's settings match, or undefined when it has its own mix. */
+export function activeLookId(tab: LookSettings): TabLookId | undefined {
+  return TAB_LOOKS.find((l) => lookMatches(tab, l))?.id;
 }

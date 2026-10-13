@@ -696,3 +696,9 @@ export const ACCESS_CHANGED_CLOSE = 4005;
 // The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):
 // the page turns read-only and does not reconnect.
 export const WORKBENCH_ENDED_CLOSE = 4006;
+
+// The room's keepalive (docs/specs/012-collaboration/realtime-conflict-resolution.md "Keepalive"): the client sends
+// the bare text ROOM_PING on an idle socket and the room answers ROOM_PONG without waking from hibernation
+// (setWebSocketAutoResponse). Plain text, never JSON, so neither side's message handler ever sees them as ops.
+export const ROOM_PING = 'ping';
+export const ROOM_PONG = 'pong';

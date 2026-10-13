@@ -204,7 +204,20 @@ describe('node edits', () => {
       'B',
       'A',
     );
-    expect(r.nodes).toHaveLength(1);
+    expect(r.nodes).toEqual([{ name: 'A', color: '#111111' }]);
+  });
+
+  it("merges onto a name listed after it, keeping the surviving name's colour", () => {
+    const r = renameSankeyNode(
+      [{ from: 'A', to: 'B', value: 1 }],
+      [
+        { name: 'A', color: '#111111' },
+        { name: 'B', color: '#222222' },
+      ],
+      'A',
+      'B',
+    );
+    expect(r.nodes).toEqual([{ name: 'B', color: '#222222' }]);
   });
 
   it('sets, clears and prunes node colours', () => {

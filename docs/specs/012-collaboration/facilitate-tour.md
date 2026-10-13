@@ -28,7 +28,7 @@ Back and outro card, driven by the same engine. Where this spec is silent, the P
 - **Once ever per person**, through the synced `facilitateTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Facilitate** switch in the Accessibility category's **Onboarding Tutorials**
+- **Replayable from Settings**: the **Facilitate Tour** switch in Settings' **Tours** category
   control, beside **Plan** and built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the
   tour straight away when the person is in Facilitate, or offers it the next time they enter Facilitate.
 

@@ -285,8 +285,9 @@ layouts because they're solving different problems.
 ### The editor's Explorer (editor + `/new`)
 
 This is the Explorer the editor's menu button opens as a popover
-([Toolbar layout](../007-editor/toolbar-layout.md)), a stand-alone corner panel on the status screens. Space is tight; the user is mid-task; "find this thing fast"
-beats "browse my whole library." The panel header carries a single
+([Toolbar layout](../007-editor/toolbar-layout.md)), a stand-alone corner panel on the status screens: a rail of
+sections beside a pane that shows the picked one, so the whole library is browsable without leaving the document
+([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)). The panel header carries a single
 **⋯** button, left of the help `?`, whose click-open menu of full-width
 icon-left rows holds the document's and the app's verbs in three bands
 split by separators:

@@ -57,6 +57,7 @@ export function VotePanel({
   popoverAnchor,
   onPopoverClose,
   readOnly,
+  canVote,
   dismissOnOutside = true,
 }: {
   vote: TabVote;
@@ -80,6 +81,8 @@ export function VotePanel({
   isHost: boolean;
   // View-role visitors watch the vote but never drive it (docs/specs/012-collaboration/session-tools.md).
   readOnly: boolean;
+  // Casts dots (an Editor, or a Participant, who is read-only otherwise): shows their dots left.
+  canVote: boolean;
   // Who the vote knows us by (the collab key), for our own dots left while casting is open.
   selfId: string;
   // The tab's layers, to name a layer-scoped vote's layer in its rules.
@@ -117,7 +120,7 @@ export function VotePanel({
       <div className="flex flex-col gap-2 px-2 pb-2">
         {/* What used to float over the canvas as the vote banner: your dots left while casting is
             open, then the walkthrough of the results. */}
-        {vote.active && !readOnly ? <YourDots vote={vote} selfId={selfId} /> : null}
+        {vote.active && canVote ? <YourDots vote={vote} selfId={selfId} /> : null}
         {review ? (
           <ReviewBar
             review={review}

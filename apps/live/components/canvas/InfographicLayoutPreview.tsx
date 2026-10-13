@@ -4,40 +4,64 @@
 // illustrate-pages.md "Layouts"): the layout built for the page, drawn over the whole sheet in the
 // page's own background so it covers what is there now, through the same renderer the exports
 // use. A picture only: nothing is placed, nothing enters the history, and it goes when the hover
-// does. Above the element layer, taking no presses.
+// does. The page's own words and pictures are carried into it as placing it would carry them
+// (buildPageLayoutOver), so the preview shows exactly what a press lands. Above the element
+// layer, taking no presses.
 import { useMemo } from 'react';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
+  elementsOnPage,
   isBoxed,
   pageSurface,
   svgArrow,
   svgBoxed,
+  type Element,
   type LaidOutPage,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
 import { PageMotionLayer } from './PageMotionLayer';
-import { buildPageLayout } from '@livediagram/templates';
+import { buildPageLayoutOver } from '@livediagram/templates';
 import { useCanvasSurface } from './CanvasSurfaceContext';
+import { useImageSources } from './page-image-access';
 
 export function InfographicLayoutPreview({
   page,
   layout,
   tabFont,
+  elements,
+  pages,
 }: {
   page: LaidOutPage;
   layout: PageLayoutId;
   tabFont?: string;
+  // The tab's elements and its laid-out pages: the content on this page the layout carries over.
+  elements?: Element[];
+  pages?: readonly LaidOutPage[];
 }) {
   const canvas = useCanvasSurface();
   const surface = pageSurface(page) ?? canvas;
   const { rect } = page;
+  const els = useMemo(
+    () =>
+      buildPageLayoutOver(
+        layout,
+        page,
+        elements && pages ? elementsOnPage(elements, pages, page.id) : [],
+      ),
+    // The page's shape, not its identity, decides the layout; its content, what carries over.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [layout, rect.x, rect.y, rect.width, rect.height, elements, pages],
+  );
+  // The carried pictures, fetched while the preview shows them (inline bytes paint as they are).
+  const imageIds = els.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []));
+  const imageSource = useImageSources(imageIds);
   const markup = useMemo(() => {
-    const els = buildPageLayout(layout, page);
     const labels = arrowLabelPass(els, { fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont) });
     const opts = {
+      resolveImageHref: (id: string) => (id.startsWith('data:') ? id : imageSource(id)),
       resolveIconArt: resolveIconArtLoaded,
       resolveStickerArt: resolveStickerArtLoaded,
       tabFont,
@@ -49,9 +73,7 @@ export function InfographicLayoutPreview({
         el.type === 'arrow' ? [svgArrow(el, els, surface, tabFont, labels, 'lvd-layout-ko-')] : [],
       ),
     ].join('');
-    // The page's shape and paint, not its identity, decide the picture.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [layout, rect.x, rect.y, rect.width, rect.height, surface, tabFont]);
+  }, [els, surface, tabFont, imageSource]);
   return (
     <div
       aria-hidden
