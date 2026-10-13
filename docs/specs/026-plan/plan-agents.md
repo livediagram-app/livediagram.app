@@ -93,6 +93,12 @@ Every write takes what a person would say, and stores the ids:
 - `cardSize` (minimal, compact, detailed) and `cardFields` (the built-in fields its cards show, by the names the
   Cards menu gives them, whole) set what each card draws, as the board's element menu does; each card type's
   display places them, and custom fields follow the display alone. The answer names both.
+- `swimlanes` sets its rows as the board's menu does: none, assignee, type, priority, status (or "column"), or a field
+  by name ("Severity"), any field a row can group by; anything else is refused naming those there are.
+  `doneColumn` names the column whose cards count as done (Completion, and the Done phase the charts read), or null
+  for none.
+- A built-in field shows on a card only when both the board's `cardFields` and the card type's display have it; the
+  tool descriptions say so.
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
   takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept

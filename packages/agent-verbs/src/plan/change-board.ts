@@ -11,6 +11,9 @@ import {
 import { elementFingerprint, type Element } from '@livediagram/document';
 import {
   CARD_FIELD_LABELS,
+  SWIMLANE_BY,
+  laneFieldsOf,
+  type ItemTypeDef,
   normaliseBoardSetup,
   planBoardWidthFor,
   reshapeBoard,
@@ -24,7 +27,10 @@ import { apiRefusalOf } from './api-refusal';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
 
-export interface ChangeBoardInput extends Omit<BoardChange, 'types'> {
+export interface ChangeBoardInput extends Omit<BoardChange, 'types' | 'swimlanes'> {
+  // Its swimlanes, as the board's menu names them: none, assignee, type, priority, status (or "column"), or a field
+  // by name ("Severity").
+  swimlanes?: string;
   // The board: its title, or its element id.
   board: string;
   // Card types by id or name; an empty list takes none (as the editor's last type turned off does), and
@@ -49,6 +55,28 @@ export type ChangeBoardResult =
       rev: number | null;
     }
   | { ok: false; code: string; message: string };
+
+// A board's swimlanes by name: a built-in grouping, else a field any card type has that rows can group by.
+export function swimlanesNamed(
+  name: string,
+  types: readonly ItemTypeDef[],
+):
+  | { ok: true; value: NonNullable<BoardChange['swimlanes']> }
+  | { ok: false; code: string; message: string } {
+  const key = statusKey(name);
+  const by = key === 'column' ? 'status' : SWIMLANE_BY.find((b) => b !== 'field' && b === key);
+  if (by) return { ok: true, value: { by } };
+  const fields = laneFieldsOf(types);
+  const field = fields.find((f) => statusKey(f.label) === key || f.id === name);
+  if (field) return { ok: true, value: { by: 'field', field: field.id } };
+  return {
+    ok: false,
+    code: 'board_invalid',
+    message:
+      `No swimlanes "${name}". Swimlanes: none, assignee, type, priority, status` +
+      `${fields.length ? `, or a field: ${fields.map((f) => f.label).join(', ')}` : ''}.`,
+  };
+}
 
 const describe = (b: PlanBoardOutline) => `"${b.title}" on ${b.tabName} (${b.elementId})`;
 
@@ -96,6 +124,12 @@ export async function changeBoard(
         types.push(t.type.id);
       }
     }
+    let swimlanes: BoardChange['swimlanes'];
+    if (input.swimlanes !== undefined) {
+      const lanes = swimlanesNamed(input.swimlanes, state.plan.types);
+      if (!lanes.ok) return lanes;
+      swimlanes = lanes.value;
+    }
     const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
     const element = (tab.elements as Element[]).find((e) => e.id === elementId);
     const setup =
@@ -114,6 +148,8 @@ export async function changeBoard(
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.renameColumns ? { renameColumns: input.renameColumns } : {}),
         ...(input.cardSize ? { cardSize: input.cardSize } : {}),
+        ...(swimlanes ? { swimlanes } : {}),
+        ...(input.doneColumn !== undefined ? { doneColumn: input.doneColumn } : {}),
         ...(input.cardFields ? { cardFields: input.cardFields } : {}),
         ...(input.columns ? { columns: input.columns } : {}),
         ...(types !== undefined ? { types } : {}),

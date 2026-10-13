@@ -10,6 +10,7 @@ import {
   type CardSize,
   type PlanBoardSetup,
   type PlanColumn,
+  type SwimlaneBy,
 } from './board';
 import { PLAN_COLUMN_NAME_MAX, PLAN_COLUMNS_MAX, PLAN_TITLE_MAX } from './limits';
 import type { PlanStatusName } from './plan-outline';
@@ -162,6 +163,10 @@ export interface BoardChange {
   types?: readonly string[] | null;
   // How much of each card it draws; Detailed draws every field the board shows.
   cardSize?: CardSize;
+  // Its swimlanes: none, by a built-in grouping, or by a field (its id, resolved by the caller).
+  swimlanes?: { by: SwimlaneBy; field?: string };
+  // The column whose cards count as done (Completion, the phases charts read), by name; null for none.
+  doneColumn?: string | null;
   // The built-in fields its cards show, by name ("Number", "Due Date") or id, whole; a type's Display places them.
   cardFields?: readonly string[];
 }
@@ -251,6 +256,30 @@ export function reshapeBoard(
     const done = columns.some((c) => c.id === setup.doneColumnId) ? setup.doneColumnId : undefined;
     const { doneColumnId: _done, ...rest } = next;
     next = { ...rest, columns, ...(done ? { doneColumnId: done } : {}) };
+  }
+  if (change.swimlanes) {
+    const { swimlaneField: _field, ...rest } = next;
+    next = {
+      ...rest,
+      swimlaneBy: change.swimlanes.by,
+      ...(change.swimlanes.by === 'field' && change.swimlanes.field
+        ? { swimlaneField: change.swimlanes.field }
+        : {}),
+    };
+  }
+  if (change.doneColumn !== undefined) {
+    const { doneColumnId: _done, ...rest } = next;
+    if (change.doneColumn === null) next = rest;
+    else {
+      const column = next.columns.find((c) => statusKey(c.name) === statusKey(change.doneColumn!));
+      if (!column)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${next.title}" has no column "${change.doneColumn}". Columns: ${next.columns.map((c) => c.name).join(', ')}.`,
+        };
+      next = { ...rest, doneColumnId: column.id };
+    }
   }
   if (change.cardSize) {
     const { cardSize: _size, ...rest } = next;

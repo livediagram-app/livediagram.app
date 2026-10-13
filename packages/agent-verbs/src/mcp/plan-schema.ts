@@ -146,8 +146,22 @@ export const changeBoardShape = {
     .optional()
     .describe(
       'The built-in fields its cards show, by name, whole: Number, Type, Assignee, Priority, Labels, Estimate, ' +
-        'Start Date, Due Date, Votes, Checklist, Comments, Description. Each card type’s display places them; ' +
-        'custom fields follow the type’s display alone.',
+        'Start Date, Due Date, Votes, Checklist, Comments, Description. A built-in field shows on a card only ' +
+        'when both this list and the card type’s display have it; custom fields follow the type’s display alone.',
+    ),
+  swimlanes: z
+    .string()
+    .optional()
+    .describe(
+      'Its rows: none, assignee, type, priority, status, or a field by name ("Severity", "Role"): a row per ' +
+        'value, across every column.',
+    ),
+  doneColumn: z
+    .string()
+    .nullable()
+    .optional()
+    .describe(
+      'The column whose cards count as done (Completion, and the Done phase charts read), by name; null for none.',
     ),
   renameColumns: z
     .record(z.string(), z.string())

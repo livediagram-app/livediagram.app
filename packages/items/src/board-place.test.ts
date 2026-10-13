@@ -132,6 +132,25 @@ describe('reshapeBoard', () => {
     expect(reshapeBoard(setup, { cardFields: ['Mood'] }, others)).toMatchObject({ ok: false });
   });
 
+  it('sets the swimlanes and the done column by name', () => {
+    const r = reshapeBoard(
+      setup,
+      { swimlanes: { by: 'field', field: 'f-sev' }, doneColumn: 'to do' },
+      others,
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.setup).toMatchObject({
+      swimlaneBy: 'field',
+      swimlaneField: 'f-sev',
+      doneColumnId: 'todo',
+    });
+    const none = reshapeBoard(r.setup, { swimlanes: { by: 'none' }, doneColumn: null }, others);
+    if (!none.ok) throw new Error(none.message);
+    expect(none.setup.swimlaneField).toBeUndefined();
+    expect(none.setup.doneColumnId).toBeUndefined();
+    expect(reshapeBoard(setup, { doneColumn: 'Shipped' }, others)).toMatchObject({ ok: false });
+  });
+
   it('never gives two columns one id, a kept column keeping its own', () => {
     // Kanban's "In Progress" has the id `doing`; a new "Doing" column slugs to the same id.
     const kanban = presetSetup('kanban');
