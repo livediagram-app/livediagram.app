@@ -68,3 +68,30 @@ describe('ZoomControls', () => {
     expect(container.querySelector('[data-zoom-controls]')).not.toBeNull();
   });
 });
+
+// docs/specs/029-sheets/sheet.md "Zoom": a Sheet zooms 50% to 200%, so its presets stop at 50%.
+describe('ZoomControls presets', () => {
+  const levels = () =>
+    screen.getAllByRole('menuitemradio').map((b) => b.textContent?.replace(/\D/g, ''));
+  const openPresets = () =>
+    fireEvent.keyDown(
+      screen
+        .getAllByRole('button', { name: 'Fit to screen' })
+        .find((b) => b.getAttribute('aria-haspopup') === 'menu')!,
+      { key: 'ArrowDown' },
+    );
+
+  it('offers every preset on the canvas', () => {
+    render(<ZoomControls zoom={1} {...handlers()} />);
+    openPresets();
+    expect(levels()).toEqual(['25', '50', '75', '100', '125', '150']);
+  });
+
+  it('offers only the levels a Sheet can reach', () => {
+    render(
+      <ZoomControls zoom={1} {...handlers()} zoomScope="sheet" zoomRange={{ min: 0.5, max: 2 }} />,
+    );
+    openPresets();
+    expect(levels()).toEqual(['50', '75', '100', '125', '150']);
+  });
+});

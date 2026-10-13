@@ -27,9 +27,14 @@ type ZoomMenuProps = {
   // Why zoom is off (a Plan element covering the canvas): the level shows, disabled, its hover card saying why, and
   // the presets never open.
   offReason?: string;
+  // The levels this zoom can reach (a Sheet's is narrower than the canvas's): presets outside it are not offered,
+  // since picking one would only clamp to the nearest end.
+  range?: ZoomRange | undefined;
 };
 
-export function ZoomMenu({ zoom, onSetZoom, onFitToScreen, offReason }: ZoomMenuProps) {
+export type ZoomRange = { min: number; max: number };
+
+export function ZoomMenu({ zoom, onSetZoom, onFitToScreen, offReason, range }: ZoomMenuProps) {
   const percent = Math.round(zoom * 100);
   if (offReason)
     return (
@@ -46,11 +51,21 @@ export function ZoomMenu({ zoom, onSetZoom, onFitToScreen, offReason }: ZoomMenu
         </HoverCard>
       </div>
     );
-  return <ZoomMenuLive zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} />;
+  return (
+    <ZoomMenuLive zoom={zoom} onSetZoom={onSetZoom} onFitToScreen={onFitToScreen} range={range} />
+  );
 }
 
-function ZoomMenuLive({ zoom, onSetZoom, onFitToScreen }: Omit<ZoomMenuProps, 'offReason'>) {
+function ZoomMenuLive({
+  zoom,
+  onSetZoom,
+  onFitToScreen,
+  range,
+}: Omit<ZoomMenuProps, 'offReason'>) {
   const percent = Math.round(zoom * 100);
+  const presets = range
+    ? ZOOM_PRESETS.filter((level) => level >= range.min && level <= range.max)
+    : ZOOM_PRESETS;
   // How it opened decides focus (docs/specs/004-interface-design/menus.md): a hover asks nothing
   // of the keyboard, so focus stays put; an arrow key on the button moves focus in.
   const [open, setOpen] = useState<MenuInitialFocus | null>(null);
@@ -104,6 +119,7 @@ function ZoomMenuLive({ zoom, onSetZoom, onFitToScreen }: Omit<ZoomMenuProps, 'o
         <ZoomPresets
           key={open === 'none' ? 'hover' : 'keyboard'}
           percent={percent}
+          levels={presets}
           button={button}
           initialFocus={open}
           onClose={() => setOpen(null)}
@@ -117,6 +133,7 @@ function ZoomMenuLive({ zoom, onSetZoom, onFitToScreen }: Omit<ZoomMenuProps, 'o
 
 function ZoomPresets({
   percent,
+  levels,
   button,
   initialFocus,
   onClose,
@@ -124,6 +141,7 @@ function ZoomPresets({
   onFitToScreen,
 }: {
   percent: number;
+  levels: readonly number[];
   button: HTMLButtonElement | null;
   initialFocus: MenuInitialFocus;
   onClose: () => void;
@@ -146,7 +164,7 @@ function ZoomPresets({
           {...surfaceProps}
           className="relative flex w-36 flex-col gap-px overflow-hidden rounded-xl border border-slate-200/80 bg-white/95 p-1.5 shadow-xl shadow-slate-900/10 outline-none ring-1 ring-white/60 backdrop-blur-sm dark:border-slate-700/80 dark:bg-slate-900/95 dark:shadow-slate-950/60 dark:ring-white/5"
         >
-          {ZOOM_PRESETS.map((level) => {
+          {levels.map((level) => {
             const levelPercent = Math.round(level * 100);
             const active = levelPercent === percent;
             return (

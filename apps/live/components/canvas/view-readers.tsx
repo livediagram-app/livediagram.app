@@ -6,7 +6,13 @@
 // wrap stay pure renderers.
 
 import { useCanvasCovered, useSheetCovering } from '@/hooks/plan/plan-cover-store';
-import { setSheetZoom, stepSheetZoom, useSheetZoom } from '@/hooks/sheets/sheet-zoom';
+import {
+  setSheetZoom,
+  SHEET_ZOOM_MAX,
+  SHEET_ZOOM_MIN,
+  stepSheetZoom,
+  useSheetZoom,
+} from '@/hooks/sheets/sheet-zoom';
 import { useEffect, type ComponentProps } from 'react';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { LaserOverlay } from '@/components/canvas/LaserOverlay';
@@ -17,6 +23,7 @@ import { useViewportOf } from '@/hooks/canvas/useViewportStore';
 import type { View } from '@/lib/viewport-store';
 
 const zoomOf = (v: View) => v.zoom;
+const SHEET_ZOOM_RANGE = { min: SHEET_ZOOM_MIN, max: SHEET_ZOOM_MAX };
 const wholeView = (v: View) => v;
 
 export function ZoomedRemoteCursor(props: Omit<ComponentProps<typeof RemoteCursor>, 'zoom'>) {
@@ -51,6 +58,7 @@ export function ViewZoomControls(
         onSetZoom={setSheetZoom}
         onFitToScreen={() => setSheetZoom(1)}
         zoomScope="sheet"
+        zoomRange={SHEET_ZOOM_RANGE}
       />
     );
   return <ZoomControls {...props} zoom={canvasZoom} zoomOff={covered} />;
