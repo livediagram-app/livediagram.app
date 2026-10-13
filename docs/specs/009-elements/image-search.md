@@ -141,6 +141,8 @@ Never the query, a title, a creator or a URL.
 - **Credit in exports.** PNG, SVG, PDF and Markdown exports don't print the credit yet; it lives on
   the element and in the Image panel.
 - **Filters.** No licence, colour, orientation or source pickers; the commercial-and-modification
-  filter is fixed.
+  filter is fixed. The one exception is a page's Image background
+  ([Illustrate pages](../007-editor/illustrate-pages.md) "Image backgrounds"), whose search passes
+  the page's shape (`aspect_ratio`) and `size=large` for it; the picker never does.
 - **Other providers.** Openverse only. A keyed provider (Unsplash, Pexels) would need the api worker
   as a proxy and is not planned.

@@ -98,7 +98,7 @@ export const TABS_ARRANGED = chart(
   'Tab',
   'Aligned',
   'Tabs Auto-Arranged',
-  'A tab laid out automatically: tree, flowchart or mindmap.',
+  'A tab laid out automatically (tree, flowchart or mindmap), or an infographic page tidied.',
 );
 
 export const TABS_REORDERED = chart(

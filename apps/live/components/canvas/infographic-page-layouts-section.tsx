@@ -4,27 +4,27 @@
 // the page's catalogue (a slide page's slide layouts, else the infographic ones) by
 // category, as /new browses templates: the categories first (each a card fronted by its first
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
-// back. Onto an empty page a press places it at once; onto
-// a page with content the grid asks first, inline, naming how much would go. Hovering a tile
-// previews it on the page (InfographicLayoutPreview); the pending one stays previewed while asked.
+// back, each move sliding in from its side. A press places the layout at once, over anything on the page (one undo
+// step brings it back). Hovering a tile previews it on the page (InfographicLayoutPreview).
 import { useState } from 'react';
 import { pageKindOf, type LaidOutPage } from '@livediagram/document';
 import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
-import { ChevronLeftIcon } from '@livediagram/ui';
 import { CountBadge } from '@livediagram/ui';
-import { Button } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
+import { BackBar } from '@/components/primitives/BackBar';
 import { PanelSection } from './illustrate-page-panel-sections';
 
 type LayoutBrowserProps = {
   page: LaidOutPage;
-  contentCount: number;
   onApply: (layout: PageLayoutId) => void;
   // Shows a layout on the page while its tile is hovered or focused; null takes it away.
   onPreview: (layout: PageLayoutId | null) => void;
   // Four across (the wide in-page card, so a category's layouts need no scrolling), else two.
   wide?: boolean;
 };
+
+// A category card's two front layouts' width: as large as the card's art box holds an A4 page.
+const FAN_THUMB_W = 74;
 
 // A layout tile's art width in the wide card's four columns.
 const WIDE_THUMB_W = 104;
@@ -39,84 +39,36 @@ export function LayoutsSection(props: LayoutBrowserProps) {
 
 /** The layouts by category, then one category's layouts: the panel's Layouts section, and the
  *  card an empty infographic page shows inside itself (EmptyPageLayouts). */
-export function LayoutBrowser({
-  page,
-  contentCount,
-  onApply,
-  onPreview,
-  wide = false,
-}: LayoutBrowserProps) {
+export function LayoutBrowser({ page, onApply, onPreview, wide = false }: LayoutBrowserProps) {
   const cols = wide ? 'grid-cols-4' : 'grid-cols-2';
-  const [pending, setPending] = useState<PageLayoutId | null>(null);
   // The category open, or null for the overview of categories.
   const [category, setCategory] = useState<string | null>(null);
+  // Which way the last move went, so the view slides in from that side: into a category from the
+  // right, back to the categories from the left (the template wizard's own slide). None at first.
+  const [moved, setMoved] = useState<'in' | 'back' | null>(null);
+  const slide = moved === 'in' ? 'animate-tip-next' : moved === 'back' ? 'animate-tip-prev' : '';
   const { categories, layouts } = layoutCatalogueFor(pageKindOf(page));
   const openCategory = categories.find((c) => c.id === category);
-  const pick = (id: PageLayoutId) => {
-    if (contentCount === 0) onApply(id);
-    else setPending(id);
-  };
-  const pendingLabel = layouts.find((l) => l.id === pending)?.label;
+  // A press places the layout at once, over whatever the page holds: one undo step brings it back.
+  const pick = (id: PageLayoutId) => onApply(id);
   return (
     <>
-      {pending ? (
-        <div
-          role="alertdialog"
-          aria-label="Replace this page's content?"
-          className="mb-2 rounded-lg bg-amber-50 p-2.5 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:ring-amber-500/30"
-        >
-          <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-            Replace this page&apos;s content?
-          </p>
-          <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-300">
-            {contentCount === 1 ? 'The 1 element' : `The ${contentCount} elements`} on it make way
-            for {pendingLabel}. Undo brings them back.
-          </p>
-          <div className="mt-2 flex justify-end gap-1.5">
-            <Button
-              size="xs"
-              variant="secondary"
-              onClick={() => {
-                setPending(null);
-                onPreview(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="xs"
-              autoFocus
-              onClick={() => {
-                onApply(pending);
-                setPending(null);
-              }}
-            >
-              Replace
-            </Button>
-          </div>
-        </div>
-      ) : null}
       {openCategory ? (
-        <>
-          <button
-            type="button"
+        <div key={openCategory.id} className={slide}>
+          <BackBar
+            label="All layouts"
+            current={openCategory.label}
+            gap="tight"
             onClick={() => {
+              setMoved('back');
               setCategory(null);
-              onPreview(pending);
+              onPreview(null);
             }}
-            className="mb-2 flex w-full items-center gap-1 rounded-md px-1 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <ChevronLeftIcon className="h-3.5 w-3.5" />
-            <span className="text-slate-500 dark:text-slate-400">All layouts</span>
-            <span aria-hidden className="text-slate-300 dark:text-slate-600">
-              /
-            </span>
-            {openCategory.label}
-          </button>
+          />
           <div
             className={`grid ${cols} gap-2`}
-            onPointerLeave={() => onPreview(pending)}
-            onBlur={() => onPreview(pending)}
+            onPointerLeave={() => onPreview(null)}
+            onBlur={() => onPreview(null)}
           >
             {layouts
               .filter((l) => l.category === openCategory.id)
@@ -124,13 +76,11 @@ export function LayoutBrowser({
                 <button
                   key={l.id}
                   type="button"
+                  data-layout-tile={l.id}
                   onClick={() => pick(l.id)}
                   onPointerEnter={() => onPreview(l.id)}
                   onFocus={() => onPreview(l.id)}
-                  aria-pressed={pending === l.id}
-                  className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 ${
-                    pending === l.id ? 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15' : ''
-                  }`}
+                  className={`flex flex-col items-center gap-1 rounded-lg p-1.5 text-[11px] font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800 `}
                 >
                   <LayoutThumb
                     layout={l.id}
@@ -141,20 +91,26 @@ export function LayoutBrowser({
                 </button>
               ))}
           </div>
-        </>
+        </div>
       ) : (
-        <div className={`grid ${cols} gap-2`}>
+        <div key="categories" className={`grid ${cols} gap-2 ${slide}`}>
           {categories.map((c) => {
             const members = layouts.filter((l) => l.category === c.id);
+            // A category with nothing in it yet is not offered.
+            if (members.length === 0) return null;
             return (
               <button
                 key={c.id}
                 type="button"
-                onClick={() => setCategory(c.id)}
+                onClick={() => {
+                  setMoved('in');
+                  setCategory(c.id);
+                }}
                 className="flex flex-col items-center gap-1.5 rounded-lg bg-slate-50 p-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-900/5 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:bg-slate-800/60 dark:text-slate-200 dark:ring-white/10 dark:hover:bg-slate-800"
               >
-                {/* Fronted by its first two layouts, fanned as /new fans a shelf: drawn small,
-                    in a clipped box of fixed height, so they never spill out of the card. */}
+                {/* Fronted by its first two layouts, the second peeking behind the first: drawn
+                    upright on whole pixels (a rotated render of tiny type blurs), in a clipped box
+                    of fixed height, so they never spill out of the card. */}
                 <span
                   aria-hidden
                   className="relative flex h-28 w-full items-center justify-center overflow-hidden"
@@ -164,11 +120,11 @@ export function LayoutBrowser({
                       key={l.id}
                       className="absolute flex"
                       style={{
-                        transform: `translateX(${i === 0 ? -14 : 14}px) rotate(${i === 0 ? -5 : 5}deg)`,
+                        transform: `translate(${i === 0 ? -12 : 12}px, ${i === 0 ? 3 : -3}px)`,
                         zIndex: i === 0 ? 1 : 0,
                       }}
                     >
-                      <LayoutThumb layout={l.id} page={page} width={64} />
+                      <LayoutThumb layout={l.id} page={page} width={FAN_THUMB_W} />
                     </span>
                   ))}
                 </span>

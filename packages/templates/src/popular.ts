@@ -36,7 +36,7 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
   illustrate: [
     'blank-illustration',
     'article',
-    'slide-deck',
+    'blank-slide-deck',
     'event-poster',
     'year-in-review',
     'social-carousel',

@@ -1,6 +1,6 @@
 'use client';
 
-// Tidy Up (docs/specs/007-editor/logo-pages.md "Tidy Up"): the selection's hand-drawn lines made
+// Tidy Up (docs/specs/007-editor/logo-pages.md "Tidy"): the selection's hand-drawn lines made
 // clean in one edit (one undo), each in place with its id, so the selection stays as it was.
 import type { BoxedElement, Element, Tab } from '@livediagram/document';
 import { tidyUpStroke, isTidyable } from '@/lib/stroke-tidy';

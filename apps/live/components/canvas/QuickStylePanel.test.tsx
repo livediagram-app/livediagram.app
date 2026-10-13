@@ -472,7 +472,7 @@ describe('QuickStylePanel: the Ink swatch', () => {
     setColour: vi.fn(),
   });
 
-  it('ends the Stroke and Text colour rows with Ink, never Background, then More colours', () => {
+  it('ends the Stroke and Text colour rows with Ink, Background with Transparent, then More colours', () => {
     render(<QuickStylePanel quickStyle={api()} hidden={false} />);
     const stroke = within(screen.getByRole('group', { name: 'Stroke' })).getAllByRole('button');
     expect(stroke).toHaveLength(9);
@@ -482,7 +482,20 @@ describe('QuickStylePanel: the Ink swatch', () => {
     const text = within(screen.getByRole('group', { name: 'Text colour' })).getAllByRole('button');
     expect(text[7]!.getAttribute('aria-label')).toBe('Ink');
     const fill = within(screen.getByRole('group', { name: 'Background' })).getAllByRole('button');
-    expect(fill).toHaveLength(8);
+    expect(fill).toHaveLength(9);
+    expect(fill[7]!.getAttribute('aria-label')).toBe('Transparent');
+  });
+
+  // docs/specs/008-canvas/quick-style-panel.md "Background": Transparent.
+  it('sets a transparent background from the Background row', () => {
+    const quickStyle = api();
+    render(<QuickStylePanel quickStyle={quickStyle} hidden={false} />);
+    fireEvent.click(
+      within(screen.getByRole('group', { name: 'Background' })).getByRole('button', {
+        name: 'Transparent',
+      }),
+    );
+    expect(quickStyle.setBackground).toHaveBeenCalledWith('transparent');
   });
 
   // docs/specs/004-interface-design/colour-picker.md "Keyboard" and "Skins".
@@ -501,7 +514,7 @@ describe('QuickStylePanel: the Ink swatch', () => {
     fireEvent.click(within(picker).getByRole('button', { name: 'Teal' }));
     expect(quickStyle.setColour).toHaveBeenCalledWith('stroke', 'teal');
     fireEvent.click(
-      within(screen.getByRole('group', { name: 'Background' })).getAllByRole('button')[7]!,
+      within(screen.getByRole('group', { name: 'Background' })).getAllByRole('button')[8]!,
     );
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Teal' }));
     expect(quickStyle.setColour).toHaveBeenLastCalledWith(

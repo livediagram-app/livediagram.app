@@ -19,7 +19,7 @@
 // element's current reference rather than aborting the whole conversion (a
 // kept R2 id still renders while online; a kept data URI renders anywhere).
 
-import type { Tab } from '@livediagram/document';
+import { pageImageIds, withPageImageIds, type Tab } from '@livediagram/document';
 import { apiFetchImageDataUrl } from '../api/images';
 import { uploadImageFile } from '../upload-image';
 
@@ -27,29 +27,37 @@ export function isDataImageId(imageId: string | null | undefined): boolean {
   return typeof imageId === 'string' && imageId.startsWith('data:');
 }
 
+// Every picture a tab names: its image elements' and its pages' backgrounds
+// (docs/specs/007-editor/illustrate-pages.md "Image backgrounds").
+export function tabImageIds(tab: Tab): string[] {
+  const ids = new Set<string>(pageImageIds(tab.pages));
+  for (const el of tab.elements) if (el.type === 'image' && el.imageId) ids.add(el.imageId);
+  return [...ids];
+}
+
 // Distinct imageIds on the given tabs that match the predicate.
 function collectImageIds(tabs: Tab[], match: (id: string) => boolean): string[] {
   const ids = new Set<string>();
-  for (const tab of tabs) {
-    for (const el of tab.elements) {
-      if (el.type === 'image' && el.imageId && match(el.imageId)) ids.add(el.imageId);
-    }
-  }
+  for (const tab of tabs) for (const id of tabImageIds(tab)) if (match(id)) ids.add(id);
   return [...ids];
 }
 
 // Swap every matching imageId through the map (ids absent from the map are
-// left untouched). Pure; exported for tests.
+// left untouched), on elements and page backgrounds alike. Pure; exported for tests.
 export function rewriteImageIds(tabs: Tab[], mapping: Map<string, string>): Tab[] {
   if (mapping.size === 0) return tabs;
-  return tabs.map((tab) => ({
-    ...tab,
-    elements: tab.elements.map((el) => {
-      if (el.type !== 'image' || !el.imageId) return el;
-      const next = mapping.get(el.imageId);
-      return next && next !== el.imageId ? { ...el, imageId: next } : el;
-    }),
-  }));
+  return tabs.map((tab) => {
+    const pages = withPageImageIds(tab.pages, mapping);
+    return {
+      ...tab,
+      elements: tab.elements.map((el) => {
+        if (el.type !== 'image' || !el.imageId) return el;
+        const next = mapping.get(el.imageId);
+        return next && next !== el.imageId ? { ...el, imageId: next } : el;
+      }),
+      ...(pages !== tab.pages ? { pages: pages as Tab['pages'] } : {}),
+    };
+  });
 }
 
 // Decode a base64 data URL into a File for the shared upload flow. Pure

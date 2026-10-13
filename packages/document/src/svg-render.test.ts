@@ -1,6 +1,14 @@
 import { svgTags, textTagBefore } from './svg-test-tags';
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, FreehandElement, ImageElement, ShapeElement, Tab } from './index';
+import type {
+  ArrowElement,
+  FreehandElement,
+  ImageElement,
+  ShapeElement,
+  Tab,
+  TableElement,
+} from './index';
+import { tableHeaderColours } from './table-header-colours';
 import { freehandPenStroke, penStrokePath } from './pen-stroke';
 import { r2 } from './svg-render-primitives';
 import { contentBounds, renderElementsToSvg } from './svg-render';
@@ -328,8 +336,10 @@ describe('renderElementsToSvg', () => {
 
     it('tints the header band and honours pinned column widths', () => {
       const svg = renderElementsToSvg(tab([table({ headerRow: true, colWidths: [100, null] })]));
-      // Header wash: stroke-coloured rect at 18% over the first row.
-      expect(svg).toContain('opacity="0.18"');
+      // Header band: the opaque tint the canvas paints, over the first row.
+      const band = tableHeaderColours(table({ headerRow: true }) as TableElement).fill;
+      expect(svg).toContain(`fill="${band}"`);
+      expect(svg).not.toContain('opacity="0.18"');
       // Pinned first column: the divider sits at x=100, not the even 150.
       expect(svg).toContain('x1="100"');
     });

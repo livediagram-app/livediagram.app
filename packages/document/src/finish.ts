@@ -97,12 +97,17 @@ export function finishFontId(
 }
 
 /** The font id an element is lettered in, from the element and its tab (finishFontId over the element's
- *  drawn finish). */
+ *  drawn finish). A finish picked on the element itself is more specific than the tab's font, so its
+ *  lettering wins over the tab's (Sketch on one heading of a Boardroom tab writes it by hand); the
+ *  element's own font still wins over both. */
 export function elementFontId(
   el: { font?: string; finish?: unknown },
   tabFont: string | undefined,
   tabFinish: unknown,
 ): string | undefined {
+  if (!el.font && isFinish(el.finish) && el.finish !== 'flexible') {
+    return finishFontId(undefined, undefined, el.finish);
+  }
   return finishFontId(el.font, tabFont, resolveFinish(el.finish, tabFinish));
 }
 

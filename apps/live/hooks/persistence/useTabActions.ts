@@ -39,7 +39,7 @@ import type { useToast } from '@/hooks/ui/useToast';
 type TabActionsDeps = {
   tabs: Tab[];
   activeId: string;
-  // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md).
+  // The viewer's editor mode on the active tab (docs/specs/007-editor/editor-modes.md): a new tab opens in it.
   editorMode: EditorMode;
   // Whether the session may change the document's structure (its tabs): false for a view link and
   // for any tab-scoped link (docs/specs/013-workspace/tab-scoped-share-links.md).
@@ -114,13 +114,12 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  // `mode`: open it in that mode (a Plan tab's switch offering a new tab instead, plan-tabs.md); else as the creator's
-  // mode says (newTabOpening).
+  // `mode`: open it in that mode (a Plan tab's switch offering a new tab instead, plan-tabs.md); else in the active
+  // tab's mode, so an Illustrate tab's + makes an Illustrate tab (newTabOpening).
   const addTab = (mode?: EditorMode) => {
     // A session that cannot change the document's tabs adds none, whichever control asked.
     if (!deps.canEditStructure) return;
-    // The new tab takes the active tab's look (newTabSeed), never its creator's mode: it opens in
-    // Diagram.
+    // The new tab takes the active tab's look (newTabSeed); its mode is newTabOpening's.
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
     // window), falling back to brand defaults the same way Tab 1 does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
@@ -138,9 +137,8 @@ export function useTabActions(deps: TabActionsDeps) {
     setSelectedId(null);
     setEditingId(null);
     setFormatSourceId(null);
-    // New tabs jump straight into the lighter template picker (just the
-    // template grid). The welcome flow is first-run only, the user
-    // already has an identity + theme by this point. From Plan, Plan's board picker is the start instead.
+    // The lighter template picker (just the template grid), should an opening ask for it. None does today: every
+    // mode's new tab opens on its own start instead (newTabOpening).
     if (opening.quickStart) setTemplatePickerMode('templates');
   };
 

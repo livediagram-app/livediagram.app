@@ -353,11 +353,24 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
       'PageSize',
       'PageRenamed',
       'PageBackground',
+      'PageBackgroundImage',
+      'PageBackgroundAnimated',
+      'PageBackgroundAnimatedSpeed',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
     ],
   },
+);
+
+// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
+// going there.
+export const PAGE_CONTENTS_JUMPS = chart(
+  'UI',
+  'Used',
+  'Contents Jumps',
+  "A page pressed in Illustrate's Contents list, the canvas gliding to it.",
+  { types: ['PageContentsJump'], rising: 'neutral' },
 );
 
 // Building Illustrate pages: a layout placed, a page duplicated or moved.
@@ -465,6 +478,7 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    PAGE_CONTENTS_JUMPS,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,
@@ -1104,6 +1118,16 @@ export const HIGHLIGHTER_SETTINGS = chart(
   { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
 );
 
+// The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
+// canvas-and-theme-dialog.md).
+export const LOOKS_FILTERED = chart(
+  'UI',
+  'Changed',
+  'Looks Filtered by Finish',
+  "The Tab Style popover's Looks narrowed to one finish with its Finish filter.",
+  { types: ['LooksFinishFilter'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -1116,6 +1140,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
+    LOOKS_FILTERED,
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],

@@ -59,15 +59,41 @@ describe('Start Facilitating', () => {
 });
 
 describe('Start Illustrating', () => {
-  it('groups by what is made: Slides, Infographics, Documents, Posters, Logos', () => {
-    expect(TEMPLATE_STARTS.illustrate.groups.map((g) => g.id)).toEqual([
-      'recommended',
-      'slides',
-      'infographics',
-      'documents',
-      'posters',
-      'logos',
+  it('groups by what is made: Slides, Infographics, Articles, Posters and Social, Logos', () => {
+    expect(TEMPLATE_STARTS.illustrate.groups.map((g) => g.name)).toEqual([
+      'Recommended',
+      'Slides',
+      'Infographics',
+      'Articles',
+      'Posters and Social',
+      'Logos',
     ]);
+    // A carousel is posted, not presented.
+    const group = (id: string) => TEMPLATE_STARTS.illustrate.groups.find((g) => g.id === id)!.kinds;
+    expect(group('slides')).not.toContain('social-carousel');
+    expect(group('posters')).toContain('social-carousel');
     expect(TEMPLATE_STARTS.illustrate.blank).toBe('blank-illustration');
+  });
+
+  it('leads Slides, Infographics, Articles and Logos with their blank of a page kind', () => {
+    // docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind".
+    const first = Object.fromEntries(
+      TEMPLATE_STARTS.illustrate.groups.map((g) => [g.id, g.kinds[0]]),
+    );
+    expect(first).toMatchObject({
+      slides: 'blank-slide-deck',
+      infographics: 'blank-infographic',
+      articles: 'blank-article',
+      logos: 'blank-logo',
+    });
+    // Each once in its group, and none in Recommended but Blank Slide Deck, which takes the Slide
+    // Deck's place there.
+    const recommended = TEMPLATE_STARTS.illustrate.groups[0]!.kinds;
+    expect(recommended).toContain('blank-slide-deck');
+    expect(recommended).not.toContain('slide-deck');
+    for (const k of ['blank-infographic', 'blank-article', 'blank-logo'] as const) {
+      expect(recommended).not.toContain(k);
+      expect(TEMPLATE_STARTS.illustrate.groups.filter((g) => g.kinds.includes(k))).toHaveLength(1);
+    }
   });
 });

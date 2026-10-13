@@ -35,8 +35,8 @@ import {
   withContentFittedToPage,
   withDuplicatedPage,
   withPageContentReplaced,
-  withPageInkFor,
 } from './illustrate-page-content';
+import { pageInkFor, type InkMemory } from './page-ink';
 import { sameFill, withBackgroundPatch } from './illustrate-page-paint';
 
 export type PageEditRefusal =
@@ -171,13 +171,16 @@ export function pageResized<T extends PagesTab>(
   };
 }
 
-/** A page's background patched; on an article, every page of it. A new fill re-inks the page's
- *  own-coloured content so it still reads (withPageInkFor). A logo page takes no pattern. */
+/** A page's background patched; on an article, every page of it. A new fill re-inks what is on
+ *  the page so it still reads (pageInkFor, docs/specs/007-editor/illustrate-pages.md "Re-inking"),
+ *  judged from the author's own colours where `memory` recalls them; `memory` comes back as it is
+ *  after (the caller keeps it). A logo page takes no pattern. */
 export function pageBackgroundSet<T extends PagesTab>(
   tab: T,
   pageId: string,
   patch: Partial<PageBackground>,
-): PageEdit<T> {
+  memory?: InkMemory,
+): PageEdit<T> & { memory?: InkMemory } {
   const pages = pagesOf(tab);
   const target = pages.find((p) => p.id === pageId);
   if (!target) return refused('unknown_page');
@@ -193,8 +196,14 @@ export function pageBackgroundSet<T extends PagesTab>(
     return background ? { ...rest, background } : rest;
   });
   let out = withIllustratePages(tab, next) as T;
-  if ('fill' in patch) for (const id of reach) out = withPageInkFor(out, id, background);
-  return { tab: out };
+  if (!('fill' in patch)) return { tab: out };
+  let recall = memory;
+  for (const id of reach) {
+    const inked = pageInkFor(out, id, background, recall);
+    out = inked.tab;
+    recall = inked.memory;
+  }
+  return { tab: out, memory: recall };
 }
 
 /** Whether another page of this kind fits (an article's copy is all its pages). */
@@ -216,6 +225,9 @@ export function pageAdded<T extends PagesTab>(
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
+  // The new page wears the background of the page before it (the last), whatever either kind; a
+  // logo page takes its fill alone, since it takes no pattern.
+  const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
   if (kind === 'article') {
     const last = pages[pages.length - 1];
     const paper = last && ['a4', 'letter', 'a3'].includes(last.size ?? 'a4');
@@ -225,6 +237,7 @@ export function pageAdded<T extends PagesTab>(
         id,
         orientation: paper ? last.orientation : 'portrait',
         ...(paper && last.size ? { size: last.size } : {}),
+        ...(carried ? { background: carried } : {}),
       },
       flow,
     );
@@ -243,7 +256,23 @@ export function pageAdded<T extends PagesTab>(
     const size = model?.size === 'fit' ? undefined : model?.size;
     page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
   }
+  if (carried) page = { ...page, background: carried };
   return { tab: withIllustratePages(tab, [...pages, page]) as T };
+}
+
+// The background a new page of `kind` carries over from the page before it: none for the paper,
+// and no pattern on a logo page.
+function carriedBackground(
+  background: PageBackground | undefined,
+  kind: PageKind,
+): PageBackground | undefined {
+  if (!background) return undefined;
+  const { fill, pattern } = background;
+  const out: PageBackground = {
+    ...(fill ? { fill } : {}),
+    ...(pattern && kind !== 'logo' ? { pattern } : {}),
+  };
+  return out.fill || out.pattern ? out : undefined;
 }
 
 /** A copy after the page, content and all; an article page copies its whole article (`flow` the

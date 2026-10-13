@@ -31,7 +31,7 @@ const snap = (value: number): number => Math.round(value / AUTO_ALIGN_GRID) * AU
 // Shape kinds whose silhouette assumes a 1:1 aspect ratio. Snapping
 // width and height independently would warp them, so we snap the
 // larger side and force the other to match.
-const SQUARE_SHAPES = new Set(['circle', 'diamond', 'actor']);
+export const SQUARE_SHAPES: ReadonlySet<string> = new Set(['circle', 'diamond', 'actor']);
 
 // Apply the cleanup pass to one element. Pure, idempotent, and
 // leaves non-boxed-non-arrow elements unchanged.

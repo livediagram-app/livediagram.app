@@ -12,6 +12,7 @@ import { type Tab } from '@livediagram/document';
 import {
   templateCanvasOverrides,
   templateTabs,
+  withBlankPageThemed,
   type TemplateKind,
   type TemplateTabDef,
 } from '@livediagram/templates';
@@ -59,17 +60,21 @@ function themedTab(
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
   const elements = recolourElementsForTheme(def.build(0, 0), theme);
-  return {
-    id: tabId,
-    name: tabName,
-    elements,
-    theme: themeId,
-    backgroundColor: theme.backgroundColor,
-    backgroundPattern: theme.backgroundPattern,
-    patternColor: theme.patternColor,
-    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
-    templateChosen: true,
-    ...templateCanvasOverrides(kind),
-    ...def.tab?.(ids),
-  };
+  return withBlankPageThemed(
+    {
+      id: tabId,
+      name: tabName,
+      elements,
+      theme: themeId,
+      backgroundColor: theme.backgroundColor,
+      backgroundPattern: theme.backgroundPattern,
+      patternColor: theme.patternColor,
+      ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
+      templateChosen: true,
+      ...templateCanvasOverrides(kind),
+      ...def.tab?.(ids),
+    },
+    kind,
+    theme,
+  );
 }

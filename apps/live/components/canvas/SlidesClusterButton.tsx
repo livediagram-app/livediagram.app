@@ -13,6 +13,7 @@ export function SlidesClusterButton(props: {
   return (
     <ClusterPopoverButton
       label="Open Slides"
+      name="Slides"
       hoverTitle="Open Slides"
       hoverDescription="Build a slide deck from your pages and present it."
       icon={<SlideDeckIcon />}

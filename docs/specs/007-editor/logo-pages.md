@@ -33,7 +33,9 @@ of infographic pages applies to a logo page except where this spec says otherwis
   other size and no orientation; a stored logo page in any other size is read as the artboard.
   The page label reads `<name or Page n> · 1024 x 1024 · Logo`.
 - **Background**: the Background swatches as on any page. A logo page offers **no pattern** (a
-  pattern is a page decoration, never part of a mark); a stored pattern on a logo page is dropped.
+  pattern is a page decoration, never part of a mark) and **no picture** (its Background has no
+  Image category, [Illustrate pages](illustrate-pages.md) "Image backgrounds"); a stored pattern or
+  picture on a logo page is dropped.
 - **Margin**: a logo page's margin is its **safe area**, 10% of its side (102 px), in place of the
   7% other pages use. Layouts fit it and snapping offers it.
 - **Re-fitting and laying out**: a logo page never changes size, so it never re-fits. Laying loose
@@ -74,7 +76,7 @@ nothing.
 A logo page's title bar holds, before its cog and each the cog's size with a tooltip, for someone
 who may edit:
 
-- **Tidy Up**, while the selection holds a hand-drawn line: the mind map's tidy wand ("Tidy Up"
+- **Tidy**, while the selection holds a hand-drawn line: the mind map's tidy wand ("Tidy Up"
   below).
 - **Mirror**, pressed while Mirror While Drawing is on, its icon showing the page's axis, opening
   a popover anchored to it: a **Mirror While Drawing** switch for this page at the top, then
@@ -88,7 +90,7 @@ who may edit:
   **Strength** (**Faint**, **Medium**, **Strong**); the tiles and Strength dim while the page
   shows none. The parts and Strength are the person's synced preferences, also in Settings.
 
-Each acts on this page only. On a desktop each names itself beside its icon (**Tidy Up**,
+Each acts on this page only. On a desktop each names itself beside its icon (**Tidy**,
 **Mirror**, **Guides**); a phone shows the icons alone. The page's label truncates before room for all three. Combine stays in the selection toolbar and
 the selection's context menu.
 
@@ -315,9 +317,9 @@ its range is refused by the document's validation, as any malformed field is.
   not edited one by one (its point editing offers none, and says "Combined shapes edit as a
   whole.").
 
-## Tidy Up
+## Tidy
 
-**Tidy Up** (beside the page's cog, while the selection holds one) makes hand-drawn lines
+**Tidy** (beside the page's cog, while the selection holds one) makes hand-drawn lines
 clean, as one edit:
 
 - **What it takes**: a pencil or marker stroke (not a highlighter, not rotated) and an open path of
@@ -327,7 +329,7 @@ clean, as one edit:
   its look (its comments, note, link, action and animation); a marker's width in px
   becomes the nearest stroke width. Each line is cut to the corners that shape it (they stray no
   more than 5% of the element's size, 2 px at least, from what was drawn). While the page shows
-  its guides, Tidy Up aligns to them within 16 screen px (further than drawing does): a corner near
+  its guides, Tidy aligns to them within 16 screen px (further than drawing does): a corner near
   a guide is put on it, a crossing first. Then every segment
   within 12 degrees of level or upright is made exactly so, the whole shape at once (a closed
   shape's closing segment too): corners joined by level segments share one height and by upright

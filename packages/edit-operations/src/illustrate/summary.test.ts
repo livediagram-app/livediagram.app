@@ -22,6 +22,12 @@ describe('backgrounds in words', () => {
       }),
     ).toBe('gradient #000 → #fff, grid pattern');
     expect(describeBackground({ pattern: 'lines' })).toBe('lines pattern');
+    expect(
+      describeBackground({
+        fill: { kind: 'image', imageId: 'i', overlay: { kind: 'light', strength: 0.6 } },
+      }),
+    ).toBe('image, light 60%');
+    expect(describeBackground({ fill: { kind: 'image', imageId: 'i' } })).toBe('image, no overlay');
   });
 });
 

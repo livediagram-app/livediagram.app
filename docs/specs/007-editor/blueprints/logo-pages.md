@@ -178,7 +178,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ### Beside the cog (`apps/live/components/canvas/LogoTitleBar.tsx`)
 
-- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy Up (`lucideWandSparkles`; a
+- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy (`lucideWandSparkles`; a
   `TidyUpButton` re-rendered by `useSelectionOf`, mounted only with the editor context and a
   selection store, `useHasSelectionStore`), Mirror (`MirrorAxisGlyph` of the page's axis) and
   Guides (`lucideGrid3x3`), the last two `aria-pressed` while on. Both are `TitlePopoverButton`s
@@ -193,8 +193,8 @@ Exclude), **Wordmark**, **Logo Kit**.
   dimmed while off. All three show their names beside the icon unless
   `useIsMobileViewport()`. `logoTitleBarRoom(true, !mobile)` (room for Tidy Up always kept: 72 px
   each named, or 28 px each icon-only, three times) is reserved from the label.
-- Layout tiles: `LayoutThumb` hands a logo page's tile to `LogoLayoutThumb`
-  (`components/canvas/logo-layout-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
+- Layout tiles: `LayoutThumb` hands a logo page's tile to `LayoutRenderThumb`
+  (`components/canvas/layout-render-thumb.tsx`) when `EditorContext` has an `activeTab` (else the
   wireframe): `logoLayoutSvg(tab, page, layout)` = `renderTabToSvg({ ...tab, elements:
 buildPageLayout(layout, page) }, { page })`, memoised on the layout, the page's rect and
   background, the tab's theme and font, and `useIconCatalogs()`; set as the markup of a div of the
@@ -485,7 +485,7 @@ Measured (vitest on this branch):
 
 - Copy: card **Logo** "A square artboard for a logo, with guides and drawing tools."; panel tabs
   **Background**, **Layouts**; in-page card **Start From a Layout** with **Start From Scratch**;
-  title bar **Tidy Up** (tooltip "Tidy Up: straighten the selected drawing"), **Mirror**,
+  title bar **Tidy** (tooltip "Tidy: straighten the selected drawing"), **Mirror**,
   **Guides** (tooltip "<name>: on" while on); Guides popover: **Show Guides**, the six part tiles,
   **Strength**; menu item **Mirror Copy**; Mirror popover:
   **Mirror While Drawing**, **Axis** (Vertical, Horizontal, Both, Radial), **Copies**, **Merge Into
@@ -552,7 +552,7 @@ Measured (vitest on this branch):
 | Mirror merge                                      | `apps/live/lib/mirror-merge.test.ts`                                                                                           |
 | The Logo palette and its markers                  | `apps/live/components/palette/PaletteLogoTab.test.tsx`, `apps/live/components/palette/MarkerPaletteTile.test.tsx`              |
 | The palette follows the page                      | `apps/live/hooks/canvas/useLogoPaletteSwitch.test.tsx`                                                                         |
-| Layout tiles rendered                             | `apps/live/components/canvas/logo-layout-thumb.test.tsx`                                                                       |
+| Layout tiles rendered                             | `apps/live/components/canvas/layout-render-thumb.test.tsx`                                                                     |
 | No quick-connect pluses                           | `apps/live/components/canvas/LayerSelectionChrome.test.ts`                                                                     |
 | Show Me                                           | `apps/live/components/tour/LogoTour.test.tsx`                                                                                  |
 

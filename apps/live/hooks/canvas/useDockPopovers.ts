@@ -17,6 +17,10 @@ const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
+  // The Slide Deck popover's `w-[420px]` (docs/specs/012-collaboration/presentation-mode.md).
+  slides: 420,
+  // The Contents popover's `w-[380px]` (docs/specs/007-editor/illustrate-pages.md "Contents").
+  contents: 380,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
   'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
@@ -38,6 +42,8 @@ export type DockPanel =
   | 'layers'
   | 'collaborate'
   | 'slides'
+  // Illustrate mode's Contents (docs/specs/007-editor/illustrate-pages.md "Contents").
+  | 'contents'
   | 'card-types'
   | 'plan-trash'
   | 'plan-cards'
@@ -58,6 +64,7 @@ function trackDockPanelOpened(id: DockPanel): void {
   if (id === 'layers') track('Layer', 'Opened', 'Panel');
   else if (id === 'collaborate') track('UI', 'Opened', 'Collaborate');
   else if (id === 'slides') track('UI', 'Opened', 'SlideDeck');
+  else if (id === 'contents') track('UI', 'Opened', 'PageContents');
   else if (id === 'card-types') track('Plan', 'Opened', 'CardTypes');
   else if (id === 'plan-trash') track('Plan', 'Opened', 'Trash');
   else if (id === 'plan-cards') track('Plan', 'Opened', 'CardFinder');

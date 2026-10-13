@@ -22,7 +22,7 @@ export type TabLookId =
   | 'workshop'
   | 'garden'
   | 'studio'
-  | 'carnival'
+  | 'spectrum'
   | 'doodle'
   | 'daydream'
   | 'lagoon'
@@ -77,13 +77,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'blank',
   },
   {
-    id: 'carnival',
-    label: 'Carnival',
-    description: 'Rainbow, Flexible, Poppins, confetti',
+    id: 'spectrum',
+    label: 'Spectrum',
+    description: 'Rainbow, Flexible, Inter, soft dots',
     theme: 'rainbow',
     finish: 'flexible',
-    font: 'poppins',
-    pattern: 'confetti',
+    font: 'inter',
+    pattern: 'grid',
     patternOpacity: 0.5,
   },
   {

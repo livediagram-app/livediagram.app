@@ -6,25 +6,26 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                      | Role                                                                          |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                     | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union               |
-| `packages/document/src/element-types.ts`                  | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields  |
-| `packages/document/src/animation.ts`                      | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`       |
-| `packages/document/src/data-shapes.ts`                    | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`         |
-| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                         |
-| `packages/document/src/colors.ts`                         | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)     |
-| `packages/document/src/svg-render-data.ts`                | `svgProgressBar`, `svgProgressRing`, `PROGRESS_LABEL_PX`: the export body     |
-| `packages/document/src/svg-render-body.ts`                | `svgElementBody`: the export dispatch and the track, `PROGRESS_TRACK_DEFAULT` |
-| `apps/live/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                            |
-| `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`             |
-| `apps/live/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                  |
-| `apps/live/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties        |
-| `apps/live/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                  |
-| `apps/live/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`           |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                             |
-| `apps/live/hooks/canvas/shape-patcher.ts`                 | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry           |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | Tiles `data:progress-bar` and `data:progress-ring`                            |
+| File                                                      | Role                                                                         |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `packages/document/src/shape-kind.ts`                     | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union              |
+| `packages/document/src/element-types.ts`                  | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields |
+| `packages/document/src/animation.ts`                      | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
+| `packages/document/src/data-shapes.ts`                    | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
+| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
+| `packages/document/src/colors.ts`                         | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
+| `packages/document/src/svg-render-data.ts`                | `svgProgressBar`, `svgProgressRing`, `PROGRESS_LABEL_PX`: the export body    |
+| `packages/document/src/svg-render-body.ts`                | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
+| `packages/document/src/progress-colours.ts`               | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
+| `apps/live/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
+| `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
+| `apps/live/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
+| `apps/live/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
+| `apps/live/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
+| `apps/live/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
+| `apps/live/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |
+| `apps/live/hooks/canvas/shape-patcher.ts`                 | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry          |
+| `apps/live/components/palette/palette-tile-defs.tsx`      | Tiles `data:progress-bar` and `data:progress-ring`                           |
 
 ## Domain and naming
 
@@ -58,7 +59,9 @@ fill animation).
 ### Render (canvas)
 
 1. `ShapeContentRouter` sends a progress shape to `ProgressView`, with `accent` (the resolved
-   stroke), `track = element.fillColor ?? '#e2e8f0'` on every paper [GE4] and `textColor`.
+   stroke), `track = progressTrackColour(element, surface)` (the element's fill, else
+   `PROGRESS_TRACK_DEFAULT` on light paper and `defaultFillColor(element, 'dark')` on dark paper;
+   `surface` is `useElementSurface`, so a dark Illustrate page counts) and `textColor`.
 2. `pct = clampPercent(element.progress ?? 50)`.
 3. **Bar**: a fully rounded track `div` in the track colour, an inner fill `div` of width `pct%`
    in the accent, and the class from `barFillClass`: `fill → lvd-prog-grow`,
@@ -68,10 +71,18 @@ fill animation).
    starts at twelve o'clock and sweeps clockwise. `fill → lvd-prog-ring-grow` keyed off
    `--lvd-progress`; `pulse → lvd-prog-pulse`; `stripes →` a full dashed circle (`4 3`, butt cap,
    `lvd-prog-ring-stripes`) masked to the progress sweep by a per-instance `useId` mask.
-5. Both draw the `{pct}%` label (14 px, semibold, tabular numerals, `D97`), optically centred on
+5. Bar label ink, per part: `inks = progressLabelInks(textColor, accent, track)`, each ink
+   `readableInk(textColor, part)` (AA, 4.5:1). When `inks.onFill === inks.onTrack`, or the
+   percentage is 0 or 100, one label in the ink of the part under it. Otherwise two layers: the
+   track copy clipped `inset(0 0 0 pct%)` (the one assistive tech reads) and the fill copy clipped
+   `inset(0 (100 - pct)% 0 0)` (`aria-hidden`). Under `fill` the copies take `lvd-prog-ink-track` /
+   `lvd-prog-ink-fill`, keyframes from a full / empty clip to the resting inline one on the
+   `lvd-prog-grow` timing, so the split tracks the growing edge. The export splits the same way with
+   a nested `<svg overflow="hidden">` viewport per part (no ids). The ring's label keeps `textColor`.
+6. Both draw the `{pct}%` label (14 px, semibold, tabular numerals, `D97`), optically centred on
    its cap band (`text-optical-centre`; the export places its baseline with `capBandBaselineY`),
    and never the editable element label: `elementSupportsText` is false for self-drawing shapes.
-6. Animation style: when `progressAnim` is set, `animSpeedVars('prog', progressAnimSpeed, loops)`
+7. Animation style: when `progressAnim` is set, `animSpeedVars('prog', progressAnimSpeed, loops)`
    with `loops = animLoops(progressAnim, progressAnimRepeat, PROGRESS_LOOPING_ANIMS)`.
 
 ### Loop rule
@@ -156,17 +167,17 @@ No migration: every field is optional and read with a default.
 
 ## Errors and edge cases
 
-| #   | Case                                   | Handling                                                           |
-| --- | -------------------------------------- | ------------------------------------------------------------------ |
-| E1  | `progress` absent                      | 50                                                                 |
-| E2  | `progress` below 0, above 100, decimal | `clampPercent` rounds and clamps                                   |
-| E3  | `progress` is 0                        | Bar fill width 0; export omits the fill rect and the ring arc      |
-| E4  | Unknown `progressAnim`                 | No class; static fill                                              |
-| E5  | Ring resized non-square                | `aspectLocked` keeps it square; the `viewBox` letterboxes          |
-| E6  | Two rings with stripes on one board    | Mask ids from `useId`, never shared                                |
-| E7  | Marker set via API on a progress shape | Not drawn (`isSelfDrawingShape`)                                   |
-| E8  | `fillColor` absent, light paper        | Track `#e2e8f0` on the canvas and in the export                    |
-| E9  | `fillColor` absent, dark paper         | Canvas `#e2e8f0` under a white label; export the themed fill [GE4] |
+| #   | Case                                   | Handling                                                             |
+| --- | -------------------------------------- | -------------------------------------------------------------------- |
+| E1  | `progress` absent                      | 50                                                                   |
+| E2  | `progress` below 0, above 100, decimal | `clampPercent` rounds and clamps                                     |
+| E3  | `progress` is 0                        | Bar fill width 0; export omits the fill rect and the ring arc        |
+| E4  | Unknown `progressAnim`                 | No class; static fill                                                |
+| E5  | Ring resized non-square                | `aspectLocked` keeps it square; the `viewBox` letterboxes            |
+| E6  | Two rings with stripes on one board    | Mask ids from `useId`, never shared                                  |
+| E7  | Marker set via API on a progress shape | Not drawn (`isSelfDrawingShape`)                                     |
+| E8  | `fillColor` absent, light paper        | Track `#e2e8f0` on the canvas and in the export                      |
+| E9  | `fillColor` absent, dark paper         | Track `defaultFillColor(el, 'dark')` on the canvas and in the export |
 
 ## Security and trust
 
@@ -195,8 +206,8 @@ is CSS only and compositor-friendly (`transform`, `opacity`, `stroke-dashoffset`
   `lvd-prog-*` class, so the resting frame is the static fill.
 - The ring SVG is `aria-hidden`; the `{pct}%` text is real text in the DOM.
 - The slider is a native range input with `aria-label="Percentage"`.
-- Label contrast depends on the element's text colour against the track; no contrast check runs
-  (`D99`).
+- The bar's label meets 4.5:1 over both parts: its ink is chosen per part by `progressLabelInks`
+  (see Render step 5). The ring's label sits over the paper in the element's text colour.
 
 ## Web experience
 
@@ -213,20 +224,22 @@ No log fingerprints: rendering is pure and the setters report through telemetry 
 
 ## Testing
 
-| Rule                                              | Test                                                                                                       | File                                               |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| `isProgressShape` is exactly the two kinds        | progress covers both the bar and the ring                                                                  | `packages/document/src/data-shapes.test.ts`        |
-| Self-drawing: no editable label                   | is false for the self-drawing data shapes                                                                  | `packages/document/src/element-has-text.test.ts`   |
-| No Border controls                                | offers no border controls for any shape that draws its own body                                            | `packages/document/src/border.test.ts`             |
-| Export draws the body, rasterised in PNG          | draws more than a box and a label for each of them; rasterises every kind whose body the SVG emitter draws | `packages/document/src/export-consistency.test.ts` |
-| Export on dark paper paints no light track        | paints no element kind on a light base unless the element stores that fill                                 | `packages/document/src/svg-render-surface.test.ts` |
-| Fill colour supported                             | stays on for the shapes that do paint one                                                                  | `packages/document/src/colors.test.ts`             |
-| Setter patches only its kind, empty = no trace    | `makeShapePatcher` cases (rating fixture)                                                                  | `apps/live/hooks/canvas/shape-patcher.test.ts`     |
-| Seeds `progress: 50`, `progressAnim: 'fill'`      | none [GE11]                                                                                                |                                                    |
-| `clampPercent` rounds and clamps                  | none [GE11]                                                                                                |                                                    |
-| Fill once, pulse / stripes loop, repeat overrides | none (`animLoops`) [GE11]                                                                                  |                                                    |
-| Ring starts at twelve and sweeps clockwise        | none [GE11]                                                                                                |                                                    |
-| Reduced motion freezes the fill                   | none [GE11]                                                                                                |                                                    |
+| Rule                                              | Test                                                                                                       | File                                                |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `isProgressShape` is exactly the two kinds        | progress covers both the bar and the ring                                                                  | `packages/document/src/data-shapes.test.ts`         |
+| Self-drawing: no editable label                   | is false for the self-drawing data shapes                                                                  | `packages/document/src/element-has-text.test.ts`    |
+| No Border controls                                | offers no border controls for any shape that draws its own body                                            | `packages/document/src/border.test.ts`              |
+| Export draws the body, rasterised in PNG          | draws more than a box and a label for each of them; rasterises every kind whose body the SVG emitter draws | `packages/document/src/export-consistency.test.ts`  |
+| Export on dark paper paints no light track        | paints no element kind on a light base unless the element stores that fill                                 | `packages/document/src/svg-render-surface.test.ts`  |
+| Track follows the paper; label AA on both parts   | `progressTrackColour`, `progressLabelInks`, `svgProgressBar label` cases                                   | `packages/document/src/progress-colours.test.ts`    |
+| Canvas splits the label per part, clips grow      | `ProgressView bar label` cases                                                                             | `apps/live/components/canvas/ProgressView.test.tsx` |
+| Fill colour supported                             | stays on for the shapes that do paint one                                                                  | `packages/document/src/colors.test.ts`              |
+| Setter patches only its kind, empty = no trace    | `makeShapePatcher` cases (rating fixture)                                                                  | `apps/live/hooks/canvas/shape-patcher.test.ts`      |
+| Seeds `progress: 50`, `progressAnim: 'fill'`      | none [GE11]                                                                                                |                                                     |
+| `clampPercent` rounds and clamps                  | none [GE11]                                                                                                |                                                     |
+| Fill once, pulse / stripes loop, repeat overrides | none (`animLoops`) [GE11]                                                                                  |                                                     |
+| Ring starts at twelve and sweeps clockwise        | none [GE11]                                                                                                |                                                     |
+| Reduced motion freezes the fill                   | none [GE11]                                                                                                |                                                     |
 
 ## Constants and configuration
 
@@ -239,6 +252,6 @@ No log fingerprints: rendering is pure and the setters report through telemetry 
 | `SHAPE_DEFAULT_SIZE`      | bar 220 × 44, ring 130 × 130           | Spec                                                  |
 | Default percentage        | 50                                     | Spec; inline literal in view, export and setter       |
 | Ring `STROKE`             | 13 (of a 100 viewBox)                  | Inline in `ProgressView` and `svgProgressRing` [GE13] |
-| `PROGRESS_TRACK_DEFAULT`  | `#e2e8f0` (slate-200)                  | Export; the canvas repeats it inline [GE4] [GE13]     |
+| `PROGRESS_TRACK_DEFAULT`  | `#e2e8f0` (slate-200)                  | `progress-colours.ts`; canvas and export share it     |
 | Keyframe base durations   | grow 1.8 s, pulse 1.4 s, stripes 0.6 s | `canvas-motion.css`; scaled by `--lvd-prog-speed`     |
 | `PROGRESS_LABEL_PX`       | 14 px, weight 600                      | Export; the canvas draws `text-sm font-semibold`      |

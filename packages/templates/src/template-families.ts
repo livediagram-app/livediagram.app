@@ -100,6 +100,10 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   whiteboard: null,
   article: null,
   'blank-illustration': null,
+  'blank-slide-deck': null,
+  'blank-article': null,
+  'blank-infographic': null,
+  'blank-logo': null,
   sketchnote: null,
   'rich-picture': null,
   'comic-strip': null,
@@ -116,6 +120,10 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'how-it-works': null,
   versus: null,
   'social-carousel': null,
+  'launch-keynote': null,
+  'quarterly-review': null,
+  'team-welcome': null,
+  'workshop-kickoff': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

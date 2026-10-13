@@ -10,8 +10,14 @@ import {
 } from './EmptyPageLayouts';
 import { PageDeckButton } from './PageDeckButton';
 import { LogoGuidesSvg, showsLogoGuides } from './LogoPageGuides';
-import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';
-import { PageLockButton, pageLockRoom } from './PageLockButton';
+import { LogoTitleBar } from './LogoTitleBar';
+import { PageLockButton } from './PageLockButton';
+import { PageBackgroundButton } from './PageBackgroundButton';
+import { PageLayoutsButton } from './PageLayoutsButton';
+import { PageMotionLayer } from './PageMotionLayer';
+import { PageNotesButton } from './PageNotesButton';
+import { PageTidyUpButton } from './PageTidyUpButton';
+import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import { isArticleLocked } from '@/lib/article/article-lock';
 import { PageNavigator } from './PageNavigator';
@@ -22,6 +28,7 @@ import {
   articleTopMarginPx,
   ILLUSTRATE_PAGE_GAP,
   pageIsDark,
+  pageKindOf,
   pageLabel,
   pageUnits,
   resolveArticleStyle,
@@ -39,6 +46,7 @@ import {
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useLogoPaletteSwitch } from '@/hooks/canvas/useLogoPaletteSwitch';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
+import { usePageImageSources } from './page-image-access';
 import { IllustratePagePanel, type PagePanelTab } from './IllustratePagePanel';
 import { LogoShowMeButton, LogoTourStage, useLogoTour } from '@/components/tour/LogoTour';
 import { AddPageButton } from './AddPageButton';
@@ -53,11 +61,6 @@ import {
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const LayoutIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 
-// Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
-const COG_ROOM = 32;
-// The deck button beside a slide page's cog: its 24 px and the gap.
-const DECK_ROOM = 28;
-const LABEL_MIN = 40;
 // Canvas px the letterbox's black reaches past the presented sheet: past any screen at any zoom.
 const LETTERBOX_SPREAD = 100_000;
 // The empty page's layout button beside the cog: with its words, or just its icon.
@@ -87,11 +90,15 @@ export function IllustratePages({
   view,
   zoom,
   bare = false,
+  onOpenTheme,
 }: {
   view: IllustratePagesView;
   zoom: number;
   // The sheets alone, without their title bars or the add button (zen, presenting).
   bare?: boolean;
+  // Opens the Tab Style popover, from the Layout popover's Change Theme; absent where the session
+  // may not restyle the tab.
+  onOpenTheme?: (() => void) | undefined;
 }) {
   const { pages, focusPage } = view;
   const articles = view.articles ?? null;
@@ -143,6 +150,8 @@ export function IllustratePages({
   // A background hovered in a page's panel: a shared preview (page-background-preview), so the
   // writing and the elements on the page take its ink too.
   const preview = usePageBackgroundPreview();
+  // The pages' pictures, each fetched once (Image backgrounds).
+  const pictureOf = usePageImageSources(pages);
   const setPreview = (next: Parameters<typeof setPageBackgroundPreview>[0]) => {
     setPageBackgroundPreview(next);
     edit?.previewInk(next);
@@ -211,16 +220,26 @@ export function IllustratePages({
         const background = previewedBackground(page, pages, preview);
         const label = pageLabel(page, page.index, pages.length);
         const number = pageNumberOf(page);
-        // The label fits the page's on-screen width, less the cog's room; too narrow, it hides.
-        // The title bar's room on screen: the page's width at this zoom. The cog takes its corner;
-        // an empty page's layout button sits beside it, with its words while there is room for
-        // them and the label, as an icon while there is room for that, else not at all.
+        // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
+        // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
+        // corner; an empty logo page's layout invite sits beside it, with its words while there is
+        // room for them and the label, as an icon while there is room for that, else not at all.
         const room = page.rect.width * zoom;
-        // Layouts are for infographic pages: an article page never invites one.
         // A locked page offers nothing to add (docs/specs/007-editor/illustrate-pages.md
-        // "Locking a page"): no layout invite, no kind choice.
+        // "Locking a page"): no Layouts, no layout invite, no kind choice.
         const locked = page.locked === true;
-        const empty = !!edit && !locked && !page.flow && edit.contentCount(page.id) === 0;
+        // An infographic or slide page's Layouts and Background sit beside its cog, always; a
+        // locked page offers neither.
+        const pageButtons =
+          !!edit &&
+          !locked &&
+          !page.flow &&
+          (page.kind === 'slide' || pageKindOf(page) === 'infographic');
+        // An infographic or slide page's Tidy, left of its Background, shown only while it would
+        // change something.
+        const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
+        // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
+        const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
         const choosing =
           !!edit &&
@@ -234,13 +253,24 @@ export function IllustratePages({
           !!view.deck &&
           !mobile &&
           (page.kind === 'slide' || !!view.deck.slideOf(page.id));
+        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
+        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
-        // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own):
-        // the invite and the label share what they leave.
-        const fixedRoom =
-          (edit ? COG_ROOM + pageLockRoom(locked, !mobile) : 0) +
-          (deckButton ? DECK_ROOM : 0) +
-          (logoButtons ? logoTitleBarRoom(true, !mobile) : 0);
+        // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
+        // an infographic or slide page's): the invite and the label share what they leave.
+        const buttons = {
+          edit: !!edit,
+          locked,
+          deck: deckButton,
+          notes: notesButton,
+          logo: logoButtons,
+          page: pageButtons,
+          tidy: tidyButton,
+        };
+        // The buttons name themselves on a desktop while the page is wide enough on screen to hold
+        // them named; zoomed out further they drop to their icons, as a phone shows them.
+        const labelled = titleBarNamed(room, buttons, mobile);
+        const fixedRoom = titleBarFixedRoom(buttons, labelled);
         const invite =
           !empty || choosing
             ? null
@@ -274,9 +304,18 @@ export function IllustratePages({
               boxShadow: view.letterbox
                 ? `0 0 0 ${LETTERBOX_SPREAD}px #000`
                 : '0 1px 3px rgb(15 23 42 / 0.14), 0 12px 32px rgb(15 23 42 / 0.12)',
-              ...pageSheetStyle(background, rulingOf(page)),
+              ...pageSheetStyle(background, rulingOf(page), pictureOf),
             }}
           >
+            {/* A slide's animated background, over its gradient and under all on it. */}
+            {background?.fill?.kind === 'gradient' && background.fill.motion ? (
+              <PageMotionLayer
+                motion={background.fill.motion}
+                fill={background.fill}
+                width={page.rect.width}
+                height={page.rect.height}
+              />
+            ) : null}
             {/* An empty logo page's guides, under its own cards (LogoPageGuides draws them over
                 the artwork once the page has some). */}
             {page.kind === 'logo' &&
@@ -333,19 +372,48 @@ export function IllustratePages({
                 ) : null}
                 {/* A logo page's Tidy Up, Mirror and Guides (LogoTitleBar). */}
                 {logoButtons && view.logo ? (
-                  <LogoTitleBar pageId={page.id} tools={view.logo} />
+                  <LogoTitleBar pageId={page.id} tools={view.logo} labelled={labelled} />
                 ) : null}
+                {/* First, left of Layout and Background: this slide's place in the deck, and its
+                    notes once it is in it. */}
+                {deckButton && view.deck ? (
+                  <PageDeckButton pageId={page.id} deck={view.deck} labelled={labelled} />
+                ) : null}
+                {notesButton && view.deck ? (
+                  <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
+                ) : null}
+                {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
+                {pageButtons ? (
+                  <PageLayoutsButton
+                    page={page}
+                    labelled={labelled}
+                    onApply={(layout) => edit.applyLayout(page.id, layout)}
+                    onChangeTheme={onOpenTheme}
+                    onPreview={(layout) =>
+                      view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
+                    }
+                  />
+                ) : null}
+                {/* An infographic or slide page's Background (PageBackgroundButton). */}
+                {pageButtons ? (
+                  <PageBackgroundButton
+                    page={page}
+                    labelled={labelled}
+                    themePresets={view.themeBackgrounds}
+                    onBackground={(patch) => edit.setBackground(page.id, patch)}
+                    onPreview={(patch) => setPreview(patch ? { pageId: page.id, patch } : null)}
+                  />
+                ) : null}
+                {/* An infographic or slide page's Tidy, its icon alone, left of the lock and cog
+                    (PageTidyUpButton), while it would change something. */}
+                {tidyButton ? <PageTidyUpButton pageId={page.id} edit={edit} /> : null}
                 {/* The page's lock, before the cog (PageLockButton). */}
                 {edit ? (
                   <PageLockButton
                     locked={locked}
-                    labelled={!mobile}
+                    labelled={labelled}
                     onToggle={() => edit.setLocked(page.id, !locked)}
                   />
-                ) : null}
-                {/* Beside the cog: this slide's place in the deck. */}
-                {deckButton && view.deck ? (
-                  <PageDeckButton pageId={page.id} deck={view.deck} />
                 ) : null}
                 <PageCog
                   name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}
@@ -399,6 +467,7 @@ export function IllustratePages({
           lastMiddle={last.rect.y + last.rect.height / 2}
           zoom={zoom}
           onAdd={edit.addPage}
+          suggested={pageKindOf(last)}
         />
       ) : null}
       {previewed && view.layoutPreview ? (
@@ -424,6 +493,7 @@ export function IllustratePages({
                 page={page}
                 zoom={zoom}
                 onApply={(layout) => edit.applyLayout(page.id, layout)}
+                onChangeTheme={onOpenTheme}
                 onHide={() => {
                   track('UI', 'Closed', 'EmptyPageLayouts');
                   setLayoutsHidden((hidden) => new Set(hidden).add(page.id));
@@ -531,16 +601,16 @@ function LayoutInvite({ wide, onOpen }: { wide: boolean; onOpen: () => void }) {
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <Tooltip label="Start from a layout">
+      <Tooltip label="Start From a Layout">
         <button
           type="button"
-          aria-label="Start from a layout"
+          aria-label="Start From a Layout"
           onClick={onOpen}
           className="flex h-6 items-center gap-1.5 rounded-md px-1.5 text-xs font-medium text-slate-500 transition hover:bg-white hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
         >
           <LayoutIcon />
           {wide ? (
-            <span className="hidden whitespace-nowrap sm:inline">Start from a layout</span>
+            <span className="hidden whitespace-nowrap sm:inline">Start From a Layout</span>
           ) : null}
         </button>
       </Tooltip>

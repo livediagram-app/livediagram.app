@@ -7,6 +7,7 @@
 // layout is what lets the two draw the same chart rather than two charts that
 // happen to agree.
 
+import { chartMarkInk } from './chart-ink';
 import { chartPaletteColors } from './chart-palettes';
 import { PIE_DEFAULT_SLICES, PIE_PALETTE, type PieSlice } from './data-shapes';
 import type { ShapeElement } from './index';
@@ -17,7 +18,13 @@ export type ChartLegendRect = ChartRect & {
   pos: 'top' | 'right' | 'bottom' | 'left';
 };
 
-export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
+export function chartFrame(
+  element: ShapeElement,
+  palette?: readonly string[],
+  // The tones the chart sits on, where a page's fill makes them matter (chartPageGrounds): each
+  // series colour is drawn adapted to them (chart-ink.ts). Absent, colours are drawn as they are.
+  ground?: readonly string[],
+) {
   // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.
@@ -28,7 +35,8 @@ export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
   const data: readonly PieSlice[] =
     element.pieSlices && element.pieSlices.length > 0 ? element.pieSlices : PIE_DEFAULT_SLICES;
   const showLegend = element.chartLegend !== false;
-  const colorAt = (i: number, d: { color?: string }) => d.color ?? colors[i % colors.length]!;
+  const colorAt = (i: number, d: { color?: string }) =>
+    chartMarkInk(d.color ?? colors[i % colors.length]!, ground);
   // Legend placement (docs/specs/009-elements/pie-chart.md). A left/right legend takes a vertical strip; a
   // top/bottom legend a horizontal band. `area` is the rect left for the chart
   // body (each renderer draws inside it); `legend` is the strip the key goes

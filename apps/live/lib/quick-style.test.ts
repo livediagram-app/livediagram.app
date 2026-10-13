@@ -12,6 +12,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import {
   applyQuickFill,
+  QUICK_TRANSPARENT,
   applyQuickIconAlign,
   applyQuickStroke,
   applyQuickStrokeStyle,
@@ -505,5 +506,20 @@ describe('named stock colours', () => {
       penTextColour: 'red',
     } as TextElement;
     expect((clearQuickStyle(text, theme) as TextElement).penTextColour).toBeUndefined();
+  });
+});
+
+// docs/specs/008-canvas/quick-style-panel.md "Background": Transparent.
+describe('a transparent background', () => {
+  it('writes no fill and no theme binding, and shows as Transparent', () => {
+    const next = applyQuickFill(
+      shape('a', { fillSwatch: 2, colorPreset: 'bold' } as never),
+      forest,
+      QUICK_TRANSPARENT,
+    ) as ShapeElement & { fillSwatch?: unknown };
+    expect(next.fillColor).toBe('transparent');
+    expect(next.fillSwatch).toBeUndefined();
+    expect(next.colorPreset).toBeUndefined();
+    expect(quickStyleView([next], forest)!.sections.background!.value).toBe(QUICK_TRANSPARENT);
   });
 });

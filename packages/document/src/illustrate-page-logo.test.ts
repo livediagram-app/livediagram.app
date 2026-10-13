@@ -124,12 +124,13 @@ describe('logo pages', () => {
 
 // docs/specs/007-editor/illustrate-pages.md "Sizes": no two size tiles of one shape.
 describe('pageSizeChoices', () => {
-  it('offers the Slide, not a second 16:9 Story, on a landscape infographic page', () => {
+  it('never offers a slide size on an infographic page, unless it is still on one', () => {
     const landscape = { orientation: 'landscape' as const };
-    expect(pageSizeChoices(landscape)).toContain('slide');
-    expect(pageSizeChoices(landscape)).not.toContain('wide');
-    expect(pageSizeChoices({ ...landscape, size: 'wide' })).toContain('wide');
-    expect(pageSizeChoices({ ...landscape, size: 'wide' })).not.toContain('slide');
+    expect(pageSizeChoices(landscape)).toContain('wide');
+    expect(pageSizeChoices(landscape)).not.toContain('slide');
+    // A page made on the Slide size keeps that tile, in Widescreen's place (one 16:9 tile).
+    expect(pageSizeChoices({ ...landscape, size: 'slide' })).toContain('slide');
+    expect(pageSizeChoices({ ...landscape, size: 'slide' })).not.toContain('wide');
     expect(pageSizeChoices({ orientation: 'portrait' })).toEqual(pageSizesFor('infographic'));
   });
 

@@ -1,28 +1,13 @@
 'use client';
 
-import { pageRulingOf, pageWritingBars } from '@/lib/article/article-export';
 import { useArticleLaidOutSeq } from '@/lib/article/article-editor-store';
-import { articleOpsToSvg } from '@/lib/article/article-draw';
 import { useMemo } from 'react';
-import {
-  r2,
-  resolveSlide,
-  slideFrame,
-  illustratePagesOf,
-  layOutIllustratePages,
-  arrowLabelFontStack,
-  arrowLabelPass,
-  svgArrow,
-  sketchBackdropIds,
-  svgBoxed,
-  type CanvasSurface,
-  type Deck,
-  type Tab,
-} from '@livediagram/document';
+import type { Deck, Tab } from '@livediagram/document';
 import type { Item, ItemTypeDef } from '@livediagram/items';
-import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
-import { pageExportFrame } from '@/lib/export-page';
+import { slideThumbFor, type SlideThumb } from '@/lib/slide-thumb';
+
+export type { SlideThumb } from '@/lib/slide-thumb';
 
 // Per-slide preview markup for the Slide Deck panel's rows (docs/specs/012-collaboration/presentation-mode.md), from
 // the SAME headless renderer the Map, the exports and the Layers panel's own
@@ -38,8 +23,6 @@ import { pageExportFrame } from '@/lib/export-page';
 //
 // The markup is our own renderer's output (user text is xmlEscaped inside it),
 // so injecting it into an <svg> is safe.
-
-export type SlideThumb = { markup: string; viewBox: string };
 
 // The document's items and types, so a Plan board on a slide draws its cards (docs/specs/012-collaboration/
 // presentation-mode.md "Board slides").
@@ -73,88 +56,18 @@ export function useSlideThumbnails(
   return useMemo(() => {
     // Read so the pictures redraw once the writing they draw has been laid out.
     void laidOut;
-    // The resolvers find nothing until the catalogues land; gating them on the
-    // flag makes the rebuild on landing a real input of this memo.
-    const art = iconsLoaded
-      ? { resolveIconArt: resolveIconArtLoaded, resolveStickerArt: resolveStickerArtLoaded }
-      : {};
     const out = new Map<string, SlideThumb>();
     if (deck.slides.length === 0) return out;
     const byId = new Map(tabs.map((t) => [t.id, t]));
     for (const slide of deck.slides) {
       const tab = byId.get(slide.tabId);
       if (!tab) continue;
-      const elements = resolveSlide(slide, tab);
-      // A page slide is its page: framed to it, painted on its background.
-      const bounds = slideFrame(slide, tab);
-      if (!bounds) continue;
-      // Boxed first, then arrows, matching the canvas's own paint order so a
-      // connector never disappears under the box it points at.
-      const parts: string[] = [];
-      const page = slide.pageId
-        ? layOutIllustratePages(illustratePagesOf(tab)).find((p) => p.id === slide.pageId)
-        : undefined;
-      // A page's surface sets its ink, as the export draws it: light ink on a dark page.
-      let surface: CanvasSurface = 'light';
-      if (page) {
-        const frame = pageExportFrame(page, {
-          idPrefix: `lvd-slide-${slide.id}`,
-          ruling: pageRulingOf(tab, page),
-        });
-        surface = frame.surface;
-        parts.push(frame.backgroundSvg);
-        // An article page's writing, as lines of text.
-        const bars = pageWritingBars(page);
-        if (bars.length) parts.push(articleOpsToSvg(bars));
-      }
-      // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
-      const backdrops = sketchBackdropIds(elements, tab.finish);
-      for (const el of elements) {
-        if (el.type !== 'arrow') {
-          parts.push(
-            svgBoxed(el, {
-              ...art,
-              tabFont: tab.font,
-              tabFinish: tab.finish,
-              sketchBackdrop: backdrops.has(el.id),
-              surface,
-              ...(items ? { items } : {}),
-              ...(itemTypes ? { itemTypes } : {}),
-            }),
-          );
-        }
-      }
-      // Labels are laid out against the whole tab, as the canvas lays them out.
-      const labels = arrowLabelPass(tab.elements, {
-        fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
+      const thumb = slideThumbFor(slide, tab, {
+        iconsLoaded,
+        ...(items ? { items } : {}),
+        ...(itemTypes ? { itemTypes } : {}),
       });
-      for (const el of elements) {
-        // Arrows resolve their endpoints against the WHOLE tab, not just the
-        // slide: an arrow is on the slide because both its ends are, and it
-        // still needs their real positions to draw itself.
-        if (el.type === 'arrow')
-          parts.push(
-            // Breaks only around the slide's own boxes, the ones drawn here.
-            svgArrow(
-              el,
-              tab.elements,
-              surface,
-              tab.font,
-              labels,
-              `lvd-slide-${slide.id}-ko-`,
-              elements,
-              undefined,
-              tab.finish,
-            ),
-          );
-      }
-      const pad = 8;
-      out.set(slide.id, {
-        markup: parts.join(''),
-        viewBox: `${r2(bounds.x - pad)} ${r2(bounds.y - pad)} ${r2(bounds.w + pad * 2)} ${r2(
-          bounds.h + pad * 2,
-        )}`,
-      });
+      if (thumb) out.set(slide.id, thumb);
     }
     return out;
   }, [deck, tabs, iconsLoaded, laidOut, items, itemTypes]);

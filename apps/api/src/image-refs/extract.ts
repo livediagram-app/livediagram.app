@@ -1,5 +1,7 @@
 // What a reference to a gallery image is (docs/specs/009-elements/images.md, "Reference index"):
-// a top-level `type: 'image'` element whose `imageId` names a gallery row.
+// a top-level `type: 'image'` element whose `imageId` names a gallery row, or a top-level
+// Illustrate page whose `background.fill` is a picture (`kind: 'image'`) naming one
+// (docs/specs/007-editor/illustrate-pages.md "Image backgrounds").
 // The SQL twin of this extractor lives in db/image-refs.ts; a parity test
 // holds the two to one corpus, because a reference either one misses is an
 // image the retention sweep would reap.
@@ -20,15 +22,33 @@ export function isGalleryImageId(value: unknown): value is string {
   );
 }
 
-// Distinct, in document order. Takes `unknown` because the backfill and the
-// copy path hand it whatever a stored body parsed to.
-export function imageRefIds(elements: unknown): string[] {
-  if (!Array.isArray(elements)) return [];
+// A page's picture id, when its background is one.
+function pageImageId(page: unknown): unknown {
+  if (typeof page !== 'object' || page === null) return undefined;
+  const background = (page as { background?: unknown }).background;
+  if (typeof background !== 'object' || background === null) return undefined;
+  const fill = (background as { fill?: unknown }).fill;
+  if (typeof fill !== 'object' || fill === null) return undefined;
+  const { kind, imageId } = fill as { kind?: unknown; imageId?: unknown };
+  return kind === 'image' ? imageId : undefined;
+}
+
+// Distinct, in document order: the elements' images, then the pages' pictures. Takes `unknown`
+// because the backfill and the copy path hand it whatever a stored body parsed to.
+export function imageRefIds(elements: unknown, pages?: unknown): string[] {
   const ids = new Set<string>();
-  for (const el of elements) {
-    if (typeof el !== 'object' || el === null) continue;
-    const { type, imageId } = el as { type?: unknown; imageId?: unknown };
-    if (type === 'image' && isGalleryImageId(imageId)) ids.add(imageId);
+  if (Array.isArray(elements)) {
+    for (const el of elements) {
+      if (typeof el !== 'object' || el === null) continue;
+      const { type, imageId } = el as { type?: unknown; imageId?: unknown };
+      if (type === 'image' && isGalleryImageId(imageId)) ids.add(imageId);
+    }
+  }
+  if (Array.isArray(pages)) {
+    for (const page of pages) {
+      const imageId = pageImageId(page);
+      if (isGalleryImageId(imageId)) ids.add(imageId);
+    }
   }
   return [...ids];
 }
@@ -56,5 +76,6 @@ export function imageRefIdsFromData(data: string): string[] {
     return imageRefIdsFromText(data);
   }
   if (typeof parsed !== 'object' || parsed === null) return [];
-  return imageRefIds((parsed as { elements?: unknown }).elements);
+  const body = parsed as { elements?: unknown; pages?: unknown };
+  return imageRefIds(body.elements, body.pages);
 }

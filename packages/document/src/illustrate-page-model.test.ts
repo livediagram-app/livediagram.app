@@ -19,8 +19,8 @@ import {
   pageSurface,
   withDuplicatedPage,
   withPageContentReplaced,
-  withPageInkFor,
 } from './illustrate-page-content';
+import { withPageInkFor } from './page-ink';
 import { contrastRatio } from './colors';
 import type { Element } from './index';
 
@@ -94,16 +94,12 @@ describe('a page', () => {
   });
 
   it('names itself by its name, or its place once there are several', () => {
-    expect(pageLabel({ orientation: 'portrait' }, 0, 1)).toBe('A4 · Portrait · Infographic');
-    expect(pageLabel({ orientation: 'landscape' }, 1, 2)).toBe(
-      'Page 2 · A4 · Landscape · Infographic',
-    );
+    expect(pageLabel({ orientation: 'portrait' }, 0, 1)).toBe('A4 · Portrait');
+    expect(pageLabel({ orientation: 'landscape' }, 1, 2)).toBe('Page 2 · A4 · Landscape');
     expect(pageLabel({ orientation: 'portrait', size: 'square', name: 'Launch' }, 0, 3)).toBe(
-      'Launch · Square · Infographic',
+      'Launch · Square',
     );
-    expect(pageLabel({ orientation: 'landscape', size: 'wide' }, 0, 1)).toBe(
-      'Slide (16:9) · Infographic',
-    );
+    expect(pageLabel({ orientation: 'landscape', size: 'wide' }, 0, 1)).toBe('Widescreen (16:9)');
     expect(pageLabel({ orientation: 'portrait', kind: 'article' }, 1, 2)).toBe(
       'Page 2 · A4 · Portrait · Article',
     );
@@ -275,5 +271,17 @@ describe('page ink', () => {
 
   it('darkens a pale colour back on a light page', () => {
     expect(contrastRatio(legibleOn('#e0f2fe', '#ffffff'), '#ffffff')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('keeps a colour that clears the floor, and re-inks one under a raised floor', () => {
+    // #2563eb on white is about 5.2:1: kept at the default 3:1 floor and at 4.5.
+    expect(legibleOn('#2563eb', '#ffffff')).toBe('#2563eb');
+    // #0ea5e9 on white is about 2.8:1: kept at a 2.5 floor, pushed to AA at a 4.5 floor.
+    expect(legibleOn('#0ea5e9', '#ffffff', 2.5)).toBe('#0ea5e9');
+    expect(contrastRatio(legibleOn('#0ea5e9', '#ffffff', 4.5), '#ffffff')).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    // A floor above AA is also the target.
+    expect(contrastRatio(legibleOn('#0ea5e9', '#ffffff', 7), '#ffffff')).toBeGreaterThanOrEqual(7);
   });
 });

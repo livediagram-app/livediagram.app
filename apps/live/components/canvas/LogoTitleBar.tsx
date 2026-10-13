@@ -14,6 +14,7 @@ import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MirrorAxisGlyph } from './logo-glyphs';
 import { LogoMirrorButton } from './LogoMirrorPopover';
 import { LogoGuidesButton } from './LogoGuidesPopover';
+import { titleButtonClass } from './TitlePopoverButton';
 
 const GuidesIcon = lucideGlyph(lucideGrid3x3, 14);
 const TidyUpIcon = lucideGlyph(lucideWandSparkles, 14);
@@ -23,21 +24,11 @@ const TidyUpIcon = lucideGlyph(lucideWandSparkles, 14);
 const BUTTON_ROOM = 28;
 const LABELLED_ROOM = 72;
 
-/** The room the controls take: Tidy Up while it shows, then Mirror and Guides, named on a desktop. */
+/** The room the controls take: Mirror and Guides, named on a desktop, then Tidy, its icon alone,
+ *  while it shows. */
 export function logoTitleBarRoom(tidyUp: boolean, labelled: boolean): number {
   const each = labelled ? LABELLED_ROOM : BUTTON_ROOM;
-  return (tidyUp ? each : 0) + 2 * each;
-}
-
-// The controls' look: the cog's size, named beside the icon when `labelled`, tinted while on.
-function titleButtonClass(on: boolean | undefined, labelled: boolean): string {
-  return `flex h-6 items-center justify-center rounded-md transition ${
-    labelled ? 'gap-1 px-1.5 text-[11px] font-medium' : 'w-6'
-  } focus-visible:outline-2 focus-visible:outline-brand-600 ${
-    on
-      ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
-      : 'text-slate-500 hover:bg-white hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
-  }`;
+  return (tidyUp ? BUTTON_ROOM : 0) + 2 * each;
 }
 
 function TitleButton({
@@ -71,31 +62,29 @@ function TitleButton({
 }
 
 // Tidy Up, shown while the selection holds a hand-drawn line. Re-rendered as the selection changes.
-function TidyUpButton({
-  canTidyUp,
-  tidyUp,
-  labelled,
-}: {
-  canTidyUp: () => boolean;
-  tidyUp: () => void;
-  labelled: boolean;
-}) {
+function TidyUpButton({ canTidyUp, tidyUp }: { canTidyUp: () => boolean; tidyUp: () => void }) {
   useSelectionOf((s) => s.selectedId);
   useSelectionOf((s) => s.multiSelectedIds);
   return canTidyUp() ? (
-    <TitleButton
-      label="Tidy Up: straighten the selected drawing"
-      text={labelled ? 'Tidy Up' : undefined}
-      onClick={tidyUp}
-    >
+    <TitleButton label="Tidy: straighten the selected drawing" onClick={tidyUp}>
       <TidyUpIcon />
     </TitleButton>
   ) : null;
 }
 
-export function LogoTitleBar({ pageId, tools }: { pageId: string; tools: LogoToolsView }) {
-  // Mirror and Guides name themselves on a desktop; a phone keeps them icon-only.
-  const labelled = !useIsMobileViewport();
+export function LogoTitleBar({
+  pageId,
+  tools,
+  labelled: named,
+}: {
+  pageId: string;
+  tools: LogoToolsView;
+  // Whether the title bar has room to name them (IllustratePages); absent, a desktop does.
+  labelled?: boolean;
+}) {
+  // Mirror and Guides name themselves on a desktop with room; a phone keeps them icon-only.
+  const desktop = !useIsMobileViewport();
+  const labelled = named ?? desktop;
   const editor = useContext(EditorContext);
   const selection = useHasSelectionStore();
   return (
@@ -107,13 +96,6 @@ export function LogoTitleBar({ pageId, tools }: { pageId: string; tools: LogoToo
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      {editor && selection ? (
-        <TidyUpButton
-          canTidyUp={editor.canTidyUp}
-          tidyUp={editor.tidyUpSelected}
-          labelled={labelled}
-        />
-      ) : null}
       {/* Mirror opens its popover: on or off, axis, copies, merge. */}
       <LogoMirrorButton
         pageId={pageId}
@@ -132,6 +114,10 @@ export function LogoTitleBar({ pageId, tools }: { pageId: string; tools: LogoToo
       >
         <GuidesIcon />
       </LogoGuidesButton>
+      {/* Tidy last, its icon alone, left of the lock and cog, as on every Illustrate page. */}
+      {editor && selection ? (
+        <TidyUpButton canTidyUp={editor.canTidyUp} tidyUp={editor.tidyUpSelected} />
+      ) : null}
     </div>
   );
 }

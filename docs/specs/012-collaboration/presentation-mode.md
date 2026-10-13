@@ -144,6 +144,31 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one. A page slide has no members to highlight: its row frames its page instead, as the page's own label does ([Illustrate pages](../007-editor/illustrate-pages.md) "Slides").
 - **Present** — enters the full-screen deck at slide 1, with a badge carrying the slide count.
 
+### The Illustrate popover
+
+Over Illustrate's **Slides** button the panel is a roomy popover, 420 px wide, its list as tall as
+the screen allows:
+
+- **Header**: "Slide Deck", a badge with the slide count and the shown slides' planned minutes
+  ("6 slides · 14 min"), the presenter settings and help.
+- **Rows**: a large 16:9 picture of the slide with its number on it (ringed in the accent while the
+  slide is open), the slide's name, else its **headline** (the text with the most weight on it, its
+  type size by its length up to 40 characters, so a heading outweighs a huge short figure), else
+  "Slide n"; under it the page's own name (the tab's too when the deck spans tabs), then quiet
+  markers: a notes glyph when it has speaker notes, its minutes, and "Hidden" with the crossed eye.
+  Hovering a row shows **Present from Here** (a round play button; not on a hidden slide), which
+  starts the presentation at that slide. A press on the row opens the slide; drag reorders; the
+  `…` menu holds the rest, as before.
+- **Add All Slide Pages**: while the tab has slide pages not in the deck, a dashed accent button
+  adds every one of them at the deck's end in page order (`UI · Added · AllPageSlides`), under the
+  list, and in the empty state.
+- **Empty state**: a deck glyph in a disc, "Build your deck", a line naming the ways in, and Add
+  All Slide Pages.
+- **Present**: a full-width accent button with the count of slides it will show.
+
+The corner panel in the other modes keeps its compact rows (small picture beside the number) and
+gains the headline names, the markers and the count badge.
+
 ### What the panel does not do
 
 Reorder tabs. It was asked for while a slide belonged to a tab and the deck was "tab order, then layer order", and the model moved on: slide order is its own array now, so reordering tabs changes nothing about the deck. Everything that DOES affect the presentation lives in this panel; a control that looks like deck management but only reshuffles the tab bar would undermine exactly that promise.

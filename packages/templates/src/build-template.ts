@@ -32,6 +32,7 @@ import { buildDataStory } from './template-builders-data-story';
 import { buildHowItWorks } from './template-builders-how-it-works';
 import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
+import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
 import {
   buildPrioritizationMatrix,
@@ -253,9 +254,14 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
     case 'blank-session':
       return [];
     // An article's writing and page are tab data (templateCanvasOverrides), not elements; a blank
-    // illustration is its one empty page, which asks what it is for.
+    // illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
+    // empty page of that kind (blank-page-templates.ts).
     case 'article':
     case 'blank-illustration':
+    case 'blank-slide-deck':
+    case 'blank-article':
+    case 'blank-infographic':
+    case 'blank-logo':
       return [];
     case 'sketchnote':
       return buildSketchnote(cx, cy);
@@ -290,6 +296,11 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildVersus();
     case 'social-carousel':
       return buildSocialCarousel();
+    case 'launch-keynote':
+    case 'quarterly-review':
+    case 'team-welcome':
+    case 'workshop-kickoff':
+      return buildLayoutDeck(kind);
   }
 }
 

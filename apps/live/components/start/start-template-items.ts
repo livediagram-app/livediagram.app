@@ -49,8 +49,8 @@ const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Facilitate by the session each runs, Illustrate by what each makes. A template of the mode in none of its groups
-// is placed in the last.
+// way: Facilitate by the session each runs, Illustrate by what each makes, each Illustrate group but Posters led by its
+// blank of a page kind. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
   facilitate: [
     {
@@ -102,32 +102,39 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
     {
       id: 'slides',
       name: 'Slides',
-      line: 'Decks and carousels, one idea to a page.',
-      kinds: ['slide-deck', 'social-carousel'],
+      line: 'Decks to present, one idea to a slide.',
+      kinds: [
+        'blank-slide-deck',
+        'slide-deck',
+        'launch-keynote',
+        'quarterly-review',
+        'team-welcome',
+        'workshop-kickoff',
+      ],
     },
     {
       id: 'infographics',
       name: 'Infographics',
       line: 'Numbers, comparisons and how-tos told visually.',
-      kinds: ['year-in-review', 'data-story', 'how-it-works', 'versus'],
+      kinds: ['blank-infographic', 'year-in-review', 'data-story', 'how-it-works', 'versus'],
     },
     {
-      id: 'documents',
-      name: 'Documents',
+      id: 'articles',
+      name: 'Articles',
       line: 'Articles, résumés and cards of text on pages.',
-      kinds: ['article', 'resume', 'recipe-card'],
+      kinds: ['blank-article', 'article', 'resume', 'recipe-card'],
     },
     {
       id: 'posters',
-      name: 'Posters',
-      line: 'Posters and cards to print, pin up or send.',
-      kinds: ['event-poster', 'live-card'],
+      name: 'Posters and Social',
+      line: 'Posters, cards and social posts to print, pin up or share.',
+      kinds: ['event-poster', 'social-carousel', 'live-card'],
     },
     {
       id: 'logos',
       name: 'Logos',
       line: 'Marks, wordmarks and lockups for a brand.',
-      kinds: ['logo-design'],
+      kinds: ['blank-logo', 'logo-design'],
     },
   ],
 };

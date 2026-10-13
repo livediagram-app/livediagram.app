@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import type { Tab } from '@livediagram/document';
+import { pageImageIds, type Tab } from '@livediagram/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {
@@ -23,7 +23,8 @@ export type ExportImageMap = Map<string, ExportImageEntry>;
 // The raster types an upload can hold (the api sniffs to these four).
 const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/;
 
-// Identify + de-duplicate the image ids on a tab, fetch + decode each once,
+// Identify + de-duplicate the image ids on a tab (its image elements' and its pages' pictures,
+// docs/specs/007-editor/illustrate-pages.md "Image backgrounds"), fetch + decode each once,
 // and return them keyed by id. Failures are swallowed per-image so one broken
 // bitmap never aborts the export — that element just renders its placeholder.
 export async function loadTabImages(
@@ -31,7 +32,10 @@ export async function loadTabImages(
   ctx: { ownerId: string; documentId: string; shareCode: string | null },
 ): Promise<ExportImageMap> {
   const ids = Array.from(
-    new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
+    new Set([
+      ...tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
+      ...pageImageIds(tab.pages),
+    ]),
   );
   const map: ExportImageMap = new Map();
   await Promise.all(

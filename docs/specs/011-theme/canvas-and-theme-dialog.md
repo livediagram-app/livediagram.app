@@ -30,6 +30,12 @@ A **look** is a shortcut that sets four of the tab's existing settings at once: 
 records which look was picked, and the tab carries only those four ordinary settings, exactly as if they had been
 picked one by one.
 
+A **Finish filter** sits left of the carousel's page controls on the Looks heading row: a compact dropdown,
+**All finishes** (the default, every look), then each finish (**Flexible**, **Professional**, **Sketch**),
+narrowing the carousel to the looks of that finish, paged afresh from its first page (or the page holding the
+tab's look when it is among them). It is the viewer's own, for this open of the dialog only (not stored), and
+changing it is tracked as `UI / Changed / LooksFinishFilter`.
+
 The table is in the order the carousel shows them, six to a page:
 
 | Look        | Theme    | Finish       | Tab font         | Pattern     | Pattern strength |
@@ -37,7 +43,7 @@ The table is in the order the carousel shows them, six to a page:
 | Everyday    | Default  | Flexible     | (none)           | Grid        | (kept)           |
 | Textbook    | UML      | Professional | Oswald           | Graph       | 50%              |
 | Whiteboard  | Mono     | Sketch       | (none)           | Blank       | (kept)           |
-| Carnival    | Rainbow  | Flexible     | Poppins          | Confetti    | 50%              |
+| Spectrum    | Rainbow  | Flexible     | Inter            | Grid        | 50%              |
 | Boardroom   | Steel    | Professional | Inter            | Blank       | (kept)           |
 | Notebook    | Mocha    | Sketch       | (none)           | Lines       | (kept)           |
 | Seaside     | Ocean    | Flexible     | Nunito           | Waves       | (kept)           |
@@ -55,7 +61,8 @@ The table is in the order the carousel shows them, six to a page:
 
 - **Multi-colour looks.** Six looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
-  different feel: Carnival is a bright party (rainbow on confetti), Doodle a bold hand-drawn rainbow, Daydream soft
+  different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on a
+  quiet dot grid), Doodle a bold hand-drawn rainbow, Daydream soft
   pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
   diagonals, and Textbook a crisp colour-coded notation on graph paper. A dark-mode viewer sees each in its theme's
   dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
@@ -63,6 +70,10 @@ The table is in the order the carousel shows them, six to a page:
   order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds two multi-colour looks,
   and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
   rather than the colourful looks clumping on one page. `apps/live/lib/tab-looks.test.ts` locks both rules.
+- **Retired looks.** Carnival (Rainbow, Flexible, Poppins, Confetti at 50%) was replaced by Spectrum: its confetti
+  backdrop fought the diagram, and the party feel was already covered by Doodle. Because a look is not stored, a tab
+  that once picked Carnival keeps its four settings and simply reads as its own mix (no card selected); nothing
+  migrates.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), three pages, with arrows and page
   dots.
@@ -189,7 +200,8 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 - `ThemeBrowser` — the flat, paged theme list. Rendered by the palette accordion, the New-document picker and the dialog's Colours panel.
 - `PagedCarousel` — the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
 - On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
-  bottom-right corner sits 8 px above the button, right edges aligned, and it grows from that corner (the long motion
+  bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom
+  controls, so it sits as far right as the cluster and covers as little of the work as it can), and it grows from that corner (the long motion
   token's `fly-up-in`; a fade alone with reduced motion), at most as tall as the room above the button. Without the
   button on screen, or on a phone, it is the centred (phone: full-screen) dialog.
 - The dialog follows the existing modal contract (`Portal` + `useEscape` + a full-screen click-catcher, see `SettingsDialog`) — but with **no dimming / blur backdrop**: because every control applies live, the catcher is left transparent so the user can watch the canvas background + theme update behind the dialog as they click. The catcher still closes on an outside click and swallows pointer / right-click events so an edit doesn't leak to the canvas while it's open.

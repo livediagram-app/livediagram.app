@@ -2,6 +2,7 @@
 // node's colour, every band's paint, every label's place and words, and the readout text for a hover. One
 // function both renderers call, so the canvas view and the exporter differ only in the markup they emit.
 
+import { chartMarkInk } from './chart-ink';
 import { chartPaletteColors } from './chart-palettes';
 import { isLightColor } from './colors';
 import { PIE_PALETTE } from './data-shapes';
@@ -78,7 +79,12 @@ export type SankeyFrame = {
   summary: string;
 };
 
-export function sankeyFrame(element: ShapeElement, palette?: readonly string[]): SankeyFrame {
+export function sankeyFrame(
+  element: ShapeElement,
+  palette?: readonly string[],
+  // The tones the diagram sits on (chartPageGrounds): node colours are drawn adapted to them.
+  ground?: readonly string[],
+): SankeyFrame {
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const fontPx = sankeyLabelPx(element.textSize);
@@ -113,12 +119,14 @@ export function sankeyFrame(element: ShapeElement, palette?: readonly string[]):
   const ramp =
     chartPaletteColors(element.chartPalette) ??
     (palette && palette.length > 0 ? palette : PIE_PALETTE);
-  const colors = layout.nodes.map(
-    (n) =>
+  const colors = layout.nodes.map((n) =>
+    chartMarkInk(
       sankeyNodeColor(element.sankeyNodes, n.name) ??
-      (written.has(n.name) ? ramp[n.index % ramp.length]! : SANKEY_NEUTRAL_BAND),
+        (written.has(n.name) ? ramp[n.index % ramp.length]! : SANKEY_NEUTRAL_BAND),
+      ground,
+    ),
   );
-  const nodeColor = (i: number) => colors[i] ?? ramp[0]!;
+  const nodeColor = (i: number) => colors[i] ?? chartMarkInk(ramp[0]!, ground);
   const mode: SankeyLinkColor = element.sankeyLinkColor ?? 'gradient';
   const bandPaint = (b: SankeyLinkBand): SankeyBandPaint => {
     if (mode === 'neutral' || leftover(b)) return { kind: 'solid', color: SANKEY_NEUTRAL_BAND };

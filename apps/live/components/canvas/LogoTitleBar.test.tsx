@@ -57,12 +57,12 @@ describe('LogoTitleBar', () => {
     expect(t.setGuides).toHaveBeenCalledWith('p', false);
   });
 
-  it('offers Tidy Up only while the selection holds a hand-drawn line', () => {
+  it('offers Tidy only while the selection holds a hand-drawn line', () => {
     show(tools());
-    expect(screen.queryByRole('button', { name: /Tidy Up/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Tidy:/ })).toBeNull();
     cleanup();
     const ctx = show(tools(), true);
-    fireEvent.click(screen.getByRole('button', { name: /Tidy Up/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Tidy:/ }));
     expect(ctx.tidyUpSelected).toHaveBeenCalled();
   });
 

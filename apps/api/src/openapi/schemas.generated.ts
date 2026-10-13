@@ -9693,6 +9693,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "const": "gradient",
             "type": "string"
           },
+          "motion": {
+            "$ref": "#/components/schemas/PageMotion"
+          },
+          "speed": {
+            "type": "number"
+          },
           "to": {
             "type": "string"
           }
@@ -9704,8 +9710,78 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "angle"
         ],
         "type": "object"
+      },
+      {
+        "$ref": "#/components/schemas/PageImageFill"
       }
     ]
+  },
+  "PageImageFill": {
+    "additionalProperties": false,
+    "properties": {
+      "credit": {
+        "$ref": "#/components/schemas/ImageCredit"
+      },
+      "imageId": {
+        "type": "string"
+      },
+      "kind": {
+        "const": "image",
+        "type": "string"
+      },
+      "overlay": {
+        "$ref": "#/components/schemas/PageImageOverlay"
+      },
+      "position": {
+        "$ref": "#/components/schemas/PageImagePosition"
+      },
+      "preview": {
+        "type": "string"
+      },
+      "tone": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "kind",
+      "imageId"
+    ],
+    "type": "object"
+  },
+  "PageImageOverlay": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "kind": {
+        "$ref": "#/components/schemas/PageImageOverlayKind"
+      },
+      "strength": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "kind",
+      "strength"
+    ],
+    "type": "object"
+  },
+  "PageImageOverlayKind": {
+    "enum": [
+      "light",
+      "dark",
+      "tint",
+      "fade"
+    ],
+    "type": "string"
+  },
+  "PageImagePosition": {
+    "enum": [
+      "top",
+      "bottom"
+    ],
+    "type": "string"
   },
   "PageKind": {
     "enum": [
@@ -9713,6 +9789,29 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "article",
       "slide",
       "logo"
+    ],
+    "type": "string"
+  },
+  "PageMotion": {
+    "enum": [
+      "flow",
+      "drift",
+      "aurora",
+      "ripple",
+      "ribbons",
+      "mesh",
+      "starfield",
+      "retro-grid",
+      "bokeh",
+      "waves",
+      "spotlight",
+      "beams",
+      "sunburst",
+      "fireflies",
+      "snowfall",
+      "lava",
+      "dot-wave",
+      "clouds"
     ],
     "type": "string"
   },

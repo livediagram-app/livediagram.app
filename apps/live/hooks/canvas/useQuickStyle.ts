@@ -59,7 +59,7 @@ import {
   type QuickStrokeStyle,
   type QuickStyleView,
   type QuickColourValue,
-  type QuickSwatchValue,
+  type QuickFillValue,
   type QuickWidth,
 } from '@/lib/quick-style';
 import { styleKindOf, type StyleKindKey } from '@/lib/style-memory';
@@ -70,7 +70,7 @@ import type { SwatchOverridesApi } from './useSwatchOverrides';
 export type QuickStyleApi = {
   view: QuickStyleView | null;
   setStroke: (slot: QuickColourValue) => void;
-  setBackground: (slot: QuickSwatchValue) => void;
+  setBackground: (slot: QuickFillValue) => void;
   setTextColour: (slot: QuickColourValue) => void;
   setWidth: (width: QuickWidth) => void;
   setStrokeStyle: (style: QuickStrokeStyle) => void;

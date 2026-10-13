@@ -10,7 +10,7 @@ import { fetchItems } from '../api/items';
 import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
 import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
-import { embedTabImages, isDataImageId } from './offline-images';
+import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {
   offlineCreateDocument,
   offlineDeleteDocument,
@@ -112,9 +112,7 @@ async function downloadAndRemoveCloudCopy(
   // image failed to embed, aborting here keeps the server copy (and its
   // images) alive instead of quietly signing the stragglers up for the
   // 30-day reaper. The caller surfaces the failure; the user can retry.
-  const unembedded = tabs.some((t) =>
-    t.elements.some((el) => el.type === 'image' && el.imageId && !isDataImageId(el.imageId)),
-  );
+  const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
   // The cloud star is a row keyed on the document, so the server delete below

@@ -13,6 +13,7 @@ import {
 } from '@livediagram/document';
 import { xmlEscape } from '@livediagram/icons';
 import { PAGE_PATTERN_PITCH, pagePatternInk } from './illustrate-page-paint';
+import { pageImageSvg } from './page-image-paint';
 
 // The paper's colour in an export: the page as printed.
 export const EXPORT_PAPER = '#ffffff';
@@ -61,6 +62,7 @@ export function pageExportFrame(
     idPrefix = 'lvd-page',
     ruling,
     transparentPaper = false,
+    imageHref,
   }: {
     // The plain paper's colour: white in an export; the canvas's own paper where a page is drawn
     // as the canvas shows it (the Map).
@@ -73,6 +75,9 @@ export function pageExportFrame(
     ruling?: { pitch: number; inset: number; top: number };
     // A logo page's plain paper is left out (a logo goes over other things); a fill is kept.
     transparentPaper?: boolean;
+    // A page picture's bytes by gallery id (a data URL, export-tab-images), to embed. Without them
+    // (the Map, slide thumbnails) the page is painted in the picture's tone under its overlay.
+    imageHref?: (imageId: string) => string | undefined;
   } = {},
 ): PageExportFrame {
   const r = page.rect;
@@ -90,6 +95,10 @@ export function pageExportFrame(
         `</linearGradient></defs>`,
       rect(`url(#${id}-fill)`),
     );
+  } else if (fill?.kind === 'image') {
+    // Offline Mode's inline bytes are the picture itself; a gallery id is looked up.
+    const href = fill.imageId.startsWith('data:') ? fill.imageId : imageHref?.(fill.imageId);
+    parts.push(pageImageSvg(fill, r, href, id));
   } else if (!transparent) {
     parts.push(rect(xmlEscape(fill?.color ?? paper)));
   }

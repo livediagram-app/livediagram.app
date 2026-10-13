@@ -727,6 +727,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|FlowchartDown': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|FlowchartRight': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
+  'Tab|Aligned|PageTidyUp':
+    'Someone pressed Tidy on an infographic or slide page, lining up and spacing what is on it.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Changed|OpensInDiagram':
     "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
@@ -789,6 +791,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
   'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
   'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PageBackgroundAnimated':
+    'Someone gave a slide an animated background (aurora, starfield, waves and the like).',
+  'Tab|Changed|PageBackgroundAnimatedSpeed':
+    "Someone changed how fast a slide's animated background moves.",
+  'Tab|Changed|PageBackgroundImage':
+    'Someone put a picture behind an Illustrate page, searched or uploaded, under an overlay.',
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
   'Tab|Changed|PageLocked':
     'Someone locked an Illustrate page, so it and what is on it stay as they are.',
@@ -996,6 +1004,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone replaced one of the quick style panel's theme colours with a colour of their own, by right-clicking the swatch.",
   'UI|Changed|QuickSwatchReset':
     'Someone put a quick style panel swatch back to its theme colour, with Clear override.',
+  'UI|Changed|LooksFinishFilter':
+    "Someone narrowed the Tab Style popover's Looks to one finish with its Finish filter.",
   'UI|Changed|SlideNotes':
     'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
   'UI|Changed|SpotlightDim':
@@ -1139,6 +1149,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
+  'UI|Opened|PageContents':
+    "Someone opened Illustrate's Contents: every page of the tab in a list.",
+  'UI|Used|PageContentsJump': "Someone went to a page from Illustrate's Contents list.",
+  'UI|Added|AllPageSlides':
+    "Someone added every slide page of a tab to the deck at once, from the Slide Deck's Add All Slide Pages.",
   'UI|Opened|SlideDeck':
     "Someone opened the deck-building panel: the Slide Deck tool, or an Illustrate tab's Slides button.",
   'UI|Opened|SlideElementDetail':

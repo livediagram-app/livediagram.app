@@ -33,6 +33,7 @@ import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { canEditSankey } from '@/lib/sankey-edit';
+import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 
 // The Canvas element's wiring, lifted out of EditorView (which carried
 // ~500 lines of prop plumbing for it). Reads everything straight from
@@ -545,9 +546,11 @@ export function EditorCanvasHost() {
       : {}),
   });
   const stableSlideDeck = useStableObject(slideDeck);
+  const activeTheme = getTheme(activeTab.theme);
 
   return (
-    <>
+    // The tab's theme for faces that dress in it unstored (the image placeholder).
+    <CanvasThemeProvider theme={activeTheme}>
       <Canvas
         tabName={activeTab.name}
         tabSummaries={tabSummaries}
@@ -599,7 +602,7 @@ export function EditorCanvasHost() {
         previewDrawnArrow={(intent, startX, startY, endX, endY) =>
           drawnArrowAsShown(intent, startX, startY, endX, endY, {
             elements: activeTab.elements,
-            theme: getTheme(activeTab.theme),
+            theme: activeTheme,
             whiteboard: drawMode,
             styleNewElement,
             surface,
@@ -1108,7 +1111,7 @@ export function EditorCanvasHost() {
         onEditMindOutline={mindOutline.open}
         onTidyMindMap={tidyMindMap}
         onAbandonMindNode={abandonMindNode}
-        chartPalette={themeChartPalette(getTheme(activeTab.theme))}
+        chartPalette={themeChartPalette(activeTheme)}
         onCancelEdit={cancelEdit}
         onBeginEndpointDrag={beginEndpointDrag}
         onBeginArrowTranslate={beginArrowTranslate}
@@ -1220,6 +1223,6 @@ export function EditorCanvasHost() {
           onClose={() => setLockedMenu(null)}
         />
       ) : null}
-    </>
+    </CanvasThemeProvider>
   );
 }

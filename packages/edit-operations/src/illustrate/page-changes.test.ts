@@ -202,6 +202,25 @@ describe('setting', () => {
     );
   });
 
+  it('keeps a picture background through a pattern change, and a colour replaces it', () => {
+    const picture = {
+      kind: 'image' as const,
+      imageId: 'img-1',
+      overlay: { kind: 'dark' as const, strength: 0.6 },
+    };
+    const tab = tabOf({ pages: [page('p1', { background: { fill: picture } })] });
+    expect(pageSummaries(tab)[0]!.background).toBe('image, dark 60%');
+    const patterned = run(tab, [{ op: 'set', page: 1, background: { pattern: 'dots' } }]);
+    expect(illustratePagesOf(patterned.tab)[0]!.background).toEqual({
+      fill: picture,
+      pattern: 'dots',
+    });
+    const coloured = run(tab, [{ op: 'set', page: 1, background: { color: '#fef9c3' } }]);
+    expect(illustratePagesOf(coloured.tab)[0]!.background).toEqual({
+      fill: { kind: 'solid', color: '#fef9c3' },
+    });
+  });
+
   it('unlocks before editing, and refuses an edit of a locked page', () => {
     const tab = tabOf({ pages: [page('p1', { locked: true })] });
     expect(refusal(tab, [{ op: 'set', page: 1, name: 'A' }]).code).toBe('page_locked');

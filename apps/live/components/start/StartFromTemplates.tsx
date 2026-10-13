@@ -64,7 +64,7 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   decisions: glyph(lucideVote),
   slides: glyph(lucideLayers),
   infographics: glyph(lucideChartPie),
-  documents: glyph(lucideFileText),
+  articles: glyph(lucideFileText),
   posters: glyph(lucideImage),
   logos: glyph(lucideShapes),
   'visual-notes': glyph(lucidePenTool),

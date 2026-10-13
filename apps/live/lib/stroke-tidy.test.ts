@@ -8,7 +8,7 @@ import {
 } from '@livediagram/document';
 import { tidyUpStroke, isTidyable } from './stroke-tidy';
 
-// docs/specs/007-editor/logo-pages.md "Tidy Up": hand-drawn lines made straight.
+// docs/specs/007-editor/logo-pages.md "Tidy": hand-drawn lines made straight.
 const wobble = (i: number) => Math.sin(i * 1.7) * 1.5;
 
 const stroke = (pts: { x: number; y: number }[], over: Partial<FreehandElement> = {}) =>

@@ -49,7 +49,7 @@ import { VideoView } from '@/components/canvas/VideoView';
 import { HeroCaptionCard } from '@/components/canvas/web/HeroCaptionCard';
 import { WebComponentFace } from '@/components/canvas/web/WebComponentFace';
 import type { BoxedElementViewProps } from './BoxedElementView.types';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
 
 // Tables and facilitation panels are on few boards, so their faces load on demand; their code is fetched
 // as the editor mounts (lib/editor-deferred-code.ts), so a board that has one finds it already in.
@@ -179,8 +179,10 @@ export function ElementFaceRouter({
   iconCaptionBand,
   labelFrame,
 }: ElementFaceRouterProps) {
-  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md).
-  const surface = useCanvasSurface();
+  // The paper under this face, for colours the element doesn't carry (docs/specs/007-editor/live-app.md):
+  // its Illustrate page's when the page has a fill of its own (illustrate-pages.md "A dark page has
+  // light ink"), as the label's ink already is, else the canvas's.
+  const surface = useElementSurface(element.id);
   // The shared settings `…` (docs/specs/008-canvas/canvas-and-palette.md), in the same corner on every Behaviours
   // element that has one: see carriesSharedSettingsMenu for who doesn't.
   const settingsButton =
@@ -403,6 +405,7 @@ export function ElementFaceRouter({
             documentId={imageContext.documentId}
             shareCode={imageContext.shareCode}
             canOpenPicker={!!imageContext.onOpenPicker}
+            fontFamily={fontFamily}
           />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
           {element.heroCaption ? (

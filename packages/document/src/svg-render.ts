@@ -305,6 +305,7 @@ export function svgBoxed(source: BoxedElement, opts: BoxedExportOptions = {}): s
       stroke: shape.stroke,
       fill: shape.fill,
       chartPalette: opts.chartPalette,
+      chartGround: opts.chartGrounds?.get(el.id),
       label: label?.text ?? el.label ?? '',
       surface,
     });

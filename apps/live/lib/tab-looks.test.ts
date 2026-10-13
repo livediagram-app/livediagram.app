@@ -26,7 +26,7 @@ describe('TAB_LOOKS', () => {
       'Everyday',
       'Textbook',
       'Whiteboard',
-      'Carnival',
+      'Spectrum',
       'Boardroom',
       'Notebook',
       'Seaside',
@@ -125,6 +125,18 @@ describe('activeLookId', () => {
 
   it('is undefined for an unknown look id lookup', () => {
     expect(tabLookById('nope')).toBeUndefined();
+  });
+
+  it('reads a tab styled with the retired Carnival look as its own mix, nothing migrated', () => {
+    expect(tabLookById('carnival')).toBeUndefined();
+    const carnival = {
+      theme: 'rainbow',
+      finish: 'flexible',
+      font: 'poppins',
+      backgroundPattern: 'confetti',
+      backgroundOpacity: 0.5,
+    } as const;
+    expect(activeLookId(carnival)).toBeUndefined();
   });
 });
 

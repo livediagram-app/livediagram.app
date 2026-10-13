@@ -1,10 +1,14 @@
 'use client';
 
 // The Looks carousel on the Tab Style home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the looks
-// in pages of six (PagedCarousel), opening on the page that holds the tab's current look. Each card is a live preview
-// drawn by the exporter.
+// in pages of six (PagedCarousel), opening on the page that holds the tab's current look, with a Finish filter left of
+// the page controls. Each card is a live preview drawn by the exporter.
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { FINISHES, type Finish } from '@livediagram/document';
+import { Select } from '@livediagram/ui';
+import { FINISH_LABELS } from '@/components/palette/FinishSection';
+import { track } from '@/lib/telemetry';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
@@ -22,6 +26,9 @@ export function LooksCarousel({
   // Each look's preview is fixed for an appearance, so they are drawn once per open (again if the viewer's mode
   // changes: they draw in its half).
   const { appearance } = useAppearance();
+  // The finish the looks are narrowed to, or all of them.
+  const [finish, setFinish] = useState<Finish | 'all'>('all');
+  const looks = finish === 'all' ? TAB_LOOKS : TAB_LOOKS.filter((l) => l.finish === finish);
   const previews = useMemo(
     () =>
       new Map(
@@ -37,7 +44,9 @@ export function LooksCarousel({
   return (
     <section aria-labelledby="looks-heading" data-tour-id="tab-style-looks">
       <PagedCarousel
-        items={TAB_LOOKS}
+        // A new filter starts its own pages.
+        key={finish}
+        items={looks}
         perPage={LOOKS_PER_PAGE}
         label="Looks"
         navTourId="tab-style-looks-nav"
@@ -48,7 +57,27 @@ export function LooksCarousel({
         }
         gridClass="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
         // Open on the page holding the tab's look (the first page when it has its own mix).
-        initialIndex={TAB_LOOKS.findIndex((l) => l.id === activeLook)}
+        initialIndex={looks.findIndex((l) => l.id === activeLook)}
+        controls={
+          <Select
+            size="sm"
+            variant="ghost"
+            aria-label="Filter looks by finish"
+            value={finish}
+            onChange={(e) => {
+              const next = e.target.value as Finish | 'all';
+              track('UI', 'Changed', 'LooksFinishFilter');
+              setFinish(next);
+            }}
+          >
+            <option value="all">All finishes</option>
+            {FINISHES.map((f) => (
+              <option key={f} value={f}>
+                {FINISH_LABELS[f]}
+              </option>
+            ))}
+          </Select>
+        }
         renderItem={(look) => {
           const preview = previews.get(look.id)!;
           return (

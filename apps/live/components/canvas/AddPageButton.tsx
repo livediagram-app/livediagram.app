@@ -16,7 +16,10 @@ export function AddPageButton({
   lastMiddle,
   zoom,
   onAdd,
+  suggested,
 }: {
+  // The last page's kind, offered first (AddPagePopover).
+  suggested?: PageKind;
   // The last page's right edge, and its vertical middle, in canvas px.
   lastRight: number;
   lastMiddle: number;
@@ -64,6 +67,7 @@ export function AddPageButton({
         <AddPagePopover
           getAnchor={getAnchor}
           onAdd={onAdd}
+          suggested={suggested}
           onClose={(restoreFocus) => {
             setOpen(false);
             if (restoreFocus) button.current?.focus();

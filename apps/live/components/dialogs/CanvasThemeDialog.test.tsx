@@ -112,7 +112,7 @@ describe('CanvasThemeDialog home', () => {
     'Everyday',
     'Textbook',
     'Whiteboard',
-    'Carnival',
+    'Spectrum',
     'Boardroom',
     'Notebook',
     'Seaside',

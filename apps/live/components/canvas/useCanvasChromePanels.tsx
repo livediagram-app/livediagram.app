@@ -57,6 +57,10 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
 
 // Lazy for the same reason: the Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button")
 // loads on the first press of its button.
+const PageContentsPanel = dynamic(
+  () => import('./PageContentsPanel').then((m) => m.PageContentsPanel),
+  { ssr: false },
+);
 const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.TidyUpPopover), {
   ssr: false,
 });
@@ -109,6 +113,8 @@ export function useCanvasChromePanels({
   sessionPopoverEl: ReactNode;
   // The Tidy Up popover over its button, in Diagram mode.
   tidyUpPopoverEl: ReactNode;
+  // Illustrate mode's Contents popover (docs/specs/007-editor/illustrate-pages.md "Contents").
+  contentsPopoverEl: ReactNode;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -246,6 +252,12 @@ export function useCanvasChromePanels({
   const slidesOpen = activeDockPanel === 'slides' && !!props.illustratePages;
   useEffect(() => {
     if (activeDockPanel === 'slides' && !props.illustratePages) closeDockPanel();
+  }, [activeDockPanel, props.illustratePages, closeDockPanel]);
+  // Contents, likewise, belongs to Illustrate mode's button (docs/specs/007-editor/illustrate-pages.md
+  // "Contents").
+  const contentsOpen = activeDockPanel === 'contents' && !!props.illustratePages && !chromeHidden;
+  useEffect(() => {
+    if (activeDockPanel === 'contents' && !props.illustratePages) closeDockPanel();
   }, [activeDockPanel, props.illustratePages, closeDockPanel]);
   // The Card Types popover, likewise, belongs to Plan mode's button.
   const planMode = props.editorMode === 'plan';
@@ -415,11 +427,11 @@ export function useCanvasChromePanels({
     () => visibleLayerElements(elements, props.tabLayers),
     [elements, props.tabLayers],
   );
+  // The Map is Diagram, Draw and Facilitate's: Illustrate has Contents for its pages, and a Plan
+  // board is a list, not a space to find your way round.
+  const mapMode = !props.illustratePages && props.editorMode !== 'plan';
   const minimapEl =
-    !chromeHidden &&
-    !isMobile &&
-    mapEnabled &&
-    (elements.length >= 4 || (props.illustratePages?.pages.length ?? 0) > 0) ? (
+    !chromeHidden && !isMobile && mapEnabled && mapMode && elements.length >= 4 ? (
       <ViewMinimap
         elements={mapElements}
         pages={props.illustratePages?.pages}
@@ -528,6 +540,24 @@ export function useCanvasChromePanels({
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
     slidesPopoverEl: slidesOpen ? slideDeckEl : null,
+    contentsPopoverEl:
+      contentsOpen && props.illustratePages ? (
+        <PageContentsPanel
+          view={props.illustratePages}
+          tab={{
+            id: props.activeTabId ?? '',
+            name: '',
+            elements,
+            pages: props.illustratePages.pages,
+            layers: props.layers,
+            font: props.tabFont,
+            finish: props.tabFinish,
+            articles: props.illustratePages.articles?.flows,
+          }}
+          anchor={activeDockAnchor ?? undefined}
+          onClose={closeDockPanel}
+        />
+      ) : null,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
         <TidyUpPopover

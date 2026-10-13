@@ -16,6 +16,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'pre-mortem': 'draw',
   'idea-garden': 'draw',
   'blank-illustration': 'illustrate',
+  'blank-slide-deck': 'illustrate',
+  'blank-article': 'illustrate',
+  'blank-infographic': 'illustrate',
+  'blank-logo': 'illustrate',
   article: 'illustrate',
   'slide-deck': 'illustrate',
   'logo-design': 'illustrate',
@@ -28,6 +32,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'how-it-works': 'illustrate',
   versus: 'illustrate',
   'social-carousel': 'illustrate',
+  'launch-keynote': 'illustrate',
+  'quarterly-review': 'illustrate',
+  'team-welcome': 'illustrate',
+  'workshop-kickoff': 'illustrate',
   // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
   'blank-spreadsheet': 'plan',
@@ -86,10 +94,17 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
 };
 
 // The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
-// empty Sheet, beside Blank Plan.
-export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet'];
+// empty Sheet, beside Blank Plan; the blanks of a page kind ("Blanks of a page kind"), one empty page of a chosen kind,
+// beside Blank Illustration, in the order the landing page's Blank Slate lists them.
+export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
+  'blank-slide-deck',
+  'blank-article',
+  'blank-infographic',
+  'blank-logo',
+  'blank-spreadsheet',
+];
 
-/** True for the blanks: each mode's, and Blank Spreadsheet. Quick-picks on Popular, never on a category shelf or tile. */
+/** True for the blanks: each mode's, Blank Spreadsheet and the blanks of a page kind. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
   return (
     Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)

@@ -112,7 +112,7 @@ describe('slide layout counts in marketing copy', () => {
 
   it('matches the infographic and logo catalogues on the landing page', () => {
     // Written as words in the cards; a catalogue change fails here until the copy follows it.
-    const WORD: Record<number, string> = { 25: 'twenty-five', 31: 'Thirty-one' };
+    const WORD: Record<number, string> = { 25: 'twenty-five', 92: 'Ninety-two' };
     const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
     expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
     expect(copy).toContain(`${WORD[LOGO_LAYOUTS.length]} logo layouts`);

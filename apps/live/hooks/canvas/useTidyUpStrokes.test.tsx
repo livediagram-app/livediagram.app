@@ -6,7 +6,7 @@ import { useTidyUpStrokes } from './useTidyUpStrokes';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-// docs/specs/007-editor/logo-pages.md "Tidy Up": one edit, in place, ids kept.
+// docs/specs/007-editor/logo-pages.md "Tidy": one edit, in place, ids kept.
 const line = (id: string, locked = false): Element =>
   ({
     id,

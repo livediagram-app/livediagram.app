@@ -35,6 +35,7 @@ export function SankeyView({
   fontFamily,
   textColor,
   palette,
+  ground,
   editable,
   bare = false,
 }: {
@@ -42,6 +43,8 @@ export function SankeyView({
   fontFamily?: string;
   textColor: string;
   palette?: readonly string[];
+  // What the diagram sits on (chartPageGrounds): its node colours drawn adapted to it.
+  ground?: readonly string[];
   // Whether this session may edit it, which only changes what the empty state says.
   editable: boolean;
   // Bands and nodes only: no labels and no hover, for a menu tile's miniature.
@@ -79,6 +82,7 @@ export function SankeyView({
           chartPalette,
         } as ShapeElement,
         palette,
+        ground,
       ),
     [
       width,
@@ -94,6 +98,7 @@ export function SankeyView({
       textSize,
       chartPalette,
       palette,
+      ground,
     ],
   );
   const [hover, setHover] = useState<Hover | null>(null);

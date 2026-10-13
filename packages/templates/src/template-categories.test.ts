@@ -67,7 +67,7 @@ describe('template categories', () => {
       strategy: 12,
       hierarchies: 5,
       design: 11,
-      presentations: 13,
+      presentations: 17,
       technical: 8,
     });
   });

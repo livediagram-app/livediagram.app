@@ -12,7 +12,14 @@ import { TOOLBAR_CONTROL_PRESSED, TOOLBAR_CONTROL_REST } from '@/components/chro
 
 const Plus = lucideGlyph(lucidePlus, 16);
 
-export function AddPageStripButton({ onAdd }: { onAdd: (kind: PageKind) => void }) {
+export function AddPageStripButton({
+  onAdd,
+  suggested,
+}: {
+  onAdd: (kind: PageKind) => void;
+  // The last page's kind, offered first (AddPagePopover).
+  suggested?: PageKind;
+}) {
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const getAnchor = useCallback(() => button.current, []);
@@ -42,6 +49,7 @@ export function AddPageStripButton({ onAdd }: { onAdd: (kind: PageKind) => void 
         <AddPagePopover
           getAnchor={getAnchor}
           onAdd={onAdd}
+          suggested={suggested}
           onClose={(restoreFocus) => {
             setOpen(false);
             if (restoreFocus) button.current?.focus();

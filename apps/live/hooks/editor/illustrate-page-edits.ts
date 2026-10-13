@@ -16,6 +16,8 @@ import {
   pageSizesFor,
   pageUnits,
   withPageKindChosen,
+  withDefaultPageBackgrounds,
+  type ThemeDefinition,
   PAGE_NAME_MAX,
   withIllustratePages,
   withPageSplit,
@@ -26,6 +28,7 @@ import {
   pageLaidOut,
   pageLockRefuses,
   pageLockSet,
+  pageMargin,
   pageMovedTo,
   pageRemoved,
   pageRenamed,
@@ -43,6 +46,9 @@ import {
 import type { PageLayoutId } from '@livediagram/templates';
 import { buildPageLayout } from '@livediagram/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
+import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
+import { tidyPageElements } from '@/lib/page-tidy';
+import { lockedElementIds } from '@/lib/tab-cleanup';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
@@ -81,8 +87,8 @@ export type IllustratePageEdits = {
   applyLayout: (pageId: string, layout: PageLayoutId) => void;
   // How many elements are on the page.
   contentCount: (pageId: string) => number;
-  // A fill hovered in the panel: the page's own-coloured text, lines and icons drawn re-inked as
-  // the press would re-ink them (a preview, writing nothing); null puts them back.
+  // A fill hovered in the panel: what is on the page drawn re-inked as the press would re-ink it
+  // (a preview, writing nothing); null puts it back.
   previewInk: (preview: { pageId: string; patch: Partial<PageBackground> } | null) => void;
   // Locking a page (docs/specs/007-editor/illustrate-pages.md "Locking a page"): it, and what is
   // on it, stay as they are. Every edit above refuses a locked page.
@@ -90,6 +96,14 @@ export type IllustratePageEdits = {
   setLocked: (pageId: string, locked: boolean) => void;
   // Blank chosen on the page's Start From a Layout card: the card is not offered there again.
   startBlank: (pageId: string) => void;
+  // An infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy"): its
+  // elements aligned and spaced, one edit; a page already tidy says so and writes nothing.
+  tidyPage?: (pageId: string) => void;
+  // Whether a Tidy would change the page: its button shows only then.
+  canTidy?: (pageId: string) => boolean;
+  // The tidied page drawn in place while the button is hovered (a preview, writing nothing); null
+  // puts it back.
+  previewTidy?: (pageId: string | null) => void;
 };
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -113,21 +127,35 @@ const KIND_ADDED_EVENT: Record<PageKind, string> = {
   logo: 'LogoPageAdded',
 };
 
+// Whether a page would change under a Tidy, by tab and page, with what the answer was for: the
+// page's own elements (as objects, so an edit elsewhere keeps it), the layers (a lock) and the page
+// list. Bounded: past TIDY_MEMO_MAX entries it starts over.
+const TIDY_MEMO = new Map<
+  string,
+  { on: readonly Tab['elements'][number][]; layers: unknown; pages: string; can: boolean }
+>();
+const TIDY_MEMO_MAX = 256;
+
 export function illustratePageEdits({
   tabId,
   current,
   elements,
+  layers,
   commitTabs,
   onGoTo,
   onArticleCreated,
   onLayoutPlaced,
   mayEdit = () => true,
   toastInfo = () => {},
+  theme,
 }: {
   tabId: string;
   current: readonly IllustratePage[];
   // The tab's elements now, to count a page's content.
   elements: Tab['elements'];
+  // The tab's layers now, so a Tidy Up preview leaves a locked layer's elements alone as its
+  // commit does.
+  layers?: Tab['layers'];
   // After a layout lands: the selection is cleared, so none of the replaced elements stays selected.
   onLayoutPlaced: () => void;
   // Whether this person may still edit, asked at commit time: a panel closing because editing went
@@ -141,7 +169,13 @@ export function illustratePageEdits({
   onArticleCreated?: (flow: string) => void;
   // What a page action says it did (Split Into Pages).
   toastInfo?: (message: string) => void;
+  // The tab's theme: a new infographic page starts on its Mist gradient (defaultPageBackground).
+  // Absent, a new page starts on the plain paper.
+  theme?: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
 }): IllustratePageEdits {
+  // A new infographic page (by id) on the theme's default background, unless it carried one over.
+  const themed = (t: Tab | null, id: string): Tab | null =>
+    t && theme ? withDefaultPageBackgrounds(t, theme, new Set([id])) : t;
   // A locked tab, or a person no longer editing, takes no page edit.
   const commitTab = (change: TabChange) => {
     if (!mayEdit()) return;
@@ -242,8 +276,9 @@ export function illustratePageEdits({
     commitTab((t) => edited(t, pageRenamed(t, pageId, name)));
     debugLog('[illustrate-page] renamed', { tabId, pageId, named: name !== '' });
   };
-  // A new fill also re-inks the page's own-coloured text, lines and icons so they still read on it
-  // (withPageInkFor), in the same edit.
+  // A new fill also re-inks what is on the page so it still reads (docs/specs/007-editor/
+  // illustrate-pages.md "Re-inking"), in the same edit, from the author's own colours where this
+  // session's memory recalls them.
   const setBackground = (pageId: string, patch: Partial<PageBackground>) => {
     if (refusedLocked(pageId, 'background')) return;
     const target = page(pageId);
@@ -258,7 +293,20 @@ export function illustratePageEdits({
     const next = withBackgroundPatch(target, patch);
     if (sameFill(was?.fill, next?.fill) && was?.pattern === next?.pattern) return;
     track('Tab', 'Changed', 'fill' in patch ? 'PageBackground' : 'PagePattern');
-    commitTab((t) => edited(t, pageBackgroundSet(t, pageId, patch)));
+    commitTab((t) => {
+      const out = pageBackgroundSet(t, pageId, patch, pageInkMemory(tabId));
+      if ('tab' in out && out.memory) {
+        rememberPageInk(tabId, out.memory);
+        const reinked = out.tab.elements.filter((el, i) => el !== t.elements[i]).length;
+        debugLog('[illustrate-page] re-inked', {
+          tabId,
+          pageId,
+          reinked,
+          remembered: out.memory.size,
+        });
+      }
+      return edited(t, out);
+    });
     debugLog('[illustrate-page] background set', { tabId, pageId, keys: Object.keys(patch) });
   };
   const units = pageUnits(current);
@@ -285,7 +333,10 @@ export function illustratePageEdits({
     if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     const flow = nextArticleFlowId(new Set());
-    commitTab((t) => withPageKindChosen(t, pageId, kind, flow));
+    commitTab((t) => {
+      const chosen = withPageKindChosen(t, pageId, kind, flow);
+      return kind === 'infographic' ? themed(chosen, pageId) : chosen;
+    });
     if (kind === 'article') onArticleCreated?.(flow);
     debugLog('[illustrate-page] first page kind chosen', { tabId, pageId, kind });
   };
@@ -293,7 +344,10 @@ export function illustratePageEdits({
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextIllustratePageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
-    commitTab((t) => edited(t, pageAdded(t, kind, id, flow)));
+    commitTab((t) => {
+      const added = edited(t, pageAdded(t, kind, id, flow));
+      return kind === 'infographic' ? themed(added, id) : added;
+    });
     if (kind === 'article') {
       onGoTo(id);
       onArticleCreated?.(flow);
@@ -407,13 +461,80 @@ export function illustratePageEdits({
       return;
     }
     const background = withBackgroundPatch(target, preview.patch);
-    let shown: { elements: Tab['elements']; pages: IllustratePage[] } = {
+    let shown: { elements: Tab['elements']; pages: IllustratePage[]; layers?: Tab['layers'] } = {
       elements,
       pages: [...current],
+      layers,
     };
     for (const id of pagesSharing(current, preview.pageId))
-      shown = withPageInkFor(shown, id, background);
+      shown = withPageInkFor(shown, id, background, pageInkMemory(tabId));
     if (shown.elements === elements) {
+      if (localPreview()?.tabId === tabId) clearLocalPreview();
+      return;
+    }
+    setLocalPreview(tabId, shown.elements, elements);
+  };
+
+  // The tab with the page's elements tidied, or null when nothing would change. Read from the tab
+  // it is given, so the commit tidies the tab as it is at commit time.
+  const tidied = (t: Tab, pageId: string): Tab | null => {
+    const pages = layOutIllustratePages(illustratePagesOf(t));
+    const target = pages.find((p) => p.id === pageId);
+    // An infographic or slide page; a logo page tidies its drawn lines, an article flows.
+    if (!target || (pageKindOf(target) !== 'infographic' && target.kind !== 'slide')) return null;
+    const next = tidyPageElements(t.elements, {
+      ids: elementIdsOnPage(t.elements, pages, pageId),
+      rect: target.rect,
+      margin: pageMargin(target),
+      lockedIds: lockedElementIds(t.elements, t.layers),
+    });
+    return next === t.elements ? null : { ...t, elements: next };
+  };
+  const tidyPage = (pageId: string) => {
+    if (!mayEdit() || refusedLocked(pageId, 'tidy', false)) return;
+    let changed = false;
+    commitTab((t) => {
+      const out = tidied(t, pageId);
+      changed = out !== null;
+      return out;
+    });
+    if (localPreview()?.tabId === tabId) clearLocalPreview(changed ? 'landed' : 'cancelled');
+    if (!changed) {
+      toastInfo('This page is already tidy.');
+      debugLog('[illustrate-page] tidy: already tidy', { tabId, pageId });
+      return;
+    }
+    track('Tab', 'Aligned', 'PageTidyUp');
+    debugLog('[illustrate-page] tidied', { tabId, pageId });
+  };
+  // Remembered per page while its own elements stay as they are, so a pan or a zoom (which
+  // re-renders every title bar) and an edit on another page rerun no tidy (3 to 8 ms a page).
+  const canTidy = (pageId: string): boolean => {
+    const pages = JSON.stringify(current);
+    const ids = elementIdsOnPage(elements, laidOut, pageId);
+    const on = elements.filter((el) => ids.has(el.id));
+    const key = `${tabId}|${pageId}`;
+    const hit = TIDY_MEMO.get(key);
+    if (
+      hit &&
+      hit.layers === layers &&
+      hit.pages === pages &&
+      hit.on.length === on.length &&
+      hit.on.every((el, k) => el === on[k])
+    ) {
+      return hit.can;
+    }
+    const can =
+      tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId) !== null;
+    if (TIDY_MEMO.size >= TIDY_MEMO_MAX) TIDY_MEMO.clear();
+    TIDY_MEMO.set(key, { on, layers, pages, can });
+    return can;
+  };
+  const previewTidy = (pageId: string | null) => {
+    const shown = pageId
+      ? tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId)
+      : null;
+    if (!shown || isLocked(pageId!)) {
       if (localPreview()?.tabId === tabId) clearLocalPreview();
       return;
     }
@@ -422,6 +543,9 @@ export function illustratePageEdits({
 
   const room = current.length < MAX_ILLUSTRATE_PAGES;
   return {
+    tidyPage,
+    canTidy,
+    previewTidy,
     previewInk,
     setOrientation,
     setSize,
