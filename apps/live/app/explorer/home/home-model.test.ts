@@ -6,8 +6,10 @@ import {
   groupsByDay,
   homeDocumentHref,
   jumpBackInSet,
+  paneJumpBackIn,
   phoneOrder,
   stripFade,
+  type JumpBackInItem,
   type JumpBackInSet,
 } from './home-model';
 
@@ -210,5 +212,20 @@ describe('stripFade', () => {
     expect(stripFade({ scrollLeft: 300, clientWidth: 300, scrollWidth: 600 })).toBe(false);
     expect(stripFade({ scrollLeft: 299.5, clientWidth: 300, scrollWidth: 600 })).toBe(false);
     expect(stripFade({ scrollLeft: 0, clientWidth: 300, scrollWidth: 300 })).toBe(false);
+  });
+});
+
+describe('paneJumpBackIn', () => {
+  const item = (documentId: string) => ({ documentId }) as JumpBackInItem;
+  const set = { mostUsed: [item('a'), item('b')], recent: [item('b'), item('c'), item('d')] };
+  const ids = (xs: JumpBackInItem[]) => xs.map((d) => d.documentId);
+
+  it('lists most used then recent, each document once', () => {
+    expect(ids(paneJumpBackIn(set, null, 6))).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('leaves out the document already open, and the next one takes its place', () => {
+    expect(ids(paneJumpBackIn(set, 'b', 3))).toEqual(['a', 'c', 'd']);
+    expect(ids(paneJumpBackIn(set, 'a', 6))).toEqual(['b', 'c', 'd']);
   });
 });
