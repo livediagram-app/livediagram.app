@@ -16,7 +16,7 @@ import {
   PlusIcon,
 } from '@/components/panels/layers-panel-icons';
 import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
 
 // Under a lone layer, so a first visit learns what the panel is for.
 export const SINGLE_LAYER_HINT =
@@ -222,7 +222,7 @@ export function LayersPanel({
             <button
               type="button"
               onClick={onAddLayer}
-              className="flex h-8 items-center gap-1.5 rounded-lg bg-brand-600 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+              className={`flex h-8 items-center gap-1.5 rounded-lg bg-brand-700 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-800 ${SOLID_BRAND_DARK_CONTROL}`}
             >
               <PlusIcon />
               New Layer

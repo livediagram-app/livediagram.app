@@ -131,7 +131,7 @@ export function LayerRow({
       {/* In the row's leading padding, so it costs the name no width. */}
       <span
         aria-hidden
-        className={`absolute left-0.5 top-1/2 flex w-3.5 -translate-y-1/2 cursor-grab justify-center text-slate-400 dark:text-slate-500 ${active ? '' : REVEAL}`}
+        className={`absolute left-0.5 top-1/2 flex w-3.5 -translate-y-1/2 cursor-grab justify-center text-slate-400 dark:text-slate-400 ${active ? '' : REVEAL}`}
       >
         <GripIcon />
       </span>
@@ -194,7 +194,7 @@ export function LayerRow({
         className={
           locked
             ? 'text-brand-600 dark:text-brand-300'
-            : `text-slate-400 dark:text-slate-500 ${active ? '' : REVEAL}`
+            : `text-slate-400 dark:text-slate-400 ${active ? '' : REVEAL}`
         }
         onClick={() => onToggleLock(layer.id)}
       >
@@ -208,7 +208,7 @@ export function LayerRow({
         }
         pressed={!visible}
         className={
-          visible ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500'
+          visible ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-400'
         }
         onClick={() => onToggleVisibility(layer.id)}
       >
@@ -223,7 +223,7 @@ export function LayerRow({
             e.stopPropagation();
             openRowMenu(layer.id, e.currentTarget);
           }}
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${active ? '' : REVEAL}`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-200 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200 ${active ? '' : REVEAL}`}
         >
           <EllipsisIcon />
         </button>
