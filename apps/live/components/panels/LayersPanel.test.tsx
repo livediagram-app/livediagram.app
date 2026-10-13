@@ -10,11 +10,15 @@ beforeAll(stubResizeObserver);
 
 // docs/specs/006-document/layers.md "The Layers panel": header bar, single-layer hint, footer.
 
-function renderPanel(layers: Layer[], activeLayerId = layers[layers.length - 1]!.id) {
+function renderPanel(
+  layers: Layer[],
+  activeLayerId = layers[layers.length - 1]!.id,
+  counts = new Map<string, number>(),
+) {
   const props = {
     layers,
     activeLayerId,
-    counts: new Map<string, number>(),
+    counts,
     elements: [],
     popoverOpen: true,
     popoverAnchor: { left: 0, top: 0, bottom: 0, arrowOffset: 0 },
@@ -72,5 +76,38 @@ describe('LayersPanel', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Merge with the layer below' }));
     expect(p.onMergeLayer).toHaveBeenCalledWith('below');
+  });
+
+  it('opens a row’s menu beside the panel from its options button', () => {
+    renderPanel([
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'A options' }));
+    expect(screen.getByTestId('layer-row-menu').textContent).toContain('Merge With Layer Above');
+  });
+
+  it('asks before the footer deletes a populated active layer', () => {
+    const p = renderPanel(
+      [
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+      ],
+      'b',
+      new Map([['b', 2]]),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Layer' }));
+    expect(p.onRemoveLayer).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(p.onRemoveLayer).toHaveBeenCalledWith('b');
+  });
+
+  it('deletes an empty active layer at once', () => {
+    const p = renderPanel([
+      { id: 'a', name: 'A' },
+      { id: 'b', name: 'B' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Layer' }));
+    expect(p.onRemoveLayer).toHaveBeenCalledWith('b');
   });
 });
