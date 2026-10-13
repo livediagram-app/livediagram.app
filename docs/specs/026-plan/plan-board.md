@@ -43,7 +43,7 @@ Stored on the element, shared by everyone, undone like any element edit:
 - **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after
   Maximise, for someone who may edit. It selects the board and opens its **element menu** under itself (the menu a
   right-click on the board opens, with the same rules: maximised or filling its tab, no Layer, Size, Rotation or
-  Animation; its **Board** category holds Board Setup, Columns, Swimlanes, Supported Cards and Card Layout; no Collaborate or
+  Animation; under Style, set apart by a separator, its own rows Board Setup, Columns, Swimlanes, Supported Cards and Card Layout; no Collaborate or
   Resources, [Nothing attached to Plan items](plan-mode.md#nothing-attached-to-plan-items)); pressed again it
   closes it. A board a collaborator holds opens nothing. In a Dashboard slot, which opens no element menu, the cog
   opens **Board Settings** as a popover instead (as a Sheet's and a chart's cogs do): Board Setup, Columns, Swimlanes,
@@ -108,9 +108,10 @@ Where each is set, so a setting lives with what it changes, never in one central
   at once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
   opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
   moves to it, anchored to its cog.
-- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as one
-  **Board** category (a flyout), holding five sub-sections, each a collapsible group under a small uppercase heading,
-  one open at a time (Board Setup when it opens), as the cog shows them: **Board Setup** (its **Title** and **Setup
+- **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as **five
+  flyout rows of the menu itself**, under Style and set apart from it by a separator, each opening its own panel to the
+  side. They used to sit one level down, as sub-sections of a **Board** flyout, which cost a click and hid what was
+  there behind a name the rows said better; the cog shows the same rows: **Board Setup** (its **Title** and **Setup
   Board**; a board on the canvas is added to the slides from its element menu, above; the board itself has no ⋯),
   **Columns** (below; left out on an All Cards or Archive board and on one not set up yet, which Setup Board sets up),
   **Swimlanes** (**Group Rows By**, one grid: None, Assignee,
