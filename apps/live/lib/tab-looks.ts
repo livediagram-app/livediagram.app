@@ -28,6 +28,11 @@ export type TabLookId =
   | 'lagoon'
   | 'textbook'
   | 'poster'
+  | 'billboard'
+  | 'patchwork'
+  | 'northern-lights'
+  | 'coffeehouse'
+  | 'schematic'
   // The Mashup card's random look (lib/look-mashup.ts): never in TAB_LOOKS, so never an activeLookId answer.
   | 'mashup';
 
@@ -46,9 +51,10 @@ export type TabLook = {
   patternOpacity?: number;
 };
 
-/** The looks, in the order the dialog shows them: three carousel pages of six. Everyday stays first; the rest are in
- *  a fixed, interleaved order (never shuffled at runtime) that puts two multi-colour looks (Rainbow, Pastel, Tropical,
- *  UML) on every page and never sets two neighbours on a page in the same theme or finish. */
+/** The looks, in the order the dialog shows them after the Mashup card: with it, four carousel pages of six.
+ *  Everyday stays first; the rest are in a fixed, interleaved order (never shuffled at runtime) that puts two
+ *  multi-colour looks (Rainbow, Pastel, Tropical, UML) on every page and never sets two neighbours on a page in the
+ *  same theme or finish. */
 export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'everyday',
@@ -143,16 +149,6 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'grid',
   },
   {
-    id: 'workshop',
-    label: 'Workshop',
-    description: 'Sand, Sketch, marker pen, soft grid',
-    theme: 'sand',
-    finish: 'sketch',
-    font: 'permanent-marker',
-    pattern: 'grid',
-    patternOpacity: 0.6,
-  },
-  {
     id: 'poster',
     label: 'Poster',
     description: 'Tropical, Professional, Abril, diagonal',
@@ -161,6 +157,16 @@ export const TAB_LOOKS: readonly TabLook[] = [
     font: 'abril-fatface',
     pattern: 'diagonal',
     patternOpacity: 0.4,
+  },
+  {
+    id: 'workshop',
+    label: 'Workshop',
+    description: 'Sand, Sketch, marker pen, soft grid',
+    theme: 'sand',
+    finish: 'sketch',
+    font: 'permanent-marker',
+    pattern: 'grid',
+    patternOpacity: 0.6,
   },
   {
     id: 'graph-paper',
@@ -217,6 +223,56 @@ export const TAB_LOOKS: readonly TabLook[] = [
     finish: 'flexible',
     font: 'poppins',
     pattern: 'hexagonal',
+    patternOpacity: 0.4,
+  },
+  {
+    id: 'billboard',
+    label: 'Billboard',
+    description: 'Sunset, Professional, Oswald, stripes',
+    theme: 'sunset',
+    finish: 'professional',
+    font: 'oswald',
+    pattern: 'stripes',
+    patternOpacity: 0.4,
+  },
+  {
+    id: 'patchwork',
+    label: 'Patchwork',
+    description: 'Pastel, Sketch, Lora, soft checks',
+    theme: 'pastel',
+    finish: 'sketch',
+    font: 'lora',
+    pattern: 'checkerboard',
+    patternOpacity: 0.3,
+  },
+  {
+    id: 'northern-lights',
+    label: 'Northern Lights',
+    description: 'Abyss, Flexible, Poppins, aurora',
+    theme: 'abyss',
+    finish: 'flexible',
+    font: 'poppins',
+    pattern: 'aurora',
+    patternOpacity: 0.6,
+  },
+  {
+    id: 'coffeehouse',
+    label: 'Coffeehouse',
+    description: 'Espresso, Sketch, Caveat, bricks',
+    theme: 'espresso',
+    finish: 'sketch',
+    font: 'caveat',
+    pattern: 'bricks',
+    patternOpacity: 0.4,
+  },
+  {
+    id: 'schematic',
+    label: 'Schematic',
+    description: 'UML, Professional, Roboto Mono, crosshatch',
+    theme: 'uml',
+    finish: 'professional',
+    font: 'roboto-mono',
+    pattern: 'crosshatch',
     patternOpacity: 0.4,
   },
 ];

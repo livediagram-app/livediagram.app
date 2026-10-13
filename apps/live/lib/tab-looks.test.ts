@@ -21,7 +21,7 @@ const tab = (over: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [shape()], ...over }) as Tab;
 
 describe('TAB_LOOKS', () => {
-  it('is three pages of six looks, in order, each built only from settings that exist', () => {
+  it('fills four pages of six after the Mashup card, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
       'Textbook',
@@ -33,16 +33,21 @@ describe('TAB_LOOKS', () => {
       'Doodle',
       'Editorial',
       'Midnight',
-      'Workshop',
       'Poster',
+      'Workshop',
       'Graph Paper',
       'Daydream',
       'Engineer',
       'Lagoon',
       'Studio',
       'Garden',
+      'Billboard',
+      'Patchwork',
+      'Northern Lights',
+      'Coffeehouse',
+      'Schematic',
     ]);
-    expect(TAB_LOOKS.length).toBe(LOOKS_PER_PAGE * 3);
+    expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 4);
     for (const look of TAB_LOOKS) {
       expect(resolveTheme(look.theme), look.id).toBeTruthy();
       expect(
@@ -57,18 +62,21 @@ describe('TAB_LOOKS', () => {
     }
   });
 
-  // The ordering rule: Everyday first, then a fixed interleave, so the multi-colour looks spread over the pages.
+  // The ordering rule: Everyday first (after the Mashup card), then a fixed interleave, so the multi-colour looks
+  // spread over the pages.
   const multicolour = (id: string) => {
     const theme = resolveTheme(id)!;
     return Boolean(theme.palette?.length || theme.shapeColors);
   };
-  const pages = Array.from({ length: TAB_LOOKS.length / LOOKS_PER_PAGE }, (_, i) =>
-    TAB_LOOKS.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE),
+  // The pages as the carousel shows them: the Mashup card takes the first slot of page one.
+  const shown = [null, ...TAB_LOOKS];
+  const pages = Array.from({ length: shown.length / LOOKS_PER_PAGE }, (_, i) =>
+    shown.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE).filter((l) => l !== null),
   );
 
-  it('opens on Everyday and has six multi-colour looks, two on every page', () => {
+  it('opens on Everyday and has eight multi-colour looks, two on every page', () => {
     expect(TAB_LOOKS[0]!.id).toBe('everyday');
-    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(6);
+    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(8);
     for (const page of pages) expect(page.filter((l) => multicolour(l.theme))).toHaveLength(2);
   });
 
