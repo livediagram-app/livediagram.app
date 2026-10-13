@@ -16,7 +16,8 @@ import {
 } from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import { cleanupElements } from '@/lib/tab-cleanup';
+import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
+import { assessCleanup, verdictNotice } from '@/lib/tidy-verdict';
 import { useTabTheme } from './useTabTheme';
 import { tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import {
@@ -31,6 +32,9 @@ type TabCanvasDeps = {
   // True when edits are disallowed (read-only role / locked tab). Every
   // handler no-ops when set.
   editsBlocked: boolean;
+  // Shows a short notice (a toast): a tidier refused because it would change nothing or damage
+  // the drawing says so rather than doing nothing silently.
+  notify?: (message: string) => void;
   activeId: string;
   activeTab: Tab;
   // History-aware element mutator. Used by auto-align and auto-layout.
@@ -47,7 +51,16 @@ type TabCanvasDeps = {
 };
 
 export function useTabCanvas(deps: TabCanvasDeps) {
-  const { editsBlocked, activeId, activeTab, commit, commitTabs, tickTabs, checkpointBurst } = deps;
+  const {
+    editsBlocked,
+    activeId,
+    activeTab,
+    commit,
+    commitTabs,
+    tickTabs,
+    checkpointBurst,
+    notify,
+  } = deps;
 
   // Shared body of the slider setters: one undoable step per gesture
   // (checkpoint when its burst opens), then history-less ticks for the
@@ -61,9 +74,23 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // unmount / page hide so the last drag isn't lost (docs/specs/017-telemetry/telemetry.md).
   const scheduleCanvasTelemetry = useDebouncedCanvasTelemetry();
 
-  const autoAlignTab = () => {
+  // A tidier that would change nothing or damage the drawing is refused with a notice
+  // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"). The Tidy Up popover
+  // judges first and greys such a tidier out, so its presses arrive `judged`; the command palette's
+  // are judged here, on the live tab (no preview is on screen there).
+  const refused = (kind: CleanupKind, judged: boolean | undefined): boolean => {
+    if (judged) return false;
+    const verdict = assessCleanup(activeTab.elements, kind, activeTab.layers);
+    const name = kind === 'align' ? 'Auto-align' : AUTO_LAYOUT_CHOICES[kind].tileName;
+    const notice = verdictNotice(name, verdict);
+    if (notice) notify?.(notice);
+    return notice !== null;
+  };
+
+  const autoAlignTab = (opts: { judged?: boolean } = {}) => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
+    if (refused('align', opts.judged)) return;
     // `commit` snapshots the pre-align state, so undo restores it.
     commit((els) => cleanupElements(els, 'align', activeTab.layers));
     track('Tab', 'Aligned');
@@ -73,13 +100,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // positions from the arrow graph rather than merely grid-snapping current
   // positions like Auto-align. `choice` picks the layout style (docs/specs/008-canvas/layout-cleanup.md
   // "Layout styles"): the smart layered default, a forced-direction
-  // flowchart, tree, or mindmap. Pins the laid-out block to the diagram's
-  // current top-left so it stays where the user is looking instead of
-  // jumping to the origin, and grid-snaps the result (the same final pass
-  // the AI-apply path uses). One undoable op via `commit`.
-  const autoLayoutTab = (choice: AutoLayoutChoice = 'smart') => {
+  // flowchart, tree, or mindmap. The tidy profile lands the laid-out block
+  // where the shapes were, clear of what it does not move, with centres on the
+  // grid. One undoable op via `commit`.
+  const autoLayoutTab = (choice: AutoLayoutChoice = 'smart', opts: { judged?: boolean } = {}) => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
+    if (refused(choice, opts.judged)) return;
     // Everything the layout needs, including the origin it pins to, is read
     // inside the updater from the elements it is given: a commit taken while a
     // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,

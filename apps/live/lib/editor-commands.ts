@@ -373,7 +373,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     id: 'auto-align',
     name: 'Auto-align to Grid',
     keywords: 'align grid snap straighten cleanup arrange',
-    run: h.autoAlign,
+    run: () => h.autoAlign(),
   });
   out.push({
     id: 'import',

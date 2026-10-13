@@ -25,12 +25,18 @@
 import { useRef, type MutableRefObject } from 'react';
 import type { Element, Tab } from '@livediagram/document';
 import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
+import { assessCleanup, type CleanupVerdict } from '@/lib/tidy-verdict';
 
 export type CleanupPreviewApi = {
   /** Lay the tab out as this cleanup would, without committing anything. */
   previewCleanup: (kind: CleanupKind) => void;
   /** Put the tab back as it was. Safe to call with no preview in flight. */
   endCleanupPreview: () => void;
+  /**
+   * Whether this cleanup is worth offering (lib/tidy-verdict.ts), judged on the tab as the author
+   * has it: the pre-hover snapshot while a preview is on screen, the live tab otherwise.
+   */
+  assessCleanupKind: (kind: CleanupKind) => CleanupVerdict;
 };
 
 export function useCleanupPreview(deps: {
@@ -82,5 +88,14 @@ export function useCleanupPreview(deps: {
     tickTabs(mapTabs);
   };
 
-  return { previewCleanup, endCleanupPreview };
+  const assessCleanupKind = (kind: CleanupKind): CleanupVerdict => {
+    const tab = tabsRef.current.find((t) => t.id === activeId);
+    const elements =
+      originalsRef.current?.tabId === activeId
+        ? originalsRef.current.elements
+        : (tab?.elements ?? []);
+    return assessCleanup(elements, kind, tab?.layers);
+  };
+
+  return { previewCleanup, endCleanupPreview, assessCleanupKind };
 }

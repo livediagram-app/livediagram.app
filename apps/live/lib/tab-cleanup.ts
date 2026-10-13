@@ -14,7 +14,6 @@ import {
   autoLayoutElements,
   isBoxed,
   lockedLayerElementIds,
-  unionRects,
   type Element,
   type ElementId,
   type Layer,
@@ -47,14 +46,36 @@ export function cleanupElements(
   // (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
   const lockedIds = lockedElementIds(elements, layers);
   if (kind === 'align') return autoAlignElements(elements, lockedIds);
-  const block = unionRects(elements.filter(isBoxed));
-  if (!block) return elements;
-  const { x: originX, y: originY } = block;
   const { options } = AUTO_LAYOUT_CHOICES[kind];
-  return autoAlignElements(
-    autoLayoutElements(elements, { ...options, originX, originY, lockedIds }),
-    lockedIds,
-  );
+  // The tidy profile keeps the author's sizes, lands the block where the nodes were and on the
+  // grid by their centres, so nothing else on the tab is touched. A layout reads the drawing it is
+  // given, so laying out its own result can refine it a little further; it runs until a pass moves
+  // nothing (bounded), so one press lands on the settled layout and a second finds it already tidy.
+  const layout = (els: Element[]) => autoLayoutElements(els, { ...options, lockedIds, tidy: true });
+  let out = layout(elements);
+  // A big tab gets one pass: each costs tens of ms there, and a hover preview must stay quick.
+  const passes = elements.length <= SETTLE_ELEMENT_LIMIT ? MAX_LAYOUT_PASSES : 1;
+  for (let pass = 1; pass < passes; pass++) {
+    const next = layout(out);
+    if (sameBoxes(out, next)) break;
+    out = next;
+  }
+  return out;
+}
+
+// Passes a layout gets to settle. Most settle on the first; a few hand-drawn trees take one more.
+export const MAX_LAYOUT_PASSES = 3;
+// Up to this many elements (shapes and arrows) a layout settles; beyond it one pass is the press.
+// A 300-shape tab's pass is ~38 ms, so three would break the hover budget there.
+export const SETTLE_ELEMENT_LIMIT = 300;
+
+// Whether every box sits exactly where it did: the arrows follow the boxes, so this is the layout.
+function sameBoxes(a: Element[], b: Element[]): boolean {
+  return a.every((el, i) => {
+    const o = b[i];
+    if (!o || !isBoxed(el) || !isBoxed(o)) return true;
+    return el.x === o.x && el.y === o.y;
+  });
 }
 
 /** Ids a cleanup must not move: each element's own lock plus its layer's. O(n). */

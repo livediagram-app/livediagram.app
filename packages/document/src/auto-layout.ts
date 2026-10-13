@@ -38,6 +38,7 @@ import { reduceCrossings } from './auto-layout-crossings';
 import { LANE_WIDTH, splitLongEdges } from './auto-layout-long-edges';
 import { placeCrossAxis } from './auto-layout-placement';
 import { positionMindmapComponent } from './auto-layout-mindmap';
+import { tidyLayoutElements } from './auto-layout-tidy';
 
 export type LayoutDirection = 'TB' | 'LR';
 
@@ -63,6 +64,12 @@ export type AutoLayoutOptions = {
   // stay put"): the editor passes its locked elements and everything on a locked layer. A locked
   // box is not a graph node, so arrows to it are not edges, and a locked arrow keeps its anchors.
   lockedIds?: ReadonlySet<ElementId>;
+  // The editor's Tidy Up (docs/specs/008-canvas/layout-cleanup.md "Tidy Up keeps a flowchart a
+  // flowchart"): an author's own drawing, not graph input. Sizes are kept, a decision's other exits
+  // sit beside it, loops break where the drawing turns back, arrows route square around the boxes,
+  // and the block lands where the nodes were, clear of what it does not move (auto-layout-tidy.ts).
+  // Origin options are ignored: the block starts at the nodes' own top-left.
+  tidy?: boolean;
 };
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
@@ -266,6 +273,7 @@ export function nodesLookUnplaced(elements: Element[]): boolean {
 // them). Non-boxed, non-arrow elements, edgeless boxed content, and arrows with
 // free / external endpoints pass through with only their position untouched.
 export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions = {}): Element[] {
+  if (opts.tidy) return tidyLayoutElements(elements, opts);
   const locked = opts.lockedIds;
   const allBoxed = elements.filter(isBoxed).filter((n) => !locked?.has(n.id));
   const arrows = elements.filter((e): e is ArrowElement => e.type === 'arrow');

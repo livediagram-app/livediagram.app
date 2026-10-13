@@ -621,6 +621,8 @@ export * from './element-fields';
 
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
 export * from './auto-layout';
+// The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
+export { tidyMindmapFits } from './auto-layout-tidy';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
