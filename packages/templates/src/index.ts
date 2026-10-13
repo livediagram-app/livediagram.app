@@ -28,7 +28,8 @@ export * from './page-layouts';
 export * from './slide-layouts';
 export * from './logo-layouts';
 export * from './layout-catalogue';
-export { buildPageLayout } from './page-layout-build';
+export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';
+export { carryPageContent, warmLayoutPlaceholders } from './page-layout-carry';
 export * from './template-tab';
 export { templateCatalogue, type TemplateCatalogue } from './template-catalogue';
 // The engine-free check; materialiseTemplateSheets (which carries the sheets engine) is the

@@ -475,6 +475,8 @@ export function IllustratePages({
           page={previewed}
           layout={view.layoutPreview.layout}
           tabFont={view.tabFont}
+          elements={view.elements}
+          pages={view.pages}
         />
       ) : null}
       {edit
