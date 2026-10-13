@@ -224,7 +224,9 @@ describe('settings catalogue', () => {
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      expect(changed, row.key).toEqual(own[row.key] ?? [row.key]);
+      // A presenter switch writes the one `presentation` object (lib/presentation-config).
+      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
+      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
     }
   });
 
