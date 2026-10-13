@@ -53,6 +53,8 @@ type EditorActionsDeps = {
   getAction: (elementId: string, actionId?: string | null) => ElementAction | undefined;
   // Whether the element is an Action panel, which holds a list.
   isActionCard: (elementId: string) => boolean;
+  // How many actions the element carries now (elementActions): an Action panel takes no more past ACTION_CARD_MAX.
+  actionCount: (elementId: string) => number;
   // The assigner: the signed-in account, or the guest participant
   // identity for a signed-out self-assignment. Null only before the
   // identity has hydrated.
@@ -187,6 +189,13 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       // Assigning needs a signed-in assigner; the tile is hidden for
       // guests so this is belt-and-braces.
       if (!deps.self.userId) return;
+      // A full panel takes no more (docs/specs/012-collaboration/action-panel.md "The data"): the add is refused
+      // before anything is written or emailed, rather than trimmed off the list after its email went out.
+      if (card && deps.actionCount(elementId) >= ACTION_CARD_MAX) {
+        console.info('[actions] add refused: the panel is full', { max: ACTION_CARD_MAX });
+        closeAssignActionDialog();
+        return;
+      }
       const action = createElementAction({
         name,
         description: input.description.trim(),

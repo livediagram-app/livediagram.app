@@ -1861,6 +1861,10 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       activeTab.elements.some(
         (e) => e.id === elementId && e.type === 'shape' && e.shape === 'action-card',
       ),
+    actionCount: (elementId) => {
+      const el = activeTab.elements.find((e) => e.id === elementId);
+      return el && isBoxed(el) ? elementActions(el).length : 0;
+    },
     // The signed-in account, or the hydrated guest participant identity
     // (guests may self-assign, docs/specs/012-collaboration/assigned-actions.md §2). Null only pre-hydration.
     self: {

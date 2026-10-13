@@ -6,6 +6,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  ACTION_CARD_MAX,
   createElementAction,
   createShape,
   elementActions,
@@ -26,6 +27,7 @@ const input = (name: string): SaveActionInput => ({
 });
 
 function setup(elements: Tab['elements']) {
+  const notify = vi.fn();
   let tabs: Tab[] = [{ id: 't', name: 'T', elements } as Tab];
   const find = (id: string) => tabs[0]!.elements.find((e) => e.id === id)!;
   const { result } = renderHook(() =>
@@ -42,11 +44,12 @@ function setup(elements: Tab['elements']) {
         const el = find(elementId);
         return el.type === 'shape' && el.shape === 'action-card';
       },
+      actionCount: (elementId) => elementActions(find(elementId)).length,
       self: { userId: 'u-me', name: 'Me' },
-      notify: vi.fn(),
+      notify,
     }),
   );
-  return { result, list: (id: string) => elementActions(find(id)), raw: find };
+  return { result, list: (id: string) => elementActions(find(id)), raw: find, notify };
 }
 
 const legacy = (): ElementAction =>
@@ -122,5 +125,29 @@ describe('useEditorActions on an ordinary element', () => {
     expect('actions' in raw(box.id)).toBe(false);
     act(() => result.current.deleteAction(box.id));
     expect('action' in raw(box.id)).toBe(false);
+  });
+});
+
+// docs/specs/012-collaboration/action-panel.md "The data": a panel holds at most ACTION_CARD_MAX actions, and an add
+// past that is refused whole: nothing stored, no email sent.
+describe('a full Action panel', () => {
+  it('refuses another action, and emails nobody about it', () => {
+    const full = Array.from({ length: ACTION_CARD_MAX }, (_, i) => ({ ...legacy(), id: `a${i}` }));
+    const card = {
+      ...createShape('action-card', 0, 0),
+      id: 'card',
+      actions: full,
+    } as Tab['elements'][number];
+    const { result, list, notify } = setup([card]);
+    act(() =>
+      result.current.saveAction('card', {
+        ...input('One too many'),
+        teamId: 'team',
+        notifyEmail: true,
+      }),
+    );
+    expect(list('card')).toHaveLength(ACTION_CARD_MAX);
+    expect(list('card').some((a) => a.name === 'One too many')).toBe(false);
+    expect(notify).not.toHaveBeenCalled();
   });
 });
