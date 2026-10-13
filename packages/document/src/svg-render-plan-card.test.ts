@@ -100,6 +100,17 @@ describe('planCardFace', () => {
     for (const f of [min, compact, detailed]) expect(f.svg).toContain('Ship it');
   });
 
+  it('gives the header end a row of its own on a narrow card, so nothing overlaps', () => {
+    const it0 = item('a', { title: 'Fix', priority: 'medium' });
+    const wide = planCardFace(it0, 0, 0, 260, { palette });
+    const narrow = planCardFace(it0, 0, 0, 120, { palette });
+    const yOf = (svg: string, text: string) =>
+      Number(new RegExp(`y="([\\d.]+)"[^>]*>${text}<`).exec(svg)?.[1]);
+    expect(yOf(wide.svg, 'Medium')).toBe(yOf(wide.svg, 'Task'));
+    expect(yOf(narrow.svg, 'Medium')).toBeGreaterThan(yOf(narrow.svg, 'Task'));
+    expect(narrow.height).toBeGreaterThan(wide.height);
+  });
+
   it('keeps a standalone element its own height', () => {
     const face = planCardFace(item('a', { title: 'Hi' }), 0, 0, 240, { palette, height: 120 });
     expect(face.height).toBe(120);

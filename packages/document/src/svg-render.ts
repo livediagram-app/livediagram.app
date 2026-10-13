@@ -113,6 +113,7 @@ import {
   type BoxedExportOptions,
   type ResolveIconArt,
   type ResolveImageHref,
+  type ResolvePlanArt,
   type ResolveStickerArt,
 } from './svg-render-describe';
 // Typefaces (docs/specs/004-interface-design/fonts.md): an export paints the face the canvas painted, and
@@ -525,6 +526,9 @@ export function renderElementsToSvg(
     // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
     // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
     sheets?: ReadonlyMap<string, SheetRenderModel>;
+    // A plan view's or placeholder's picture (a Dashboard laid out, @livediagram/plan-art); its labelled box when
+    // absent or answering nothing.
+    resolvePlanArt?: ResolvePlanArt;
   } = {},
 ): string {
   const padding = opts.padding ?? EXPORT_PADDING;
@@ -584,6 +588,7 @@ export function renderElementsToSvg(
             items: opts.items,
             itemTypes: opts.itemTypes,
             sheets: opts.sheets,
+            resolvePlanArt: opts.resolvePlanArt,
           }),
     );
     const opacity = layerOpacityOf(band.layer);

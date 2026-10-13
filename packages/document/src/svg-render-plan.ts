@@ -43,6 +43,9 @@ function text(
   return faceText(x, y, body, { size, color, ...o });
 }
 
+// The width a column header keeps for its count ("1 / 3") at 12 px, with the gaps either side of it.
+const countRoom = (count: string) => count.length * 12 * 0.56 + 28;
+
 // `s` on one line that fits `width`, ending in an ellipsis when it runs on.
 const fit = (s: string, width: number, size: number) => wrapLines(s, width, size, 1)[0] ?? '';
 
@@ -96,7 +99,9 @@ export function svgPlanBoard(
     }
     const count = col.column.wipLimit ? `${col.count} / ${col.column.wipLimit}` : `${col.count}`;
     parts.push(
-      text(cx + 10, top + 22, 13, p.text, fit(col.column.name, colW - 60, 13), { weight: 600 }),
+      text(cx + 10, top + 22, 13, p.text, fit(col.column.name, colW - countRoom(count), 13), {
+        weight: 600,
+      }),
     );
     parts.push(
       text(cx + colW - 10, top + 22, 12, col.overLimit ? '#b45309' : p.muted, count, {

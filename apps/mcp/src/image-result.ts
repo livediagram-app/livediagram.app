@@ -20,6 +20,7 @@ import { renderElementsToSvg, type SheetRenderModel, type Tab } from '@livediagr
 // elements render their real glyph in the inline image.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
 import { svgToPngBase64 } from './render';
+import { planPreviewFor } from './plan-preview';
 import { apiFetch, apiJson } from './api';
 import type { Env } from './env';
 import { textResult, type StructuredValue, type ToolResult } from './tool-helpers';
@@ -71,8 +72,11 @@ async function planContentFor(
   itemTypes?: readonly ItemTypeDef[];
   sheets?: ReadonlyMap<string, SheetRenderModel>;
 }> {
+  // Plan views (metrics, charts) read the cards too, as a Dashboard's do.
   const plan = tab.elements.some(
-    (el) => el.type === 'shape' && (el.shape === 'plan-board' || el.shape === 'plan-card'),
+    (el) =>
+      el.type === 'shape' &&
+      (el.shape === 'plan-board' || el.shape === 'plan-card' || el.shape === 'plan-view'),
   );
   const frames = sheetFramesOf(tab.elements as never);
   if ((!plan && frames.length === 0) || !auth?.documentId) return {};
@@ -120,13 +124,22 @@ export async function tabPreview(
   tab: Tab,
   auth?: { env: Env; token: string; documentId?: string },
 ): Promise<ImageBlock> {
-  const resolveImageHref = auth ? await buildImageResolver(auth.env, auth.token, tab) : undefined;
+  // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
+  const plain = (shown: Tab) =>
+    renderElementsToSvg(shown, { resolveIconArt: resolveIconExportArt, resolveStickerArt });
+  const laidOut = await planPreviewFor(tab, auth, plain).catch(() => null);
+  const shown = laidOut?.tab ?? tab;
+  const [resolveImageHref, content] = await Promise.all([
+    auth ? buildImageResolver(auth.env, auth.token, shown) : undefined,
+    planContentFor(shown, auth),
+  ]);
   const png = await svgToPngBase64(
-    renderElementsToSvg(tab, {
+    renderElementsToSvg(shown, {
       resolveImageHref,
       resolveIconArt: resolveIconExportArt,
       resolveStickerArt,
-      ...(await planContentFor(tab, auth)),
+      ...content,
+      ...(laidOut ? { resolvePlanArt: laidOut.artWith(content) } : {}),
     }),
   );
   return { type: 'image', data: png, mimeType: 'image/png' };

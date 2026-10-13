@@ -969,6 +969,12 @@ Worker (no DOM, no React).
   consumed by **both** the existing in-app export (dedup — the editor stops
   carrying its own copy) and the MCP worker. This is the reuse rule applied: one
   renderer, two callers.
+- **A Plan tab as the editor exports it.** A Board, Sheet or Dashboard tab previews as the editor's image export draws
+  it ([Plan tabs](../026-plan/plan-tabs.md) "Export", `@livediagram/plan-art` `planImageOf`): a Board tab its board
+  alone, a Dashboard its page laid out row by row, each metric, chart and card drawn from the document's cards
+  (`resolvePlanArt`), each tab slot that tab's board or Sheet. A Dashboard's preview reads the document's other tabs
+  (up to `PLAN_PREVIEW_TABS_MAX`, 20) and its plan's column names; any read that fails draws as the editor draws it
+  missing.
 - **Rasterise in the worker.** Convert the SVG to PNG with
   [`@resvg/resvg-wasm`](https://github.com/yisibl/resvg-js) (runs in the Workers
   runtime), return it as base64 MCP image content (`image/png`) — broadest client

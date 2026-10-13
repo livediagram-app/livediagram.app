@@ -251,8 +251,18 @@ export function planCardFace(
   } else {
     let cy = y + 9;
     const headEnd = bits('headEnd');
-    const endW = rightRow(headEnd, x + w - PAD - (flagged ? 14 : 0), cy);
-    const headH = row(bits('head'), x + PAD, cy, x + w - PAD - endW);
+    const head = bits('head');
+    const flagW = flagged ? 14 : 0;
+    // The header end sits at the right of the header row when both fit; on a narrow card it takes a row of its own.
+    const widthOf = (list: Bit[]) => list.reduce((sum, b) => sum + bitWidth(b) + BIT_GAP, 0);
+    const shared = widthOf(head) + widthOf(headEnd) <= w - PAD * 2 - flagW;
+    const endW = shared ? rightRow(headEnd, x + w - PAD - flagW, cy) : 0;
+    let headH = row(head, x + PAD, cy, x + w - PAD - flagW - endW);
+    if (!shared && headEnd.length) {
+      const below = cy + Math.max(headH, ROW_H) + 2;
+      rightRow(headEnd, x + w - PAD, below);
+      headH = below - cy + ROW_H;
+    }
     if (flagged && !measureOnly)
       out.push(
         faceText(x + w - PAD, cy + 14, '⚑', { size: 12, color: FLAG_COLOUR, anchor: 'end' }),
