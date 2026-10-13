@@ -10,27 +10,30 @@ import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { useLayerRowDrag } from '@/components/panels/useLayerRowDrag';
 import { useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
+  FooterDeleteIcon,
   MergeDownIcon,
   MergeUpIcon,
   PlusIcon,
-  TrashIcon,
 } from '@/components/panels/layers-panel-icons';
 import type { MovablePanelPopoverProps } from '@/components/primitives/MovablePanel.types';
 import { HoverCard } from '@livediagram/ui';
 
+// Under a lone layer, so a first visit learns what the panel is for.
+export const SINGLE_LAYER_HINT =
+  'Layers keep a background, content and notes apart. Add one to stack on top.';
+
 // The popover never moves, so its MovablePanel's move handler has nothing to do.
 const NO_MOVE = () => {};
 
-// The Layers panel (docs/specs/006-document/layers.md): one row per layer, TOP layer first (the
-// panel mirrors the paint stack like every design tool). Row = eye
-// toggle · a mini preview of just that layer's elements (all rows share
-// the whole tab's framing so content reads in place, like the Map) ·
-// name (double-click to rename inline) · element count · lock toggle,
-// with the whole row click setting the ACTIVE layer. Rows drag
-// to restack; the footer adds a layer above the active one or deletes
-// the active layer (inline confirm when it still has elements; the
-// last layer can't be deleted). Pure view: every mutation is a
-// callback into useLayersState.
+// The Layers panel (docs/specs/006-document/layers.md "The Layers panel"): a header bar (layer
+// count + New Layer), one roomy row per layer, TOP layer first (the panel mirrors the paint stack
+// like every design tool; see LayerRow), and a footer acting on the ACTIVE layer (Merge Up / Merge
+// Down / Delete, with an anchored confirm when it still has elements; the last layer can't be
+// deleted). Rows drag to restack. Pure view: every mutation is a callback into useLayersState.
+
+// Shared look of the footer's labelled buttons.
+const FOOTER_BUTTON =
+  'flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-transparent dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white dark:disabled:text-slate-600 dark:disabled:hover:bg-transparent';
 
 export function LayersPanel({
   layers,
@@ -184,12 +187,13 @@ export function LayersPanel({
   };
 
   // Row drag-to-restack — see useLayerRowDrag.
-  const { dragId, dropTargetId, rowPointerDown, rowPointerMove, rowPointerUp } = useLayerRowDrag({
-    listRef,
-    layers,
-    renamingId,
-    onReorderLayer,
-  });
+  const { dragId, dropTargetId, dropEdge, rowPointerDown, rowPointerMove, rowPointerUp } =
+    useLayerRowDrag({
+      listRef,
+      layers,
+      renamingId,
+      onReorderLayer,
+    });
 
   return (
     <MovablePanel
@@ -198,7 +202,10 @@ export function LayersPanel({
       // A popover over its bottom-right cluster button (docs/specs/006-document/layers.md): never placed or dragged.
       position={null}
       defaultCorner="bottom-right"
-      width="w-auto sm:w-64"
+      width="w-auto sm:w-80"
+      // Roomy rows (docs/specs/006-document/layers.md "The Layers panel"): the default 16rem crushed the
+      // name between the preview and the row controls.
+      popoverWidth="w-[22rem]"
       onMoveTo={NO_MOVE}
       popoverOpen={popoverOpen}
       popoverAnchor={popoverAnchor}
@@ -206,8 +213,26 @@ export function LayersPanel({
       dismissOnOutside
       onPopoverClose={onPopoverClose}
     >
-      <div className="px-2 pb-2">
-        <ul ref={listRef} className="flex flex-col gap-0.5">
+      <div className="pb-1">
+        <div className="flex items-center justify-between gap-2 px-3 pb-2">
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            {layers.length} {layers.length === 1 ? 'layer' : 'layers'}
+          </span>
+          <HoverCard title="New Layer" description="Add a layer above the active one.">
+            <button
+              type="button"
+              onClick={onAddLayer}
+              className="flex h-8 items-center gap-1.5 rounded-lg bg-brand-600 px-3 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+            >
+              <PlusIcon />
+              New Layer
+            </button>
+          </HoverCard>
+        </div>
+        <ul
+          ref={listRef}
+          className="flex max-h-[min(60vh,28rem)] flex-col gap-1 overflow-y-auto px-2 py-0.5"
+        >
           {rows.map((layer) => (
             <LayerRow
               key={layer.id}
@@ -223,6 +248,7 @@ export function LayersPanel({
               commitRename={commitRename}
               dragId={dragId}
               dropTargetId={dropTargetId}
+              dropEdge={dropEdge}
               enterRowPreview={enterRowPreview}
               leaveRowPreview={leaveRowPreview}
               rowPointerDown={rowPointerDown}
@@ -231,11 +257,17 @@ export function LayersPanel({
               openRowMenu={openRowMenu}
               onSelectLayer={onSelectLayer}
               onToggleVisibility={onToggleVisibility}
+              onToggleLock={onToggleLock}
             />
           ))}
         </ul>
-        <div className="mt-2 flex items-center justify-between gap-1.5">
-          <div className="flex gap-1.5">
+        {layers.length === 1 ? (
+          <p className="px-3 pb-1 pt-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+            {SINGLE_LAYER_HINT}
+          </p>
+        ) : null}
+        <div className="mt-2 flex items-center justify-between gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
+          <div className="flex gap-0.5">
             <HoverCard
               title="Merge Up"
               description={
@@ -249,9 +281,10 @@ export function LayersPanel({
                 disabled={!canMergeUp}
                 aria-label="Merge with the layer above"
                 onClick={() => onMergeLayer('above')}
-                className="flex items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
+                className={FOOTER_BUTTON}
               >
                 <MergeUpIcon />
+                Merge Up
               </button>
             </HoverCard>
             <HoverCard
@@ -267,47 +300,37 @@ export function LayersPanel({
                 disabled={!canMergeDown}
                 aria-label="Merge with the layer below"
                 onClick={() => onMergeLayer('below')}
-                className="flex items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-500 transition hover:bg-slate-50 hover:text-slate-700 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
+                className={FOOTER_BUTTON}
               >
                 <MergeDownIcon />
+                Merge Down
               </button>
             </HoverCard>
           </div>
-          <div className="flex gap-1.5">
-            <HoverCard title="Add Layer" description="Insert a new layer above the active one.">
-              <button
-                type="button"
-                onClick={onAddLayer}
-                className="flex items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                <PlusIcon />
-                Add
-              </button>
-            </HoverCard>
-            <HoverCard
-              title="Delete Layer"
-              description={
-                layers.length <= 1
-                  ? 'The last layer can’t be deleted.'
-                  : 'Delete the active layer and everything on it.'
-              }
+          <HoverCard
+            title="Delete Layer"
+            description={
+              layers.length <= 1
+                ? 'The last layer can’t be deleted.'
+                : 'Delete the active layer and everything on it.'
+            }
+          >
+            <button
+              type="button"
+              disabled={layers.length <= 1}
+              aria-label="Delete Layer"
+              onClick={(e) => {
+                // Empty layers delete straight away; a populated one
+                // asks first via an anchored popover (docs/specs/006-document/layers.md).
+                if (activeCount === 0) onRemoveLayer(activeLayerId);
+                else setConfirmAnchor(e.currentTarget);
+              }}
+              className={FOOTER_BUTTON}
             >
-              <button
-                type="button"
-                disabled={layers.length <= 1}
-                aria-label="Delete Layer"
-                onClick={(e) => {
-                  // Empty layers delete straight away; a populated one
-                  // asks first via an anchored popover (docs/specs/006-document/layers.md).
-                  if (activeCount === 0) onRemoveLayer(activeLayerId);
-                  else setConfirmAnchor(e.currentTarget);
-                }}
-                className="flex items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:text-slate-300 disabled:hover:bg-white dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:disabled:text-slate-600 dark:disabled:hover:bg-slate-900"
-              >
-                <TrashIcon />
-              </button>
-            </HoverCard>
-          </div>
+              <FooterDeleteIcon />
+              Delete
+            </button>
+          </HoverCard>
         </div>
         {rowMenu
           ? (() => {
@@ -318,6 +341,8 @@ export function LayersPanel({
                 <LayerRowMenu
                   layer={menuLayer}
                   elementCount={counts.get(menuLayer.id) ?? 0}
+                  thumbViewBox={thumbViewBox}
+                  thumbMarkup={thumbMarkup.get(menuLayer.id)}
                   isTop={idx === layers.length - 1}
                   isBottom={idx === 0}
                   anchor={{ panelLeft: rowMenu.panelLeft, rowBottom: rowMenu.rowBottom }}
@@ -329,6 +354,7 @@ export function LayersPanel({
                   onBringToTop={() => onReorderLayer(menuLayer.id, layers.length - 1)}
                   onSendToBottom={() => onReorderLayer(menuLayer.id, 0)}
                   onHideOthers={() => onHideOtherLayers(menuLayer.id)}
+                  onToggleVisibility={() => onToggleVisibility(menuLayer.id)}
                   onToggleLock={() => onToggleLock(menuLayer.id)}
                   onClear={() => onClearLayer(menuLayer.id)}
                   onMergeUp={() => onMergeLayer('above')}

@@ -1,42 +1,56 @@
 import {
   EllipsisIcon as SharedEllipsisIcon,
-  LockIcon as SharedLockIcon,
   lucideGlyph,
   PlusIcon as SharedPlusIcon,
-  TrashIcon as SharedTrashIcon,
 } from '@livediagram/ui';
 import {
   lucideArrowDownToLine,
   lucideArrowUpToLine,
+  lucideBringToFront,
+  lucideEraser,
   lucideEye,
   lucideEyeOff,
+  lucideGripVertical,
+  lucideLock,
+  lucideLockOpen,
+  lucideMerge,
+  lucidePencil,
+  lucideScanEye,
+  lucideSendToBack,
+  lucideTrash2,
 } from '@livediagram/icons/lucide';
 
-// Glyphs for the Layers panel (docs/specs/006-document/layers.md): the row controls (eye / eye-off,
-// lock, ellipsis, merge up / down), the footer add / delete, and the LayersStackIcon the
-// CanvasChrome cluster button wears.
+// Glyphs for the Layers panel (docs/specs/006-document/layers.md): the row controls (grip, eye,
+// lock, ellipsis), the header's New Layer, the footer's merge + delete, the row menu's verbs, and
+// the LayersStackIcon the CanvasChrome cluster button wears. Row controls draw at 16px inside
+// 32px targets; the footer and menu draw at 14-16px.
 
 export { LayersStackIcon } from '@livediagram/ui';
+export const GripIcon = lucideGlyph(lucideGripVertical, 14);
+// 13px: shared with the slide deck rows, the page deck button and the role indicator.
 export const EyeIcon = lucideGlyph(lucideEye, 13);
 export const EyeOffIcon = lucideGlyph(lucideEyeOff, 13);
-
-// `size` defaults to the row control's 12px; the row menu's Lock item draws it at 14.
-export function LockIcon({ size = 12 }: { size?: number } = {}) {
-  return <SharedLockIcon size={size} />;
-}
-
-export function EllipsisIcon() {
-  return <SharedEllipsisIcon size={13} />;
-}
+export const RowEyeIcon = lucideGlyph(lucideEye, 16);
+export const RowEyeOffIcon = lucideGlyph(lucideEyeOff, 16);
+export const LockIcon = lucideGlyph(lucideLock, 15);
+export const UnlockIcon = lucideGlyph(lucideLockOpen, 15);
+export const SoloIcon = lucideGlyph(lucideScanEye, 16);
+export const BringToTopIcon = lucideGlyph(lucideBringToFront, 16);
+export const SendToBottomIcon = lucideGlyph(lucideSendToBack, 16);
+export const MergeIcon = lucideGlyph(lucideMerge, 16);
+export const RenameIcon = lucideGlyph(lucidePencil, 16);
+export const ClearIcon = lucideGlyph(lucideEraser, 16);
+export const DeleteIcon = lucideGlyph(lucideTrash2, 16);
 
 // Merge into the layer above / below: an arrow meeting a line.
-export const MergeUpIcon = lucideGlyph(lucideArrowUpToLine, 12);
-export const MergeDownIcon = lucideGlyph(lucideArrowDownToLine, 12);
+export const MergeUpIcon = lucideGlyph(lucideArrowUpToLine, 14);
+export const MergeDownIcon = lucideGlyph(lucideArrowDownToLine, 14);
+export const FooterDeleteIcon = lucideGlyph(lucideTrash2, 14);
 
-export function PlusIcon() {
-  return <SharedPlusIcon size={11} />;
+export function EllipsisIcon() {
+  return <SharedEllipsisIcon size={16} />;
 }
 
-export function TrashIcon() {
-  return <SharedTrashIcon size={12} />;
+export function PlusIcon() {
+  return <SharedPlusIcon size={14} />;
 }
