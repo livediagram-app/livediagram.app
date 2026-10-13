@@ -18,6 +18,7 @@
 
 import type { Rect } from './geometry-primitives';
 import type { Anchor, ArrowElement, ElementId } from './index';
+import { rectGrid, type RectGrid } from './auto-layout-route-grid';
 
 type Pt = { x: number; y: number };
 
@@ -73,6 +74,7 @@ export function routeTidyArrows(input: RouteInput): Map<ElementId, ArrowElement>
 
   // Every box a leg must clear, built once; each route skips its own two nodes by identity.
   const blockers = [...nodes.values(), ...obstacles];
+  const grid = rectGrid(blockers, CLEARANCE);
   const out = new Map<ElementId, ArrowElement>();
   for (const req of input.requests) {
     const u = nodes.get(req.from);
@@ -89,6 +91,7 @@ export function routeTidyArrows(input: RouteInput): Map<ElementId, ArrowElement>
       bv: bandOf.get(req.to)!,
       bands,
       blockers,
+      grid,
     };
     const candidates = routeCandidates(
       ctx,
@@ -126,6 +129,8 @@ type Ctx = {
   bv: number;
   bands: Band[];
   blockers: Rect[];
+  /** `blockers`, indexed by place: a leg is tested against the boxes near it. */
+  grid: RectGrid;
 };
 
 // Rows of boxes: boxes whose vertical spans overlap share a band.
@@ -344,8 +349,13 @@ function routeHits(points: Pt[], ctx: Ctx): number {
   for (let i = 0; i + 1 < points.length; i++) {
     const p = points[i]!;
     const q = points[i + 1]!;
-    for (const r of ctx.blockers)
-      if (r !== ctx.nu && r !== ctx.nv && legHits(p, q, r, CLEARANCE)) hits++;
+    const near = ctx.grid.near(
+      Math.min(p.x, q.x),
+      Math.min(p.y, q.y),
+      Math.max(p.x, q.x),
+      Math.max(p.y, q.y),
+    );
+    for (const r of near) if (r !== ctx.nu && r !== ctx.nv && legHits(p, q, r, CLEARANCE)) hits++;
     // Its own boxes: only the first leg may touch the source, the last the target.
     if (i > 0 && legHits(p, q, ctx.u, -1)) hits++;
     if (i < points.length - 2 && legHits(p, q, ctx.v, -1)) hits++;

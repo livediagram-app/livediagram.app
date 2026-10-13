@@ -15,8 +15,8 @@ import type { Edge } from './auto-layout-shared';
 const SWEEPS = 6;
 
 // How many pairs of adjacent-rank edges cross, for one full ordering. Edges are bucketed by the
-// pair of ranks they join in one pass, so the cost is the edges plus each bucket's pairs, rather
-// than every edge tested against every rank.
+// pair of ranks they join in one pass, and each bucket's crossings are counted as inversions, so the
+// cost is E log V rather than every pair of edges between two ranks.
 export function countCrossings(
   order: ElementId[][],
   edges: Edge[],
@@ -40,14 +40,39 @@ export function countCrossings(
     spans[Math.min(a, b)]!.push([index.get(top)!, index.get(bottom)!]);
   }
   let crossings = 0;
-  for (const span of spans)
-    for (let i = 0; i < span.length; i++)
-      for (let j = i + 1; j < span.length; j++) {
-        const [a1, b1] = span[i]!;
-        const [a2, b2] = span[j]!;
-        if ((a1 - a2) * (b1 - b2) < 0) crossings++;
-      }
+  for (let r = 0; r + 1 < order.length; r++)
+    crossings += crossingPairs(spans[r]!, order[r + 1]!.length);
   return crossings;
+}
+
+// Pairs of edges [top, bottom] that cross: one strictly left of the other at the top and strictly
+// right of it at the bottom. Edges are taken left to right by their top end, and a Fenwick tree over
+// the bottom positions counts, for each, the earlier ones that land strictly right of it; edges
+// sharing a top end are counted before any of them is added, so they never cross each other.
+function crossingPairs(span: [number, number][], width: number): number {
+  if (span.length < 2) return 0;
+  const sorted = [...span].sort((p, q) => p[0] - q[0]);
+  const tree = new Int32Array(width + 1);
+  const add = (i: number) => {
+    for (let k = i + 1; k <= width; k += k & -k) tree[k]!++;
+  };
+  // How many added edges land at or left of bottom position i.
+  const upTo = (i: number) => {
+    let n = 0;
+    for (let k = i + 1; k > 0; k -= k & -k) n += tree[k]!;
+    return n;
+  };
+  let pairs = 0;
+  let added = 0;
+  for (let i = 0; i < sorted.length;) {
+    let j = i;
+    while (j < sorted.length && sorted[j]![0] === sorted[i]![0]) j++;
+    for (let k = i; k < j; k++) pairs += added - upTo(sorted[k]![1]);
+    for (let k = i; k < j; k++) add(sorted[k]![1]);
+    added += j - i;
+    i = j;
+  }
+  return pairs;
 }
 
 // Reorders each rank to cross fewer edges, or returns the order it was given

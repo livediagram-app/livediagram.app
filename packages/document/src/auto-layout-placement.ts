@@ -36,20 +36,29 @@ function edgeWeight(a: ElementId, b: ElementId, lanes: Set<ElementId>): number {
   return n === 2 ? 8 : n === 1 ? 2 : 1;
 }
 
-// Closest positions to `want` (least squares) that keep `rank` in order with
-// `gap` between neighbouring boxes of cross size `size`.
-function legalise(
+// Where each node of `rank` sits, packed tight from the first, with `gap` between neighbouring
+// boxes of cross size `size`. Fixed for a rank, so it is worked out once, not on every sweep.
+function rankOffsets(
   rank: ElementId[],
-  want: Map<ElementId, number>,
   size: (id: ElementId) => number,
   gap: (a: ElementId, b: ElementId) => number,
-): Map<ElementId, number> {
-  // Shift out the spacing so the constraint becomes plain non-decreasing.
+): number[] {
   const offset: number[] = [];
   rank.forEach((id, i) => {
     const prev = rank[i - 1]!;
     offset.push(i === 0 ? 0 : offset[i - 1]! + size(prev) / 2 + gap(prev, id) + size(id) / 2);
   });
+  return offset;
+}
+
+// Closest positions to `want` (least squares) that keep `rank` in order with at least the
+// spacing `offset` (rankOffsets) holds between neighbours.
+function legalise(
+  rank: ElementId[],
+  want: Map<ElementId, number>,
+  offset: number[],
+): Map<ElementId, number> {
+  // Shift out the spacing so the constraint becomes plain non-decreasing.
   const blocks: { sum: number; count: number }[] = [];
   rank.forEach((id, i) => {
     blocks.push({ sum: want.get(id)! - offset[i]!, count: 1 });
@@ -103,6 +112,7 @@ export function placeCrossAxis(
     (down.get(hi) ?? down.set(hi, []).get(hi)!).push({ id: lo, w: wHi });
     (up.get(lo) ?? up.set(lo, []).get(lo)!).push({ id: hi, w: wLo });
   }
+  const offsets = new Map(order.map((rank) => [rank, rankOffsets(rank, size, gapOf)] as const));
   const pull = (rank: ElementId[], sides: Map<ElementId, { id: ElementId; w: number }[]>[]) => {
     const want = new Map<ElementId, number>();
     for (const id of rank) {
@@ -122,7 +132,7 @@ export function placeCrossAxis(
       }
       want.set(id, wsum > 0 ? sum / wsum : pos.get(id)!);
     }
-    for (const [id, v] of legalise(rank, want, size, gapOf)) pos.set(id, v);
+    for (const [id, v] of legalise(rank, want, offsets.get(rank)!)) pos.set(id, v);
   };
   for (let s = 0; s < SWEEP_PAIRS; s++) {
     for (let r = 1; r < order.length; r++) pull(order[r]!, [up]);
@@ -144,7 +154,7 @@ export function placeCrossAxis(
       const below = only ? (down.get(only) ?? []).filter((n) => !side.has(n.id)) : [];
       want.set(id, only && below.length === 1 ? pos.get(only)! : pos.get(id)!);
     }
-    for (const [id, v] of legalise(rank, want, size, gapOf)) pos.set(id, v);
+    for (const [id, v] of legalise(rank, want, offsets.get(rank)!)) pos.set(id, v);
   }
   return pos;
 }

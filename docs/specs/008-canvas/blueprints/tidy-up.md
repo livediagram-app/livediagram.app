@@ -19,6 +19,7 @@ Scope, by file:
 | `packages/document/src/auto-layout-tidy-rank.ts`                                  | Drawn-order loop breaking, side steps, zero-length side edges in the layering              |
 | `packages/document/src/auto-layout-tidy-flow.ts`                                  | One component's flow positions: blocks, label-sized gaps, lane centres                     |
 | `packages/document/src/auto-layout-route.ts`                                      | Square arrow routes around the boxes                                                       |
+| `packages/document/src/auto-layout-route-grid.ts`                                 | Bucket grid of the boxes a route must clear                                                |
 | `apps/live/hooks/canvas/useCleanupPreview.ts`                                     | `previewCleanup(kind)` / `endCleanupPreview()`: snapshot, present-only ticks, revert       |
 | `apps/live/components/canvas/tidy-up-actions.ts`                                  | `TidyUpActions` and the pure gate `tidyUpOffered`                                          |
 | `apps/live/components/canvas/TidyUpPopover.tsx`                                   | The popover: the Auto Layout tiles, the Auto-align row, the empty and locked notes, Escape |
@@ -131,7 +132,12 @@ open would still have its element moves refused by `applyParticipantOp`.
   best of three, with the tidy profile: the checkout template 0.2 to 1.4 ms per tidier; 50 nodes Smart 7 ms;
   100 nodes Smart 18 ms; 300 nodes (one pass, past `SETTLE_ELEMENT_LIMIT`) Smart about 40 ms, Tree 52 ms,
   Mindmap 5 ms, Auto-align 3.6 ms. Crossing reduction builds each node's neighbours once and buckets edges by rank
-  pair (it rescanned every edge per node per sweep: 166 ms of a 210 ms pass at 300 nodes, now 8 ms).
+  pair (it rescanned every edge per node per sweep: 166 ms of a 210 ms pass at 300 nodes, now 8 ms), and counts
+  each pair's crossings as inversions with a Fenwick tree rather than testing every pair of edges. Placement works
+  out each rank's spacing once, not on every sweep, and the router tests a leg only against the boxes in the grid
+  cells it passes (`auto-layout-route-grid.ts`, `ROUTE_GRID_CELL`). Together these took the 300-node pass, best of
+  fifteen CPU-time runs, from Smart 36.6 / Flow down 34.3 / Flow right 32.1 ms to 22.0 / 17.5 / 18.8 ms: CI runs
+  this test under coverage on slower runners, where the earlier figures read 156 to 170 ms and broke the budget.
 - **First load:** the tidy profile, its router, the verdicts and `cleanupElements` load on demand
   (`lib/tidy-engine.ts`): the popover loads them as it opens and judges once they are here; a palette command loads
   them at the press; a hover before they arrive shows nothing. The document page's initial JS, measured as the
@@ -177,26 +183,27 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 
 ## Testing
 
-| Spec rule                                                                                                   | Test                                             |
-| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Button left of Layers, only when offered                                                                    | `LayersThemeStrip.test.tsx`                      |
-| Diagram-only, Editor-only, not in Zen                                                                       | `tidy-up-actions.test.ts` (`tidyUpOffered`)      |
-| Five tiles in order + Auto-align row                                                                        | `TidyUpPopover.test.tsx`                         |
-| Press ends preview, runs, closes, in order                                                                  | `TidyUpPopover.test.tsx`                         |
-| Mouse hover previews, touch does not                                                                        | `TidyUpPopover.test.tsx`                         |
-| Unmount reverts                                                                                             | `TidyUpPopover.test.tsx`                         |
-| Empty and locked notes, tiles disabled                                                                      | `TidyUpPopover.test.tsx`                         |
-| Snapshot, no stacking, tab-scoped revert                                                                    | `useCleanupPreview.test.ts`                      |
-| Telemetry on open                                                                                           | `useDockPopovers.test.tsx`                       |
-| Hover budget at the worst case                                                                              | `tab-cleanup.perf.test.ts`                       |
-| Greyed-out tiles, reasons, lanes note                                                                       | `TidyUpPopover.test.tsx`                         |
-| Judged one per task; judged flag on press                                                                   | `TidyUpPopover.test.tsx`                         |
-| Palette refusal with a notice                                                                               | `useTabCanvas.test.ts`                           |
-| Every verdict and its copy                                                                                  | `tidy-verdict.test.ts`                           |
-| Checkout survives Auto-align, Smart, Down                                                                   | `tidy-verdict.test.ts`                           |
-| A second press finds a template tidy                                                                        | `tidy-verdict.test.ts`                           |
-| Auto-align keeps lines, spacing, no overlap                                                                 | `auto-align-lines.test.ts`, `auto-align.test.ts` |
-| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/document/src/auto-layout-tidy.test.ts` |
+| Spec rule                                                                                                   | Test                                                                                    |
+| ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Button left of Layers, only when offered                                                                    | `LayersThemeStrip.test.tsx`                                                             |
+| Diagram-only, Editor-only, not in Zen                                                                       | `tidy-up-actions.test.ts` (`tidyUpOffered`)                                             |
+| Five tiles in order + Auto-align row                                                                        | `TidyUpPopover.test.tsx`                                                                |
+| Press ends preview, runs, closes, in order                                                                  | `TidyUpPopover.test.tsx`                                                                |
+| Mouse hover previews, touch does not                                                                        | `TidyUpPopover.test.tsx`                                                                |
+| Unmount reverts                                                                                             | `TidyUpPopover.test.tsx`                                                                |
+| Empty and locked notes, tiles disabled                                                                      | `TidyUpPopover.test.tsx`                                                                |
+| Snapshot, no stacking, tab-scoped revert                                                                    | `useCleanupPreview.test.ts`                                                             |
+| Telemetry on open                                                                                           | `useDockPopovers.test.tsx`                                                              |
+| Hover budget at the worst case                                                                              | `tab-cleanup.perf.test.ts`                                                              |
+| Greyed-out tiles, reasons, lanes note                                                                       | `TidyUpPopover.test.tsx`                                                                |
+| Judged one per task; judged flag on press                                                                   | `TidyUpPopover.test.tsx`                                                                |
+| Palette refusal with a notice                                                                               | `useTabCanvas.test.ts`                                                                  |
+| Every verdict and its copy                                                                                  | `tidy-verdict.test.ts`                                                                  |
+| Checkout survives Auto-align, Smart, Down                                                                   | `tidy-verdict.test.ts`                                                                  |
+| A second press finds a template tidy                                                                        | `tidy-verdict.test.ts`                                                                  |
+| Auto-align keeps lines, spacing, no overlap                                                                 | `auto-align-lines.test.ts`, `auto-align.test.ts`                                        |
+| Tidy profile: spine, side steps, square routes clear of boxes, title, settled, units, riders, dashed arrows | `packages/document/src/auto-layout-tidy.test.ts`                                        |
+| The route grid misses no box a leg could hit; crossings match a pair-by-pair count                          | `packages/document/src/auto-layout-route-grid.test.ts`, `auto-layout-crossings.test.ts` |
 
 ## Constants and configuration
 
@@ -214,6 +221,7 @@ present-only tick, inside the budget above. No LCP impact (lazy).
 | `TIDY_RANK_GAP` / `TIDY_SIBLING_GAP` | 56 / 48 | The checkout's own rows are 44 apart (D103)                    | 40–90        |
 | `TIDY_CLEARANCE`                     | 24      | Room between the block and a title (D103)                      | 16–40        |
 | `CLEARANCE` / `LOOP_OFFSET` (route)  | 10 / 32 | A leg's gap to a box; a loop's lane outside (D104)             | 6–16 / 24–48 |
+| `ROUTE_GRID_CELL`                    | 160 px  | About one box and its gap: a leg spans a few cells             | 80–400       |
 | `LANE_GAP` / `LANE_GAP_DRIFT`        | 48 / 16 | A swimlane's lanes are 36 apart; a layout's own spacing (D105) | 24–64 / 8–24 |
 
 ## Defaults ledger
