@@ -302,8 +302,8 @@ export function MindMapFlows() {
   ];
   let y = 40;
   const drawn = groups.map((g) => {
-    const top = y + 14;
-    y = top + g.rows.length * ROW + 14;
+    const top = y + 18;
+    y = top + g.rows.length * ROW + 10;
     return { ...g, top };
   });
   return (
@@ -322,7 +322,7 @@ export function MindMapFlows() {
       </Label>
       {drawn.map((g) => (
         <g key={g.title}>
-          <Label x={X} y={g.top - 4} size={9} weight={700} tone="muted">
+          <Label x={X} y={g.top - 7} size={9} weight={700} tone="muted">
             {g.title}
           </Label>
           <rect
@@ -351,11 +351,11 @@ export function MindMapFlows() {
                   <path d={`M${X} ${ry} H${X + W}`} className="stroke-slate-100" strokeWidth={1} />
                 ) : null}
                 {r.glyph ? (
-                  <g transform={`translate(${X + 22} ${ry + ROW / 2})`}>{r.glyph}</g>
+                  <g transform={`translate(${X + 22} ${ry + ROW / 2}) scale(0.6)`}>{r.glyph}</g>
                 ) : null}
                 <Label
-                  x={X + (r.glyph ? 46 : 14)}
-                  y={ry + ROW / 2 + 4}
+                  x={X + (r.glyph ? 40 : 14)}
+                  y={ry + ROW / 2 + 3.5}
                   size={10.5}
                   weight={r.on ? 700 : 500}
                   tone={r.on ? 'accent' : 'body'}
