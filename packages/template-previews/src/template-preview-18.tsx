@@ -355,22 +355,24 @@ export function templatePreviewGroup18(kind: TemplateKind): ReactElement | null 
       );
     case 'approval-workflow':
       // Three desks as tinted columns (Requester, Manager, Finance), each with its glyph and name in the header band;
-      // a solid start, two decisions, a soft finish, the usual-wait chips, and the two ways a No goes (a dashed revise
-      // step back with the requester, a dashed final decline). Hover story: the request is approved, the finish pulses.
+      // the request flows DOWN through them, a live flowchart (docs/specs/009-elements/flowchart.md): a solid start,
+      // two decisions whose Yes and No leave by their corners, a soft finish, the usual-wait chips on the reviews' corners,
+      // and the two ways a No goes (a dashed revise step that loops back to the start, a dashed final decline).
+      // Hover story: the manager says Yes, the request crosses to Finance, the finish pulses.
       return (
         <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
           <Title w={34} cw={46} />
           {[
-            { x: 2, w: 14, hue: VIOLET },
-            { x: 18, w: 22, hue: SKY },
-            { x: 42, w: 36, hue: GREEN },
+            { x: 2, w: 16, hue: VIOLET },
+            { x: 18, w: 20, hue: SKY },
+            { x: 38, w: 40, hue: GREEN },
           ].map(({ x, w, hue }) => (
             <g key={x}>
               <rect
                 x={x}
                 y="8"
                 width={w}
-                height="40"
+                height="41"
                 rx="1"
                 fill={hue.band}
                 stroke={hue.edge}
@@ -386,51 +388,29 @@ export function templatePreviewGroup18(kind: TemplateKind): ReactElement | null 
                 strokeWidth="0.5"
               />
               <Bar x={x + w / 2 - 1.5} y={9.95} w={5} h={1.1} fill={hue.ink} />
-              <Bar x={x + w / 2 - 3} y={15.2} w={6} h={0.7} fill={MUTED} />
             </g>
           ))}
           <g fill="none" stroke={LINE} strokeWidth="0.55">
-            <path d="M14.5 22 H20" />
-            <path d="M28 22 H31" />
-            <path d="M39 22 H44" />
-            <path d="M52 22 H56" />
-            <path d="M64 22 H67" />
-            <path d="M35 24.8 V38 H14" />
-            <path d="M60 24.8 V35.8" />
-            <path d="M9 35.8 V24.2" />
+            <path d="M10 18.2 V19.6 H28 V21" />
+            <path d="M28 25 V26.2" />
+            <path d="M32 29 H58 V32.5" />
+            <path d="M24 29 H10 V32.5" />
+            <path d="M5 34.5 H3.5 V16 H4.5" />
+            <path d="M58 36.5 V37.2" />
+            <path d="M54 40 H49 V43.6" />
+            <path d="M62 40 H67 V43.6" />
           </g>
-          <Stadium cx={9} cy={22} w={11} hue={VIOLET} solid />
-          <Step cx={24} cy={22} w={8} hue={SKY} />
-          <Diamond cx={35} cy={22} hue={SKY} />
-          <Step cx={48} cy={22} w={8} hue={GREEN} />
-          <Diamond cx={60} cy={22} hue={GREEN} />
-          <Stadium cx={72} cy={22} w={10} hue={GREEN} solid={false} />
-          {/* The usual wait at each desk. */}
+          <Stadium cx={10} cy={16} w={11} hue={VIOLET} solid />
+          <Step cx={28} cy={23} w={13} hue={SKY} />
+          <Diamond cx={28} cy={29} hue={SKY} />
+          <Step cx={58} cy={34.5} w={13} hue={GREEN} />
+          <Diamond cx={58} cy={40} hue={GREEN} />
+          <Stadium cx={49} cy={45.8} w={12} hue={GREEN} solid={false} />
+          <Step cx={10} cy={34.5} w={11} hue={VIOLET} dashed />
           <rect
-            x="20"
-            y="26.5"
-            width="8"
-            height="2.4"
-            rx="1.2"
-            fill={SKY.strip}
-            stroke={SKY.edge}
-            strokeWidth="0.4"
-          />
-          <rect
-            x="44"
-            y="26.5"
-            width="8"
-            height="2.4"
-            rx="1.2"
-            fill={GREEN.strip}
-            stroke={GREEN.edge}
-            strokeWidth="0.4"
-          />
-          <Step cx={9} cy={38} w={10} hue={VIOLET} dashed />
-          <rect
-            x="55.5"
-            y="35.8"
-            width="9"
+            x="61"
+            y="43.6"
+            width="12"
             height="4.4"
             rx="2.2"
             fill={WHITE}
@@ -438,24 +418,45 @@ export function templatePreviewGroup18(kind: TemplateKind): ReactElement | null 
             strokeWidth="0.55"
             strokeDasharray="1 0.6"
           />
-          <Bar x={57.5} y={37.6} w={5} h={0.8} fill="rgb(51 65 85)" />
-          {/* Hover story: Yes at both gates; the purchase is approved. */}
+          <Bar x={63.5} y={45.4} w={7} h={0.8} fill="rgb(51 65 85)" />
+          {/* The usual wait at each desk, on its review's corner. */}
+          <rect
+            x="31"
+            y="19.9"
+            width="6"
+            height="2.2"
+            rx="1.1"
+            fill={SKY.strip}
+            stroke={SKY.edge}
+            strokeWidth="0.4"
+          />
+          <rect
+            x="61"
+            y="31.4"
+            width="6"
+            height="2.2"
+            rx="1.1"
+            fill={GREEN.strip}
+            stroke={GREEN.edge}
+            strokeWidth="0.4"
+          />
+          {/* Hover story: the manager's Yes crosses to Finance; the purchase is approved. */}
           <circle
             className="pv-travel"
             opacity="0"
-            cx="15"
-            cy="22"
+            cx="32"
+            cy="29"
             r="1.1"
             fill={BOLD}
-            style={pv({ '--pv-dx': '52px', '--pv-at': '900ms', '--pv-dur': '1800ms' })}
+            style={pv({ '--pv-dx': '26px', '--pv-at': '900ms', '--pv-dur': '1400ms' })}
           />
-          <g className="pv-new" opacity="0" style={popGroup(2500)}>
+          <g className="pv-new" opacity="0" style={popGroup(2300)}>
             <rect
-              x="67"
-              y="19.8"
-              width="10"
-              height="4.4"
-              rx="2.2"
+              x="42.6"
+              y="43.2"
+              width="12.8"
+              height="5.2"
+              rx="2.6"
               fill="none"
               stroke={GREEN.fill}
               strokeWidth="0.8"

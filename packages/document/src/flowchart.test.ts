@@ -28,6 +28,7 @@ import {
   setFlowchartDirection,
 } from './flowchart-grow';
 import { duplicateElements } from './duplicate';
+import { createShape } from './shape-factory';
 import { elementKindLabel } from './element-kind-label';
 import type { ArrowElement, Element, ShapeElement } from './index';
 
@@ -404,6 +405,90 @@ describe('connector routes', () => {
   });
 });
 
+describe('loops', () => {
+  // The checkout: a declined card loops back to the form; a back-order rejoins at the receipt.
+  const checkout = (): Element[] => [
+    step(CHART, 'terminator'),
+    step('input', 'io'),
+    step('charge'),
+    step('paid', 'decision'),
+    step('stock', 'decision'),
+    step('receipt', 'document'),
+    step('error'),
+    step('back'),
+    link(CHART, 'input'),
+    link('input', 'charge'),
+    link('charge', 'paid'),
+    link('paid', 'stock', 'Yes'),
+    link('paid', 'error', 'No'),
+    link('error', 'input', 'Try again'),
+    link('stock', 'receipt', 'Yes'),
+    link('stock', 'back', 'No'),
+    link('back', 'receipt'),
+  ];
+
+  it('never lets a loop flatten the steps after it', () => {
+    const laid = relayoutFlowchart(checkout(), CHART);
+    expect(box(laid, 'receipt').y).toBeGreaterThan(box(laid, 'back').y + box(laid, 'back').height);
+  });
+
+  it('is a fixed point: laying a laid-out chart out again changes nothing', () => {
+    const once = relayoutFlowchart(checkout(), CHART);
+    const again = layoutFlowchart(once, CHART);
+    expect(again.steps.size + again.lanes.size + again.connectors.size).toBe(0);
+    const right = relayoutFlowchart(checkout(), CHART, { direction: 'right' });
+    const r2 = layoutFlowchart(right, CHART, { direction: 'right' });
+    expect(r2.steps.size + r2.lanes.size + r2.connectors.size).toBe(0);
+  });
+
+  it("turns a Decision's exit out of a corner only toward a step beyond it", () => {
+    const laid = relayoutFlowchart(checkout(), CHART);
+    const stock = box(laid, 'stock');
+    for (const id of ['stock-receipt', 'stock-back']) {
+      const c = laid.find((e) => e.id === id) as ArrowElement;
+      const target = box(laid, id.split('-')[1]!);
+      const beyond =
+        Math.abs(target.x + target.width / 2 - (stock.x + stock.width / 2)) > stock.width / 2;
+      expect((c.from as { anchor: string }).anchor === 's').toBe(!beyond);
+    }
+  });
+
+  it('sends a loop round whichever side is the shorter trip', () => {
+    // Two branches, the loop on the left one: it goes round the left.
+    const els: Element[] = [
+      step(CHART, 'decision'),
+      step('l'),
+      step('r'),
+      step('l2'),
+      link(CHART, 'l', 'Yes'),
+      link(CHART, 'r', 'No'),
+      link('l', 'l2'),
+      link('l2', 'l'),
+    ];
+    const laid = relayoutFlowchart(els, CHART);
+    expect(box(laid, 'l').x).toBeLessThan(box(laid, 'r').x);
+    const loop = laid.find((e) => e.id === 'l2-l') as ArrowElement;
+    expect(loop).toMatchObject({ from: { anchor: 'w' }, to: { anchor: 'w' } });
+  });
+
+  it('routes a loop round the outside of every step it passes, side to side', () => {
+    const laid = relayoutFlowchart(checkout(), CHART);
+    const loop = laid.find((e) => e.id === 'error-input') as ArrowElement;
+    expect(loop).toMatchObject({
+      arrowStyle: 'angled',
+      from: { anchor: 'e' },
+      to: { anchor: 'e' },
+    });
+    const error = box(laid, 'error');
+    const input = box(laid, 'input');
+    const mx = (error.x + error.width + input.x + input.width) / 2;
+    const corner = mx + loop.curvePoints![0]!.dx;
+    const steps = laid.filter((e) => e.type === 'shape') as ShapeElement[];
+    const between = steps.filter((s) => s.y < error.y + error.height && s.y + s.height > input.y);
+    for (const s of between) expect(corner).toBeGreaterThan(s.x + s.width);
+  });
+});
+
 describe('changes', () => {
   it('retyping swaps kind and size about the centre, keeping the look', () => {
     const els = [
@@ -519,6 +604,29 @@ describe('lanes', () => {
       expect(s.x).toBeGreaterThanOrEqual(l1.x);
       expect(s.x + s.width).toBeLessThanOrEqual(l1.x + l1.width);
     }
+  });
+
+  it("runs a connector that skips a rank along its target lane's free strip, clear of every step", () => {
+    const els: Element[] = [
+      { ...step(CHART, 'terminator'), flowLaneId: 'l1' },
+      { ...step('mid'), flowLaneId: 'l1' },
+      { ...step('end'), flowLaneId: 'l1' },
+      { ...createShape('lane', 0, 0), id: 'l1', flowchartId: CHART },
+      link(CHART, 'mid'),
+      link('mid', 'end'),
+      link(CHART, 'end'),
+    ];
+    const laid = relayoutFlowchart(els, CHART);
+    const skip = laid.find((e) => e.id === `${CHART}-end`) as ArrowElement;
+    const mid = box(laid, 'mid');
+    const lane = box(laid, 'l1');
+    expect(skip.curvePoints).toHaveLength(4);
+    const start = box(laid, CHART);
+    const end = box(laid, 'end');
+    const my = (start.y + start.height / 2 + end.y + end.height / 2) / 2;
+    const strip = my + skip.curvePoints![1]!.dy;
+    expect(strip).toBeGreaterThan(lane.y);
+    expect(strip).toBeLessThan(mid.y);
   });
 
   it('a step whose lane is gone sits in the first lane', () => {

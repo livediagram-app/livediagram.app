@@ -92,10 +92,11 @@ are ordinary arrow labels: edit them to anything. The rule applies however the e
 Add Step, the ring, or drawing an arrow from the Decision to another step of the chart.
 
 **A Decision's exits leave by its corners.** An exit that carries straight on along the flow leaves by
-the flow's face; any other leaves by the side corner facing its step (left or right flowing down, top
-or bottom flowing right) and turns once into it. Every other connector runs straight when its ends line
-up and otherwise bends twice: along the flow to halfway, across, and on into the step. A connector made
-curved keeps its curve.
+the flow's face; one whose step lies beyond a side corner leaves by that corner (left or right flowing
+down, top or bottom flowing right) and turns once into it. Every other connector runs straight when its ends line
+up and otherwise bends twice: along the flow to halfway, across, and on into the step. A **loop** leaves by a side
+(left or right flowing down, top or bottom flowing right), runs past the outside of every step between
+its ends and comes back into the earlier step's same side, on whichever side makes the shorter trip. A connector made curved keeps its curve.
 
 **Connecting existing steps** is drawing an arrow, as on any shape. An arrow pinned at both ends to
 steps of the same chart joins the chart (a merge or a loop) and the chart is laid out again.
@@ -108,7 +109,8 @@ or reassigned. One change is one commit and one undo step, layout included.
 
 It is the **layered** layout Auto Layout already uses (Flowchart down / right in
 [Layout cleanup](../008-canvas/layout-cleanup.md)): steps in ranks along the flow, each rank one past
-its deepest predecessor, loops ignored for ranking so a loop runs back up the chart, order within a
+its deepest predecessor, loops ignored for ranking (a loop is a connector back to a step already on the path from the first
+step, followed in the order connectors were drawn), order within a
 rank refined to cross fewer connectors, long connectors kept in a channel of their own, and every
 connector re-anchored on the flow's faces. Three things differ from Auto Layout:
 
@@ -146,13 +148,15 @@ carry their contents exactly as any lane does.
   **"Lane 2"**; on a chart with lanes it adds the next lane at the end. Titles are edited like any
   lane's.
 - Lanes run **across** the flow: horizontal rows when the chart flows right, vertical columns
-  (title centred at the top) when it flows down. Changing direction turns the lanes.
+  (title centred at the top) when it flows down. Changing direction turns the lanes. A lane whose title
+  already runs the right way (a row's pinned left or right, a column's in a band at its top or bottom)
+  keeps its own alignment.
 - A new step lands in the **same lane** as the step it grew from. The step toolbar's **Lane** menu
   lists the chart's lanes by title and moves the step; **dragging a step into another lane** of the
   chart moves it too. Either way the chart is laid out again.
 - The layout keeps every step inside its lane's band: ranks are shared across lanes, so a column of
   steps lines up through every lane, and each lane grows to fit its tallest stack of steps (never
-  thinner than a lane's default). The lanes are stacked flush, in the order they are drawn, and all
+  thinner than one holding a single Process). The lanes are stacked flush, in the order they are drawn, and all
   run the full length of the chart.
 - **Reordering lanes** is dragging one past another: the order is read from the drawing at the next
   layout.

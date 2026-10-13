@@ -104,8 +104,9 @@ connectors: ArrowElement[] }`, holding only what changes.
      position: rank start + `(rank size − step main size) / 2`.
    - Lane length: `gutter + 2 × FLOWCHART_LANE_PAD + Σ rank sizes + LAYER_GAP × (ranks − 1)`
      (at least `FLOWCHART_LANE_MIN_LENGTH`).
-   - Rows set `textAlignX: 'left'`, `textAlignY: 'middle'`; columns `textAlignX: 'center'`,
-     `textAlignY: 'top'`.
+   - A lane whose title edge suits the direction (`laneEdgeOfElement`: `left` / `right` for rows,
+     `top` / `bottom` for columns) keeps its alignment; any other is set to rows `left` / `middle`,
+     columns `center` / `top`.
    - Translate steps and lanes together so the anchor keeps its top-left.
 5. Connectors: `reanchorArrow` against the final centres with the layered direction.
 
@@ -220,8 +221,9 @@ Each rule above maps to a test in `flowchart.test.ts`, `flowchart-layout.test.ts
 | `FLOWCHART_LANE_PAD`                        | 32          | Clear of the lane's border at every zoom (D169)       |
 | `FLOWCHART_LANE_MIN`                        | 200         | The lane's default height (`SHAPE_DEFAULT_SIZE.lane`) |
 | `FLOWCHART_LANE_MIN_LENGTH`                 | 600         | A lane shorter than this reads as a box (D170)        |
+| `FLOWCHART_LOOP_GAP`                        | 40          | Clear of the steps a loop passes (D174)               |
 | `LAYER_GAP`, `SIBLING_GAP`, `COMPONENT_GAP` | 90, 56, 120 | Shared with Auto Layout                               |
 
 ## Defaults ledger
 
-D169 to D173 in [DEFAULTS.md](DEFAULTS.md).
+D169 to D174 in [DEFAULTS.md](DEFAULTS.md).

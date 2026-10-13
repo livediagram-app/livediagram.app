@@ -30,7 +30,7 @@ import {
   flowchartSteps,
   type FlowchartDirection,
 } from './flowchart';
-import { laneSizeOfElement } from './lane-gutter';
+import { laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import { orthogonalBends } from './arrow-orthogonal';
 import type {
   Anchor,
@@ -44,8 +44,8 @@ import type {
 
 /** Clear of a lane's border on every side of its body (blueprint D169). */
 export const FLOWCHART_LANE_PAD = 32;
-/** A lane is never thinner than a lane's default height. */
-export const FLOWCHART_LANE_MIN = 200;
+/** A lane is never thinner than one holding a single Process: 72 plus the pad each side, rounded. */
+export const FLOWCHART_LANE_MIN = 140;
 /** A lane shorter than this along the flow reads as a box (blueprint D170). */
 export const FLOWCHART_LANE_MIN_LENGTH = 600;
 
@@ -111,10 +111,14 @@ export function layoutFlowchart(
   // move at all, and the earliest movable step holds the rest in place).
   const reference = anchor && steps.includes(anchor) ? anchor : [...steps].sort(readingOrder)[0]!;
 
+  // Loops are ranked as if they were not there, so a loop back to an earlier step never drags the
+  // steps after it out of order; they are routed round the side instead (below).
+  const loops = backEdges(steps, connectors, reference);
+  const forward = connectors.filter((c) => !loops.has(c.id));
   const placed =
     lanes.length > 0
-      ? layoutLaned(steps, connectors, lanes, dir, reference)
-      : layoutUnlaned(steps, connectors, dir, reference, anchor);
+      ? layoutLaned(steps, forward, lanes, dir, reference)
+      : layoutUnlaned(steps, forward, dir, reference, anchor);
 
   const round = (p: Pt): Pt => ({ x: Math.round(p.x), y: Math.round(p.y) });
   for (const s of steps) {
@@ -154,12 +158,37 @@ export function layoutFlowchart(
   }
   const axis = dir === 'down' ? 'TB' : 'LR';
   const faced = new Map<ElementId, ArrowElement>();
+  const loopRoutes = new Map<ElementId, ReturnType<typeof loopRoute>>();
+  const sideExits = new Set<ElementId>();
   for (const c of connectors) {
     if (locked(c) || c.from.kind !== 'pinned' || c.to.kind !== 'pinned') continue;
+    // A loop's faces come with its route, and are settled first: the fan of ends sharing a face
+    // moves every other connector's ends, so they must see the loop where it will be.
+    if (loops.has(c.id)) {
+      if (c.arrowStyle === 'curved') {
+        faced.set(c.id, c);
+        continue;
+      }
+      const loop = loopRoute(c, all, out.steps, dir);
+      loopRoutes.set(c.id, loop);
+      faced.set(c.id, {
+        ...c,
+        from: { ...c.from, anchor: loop.face },
+        to: { ...c.to, anchor: loop.face },
+      });
+      continue;
+    }
     const re = reanchorArrow(c, centres, axis);
     if (re.from.kind !== 'pinned' || re.to.kind !== 'pinned') continue;
-    // reanchorArrow straightens every arrow it touches; the style is decided below instead.
-    faced.set(c.id, { ...c, from: re.from, to: re.to });
+    // reanchorArrow straightens every arrow it touches; the style is decided below instead. A
+    // Decision's side exit is chosen here too, for the same reason a loop's faces are.
+    const side = c.arrowStyle === 'curved' ? undefined : decisionSideExit(re, all, centres, dir);
+    faced.set(c.id, {
+      ...c,
+      from: side ? { ...re.from, anchor: side } : re.from,
+      to: re.to,
+    });
+    if (side) sideExits.add(c.id);
   }
   const laid = (elements as Element[]).map((el) => {
     const p = out.steps.get(el.id);
@@ -170,8 +199,19 @@ export function layoutFlowchart(
     const f = faced.get(c.id);
     if (!f || f.from.kind !== 'pinned' || f.to.kind !== 'pinned') continue;
     const route: FlowchartConnectorRoute = { from: f.from.anchor, to: f.to.anchor };
-    const side = decisionSideExit(f, all, centres, dir);
-    if (side && c.arrowStyle !== 'curved') {
+    const side = sideExits.has(c.id) ? f.from.anchor : undefined;
+    const channel = placed.channels?.get(c.id);
+    const loop = loopRoutes.get(c.id);
+    if (loop) {
+      route.from = loop.face;
+      route.to = loop.face;
+      route.arrowStyle = 'angled';
+      route.curvePoints = loop.curvePoints;
+    } else if (channel !== undefined && c.arrowStyle !== 'curved') {
+      route.from = side ?? route.from;
+      route.arrowStyle = 'angled';
+      route.curvePoints = channelBends(f, route.from, all, out.steps, dir, channel);
+    } else if (side && c.arrowStyle !== 'curved') {
       // Out of the Decision's side corner, across, and into the step: one bend, an L.
       route.from = side;
       route.arrowStyle = 'angled';
@@ -186,10 +226,178 @@ export function layoutFlowchart(
   return out;
 }
 
+/** Clear of the steps a loop runs past (blueprint D174). */
+export const FLOWCHART_LOOP_GAP = 40;
+
+/**
+ * The connectors that run back to an earlier step: a depth-first walk from the reference step, then
+ * from every other step in reading order, following connectors in the order they were drawn; a
+ * connector into a step still on the walk's path closes a loop.
+ */
+function backEdges(
+  steps: readonly ShapeElement[],
+  connectors: readonly ArrowElement[],
+  reference: ShapeElement,
+): Set<ElementId> {
+  const out = new Map<ElementId, ArrowElement[]>();
+  for (const c of connectors) {
+    if (c.from.kind !== 'pinned') continue;
+    const list = out.get(c.from.elementId) ?? [];
+    list.push(c);
+    out.set(c.from.elementId, list);
+  }
+  const loops = new Set<ElementId>();
+  const done = new Set<ElementId>();
+  const onPath = new Set<ElementId>();
+  // Iterative, so a long chain cannot overflow the stack.
+  const walk = (root: ElementId) => {
+    if (done.has(root)) return;
+    const stack: { id: ElementId; next: number }[] = [{ id: root, next: 0 }];
+    onPath.add(root);
+    while (stack.length > 0) {
+      const top = stack[stack.length - 1]!;
+      const exits = out.get(top.id) ?? [];
+      if (top.next >= exits.length) {
+        stack.pop();
+        onPath.delete(top.id);
+        done.add(top.id);
+        continue;
+      }
+      const c = exits[top.next++]!;
+      if (c.to.kind !== 'pinned') continue;
+      const to = c.to.elementId;
+      if (onPath.has(to)) loops.add(c.id);
+      else if (!done.has(to)) {
+        onPath.add(to);
+        stack.push({ id: to, next: 0 });
+      }
+    }
+  };
+  walk(reference.id);
+  for (const s of [...steps].sort(readingOrder)) walk(s.id);
+  return loops;
+}
+
+/**
+ * A loop's route: out of its step's side, along the outside of every step between the two ends, and
+ * back into the earlier step's same side. It takes whichever side (left or right flowing down, top or
+ * bottom flowing right) makes the shorter trip. Corners are chord-midpoint deltas, as every angled
+ * arrow's are.
+ */
+function loopRoute(
+  c: ArrowElement,
+  steps: readonly ShapeElement[],
+  moved: ReadonlyMap<ElementId, Pt>,
+  dir: FlowchartDirection,
+): { face: Anchor; curvePoints: { dx: number; dy: number }[] } {
+  const at = (s: ShapeElement) => ({ ...s, ...(moved.get(s.id) ?? {}) });
+  const from = steps.find((s) => c.from.kind === 'pinned' && s.id === c.from.elementId)!;
+  const to = steps.find((s) => c.to.kind === 'pinned' && s.id === c.to.elementId)!;
+  const a = at(from);
+  const b = at(to);
+  const down = dir === 'down';
+  // Everything the loop runs past, along the flow from one end to the other.
+  const lo = down ? Math.min(a.y, b.y) : Math.min(a.x, b.x);
+  const hi = down
+    ? Math.max(a.y + a.height, b.y + b.height)
+    : Math.max(a.x + a.width, b.x + b.width);
+  const past = steps
+    .map(at)
+    .filter((s) => (down ? s.y < hi && s.y + s.height > lo : s.x < hi && s.x + s.width > lo));
+  const far =
+    Math.max(...past.map((s) => (down ? s.x + s.width : s.y + s.height))) + FLOWCHART_LOOP_GAP;
+  const near = Math.min(...past.map((s) => (down ? s.x : s.y))) - FLOWCHART_LOOP_GAP;
+  const sides = down
+    ? ([
+        ['e', far],
+        ['w', near],
+      ] as const)
+    : ([
+        ['s', far],
+        ['n', near],
+      ] as const);
+  const options = sides.map(([face, edge]) => {
+    const p = facePoint(a, face);
+    const q = facePoint(b, face);
+    const trip = down
+      ? Math.abs(edge - p.x) + Math.abs(edge - q.x)
+      : Math.abs(edge - p.y) + Math.abs(edge - q.y);
+    return { face, edge, p, q, trip };
+  });
+  const best = options[1]!.trip < options[0]!.trip ? options[1]! : options[0]!;
+  const { p, q, edge } = best;
+  const mx = (p.x + q.x) / 2;
+  const my = (p.y + q.y) / 2;
+  const corners = down
+    ? [
+        { x: edge, y: p.y },
+        { x: edge, y: q.y },
+      ]
+    : [
+        { x: p.x, y: edge },
+        { x: q.x, y: edge },
+      ];
+  return {
+    face: best.face,
+    curvePoints: corners.map((k) => ({ dx: Math.round(k.x - mx), dy: Math.round(k.y - my) })),
+  };
+}
+
+/**
+ * A connector that skips a rank in a laned chart runs along its target lane's free strip (`channel`, on
+ * the cross axis): out of its step, onto the strip, along it to just before the target's rank, and in.
+ * Leaving by the flow's face it turns twice onto the strip; leaving by a side corner it drops straight
+ * onto it.
+ */
+// The midpoint of a box's face: where a pinned end on that face sits (a diamond's corners included).
+function facePoint(b: { x: number; y: number; width: number; height: number }, face: Anchor): Pt {
+  if (face === 'n') return { x: b.x + b.width / 2, y: b.y };
+  if (face === 's') return { x: b.x + b.width / 2, y: b.y + b.height };
+  if (face === 'w') return { x: b.x, y: b.y + b.height / 2 };
+  return { x: b.x + b.width, y: b.y + b.height / 2 };
+}
+
+function channelBends(
+  c: ArrowElement,
+  fromFace: Anchor,
+  steps: readonly ShapeElement[],
+  moved: ReadonlyMap<ElementId, Pt>,
+  dir: FlowchartDirection,
+  channel: number,
+): { dx: number; dy: number }[] {
+  const at = (id: ElementId) => {
+    const s = steps.find((x) => x.id === id)!;
+    return { ...s, ...(moved.get(s.id) ?? {}) };
+  };
+  const a = at((c.from as { elementId: ElementId }).elementId);
+  const b = at((c.to as { elementId: ElementId }).elementId);
+  const down = dir === 'down';
+  // The real ends: the corners are stored relative to their midpoint.
+  const p = facePoint(a, fromFace);
+  const q = facePoint(b, down ? 'n' : 'w');
+  // Halfway into the gap after the source's rank, and halfway into the gap before the target's.
+  const out = (down ? a.y + a.height : a.x + a.width) + LAYER_GAP / 2;
+  const into = (down ? b.y : b.x) - LAYER_GAP / 2;
+  const sideExit = down
+    ? fromFace === 'e' || fromFace === 'w'
+    : fromFace === 'n' || fromFace === 's';
+  const pt = (main: number, cross: number) =>
+    down ? { x: cross, y: main } : { x: main, y: cross };
+  const fromCross = down ? p.x : p.y;
+  const toCross = down ? q.x : q.y;
+  const corners = sideExit
+    ? // Off a side corner the first leg runs straight across the flow onto the strip.
+      [pt(down ? p.y : p.x, channel), pt(into, channel), pt(into, toCross)]
+    : [pt(out, fromCross), pt(out, channel), pt(into, channel), pt(into, toCross)];
+  const mx = (p.x + q.x) / 2;
+  const my = (p.y + q.y) / 2;
+  return corners.map((k) => ({ dx: Math.round(k.x - mx), dy: Math.round(k.y - my) }));
+}
+
 /**
  * A Decision's exit that does not carry straight on leaves by a side corner
- * (docs/specs/009-elements/flowchart.md "Connectors"): the corner facing its step across the flow. The
- * exit lined up with the Decision keeps the flow's face, and a loop back up keeps the face it has.
+ * (docs/specs/009-elements/flowchart.md "Connectors"): the corner facing its step across the flow, when
+ * the step lies beyond that corner. Any other exit keeps the flow's face; a loop is routed apart.
  */
 function decisionSideExit(
   c: ArrowElement,
@@ -206,7 +414,10 @@ function decisionSideExit(
   if (!a || !b) return undefined;
   const ahead = dir === 'down' ? b.y - a.y : b.x - a.x;
   const across = dir === 'down' ? b.x - a.x : b.y - a.y;
-  if (ahead <= 0 || Math.abs(across) < 1) return undefined;
+  // Only a step beyond the corner is reached by turning out of it: one nearer the middle would send
+  // the line back inside the diamond, so it leaves by the flow's face and bends twice instead.
+  const half = dir === 'down' ? source.width / 2 : source.height / 2;
+  if (ahead <= 0 || Math.abs(across) <= half) return undefined;
   if (dir === 'down') return across < 0 ? 'w' : 'e';
   return across < 0 ? 'n' : 's';
 }
@@ -222,7 +433,13 @@ function sameRoute(c: ArrowElement, r: FlowchartConnectorRoute): boolean {
   return (c.arrowStyle ?? 'straight') === r.arrowStyle && sameBends(c.curvePoints, r.curvePoints);
 }
 
-type Placed = { steps: Map<ElementId, Pt>; lanes: Map<ElementId, FlowchartLaneRect> };
+type Placed = {
+  steps: Map<ElementId, Pt>;
+  lanes: Map<ElementId, FlowchartLaneRect>;
+  // A laned chart's connectors that skip a rank, and the cross-axis line each runs along: the free
+  // strip inside the top (or left) of its target's lane, where no step ever sits.
+  channels?: Map<ElementId, number>;
+};
 
 // The layered layout of the connected steps, sizes fixed, translated so the reference keeps its
 // place; unconnected steps line up beside the block (a column flowing down, a row flowing right).
@@ -299,10 +516,18 @@ function layoutLaned(
     const kb = isRowLane(b) ? b.y : b.x;
     return ka - kb || readingOrder(a, b);
   });
-  const align: { textAlignX: TextAlignX; textAlignY: TextAlignY } = down
-    ? { textAlignX: 'center', textAlignY: 'top' }
-    : { textAlignX: 'left', textAlignY: 'middle' };
-  const gutter = Math.max(...order.map((l) => laneSizeOfElement({ ...l, ...align })));
+  // A lane whose title already runs the right way keeps it (a row's title pinned left or right, a
+  // column's in a band along its top or bottom); any other is turned to the default for the direction.
+  const alignOf = (l: ShapeElement): { textAlignX: TextAlignX; textAlignY: TextAlignY } => {
+    const edge = laneEdgeOfElement(l);
+    const suits = down ? edge === 'top' || edge === 'bottom' : edge === 'left' || edge === 'right';
+    if (suits)
+      return { textAlignX: l.textAlignX ?? 'center', textAlignY: l.textAlignY ?? 'middle' };
+    return down
+      ? { textAlignX: 'center', textAlignY: 'top' }
+      : { textAlignX: 'left', textAlignY: 'middle' };
+  };
+  const gutter = Math.max(...order.map((l) => laneSizeOfElement({ ...l, ...alignOf(l) })));
   const laneIds = new Set(order.map((l) => l.id));
   const laneOf = (s: ShapeElement) =>
     s.flowLaneId !== undefined && laneIds.has(s.flowLaneId) ? s.flowLaneId : order[0]!.id;
@@ -356,7 +581,7 @@ function layoutLaned(
       ...(down
         ? { x: c, y: 0, width: thick, height: length }
         : { x: 0, y: c, width: length, height: thick }),
-      ...align,
+      ...alignOf(lane),
     });
     c += thick;
   }
@@ -365,9 +590,22 @@ function layoutLaned(
   const dx = reference.x - ref.x;
   const dy = reference.y - ref.y;
   const shift = <T extends Pt>(p: T): T => ({ ...p, x: p.x + dx, y: p.y + dy });
+  const byId = new Map(steps.map((s) => [s.id, s]));
+  const channels = new Map<ElementId, number>();
+  for (const c of connectors) {
+    if (c.from.kind !== 'pinned' || c.to.kind !== 'pinned') continue;
+    const r1 = rank.get(c.from.elementId);
+    const r2 = rank.get(c.to.elementId);
+    const target = byId.get(c.to.elementId);
+    if (r1 === undefined || r2 === undefined || !target || r2 - r1 < 2) continue;
+    const lane = laneRects.get(laneOf(target))!;
+    const strip = (down ? lane.x + dx : lane.y + dy) + FLOWCHART_LANE_PAD / 2;
+    channels.set(c.id, strip);
+  }
   return {
     steps: new Map([...local].map(([k, p]) => [k, shift(p)])),
     lanes: new Map([...laneRects].map(([k, r]) => [k, shift(r)])),
+    channels,
   };
 }
 
