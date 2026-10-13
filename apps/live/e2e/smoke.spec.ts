@@ -7,7 +7,6 @@ import {
   startBlankDocument,
   startEventStormingRow,
   startTemplateDocument,
-  untilHydrated,
 } from './fixtures';
 
 // End-to-end smoke suite (docs/specs/003-system-architecture/e2e-smoke.md). Small by design: it answers "does
@@ -26,24 +25,15 @@ test('the new-document wizard renders', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors);
 });
 
-// The wizard dims nothing, so the header stays live beside it: the header's
-// apps menu must paint (and take clicks) in front of the wizard card, not
-// open invisibly behind it.
-test('the apps menu opens in front of the new-document wizard', async ({ page, pageErrors }) => {
+// The editor header carries no apps menu over the new-document wizard: the product's links live in the Explorer
+// panel's footer (docs/specs/013-workspace/explorer-structure.md "Layout").
+test('the new-document wizard shows with no apps menu in the header', async ({
+  page,
+  pageErrors,
+}) => {
   await page.goto('/new');
   await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
-
-  const switcher = page.getByRole('button', { name: /^switch section/i });
-  await untilHydrated(switcher);
-  await switcher.click();
-  const menu = page.getByRole('menu');
-  await expect(menu).toBeVisible();
-  const menuOnTop = await menu.evaluate((panel) => {
-    const r = panel.getBoundingClientRect();
-    const hit = document.elementFromPoint(Math.round(r.right - 8), Math.round(r.y + r.height / 2));
-    return !!hit && panel.contains(hit);
-  });
-  expect(menuOnTop).toBe(true);
+  await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
 

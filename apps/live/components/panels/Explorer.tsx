@@ -97,6 +97,9 @@ function ExplorerImpl({
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
   const isMobile = useIsMobileViewport();
+  // The stacked layout (section chips over the pane): on a phone, and in the corner panel that stands beside the
+  // new-document wizard and the status screens, which must stay narrow or it covers their card.
+  const stacked = isMobile || !asPopover;
   // Expansion state for each row of the tree (keyed by folder or team id, or
   // a prefixed key such as `space:my-documents` for the fixed rows).
   // Team rows + team folders share this map too (ids are globally
@@ -230,7 +233,7 @@ function ExplorerImpl({
   );
   const [section, pick] = useExplorerPanelSection(groups);
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
-  const shown = !asPopover || popoverOpen === true;
+  const shown = asPopover === true && popoverOpen === true;
   useEffect(() => {
     if (!shown) return;
     document.body.setAttribute('data-explorer-open', '');
@@ -304,7 +307,7 @@ function ExplorerImpl({
       // top-left corner.
       defaultCorner={isMobile ? 'top-banner' : 'top-left'}
       // Wide enough on a desktop for the rail beside a pane of the Explorer page's own views.
-      width={isMobile ? 'w-auto' : 'w-[38rem] max-w-[calc(100vw-2rem)]'}
+      width={isMobile ? 'w-auto' : 'w-80'}
       popoverWidth={isMobile ? 'w-[calc(100vw-1rem)]' : 'w-[38rem]'}
       onReset={onReset}
       onMoveTo={onMoveTo}
@@ -339,7 +342,7 @@ function ExplorerImpl({
         <div
           className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
             // On a phone the chips and pane share what is left under the panel's top, card and footer, over the tab bar.
-            isMobile ? 'max-h-[max(14rem,calc(100dvh-25rem))] flex-col' : 'h-[min(30rem,62vh)]'
+            stacked ? 'max-h-[max(14rem,calc(100dvh-30rem))] flex-col' : 'h-[min(30rem,62vh)]'
           }`}
         >
           <ExplorerRail
@@ -349,7 +352,7 @@ function ExplorerImpl({
             badges={badges}
             teamName={teamName}
             divider={divider}
-            phone={isMobile}
+            phone={stacked}
             onNewDocument={onNewDocument}
             onDropToMyDocuments={
               onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined

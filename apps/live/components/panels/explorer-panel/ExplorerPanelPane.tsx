@@ -40,6 +40,7 @@ const HEADER_BUTTON =
 
 export function ExplorerPanelPane({
   section,
+  narrow = false,
   teamName,
   ownerId,
   currentDocumentId,
@@ -51,6 +52,8 @@ export function ExplorerPanelPane({
   footer,
 }: {
   section: PanelSection;
+  // A narrow panel (a phone, the corner panel beside the wizard): the header's actions are their glyph alone.
+  narrow?: boolean;
   teamName: (id: string) => string | undefined;
   ownerId: string | null;
   currentDocumentId: string | null;
@@ -107,7 +110,7 @@ export function ExplorerPanelPane({
           <button type="button" onClick={onNewFolder} className={HEADER_BUTTON}>
             <PlusIcon size={12} />
             {/* On a phone the glyph alone (the name stays for assistive technology), so the title keeps its room. */}
-            <span className="max-sm:sr-only">New Folder</span>
+            <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>New Folder</span>
           </button>
         ) : null}
         <a
@@ -116,7 +119,7 @@ export function ExplorerPanelPane({
           )}
           className={HEADER_BUTTON}
         >
-          <span className="max-sm:sr-only">Open Page</span>
+          <span className={narrow ? 'sr-only' : 'max-sm:sr-only'}>Open Page</span>
           <OpenIcon />
         </a>
       </div>

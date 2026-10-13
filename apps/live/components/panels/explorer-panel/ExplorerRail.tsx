@@ -156,7 +156,7 @@ export function ExplorerRail({
       onKeyDown={onKeyDown}
       className={
         phone
-          ? 'overflow-x-auto px-3 pb-2.5 pt-1 [scrollbar-width:none]'
+          ? 'shrink-0 overflow-x-auto px-3 pb-2.5 pt-1 [scrollbar-width:none]'
           : 'scrollbar-slim flex w-44 shrink-0 flex-col overflow-y-auto border-r border-slate-200 px-1.5 py-2 dark:border-slate-700/70'
       }
     >
