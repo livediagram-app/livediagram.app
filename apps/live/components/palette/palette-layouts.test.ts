@@ -122,7 +122,12 @@ describe('palette layouts', () => {
       'tools:arrow',
       'tools:line',
     ]);
-    expect(tilesOf('build')).toEqual(['tools:mind-node', 'tools:table', 'tools:frame']);
+    expect(tilesOf('build')).toEqual([
+      'tools:mind-node',
+      'tools:flowchart',
+      'tools:table',
+      'tools:frame',
+    ]);
   });
 
   it("gives a Facilitate Participant the landing's sticky and text, and an image", () => {

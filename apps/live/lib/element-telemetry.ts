@@ -142,6 +142,7 @@ export const COMPONENT_TELEMETRY: Record<ComponentKind, string> = {
   stat: 'StatRow',
   process: 'ProcessSteps',
   avatar: 'Avatar',
+  flowchart: 'Flowchart',
 };
 
 export function componentTelemetryType(kind: ComponentKind): string {

@@ -345,6 +345,7 @@ export type CanvasProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
+  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
   // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
@@ -659,6 +660,9 @@ export type CanvasProps = {
   // fields, so they commit through here rather than the label editor.
   // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
   onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
+  // Flowchart (docs/specs/009-elements/flowchart.md): a step's type and lane from its toolbar. An
+  // Editor's only, so absent for anyone else (who still grows a chart through onGrowMindNode).
+  flowchartActions?: import('@/hooks/canvas/useFlowchartSetters').FlowchartActions;
   // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
   // edited, and opening it.
   canEditMindOutline?: (id: string) => boolean;

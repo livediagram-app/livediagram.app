@@ -15,7 +15,12 @@ import {
   resolveLayerId,
   withMindBranches,
   type ShapeElement,
+  flowchartDirectionOf,
+  flowchartStepTypeOf,
+  isFlowchartLane,
+  isFlowchartStep,
 } from '@livediagram/document';
+import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
 import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
@@ -132,6 +137,7 @@ export function EditorContextMenuHost() {
     can,
     setMindFlowSelected,
     setMindSpacingSelected,
+    flowchartActions,
     selectMarquee,
     tidyMindMapSelected,
     mindOutline,
@@ -244,6 +250,25 @@ export function EditorContextMenuHost() {
           onEditFlows: setSankeyFlowsOpenForId,
           onSetNodeColor: sankey.setSankeyNodeColorSelected,
           onSetOption: sankey.setSankeyOptionSelected,
+        }
+      : undefined;
+
+  // The Flowchart section (docs/specs/009-elements/flowchart.md): on a step or a chart's lane, for an
+  // Editor on an unlocked element; the step's type and its chart's direction resolved here.
+  const flowchartMenu: FlowchartMenuHandlers | undefined =
+    ctxSelectedEl &&
+    (isFlowchartStep(ctxSelectedEl) || isFlowchartLane(ctxSelectedEl)) &&
+    can.level === 'edit' &&
+    ctxSelectedEl.locked !== true
+      ? {
+          stepType: isFlowchartStep(ctxSelectedEl)
+            ? flowchartStepTypeOf(ctxSelectedEl.shape)
+            : undefined,
+          direction: flowchartDirectionOf(activeTab.elements, ctxSelectedEl.flowchartId!),
+          onSetStepType: flowchartActions.setStepTypeSelected,
+          onSetDirection: flowchartActions.setDirectionSelected,
+          onAddLane: flowchartActions.addLaneSelected,
+          onTidy: flowchartActions.tidySelected,
         }
       : undefined;
 
@@ -399,6 +424,7 @@ export function EditorContextMenuHost() {
       onSetCodeWrap={setCodeWrapSelected}
       onSetLegendItems={setLegendItemsSelected}
       sankey={sankeyMenu}
+      flowchart={flowchartMenu}
       mindFlow={menuMindFlow}
       onSetMindFlow={setMindFlowSelected}
       onTidyMindMap={tidyMindMapSelected}

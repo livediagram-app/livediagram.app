@@ -170,7 +170,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 24,
+    articleCount: 25,
     kind: 'feature',
   },
   {
@@ -1093,7 +1093,7 @@ export const articles: Article[] = [
     slug: 'build',
     title: 'Build Elements',
     description:
-      'Mind nodes, lanes, frames, timelines, tables and Sankey diagrams: the elements you lay a diagram out with.',
+      'Mind nodes, flowcharts, lanes, frames, timelines, tables and Sankey diagrams: the elements you lay a diagram out with.',
     keywords:
       'build structure layout container holds frame lane timeline table mind node sankey flow arrange scaffold group section band track grid organise',
     category: 'Palette',
@@ -1136,6 +1136,16 @@ export const articles: Article[] = [
     description: 'Tab adds a child, Enter a sibling: build a branch from the keyboard.',
     keywords:
       'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets branching flow leftward upward downward balanced bubble spacing tight compact comfortable wide select branch delete branch',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Elements',
+  },
+  {
+    slug: 'flowcharts',
+    title: 'Flowcharts',
+    description: 'Tab adds the next step, Enter a parallel one: a flowchart that lays itself out.',
+    keywords:
+      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Elements',

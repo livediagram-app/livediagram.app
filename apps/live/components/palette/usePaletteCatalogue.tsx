@@ -82,6 +82,7 @@ export function usePaletteCatalogue({
   onAddCallout,
   onAddStatRow,
   onAddProcess,
+  onAddFlowchart,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -173,6 +174,7 @@ export function usePaletteCatalogue({
       callout: onAddCallout,
       stat: onAddStatRow,
       process: onAddProcess,
+      flowchart: onAddFlowchart,
     } as const;
     armed(byKind[kind])();
   };

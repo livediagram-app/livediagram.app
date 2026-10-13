@@ -1,5 +1,5 @@
 import { useEffectEvent, useLayoutEffect, type KeyboardEvent, type RefObject } from 'react';
-import { isMindNode, type Element } from '@livediagram/document';
+import { isFlowchartStep, isMindNode, type Element } from '@livediagram/document';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { claimMindHandoff } from '@/lib/mind-handoff';
@@ -24,7 +24,9 @@ export function useMindLabelKeys(opts: {
 }): { onMindKeyDown: (e: KeyboardEvent) => boolean } {
   const { element, initialLabel, editorRef, syncFromDom, commitNow, handleCancel } = opts;
   const mind = useMindGrow();
-  const active = !!mind && isMindNode(element);
+  // A flowchart step takes the same keys (docs/specs/009-elements/flowchart.md): Tab its next step,
+  // Enter a parallel one, Escape keeps the label.
+  const active = !!mind && (isMindNode(element) || isFlowchartStep(element));
 
   const leave = (how: 'child' | 'sibling' | 'escape') => {
     // Only from a real key press in this editor, so the label commit reads a
