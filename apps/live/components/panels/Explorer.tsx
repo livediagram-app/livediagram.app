@@ -328,7 +328,8 @@ function ExplorerImpl({
             on a desktop, the rail a row of section chips over the pane on a phone. */}
         <div
           className={`flex border-t border-slate-200 dark:border-slate-700/70 ${
-            isMobile ? 'max-h-[60vh] flex-col' : 'h-[min(30rem,62vh)]'
+            // On a phone the chips and pane share what is left under the panel's top, card and footer, over the tab bar.
+            isMobile ? 'max-h-[max(14rem,calc(100dvh-25rem))] flex-col' : 'h-[min(30rem,62vh)]'
           }`}
         >
           <ExplorerRail
