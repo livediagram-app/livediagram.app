@@ -634,6 +634,7 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export * from './svg-render-plan-sheet';
 export * from './svg-render-table';

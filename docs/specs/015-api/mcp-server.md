@@ -466,7 +466,11 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
   both ways and keeps the one whose aspect is nearer a landscape page (3:2).
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
-  chart, a hierarchy), `mindmap` the radial layout around the first node, `lanes` a swimlane diagram (each group
+  chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
+  under it, indented, joined by a bus down its lower-left quarter, the compact org chart), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
+  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level
+  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue; curved connectors in
+  the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
   a node outside every group gets an unnamed lane), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, a node with no edge at all at the ring's centre, a node given no

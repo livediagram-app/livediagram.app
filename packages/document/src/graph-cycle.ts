@@ -19,11 +19,27 @@ export function layoutCycle(
   const wired = new Set(graph.edges.flatMap((e) => [e.from, e.to]));
   const nodes = graph.nodes.map((n) => (n.shape ? n : { ...n, shape: 'circle' }));
   const boxes = graphToElements({ nodes, edges: [] }, makeEdgeId, opts.look).filter(isBoxed);
-  const ring = boxes.filter((b) => wired.has(b.id));
-  const hubs = boxes.filter((b) => !wired.has(b.id));
+  // Every stop one size, the largest any needs: a ring of uneven stops reads as a ranking.
+  const sized = boxes.filter((b) => wired.has(b.id));
+  const w = Math.max(0, ...sized.map((b) => b.width));
+  const h = Math.max(0, ...sized.map((b) => b.height));
+  const ring = sized.map((b) => ({ ...b, width: w, height: h }));
   const n = Math.max(1, ring.length);
-  const reach = Math.max(0, ...ring.map((b) => Math.hypot(b.width, b.height)));
+  const reach = Math.hypot(w, h);
   const r = Math.max(RING_MIN_R, (n * (reach + RING_GAP)) / (2 * Math.PI));
+  // A hub fits inside the ring with room for the arrows: a round hub wraps its label rather than ballooning.
+  const hubMax = Math.max(140, 2 * r - reach - 2 * RING_GAP);
+  const hubs = boxes
+    .filter((b) => !wired.has(b.id))
+    .map((b) => {
+      if (b.width <= hubMax) return b;
+      const side = b.type === 'shape' && b.shape === 'circle';
+      return {
+        ...b,
+        width: hubMax,
+        height: side ? hubMax : b.height * Math.ceil(b.width / hubMax),
+      };
+    });
   const angle = (i: number) => -Math.PI / 2 + (2 * Math.PI * i) / n;
   const placed: BoxedElement[] = ring.map((b, i) => ({
     ...b,

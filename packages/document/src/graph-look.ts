@@ -676,3 +676,40 @@ export function spreadChannels(elements: Element[], axis: 'TB' | 'LR'): Element[
     return through(b.el, points, elements);
   });
 }
+
+// The parents in a tree whose children are all leaves, two or more, below the root: their leaves stack in a column
+// under them, the compact org chart (docs/specs/015-api/mcp-server.md §4.7 "Layout choices"), instead of a row that
+// makes a wide company four times wider than tall.
+export function stackedParents(
+  nodes: readonly LookNode[],
+  edges: readonly GraphEdge[],
+): Set<string> {
+  const out = new Set<string>();
+  for (const n of nodes) {
+    const kids = outEdges(edges, n.id).map((e) => e.to);
+    if (kids.length < 2 || inCount(edges, n.id) === 0) continue;
+    if (kids.every((k) => outEdges(edges, k).length === 0 && inCount(edges, k) === 1))
+      out.add(n.id);
+  }
+  return out;
+}
+
+// A stacked parent's arrows as a bus: down from its lower-left quarter, then across into each leaf's left side.
+export function stackBuses(
+  elements: Element[],
+  stacked: ReadonlySet<string>,
+  routes: Routes,
+): Element[] {
+  return elements.map((el) => {
+    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') return el;
+    if (!stacked.has(el.from.elementId)) return el;
+    routes.set(el.id, { kind: 'corner', first: 'v' });
+    return {
+      ...el,
+      from: { ...el.from, anchor: 'ssw' as const },
+      to: { ...el.to, anchor: 'w' as const },
+      exactStart: true,
+      exactEnd: true,
+    };
+  });
+}

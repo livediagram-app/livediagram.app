@@ -28,6 +28,8 @@ import {
   sideRejoins,
   sideStepEdges,
   spreadChannels,
+  stackBuses,
+  stackedParents,
   straightenSpine,
   withTones,
   type LookNode,
@@ -38,6 +40,7 @@ import { isBoxed } from './index';
 import { withHeaderAndKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
 import { layoutCycle } from './graph-cycle';
+import { layoutMindmapGraph } from './graph-mindmap';
 import { parseMermaid } from './mermaid';
 import { graphTooLargeError } from './graph-limits';
 import type { Element } from './index';
@@ -226,6 +229,8 @@ export function layoutGraph(
     clusters: g.groups as GraphCluster[] | undefined,
   };
   const flat = style === 'flow' ? sideStepEdges(g.nodes, g.edges) : new Set<string>();
+  // A tree's leaf groups stack under their parent, the compact org chart (graph-look.ts).
+  const stacked = style === 'tree' ? stackedParents(g.nodes, g.edges) : new Set<string>();
   const flowLayout = (dir: LayoutDirection) =>
     layoutClusteredGraph(graph, {
       direction: dir,
@@ -235,7 +240,8 @@ export function layoutGraph(
     });
   let flowDir: LayoutDirection = direction ?? 'TB';
   let laid: Element[];
-  if (style === 'lanes') laid = layoutLanes(graph, { look, makeEdgeId });
+  if (style === 'mindmap') laid = layoutMindmapGraph(graph, { look, makeEdgeId });
+  else if (style === 'lanes') laid = layoutLanes(graph, { look, makeEdgeId });
   else if (style === 'cycle') laid = layoutCycle(graph, { look, makeEdgeId });
   else if (style === 'flow') {
     // Auto direction: a flowchart reads down the page, as the template does; anything else takes whichever
@@ -257,6 +263,7 @@ export function layoutGraph(
       autoLayoutElements(graphToElements(graph, makeEdgeId, look), {
         direction,
         style,
+        ...(style === 'tree' ? { stackedParents: stacked } : {}),
         // Boxes keep their label-fitted sizes, as in the flow layout.
         fixedSizeIds: new Set(graph.nodes.map((n) => n.id)),
       }),
@@ -266,7 +273,8 @@ export function layoutGraph(
     laid = straightenSpine(laid, g.nodes, g.edges, flat, flowDir);
   laid = withTones(laid, g.nodes, g.edges);
   const lines = g.lines ?? DEFAULT_LINES[style];
-  if (lines !== 'straight' && style !== 'cycle')
+  // A mind map and a cycle draw their own connectors.
+  if (lines !== 'straight' && style !== 'cycle' && style !== 'mindmap')
     laid = laid.map((el) => (el.type === 'arrow' ? { ...el, arrowStyle: lines } : el));
   // Angled lines bend twice (down, across, down), the org-chart shape, along the flow; edges back to an earlier
   // rank then go round the outside instead.
@@ -282,6 +290,7 @@ export function layoutGraph(
     const routes: Routes = new Map();
     if (style === 'flow' && !g.groups?.length && isFlowchart(g.nodes))
       laid = sideRejoins(laid, axis, routes);
+    if (stacked.size) laid = stackBuses(laid, stacked, routes);
     if (style === 'flow' || style === 'lanes') laid = routeLoops(laid, axis, flat, routes);
     laid = applyRoutes(laid, routes);
   }

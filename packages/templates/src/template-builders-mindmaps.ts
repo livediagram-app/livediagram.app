@@ -1,14 +1,11 @@
 import {
-  createPinnedArrow,
-  createShape,
+  buildMindTemplate,
   createText,
-  layoutMindTree,
-  MIND_CONNECTOR_LOOK,
-  mindConnectorAnchors,
+  MIND_HUES,
   runsPlainText,
-  type ArrowElement,
+  type MindHue,
+  type MindSpec,
   type Element,
-  type MindFlow,
   type ShapeElement,
   type TextRun,
 } from '@livediagram/document';
@@ -20,67 +17,8 @@ import {
 // Enter grow it in place, with the new nodes matching the template's own.
 // Squares and circles looked identical and did nothing.
 
-/** One node of a template map: its label, its look, the look of the connector
- *  into it (a branch's colour, say), and what hangs off it. */
-export type MindSpec = {
-  label: string;
-  look: Partial<ShapeElement> & { width: number; height: number };
-  connector?: Partial<ArrowElement>;
-  children?: MindSpec[];
-};
-
-export function buildMindTemplate(
-  spec: MindSpec,
-  flow: MindFlow,
-  cx: number,
-  cy: number,
-): Element[] {
-  const nodes: ShapeElement[] = [];
-  const connectorLook = new Map<string, Partial<ArrowElement>>();
-  const make = (s: MindSpec, parentId?: string): ShapeElement => {
-    // Every node starts centred on the origin, so the layout reads sibling
-    // order from the outline (a tie on position falls back to document order)
-    // rather than from wherever a builder happened to put them.
-    const el: ShapeElement = {
-      ...(createShape('mind-node', 0, 0) as ShapeElement),
-      ...s.look,
-      label: s.label,
-      x: -s.look.width / 2,
-      y: -s.look.height / 2,
-      ...(parentId ? { mindParentId: parentId } : { mindFlow: flow }),
-    };
-    nodes.push(el);
-    if (s.connector) connectorLook.set(el.id, s.connector);
-    for (const c of s.children ?? []) make(c, el.id);
-    return el;
-  };
-  const root = make(spec);
-  const layout = layoutMindTree(nodes, root.id, flow);
-  const placed = nodes.map((n) => ({ ...n, ...layout.get(n.id)! }));
-  // Centre the whole map on the drop point. A whole-pixel shift keeps the
-  // layout exact, so the template still reads as tidy and grows tidily.
-  const left = Math.min(...placed.map((n) => n.x));
-  const right = Math.max(...placed.map((n) => n.x + n.width));
-  const top = Math.min(...placed.map((n) => n.y));
-  const bottom = Math.max(...placed.map((n) => n.y + n.height));
-  const dx = Math.round(cx - (left + right) / 2);
-  const dy = Math.round(cy - (top + bottom) / 2);
-  const shifted = placed.map((n) => ({ ...n, x: n.x + dx, y: n.y + dy }));
-  const byId = new Map(shifted.map((n) => [n.id, n]));
-  const arrows = shifted.flatMap((child) => {
-    const parent = child.mindParentId ? byId.get(child.mindParentId) : undefined;
-    if (!parent) return [];
-    const [from, to] = mindConnectorAnchors(flow, parent, child);
-    return [
-      {
-        ...createPinnedArrow(parent.id, from, child.id, to),
-        ...MIND_CONNECTOR_LOOK,
-        ...connectorLook.get(child.id),
-      },
-    ];
-  });
-  return [...arrows, ...shifted];
-}
+// The builder lives with the mind-node layout in the document package; templates import it from here as before.
+export { buildMindTemplate, type MindSpec };
 
 // Radial mind map: a real plan (a team offsite) rather than a diagram of one.
 // A bold round nucleus names the topic and its dates; five branches radiate
@@ -91,16 +29,6 @@ export function buildMindTemplate(
 // under the map teaches the two keys that grow it. Because growth copies the
 // look of a node at the same level and the connector of its siblings, a leaf
 // added to a branch comes out in that branch's colour.
-type MindHue = { fill: string; stroke: string; text: string; leaf: string };
-
-const MIND_HUES: MindHue[] = [
-  { fill: '#d1fae5', stroke: '#10b981', text: '#065f46', leaf: '#6ee7b7' },
-  { fill: '#e0f2fe', stroke: '#0ea5e9', text: '#075985', leaf: '#7dd3fc' },
-  { fill: '#ede9fe', stroke: '#8b5cf6', text: '#5b21b6', leaf: '#c4b5fd' },
-  { fill: '#fef3c7', stroke: '#f59e0b', text: '#92400e', leaf: '#fcd34d' },
-  { fill: '#ffe4e6', stroke: '#f43f5e', text: '#9f1239', leaf: '#fda4af' },
-];
-
 const OFFSITE_BRANCHES: { label: string; icon: string; leaves: string[] }[] = [
   { label: 'Venue', icon: 'map-pin', leaves: ['Lakeside lodge', 'Deposit paid'] },
   {

@@ -246,3 +246,58 @@ describe('cycle', () => {
     expect(arrowTo(els, 'a', 'b').arrowStyle).toBe('curved');
   });
 });
+
+describe('mindmap', () => {
+  it('draws mind nodes: a bold round root, hued branches on both sides, connectors without heads', () => {
+    const els = lay({
+      style: 'mindmap',
+      nodes: [
+        { id: 'c', label: 'Launch' },
+        { id: 'a', label: 'Marketing' },
+        { id: 'b', label: 'Pricing' },
+        { id: 'd', label: 'Logistics' },
+        { id: 'a1', label: 'Instagram' },
+      ],
+      edges: [
+        { from: 'c', to: 'a' },
+        { from: 'c', to: 'b' },
+        { from: 'c', to: 'd' },
+        { from: 'a', to: 'a1' },
+      ],
+    });
+    const node = (id: string) =>
+      box(els, id) as BoxedElement & { shape?: string; mindParentId?: string };
+    expect(node('c').shape).toBe('mind-node');
+    expect((node('c') as { colorPreset?: string }).colorPreset).toBe('bold');
+    expect(node('a1').mindParentId).toBe('a');
+    const sides = ['a', 'b', 'd'].map((id) => Math.sign(midX(box(els, id)) - midX(box(els, 'c'))));
+    expect(new Set(sides).size).toBe(2);
+    const connector = arrowTo(els, 'c', 'a');
+    expect(connector.arrowEnds).toBe('none');
+    expect(connector.arrowStyle).toBe('curved');
+  });
+});
+
+describe('tree', () => {
+  it("stacks a manager's leaf reports in a column under them, joined by a bus", () => {
+    const els = lay({
+      style: 'tree',
+      nodes: [{ id: 'ceo' }, { id: 'cto' }, { id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'coo' }],
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'coo' },
+        { from: 'cto', to: 'a' },
+        { from: 'cto', to: 'b' },
+        { from: 'cto', to: 'c' },
+      ],
+    });
+    const [a, b, c, cto] = ['a', 'b', 'c', 'cto'].map((id) => box(els, id));
+    expect(a!.x).toBe(b!.x);
+    expect(b!.y).toBeGreaterThan(a!.y);
+    expect(c!.y).toBeGreaterThan(b!.y);
+    expect(a!.x).toBeGreaterThan(cto!.x);
+    const bus = arrowTo(els, 'cto', 'b');
+    expect(bus.from.kind === 'pinned' && bus.from.anchor).toBe('ssw');
+    expect(bus.to.kind === 'pinned' && bus.to.anchor).toBe('w');
+  });
+});

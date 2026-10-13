@@ -67,6 +67,8 @@ export type AutoLayoutOptions = {
   // decision's side step (docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
   // Graph input only; Tidy Up never passes it.
   flatEdges?: ReadonlySet<string>;
+  // Tree style: parents whose leaf children stack in a column under them (auto-layout-tree.ts). Graph input only.
+  stackedParents?: ReadonlySet<ElementId>;
 };
 
 export const edgeKey = (from: ElementId, to: ElementId) => `${from}->${to}`;
@@ -335,7 +337,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   for (const comp of comps) {
     let placed: PlacedComponent;
     if (style === 'tree') {
-      placed = positionTreeComponent(comp, edges, size, centers);
+      placed = positionTreeComponent(comp, edges, size, centers, opts.stackedParents);
     } else if (style === 'mindmap') {
       placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
