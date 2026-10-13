@@ -57,8 +57,14 @@ function galleryIds(pages: readonly LaidOutPage[]): string[] {
 export function usePageImageSources(
   pages: readonly LaidOutPage[],
 ): (imageId: string) => string | undefined {
+  return useImageSources(galleryIds(pages));
+}
+
+/** Each gallery picture's blob URL by id (see usePageImageSources): fetched once while it is
+ *  wanted, revoked once it is not. Inline bytes (`data:` ids) are left to the caller. */
+export function useImageSources(ids: readonly string[]): (imageId: string) => string | undefined {
   const access = usePageImageAccess();
-  const key = galleryIds(pages).join('\n');
+  const key = [...new Set(ids.filter((id) => !id.startsWith('data:')))].sort().join('\n');
   const accessKey = access ? `${access.ownerId}\0${access.documentId}\0${access.shareCode}` : '';
   const [sources, setSources] = useState<ReadonlyMap<string, string>>(new Map());
   // Every id asked for under this access, with its URL once it came.
@@ -93,7 +99,7 @@ export function usePageImageSources(
       })
         .then((url) => {
           if (!url) {
-            console.warn('[illustrate-page] background picture unavailable', { imageId: id });
+            console.warn('[illustrate-page] picture unavailable', { imageId: id });
             return;
           }
           // Dropped (or the access changed) while it was on its way.
@@ -101,7 +107,7 @@ export function usePageImageSources(
           mine.set(id, url);
           setSources((prev) => new Map(prev).set(id, url));
         })
-        .catch(() => console.warn('[illustrate-page] background picture failed', { imageId: id }));
+        .catch(() => console.warn('[illustrate-page] picture failed', { imageId: id }));
     }
     // The access is read through its key: a fresh object with the same values refetches nothing.
     // eslint-disable-next-line react-hooks/exhaustive-deps

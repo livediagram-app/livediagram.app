@@ -45,4 +45,17 @@ describe('useTokens', () => {
     window.dispatchEvent(new Event('livediagram:tokens-changed'));
     expect(api.apiListTokens).not.toHaveBeenCalled();
   });
+
+  it('counts only live tokens toward the cap, as the api does', async () => {
+    const expired = Array.from({ length: 10 }, (_, i) => ({
+      ...TOKEN,
+      id: `old${i}`,
+      expiresAt: Date.now() - 1000,
+    }));
+    api.apiListTokens.mockResolvedValue([...expired, TOKEN]);
+    const { result } = renderHook(() => useTokens('user_1', { enabled: true }));
+    await waitFor(() => expect(result.current.list).toHaveLength(11));
+    expect(result.current.count).toBe(1);
+    expect(result.current.atCap).toBe(false);
+  });
 });

@@ -125,7 +125,11 @@ function mindOutlineLines(text: string): (MindOutlineRead | null)[] {
     }
     let level: number;
     if (heading) {
-      level = Math.max(1, heading[1]!.length - rootHashes);
+      const hashes = heading[1]!.length;
+      // A heading as shallow as the root's (a document of several `#` sections under a `#` title) is a child of
+      // the root, and the deeper headings under it read against it, so `## Sub` nests under `# Section`.
+      if (hashes <= rootHashes) rootHashes = hashes - 1;
+      level = Math.max(1, hashes - rootHashes);
       headingLevel = level;
       ladder = [];
     } else {

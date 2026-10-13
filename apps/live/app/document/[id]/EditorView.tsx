@@ -6,6 +6,7 @@ import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
@@ -156,6 +157,7 @@ export function EditorView() {
   useEffect(() => registerUnsavedWork(hasUnsavedChanges), [hasUnsavedChanges]);
   const {
     pasteFromClipboard,
+    slideDeck,
     hasClipboard,
     boardSceneInsert,
     activeId,
@@ -251,9 +253,10 @@ export function EditorView() {
   // While a Settings slider is dragged its patch wins, so the chrome resizes
   // as you go; the preference is written once, on release.
   const uiScalePreview = useUiScalePreview();
+  const isMobileViewport = useIsMobileViewport();
   const uiScales = resolveUiScales(
     uiScalePreview === null ? userPreferences : { ...userPreferences, ...uiScalePreview },
-    { mobile: useIsMobileViewport() },
+    { mobile: isMobileViewport },
   );
   const role = useRoleIndicator();
 
@@ -378,6 +381,20 @@ export function EditorView() {
           renameNonce={renameDocumentNonce}
           // Minimal chrome moves the pill to an icon in the status bar.
           rolePill={minimalChrome ? undefined : <RolePill {...role} />}
+          // docs/specs/012-collaboration/presentation-mode.md "The header's Present button": only
+          // while the deck has a slide to show, on a desktop, once the document is up. Every role.
+          present={
+            hydrated && !anyWelcomeOpen && !isMobileViewport && slideDeck.runnable.length > 0
+              ? {
+                  slideCount: slideDeck.runnable.length,
+                  starting: slideDeck.startingDeck,
+                  onPresent: () => {
+                    track('UI', 'Opened', 'HeaderPresent');
+                    void slideDeck.start();
+                  },
+                }
+              : undefined
+          }
           brandAccent={getTheme(activeTab.theme).elementStroke ?? undefined}
           onOpenAccount={() => openSettingsOn('account')}
           onOpenShare={() => {
@@ -465,14 +482,7 @@ export function EditorView() {
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          onOpenSearch={() => {
-            setSearchOpen(true);
-            // Element search walks local tab state; pull every
-            // not-yet-visited tab's content so matches cover the
-            // whole document (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
-            // and fire-and-forget: results refresh as tabs land.
-            void loadAllTabs();
-          }}
+          onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the
           // TabBar so it reuses every tab handler. Element / multi context

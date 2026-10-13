@@ -354,10 +354,11 @@ export function renameSankeyNode(
   const now = cleanSankeyName(to);
   if (!was || !now || was === now) return { flows: [...flows], nodes: nodes ? [...nodes] : nodes };
   const swap = (name: string) => (cleanSankeyName(name) === was ? now : name);
-  const moved = (nodes ?? []).map((n) => (n.name === was ? { ...n, name: now } : n));
-  // A merge keeps the colour the surviving name already had.
-  const seen = new Set<string>();
-  const deduped = moved.filter((n) => !seen.has(n.name) && (seen.add(n.name), true));
+  // A merge keeps the settings the surviving name already had, wherever the two rows sit in the list.
+  const survivor = (nodes ?? []).some((n) => n.name === now);
+  const deduped = (nodes ?? []).flatMap((n) =>
+    n.name !== was ? [n] : survivor ? [] : [{ ...n, name: now }],
+  );
   return {
     flows: flows.map((f) => ({ ...f, from: swap(f.from), to: swap(f.to) })),
     nodes: nodes ? deduped : nodes,

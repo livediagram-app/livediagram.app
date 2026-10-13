@@ -47,3 +47,30 @@ describe('SankeyFlowsDialog leftover switch', () => {
     expect(leftoverSwitch().getAttribute('aria-checked')).toBe('true');
   });
 });
+
+// Escape closes without blurring the focused field, so the close itself stores what was typed.
+describe('SankeyFlowsDialog close', () => {
+  it('stores a typed amount when Escape closes the dialog mid-edit', () => {
+    const onCommit = vi.fn();
+    const onClose = vi.fn();
+    render(<SankeyFlowsDialog element={leaky()} onCommit={onCommit} onClose={onClose} />);
+    const amount = screen.getAllByDisplayValue('800')[0]!;
+    fireEvent.change(amount, { target: { value: '900' } });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onCommit).toHaveBeenLastCalledWith(
+      [
+        { from: 'Income', to: 'Budget', value: 1000 },
+        { from: 'Budget', to: 'Rent', value: 900 },
+      ],
+      undefined,
+    );
+  });
+
+  it('stores nothing on a close with no change', () => {
+    const onCommit = vi.fn();
+    render(<SankeyFlowsDialog element={leaky()} onCommit={onCommit} onClose={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+});

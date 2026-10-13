@@ -144,6 +144,24 @@ describe('Illustrate page edits', () => {
     expect(h.onLayoutPlaced).toHaveBeenCalled();
   });
 
+  it('carries what was written on the page into the new layout', async () => {
+    const h = harness(twoPages());
+    await h.edits().applyLayout('page-1', 'title');
+    const written = h
+      .tab()
+      .elements.map((e) =>
+        e.type === 'text' && e.label === 'Your big headline' ? { ...e, label: 'Q3 Results' } : e,
+      );
+    h.commitTabs((ts) => [{ ...ts[0]!, elements: written }]);
+    await h.edits().applyLayout('page-1', 'poster');
+    const labels = h.tab().elements.flatMap((e) => (e.type === 'text' ? [e.label] : []));
+    expect(labels).toContain('Q3 Results');
+    // The poster's own placeholder headline gave its place up.
+    expect(labels).not.toContain('Make it bold');
+    // The other page's content stays where it is.
+    expect(h.tab().elements.some((e) => e.id === 'b')).toBe(true);
+  });
+
   it('frames a turned or resized page again, as the view frames the page itself', () => {
     const h = harness(twoPages());
     h.edits().setOrientation('page-1', 'landscape');

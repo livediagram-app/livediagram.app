@@ -56,6 +56,16 @@ export function elementIdsOnPage(
   return ids;
 }
 
+/** The elements on the page (see elementIdsOnPage), in the tab's order. */
+export function elementsOnPage(
+  elements: Element[],
+  pages: readonly LaidOutPage[],
+  pageId: string,
+): Element[] {
+  const ids = elementIdsOnPage(elements, pages, pageId);
+  return elements.filter((el) => ids.has(el.id));
+}
+
 /**
  * The tab with a copy of a page right after it: the same size, orientation and background, its name
  * marked as a copy, and a copy of every element on it, moved onto the copy. Pages after it move

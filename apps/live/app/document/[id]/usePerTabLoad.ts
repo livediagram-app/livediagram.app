@@ -18,7 +18,7 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // one-shot GET that merges the elements into local state. Failures fall
 // back to the placeholder so the editor doesn't lock up. The loaded-set
 // ref + its reactive mirror are seeded by hydration and passed in, as is
-// resetTabs (the history reset) and the remote-update guard ref.
+// applyLoaded (which puts content in place without touching undo) and the remote-update guard ref.
 //
 // Also returns `loadAllTabs`, the search panel's prefetch (docs/specs/008-canvas/canvas-and-palette.md
 // "Search panel"): element search walks local tab state, so unvisited
@@ -56,7 +56,12 @@ export function usePerTabLoad(opts: {
   // so it lands here too, or the next save would PUT and broadcast the whole
   // tab back as if we had just drawn it (docs/specs/012-collaboration/collab-race-hardening.md).
   lastSavedTabsRef: MutableRefObject<Tab[]>;
-  resetTabs: (updater: (prev: Tab[]) => Tab[]) => void;
+  // Puts fetched content in place in the present AND every undo / redo snapshot (the history's applyRemoteOp), so a
+  // tab loading for the first time (on opening it, or the search and Plan prefetch) never clears the undo history:
+  // a snapshot holding the tab's empty placeholder takes the loaded content too, so an undo can never put the
+  // placeholder back over it (and the autosave save it, empty, over the stored tab). `apply` returns its input
+  // when it changes nothing.
+  applyLoaded: (apply: (tabs: Tab[]) => Tab[]) => void;
   // Records what a tab put in place holds of the changesets (useChangesetSeen): every changeset
   // up to the revision it was read at. Stable.
   noteChangesetSeen: (tabId: string, rev: number) => void;
@@ -74,18 +79,18 @@ export function usePerTabLoad(opts: {
     setTabLoadErrors,
     retryNonce,
     lastSavedTabsRef,
-    resetTabs,
+    applyLoaded,
     noteChangesetSeen,
   } = opts;
 
-  // resetTabs is read through a ref, not listed as an effect dep. The load
+  // applyLoaded is read through a ref, not listed as an effect dep. The load
   // effect must re-run only for a genuine reason (the tab, the document, the
-  // identity, or the Retry nonce). When it listed resetTabs and the caller
+  // identity, or the Retry nonce). When it listed the history setter and the caller
   // passed a fresh function each render, every re-render (the 30s presence
   // tick among them) tore the effect down and refetched; on a tab whose load
   // had FAILED that meant a refetch, and an Error telemetry report, twice a
   // minute for as long as the tab stayed open (docs/specs/017-telemetry/telemetry.md).
-  const resetTabsRef = useLatest(resetTabs);
+  const applyLoadedRef = useLatest(applyLoaded);
   // Read by the search sweep when a fetch fails (see loadAllTabs).
   const activeIdRef = useLatest(activeId);
 
@@ -109,12 +114,17 @@ export function usePerTabLoad(opts: {
         );
         noteChangesetSeen(tab.id, rev);
       }
-      resetTabsRef.current((prev) =>
-        prev.map((t) => (t.id !== tab.id || userHasEdited(t) ? t : { ...tab, folder: t.folder })),
-      );
+      applyLoadedRef.current((prev) => {
+        const at = prev.findIndex((t) => t.id === tab.id);
+        const was = at < 0 ? undefined : prev[at]!;
+        if (!was || userHasEdited(was)) return prev;
+        const next = [...prev];
+        next[at] = { ...tab, folder: was.folder };
+        return next;
+      });
       return !onScreen || !userHasEdited(onScreen) || onScreen.elements.length > 0;
     },
-    [tabsRef, lastSavedTabsRef, resetTabsRef, noteChangesetSeen],
+    [tabsRef, lastSavedTabsRef, applyLoadedRef, noteChangesetSeen],
   );
 
   // The attempt that last failed, keyed on everything that makes a fetch
@@ -237,7 +247,7 @@ export function usePerTabLoad(opts: {
       // here so the next run actually fetches.
       if (!merged) fetching.delete(targetId);
     };
-    // resetTabs is read through resetTabsRef on purpose (see above); the refs and setters listed are stable.
+    // applyLoaded is read through applyLoadedRef on purpose (see above); the refs and setters listed are stable.
   }, [
     hydrated,
     documentId,

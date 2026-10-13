@@ -95,7 +95,7 @@ SheetFace.tsx            the frame: loading (SheetBuildAnimation, "Opening Sheet
 SheetHeader.tsx          title (in-place edit), FocusElementButton kind="Sheet", MaximisePlanButton kind="Sheet"
                          (neither while the Sheet fills its tab), the Sheet Settings cog (plan/SettingsCog.tsx, shared
                          with BoardSettingsButton)
-SheetMenuSection.tsx     The element menu's Sheet flyout: SheetSettingsPanel with the Sheet's controller, read from
+SheetMenuSection.tsx     The element menu's Sheet rows: SheetSettingsPanel (its `asRow`, a flyout row per section) with the Sheet's controller, read from
                          sheet-settings-registry.ts (usePublishSheetSettings in PlanSheetView, useSheetSettingsEntry)
 SheetSettingsPanel.tsx   Sheet Settings' sections (BoardSettingsSection): Sheet Setup, Sheet Options (with Fill Tab's
                          OptionRows), Cells, Freeze (editors), Calculations, Named Ranges (SheetNamedRanges.tsx); options through actions.setOptions (LayoutChange

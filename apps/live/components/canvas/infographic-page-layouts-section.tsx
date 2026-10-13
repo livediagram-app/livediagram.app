@@ -6,13 +6,22 @@
 // layout, with a count), then one category's layouts, each previewed for this page, with a way
 // back, each move sliding in from its side. A press places the layout at once, over anything on the page (one undo
 // step brings it back). Hovering a tile previews it on the page (InfographicLayoutPreview).
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { pageKindOf, type LaidOutPage } from '@livediagram/document';
-import { layoutCatalogueFor, type PageLayoutId } from '@livediagram/templates';
+import {
+  layoutCatalogueFor,
+  warmLayoutPlaceholders,
+  type PageLayoutId,
+} from '@livediagram/templates';
 import { CountBadge } from '@livediagram/ui';
 import { LayoutThumb } from './infographic-layout-thumb';
 import { BackBar } from '@/components/primitives/BackBar';
 import { PanelSection } from './illustrate-page-panel-sections';
+import { prefetchWhenIdle } from '@/lib/idle-prefetch';
+
+// The placeholders a page's carried content is told apart from, gathered once while the layouts
+// are open and idle, so the first hover preview (or press) does not wait on them.
+const warmPlaceholders = async () => warmLayoutPlaceholders();
 
 type LayoutBrowserProps = {
   page: LaidOutPage;
@@ -48,6 +57,7 @@ export function LayoutBrowser({ page, onApply, onPreview, wide = false }: Layout
   const [moved, setMoved] = useState<'in' | 'back' | null>(null);
   const slide = moved === 'in' ? 'animate-tip-next' : moved === 'back' ? 'animate-tip-prev' : '';
   const { categories, layouts } = layoutCatalogueFor(pageKindOf(page));
+  useEffect(() => prefetchWhenIdle([warmPlaceholders]), []);
   const openCategory = categories.find((c) => c.id === category);
   // A press places the layout at once, over whatever the page holds: one undo step brings it back.
   const pick = (id: PageLayoutId) => onApply(id);

@@ -120,7 +120,11 @@ export function roomQueryString(options: RoomAuthOptions, sharePassword: string 
 // Reconnect backoff: a dropped socket auto-reopens so a brief network blip
 // doesn't silently end a collaborative session. Capped attempts + capped
 // delay so a hard-rejected upgrade (revoked share, lost membership) stops
-// retrying rather than hammering the worker forever.
+// retrying rather than hammering the worker forever. Out of attempts, the
+// connector waits for a sign the cause may have passed (the browser back
+// online, the tab shown again: a laptop waking, wifi returning after the
+// ~30 s the attempts span) and starts a fresh round then, so a longer outage
+// no longer ends live collaboration for the rest of the session.
 const MAX_RECONNECT_ATTEMPTS = 6;
 
 // Ops held while the socket is down (docs/specs/012-collaboration/collab-race-hardening.md). A change made in that window
@@ -200,6 +204,8 @@ export function connectRoom(
   let opened = false; // we've had at least one successful session (→ reconnects sync)
   let attempts = 0;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  // Out of attempts and waiting for the network or the tab to come back (see MAX_RECONNECT_ATTEMPTS).
+  let parked = false;
 
   // Ordering cursor for reconnect catch-up (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 1): the last
   // epoch + seq we applied off an ordered op. On reopen we hand these to the
@@ -380,6 +386,8 @@ export function connectRoom(
         reconnectTiming ??= startEditorTiming('RoomReconnect');
       if (attempts >= MAX_RECONNECT_ATTEMPTS) {
         settleTimings(false);
+        parked = true;
+        debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
         return;
       }
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
@@ -398,6 +406,22 @@ export function connectRoom(
     open();
   };
   open();
+
+  // A fresh round of attempts once the browser is back online or the tab is shown again, only while parked.
+  const resume = () => {
+    if (closed || !parked) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    parked = false;
+    attempts = 0;
+    debugLog('[room] reconnecting after a wait');
+    void reopen();
+  };
+  if (typeof window !== 'undefined') window.addEventListener('online', resume);
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', resume);
+  const stopResuming = () => {
+    if (typeof window !== 'undefined') window.removeEventListener('online', resume);
+    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', resume);
+  };
 
   const send = (raw: RoomOutgoing) => {
     // No comment author id leaves this browser: it is its author's owner
@@ -456,6 +480,7 @@ export function connectRoom(
     },
     close: () => {
       closed = true;
+      stopResuming();
       settleTimings(false);
       outbox = [];
       settleAll(false);

@@ -235,7 +235,6 @@ export function CanvasSelectionToolbars({
             title={`Selected Elements (${multiSelectedIds.size})`}
           >
             <MultiSelectionToolbar
-              anyLocked={elements.some((el) => multiSelectedIds.has(el.id) && el.locked === true)}
               allLocked={elements
                 .filter((el) => multiSelectedIds.has(el.id))
                 .every((el) => el.locked === true)}

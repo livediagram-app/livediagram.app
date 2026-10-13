@@ -1,6 +1,6 @@
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
-import { ZoomMenu } from '@/components/chrome/ZoomMenu';
+import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
 import { HoverCard, Glyph } from '@livediagram/ui';
 
@@ -33,6 +33,8 @@ type ZoomControlsProps = {
   // What the controls zoom: the canvas, or a Sheet covering it (docs/specs/029-sheets/sheet.md "Zoom"), which only
   // their hover cards tell apart.
   zoomScope?: 'canvas' | 'sheet';
+  // The levels the zoom can reach, when narrower than the canvas's: the preset menu offers only those.
+  zoomRange?: ZoomRange | undefined;
 };
 
 // The hover cards' lines, by what the controls zoom.
@@ -70,6 +72,7 @@ export function ZoomControls({
   pinchOnly = false,
   zoomOff = false,
   zoomScope = 'canvas',
+  zoomRange,
 }: ZoomControlsProps) {
   const copy = ZOOM_COPY[zoomScope];
   const why = (description: string) => (zoomOff ? ZOOM_OFF_REASON : description);
@@ -107,6 +110,7 @@ export function ZoomControls({
         zoom={zoom}
         onSetZoom={onSetZoom}
         onFitToScreen={onFitToScreen}
+        range={zoomRange}
         {...(zoomOff ? { offReason: ZOOM_OFF_REASON } : {})}
       />
       {pinchOnly ? null : (
