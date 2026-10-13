@@ -957,7 +957,7 @@ desktop), left of the Theme & canvas button, in every Illustrate tab and for eve
 your way round a long document is everyone's. It opens the **Contents** popover above it (a
 bottom sheet on a phone), the way round a big document:
 
-- **Header**: "Contents" and the page count ("12 pages"); with more than six pages, a **Find a
+- **Header**: "Contents", the page count ("12 pages") a badge at the right of the same line; with more than six pages, a **Find a
   Page** box under it that narrows the list by name, kind or number as you type (Escape clears it,
   then closes).
 - **The list**: every page in row order, one row each: its number, a live thumbnail of the page

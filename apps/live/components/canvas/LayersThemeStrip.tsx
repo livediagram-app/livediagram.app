@@ -36,6 +36,7 @@ export function LayersThemeStrip({
       {tidyUp ? (
         <ClusterPopoverSegment
           label="Tidy Up"
+          name="Tidy Up"
           hoverTitle="Tidy Up"
           hoverDescription="Lay this tab out again in one press."
           icon={<TidyUpIcon />}
@@ -48,6 +49,7 @@ export function LayersThemeStrip({
         <ClusterPopoverSegment
           divided={!!tidyUp}
           label="Open Layers"
+          name="Layers"
           hoverTitle="Open Layers"
           hoverDescription="Show this tab's layers."
           icon={<LayersStackIcon />}

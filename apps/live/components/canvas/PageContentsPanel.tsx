@@ -147,13 +147,14 @@ export function PageContentsPanel({
     view.edit.addPage(kind);
   };
 
+  // The page count, a badge at the right of the header line.
+  const count = (
+    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+      {pages.length === 1 ? '1 page' : `${pages.length} pages`}
+    </span>
+  );
   const body = (
     <div className="flex min-h-0 flex-col" data-page-contents="">
-      <div className="flex items-baseline justify-between px-3 pb-2">
-        <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-          {pages.length === 1 ? '1 page' : `${pages.length} pages`}
-        </p>
-      </div>
       {pages.length > CONTENTS_FIND_AFTER ? (
         <label className="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-slate-400 focus-within:border-brand-400 dark:border-slate-700 dark:bg-slate-900">
           <FindIcon />
@@ -304,7 +305,12 @@ export function PageContentsPanel({
     </div>
   );
 
-  if (mobile) return <ContentsSheet onClose={onClose}>{body}</ContentsSheet>;
+  if (mobile)
+    return (
+      <ContentsSheet onClose={onClose} count={count}>
+        {body}
+      </ContentsSheet>
+    );
   return (
     <MovablePanel
       title="Contents"
@@ -317,6 +323,7 @@ export function PageContentsPanel({
       popoverWidth="w-[380px]"
       dismissOnOutside
       onPopoverClose={onClose}
+      headerActions={count}
     >
       {body}
     </MovablePanel>
@@ -326,7 +333,15 @@ export function PageContentsPanel({
 const NO_MOVE = () => {};
 
 // On a phone: the list in a bottom sheet, named, closed by a swipe down, an outside press or Escape.
-function ContentsSheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+function ContentsSheet({
+  onClose,
+  count,
+  children,
+}: {
+  onClose: () => void;
+  count: React.ReactNode;
+  children: React.ReactNode;
+}) {
   useEscape(onClose, { capture: true, stopPropagation: true });
   return (
     <BottomSheet
@@ -335,9 +350,10 @@ function ContentsSheet({ onClose, children }: { onClose: () => void; children: R
       onClose={onClose}
       zClassName="z-[var(--z-overlay)]"
     >
-      <p className="px-4 pb-1 pt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
-        Contents
-      </p>
+      <div className="flex items-center justify-between px-4 pb-2 pt-0.5">
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Contents</p>
+        {count}
+      </div>
       {children}
     </BottomSheet>
   );
