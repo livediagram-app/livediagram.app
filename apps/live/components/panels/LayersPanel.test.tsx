@@ -17,7 +17,7 @@ function renderPanel(layers: Layer[], activeLayerId = layers[layers.length - 1]!
     counts: new Map<string, number>(),
     elements: [],
     popoverOpen: true,
-    popoverAnchor: { left: 0, bottom: 0, arrowOffset: 0 },
+    popoverAnchor: { left: 0, top: 0, bottom: 0, arrowOffset: 0 },
     onPopoverClose: vi.fn(),
     onSelectLayer: vi.fn(),
     onAddLayer: vi.fn(),
