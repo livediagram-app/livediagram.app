@@ -104,6 +104,24 @@ Every write takes what a person would say, and stores the ids:
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept
   except on the set-up; the board widens when its columns need it.
 
+## Making a dashboard
+
+- A **Dashboard tab** ([Plan tabs](plan-tabs.md)) is made where a tab is made: `create_document`'s tabs and `add_tab`
+  take `dashboard` in place of a graph, Mermaid, elements or a template, and the tab is made as a template's
+  Dashboard is (the same row builder, `buildDashboardTab`):
+  - `tabs`: the document's Board and Sheet tabs it shows, by name (in `create_document`, the other tabs of the same
+    call), or `"every"` for each Board and Sheet tab in order; two to a row.
+  - `metrics`: metric tiles, four to a row: `count` (cards), `progress` (percent done), `people`, `types`,
+    `priorities`, `due` (overdue and due soon), `unassigned`, `points` (estimates), `top-voted`, `stale`.
+  - `charts`: `{ view, groupBy?, types? }`, two to a row and a Gantt a row of its own: `gantt`, `calendar` (by due
+    date), `start-calendar`, `workload` (Cards by a field: `groupBy` assignee, type, priority, status or a field by
+    name), `priority-matrix` (Priority by Status), `search`; `types` narrows a chart to card types by name.
+  - `notes`: `{ title, text }`, three to a row.
+  - Rows run in that order (tabs, metrics, Gantts, other charts, notes), up to the Dashboard's 12 rows; anything past
+    them is left off and the answer says so.
+- A name or view the document lacks is refused naming those there are. A dashboard only makes a new tab: a replace
+  of an existing tab with one is refused (`invalid_value`), pointing at `add_tab`.
+
 ## What a change says
 
 - Each change's line names the card, its column by name, and for a `set` the fields it set and cleared.
