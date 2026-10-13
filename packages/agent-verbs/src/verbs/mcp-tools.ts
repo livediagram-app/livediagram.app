@@ -186,7 +186,8 @@ export const mcpShareDocument = mcpTool('share_document', {
   title: 'Share a document',
   description:
     'Create a shareable link to a document so anyone with the URL can open it — no ' +
-    'sign-in required. Choose "view" (read-only, the default) or "edit". Returns the ' +
+    'sign-in required. Choose "participate" (the default: comment, add stickies and vote), ' +
+    '"view" (read-only) or "edit". Returns the ' +
     'link URL. Use after creating or finding a document to hand it to teammates.',
   inputSchema: shareDocumentShape,
   outputSchema: shareDocumentOutput,
