@@ -6,7 +6,6 @@
 
 import type { EditRejection } from '@livediagram/api-schema';
 import {
-  applyLayout,
   buildGraphTab,
   buildTab,
   coerceShapeKind,
@@ -17,7 +16,6 @@ import {
   invertElementOps,
   isValidTab,
   landWorkshopArrivals,
-  layoutGraph,
   normaliseElements,
   resolveGraphInput,
   type Element,
@@ -43,11 +41,12 @@ const invalidBody = (detail: string, hint?: string): EditRejection => ({
   ...(hint ? { hint } : {}),
 });
 
+// The elements a replace writes onto an existing tab are built exactly as a new tab's are, themed included: a
+// graph's tones and a template's presets are colour presets the theme resolves, and an existing tab took them
+// unresolved, so a replace drew every toned node plain.
 function fromGraph(graph: GraphInput, themeId: string | undefined): Built {
-  return {
-    elements: layoutGraph(graph),
-    tab: (tabId, name) => buildGraphTab(tabId, name, graph, themeId),
-  };
+  const tab = (tabId: string, name: string) => buildGraphTab(tabId, name, graph, themeId);
+  return { elements: tab('graph', 'graph').elements, tab };
 }
 
 function fromElements(
@@ -70,7 +69,7 @@ function fromElements(
     el.type === 'shape' ? { ...el, shape: coerceShapeKind(el.shape) } : el,
   );
   return {
-    elements: applyLayout(layout, coerced),
+    elements: buildTab('elements', 'elements', coerced, layout, themeId).elements,
     tab: (tabId, name) => buildTab(tabId, name, valid, layout, themeId),
   };
 }

@@ -336,8 +336,10 @@ in this call`); an arrow to nowhere is never stored.
 
 **Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
 is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
-like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a `textSize` off the scale
-(`sm`, `md`, `lg`, `scale`) is refused, and an `iconId` that names no icon is refused with the icons like it and a
+like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
+(`textSize` `sm`, `md`, `lg`, `scale`; the alignments, arrow styles, ends and heads, border styles and radii: the
+same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
+and an `iconId` that names no icon is refused with the icons like it and a
 pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
 of every template, so a tab read back as JSON writes again unchanged.
 
@@ -456,9 +458,12 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
   crosses the spine. Several loops take separate tracks.
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
-  aligned, as every template has. `key: true` adds a key beside it: one miniature per shape kind the graph uses,
-  with what that shape means (stadium "Start or end", square "Step", diamond "Decision", cylinder "Data store",
-  parallelogram "Input or output", document "Document", and so on), in the diagram's own tones.
+  aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
+  what that shape means, in the diagram's own tones. `true` names them by default: in a flowchart by ISO 5807
+  (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
+  hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
+  hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
+  object names them by shape (`{"hexagon": "Event bus"}`), the rest by default.
 
 **Layout choices** (defaults in brackets):
 
@@ -576,6 +581,12 @@ wrongly:
   carries its points as one `packedPoints` block, and a model that writes
   `points` instead gets them packed, as the api's own writes would. In an
   update, sent `points` replace the stroke's block (`mergeElementUpdate`).
+
+**Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
+every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
+heads, border style and radius) with its values, bold and italic, `colorPreset` with the theme's preset looks,
+`iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
+an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
 ### 4.8 `share_document`
 

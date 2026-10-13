@@ -4,10 +4,9 @@
 // a text size off the scale and an icon id that names no icon all used to be stored and drawn wrong in silence
 // (a question mark for the icon, tiny text for the size).
 
-import { ELEMENT_FIELD_NAMES, type Element } from '@livediagram/document';
+import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@livediagram/document';
 import { iconsLike, isIconId } from '@livediagram/icons/search';
 
-const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
 // The fields shown beside an unknown one: those sharing its words, else none.
 const NEAREST_FIELDS_MAX = 4;
 
@@ -42,8 +41,10 @@ function elementIssue(el: Rec, where: string): string | null {
       (like.length ? `; fields like it: ${like.join(', ')}.` : '.')
     );
   }
-  if (el.textSize !== undefined && !TEXT_SIZES.includes(el.textSize as never))
-    return `${where}: textSize ${JSON.stringify(el.textSize)} is not a size; sizes: ${TEXT_SIZES.join(', ')}.`;
+  for (const [key, value] of Object.entries(el)) {
+    const issue = fieldValueIssue(key, value);
+    if (issue) return `${where}: ${issue}.`;
+  }
   if (typeof el.iconId === 'string' && !isIconId(el.iconId)) {
     const like = iconsLike(el.iconId).map((i) => i.id);
     return (

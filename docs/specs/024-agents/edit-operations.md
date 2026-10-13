@@ -44,6 +44,10 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
   [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
+- **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,
+  `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`;
+  `ELEMENT_FIELD_VALUES` in `@livediagram/document`) refuses a value off it as `invalid_value`, naming the values it
+  takes, as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 

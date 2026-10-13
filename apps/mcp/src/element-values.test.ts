@@ -26,7 +26,7 @@ describe('elementsIssue', () => {
 
   it('refuses a text size off the scale', () => {
     expect(elementsIssue([box({ textSize: 'xl' })])).toBe(
-      'element "b1": textSize "xl" is not a size; sizes: sm, md, lg, scale.',
+      'element "b1": textSize "xl" is not one of sm, md, lg, scale.',
     );
   });
 

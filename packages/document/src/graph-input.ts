@@ -37,7 +37,7 @@ import {
 } from './graph-look';
 import { unionRects } from './geometry-primitives';
 import { isBoxed } from './index';
-import { withHeaderAndKey } from './graph-header';
+import { withHeaderAndKey, type GraphKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
 import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
@@ -59,7 +59,7 @@ export type GraphInput = {
   // A heading and a muted caption above the drawing, and a key of the shapes it uses (graph-header.ts).
   title?: string;
   subtitle?: string;
-  key?: boolean;
+  key?: GraphKey;
   nodes: GraphInputNode[];
   edges: GraphEdge[];
   groups?: (Omit<GraphCluster, 'members'> & { members?: string[] })[];
@@ -303,7 +303,7 @@ export function layoutGraph(
   return withHeaderAndKey(laid, {
     ...(g.title ? { title: g.title } : {}),
     ...(g.subtitle ? { subtitle: g.subtitle } : {}),
-    ...(g.key ? { key: true } : {}),
+    ...(g.key ? { key: g.key, flowchart: isFlowchart(g.nodes) } : {}),
     ...(makeEdgeId ? { makeId: makeEdgeId } : {}),
   });
 }

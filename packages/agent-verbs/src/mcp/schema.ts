@@ -18,6 +18,7 @@ import {
 } from '@livediagram/api-schema';
 import {
   ANCHORS,
+  ELEMENT_FIELD_VALUES,
   FINISHES,
   type Finish,
   CODE_LANGUAGES,
@@ -88,6 +89,19 @@ const CONTENT_KINDS =
   "node's name; do not write leftover flows yourself). Make it " +
   'wide (about 2:1); it draws no title.';
 
+// The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
+// fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
+const STYLE_FIELDS =
+  'Style fields: ' +
+  Object.entries(ELEMENT_FIELD_VALUES)
+    .map(([key, values]) => `"${key}" (${values.join(', ')})`)
+    .join(', ') +
+  '; "textBold", "textItalic" (true/false); "colorPreset" (a shape\u2019s look from the theme: theme, soft, ' +
+  'tinted, solid, bold, ghost, paper, muted, slate, inked, hairline, outline, dotted, dash-dot, frame, info, ' +
+  'success, warning, danger, highlight); "iconId" (an id from search_icons) with "iconPosition"; "note" (detail ' +
+  'shown on the element); on an arrow "label", "strokeStyle", "arrowEnds", "arrowheadShape". A field a type ' +
+  'does not have, or a value off its list, is refused naming what it takes. ';
+
 // Self-contained element schema, attached to each tool's element argument so the
 // model reads it straight from the tool definition (see the comment above).
 const ELEMENT_SCHEMA_HINT =
@@ -106,6 +120,7 @@ const ELEMENT_SCHEMA_HINT =
   'The theme owns fill, stroke, and text colour on every element except a sticky. ' +
   'Any element may carry "finish" ("flexible", "professional" or "sketch") to be drawn ' +
   'differently from its tab. ' +
+  STYLE_FIELDS +
   CONTENT_KINDS;
 
 export function elementSchemaDoc(): string {
@@ -437,11 +452,13 @@ const graphField = z
       .optional()
       .describe('A muted caption under the title: what the diagram shows and how to read it.'),
     key: z
-      .boolean()
+      .union([z.boolean(), z.record(z.string(), z.string().max(40))])
       .optional()
       .describe(
-        'true adds a key beside the diagram: one miniature per shape kind it uses with what that shape ' +
-          'means (Start or end, Step, Decision, Data store, ...).',
+        'A key beside the diagram: one miniature per shape kind it uses with what that shape means. true ' +
+          'names them by default (a flowchart\u2019s Start or end, Step, Decision...; else Component, Data ' +
+          'store, Hub or bus, External system...); an object names them yourself by shape ' +
+          '({"hexagon": "Event bus", "cylinder": "Database"}), the rest by default.',
       ),
   })
   .optional()

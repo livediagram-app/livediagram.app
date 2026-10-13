@@ -21,7 +21,8 @@ const KEY_PAD = 20;
 const KEY_ROW_H = 52;
 const KEY_ICON_W = 56;
 
-// What each shape kind means in a key, in the order a key lists them.
+// What each shape kind means in a key, in the order a key lists them, with its miniature's height: a flowchart's
+// ISO 5807 meanings, and the plainer ones a diagram of systems reads by. A graph's own `key` names override either.
 export const KEY_MEANING: readonly (readonly [string, string, number])[] = [
   ['stadium', 'Start or end', 24],
   ['square', 'Step', 30],
@@ -34,6 +35,15 @@ export const KEY_MEANING: readonly (readonly [string, string, number])[] = [
   ['cloud', 'External system', 32],
   ['actor', 'Person', 40],
 ];
+const SYSTEM_MEANING: Readonly<Record<string, string>> = {
+  stadium: 'Entry point',
+  square: 'Component',
+  hexagon: 'Hub or bus',
+  circle: 'Node',
+};
+
+// A key: every shape's meaning as given, else the defaults (flowchart or system).
+export type GraphKey = boolean | Readonly<Record<string, string>>;
 
 let nextId = 0;
 const idOf = (makeId: (() => string) | undefined, base: string) =>
@@ -43,7 +53,14 @@ const idOf = (makeId: (() => string) | undefined, base: string) =>
 // sits above their top-left corner, so nothing moves.
 export function withHeaderAndKey(
   elements: Element[],
-  opts: { title?: string; subtitle?: string; key?: boolean; makeId?: () => string },
+  opts: {
+    title?: string;
+    subtitle?: string;
+    key?: GraphKey;
+    // Whether the drawing is a flowchart, which picks the default meanings.
+    flowchart?: boolean;
+    makeId?: () => string;
+  },
 ): Element[] {
   const boxes = elements.filter(isBoxed);
   const block = unionRects(boxes);
@@ -51,7 +68,12 @@ export function withHeaderAndKey(
   const added: Element[] = [];
   const title = opts.title?.trim();
   const subtitle = opts.subtitle?.trim();
-  if (opts.key) added.push(...keyCard(boxes, block, opts.makeId));
+  if (opts.key) {
+    const given = typeof opts.key === 'object' ? opts.key : {};
+    const meaning = (kind: string, fallback: string) =>
+      given[kind]?.trim() || (opts.flowchart ? fallback : (SYSTEM_MEANING[kind] ?? fallback));
+    added.push(...keyCard(boxes, block, meaning, opts.makeId));
+  }
   const right = Math.max(block.x + block.width, ...added.filter(isBoxed).map((b) => b.x + b.width));
   const width = Math.max(HEADER_MIN_W, right - block.x);
   if (title || subtitle) {
@@ -94,6 +116,7 @@ export function withHeaderAndKey(
 function keyCard(
   boxes: BoxedElement[],
   block: { x: number; y: number; width: number },
+  meaning: (kind: string, fallback: string) => string,
   makeId?: () => string,
 ): Element[] {
   const shapes = boxes.filter(
@@ -129,7 +152,7 @@ function keyCard(
       textAlignX: 'left',
     },
   ];
-  rows.forEach(([kind, meaning, iconH], i) => {
+  rows.forEach(([kind, fallback, iconH], i) => {
     const y = top + KEY_PAD + 40 + i * KEY_ROW_H;
     const sample = mostCommonPreset(shapes.filter((s) => s.shape === kind));
     out.push(
@@ -151,7 +174,7 @@ function keyCard(
         y: y + 4,
         width: KEY_W - KEY_PAD * 2 - KEY_ICON_W - 14,
         height: 28,
-        label: meaning,
+        label: meaning(kind, fallback),
         textSize: 'sm',
         textColor: GRAPH_MUTED,
         textAlignX: 'left',

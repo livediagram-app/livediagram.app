@@ -22,6 +22,20 @@ const ROOT_SIDE = 200;
 const BRANCH = { width: 170, height: 64, max: 280, px: 22 };
 const LEAF = { width: 160, height: 44, max: 260, px: 14 };
 
+// The round root's side: big enough that its longest word fits one line of the circle's inner width (about 0.7 of
+// it) and every line of its label fits down it, at the root's large text (32px), never under the template's 200.
+const ROOT_PX = 32;
+function rootSide(label: string): number {
+  const words = label.split(/\s+/).filter(Boolean);
+  const longest = Math.max(0, ...words.map((w) => glyphWidth(w, ROOT_PX)));
+  let side = Math.max(ROOT_SIDE, Math.ceil(longest / 0.7 + 24));
+  for (;;) {
+    const lines = Math.ceil(glyphWidth(label, ROOT_PX) / (side * 0.7));
+    if (lines * ROOT_PX * 1.25 <= side * 0.7 || side > 420) return side;
+    side += 20;
+  }
+}
+
 const fit = (label: string, lv: typeof BRANCH, iconRoom = 0) => {
   const w = Math.round(
     Math.min(lv.max, Math.max(lv.width, glyphWidth(label, lv.px) + 48 + iconRoom)),
@@ -77,11 +91,12 @@ export function layoutMindmapGraph(
       children: (children.get(id) ?? []).map((c) => leafSpec(c, hue)),
     };
   };
+  const side = rootSide(root.label ?? '');
   const spec: MindSpec = {
     label: root.label ?? '',
     look: {
-      width: ROOT_SIDE,
-      height: ROOT_SIDE,
+      width: side,
+      height: side,
       textSize: 'lg',
       textBold: true,
       colorPreset: 'bold',

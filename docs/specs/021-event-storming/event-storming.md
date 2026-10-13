@@ -1575,6 +1575,9 @@ An agent builds a board through the MCP's graph input with `style: "storm"` ([MC
   Notes sharing a lane and column sit side by side, a gutter apart; columns stand three gutters apart.
 - **One lane per kind used**, top to bottom in the method's reading order: actor, read model, command, aggregate,
   external system, domain event, policy, hotspot. Every note sits on its lane's centre line, so the board is settled.
+  Each lane is named to the left of the wall ("Domain events", muted text, right aligned): plain text, not a workshop
+  note, so the lanes neither hold nor move it, and a reader new to the notation can still read the board.
+- **A title and subtitle**, when given, head the wall as on every graph (graph-header.ts).
 - **A new tab is a board.** `create_document` and `add_tab` with a storm graph make an event-storming tab (`kind`
   `event-storming`, born settled, the board layer), the same as the template. A `replace` onto an existing board
   lands the notes on its lanes as any arrival does; onto an ordinary tab the notes arrive but the tab stays ordinary.

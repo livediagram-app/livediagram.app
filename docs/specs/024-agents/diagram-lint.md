@@ -13,21 +13,21 @@ reveal (`docs/research/agent-cli/authoring-from-scratch.md`).
 
 Each **lint finding** has a code, a severity, the refs involved and a fix phrased as a command or operation.
 
-| Code                | Severity | Finding                                                                                                                             |
-| ------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `box-overlap`       | error    | Two boxes that arrows connect partly overlap; one wholly inside another does not count                                              |
-| `arrow-dangling`    | error    | An arrow pinned to a missing element                                                                                                |
-| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                                                                                   |
-| `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows                                                                  |
-| `label-collision`   | warning  | An arrow label overlaps a box                                                                                                       |
-| `label-overflow`    | warning  | A label needs more lines than its box holds                                                                                         |
-| `node-isolated`     | warning  | A labelled shape with no arrows on a tab that is otherwise a graph (an unlabelled one is decoration: a key's sample, a card)        |
-| `group-escape`      | warning  | A member lies outside its frame                                                                                                     |
-| `group-split-edges` | info     | Most of a frame's arrows cross its border                                                                                           |
-| `duplicate-label`   | info     | Two boxes share a label                                                                                                             |
-| `flow-backwards`    | info     | Arrows point against the flow direction                                                                                             |
-| `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse                                                    |
-| `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies excepted) |
+| Code                | Severity | Finding                                                                                                                                                            |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `box-overlap`       | error    | Two boxes that arrows connect partly overlap; one wholly inside another does not count                                                                             |
+| `arrow-dangling`    | error    | An arrow pinned to a missing element                                                                                                                               |
+| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                                                                                                                  |
+| `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows                                                                                                 |
+| `label-collision`   | warning  | An arrow label overlaps a box                                                                                                                                      |
+| `label-overflow`    | warning  | A label needs more lines than its box holds                                                                                                                        |
+| `node-isolated`     | warning  | A labelled shape with no arrows on a tab that is otherwise a graph (an unlabelled one is decoration: a key's sample, a card)                                       |
+| `group-escape`      | warning  | A member lies outside its frame                                                                                                                                    |
+| `group-split-edges` | info     | Most of a frame's arrows cross its border                                                                                                                          |
+| `duplicate-label`   | info     | Two boxes share a label                                                                                                                                            |
+| `flow-backwards`    | info     | Arrows point against the flow direction (not one that closes a loop: a retry runs back by design)                                                                  |
+| `aspect-extreme`    | info     | The drawing is more than `LINT_MAX_ASPECT` times wider than tall, or the reverse                                                                                   |
+| `colour-on-themed`  | info     | A fill or stroke the tab's theme would not paint, on an element the theme colours, bound to no preset or swatch (stickies, and a mind map's branch hues, excepted) |
 
 - The error codes judge the diagram's graph. Boxes no arrow connects are decoration (an icon on a card, a sticker,
   a Venn circle) and may overlap by design; a line with both ends free is a drawing, not a broken arrow. The

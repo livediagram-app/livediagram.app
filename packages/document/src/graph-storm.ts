@@ -20,6 +20,7 @@ import {
 } from './event-storming';
 import { ES_LANES, ES_NOTE_GAP, laneCentre } from './event-storming-lanes';
 import type { GraphEdge, GraphNode } from './graph-authoring';
+import { GRAPH_MUTED, withHeaderAndKey } from './graph-header';
 import type { Element } from './index';
 
 // The lanes, top to bottom: who and what they look at, what they ask for, what it acts on, what happened, how the
@@ -52,6 +53,8 @@ const isKind = (k: string | undefined): k is EventStormingNoteKind =>
   STORM_LANE_ORDER.includes(k as EventStormingNoteKind);
 
 export function layoutStormGraph(graph: {
+  title?: string;
+  subtitle?: string;
   nodes: readonly StormNode[];
   edges: readonly GraphEdge[];
 }): Element[] {
@@ -153,5 +156,29 @@ export function layoutStormGraph(graph: {
     }
     x += width + STORM_COLUMN_GAP;
   }
-  return out;
+  // Each lane named to the left of the wall, so a reader new to the notation can read it: plain muted text, not a
+  // workshop note, so the lanes neither hold nor move it.
+  for (const kind of lanes)
+    out.push({
+      id: `lane-label-${kind}`,
+      type: 'text',
+      x: -STORM_LABEL_W - STORM_COLUMN_GAP,
+      y: laneCentre(laneOf(kind), ES_LANES) - 16,
+      width: STORM_LABEL_W,
+      height: 32,
+      label: plural(eventStormingNote(kind).label),
+      textSize: 'md',
+      textColor: GRAPH_MUTED,
+      textAlignX: 'right',
+    });
+  return withHeaderAndKey(out, {
+    ...(graph.title ? { title: graph.title } : {}),
+    ...(graph.subtitle ? { subtitle: graph.subtitle } : {}),
+  });
 }
+
+// A kind's name for its lane: "Policies", "Domain events".
+const plural = (label: string) => (label.endsWith('y') ? `${label.slice(0, -1)}ies` : `${label}s`);
+
+// The width of a lane's name beside the wall.
+const STORM_LABEL_W = 180;

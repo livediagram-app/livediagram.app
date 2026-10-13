@@ -50,7 +50,15 @@ const isGroup = (g: unknown) =>
 const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
   ['title', optional(isString), 'a string'],
   ['subtitle', optional(isString), 'a string'],
-  ['key', optional((v) => typeof v === 'boolean'), 'true or false'],
+  [
+    'key',
+    optional(
+      (v) =>
+        typeof v === 'boolean' ||
+        (isRecord(v) && Object.values(v).every((m) => typeof m === 'string')),
+    ),
+    'true, false or { shape: meaning }',
+  ],
   [
     'nodes',
     (v) => isListOf(v, isNode),

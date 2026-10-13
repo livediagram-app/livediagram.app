@@ -176,6 +176,31 @@ describe('title, subtitle and key', () => {
   });
 });
 
+describe('key meanings', () => {
+  const system: GraphInput = {
+    nodes: [
+      { id: 'a', label: 'API' },
+      { id: 'b', label: 'Bus', shape: 'hexagon' },
+      { id: 'c', label: 'DB', shape: 'cylinder' },
+    ],
+    edges: [
+      { from: 'a', to: 'b' },
+      { from: 'b', to: 'c' },
+    ],
+  };
+  const texts = (els: Element[]) =>
+    els.filter((e) => e.type === 'text').map((e) => (e as { label?: string }).label);
+  it("names a system diagram's shapes plainly, not by flowchart meanings", () => {
+    const labels = texts(lay({ ...system, key: true }));
+    expect(labels).toEqual(expect.arrayContaining(['Component', 'Hub or bus', 'Data store']));
+    expect(labels).not.toContain('Preparation');
+  });
+  it('takes meanings given by shape, the rest by default', () => {
+    const labels = texts(lay({ ...system, key: { hexagon: 'Event bus' } }));
+    expect(labels).toEqual(expect.arrayContaining(['Component', 'Event bus', 'Data store']));
+  });
+});
+
 describe('lanes', () => {
   it('draws each group as a lane, one under another, the flow left to right', () => {
     const els = lay({
@@ -324,6 +349,10 @@ describe('storm', () => {
       ],
     });
     expect(els.some((e) => e.type === 'arrow')).toBe(false);
+    const labels = els.filter((e) => e.type === 'text').map((e) => (e as { label?: string }).label);
+    expect(labels).toEqual(
+      expect.arrayContaining(['Actors', 'Commands', 'Domain events', 'Policies']),
+    );
     const note = (id: string) => box(els, id) as BoxedElement & { esKind?: string; label?: string };
     expect(note('p1').label).toBe(policy);
     expect(note('placed').esKind).toBe('domain-event');

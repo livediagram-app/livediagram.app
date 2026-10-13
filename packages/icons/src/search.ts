@@ -28,14 +28,40 @@ const CATALOGUE: readonly (IconHit & { keywords: string })[] = [
   })),
 ];
 
+// Words a query carries that say nothing about the picture.
+const FILLER = new Set(['a', 'an', 'the', 'of', 'for', 'and', 'icon', 'logo', 'symbol']);
+const compact = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
+const wordsOf = (q: string) =>
+  q
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 1 && !FILLER.has(w));
+
+// How well an icon answers a query, lower first; 7 or more is no match. The whole query ranks as the palette ranks
+// it (0 to 3); then spacing aside ("route53" for Route 53, 3.5); then icons holding every word of a several-word
+// query (4), then most of its words (5 to 6, by how many are missing), so "mobile phone" and "credit card" find
+// what one word would.
+function iconRank(query: string, icon: { label: string; keywords: string }): number {
+  const whole = paletteRank(query, { name: icon.label, keywords: icon.keywords });
+  if (whole < 4) return whole;
+  const hay = `${icon.label} ${icon.keywords}`.toLowerCase();
+  const needle = compact(query);
+  if (needle.length > 2 && compact(icon.label).includes(needle)) return 3.5;
+  const words = wordsOf(query);
+  if (words.length < 2) return needle.length > 2 && compact(hay).includes(needle) ? 3.6 : 7;
+  // A word counts where a word of the icon starts with it ("lock" is not in "clock", "load" not in "download").
+  const hayWords = hay.split(/[^a-z0-9]+/);
+  const has = (w: string) => hayWords.some((h) => h.startsWith(w));
+  const found = words.filter((w) => has(w) || (w.endsWith('s') && has(w.slice(0, -1))));
+  if (found.length === words.length) return 4;
+  if (found.length === 0) return 7;
+  return 5 + (words.length - found.length) / words.length;
+}
+
 // The best `limit` icons for a query, and how many more matched.
 export function searchIcons(query: string, limit: number): { icons: IconHit[]; more: number } {
-  const ranked = CATALOGUE.map((icon, order) => ({
-    icon,
-    order,
-    rank: paletteRank(query, { name: icon.label, keywords: icon.keywords }),
-  }))
-    .filter((r) => r.rank < 4)
+  const ranked = CATALOGUE.map((icon, order) => ({ icon, order, rank: iconRank(query, icon) }))
+    .filter((r) => r.rank < 7)
     .sort((a, b) => a.rank - b.rank || a.order - b.order);
   return {
     icons: ranked
