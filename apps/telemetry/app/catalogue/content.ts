@@ -90,8 +90,8 @@ export const TAB_LOOKS_PICKED = chart(
   'Tab',
   'Changed',
   'Tab Looks',
-  'A look picked in Tab Look & Feel: theme, finish, font and canvas pattern set at once.',
-  { types: ['Look'] },
+  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once (Mashup: a random look rolled).',
+  { types: ['Look', 'Mashup'] },
 );
 
 export const TABS_ARRANGED = chart(

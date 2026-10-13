@@ -13,7 +13,7 @@ import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { getTheme } from '@/lib/themes';
-import { type TabLookId } from '@/lib/tab-looks';
+import { type LookSettings, type TabLook, type TabLookId } from '@/lib/tab-looks';
 import { LooksCarousel } from './LooksCarousel';
 
 /** The panels a Fine-tune row opens. */
@@ -30,6 +30,7 @@ const sectionLabel =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 
 export function LooksHome({
+  settings,
   activeLook,
   onPickLook,
   themeId,
@@ -39,9 +40,12 @@ export function LooksHome({
   pattern,
   onOpenPanel,
 }: {
+  // The tab's four look settings (the Mashup card is selected while they are its mashup's).
+  settings: LookSettings;
   // The look the tab's settings match, undefined when it has its own mix.
   activeLook: TabLookId | undefined;
-  onPickLook: (id: TabLookId) => void;
+  // A named look's id, or the Mashup card's random look whole.
+  onPickLook: (look: TabLookId | TabLook) => void;
   // The tab's current settings, for the Fine-tune rows' summaries.
   themeId: string;
   finish: Finish;
@@ -55,7 +59,12 @@ export function LooksHome({
   const patternLabel = PATTERNS.find((p) => p.id === pattern)?.label ?? 'Grid';
   return (
     <div className="flex flex-col gap-5">
-      <LooksCarousel activeLook={activeLook} onPickLook={onPickLook} headingClass={sectionLabel} />
+      <LooksCarousel
+        settings={settings}
+        activeLook={activeLook}
+        onPickLook={onPickLook}
+        headingClass={sectionLabel}
+      />
 
       <section
         aria-labelledby="fine-tune-heading"

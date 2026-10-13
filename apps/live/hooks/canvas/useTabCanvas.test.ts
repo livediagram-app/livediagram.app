@@ -2,6 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
+import { rollMashup } from '@/lib/look-mashup';
 import { useTabCanvas } from './useTabCanvas';
 
 const track = vi.hoisted(() => vi.fn());
@@ -94,6 +95,24 @@ describe('useTabCanvas applyTabLook', () => {
     ]);
     expect(h.tabs()[1]!.theme).toBeUndefined();
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Look');
+  });
+
+  it("applies the Mashup card's random look whole, tracked as a Mashup", () => {
+    track.mockClear();
+    const h = setup([box('a')]);
+    const mashup = rollMashup({ random: () => 0.5 });
+    h.api.applyTabLook(mashup);
+    expect(h.commitTabs).toHaveBeenCalledTimes(1);
+    const t = h.tabs()[0]!;
+    expect([t.theme, t.finish, t.font, t.backgroundPattern, t.backgroundOpacity]).toEqual([
+      mashup.theme,
+      mashup.finish,
+      mashup.font,
+      mashup.pattern,
+      mashup.patternOpacity,
+    ]);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'Mashup');
+    expect(track).not.toHaveBeenCalledWith('Tab', 'Changed', 'Look');
   });
 
   it('ignores an unknown look and a blocked session', () => {

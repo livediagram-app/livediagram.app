@@ -2532,7 +2532,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch spectrum',
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch spectrum mashup random surprise shuffle dice',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',
