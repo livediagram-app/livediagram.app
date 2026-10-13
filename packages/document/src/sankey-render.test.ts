@@ -207,7 +207,7 @@ describe('node edits', () => {
     expect(r.nodes).toEqual([{ name: 'A', color: '#111111' }]);
   });
 
-  it('merges onto a name listed after it, keeping the surviving name\'s colour', () => {
+  it("merges onto a name listed after it, keeping the surviving name's colour", () => {
     const r = renameSankeyNode(
       [{ from: 'A', to: 'B', value: 1 }],
       [

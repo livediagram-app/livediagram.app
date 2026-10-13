@@ -56,12 +56,7 @@ export function ZoomMenu({ zoom, onSetZoom, onFitToScreen, offReason, range }: Z
   );
 }
 
-function ZoomMenuLive({
-  zoom,
-  onSetZoom,
-  onFitToScreen,
-  range,
-}: Omit<ZoomMenuProps, 'offReason'>) {
+function ZoomMenuLive({ zoom, onSetZoom, onFitToScreen, range }: Omit<ZoomMenuProps, 'offReason'>) {
   const percent = Math.round(zoom * 100);
   const presets = range
     ? ZOOM_PRESETS.filter((level) => level >= range.min && level <= range.max)
