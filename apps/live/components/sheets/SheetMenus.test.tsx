@@ -81,19 +81,20 @@ describe('the cell menu', () => {
     reopen();
     expect(screen.getByText('A1:B3')).toBeTruthy();
     expect(screen.getByText('6 Cells')).toBeTruthy();
-    for (const name of [
-      'Insert 3 Rows Above',
-      'Insert 3 Rows Below',
-      'Insert 2 Columns Left',
-      'Insert 2 Columns Right',
-      'Delete Rows 1 to 3',
-      'Delete Columns A to B',
-      'Merge Cells',
-    ])
+    // The menu shows its categories closed, never a long list of rows.
+    no('Insert 3 Rows Above');
+    expect(fly('Insert', 'Insert 3 Rows Above')).toBeTruthy();
+    for (const name of ['Insert 3 Rows Below', 'Insert 2 Columns Left', 'Insert 2 Columns Right'])
       expect(btn(name)).toBeTruthy();
+    expect(fly('Delete', 'Delete Rows 1 to 3')).toBeTruthy();
+    expect(btn('Delete Columns A to B')).toBeTruthy();
+    expect(fly('Cells', 'Merge Cells')).toBeTruthy();
     // One cell has nothing to merge.
     act(() => h.select('A1'));
     reopen();
+    // Its Cells category is still open from the last look.
+    if (!screen.queryByRole('button', { name: 'Hide Row 1' })) fly('Cells', 'Hide Row 1');
+    expect(btn('Hide Row 1')).toBeTruthy();
     no('Merge Cells');
     no('Unmerge Cells');
   });
@@ -101,7 +102,7 @@ describe('the cell menu', () => {
   it('makes a chart from the cells, closing', () => {
     show(h, cellMenu);
     act(() => h.select('A1:B2'));
-    fireEvent.click(fly('Insert Chart', 'Line Chart'));
+    fireEvent.click(fly('Chart', 'Line Chart'));
     expect(h.placeChart).toHaveBeenCalledWith(
       'line',
       expect.any(Object),
@@ -117,7 +118,7 @@ describe('the cell menu', () => {
       ['Doughnut Chart', 'doughnut'],
     ] as const) {
       reopen();
-      fireEvent.click(fly('Insert Chart', name));
+      fireEvent.click(fly('Chart', name));
       expect(h.placeChart).toHaveBeenLastCalledWith(kind, expect.any(Object), expect.any(Object));
     }
   });
@@ -135,29 +136,29 @@ describe('the cell menu', () => {
 
   it('inserts and deletes rows and columns at the selection, on either side', () => {
     show(h, cellMenu, { at: 'A2' });
-    fireEvent.click(btn('Insert Row Above'));
+    fireEvent.click(fly('Insert', 'Insert Row Above'));
     expect(layout(h).rows).toHaveLength(9);
     expect(h.value('A3')).toBe(2);
     expect(h.announce).toHaveBeenCalledWith('1 row inserted');
     reopen();
-    fireEvent.click(btn('Delete Row 2'));
+    fireEvent.click(fly('Delete', 'Delete Row 2'));
     expect(layout(h).rows).toHaveLength(8);
     expect(h.value('A2')).toBe(2);
     reopen();
-    fireEvent.click(btn('Insert Row Below'));
+    fireEvent.click(fly('Insert', 'Insert Row Below'));
     expect(layout(h).rows).toHaveLength(9);
     expect(h.value('A2')).toBe(2);
     expect(h.value('A3')).toBeNull();
     reopen();
-    fireEvent.click(btn('Insert Column Left'));
+    fireEvent.click(fly('Insert', 'Insert Column Left'));
     expect(layout(h).cols).toHaveLength(6);
     expect(h.value('B2')).toBe(2);
     reopen();
-    fireEvent.click(btn('Delete Column A'));
+    fireEvent.click(fly('Delete', 'Delete Column A'));
     expect(layout(h).cols).toHaveLength(5);
     expect(h.value('A2')).toBe(2);
     reopen();
-    fireEvent.click(btn('Insert Column Right'));
+    fireEvent.click(fly('Insert', 'Insert Column Right'));
     expect(layout(h).cols).toHaveLength(6);
     expect(h.value('A2')).toBe(2);
     expect(h.value('C2')).toBe('y');
@@ -165,19 +166,19 @@ describe('the cell menu', () => {
 
   it('inserts and deletes cells, shifting their neighbours', () => {
     show(h, cellMenu);
-    fireEvent.click(fly('Shift Cells', 'Insert Cells, Shift Right'));
+    fireEvent.click(fly('Insert', 'Insert Cells, Shift Right'));
     expect(h.value('B1')).toBe(1);
     expect(h.value('C1')).toBe('x');
     expect(h.value('A1')).toBeNull();
     reopen();
-    fireEvent.click(fly('Shift Cells', 'Delete Cells, Shift Left'));
+    fireEvent.click(fly('Delete', 'Delete Cells, Shift Left'));
     expect(h.value('A1')).toBe(1);
     reopen();
-    fireEvent.click(fly('Shift Cells', 'Insert Cells, Shift Down'));
+    fireEvent.click(fly('Insert', 'Insert Cells, Shift Down'));
     expect(h.value('A2')).toBe(1);
     expect(h.value('A3')).toBe(2);
     reopen();
-    fireEvent.click(fly('Shift Cells', 'Delete Cells, Shift Up'));
+    fireEvent.click(fly('Delete', 'Delete Cells, Shift Up'));
     expect(h.value('A1')).toBe(1);
     expect(h.value('A2')).toBe(2);
   });
@@ -202,11 +203,11 @@ describe('the cell menu', () => {
     show(h, cellMenu);
     act(() => h.select('A1:B2'));
     reopen();
-    fireEvent.click(fly('Hide', 'Hide Rows 1 to 2'));
+    fireEvent.click(fly('Cells', 'Hide Rows 1 to 2'));
     expect(layout(h).hiddenRows).toHaveLength(2);
     expect(h.ctl().menu).toBeNull();
     reopen();
-    fireEvent.click(fly('Hide', 'Hide Columns A to B'));
+    fireEvent.click(fly('Cells', 'Hide Columns A to B'));
     expect(layout(h).hiddenCols).toHaveLength(2);
   });
 
@@ -226,12 +227,12 @@ describe('the cell menu', () => {
   it('merges at once when nothing is lost, asks when values would be, and unmerges', () => {
     show(h, cellMenu);
     act(() => h.select('C1:D2'));
-    fireEvent.click(btn('Merge Cells'));
+    fireEvent.click(fly('Cells', 'Merge Cells'));
     expect(layout(h).merges).toHaveLength(1);
     expect(h.ctl().menu).toBeNull();
     act(() => h.select('A1:B1'));
     reopen();
-    fireEvent.click(btn('Merge Cells'));
+    fireEvent.click(fly('Cells', 'Merge Cells'));
     const ask = screen.getByRole('alertdialog', { name: 'Merge Cells' });
     expect(ask.textContent).toContain('keeps only the top-left value');
     fireEvent.click(within(ask).getByRole('button', { name: 'Cancel' }));
@@ -244,7 +245,7 @@ describe('the cell menu', () => {
     expect(h.ctl().menu).toBeNull();
     act(() => h.select('C1'));
     reopen();
-    fireEvent.click(btn('Unmerge Cells'));
+    fireEvent.click(fly('Cells', 'Unmerge Cells'));
     expect(layout(h).merges).toHaveLength(1);
   });
 
