@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
-import { appBaseUrl, emailEnabled, sendEmail } from './client';
+import { appBaseUrl, EMAIL_SEND_TIMEOUT_MS, emailEnabled, sendEmail } from './client';
 
 const withKey = { RESEND_API_KEY: 're_test' } as unknown as Env;
 const noKey = {} as Env;
@@ -90,5 +90,26 @@ describe('sendEmail', () => {
     ).toEqual({
       sent: false,
     });
+  });
+});
+
+// A hung Resend call no longer holds the daily email cron behind it: the send gives up, as a failure.
+describe('sendEmail timeout', () => {
+  it('fails a send Resend never answers, after EMAIL_SEND_TIMEOUT_MS', async () => {
+    // The bound itself is the platform's (AbortSignal.timeout); stand in an already-expired one.
+    const timeout = vi
+      .spyOn(AbortSignal, 'timeout')
+      .mockImplementation(() => AbortSignal.abort(new DOMException('timed out', 'TimeoutError')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: string, init: RequestInit) => {
+        if (init.signal?.aborted) throw init.signal.reason;
+        return new Response('{}', { status: 200 });
+      }),
+    );
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const sent = sendEmail(withKey, { kind: 'Welcome', to: 'a@b.com', subject: 's', html: 'h' });
+    expect(await sent).toEqual({ sent: false });
+    expect(timeout).toHaveBeenCalledWith(EMAIL_SEND_TIMEOUT_MS);
   });
 });

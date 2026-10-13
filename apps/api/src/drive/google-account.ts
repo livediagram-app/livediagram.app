@@ -3,7 +3,7 @@
 // consent asks only for drive.file and drive.install, so there is no id token to read a `sub` from;
 // `about` answers under drive.file. One call per consent, never per sync.
 
-import { GoogleOAuthError } from './google-oauth';
+import { GOOGLE_CALL_TIMEOUT_MS, GoogleOAuthError } from './google-oauth';
 import { googleApiBase } from './config';
 import type { Env } from '../types';
 
@@ -12,6 +12,7 @@ export async function fetchGoogleAccountId(env: Env, accessToken: string): Promi
   try {
     res = await fetch(`${googleApiBase(env)}/drive/v3/about?fields=user(permissionId)`, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(GOOGLE_CALL_TIMEOUT_MS),
     });
   } catch (err) {
     throw new GoogleOAuthError('failed', err instanceof Error ? err.message : 'network');
