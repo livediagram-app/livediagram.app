@@ -4,7 +4,7 @@
 // all build tabs the same way. Template tabs are `buildTemplateTab` in @livediagram/templates.
 
 import { autoLayoutElements, isLayoutCandidate, nodesLookUnplaced } from './auto-layout';
-import { isEventStormingNote, isEventStormingTab } from './event-storming';
+import { eventStormingLayers, isEventStormingNote, isEventStormingTab } from './event-storming';
 import { landArrivals } from './event-storming-lane-landing';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { recolourElementsForTheme } from './theme-graph';
@@ -65,7 +65,12 @@ export function buildGraphTab(
   graph: GraphInput,
   themeId: string | undefined,
 ): Tab {
-  return buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
+  const tab = buildTab(tabId, name, layoutGraph(graph), 'preserve', themeId);
+  // A storm is an event-storming board, born settled on its lanes as the template's is
+  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
+  return graph.style === 'storm'
+    ? { ...tab, kind: 'event-storming', esLanesSettled: true, layers: eventStormingLayers() }
+    : tab;
 }
 
 // Workshop notes a call adds or moves on an event-storming tab land on lanes

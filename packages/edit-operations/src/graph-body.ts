@@ -2,7 +2,12 @@
 // shape the MCP's `graph` argument takes): `layoutGraph` trusts its input, and a changeset's body is
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
-import { isRecord, MAX_ELEMENTS_PER_TAB, type GraphInput } from '@livediagram/document';
+import {
+  EVENT_STORMING_NOTES,
+  isRecord,
+  MAX_ELEMENTS_PER_TAB,
+  type GraphInput,
+} from '@livediagram/document';
 import { iconsLike, isIconId } from '@livediagram/icons/search';
 
 const isId = (v: unknown) => typeof v === 'string' && v !== '';
@@ -15,6 +20,8 @@ const isOneOf = (values: readonly string[]) => (v: unknown) => values.includes(v
 const isListOf = (v: unknown, check: (item: unknown) => boolean) =>
   Array.isArray(v) && v.every(check);
 
+const ES_KINDS = EVENT_STORMING_NOTES.map((n) => n.kind);
+
 const isEntityField = (f: unknown) => isRecord(f) && isString(f.name) && optional(isString)(f.type);
 
 const isNode = (n: unknown) =>
@@ -22,6 +29,7 @@ const isNode = (n: unknown) =>
   isId(n.id) &&
   ['label', 'shape', 'link', 'note', 'group', 'icon'].every((key) => optional(isString)(n[key])) &&
   optional(isOneOf(['strong', 'soft', 'muted', 'plain']))(n.tone) &&
+  optional(isOneOf(ES_KINDS))(n.esKind) &&
   optional((v) => isListOf(v, isEntityField))(n.fields);
 
 const isEdge = (e: unknown) =>
@@ -53,8 +61,8 @@ const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
   ['direction', optional(isOneOf(['down', 'right'])), 'down or right'],
   [
     'style',
-    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle'])),
-    'flow, tree, mindmap, lanes or cycle',
+    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm'])),
+    'flow, tree, mindmap, lanes, cycle or storm',
   ],
   ['lines', optional(isOneOf(['straight', 'angled', 'curved'])), 'straight, angled or curved'],
 ];

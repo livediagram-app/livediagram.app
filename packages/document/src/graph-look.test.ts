@@ -301,3 +301,52 @@ describe('tree', () => {
     expect(bus.to.kind === 'pinned' && bus.to.anchor).toBe('w');
   });
 });
+
+describe('storm', () => {
+  it('lays an event-storming wall: a column per event, a lane per kind, notes whole, no arrows', () => {
+    const policy = 'Whenever an order is placed, authorise the payment straight away';
+    const els = lay({
+      style: 'storm',
+      nodes: [
+        { id: 'cust', label: 'Customer', esKind: 'actor' },
+        { id: 'place', label: 'Place order', esKind: 'command' },
+        { id: 'placed', label: 'Order placed', esKind: 'domain-event' },
+        { id: 'p1', label: policy, esKind: 'policy' },
+        { id: 'auth', label: 'Authorise payment', esKind: 'command' },
+        { id: 'authd', label: 'Payment authorised', esKind: 'domain-event' },
+      ],
+      edges: [
+        { from: 'cust', to: 'place' },
+        { from: 'place', to: 'placed' },
+        { from: 'placed', to: 'p1' },
+        { from: 'p1', to: 'auth' },
+        { from: 'auth', to: 'authd' },
+      ],
+    });
+    expect(els.some((e) => e.type === 'arrow')).toBe(false);
+    const note = (id: string) => box(els, id) as BoxedElement & { esKind?: string; label?: string };
+    expect(note('p1').label).toBe(policy);
+    expect(note('placed').esKind).toBe('domain-event');
+    // Columns: the first command with its event, the policy under the event it follows, the next command onward.
+    expect(midX(note('place'))).toBeCloseTo(midX(note('placed')), 0);
+    expect(midX(note('p1'))).toBeCloseTo(midX(note('placed')), 0);
+    expect(midX(note('auth'))).toBeCloseTo(midX(note('authd')), 0);
+    expect(midX(note('authd'))).toBeGreaterThan(midX(note('placed')));
+    // Lanes: actor over command over event over policy.
+    expect(midY(note('cust'))).toBeLessThan(midY(note('place')));
+    expect(midY(note('place'))).toBeLessThan(midY(note('placed')));
+    expect(midY(note('placed'))).toBeLessThan(midY(note('p1')));
+  });
+
+  it('makes a new tab an event-storming board', async () => {
+    const { buildGraphTab } = await import('./tab-builders');
+    const tab = buildGraphTab(
+      't',
+      'Wall',
+      { style: 'storm', nodes: [{ id: 'a', label: 'Happened' }], edges: [] },
+      undefined,
+    );
+    expect(tab.kind).toBe('event-storming');
+    expect(tab.esLanesSettled).toBe(true);
+  });
+});

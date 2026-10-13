@@ -472,7 +472,7 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   branch tinted in its own hue with its icon; leaves white and edged in their branch's hue; curved connectors in
   the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
-  a node outside every group gets an unnamed lane), `cycle` a ring (the nodes in order clockwise from the top, each
+  a node outside every group gets an unnamed lane), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, a node with no edge at all at the ring's centre, a node given no
   shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as

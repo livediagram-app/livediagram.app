@@ -331,6 +331,22 @@ const graphField = z
             .string()
             .optional()
             .describe('An icon on the box: an id from search_icons ("database", "aws-lambda").'),
+          esKind: z
+            .enum([
+              'domain-event',
+              'command',
+              'actor',
+              'policy',
+              'read-model',
+              'external-system',
+              'aggregate',
+              'hotspot',
+            ])
+            .optional()
+            .describe(
+              'style "storm" only: the workshop note this node is (default domain-event). Its label is the ' +
+                'note\u2019s text, kept whole.',
+            ),
           tone: z
             .enum(['strong', 'soft', 'muted', 'plain'])
             .optional()
@@ -392,15 +408,17 @@ const graphField = z
         'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
       ),
     style: z
-      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle'])
+      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm'])
       .optional()
       .describe(
         'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
           'side exit sits level beside it and a loop back runs round the outside), "tree" (a tidy ' +
           'hierarchy, the layout for org charts), "mindmap" (radial around the first node), "lanes" (a ' +
           'swimlane diagram: each group a lane, the flow left to right across them) or "cycle" (a ring in ' +
-          'node order, clockwise from the top; a node with no edge sits at its centre). With groups the ' +
-          'layout is flow unless it is lanes.',
+          'node order, clockwise from the top; a node with no edge sits at its centre) or "storm" (an ' +
+          'event-storming board: each node a workshop note of its esKind, one column per domain event in the ' +
+          'order the edges imply, each kind on its own lane, no arrows; a new tab becomes an event-storming ' +
+          'board). With groups the layout is flow unless it is lanes.',
       ),
     lines: z
       .enum(['straight', 'angled', 'curved'])

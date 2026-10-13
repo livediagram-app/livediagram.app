@@ -41,6 +41,7 @@ import { withHeaderAndKey } from './graph-header';
 import { layoutLanes } from './graph-lanes';
 import { layoutCycle } from './graph-cycle';
 import { layoutMindmapGraph } from './graph-mindmap';
+import { layoutStormGraph } from './graph-storm';
 import { parseMermaid } from './mermaid';
 import { graphTooLargeError } from './graph-limits';
 import type { Element } from './index';
@@ -49,10 +50,10 @@ export const GRAPH_LABEL_MAX = 40;
 
 // A node may name its group itself (`group`), as well as or instead of being
 // listed in the group's `members`: the natural shape for a model to write.
-export type GraphInputNode = LookNode & { group?: string };
+export type GraphInputNode = LookNode & { group?: string; esKind?: string };
 
 // The layouts graph input offers: the editor's three, and two of its own (docs/specs/015-api/mcp-server.md §4.7).
-export type GraphStyle = LayoutStyle | 'lanes' | 'cycle';
+export type GraphStyle = LayoutStyle | 'lanes' | 'cycle' | 'storm';
 
 export type GraphInput = {
   // A heading and a muted caption above the drawing, and a key of the shapes it uses (graph-header.ts).
@@ -202,6 +203,7 @@ const DEFAULT_LINES: Record<GraphStyle, ArrowStyle> = {
   mindmap: 'curved',
   lanes: 'angled',
   cycle: 'curved',
+  storm: 'straight',
 };
 
 // Laid-out elements for a graph: capped, positioned in the chosen style and direction, worn in the template look
@@ -213,6 +215,9 @@ export function layoutGraph(
   options: { makeEdgeId?: () => string } = {},
 ): Element[] {
   const { makeEdgeId } = options;
+  // An event-storming board is paper only: notes on lanes, no arrows, no heading (graph-storm.ts). A note's label is
+  // its content, kept whole as a sticky's always is, so it skips the heading cap.
+  if (input.style === 'storm') return layoutStormGraph(input);
   const g = conciseGraph(input);
   const direction =
     g.direction === 'right'
@@ -262,8 +267,9 @@ export function layoutGraph(
     laid = sweepEdgelessNodes(
       autoLayoutElements(graphToElements(graph, makeEdgeId, look), {
         direction,
-        style,
-        ...(style === 'tree' ? { stackedParents: stacked } : {}),
+        // The one style left by here (storm returned early; flow, mindmap, lanes and cycle have their own).
+        style: 'tree',
+        stackedParents: stacked,
         // Boxes keep their label-fitted sizes, as in the flow layout.
         fixedSizeIds: new Set(graph.nodes.map((n) => n.id)),
       }),
