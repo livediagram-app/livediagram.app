@@ -150,6 +150,9 @@ export interface BoardChange {
   // Every column, by name, left to right: a name the board has keeps its column (status, WIP limit, colour); a name
   // the document's other boards use shares their status; any other is a new, empty column.
   columns?: readonly string[];
+  // Columns renamed in place, old name to new: each keeps its status, WIP limit, colour and cards. Applied before
+  // `columns`, which may name them by their new names.
+  renameColumns?: Readonly<Record<string, string>>;
   // The card types it shows and takes, by id (resolved by the caller); null shows every type again, and an empty
   // list takes none, as the editor's last type turned off does.
   types?: readonly string[] | null;
@@ -191,15 +194,43 @@ export function reshapeBoard(
       };
     next = { ...next, title };
   }
+  if (change.renameColumns) {
+    let columns = next.columns;
+    for (const [from, to] of Object.entries(change.renameColumns)) {
+      const column = columns.find((c) => statusKey(c.name) === statusKey(from));
+      if (!column)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${next.title}" has no column "${from}". Columns: ${columns.map((c) => c.name).join(', ')}.`,
+        };
+      const name = to.trim();
+      if (!name || name.length > PLAN_COLUMN_NAME_MAX)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `A column name is 1 to ${PLAN_COLUMN_NAME_MAX} characters.`,
+        };
+      if (columns.some((c) => c !== column && statusKey(c.name) === statusKey(name)))
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${next.title}" already has a column "${name}".`,
+        };
+      columns = columns.map((c) => (c === column ? { ...c, name } : c));
+    }
+    next = { ...next, columns };
+  }
   if (change.columns) {
+    const base = next;
     const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
-    const own = setup.columns.map((c) => ({ status: c.status, name: c.name }));
+    const own = base.columns.map((c) => ({ status: c.status, name: c.name }));
     const others = existing.filter((s) => !own.some((o) => o.status === s.status));
     const made = namedColumns(change.columns, [...own, ...others], suffix);
     if (typeof made === 'string') return { ok: false, code: 'board_invalid', message: made };
     const columns = uniqueColumnIds(
-      made.map((c) => setup.columns.find((o) => o.status === c.status) ?? c),
-      new Set(setup.columns),
+      made.map((c) => base.columns.find((o) => o.status === c.status) ?? c),
+      new Set(base.columns),
     );
     const done = columns.some((c) => c.id === setup.doneColumnId) ? setup.doneColumnId : undefined;
     const { doneColumnId: _done, ...rest } = next;

@@ -134,6 +134,13 @@ export const changeBoardShape = {
         'boards use shares their column; any other name is a new, empty column. A column left out leaves its ' +
         'cards off this board.',
     ),
+  renameColumns: z
+    .record(z.string(), z.string())
+    .optional()
+    .describe(
+      'Columns renamed in place, old name to new ({"To Do": "Backlog"}): each keeps its cards, WIP limit and ' +
+        'colour. Applied before columns, which can then use the new names.',
+    ),
   types: z
     .union([z.array(z.string()), z.literal('every type')])
     .optional()

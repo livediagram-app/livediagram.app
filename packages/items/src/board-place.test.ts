@@ -91,6 +91,33 @@ describe('reshapeBoard', () => {
     expect(dropped.ok && dropped.setup.doneColumnId).toBeUndefined();
   });
 
+  it('renames a column in place, keeping its status, limit and done mark, before reordering', () => {
+    const r = reshapeBoard(
+      setup,
+      { renameColumns: { 'to do': 'Backlog', Done: 'Shipped' }, columns: ['Shipped', 'Backlog'] },
+      others,
+      fixed,
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.setup.columns).toEqual([
+      { id: 'done', status: 'done~b', name: 'Shipped' },
+      { id: 'todo', status: 'todo~b', name: 'Backlog', wipLimit: 4 },
+    ]);
+    expect(r.setup.doneColumnId).toBe('done');
+  });
+
+  it('refuses renaming a column it lacks, to nothing, or onto another column', () => {
+    const renames: Record<string, string>[] = [
+      { Doing: 'X' },
+      { 'To Do': ' ' },
+      { 'To Do': 'done' },
+    ];
+    for (const renameColumns of renames) {
+      const r = reshapeBoard(setup, { renameColumns }, others, fixed);
+      expect(r.ok, JSON.stringify(renameColumns)).toBe(false);
+    }
+  });
+
   it('never gives two columns one id, a kept column keeping its own', () => {
     // Kanban's "In Progress" has the id `doing`; a new "Doing" column slugs to the same id.
     const kanban = presetSetup('kanban');

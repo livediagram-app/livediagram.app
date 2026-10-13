@@ -108,6 +108,7 @@ export async function changeBoard(
       setup,
       {
         ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.renameColumns ? { renameColumns: input.renameColumns } : {}),
         ...(input.columns ? { columns: input.columns } : {}),
         ...(types !== undefined ? { types } : {}),
       },

@@ -67,9 +67,10 @@ export function resolveType(
   );
 }
 
-// An item by number or id prefix, as people say it.
+// An item by number or id prefix, as people say it; "#12 Fix login", as list_items reads a card link, by its number.
 export function resolveItem(input: string, items: readonly Item[]): Named<{ item: Item }> {
-  const found = resolveItemRef(items, input);
+  const titled = /^(#\d+)\s+\S/.exec(input.trim());
+  const found = resolveItemRef(items, titled ? titled[1]! : input);
   if (found.ok) return { ok: true, item: found.item };
   return refuse(
     'item_unknown',
@@ -89,8 +90,9 @@ export function assignedPeople(items: readonly Item[]): ItemPerson[] {
   return [...seen.values()];
 }
 
-// A person by name: one already assigned on the document, else a named person whose id and colour come from the
-// name, so the same name is the same person on every card.
+// A person by name: one already assigned on the document, else a named person whose id comes from the name, so the
+// same name is the same person on every card. A new person's colour starts from the name and steps on past any
+// colour someone on the document already has, so two people never share one while colours remain.
 export function personNamed(name: string, people: readonly ItemPerson[]): ItemPerson {
   const key = statusKey(name);
   const known = people.find((p) => statusKey(p.name) === key);
@@ -98,11 +100,12 @@ export function personNamed(name: string, people: readonly ItemPerson[]): ItemPe
   const slug = slugOf(name, 30) || 'person';
   let hash = 0;
   for (const ch of slug) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return {
-    id: `n-${slug}`,
-    name: name.trim(),
-    color: PLAN_TYPE_COLOURS[hash % PLAN_TYPE_COLOURS.length]!,
-  };
+  const taken = new Set(people.map((p) => p.color.toLowerCase()));
+  const n = PLAN_TYPE_COLOURS.length;
+  let pick = hash % n;
+  for (let step = 0; step < n && taken.has(PLAN_TYPE_COLOURS[pick]!.toLowerCase()); step++)
+    pick = (pick + 1) % n;
+  return { id: `n-${slug}`, name: name.trim(), color: PLAN_TYPE_COLOURS[pick]! };
 }
 
 // Built-in fields by the names the interface gives them, beside their ids.

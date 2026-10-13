@@ -142,6 +142,22 @@ describe('resolveFields', () => {
     expect(resolveFields({ parent: '#99' }, bug, naming)).toMatchObject({ code: 'field_unknown' });
   });
 
+  it('reads "#12 Title", as list_items shows a card link, by its number', () => {
+    const items = [item({ title: 'Login' }, { id: 'abc1', key: 12 })];
+    expect(resolveItem('#12 Login', items)).toMatchObject({ ok: true, item: { id: 'abc1' } });
+    expect(resolveItem('#12 Anything else', items)).toMatchObject({ ok: true });
+  });
+
+  it('gives a new person a colour no one on the document has, while colours remain', () => {
+    const first = personNamed('Sam', []);
+    const people = [first];
+    for (const name of ['Alex', 'Priya', 'Jo', 'Kim', 'Lee'])
+      people.push(personNamed(name, people));
+    expect(new Set(people.map((p) => p.color)).size).toBe(people.length);
+    // The same name, with no one else around, is the same person and colour.
+    expect(personNamed('Sam', [])).toEqual(first);
+  });
+
   it('names an ambiguous item', () => {
     const items = [item({ title: 'a' }, { id: 'abc1' }), item({ title: 'b' }, { id: 'abc2' })];
     expect(resolveItem('abc', items)).toMatchObject({ ok: false, code: 'item_unknown' });

@@ -15,6 +15,7 @@ import {
   detailsLabelOf,
   isCustomCardField,
   namedDisplay,
+  PARENT_FIELD_ID,
   tabsOf,
   typeCardLayout,
   type Item,
@@ -139,14 +140,26 @@ function columnName(status: string | undefined, state: PlanState): string | null
 }
 
 // An item's fields with its custom fields under their names ("Severity"), as writes name them; a custom field its
-// type no longer has keeps its id.
-function namedFields(item: Item, types: readonly ItemTypeDef[]): Record<string, unknown> {
+// type no longer has keeps its id. A card link (Parent, a Card field) reads as its card's number and title
+// ("#12 Fix login"), which writes take back.
+function namedFields(
+  item: Item,
+  types: readonly ItemTypeDef[],
+  byId: ReadonlyMap<string, Item>,
+): Record<string, unknown> {
   const custom = types.find((t) => t.id === item.type)?.custom ?? [];
   const out: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(item.fields)) {
-    const label = custom.find((f) => f.id === key)?.label;
+    const field = custom.find((f) => f.id === key);
+    const label = field?.label;
+    const linked =
+      (key === PARENT_FIELD_ID || field?.kind === 'card') && typeof value === 'string'
+        ? byId.get(value)
+        : undefined;
     // A name a built-in or another field already uses keeps the id, so nothing is overwritten.
-    out[label && !(label in item.fields) && !(label in out) ? label : key] = value;
+    out[label && !(label in item.fields) && !(label in out) ? label : key] = linked
+      ? `#${linked.key} ${itemTitle(linked)}`
+      : value;
   }
   return out;
 }
@@ -217,6 +230,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
       }),
     };
   });
+  const byId = new Map(state.items.map((i) => [i.id, i]));
   const items = [...state.items]
     .filter((i) => !filter.type || i.type === filter.type)
     .filter((i) => !filter.status || itemStatus(i) === filter.status)
@@ -228,7 +242,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
       status: itemStatus(i) ?? null,
       column: columnName(itemStatus(i), state),
       title: itemTitle(i),
-      fields: namedFields(i, plan.types),
+      fields: namedFields(i, plan.types, byId),
     }));
   return {
     boards,

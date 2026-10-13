@@ -185,6 +185,16 @@ describe('planListing', () => {
     });
   });
 
+  it('reads a card link as its card’s number and title', async () => {
+    const linked = [
+      item(3, 'aaa333', { title: 'Epic' }, 'project'),
+      item(4, 'bbb444', { title: 'Child', parent: 'aaa333' }),
+    ];
+    const { api: a } = api({ [`/documents/${D}/items`]: { items: linked, rev: 1 } });
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items.find((i) => i.ref === '#4')!.fields['Parent']).toBe('#3 Epic');
+  });
+
   it('hides cards of types a board does not take, filters by names, and hints with no board', async () => {
     const { api: a } = api(
       {},

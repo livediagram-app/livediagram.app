@@ -27,6 +27,9 @@ never told a change worked when it shows on no board.
     editor's rule, [Plan templates](plan-templates.md) "Hand-offs");
   - **types**: the document's card types (its catalogue; none while not chosen), each with its id, name and fields,
     custom fields by id, name and kind (and a Choice's options).
+- A card link (Parent, a Card field) reads as its card's number and title (`"#12 Fix login"`); writes take that form
+  back, by the number.
+- A person named for the first time gets a colour no one on the document has yet, while colours remain.
 - Each board's card types are part of what it shows: a card is on a board only when its column is there and the
   board takes its card type ([Plan board](plan-board.md#the-board-set-up)).
 - **`list_items`** answers the plan with the items: each board with its columns in order, each column with its
@@ -84,6 +87,9 @@ Every write takes what a person would say, and stores the ids:
   empty column. A column left out takes nothing with it: its cards keep their status and wait off this board.
   Every column keeps an id of its own: a kept column keeps its id, and a new one whose name would give it a kept
   column's id ("Doing" beside a kept "In Progress" whose id is `doing`) takes the next free one (`doing-2`).
+- `renameColumns` (`{ "To Do": "Backlog" }`) renames columns in place, before `columns` is read: each keeps its
+  status, WIP limit, colour, done mark and cards. A name the board lacks, an empty name or one another column has is
+  refused.
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
   takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept

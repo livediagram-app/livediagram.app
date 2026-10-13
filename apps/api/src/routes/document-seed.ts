@@ -6,7 +6,12 @@
 import { creationIntentOf, type CreationIntent } from '@livediagram/api-schema';
 import type { Tab } from '@livediagram/document';
 import { applyReplace, type ReplaceBody } from '@livediagram/edit-operations';
-import { buildTemplateTabs, isTemplateKind, templateFamilyOf } from '@livediagram/templates';
+import {
+  buildTemplateTabs,
+  isTemplateKind,
+  templateFamilyOf,
+  templateTabs,
+} from '@livediagram/templates';
 import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@livediagram/document';
@@ -29,6 +34,16 @@ function sourceOf(tab: Record<string, unknown>): ReplaceBody | null {
   return { [key]: tab[key] } as ReplaceBody;
 }
 
+// The first tab's name: the one given, unless it names one of the template's later tabs (an agent naming the tab it
+// wanted, which the template makes anyway), when the first keeps the template's own name, so no two tabs share one
+// (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").
+export function seededTabName(given: string, template: unknown): string {
+  if (typeof template !== 'string' || !isTemplateKind(template)) return given;
+  const [first, ...later] = templateTabs(template).map((d) => d.name);
+  const key = given.trim().toLowerCase();
+  return first && later.some((n) => n?.trim().toLowerCase() === key) ? first : given;
+}
+
 export function compileSeededTabs(tabs: readonly unknown[], documentId: string): CompiledSeed {
   const out: unknown[] = [];
   let first: { tab: Tab; template: string | null } | null = null;
@@ -43,7 +58,7 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
     const { graph: _g, mermaid: _m, template, ...rest } = raw;
     const compiled = applyReplace(null, body, {
       tabId,
-      name: typeof raw.name === 'string' ? raw.name : 'Tab',
+      name: seededTabName(typeof raw.name === 'string' ? raw.name : 'Tab', template),
       ...(typeof raw.theme === 'string' ? { themeId: raw.theme } : {}),
       log: engineLog({ documentId, tabId }),
     });
