@@ -52,7 +52,7 @@ import {
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
-import { elementsIssue } from './element-values';
+import { elementsIssue, graphIconIssue } from './element-values';
 import { searchIcons } from '@livediagram/icons/search';
 import { imageResult } from './image-result';
 import {
@@ -160,6 +160,8 @@ export function registerTools(server: McpServer, env: Env): void {
       // and arrows from a node/edge graph, or the same graph as Mermaid.
       const input = resolveGraphInput(t);
       if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
+      const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
+      if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
       if (input.graph) {
         tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
         continue;

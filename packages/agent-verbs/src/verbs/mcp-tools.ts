@@ -155,8 +155,9 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document from diagram elements you produce. The full element format is ' +
-    'documented inline on the "tabs" argument below. ' +
+    'Create a new document. Each tab takes a "graph" (nodes and edges, laid out in the template look: ' +
+    'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
+    'format is documented inline on the "tabs" argument below) or a "template". ' +
     'Pass one tab, or several to build a multi-tab document in one call (an ' +
     'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
     'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +

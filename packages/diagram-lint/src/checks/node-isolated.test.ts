@@ -25,6 +25,16 @@ describe('node-isolated', () => {
     ).toBe('add an edge to alone, or drop it');
   });
 
+  it("skips an unlabelled shape: a key's sample or a card is decoration", () => {
+    const sample = { ...box('sample', 0, 200), label: '' } as never;
+    expect(
+      of(
+        lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), sample)),
+        'node-isolated',
+      ),
+    ).toEqual([]);
+  });
+
   it('judges shapes only, and only when most boxes are connected', () => {
     const sticky = { ...box('note', 0, 200), type: 'sticky' } as never;
     expect(

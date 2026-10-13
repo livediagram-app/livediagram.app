@@ -63,7 +63,13 @@ export type AutoLayoutOptions = {
   // stay put"): the editor passes its locked elements and everything on a locked layer. A locked
   // box is not a graph node, so arrows to it are not edges, and a locked arrow keeps its anchors.
   lockedIds?: ReadonlySet<ElementId>;
+  // Edges (`from->to`) whose target ranks level with its source and sits just after it across the flow: a
+  // decision's side step (docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
+  // Graph input only; Tidy Up never passes it.
+  flatEdges?: ReadonlySet<string>;
 };
+
+export const edgeKey = (from: ElementId, to: ElementId) => `${from}->${to}`;
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
 function detectDirection(centers: Map<ElementId, Pt>, edges: Edge[]): LayoutDirection {
@@ -93,7 +99,11 @@ export function flowDirectionOf(elements: readonly Element[]): LayoutDirection {
 // deepest predecessor. Cycles are broken by ignoring back edges (relax only
 // along the topological order; remaining cycle nodes are appended in input
 // order so the result is deterministic).
-function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number> {
+function layerComponent(
+  ids: ElementId[],
+  edges: Edge[],
+  flat?: ReadonlySet<string>,
+): Map<ElementId, number> {
   const idset = new Set(ids);
   const out = new Map<ElementId, ElementId[]>(ids.map((id) => [id, []]));
   const indeg = new Map<ElementId, number>(ids.map((id) => [id, 0]));
@@ -122,7 +132,8 @@ function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number>
   for (const u of topo) {
     for (const v of out.get(u)!) {
       if (topoIndex.get(u)! < topoIndex.get(v)!) {
-        layer.set(v, Math.max(layer.get(v)!, layer.get(u)! + 1));
+        const step = flat?.has(edgeKey(u, v)) ? 0 : 1;
+        layer.set(v, Math.max(layer.get(v)!, layer.get(u)! + step));
       }
     }
   }
@@ -143,6 +154,7 @@ function positionComponent(
   centers: Map<ElementId, Pt>,
   dir: LayoutDirection,
   realEdges: Edge[],
+  flat?: ReadonlySet<string>,
 ): PlacedComponent {
   const { ids, edges, layer, lanes } = splitLongEdges(realIds, realEdges, realLayer);
   const byLayer = new Map<number, ElementId[]>();
@@ -165,6 +177,15 @@ function positionComponent(
     layer,
   );
   layers.forEach((L, i) => byLayer.set(L, refined[i]!));
+  // A side step sits just after the node that sends it out, on the same rank.
+  if (flat?.size) {
+    for (const e of edges) {
+      if (!flat.has(edgeKey(e.from, e.to)) || layer.get(e.from) !== layer.get(e.to)) continue;
+      const rank = byLayer.get(layer.get(e.from)!)!;
+      rank.splice(rank.indexOf(e.to), 1);
+      rank.splice(rank.indexOf(e.from) + 1, 0, e.to);
+    }
+  }
 
   const mainSize = (id: ElementId) =>
     lanes.has(id) ? 0 : dir === 'TB' ? size.get(id)!.h : size.get(id)!.w;
@@ -318,7 +339,15 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
     } else if (style === 'mindmap') {
       placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
-      placed = positionComponent(comp, layerComponent(comp, edges), size, centers, dir, edges);
+      placed = positionComponent(
+        comp,
+        layerComponent(comp, edges, opts.flatEdges),
+        size,
+        centers,
+        dir,
+        edges,
+        opts.flatEdges,
+      );
     }
     for (const id of comp) {
       const p = placed.pos.get(id)!;

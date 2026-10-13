@@ -88,7 +88,7 @@ describe('layoutGraph', () => {
     expect(byId(down, 'b').y).toBeGreaterThan(byId(down, 'a').y);
   });
 
-  it('routes arrows per style: angled for a tree, curved for a mind map, or as asked', () => {
+  it('routes arrows per style: angled for flow and tree, curved for a mind map, or as asked', () => {
     const arrows = (els: ReturnType<typeof layoutGraph>) =>
       els.filter((e) => e.type === 'arrow') as { arrowStyle?: string }[];
     // A branch, so the children sit off to each side (a lined-up angled
@@ -106,8 +106,10 @@ describe('layoutGraph', () => {
     };
     expect(arrows(layoutGraph({ ...branch, style: 'tree' }))[0]!.arrowStyle).toBe('angled');
     expect(arrows(layoutGraph({ ...branch, style: 'mindmap' }))[0]!.arrowStyle).toBe('curved');
-    expect(arrows(layoutGraph(branch))[0]!.arrowStyle ?? 'straight').toBe('straight');
-    expect(arrows(layoutGraph({ ...branch, lines: 'angled' }))[0]!.arrowStyle).toBe('angled');
+    expect(arrows(layoutGraph(branch))[0]!.arrowStyle).toBe('angled');
+    expect(arrows(layoutGraph({ ...branch, lines: 'straight' }))[0]!.arrowStyle ?? 'straight').toBe(
+      'straight',
+    );
     expect(arrows(layoutGraph({ ...chain, lines: 'angled' }))[0]!.arrowStyle).toBe('straight');
   });
 

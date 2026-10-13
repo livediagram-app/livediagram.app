@@ -1,5 +1,6 @@
 // `node-isolated` (warning): a shape no arrow touches, on a tab that is otherwise a graph: at least two
-// connected boxes, at least half of all boxes (LN11).
+// connected boxes, at least half of all boxes (LN11). An unlabelled shape is decoration (a key's sample, the card
+// behind a block of text), never a node left out.
 
 import type { ElementId } from '@livediagram/document';
 import { LINT_GRAPH_MIN_CONNECTED, LINT_GRAPH_MIN_SHARE } from '../constants';
@@ -20,7 +21,9 @@ export const nodeIsolated: Check = (ctx) => {
     ),
   );
   return ctx.boxes
-    .filter((box) => box.type === 'shape' && !touched.has(box.id))
+    .filter(
+      (box) => box.type === 'shape' && !touched.has(box.id) && (box.label ?? '').trim() !== '',
+    )
     .map((box) => {
       const ref = refOf(ctx, box.id);
       return {

@@ -183,10 +183,10 @@ tabs in a create_document call.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
-- For a standard artefact (kanban, flowchart, SWOT, gantt, wireframe, ...),
-  don't rebuild it from raw elements: call list_templates and pass its kind as
-  "template" on create_document / add_tab, then personalise the labels with
-  update_document. The hand-tuned scaffold reads better than a from-scratch one.
+- A node/edge diagram given as "graph" is laid out in the template look (sizes,
+  elbows, side exits, loops round the outside, title, key). For an artefact that
+  is not a graph (kanban, SWOT, gantt, wireframe, ...) list_templates has
+  hand-tuned scaffolds to pass as "template", then personalise with update_document.
 `;
 }
 
@@ -199,22 +199,22 @@ The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
 documented inline on each tool's element argument, so the tool definitions are
-the complete reference for it. The EASIEST way to author a node/edge diagram (flowchart, org chart,
-architecture, dependency graph) is the "graph" argument: give just nodes + edges
-by id and the server builds the boxes + arrows and lays them out — no
-coordinates, no anchors; the same graph can be given as Mermaid text
-("mermaid"). A node's label is its heading (up to 40 characters, longer ones
-shortened with the full text kept in the node's note). Raw "elements" are for a deliberate
-arrangement (a cycle as a ring, a grid) or mixed non-node content. Either way:
+the complete reference for it. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
+"mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
+cycle, a mind map) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
+exit level beside it, loops and skipped ranks routed round the boxes, flowchart roles toned (start, end, decision),
+node tones and icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
+mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is its heading (up to 40 characters,
+longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
+express (charts, tables, stickies, free placement). Either way:
 use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 "text" (text is only for titles/captions), prefer pinned arrows (node -> node),
 and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
 entities, lanes and charts carry content fields, documented on each tool's
-element argument. For a standard artefact (kanban, flowchart, SWOT,
-gantt, wireframe, ...) check list_templates first and pass its kind as
-"template" on create_document / add_tab — the hand-tuned scaffold beats
-rebuilding one from raw elements — then fill in real labels with
-update_document. Plan boards hold cards (items), which have their own tools:
+element argument. For a standard artefact that is not a node/edge graph (kanban, SWOT,
+gantt, wireframe, retro, ...) list_templates has hand-tuned scaffolds: pass its kind as
+"template" on create_document / add_tab, then fill in real labels with
+update_document. search_icons finds icon ids for "iconId" and a graph node's "icon". Plan boards hold cards (items), which have their own tools:
 list_items reads a document's boards, their columns by name, its cards and its
 card types; change_items adds, edits and moves cards, naming columns, card
 types, fields and people as the board shows them; add_board puts a board on a
@@ -327,6 +327,18 @@ const graphField = z
             .describe(
               "Id of the group this node sits in; the same as listing it in that group's members.",
             ),
+          icon: z
+            .string()
+            .optional()
+            .describe('An icon on the box: an id from search_icons ("database", "aws-lambda").'),
+          tone: z
+            .enum(['strong', 'soft', 'muted', 'plain'])
+            .optional()
+            .describe(
+              'How the box stands out: strong (filled in the accent), soft (tinted), muted (outlined and ' +
+                'dashed: an exception or an optional step) or plain. Unset in a flowchart, a stadium the flow ' +
+                'starts from is strong, one it ends on soft, and a diamond soft.',
+            ),
         }),
       )
       .min(1)
@@ -344,6 +356,12 @@ const graphField = z
             .string()
             .optional()
             .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
+          line: z
+            .enum(['solid', 'dashed', 'thick'])
+            .optional()
+            .describe(
+              'The stroke: solid (default), dashed (an event, a reply, an optional path) or thick.',
+            ),
         }),
       )
       .max(GRAPH_LAYOUT_MAX_EDGES)
@@ -374,17 +392,39 @@ const graphField = z
         'Flow direction: "down" (top to bottom) or "right" (left to right). Default: auto.',
       ),
     style: z
-      .enum(['flow', 'tree', 'mindmap'])
+      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle'])
       .optional()
       .describe(
-        'Layout: "flow" (layered, the default; the layout for processes and systems), "tree" ' +
-          '(a tidy hierarchy, the layout for org charts), "mindmap" (radial around the first ' +
-          'node). With groups the layout is flow.',
+        'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
+          'side exit sits level beside it and a loop back runs round the outside), "tree" (a tidy ' +
+          'hierarchy, the layout for org charts), "mindmap" (radial around the first node), "lanes" (a ' +
+          'swimlane diagram: each group a lane, the flow left to right across them) or "cycle" (a ring in ' +
+          'node order, clockwise from the top; a node with no edge sits at its centre). With groups the ' +
+          'layout is flow unless it is lanes.',
       ),
     lines: z
       .enum(['straight', 'angled', 'curved'])
       .optional()
-      .describe('Arrow routing. Default: straight for flow, angled for tree, curved for mindmap.'),
+      .describe(
+        'Arrow routing. Default: angled (elbows) for flow, tree and lanes; curved for mindmap and cycle.',
+      ),
+    title: z
+      .string()
+      .max(120)
+      .optional()
+      .describe('A heading above the diagram, left aligned, as every template has.'),
+    subtitle: z
+      .string()
+      .max(300)
+      .optional()
+      .describe('A muted caption under the title: what the diagram shows and how to read it.'),
+    key: z
+      .boolean()
+      .optional()
+      .describe(
+        'true adds a key beside the diagram: one miniature per shape kind it uses with what that shape ' +
+          'means (Start or end, Step, Decision, Data store, ...).',
+      ),
   })
   .optional()
   .describe(

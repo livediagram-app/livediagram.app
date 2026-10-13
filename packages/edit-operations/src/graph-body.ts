@@ -3,6 +3,7 @@
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
 import { isRecord, MAX_ELEMENTS_PER_TAB, type GraphInput } from '@livediagram/document';
+import { iconsLike, isIconId } from '@livediagram/icons/search';
 
 const isId = (v: unknown) => typeof v === 'string' && v !== '';
 const optional =
@@ -19,7 +20,8 @@ const isEntityField = (f: unknown) => isRecord(f) && isString(f.name) && optiona
 const isNode = (n: unknown) =>
   isRecord(n) &&
   isId(n.id) &&
-  ['label', 'shape', 'link', 'note', 'group'].every((key) => optional(isString)(n[key])) &&
+  ['label', 'shape', 'link', 'note', 'group', 'icon'].every((key) => optional(isString)(n[key])) &&
+  optional(isOneOf(['strong', 'soft', 'muted', 'plain']))(n.tone) &&
   optional((v) => isListOf(v, isEntityField))(n.fields);
 
 const isEdge = (e: unknown) =>
@@ -38,11 +40,22 @@ const isGroup = (g: unknown) =>
   optional((v) => isListOf(v, isString))(g.members);
 
 const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
-  ['nodes', (v) => isListOf(v, isNode), 'an array of { id, label?, shape?, note?, group? }'],
+  ['title', optional(isString), 'a string'],
+  ['subtitle', optional(isString), 'a string'],
+  ['key', optional((v) => typeof v === 'boolean'), 'true or false'],
+  [
+    'nodes',
+    (v) => isListOf(v, isNode),
+    'an array of { id, label?, shape?, note?, group?, icon?, tone? (strong, soft, muted or plain) }',
+  ],
   ['edges', (v) => isListOf(v, isEdge), 'an array of { from, to, label? }'],
   ['groups', optional((v) => isListOf(v, isGroup)), 'an array of { id, members }'],
   ['direction', optional(isOneOf(['down', 'right'])), 'down or right'],
-  ['style', optional(isOneOf(['flow', 'tree', 'mindmap'])), 'flow, tree or mindmap'],
+  [
+    'style',
+    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle'])),
+    'flow, tree, mindmap, lanes or cycle',
+  ],
   ['lines', optional(isOneOf(['straight', 'angled', 'curved'])), 'straight, angled or curved'],
 ];
 
@@ -53,5 +66,16 @@ export function graphBodyIssue(graph: unknown): string | null {
   const { nodes, edges } = graph as GraphInput;
   if (nodes.length + edges.length > MAX_ELEMENTS_PER_TAB)
     return `graph: at most ${MAX_ELEMENTS_PER_TAB} nodes and edges`;
+  // An icon that names none would draw a question mark (docs/specs/015-api/mcp-server.md §4.4 "Values checked").
+  const unknownIcon = nodes.find((n) => n.icon !== undefined && !isIconId(n.icon));
+  if (unknownIcon) {
+    const like = iconsLike(unknownIcon.icon!).map((i) => i.id);
+    return (
+      `graph.nodes: node "${unknownIcon.id}" icon ${JSON.stringify(unknownIcon.icon)} is not an icon` +
+      (like.length
+        ? `; icons like it: ${like.join(', ')}`
+        : '; search_icons finds one by what it shows')
+    );
+  }
   return null;
 }

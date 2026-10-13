@@ -391,11 +391,12 @@ or the same thing written as **`mermaid`**:
 
 ```
 graph: {
-  nodes:  [{ id, label?, shape?, note?, group? }],
-  edges:  [{ from, to, label? }],
+  title?: string, subtitle?: string, key?: boolean,
+  nodes:  [{ id, label?, shape?, note?, group?, icon?, tone? }],
+  edges:  [{ from, to, label?, line? }],
   groups?: [{ id, label?, members?: [nodeId, ...] }],
   direction?: 'down' | 'right',
-  style?:  'flow' | 'tree' | 'mindmap',
+  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle',
   lines?:  'straight' | 'angled' | 'curved',
 }
 mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
@@ -437,18 +438,46 @@ every box ("CTO" drawn as wide as "Platform and site reliability"). An
 unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
 "Node boxes and text").
 
+**The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
+
+- **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
+  wider for a longer label, never the 120×120 square the editor's palette starts a square at. Every node's text is
+  one size: `md` for a graph of up to 12 nodes (the template's size), `sm` beyond, so a large system still fits.
+- **Roles by notation.** In a flowchart (a graph with a diamond or a stadium) the first stadium a flow starts from is
+  `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,
+  `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
+  the box; an id that names none is refused.
+- **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
+  twice along the flow.
+- **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
+  the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
+  target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
+- **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
+  away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
+  crosses the spine. Several loops take separate tracks.
+- **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
+  aligned, as every template has. `key: true` adds a key beside it: one miniature per shape kind the graph uses,
+  with what that shape means (stadium "Start or end", square "Step", diamond "Decision", cylinder "Data store",
+  parallelogram "Input or output", document "Document", and so on), in the diagram's own tones.
+
 **Layout choices** (defaults in brackets):
 
-- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right).
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
+  reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
+  both ways and keeps the one whose aspect is nearer a landscape page (3:2).
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
-  chart, a hierarchy), `mindmap` the radial layout around the first node.
+  chart, a hierarchy), `mindmap` the radial layout around the first node, `lanes` a swimlane diagram (each group
+  a lane, one under another, its label in the lane's header strip; the flow runs left to right across the lanes and
+  a node outside every group gets an unnamed lane), `cycle` a ring (the nodes in order clockwise from the top, each
+  edge a curved arrow following the ring's arc, a node with no edge at all at the ring's centre, a node given no
+  shape a circle).
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
   may point at a group id. With groups, `style` is flow. A node may name its
   group itself (`group`), the shape a model reaches for first; it joins that
   group's members, and a group id nothing declares is created with the id as its
   label. `members` is then optional.
-- `lines` (`straight` for flow, `angled` for tree, `curved` for mindmap): the
+- `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
   top), the org-chart shape; one whose ends already line up runs straight
@@ -480,7 +509,7 @@ person typed.
 The **prompts** (§4.10) are messages the user sends, not tool descriptions, so
 they do ask for it outright: short headings, detail in the note, related nodes
 grouped, a direction and style that fit the subject. Nodes are set in one fixed
-text size (`sm`, what the sizing measures against), not the shape default that
+text size (`md` up to 12 nodes, else `sm`; what the sizing measures against), not the shape default that
 scales text to fill each box.
 
 ### 4.7a Content-carrying element kinds

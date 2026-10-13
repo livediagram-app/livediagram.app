@@ -22,7 +22,7 @@ describe('graphBodyIssue', () => {
   it('names the first member that is wrong', () => {
     expect(graphBodyIssue('a -> b')).toBe('graph: expected an object with nodes and edges');
     expect(graphBodyIssue({ nodes: [{ id: 1 }], edges })).toBe(
-      'graph.nodes: expected an array of { id, label?, shape?, note?, group? }',
+      'graph.nodes: expected an array of { id, label?, shape?, note?, group?, icon?, tone? (strong, soft, muted or plain) }',
     );
     expect(graphBodyIssue({ nodes: [{ id: 'a', fields: 'x' }], edges: [] })).toMatch(
       /^graph.nodes/,
@@ -37,7 +37,7 @@ describe('graphBodyIssue', () => {
       'graph.direction: expected down or right',
     );
     expect(graphBodyIssue({ nodes, edges, style: 'radial' })).toBe(
-      'graph.style: expected flow, tree or mindmap',
+      'graph.style: expected flow, tree, mindmap, lanes or cycle',
     );
     expect(graphBodyIssue({ nodes, edges, lines: 'wavy' })).toBe(
       'graph.lines: expected straight, angled or curved',
@@ -48,6 +48,30 @@ describe('graphBodyIssue', () => {
     const many = Array.from({ length: MAX_ELEMENTS_PER_TAB + 1 }, (_, i) => ({ id: `n${i}` }));
     expect(graphBodyIssue({ nodes: many, edges: [] })).toBe(
       `graph: at most ${MAX_ELEMENTS_PER_TAB} nodes and edges`,
+    );
+  });
+});
+
+describe('graphBodyIssue, the graph look', () => {
+  const edges = [{ from: 'a', to: 'b' }];
+  const nodes = [{ id: 'a' }, { id: 'b' }];
+  it('takes a title, a subtitle, a key, tones, icons and the lanes and cycle styles', () => {
+    expect(
+      graphBodyIssue({
+        title: 'T',
+        subtitle: 'S',
+        key: true,
+        style: 'lanes',
+        nodes: [{ id: 'a', tone: 'muted', icon: 'database' }, { id: 'b' }],
+        edges,
+      }),
+    ).toBeNull();
+    expect(graphBodyIssue({ style: 'cycle', nodes, edges })).toBeNull();
+  });
+  it('refuses a tone off the list and an icon that names none', () => {
+    expect(graphBodyIssue({ nodes: [{ id: 'a', tone: 'loud' }], edges })).toMatch(/^graph.nodes/);
+    expect(graphBodyIssue({ nodes: [{ id: 'a', icon: 'zzqx' }, { id: 'b' }], edges })).toBe(
+      'graph.nodes: node "a" icon "zzqx" is not an icon; search_icons finds one by what it shows',
     );
   });
 });

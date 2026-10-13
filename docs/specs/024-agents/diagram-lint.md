@@ -21,7 +21,7 @@ Each **lint finding** has a code, a severity, the refs involved and a fix phrase
 | `edge-crossings`    | warning  | More crossing arrow pairs than `LINT_CROSSINGS_PER_ARROW` × arrows                                                                  |
 | `label-collision`   | warning  | An arrow label overlaps a box                                                                                                       |
 | `label-overflow`    | warning  | A label needs more lines than its box holds                                                                                         |
-| `node-isolated`     | warning  | A shape with no arrows on a tab that is otherwise a graph                                                                           |
+| `node-isolated`     | warning  | A labelled shape with no arrows on a tab that is otherwise a graph (an unlabelled one is decoration: a key's sample, a card)        |
 | `group-escape`      | warning  | A member lies outside its frame                                                                                                     |
 | `group-split-edges` | info     | Most of a frame's arrows cross its border                                                                                           |
 | `duplicate-label`   | info     | Two boxes share a label                                                                                                             |
