@@ -194,11 +194,16 @@ export function planCardFace(
     return cy - top + (cx > left ? ROW_H : 0);
   };
   // Bits from the right edge leftwards, on one row.
+  // Bits from the right edge leftwards, on one row, never past the card's inset: a bit wider than the room left
+  // shrinks to it (its text ends in an ellipsis), and any after it are left off.
   const rightRow = (list: Bit[], right: number, top: number) => {
+    const left = x + PAD;
     let cx = right;
     for (const b of [...list].reverse()) {
       if (b.kind === 'lines') continue;
-      const bw = bitWidth(b);
+      const room = cx - left;
+      if (room < 24) break;
+      const bw = Math.min(bitWidth(b), room);
       cx -= bw;
       if (!measureOnly) out.push(drawBit(b, cx, top, bw, p.border));
       cx -= BIT_GAP;
@@ -298,6 +303,14 @@ export function planCardFace(
   return { svg: frame + out.join(''), height: h };
 }
 
+// `s` cut to the characters `room` holds at a bit's size, ending in an ellipsis when cut; nothing when not even two
+// fit (the shared wrapLines keeps at least eight, which a narrow pill cannot hold).
+function fitChars(s: string, room: number): string {
+  const fits = Math.floor((room + 1) / (BIT_PX * CHAR_EM));
+  if (s.length <= fits) return s;
+  return fits < 2 ? '' : `${s.slice(0, fits - 1).trimEnd()}…`;
+}
+
 function drawBit(
   b: Exclude<Bit, { kind: 'lines' }>,
   x: number,
@@ -319,7 +332,7 @@ function drawBit(
     tx += 12;
   }
   const room = Math.max(0, w - (tx - x) - (b.pill ? 7 : 0));
-  const text = wrapLines(b.text, room + 2, BIT_PX, 1)[0] ?? '';
+  const text = fitChars(b.text, room);
   parts.push(
     faceText(tx, y + 14, text, {
       size: BIT_PX,

@@ -111,6 +111,21 @@ describe('planCardFace', () => {
     expect(narrow.height).toBeGreaterThan(wide.height);
   });
 
+  it('keeps every bit inside a narrow card', () => {
+    const it0 = item(
+      'a',
+      { title: 'Crash', 'f-sev': 'A very long severity value indeed' },
+      { type: 'bug' },
+    );
+    const sev = { ...bug, display: { detailed: { headEnd: ['f-sev' as const] } } };
+    const face = planCardFace(it0, 0, 0, 110, { palette, types: [...ITEM_TYPES, sev] });
+    for (const m of face.svg.matchAll(/<rect x="([\d.-]+)"[^>]*width="([\d.]+)" height="18"/g))
+      expect(Number(m[1]) + Number(m[2])).toBeLessThanOrEqual(110);
+    for (const m of face.svg.matchAll(/<rect x="([\d.-]+)"[^>]*height="18"/g))
+      expect(Number(m[1])).toBeGreaterThanOrEqual(0);
+    expect(face.svg).toContain('…');
+  });
+
   it('keeps a standalone element its own height', () => {
     const face = planCardFace(item('a', { title: 'Hi' }), 0, 0, 240, { palette, height: 120 });
     expect(face.height).toBe(120);
@@ -162,6 +177,27 @@ describe('planBoardLayout swimlanes', () => {
     expect(svg).toContain('>Low</text>');
     expect(svg).toContain('>One</text>');
     expect(svg).toMatch(/<line [^>]*stroke-width="1"/);
+  });
+
+  it('counts the cards that do not fit at the column foot, never dropping them silently', () => {
+    const items = new Map(
+      Array.from({ length: 12 }, (_, i) => {
+        const id = `c${i}`;
+        return [id, item(id, { title: `Card ${i}`, status: 'todo' }, { key: i + 1 })] as const;
+      }),
+    );
+    const board = {
+      ...createShape('plan-board', 0, 0),
+      height: 420,
+      planBoard: { ...presetSetup('kanban'), swimlaneBy: 'none' },
+    } as BoxedElement;
+    const layout = planBoardLayout(board as never, items, ITEM_TYPES)!;
+    const col = layout.columns.find((c) => c.column.status === 'todo')!;
+    expect(col.hidden).toBeGreaterThan(0);
+    expect(col.cards.length + col.hidden).toBe(12);
+    const last = col.cards[col.cards.length - 1]!;
+    expect(last.y + last.height).toBeLessThanOrEqual(col.y + col.height - 20);
+    expect(svgBoxed(board, { items })).toContain(`+${col.hidden} more`);
   });
 
   it('has no lanes without swimlanes', () => {

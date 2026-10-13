@@ -48,17 +48,30 @@ export function customFieldText(
     case 'checkbox':
       return value === true ? 'Yes' : value === false ? 'No' : null;
     case 'number':
-      return typeof value === 'number' ? String(value) : null;
+      // Grouped as the reader's locale groups digits ("82,000"), up to two decimals.
+      return typeof value === 'number'
+        ? value.toLocaleString(undefined, { maximumFractionDigits: 2 })
+        : null;
     case 'date': {
       if (typeof value !== 'string') return null;
       return dayLabel(value, 'medium');
     }
     case 'link':
-      return typeof value === 'string' ? value.replace(/^https?:\/\//, '') : null;
+      return typeof value === 'string' ? linkHost(value) : null;
     case 'card':
       return linkText(items, value);
     default:
       return typeof value === 'string' ? value.split('\n')[0]! : null;
+  }
+}
+
+// A link as a card has room for it: its site, less any www. ("sentry.io"); the address less its scheme when it is
+// not one.
+export function linkHost(url: string): string {
+  try {
+    return new URL(url).host.replace(/^www\./, '') || url;
+  } catch {
+    return url.replace(/^https?:\/\//, '');
   }
 }
 

@@ -127,6 +127,8 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     EUR, chosen when the field is made and changeable later; GBP when none is given). Its value is a number with up to
     two decimals; it reads, on the card and in the panel, as the person's locale formats that currency ("£12,500",
     "$1,200.50"). Changing the field's currency changes how every value reads, never the numbers.
+  - On a card a value reads short: a Number grouped as the reader's locale groups digits ("82,000"), a Link as its
+    site alone ("sentry.io"), a Long Text its first line.
   - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
     The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
     a Link that is not `https://` is.

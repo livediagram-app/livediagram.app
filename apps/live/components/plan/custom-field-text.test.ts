@@ -11,7 +11,10 @@ describe('customFieldText', () => {
     expect(customFieldText(field('checkbox'), true)).toBe('Yes');
     expect(customFieldText(field('checkbox'), false)).toBe('No');
     expect(customFieldText(field('number'), 3.5)).toBe('3.5');
-    expect(customFieldText(field('link'), 'https://acme.test/a')).toBe('acme.test/a');
+    // A card has room for a link's site, and a number reads grouped.
+    expect(customFieldText(field('link'), 'https://www.acme.test/a/b?c=1')).toBe('acme.test');
+    expect(customFieldText(field('link'), 'not a url')).toBe('not a url');
+    expect(customFieldText(field('number'), 82000)).toBe((82000).toLocaleString());
     expect(customFieldText(field('choice'), 'Won')).toBe('Won');
     expect(customFieldText(field('date'), '2026-10-05')).toMatch(/2026/);
     expect(customFieldText(field('text'), undefined)).toBeNull();

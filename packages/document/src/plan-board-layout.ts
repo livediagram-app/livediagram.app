@@ -32,7 +32,13 @@ export interface PlanColumnSlot extends Box {
   overLimit: boolean;
   // The cards that fit, top to bottom; the rest of the column's cards are cut off, as on a short board.
   cards: PlanCardSlot[];
+  // How many of its cards did not fit: the export says so at the column's foot ("+3 more"), never dropping them
+  // silently.
+  hidden: number;
 }
+
+// The room kept at a column's foot for its "+n more" line when its cards do not all fit.
+export const PLAN_MORE_H = 20;
 
 export interface PlanLaneSlot {
   key: string;
@@ -121,15 +127,27 @@ export function planBoardLayout(
       y = laneTop + height + PLAN_CARD_GAP;
     }
   }
-  const columns = projection.columns.map((col, i): PlanColumnSlot => ({
-    column: col.column,
-    count: col.count,
-    overLimit: col.overLimit,
-    x: xOf(i),
-    y: top,
-    width: colW,
-    height: colH,
-    cards: cardsBy[i]!,
-  }));
+  // A column whose cards did not all fit gives up its last ones until its "+n more" line has room.
+  const columns = projection.columns.map((col, i): PlanColumnSlot => {
+    const total = col.lanes.reduce((n, l) => n + l.items.length, 0);
+    const cards = cardsBy[i]!;
+    if (cards.length < total)
+      while (
+        cards.length &&
+        cards[cards.length - 1]!.y + cards[cards.length - 1]!.height > bottom - PLAN_MORE_H
+      )
+        cards.pop();
+    return {
+      column: col.column,
+      count: col.count,
+      overLimit: col.overLimit,
+      x: xOf(i),
+      y: top,
+      width: colW,
+      height: colH,
+      cards,
+      hidden: total - cards.length,
+    };
+  });
   return { setup, projection, columns, lanes };
 }

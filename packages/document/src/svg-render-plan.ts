@@ -109,6 +109,16 @@ export function svgPlanBoard(
       }),
     );
   }
+  // A column's cards that did not fit, counted at its foot rather than dropped.
+  for (const col of layout.columns) {
+    if (col.hidden > 0)
+      parts.push(
+        text(col.x + col.width / 2, col.y + col.height - 10, 12, p.muted, `+${col.hidden} more`, {
+          anchor: 'middle',
+          weight: 600,
+        }),
+      );
+  }
   // A swimlane board's rows: a divider and the lane's name across every column, above its cards.
   for (const lane of layout.lanes) {
     const left = el.x + PAD;
