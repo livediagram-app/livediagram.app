@@ -20,12 +20,8 @@ import {
 } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
-import {
-  ColourRow,
-  MenuToggleRow,
-  TextSizeTiles,
-  TextToggle,
-} from '@/components/palette/context-menu-rows';
+import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
+import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
@@ -112,11 +108,9 @@ export function ElementContentSections({
               <StrikethroughIcon />
             </TextToggle>
           </div>
-          <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
-            Size
-          </p>
-          <TextSizeTiles
+          <TextSizeControl
             current={target.textSize ?? 'sm'}
+            presetPx={presetPxFor(target.type)}
             onSet={props.onSetTextSize}
             onPreview={props.onPreviewTextSize}
             onPreviewEnd={props.onPreviewStyleEnd}

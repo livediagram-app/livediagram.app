@@ -16,7 +16,7 @@
 import {
   hasRichFormatting,
   isEventStormingNote,
-  LABEL_FONT_PX,
+  labelFontPx,
   type BoxedElement,
   type TextAlignX,
   type TextAlignY,
@@ -232,7 +232,7 @@ export function renderLabel(
   return (
     <FixedSizeLabel
       text={label}
-      px={hug ? hug.fontPx : LABEL_FONT_PX[textSize] * textScale}
+      px={hug ? hug.fontPx : labelFontPx(textSize) * textScale}
       alignX={alignX}
       alignY={alignY}
       padding={textPadding}

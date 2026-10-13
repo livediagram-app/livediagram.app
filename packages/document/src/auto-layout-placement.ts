@@ -16,27 +16,49 @@
 
 import type { ElementId } from './index';
 import type { Edge } from './auto-layout-shared';
+import type { SideSpec } from './auto-layout-tidy-rank';
 
 const SWEEP_PAIRS = 4;
+// How hard a side step (auto-layout-tidy-rank.ts) is held against the node it sits beside, and how
+// little a node in the column is pulled toward a side step it joins: the column stays straight.
+const SIDE_HOLD = 6;
+const SIDE_PULL = 0.25;
+
+export type CrossAxisOptions = {
+  /** The gap between two neighbours in a rank, in rank order; `gap` when absent. */
+  gapBetween?: (a: ElementId, b: ElementId) => number;
+  /** Side steps, held beside their node. */
+  side?: Map<ElementId, SideSpec>;
+};
 
 function edgeWeight(a: ElementId, b: ElementId, lanes: Set<ElementId>): number {
   const n = (lanes.has(a) ? 1 : 0) + (lanes.has(b) ? 1 : 0);
   return n === 2 ? 8 : n === 1 ? 2 : 1;
 }
 
-// Closest positions to `want` (least squares) that keep `rank` in order with
-// `gap` between neighbouring boxes of cross size `size`.
+// Where each node of `rank` sits, packed tight from the first, with `gap` between neighbouring
+// boxes of cross size `size`. Fixed for a rank, so it is worked out once, not on every sweep.
+function rankOffsets(
+  rank: ElementId[],
+  size: (id: ElementId) => number,
+  gap: (a: ElementId, b: ElementId) => number,
+): number[] {
+  const offset: number[] = [];
+  rank.forEach((id, i) => {
+    const prev = rank[i - 1]!;
+    offset.push(i === 0 ? 0 : offset[i - 1]! + size(prev) / 2 + gap(prev, id) + size(id) / 2);
+  });
+  return offset;
+}
+
+// Closest positions to `want` (least squares) that keep `rank` in order with at least the
+// spacing `offset` (rankOffsets) holds between neighbours.
 function legalise(
   rank: ElementId[],
   want: Map<ElementId, number>,
-  size: (id: ElementId) => number,
-  gap: number,
+  offset: number[],
 ): Map<ElementId, number> {
   // Shift out the spacing so the constraint becomes plain non-decreasing.
-  const offset: number[] = [];
-  rank.forEach((id, i) => {
-    offset.push(i === 0 ? 0 : offset[i - 1]! + size(rank[i - 1]!) / 2 + gap + size(id) / 2);
-  });
   const blocks: { sum: number; count: number }[] = [];
   rank.forEach((id, i) => {
     blocks.push({ sum: want.get(id)! - offset[i]!, count: 1 });
@@ -68,8 +90,11 @@ export function placeCrossAxis(
   gap: number,
   lanes: Set<ElementId>,
   start: Map<ElementId, number>,
+  opts: CrossAxisOptions = {},
 ): Map<ElementId, number> {
   const pos = new Map(start);
+  const side = opts.side ?? new Map<ElementId, SideSpec>();
+  const gapOf = opts.gapBetween ?? (() => gap);
   if (order.length < 2) return pos;
   const up = new Map<ElementId, { id: ElementId; w: number }[]>();
   const down = new Map<ElementId, { id: ElementId; w: number }[]>();
@@ -81,9 +106,13 @@ export function placeCrossAxis(
     if (a === undefined || b === undefined || Math.abs(a - b) !== 1) continue;
     const [hi, lo] = a < b ? [e.from, e.to] : [e.to, e.from];
     const w = edgeWeight(e.from, e.to, lanes);
-    (down.get(hi) ?? down.set(hi, []).get(hi)!).push({ id: lo, w });
-    (up.get(lo) ?? up.set(lo, []).get(lo)!).push({ id: hi, w });
+    // A node in the column barely leans toward a side step: the step comes to it.
+    const wHi = side.has(lo) && !side.has(hi) ? SIDE_PULL : w;
+    const wLo = side.has(hi) && !side.has(lo) ? SIDE_PULL : w;
+    (down.get(hi) ?? down.set(hi, []).get(hi)!).push({ id: lo, w: wHi });
+    (up.get(lo) ?? up.set(lo, []).get(lo)!).push({ id: hi, w: wLo });
   }
+  const offsets = new Map(order.map((rank) => [rank, rankOffsets(rank, size, gapOf)] as const));
   const pull = (rank: ElementId[], sides: Map<ElementId, { id: ElementId; w: number }[]>[]) => {
     const want = new Map<ElementId, number>();
     for (const id of rank) {
@@ -94,9 +123,16 @@ export function placeCrossAxis(
           sum += pos.get(n.id)! * n.w;
           wsum += n.w;
         }
+      const beside = side.get(id);
+      if (beside && pos.has(beside.parent)) {
+        const p = beside.parent;
+        const reach = size(p) / 2 + gapOf(p, id) + size(id) / 2;
+        sum += (pos.get(p)! + beside.sign * reach) * SIDE_HOLD;
+        wsum += SIDE_HOLD;
+      }
       want.set(id, wsum > 0 ? sum / wsum : pos.get(id)!);
     }
-    for (const [id, v] of legalise(rank, want, size, gap)) pos.set(id, v);
+    for (const [id, v] of legalise(rank, want, offsets.get(rank)!)) pos.set(id, v);
   };
   for (let s = 0; s < SWEEP_PAIRS; s++) {
     for (let r = 1; r < order.length; r++) pull(order[r]!, [up]);
@@ -111,11 +147,14 @@ export function placeCrossAxis(
     const rank = order[r]!;
     const want = new Map<ElementId, number>();
     for (const id of rank) {
-      const above = up.get(id) ?? [];
-      const only = above.length === 1 ? above[0]!.id : null;
-      want.set(id, only && (down.get(only) ?? []).length === 1 ? pos.get(only)! : pos.get(id)!);
+      // A join from a side step does not count against the column it rejoins.
+      const inColumn = (n: { id: ElementId }) => !side.has(n.id) || side.has(id);
+      const above = (up.get(id) ?? []).filter(inColumn);
+      const only = above.length === 1 && !side.has(id) ? above[0]!.id : null;
+      const below = only ? (down.get(only) ?? []).filter((n) => !side.has(n.id)) : [];
+      want.set(id, only && below.length === 1 ? pos.get(only)! : pos.get(id)!);
     }
-    for (const [id, v] of legalise(rank, want, size, gap)) pos.set(id, v);
+    for (const [id, v] of legalise(rank, want, offsets.get(rank)!)) pos.set(id, v);
   }
   return pos;
 }

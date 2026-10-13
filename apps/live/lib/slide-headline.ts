@@ -4,7 +4,14 @@
 // HEADLINE_LENGTH_CAP characters), so a heading outweighs a huge short figure ("86k") and a large
 // statement outweighs a small eyebrow; the topmost on a tie. On one line, cut to
 // SLIDE_HEADLINE_MAX characters. Pure.
-import { resolveSlide, type Deck, type Slide, type Tab } from '@livediagram/document';
+import {
+  LABEL_FONT_PX,
+  resolveSlide,
+  type Deck,
+  type Slide,
+  type Tab,
+  type TextSize,
+} from '@livediagram/document';
 
 // Longer than a row shows; the row truncates with an ellipsis.
 export const SLIDE_HEADLINE_MAX = 80;
@@ -12,6 +19,13 @@ export const SLIDE_HEADLINE_MAX = 80;
 export const HEADLINE_LENGTH_CAP = 40;
 
 const SIZE: Record<string, number> = { sm: 12, md: 14, lg: 18, xl: 24, scale: 14 };
+
+// A preset's weight from the table; an exact px from the Text Size slider on the same footing,
+// by its ratio to Medium on the canvas (22px there weighs what `md` does here).
+function sizeWeight(size: TextSize | undefined): number {
+  if (typeof size === 'number') return ((SIZE.md ?? 14) * size) / LABEL_FONT_PX.md;
+  return SIZE[size ?? 'md'] ?? 14;
+}
 
 export function slideHeadline(slide: Slide, tab: Tab | undefined): string | null {
   if (!tab || slide.itemId) return null;
@@ -21,9 +35,7 @@ export function slideHeadline(slide: Slide, tab: Tab | undefined): string | null
     const label = (el.label ?? '').replace(/\s+/g, ' ').trim();
     if (!label) continue;
     const size =
-      (SIZE[el.textSize ?? 'md'] ?? 14) *
-      (el.textScale ?? 1) *
-      Math.min(label.length, HEADLINE_LENGTH_CAP);
+      sizeWeight(el.textSize) * (el.textScale ?? 1) * Math.min(label.length, HEADLINE_LENGTH_CAP);
     if (!best || size > best.size + 0.01 || (Math.abs(size - best.size) <= 0.01 && el.y < best.y)) {
       best = { label, size, y: el.y };
     }

@@ -121,7 +121,7 @@ closed until opened as everywhere ([menus](../004-interface-design/menus.md)), a
   Names Only) and **Leftovers** (Show / Hide): each an option list, the Plan mode picker (`OptionRows`): a
   bordered box, one choice to a row, a glyph drawing it at the left, the chosen row tinted with a tick.
   **Leftovers** also holds **Leftover Name** while they show.
-- **Text**: **Unit**, and **Text Size** (Small / Medium / Large: 10 / 12 / 15px labels). Unit and Leftover
+- **Text**: **Unit**, and **Text Size** (the [Text Size](../004-interface-design/fonts.md#text-size) slider without Scale: a px is the labels' own; the presets earlier Sankeys carry read 10 / 12 / 15px). Unit and Leftover
   Name are short text fields committed on Enter or blur.
 - **Presets** holds the chart palettes ([Data charts](pie-chart.md#chart-palettes)), as a chart's does.
 - **Animation**: **None**, **Grow** (bands sweep in from the left, once), **Flow** (a soft current

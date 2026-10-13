@@ -1,26 +1,46 @@
 'use client';
 
 // The Looks carousel on the Tab Style home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the looks
-// in pages of six (PagedCarousel), opening on the page that holds the tab's current look, with a Finish filter left of
-// the page controls. Each card is a live preview drawn by the exporter.
+// in pages of six (PagedCarousel), led by the Mashup card ("Mashup": a random look, rolled afresh on each press),
+// opening on the page that holds the tab's current look, with a Finish filter left of the page controls. Each card is a
+// live preview drawn by the exporter.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { FINISHES, type Finish } from '@livediagram/document';
-import { Select } from '@livediagram/ui';
+import { Select, lucideGlyph } from '@livediagram/ui';
+import { lucideDices } from '@livediagram/icons/lucide';
 import { FINISH_LABELS } from '@/components/palette/FinishSection';
 import { track } from '@/lib/telemetry';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
-import { LOOKS_PER_PAGE, TAB_LOOKS, type TabLook, type TabLookId } from '@/lib/tab-looks';
+import { rollMashup } from '@/lib/look-mashup';
+import {
+  LOOKS_PER_PAGE,
+  TAB_LOOKS,
+  lookMatches,
+  type LookSettings,
+  type TabLook,
+  type TabLookId,
+} from '@/lib/tab-looks';
+
+const DiceIcon = lucideGlyph(lucideDices, 14);
+
+// The Mashup card leads every page set; the looks follow.
+type Card = { kind: 'mashup' } | TabLook;
+const MASHUP_CARD: Card = { kind: 'mashup' };
 
 export function LooksCarousel({
+  settings,
   activeLook,
   onPickLook,
   headingClass,
 }: {
+  // The tab's four look settings, to tell whether it wears the Mashup card's look.
+  settings: LookSettings;
   activeLook: TabLookId | undefined;
-  onPickLook: (id: TabLookId) => void;
+  // A named look's id, or the Mashup card's random look whole.
+  onPickLook: (look: TabLookId | TabLook) => void;
   headingClass: string;
 }) {
   // Each look's preview is fixed for an appearance, so they are drawn once per open (again if the viewer's mode
@@ -29,6 +49,24 @@ export function LooksCarousel({
   // The finish the looks are narrowed to, or all of them.
   const [finish, setFinish] = useState<Finish | 'all'>('all');
   const looks = finish === 'all' ? TAB_LOOKS : TAB_LOOKS.filter((l) => l.finish === finish);
+  const cards: Card[] = [MASHUP_CARD, ...looks];
+  // The card's mashup: rolled on open, not applied until pressed, so the first press applies what the card shows.
+  const [mashup, setMashup] = useState(() => rollMashup());
+  const wearingMashup = lookMatches(settings, mashup);
+  const pickMashup = () => {
+    // While the tab wears the card's mashup, a press rolls the next one; otherwise it applies the one on show.
+    const next = wearingMashup
+      ? rollMashup({ finish: finish === 'all' ? undefined : finish, previous: mashup })
+      : mashup;
+    setMashup(next);
+    onPickLook(next);
+  };
+  const mashupPreview = useMemo(
+    () => ({ markup: lookPreviewSvg(mashup), paper: lookPreviewTab(mashup).backgroundColor }),
+    // As the looks' previews: redrawn in the viewer's half when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [mashup, appearance],
+  );
   const previews = useMemo(
     () =>
       new Map(
@@ -46,7 +84,7 @@ export function LooksCarousel({
       <PagedCarousel
         // A new filter starts its own pages.
         key={finish}
-        items={looks}
+        items={cards}
         perPage={LOOKS_PER_PAGE}
         label="Looks"
         navTourId="tab-style-looks-nav"
@@ -57,7 +95,7 @@ export function LooksCarousel({
         }
         gridClass="grid grid-cols-2 gap-2.5 sm:grid-cols-3"
         // Open on the page holding the tab's look (the first page when it has its own mix).
-        initialIndex={looks.findIndex((l) => l.id === activeLook)}
+        initialIndex={cards.findIndex((c) => 'id' in c && c.id === activeLook)}
         controls={
           <Select
             size="sm"
@@ -68,6 +106,8 @@ export function LooksCarousel({
               const next = e.target.value as Finish | 'all';
               track('UI', 'Changed', 'LooksFinishFilter');
               setFinish(next);
+              // The card's mashup rolls within the chosen finish.
+              if (next !== 'all' && mashup.finish !== next) setMashup(rollMashup({ finish: next }));
             }}
           >
             <option value="all">All finishes</option>
@@ -79,6 +119,19 @@ export function LooksCarousel({
           </Select>
         }
         renderItem={(look) => {
+          if (!('id' in look))
+            return (
+              <LookCard
+                key="mashup"
+                look={mashup}
+                active={wearingMashup}
+                markup={mashupPreview.markup}
+                paper={mashupPreview.paper}
+                onPick={pickMashup}
+                ariaLabel="Mashup: a random look, press for another"
+                badge={<DiceIcon />}
+              />
+            );
           const preview = previews.get(look.id)!;
           return (
             <LookCard
@@ -102,19 +155,25 @@ function LookCard({
   markup,
   paper,
   onPick,
+  ariaLabel,
+  badge,
 }: {
   look: TabLook;
   active: boolean;
   markup: string;
   paper: string | undefined;
   onPick: () => void;
+  ariaLabel?: string;
+  // A glyph pinned to the preview's corner (the Mashup card's dice).
+  badge?: ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-pressed={active}
+      aria-label={ariaLabel}
       onClick={onPick}
-      className={`flex flex-col overflow-hidden rounded-lg text-left transition ${
+      className={`relative flex flex-col overflow-hidden rounded-lg text-left transition ${
         active
           ? 'border-2 border-brand-500 bg-brand-50 dark:border-brand-400 dark:bg-brand-500/15'
           : 'border border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60'
@@ -126,6 +185,14 @@ function LookCard({
         style={{ backgroundColor: paper }}
         dangerouslySetInnerHTML={{ __html: markup }}
       />
+      {badge ? (
+        <span
+          aria-hidden
+          className="absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-md bg-white/90 text-slate-700 shadow-sm dark:bg-slate-900/85 dark:text-slate-200"
+        >
+          {badge}
+        </span>
+      ) : null}
       <span className="flex flex-col gap-0.5 px-2.5 pb-2.5 pt-2">
         <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
           {look.label}

@@ -6,30 +6,41 @@
 // controls.
 
 import type { ReactNode } from 'react';
-import { FONTS, type BackgroundPattern, type Finish, type TextSize } from '@livediagram/document';
+import {
+  FONTS,
+  type BackgroundPattern,
+  type Finish,
+  type TextSize,
+  type TextSizePreset,
+} from '@livediagram/document';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 import { lucideChevronRight } from '@livediagram/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { getTheme } from '@/lib/themes';
-import { type TabLookId } from '@/lib/tab-looks';
+import { type LookSettings, type TabLook, type TabLookId } from '@/lib/tab-looks';
 import { LooksCarousel } from './LooksCarousel';
 
 /** The panels a Fine-tune row opens. */
 export type LookPanel = 'theme' | 'finish' | 'font' | 'canvas';
 
-const SIZE_LABELS: Record<TextSize, string> = {
+const SIZE_LABELS: Record<TextSizePreset, string> = {
   scale: 'scaled',
   sm: 'small',
   md: 'medium',
   lg: 'large',
 };
 
+// An exact size from the Text Size slider reads as its px.
+const sizeLabel = (size: TextSize | undefined): string =>
+  typeof size === 'number' ? `${size}px` : SIZE_LABELS[size ?? 'md'];
+
 const sectionLabel =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 
 export function LooksHome({
+  settings,
   activeLook,
   onPickLook,
   themeId,
@@ -39,9 +50,12 @@ export function LooksHome({
   pattern,
   onOpenPanel,
 }: {
+  // The tab's four look settings (the Mashup card is selected while they are its mashup's).
+  settings: LookSettings;
   // The look the tab's settings match, undefined when it has its own mix.
   activeLook: TabLookId | undefined;
-  onPickLook: (id: TabLookId) => void;
+  // A named look's id, or the Mashup card's random look whole.
+  onPickLook: (look: TabLookId | TabLook) => void;
   // The tab's current settings, for the Fine-tune rows' summaries.
   themeId: string;
   finish: Finish;
@@ -55,7 +69,12 @@ export function LooksHome({
   const patternLabel = PATTERNS.find((p) => p.id === pattern)?.label ?? 'Grid';
   return (
     <div className="flex flex-col gap-5">
-      <LooksCarousel activeLook={activeLook} onPickLook={onPickLook} headingClass={sectionLabel} />
+      <LooksCarousel
+        settings={settings}
+        activeLook={activeLook}
+        onPickLook={onPickLook}
+        headingClass={sectionLabel}
+      />
 
       <section
         aria-labelledby="fine-tune-heading"
@@ -84,7 +103,7 @@ export function LooksHome({
           />
           <FineTuneRow
             label="Text"
-            value={`${fontLabel}, ${SIZE_LABELS[defaultTextSize ?? 'md']}`}
+            value={`${fontLabel}, ${sizeLabel(defaultTextSize)}`}
             icon={<span className="text-[15px] font-semibold">Aa</span>}
             onOpen={() => onOpenPanel('font')}
           />

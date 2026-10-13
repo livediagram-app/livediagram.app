@@ -22,6 +22,7 @@ import {
   SANKEY_VALUE_LABEL_LABELS,
   SANKEY_VALUE_LABELS,
   sankeyGraph,
+  sankeyLabelPx,
   sankeyNodeColor,
   type SankeyAlign,
   type SankeyLeftover,
@@ -240,6 +241,7 @@ export function SankeyMenuSections({
         />
         <LegendTextSize
           current={target.textSize ?? 'md'}
+          presetPx={sankeyLabelPx}
           onSet={(size) => h.onSetOption({ textSize: size })}
           onPreview={onPreviewTextSize}
           onPreviewEnd={onPreviewEnd}
