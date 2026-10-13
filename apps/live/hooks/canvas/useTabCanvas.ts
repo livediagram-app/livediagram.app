@@ -18,7 +18,7 @@ import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import { cleanupElements } from '@/lib/tab-cleanup';
 import { useTabTheme } from './useTabTheme';
-import { tabLookById, withLookApplied } from '@/lib/tab-looks';
+import { tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import {
   withTabFinish,
   withTabFont,
@@ -106,11 +106,12 @@ export function useTabCanvas(deps: TabCanvasDeps) {
 
   // A look (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the tab's theme, finish, font and pattern at
   // once, as one undo step. The theme lands exactly as picking it does (withThemeApplied).
-  const applyTabLook = (id: string) => {
+  // A named look comes by id; the Mashup card's random look (lib/look-mashup.ts) comes whole.
+  const applyTabLook = (lookOrId: string | TabLook) => {
     if (editsBlocked) return;
-    const look = tabLookById(id);
+    const look = typeof lookOrId === 'string' ? tabLookById(lookOrId) : lookOrId;
     if (!look) return;
-    track('Tab', 'Changed', 'Look');
+    track('Tab', 'Changed', look.id === 'mashup' ? 'Mashup' : 'Look');
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? withLookApplied(t, look) : t)));
   };
 
