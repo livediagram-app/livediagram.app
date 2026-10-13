@@ -243,7 +243,7 @@ unchanged; only the mode they open in moved from Diagram.
 
 Besides the **Slide Deck** (a six-slide seed pitch), four decks are built from the slide layouts
 (`template-builders-layout-decks.ts`), six 16:9 slide pages each, every page one slide layout with
-its sample text replaced by the deck's own and its speaker note on its first text. Each opens and
+its sample text replaced by the deck's own; no element carries a note. Each opens and
 closes on an animated background in colours of its own (custom colours, so they keep through a theme
 change) and sets the slides between on a soft still gradient, so they read and print plainly:
 
