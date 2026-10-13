@@ -60,4 +60,31 @@ describe('the number stepper', () => {
     fireEvent.focus(field);
     expect(onCommit.mock.calls).toEqual([[8], [9]]);
   });
+
+  it('wears a tone it is given, bordered, rather than the slate track', () => {
+    const { container } = render(
+      <NumberStepper
+        label="Font Size"
+        value={10}
+        min={6}
+        max={72}
+        tone={{
+          line: 'rgb(1, 2, 3)',
+          field: 'rgb(4, 5, 6)',
+          text: 'rgb(7, 8, 9)',
+          muted: 'rgb(10, 11, 12)',
+        }}
+        onCommit={vi.fn()}
+      />,
+    );
+    const track = container.firstElementChild as HTMLElement;
+    expect(track.style.borderColor).toBe('rgb(1, 2, 3)');
+    expect(track.className).not.toContain('bg-slate-100');
+    const field = screen.getByLabelText('Font Size') as HTMLInputElement;
+    expect(field.style.color).toBe('rgb(7, 8, 9)');
+    expect(field.parentElement!.style.backgroundColor).toBe('rgb(4, 5, 6)');
+    expect(screen.getByRole('button', { name: 'Increase Font Size' }).style.color).toBe(
+      'rgb(10, 11, 12)',
+    );
+  });
 });

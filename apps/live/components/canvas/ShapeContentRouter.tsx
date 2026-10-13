@@ -28,6 +28,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { useFillsTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
+import { FillTabElementContext, FillTabPending } from '@/components/plan/FillTabPending';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { isTechIconId } from '@/lib/tech-icons';
 import { TechIconGlyph } from '@/components/primitives/tech-icon-glyph';
@@ -56,7 +57,7 @@ const PlanCardView = dynamic(
 );
 const PlanViewView = dynamic(
   () => import('@/components/plan/views/PlanViewView').then((m) => m.PlanViewView),
-  { ssr: false },
+  { ssr: false, loading: FillTabPending },
 );
 // A Sankey (docs/specs/009-elements/sankey.md) loads only when one is drawn: most boards have none.
 const SankeyView = dynamic(
@@ -71,7 +72,7 @@ const SheetLinkedChart = dynamic(
 // The Sheet and its engine load only when one is drawn (docs/specs/029-sheets/sheet.md "Performance").
 const PlanSheetView = dynamic(
   () => import('@/components/sheets/PlanSheetView').then((m) => m.PlanSheetView),
-  { ssr: false },
+  { ssr: false, loading: FillTabPending },
 );
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
@@ -82,12 +83,15 @@ const PlanSheetView = dynamic(
 function OffDashboard({ id, children }: { id: string; children: ReactNode }) {
   // A Visualisation tab's chart fills the tab from here, as a Board tab's board does (fill-tab.ts).
   const fills = useFillsTab(id);
-  return usePlanTabKind() === 'dashboard' && !fills ? null : <>{children}</>;
+  // The element named for its view's loading cover (FillTabPending), so filling its tab it never shows small first.
+  return usePlanTabKind() === 'dashboard' && !fills ? null : (
+    <FillTabElementContext.Provider value={id}>{children}</FillTabElementContext.Provider>
+  );
 }
 
 const PlanBoardView = dynamic(
   () => import('@/components/plan/PlanBoardView').then((m) => m.PlanBoardView),
-  { ssr: false },
+  { ssr: false, loading: FillTabPending },
 );
 
 type ShapeContentRouterProps = Pick<

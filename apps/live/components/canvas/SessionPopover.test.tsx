@@ -49,6 +49,7 @@ function popover(overrides: Partial<SessionPopoverProps> = {}) {
     onClose: vi.fn(),
     session: session(),
     readOnly: false,
+    canVote: true,
     holdOpen: true,
     voteSelfId: 'me',
     pollPanel: null,
@@ -164,6 +165,7 @@ describe('SessionPopover', () => {
         onClose={() => {}}
         session={session()}
         readOnly
+        canVote={false}
         holdOpen
         voteSelfId="me"
         pollPanel={null}

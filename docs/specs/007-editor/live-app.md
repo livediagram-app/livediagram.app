@@ -54,6 +54,7 @@ The **role pill** says whether you are editing or viewing this document. Everyon
   bar has no room. Under [Minimal chrome](power-user-mode.md#minimal-chrome) it becomes an icon at the start of the
   status bar instead.
 - **What it reads.** "Editing" (emerald) or "Viewing" (amber).
+- **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
 - **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
   for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
   badge. With no known owner (the owner has never joined the room), the pill has no Tooltip.

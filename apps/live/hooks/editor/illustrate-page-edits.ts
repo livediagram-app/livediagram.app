@@ -6,6 +6,7 @@
 // (withIllustratePages), re-reading the tab at commit time so two quick edits compose.
 import {
   elementIdsOnPage,
+  elementsOnPage,
   illustratePagesOf,
   layOutIllustratePages,
   MAX_ILLUSTRATE_PAGES,
@@ -44,7 +45,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
-import { buildPageLayout } from '@livediagram/templates';
+import { buildPageLayoutOver } from '@livediagram/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/illustrate-page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
@@ -439,14 +440,18 @@ export function illustratePageEdits({
     debugLog('[illustrate-page] page split', { tabId, pageId, pages: made });
   };
 
-  // Laid out in the page's content box (the page less its margins), one tab edit.
+  // Laid out in the page's content box (the page less its margins), the page's own words and
+  // pictures carried into it (docs/specs/007-editor/illustrate-pages.md "Content carries over"),
+  // one tab edit.
   const applyLayout = (pageId: string, layoutId: PageLayoutId) => {
     if (refusedLocked(pageId, 'layout')) return;
     track('Tab', 'Changed', 'PageLayout');
     commitTab((t) => {
-      const page = layOutIllustratePages(illustratePagesOf(t)).find((p) => p.id === pageId);
+      const pages = layOutIllustratePages(illustratePagesOf(t));
+      const page = pages.find((p) => p.id === pageId);
       if (!page) return null;
-      return edited(t, pageLaidOut(t, pageId, buildPageLayout(layoutId, page)));
+      const previous = elementsOnPage(t.elements, pages, pageId);
+      return edited(t, pageLaidOut(t, pageId, buildPageLayoutOver(layoutId, page, previous)));
     });
     onLayoutPlaced();
     debugLog('[illustrate-page] layout placed', { tabId, pageId, layout: layoutId });

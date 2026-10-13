@@ -72,6 +72,7 @@ import { routeBoardDoubleClick } from '@/lib/whiteboard-edit-target';
 import { useWhiteboardPenCursor } from '@/hooks/canvas/useWhiteboardPenCursor';
 import { useSpotlight } from '@/hooks/canvas/useSpotlight';
 import { useSpotlightConfig } from '@/hooks/canvas/useSpotlightConfig';
+import { spotlightRadius } from '@/lib/spotlight-config';
 import { AvatarWalker } from '@/components/canvas/AvatarWalker';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 
@@ -335,10 +336,10 @@ function CanvasView(props: CanvasProps) {
   // radius. Local to Canvas so the click handlers, the pointer tracker, and
   // the overlay share one source of truth; survives Pan/Select detours
   // because Canvas stays mounted.
-  const spotlight = useSpotlight();
   // The spotlight's look (docs/specs/008-canvas/spotlight-panel.md): persisted per browser, read by the
-  // overlay and edited from the Spotlight Panel down in the chrome.
+  // overlay and edited from the Spotlight Panel down in the chrome. The light opens at its saved Size.
   const spotlightLook = useSpotlightConfig();
+  const spotlight = useSpotlight(spotlightRadius(spotlightLook.config.size));
   // Where to draw the eraser's brush ring, in <main>-relative px. Null until
   // the pointer has been over the canvas — an eraser ring parked in the middle
   // of the screen would claim a brush that isn't there.

@@ -101,7 +101,11 @@ that let `viewport` through.
   lives in memory only: a client that fell behind across a wake finds the log
   empty and re-fetches, which is the safe path and never loses data.
 - The client (`apps/live/lib/api/room.ts`) gained auto-reconnect with capped
-  backoff + seq/epoch tracking.
+  backoff + seq/epoch tracking. The backoff's six attempts span about 30
+  seconds; once they are used up the client waits for the browser to come back
+  online or the tab to be shown again and starts a fresh round then, so an
+  outage longer than the attempts (a laptop asleep, wifi gone a while) does not
+  end live collaboration for the rest of the session.
 - **The cursor must include the client's own ops.** The relay skips the
   sender, so a client used to learn seqs only from other people's ops: a
   reconnect asked for its own ops back, and a session that had heard nothing

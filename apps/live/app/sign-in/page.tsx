@@ -50,6 +50,7 @@ function SignInContent() {
 
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showCodeStep, setShowCodeStep] = useState(false);
@@ -186,6 +187,7 @@ function SignInContent() {
 
   const handleResendCode = async () => {
     setError('');
+    setNotice('');
     setLoading(true);
     setCodeDigits(['', '', '', '', '', '']);
     try {
@@ -196,7 +198,7 @@ function SignInContent() {
             strategy: 'email_code',
             emailAddressId: factor.emailAddressId,
           });
-          setError('A new code has been sent. Check your email.');
+          setNotice('A new code has been sent. Check your email.');
           codeInputRefs.current[0]?.focus();
         }
       }
@@ -211,6 +213,7 @@ function SignInContent() {
     setShowCodeStep(false);
     setCodeDigits(['', '', '', '', '', '']);
     setError('');
+    setNotice('');
   };
 
   if (authLoaded && isSignedIn) {
@@ -221,6 +224,7 @@ function SignInContent() {
     <AuthCard
       subtitle="Sign in to keep your documents and work across multiple devices."
       error={error}
+      notice={notice}
       footer={
         <>
           New to livediagram?{' '}

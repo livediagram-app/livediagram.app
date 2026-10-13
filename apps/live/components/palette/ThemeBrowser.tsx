@@ -87,11 +87,9 @@ export function ThemeBrowser({
               onApply={() => onSelect(it.theme.id)}
               onCommit={() => commit(it.theme.id)}
               onEdit={() => onEditCustomTheme?.(it.theme.id)}
-              onDelete={() => {
-                // Fall the selection back to Default so the host never points at a theme that's about to vanish.
-                if (themeId === it.theme.id) onSelect('brand');
-                onDeleteCustomTheme?.(it.theme.id);
-              }}
+              // The host asks first, and falls the selection back to Default only once the delete is confirmed:
+              // switching here would leave the tab on Default after a Cancel.
+              onDelete={() => onDeleteCustomTheme?.(it.theme.id)}
             />
           ) : (
             <NewThemeCard key="new" onClick={() => onNewCustomTheme?.()} />

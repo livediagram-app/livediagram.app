@@ -2,7 +2,7 @@
 
 A lightweight way to pin an explanatory note to a spot on the canvas without
 cluttering it: a small themed circle holding a fixed note glyph. Hover it to
-read its note floating above everything; click it to edit the note.
+read its note floating above everything; double-click it to edit the note.
 
 Annotations are a first-class element type. They build on the existing
 per-element **note** feature (`note?: string` on every boxed element, edited
@@ -48,11 +48,11 @@ and `note` is the plain-text mirror.
   pointer-leave. An annotation with no note yet shows nothing on hover. The
   hover preview is suppressed while the annotation is selected (the click /
   edit popover owns that surface).
-- **Click → edit.** A plain click on an annotation opens the editable
-  `NotePopover` (same component the note badge opens elsewhere). Typing +
-  commit goes through history like any other element edit. Clicking the same
-  annotation again toggles the popover closed. Dragging moves it instead of
-  opening the editor (a click that doesn't move opens; a drag doesn't).
+- **Double-click → edit.** A double-click on an annotation opens the editable
+  `NotePopover` (same component the note badge opens elsewhere), as a
+  double-click opens any element's editor; a single click selects it, and a
+  drag moves it. Typing + commit goes through history like any other element
+  edit. Double-clicking the same annotation again toggles the popover closed.
 - **Read-only viewers** (view-role share visitors) can hover to read and open
   the note read-only, but can't edit, move, or delete it — same gating as
   every other element.

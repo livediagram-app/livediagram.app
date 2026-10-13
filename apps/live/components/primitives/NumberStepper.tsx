@@ -3,13 +3,25 @@
 // A whole number with − and + either side (a Sheet's column width and row height, its font size): the field takes typing and
 // applies on Enter or leaving it, kept within [min, max]; Escape or an empty field puts the value back. The arrow
 // keys step it, as a native number field's do. The settings dialog's segmented control's look: a slate track with
-// the value on white.
+// the value on white. Given a `tone` (a Sheet's toolbar), it wears those colours instead, bordered like the controls
+// beside it, so it follows the Sheet's theme in light and dark.
 import { useState } from 'react';
 import { Tooltip, lucideGlyph } from '@livediagram/ui';
 import { lucideMinus, lucidePlus } from '@livediagram/icons/lucide';
 
 const MinusGlyph = lucideGlyph(lucideMinus, 14);
 const PlusGlyph = lucideGlyph(lucidePlus, 14);
+
+// Colours from what holds the stepper (a Sheet's palette): its hairline, the value's field, its ink and the − and +.
+export type NumberStepperTone = { line: string; field: string; text: string; muted: string };
+
+const BUTTON =
+  'flex shrink-0 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-35';
+const BUTTON_SLATE =
+  'h-7 w-7 text-slate-500 hover:bg-white hover:text-slate-900 hover:shadow-sm disabled:hover:bg-transparent disabled:hover:shadow-none dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50';
+// Toned: the toolbar's own hover wash, so it reads on any Sheet colour.
+const BUTTON_TONED =
+  'h-6 w-6 hover:bg-black/5 disabled:hover:bg-transparent dark:hover:bg-white/10';
 
 export function NumberStepper({
   label,
@@ -20,6 +32,7 @@ export function NumberStepper({
   unit,
   disabled = false,
   stepBy,
+  tone,
   onCommit,
 }: {
   label: string;
@@ -32,6 +45,7 @@ export function NumberStepper({
   disabled?: boolean;
   // The next value for − and + (Word's font sizes step through presets); else `step` either way.
   stepBy?: (value: number, dir: 1 | -1) => number;
+  tone?: NumberStepperTone;
   onCommit: (n: number) => void;
 }) {
   const [draft, setDraft] = useState<string | null>(null);
@@ -55,7 +69,8 @@ export function NumberStepper({
           aria-label={name}
           disabled={disabled || off}
           onClick={() => set(stepBy ? stepBy(value, dir) : value + dir * step)}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition hover:bg-white hover:text-slate-900 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:shadow-none dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-50"
+          className={`${BUTTON} ${tone ? BUTTON_TONED : BUTTON_SLATE}`}
+          style={tone ? { color: tone.muted } : undefined}
         >
           {dir < 0 ? <MinusGlyph /> : <PlusGlyph />}
         </button>
@@ -63,9 +78,23 @@ export function NumberStepper({
     );
   };
   return (
-    <span className="flex shrink-0 items-center gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-900">
+    <span
+      className={
+        tone
+          ? 'flex h-7 shrink-0 items-center gap-0.5 rounded-md border px-px'
+          : 'flex shrink-0 items-center gap-0.5 rounded-lg bg-slate-100 p-0.5 dark:bg-slate-900'
+      }
+      style={tone ? { borderColor: tone.line } : undefined}
+    >
       {button(-1)}
-      <span className="flex h-7 items-center rounded-md bg-white px-1.5 shadow-sm dark:bg-slate-700">
+      <span
+        className={
+          tone
+            ? 'flex h-[22px] items-center rounded px-1.5'
+            : 'flex h-7 items-center rounded-md bg-white px-1.5 shadow-sm dark:bg-slate-700'
+        }
+        style={tone ? { backgroundColor: tone.field } : undefined}
+      >
         <input
           inputMode="numeric"
           aria-label={label}
@@ -89,9 +118,19 @@ export function NumberStepper({
               set(stepBy ? stepBy(from, dir) : from + dir * step);
             }
           }}
-          className="w-9 bg-transparent text-center text-xs font-medium tabular-nums text-slate-900 outline-none dark:text-slate-50"
+          className={`w-9 bg-transparent text-center text-xs font-medium tabular-nums outline-none ${
+            tone ? '' : 'text-slate-900 dark:text-slate-50'
+          }`}
+          style={tone ? { color: tone.text } : undefined}
         />
-        {unit ? <span className="pl-0.5 text-[11px] text-slate-400">{unit}</span> : null}
+        {unit ? (
+          <span
+            className={`pl-0.5 text-[11px] ${tone ? '' : 'text-slate-400'}`}
+            style={tone ? { color: tone.muted } : undefined}
+          >
+            {unit}
+          </span>
+        ) : null}
       </span>
       {button(1)}
     </span>

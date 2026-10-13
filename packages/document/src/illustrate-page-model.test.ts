@@ -12,6 +12,7 @@ import {
 } from './illustrate-page';
 import {
   elementIdsOnPage,
+  elementsOnPage,
   elementPageSurfaces,
   legibleOn,
   pageFillTone,
@@ -150,6 +151,7 @@ describe('page content', () => {
     const laid = layOutIllustratePages(pages);
     expect([...elementIdsOnPage(tab.elements, laid, 'a')].sort()).toEqual(['a1', 'a2', 'ar']);
     expect([...elementIdsOnPage(tab.elements, laid, 'b')]).toEqual(['b1']);
+    expect(elementsOnPage(tab.elements, laid, 'a').map((el) => el.id)).toEqual(['a1', 'a2', 'ar']);
   });
 
   it('duplicates a page with its content, pinned arrows re-pinned to the copies', () => {

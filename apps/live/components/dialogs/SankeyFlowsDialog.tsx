@@ -83,6 +83,12 @@ export function SankeyFlowsDialog({
     onCommit(flows, nextNodes);
   };
   const store = (next: SankeyDraftRow[]) => storeWith(next, nodes);
+  // Closing stores what is being typed: Escape unmounts the dialog without blurring the focused cell or
+  // the text box, so their own store-on-blur never runs. A close after a blur stores nothing twice.
+  const close = () => {
+    store(rows);
+    onClose();
+  };
 
   const switchTab = (next: Tab) => {
     if (next === tab) return;
@@ -155,7 +161,7 @@ export function SankeyFlowsDialog({
   return (
     <Dialog
       open
-      onClose={onClose}
+      onClose={close}
       // While Show Me runs, Escape is the tour's, never the dialog's.
       closeOnEscape={!tour.active}
       ariaLabel="Edit Sankey flows"
@@ -168,7 +174,7 @@ export function SankeyFlowsDialog({
       >
         <SankeyFlowsShowMeButton tour={tour} onStart={freezeTour} />
         <HelpArticleLink article="sankeyDiagram" variant="labelled" />
-        <DialogCloseButton onClick={onClose} />
+        <DialogCloseButton onClick={close} />
       </DialogHeader>
 
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-6 dark:border-slate-800">
@@ -341,7 +347,7 @@ export function SankeyFlowsDialog({
       </div>
 
       <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4 dark:border-slate-800">
-        <Button variant="primary" size="md" onClick={onClose}>
+        <Button variant="primary" size="md" onClick={close}>
           Done
         </Button>
       </div>

@@ -102,7 +102,7 @@ cog).
 - **Background**: the **Background** swatches, no Pattern. It has no Size or Orientation to choose, so no
   **Page** tab.
 - **Layouts**: the **logo layouts** (below), in the same browser as the infographic layouts
-  (categories, then a category's layouts, the same Replace question and hover previews). Each
+  (categories, then a category's layouts, placed at once with the content carried over, and hover previews). Each
   tile is the layout exactly as it lands: built for this page and drawn by the export renderer in
   the tab's theme and font, on the page's background, its words and icon included (a wireframe
   outside an editor). An empty logo page shows them inside itself (**Start From a Layout**) as an empty

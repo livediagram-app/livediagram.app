@@ -110,7 +110,8 @@ export function SharedBadge({
           aria-label={meta.label}
           aria-describedby={descriptionId}
           aria-haspopup="dialog"
-          className="cursor-pointer rounded-full transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          // flex: an inline button's line box stood it taller than the chip, which sat low beside the role pill.
+          className="flex cursor-pointer rounded-full transition hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
         >
           <ShareStateChip state={state} />
         </button>

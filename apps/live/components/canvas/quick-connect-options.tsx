@@ -95,7 +95,7 @@ export const OPTIONS: Option[] = [
   {
     kind: 'duplicate',
     label: 'Duplicate',
-    description: 'Copy this element to the side and connect it.',
+    description: 'Copy this element to the side.',
     icon: <DuplicateIcon />,
   },
   {

@@ -40,12 +40,13 @@ every design decision. The mode itself (the switch, the opening mode, the pages'
 | Snap boxes                  | `illustratePageSnapBoxes(pages)` (ids `page-snap:<id>`, `page-margin:<id>`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Into pages                  | `contentClusters`, `pageAround(box, id)`, `withContentOnAPage(tab)`, `withPageSplit(tab, pageId)`, `packages/document/src/illustrate-paginate.ts`; `IllustratePageEdits.splitPage`; `SplitPagesIcon` (`packages/ui/src/icons/actions.tsx`)                                                                                                                                                                                                                                                                                                                                           |
 | Page layout                 | `PageLayoutId`, `PageLayout`, `PAGE_LAYOUTS` (`page-layouts.ts`); `SlideLayoutId`, `SLIDE_LAYOUTS`, `SLIDE_LAYOUT_CATEGORIES` (`slide-layouts.ts`); `layoutCatalogueFor(kind)`, `pageLayoutById` (`layout-catalogue.ts`), all `packages/templates/src/`                                                                                                                                                                                                                                                                                                                              |
+| Carried content             | `carryPageContent(previous, placed)`, `warmLayoutPlaceholders()`, `packages/templates/src/page-layout-carry.ts`; roles `title`, `large`, `body`, `figure`; the page's elements `elementsOnPage` (`packages/document/src/illustrate-page-content.ts`)                                                                                                                                                                                                                                                                                                                                 |
 | Layout kit                  | `kit(box)`, `Kit`, `heading`, `verticalSteps`, `LayoutBox`, `page-layout-kit.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | Extra layouts               | `quotePage`, `teamPage`, `factsGridPage`, `checklistPage`, `eventPage`, `page-layouts-extra.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | More layouts                | `buildSectionDivider`, `buildPoster`, `buildSurveyResults`, `buildProgressReport`, `buildRoadmap`, `buildAgenda`, `buildQuestions`, `buildProfile`, `page-layouts-more.ts`; `buildProsCons`, `buildBeforeAfter`, `buildFeatureMatrix`, `page-layouts-compare.ts`; `buildPictogram`, `buildRanking`, `buildCycle`, `buildFunnel`, `page-layouts-figures.ts`; `buildAnnouncement`, `buildDidYouKnow`, `buildSaveTheDate`, `page-layouts-social.ts`; shared parts `page-layout-parts.ts`                                                                                                |
 | Category sets               | Each category's further layouts in its own set, `<NAME>_SET_LAYOUTS` and `<Name>SetLayoutId`, spread after the core list in `PAGE_LAYOUTS`: `page-layouts-set-covers*.ts`, `-posters*.ts`, `-data*.ts`, `-steps*.ts`, `-compare*.ts`, `-people*.ts`, `-social*.ts`, `-explainers*.ts` (each set file the ids and entries, its siblings the builders and parts); tests `apps/live/lib/page-layouts-set-<category>.test.ts`                                                                                                                                                            |
 | Layout category             | `PageLayoutCategoryId` (`'covers' \| 'posters' \| 'data' \| 'steps' \| 'compare' \| 'people' \| 'social' \| 'explainers'`), `PAGE_LAYOUT_CATEGORIES`, `PageLayout.category`, `page-layouts.ts`; `SlideLayoutCategoryId` (`slide-openers`, `slide-content`, `slide-data`, `slide-steps`, `slide-closers`)                                                                                                                                                                                                                                                                             |
-| A layout for a page         | `buildPageLayout(layout, page)`, `packages/templates/src/page-layout-build.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| A layout for a page         | `buildPageLayout(layout, page)`; with the page's content carried in, `buildPageLayoutOver(layout, page, previous)`, `packages/templates/src/page-layout-build.ts`                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Background catalogue        | `PAGE_COLOUR_GROUPS` (`page-background-custom.tsx`), `PAGE_GRADIENT_PRESETS`, `themeBackgroundPresets`, `backgroundCategoryOf`, `isCustomGradient`, `customGradientSeed`, `apps/live/lib/illustrate-page-paint.ts`                                                                                                                                                                                                                                                                                                                                                                   |
 | Sheet paint                 | `pageSheetStyle`, `pagePatternInk`, `fillCss`, `gradientFill` (`apps/live/lib/illustrate-page-paint.ts`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | The pages view              | `IllustratePagesView`, `useIllustratePages`, `apps/live/hooks/editor/useIllustratePages.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -117,6 +118,9 @@ page; "template" stays the whole-tab starting point.
 | `PAPER_TONE`                                                           | `#ffffff`                                                       | Spec "Re-inking": the paper as printed                                                                                                   |
 | Ink memory `MAX_TABS`                                                  | 20 tabs                                                         | `apps/live/lib/page-ink-memory.ts`; D85                                                                                                  |
 | `WIDE_RATIO`                                                           | 1.15                                                            | `page-layout-kit.ts`; spec "Layouts" tall / wide                                                                                         |
+| `LARGE_PX`, `FIGURE_MAX_CHARS`, `ROW_TOLERANCE`                        | 32 px (the large size), 12 chars, 4 px                          | `page-layout-carry.ts`; spec "Content carries over", D86                                                                                 |
+| `MIN_SHRINK`, `GLYPH_WIDTH`, `BOLD_GLYPH_WIDTH`, `LINE_HEIGHT`         | 0.4, 0.55, 0.6, 1.25                                            | `page-layout-carry.ts`; spec "Words fit their new place", D86                                                                            |
+| `REFERENCE_BOXES`                                                      | 760 x 1075 and 1700 x 956 px                                    | `page-layout-carry.ts`: the boxes every layout's placeholders are gathered from, D86                                                     |
 | `TITLE_FILL`, `GLYPH_WIDTH`                                            | 0.72, 0.6                                                       | `page-layout-kit.ts`; D26                                                                                                                |
 | Panel `WIDTH`, `GAP`                                                   | 304 px, 6 px                                                    | `IllustratePagePanel.tsx`; D27                                                                                                           |
 | `PAGE_EASE_MS`                                                         | 200 ms                                                          | Editor modes "Turning, adding and deleting animate"                                                                                      |
@@ -265,7 +269,9 @@ change reaches them all.
   then the page list without it; an article page `withArticleRemoved(t, flow)`. (`pageRemoved`
   itself refuses the last unit, `last_page`, the agents' rule.)
 - `applyLayout(id, layout)` (`pageLaidOut`): `withPageContentReplaced(tab, id,
-buildPageLayout(layout, page))`, then `onLayoutPlaced` (clears the selection).
+buildPageLayoutOver(layout, page, elementsOnPage(tab.elements, pages, id)))`, then
+  `onLayoutPlaced` (clears the selection). The agents' `layout` change keeps `buildPageLayout`
+  alone (a plain replace).
 - `startBlank(id)`: sets `startedBlank: true` (a logo page's Start From Scratch, [Logo
   pages](logo-pages.md)); the page's own lock refuses it.
 - `contentCount(id)`: `elementIdsOnPage(elements, laidOut, id).size`.
@@ -293,6 +299,39 @@ margin box. Scaled (`s < 1`) or `centre`: the content's centre goes to the page'
 keeps its place. Then nudged so its scaled half-extents sit inside the margin box (centred when it
 cannot). Boxes map position and size; text elements also multiply `textScale` by `s`; free arrow
 ends map; pinned ends follow. Returns the same tab when nothing moves.
+
+### Carried content (`carryPageContent`)
+
+`carryPageContent(previous, placed)` returns `placed` (same ids and order, so pinned arrows hold)
+with content copied in; geometry and look are always the placed element's.
+
+- Placeholders: built once (`placeholders()`, memoised in the module; warmed by
+  `warmLayoutPlaceholders` through `prefetchWhenIdle` when a `LayoutBrowser` mounts) from every
+  `PAGE_LAYOUTS`, `SLIDE_LAYOUTS` and `LOGO_LAYOUTS` entry in each `REFERENCE_BOXES` box: every text
+  label (trimmed) and every shape's `contentKey` (`[shape, SHAPE_CONTENT fields]` as JSON).
+- Words: `previous` texts whose trimmed label is not a placeholder, and every `placed` text, sort
+  into roles (`byRole`): `figure` when `isFigure(label)` (at most `FIGURE_MAX_CHARS`, a digit, no run
+  of three letters); else `title` for the page's most prominent word text (largest `typePx` =
+  `LABEL_FONT_PX[textSize] x textScale`, topmost on a tie; decided over all of the page's texts, so a
+  placeholder title keeps the role) when at least `LARGE_PX`; else `large` when at least `LARGE_PX`;
+  else `body`. Each role pairs in reading order (`readingOrder`: top, then left within
+  `ROW_TOLERANCE`). Leftovers walk `ROLE_FALLBACK` (`title` to large, body; `large` to body, title;
+  `body` to large, title; `figure` none), taking the next free slot.
+- `withWords(slot, from)`: the slot with `from.label`, and `from.richText` (or none); `textScale`
+  multiplied by `fitShrink`: 1 when the estimated wrapped height fits (`lines x px x LINE_HEIGHT`,
+  a line's glyphs at `GLYPH_WIDTH` or `BOLD_GLYPH_WIDTH` of px), else the largest factor in
+  [`MIN_SHRINK`, 1] that fits (12 bisection steps), rounded to 0.01.
+- Pictures: `previous` images with an `imageId`, largest area first, into `placed` images largest
+  first: `IMAGE_CONTENT` (`imageId`, `naturalWidth`, `naturalHeight`, `credit`, `alt`) and
+  `objectFit: 'cover'`.
+- Shapes: `previous` shapes with content (`hasContent`: a non-blank string or any value in
+  `SHAPE_CONTENT`) and a non-placeholder `contentKey`, in reading order, each into the next free
+  `placed` shape of the same `shape` kind: its `SHAPE_CONTENT` fields.
+- Everything else (arrows, unmatched elements, other types) is not carried.
+- The hover preview (`InfographicLayoutPreview`, given `view.elements` and `view.pages`) builds
+  `buildPageLayoutOver` in a `useMemo` on the layout, the rect and the content, and resolves carried
+  pictures through `useImageSources(ids)` (`page-image-access.tsx`; `usePageImageSources` is it over
+  the pages' background ids), `data:` ids painted as they are.
 
 ### Into pages (`withContentOnAPage`, `withPageSplit`)
 
@@ -504,8 +543,8 @@ pageHasOrientation(page)`, then **Background**, then an infographic, slide or lo
   The panel and the cog row carry `data-article-keep-active`.
 - Layout preview: `view.layoutPreview` set on tile pointerenter / focus; the clip drops that page
   (`hiddenPageId`); `InfographicLayoutPreview` draws `svgBoxed` / `svgArrow` markup of
-  `buildPageLayout` over the sheet. While Replace is pending, leaving the grid restores the
-  pending layout's preview. Cleared on apply and on unmount (through a latest-callback ref).
+  `buildPageLayoutOver` (the page's content carried in) over the sheet. Cleared on apply and on
+  unmount (through a latest-callback ref).
 - Reorder: `usePageReorderDrag` on the label (`cursor-grab` only while `pageUnits(pages).length > 1`): pointer capture; with two or more units, past
   `DRAG_THRESHOLD` sideways it is a drag (`reorder = { pageId, pageIds, slot }`, `pageIds` the
   unit's pages, all dimmed); release calls `movePageTo(id, slot)`; the following click is
@@ -736,6 +775,10 @@ SVG `href` is escaped. The api counts a page picture as an image reference
   page's elements, run only when Split Into Pages is pressed (57 ms at 3000).
 - A Fit to Content page's image export is drawn at 2x, lowered by `exportScale` so no canvas side
   passes `MAX_EXPORT_CANVAS_SIDE` (16384 px); its PDF page is at most 14400 pt.
+- Carrying content: gathering the placeholders builds every layout twice, once per session
+  (measured ~15 ms per box warm, ~100 ms cold, in vitest on an M-series Mac), warmed while idle as
+  the layouts open; a carry itself is linear in the page's elements plus the layout's (measured
+  2.5 ms for a title page into a poster; guarded by a 300-element budget test).
 - Layout thumbnails build once per page shape (`useMemo` on the rect); the overview draws two per category (12 over the six), a category at most eight (Data).
 - Page Tidy Up runs only on a press or a hover, never per render: O(n²) in the page's elements per pass (containment,
   the guard). Measured on an M-series Mac: at most 25 ms for any jittered layout (3312 cases), about 120 ms for 600
@@ -815,8 +858,8 @@ for the whole of Illustrate mode.
   `split refused: page limit`, `size refused: fit to content`, `size refused: not offered for the
 kind`, `turn refused: landscape only`, `pattern refused: a logo page`, `refused: page locked`,
   `lock set`, `started blank`, `re-inked` (`reinked`, `remembered`), `tidied`, `tidy: already tidy`, `press off the pages ignored`; `[page-lock] edit held back`;
-  `[arrow-connect] skipped: another page`; `console.warn` `[illustrate-page] background picture
-unavailable` / `background picture failed` (a sheet's fetch), `picture tone unreadable`,
+  `[arrow-connect] skipped: another page`; `console.warn` `[illustrate-page] picture
+unavailable` / `picture failed` (a sheet's fetch, or a carried picture's in a layout preview), `picture tone unreadable`,
   `background upload failed`.
 - Telemetry as the spec's Telemetry section, charted in `apps/telemetry/app/catalogue/features.ts`
   (`PAGE_ORIENTATION`, `ILLUSTRATE_PAGES`, `ILLUSTRATE_PAGE_SETUP`,
@@ -856,6 +899,7 @@ read against the code. Rules no test covers are listed as gaps after the table.
 | Seventeen slide layouts by category; reuse is the same build; per-kind catalogue                                                                                            | `apps/live/lib/slide-layouts.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | A layout replaces the page's content, inside its margins, one edit                                                                                                          | `illustrate-edits.test.ts` "laying out"; `illustrate-page-edits.test.ts` "replaces a page with a layout inside its margins, leaving other pages alone"; `illustrate-page-model.test.ts` "replaces a page’s content, arrows pinned to it going too"                                                                                                                                                                                                                                            |
 | The layout preview hides the page's own content (the clip)                                                                                                                  | `apps/live/components/canvas/IllustratePageClip.test.ts`                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Content carries over: placeholders stay, roles, figures, fallback, pictures, shapes, rich text, fit, ids, budget                                                            | `packages/templates/src/page-layout-carry.test.ts`; `illustrate-page-edits.test.ts` "carries what was written on the page into the new layout"; `apps/live/components/canvas/InfographicLayoutPreview.test.tsx`                                                                                                                                                                                                                                                                               |
 | The in-page card: Start From Scratch on a logo page only                                                                                                                    | `apps/live/components/canvas/EmptyPageLayouts.test.tsx`                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Page actions: duplicate with content, move, delete closing the gap                                                                                                          | `illustrate-edits.test.ts` "duplicating, moving and deleting"; `illustrate-page-model.test.ts` "page content"; `illustrate-page-edits.test.ts` "Illustrate page edits"                                                                                                                                                                                                                                                                                                                        |
 | An article's actions act on the whole article                                                                                                                               | `illustrate-page-edits.test.ts` "moves, duplicates and deletes the whole document"; `article-pages.test.ts` "remove an article with its pages, content and writing", "move a whole article as one"                                                                                                                                                                                                                                                                                            |
@@ -891,7 +935,7 @@ Gaps (no unit test; browser-checked or uncovered):
 - The Add a Page popover (opening, focus, outside press, the bottom sheet) and the strip's +.
 - The page panel's placement, the bottom sheet, Escape restoring focus to the cog, closing on a
   wheel, following its cog after a move; the name field committing on close.
-- Hover previews on the sheet (backgrounds, layouts), the Replace question, and the layout invite's
+- Hover previews on the sheet (backgrounds, layouts), and the layout invite's
   room in the title bar (`INVITE_WIDE`, `INVITE_ICON`, `LABEL_MIN`).
 - The in-page card's visibility rules (`showsLayoutCard`: size on screen, Hide, the panel open) and
   its wide form.
@@ -914,4 +958,4 @@ Gaps (no unit test; browser-checked or uncovered):
 
 ## Defaults ledger
 
-See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D85.
+See [DEFAULTS.md](DEFAULTS.md), rows D23 to D32, D55 to D58 and D81 to D86.
