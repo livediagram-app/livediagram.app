@@ -36,6 +36,12 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'quarterly-review': 'illustrate',
   'team-welcome': 'illustrate',
   'workshop-kickoff': 'illustrate',
+  // Design templates (template-design-pages.ts): drawn on a page sized for what each is.
+  'floor-plan': 'illustrate',
+  storyboard: 'illustrate',
+  'browser-wireframe': 'illustrate',
+  'laptop-wireframe': 'illustrate',
+  'mobile-wireframe': 'illustrate',
   // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
   'blank-spreadsheet': 'plan',
@@ -77,6 +83,16 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'affinity-map': 'facilitate',
   'prioritization-matrix': 'facilitate',
   'risk-matrix': 'facilitate',
+  // Boards a team fills in together in a session, rather than a diagram one person draws.
+  'incident-postmortem': 'facilitate',
+  'objectives-planner': 'facilitate',
+  roadmap: 'facilitate',
+  'raci-matrix': 'facilitate',
+  'user-story-map': 'facilitate',
+  'business-model-canvas': 'facilitate',
+  'stakeholder-map': 'facilitate',
+  'opportunity-solution-tree': 'facilitate',
+  'user-persona': 'facilitate',
 };
 
 /** The mode a template's tab opens in. */

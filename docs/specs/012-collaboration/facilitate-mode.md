@@ -147,7 +147,11 @@ Session templates open in Facilitate, as the Draw templates open in Draw
   and `sailboat` (`team-retro` stays in Plan: it is a board of cards);
 - `town-hall`, `lean-coffee`, `crazy-eights` and `meeting-agenda`;
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
-  only a mode with a Session strip can watch, end and keep that vote.
+  only a mode with a Session strip can watch, end and keep that vote;
+- the boards a team fills in together: `incident-postmortem`, `user-persona`, `objectives-planner`,
+  `roadmap`, `raci-matrix`, `user-story-map`, `business-model-canvas`, `stakeholder-map` and
+  `opportunity-solution-tree` (grouped in Start Facilitating under Retrospectives, Workshops, Planning
+  and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#facilitate-templates)).
 
 Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
 `idea-garden`) stay in Draw.

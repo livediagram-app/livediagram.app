@@ -179,6 +179,26 @@ already infographic pages, built with the page layouts' kit.
 - **Social Carousel** _(Presentations)_: five Square slides for a LinkedIn or Instagram carousel: a hook,
   three tips and a call to action, with slide numbers and swipe cues.
 
+### Design templates
+
+Five templates for showing a design open in Illustrate, each on one infographic page sized for what it is
+(`template-design-pages.ts`). Their drawings are the ones they had as Diagram templates, built by the same builders
+at the same size (the Floor plan is drawn to a captioned metric scale, so none is scaled) and centred on the page.
+Start Illustrating lists them in their own group, **Design** ("Wireframes, storyboards and floor plans, drawn to
+show."), after Logos; their catalogue category stays Design.
+
+| Template           | Kind id             | Page                                                         |
+| ------------------ | ------------------- | ------------------------------------------------------------ |
+| Web page wireframe | `browser-wireframe` | Widescreen (16:9), "Landing Page", on a cool studio grey     |
+| Laptop wireframe   | `laptop-wireframe`  | Widescreen (16:9), "Dashboard", on a cool studio grey        |
+| Mobile wireframe   | `mobile-wireframe`  | Widescreen (16:9), "Order Ahead Flow", on a cool studio grey |
+| Storyboard         | `storyboard`        | A3 landscape, "Storyboard", plain paper                      |
+| Floor plan         | `floor-plan`        | A3 landscape, "Floor Plan", ruled in the page's grid pattern |
+
+- Screens sit on the shape they are shown on (16:9); the storyboard and the plan on the sheet they are printed on (A3).
+- The page carries the backdrop: none of the five ships a canvas pattern any more (the Floor plan's graph paper
+  became its page's grid, the Storyboard's crosshatch is gone).
+
 ## Facilitate templates
 
 Session formats open in Facilitate ([Facilitate mode](../012-collaboration/facilitate-mode.md#templates)),
@@ -194,6 +214,12 @@ unchanged; only the mode they open in moved from Diagram.
   (`prioritization-matrix`) and **Risk matrix** (`risk-matrix`). Diagram has no Session strip, so a
   vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
   session tool opens in Facilitate.
+- The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
+  postmortem** (`incident-postmortem`, a look back, under Retrospectives), **User persona** (`user-persona`, under
+  Workshops), the **Planning** group's **Objectives planner** (`objectives-planner`), **Roadmap** (`roadmap`),
+  **RACI matrix** (`raci-matrix`) and **User story map** (`user-story-map`), and the **Strategy** group's **Business
+  Model Canvas** (`business-model-canvas`), **Stakeholder map** (`stakeholder-map`) and **Opportunity solution
+  tree** (`opportunity-solution-tree`). Their catalogue categories are unchanged.
 
 ## Testing
 

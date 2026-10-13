@@ -194,6 +194,11 @@ const PAGED_KINDS = [
   'quarterly-review',
   'team-welcome',
   'workshop-kickoff',
+  'floor-plan',
+  'storyboard',
+  'browser-wireframe',
+  'laptop-wireframe',
+  'mobile-wireframe',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.

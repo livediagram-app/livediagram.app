@@ -49,15 +49,22 @@ const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Facilitate by the session each runs, Illustrate by what each makes, each Illustrate group but Posters led by its
-// blank of a page kind. A template of the mode in none of its groups is placed in the last.
+// way: Facilitate by the session each runs, Illustrate by what each makes, each Illustrate group but Posters and Design led by
+// its blank of a page kind. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
   facilitate: [
     {
       id: 'retrospectives',
       name: 'Retrospectives',
       line: 'Look back as a team: what went well, what to change.',
-      kinds: ['retrospective', 'sailboat', 'start-stop-continue', 'mad-sad-glad', 'four-ls'],
+      kinds: [
+        'retrospective',
+        'sailboat',
+        'start-stop-continue',
+        'mad-sad-glad',
+        'four-ls',
+        'incident-postmortem',
+      ],
     },
     {
       id: 'meetings',
@@ -69,7 +76,19 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       id: 'workshops',
       name: 'Workshops',
       line: 'Hands-on formats for ideas and design work.',
-      kinds: ['crazy-eights', 'affinity-map'],
+      kinds: ['crazy-eights', 'affinity-map', 'user-persona'],
+    },
+    {
+      id: 'planning',
+      name: 'Planning',
+      line: 'Agree the goals, the roadmap and who does what.',
+      kinds: ['objectives-planner', 'roadmap', 'raci-matrix', 'user-story-map'],
+    },
+    {
+      id: 'strategy',
+      name: 'Strategy',
+      line: 'Map the business, the people and the opportunities.',
+      kinds: ['business-model-canvas', 'stakeholder-map', 'opportunity-solution-tree'],
     },
     {
       id: 'decisions',
@@ -135,6 +154,18 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
       name: 'Logos',
       line: 'Marks, wordmarks and lockups for a brand.',
       kinds: ['blank-logo', 'logo-design'],
+    },
+    {
+      id: 'design',
+      name: 'Design',
+      line: 'Wireframes, storyboards and floor plans, drawn to show.',
+      kinds: [
+        'browser-wireframe',
+        'laptop-wireframe',
+        'mobile-wireframe',
+        'storyboard',
+        'floor-plan',
+      ],
     },
   ],
 };

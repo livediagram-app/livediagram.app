@@ -281,10 +281,9 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.4,
       layers: templateLayers('gantt'),
     });
-    expect(templateCanvasOverrides('mobile-wireframe')).toEqual({
+    expect(templateCanvasOverrides('sitemap')).toEqual({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.4,
-      layers: templateLayers('mobile-wireframe'),
     });
   });
 
