@@ -50,6 +50,7 @@ export function PageArticleButtons({
         className={titleButtonClass}
         icon={<StyleIcon />}
         width={POPOVER_WIDTH}
+        padded={false}
         openRequest={styleRequest}
         onOpen={() => track('UI', 'Opened', 'PageArticleStyleButton')}
       >
@@ -61,6 +62,7 @@ export function PageArticleButtons({
         className={titleButtonClass}
         icon={<TextIcon />}
         width={POPOVER_WIDTH}
+        padded={false}
         onOpen={() => track('UI', 'Opened', 'PageArticleTextButton')}
       >
         {section('text')}
