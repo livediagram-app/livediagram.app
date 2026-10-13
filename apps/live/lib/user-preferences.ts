@@ -166,6 +166,10 @@ export type UserPreferences = {
   // Missing / undefined / true === on, the default. Flipped from the
   // panel's settings gear (desktop-only chrome, like the hover itself).
   layerHoverPreview?: boolean;
+  // Whether the bottom-right cluster names its buttons beside their icons on a wide desktop
+  // (docs/specs/007-editor/live-app.md "Named on a wide desktop"). Missing === on; a phone never
+  // names them, whatever this says. Read through useDockNames.
+  dockButtonNames?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from
@@ -193,21 +197,21 @@ export type UserPreferences = {
   // tour's welcome offer has been answered (taken, skipped, or declined),
   // so the offer never re-appears for this user — synced, so it follows
   // the account across devices like every other preference. Surfaced in
-  // Settings as Onboarding Tutorials › "Diagram" (inverted); turning it on there and
+  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
   // closing Settings replays the tour. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md), as `tourSeen` is the Diagram tour's:
   // true once its offer has been answered, so it never offers itself again on any device. Surfaced in
-  // Settings as Onboarding Tutorials › "Plan" (inverted). Missing / undefined === not seen.
+  // Settings as Tours › "Plan Tour" (inverted). Missing / undefined === not seen.
   planTourSeen?: boolean;
   // The Facilitate tour's seen-guard (docs/specs/012-collaboration/facilitate-tour.md), as `planTourSeen`.
-  // Surfaced in Settings as Onboarding Tutorials › "Facilitate" (inverted). Missing / undefined === not seen.
+  // Surfaced in Settings as Tours › "Facilitate Tour" (inverted). Missing / undefined === not seen.
   facilitateTourSeen?: boolean;
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
-  // Surfaced in Settings as Onboarding Tutorials › "Draw" (inverted). Missing / undefined === not seen.
+  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
   // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Onboarding Tutorials › "Illustrate" (inverted). Missing / undefined === not seen.
+  // Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing / undefined === not seen.
   illustrateTourSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent

@@ -119,7 +119,7 @@ export function IllustrateTourHost() {
     return () => clearTimeout(t);
   }, [armed, active, seen, inIllustrate, canWork, otherTour, engineRef]);
 
-  // Settings rerun (the Onboarding Tutorials › "Illustrate" row, turned on from off + closed): offers again in
+  // Settings rerun (the Tours › "Illustrate Tour" row, turned on from off + closed): offers again in
   // Illustrate, and otherwise the next time the person enters it (the row has cleared the preference).
   const inIllustrateRef = useLatest(inIllustrate);
   useEffect(() => {

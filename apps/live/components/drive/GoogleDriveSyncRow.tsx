@@ -148,7 +148,7 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
         return null;
     }
   })();
-  // Connected, the description under the card says where the documents go.
+  // Connected, the row's description says where the documents go.
   const described =
     phase === 'connected' ? { ...row, description: driveConnectedText(status.rootName) } : row;
   // The quoted folder name opens that folder in Google Drive, once its id is
@@ -172,106 +172,98 @@ export function GoogleDriveSyncRow({ row }: { row: SettingsCloudSyncRowSpec }) {
     ) : undefined;
 
   return (
-    <SettingsRowShell
-      row={described}
-      descriptionContent={folderLink}
-      wrapper={() => (
-        <div
-          ref={card}
-          data-cloud-sync={row.provider}
-          data-drive-phase={phase}
-          className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 dark:border-slate-700 dark:bg-slate-800"
-        >
-          {/* Wide: one row. Narrow (a phone's Settings): the status and buttons
-              wrap under the name instead of leaving the card. */}
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-            <span className="flex min-w-0 items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-100">
-              <CloudGlyph />
-              {row.label}
+    <div ref={card} data-cloud-sync={row.provider} data-drive-phase={phase}>
+      <SettingsRowShell
+        row={described}
+        descriptionContent={folderLink}
+        leading={
+          <span className="flex shrink-0 text-slate-500 dark:text-slate-400">
+            <CloudGlyph />
+          </span>
+        }
+        control={
+          <span
+            data-drive-actions
+            className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2"
+          >
+            <span aria-live="polite" className="text-xs">
+              <StatusText options={driveStatusOptions(status, phase)} current={copy.status} />
             </span>
-            <span
-              data-drive-actions
-              className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-2"
-            >
-              <span aria-live="polite">
-                <StatusText options={driveStatusOptions(status, phase)} current={copy.status} />
-              </span>
-              {phase === 'not-connected' ? (
-                <span data-drive-primary>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    // aria-disabled, not disabled: a pressed button keeps focus.
-                    aria-disabled={connecting}
-                    onClick={() => {
-                      if (!connecting) void drive.connect();
-                    }}
-                  >
-                    Connect
-                  </Button>
-                </span>
-              ) : (
-                <span data-drive-disconnect>
-                  <Button
-                    // Reversible, and the Drive files stay: a neutral action.
-                    variant="secondary"
-                    size="sm"
-                    disabled={busy !== null}
-                    onClick={run('disconnect', drive.disconnect)}
-                  >
-                    Disconnect
-                  </Button>
-                </span>
-              )}
-            </span>
-          </div>
-
-          {problem ? (
-            <div
-              data-drive-problem
-              role={problem.failed ? 'alert' : 'status'}
-              className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2 dark:border-slate-700"
-            >
-              <p
-                className={`min-w-0 text-xs ${
-                  problem.failed
-                    ? 'text-rose-700 dark:text-rose-300'
-                    : 'text-amber-800 dark:text-amber-200'
-                }`}
-              >
-                {problem.text}
-              </p>
-              {problem.action === 'showFolder' && notice && drive.canAdopt ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  disabled={busy !== null}
-                  onClick={run('adopt', () => drive.adopt(notice))}
-                >
-                  Show folder
-                </Button>
-              ) : null}
-              {problemAction ? (
+            {phase === 'not-connected' ? (
+              <span data-drive-primary>
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={busy !== null && busy !== 'resume'}
-                  aria-disabled={problemAction.held}
+                  // aria-disabled, not disabled: a pressed button keeps focus.
+                  aria-disabled={connecting}
                   onClick={() => {
-                    if (!problemAction.held) void problemAction.act();
+                    if (!connecting) void drive.connect();
                   }}
                 >
-                  <StableLabel
-                    options={DRIVE_PROBLEM_LABELS}
-                    current={problemAction.label}
-                    itemClassName="text-optical-line"
-                  />
+                  Connect
                 </Button>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      )}
-    />
+              </span>
+            ) : (
+              <span data-drive-disconnect>
+                <Button
+                  // Reversible, and the Drive files stay: a neutral action.
+                  variant="secondary"
+                  size="sm"
+                  disabled={busy !== null}
+                  onClick={run('disconnect', drive.disconnect)}
+                >
+                  Disconnect
+                </Button>
+              </span>
+            )}
+          </span>
+        }
+      >
+        {problem ? (
+          <div
+            data-drive-problem
+            role={problem.failed ? 'alert' : 'status'}
+            className="flex items-center justify-between gap-3 border-t border-slate-100 pt-2 dark:border-slate-700"
+          >
+            <p
+              className={`min-w-0 text-xs ${
+                problem.failed
+                  ? 'text-rose-700 dark:text-rose-300'
+                  : 'text-amber-800 dark:text-amber-200'
+              }`}
+            >
+              {problem.text}
+            </p>
+            {problem.action === 'showFolder' && notice && drive.canAdopt ? (
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={busy !== null}
+                onClick={run('adopt', () => drive.adopt(notice))}
+              >
+                Show folder
+              </Button>
+            ) : null}
+            {problemAction ? (
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={busy !== null && busy !== 'resume'}
+                aria-disabled={problemAction.held}
+                onClick={() => {
+                  if (!problemAction.held) void problemAction.act();
+                }}
+              >
+                <StableLabel
+                  options={DRIVE_PROBLEM_LABELS}
+                  current={problemAction.label}
+                  itemClassName="text-optical-line"
+                />
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+      </SettingsRowShell>
+    </div>
   );
 }

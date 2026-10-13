@@ -171,7 +171,7 @@ export function PlanTourHost() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [armed, active, seen, inPlan, canWork, otherTour, hasPlanWork, workKey, engineRef]);
 
-  // Settings rerun (the Onboarding Tutorials › "Plan" row, turned on from off + closed): offers again in Plan once a
+  // Settings rerun (the Tours › "Plan Tour" row, turned on from off + closed): offers again in Plan once a
   // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared
   // `planTourSeen`). It places nothing to show: an empty tab offers Start Planning, which makes one.
   const inPlanRef = useLatest(inPlan);

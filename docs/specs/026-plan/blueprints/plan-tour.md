@@ -144,7 +144,7 @@ another document is kept. Nothing writes a record any more.
 - Leftover record (read only): `localStorage['livediagram:v2:plan-tour-content']` = JSON `PlanTourContent`; a
   malformed value is dropped, never thrown. A record from before the Sheets track (`boardId`) reads as its
   `elementId`.
-- Settings switch: `planTourSeen`, label **Plan** in the Onboarding Tutorials `toggleGroup`, inverted read / write, help article
+- Settings switch: `planTourSeen`, label **Plan Tour**, second toggle row in the Tours category, inverted read / write, help article
   `planTour`, event `{ on: 'PlanTourSeenOff', off: 'PlanTourSeenOn' }`. `SettingsDialog`'s close relaunches
   when the row is on and was off at open.
 - `POWER_USER_PRESET.planTourSeen = { planTourSeen: true }`.

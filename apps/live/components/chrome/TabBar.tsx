@@ -1,3 +1,4 @@
+import { useButtonLabelsSetting } from '@/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
 import { tabDataRows } from './tab-data-rows';
 import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
@@ -181,6 +182,9 @@ export function TabBar({
   workbenchLink,
 }: TabBarProps) {
   const minimalChrome = useMinimalChrome();
+  // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
+  const buttonLabels = useButtonLabelsSetting();
+  const labelled = !minimalChrome && buttonLabels;
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   // The command palette requests an active-tab rename by bumping
@@ -366,13 +370,14 @@ export function TabBar({
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
           settingsDescription="Your editor preferences. They follow your account, not this document."
-          // Icons only under Minimal chrome; each keeps its hover card, titled with its name.
-          labelled={!minimalChrome}
+          // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
+          // titled with its name.
+          labelled={labelled}
           github={false}
           powerUser={powerUser}
           appearance={!workbenchLink}
         />
-        {workbenchLink?.(!minimalChrome)}
+        {workbenchLink?.(labelled)}
       </div>
       {canvasMenu && !readOnly && activeTab && onCloseCanvasMenu && canvasActions ? (
         // A fault inside the menu closes the menu, not the editor.

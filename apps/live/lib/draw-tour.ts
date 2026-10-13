@@ -1,5 +1,5 @@
 // The Draw tour's relaunch signal (docs/specs/023-draw-mode/draw-tour.md "Where it appears"): the Settings row
-// Onboarding Tutorials › "Draw", turned on from off and closed, reruns the tour. A window event keeps the dialog decoupled
+// Tours › "Draw Tour", turned on from off and closed, reruns the tour. A window event keeps the dialog decoupled
 // from DrawTourHost, as the Diagram, Plan and Facilitate tours' relaunches do.
 export const DRAW_TOUR_RELAUNCH_EVENT = 'livediagram:draw-tour-relaunch';
 
