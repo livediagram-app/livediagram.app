@@ -423,6 +423,9 @@ export const findDocumentsShape = {
 // "Budgets", VW45).
 export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
 
+// The longest edit-operations text update_document takes: room for a few hundred lines.
+export const EDITS_MAX_CHARS = 40_000;
+
 export const readDocumentShape = {
   documentId: z.string().describe('The document id (from find_documents).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
@@ -543,7 +546,9 @@ export const addTabShape = {
 export const updateDocumentShape = {
   documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
-  mode: z.enum(['replace', 'ops']).describe('"replace" the whole tab, or apply granular "ops".'),
+  mode: z
+    .enum(['replace', 'ops'])
+    .describe('"replace" the whole tab, or apply granular "ops" (or "edits").'),
   rev: z
     .number()
     .int()
@@ -582,6 +587,24 @@ export const updateDocumentShape = {
     )
     .optional()
     .describe('ops mode: ordered add / update / remove against existing elements, by id or ref.'),
+  edits: z
+    .string()
+    .max(EDITS_MAX_CHARS)
+    .optional()
+    .describe(
+      'ops mode, instead of "ops": edit operations, one a line, applied all or nothing. The language the lint ' +
+        'fixes are written in. Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
+        '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
+        '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
+        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
+        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
+        'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
+        'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
+        'inside:<frame>, align:<x>, at:x,y. Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
+        'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +
+        'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
+        'Coordinates are relative to the content origin, as the layout view prints them.',
+    ),
 };
 
 export const shareDocumentShape = {

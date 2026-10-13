@@ -58,6 +58,7 @@ import { imageResult } from './image-result';
 import {
   baseFor,
   changesetErrorText,
+  editsBase,
   isChangesetRefusal,
   mcpOpsToEditOperations,
   replaceBodyFrom,
@@ -330,8 +331,12 @@ export function registerTools(server: McpServer, env: Env): void {
           ...(!input.graph && args.layout ? { layout: args.layout } : {}),
         }),
       };
+    } else if (args.edits !== undefined) {
+      if (args.ops) return errorResult('ops mode takes "ops" or "edits", not both.');
+      // Edit operations as text, parsed and applied by the api (docs/specs/015-api/mcp-server.md §4.4 "Edits").
+      body = { operations: args.edits, base: editsBase(tab, args.rev) };
     } else {
-      if (!args.ops) return errorResult('ops mode requires "ops".');
+      if (!args.ops) return errorResult('ops mode requires "ops" or "edits".');
       const operations = mcpOpsToEditOperations(args.ops, tab);
       if (typeof operations === 'string') return errorResult(operations);
       body = { operations, base: baseFor(args.ops, tab, args.rev) };

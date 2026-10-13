@@ -123,6 +123,14 @@ export function baseFor(ops: readonly McpOp[], current: Tab & { rev: number }, r
   return { rev: rev ?? current.rev, elements };
 }
 
+// The base of an edits changeset: the revision the model read, and every element as loaded now, since the text may
+// name any of them; a person's change since is overwritten only on the fields the edits set.
+export function editsBase(current: Tab & { rev: number }, rev?: number) {
+  const elements: Record<string, string> = {};
+  for (const el of current.elements) elements[el.id] = elementFingerprint(el);
+  return { rev: rev ?? current.rev, elements };
+}
+
 // A whole-tab body from the tool's graph, Mermaid, template or elements input.
 export function replaceBodyFrom(args: {
   graph?: unknown;

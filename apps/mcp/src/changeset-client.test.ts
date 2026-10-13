@@ -10,6 +10,7 @@ import { ApiError } from './api';
 import {
   baseFor,
   changesetErrorText,
+  editsBase,
   mcpOpsToEditOperations,
   replaceBodyFrom,
 } from './changeset-client';
@@ -21,6 +22,15 @@ import { connectTestClient } from './mcp-test-client';
 const box = (id: string, label = id): Element =>
   ({ id, type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, label }) as Element;
 const tab: Tab & { rev: number } = { id: 't1', name: 'T', elements: [box('a'), box('b')], rev: 7 };
+
+describe('editsBase', () => {
+  it('bases edits on the revision read and every element as loaded, since the text may name any', () => {
+    const base = editsBase(tab, 5);
+    expect(base.rev).toBe(5);
+    expect(Object.keys(base.elements).sort()).toEqual(['a', 'b']);
+    expect(editsBase(tab).rev).toBe(7);
+  });
+});
 
 describe('mcpOpsToEditOperations', () => {
   const ends = (from: string, to: string) => ({
