@@ -18,6 +18,7 @@ import {
   landWorkshopArrivals,
   normaliseElements,
   resolveGraphInput,
+  tabKindOf,
   type Element,
   type GraphInput,
   type Tab,
@@ -40,7 +41,7 @@ type Source = 'graph' | 'mermaid' | 'template' | 'dashboard' | 'elements';
 const SOURCES: readonly Source[] = ['graph', 'mermaid', 'template', 'dashboard', 'elements'];
 
 // What one source builds: the new elements, and for a tab that does not exist yet, the whole tab.
-// `newOnly`: the source makes a tab of its own kind (a Dashboard), never elements onto an existing tab.
+// `newOnly`: the source makes a tab of its own kind (a Dashboard): a new tab, or that kind's own tab rebuilt.
 type Built =
   | { elements: Element[]; tab: (tabId: string, name: string) => Tab; newOnly?: true }
   | EditRejection;
@@ -143,6 +144,16 @@ function nextTab(
     const made = built.tab(options.tabId, options.name);
     return options.finish ? { ...made, finish: options.finish } : made;
   }
+  if (built.newOnly) {
+    // A Dashboard tab rebuilt: its views and layout anew, everything else about the tab kept.
+    const made = built.tab(tab.id, tab.name);
+    const { dashboard: _old, ...rest } = tab;
+    return {
+      ...rest,
+      elements: made.elements,
+      ...(made.dashboard ? { dashboard: made.dashboard } : {}),
+    };
+  }
   return { ...tab, elements: landWorkshopArrivals(tab, built.elements, 'replace') };
 }
 
@@ -166,11 +177,12 @@ export function applyReplace(
   if (themeId !== undefined && !isBuiltInTheme(themeId)) log('[edit-ops] theme-fallback', {});
   const built = build(body, source, themeId);
   if ('code' in built) return refuse(built);
-  if (tab && built.newOnly)
+  // A Dashboard is rebuilt in place on a Dashboard tab (its id, name and theme kept); onto any other tab it is refused.
+  if (tab && built.newOnly && tabKindOf(tab) !== 'dashboard')
     return refuse(
       invalidBody(
-        'dashboard: a Dashboard makes a new tab',
-        'add it with add_tab, or in create_document',
+        'dashboard: only a Dashboard tab is rebuilt as one',
+        'add a new Dashboard with add_tab, or in create_document',
       ),
     );
   const next = nextTab(tab, built, options);

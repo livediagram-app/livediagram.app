@@ -779,3 +779,4 @@ export * from './dashboard';
 export * from './dashboard-cards';
 export * from './dashboard-card-style';
 export * from './tab-names';
+export { planBoardFitHeight } from './svg-render-plan';

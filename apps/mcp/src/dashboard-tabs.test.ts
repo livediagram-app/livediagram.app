@@ -8,5 +8,10 @@ describe('dashboardTabKind', () => {
     expect(dashboardTabKind({ kind: 'sheet' })).toBe('sheet');
     expect(dashboardTabKind({ kind: 'dashboard' })).toBeNull();
     expect(dashboardTabKind({})).toBeNull();
+    // A Blank Plan tab given a board by add_board.
+    const board = { type: 'shape', shape: 'plan-board' } as never;
+    const sheet = { type: 'shape', shape: 'plan-sheet' } as never;
+    expect(dashboardTabKind({ kind: 'diagram', elements: [board] })).toBe('board');
+    expect(dashboardTabKind({ elements: [sheet] })).toBe('sheet');
   });
 });

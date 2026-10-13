@@ -12,7 +12,9 @@ describe('customFieldText', () => {
     expect(customFieldText(field('checkbox'), false)).toBe('No');
     expect(customFieldText(field('number'), 3.5)).toBe('3.5');
     // A card has room for a link's site, and a number reads grouped.
-    expect(customFieldText(field('link'), 'https://www.acme.test/a/b?c=1')).toBe('acme.test');
+    expect(customFieldText(field('link'), 'https://www.acme.test/a/b?c=1')).toBe('acme.test/…/b');
+    expect(customFieldText(field('link'), 'https://acme.test/issue')).toBe('acme.test/issue');
+    expect(customFieldText(field('link'), 'https://acme.test/')).toBe('acme.test');
     expect(customFieldText(field('link'), 'not a url')).toBe('not a url');
     expect(customFieldText(field('number'), 82000)).toBe((82000).toLocaleString());
     expect(customFieldText(field('choice'), 'Won')).toBe('Won');

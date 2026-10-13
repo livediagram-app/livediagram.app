@@ -15,7 +15,14 @@ import {
   type ItemTypeDef,
 } from '@livediagram/items';
 import { embedTabImages } from '@livediagram/api-schema';
-import { renderElementsToSvg, type SheetRenderModel, type Tab } from '@livediagram/document';
+import {
+  canvasSurface,
+  planBoardFitHeight,
+  renderElementsToSvg,
+  type SheetRenderModel,
+  type Tab,
+} from '@livediagram/document';
+import { planTabKindOf } from '@livediagram/plan-art';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
@@ -128,11 +135,31 @@ export async function tabPreview(
   const plain = (shown: Tab) =>
     renderElementsToSvg(shown, { resolveIconArt: resolveIconExportArt, resolveStickerArt });
   const laidOut = await planPreviewFor(tab, auth, plain).catch(() => null);
-  const shown = laidOut?.tab ?? tab;
+  const drawn = laidOut?.tab ?? tab;
   const [resolveImageHref, content] = await Promise.all([
-    auth ? buildImageResolver(auth.env, auth.token, shown) : undefined,
-    planContentFor(shown, auth),
+    auth ? buildImageResolver(auth.env, auth.token, drawn) : undefined,
+    planContentFor(drawn, auth),
   ]);
+  // A Board tab's board scrolls on its tab, so its preview grows to every card rather than cutting the rest off.
+  const shown =
+    laidOut && planTabKindOf(tab) === 'board'
+      ? {
+          ...drawn,
+          elements: drawn.elements.map((el) =>
+            el.type === 'shape' && el.shape === 'plan-board'
+              ? {
+                  ...el,
+                  height: planBoardFitHeight(
+                    el,
+                    content.items,
+                    canvasSurface(drawn.backgroundColor ?? '#ffffff'),
+                    content.itemTypes,
+                  ),
+                }
+              : el,
+          ),
+        }
+      : drawn;
   const png = await svgToPngBase64(
     renderElementsToSvg(shown, {
       resolveImageHref,

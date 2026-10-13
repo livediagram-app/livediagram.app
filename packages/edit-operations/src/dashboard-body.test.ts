@@ -17,15 +17,38 @@ describe('dashboard replace', () => {
     expect(out.tab.dashboard!.rows).toHaveLength(2);
   });
 
-  it('never replaces an existing tab', () => {
-    const made = applyReplace(null, { dashboard: {} }, { tabId: 't1', name: 'Overview' });
+  it('rebuilds a Dashboard tab in place, keeping its id, name and theme', () => {
+    const made = applyReplace(
+      null,
+      { dashboard: {} },
+      { tabId: 't1', name: 'Overview', themeId: 'ocean' },
+    );
     if ('errors' in made) throw new Error('refused');
     const again = applyReplace(
       made.tab,
-      { dashboard: { metrics: ['count'] } },
-      { tabId: 't1', name: 'Overview' },
+      { dashboard: { metrics: ['count', 'stale'] } },
+      { tabId: 'x', name: 'x' },
     );
-    expect('errors' in again && again.errors[0]!.hint).toContain('add_tab');
+    if ('errors' in again) throw new Error(JSON.stringify(again.errors));
+    expect(again.tab).toMatchObject({
+      id: 't1',
+      name: 'Overview',
+      theme: made.tab.theme,
+      kind: 'dashboard',
+    });
+    expect(again.tab.elements).toHaveLength(2);
+    expect(again.tab.dashboard!.rows).toHaveLength(1);
+  });
+
+  it('never turns another tab into a Dashboard', () => {
+    const diagram = applyReplace(null, { elements: [] }, { tabId: 't2', name: 'Flow' });
+    if ('errors' in diagram) throw new Error('refused');
+    const out = applyReplace(
+      diagram.tab,
+      { dashboard: { metrics: ['count'] } },
+      { tabId: 't2', name: 'Flow' },
+    );
+    expect('errors' in out && out.errors[0]!.hint).toContain('add_tab');
   });
 
   it('names what is wrong with a body', () => {

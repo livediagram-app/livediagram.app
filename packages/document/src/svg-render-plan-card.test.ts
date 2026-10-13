@@ -4,6 +4,7 @@ import { planPalette } from './plan-palette';
 import { planCardFace } from './svg-render-plan-card';
 import { PLAN_LANE_HEAD_H, planBoardLayout } from './plan-board-layout';
 import { svgBoxed } from './svg-render';
+import { planBoardFitHeight } from './svg-render-plan';
 import { createShape } from './shape-factory';
 import type { BoxedElement } from './index';
 
@@ -198,6 +199,26 @@ describe('planBoardLayout swimlanes', () => {
     const last = col.cards[col.cards.length - 1]!;
     expect(last.y + last.height).toBeLessThanOrEqual(col.y + col.height - 20);
     expect(svgBoxed(board, { items })).toContain(`+${col.hidden} more`);
+  });
+
+  it('fits a board to every card it holds, never shorter than it is', () => {
+    const items = new Map(
+      Array.from({ length: 12 }, (_, i) => {
+        const id = `c${i}`;
+        return [id, item(id, { title: `Card ${i}`, status: 'todo' }, { key: i + 1 })] as const;
+      }),
+    );
+    const board = {
+      ...createShape('plan-board', 0, 0),
+      height: 420,
+      planBoard: { ...presetSetup('kanban'), swimlaneBy: 'none' },
+    } as BoxedElement & { type: 'shape' };
+    const fit = planBoardFitHeight(board, items, 'light');
+    expect(fit).toBeGreaterThan(420);
+    const grown = { ...board, height: fit } as BoxedElement;
+    expect(svgBoxed(board, { items })).toMatch(/\+\d+ more/);
+    expect(svgBoxed(grown, { items })).not.toMatch(/\+\d+ more/);
+    expect(planBoardFitHeight(board, new Map(), 'light')).toBe(420);
   });
 
   it('has no lanes without swimlanes', () => {

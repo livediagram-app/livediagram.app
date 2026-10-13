@@ -19,7 +19,7 @@ import type { CanvasSurface } from './colors';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { text as faceText, wrapLines } from './svg-render-face-kit';
 import { PLAN_BOARD_PAD, planBoardLayout } from './plan-board-layout';
-import { planCardFace } from './svg-render-plan-card';
+import { planCardFace, type CardFaceContext } from './svg-render-plan-card';
 
 type Shape = BoxedElement & { type: 'shape' };
 
@@ -49,6 +49,54 @@ const countRoom = (count: string) => count.length * 12 * 0.56 + 28;
 // `s` on one line that fits `width`, ending in an ellipsis when it runs on.
 const fit = (s: string, width: number, size: number) => wrapLines(s, width, size, 1)[0] ?? '';
 
+// A board's card faces: each card as tall as its type's Display needs at the board's card size.
+function boardFaceCtx(
+  el: Shape,
+  items: ReadonlyMap<string, Item> | undefined,
+  surface: CanvasSurface,
+  types: readonly ItemTypeDef[],
+): CardFaceContext {
+  const setupOf = normaliseBoardSetup(el.planBoard);
+  return {
+    palette: planPalette(surface, ownColours(el)),
+    types,
+    ...(setupOf ? { boardFields: setupOf.cardFields, size: setupOf.cardSize ?? 'detailed' } : {}),
+    ...(items ? { items } : {}),
+  };
+}
+
+const measured =
+  (ctx: CardFaceContext) =>
+  (item: Item, width: number): number =>
+    planCardFace(item, 0, 0, width, ctx, true).height;
+
+// The height a board needs to show every card it holds (a Board tab's image, where the board scrolls rather than
+// cutting cards off): never less than its own. Laid out once at a height no board reaches, then measured.
+export function planBoardFitHeight(
+  el: Shape,
+  items: ReadonlyMap<string, Item> | undefined,
+  surface: CanvasSurface,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): number {
+  const open = { ...el, height: PLAN_BOARD_FIT_PROBE_H };
+  const layout = planBoardLayout(
+    open,
+    items,
+    types,
+    measured(boardFaceCtx(el, items, surface, types)),
+  );
+  if (!layout) return el.height;
+  const cardsEnd = Math.max(
+    0,
+    ...layout.columns.flatMap((c) => c.cards.map((card) => card.y + card.height)),
+    ...layout.lanes.map((l) => l.y + l.height),
+  );
+  return Math.max(el.height, Math.ceil(cardsEnd - el.y + PAD * 2));
+}
+
+// Taller than any board: laying out at it leaves no card cut off.
+const PLAN_BOARD_FIT_PROBE_H = 100_000;
+
 export function svgPlanBoard(
   el: Shape,
   items: ReadonlyMap<string, Item> | undefined,
@@ -60,19 +108,8 @@ export function svgPlanBoard(
     `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="12" fill="${p.surface}" stroke="${p.border}" stroke-width="1.5"/>`,
   ];
   // Each card as tall as its type's Display needs at the board's card size (svg-render-plan-card.ts).
-  const setupOf = normaliseBoardSetup(el.planBoard);
-  const faceCtx = {
-    palette: p,
-    types,
-    ...(setupOf ? { boardFields: setupOf.cardFields, size: setupOf.cardSize ?? 'detailed' } : {}),
-    ...(items ? { items } : {}),
-  };
-  const layout = planBoardLayout(
-    el,
-    items,
-    types,
-    (item, width) => planCardFace(item, 0, 0, width, faceCtx, true).height,
-  );
+  const faceCtx = boardFaceCtx(el, items, surface, types);
+  const layout = planBoardLayout(el, items, types, measured(faceCtx));
   if (!layout) return inFont(parts.join(''));
   const { setup, projection } = layout;
   parts.push(

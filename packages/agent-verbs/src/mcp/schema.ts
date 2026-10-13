@@ -703,6 +703,10 @@ export const updateDocumentShape = {
   elements: elementArray
     .optional()
     .describe(`Replace mode: the full new element list. ${ELEMENT_SCHEMA_HINT}`),
+  dashboard: dashboardField.describe(
+    'Replace mode on a Dashboard tab: its tabs, metrics, charts and notes rebuilt whole (the tab keeps its id ' +
+      'and name). Only a Dashboard tab takes one.',
+  ),
   layout: layoutField,
   ops: z
     .array(

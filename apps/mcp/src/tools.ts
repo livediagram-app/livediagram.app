@@ -45,12 +45,11 @@ import {
   bringBoardCardTypes,
   fetchTeamLibraries,
   matchDocuments,
-  readPlanState,
   resolveDashboardInput,
   type DashboardInput,
 } from '@livediagram/agent-verbs';
-import { ITEM_TYPES, catalogueWithBoardTypes, typesOf } from '@livediagram/items';
-import { dashboardTabKind, documentTabRefs } from './dashboard-tabs';
+import { catalogueWithBoardTypes, typesOf } from '@livediagram/items';
+import { dashboardTabKind, documentDashboard } from './dashboard-tabs';
 import {
   deepLink,
   errorResult,
@@ -275,13 +274,7 @@ export function registerTools(server: McpServer, env: Env): void {
     // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): the document's tabs and card types by name.
     let dashboard: Record<string, unknown> | undefined;
     if (args.dashboard) {
-      const [refs, types] = await Promise.all([
-        documentTabRefs(env, token, args.documentId),
-        readPlanState(clientFor(env, token), args.documentId)
-          .then((s) => s.plan.types)
-          .catch(() => ITEM_TYPES),
-      ]);
-      const resolved = resolveDashboardInput(args.dashboard, refs, types);
+      const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
       if (!resolved.ok) return errorResult(resolved.message);
       dashboard = resolved.spec as Record<string, unknown>;
     }
@@ -365,21 +358,29 @@ export function registerTools(server: McpServer, env: Env): void {
     if (args.mode === 'replace') {
       const input = resolveGraphInput(args);
       if (input.error) return errorResult(input.error);
-      if (!input.graph && !args.elements) {
-        return errorResult('replace mode requires "graph", "mermaid" or "elements".');
+      // A Dashboard tab rebuilt whole (docs/specs/026-plan/plan-agents.md "Making a dashboard").
+      if (args.dashboard) {
+        const resolved = await documentDashboard(env, token, args.documentId, args.dashboard);
+        if (!resolved.ok) return errorResult(resolved.message);
+        body = {
+          replace: replaceBodyFrom({ dashboard: resolved.spec as Record<string, unknown> }),
+        };
+      } else if (!input.graph && !args.elements) {
+        return errorResult('replace mode requires "graph", "mermaid", "elements" or "dashboard".');
+      } else {
+        const valueIssue = args.elements ? elementsIssue(args.elements) : null;
+        if (valueIssue) return errorResult(valueIssue);
+        // The new elements are the whole tab, so an arrow end may name only them.
+        const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+        if (ended && 'error' in ended) return errorResult(ended.error);
+        body = {
+          replace: replaceBodyFrom({
+            ...(input.graph ? { graph: input.graph } : {}),
+            ...(!input.graph && ended ? { elements: ended.elements } : {}),
+            ...(!input.graph && args.layout ? { layout: args.layout } : {}),
+          }),
+        };
       }
-      const valueIssue = args.elements ? elementsIssue(args.elements) : null;
-      if (valueIssue) return errorResult(valueIssue);
-      // The new elements are the whole tab, so an arrow end may name only them.
-      const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
-      if (ended && 'error' in ended) return errorResult(ended.error);
-      body = {
-        replace: replaceBodyFrom({
-          ...(input.graph ? { graph: input.graph } : {}),
-          ...(!input.graph && ended ? { elements: ended.elements } : {}),
-          ...(!input.graph && args.layout ? { layout: args.layout } : {}),
-        }),
-      };
     } else if (args.edits !== undefined) {
       if (args.ops) return errorResult('ops mode takes "ops" or "edits", not both.');
       // Edit operations as text, parsed and applied by the api (docs/specs/015-api/mcp-server.md §4.4 "Edits").

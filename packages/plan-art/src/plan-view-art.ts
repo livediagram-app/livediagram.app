@@ -136,6 +136,7 @@ function workloadArt({ rect, p, items, data, settings, title }: ViewArtInput): s
     { by, field },
     data.types,
     data.statusNames,
+    data.items,
   );
   const frame = viewFrame(
     rect,

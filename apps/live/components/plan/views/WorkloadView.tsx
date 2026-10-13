@@ -39,8 +39,8 @@ export function WorkloadView({
   const statuses = settings.statuses;
   const counted = useMemo(() => cardsInStatuses(items, statuses), [items, statuses]);
   const model = useMemo(
-    () => breakdownModel(counted.values(), phases, { by, field }, types, statusNames),
-    [counted, phases, by, field, types, statusNames],
+    () => breakdownModel(counted.values(), phases, { by, field }, types, statusNames, plan?.items),
+    [counted, phases, by, field, types, statusNames, plan?.items],
   );
   const layout = workloadLayout(width, height, model.rows.length);
   return (

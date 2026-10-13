@@ -119,8 +119,14 @@ Every write takes what a person would say, and stores the ids:
   - `notes`: `{ title, text }`, three to a row.
   - Rows run in that order (tabs, metrics, Gantts, other charts, notes), up to the Dashboard's 12 rows; anything past
     them is left off and the answer says so.
-- A name or view the document lacks is refused naming those there are. A dashboard only makes a new tab: a replace
-  of an existing tab with one is refused (`invalid_value`), pointing at `add_tab`.
+- A name or view the document lacks is refused naming those there are.
+- `update_document` in replace mode takes `dashboard` on a Dashboard tab and rebuilds it whole, the tab keeping its
+  id, name and theme. On any other tab it is refused (`invalid_value`), pointing at `add_tab`.
+- A tab of another kind that holds a board or a Sheet (a Blank Plan tab given a board by `add_board`) can be shown;
+  a Dashboard draws it as its canvas.
+- A Cards by Field chart grouped by a Card field names each linked card, of whatever type.
+- A Board tab's preview grows its board to every card it holds, as the board scrolls on its tab, rather than cutting
+  lower rows off.
 
 ## What a change says
 

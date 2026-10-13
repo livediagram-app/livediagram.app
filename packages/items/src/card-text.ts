@@ -85,11 +85,17 @@ export function currencyText(value: number, code: string = CURRENCY_DEFAULT): st
   }
 }
 
-// A link as a card has room for it: its site, less any www. ("sentry.io"); the address less its scheme when it is
-// not one.
+// A link as a card has room for it: its site, less any www., and its last path step when it has one, so links to one
+// site are told apart ("sentry.io/…/4521"); the address less its scheme when it is not one.
 export function linkHost(url: string): string {
   try {
-    return new URL(url).host.replace(/^www\./, '') || url;
+    const u = new URL(url);
+    const site = u.host.replace(/^www\./, '');
+    const steps = u.pathname.split('/').filter(Boolean);
+    const last = steps[steps.length - 1];
+    if (!site) return url;
+    if (!last) return site;
+    return `${site}/${steps.length > 1 ? '…/' : ''}${decodeURIComponent(last)}`;
   } catch {
     return url.replace(/^https?:\/\//, '');
   }
