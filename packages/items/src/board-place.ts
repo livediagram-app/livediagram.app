@@ -3,8 +3,11 @@
 // status, so its cards show here too; any other column starts empty under a status of its own. Placed to the right
 // of what the tab already holds, so it never covers anything.
 import {
+  CARD_FIELDS,
   planBoardHeightFor,
   planBoardWidthFor,
+  type CardField,
+  type CardSize,
   type PlanBoardSetup,
   type PlanColumn,
 } from './board';
@@ -13,6 +16,7 @@ import type { PlanStatusName } from './plan-outline';
 import { freshBoardSetup, isPlanBoardPresetId, PLAN_BOARD_PRESET_IDS } from './presets';
 import { statusKey, statusNamed } from './status-names';
 import { slugOf } from './type-catalogue';
+import { CARD_FIELD_LABELS } from './card-display';
 
 // A placed board's width (blueprints/DEFAULTS.md D5; wider when its columns need it; its height is
 // planBoardHeightFor) and its gap from what the tab holds.
@@ -156,6 +160,18 @@ export interface BoardChange {
   // The card types it shows and takes, by id (resolved by the caller); null shows every type again, and an empty
   // list takes none, as the editor's last type turned off does.
   types?: readonly string[] | null;
+  // How much of each card it draws; Detailed draws every field the board shows.
+  cardSize?: CardSize;
+  // The built-in fields its cards show, by name ("Number", "Due Date") or id, whole; a type's Display places them.
+  cardFields?: readonly string[];
+}
+
+// A built-in card field by its name or id ("Due Date", "due"), case and spaces aside.
+function builtInCardFieldOf(name: string): CardField | null {
+  const k = statusKey(name);
+  if (k === 'number' || k === '#') return 'key';
+  for (const f of CARD_FIELDS) if (k === f || k === statusKey(CARD_FIELD_LABELS[f])) return f;
+  return null;
 }
 
 // Column ids made unique after a reshape: a kept column keeps its id (its done mark and the editor's references
@@ -235,6 +251,24 @@ export function reshapeBoard(
     const done = columns.some((c) => c.id === setup.doneColumnId) ? setup.doneColumnId : undefined;
     const { doneColumnId: _done, ...rest } = next;
     next = { ...rest, columns, ...(done ? { doneColumnId: done } : {}) };
+  }
+  if (change.cardSize) {
+    const { cardSize: _size, ...rest } = next;
+    next = change.cardSize === 'detailed' ? rest : { ...rest, cardSize: change.cardSize };
+  }
+  if (change.cardFields) {
+    const picked = new Set<CardField>();
+    for (const name of change.cardFields) {
+      const f = builtInCardFieldOf(name);
+      if (!f)
+        return {
+          ok: false,
+          code: 'board_invalid',
+          message: `"${name}" is not a card field. Card fields: ${CARD_FIELDS.map((c) => CARD_FIELD_LABELS[c]).join(', ')}.`,
+        };
+      picked.add(f);
+    }
+    next = { ...next, cardFields: CARD_FIELDS.filter((f) => picked.has(f)) };
   }
   if (change.types !== undefined) {
     const { addTypes: _types, ...rest } = next;

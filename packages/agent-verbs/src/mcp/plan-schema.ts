@@ -134,6 +134,21 @@ export const changeBoardShape = {
         'boards use shares their column; any other name is a new, empty column. A column left out leaves its ' +
         'cards off this board.',
     ),
+  cardSize: z
+    .enum(['minimal', 'compact', 'detailed'])
+    .optional()
+    .describe(
+      'How much of each card it draws: minimal (one line), compact (a title over one row), detailed (every ' +
+        'field, the title on up to three lines).',
+    ),
+  cardFields: z
+    .array(z.string())
+    .optional()
+    .describe(
+      'The built-in fields its cards show, by name, whole: Number, Type, Assignee, Priority, Labels, Estimate, ' +
+        'Start Date, Due Date, Votes, Checklist, Comments, Description. Each card type’s display places them; ' +
+        'custom fields follow the type’s display alone.',
+    ),
   renameColumns: z
     .record(z.string(), z.string())
     .optional()
@@ -437,6 +452,8 @@ export const changeBoardOutput = {
   takes: z
     .union([z.array(z.string()), z.literal('every type')])
     .describe('The card types it shows now.'),
+  cardSize: z.enum(['minimal', 'compact', 'detailed']).describe('How much of each card it draws.'),
+  cardFields: z.array(z.string()).describe('The built-in fields its cards show, by name.'),
   changesetId: z.string().nullable().describe('The changeset that changed it (revertible).'),
   rev: z.number().nullable().describe('The tab revision after it.'),
   url,

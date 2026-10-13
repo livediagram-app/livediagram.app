@@ -90,6 +90,9 @@ Every write takes what a person would say, and stores the ids:
 - `renameColumns` (`{ "To Do": "Backlog" }`) renames columns in place, before `columns` is read: each keeps its
   status, WIP limit, colour, done mark and cards. A name the board lacks, an empty name or one another column has is
   refused.
+- `cardSize` (minimal, compact, detailed) and `cardFields` (the built-in fields its cards show, by the names the
+  Cards menu gives them, whole) set what each card draws, as the board's element menu does; each card type's
+  display places them, and custom fields follow the display alone. The answer names both.
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
   takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept

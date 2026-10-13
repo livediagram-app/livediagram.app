@@ -10,12 +10,14 @@ import {
 } from '@livediagram/api-schema';
 import { elementFingerprint, type Element } from '@livediagram/document';
 import {
+  CARD_FIELD_LABELS,
   normaliseBoardSetup,
   planBoardWidthFor,
   reshapeBoard,
   resolveType,
   statusKey,
   type BoardChange,
+  type CardSize,
   type PlanBoardOutline,
 } from '@livediagram/items';
 import { apiRefusalOf } from './api-refusal';
@@ -41,6 +43,8 @@ export type ChangeBoardResult =
       title: string;
       columns: { name: string; status: string }[];
       takes: string[] | 'every type';
+      cardSize: CardSize;
+      cardFields: string[];
       changesetId: string | null;
       rev: number | null;
     }
@@ -109,6 +113,8 @@ export async function changeBoard(
       {
         ...(input.title !== undefined ? { title: input.title } : {}),
         ...(input.renameColumns ? { renameColumns: input.renameColumns } : {}),
+        ...(input.cardSize ? { cardSize: input.cardSize } : {}),
+        ...(input.cardFields ? { cardFields: input.cardFields } : {}),
         ...(input.columns ? { columns: input.columns } : {}),
         ...(types !== undefined ? { types } : {}),
       },
@@ -140,6 +146,10 @@ export async function changeBoard(
       title: reshaped.setup.title,
       columns: reshaped.setup.columns.map((c) => ({ name: c.name, status: c.status })),
       takes: reshaped.setup.addTypes ? reshaped.setup.addTypes.map(label) : 'every type',
+      cardSize: reshaped.setup.cardSize ?? 'detailed',
+      cardFields: reshaped.setup.cardFields.map(
+        (f) => CARD_FIELD_LABELS[f as keyof typeof CARD_FIELD_LABELS] ?? f,
+      ),
       changesetId: answer.changeset?.id ?? null,
       rev: answer.changeset?.rev ?? null,
     };

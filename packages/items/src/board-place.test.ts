@@ -118,6 +118,20 @@ describe('reshapeBoard', () => {
     }
   });
 
+  it('sets the card size and the card fields by name', () => {
+    const r = reshapeBoard(
+      setup,
+      { cardSize: 'compact', cardFields: ['Due Date', 'number', 'Priority'] },
+      others,
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.setup.cardSize).toBe('compact');
+    expect(r.setup.cardFields).toEqual(['key', 'priority', 'due']);
+    const back = reshapeBoard(r.setup, { cardSize: 'detailed' }, others);
+    expect(back.ok && back.setup.cardSize).toBeUndefined();
+    expect(reshapeBoard(setup, { cardFields: ['Mood'] }, others)).toMatchObject({ ok: false });
+  });
+
   it('never gives two columns one id, a kept column keeping its own', () => {
     // Kanban's "In Progress" has the id `doing`; a new "Doing" column slugs to the same id.
     const kanban = presetSetup('kanban');
