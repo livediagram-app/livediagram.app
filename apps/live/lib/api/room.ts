@@ -23,6 +23,7 @@ import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { getGuestSelfSig } from '../local-identity';
 import { startEditorTiming } from '../timing';
 import { getSessionSharePassword, wsUrl } from './core';
+import { debugLog } from '../debug-log';
 
 export type RoomHandlers = {
   // The room's agents arrive apart from the sessions (docs/specs/024-agents/agent-presence.md "In the editor").
@@ -331,7 +332,7 @@ export function connectRoom(
       if (attempts >= MAX_RECONNECT_ATTEMPTS) {
         settleTimings(false);
         parked = true;
-        console.info('[room] reconnect attempts used up; waiting for the network or the tab');
+        debugLog('[room] reconnect attempts used up; waiting for the network or the tab');
         return;
       }
       const delay = Math.min(RECONNECT_MAX_MS, RECONNECT_BASE_MS * 2 ** attempts);
@@ -356,7 +357,7 @@ export function connectRoom(
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     parked = false;
     attempts = 0;
-    console.info('[room] reconnecting after a wait');
+    debugLog('[room] reconnecting after a wait');
     void reopen();
   };
   if (typeof window !== 'undefined') window.addEventListener('online', resume);

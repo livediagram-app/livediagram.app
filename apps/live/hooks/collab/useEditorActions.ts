@@ -31,6 +31,7 @@ import {
 } from '@livediagram/document';
 import type { Tab } from '@livediagram/document';
 import { track } from '@/lib/telemetry';
+import { debugLog } from '@/lib/debug-log';
 
 export type SaveActionInput = {
   name: string;
@@ -192,7 +193,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
       // A full panel takes no more (docs/specs/012-collaboration/action-panel.md "The data"): the add is refused
       // before anything is written or emailed, rather than trimmed off the list after its email went out.
       if (card && deps.actionCount(elementId) >= ACTION_CARD_MAX) {
-        console.info('[actions] add refused: the panel is full', { max: ACTION_CARD_MAX });
+        debugLog('[actions] add refused: the panel is full', { max: ACTION_CARD_MAX });
         closeAssignActionDialog();
         return;
       }
