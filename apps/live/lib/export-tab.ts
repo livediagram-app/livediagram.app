@@ -153,7 +153,7 @@ function withWritingFonts(ids: string[], writing: Pick<PageWriting, 'fonts'> | n
 
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
-const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
+export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
 
 // One <pattern> id for the export SVG / canvas rasterisation.
 const BG_PATTERN_ID = 'lvd-export-bg';
