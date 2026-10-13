@@ -2,21 +2,57 @@
 // diagram with the look applied (theme colours, finish, font, canvas colour and pattern), drawn by the tab exporter so
 // the card shows exactly what the tab will. Several cards share one page, so the exporter's fixed pattern id is made
 // unique per look.
-import type { Tab } from '@livediagram/document';
+import type { ArrowElement, Element, Tab } from '@livediagram/document';
 import { renderTabToSvg } from '@/lib/export-tab';
 import { FINISH_PREVIEW_ELEMENTS } from '@/lib/finish-preview';
 import { withLookApplied, type TabLook } from '@/lib/tab-looks';
 
 const EXPORT_PATTERN_ID = 'lvd-export-bg';
 
+// The colouring pass. A multi-colour theme colours by branch: with the arrow pinned, the step is the root (the
+// theme's neutral) and only the decision takes a palette colour. So the pass runs on the sample with the arrow
+// unpinned at the points its pins draw (the step's east edge, the decision's west tip), making each box a loose
+// branch, and with PALETTE_SKIP unseen boxes between them, so the step takes the palette's first colour and the
+// decision its fourth: across the wheel (Rainbow's red and green, Tropical's teal and orange) rather than two
+// neighbours. A single-colour or per-shape theme paints the sample the same either way.
+const PALETTE_SKIP = 2;
+const SPACER_ID = 'look-preview-spacer-';
+
+function colouringSample(): Element[] {
+  const byId = new Map(FINISH_PREVIEW_ELEMENTS.map((el) => [el.id, el]));
+  const edge = (end: ArrowElement['from']) => {
+    if (end.kind !== 'pinned') return end;
+    const el = byId.get(end.elementId) as { x: number; y: number; width: number; height: number };
+    const y = el.y + el.height / 2;
+    return { kind: 'free' as const, x: end.anchor === 'e' ? el.x + el.width : el.x, y };
+  };
+  const [step, ...rest] = FINISH_PREVIEW_ELEMENTS.map((el) =>
+    el.type === 'arrow' ? ({ ...el, from: edge(el.from), to: edge(el.to) } as Element) : el,
+  );
+  const spacers = Array.from(
+    { length: PALETTE_SKIP },
+    (_, i) => ({ ...step!, id: `${SPACER_ID}${i}` }) as Element,
+  );
+  return [step!, ...spacers, ...rest];
+}
+
 /** The sample tab with the look applied, as a tab of its own. */
 export function lookPreviewTab(look: TabLook): Tab {
-  const blank = {
-    id: `look-${look.id}`,
-    name: look.label,
-    elements: [...FINISH_PREVIEW_ELEMENTS],
-  } as Tab;
-  return withLookApplied(blank, look);
+  const blank = { id: `look-${look.id}`, name: look.label, elements: colouringSample() } as Tab;
+  const styled = withLookApplied(blank, look);
+  // The spacers go, and the arrow goes back on its pins, keeping the colour the pass gave it.
+  const pinned = new Map(FINISH_PREVIEW_ELEMENTS.map((el) => [el.id, el]));
+  return {
+    ...styled,
+    elements: styled.elements
+      .filter((el) => !el.id.startsWith(SPACER_ID))
+      .map((el) => {
+        const original = pinned.get(el.id);
+        return el.type === 'arrow' && original?.type === 'arrow'
+          ? { ...el, from: original.from, to: original.to }
+          : el;
+      }),
+  };
 }
 
 /** The look's card preview as SVG markup, its ids scoped to the look. */

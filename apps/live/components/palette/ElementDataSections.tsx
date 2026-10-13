@@ -46,6 +46,7 @@ import {
 import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MindMapMenuGroups } from './MindMapMenuGroups';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
@@ -78,7 +79,6 @@ import {
   CodeSummary,
   DataMenuGlyph,
   LegendDataEditor,
-  MindFlowTiles,
   LineDataSummary,
   LinkedChartData,
   PieDataEditor,
@@ -499,20 +499,23 @@ export function ElementDataSections({
               onPreviewEnd={props.onPreviewStyleEnd}
             />
           ) : null}
-          {/* Mind map (docs/specs/009-elements/mind-node.md): the shape the whole map grows in. It sets
-            the ROOT's flow, so one pick re-shapes every branch that follows
-            rather than leaving half a map in one arrangement. */}
+          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): Outline, Branching and Spacing.
+            Branching and Spacing set the ROOT's, so one pick re-shapes the whole map rather than half of it. */}
           {isMindNode ? (
             <MenuAccordionSection
               title="Mind Map"
               icon={<DataMenuGlyph />}
               {...sectionProps('mind-flow')}
             >
-              <MindFlowTiles
-                current={props.mindFlow}
-                onSet={props.onSetMindFlow}
+              <MindMapMenuGroups
+                flow={props.mindFlow}
+                spacing={props.mindSpacing}
+                onSetFlow={props.onSetMindFlow}
+                onSetSpacing={props.onSetMindSpacing}
                 onTidy={props.onTidyMindMap}
                 onEditOutline={props.onEditMindOutline}
+                onSelectBranch={props.onSelectMindBranch}
+                onSelectMap={props.onSelectMindMap}
               />
             </MenuAccordionSection>
           ) : null}

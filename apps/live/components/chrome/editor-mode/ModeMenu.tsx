@@ -8,13 +8,7 @@ import {
   type MenuInitialFocus,
 } from '@livediagram/ui';
 import { MODE_SWITCH_FOCUS, type EditorModeSwitchProps } from './editor-mode-copy';
-import {
-  MODE_ACTION_TINT,
-  MODE_TINT,
-  MODE_TOOLS,
-  modeMenuActionLabel,
-  type ModeMenuAction,
-} from './mode-menu-copy';
+import { MODE_TINT, MODE_TOOLS, type ModeMenuAction } from './mode-menu-copy';
 import { ModeKeyHint } from './ModeKeyHint';
 import { ModePreviewArt } from './ModePreviewArt';
 import { OpenIcon } from '@/components/primitives/explorer-icons';
@@ -25,8 +19,9 @@ type Mode = EditorModeSwitchProps['mode'];
 // modes and a preview of one. The list's rows are the menu's `menuitemradio` items, each its mark on
 // the mode's tint, its name, then a check on the current mode or a New tab mark across Plan's line.
 // The preview follows the pointer, else focus, else the current mode: a picture, the description,
-// the main tools and a button that does what the row does. It is for the pointer, so it is hidden
-// from assistive technology, which hears each row's description on the row (aria-describedby).
+// the main tools. Choosing is the row's alone (a click, or Enter or Space on the focused row). The
+// preview is for the pointer, so it is hidden from assistive technology, which hears each row's
+// description on the row (aria-describedby).
 // Under 640px the preview is left out and the list stands alone, each row showing its description.
 //
 // Opened by ModeMenuChip, in the top chrome and on every start panel's rail, so both show the same menu.
@@ -148,30 +143,14 @@ export function ModeMenu({
           );
         })}
       </div>
-      <ModePreview
-        mode={shown}
-        action={actionOf(shown)}
-        keyLeads={shown === keyLeadsTo && !lockedReason}
-        onChoose={() => choose(shown)}
-      />
+      <ModePreview mode={shown} keyLeads={shown === keyLeadsTo && !lockedReason} />
     </div>
   );
 }
 
 // The preview pane: hidden under 640px, and from assistive technology (the rows carry its words).
-function ModePreview({
-  mode,
-  action,
-  keyLeads,
-  onChoose,
-}: {
-  mode: Mode;
-  action: ModeMenuAction;
-  keyLeads: boolean;
-  onChoose: () => void;
-}) {
+function ModePreview({ mode, keyLeads }: { mode: Mode; keyLeads: boolean }) {
   const label = editorModeLabel(mode);
-  const live = action === 'switch' || action === 'new-tab';
   return (
     <div
       aria-hidden
@@ -198,20 +177,6 @@ function ModePreview({
           </li>
         ))}
       </ul>
-      <button
-        type="button"
-        // Out of the tab order and the menu's items: the row it mirrors is the keyboard's way.
-        tabIndex={-1}
-        disabled={!live}
-        onClick={onChoose}
-        className={`mt-0.5 self-start rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
-          live
-            ? MODE_ACTION_TINT[mode]
-            : 'cursor-default bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-        }`}
-      >
-        {modeMenuActionLabel(action, label)}
-      </button>
     </div>
   );
 }

@@ -16,7 +16,7 @@ import type { ShapeMarker } from './shape-marker';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from './code-themes';
-import type { MindFlow } from './mind-flow';
+import type { MindFlow, MindSpacing } from './mind-flow';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
 import type {
@@ -413,6 +413,9 @@ export type ShapeElement = {
   // applied to the whole tree; absent = 'tree', the one arrangement growth
   // shipped with, so every map already drawn keeps its shape.
   mindFlow?: MindFlow;
+  // How far apart the map's nodes sit (docs/specs/009-elements/mind-node.md "Spacing"). Read off the ROOT like
+  // `mindFlow`; absent = 'comfortable', the gaps every map had before, so no map moves.
+  mindSpacing?: MindSpacing;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
   // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the

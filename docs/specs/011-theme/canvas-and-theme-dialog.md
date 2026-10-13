@@ -30,26 +30,49 @@ A **look** is a shortcut that sets four of the tab's existing settings at once: 
 records which look was picked, and the tab carries only those four ordinary settings, exactly as if they had been
 picked one by one.
 
+The table is in the order the carousel shows them, six to a page:
+
 | Look        | Theme    | Finish       | Tab font         | Pattern     | Pattern strength |
 | ----------- | -------- | ------------ | ---------------- | ----------- | ---------------- |
 | Everyday    | Default  | Flexible     | (none)           | Grid        | (kept)           |
+| Textbook    | UML      | Professional | Oswald           | Graph       | 50%              |
 | Whiteboard  | Mono     | Sketch       | (none)           | Blank       | (kept)           |
-| Graph Paper | Indigo   | Professional | Roboto Mono      | Graph       | (kept)           |
+| Carnival    | Rainbow  | Flexible     | Poppins          | Confetti    | 50%              |
 | Boardroom   | Steel    | Professional | Inter            | Blank       | (kept)           |
 | Notebook    | Mocha    | Sketch       | (none)           | Lines       | (kept)           |
-| Midnight    | Midnight | Flexible     | (none)           | Grid        | (kept)           |
 | Seaside     | Ocean    | Flexible     | Nunito           | Waves       | (kept)           |
+| Doodle      | Rainbow  | Sketch       | Caveat           | Blank       | (kept)           |
 | Editorial   | Cream    | Professional | Lora             | Blank       | (kept)           |
-| Engineer    | Sky      | Professional | Space Grotesk    | Engineering | (kept)           |
+| Midnight    | Midnight | Flexible     | (none)           | Grid        | (kept)           |
 | Workshop    | Sand     | Sketch       | Permanent Marker | Grid        | 60%              |
-| Garden      | Forest   | Flexible     | Poppins          | Hexagonal   | 40%              |
+| Poster      | Tropical | Professional | Abril Fatface    | Diagonal    | 40%              |
+| Graph Paper | Indigo   | Professional | Roboto Mono      | Graph       | (kept)           |
+| Daydream    | Pastel   | Flexible     | Nunito           | Grid        | 60%              |
+| Engineer    | Sky      | Professional | Space Grotesk    | Engineering | (kept)           |
+| Lagoon      | Tropical | Flexible     | Space Grotesk    | Ripple      | 50%              |
 | Studio      | Lavender | Professional | Roboto Slab      | Isometric   | (kept)           |
+| Garden      | Forest   | Flexible     | Poppins          | Hexagonal   | 40%              |
 
+- **Multi-colour looks.** Six looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
+  Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)) and UML's colour per shape kind. Each is a
+  different feel: Carnival is a bright party (rainbow on confetti), Doodle a bold hand-drawn rainbow, Daydream soft
+  pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
+  diagonals, and Textbook a crisp colour-coded notation on graph paper. A dark-mode viewer sees each in its theme's
+  dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
+- **Order.** Everyday is always first (it is what an untouched tab reads as). The rest follow a fixed, interleaved
+  order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds two multi-colour looks,
+  and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
+  rather than the colourful looks clumping on one page. `apps/live/lib/tab-looks.test.ts` locks both rules.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
-- The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots.
+- The looks sit in a **carousel**, six to a page (three columns, two on a phone), three pages, with arrows and page
+  dots.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
+  The sample is coloured with its two boxes as separate branches, taking the palette's first and fourth colours
+  (across the wheel: Rainbow's red and green, Tropical's teal and orange), and its arrow is put back on its pins
+  after; so a multi-colour look's card shows two contrasting palette colours rather than the trunk neutral and one
+  hue. Single-colour and per-shape (UML) looks draw exactly as they would without it (`apps/live/lib/look-preview.ts`).
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
   (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
   element's own finish or font still wins over the tab's.

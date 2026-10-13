@@ -3108,6 +3108,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    setMindSpacingSelected,
     tidyMindMapSelected,
     tidyMindMap,
     setPageHeading,
@@ -3630,7 +3631,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onCut: () => {
       // Copy to the in-app clipboard, then delete: the two halves the
       // editor already exposes, composed into one undo-friendly action.
-      copySelection();
+      copySelection({ cut: true });
       if (readSelection().multiSelectedIds.size > 0) {
         deleteMultiSelected({ cut: true });
       } else {
@@ -4162,6 +4163,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeWrapSelected,
     setLegendItemsSelected,
     setMindFlowSelected,
+    setMindSpacingSelected,
     tidyMindMapSelected,
     tidyMindMap,
     toggleChecklistItem,

@@ -21,22 +21,28 @@ const tab = (over: Partial<Tab> = {}): Tab =>
   ({ id: 't', name: 'T', elements: [shape()], ...over }) as Tab;
 
 describe('TAB_LOOKS', () => {
-  it('is two pages of six looks, in order, each built only from settings that exist', () => {
+  it('is three pages of six looks, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
+      'Textbook',
       'Whiteboard',
-      'Graph Paper',
+      'Carnival',
       'Boardroom',
       'Notebook',
-      'Midnight',
       'Seaside',
+      'Doodle',
       'Editorial',
-      'Engineer',
+      'Midnight',
       'Workshop',
-      'Garden',
+      'Poster',
+      'Graph Paper',
+      'Daydream',
+      'Engineer',
+      'Lagoon',
       'Studio',
+      'Garden',
     ]);
-    expect(TAB_LOOKS.length).toBe(LOOKS_PER_PAGE * 2);
+    expect(TAB_LOOKS.length).toBe(LOOKS_PER_PAGE * 3);
     for (const look of TAB_LOOKS) {
       expect(resolveTheme(look.theme), look.id).toBeTruthy();
       expect(
@@ -49,6 +55,30 @@ describe('TAB_LOOKS', () => {
           look.id,
         ).toBe(true);
     }
+  });
+
+  // The ordering rule: Everyday first, then a fixed interleave, so the multi-colour looks spread over the pages.
+  const multicolour = (id: string) => {
+    const theme = resolveTheme(id)!;
+    return Boolean(theme.palette?.length || theme.shapeColors);
+  };
+  const pages = Array.from({ length: TAB_LOOKS.length / LOOKS_PER_PAGE }, (_, i) =>
+    TAB_LOOKS.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE),
+  );
+
+  it('opens on Everyday and has six multi-colour looks, two on every page', () => {
+    expect(TAB_LOOKS[0]!.id).toBe('everyday');
+    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(6);
+    for (const page of pages) expect(page.filter((l) => multicolour(l.theme))).toHaveLength(2);
+  });
+
+  it('never sets two neighbours on a page in the same theme or the same finish', () => {
+    for (const page of pages)
+      for (let i = 1; i < page.length; i++) {
+        const [a, b] = [page[i - 1]!, page[i]!];
+        expect(a.theme, `${a.id} | ${b.id}`).not.toBe(b.theme);
+        expect(a.finish, `${a.id} | ${b.id}`).not.toBe(b.finish);
+      }
   });
 
   it('gives every look a distinct mix, so at most one reads as selected', () => {

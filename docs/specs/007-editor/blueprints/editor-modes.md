@@ -247,7 +247,8 @@ onChange, newTabIn, crossPlan, lockedReason })` (`lockedReason` only while it ca
 lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip` in both places:
   - `actionOf(option): ModeMenuAction`: `'current'` for `mode`; `'switch'` unless locked (a
     `lockedReason`, or `!crossPlan && crossesPlan(mode, option)`); else `'new-tab'` with
-    `onLockedPick`, `'inert'` without. Choosing (row or preview button) does nothing when inert,
+    `onLockedPick`, `'inert'` without. Choosing (a row's click, or Enter / Space through
+    `useMenu`'s activate) does nothing when inert,
     else closes, then `onLockedPick` for `'new-tab'` or `onChange` for `'switch'`.
   - Rows: `menuitemradio`, `data-mode-row`, `aria-describedby` to a span holding
     `editorModeDescription` (plus " Opens in a new tab." on a `'new-tab'` row), visible under the
@@ -256,9 +257,7 @@ lockedReason?, onLockedPick? })` (`ModeMenu.tsx`), opened by `ModeMenuChip` in b
   - `shown` (initially `mode`) follows `onPointerEnter` and `onFocus` of a row.
   - `ModePreview` (`data-mode-preview`, `aria-hidden`, `hidden sm:flex`): `ModePreviewArt` on the
     tint, the name with `ModeKeyHint` when `shown === keyLeadsTo && !lockedReason`, the
-    description, `MODE_TOOLS` chips and a `tabIndex={-1}` button labelled
-    `modeMenuActionLabel(action, label)` ("Switch to X", "Open a New X Tab", "Current Mode",
-    "Can’t Switch Here"), disabled unless `'switch'` or `'new-tab'`.
+    description and `MODE_TOOLS` chips; no button (choosing is the row's alone).
 - Placement: inside `ToolbarExplorerButton`, after the menu button, in its corner card; not on a
   phone (`phone ? null`), where the tab menu's Mode switches. That card carries `data-floating-panel`, so the
   canvas's capture-phase pen gesture (`useCanvasSurfaceGestures`) skips a press there: with a Draw

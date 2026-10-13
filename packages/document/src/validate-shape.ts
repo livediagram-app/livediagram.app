@@ -42,7 +42,7 @@ import {
 import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web-components';
 import { isCodeThemeId } from './code-themes';
 import { isChartPaletteId } from './chart-palettes';
-import { isMindFlow } from './mind-flow';
+import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
   type ElementValidationIssue,
   type FieldCheck,
@@ -210,6 +210,7 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   { field: 'codeTheme', valid: (v) => isCodeThemeId(v as string), rule: 'a code theme id' },
   { field: 'mindFlow', valid: (v) => isMindFlow(v as string), rule: 'a mind flow' },
+  { field: 'mindSpacing', valid: (v) => isMindSpacing(v as string), rule: 'a mind spacing' },
   {
     field: 'chartVariant',
     valid: isChartVariant,

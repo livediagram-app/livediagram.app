@@ -65,6 +65,9 @@ export function renderLabel(
   // The label's Text animation (docs/specs/028-animation/element-animations.md "Text"), undefined
   // when it has none or is being edited; useTextAnimation builds it.
   textAnim?: TextAnimView,
+  // Told the editor's live content on every change, for a label that sizes its box without the
+  // rest of `hug`: a mind node growing to fit its lines (useMindLabelFit).
+  onLiveText?: (editor: HTMLElement) => void,
 ) {
   const isSticky = element.type === 'sticky';
   // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
@@ -140,7 +143,7 @@ export function renderLabel(
         alignY={alignY}
         padding={textPadding}
         textScale={textScale}
-        onLiveText={hug?.onLiveText}
+        onLiveText={hug?.onLiveText ?? onLiveText}
         fontFamily={fontFamily}
         multiline={isSticky}
         uppercase={caps}

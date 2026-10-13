@@ -1,12 +1,14 @@
 'use client';
 
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { Portal } from '../Portal';
 import { useEscape } from '../useEscape';
 import { useFocusTrap, type FocusTrapInitial } from '../useFocusTrap';
 import { useSheetDrag } from '../useSheetDrag';
 import { SheetHandle } from '../SheetHandle';
 import { safeInset } from '../safe-area';
+import { useMediaQuery } from '../useMediaQuery';
+import { useVisualViewportBand, type VisualViewportBand } from '../useVisualViewportBand';
 
 // The shared modal shell (packages/ui, so the public sites use it too; the editor wraps it with its modal
 // guard). Every editor dialog (ConfirmDialog,
@@ -87,6 +89,31 @@ const BACKDROPS: Record<NonNullable<DialogProps['backdrop']>, string> = {
     'bg-slate-900/40 backdrop-blur-sm dark:bg-slate-950/60 sm:bg-slate-900/10 sm:backdrop-blur-none sm:dark:bg-slate-950/20',
 };
 
+// Below Tailwind's sm breakpoint: where a phone sheet docks and the larger sizes go edge to edge.
+const PHONE_QUERY = '(max-width: 639.98px)';
+
+// While the on-screen keyboard (or a pinch zoom) leaves only part of the window visible, the dim layer covers just
+// that band, so the panel centres (or a phone sheet docks) above the keyboard, and the panel is capped to the band:
+// a card keeps 1rem clear of each edge, a full-width phone panel takes all of it. The panel scrolls inside the cap,
+// and a sheet dragged taller stops at it. Null band: the CSS placement alone, as on a desktop.
+export function keyboardBandStyles(
+  band: VisualViewportBand | null,
+  fullHeight: boolean,
+): { layer?: CSSProperties; panel?: CSSProperties } {
+  if (!band) return {};
+  return {
+    layer: {
+      top: band.top,
+      left: band.left,
+      width: band.width,
+      height: band.height,
+      right: 'auto',
+      bottom: 'auto',
+    },
+    panel: { maxHeight: fullHeight ? '100%' : 'calc(100% - 2rem)', overflowY: 'auto' },
+  };
+}
+
 export function Dialog({
   open,
   onClose,
@@ -121,6 +148,21 @@ export function Dialog({
   // keyboard / screen-reader users out of the inert background. Re-engages on
   // `open` because the dialog stays mounted and toggles rather than unmounting.
   useFocusTrap(panelRef, open, initialFocus);
+  const band = useVisualViewportBand();
+  const phone = useMediaQuery(PHONE_QUERY);
+  const fitted = keyboardBandStyles(band, phone && (phoneSheet || EDGE_TO_EDGE_SIZES.has(size)));
+  // The field being typed in stays in sight as the band changes: the panel has just shrunk to fit above the
+  // keyboard, so the scroll areas inside it bring the field back into view.
+  useLayoutEffect(() => {
+    if (!band) return;
+    const field = document.activeElement;
+    if (
+      field instanceof HTMLElement &&
+      field !== panelRef.current &&
+      panelRef.current?.contains(field)
+    )
+      field.scrollIntoView?.({ block: 'nearest' });
+  }, [band]);
 
   if (!open) return null;
 
@@ -140,6 +182,7 @@ export function Dialog({
         }}
         // The dim fades in (fade-in, micro) while the panel settles (dialog-in, long), so the modal
         // arrives rather than appearing (docs/specs/004-interface-design/motion.md "Dialogs").
+        style={fitted.layer}
         className={`fixed inset-0 z-[var(--z-modal)] flex animate-fade-in items-center justify-center ${
           phoneSheet ? 'max-sm:items-end ' : ''
         }${BACKDROPS[backdrop]}`}
@@ -157,13 +200,15 @@ export function Dialog({
           aria-labelledby={titleId}
           aria-label={ariaLabel}
           tabIndex={-1}
+          // The keyboard band's cap goes last, so a sheet dragged taller still stops above the keyboard.
           style={
             phoneSheet
               ? {
                   paddingBottom: safeInset('bottom'),
                   ...sheet.style,
+                  ...fitted.panel,
                 }
-              : undefined
+              : fitted.panel
           }
           // Default to a viewport-bounded, scrollable panel so a tall dialog on
           // a short/landscape screen never pushes its footer off the bottom.

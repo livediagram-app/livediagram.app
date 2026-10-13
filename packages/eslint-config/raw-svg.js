@@ -26,7 +26,7 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/palette/palette-style-previews.tsx',
   '**/components/palette/palette-tile-art.tsx',
   '**/components/palette/context-menu-tiles.tsx',
-  '**/components/palette/context-menu-data-editors.tsx',
+  '**/components/palette/mind-map-menu-glyphs.tsx',
   '**/components/palette/sankey-menu-glyphs.tsx',
   '**/components/canvas/quick-style-rows.tsx',
   '**/components/canvas/infographic-layout-thumb.tsx',

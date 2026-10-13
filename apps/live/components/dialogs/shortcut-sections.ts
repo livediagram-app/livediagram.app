@@ -81,6 +81,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },
       { keys: ['Tab'], label: 'On a mind node: add a child' },
       { keys: ['Enter'], label: 'On a mind node: add a sibling' },
+      { keys: ['⇧', 'Enter'], label: 'In a mind node’s label: new line' },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },

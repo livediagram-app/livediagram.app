@@ -6,7 +6,7 @@ look, independent of their colours. There are three:
 | Finish           | Reads as                      | What it changes                                                                                                |
 | ---------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies                  |
-| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows drawn right-angled                 |
+| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows and mind maps drawn right-angled   |
 | **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, pencil-shaded fills, a handwriting font, arrowheads drawn as two loose strokes |
 
 A finish is a look, never a type: switching it changes no stored geometry, colour or text, and switching back
@@ -42,6 +42,11 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
   taking the draw-time avoidance curve ([Arrow collision avoidance](arrow-collision-avoidance.md)). It is an
   ordinary Angled arrow afterwards; arrows already on the tab keep their style.
+- **Mind maps:** a mind map's connectors that are still in the map's default look (curved, never bowed or bent by
+  hand) are drawn right-angled, as a neat bracket off each parent; the bubble flow draws them as straight spokes
+  ([The mind node](../009-elements/mind-node.md) "Connectors"). It is drawn, not stored: switching back to
+  Flexible or Sketch shows the curves again. A connector given a style, bow or bend of its own keeps it, and one
+  given its own Flexible finish keeps its curve.
 
 ### Sketch
 

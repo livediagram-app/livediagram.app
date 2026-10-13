@@ -6,11 +6,17 @@ import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import dynamic from 'next/dynamic';
 import {
   DEFAULT_MIND_FLOW,
+  DEFAULT_MIND_SPACING,
   isMindNode,
   logoPageAt,
   mindFlowOf,
+  mindRootOf,
+  mindSpacingOf,
   resolveLayerId,
+  withMindBranches,
+  type ShapeElement,
 } from '@livediagram/document';
+import { track } from '@/lib/telemetry';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
@@ -125,6 +131,8 @@ export function EditorContextMenuHost() {
     setSankeyFlowsOpenForId,
     can,
     setMindFlowSelected,
+    setMindSpacingSelected,
+    selectMarquee,
     tidyMindMapSelected,
     mindOutline,
     setChecklistItemsSelected,
@@ -242,10 +250,22 @@ export function EditorContextMenuHost() {
   // The flow the selected node's MAP grows in (docs/specs/009-elements/mind-node.md). Resolved here
   // because it lives on the tree's root, which the menu cannot walk to from
   // the node in hand.
-  const menuMindFlow =
-    ctxSelectedEl && isMindNode(ctxSelectedEl)
-      ? mindFlowOf(activeTab.elements, ctxSelectedEl)
-      : DEFAULT_MIND_FLOW;
+  const menuMindNode = ctxSelectedEl && isMindNode(ctxSelectedEl) ? ctxSelectedEl : null;
+  const menuMindFlow = menuMindNode
+    ? mindFlowOf(activeTab.elements, menuMindNode)
+    : DEFAULT_MIND_FLOW;
+  // Its spacing, from the same root (docs/specs/009-elements/mind-node.md "Spacing").
+  const menuMindSpacing = menuMindNode
+    ? mindSpacingOf(activeTab.elements, menuMindNode)
+    : DEFAULT_MIND_SPACING;
+  // Select Branch / Select Whole Map: the node (or its root) with everything under it and the lines between, through
+  // the marquee commit, so a one-node branch is a single selection and a locked-by-other node is left out.
+  const selectMindBranchOf = (node: ShapeElement | null) => {
+    if (!node) return;
+    selectMarquee(new Set(withMindBranches(activeTab.elements, new Set([node.id]))));
+    track('Element', 'Selected', 'MindBranch');
+  };
+  const menuMindRoot = menuMindNode ? mindRootOf(activeTab.elements, menuMindNode) : null;
 
   // The selection's layer for the Layer section's move-to dropdown
   // (docs/specs/006-document/layers.md): the single resolved layer every member shares, or null
@@ -303,7 +323,7 @@ export function EditorContextMenuHost() {
       // moves above: on a workshop board the notes share one band and
       // "bring to front" means "over the note it overlaps".
       onCutElement={() => {
-        copySelection();
+        copySelection({ cut: true });
         // A Cut keeps the sheets of its Sheets for the paste: it never asks (sheet-store.md "Deleting a sheet").
         deleteSelected({ cut: true });
       }}
@@ -383,10 +403,14 @@ export function EditorContextMenuHost() {
       onSetMindFlow={setMindFlowSelected}
       onTidyMindMap={tidyMindMapSelected}
       onEditMindOutline={
-        ctxSelectedEl && mindOutline.canEdit(ctxSelectedEl.id)
-          ? () => mindOutline.open(ctxSelectedEl.id)
+        menuMindRoot && mindOutline.canEdit(menuMindRoot.id)
+          ? () => mindOutline.open(menuMindRoot.id)
           : undefined
       }
+      mindSpacing={menuMindSpacing}
+      onSetMindSpacing={setMindSpacingSelected}
+      onSelectMindBranch={() => selectMindBranchOf(menuMindNode)}
+      onSelectMindMap={() => selectMindBranchOf(menuMindRoot)}
       onSetChecklistItems={setChecklistItemsSelected}
       onToggleChecklistItem={toggleChecklistItem}
       onSetEntityFields={setEntityFieldsSelected}

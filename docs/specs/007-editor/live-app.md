@@ -244,6 +244,18 @@ the same grab handle, which fills the screen, returns or closes it as a menu's s
 dialog: the dim behind it, the focus trap, Escape and the backdrop tap all behave as on a
 desktop, where it is the usual centred card (`Dialog`'s `phoneSheet`).
 
+**A dialog stays above the on-screen keyboard.** A touch screen's keyboard shrinks the visual
+viewport, not the window a fixed layer and `vh` measure against, so a dialog centred in the window
+(Edit Outline on an iPad) sat half under the keyboard, and moving the page or dragging the sheet put
+it further under. While the visible area is smaller than the window (`visualViewport` height or
+offset differs by more than 1 px), the dialog's dim layer covers just that visible band, following
+its every resize and scroll, so the card centres in it and a phone sheet docks on top of the
+keyboard. The panel is capped to the band (a card 1rem clear of each edge, a full-width phone panel
+all of it) and scrolls inside the cap, over its own `max-h`; a sheet dragged taller stops at the
+cap. The field being typed in is scrolled back into view inside the panel as the band changes.
+When the keyboard goes the dialog returns to its own placement. With the whole window visible
+(any desktop) nothing changes (`useVisualViewportBand`, `Dialog`).
+
 **A dialog opened by touch takes focus on itself, not its first control.** With a keyboard or
 mouse, an opening dialog focuses its first control so typing and Tab work at once. On a touch
 screen (a coarse primary pointer: phones and tablets) that same focus highlighted the first control

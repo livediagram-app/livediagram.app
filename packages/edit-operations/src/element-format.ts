@@ -157,7 +157,7 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   process: ['processSteps'],
   'site-header': ['navLinks'],
   page: ['pageTitle', 'pageSubtitle'],
-  'mind-node': ['mindParentId', 'mindFlow'],
+  'mind-node': ['mindParentId', 'mindFlow', 'mindSpacing'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   estimate: ['estimateScale'],

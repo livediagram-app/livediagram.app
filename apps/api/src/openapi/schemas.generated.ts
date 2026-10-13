@@ -9068,9 +9068,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "MindFlow": {
     "enum": [
       "tree",
+      "leftward",
       "balanced",
       "downward",
+      "upward",
       "bubble"
+    ],
+    "type": "string"
+  },
+  "MindSpacing": {
+    "description": "How far apart a map's nodes sit (docs/specs/009-elements/mind-node.md \"Spacing\").",
+    "enum": [
+      "tight",
+      "compact",
+      "comfortable",
+      "wide"
     ],
     "type": "string"
   },
@@ -11755,6 +11767,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mindParentId": {
         "$ref": "#/components/schemas/ElementId"
+      },
+      "mindSpacing": {
+        "$ref": "#/components/schemas/MindSpacing"
       },
       "mode": {
         "$ref": "#/components/schemas/SelectionMode"

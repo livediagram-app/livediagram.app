@@ -25,9 +25,10 @@ function draw(
     scroll?: { top: number; left: number };
     view?: { width: number; height: number };
     onUnhide?: ((axis: 'r' | 'c', from: number, to: number) => void) | null;
+    filteredOut?: string[];
   } = {},
 ) {
-  const g = geometryOf(layout);
+  const g = geometryOf(layout, new Set(opts.filteredOut));
   const scroll = opts.scroll ?? { top: 0, left: 0 };
   const view = opts.view ?? { width: 900, height: 400 };
   return render(
@@ -144,5 +145,15 @@ describe('the sheet headers', () => {
       view: { width: 400, height: 300 },
     });
     expect(screen.queryAllByRole('button')).toHaveLength(0);
+  });
+
+  // sheet.md "Filter": a filtered-out row is a gap in the numbers. It once drew a Show Row arrow over the numbers
+  // that showed nothing (the row is not hidden, the filter leaves it out).
+  it('draws no arrow for rows the filter leaves out, only for rows someone hid', () => {
+    draw(grid(8, 3, { hiddenRows: ['r5'] }), { onUnhide: vi.fn(), filteredOut: ['r1', 'r2'] });
+    expect(texts('rowheader')).toEqual(['1', '4', '5', '7', '8']);
+    expect(screen.queryByRole('button', { name: /Show Rows? 2/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Show Row 6' })).toBeTruthy();
+    expect(screen.getAllByRole('button')).toHaveLength(1);
   });
 });

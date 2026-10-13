@@ -110,20 +110,26 @@ describe('CanvasThemeDialog home', () => {
     render(<CanvasThemeDialog {...props} tab="looks" {...over} />);
   const lookNames = [
     'Everyday',
+    'Textbook',
     'Whiteboard',
-    'Graph Paper',
+    'Carnival',
     'Boardroom',
     'Notebook',
-    'Midnight',
     'Seaside',
+    'Doodle',
     'Editorial',
-    'Engineer',
+    'Midnight',
     'Workshop',
-    'Garden',
+    'Poster',
+    'Graph Paper',
+    'Daydream',
+    'Engineer',
+    'Lagoon',
     'Studio',
+    'Garden',
   ];
 
-  it('offers the twelve looks, each drawn as a preview', () => {
+  it('offers the eighteen looks, each drawn as a preview', () => {
     home();
     for (const name of lookNames) {
       const card = screen.getByRole('button', { name: new RegExp(`^${name}`) });
@@ -131,18 +137,19 @@ describe('CanvasThemeDialog home', () => {
     }
   });
 
-  it('pages the looks in a carousel of two pages, opening on the current look’s page', () => {
+  it('pages the looks in a carousel of three pages, opening on the current look’s page', () => {
     const { unmount } = home({ themeId: 'brand', finish: undefined, font: null });
     const next = screen.getByRole('button', { name: 'Next looks' });
     const prev = screen.getByRole('button', { name: 'Previous looks' });
     expect(prev.hasAttribute('disabled')).toBe(true);
     fireEvent.click(next);
+    fireEvent.click(next);
     expect(next.hasAttribute('disabled')).toBe(true);
     expect(
-      screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
+      screen.getByRole('button', { name: 'Looks page 3 of 3' }).getAttribute('aria-current'),
     ).toBe('true');
     unmount();
-    // A tab on a page-two look opens there.
+    // A tab on a page-three look opens there.
     home({
       themeId: 'lavender',
       finish: 'professional',
@@ -150,7 +157,7 @@ describe('CanvasThemeDialog home', () => {
       backgroundPattern: 'isometric',
     });
     expect(
-      screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
+      screen.getByRole('button', { name: 'Looks page 3 of 3' }).getAttribute('aria-current'),
     ).toBe('true');
   });
 

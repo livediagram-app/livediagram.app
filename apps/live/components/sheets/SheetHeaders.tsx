@@ -96,7 +96,8 @@ function unhideMarkers({ geometry: g, scroll, palette, view, onUnhide }: Props):
     const label = `Show Column${a === b ? '' : 's'} ${columnLetters(a)}${a === b ? '' : ` to ${columnLetters(b)}`}`;
     markers.push(marker(`hc${a}`, label, x - 8, 3, false, () => onUnhide('c', a, b)));
   }
-  for (const [a, b] of hiddenRuns(g.rows.length - 1, g.hiddenRow)) {
+  // Only rows someone hid: a row the filter leaves out shows as a gap in the numbers, with nothing to click.
+  for (const [a, b] of hiddenRuns(g.rows.length - 1, g.userHiddenRow)) {
     const y = g.headH + (a < g.frozenRows ? g.rows[a]! : g.rows[a]! - scroll.top);
     if (y < g.headH - 4 || y > view.height) continue;
     const label = `Show Row${a === b ? '' : 's'} ${a + 1}${a === b ? '' : ` to ${b + 1}`}`;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape } from './factories';
+import { createPinnedArrow, createShape } from './factories';
 import { SHAPE_DEFAULT_SIZE } from './shape-factory';
 import type { Element, ShapeElement } from './index';
 import {
@@ -10,6 +10,7 @@ import {
   mindChildren,
   mindSubtree,
   nextMindChildPosition,
+  withMindBranches,
 } from './mind-map';
 
 // The size a new node is actually created at, so these tests keep exercising
@@ -55,6 +56,55 @@ describe('mindSubtree', () => {
     // contain one. Drawing something is better than blowing the stack.
     const els: Element[] = [node('a', 0, 0, 'b'), node('b', 0, 0, 'a')];
     expect(mindSubtree(els, 'a').map((n) => n.id)).toEqual(['b']);
+  });
+});
+
+describe('withMindBranches', () => {
+  const tree = (): Element[] => [
+    node('root', 0, 0),
+    node('a', 0, 0, 'root'),
+    node('a1', 0, 0, 'a'),
+    node('b', 0, 0, 'root'),
+    { ...createPinnedArrow('root', 'e', 'a', 'w'), id: 'root-a' },
+    { ...createPinnedArrow('a', 'e', 'a1', 'w'), id: 'a-a1' },
+    { ...createPinnedArrow('root', 'e', 'b', 'w'), id: 'root-b' },
+  ];
+
+  it('adds the branch under a node and the connectors inside it', () => {
+    expect([...withMindBranches(tree(), new Set(['a']))].sort()).toEqual(['a', 'a-a1', 'a1']);
+  });
+
+  it('takes the whole map from the root', () => {
+    expect(withMindBranches(tree(), new Set(['root'])).size).toBe(7);
+  });
+
+  it('returns the same set when nothing hangs off the selection', () => {
+    const ids = new Set(['a1']);
+    expect(withMindBranches(tree(), ids)).toBe(ids);
+  });
+
+  it('ignores non-mind elements that carry a mindParentId', () => {
+    const square = { ...(createShape('square', 0, 0) as ShapeElement), id: 's', mindParentId: 'r' };
+    const ids = new Set(['r']);
+    expect(withMindBranches([node('r', 0, 0), square], ids)).toBe(ids);
+  });
+
+  it('does not enter a protected node, so its own branch stays with it', () => {
+    const out = withMindBranches(tree(), new Set(['root']), (el) => el.id === 'a');
+    expect([...out].sort()).toEqual(['b', 'root', 'root-b']);
+  });
+
+  it('terminates on a cycle', () => {
+    const els: Element[] = [node('a', 0, 0, 'b'), node('b', 0, 0, 'a')];
+    expect([...withMindBranches(els, new Set(['a']))].sort()).toEqual(['a', 'b']);
+  });
+
+  it('stays linear on a wide map', () => {
+    const els: Element[] = [node('root', 0, 0)];
+    for (let i = 0; i < 5000; i++) els.push(node(`n${i}`, 0, 0, i === 0 ? 'root' : `n${i - 1}`));
+    const start = performance.now();
+    expect(withMindBranches(els, new Set(['root'])).size).toBe(5001);
+    expect(performance.now() - start).toBeLessThan(200);
   });
 });
 

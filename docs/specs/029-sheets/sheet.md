@@ -441,7 +441,8 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
   (columns), as many as selected; **Delete**; **Clear**; **Hide**; **Resize…**; and on a column **Sort A to Z**,
   **Sort Z to A**. Hidden rows and columns show a small double arrow on the headers either side (**Show Column C**,
   **Show Rows 2 to 3**, with the shared tooltip), which unhides them; a sheet without headers draws the arrows at the
-  grid's own edge, so hidden lines can always come back.
+  grid's own edge, so hidden lines can always come back. Rows a filter leaves out are not hidden lines and draw no
+  arrow ([Filter](#filter)).
 - Rows and columns can be dragged by their selected headers to a new place.
 - Inserting, deleting and moving keep every formula right: references move with their cells, a reference to a
   deleted cell becomes `#REF!`, and a range shrinks or grows with what is inside it.
@@ -579,8 +580,11 @@ coloured in one theme reads in the other (`@livediagram/document` `cellColours`)
   column's values with counts, **Select All** and **Clear**), and **Filter by Condition** (is empty, is not empty,
   text contains, does not contain, starts with, ends with, is exactly, date is before / after / on, greater than,
   less than, between, equal to, not equal to).
+- The filter menu's **Sort A to Z / Z to A** sorts the filter's rows under its header by that column (whichever cell
+  is active), moving whole rows. The header row stays on top, and the filter covers the same rows on screen after.
 - Rows that do not match every column's filter are hidden; a filtered column's button is filled. Row numbers of
-  the visible rows stay as they are, so a gap shows rows are filtered.
+  the visible rows stay as they are, so a gap shows rows are filtered. A filtered-out row draws no **Show Row**
+  arrow: those are only for rows someone hid, and the filter is what brings filtered rows back.
 - The filter is the sheet's, seen by everyone, as in a spreadsheet; turning it off shows every row again.
 - Functions over a filtered range still read the hidden rows, as in a spreadsheet; the status bar's Sum reads the
   visible ones.

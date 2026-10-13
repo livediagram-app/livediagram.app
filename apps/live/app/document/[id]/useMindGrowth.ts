@@ -10,10 +10,13 @@ import {
   relayoutMindMap,
   type ArrowElement,
   type Element,
+  type MindGrowthPlan,
   type ShapeElement,
   type Tab,
 } from '@livediagram/document';
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
+import { fitMindLabel } from '@/lib/mind-label-fit';
+import { measureDrawnMindLabel } from '@/components/canvas/text-hug-measure';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { beginMindHandoff, landMindHandoff, type HandoffActions } from '@/lib/mind-handoff';
 import { track } from '@/lib/telemetry';
@@ -89,36 +92,50 @@ export function useMindGrowth(opts: {
   const dress = (node: ShapeElement, styleFrom: ShapeElement | null): ShapeElement =>
     dressMindNode(node, styleFrom, activeTab);
 
+  // A label written here never passed through an editor, so the node grows to fit it here
+  // (docs/specs/009-elements/mind-node.md "A node grows to fit its label").
+  const measureLabel = measureDrawnMindLabel(activeTab.font, activeTab.finish);
+  const withLabelOn = (els: Element[], id: string, label: string) =>
+    fitMindLabel(
+      els.map((el) => (el.id === id ? labelled(el, label) : el)),
+      id,
+      measureLabel,
+    );
+
   // What was typed for a node whose editor never opened (the handoff timed
   // out): written straight onto its label, so nothing typed is lost.
   const settleLabel = (id: string, text: string) =>
-    patchActive((els) => els.map((el) => (el.id === id ? labelled(el, text) : el)));
+    patchActive((els) => withLabelOn(els, id, text));
 
   // `label`, when given, is written onto the node grown FROM in the same
   // commit: the typing-ahead handoff finishing a node whose editor never
   // opened (lib/mind-handoff.ts).
   const growMindNode = (id: string, kind: 'child' | 'sibling', label?: string) => {
     if (editsBlocked) return;
-    const withLabel = (els: Element[]) =>
-      label === undefined ? els : els.map((el) => (el.id === id ? labelled(el, label) : el));
+    const withLabel = (els: Element[]) => (label === undefined ? els : withLabelOn(els, id, label));
+    const ids = { node: crypto.randomUUID(), arrow: crypto.randomUUID() };
+    // Planned once from the tab as rendered, to bail early and to know where the node lands, and
+    // again inside the commit: the label typed before this Tab committed a moment ago (and may
+    // have grown its node and re-laid the map), so only the tab as it stands in the commit
+    // places the new node clear of it. The ids are fixed, so both plans name the same node.
     const before = activeTab.elements;
-    const plan = planMindGrowth(before, id, kind, {
-      node: crypto.randomUUID(),
-      arrow: crypto.randomUUID(),
-    });
+    const plan = planMindGrowth(before, id, kind, ids);
     if (!plan) return;
-    const node = dress(plan.node, plan.styleFrom);
-    const arrow: ArrowElement | null = plan.arrow
-      ? dressMindConnector(plan.arrow, plan.connectorStyleFrom)
-      : null;
-    const added: Element[] = arrow ? [node, arrow] : [node];
-    // Applied against the elements as they stand IN the commit, as patches:
-    // the label typed before this Tab committed a moment ago and is not in
-    // `before` yet.
-    const grown = (els: Element[]) => [
-      ...applyMindMoves(withLabel(els), plan.moves, plan.reanchored),
-      ...added,
-    ];
+    const build = (p: MindGrowthPlan) => {
+      const node = dress(p.node, p.styleFrom);
+      const arrow: ArrowElement | null = p.arrow
+        ? dressMindConnector(p.arrow, p.connectorStyleFrom)
+        : null;
+      return { node, added: arrow ? [node, arrow] : [node] };
+    };
+    const { node } = build(plan);
+    const grown = (els: Element[]) => {
+      const base = withLabel(els);
+      // Re-planned only when the tab moved on since this render: planning is O(nodes x map) and
+      // the canvas keys (no label commit in between) need it once.
+      const now = base === before ? plan : (planMindGrowth(base, id, kind, ids) ?? plan);
+      return [...applyMindMoves(base, now.moves, now.reanchored), ...build(now).added];
+    };
     patchActive(grown);
     // Grown from inside a label editor, that editor closes with the commit.
     setEditingId(null);

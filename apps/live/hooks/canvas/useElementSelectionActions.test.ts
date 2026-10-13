@@ -167,3 +167,37 @@ describe('deleting with the sheet guard', () => {
     expect(guard).toHaveBeenCalledOnce();
   });
 });
+
+// A mind node takes its branch (docs/specs/009-elements/mind-node.md "Deleting").
+describe('deleting a mind node', () => {
+  const mind = (id: string, parent?: string, extra: Partial<ShapeElement> = {}) =>
+    shape(id, { shape: 'mind-node', ...(parent ? { mindParentId: parent } : {}), ...extra });
+  const map = (): Element[] => [
+    mind('root'),
+    mind('a', 'root'),
+    mind('a1', 'a'),
+    mind('b', 'root'),
+    pinnedArrow('root-a', 'root', 'a'),
+    pinnedArrow('a-a1', 'a', 'a1'),
+    pinnedArrow('root-b', 'root', 'b'),
+  ];
+
+  it('deletes the node, everything under it and their connectors', () => {
+    const { actions, getResult } = setup(map(), { selection: ['a'] });
+    actions.deleteSelected();
+    expect(ids(getResult())).toEqual(['b', 'root', 'root-b']);
+  });
+
+  it('cascades from each node of a multi-selection', () => {
+    const { actions, getResult } = setup([...map(), shape('loose')], { selection: ['a', 'loose'] });
+    actions.deleteMultiSelected();
+    expect(ids(getResult())).toEqual(['b', 'root', 'root-b']);
+  });
+
+  it('spares a locked node in the branch, and the nodes under it', () => {
+    const els = map().map((el) => (el.id === 'a' ? { ...el, locked: true } : el));
+    const { actions, getResult } = setup(els, { selection: ['root'] });
+    actions.deleteSelected();
+    expect(ids(getResult())).toEqual(['a', 'a-a1', 'a1']);
+  });
+});

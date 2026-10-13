@@ -83,8 +83,7 @@ list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode 
 or out of it, and the mode menu offers a new tab instead. An empty tab has nothing either side's tools could not
 hold, so while a general tab has no elements it switches freely into and out of Plan, from the start's switch, the
 top switch and Shift+D (`crossPlan` on `useEditorMode`). The first element closes the line again. Meanwhile the mode menu
-shows Plan (or, on a Plan tab, the other modes) as a plain switch: no New tab mark, and the preview's button
-reads **Switch to Plan**.
+shows Plan (or, on a Plan tab, the other modes) as a plain switch: no New tab mark, and choosing its row switches.
 
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content
 crossfades into the new (the start's mode switch runs the change as a View Transition, `withViewTransition`), so a

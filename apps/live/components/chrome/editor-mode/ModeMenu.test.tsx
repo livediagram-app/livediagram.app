@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 // The mode menu (docs/specs/007-editor/editor-modes.md "The mode switch"): a list of the modes and a
-// preview of one, following the pointer, else focus, else the current mode, with a button that does
-// what the row does. The same menu opens from the top chrome's chip and a start panel's named chip.
+// preview of one, following the pointer, else focus, else the current mode. The preview has no button:
+// choosing is the row's alone. The same menu opens from the top chrome's chip and a start panel's named chip.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -30,7 +30,6 @@ function open(
 }
 
 const preview = () => document.querySelector<HTMLElement>('[data-mode-preview]')!;
-const previewButton = () => preview().querySelector('button')!;
 const row = (name: string) => screen.getByRole('menuitemradio', { name: new RegExp(`^${name}`) });
 
 describe('ModeMenu preview', () => {
@@ -39,13 +38,10 @@ describe('ModeMenu preview', () => {
     expect(preview().dataset.modePreview).toBe('diagram');
     expect(preview().textContent).toContain(editorModeDescription('diagram'));
     for (const tool of MODE_TOOLS.diagram) expect(preview().textContent).toContain(tool);
-    expect(previewButton().textContent).toBe('Current Mode');
-    expect(previewButton().disabled).toBe(true);
 
     fireEvent.pointerEnter(row('Facilitate'));
     expect(preview().dataset.modePreview).toBe('facilitate');
     expect(preview().textContent).toContain(editorModeDescription('facilitate'));
-    expect(previewButton().textContent).toBe('Switch to Facilitate');
   });
 
   it('follows keyboard focus too', () => {
@@ -54,10 +50,12 @@ describe('ModeMenu preview', () => {
     expect(preview().dataset.modePreview).toBe('illustrate');
   });
 
-  it('is hidden from assistive technology and from the keyboard', () => {
+  it('is hidden from assistive technology and holds no button', () => {
     open('diagram');
     expect(preview().getAttribute('aria-hidden')).toBe('true');
-    expect(previewButton().tabIndex).toBe(-1);
+    fireEvent.pointerEnter(row('Facilitate'));
+    expect(preview().querySelector('button')).toBeNull();
+    expect(preview().textContent).not.toContain('Switch to');
     // The menu's items are its rows alone.
     expect(screen.getAllByRole('menuitemradio')).toHaveLength(5);
   });
@@ -71,10 +69,21 @@ describe('ModeMenu preview', () => {
     expect(description.className).not.toMatch(/(^| )sr-only( |$)/);
   });
 
-  it('switches from its button as the row would, and closes', () => {
+  it('switches from a clicked row, and closes', () => {
     const { onChange } = open('diagram');
     fireEvent.pointerEnter(row('Draw'));
-    fireEvent.click(previewButton());
+    fireEvent.click(row('Draw'));
+    expect(onChange).toHaveBeenCalledWith('draw');
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('switches from the keyboard: Enter on the focused row', () => {
+    const { onChange } = open('diagram');
+    const menu = screen.getByRole('menu');
+    fireEvent.keyDown(menu, { key: 'Home' });
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(row('Draw'));
+    fireEvent.keyDown(menu, { key: 'Enter' });
     expect(onChange).toHaveBeenCalledWith('draw');
     expect(screen.queryByRole('menu')).toBeNull();
   });
@@ -83,16 +92,14 @@ describe('ModeMenu preview', () => {
 // docs/specs/007-editor/editor-modes.md "Plan stands apart": across the line a row opens a new tab, except on an
 // empty tab (a start panel's), where Plan is a plain switch.
 describe('ModeMenu across Plan’s line', () => {
-  it('marks Plan as a new tab on a tab with content, and its button says so', async () => {
+  it('marks Plan as a new tab on a tab with content, and its row opens one', async () => {
     const { onChange, newTabIn } = open('diagram');
     expect(row('Plan').querySelector('[data-new-tab-mark]')).not.toBeNull();
     expect(row('Draw').querySelector('[data-new-tab-mark]')).toBeNull();
     expect(
       document.getElementById(row('Plan').getAttribute('aria-describedby')!)?.textContent,
     ).toContain('Opens in a new tab.');
-    fireEvent.pointerEnter(row('Plan'));
-    expect(previewButton().textContent).toBe('Open a New Plan Tab');
-    fireEvent.click(previewButton());
+    fireEvent.click(row('Plan'));
     await vi.waitFor(() => expect(newTabIn).toHaveBeenCalledWith('plan'));
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -100,9 +107,7 @@ describe('ModeMenu across Plan’s line', () => {
   it('switches straight into Plan on an empty tab (crossPlan), with no new-tab mark', () => {
     const { onChange, newTabIn } = open('diagram', { crossPlan: true, labelled: true });
     expect(row('Plan').querySelector('[data-new-tab-mark]')).toBeNull();
-    fireEvent.pointerEnter(row('Plan'));
-    expect(previewButton().textContent).toBe('Switch to Plan');
-    fireEvent.click(previewButton());
+    fireEvent.click(row('Plan'));
     expect(onChange).toHaveBeenCalledWith('plan');
     expect(newTabIn).not.toHaveBeenCalled();
     expect(confirm).not.toHaveBeenCalled();
@@ -114,14 +119,20 @@ describe('ModeMenu across Plan’s line', () => {
     expect(onChange).toHaveBeenCalledWith('diagram');
   });
 
-  it('shows an inert button on a row that can neither switch nor open a tab', () => {
+  it('leaves a row inert when it can neither switch nor open a tab', () => {
+    const onChange = vi.fn();
     render(
-      <ModeMenuChip mode="plan" onChange={vi.fn()} lockedReason="A Dashboard is always in Plan." />,
+      <ModeMenuChip
+        mode="plan"
+        onChange={onChange}
+        lockedReason="A Dashboard is always in Plan."
+      />,
     );
     fireEvent.click(screen.getByRole('button', { name: /mode:/ }));
-    fireEvent.pointerEnter(row('Draw'));
-    expect(previewButton().textContent).toBe('Can’t Switch Here');
-    expect(previewButton().disabled).toBe(true);
+    expect(row('Draw').getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(row('Draw'));
+    expect(onChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('menu')).toBeTruthy();
   });
 });
 

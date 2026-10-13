@@ -8,6 +8,10 @@ import { createPinnedArrow, createShape } from './factories';
 import {
   DEFAULT_MIND_FLOW,
   isMindFlow,
+  isMindSpacing,
+  mindGaps,
+  DEFAULT_MIND_SPACING,
+  type MindSpacing,
   MIND_CHILD_GAP_X,
   mindConnectorAnchors,
   MIND_SIBLING_GAP_Y,
@@ -50,6 +54,53 @@ export function mindSubtree(elements: Element[], id: ElementId): ShapeElement[] 
       next.push(...mindChildren(elements, node.id));
     }
     frontier = next;
+  }
+  return out;
+}
+
+/**
+ * `ids` plus every mind node under any of them, and the connectors pinned at
+ * both ends inside that set (docs/specs/009-elements/mind-node.md "Deleting"):
+ * a branch is one idea, so deleting or cutting its node takes the branch.
+ * A node `isProtected` says to keep (a locked one) is not entered, so it and
+ * its own branch stay together. Returns `ids` itself when nothing is added, so
+ * callers can skip work.
+ */
+export function withMindBranches(
+  elements: Element[],
+  ids: ReadonlySet<ElementId>,
+  isProtected: (el: Element) => boolean = () => false,
+): ReadonlySet<ElementId> {
+  // One parent -> children index, so a wide selection stays linear rather
+  // than re-scanning the tab per node as `mindChildren` does.
+  const children = new Map<ElementId, ElementId[]>();
+  for (const el of elements) {
+    if (!isMindNode(el) || !el.mindParentId || isProtected(el)) continue;
+    const list = children.get(el.mindParentId);
+    if (list) list.push(el.id);
+    else children.set(el.mindParentId, [el.id]);
+  }
+  const out = new Set(ids);
+  // Iterative with the set as the seen-guard: a looping `mindParentId` stops.
+  const frontier = [...ids];
+  while (frontier.length > 0) {
+    for (const child of children.get(frontier.pop()!) ?? []) {
+      if (out.has(child)) continue;
+      out.add(child);
+      frontier.push(child);
+    }
+  }
+  if (out.size === ids.size) return ids;
+  for (const el of elements) {
+    if (
+      el.type === 'arrow' &&
+      el.from.kind === 'pinned' &&
+      el.to.kind === 'pinned' &&
+      out.has(el.from.elementId) &&
+      out.has(el.to.elementId)
+    ) {
+      out.add(el.id);
+    }
   }
   return out;
 }
@@ -148,6 +199,12 @@ export function mindFlowOf(elements: Element[], node: ShapeElement): MindFlow {
   return isMindFlow(flow) ? flow : DEFAULT_MIND_FLOW;
 }
 
+/** How far apart `node`'s map sits (docs/specs/009-elements/mind-node.md "Spacing"), stored on its ROOT. */
+export function mindSpacingOf(elements: Element[], node: ShapeElement): MindSpacing {
+  const spacing = mindRootOf(elements, node).mindSpacing;
+  return isMindSpacing(spacing) ? spacing : DEFAULT_MIND_SPACING;
+}
+
 /** The direction a branch already runs in, which is what the fanned and
  *  two-sided flows continue. East for a root: it points nowhere yet. */
 function outwardOf(elements: Element[], node: ShapeElement): number {
@@ -170,6 +227,7 @@ function clearOfFixedNodes(
   at: { x: number; y: number },
   size: { width: number; height: number },
   axis: 'x' | 'y',
+  gap: number,
 ): { x: number; y: number } {
   const blockers = elements.filter((el) => isMindNode(el) && fixed.has(el.id)) as ShapeElement[];
   const out = { ...at };
@@ -181,8 +239,7 @@ function clearOfFixedNodes(
       if (!overlaps({ ...size, ...out }, n)) continue;
       // Along the flow's own stacking axis, so a downward map's siblings move
       // sideways into the next column rather than down into the next row.
-      out[axis] =
-        axis === 'y' ? n.y + n.height + MIND_SIBLING_GAP_Y : n.x + n.width + MIND_SIBLING_GAP_Y;
+      out[axis] = axis === 'y' ? n.y + n.height + gap : n.x + n.width + gap;
       moved = true;
     }
     if (!moved) break;
@@ -202,6 +259,7 @@ export function nextMindChildPosition(
   parent: ShapeElement,
   size: { width: number; height: number },
 ): { x: number; y: number } {
+  const gaps = mindGaps(mindSpacingOf(elements, parent));
   const at = placeMindChild(
     mindFlowOf(elements, parent),
     parent,
@@ -209,8 +267,9 @@ export function nextMindChildPosition(
     mindSubtree(elements, parent.id),
     mindChildren(elements, parent.id),
     outwardOf(elements, parent),
+    gaps,
   );
-  return clearOfFixedNodes(elements, treeIds(elements, parent), at, size, at.axis);
+  return clearOfFixedNodes(elements, treeIds(elements, parent), at, size, at.axis, gaps.sibling);
 }
 
 /** Every node of `node`'s tree, the ones a growth may not move. */

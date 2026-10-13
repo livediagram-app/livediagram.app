@@ -7,6 +7,8 @@ from the keyboard.
 
 - **Tab** on a selected node adds a **child**.
 - **Enter** adds a **sibling** directly after it.
+- **Shift+Enter**, while typing a node's label, starts a **new line** in it (see "New lines"
+  below).
 
 The same two actions are one click away, for anyone who doesn't know the keys:
 **Add Child** and **Add Sibling** buttons on the node's selection toolbar (after
@@ -14,7 +16,8 @@ Edit text), and the same two options on its quick-connect "+" ring. On a mind
 node the ring holds only those two and Duplicate: a free arrow, a freehand
 sketch or a loose text label is not how a map grows, so Arrow, Pencil and Text
 are left off it (they stay on every other element's ring). Each names
-its shortcut in its hover card. The toolbar buttons are not offered on a locked
+its shortcut in its hover card, and Add Sibling's also says that Shift+Enter starts a new line
+while typing, since that is the key someone reaching for Enter to break a line needs to find. The toolbar buttons are not offered on a locked
 node (growing re-lays the map) or to a Viewer. A Participant grows a map too, from Tab and Enter or the toolbar's
 Add child and Add sibling ([Share roles](../013-workspace/share-roles.md)); the quick-connect ring stays an Editor's.
 
@@ -52,8 +55,9 @@ mindParentId?: ElementId;
 
 Absent = a root. It is the **only** thing that makes this more than a rounded
 box, and it is deliberately not a `children[]` array: a child pointer is
-single-valued, so it cannot disagree with itself, and deleting a parent leaves
-dangling ids rather than a corrupt tree (see "Deleting" below).
+single-valued, so it cannot disagree with itself, and a dangling id (a parent
+gone some other way, an erased node) leaves a root rather than a corrupt tree
+(see "Deleting" below).
 
 The connector is an ordinary pinned arrow. The tree is not a second graph
 model: it is the arrows you can already see, plus a pointer saying which node
@@ -64,6 +68,26 @@ owns which.
 Default size **250×80**: wide enough for a phrase. 170×48 fits a couple of words
 and makes anything longer wrap or overflow, which is not what people type into a
 mind map.
+
+### A node grows to fit its label
+
+A label with more lines than the node has room for (lines started with Shift+Enter, or a long
+line wrapping) makes the node **taller**, never wider: the width is the map's rhythm, the
+height is the content's. The lines are measured the way the label draws them (its size, font,
+weight and formatting, at the node's width less its padding; a node sized **Auto** measures at
+the size its editor types in), and the node's height becomes the lines' height plus its padding,
+rounded up to a whole pixel.
+
+- **While typing**, the node grows with each line, so the editor never types into hidden lines.
+  Nothing is written per keystroke: the grown size is drawn locally until the edit commits.
+- **On commit**, the grown height is written with the label, in the same commit (one undo step).
+  The same holds for a label written by the typing-ahead handoff (below), which never opens an
+  editor.
+- The node grows **downward** (its top stays put). If the map was tidy before, it is laid out
+  again around the taller node in the same commit, so siblings never overlap it and the map stays
+  tidy; a hand-arranged map is left where it is.
+- A node **never shrinks** on its own: deleting lines leaves the height it had, the way a resized
+  node keeps the size it was given. Resizing it is how it gets shorter.
 
 ### A tidy map stays tidy
 
@@ -89,7 +113,7 @@ node of that map. **Tidy Map** in the Mind Map menu section puts it back, and
 from then on it stays tidy again.
 
 Order is read from the map as drawn: siblings are ordered along the flow's
-stacking axis (top to bottom for a tree, left to right for a downward map,
+stacking axis (top to bottom for a tree or a leftward map, left to right for a downward or upward map,
 clockwise from the west around a bubble map's root, and clockwise from the
 side facing away from its parent around a deeper node). A new **sibling** goes **directly after** the node Enter
 was pressed on, the way an outliner inserts the next line, not at the end of
@@ -167,11 +191,41 @@ The faces a connector joins are the **flow's**, not the nearest pair: a tree
 leaves the parent's east face and enters the child's west face however far down
 the column the child is. The nearest-pair chooser would pick the parent's south
 face for a third child, and the connector would then run behind the second
-child to reach it. A balanced map uses east or west by the side the child is on, a
-downward map south to north, and only the bubble flow, which fans in every
+child to reach it. A leftward map leaves west and enters east, a balanced map uses east or west by the side
+the child is on, a downward map south to north (an upward map north to south), and only the bubble flow, which fans in every
 direction, asks the shared chooser (`bestAnchorTowards`). A re-layout
 (tidy growth, Tidy Map, a flow change) re-anchors the map's connectors by the
 same rule.
+
+### In the Professional finish
+
+The Professional finish ([Finish](../008-canvas/finish.md)) draws a map's connectors right-angled, and neat:
+
+- **Tree, leftward and balanced:** every connector off one parent leaves the same point on the parent's side face,
+  runs out to one shared **trunk** halfway across the gap between the parent and its nearest child on that
+  side, runs along the trunk, and turns once more straight into the child's facing side. A column of siblings
+  reads as one bracket, with no jogs at the card edges and no diagonals. A child level with its parent is
+  one straight run. A child dragged further out still turns on the trunk, so the bracket holds.
+- **Downward:** every connector leaves the middle of the parent's bottom, drops to one horizontal **bus**
+  halfway down the gap to the nearest child, runs along it, and drops straight into the middle of each
+  child's top. A child directly below is one straight drop. **Upward** is the same bus mirrored: up from
+  the parent's top into each child's bottom.
+- **Bubble:** straight spokes from face to face. A bubble map fans every way, so a right angle there would
+  cross its own branches; a straight spoke is the neat line.
+
+This is how the finish draws the map, not what is stored: the connectors stay curved, so switching the tab
+back to Flexible or Sketch shows the curves, and growth under Professional copies the curved look and is
+drawn the same right-angled way. Only a connector still in the map's **default look** (curved, never bowed
+or bent by hand) is routed. One that was given another style (straight, angled), a bow or a bend keeps it,
+because a pick on an element wins in every finish; one given its own Flexible finish keeps its curve, which
+is how to keep a curve on a Professional tab. A connector whose faces were re-pinned so they no longer face
+each other is drawn as a plain one-elbow angled line.
+
+A routed connector has no bow, elbow or bend handles, and dragging its line does not bend it: the shape is
+the map's, worked out from where the nodes are, so it follows every move. Its ends start and end exactly on
+the faces rather than in the fan that spreads arrows sharing an anchor, which is what lets siblings share one
+trunk. Routing is the same on the canvas and in every export, and costs one pass over the board per render
+(a 2,000-node map routes in about 10 to 25 ms of CPU, about what the fan costs in Flexible).
 
 ## Keyboard
 
@@ -183,6 +237,19 @@ and both listeners sit on `window`. The traversal one is mounted first, so the
 selected element gets first refusal on the key; otherwise pressing Tab on a mind
 node would cycle the tab's elements instead of growing a branch.
 Shift+Tab stays traversal, since only plain Tab grows.
+
+### New lines
+
+A label with several lines is still one node, so a line break needs a key of its own. Inside a
+mind node's label editor **Shift+Enter starts a new line**, the convention of chat apps and
+outliners (and of Edit Outline's rows, below), and plain **Enter** keeps committing the label and
+adding a sibling, so typing a map from the keyboard is unchanged. Shift+Enter typed ahead, before
+the new node's editor is on screen, is a new line in that node's label too. On a selected node
+with no editor open, Shift+Enter does nothing mind-specific (only plain Enter grows). The
+Keyboard settings list carries it as its own row, beside Tab and Enter on a mind node.
+
+The newline is stored as a `\n` in the label (and its formatted runs), drawn as a line break on
+the canvas and in exports, and the node grows to fit (see "A node grows to fit its label").
 
 ### Typing ahead
 
@@ -255,9 +322,9 @@ Resizing a node resizes only that node.
 
 The arrangement a keyboard-driven outline wants is a child to the right,
 siblings stacked down it. That is a **tree**, and it is only one of the shapes
-people draw. There are four (`MindFlow` in
-`packages/document/src/mind-flow.ts`), picked from the **Mind Map** section of a
-selected node's menu:
+people draw. There are six (`MindFlow` in
+`packages/document/src/mind-flow.ts`), picked from **Branching** in the **Mind
+Map** section of a selected node's menu (see "The Mind Map menu"):
 
 - **Tree**: branches right, siblings stacked down. The default, so every map
   already drawn keeps its shape.
@@ -268,6 +335,11 @@ selected node's menu:
   of the node it was pressed on.
 - **Downward**: branches below, siblings spread across. The tree on its side,
   which is what an org chart or a decision tree looks like.
+- **Leftward**: branches left, siblings stacked down. The tree mirrored, for a
+  map read right to left or one that sits against the right of the canvas.
+- **Upward**: branches above, siblings spread across. The downward tree
+  mirrored, for a goal tree that builds up to its root, the way a pyramid of
+  reasons reads.
 - **Bubble**: branches fanned around the parent. Laid out tidily, the root's
   children share the full circle **equally**, starting from the root's west
   side and running clockwise, so a lone first branch points east. Weighting
@@ -293,9 +365,61 @@ sibling; the flow decides only where the node lands, and which faces its
 connector leaves and enters through (see Connectors).
 
 In free placement, collisions push along the flow's own stacking axis: a tree
-stacks a column, so something in the way moves down; a downward map spreads a
-row, so it moves right. Pushing the wrong way would shove a node straight into
+stacks a column, so something in the way moves down (a leftward map too); a
+downward or upward map spreads a row, so it moves right. Pushing the wrong way would shove a node straight into
 the next sibling's slot.
+
+## Spacing
+
+How far apart a map's nodes sit is the map's **spacing** (`MindSpacing` in
+`packages/document/src/mind-flow.ts`), picked from **Spacing** in the Mind Map
+menu. It scales both gaps the layout uses, parent to child along the flow and
+sibling to sibling across it, by one factor:
+
+| Spacing         | Factor | Parent to child | Between siblings |
+| --------------- | ------ | --------------- | ---------------- |
+| **Tight**       | 0.5    | 32              | 9                |
+| **Compact**     | 0.75   | 48              | 14               |
+| **Comfortable** | 1      | 64              | 18               |
+| **Wide**        | 1.5    | 96              | 27               |
+
+(Rounded to whole pixels. The downward and upward flows' level gap, a sibling gap plus half a child gap, scales
+the same way.)
+
+**Comfortable** is the default and is exactly the gaps maps have always had, so
+every map already drawn keeps its shape. Like the flow, spacing is stored on the
+map's **root** (`mindSpacing`, absent = Comfortable) and applies to the whole
+map. Picking one re-lays the map out at once, around the root, in one undo step,
+the same way a flow pick does; growth and Tidy Map use it from then on, and in
+free placement a new node lands the chosen gap from its parent and siblings.
+
+## The Mind Map menu
+
+A selected mind node's menu has one **Mind Map** section (a closed
+`MenuAccordionSection` like every element-menu section). Inside it, three
+groups, each under a small heading and each one of Plan mode's option lists
+(`OptionRows`, docs/specs/026-plan/plan-board.md "Option lists"): a bordered,
+rounded box with one row per choice at full width, its icon at the left and its
+name after it.
+
+- **Outline**: actions on the whole map.
+  - **Edit Outline**: the map as a list (see "Edit Outline"). Offered on every
+    node, not only the root: it opens the outline of the node's map.
+  - **Tidy Map**: lay the map out again in its flow and spacing (see "Tidy Map").
+  - **Select Branch**: select the node and every node under it, so a branch can
+    be restyled, copied or moved as one.
+  - **Select Whole Map**: select every node of the map, root included.
+- **Branching**: the six flows, one row each, the map's flow ticked. A row is its
+  glyph and name only: a hint line under each was cut short in a menu column and
+  doubled the list's height, and the glyph already draws the arrangement.
+- **Spacing**: Tight, Compact, Comfortable and Wide, the map's spacing ticked.
+
+The selects take connectors too: a selected branch moves, copies and restyles
+with the lines that join it.
+
+Share roles: all of it is an **Editor's**. A Participant or a Viewer sees no Mind
+Map section, as today; the outline badge on a root keeps its own rule (see
+"Edit Outline").
 
 ## Tidy Map
 
@@ -378,6 +502,10 @@ Team offsite
   quiet line counts what Save will do: "3 added, 1 renamed, 2 removed", or "No changes".
 - **On a phone** the dialog rises as a sheet (see live-app.md "Working dialogs rise as sheets on a
   phone"), and the toolbar is the way to indent, outdent and break a line.
+- **With the on-screen keyboard up** (a phone or a tablet) the dialog stays whole inside the
+  visible area above the keyboard, its rows scrolling, the row being edited in view; moving the
+  page or dragging the sheet never puts it under the keyboard (see live-app.md "A dialog stays
+  above the on-screen keyboard").
 
 **What it reads.** Pasted text, and the outline the rows are saved through (the root on the
 first line, every other node a `- ` bullet two spaces deeper than its parent, a node's further
@@ -460,16 +588,25 @@ it in place, and the new nodes look like the template's own.
 - **Mind map**: the bubble flow; a team-offsite plan, a root with five branches, each in its own hue with a glyph, carrying two or three leaves.
 - **Tree mind map**: the tree flow; a bold root, four tinted branches, two small leaves each.
 - **Bubble map**: the bubble flow with round nodes and a single ring; a brand voice, one adjective and its proof line per bubble, each bubble in its own hue.
+- **Sitemap**: the downward flow; Home over the nav sections and the dashed footer and utility groups, each page carrying its route on its second line ([Templates](../008-canvas/canvas-and-palette.md)).
 
 ## Deleting
 
-Deleting a node leaves its children with a `mindParentId` pointing at nothing.
-They become roots: their arrows are already gone (arrow cleanup on delete is
-existing behaviour), so what remains on screen is exactly what the model says.
+Deleting a node deletes its **branch**: every node under it and the connectors
+between them go in the same undo step. A branch is one idea, the same reason it
+moves as one (see "Moving a branch"), and a heading deleted from under its
+points left those points floating as unconnected roots nobody meant to keep.
+Undo brings the whole branch back.
 
-The alternative, cascading the delete to the subtree, was rejected: deleting one
-node and silently losing nine is the kind of thing you only notice after the
-undo stack has moved on.
+- It applies to Delete / Backspace, the element menu's Delete, and a
+  multi-selection's delete: each selected node takes its branch.
+- **Cut** takes the branch too, and copies it first, so a paste puts the whole
+  branch back. A plain **Copy** copies only what is selected.
+- A **locked** node in the branch (or one on a locked layer) stays, as do the
+  nodes under it, and becomes a root, as any protected element survives a
+  delete.
+- The **eraser** is a brush, not a delete: it removes only what it touches, and
+  a child whose parent was erased becomes a root.
 
 ## Discoverability
 
