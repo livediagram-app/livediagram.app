@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyReplace } from './replace';
 import { dashboardSpecIssue } from './dashboard-body';
+import type { ReplaceBody } from './types';
 
 // A replace's `dashboard` source (docs/specs/026-plan/plan-agents.md "Making a dashboard").
 
@@ -68,5 +69,15 @@ describe('dashboard replace', () => {
         notes: [{ title: 'a', text: 'b' }],
       }),
     ).toBeNull();
+  });
+});
+
+describe('dashboard replace, refused', () => {
+  it('refuses a dashboard spec that is not one, naming the problem', () => {
+    const out = applyReplace(null, { dashboard: 'charts please' } as unknown as ReplaceBody, {
+      tabId: 't1',
+      name: 'O',
+    });
+    expect('errors' in out && JSON.stringify(out.errors)).toMatch(/dashboard: expected an object/);
   });
 });

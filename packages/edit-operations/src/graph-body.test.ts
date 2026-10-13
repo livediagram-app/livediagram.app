@@ -75,3 +75,65 @@ describe('graphBodyIssue, the graph look', () => {
     );
   });
 });
+
+describe('graphBodyIssue, a sequence', () => {
+  const sequence = {
+    participants: [
+      { id: 'u', label: 'User', actor: true },
+      { id: 's', label: 'Server', icon: 'server' },
+    ],
+    items: [
+      { kind: 'message', from: 'u', to: 's', label: 'GET', style: 'call', activate: true },
+      { kind: 'message', from: 's', to: 'u', label: '200', style: 'reply', deactivate: true },
+      { kind: 'note', placement: 'over', who: ['u', 's'], text: 'cached' },
+      { kind: 'activate', who: 's' },
+      { kind: 'deactivate', who: 's' },
+      { kind: 'fragment', op: 'alt', label: 'ok' },
+      { kind: 'else', label: 'error' },
+      { kind: 'end' },
+    ],
+    title: 'Fetch',
+    autonumber: true,
+  };
+
+  it('takes every kind of item, and a key of meanings', () => {
+    expect(
+      graphBodyIssue({
+        nodes: [],
+        edges: [],
+        style: 'sequence',
+        sequence,
+        key: { square: 'Step' },
+      }),
+    ).toBeNull();
+    expect(graphBodyIssue({ nodes: [], edges: [], key: true })).toBeNull();
+  });
+
+  it('refuses a malformed item, participant or key', () => {
+    const bad = [
+      { ...sequence, items: [{ kind: 'message', from: 'u', to: 's', label: 'x', style: 'shout' }] },
+      { ...sequence, items: [{ kind: 'note', placement: 'over', who: [], text: 'x' }] },
+      { ...sequence, items: [{ kind: 'wobble' }] },
+      { ...sequence, items: ['end'] },
+      { ...sequence, participants: [{ id: 'u' }] },
+      { ...sequence, autonumber: 'yes' },
+      'u -> s',
+    ];
+    for (const q of bad)
+      expect(graphBodyIssue({ nodes: [], edges: [], sequence: q }), JSON.stringify(q)).toMatch(
+        /^graph\.sequence: expected a sequence/,
+      );
+    expect(graphBodyIssue({ nodes: [], edges: [], key: { square: 1 } })).toMatch(/^graph\.key/);
+  });
+});
+
+describe('graphBodyIssue, icons', () => {
+  it('suggests icons like an unknown one, or points at search_icons when none are', () => {
+    expect(graphBodyIssue({ nodes: [{ id: 'a', icon: 'usr' }], edges: [] })).toMatch(
+      /icons like it: /,
+    );
+    expect(graphBodyIssue({ nodes: [{ id: 'a', icon: 'qqqqzzzz' }], edges: [] })).toMatch(
+      /search_icons finds one/,
+    );
+  });
+});

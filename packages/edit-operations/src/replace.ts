@@ -147,12 +147,7 @@ function nextTab(
   if (built.newOnly) {
     // A Dashboard tab rebuilt: its views and layout anew, everything else about the tab kept.
     const made = built.tab(tab.id, tab.name);
-    const { dashboard: _old, ...rest } = tab;
-    return {
-      ...rest,
-      elements: made.elements,
-      ...(made.dashboard ? { dashboard: made.dashboard } : {}),
-    };
+    return { ...tab, elements: made.elements, dashboard: made.dashboard };
   }
   return { ...tab, elements: landWorkshopArrivals(tab, built.elements, 'replace') };
 }

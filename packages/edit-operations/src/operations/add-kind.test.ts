@@ -152,4 +152,46 @@ describe('add <kind>', () => {
       'element_locked',
     );
   });
+
+  it('keeps a given md text size on a tab with no sibling, and reads a size the template sizes for', () => {
+    const empty: Tab = { id: 't', name: 'T', elements: [] };
+    expect(applied(run('add square label=Pay text=md', empty)).tab.elements[0]).toMatchObject({
+      textSize: 'md',
+    });
+    expect(applied(run('add square label=Pay text=lg', empty)).tab.elements[0]).toMatchObject({
+      textSize: 'lg',
+    });
+  });
+
+  it('matches the size most siblings use when they differ', () => {
+    const tab = checkoutFlow();
+    const mixed: Tab = {
+      ...tab,
+      elements: tab.elements.map((el) => (el.id === 'n2' ? { ...el, textSize: 'md' } : el)),
+    };
+    const { tab: next } = applied(run('add square label="Gift wrap" below:n8', mixed));
+    expect(next.elements.find((e) => e.id === 'gift-wrap')).toMatchObject({ textSize: 'sm' });
+  });
+
+  it('leaves frames alone when placed by coordinates or beside an arrow', () => {
+    for (const op of ['add square label=Far x=4000 y=4000', 'add square label=Near below:a3']) {
+      const outcome = run(op);
+      if ('errors' in outcome) continue;
+      expect(lines(outcome).some((l) => l.startsWith('~ f2'))).toBe(false);
+    }
+  });
+
+  it('widens a frame without making it taller when the new box fits its height', () => {
+    const outcome = run('add square label=Side right-of:n4 height=30');
+    const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
+    expect(grown).toMatch(/widened/);
+    expect(grown).not.toMatch(/taller/);
+  });
+
+  it('makes a frame taller without widening it when the new box fits its width', () => {
+    const outcome = run('add square label=Below below:n5 width=100');
+    const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
+    expect(grown).toMatch(/taller/);
+    expect(grown).not.toMatch(/widened/);
+  });
 });

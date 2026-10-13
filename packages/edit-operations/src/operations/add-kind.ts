@@ -229,8 +229,8 @@ function growToHold(
   el: BoxedElement,
   operation: number,
 ): void {
-  if (!ref || ref.type === 'arrow') return;
-  const holderId = holdersOf(state).get(ref.id);
+  // Placement refuses an arrow as its reference (placement.ts), so a relative placement's ref is always a box.
+  const holderId = holdersOf(state).get(ref!.id);
   const holder = holderId ? state.byId.get(holderId) : undefined;
   if (!holder || holder.type === 'arrow' || state.locked.has(holder.id)) return;
   const right = Math.max(holder.x + holder.width, el.x + el.width + HOLD_PAD);

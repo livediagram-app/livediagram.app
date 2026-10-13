@@ -174,4 +174,57 @@ describe('rewire', () => {
       'a1 from=n3 to=n3: an arrow joins two different boxes',
     ]);
   });
+
+  it('takes a tab of curves, and bends an elbow across or up when the ends lie that way', () => {
+    const curved = flowWith((el) => (el.type === 'arrow' ? { ...el, arrowStyle: 'curved' } : el));
+    expect(elementOf(applied(run('connect n3 -> n7 id=c', curved)).tab, 'c')).toMatchObject({
+      arrowStyle: 'curved',
+    });
+    const angled = (move: (el: Element) => Element) =>
+      flowWith((el) => (el.type === 'arrow' ? { ...el, arrowStyle: 'angled' } : move(el)));
+    // n7 far to the right and level with n3: across, east to west.
+    const across = angled((el) =>
+      el.id === 'n7' && 'x' in el
+        ? { ...el, x: el.x + 1200, y: (el as { y: number }).y - 420 }
+        : el,
+    );
+    const right = elementOf(applied(run('connect n3 -> n7 id=r', across)).tab, 'r');
+    expect(right).toMatchObject({ from: { anchor: 'e' }, to: { anchor: 'w' } });
+    // n1 back up from n7: up, north to south.
+    const up = elementOf(
+      applied(
+        run(
+          'connect n7 -> n1 id=u',
+          angled((el) => el),
+        ),
+      ).tab,
+      'u',
+    );
+    expect(up).toMatchObject({ from: { anchor: 'n' }, to: { anchor: 's' } });
+  });
+
+  it('follows the line most arrows use when they differ, and turns west to a box on the left', () => {
+    const mostly = flowWith((el) =>
+      el.type === 'arrow'
+        ? { ...el, arrowStyle: el.id === 'a1' ? 'straight' : 'angled' }
+        : el.id === 'n7' && 'x' in el
+          ? { ...el, x: (el as { x: number }).x - 1200, y: (el as { y: number }).y - 420 }
+          : el,
+    );
+    // Turned west to east; with nothing to bend round so far across, it falls back to straight.
+    expect(elementOf(applied(run('connect n3 -> n7 id=w', mostly)).tab, 'w')).toMatchObject({
+      arrowStyle: 'straight',
+      from: { anchor: 'w' },
+      to: { anchor: 'e' },
+    });
+  });
+
+  it('draws straight on a tab with no pinned arrows yet', () => {
+    const bare = flowWith((el) => el).elements.filter((el) => el.type !== 'arrow');
+    const made = elementOf(
+      applied(run('connect n3 -> n7 id=s', { ...flowWith((el) => el), elements: bare })).tab,
+      's',
+    );
+    expect((made as { arrowStyle?: string }).arrowStyle ?? 'straight').toBe('straight');
+  });
 });
