@@ -26,7 +26,7 @@ import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
-import { type EditState, putElement, refuseLocked, touch, writeFields } from '../state';
+import { type EditState, holdersOf, putElement, refuseLocked, touch, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
 // Kinds an edit operation cannot make, and what to use instead.
@@ -62,6 +62,30 @@ export function buildKind(kind: string): Built | { refusal: string } {
   return {
     el: { ...createShape(shape, 0, 0), textSize: 'sm' },
     coerced: kind === 'shape' || SHAPE_KINDS.has(kind) ? null : shape,
+  };
+}
+
+// The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
+// has none of that shape (frames and lanes never count, they are containers).
+function peerLook(
+  state: EditState,
+  shape: string,
+): { textSize: 'sm' | 'md' | 'lg' | 'scale'; width: number; height: number } | null {
+  const peers = [...state.byId.values()].filter(
+    (e): e is Extract<Element, { type: 'shape' }> =>
+      e.type === 'shape' && e.shape === shape && shape !== 'frame' && shape !== 'lane',
+  );
+  if (peers.length === 0) return null;
+  const counts = new Map<string, number>();
+  for (const p of peers)
+    counts.set(p.textSize ?? 'scale', (counts.get(p.textSize ?? 'scale') ?? 0) + 1);
+  const textSize = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]![0] as
+    'sm' | 'md' | 'lg' | 'scale';
+  const median = (xs: number[]) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
+  return {
+    textSize,
+    width: median(peers.map((p) => p.width)),
+    height: median(peers.map((p) => p.height)),
   };
 }
 
@@ -102,8 +126,27 @@ export function createKind(
   if ('code' in written) return { rejection: written };
   const named = spec.fields ?? {};
   let el = paint(written.next, state.theme);
-  if (el.type === 'shape' && !('width' in named) && !('height' in named))
-    el = { ...el, ...labelBoxSize(el.label, el.shape) };
+  if (el.type === 'shape' && !('width' in named) && !('height' in named)) {
+    // A new box matches its siblings (docs/specs/024-agents/edit-operations.md "Layout on edit"): the text size most
+    // boxes of its shape on the tab wear, and at least their usual size, so a step added to a drawn flow is not a
+    // small box whose label wraps mid-word beside the others.
+    // With no sibling of its shape, it takes the template's proportions, as graph input draws a box.
+    const peers = peerLook(state, el.shape);
+    if (peers && !('textSize' in named) && !('text' in named))
+      el = { ...el, textSize: peers.textSize };
+    if (peers) {
+      const fit = labelBoxSize(el.label, el.shape);
+      el = {
+        ...el,
+        width: Math.max(fit.width, peers.width),
+        height: Math.max(fit.height, peers.height),
+      };
+    } else {
+      const look =
+        el.textSize === 'sm' || el.textSize === 'md' ? { textSize: el.textSize } : undefined;
+      el = { ...el, ...labelBoxSize(el.label, el.shape, look, !!el.iconId) };
+    }
+  }
   const placed = place({ width: el.width, height: el.height });
   if ('rejection' in placed) return placed;
   el = {
@@ -169,5 +212,46 @@ export function applyAddKind(
   const refused = commitNew(state, made, 'add', index);
   if (refused) return refused;
   growInto(state, made.placed, index);
+  if (operation.place && operation.place.rel !== 'at' && operation.place.rel !== 'inside')
+    growToHold(state, made.placed.ref, made.el, index);
   return null;
+}
+
+// Room a frame or lane leaves around what it holds, and the deeper band its header label takes.
+const HOLD_PAD = 32;
+
+// A box placed beside a member of a frame or lane joins it: the container grows to hold it, as an insertion grows
+// one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside.
+function growToHold(
+  state: EditState,
+  ref: Element | undefined,
+  el: BoxedElement,
+  operation: number,
+): void {
+  if (!ref || ref.type === 'arrow') return;
+  const holderId = holdersOf(state).get(ref.id);
+  const holder = holderId ? state.byId.get(holderId) : undefined;
+  if (!holder || holder.type === 'arrow' || state.locked.has(holder.id)) return;
+  const right = Math.max(holder.x + holder.width, el.x + el.width + HOLD_PAD);
+  const bottom = Math.max(holder.y + holder.height, el.y + el.height + HOLD_PAD);
+  const x = Math.min(holder.x, el.x - HOLD_PAD);
+  const y = Math.min(holder.y, el.y - HOLD_PAD);
+  if (
+    x === holder.x &&
+    y === holder.y &&
+    right === holder.x + holder.width &&
+    bottom === holder.y + holder.height
+  )
+    return;
+  putElement(state, { ...holder, x, y, width: right - x, height: bottom - y }, operation);
+  const touched = touch(state, holder.id, operation);
+  touched.fit = {
+    ...touched.fit,
+    ...(right - x !== holder.width
+      ? { widened: [holder.width, right - x] as [number, number] }
+      : {}),
+    ...(bottom - y !== holder.height
+      ? { taller: [holder.height, bottom - y] as [number, number] }
+      : {}),
+  };
 }

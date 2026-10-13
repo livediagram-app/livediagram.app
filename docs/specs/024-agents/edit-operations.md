@@ -99,6 +99,16 @@ The layout an agent did not ask to change stays put:
 
 - `set` changes no geometry it is not given, except a box growing around its centre to fit a longer label
   (reported).
+- **A new box matches its siblings.** `add` and `insert` of a shape given no size take the text size most boxes of
+  that shape on the tab wear and at least their median size (grown only for a longer label), so a step added to a
+  drawn flow is not a small box wrapping its label mid-word. On a tab with no box of that shape, it takes the
+  template's proportions graph input draws ([MCP server](../015-api/mcp-server.md) §4.7, 180×64 for a square).
+- **A new box placed beside a member joins its frame or lane**: `add` with a placement against an element inside a
+  container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
+  instead of the box landing just outside it.
+- **A new arrow takes the tab's line.** `connect` with no `line=` draws with the line most of the tab's pinned arrows
+  use: angled (anchors along the axis the two boxes lie on, bent twice as graph input bends an elbow) or curved; a
+  given `line=` wins.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
   frame or lane, or outside them within b's connected group along arrows, shifts by the node's size and the gap
   (reported as moves), whatever room there already was. A frame or lane holding shifted members grows with them.

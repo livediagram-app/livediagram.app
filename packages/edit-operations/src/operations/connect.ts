@@ -9,6 +9,7 @@ import {
   createPinnedArrow,
   recolourElementForTheme,
   endpointPosition,
+  orthogonalBends,
   type ArrowElement,
   type BoxedElement,
   type Element,
@@ -107,6 +108,13 @@ export function applyConnect(
   const base = { ...createPinnedArrow(a.el.id, anchors.from, b.el.id, anchors.to), id };
   const written = writeFieldsOnto(base, operation.fields ?? {}, state.theme, id, index);
   if ('code' in written) return written;
+  // No line asked for: the line most of the tab's arrows are drawn with, so an arrow added to a flow of elbows is an
+  // elbow (docs/specs/024-agents/edit-operations.md "Layout on edit").
+  const fields = operation.fields ?? {};
+  if (!('line' in fields) && !('arrowStyle' in fields)) {
+    const styled = prevailingLine(state, written.next, a.el, b.el);
+    if (styled) written.next = styled;
+  }
   const layerId = layerFor(state, a.el);
   const arrow = recolourElementForTheme(
     layerId === undefined ? written.next : { ...written.next, layerId },
@@ -117,6 +125,43 @@ export function applyConnect(
   insertElement(state, arrow, index, { after: later });
   state.created.push(id);
   return null;
+}
+
+// The tab's prevailing line on a new arrow: angled (anchors along the axis the two boxes lie on, bent twice as graph
+// input bends an elbow) or curved; null when most of the tab's pinned arrows are straight, or it has none.
+function prevailingLine(
+  state: EditState,
+  arrow: ArrowElement,
+  a: BoxedElement,
+  b: BoxedElement,
+): ArrowElement | null {
+  const counts = new Map<string, number>();
+  for (const el of currentElements(state)) {
+    if (el.type !== 'arrow' || el.from.kind !== 'pinned' || el.to.kind !== 'pinned') continue;
+    const style = el.arrowStyle ?? 'straight';
+    counts.set(style, (counts.get(style) ?? 0) + 1);
+  }
+  const [style] = [...counts.entries()].sort((p, q) => q[1] - p[1])[0] ?? ['straight'];
+  if (style === 'curved') return { ...arrow, arrowStyle: 'curved' };
+  if (style !== 'angled') return null;
+  const [ca, cb] = [centreOf(a), centreOf(b)];
+  const down = Math.abs(cb.y - ca.y) >= Math.abs(cb.x - ca.x);
+  const turned: ArrowElement = {
+    ...arrow,
+    arrowStyle: 'angled',
+    from: {
+      kind: 'pinned',
+      elementId: a.id,
+      anchor: down ? (cb.y > ca.y ? 's' : 'n') : cb.x > ca.x ? 'e' : 'w',
+    },
+    to: {
+      kind: 'pinned',
+      elementId: b.id,
+      anchor: down ? (cb.y > ca.y ? 'n' : 's') : cb.x > ca.x ? 'w' : 'e',
+    },
+  };
+  const bends = orthogonalBends(turned, [...currentElements(state), turned], down ? 'TB' : 'LR');
+  return bends ? { ...turned, curvePoints: bends } : { ...turned, arrowStyle: 'straight' };
 }
 
 export function applyRewire(

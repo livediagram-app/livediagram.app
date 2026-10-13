@@ -17,6 +17,27 @@ describe('connect', () => {
     expect(ids.indexOf('retry')).toBe(ids.indexOf('n7') + 1);
   });
 
+  it("draws with the line most of the tab's arrows use: an elbow in a flow of elbows", () => {
+    // Elbows throughout, and n7 off to the side so the new arrow has something to bend round.
+    const tab = flowWith((el) =>
+      el.type === 'arrow'
+        ? { ...el, arrowStyle: 'angled' }
+        : el.id === 'n7'
+          ? { ...el, x: el.x + 400 }
+          : el,
+    );
+    const made = elementOf(applied(run('connect n3 -> n7 id=skip', tab)).tab, 'skip');
+    expect(made).toMatchObject({
+      arrowStyle: 'angled',
+      from: { anchor: 's' },
+      to: { anchor: 'n' },
+    });
+    expect((made as { curvePoints?: unknown[] }).curvePoints).toHaveLength(2);
+    // A given line still wins.
+    const straight = elementOf(applied(run('connect n3 -> n7 id=s line=straight', tab)).tab, 's');
+    expect((straight as { arrowStyle?: string }).arrowStyle ?? 'straight').toBe('straight');
+  });
+
   it('mints an arrow id from the kind word, and takes a given id', () => {
     expect(lines(run('connect n7 -> n3'))).toEqual(['+ arrow  n7→n3']);
     expect(lines(run('connect n1 -> n8 id=skip'))).toEqual(['+ skip  n1→n8']);
