@@ -5,6 +5,7 @@ import type { DockAnchor } from '@/lib/canvas-chrome';
 import { AUTO_LAYOUT_CHOICES, AUTO_LAYOUT_TILE_ORDER } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import { verdictLine, type CleanupVerdict } from '@/lib/tidy-verdict';
+import { loadTidyEngine } from '@/lib/tidy-engine';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -150,7 +151,8 @@ function useVerdicts(
   useEffect(() => {
     if (!judge) return;
     let i = 0;
-    let timer: ReturnType<typeof setTimeout>;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let live = true;
     const next = () => {
       const kind = ALL_KINDS[i++];
       const fn = assessRef.current;
@@ -159,8 +161,14 @@ function useVerdicts(
       setVerdicts((was) => ({ ...was, [kind]: v }));
       timer = setTimeout(next, 0);
     };
-    timer = setTimeout(next, 0);
-    return () => clearTimeout(timer);
+    // The tidiers load on demand (lib/tidy-engine.ts); judging starts once they are here.
+    void loadTidyEngine().then(() => {
+      if (live) timer = setTimeout(next, 0);
+    });
+    return () => {
+      live = false;
+      clearTimeout(timer);
+    };
   }, [judge, assessRef]);
   return verdicts;
 }

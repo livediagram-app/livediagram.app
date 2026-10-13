@@ -10,6 +10,8 @@ Scope, by file:
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `apps/live/lib/auto-layout-choices.ts`                                            | Each choice's tile name and line, beside its command name, options and telemetry type      |
 | `apps/live/lib/tab-cleanup.ts`                                                    | `cleanupElements`: the one transform the preview and the press both run; settles a layout  |
+| `apps/live/lib/tidy-engine.ts`                                                    | `loadTidyEngine`, `tidyEngine`, `withTidyEngine`: the tidiers loaded on demand             |
+| `apps/live/lib/locked-element-ids.ts`                                             | `lockedElementIds`: the lock rule, light enough for callers that do not tidy               |
 | `apps/live/lib/tidy-verdict.ts`                                                   | `assessCleanup`, `cleanupVerdict`: whether a tidier is offered, its tile line and notice   |
 | `apps/live/lib/auto-align.ts`, `auto-align-lines.ts`                              | Auto-align: per-element sizes, positions by shared lines, even spacing, the overlap guard  |
 | `packages/document/src/auto-layout-tidy.ts`                                       | The tidy profile: direction, anchoring, clear placement, routing hand-off, mindmap fit     |
@@ -42,7 +44,7 @@ Scope, by file:
 | Tile            | one `AutoLayoutChoice`, in `AUTO_LAYOUT_TILE_ORDER`                                                | A style's button in the grid                          |
 | Tidy Up actions | `TidyUpActions = { run, preview, endPreview, assess, blocked }`                                    | What the chrome is handed; absent means no button     |
 | Verdict         | `CleanupVerdict` (`ok`, `unchanged`, `covers`, `leaves-container`, `rearranges-lanes`, `unsuited`) | Whether a tidier is offered, and why not              |
-| Tidy profile    | `AutoLayoutOptions.tidy`                                                                           | The editor's Auto Layout, as opposed to graph input's |
+| Tidy profile    | `tidyLayoutElements`                                                                               | The editor's Auto Layout, as opposed to graph input's |
 | Unit / rider    | `tidyGraph(...).units`, `moverOf`                                                                  | What moves as one block / with its node               |
 
 "Cleanup" stays the name of the transform (`cleanupElements`, `useCleanupPreview`); "Tidy Up" is only the
@@ -130,6 +132,12 @@ open would still have its element moves refused by `applyParticipantOp`.
   100 nodes Smart 18 ms; 300 nodes (one pass, past `SETTLE_ELEMENT_LIMIT`) Smart about 40 ms, Tree 52 ms,
   Mindmap 5 ms, Auto-align 3.6 ms. Crossing reduction builds each node's neighbours once and buckets edges by rank
   pair (it rescanned every edge per node per sweep: 166 ms of a 210 ms pass at 300 nodes, now 8 ms).
+- **First load:** the tidy profile, its router, the verdicts and `cleanupElements` load on demand
+  (`lib/tidy-engine.ts`): the popover loads them as it opens and judges once they are here; a palette command loads
+  them at the press; a hover before they arrive shows nothing. The document page's initial JS, measured as the
+  gzip sum of the scripts `out/document/placeholder.html` loads: 1,334.8 KiB before this work, 1,343.9 KiB with
+  the tidiers static, 1,337.1 KiB loaded on demand. The remaining 2.3 KiB is Auto-align's line logic, which the AI
+  apply path runs at first load.
 - Judging the six tidiers costs six cleanups plus the overlap sweep: 2.9 ms on the checkout, 21 ms at 50 nodes,
   58 ms at 100, about 450 ms at 300 in all. It runs one tidier per task after the popover paints (D101), so the
   longest single task at 300 nodes is one layout (about 130 ms when it settles), never the six together.

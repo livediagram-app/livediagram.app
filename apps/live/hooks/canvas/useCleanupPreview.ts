@@ -24,8 +24,9 @@
 
 import { useRef, type MutableRefObject } from 'react';
 import type { Element, Tab } from '@livediagram/document';
-import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
-import { assessCleanup, type CleanupVerdict } from '@/lib/tidy-verdict';
+import type { CleanupKind } from '@/lib/tab-cleanup';
+import type { CleanupVerdict } from '@/lib/tidy-verdict';
+import { loadTidyEngine, tidyEngine } from '@/lib/tidy-engine';
 
 export type CleanupPreviewApi = {
   /** Lay the tab out as this cleanup would, without committing anything. */
@@ -59,6 +60,12 @@ export function useCleanupPreview(deps: {
 
   const previewCleanup = (kind: CleanupKind) => {
     if (editsBlocked) return;
+    // The popover loads the tidiers as it opens; a hover in the moment before they arrive shows nothing.
+    const engine = tidyEngine();
+    if (!engine) {
+      void loadTidyEngine();
+      return;
+    }
     const snapshot =
       originalsRef.current?.tabId === activeId
         ? originalsRef.current
@@ -71,7 +78,7 @@ export function useCleanupPreview(deps: {
     previewingRef.current = true;
     // Layers are read live: a preview never changes them, and their locks decide what stays put.
     const layers = tabsRef.current.find((t) => t.id === activeId)?.layers;
-    writeElements(cleanupElements(snapshot.elements, kind, layers));
+    writeElements(engine.cleanupElements(snapshot.elements, kind, layers));
   };
 
   const endCleanupPreview = () => {
@@ -88,13 +95,17 @@ export function useCleanupPreview(deps: {
     tickTabs(mapTabs);
   };
 
+  // Called by the popover only once the tidiers have loaded; before that there is nothing to judge with,
+  // and offering the tidier is the safe default (its press is then judged by the command).
   const assessCleanupKind = (kind: CleanupKind): CleanupVerdict => {
+    const engine = tidyEngine();
+    if (!engine) return { kind: 'ok' };
     const tab = tabsRef.current.find((t) => t.id === activeId);
     const elements =
       originalsRef.current?.tabId === activeId
         ? originalsRef.current.elements
         : (tab?.elements ?? []);
-    return assessCleanup(elements, kind, tab?.layers);
+    return engine.assessCleanup(elements, kind, tab?.layers);
   };
 
   return { previewCleanup, endCleanupPreview, assessCleanupKind };

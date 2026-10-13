@@ -10,14 +10,8 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import {
-  autoLayoutElements,
-  isBoxed,
-  lockedLayerElementIds,
-  type Element,
-  type ElementId,
-  type Layer,
-} from '@livediagram/document';
+import { isBoxed, tidyLayoutElements, type Element, type Layer } from '@livediagram/document';
+import { lockedElementIds } from '@/lib/locked-element-ids';
 import { autoAlignElements } from '@/lib/auto-align';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 
@@ -51,7 +45,7 @@ export function cleanupElements(
   // grid by their centres, so nothing else on the tab is touched. A layout reads the drawing it is
   // given, so laying out its own result can refine it a little further; it runs until a pass moves
   // nothing (bounded), so one press lands on the settled layout and a second finds it already tidy.
-  const layout = (els: Element[]) => autoLayoutElements(els, { ...options, lockedIds, tidy: true });
+  const layout = (els: Element[]) => tidyLayoutElements(els, { ...options, lockedIds });
   let out = layout(elements);
   // A big tab gets one pass: each costs tens of ms there, and a hover preview must stay quick.
   const passes = elements.length <= SETTLE_ELEMENT_LIMIT ? MAX_LAYOUT_PASSES : 1;
@@ -78,9 +72,4 @@ function sameBoxes(a: Element[], b: Element[]): boolean {
   });
 }
 
-/** Ids a cleanup must not move: each element's own lock plus its layer's. O(n). */
-export function lockedElementIds(elements: Element[], layers?: Layer[]): Set<ElementId> {
-  const ids = lockedLayerElementIds(elements, layers);
-  for (const el of elements) if (el.locked === true) ids.add(el.id);
-  return ids;
-}
+export { lockedElementIds };

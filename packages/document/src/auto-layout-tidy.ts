@@ -83,7 +83,14 @@ export function tidyMindmapFits(elements: Element[], lockedIds?: ReadonlySet<Ele
   return rects.size > 2 && pairs.size === rects.size - comps.length;
 }
 
-export function tidyLayoutElements(elements: Element[], opts: AutoLayoutOptions): Element[] {
+// The editor's Tidy Up (docs/specs/008-canvas/layout-cleanup.md "Tidy Up keeps a flowchart a
+// flowchart"): an author's own drawing, not graph input. A separate entry from autoLayoutElements so
+// the graph-input callers (the AI apply path, imports) never load it. Origin options are ignored:
+// the flow's first shape anchors the block.
+export function tidyLayoutElements(
+  elements: Element[],
+  opts: Pick<AutoLayoutOptions, 'style' | 'direction' | 'lockedIds'> = {},
+): Element[] {
   const locked = opts.lockedIds;
   const graph = tidyGraph(elements, locked);
   const { rects, edges, moverOf, units } = graph;

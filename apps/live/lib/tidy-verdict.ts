@@ -11,7 +11,8 @@ import {
   type Element,
   type Layer,
 } from '@livediagram/document';
-import { cleanupElements, lockedElementIds, type CleanupKind } from '@/lib/tab-cleanup';
+import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
+import { lockedElementIds } from '@/lib/locked-element-ids';
 
 export type CleanupVerdict =
   | { kind: 'ok' }

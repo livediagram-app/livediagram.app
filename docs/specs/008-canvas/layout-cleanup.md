@@ -62,7 +62,7 @@ import) to place nodes they never drew.
   spacing respects element sizes.
 - **Graph input** (importers, the MCP, AI output) gets the layout described in the sections up to
   "Two-way edges bow apart", pinned to the origin the caller gives.
-- **The editor's Tidy Up** runs the **tidy profile** instead (`AutoLayoutOptions.tidy`,
+- **The editor's Tidy Up** runs the **tidy profile** instead (`tidyLayoutElements`,
   [below](#tidy-up-keeps-a-flowchart-a-flowchart)): an author's drawing carries intent a generated
   graph does not, and the graph-input layout trashed it.
 - One undoable op (`commit` snapshots the pre-layout state), so it can be
@@ -140,7 +140,7 @@ carry a curve or a routing are left as they are.
 
 ### Tidy Up keeps a flowchart a flowchart
 
-The editor's Auto Layout (`cleanupElements` → `autoLayoutElements(…, { tidy: true })`,
+The editor's Auto Layout (`cleanupElements` → `tidyLayoutElements`, a separate entry so graph-input callers never load it,
 `auto-layout-tidy.ts`) reads the drawing as well as the graph. On the checkout template the
 graph-input layout squared both decisions, straightened every elbow into a diagonal, ran the retry
 loop back through the column it returns along, and landed the flow on top of the title. The tidy

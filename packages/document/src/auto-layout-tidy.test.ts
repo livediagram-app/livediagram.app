@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { autoLayoutElements } from './auto-layout';
-import { clearPlacement, tidyDirection, tidyMindmapFits } from './auto-layout-tidy';
+import {
+  clearPlacement,
+  tidyDirection,
+  tidyLayoutElements,
+  tidyMindmapFits,
+} from './auto-layout-tidy';
 import { createPinnedArrow, createText } from './factories';
 import { createShape } from './shape-factory';
 import { arrowPathPolyline } from './arrow-path';
@@ -31,8 +35,8 @@ function link(
 const find = (out: Element[], id: string) => out.find((e) => e.id === id) as BoxedElement;
 const cx = (b: BoxedElement) => b.x + b.width / 2;
 const cy = (b: BoxedElement) => b.y + b.height / 2;
-const tidy = (els: Element[], extra: Parameters<typeof autoLayoutElements>[1] = {}) =>
-  autoLayoutElements(els, { tidy: true, ...extra });
+const tidy = (els: Element[], extra: Parameters<typeof tidyLayoutElements>[1] = {}) =>
+  tidyLayoutElements(els, extra);
 
 // The checkout template's flow, drawn as a person would: a title above, a spine of mixed widths, two
 // decisions whose No exits step aside, a retry loop back up the side and a back-order rejoining.

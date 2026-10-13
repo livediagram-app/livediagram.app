@@ -18,14 +18,15 @@ import {
 import type { TidyUpActions } from './tidy-up-actions';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
+import { loadTidyEngine } from '@/lib/tidy-engine';
 
 afterEach(() => {
   cleanup();
   vi.useRealTimers();
 });
 
-// The popover judges one tidier per task after it paints.
-const judgeAll = () => act(() => void vi.runAllTimers());
+// The popover loads the tidiers, then judges one per task.
+const judgeAll = () => act(() => vi.runAllTimersAsync());
 
 // jsdom has no ResizeObserver; the popover measures itself with one.
 globalThis.ResizeObserver ??= class {
@@ -139,7 +140,7 @@ describe('TidyUpPopover', () => {
   });
 
   // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".
-  it('greys out a tidier that would not help, with its reason in place of its line', () => {
+  it('greys out a tidier that would not help, with its reason in place of its line', async () => {
     vi.useFakeTimers();
     const { calls } = setup({
       verdicts: {
@@ -148,7 +149,7 @@ describe('TidyUpPopover', () => {
         align: { kind: 'unchanged' },
       },
     });
-    judgeAll();
+    await judgeAll();
     const byKind = Object.fromEntries(tiles().map((t) => [t.kind, t.disabled]));
     expect(byKind).toMatchObject({
       smart: false,
@@ -168,20 +169,23 @@ describe('TidyUpPopover', () => {
     expect(calls).toEqual([]);
   });
 
-  it('judges every tidier once, after it opens, one per task', () => {
+  it('judges every tidier once, after it opens, one per task', async () => {
     vi.useFakeTimers();
     const { actions, view } = setup();
     // Nothing on the first paint: opening never waits on the layouts.
     expect(actions.assess).not.toHaveBeenCalled();
-    act(() => void vi.advanceTimersByTime(0));
+    await act(async () => {
+      await loadTidyEngine();
+    });
+    await act(() => vi.advanceTimersByTimeAsync(0));
     expect(actions.assess).toHaveBeenCalledTimes(1);
-    judgeAll();
+    await judgeAll();
     view.rerender(<TidyUpPopover actions={actions} empty={false} onClose={() => {}} />);
-    judgeAll();
+    await judgeAll();
     expect(actions.assess).toHaveBeenCalledTimes(6);
   });
 
-  it('passes on whether a pressed tidier was judged already', () => {
+  it('passes on whether a pressed tidier was judged already', async () => {
     vi.useFakeTimers();
     const { actions } = setup();
     // Pressed before its turn: the command judges it.
@@ -189,7 +193,7 @@ describe('TidyUpPopover', () => {
     expect(actions.run).toHaveBeenLastCalledWith('tree', false);
     cleanup();
     const second = setup();
-    judgeAll();
+    await judgeAll();
     fireEvent.click(document.querySelector('[data-tidy-kind="tree"]')!);
     expect(second.actions.run).toHaveBeenLastCalledWith('tree', true);
   });
@@ -199,7 +203,7 @@ describe('TidyUpPopover', () => {
     expect(actions.assess).not.toHaveBeenCalled();
   });
 
-  it('says once, over the tiles, when every layout is refused for the lanes', () => {
+  it('says once, over the tiles, when every layout is refused for the lanes', async () => {
     vi.useFakeTimers();
     setup({
       verdicts: {
@@ -210,7 +214,7 @@ describe('TidyUpPopover', () => {
         mindmap: { kind: 'rearranges-lanes' },
       },
     });
-    judgeAll();
+    await judgeAll();
     expect(screen.getByText(TIDY_LANES_NOTE)).toBeTruthy();
     expect(document.querySelector<HTMLButtonElement>('[data-tidy-kind="align"]')!.disabled).toBe(
       false,

@@ -16,8 +16,8 @@ import {
 } from '@livediagram/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
-import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
-import { assessCleanup, verdictNotice } from '@/lib/tidy-verdict';
+import type { CleanupKind } from '@/lib/tab-cleanup';
+import { withTidyEngine, type TidyEngine } from '@/lib/tidy-engine';
 import { useTabTheme } from './useTabTheme';
 import { tabLookById, withLookApplied, type TabLook } from '@/lib/tab-looks';
 import {
@@ -77,12 +77,13 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   // A tidier that would change nothing or damage the drawing is refused with a notice
   // (docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work"). The Tidy Up popover
   // judges first and greys such a tidier out, so its presses arrive `judged`; the command palette's
-  // are judged here, on the live tab (no preview is on screen there).
-  const refused = (kind: CleanupKind, judged: boolean | undefined): boolean => {
+  // are judged here, on the live tab (no preview is on screen there). The tidiers load on demand
+  // (lib/tidy-engine.ts): already there after the popover opens, fetched at the press otherwise.
+  const refused = (engine: TidyEngine, kind: CleanupKind, judged: boolean | undefined): boolean => {
     if (judged) return false;
-    const verdict = assessCleanup(activeTab.elements, kind, activeTab.layers);
+    const verdict = engine.assessCleanup(activeTab.elements, kind, activeTab.layers);
     const name = kind === 'align' ? 'Auto-align' : AUTO_LAYOUT_CHOICES[kind].tileName;
-    const notice = verdictNotice(name, verdict);
+    const notice = engine.verdictNotice(name, verdict);
     if (notice) notify?.(notice);
     return notice !== null;
   };
@@ -90,10 +91,12 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   const autoAlignTab = (opts: { judged?: boolean } = {}) => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
-    if (refused('align', opts.judged)) return;
-    // `commit` snapshots the pre-align state, so undo restores it.
-    commit((els) => cleanupElements(els, 'align', activeTab.layers));
-    track('Tab', 'Aligned');
+    withTidyEngine((engine) => {
+      if (refused(engine, 'align', opts.judged)) return;
+      // `commit` snapshots the pre-align state, so undo restores it.
+      commit((els) => engine.cleanupElements(els, 'align', activeTab.layers));
+      track('Tab', 'Aligned');
+    });
   };
 
   // Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md, GitHub #12): recompute element
@@ -106,13 +109,15 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   const autoLayoutTab = (choice: AutoLayoutChoice = 'smart', opts: { judged?: boolean } = {}) => {
     if (editsBlocked) return;
     if (activeTab.elements.length === 0) return;
-    if (refused(choice, opts.judged)) return;
-    // Everything the layout needs, including the origin it pins to, is read
-    // inside the updater from the elements it is given: a commit taken while a
-    // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
-    // so `current` is the true pre-hover state and undo returns there.
-    commit((current) => cleanupElements(current, choice, activeTab.layers));
-    track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
+    withTidyEngine((engine) => {
+      if (refused(engine, choice, opts.judged)) return;
+      // Everything the layout needs, including the origin it pins to, is read
+      // inside the updater from the elements it is given: a commit taken while a
+      // hover preview is on screen (docs/specs/008-canvas/layout-cleanup.md) composes after the preview's revert,
+      // so `current` is the true pre-hover state and undo returns there.
+      commit((current) => engine.cleanupElements(current, choice, activeTab.layers));
+      track('Tab', 'Aligned', AUTO_LAYOUT_CHOICES[choice].telemetryType);
+    });
   };
 
   // Tab default font (docs/specs/004-interface-design/fonts.md): every text element without its own

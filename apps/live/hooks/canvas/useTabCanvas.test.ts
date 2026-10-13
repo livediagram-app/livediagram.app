@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import type { Element, Tab } from '@livediagram/document';
 import { rollMashup } from '@/lib/look-mashup';
 import { useTabCanvas } from './useTabCanvas';
+import { loadTidyEngine } from '@/lib/tidy-engine';
+
+// The tidiers load on demand (lib/tidy-engine.ts); these tests start with them loaded.
+beforeAll(async () => {
+  await loadTidyEngine();
+});
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', async (orig) => ({
