@@ -54,8 +54,17 @@ its orientation after a Fit to Content page, whose sides are that page's alone);
 article is as [Article pages](article-pages.md) "An article" says; a new slide takes the last
 slide's size (else 16:9), landscape; a new logo page is the 1024 x 1024 artboard. Whatever its
 kind, a new page **carries over the background** of the page before it (the last page): its fill
-and pattern, a logo page taking the fill alone (it takes no pattern); after the plain paper it is
-plain paper too. It is the new page's own from then on. The popover is the same on
+and pattern, a logo page taking the fill alone (it takes no pattern). It is the new page's own
+from then on.
+
+**A new page's background.** A new infographic page with nothing to carry over (after the plain
+paper, or the first page once it is chosen as an infographic, or a Blank Infographic's page)
+starts on the tab theme's **Mist** gradient (the Gradient category's Theme Mist: the theme's
+accent tinted 95% toward white at the top and 72% at the bottom), so a fresh page looks designed
+rather than bare; its default dark ink reads on it at 7:1 or better on every built-in theme. A new
+slide, article or logo page starts on the plain paper as before, and a template that comes with
+content keeps the paper it was designed on. Every path that makes a page lands the same: adding
+one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
 a phone (a bottom sheet). The **+** is named **Add Page** and shows the popover open as pressed. The Toolbar
 strip ends, after a divider, with the same **+** (Add Page), opening the same
 popover, while in Illustrate mode; not on a phone, where the strip has no room to spare and the

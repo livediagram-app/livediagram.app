@@ -16,6 +16,8 @@ import {
   pageSizesFor,
   pageUnits,
   withPageKindChosen,
+  withDefaultPageBackgrounds,
+  type ThemeDefinition,
   PAGE_NAME_MAX,
   withIllustratePages,
   withPageSplit,
@@ -145,6 +147,7 @@ export function illustratePageEdits({
   onLayoutPlaced,
   mayEdit = () => true,
   toastInfo = () => {},
+  theme,
 }: {
   tabId: string;
   current: readonly IllustratePage[];
@@ -166,7 +169,13 @@ export function illustratePageEdits({
   onArticleCreated?: (flow: string) => void;
   // What a page action says it did (Split Into Pages).
   toastInfo?: (message: string) => void;
+  // The tab's theme: a new infographic page starts on its Mist gradient (defaultPageBackground).
+  // Absent, a new page starts on the plain paper.
+  theme?: Pick<ThemeDefinition, 'elementStroke' | 'palette'>;
 }): IllustratePageEdits {
+  // A new infographic page (by id) on the theme's default background, unless it carried one over.
+  const themed = (t: Tab | null, id: string): Tab | null =>
+    t && theme ? withDefaultPageBackgrounds(t, theme, new Set([id])) : t;
   // A locked tab, or a person no longer editing, takes no page edit.
   const commitTab = (change: TabChange) => {
     if (!mayEdit()) return;
@@ -324,7 +333,10 @@ export function illustratePageEdits({
     if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     const flow = nextArticleFlowId(new Set());
-    commitTab((t) => withPageKindChosen(t, pageId, kind, flow));
+    commitTab((t) => {
+      const chosen = withPageKindChosen(t, pageId, kind, flow);
+      return kind === 'infographic' ? themed(chosen, pageId) : chosen;
+    });
     if (kind === 'article') onArticleCreated?.(flow);
     debugLog('[illustrate-page] first page kind chosen', { tabId, pageId, kind });
   };
@@ -332,7 +344,10 @@ export function illustratePageEdits({
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextIllustratePageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
-    commitTab((t) => edited(t, pageAdded(t, kind, id, flow)));
+    commitTab((t) => {
+      const added = edited(t, pageAdded(t, kind, id, flow));
+      return kind === 'infographic' ? themed(added, id) : added;
+    });
     if (kind === 'article') {
       onGoTo(id);
       onArticleCreated?.(flow);

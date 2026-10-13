@@ -425,6 +425,7 @@ export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
 export * from './illustrate-page-paint';
+export * from './page-default-background';
 export * from './illustrate-edits';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';

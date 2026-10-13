@@ -278,6 +278,7 @@ export function useIllustratePages(deps: {
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
       toastInfo: deps.toastInfo,
+      theme,
     }),
   };
 }

@@ -2,6 +2,11 @@
 // "Backgrounds"): the panel's preset catalogue, and the CSS a sheet takes from its background. The
 // export paints the same background onto its own canvas (export-page).
 import {
+  FALLBACK_THEME_ACCENT,
+  MIST_BOTTOM_TINT,
+  MIST_TOP_TINT,
+  themeAccent,
+  themeSecondaries,
   PAGE_GRADIENT_ANGLE,
   pageImageTone,
   pageIsDark,
@@ -169,19 +174,11 @@ export function pagePatternInk(background: PageBackground | undefined): string {
 
 export type ThemeBackgroundPreset = { id: string; label: string; fill: PageFill };
 
-// The accent a theme without its own stroke paints in (the brand blue).
-const FALLBACK_ACCENT = '#0ea5e9';
+// The theme's accent and its default page background are the document's, shared with every path
+// that makes a page.
+export { themeAccent } from '@livediagram/document';
+const FALLBACK_ACCENT = FALLBACK_THEME_ACCENT;
 const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{6}$/i.test(c);
-
-/** The tab theme's accent: its element stroke, else its first palette colour, else the brand blue.
- *  What theme backgrounds and a document's accent are drawn from. */
-export function themeAccent(theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>): string {
-  return isHex(theme.elementStroke)
-    ? theme.elementStroke
-    : isHex(theme.palette?.[0]?.stroke)
-      ? theme.palette![0]!.stroke
-      : FALLBACK_ACCENT;
-}
 
 /**
  * Gradients drawn from the tab's theme (docs/specs/007-editor/illustrate-pages.md "Backgrounds"),
@@ -193,8 +190,7 @@ export function themeBackgroundPresets(
   theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
 ): ThemeBackgroundPreset[] {
   const a = themeAccent(theme);
-  const b = isHex(theme.palette?.[1]?.stroke) ? theme.palette![1]!.stroke : shade(a, 0.25);
-  const c = isHex(theme.palette?.[2]?.stroke) ? theme.palette![2]!.stroke : shade(a, 0.45);
+  const [b, c] = themeSecondaries(theme);
   const g = (id: string, label: string, from: string, to: string): ThemeBackgroundPreset => ({
     id: `theme-${id}`,
     label: `Theme ${label}`,
@@ -202,7 +198,8 @@ export function themeBackgroundPresets(
   });
   return [
     g('dawn', 'dawn', '#ffffff', tint(a, 0.8)),
-    g('mist', 'mist', tint(a, 0.95), tint(a, 0.72)),
+    // A new infographic page's own background (defaultPageBackground).
+    g('mist', 'mist', tint(a, MIST_TOP_TINT), tint(a, MIST_BOTTOM_TINT)),
     g('glow', 'glow', tint(a, 0.85), tint(b, 0.7)),
     g('haze', 'haze', tint(b, 0.92), tint(a, 0.8)),
     g('sorbet', 'sorbet', tint(b, 0.85), tint(c, 0.75)),

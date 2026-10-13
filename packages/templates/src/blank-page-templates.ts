@@ -5,9 +5,11 @@
 // Pure: merged in by templateCanvasOverrides, so every application path (the picker, /new, the MCP worker) lands it.
 import {
   illustratePagesOf,
+  withDefaultPageBackgrounds,
   withPageKindChosen,
   type PageKind,
   type Tab,
+  type ThemeDefinition,
 } from '@livediagram/document';
 import type { TemplateKind } from './templates';
 
@@ -43,4 +45,15 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
   // An article page's writing (an empty Title and paragraph) comes with it.
   const { articles } = chosen as Partial<Tab>;
   return { opensIn: 'illustrate', pages: chosen.pages, ...(articles ? { articles } : {}) };
+}
+
+/** A blank infographic's page on the tab theme's default background (docs/specs/007-editor/
+ *  illustrate-pages.md "A new page's background"), as a page added in the editor starts; any other
+ *  template's tab as it is (one with content keeps the paper it was designed on). */
+export function withBlankPageThemed<T extends Partial<Pick<Tab, 'pages'>>>(
+  tab: T,
+  kind: TemplateKind,
+  theme: Pick<ThemeDefinition, 'elementStroke' | 'palette'>,
+): T {
+  return kind === 'blank-infographic' ? withDefaultPageBackgrounds(tab, theme) : tab;
 }

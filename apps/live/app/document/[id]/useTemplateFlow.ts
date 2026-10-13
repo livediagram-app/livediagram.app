@@ -4,7 +4,7 @@ import type { ItemCreate } from '@livediagram/items';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme, switchThemeBackdrop } from '@/lib/themes';
 import { themeTelemetryLabel } from '@/lib/custom-theme-registry';
-import { isPlanTemplateKind, type TemplateKind } from '@livediagram/templates';
+import { isPlanTemplateKind, withBlankPageThemed, type TemplateKind } from '@livediagram/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { patchTab } from './editor-page-helpers';
@@ -240,7 +240,9 @@ export function useTemplateFlow(opts: {
           ...first!.tab?.(ids),
         };
         const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
-        return { landed, followers: templateFollowerTabs(landed, followers, withMode) };
+        // A blank infographic's page starts on the theme's default background, as an added page.
+        const themed = withBlankPageThemed(landed, kind, theme ?? getTheme(landed.theme));
+        return { landed: themed, followers: templateFollowerTabs(themed, followers, withMode) };
       }),
     );
     for (const f of followers) markTabLoaded(f.id);

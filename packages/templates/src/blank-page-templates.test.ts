@@ -63,3 +63,17 @@ describe('blanks of a page kind', () => {
     expect(templateCanvasOverrides('blank-illustration').pages).toBeUndefined();
   });
 });
+
+describe('a blank infographic on its theme', () => {
+  it("starts its page on the theme's default background; other templates keep theirs", async () => {
+    const { buildTemplateTab } = await import('./template-tab');
+    const { defaultPageBackground, getBuiltInTheme, illustratePagesOf } =
+      await import('@livediagram/document');
+    const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
+    expect(illustratePagesOf(tab)[0]!.background).toEqual(
+      defaultPageBackground(getBuiltInTheme('ocean')),
+    );
+    const slides = buildTemplateTab('s', 'S', 'blank-slide-deck', 'ocean');
+    expect(illustratePagesOf(slides)[0]!.background).toBeUndefined();
+  });
+});
