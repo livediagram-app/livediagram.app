@@ -203,7 +203,7 @@ export type EditorContextMenuProps = {
   sankey?: import('./SankeyMenuSection').SankeyMenuHandlers;
   // Flowchart (docs/specs/009-elements/flowchart.md): present only for an Editor on an unlocked step or
   // chart lane, so the menu shows no Flowchart section otherwise.
-  flowchart?: import('@/components/flowchart/FlowchartMenuGroups').FlowchartMenuHandlers;
+  flowchart?: import('@/components/flowchart/FlowchartMenuSections').FlowchartMenuHandlers;
   // Mind-map flow (docs/specs/009-elements/mind-node.md): the shape the selected node's whole map grows
   // in. Resolved here rather than in the menu because it is stored on the
   // tree's ROOT, which the menu has no way to walk to.

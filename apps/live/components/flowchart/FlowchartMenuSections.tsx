@@ -1,8 +1,10 @@
 'use client';
 
-// The Flowchart menu section's contents (docs/specs/009-elements/flowchart.md): Chart (Add Lane, Tidy
-// Flowchart), Step Type (on a step) and Direction, each one of Plan mode's option lists like the Mind
-// Map section's. Everything but Step Type acts on the selected step's or lane's whole chart.
+// The Flowchart menu category (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout row
+// holding Chart (Add Lane, Tidy Flowchart), Step Type (on a step) and Direction, each a closed accordion
+// around one of Plan mode's option lists, the way the Mind Map row is built. Everything but Step Type acts
+// on the selected step's or lane's whole chart.
+import type { ComponentProps } from 'react';
 import {
   FLOWCHART_DIRECTIONS,
   FLOWCHART_DIRECTION_LABEL,
@@ -11,10 +13,18 @@ import {
   type FlowchartDirection,
   type FlowchartStepType,
 } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import { Glyph, lucideGlyph } from '@livediagram/ui';
+import { lucideRoute, lucideShapes, lucideWorkflow } from '@livediagram/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { MenuGroup } from '@/components/palette/plan-menu-parts';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { DataMenuGlyph } from '@/components/palette/context-menu-rows';
 import { STEP_TYPE_GLYPH } from '@/components/flowchart/step-type-glyphs';
+
+const ChartGlyph = lucideGlyph(lucideWorkflow, MENU_ICON_PX);
+const StepTypeGlyph = lucideGlyph(lucideShapes, MENU_ICON_PX);
+const DirectionGlyph = lucideGlyph(lucideRoute, MENU_ICON_PX);
 
 export type FlowchartMenuHandlers = {
   // The selected step's type; absent on a lane.
@@ -27,6 +37,7 @@ export type FlowchartMenuHandlers = {
 };
 
 type ChartAction = 'lane' | 'tidy';
+type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 const CHART_ICON: Record<ChartAction, React.ReactNode> = {
   lane: (
@@ -59,22 +70,32 @@ const DIRECTION_ICON: Record<FlowchartDirection, React.ReactNode> = {
   ),
 };
 
-export function FlowchartMenuGroups({
+export function FlowchartMenuSections({
   stepType,
   direction,
   onSetStepType,
   onSetDirection,
   onAddLane,
   onTidy,
-}: FlowchartMenuHandlers) {
+  sectionProps,
+  flyoutProps,
+}: FlowchartMenuHandlers & {
+  sectionProps: (id: string) => SectionProps;
+  // The Flowchart category's own row: open state and placement, as the host gives every flyout.
+  flyoutProps: Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
+}) {
   const actions: Record<ChartAction, () => void> = { lane: onAddLane, tidy: onTidy };
   const chartRows: { id: ChartAction; label: string }[] = [
     { id: 'lane', label: 'Add Lane' },
     { id: 'tidy', label: 'Tidy Flowchart' },
   ];
   return (
-    <>
-      <MenuGroup title="Chart">
+    <MenuFlyoutSection title="Flowchart" icon={<DataMenuGlyph />} {...flyoutProps}>
+      <MenuAccordionSection
+        title="Chart"
+        icon={<ChartGlyph />}
+        {...sectionProps('flowchart-chart')}
+      >
         <OptionRows
           kind="action"
           label="Chart"
@@ -82,9 +103,13 @@ export function FlowchartMenuGroups({
           rows={chartRows.map((r) => ({ ...r, icon: CHART_ICON[r.id] }))}
           onPick={(id) => actions[id as ChartAction]()}
         />
-      </MenuGroup>
+      </MenuAccordionSection>
       {stepType ? (
-        <MenuGroup title="Step Type">
+        <MenuAccordionSection
+          title="Step Type"
+          icon={<StepTypeGlyph />}
+          {...sectionProps('flowchart-step-type')}
+        >
           <OptionRows
             kind="single"
             label="Step Type"
@@ -97,9 +122,13 @@ export function FlowchartMenuGroups({
             }))}
             onPick={(id) => onSetStepType(id as FlowchartStepType)}
           />
-        </MenuGroup>
+        </MenuAccordionSection>
       ) : null}
-      <MenuGroup title="Direction">
+      <MenuAccordionSection
+        title="Direction"
+        icon={<DirectionGlyph />}
+        {...sectionProps('flowchart-direction')}
+      >
         <OptionRows
           kind="single"
           label="Direction"
@@ -112,7 +141,7 @@ export function FlowchartMenuGroups({
           }))}
           onPick={(id) => onSetDirection(id as FlowchartDirection)}
         />
-      </MenuGroup>
-    </>
+      </MenuAccordionSection>
+    </MenuFlyoutSection>
   );
 }

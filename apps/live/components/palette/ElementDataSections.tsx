@@ -47,7 +47,7 @@ import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MindMapMenuGroups } from './MindMapMenuGroups';
-import { FlowchartMenuGroups } from '@/components/flowchart/FlowchartMenuGroups';
+import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
@@ -517,16 +517,14 @@ export function ElementDataSections({
               />
             </MenuAccordionSection>
           ) : null}
-          {/* Flowchart (docs/specs/009-elements/flowchart.md): the chart's lanes and tidy, the step's type,
-            the chart's direction. */}
+          {/* Flowchart (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout of Chart (lanes and
+            tidy), the step's Step Type and the chart's Direction. */}
           {props.flowchart ? (
-            <MenuAccordionSection
-              title="Flowchart"
-              icon={<DataMenuGlyph />}
-              {...sectionProps('flowchart')}
-            >
-              <FlowchartMenuGroups {...props.flowchart} />
-            </MenuAccordionSection>
+            <FlowchartMenuSections
+              {...props.flowchart}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('flowchart')}
+            />
           ) : null}
           {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
             whoever clicked. Tiles rather than a list so the icons match the
