@@ -261,6 +261,13 @@ between categories changes nothing on the page.
   to read ("Re-inking" below). Same edit, one undo.
 - The page background is a page's, never the tab's: the surround (the tab's own canvas) is
   untouched.
+- **It follows the theme.** When the tab's theme changes (a theme, or a Look), a page whose fill is
+  one of the old theme's own takes the same one from the new theme: a Theme gradient (the default
+  Mist included) the gradient of the same name, an animated background the same motion in the same
+  colouring, a Theme Palette colour the colour in the same place of the new palette. A colour
+  someone picked that is not the theme's (a preset gradient, a custom one, a standard colour, a
+  picture) stays, as an element's own colour does. Content on a page whose fill moved is re-inked
+  for it, in the same edit.
 
 ### Re-inking
 

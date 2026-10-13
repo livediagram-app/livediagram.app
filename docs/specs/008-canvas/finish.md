@@ -38,7 +38,8 @@ element leaves unset, plus how a line is drawn (Sketch).
 - **Icons:** a line-art icon without its own weight draws Thin (0.75 px) instead of Regular. A weight picked on the
   icon wins. Technology icons and stickers are full-colour art and draw as they are.
 - **Lettering:** an element without its own font, on a tab without one, is written in Inter. A font picked on the
-  element or the tab wins.
+  element or the tab wins, except that Professional picked on the element itself (not followed from the tab) is
+  more specific than the tab's font and writes it in Inter; the element's own font still wins over both.
 - **Arrows:** a freshly drawn arrow whose style was not picked becomes a right-angled connector (Angled) instead of
   taking the draw-time avoidance curve ([Arrow collision avoidance](arrow-collision-avoidance.md)). It is an
   ordinary Angled arrow afterwards; arrows already on the tab keep their style.
@@ -62,7 +63,9 @@ element leaves unset, plus how a line is drawn (Sketch).
   centre inside the shape, such as a flowchart key's card under its captions) is not shaded, so what sits on it
   stays readable. Only a shape that stands alone is shaded.
 - **Lettering:** an element without its own font, on a tab without one, is written in the handwriting font
-  (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab. A code block keeps its monospace font.
+  (Caveat). A font picked on the element or the tab wins, so a typeface picked in Tab Style shows on a Sketch tab.
+  Sketch picked on the element itself is more specific than the tab's font: that element is written by hand even
+  on a tab with a typeface (Style → Finish on one heading of a Boardroom slide); its own font still wins. A code block keeps its monospace font.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
   cardinality).

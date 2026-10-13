@@ -18,6 +18,7 @@ import {
 import type { PageLayoutId } from '@livediagram/templates';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { pageSheetStyle } from '@/lib/illustrate-page-paint';
+import { PageMotionLayer } from './PageMotionLayer';
 import { buildPageLayout } from '@livediagram/templates';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 
@@ -68,7 +69,17 @@ export function InfographicLayoutPreview({
         ...pageSheetStyle(page.background),
       }}
     >
+      {/* A slide's animated background keeps moving under the previewed layout. */}
+      {page.background?.fill?.kind === 'gradient' && page.background.fill.motion ? (
+        <PageMotionLayer
+          motion={page.background.fill.motion}
+          fill={page.background.fill}
+          width={rect.width}
+          height={rect.height}
+        />
+      ) : null}
       <svg
+        className="relative"
         width={rect.width}
         height={rect.height}
         viewBox={`${rect.x} ${rect.y} ${rect.width} ${rect.height}`}

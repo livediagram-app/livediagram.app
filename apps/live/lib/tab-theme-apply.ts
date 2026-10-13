@@ -3,6 +3,7 @@
 // theme (useTabTheme.setTheme) and picking a look (useTabCanvas.applyTabLook) both run it, so a look's theme lands
 // exactly as picking that theme does.
 import { viewElementInTheme, type Appearance, type Tab } from '@livediagram/document';
+import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
 import { getResolvedAppearance } from '@livediagram/ui';
 import {
   getTheme,
@@ -67,5 +68,10 @@ export function withThemeApplied(
   // elements: a deliberately-chosen pattern / colour survives a
   // theme change instead of being reset to the theme's backdrop.
   const backdrop = switchThemeBackdrop(t, prevTheme, theme);
-  return { ...t, elements, theme: id, ...backdrop };
+  // Illustrate pages on a fill of the old theme's own take the new theme's (page-theme-follow).
+  return withPageBackgroundsFollowingTheme(
+    { ...t, elements, theme: id, ...backdrop },
+    prevTheme,
+    theme,
+  );
 }

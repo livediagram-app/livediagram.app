@@ -10,6 +10,7 @@ import {
   finishCornerFallbackPx,
   finishCurvesNewArrows,
   finishDrawsDefaultShadow,
+  elementFontId,
   finishFontId,
   finishNewArrowStyle,
   supportsFinish,
@@ -123,5 +124,20 @@ describe('finishNewArrowStyle', () => {
     expect(finishNewArrowStyle('professional')).toBe('angled');
     expect(finishNewArrowStyle('flexible')).toBeUndefined();
     expect(finishNewArrowStyle('sketch')).toBeUndefined();
+  });
+});
+
+// docs/specs/008-canvas/finish.md "Where a finish comes from": an element's own finish is more
+// specific than the tab's font.
+describe("an element's own finish and the tab's font", () => {
+  it("letters in the element's own finish over the tab's font, its own font over both", () => {
+    expect(elementFontId({ finish: 'sketch' }, 'inter', 'professional')).toBe(SKETCH_FONT_ID);
+    expect(elementFontId({ finish: 'professional' }, 'lora', 'flexible')).toBe(PROFESSIONAL_FONT_ID);
+    expect(elementFontId({ finish: 'sketch', font: 'lora' }, 'inter', 'flexible')).toBe('lora');
+  });
+
+  it("keeps the tab's font when the element follows the tab or is Flexible", () => {
+    expect(elementFontId({}, 'inter', 'sketch')).toBe('inter');
+    expect(elementFontId({ finish: 'flexible' }, 'inter', 'sketch')).toBe('inter');
   });
 });
