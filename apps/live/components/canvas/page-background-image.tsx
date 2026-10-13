@@ -2,7 +2,7 @@
 
 // The Background section's Image category (docs/specs/007-editor/illustrate-pages.md "Image
 // backgrounds"): the page's picture with its credit, its Overlay, Strength and Position, then the
-// image search (asking for the page's shape, large) and Upload an Image to pick or replace it. A
+// image search (asking for the page's shape) and Upload an Image to pick or replace it. A
 // hovered result, overlay or position previews on the page; a pick, an upload or a press commits
 // one edit. Not offered on a logo page (page-background-section).
 import { useRef, useState, type ReactNode } from 'react';
@@ -57,11 +57,12 @@ const POSITION_TILES: readonly { id: PageImagePosition | 'center'; label: string
 // A sample picture under each overlay tile: a sky over hills, so the wash reads.
 const SAMPLE = 'linear-gradient(180deg, #7dd3fc 0%, #fde68a 55%, #4d7c0f 56%, #365314 100%)';
 
-/** The Openverse filters a page's picture is searched with: its shape, large. */
+/** The Openverse filters a page's picture is searched with: its shape. Not `size: 'large'`: Openverse cannot
+ *  render thumbnails for most of those (its thumbnail service answers 424), so every result drew broken. */
 export function pageImageFilters(page: IllustratePage): OpenverseFilters {
   const { width, height } = pageDimensions(page);
   const aspectRatio = width === height ? 'square' : width > height ? 'wide' : 'tall';
-  return { aspectRatio, size: 'large' };
+  return { aspectRatio };
 }
 
 function Heading({ children }: { children: ReactNode }) {
