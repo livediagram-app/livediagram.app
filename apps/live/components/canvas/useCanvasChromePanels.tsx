@@ -166,6 +166,7 @@ export function useCanvasChromePanels({
     onMoveCommentsPanel,
     onMoveDocumentToFolder,
     onMoveDocumentTo,
+    onLibraryChanged,
     onNewDocument,
     explorerMenuActions,
     onOpenActionForElement,
@@ -207,6 +208,7 @@ export function useCanvasChromePanels({
     onDeleteFolder,
     onMoveDocumentToFolder,
     onMoveDocumentTo,
+    onLibraryChanged,
     onMenuShare: explorerMenuActions?.onShare,
     onMenuExport: explorerMenuActions?.onExport,
     onMenuSearch: explorerMenuActions?.onSearch,
@@ -325,6 +327,7 @@ export function useCanvasChromePanels({
         menuActions={explorerMenu}
         onRenameCurrent={explorerHandlers.onRenameCurrent}
         onDeleteDocument={explorerHandlers.onDeleteDocument}
+        onLibraryChanged={explorerHandlers.onLibraryChanged}
         onDuplicateDocument={explorerHandlers.onDuplicateDocument}
         onCreateFolder={explorerHandlers.onCreateFolder}
         onRenameFolder={explorerHandlers.onRenameFolder}
