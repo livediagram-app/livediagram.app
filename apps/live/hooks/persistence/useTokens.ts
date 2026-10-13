@@ -20,6 +20,7 @@ const announceChange = () => window.dispatchEvent(new Event(TOKENS_CHANGED_EVENT
 
 export type TokensController = {
   list: ApiToken[] | null;
+  // Live (unexpired) tokens: the slots of the cap they take.
   count: number;
   // The per-account cap, so a caller can say it without restating it.
   max: number;
@@ -50,7 +51,10 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
     return () => window.removeEventListener(TOKENS_CHANGED_EVENT, load);
   }, [load, enabled]);
 
-  const count = list?.length ?? 0;
+  // The cap counts live tokens only, as the api's mint does: an expired token still listed (until revoked) takes
+  // no slot, so it never blocks making a new one.
+  const now = Date.now();
+  const count = list?.filter((t) => t.expiresAt > now).length ?? 0;
   const atCap = count >= MAX_TOKENS;
 
   const create = useCallback(
