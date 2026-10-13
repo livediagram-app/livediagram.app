@@ -2335,10 +2335,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   >(null);
   // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden } = slideDeck;
+  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
   const pageDeck = useMemo(
-    () => pageDeckControls(currentDeck, activeId, !isReadOnly, { newPageSlide, toggleSlideHidden }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden],
+    () =>
+      pageDeckControls(currentDeck, activeId, !isReadOnly, {
+        newPageSlide,
+        toggleSlideHidden,
+        setSlideNotes,
+      }),
+    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
   );
   const illustrateView = useMemo(
     () =>

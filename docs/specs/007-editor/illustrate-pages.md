@@ -450,7 +450,7 @@ and logo pages keep their background in the panel only. Opening it is tracked as
 
 ### Tidy
 
-An infographic page's title bar holds a **Tidy** button left of its Background button, shown
+An infographic or slide page's title bar holds a **Tidy** button left of its Background button, shown
 only while a press would change something (a page already tidy, or empty, shows none), the
 cog's size with a tooltip ("Tidy: align and space what is on this page"), its glyph the
 diagram Tidy Up's broom. On a desktop it names itself beside its icon (**Tidy**); a phone shows
@@ -1152,16 +1152,22 @@ separate pages. It is explicit: never run on entering the mode.
 - Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
   Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
   says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
-- **A slide page's deck button**: beside its cog (left of it), for an editor on a desktop, a slide
-  page shows its place in the deck. While the deck has no slide of the page (on this tab) it is
-  **Add to slide deck** (the Slide Deck icon), which adds the page slide at the deck's end, as Add
-  as slide does. Once the deck has one it is an eye that toggles that slide's visibility in the
-  presentation: **Hide from the presentation** (an open eye) or **Show in the
-  presentation** (a crossed eye, dimmed), the same as the slide's Visibility in the Slide Deck.
-  Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
+- **A slide page's deck button**: first in its title bar, left of Layout and Background, for an
+  editor on a desktop, a slide page shows its place in the deck, named beside its icon while the
+  title bar has room. While the deck has no slide of the page (on this tab) it is **Add to Slides**
+  (the Slide Deck icon), which adds the page slide at the deck's end, as Add as slide does. Once
+  the deck has one it toggles that slide's visibility in the presentation: **Hide in Slides** (an
+  open eye) or **Show in Slides** (a crossed eye), the same as the slide's Visibility in the Slide
+  Deck. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
 SlideShown`).
+- **Add Notes**: beside the deck button once the deck has a slide of the page, **Add Notes** (a
+  page glyph) opens a popover holding that slide's speaker notes, the deck slide's own: the same
+  notes the Slide Deck panel writes and the presenter view shows, never drawn on the slide. Once
+  the slide has notes the button reads **Notes**, pressed. Every keystroke writes the deck (one
+  `UI · Changed · SlideNotes` per opening, on the first keystroke); emptying the box removes the
+  notes. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone, like the deck button.
 - **Any other page in the deck shows its eye too**: an infographic, article or logo page offers no
-  Add to slide deck in its title bar (the Slide Deck's page picker adds it), but once the deck has a
+  Add to Slides in its title bar (the Slide Deck's page picker adds it), but once the deck has a
   slide of it, the same eye sits beside its cog, so wherever a page is presented its visibility is
   one press away.
 - **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the

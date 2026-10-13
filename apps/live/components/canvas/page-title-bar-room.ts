@@ -4,13 +4,13 @@
 import { logoTitleBarRoom } from './LogoTitleBar';
 import { pageBackgroundRoom } from './PageBackgroundButton';
 import { pageLayoutsRoom } from './PageLayoutsButton';
+import { pageDeckRoom } from './PageDeckButton';
 import { pageLockRoom } from './PageLockButton';
+import { pageNotesRoom } from './PageNotesButton';
 import { pageTidyUpRoom } from './PageTidyUpButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
 export const COG_ROOM = 32;
-// The deck button beside a slide page's cog: its 24 px and the gap.
-export const DECK_ROOM = 28;
 export const LABEL_MIN = 40;
 
 export type TitleBarButtons = {
@@ -18,6 +18,8 @@ export type TitleBarButtons = {
   edit: boolean;
   locked: boolean;
   deck: boolean;
+  // A slide in the deck: its Add Notes.
+  notes: boolean;
   logo: boolean;
   // An infographic or slide page's Layout and Background.
   page: boolean;
@@ -28,7 +30,8 @@ export type TitleBarButtons = {
 export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
   return (
     (b.edit ? COG_ROOM + pageLockRoom(b.locked, named) : 0) +
-    (b.deck ? DECK_ROOM : 0) +
+    (b.deck ? pageDeckRoom(named) : 0) +
+    (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
     (b.tidy ? pageTidyUpRoom(named) : 0)

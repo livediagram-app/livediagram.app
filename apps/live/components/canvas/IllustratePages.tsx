@@ -14,6 +14,7 @@ import { LogoTitleBar } from './LogoTitleBar';
 import { PageLockButton } from './PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
+import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
@@ -233,10 +234,9 @@ export function IllustratePages({
           !locked &&
           !page.flow &&
           (page.kind === 'slide' || pageKindOf(page) === 'infographic');
-        // An infographic page's Tidy, left of its Background, shown only while it would change
-        // something.
-        const tidyButton =
-          pageButtons && pageKindOf(page) === 'infographic' && edit.canTidy?.(page.id) === true;
+        // An infographic or slide page's Tidy, left of its Background, shown only while it would
+        // change something.
+        const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
         // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
         const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
@@ -252,6 +252,8 @@ export function IllustratePages({
           !!view.deck &&
           !mobile &&
           (page.kind === 'slide' || !!view.deck.slideOf(page.id));
+        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
+        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
         // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
         // an infographic or slide page's): the invite and the label share what they leave.
@@ -259,6 +261,7 @@ export function IllustratePages({
           edit: !!edit,
           locked,
           deck: deckButton,
+          notes: notesButton,
           logo: logoButtons,
           page: pageButtons,
           tidy: tidyButton,
@@ -361,6 +364,14 @@ export function IllustratePages({
                 {logoButtons && view.logo ? (
                   <LogoTitleBar pageId={page.id} tools={view.logo} labelled={labelled} />
                 ) : null}
+                {/* First, left of Layout and Background: this slide's place in the deck, and its
+                    notes once it is in it. */}
+                {deckButton && view.deck ? (
+                  <PageDeckButton pageId={page.id} deck={view.deck} labelled={labelled} />
+                ) : null}
+                {notesButton && view.deck ? (
+                  <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
+                ) : null}
                 {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
                 {pageButtons ? (
                   <PageLayoutsButton
@@ -373,7 +384,7 @@ export function IllustratePages({
                     }
                   />
                 ) : null}
-                {/* An infographic page's Tidy (PageTidyUpButton), while it would change something. */}
+                {/* An infographic or slide page's Tidy (PageTidyUpButton), while it would change something. */}
                 {tidyButton ? (
                   <PageTidyUpButton pageId={page.id} labelled={labelled} edit={edit} />
                 ) : null}
@@ -394,10 +405,6 @@ export function IllustratePages({
                     labelled={labelled}
                     onToggle={() => edit.setLocked(page.id, !locked)}
                   />
-                ) : null}
-                {/* Beside the cog: this slide's place in the deck. */}
-                {deckButton && view.deck ? (
-                  <PageDeckButton pageId={page.id} deck={view.deck} />
                 ) : null}
                 <PageCog
                   name={`${page.name ?? (pages.length > 1 ? `Page ${page.index + 1}` : 'Page')} settings`}

@@ -480,7 +480,8 @@ export function illustratePageEdits({
   const tidied = (t: Tab, pageId: string): Tab | null => {
     const pages = layOutIllustratePages(illustratePagesOf(t));
     const target = pages.find((p) => p.id === pageId);
-    if (!target || pageKindOf(target) !== 'infographic') return null;
+    // An infographic or slide page; a logo page tidies its drawn lines, an article flows.
+    if (!target || (pageKindOf(target) !== 'infographic' && target.kind !== 'slide')) return null;
     const next = tidyPageElements(t.elements, {
       ids: elementIdsOnPage(t.elements, pages, pageId),
       rect: target.rect,

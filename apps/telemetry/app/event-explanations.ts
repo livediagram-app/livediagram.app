@@ -728,7 +728,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Aligned|FlowchartRight': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|Mindmap': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Aligned|PageTidyUp':
-    'Someone pressed Tidy Up on an infographic page, lining up and spacing what is on it.',
+    'Someone pressed Tidy on an infographic or slide page, lining up and spacing what is on it.',
   'Tab|Aligned|Tree': 'Someone tapped "Auto align" to snap a tab to the grid.',
   'Tab|Changed|OpensInDiagram':
     "Someone set a tab to open in Diagram mode for everyone, from the tab menu's former Opens in (retired: the tab menu's Mode now counts as a mode switch).",
