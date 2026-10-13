@@ -6,6 +6,7 @@ import {
   chartTextInk,
   CHART_MARK_CONTRAST,
   CHART_TEXT_CONTRAST,
+  CHART_TEXT_TARGET,
 } from './chart-ink';
 import { CHART_PALETTES } from './chart-palettes';
 import { contrastRatio, hexToRgb } from './colors';
@@ -101,14 +102,24 @@ describe('chartMarkInk', () => {
 });
 
 describe('chartTextInk', () => {
-  it.each(Object.entries(GROUNDS))('holds a chart label to 4.5:1 on a %s page', (_, ground) => {
-    for (const color of ['#0f172a', '#334155', '#64748b', '#94a3b8', '#f8fafc']) {
-      const out = chartTextInk(color, [ground]);
-      expect(contrastRatio(out, ground), `${color} on ${ground}`).toBeGreaterThanOrEqual(
-        CHART_TEXT_CONTRAST,
-      );
-    }
-  });
+  it.each(Object.entries(GROUNDS))(
+    'keeps a chart label at 4.5:1 or over, else takes it to 7:1, on a %s page',
+    (_, ground) => {
+      for (const color of ['#0f172a', '#334155', '#64748b', '#94a3b8', '#f8fafc']) {
+        const out = chartTextInk(color, [ground]);
+        const kept = contrastRatio(color, ground) >= CHART_TEXT_CONTRAST;
+        // 7:1 where any lightness of the hue reaches it (white or black does), else AA.
+        const reachable =
+          Math.max(contrastRatio('#ffffff', ground), contrastRatio('#000000', ground)) >=
+          CHART_TEXT_TARGET;
+        if (kept) expect(out, `${color} on ${ground}`).toBe(color);
+        else
+          expect(contrastRatio(out, ground), `${color} on ${ground}`).toBeGreaterThanOrEqual(
+            reachable ? CHART_TEXT_TARGET : CHART_TEXT_CONTRAST,
+          );
+      }
+    },
+  );
 
   it('keeps text that already reads, and anything it cannot measure', () => {
     expect(chartTextInk('#0f172a', [LIGHT])).toBe('#0f172a');

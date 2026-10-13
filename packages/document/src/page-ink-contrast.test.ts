@@ -62,6 +62,16 @@ describe('page ink contrast', () => {
     }
   });
 
+  it('settles for the floor, keeping the hue, where no lightness reaches the target', () => {
+    // On teal neither white nor black reaches 7:1, so a blue heading goes to AA, still blue.
+    const teal = '#0f766e';
+    const out = inkToward('#1d4ed8', [teal], 4.5, 7);
+    expect(contrastRatio(out, teal)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(out, teal)).toBeLessThan(7);
+    expect(['#ffffff', '#000000']).not.toContain(out);
+    expect(Math.abs(hue(out) - hue('#1d4ed8'))).toBeLessThan(6);
+  });
+
   it('goes whichever way needs the smaller change', () => {
     // Pale on a white page: darker; navy on navy: lighter.
     expect(contrastRatio(inkToward('#e0f2fe', ['#ffffff'], 3, 4.5), '#000000')).toBeLessThan(

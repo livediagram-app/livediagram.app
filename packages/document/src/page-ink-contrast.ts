@@ -69,8 +69,10 @@ function leastToward(color: string, tones: readonly string[], target: number, li
 /**
  * A colour that reads on the tones: unchanged while its worst contrast against them is at least
  * `floor`; else the same hue lightened or darkened, whichever needs the smaller change, by the
- * least amount whose worst contrast reaches `target`. When neither way reaches it (a gradient from
- * black to white under the element), the end (white or black) that reads best.
+ * least amount whose worst contrast reaches `target`. Where no change of its lightness reaches
+ * `target` (7:1 on a mid-tone teal), the least that reaches `floor`, still keeping its hue. When
+ * neither way reaches even that (a gradient from black to white under the element), the end
+ * (white or black) that reads best.
  */
 export function inkToward(
   color: string,
@@ -81,14 +83,17 @@ export function inkToward(
   if (!isOpaqueHex(color) || tones.length === 0) return color;
   const now = worstContrast(color, tones);
   if (Number.isNaN(now) || now >= floor) return color;
-  const goal = Math.max(floor, target);
-  const up = leastToward(color, tones, goal, true);
-  const down = leastToward(color, tones, goal, false);
-  const reached = [up, down].filter((t) => t.amount <= 1);
-  if (reached.length > 0) {
-    // The smaller change; on a tie, the lighter.
-    reached.sort((a, b) => a.amount - b.amount);
-    return reached[0]!.color;
+  let up: Toward | undefined;
+  let down: Toward | undefined;
+  for (const goal of target > floor ? [target, floor] : [floor]) {
+    up = leastToward(color, tones, goal, true);
+    down = leastToward(color, tones, goal, false);
+    const reached = [up, down].filter((t) => t.amount <= 1);
+    if (reached.length > 0) {
+      // The smaller change; on a tie, the lighter.
+      reached.sort((a, b) => a.amount - b.amount);
+      return reached[0]!.color;
+    }
   }
-  return up.contrast >= down.contrast ? up.color : down.color;
+  return up!.contrast >= down!.contrast ? up!.color : down!.color;
 }

@@ -242,13 +242,23 @@ describe('re-inking a page', () => {
     expect(withPageInkFor(tab, 'p', undefined)).toBe(tab);
   });
 
-  it('keeps text between 3:1 and AA, and takes text under 3:1 to AA', () => {
+  it('keeps text at AA, and takes text under AA, a soft heading included, to AAA', () => {
     const fill: PageFill = { kind: 'solid', color: '#ffffff' };
-    const tab = tabOf([text('kept', 20, 20, '#2563eb'), text('moved', 20, 80, '#bae6fd')]);
+    const tab = tabOf([
+      text('kept', 20, 20, '#2563eb'),
+      text('moved', 20, 80, '#bae6fd'),
+      text('soft', 20, 140, '#64748b'),
+    ]);
     const out = withPageInkFor(tab, 'p', { fill });
     expect(byId(out.elements, 'kept').textColor).toBe('#2563eb');
+    // Slate-500 on white is 4.76:1, so it reads; on a near-black page it is 3.6:1 and moves.
+    expect(byId(out.elements, 'soft').textColor).toBe('#64748b');
+    const dark = withPageInkFor(tab, 'p', { fill: { kind: 'solid', color: '#1c1917' } });
+    expect(contrastRatio(byId(dark.elements, 'soft').textColor, '#1c1917')).toBeGreaterThanOrEqual(
+      7,
+    );
     expect(contrastRatio(byId(out.elements, 'moved').textColor, '#ffffff')).toBeGreaterThanOrEqual(
-      4.5,
+      7,
     );
   });
 

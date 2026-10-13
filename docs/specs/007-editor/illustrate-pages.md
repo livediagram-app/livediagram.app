@@ -276,14 +276,17 @@ fill twice changes nothing the second time.
 
   | What                                                                                                                                                                                                                             | Measured against                        | Floor  | Target |
   | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------ | ------ |
-  | **Text**: a text element's text, a shape's, table's, chart's or icon's label, a stat row's figures and captions (on its cards), a process's captions, an arrow's label (its line's colour when it has no text colour of its own) | its card's fill, else the page          | 3:1    | 4.5:1  |
+  | **Text**: a text element's text, a shape's, table's, chart's or icon's label, a stat row's figures and captions (on its cards), a process's captions, an arrow's label (its line's colour when it has no text colour of its own) | its card's fill, else the page          | 4.5:1  | 7:1    |
   | **Lines and glyphs**: an arrow's line and head, an outlined (unfilled) shape's border, a sketch's or path's line, an icon's glyph, a progress, rail or rating accent, a process's discs, a table's grid                          | its ground                              | 3:1    | 3:1    |
   | **Marks**: the fill of a filled shape, closed path or sketch that holds nothing (no label, nothing on it): a dot, a bar, a rule, a logo's shape                                                                                  | its ground                              | 3:1    | 3:1    |
   | **Cards**: the fill of a filled shape, closed path or sketch with a label or something on it, and a stat row's cards                                                                                                             | its ground (a gradient's mean under it) | 1.25:1 | 1.4:1  |
 
-  Text between 3:1 and 4.5:1 is kept (a large heading in a soft colour is the author's choice);
-  under 3:1 it goes to AA. Lines, glyphs and marks go to 3:1, WCAG's non-text floor, and no
-  further. A card is a container: its text carries its content and is held to 4.5:1 against the
+  Text under 4.5:1 (AA) is moved, a large heading in a soft colour included: on a new fill every
+  word reads, which matters more than the heading's softer tone. It goes to 7:1 (AAA), not just to
+  AA: the least change that only just reaches AA leaves a dark heading a muddy mid grey on a dark
+  page, where 7:1 reads plainly and still keeps its hue. On a mid-tone fill where no lightness
+  of it reaches 7:1 (teal, say), it goes to AA, still keeping its hue. Lines, glyphs and marks go to
+  3:1, WCAG's non-text floor, and no further. A card is a container: its text carries its content and is held to 4.5:1 against the
   card's fill as re-inked, so the card itself needs only to separate from the page; 1.25:1 is
   where a white card on a near-white page stops reading as a card. A card or mark whose border is
   drawn and already reaches its floor against the ground keeps its fill: the outline separates it.
@@ -345,8 +348,8 @@ drawing only, never stored:
   colours) under **3:1** against the ground (at its worst tone) are lightened or darkened, keeping
   their hue, by the least that reaches 3:1, whichever way needs the smaller change. A colour that
   already reaches 3:1 is drawn exactly as it is.
-- **The chart's own text** (its axis labels, its key, a Sankey's node names) is held to **4.5:1**
-  the same way: it is small text, so it gets AA rather than the 3:1 a large label keeps.
+- **The chart's own text** (its axis labels, its key, a Sankey's node names) is held to **4.5:1**, and taken to **7:1** when under it,
+  the same way, as re-inked text is.
 - **Everywhere it is drawn alike**: the canvas, the image exports of a page (SVG, PNG, PDF), the
   slide thumbnails and the minimap use the same adaptation (`chart-ink.ts`), so a chart exports as
   it shows. A page export also draws its charts in the tab theme's ramp, as the canvas does.

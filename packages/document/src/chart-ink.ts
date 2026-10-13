@@ -20,6 +20,7 @@ import {
   inkKindOf,
   keptCover,
   PAGE_INK_CONTRAST,
+  PAGE_INK_TARGET,
   PAGE_LINE_CONTRAST,
 } from './page-ink-rules';
 import { isBoxed, type Element } from './index';
@@ -28,9 +29,10 @@ import type { Layer } from './layers';
 // A series (a line, a bar, a wedge, a Sankey node) against its ground: WCAG 2.2 SC 1.4.11
 // non-text contrast, floor and target both, as re-inking holds lines and marks.
 export const CHART_MARK_CONTRAST = PAGE_LINE_CONTRAST;
-// A chart's own text (9px axis labels, the key, a Sankey's node names): small text, so WCAG 2.2
-// SC 1.4.3 AA as floor and target both, stricter than a label re-inking keeps from 3:1.
+// A chart's own text (9px axis labels, the key, a Sankey's node names): moved under WCAG 2.2
+// SC 1.4.3 AA, to AAA, as re-inking moves a page's text.
 export const CHART_TEXT_CONTRAST = PAGE_INK_CONTRAST;
+export const CHART_TEXT_TARGET = PAGE_INK_TARGET;
 // How many adapted colours are remembered across draws (a hover re-draws a chart every move).
 // A board's charts use a few dozen colours on a few grounds; past this the memory starts over.
 // Safe range 64 to 4096: smaller recomputes on busy boards, larger only holds more strings.
@@ -38,11 +40,16 @@ export const CHART_INK_MEMORY = 512;
 
 const memory = new Map<string, string>();
 
-function adapted(color: string, tones: readonly string[], contrast: number): string {
-  const key = `${contrast}|${color}|${tones.join(',')}`;
+function adapted(
+  color: string,
+  tones: readonly string[],
+  floor: number,
+  target: number = floor,
+): string {
+  const key = `${floor}|${target}|${color}|${tones.join(',')}`;
   const hit = memory.get(key);
   if (hit !== undefined) return hit;
-  const out = inkToward(color, tones, contrast, contrast);
+  const out = inkToward(color, tones, floor, target);
   if (memory.size >= CHART_INK_MEMORY) memory.clear();
   memory.set(key, out);
   return out;
@@ -54,9 +61,11 @@ export function chartMarkInk(color: string, ground: readonly string[] | undefine
   return ground && ground.length > 0 ? adapted(color, ground, CHART_MARK_CONTRAST) : color;
 }
 
-/** A chart's own text colour as drawn on `ground`: held to 4.5:1 the same way. */
+/** A chart's own text colour as drawn on `ground`: kept at 4.5:1 or over, else taken to 7:1. */
 export function chartTextInk(color: string, ground: readonly string[] | undefined): string {
-  return ground && ground.length > 0 ? adapted(color, ground, CHART_TEXT_CONTRAST) : color;
+  return ground && ground.length > 0
+    ? adapted(color, ground, CHART_TEXT_CONTRAST, CHART_TEXT_TARGET)
+    : color;
 }
 
 /** Whether an element is a chart whose series come from a palette: a pie, doughnut, bar, column,

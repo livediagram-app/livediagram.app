@@ -6,11 +6,17 @@ import { defaultFillColor, defaultStrokeColor, type CanvasSurface } from './colo
 import { isOpaqueHex } from './page-ink-contrast';
 import type { BoxedElement, Element } from './index';
 
-// Text below this contrast is re-inked; text between it and AA is kept as the author chose it
-// (a large heading in a soft colour). WCAG 2.2 SC 1.4.3 large text.
+// The least contrast `legibleOn` keeps a colour at by default (an article's accent): WCAG 2.2
+// SC 1.4.3 large text. Re-inking holds a page's text to AA instead (PAGE_INK_CONTRAST).
 export const PAGE_INK_FLOOR = 3;
-// What re-inked text reaches. WCAG 2.2 SC 1.4.3 AA.
+// Text on a page is re-inked below this, a soft heading included: on a new fill every word reads
+// at least at AA. WCAG 2.2 SC 1.4.3 AA.
 export const PAGE_INK_CONTRAST = 4.5;
+// What re-inked text reaches: WCAG 2.2 SC 1.4.6 AAA. The least change that only just makes AA
+// leaves a dark heading a muddy mid grey on a dark page (#0f172a on #1c1917 lands on #7d828c);
+// at 7:1 it reads plainly (#a1a4ab) and keeps its hue. Safe range 4.5 to 10: past 10 coloured text
+// turns pastel.
+export const PAGE_INK_TARGET = 7;
 // Lines, glyphs and marks: floor and target both. WCAG 2.2 SC 1.4.11 non-text contrast.
 export const PAGE_LINE_CONTRAST = 3;
 // A card's fill against its ground: below the floor a white card on a near-white page stops
@@ -22,7 +28,7 @@ export const PAGE_CARD_TARGET = 1.4;
 export type InkRole = 'text' | 'line' | 'mark' | 'card';
 
 export const INK_ROLE_CONTRAST: Record<InkRole, { floor: number; target: number }> = {
-  text: { floor: PAGE_INK_FLOOR, target: PAGE_INK_CONTRAST },
+  text: { floor: PAGE_INK_CONTRAST, target: PAGE_INK_TARGET },
   line: { floor: PAGE_LINE_CONTRAST, target: PAGE_LINE_CONTRAST },
   mark: { floor: PAGE_LINE_CONTRAST, target: PAGE_LINE_CONTRAST },
   card: { floor: PAGE_CARD_FLOOR, target: PAGE_CARD_TARGET },
