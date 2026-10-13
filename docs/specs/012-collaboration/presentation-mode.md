@@ -144,6 +144,25 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one. A page slide has no members to highlight: its row frames its page instead, as the page's own label does ([Illustrate pages](../007-editor/illustrate-pages.md) "Slides").
 - **Present** — enters the full-screen deck at slide 1, with a badge carrying the slide count.
 
+### The header's Present button
+
+A deck you have built should be one press away from wherever you are in the document, without
+picking the Slide Deck tool first. So while the deck has **at least one presentable slide**
+(`presentableSlides`: not hidden, its tab still there), the editor header carries a **Present**
+button (a play glyph and the word), immediately to the **left of Share** (or, for a visitor, of the
+account controls, where Share would sit). Pressing it starts the presentation at slide 1, exactly
+as the panel's Present does (`start()`, so the cross-tab load and the overlay preload are the same);
+while that load runs the button reads **Starting** and is disabled. Its hover card names the count:
+"Present the slide deck: 6 slides."
+
+- **Not shown** when the deck is empty, when every slide is hidden or points at a deleted tab, on a
+  phone (below `sm`, where presenting is not offered), during the welcome flow, or before the
+  document has hydrated. Nothing to present means no button, never a disabled one.
+- **Every role**, as presenting itself is: an Editor, a Participant and a Viewer on a share link
+  all see it, because presenting changes nothing.
+- Telemetry `UI · Opened · HeaderPresent` on the press, before `start()` logs
+  `UI · Started · Presentation`.
+
 ### The Illustrate popover
 
 Over Illustrate's **Slides** button the panel is a roomy popover, 420 px wide, its list as tall as
