@@ -791,6 +791,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|PageLandscape': 'Someone turned an Illustrate page to landscape.',
   'Tab|Changed|PageSize': 'Someone changed an Illustrate page to another size.',
   'Tab|Changed|PageBackground': "Someone changed an Illustrate page's background colour.",
+  'Tab|Changed|PageBackgroundImage':
+    'Someone put a picture behind an Illustrate page, searched or uploaded, under an overlay.',
   'Tab|Changed|PagePattern': "Someone changed an Illustrate page's background pattern.",
   'Tab|Changed|PageLocked':
     'Someone locked an Illustrate page, so it and what is on it stay as they are.',
@@ -998,6 +1000,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone replaced one of the quick style panel's theme colours with a colour of their own, by right-clicking the swatch.",
   'UI|Changed|QuickSwatchReset':
     'Someone put a quick style panel swatch back to its theme colour, with Clear override.',
+  'UI|Changed|LooksFinishFilter':
+    "Someone narrowed the Tab Style popover's Looks to one finish with its Finish filter.",
   'UI|Changed|SlideNotes':
     'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
   'UI|Changed|SpotlightDim':

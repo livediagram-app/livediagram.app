@@ -353,6 +353,7 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
       'PageSize',
       'PageRenamed',
       'PageBackground',
+      'PageBackgroundImage',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
@@ -1104,6 +1105,16 @@ export const HIGHLIGHTER_SETTINGS = chart(
   { types: ['HighlighterColour', 'HighlighterWidth'], rising: 'neutral' },
 );
 
+// The Tab Style popover's Finish filter beside its Looks carousel (docs/specs/011-theme/
+// canvas-and-theme-dialog.md).
+export const LOOKS_FILTERED = chart(
+  'UI',
+  'Changed',
+  'Looks Filtered by Finish',
+  "The Tab Style popover's Looks narrowed to one finish with its Finish filter.",
+  { types: ['LooksFinishFilter'], rising: 'neutral' },
+);
+
 export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
@@ -1116,6 +1127,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_THEMES,
     CUSTOM_SWATCHES,
+    LOOKS_FILTERED,
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],
