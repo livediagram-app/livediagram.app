@@ -14,36 +14,65 @@ import type { Edge } from './auto-layout-shared';
 
 const SWEEPS = 6;
 
-// How many pairs of adjacent-rank edges cross, for one full ordering.
+// How many pairs of adjacent-rank edges cross, for one full ordering. Edges are bucketed by the
+// pair of ranks they join in one pass, and each bucket's crossings are counted as inversions, so the
+// cost is E log V rather than every pair of edges between two ranks.
 export function countCrossings(
   order: ElementId[][],
   edges: Edge[],
   layerOf: Map<ElementId, number>,
 ): number {
   const index = new Map<ElementId, number>();
-  order.forEach((rank) => rank.forEach((id, i) => index.set(id, i)));
-  let crossings = 0;
-  for (let r = 0; r + 1 < order.length; r++) {
-    const span: [number, number][] = [];
-    for (const e of edges) {
-      const a = layerOf.get(e.from);
-      const b = layerOf.get(e.to);
-      if (a === undefined || b === undefined) continue;
-      const rankA = order[r]!;
-      const rankB = order[r + 1]!;
-      if (rankA.includes(e.from) && rankB.includes(e.to))
-        span.push([index.get(e.from)!, index.get(e.to)!]);
-      else if (rankA.includes(e.to) && rankB.includes(e.from))
-        span.push([index.get(e.to)!, index.get(e.from)!]);
-    }
-    for (let i = 0; i < span.length; i++)
-      for (let j = i + 1; j < span.length; j++) {
-        const [a1, b1] = span[i]!;
-        const [a2, b2] = span[j]!;
-        if ((a1 - a2) * (b1 - b2) < 0) crossings++;
-      }
+  const rankOf = new Map<ElementId, number>();
+  order.forEach((rank, r) =>
+    rank.forEach((id, i) => {
+      index.set(id, i);
+      rankOf.set(id, r);
+    }),
+  );
+  const spans: [number, number][][] = order.map(() => []);
+  for (const e of edges) {
+    if (!layerOf.has(e.from) || !layerOf.has(e.to)) continue;
+    const a = rankOf.get(e.from);
+    const b = rankOf.get(e.to);
+    if (a === undefined || b === undefined || Math.abs(a - b) !== 1) continue;
+    const [top, bottom] = a < b ? [e.from, e.to] : [e.to, e.from];
+    spans[Math.min(a, b)]!.push([index.get(top)!, index.get(bottom)!]);
   }
+  let crossings = 0;
+  for (let r = 0; r + 1 < order.length; r++)
+    crossings += crossingPairs(spans[r]!, order[r + 1]!.length);
   return crossings;
+}
+
+// Pairs of edges [top, bottom] that cross: one strictly left of the other at the top and strictly
+// right of it at the bottom. Edges are taken left to right by their top end, and a Fenwick tree over
+// the bottom positions counts, for each, the earlier ones that land strictly right of it; edges
+// sharing a top end are counted before any of them is added, so they never cross each other.
+function crossingPairs(span: [number, number][], width: number): number {
+  if (span.length < 2) return 0;
+  const sorted = [...span].sort((p, q) => p[0] - q[0]);
+  const tree = new Int32Array(width + 1);
+  const add = (i: number) => {
+    for (let k = i + 1; k <= width; k += k & -k) tree[k]!++;
+  };
+  // How many added edges land at or left of bottom position i.
+  const upTo = (i: number) => {
+    let n = 0;
+    for (let k = i + 1; k > 0; k -= k & -k) n += tree[k]!;
+    return n;
+  };
+  let pairs = 0;
+  let added = 0;
+  for (let i = 0; i < sorted.length;) {
+    let j = i;
+    while (j < sorted.length && sorted[j]![0] === sorted[i]![0]) j++;
+    for (let k = i; k < j; k++) pairs += added - upTo(sorted[k]![1]);
+    for (let k = i; k < j; k++) add(sorted[k]![1]);
+    added += j - i;
+    i = j;
+  }
+  return pairs;
 }
 
 // Reorders each rank to cross fewer edges, or returns the order it was given
@@ -54,22 +83,30 @@ export function reduceCrossings(
   layerOf: Map<ElementId, number>,
 ): ElementId[][] {
   if (order.length < 2) return order;
-  const neighbours = (id: ElementId, rank: ElementId[]) => {
-    const inRank = new Set(rank);
-    const out: ElementId[] = [];
-    for (const e of edges) {
-      if (e.from === id && inRank.has(e.to)) out.push(e.to);
-      else if (e.to === id && inRank.has(e.from)) out.push(e.from);
-    }
-    return out;
+  // Each node's neighbours, built once: a sweep then costs each node's degree, not every edge.
+  const adjacent = new Map<ElementId, ElementId[]>();
+  const link = (a: ElementId, b: ElementId) => {
+    const list = adjacent.get(a);
+    if (list) list.push(b);
+    else adjacent.set(a, [b]);
   };
+  for (const e of edges) {
+    link(e.from, e.to);
+    link(e.to, e.from);
+  }
   const reorder = (rank: ElementId[], against: ElementId[]) => {
     const pos = new Map(against.map((id, i) => [id, i] as const));
     const keyed = rank.map((id, i) => {
-      const ns = neighbours(id, against);
+      let sum = 0;
+      let count = 0;
+      for (const n of adjacent.get(id) ?? []) {
+        const p = pos.get(n);
+        if (p === undefined) continue;
+        sum += p;
+        count++;
+      }
       // A node with no neighbour there keeps its place.
-      const bary = ns.length ? ns.reduce((sum, n) => sum + pos.get(n)!, 0) / ns.length : i;
-      return { id, bary, i };
+      return { id, bary: count ? sum / count : i, i };
     });
     keyed.sort((a, b) => a.bary - b.bary || a.i - b.i);
     return keyed.map((k) => k.id);

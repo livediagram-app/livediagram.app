@@ -10,15 +10,8 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import {
-  autoLayoutElements,
-  isBoxed,
-  lockedLayerElementIds,
-  unionRects,
-  type Element,
-  type ElementId,
-  type Layer,
-} from '@livediagram/document';
+import { isBoxed, tidyLayoutElements, type Element, type Layer } from '@livediagram/document';
+import { lockedElementIds } from '@/lib/locked-element-ids';
 import { autoAlignElements } from '@/lib/auto-align';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 
@@ -47,19 +40,36 @@ export function cleanupElements(
   // (docs/specs/008-canvas/layout-cleanup.md "Locked elements stay put").
   const lockedIds = lockedElementIds(elements, layers);
   if (kind === 'align') return autoAlignElements(elements, lockedIds);
-  const block = unionRects(elements.filter(isBoxed));
-  if (!block) return elements;
-  const { x: originX, y: originY } = block;
   const { options } = AUTO_LAYOUT_CHOICES[kind];
-  return autoAlignElements(
-    autoLayoutElements(elements, { ...options, originX, originY, lockedIds }),
-    lockedIds,
-  );
+  // The tidy profile keeps the author's sizes, lands the block where the nodes were and on the
+  // grid by their centres, so nothing else on the tab is touched. A layout reads the drawing it is
+  // given, so laying out its own result can refine it a little further; it runs until a pass moves
+  // nothing (bounded), so one press lands on the settled layout and a second finds it already tidy.
+  const layout = (els: Element[]) => tidyLayoutElements(els, { ...options, lockedIds });
+  let out = layout(elements);
+  // A big tab gets one pass: each costs tens of ms there, and a hover preview must stay quick.
+  const passes = elements.length <= SETTLE_ELEMENT_LIMIT ? MAX_LAYOUT_PASSES : 1;
+  for (let pass = 1; pass < passes; pass++) {
+    const next = layout(out);
+    if (sameBoxes(out, next)) break;
+    out = next;
+  }
+  return out;
 }
 
-/** Ids a cleanup must not move: each element's own lock plus its layer's. O(n). */
-export function lockedElementIds(elements: Element[], layers?: Layer[]): Set<ElementId> {
-  const ids = lockedLayerElementIds(elements, layers);
-  for (const el of elements) if (el.locked === true) ids.add(el.id);
-  return ids;
+// Passes a layout gets to settle. Most settle on the first; a few hand-drawn trees take one more.
+export const MAX_LAYOUT_PASSES = 3;
+// Up to this many elements (shapes and arrows) a layout settles; beyond it one pass is the press.
+// A 300-shape tab's pass is ~20 ms here and several times that on CI, so three would break the hover budget.
+export const SETTLE_ELEMENT_LIMIT = 300;
+
+// Whether every box sits exactly where it did: the arrows follow the boxes, so this is the layout.
+function sameBoxes(a: Element[], b: Element[]): boolean {
+  return a.every((el, i) => {
+    const o = b[i];
+    if (!o || !isBoxed(el) || !isBoxed(o)) return true;
+    return el.x === o.x && el.y === o.y;
+  });
 }
+
+export { lockedElementIds };

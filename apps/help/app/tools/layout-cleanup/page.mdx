@@ -21,7 +21,7 @@ When a diagram gets messy, you usually want one of two things: either everything
 
 ## The two tools
 
-- **Auto-align** is a grid snap. It rounds every element's position and size to a 10 px grid so near-aligned shapes become exactly aligned and small drift collapses. No element's position moves more than 5 px. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
+- **Auto-align** is a grid snap. It rounds every element's size to a 10 px grid and lines shapes up by the edges and centres they nearly share, so near-aligned shapes become exactly aligned, small drift collapses, and nothing moves far. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
 - **Auto Layout** ("tidy up" in the command palette) reads the arrow graph and computes brand-new positions, laying out connected shapes into clean layers, or into a style you pick: flowchart (down or right), tree, or mindmap. It can legitimately move an element across the canvas. See [Auto Layout](/help/tools/layout-cleanup/auto-layout/).
 
 <FeatureGrid>
@@ -45,7 +45,7 @@ You can also open the [command palette](/help/search-panel/the-search-panel/comm
 
 The tidiers are for editors: they aren't offered to a participant or in a view-only session, and they leave a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), stays exactly where it is.
 
-The two tools compose nicely. Auto Layout finishes by running Auto-Align, so a freshly laid-out diagram is also grid-aligned. If you want, you can run Auto Layout to get the structure right, then trust it has already snapped to the grid for you.
+Neither tool will trash your work. Each one is tried before it's offered, and one that would change nothing, cover a shape, or pull shapes out of their lanes is greyed out with the reason. Run one from the command palette and the same check applies: nothing moves, and a short notice says why. See [When a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isnt-offered).
 
 <Note>
   Both tools work entirely offline and deterministically. They never call out to anything, so
