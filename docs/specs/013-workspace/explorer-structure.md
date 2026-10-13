@@ -208,16 +208,17 @@ Top to bottom:
 4. **The footer**: the product's surfaces as links, one row: **Welcome**, **Explorer** (the Explorer page),
    **Community** (while the Community is on), **Help**, **Telemetry**. They are the product menu's entries; the editor
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
-5. **The sign-in bar** for a signed-out guest: one line pinned to the foot of the pane, under its scroll ("Keep your
-   work. A free account saves it across devices." with **Sign in**; on a deployment without sign-in, "Saved in this
-   browser. Clearing site data deletes it."), dismissible as the sign-in notice is. Minimal chrome drops it.
+5. **The sign-in note** for a signed-out guest: one quiet line under the Current Document card ("Keep your work. A free
+   account saves it across devices." with **Sign in**; on a deployment without sign-in, "Saved in this browser.
+   Clearing site data deletes it."), dismissible as the sign-in notice is. Minimal chrome drops it.
 
 While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
 aside: the panel reaches under the strip and they would cover its header.
 
 ### The rail
 
-The rail is the sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
+The rail opens with **New Document** (one click to a new document; a "New" chip first in the row on a phone), then the
+sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
 Shared with me; My documents and each team; This browser, Library and Trash. Shared with me and This browser carry
 their counts (the panel reads no other feed until its section is shown). No
 Invites, New team or sign-in nudge: those are the Explorer page's.
@@ -231,24 +232,30 @@ Invites, New team or sign-in nudge: those are the Explorer page's.
 
 A header (the section's name, then quiet actions: the section's own, and **Open Page** to its Explorer page) over its
 content, which scrolls inside the pane with room round it. Every section is drawn for the pane from the same parts:
-**rows** (a 48 × 36 thumbnail or tile, the name over one quiet line, a trailing slot for pills and the `⋯` menu),
+**cards**: rows (a 60 × 44 thumbnail or tile, the name over one quiet line, a trailing slot for pills and the `⋯`
+menu) and two-column preview cards (a picture across the top, the name and a line under it), each a raised surface that
+lifts on hover, the open document's ringed in brand. Tiles take a tone by what they show (made: emerald, talked about:
+sky, shared: violet, moved: amber, removed: rose, changed: brand);
 **section headings** (small capitals with an action at the end), the Explorer's **illustrated empty state** at a
 compact size, skeleton rows while loading, and one line with **Try Again** when a read fails.
 
-| Section        | The pane shows                                                                                                                                                                                                                                                    | Action     |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Home           | **Jump back in**: up to six documents (most used, then most recent) as rows, with **See all** (Recent). **What happened**, only when someone else did something: each document's summary sentence under its day, with **See timeline** (the Timeline in the pane) | None       |
-| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                | None       |
-| Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                     | None       |
-| Shared with me | The documents shared with the reader, as rows                                                                                                                                                                                                                     | None       |
-| My documents   | The root folders, then the root documents, as rows; a folder opens **in the pane**, under a breadcrumb back to the root                                                                                                                                           | New Folder |
-| A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                              | New Folder |
-| This browser   | The documents saved only in this browser                                                                                                                                                                                                                          | None       |
-| Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width                                                                                                                                                         | None       |
-| Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** (asked first)                                                                                                                                                          | None       |
+| Section        | The pane shows                                                                                                                                                                                                                                                             | Action     |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Home           | **Jump back in**: up to six documents (most used, then most recent) as preview cards, with **See all** (Recent). **What happened**, only when someone else did something: each document's summary sentence under its day, with **See timeline** (the Timeline in the pane) | None       |
+| Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                         | None       |
+| Timeline       | The Timeline ([Timeline](timeline.md)) as a list: each event a row (its glyph, its subject, its reason and time) under its day, **Show Earlier** to page back                                                                                                              | None       |
+| Shared with me | The documents shared with the reader, as rows                                                                                                                                                                                                                              | None       |
+| My documents   | The root folders as preview cards (their counts on the picture), then the root documents as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip)                                          | New Folder |
+| A team         | The team's folders, then its documents, the same way                                                                                                                                                                                                                       | New Folder |
+| This browser   | The documents saved only in this browser                                                                                                                                                                                                                                   | None       |
+| Library        | Three tabs: Image gallery, Themes, Shape libraries, each the Explorer page's own view at the pane's width; Open Page goes to the tab shown                                                                                                                                 | None       |
+| Trash          | A line on the 30 days, then each deleted document as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                    | None       |
 
+- **Every document the pane shows** (a place's rows, Home's cards and What happened, the Timeline's document events)
+  carries the Explorer page's document menu (`⋯`, right-click, Shift+F10), the same verbs as on the Explorer page. The
+  `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with documents**: a document row shows its thumbnail and "Updated <relative time>"; activating it opens the
-  document; it carries the document menu (`⋯`, right-click, Shift+F10), its favourite star and, for an offline
+  document; it carries the document menu, its favourite star and, for an offline
   document, the Local only pill; the open document's row is the current one. A folder row shows its counts ("2
   folders · 5 documents") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own document rows drags onto a personal folder row (resting on it opens it), or onto
@@ -258,6 +265,8 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 - **An empty place** says so in the Explorer's empty state: "Nothing shared with you yet", "Nothing in this browser",
   "No documents yet", "This folder is empty", "Nothing waiting on you", "No activity yet", "Nothing in the Trash right
   now".
+- **Motion**: picking a section slides its content in, opening a folder slides its contents in, and rows and cards
+  cascade in as they arrive (the dialogs' view and row motions, a fade alone under reduced motion).
 - The views load only when their section is first shown, so opening the editor costs nothing more. The Timeline's
   card menus and calendar are the Explorer page's (Open Page).
 
