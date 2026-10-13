@@ -42,6 +42,7 @@ import { useCanvasCovered, usePlanTabKind } from '@/hooks/plan/plan-cover-store'
 // little more in, and past the element's bottom scrollbar up.
 const COVERED_CLUSTER_INSET = { x: 16, y: 20 };
 const NO_CLUSTER_INSET = { x: 0, y: 0 };
+import { ContentsClusterButton } from './ContentsClusterButton';
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@/components/canvas/UndoRedoClusterStrip';
@@ -392,6 +393,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     cardFinderPopoverEl,
     sessionPopoverEl,
     tidyUpPopoverEl,
+    contentsPopoverEl,
     paletteTint,
   } = useCanvasChromePanels({
     props,
@@ -564,6 +566,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {zenMode ? null : newCardPopoverEl}
       {zenMode ? null : cardFinderPopoverEl}
       {tidyUpPopoverEl}
+      {contentsPopoverEl}
       {/* The Session strip's popover, in Zen too, as its strip is (docs/specs/012-collaboration/session-tools.md). */}
       {sessionPopoverEl}
       {paletteShown ? (
@@ -702,6 +705,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   onToggle={(segment, button) => handleDockButtonClick(segment, button, true)}
                 />
               </div>
+            ) : null}
+            {/* Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): in Illustrate mode, every
+                page one press away, for every role and on a phone too. */}
+            {!zenMode && props.illustratePages ? (
+              <ContentsClusterButton
+                popoverOpen={activeDockPanel === 'contents'}
+                onTogglePopover={(button) => handleDockButtonClick('contents', button, true)}
+              />
             ) : null}
             {/* Slides (docs/specs/007-editor/illustrate-pages.md "Slides"): in Illustrate mode, where
                 Layers would be, the deck one press away. */}

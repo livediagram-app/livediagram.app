@@ -363,6 +363,16 @@ export const ILLUSTRATE_PAGE_SETUP = chart(
   },
 );
 
+// Contents (docs/specs/007-editor/illustrate-pages.md "Contents"): a press on a page in the list,
+// going there.
+export const PAGE_CONTENTS_JUMPS = chart(
+  'UI',
+  'Used',
+  'Contents Jumps',
+  "A page pressed in Illustrate's Contents list, the canvas gliding to it.",
+  { types: ['PageContentsJump'], rising: 'neutral' },
+);
+
 // Building Illustrate pages: a layout placed, a page duplicated or moved.
 export const ILLUSTRATE_PAGE_BUILDING = chart(
   'Tab',
@@ -468,6 +478,7 @@ export const WHITEBOARDS: MetricStack = {
     ILLUSTRATE_PAGES,
     ILLUSTRATE_PAGE_SETUP,
     ILLUSTRATE_PAGE_BUILDING,
+    PAGE_CONTENTS_JUMPS,
     LOGO_TOOLS,
     LOGO_MIRROR_TWINS,
     LOGO_SWITCHES,

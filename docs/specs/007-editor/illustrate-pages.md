@@ -950,6 +950,39 @@ swipe, with no X.
   so a category's layouts show without scrolling; else two across (340 px). The panel's Layouts
   tab is always two across.
 
+## Contents
+
+In Illustrate mode the bottom-right cluster holds **Contents** (a list glyph, named beside it on a
+desktop), left of the Theme & canvas button, in every Illustrate tab and for every role: finding
+your way round a long document is everyone's. It opens the **Contents** popover above it (a
+bottom sheet on a phone), the way round a big document:
+
+- **Header**: "Contents" and the page count ("12 pages"); with more than six pages, a **Find a
+  Page** box under it that narrows the list by name, kind or number as you type (Escape clears it,
+  then closes).
+- **The list**: every page in row order, one row each: its number, a live thumbnail of the page
+  as it is (its background, motion still, and everything on it, drawn by the same renderer as the
+  Slide Deck's thumbnails, 16:9, A4 or square as the page is), its name (its own, else "Page 3"),
+  and a line saying what it is: "Infographic · A4 Portrait", "Slide · In the deck" or "Slide ·
+  Not in the deck", "Article · Its Title" (each page of an article its own row, the line naming
+  the article), "Logo". The page in view is marked: an accent bar down its row's left edge and
+  "Here" beside its number. A locked page shows the padlock.
+- **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
+  and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
+  on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
+  the first and last; the list scrolls the marked page into view when it opens.
+- **Adding**: an Editor's footer holds **Add Page** with the four kinds as compact buttons
+  (Infographic, Slide, Article, Logo, each its glyph and name); a press adds a page of that kind
+  after the last, exactly as the row's **+** does (carrying the background, theme's Mist for a
+  new infographic), glides to it and scrolls the list to its new row, marked as here. At the page
+  limit the buttons are disabled with the limit in their tooltip. A Participant and a Viewer see
+  the list without the footer.
+- **Cost**: thumbnails are drawn when the popover opens and redrawn only when the tab's elements
+  or pages change while it is open, arrow labels laid out once for the tab rather than once a
+  page; nothing is drawn while it is closed.
+- **Telemetry**: `UI · Opened · PageContents` on opening; `UI · Used · PageContentsJump` on going
+  to a page; adding a page counts as the row's + does.
+
 ## Slide layouts
 
 A **slide** page's **Layout** button, and its in-page **Start From a Layout** card, offer the **slide

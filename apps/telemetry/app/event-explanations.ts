@@ -1149,6 +1149,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
     'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
+  'UI|Opened|PageContents':
+    "Someone opened Illustrate's Contents: every page of the tab in a list.",
+  'UI|Used|PageContentsJump': "Someone went to a page from Illustrate's Contents list.",
   'UI|Opened|SlideDeck':
     "Someone opened the deck-building panel: the Slide Deck tool, or an Illustrate tab's Slides button.",
   'UI|Opened|SlideElementDetail':
