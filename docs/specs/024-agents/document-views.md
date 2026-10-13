@@ -68,18 +68,18 @@ The example is abridged; a real outline prints every element.
 
 ## The views
 
-| View           | Answers                         | Holds                                                                                                                                           |
-| -------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `overview`     | What is in this document?       | Its tabs, their sizes, open threads, last edit; no elements                                                                                     |
-| `outline`      | What does this tab mean?        | As above                                                                                                                                        |
-| `graph`        | What connects to what?          | Nodes (ref, kind, label) and arrows (ref, from, to, label), nothing else                                                                        |
-| `layout`       | Where do things sit?            | Rounded geometry per element, or `--coarse` rows and columns                                                                                    |
-| `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full                                                                          |
-| `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out and its container; or `selected`                                                                        |
-| `find <text>`  | Where is this?                  | Matching elements with their containers                                                                                                         |
-| `lint`         | Is the drawing sound?           | The [lint](diagram-lint.md) findings, refs first                                                                                                |
-| `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                     |
-| `pages`        | What pages does this tab have?  | Its Illustrate pages, each article as Markdown, the layouts on offer ([Illustrate for agents](illustrate-for-agents.md#reading-the-pages-view)) |
+| View           | Answers                         | Holds                                                                                                                                                          |
+| -------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overview`     | What is in this document?       | Its tabs, their sizes, open threads, last edit; no elements                                                                                                    |
+| `outline`      | What does this tab mean?        | As above                                                                                                                                                       |
+| `graph`        | What connects to what?          | Nodes (ref, kind, label) and arrows (ref, from, to, label), nothing else                                                                                       |
+| `layout`       | Where do things sit?            | Rounded geometry per element from the content origin (the header names the origin when it is not 0,0: stored = shown + origin), or `--coarse` rows and columns |
+| `comments`     | What are people saying?         | Open threads with their element's ref and label, every comment in full                                                                                         |
+| `show <ref>`   | Everything about one element    | Every field, plus its arrows in and out and its container; or `selected`                                                                                       |
+| `find <text>`  | Where is this?                  | Matching elements with their containers                                                                                                                        |
+| `lint`         | Is the drawing sound?           | The [lint](diagram-lint.md) findings, refs first                                                                                                               |
+| `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                                    |
+| `pages`        | What pages does this tab have?  | Its Illustrate pages, each article as Markdown, the layouts on offer ([Illustrate for agents](illustrate-for-agents.md#reading-the-pages-view))                |
 
 Every view opens with a header line naming the tab, its counts and its `rev`, so a later write can carry it as a
 base. Every view takes `--json` for the same data as JSON; the stored tab itself is `--raw`.

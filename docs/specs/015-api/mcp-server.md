@@ -317,6 +317,13 @@ refused as held. Both return the changeset's result lines, its [lint](../024-age
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
+**Arrow ends by ref.** A pinned arrow end the model writes (on `create_document`, `add_tab` and both modes here)
+may name its element by id or by the ref `read_document` prints, as an op's `elementId` may. Each end is resolved
+among the ids the result will hold: in `ops` mode the tab's elements and every element the call adds; in `replace`
+mode and on a new tab only the elements sent. An end that names nothing there, or more than one element, refuses
+the call, naming the arrow and its side (`arrow "a1": "to" is pinned to "4aeb", which is no element on the tab or
+in this call`); an arrow to nowhere is never stored.
+
 ### 4.5 `list_templates`
 
 Browse the template library — the same hand-tuned catalogue the editor's

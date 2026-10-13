@@ -23,6 +23,68 @@ const box = (id: string, label = id): Element =>
 const tab: Tab & { rev: number } = { id: 't1', name: 'T', elements: [box('a'), box('b')], rev: 7 };
 
 describe('mcpOpsToEditOperations', () => {
+  const ends = (from: string, to: string) => ({
+    from: { kind: 'pinned', elementId: from, anchor: 's' },
+    to: { kind: 'pinned', elementId: to, anchor: 'n' },
+  });
+  const refTab: Tab = {
+    id: 't2',
+    name: 'T',
+    elements: [box('4aeb12f0-aaaa'), box('9c11aa00-bbbb')],
+  };
+
+  it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {
+    const ops = mcpOpsToEditOperations(
+      [
+        {
+          op: 'add',
+          element: { id: 'new', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+        },
+        { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'new') } },
+      ],
+      refTab,
+    );
+    expect(ops).toEqual([
+      expect.anything(),
+      { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb12f0-aaaa', 'new') } },
+    ]);
+  });
+
+  it('refuses an arrow end that names nothing rather than storing an arrow to nowhere', () => {
+    const ops = mcpOpsToEditOperations(
+      [{ op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'gone') } }],
+      refTab,
+    );
+    expect(ops).toMatch(/^ops\[1\]: arrow "a1": "to" is pinned to "gone"/);
+  });
+
+  it('resolves refs in an update that re-pins an existing arrow', () => {
+    const withArrow: Tab = {
+      ...refTab,
+      elements: [
+        ...refTab.elements,
+        { id: 'ar', type: 'arrow', ...ends('4aeb12f0-aaaa', '9c11aa00-bbbb') } as Element,
+      ],
+    };
+    const ops = mcpOpsToEditOperations(
+      [
+        {
+          op: 'update',
+          elementId: 'ar',
+          element: { to: { kind: 'pinned', elementId: '4aeb', anchor: 'e' } },
+        },
+      ],
+      withArrow,
+    );
+    expect(ops).toEqual([
+      {
+        op: 'set',
+        target: 'id:"ar"',
+        fields: { to: { kind: 'pinned', elementId: '4aeb12f0-aaaa', anchor: 'e' } },
+      },
+    ]);
+  });
+
   it('maps add, update and remove onto add, set and rm, dropping an unchanged id or type', () => {
     expect(
       mcpOpsToEditOperations(

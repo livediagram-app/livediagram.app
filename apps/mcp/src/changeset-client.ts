@@ -18,6 +18,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { ApiError, apiJson } from './api';
+import { idsOf, resolveArrowEnds } from './arrow-ends';
 import type { Env } from './env';
 
 export async function submitChangeset(
@@ -69,16 +70,32 @@ function targetOf(elementId: string, named: Element | undefined): string {
 // can change.
 export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unknown[] | string {
   const named = namedIn(current);
+  // The ids an arrow end may name: the tab's, and every element this call adds.
+  const known = [
+    ...current.elements.map((e) => e.id),
+    ...idsOf(ops.flatMap((op) => (op.op === 'add' && op.element ? [op.element] : []))),
+  ];
+  const withEnds = (element: Record<string, unknown>): Record<string, unknown> | string => {
+    const resolved = resolveArrowEnds([element], known);
+    return 'error' in resolved ? resolved.error : (resolved.elements[0] as Record<string, unknown>);
+  };
   const out: unknown[] = [];
   for (const [i, op] of ops.entries()) {
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
-      out.push({ op: 'add', element: op.element });
+      const element = withEnds(op.element);
+      if (typeof element === 'string') return `ops[${n}]: ${element}`;
+      out.push({ op: 'add', element });
     } else if (op.op === 'update') {
       if (!op.elementId || !op.element) return `ops[${n}]: update needs "elementId" and "element"`;
       const stored = named(op.elementId);
-      const fields = { ...op.element };
+      const ended = withEnds(
+        stored?.type === 'arrow' ? { type: 'arrow', ...op.element } : op.element,
+      );
+      if (typeof ended === 'string') return `ops[${n}]: ${ended}`;
+      const fields = { ...ended };
+      if (stored?.type === 'arrow' && op.element.type === undefined) delete fields.type;
       if (stored && fields.id === stored.id) delete fields.id;
       if (stored && fields.type === stored.type) delete fields.type;
       out.push({ op: 'set', target: targetOf(op.elementId, stored), fields });

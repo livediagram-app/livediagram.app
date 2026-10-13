@@ -50,7 +50,8 @@ import {
   textResult,
   type Extra,
 } from './tool-helpers';
-import { lintLineOf, lintLinesOf } from './lint-summary';
+import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
+import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { imageResult } from './image-result';
 import {
   baseFor,
@@ -153,10 +154,12 @@ export function registerTools(server: McpServer, env: Env): void {
         tabs.push(buildGraphTab(tabId, t.name, input.graph, args.theme));
         continue;
       }
+      const ended = resolveArrowEnds(t.elements ?? [], idsOf(t.elements ?? []));
+      if ('error' in ended) return errorResult(`Tab "${t.name}": ${ended.error}`);
       const candidate: unknown = {
         id: tabId,
         name: t.name,
-        elements: normaliseElements(t.elements ?? []),
+        elements: normaliseElements(ended.elements),
       };
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
@@ -191,7 +194,8 @@ export function registerTools(server: McpServer, env: Env): void {
       }),
     });
     const tabIds = tabs.map((t) => t.id);
-    const lint = await lintLinesOf(env, token, id, tabIds);
+    const reports = await lintReportsOf(env, token, id, tabIds);
+    const lint = reports.map(lintLineOf);
     return imageResult(
       {
         id,
@@ -205,7 +209,7 @@ export function registerTools(server: McpServer, env: Env): void {
       },
       tabs[0]!,
       { env, token },
-      lint,
+      reports.map(lintTextOf),
     );
   });
 
@@ -227,6 +231,8 @@ export function registerTools(server: McpServer, env: Env): void {
           'from list_templates. Check the livediagram://schema/elements resource.',
       );
     }
+    const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+    if (ended && 'error' in ended) return errorResult(ended.error);
     // Default the new tab's theme to the document's existing one so it matches the other tabs
     // rather than landing as a clashing brand-white tab; the model can still pass a theme.
     let themeId = args.theme;
@@ -245,7 +251,7 @@ export function registerTools(server: McpServer, env: Env): void {
         replace: replaceBodyFrom({
           ...(input.graph ? { graph: input.graph } : {}),
           ...(args.template ? { template: args.template } : {}),
-          ...(args.elements ? { elements: args.elements } : {}),
+          ...(ended ? { elements: ended.elements } : {}),
           ...(args.layout ? { layout: args.layout } : {}),
           ...(themeId ? { theme: themeId } : {}),
           ...(args.finish ? { finish: args.finish } : {}),
@@ -279,7 +285,7 @@ export function registerTools(server: McpServer, env: Env): void {
       },
       tab,
       { env, token },
-      [lintLineOf(answer.lint)],
+      [lintTextOf(answer.lint)],
     );
   });
 
@@ -299,10 +305,13 @@ export function registerTools(server: McpServer, env: Env): void {
       if (!input.graph && !args.elements) {
         return errorResult('replace mode requires "graph", "mermaid" or "elements".');
       }
+      // The new elements are the whole tab, so an arrow end may name only them.
+      const ended = args.elements ? resolveArrowEnds(args.elements, idsOf(args.elements)) : null;
+      if (ended && 'error' in ended) return errorResult(ended.error);
       body = {
         replace: replaceBodyFrom({
           ...(input.graph ? { graph: input.graph } : {}),
-          ...(!input.graph && args.elements ? { elements: args.elements } : {}),
+          ...(!input.graph && ended ? { elements: ended.elements } : {}),
           ...(!input.graph && args.layout ? { layout: args.layout } : {}),
         }),
       };
@@ -337,7 +346,7 @@ export function registerTools(server: McpServer, env: Env): void {
       },
       next,
       { env, token },
-      [lintLineOf(answer.lint)],
+      [lintTextOf(answer.lint)],
     );
   });
 
