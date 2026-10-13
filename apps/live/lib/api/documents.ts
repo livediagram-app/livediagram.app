@@ -38,6 +38,7 @@ import {
   expectOkVoid,
   tabForWire,
   apiFetch,
+  saveTimeoutSignal,
 } from './core';
 import type { RoomTicketResponse } from '@livediagram/api-schema';
 
@@ -137,15 +138,17 @@ export async function apiSaveDocumentMeta(
     );
     return;
   }
+  const body = JSON.stringify({
+    name: d.name,
+    tabs: d.tabs,
+    tabIds: d.tabIds,
+    presentation: d.presentation,
+  });
   const res = await apiFetch(`${API_BASE}/documents/${d.id}`, {
     method: 'PUT',
     headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
-    body: JSON.stringify({
-      name: d.name,
-      tabs: d.tabs,
-      tabIds: d.tabIds,
-      presentation: d.presentation,
-    }),
+    body,
+    signal: saveTimeoutSignal(body),
   });
   await expectOkVoid(res, 'save document meta');
 }
