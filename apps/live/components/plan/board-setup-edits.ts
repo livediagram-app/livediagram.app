@@ -4,8 +4,6 @@
 import {
   PLAN_COLUMNS_MAX,
   statusTitleCase,
-  type CardField,
-  type CustomCardField,
   type ColumnWidth,
   type PlanBoardSetup,
   type PlanColumn,
@@ -22,21 +20,8 @@ export const SWIMLANE_LABELS: Record<SwimlaneBy, string> = {
   field: 'By a Field',
 };
 
-// The built-in card fields' names; a custom field (Parent among them) is named by its type.
-export const CARD_FIELD_LABELS: Record<Exclude<CardField, CustomCardField>, string> = {
-  key: 'Number',
-  type: 'Type',
-  assignee: 'Assignee',
-  priority: 'Priority',
-  labels: 'Labels',
-  estimate: 'Estimate',
-  start: 'Start Date',
-  due: 'Due Date',
-  votes: 'Votes',
-  checklist: 'Checklist',
-  comments: 'Comments',
-  description: 'Description',
-};
+// The built-in card fields' names live with the card display in @livediagram/items, shared with the agent tools.
+export { CARD_FIELD_LABELS } from '@livediagram/items';
 
 export const COLUMN_NAME_MAX = 40;
 export const WIP_LIMIT_MAX = 99;

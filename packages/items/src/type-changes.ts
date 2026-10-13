@@ -27,6 +27,14 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { defaultTypesToAdd } from './brought-types';
+import {
+  detailsLabelFrom,
+  displayFrom,
+  tabsFrom,
+  type DisplayInput,
+  type FaceRead,
+  type TabInput,
+} from './type-change-face';
 
 // A new type's starting look and fields (blueprints/DEFAULTS.md D10): what the type editor's Add Type opens on.
 export const NEW_ITEM_TYPE: Omit<ItemTypeDef, 'id' | 'newTitle'> = {
@@ -45,8 +53,24 @@ export interface CustomFieldInput {
   onCard?: boolean;
 }
 
+// An existing custom field edited in place: renamed, its options replaced (a Choice field), drawn on the card or not.
+// Values on cards stay as they are.
+export interface CustomFieldEdit {
+  field: string;
+  name?: string;
+  options?: readonly string[];
+  onCard?: boolean;
+}
+
+// A type's card face and panel (type-change-face.ts), as `add` and `set` take them.
+interface FaceInput {
+  display?: DisplayInput;
+  tabs?: readonly TabInput[];
+  detailsLabel?: string;
+}
+
 export type CardTypeChange =
-  | {
+  | ({
       op: 'add';
       name: string;
       color?: string;
@@ -55,8 +79,8 @@ export type CardTypeChange =
       custom?: readonly CustomFieldInput[];
       defaultStatus?: string;
       excludedStatuses?: readonly string[];
-    }
-  | {
+    } & FaceInput)
+  | ({
       op: 'set';
       type: string;
       name?: string;
@@ -65,18 +89,20 @@ export type CardTypeChange =
       addFields?: readonly string[];
       removeFields?: readonly string[];
       addCustom?: readonly CustomFieldInput[];
+      editCustom?: readonly CustomFieldEdit[];
       removeCustom?: readonly string[];
       // A status, or null to clear the Default State.
       defaultStatus?: string | null;
       excludedStatuses?: readonly string[];
-    }
+    } & FaceInput)
   | { op: 'delete'; type: string }
   // Any of the five default types the document lacks, after its types (docs/specs/026-plan/plan-agents.md); its
   // older name, `restore_built_ins`, does the same.
   | { op: 'add_default_types' }
   | { op: 'restore_built_ins' };
 
-export type TypeChangeRefusal = NameRefusal | { code: 'type_change_invalid'; message: string };
+export type TypeChangeRefusal =
+  NameRefusal | { code: 'type_change_invalid' | 'display_invalid'; message: string };
 
 export type TypeChangesResult =
   | {
@@ -99,6 +125,50 @@ class Refused extends Error {
 }
 
 const invalid = (message: string) => new Refused({ code: 'type_change_invalid', message });
+
+function face<T>(read: FaceRead<T>, code: 'type_change_invalid' | 'display_invalid'): T {
+  if (!read.ok) throw new Refused({ code, message: read.message });
+  return read.value;
+}
+
+// The face and panel `c` gives, on `type` as it stands after the change's fields.
+function withFace(type: ItemTypeDef, c: FaceInput): ItemTypeDef {
+  let next = type;
+  if (c.display) {
+    const display = face(displayFrom(c.display, next), 'display_invalid');
+    const { display: _old, ...rest } = next;
+    next = display ? { ...rest, display } : rest;
+  }
+  if (c.tabs) next = { ...next, tabs: face(tabsFrom(c.tabs, next), 'type_change_invalid') };
+  if (c.detailsLabel !== undefined) {
+    const label = face(detailsLabelFrom(c.detailsLabel), 'type_change_invalid');
+    const { detailsLabel: _old, ...rest } = next;
+    next = label ? { ...rest, detailsLabel: label } : rest;
+  }
+  return next;
+}
+
+function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
+  const key = must(fieldKeyOf(edit.field, type)).key;
+  const field = (type.custom ?? []).find((f) => f.id === key);
+  if (!field)
+    throw invalid(`"${edit.field}" is a built-in field: only custom fields are edited here.`);
+  const next: { -readonly [K in keyof CustomFieldDef]: CustomFieldDef[K] } = { ...field };
+  if (edit.name !== undefined) {
+    const name = edit.name.trim();
+    if ((type.custom ?? []).some((f) => f.id !== key && statusKey(f.label) === statusKey(name)))
+      throw invalid(`${type.label} already has a field "${name}".`);
+    next.label = name;
+  }
+  if (edit.options) {
+    if (field.kind !== 'choice')
+      throw invalid(`"${field.label}" is a ${field.kind} field: only a choice field has options.`);
+    next.options = edit.options.map((o) => o.trim());
+  }
+  if (edit.onCard === true) next.onCard = true;
+  if (edit.onCard === false) delete next.onCard;
+  return { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
+}
 
 function must<T extends object>(named: ({ ok: true } & T) | ({ ok: false } & NameRefusal)): T {
   if (!named.ok) throw new Refused({ code: named.code, message: named.message });
@@ -172,6 +242,14 @@ export function applyCardTypeChanges(
   const replace = (next: ItemTypeDef) => {
     types = types.map((t) => (t.id === next.id ? next : t));
   };
+  // A type renamed earlier in the batch still answers to its former name, so later changes can name it either way.
+  const formerNames = new Map<string, string>();
+  const typeNamed = (name: string): ItemTypeDef => {
+    const id = formerNames.get(statusKey(name));
+    const renamed = id ? types.find((t) => t.id === id) : undefined;
+    const named = resolveType(name, types);
+    return !named.ok && renamed ? renamed : must(named).type;
+  };
   try {
     for (const c of changes) {
       if (c.op === 'add') {
@@ -202,16 +280,18 @@ export function applyCardTypeChanges(
           type = { ...type, excludedStatuses: statusesOf(c.excludedStatuses, statuses) };
         if (c.defaultStatus)
           type = { ...type, defaultStatus: must(resolveStatus(c.defaultStatus, statuses)).status };
+        type = withFace(type, c);
         types = [...types, type];
         const made = (type.custom ?? []).map((f) => `${f.label} (${f.id})`);
         applied.push(`+ ${type.label} (${type.id})${made.length ? `: ${made.join(', ')}` : ''}`);
       } else if (c.op === 'set') {
-        let type = must(resolveType(c.type, types)).type;
+        let type = typeNamed(c.type);
         const id = type.id;
         if (c.name !== undefined) {
           const name = c.name.trim();
           if (types.some((t) => t.id !== id && statusKey(t.label) === statusKey(name)))
             throw invalid(`A card type "${name}" already exists.`);
+          formerNames.set(statusKey(type.label), id);
           type = { ...type, label: name, newTitle: defaultNewTitle(name) };
         }
         if (c.color) type = { ...type, color: colourOf(c.color) };
@@ -234,6 +314,7 @@ export function applyCardTypeChanges(
             fields: [...type.fields, field.id],
           };
         }
+        for (const edit of c.editCustom ?? []) type = editedCustom(type, edit);
         for (const name of c.removeCustom ?? []) {
           const key = must(fieldKeyOf(name, type)).key;
           if (isBuiltInFieldId(key))
@@ -257,10 +338,11 @@ export function applyCardTypeChanges(
         } else if (c.defaultStatus) {
           type = { ...type, defaultStatus: must(resolveStatus(c.defaultStatus, statuses)).status };
         }
+        type = withFace(type, c);
         replace(type);
         applied.push(`~ ${type.label} (${type.id})`);
       } else if (c.op === 'delete') {
-        const type = must(resolveType(c.type, types)).type;
+        const type = typeNamed(c.type);
         types = types.filter((t) => t.id !== type.id);
         deleted.push(type.id);
         applied.push(`- ${type.label} (${type.id})`);

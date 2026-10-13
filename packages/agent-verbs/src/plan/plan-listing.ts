@@ -12,8 +12,14 @@ import {
   resolveType,
   statusKey,
   TRASH_STATUS,
+  detailsLabelOf,
+  isCustomCardField,
+  namedDisplay,
+  tabsOf,
+  typeCardLayout,
   type Item,
   type ItemTypeDef,
+  type PlanStatusName,
   type PlanBoardOutline,
 } from '@livediagram/items';
 import type { PlanState } from './plan-state';
@@ -51,6 +57,8 @@ export interface ListedItem {
 export interface ListedType {
   id: string;
   name: string;
+  color: string;
+  glyph: string;
   fields: string[];
   custom: {
     id: string;
@@ -58,7 +66,14 @@ export interface ListedType {
     kind: string;
     options?: readonly string[];
     linkType?: string;
+    onCard?: boolean;
   }[];
+  // The column a new card of it starts in, by name.
+  defaultStatus?: string;
+  // What its cards show per size, by place and field name, as change_card_types takes it.
+  display: Record<string, Record<string, string[]>>;
+  tabs: { name: string; fields: string[] }[];
+  detailsLabel: string;
 }
 
 export interface PlanListing {
@@ -136,20 +151,35 @@ function namedFields(item: Item, types: readonly ItemTypeDef[]): Record<string, 
   return out;
 }
 
-export function listedType(t: ItemTypeDef): ListedType {
+// A card type as list_items answers it: everything change_card_types sets, by the names it takes. Its Default
+// State by column name when `statuses` has it.
+export function listedType(t: ItemTypeDef, statuses: readonly PlanStatusName[] = []): ListedType {
+  const fieldName = (f: string) => (t.custom ?? []).find((c) => c.id === f)?.label ?? f;
+  const status = t.defaultStatus;
   return {
     id: t.id,
     name: t.label,
-    fields: t.fields.filter((f) => !f.startsWith('f-')),
+    color: t.color,
+    glyph: t.glyph,
+    fields: t.fields.filter((f) => !isCustomCardField(f)),
     custom: (t.custom ?? []).map((f) => ({
       id: f.id,
       name: f.label,
       kind: f.kind,
       ...(f.options ? { options: f.options } : {}),
       ...(f.linkType ? { linkType: f.linkType } : {}),
+      ...(f.onCard ? { onCard: true } : {}),
     })),
+    ...(status ? { defaultStatus: statuses.find((s) => s.status === status)?.name ?? status } : {}),
+    display: namedDisplay(t, (size) => typeCardLayout(t, size)),
+    tabs: tabsOf(t).map((tab) => ({ name: tab.label, fields: tab.fields.map(fieldName) })),
+    detailsLabel: detailsLabelOf(t),
   };
 }
+
+// Each of `types` listed against the plan's columns.
+export const listedTypes = (types: readonly ItemTypeDef[], statuses: readonly PlanStatusName[]) =>
+  types.map((t) => listedType(t, statuses));
 
 // The plan, narrowed by a filter resolveListingFilter resolved.
 export function planListing(state: PlanState, filter: ResolvedListingFilter = {}): PlanListing {
@@ -205,7 +235,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
     notOnBoard: live.filter((i) => !onABoard.has(i.id)).map(ref),
     count: items.length,
     items,
-    types: plan.types.map(listedType),
+    types: listedTypes(plan.types, plan.statuses),
     ...(plan.boards.length === 0 ? { hint: NO_BOARD_HINT } : {}),
   };
 }

@@ -105,8 +105,24 @@ Every write takes what a person would say, and stores the ids:
     are given, as the type editor starts a type); `custom` is `[{ name, kind, options?, linkType?, onCard? }]`
     (kinds `text`, `longtext`, `number`, `date`, `checkbox`, `link`, `choice`, `card`). Colour and glyph default
     as the type editor's Add Type does.
-  - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, removeCustom?, defaultStatus?,
-excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes values.
+  - `set` `{ type, name?, color?, glyph?, addFields?, removeFields?, addCustom?, editCustom?, removeCustom?,
+defaultStatus?, excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a field never deletes
+    values. `editCustom` `[{ field, name?, options?, onCard? }]` edits a custom field in place, as the type editor's
+    field form does: a new name, a Choice field's options replaced whole (any other kind is refused), drawn on the
+    card or not; values on cards stay.
+  - A type renamed earlier in the same call still answers to its former name, so a later change can name it either
+    way.
+  - `add` and `set` also take the type's **card face and panel**, as the type editor's Display and Configuration
+    tabs set them, every field named as people say it:
+    - `display`: per card size, which fields sit in which slot, in order: `{ minimal: { beforeTitle, afterTitle },
+compact: { besideTitle, belowTitle, bottomRight }, detailed: { header, headerEnd, underTitle, footer,
+bottomRight } }`, each a list of card fields (Number, Type, Assignee, Priority, Labels, Estimate, Start, Due,
+      Votes, Checklist, Comments, Description, or a custom field by name). A size given replaces that size's layout;
+      a size left out keeps its own. A field a size cannot draw (Minimal draws Number, Priority, Due and Assignee;
+      Compact also Type, Start, Votes and Comments; Detailed every field) or the type lacks is refused naming what
+      the size draws (`display_invalid`).
+    - `tabs`: the item panel's tabs, `[{ name, fields }]`, up to 6, fields by name (Title never, it heads the
+      panel); `detailsLabel`: what the panel calls Details. `set` replaces them whole when given.
   - `delete` `{ type }`: as the type editor's Delete Type: the type goes and its cards (out of the Trash) move to the
     Trash; the answer says how many. The catalogue's last type can go too, leaving none.
   - `add_default_types`: as Add Default Types: any of Project, Task, Note, Idea and Action the document lacks, after
@@ -119,6 +135,14 @@ excludedStatuses? }`: edit a type. Statuses here are named as above. Removing a 
   changed the card types in between, it reads them again and applies its changes to theirs (a board an agent adds
   brings its types the same way), so neither change is lost. After three tries it refuses (`item_types_stale`).
 - Only someone who may edit the whole document changes card types (a tab-scoped grant may not), as in the editor.
+
+### What a card type is made of, as facts
+
+The tool's descriptions carry what an agent needs to design a type well, as facts (never instructions,
+[MCP server](../015-api/mcp-server.md) §4.15): the built-in fields and what each holds, the custom field kinds and what
+each stores, every Plan glyph id, the card sizes with the slots each draws and the fields it can draw, the panel's
+tabs, and the limits (24 fields, 12 custom, 20 choice options, 6 tabs, 32 types). `list_items` lists each type with
+its Default State, its display per size and its tabs, so a change can build on what is there.
 
 ## Errors that teach
 
