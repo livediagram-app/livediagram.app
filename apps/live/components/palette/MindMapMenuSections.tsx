@@ -1,8 +1,10 @@
 'use client';
 
-// The Mind Map menu section's contents (docs/specs/009-elements/mind-node.md "The Mind Map menu"): three groups,
-// Outline, Branching and Spacing, each one of Plan mode's option lists (a bordered box, one full-width row per
-// choice, its icon at the left). Everything acts on the selected node's whole MAP, through its root.
+// The Mind Map menu category (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout row holding three
+// categories, Outline, Branching and Spacing, each a closed accordion around one of Plan mode's option lists (a
+// bordered box, one full-width row per choice, its icon at the left). Everything acts on the selected node's whole
+// MAP, through its root.
+import type { ComponentProps } from 'react';
 import {
   MIND_FLOWS,
   MIND_FLOW_LABEL,
@@ -11,13 +13,27 @@ import {
   type MindFlow,
   type MindSpacing,
 } from '@livediagram/document';
+import { lucideGlyph } from '@livediagram/ui';
+import {
+  lucideBetweenHorizontalStart,
+  lucideListTree,
+  lucideNetwork,
+} from '@livediagram/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';
-import { MenuGroup } from './plan-menu-parts';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { MENU_ICON_PX } from './context-menu-icons';
+import { DataMenuGlyph } from './context-menu-rows';
 import { MIND_FLOW_ICON, MIND_OUTLINE_ICON, MIND_SPACING_ICON } from './mind-map-menu-glyphs';
 
-type OutlineAction = 'outline' | 'tidy' | 'branch' | 'map';
+const OutlineGlyph = lucideGlyph(lucideListTree, MENU_ICON_PX);
+const BranchingGlyph = lucideGlyph(lucideNetwork, MENU_ICON_PX);
+const SpacingGlyph = lucideGlyph(lucideBetweenHorizontalStart, MENU_ICON_PX);
 
-export function MindMapMenuGroups({
+type OutlineAction = 'outline' | 'tidy' | 'branch' | 'map';
+type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
+
+export function MindMapMenuSections({
   flow,
   spacing,
   onSetFlow,
@@ -26,6 +42,8 @@ export function MindMapMenuGroups({
   onEditOutline,
   onSelectBranch,
   onSelectMap,
+  sectionProps,
+  flyoutProps,
 }: {
   flow: MindFlow;
   spacing: MindSpacing;
@@ -36,6 +54,9 @@ export function MindMapMenuGroups({
   onEditOutline?: () => void;
   onSelectBranch: () => void;
   onSelectMap: () => void;
+  sectionProps: (id: string) => SectionProps;
+  // The Mind Map category's own row: open state and placement, as the host gives every flyout.
+  flyoutProps: Omit<ComponentProps<typeof MenuFlyoutSection>, 'title' | 'icon' | 'children'>;
 }) {
   const actions: Record<OutlineAction, (() => void) | undefined> = {
     outline: onEditOutline,
@@ -50,8 +71,12 @@ export function MindMapMenuGroups({
     { id: 'map', label: 'Select Whole Map' },
   ];
   return (
-    <>
-      <MenuGroup title="Outline">
+    <MenuFlyoutSection title="Mind Map" icon={<DataMenuGlyph />} {...flyoutProps}>
+      <MenuAccordionSection
+        title="Outline"
+        icon={<OutlineGlyph />}
+        {...sectionProps('mind-outline')}
+      >
         <OptionRows
           kind="action"
           label="Outline"
@@ -61,8 +86,12 @@ export function MindMapMenuGroups({
             .map((r) => ({ ...r, icon: MIND_OUTLINE_ICON[r.id] }))}
           onPick={(id) => actions[id as OutlineAction]?.()}
         />
-      </MenuGroup>
-      <MenuGroup title="Branching">
+      </MenuAccordionSection>
+      <MenuAccordionSection
+        title="Branching"
+        icon={<BranchingGlyph />}
+        {...sectionProps('mind-branching')}
+      >
         <OptionRows
           kind="single"
           label="Branching"
@@ -75,8 +104,12 @@ export function MindMapMenuGroups({
           }))}
           onPick={(id) => onSetFlow(id as MindFlow)}
         />
-      </MenuGroup>
-      <MenuGroup title="Spacing">
+      </MenuAccordionSection>
+      <MenuAccordionSection
+        title="Spacing"
+        icon={<SpacingGlyph />}
+        {...sectionProps('mind-spacing')}
+      >
         <OptionRows
           kind="single"
           label="Spacing"
@@ -89,7 +122,7 @@ export function MindMapMenuGroups({
           }))}
           onPick={(id) => onSetSpacing(id as MindSpacing)}
         />
-      </MenuGroup>
-    </>
+      </MenuAccordionSection>
+    </MenuFlyoutSection>
   );
 }
