@@ -35,13 +35,18 @@ export type TokensController = {
 export function useTokens(ownerId: string | null, opts: { enabled: boolean }): TokensController {
   const enabled = opts.enabled && !!ownerId;
   const [list, setList] = useState<ApiToken[] | null>(null);
+  // When the list was read: what "expired" is measured against (a clock read in render would be impure).
+  const [readAt, setReadAt] = useState(0);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     if (!enabled || !ownerId) return;
     apiListTokens(ownerId)
-      .then(setList)
+      .then((tokens) => {
+        setReadAt(Date.now());
+        setList(tokens);
+      })
       .catch(() => setError('Could not load tokens.'));
   }, [enabled, ownerId]);
   useEffect(() => {
@@ -53,8 +58,7 @@ export function useTokens(ownerId: string | null, opts: { enabled: boolean }): T
 
   // The cap counts live tokens only, as the api's mint does: an expired token still listed (until revoked) takes
   // no slot, so it never blocks making a new one.
-  const now = Date.now();
-  const count = list?.filter((t) => t.expiresAt > now).length ?? 0;
+  const count = list?.filter((t) => t.expiresAt > readAt).length ?? 0;
   const atCap = count >= MAX_TOKENS;
 
   const create = useCallback(
