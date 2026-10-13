@@ -188,6 +188,18 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8 11l8-4M8 12h8M8 13l8 4" />
     </Glyph>
   ),
+  // A flowchart's own vocabulary: a Start over a Decision diamond, its two exits leaving by the
+  // corners. `auto-layout` draws plain boxes; the diamond is what makes this one a flowchart.
+  flowcharts: (
+    <Glyph>
+      <rect x="7.5" y="2.5" width="9" height="4" rx="2" />
+      <path d="M12 6.5v2.5" />
+      <path d="M12 9l4 3.5-4 3.5-4-3.5z" />
+      <path d="M8 12.5H5v5M16 12.5h3v5" />
+      <rect x="2.5" y="17.5" width="5" height="4" rx="0.5" />
+      <rect x="16.5" y="17.5" width="5" height="4" rx="0.5" />
+    </Glyph>
+  ),
   // The same map as an indented list: a bold root line, then bullets stepping
   // in a level each. The stepped indent is what makes it an outline rather
   // than the plain bullet list `checklists` or `markdown-import` would be.

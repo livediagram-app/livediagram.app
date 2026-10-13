@@ -12,6 +12,7 @@ Follow the references below only as needed; never upfront.
 - ./image-reference-index.md - when implementing or changing `image_refs`, `image_grants`, their writers, backfill, or the image sweep, usage map, share read and render read
 - ./image-search.md - when implementing or changing the picker's Search tab, the Openverse client, the pick download or `ImageElement.credit`
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
+- ./flowchart.md - when implementing or changing the flowchart, its layout, growth, step types or lanes
 - ./lane.md - when implementing or changing the lane, its gutter, the seam drag or lane stacking
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
 - ./mind-node.md - when implementing or changing mind nodes, Tab / Enter growth, flows or collision placement

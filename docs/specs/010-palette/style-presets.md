@@ -40,8 +40,10 @@ fill / border to preset:
   the corner radius**: radius is a silhouette choice the user makes
   separately, and presets clobbering it read as the preset breaking the shape
   (the radius-defined Pill preset left with that rule; a stored 'pill'
-  binding simply stops re-deriving). Text colour is auto-contrasted on filled
-  variants so labels stay readable. Twenty looks on a single-accent theme
+  binding simply stops re-deriving). Every preset's label meets the 4.5:1 text
+  floor on its fill, in both halves of every theme ([Light and dark](../011-theme/light-and-dark.md)):
+  Bold darkens its fill so its white label reads, and any other short label is
+  walked away from its fill. Twenty looks on a single-accent theme
   (five per group); a multi-colour theme adds its branch cards. The set is
   deduped on the colour triple but **not capped**: a cap would cut a tier
   short (the old 20-cap dropped Danger on six-branch themes). The standalone weight / pattern /

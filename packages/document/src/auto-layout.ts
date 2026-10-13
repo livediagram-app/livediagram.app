@@ -101,7 +101,7 @@ export function flowDirectionOf(elements: readonly Element[]): LayoutDirection {
 // deepest predecessor. Cycles are broken by ignoring back edges (relax only
 // along the topological order; remaining cycle nodes are appended in input
 // order so the result is deterministic).
-function layerComponent(
+export function layerComponent(
   ids: ElementId[],
   edges: Edge[],
   flat?: ReadonlySet<string>,

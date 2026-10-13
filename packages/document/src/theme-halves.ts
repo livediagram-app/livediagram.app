@@ -6,7 +6,8 @@ import { canvasSurface, contrastRatio } from './colors';
 import { hexOklch, oklchHex } from './pen-colours';
 import { DEFAULT_SCHEME_ID, defaultScheme, type Appearance, type ThemeDefinition } from './themes';
 import type { ShapeKind } from './index';
-import { shapeColorPresets } from './theme-presets';
+import { reachContrast, THEME_LINE_CONTRAST, THEME_TEXT_CONTRAST } from './readable-colour';
+import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
 
 type Role = 'background' | 'pattern' | 'fill' | 'stroke' | 'text';
 
@@ -28,9 +29,7 @@ const ROLE_TARGETS: Record<Appearance, Record<Role, { l: number; keep: number; m
   },
 };
 
-/** The WCAG 2.2 AA floors: text on its fill, and outlines / arrows (non-text) on the canvas. */
-export const THEME_TEXT_CONTRAST = 4.5;
-export const THEME_LINE_CONTRAST = 3;
+export { THEME_LINE_CONTRAST, THEME_TEXT_CONTRAST };
 
 /** Which appearance a theme is written for: a light canvas is a light theme, a dark canvas a dark one. */
 export function nativeAppearance(theme: ThemeDefinition): Appearance {
@@ -42,23 +41,6 @@ function moveTo(hex: string, role: Role, target: Appearance): string {
   if (!o) return hex;
   const t = ROLE_TARGETS[target][role];
   return oklchHex(t.l, Math.min(o.c * t.keep, t.max), o.h);
-}
-
-/** `fg` with its lightness walked away from `bg` until it reaches `min` contrast (or the end of the range). */
-function reachContrast(fg: string, bg: string, min: number): string {
-  if (contrastRatio(fg, bg) >= min) return fg;
-  const o = hexOklch(fg);
-  const b = hexOklch(bg);
-  if (!o || !b) return fg;
-  const step = b.l >= 0.6 ? -0.02 : 0.02;
-  let l = o.l;
-  let out = fg;
-  for (let i = 0; i < 50; i++) {
-    l = Math.min(1, Math.max(0, l + step));
-    out = oklchHex(l, o.c, o.h);
-    if (contrastRatio(out, bg) >= min || l === 0 || l === 1) break;
-  }
-  return out;
 }
 
 type Paint = { fill?: string | null; stroke?: string | null; text?: string | null };
@@ -168,8 +150,12 @@ export function themeColourMap(
   const targetPresets = new Map(
     shapeColorPresets(themeHalf(theme, appearance)).map((p) => [p.id, p] as const),
   );
-  for (const half of [theme, themeHalf(theme, 'light'), themeHalf(theme, 'dark')]) {
-    for (const p of shapeColorPresets(half)) {
+  // The presets as first derived come last: a shape styled before labels met the text floor stores those colours, and
+  // is drawn as today's preset of the same id.
+  const halves = [theme, themeHalf(theme, 'light'), themeHalf(theme, 'dark')];
+  const presetSources = [...halves.map(shapeColorPresets), ...halves.map(legacyShapeColorPresets)];
+  for (const presets of presetSources) {
+    for (const p of presets) {
       const to = targetPresets.get(p.id);
       if (!to) continue;
       for (const k of ['fill', 'stroke', 'text'] as const) {
@@ -197,7 +183,40 @@ export function viewElementInTheme<T extends object>(el: T, map: ReadonlyMap<str
     const to = map.get(value.toLowerCase());
     if (to && to !== value) (patch ??= {})[field] = to;
   }
+  if (patch && breaksTextPair(el as Record<string, unknown>, patch)) {
+    delete patch.fillColor;
+    delete patch.textColor;
+    if (Object.keys(patch).length === 0) patch = null;
+  }
   return patch ? { ...el, ...patch } : el;
+}
+
+// A box's text and fill are drawn as a pair (docs/specs/011-theme/light-and-dark.md "What a viewer sees"): redrawing
+// only one of them (a template's white box under its own slate text) can sink the text into its fill. True when the
+// view would put the text on its fill below the floor and read worse than the stored pair; the box then keeps both.
+function breaksTextPair(el: Record<string, unknown>, patch: Record<string, string>): boolean {
+  if (!('fillColor' in patch) && !('textColor' in patch)) return false;
+  const fill = el.fillColor;
+  const text = el.textColor;
+  if (typeof fill !== 'string' || typeof text !== 'string') return false;
+  const viewed = pairContrast(patch.textColor ?? text, patch.fillColor ?? fill);
+  return viewed < THEME_TEXT_CONTRAST && viewed < pairContrast(text, fill);
+}
+
+/** How many text-on-fill ratios the canvas keeps: a tab's boxes repeat a handful of pairs, so a small cache answers
+ *  nearly every draw (5,000 boxes: 70 ms of luminance maths uncached). Cleared whole when full; safe range 64..4096. */
+const PAIR_CONTRAST_CACHE_SIZE = 512;
+const PAIR_CONTRAST = new Map<string, number>();
+
+function pairContrast(text: string, fill: string): number {
+  const key = `${text}|${fill}`;
+  let ratio = PAIR_CONTRAST.get(key);
+  if (ratio === undefined) {
+    if (PAIR_CONTRAST.size >= PAIR_CONTRAST_CACHE_SIZE) PAIR_CONTRAST.clear();
+    ratio = contrastRatio(text, fill);
+    PAIR_CONTRAST.set(key, ratio);
+  }
+  return ratio;
 }
 
 /** A stored backdrop drawn in a theme half: a canvas or pattern colour the theme painted, in either half, becomes the

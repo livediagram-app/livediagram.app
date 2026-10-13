@@ -89,8 +89,9 @@ describe('assessCleanup on the templates', () => {
       // Decisions keep the size they were drawn.
       expect(byLabel('Payment OK?').width, kind).toBe(was('Payment OK?').width);
       expect(byLabel('Payment OK?').height, kind).toBe(was('Payment OK?').height);
-      // Every arrow along the spine runs dead straight down.
-      const spine = ['Checkout', 'Enter card details', 'Charge card', 'Payment OK?', 'In stock?'];
+      // Every arrow along the spine runs dead straight down, to the first decision: the template is a live
+      // flowchart, so its Yes branch steps aside (docs/specs/009-elements/flowchart.md "The layout").
+      const spine = ['Checkout', 'Enter card details', 'Charge card', 'Payment OK?'];
       const centres = spine.map((l) => byLabel(l).x + byLabel(l).width / 2);
       expect(new Set(centres).size, kind).toBe(1);
       // Nothing lands on the title.

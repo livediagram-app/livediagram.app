@@ -6073,6 +6073,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "FlowchartDirection": {
+    "enum": [
+      "down",
+      "right"
+    ],
+    "type": "string"
+  },
   "Folder": {
     "additionalProperties": false,
     "properties": {
@@ -11785,6 +11792,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "fixedSize": {
         "type": "boolean"
+      },
+      "flowDirection": {
+        "$ref": "#/components/schemas/FlowchartDirection"
+      },
+      "flowLaneId": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "flowchartId": {
+        "type": "string"
       },
       "font": {
         "type": "string"

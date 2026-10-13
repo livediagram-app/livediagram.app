@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { canAppendWebRow, isRailShape, type Element } from '@livediagram/document';
+import { canAppendWebRow, isFlowchartStep, isRailShape, type Element } from '@livediagram/document';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
@@ -50,6 +50,7 @@ export function QuickConnectPluses({
   const selectedIsRail = selectedElement?.type === 'shape' && isRailShape(selectedElement.shape);
   const selectedIsTable = selectedElement?.type === 'table';
   const selectedIsMind = selectedElement?.type === 'shape' && selectedElement.shape === 'mind-node';
+  const selectedIsStep = !!selectedElement && isFlowchartStep(selectedElement);
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the ring's "Add stat / step / link", while
   // there is room for one more.
   const webRow =
@@ -91,11 +92,13 @@ export function QuickConnectPluses({
           // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, each naming its
           // shortcut in the hover card. Only on a mind node, and only where there is a grower (not
           // the share view, embed, or exports).
+          // A flowchart step grows the same way (docs/specs/009-elements/flowchart.md): Add Step / Add Branch.
           onGrowMind={
-            selectedIsMind && growMind
-              ? (relation) => growMind.grow(selectedElement.id, relation)
+            (selectedIsMind || selectedIsStep) && growMind
+              ? (relation) => growMind.grow(selectedElement!.id, relation)
               : undefined
           }
+          growing={selectedIsStep ? 'flowchart' : 'mind'}
         />
       ))}
     </>

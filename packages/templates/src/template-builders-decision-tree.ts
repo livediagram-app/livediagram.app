@@ -11,6 +11,7 @@ import {
   type ShapeElement,
   type TextRun,
 } from '@livediagram/document';
+import { liveFlowchart } from './template-flowchart-live';
 
 // Decision tree: a question every team argues about, "Can we ship on
 // Friday?", answered as a balanced binary tree. Questions are diamonds (the
@@ -22,6 +23,9 @@ import {
 // red to stop, amber to wait, green to go. Each outcome is a verdict in bold
 // over the one-line reason, with a sticker that says it at a glance. A key
 // under the leaves names the three colours.
+//
+// It is a live flowchart (docs/specs/009-elements/flowchart.md "Templates"): the questions and outcomes are
+// its steps, placed by the flowchart layout from the order they are drawn in, so Tab and Enter grow it.
 type Outcome = {
   verdict: string;
   reason: string;
@@ -73,14 +77,11 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
   const titleH = 44;
   const captionH = 28;
   const keyH = 28;
-  const totalW = leafPitch * 3 + outW;
-  const totalH = titleH + captionH + 36 + qH * 2 + outH + levelGap * 2 + 44 + keyH;
-  const left = cx - totalW / 2;
-  const top = cy - totalH / 2;
-  const q1Y = top + titleH + captionH + 36;
+  // Seed positions: they only fix the left-to-right order, No before Yes; the layout places them.
+  const q1Y = 0;
   const q2Y = q1Y + qH + levelGap;
   const outY = q2Y + qH + levelGap;
-  const leafX = (i: number) => cx + (i - 1.5) * leafPitch;
+  const leafX = (i: number) => (i - 1.5) * leafPitch;
 
   const question = (label: string, x: number, y: number, preset: string): ShapeElement => ({
     ...createShape('diamond', x - qW / 2, y),
@@ -125,10 +126,26 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
     branch(qYes, outcomes[2]!, false),
     branch(qYes, outcomes[3]!, true),
   ];
+  const steps = [root, qNo, qYes, ...outcomes];
+
+  // Laid out once to learn its size, then placed so the whole composition centres on (cx, cy).
+  const probe = liveFlowchart(steps, arrows, { direction: 'down', left: 0, top: 0 }).bounds;
+  const totalW = Math.max(probe.width, 3 * 140 + 56);
+  const totalH = titleH + captionH + 36 + probe.height + 44 + keyH;
+  const left = Math.round(cx - totalW / 2);
+  const top = Math.round(cy - totalH / 2);
+  const chart = liveFlowchart(steps, arrows, {
+    direction: 'down',
+    left: left + Math.round((totalW - probe.width) / 2),
+    top: top + titleH + captionH + 36,
+  });
+  const laidOutcomes = outcomes.map(
+    (o) => chart.elements.find((e) => e.id === o.id) as ShapeElement,
+  );
 
   // Each verdict gets a sticker on its top-right corner, tilted off the card.
   const stickerSize = 52;
-  const stickers: Element[] = outcomes.map((o, i) => ({
+  const stickers: Element[] = laidOutcomes.map((o, i) => ({
     ...createShape('sticker', o.x + o.width - stickerSize + 14, o.y - stickerSize / 2),
     width: stickerSize,
     height: stickerSize,
@@ -157,7 +174,7 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
   ];
 
   // The key: one chip per outcome colour, in the same status presets.
-  const keyY = outY + outH + 44;
+  const keyY = chart.bounds.y + chart.bounds.height + 44;
   const keyItems: [string, Outcome['preset']][] = [
     ['Go', 'success'],
     ['Wait', 'warning'],
@@ -197,5 +214,5 @@ export function buildDecisionTree(cx: number, cy: number): Element[] {
     );
   });
 
-  return [...header, ...arrows, root, qNo, qYes, ...outcomes, ...stickers, ...key];
+  return [...header, ...chart.elements, ...stickers, ...key];
 }

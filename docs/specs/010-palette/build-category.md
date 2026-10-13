@@ -6,6 +6,7 @@ lay a diagram _out_ with, as opposed to the ones you draw _on_ it:
 | Tile          | Came from     |
 | ------------- | ------------- |
 | **Mind Node** | Write (Tools) |
+| **Flowchart** | (new)         |
 | **Lane**      | Draw (Tools)  |
 | **Frame**     | Draw (Tools)  |
 | **Timeline**  | Components    |
@@ -17,6 +18,10 @@ element that lays itself out from data rather than holding work you place in it;
 Sankey is a structure you choose for a whole picture (how much moves where), the same moment as choosing
 lanes or a timeline. It is in Diagram and Illustrate (as an infographic), and left out of Facilitate,
 where a session does not stop to chart a flow.
+
+The **Flowchart** ([The flowchart](../009-elements/flowchart.md)) joined later, beside the Mind Node: it
+drops a Start that grows into a chart from the keyboard and lays itself out. Like the Mind Node it is
+in Diagram mode and left out of Illustrate, where a page, not a process, is being arranged.
 
 ## Why it exists
 

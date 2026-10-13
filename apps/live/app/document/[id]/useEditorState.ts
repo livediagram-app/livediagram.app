@@ -84,7 +84,8 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, isVoteHost, opensInOf, settleFlowcharts } from '@livediagram/document';
+import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { useArticles } from '@/hooks/editor/useArticles';
 import { useIllustratePages } from '@/hooks/editor/useIllustratePages';
@@ -207,6 +208,9 @@ import { useElementHelpers } from './useElementHelpers';
 import { usePruneInertSelection } from '@/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
 import { useMindGrowth } from './useMindGrowth';
+import { useFlowchartGrowth } from './useFlowchartGrowth';
+import { routeGrowth } from './growth-routing';
+import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
 import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
@@ -321,7 +325,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // are stamped: an untouched tab may be a placeholder whose content has not loaded, and stamping it would make
       // it look edited to the autosave (docs/specs/006-document/per-tab-storage.md).
       const before = new Set<Tab>(ts);
-      const mapped = mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
+      // Flowcharts (docs/specs/009-elements/flowchart.md "The layout"): a chart whose structure this
+      // commit changed (an arrow drawn between steps, a step deleted, a step dragged into another
+      // lane) is laid out again in the same commit, whichever path made the change.
+      const mapped = mapTabs(ts).map((t) => {
+        if (before.has(t)) return t;
+        const prev = ts.find((p) => p.id === t.id);
+        const settled = prev
+          ? settleFlowcharts(prev.elements, t.elements, () =>
+              lockedElementIds(t.elements, t.layers),
+            )
+          : t.elements;
+        return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
+      });
       // Locked pages (docs/specs/007-editor/illustrate-pages.md "Locking a page"): in Illustrate
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       const next = guardLockedPagesIn(ts, mapped, pageLockGuardRef.current);
@@ -2856,9 +2872,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
   });
 
-  // Mind-map growth (docs/specs/009-elements/mind-node.md): Tab / Enter / the "+" ring. See useMindGrowth.
-  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = useMindGrowth({
-    // A Participant grows a mind map (docs/specs/013-workspace/share-roles.md): branches are content.
+  // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
+  // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
+  // (growth-routing.ts) so the keyboard and label-editor plumbing serves both.
+  const growthOpts = {
+    // A Participant grows a mind map or a flowchart (docs/specs/013-workspace/share-roles.md): branches
+    // and steps are content.
     editsBlocked: participant.participating
       ? createBlocked || !participant.can.addContent
       : structureCreateBlocked,
@@ -2869,7 +2888,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
     setEditingId,
     scrollIntoView,
-  });
+  };
+  const flowchartGrowth = useFlowchartGrowth(growthOpts);
+  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = routeGrowth(
+    useMindGrowth(growthOpts),
+    flowchartGrowth,
+  );
 
   // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
   const mindOutline = useMindOutline({
@@ -2896,6 +2920,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addCallout,
     addStatRow,
     addProcess,
+    addFlowchart,
     addAvatar,
     dropPaletteItem,
     placeIntentAt,
@@ -3179,6 +3204,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
+    notify: (tone, message) => toast[tone](message),
+  });
+
+  // The flowchart's step type, direction, lanes and Tidy (docs/specs/009-elements/flowchart.md): one
+  // bundle the step toolbar and the Flowchart menu section read from the editor context.
+  const flowchartActions = useFlowchartSetters({
+    currentSelectionIds,
+    commitActiveTab,
+    elements: () => activeTab.elements,
+    editsBlocked,
     notify: (tone, message) => toast[tone](message),
   });
 
@@ -3860,6 +3895,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addCallout,
     addStatRow,
     addProcess,
+    addFlowchart,
     addAvatar,
     dropPaletteItem,
     // The empty Plan tab's board picker places its board in the middle of the view.
@@ -4186,6 +4222,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionSelected,
     growMindNode,
     abandonMindNode,
+    flowchartActions,
     mindOutline,
     setChecklistItemsSelected,
     setEntityFieldsSelected,

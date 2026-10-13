@@ -8,6 +8,7 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
+  isFlowchartStep,
   isMindNode,
   takesAttachments,
 } from '@livediagram/document';
@@ -22,6 +23,7 @@ import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
+import { flowchartStepToolbarFor } from '@/components/flowchart/flowchart-step-toolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 
@@ -160,6 +162,21 @@ export function CanvasSelectionToolbars({
               ? {
                   onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
                   onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
+                }
+              : {})}
+            // Flowchart (docs/specs/009-elements/flowchart.md): Add Step / Add Branch for whoever grows
+            // the chart; Step Type and Lane for an Editor. Not on a locked step: growing re-lays the chart.
+            {...((!readOnly || !!props.participantPalette) &&
+            !selectedLocked &&
+            selected &&
+            isFlowchartStep(selected)
+              ? {
+                  flowchartStep: flowchartStepToolbarFor(
+                    props.elements,
+                    selected,
+                    props.onGrowMindNode,
+                    props.flowchartActions,
+                  ),
                 }
               : {})}
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}

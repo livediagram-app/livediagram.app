@@ -4,6 +4,7 @@
 
 import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@livediagram/items';
 import { isPlanSheetRef } from './element-types';
+import { isFlowchartDirection } from './flowchart';
 import { isChartSource, isSheetAnchor } from './chart-source';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
@@ -227,6 +228,9 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: oneOfRule(EMBED_PROVIDERS),
   },
   { field: 'mindParentId', valid: (v) => typeof v === 'string', rule: 'an element id' },
+  { field: 'flowchartId', valid: isNonEmptyStr, rule: 'a flowchart id' },
+  { field: 'flowDirection', valid: isFlowchartDirection, rule: 'a flowchart direction' },
+  { field: 'flowLaneId', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'pageTitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   { field: 'pageSubtitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   {

@@ -23,6 +23,13 @@
 
 import { shade, tint, type AnimatedBackgroundPattern } from '@livediagram/document';
 import type { CSSProperties } from 'react';
+import {
+  AURORA_GLOWS,
+  AURORA_GLOW_OPACITY,
+  RINGS_PER_ORIGIN,
+  RIPPLE_ORIGINS,
+  RIPPLE_RING_VMAX,
+} from '@/lib/animated-pattern-still';
 
 type AnimatedCanvasBackgroundProps = {
   variant: AnimatedBackgroundPattern;
@@ -150,16 +157,10 @@ function Drift({ scale }: { scale: number }) {
 // ── Aurora ──────────────────────────────────────────────────────────────
 // Large blurred glows that slowly drift and breathe, a calm coloured wash.
 // Resting frame: soft static glows.
-const GLOWS: { top: number; left: number; size: number; dx: number; dy: number; dur: number }[] = [
-  { top: 8, left: 12, size: 46, dx: 8, dy: 6, dur: 26 },
-  { top: 44, left: 58, size: 54, dx: -10, dy: 8, dur: 32 },
-  { top: 62, left: 18, size: 40, dx: 7, dy: -9, dur: 29 },
-  { top: 18, left: 70, size: 50, dx: -6, dy: -7, dur: 35 },
-];
 function Aurora({ scale }: { scale: number }) {
   return (
     <>
-      {GLOWS.map((g, i) => {
+      {AURORA_GLOWS.map((g, i) => {
         const s = g.size * scale;
         return (
           <span
@@ -188,15 +189,8 @@ function Aurora({ scale }: { scale: number }) {
 // ── Ripple ──────────────────────────────────────────────────────────────
 // Concentric rings that expand and fade from a handful of origins, like
 // raindrops on water. Resting frame: a set of still concentric rings.
-const RIPPLE_ORIGINS: { top: number; left: number; dur: number }[] = [
-  { top: 26, left: 20, dur: 9 },
-  { top: 68, left: 40, dur: 11 },
-  { top: 38, left: 72, dur: 10 },
-  { top: 80, left: 82, dur: 12 },
-];
-const RINGS_PER_ORIGIN = 3;
 function Ripple({ scale }: { scale: number }) {
-  const base = 26 * scale; // resting ring diameter in vmax units feels right small
+  const base = RIPPLE_RING_VMAX * scale;
   return (
     <>
       {RIPPLE_ORIGINS.map((o, i) =>
@@ -294,7 +288,7 @@ const KEYFRAMES = `
   }
 
   .lvd-aurora-glow {
-    opacity: 0.72;
+    opacity: ${AURORA_GLOW_OPACITY};
     animation: lvd-aurora calc(var(--dur) / var(--lvd-bg-speed, 1)) ease-in-out infinite;
   }
   @keyframes lvd-aurora {

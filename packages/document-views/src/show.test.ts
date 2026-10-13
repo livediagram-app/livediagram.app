@@ -138,6 +138,9 @@ describe('person ids (security)', () => {
       'stickerId',
       'imageId',
       'mindParentId',
+      // A flowchart's id (its first step's) and a step's lane (docs/specs/009-elements/flowchart.md).
+      'flowchartId',
+      'flowLaneId',
       'ideaCardIds',
     ]);
     const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[{]/)[0]));
