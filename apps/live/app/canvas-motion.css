@@ -1224,6 +1224,51 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
   animation: lvd-slide-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* The first slide holds back until fullscreen has landed and the slide is fitted to it (slide-transition.ts),
+   so the card never arrives and then jumps when the screen resizes under it. */
+html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
+  opacity: 0;
+  animation: none;
+}
+
+/* The outgoing slide: a snapshot of the surface leaving the other way as the new slide arrives, so the deck
+   reads as one strip of slides moving together rather than a slide appearing over a blank. */
+html[data-presenting][data-slide-transition='slide']
+  [data-slide-ghost][data-slide-leave='forward'] {
+  animation: lvd-slide-out-forward var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+html[data-presenting][data-slide-transition='slide'] [data-slide-ghost][data-slide-leave='back'] {
+  animation: lvd-slide-out-back var(--lvd-slide-ms, 380ms) cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+/* A fade crosses the two: the old slide fades out as the new one fades in. */
+html[data-presenting][data-slide-transition='fade'] [data-slide-ghost] {
+  animation: lvd-slide-fade-out var(--lvd-slide-ms, 380ms) ease forwards;
+}
+
+@keyframes lvd-slide-out-forward {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes lvd-slide-out-back {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes lvd-slide-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
 @keyframes lvd-slide-fade {
   from {
     opacity: 0;
@@ -1267,6 +1312,12 @@ html[data-presenting][data-slide-transition='slide'][data-slide-move='back']
      deck still reads as changing slides, without the travel. */
   html[data-presenting][data-slide-move] [data-canvas-a11y-root] {
     animation: lvd-slide-fade 380ms ease;
+  }
+  html[data-presenting] [data-slide-ghost] {
+    animation: lvd-slide-fade-out 380ms ease forwards;
+  }
+  html[data-presenting][data-slide-move='pending'] [data-canvas-a11y-root] {
+    animation: none;
   }
 }
 
