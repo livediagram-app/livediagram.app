@@ -24,10 +24,11 @@ const TidyUpIcon = lucideGlyph(lucideWandSparkles, 14);
 const BUTTON_ROOM = 28;
 const LABELLED_ROOM = 72;
 
-/** The room the controls take: Tidy Up while it shows, then Mirror and Guides, named on a desktop. */
+/** The room the controls take: Mirror and Guides, named on a desktop, then Tidy, its icon alone,
+ *  while it shows. */
 export function logoTitleBarRoom(tidyUp: boolean, labelled: boolean): number {
   const each = labelled ? LABELLED_ROOM : BUTTON_ROOM;
-  return (tidyUp ? each : 0) + 2 * each;
+  return (tidyUp ? BUTTON_ROOM : 0) + 2 * each;
 }
 
 function TitleButton({
@@ -61,23 +62,11 @@ function TitleButton({
 }
 
 // Tidy Up, shown while the selection holds a hand-drawn line. Re-rendered as the selection changes.
-function TidyUpButton({
-  canTidyUp,
-  tidyUp,
-  labelled,
-}: {
-  canTidyUp: () => boolean;
-  tidyUp: () => void;
-  labelled: boolean;
-}) {
+function TidyUpButton({ canTidyUp, tidyUp }: { canTidyUp: () => boolean; tidyUp: () => void }) {
   useSelectionOf((s) => s.selectedId);
   useSelectionOf((s) => s.multiSelectedIds);
   return canTidyUp() ? (
-    <TitleButton
-      label="Tidy: straighten the selected drawing"
-      text={labelled ? 'Tidy' : undefined}
-      onClick={tidyUp}
-    >
+    <TitleButton label="Tidy: straighten the selected drawing" onClick={tidyUp}>
       <TidyUpIcon />
     </TitleButton>
   ) : null;
@@ -107,13 +96,6 @@ export function LogoTitleBar({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      {editor && selection ? (
-        <TidyUpButton
-          canTidyUp={editor.canTidyUp}
-          tidyUp={editor.tidyUpSelected}
-          labelled={labelled}
-        />
-      ) : null}
       {/* Mirror opens its popover: on or off, axis, copies, merge. */}
       <LogoMirrorButton
         pageId={pageId}
@@ -132,6 +114,10 @@ export function LogoTitleBar({
       >
         <GuidesIcon />
       </LogoGuidesButton>
+      {/* Tidy last, its icon alone, left of the lock and cog, as on every Illustrate page. */}
+      {editor && selection ? (
+        <TidyUpButton canTidyUp={editor.canTidyUp} tidyUp={editor.tidyUpSelected} />
+      ) : null}
     </div>
   );
 }

@@ -620,7 +620,7 @@ export const ALTERNATIVES: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes, live cursors and comments', them: 'Yes' },
       {
         label: 'Designed slides',
-        us: '16:9 or 4:3 slide pages from 17 layouts',
+        us: '16:9 or 4:3 slide pages from 46 layouts',
         them: 'Themes, layouts and a large template gallery',
       },
       {
@@ -648,7 +648,7 @@ export const ALTERNATIVES: Alternative[] = [
     ],
     usBest: [
       'Slides straight from the work: select elements or a Plan board on any tab and present it, and editing a shape updates every slide it is on.',
-      'Slide pages when you want a designed deck: 16:9 or 4:3, started from seventeen layouts (title, agenda, two columns, timeline and more).',
+      'Slide pages when you want a designed deck: 16:9 or 4:3, started from 46 layouts (title, agenda, big numbers, roadmap and more).',
       'One document for the whole story: the write-up as pages, the diagram, the plan and the spreadsheet beside the deck that presents them.',
       'Present with presenter notes, a time budget per slide, Slide or Fade transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
@@ -661,7 +661,7 @@ export const ALTERNATIVES: Alternative[] = [
       {
         heading: 'Two ways to make a deck',
         paragraphs: [
-          'In Google Slides a deck is its own file, built slide by slide. livediagram gives you two ways in. Switch a tab to Illustrate and add slide pages, 16:9 or 4:3, each started from one of seventeen layouts (a title, an agenda, two columns, image and text, a timeline and more) and painted from your theme. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
+          'In Google Slides a deck is its own file, built slide by slide. livediagram gives you two ways in. Switch a tab to Illustrate and add slide pages, 16:9 or 4:3, each started from one of 46 layouts (a title, an agenda, two columns, image and text, a timeline and more) and painted from your theme. Or build slides from what is already on your canvas: select a cluster of elements, or a Plan board, and make it a slide.',
           'Slides made from the canvas point at the real elements rather than copying them, so the deck can never drift from the work: change a shape, a card or a label and every slide it is on changes with it. Both kinds of slide sit in one deck, ordered in the Slide Deck panel, saved with the document.',
         ],
       },

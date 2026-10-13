@@ -93,7 +93,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   than the window.
 - Top to bottom: on a logo page, **Show Me** and **Help** ([Logo pages](logo-pages.md) "Show Me"); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs: **Page**
-  alone on an infographic page, with no tab switch (its Layout, Tidy and Background are the
+  alone on an infographic page, with no tab switch (its Layout, Background and Tidy are the
   buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its
   Layout is the button beside the cog); an article page:
   **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
@@ -466,8 +466,8 @@ Image category: a logo goes over other things, so its artboard stays a colour or
 
 ### Beside the cog
 
-**Named while there is room.** On a desktop the title bar's buttons (Layout, Tidy, Background,
-the lock, a logo page's Tidy, Mirror and Guides) name themselves beside their icons only while
+**Named while there is room.** On a desktop the title bar's buttons (Layout, Background,
+the lock, a logo page's Mirror and Guides; Tidy is always its icon alone) name themselves beside their icons only while
 the page is wide enough on screen to hold them named and still leave the label its least room
 (40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
@@ -486,11 +486,12 @@ and logo pages keep their background in the panel only. Opening it is tracked as
 
 ### Tidy
 
-An infographic or slide page's title bar holds a **Tidy** button left of its Background button, shown
-only while a press would change something (a page already tidy, or empty, shows none), the
-cog's size with a tooltip ("Tidy: align and space what is on this page"), its glyph the
-diagram Tidy Up's broom. On a desktop it names itself beside its icon (**Tidy**); a phone shows
-the icon alone. It is Diagram mode's Tidy Up ([Layout cleanup](../008-canvas/layout-cleanup.md#the-tidy-up-button))
+An infographic or slide page's title bar holds a **Tidy** button, its icon alone (never named,
+on a desktop or a phone), right after Background and left of the lock and the cog, shown only
+while a press would change something (a page already tidy, or empty, shows none), the cog's
+size with a tooltip ("Tidy: align and space what is on this page"), its glyph the diagram Tidy
+Up's broom. A logo page's Tidy (for drawn lines) sits in the same place, after Mirror and
+Guides, its icon alone too. It is Diagram mode's Tidy Up ([Layout cleanup](../008-canvas/layout-cleanup.md#the-tidy-up-button))
 for a page: where the diagram one lays shapes out from their arrows, a page has no graph, so this
 one keeps the author's layout and straightens it.
 
@@ -942,20 +943,45 @@ be read across a room:
 
 - **Openers**: **Title Slide** (a large title, a subtitle, an accent rule, and the presenter and
   date at the foot), **Section Header** (a big section number, an accent rule, the section's title
-  and a line), and **Agenda** (the infographic Agenda).
+  and a line), **Agenda** (the infographic Agenda), **Title and Image** (an eyebrow, a title, a rule
+  and a subtitle on the left half, a picture filling the right), **Keynote Title** (everything
+  centred: an eyebrow, a large title, a rule, a subtitle, the event at the foot), **Opening
+  Question** (an eyebrow, one question set very large, a rule and a line), **About the Speaker** (a
+  round photo, an eyebrow, the name, the role, a rule and three facts), **Objectives** (three
+  numbered cards, each a name and a note) and **Agenda Grid** (four cards, two by two, each a large
+  number, the part and its time).
 - **Content**: **Title and Bullets** (a title over five bullet points, each a dot beside a line),
   **Two Columns** (a title over two columns, each a heading and three bullet points), **Image and
   Text** (an image filling the left half, a title, a line and three bullet points to its right),
-  **Statement** (an accent rule, one sentence set very large, centred, and a line under it) and **Quote** (the
-  infographic Quote).
-- **Data**: **Big Number**, **Key Stats**, **Chart Story** and **Comparison** (the infographic
-  ones, side by side).
-- **Steps and Time**: **Process**, **Timeline** and **Roadmap** (the infographic ones).
-- **Closers**: **Thank You** (a large "Thank you", "Questions?", and a contact line) and **Team**
-  (the infographic Team).
+  **Statement** (an accent rule, one sentence set very large, centred, and a line under it),
+  **Quote** (the infographic Quote), **Three Points** (three icons in discs, each a heading and a
+  line), **Full Image** (a picture filling the slide under a caption card at its lower left), **Key
+  Takeaway** (a card holding the one thing to remember, set large, beside three supporting points)
+  and **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line).
+- **Data**: **Big Number**, **Key Stats**, **Chart Story**, **Comparison**, **KPI Dashboard** and
+  **Market Share** (the infographic ones, side by side), **Three Big Numbers** (three figures
+  across, fitted as the longest so all stand the same size, a rule, a caption and a note under
+  each), **Big Chart** (a full-height bar chart and its headline figure on a card beside it),
+  **Chart and Insights** (an area chart beside three numbered insights) and **Goals Progress**
+  (three progress rings, never wider than their column, each a goal and its target). Each of the
+  slide's own cites its source at the foot.
+- **Steps and Time**: **Process**, **Timeline**, **Roadmap**, **Funnel**, **Cycle** and **Project
+  Plan** (the infographic ones), **Process Flow** (four steps as pills joined by arrows, a note under
+  each), **Milestones** (five years along a rail, a dot on it for each, what happened under it) and
+  **Now, Next, Later** (three cards of bullet points).
+- **Closers**: **Thank You** (a large "Thank you", "Questions?", and a contact line), **Team** (the
+  infographic Team), **Summary** (three numbered takeaways, each a bold line and a note), **Call to
+  Action** (an eyebrow, one bold ask centred, a button-like pill and a link), **Next Steps** (four
+  actions, each with a tick, its owner and its date, a hairline between), **Contact** (a round
+  photo, an eyebrow, the name, the role and three ways to get in touch), **Questions** (an icon in
+  a disc over "Questions?" set large and how to ask later), **Thank You and Image** (a thank you
+  beside a full-height picture) and **Resources** (four links, each an icon in a disc, a title and
+  where to find it).
 
-Seventeen in all; a slide layout reused from the infographics is the same layout (same id, same
-build), filed under the slide category.
+Forty-six in all, at least nine to a category; a slide layout reused from the infographics is the
+same layout (same id, same build), filed under the slide category. Every one fits a 16:9 and a
+4:3 slide inside its margins, every icon is one the catalogue draws, and no two of its text boxes
+overlap on either shape.
 
 ## Page actions
 

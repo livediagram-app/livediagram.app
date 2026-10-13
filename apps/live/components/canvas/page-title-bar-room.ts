@@ -34,7 +34,7 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
-    (b.tidy ? pageTidyUpRoom(named) : 0)
+    (b.tidy ? pageTidyUpRoom() : 0)
   );
 }
 

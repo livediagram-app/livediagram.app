@@ -150,13 +150,13 @@ function SolidSegments({
 // --- Pages in a row ----------------------------------------------------------------------------
 
 /** An infographic page's title-bar buttons as icons alone (the page too small on screen to name
- *  them): Layout, Tidy, Background and the padlock, left of the cog at `cogX`. */
+ *  them): Layout, Background, Tidy and the padlock, left of the cog at `cogX`. */
 function PageIcons({ cogX, cy }: { cogX: number; cy: number }) {
   return (
     <g>
       <TitleIcon cx={cogX - 70} cy={cy} Glyph={LayoutGlyph} />
-      <TitleIcon cx={cogX - 54} cy={cy} Glyph={TidyUpGlyph} />
-      <TitleIcon cx={cogX - 38} cy={cy} Glyph={BackgroundGlyph} />
+      <TitleIcon cx={cogX - 54} cy={cy} Glyph={BackgroundGlyph} />
+      <TitleIcon cx={cogX - 38} cy={cy} Glyph={TidyUpGlyph} />
       <TitleIcon cx={cogX - 22} cy={cy} Glyph={PadlockGlyph} />
     </g>
   );
@@ -596,11 +596,11 @@ export function LayoutCategoriesScene() {
   const pageW = 360;
   const right = pageX + pageW;
   const barY = 32;
-  // The title bar from the right: the cog, the padlock, then Background, Tidy and Layout,
-  // each named, the gaps the title bar's own.
-  const bgX = right - 18 - 4 - 22 - 4 - titleButtonWidth('Background');
-  const tidyX = bgX - 4 - titleButtonWidth('Tidy');
-  const layoutX = tidyX - 4 - titleButtonWidth('Layout');
+  // The title bar from the right: the cog, the padlock, Tidy (its icon alone), then Background
+  // and Layout, named, the gaps the title bar's own.
+  const tidyCx = right - 18 - 4 - 22 - 4 - 10;
+  const bgX = tidyCx - 10 - 4 - titleButtonWidth('Background');
+  const layoutX = bgX - 4 - titleButtonWidth('Layout');
   // The popover, left-aligned under the Layout button: four cards across.
   const cols = 4;
   const cw = 110;
@@ -618,8 +618,8 @@ export function LayoutCategoriesScene() {
         A4 · Landscape
       </Label>
       <TitleButton x={layoutX} cy={barY} name="Layout" on Glyph={LayoutGlyph} />
-      <TitleButton x={tidyX} cy={barY} name="Tidy" Glyph={TidyUpGlyph} />
       <TitleButton x={bgX} cy={barY} name="Background" Glyph={BackgroundGlyph} />
+      <TitleIcon cx={tidyCx} cy={barY} Glyph={TidyUpGlyph} />
       <PadlockGlyph cx={right - 18 - 4 - 11} cy={barY} />
       <Cog cx={right - 9} cy={barY} />
       {/* The page, with what is on it now: a layout placed over it replaces it, one Undo back */}

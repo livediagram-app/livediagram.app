@@ -905,7 +905,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present',
         title: 'Slide pages, ready-made layouts',
         description:
-          'Add a 16:9 or classic 4:3 slide page and start it from one of seventeen layouts: a title, an agenda, two columns, image and text, a timeline and more. One press puts it in the deck, and it presents edge to edge.',
+          'Add a 16:9 or classic 4:3 slide page and start it from one of 46 layouts: a keynote title, an agenda, three big numbers, a roadmap, a call to action and more. One press puts it in the deck, and it presents edge to edge.',
       },
       {
         art: <SlideDeckArt />,

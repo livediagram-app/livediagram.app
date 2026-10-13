@@ -394,10 +394,6 @@ export function IllustratePages({
                     }
                   />
                 ) : null}
-                {/* An infographic or slide page's Tidy (PageTidyUpButton), while it would change something. */}
-                {tidyButton ? (
-                  <PageTidyUpButton pageId={page.id} labelled={labelled} edit={edit} />
-                ) : null}
                 {/* An infographic or slide page's Background (PageBackgroundButton). */}
                 {pageButtons ? (
                   <PageBackgroundButton
@@ -408,6 +404,9 @@ export function IllustratePages({
                     onPreview={(patch) => setPreview(patch ? { pageId: page.id, patch } : null)}
                   />
                 ) : null}
+                {/* An infographic or slide page's Tidy, its icon alone, left of the lock and cog
+                    (PageTidyUpButton), while it would change something. */}
+                {tidyButton ? <PageTidyUpButton pageId={page.id} edit={edit} /> : null}
                 {/* The page's lock, before the cog (PageLockButton). */}
                 {edit ? (
                   <PageLockButton

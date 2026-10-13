@@ -37,7 +37,7 @@ export const TEMPLATE_COUNT = 110;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 12;
 // Illustrate's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
-export const SLIDE_LAYOUT_COUNT = 17;
+export const SLIDE_LAYOUT_COUNT = 46;
 // Illustrate's infographic page layouts and logo layouts, pinned the same way.
 export const PAGE_LAYOUT_COUNT = 92;
 export const LOGO_LAYOUT_COUNT = 25;
