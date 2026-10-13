@@ -6,10 +6,10 @@
 // Done. The rows share the view's height and the bars thicken, and labels grow, where there is room.
 import { useMemo } from 'react';
 import {
-  PLAN_VISUALISATION_LABELS,
   STATUS_PHASES,
   STATUS_PHASE_LABELS,
   breakdownGroupingOf,
+  breakdownTitle,
   breakdownModel,
   cardsInStatuses,
 } from '@livediagram/items';
@@ -45,7 +45,7 @@ export function WorkloadView({
   const layout = workloadLayout(width, height, model.rows.length);
   return (
     <ViewFrame
-      title={PLAN_VISUALISATION_LABELS.workload}
+      title={breakdownTitle({ by, field }, types)}
       count={model.total}
       countLabel={`${model.total} ${model.total === 1 ? 'card' : 'cards'}`}
       palette={palette}

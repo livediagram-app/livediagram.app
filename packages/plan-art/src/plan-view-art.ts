@@ -10,11 +10,11 @@ import {
   type ShapeElement,
 } from '@livediagram/document';
 import {
-  PLAN_VISUALISATION_LABELS,
   PRIORITY_LABELS,
   STATUS_PHASES,
   STATUS_PHASE_LABELS,
   breakdownGroupingOf,
+  breakdownTitle,
   breakdownModel,
   cardsInStatuses,
   itemTitle,
@@ -137,7 +137,12 @@ function workloadArt({ rect, p, items, data, settings, title }: ViewArtInput): s
     data.types,
     data.statusNames,
   );
-  const frame = viewFrame(rect, p, titled(PLAN_VISUALISATION_LABELS.workload, title), model.total);
+  const frame = viewFrame(
+    rect,
+    p,
+    titled(breakdownTitle({ by, field }, data.types), title),
+    model.total,
+  );
   if (model.total === 0) return frame.markup + emptyBody(frame.body, p, 'No cards yet.');
   const body = frame.body;
   const top = body.y + 32;

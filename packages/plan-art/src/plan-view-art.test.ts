@@ -18,7 +18,7 @@ const data = artData(cards);
 describe('a plan view’s picture', () => {
   it('draws Cards by Field as bars with their totals and the phase key', () => {
     const svg = planViewArt(view('workload'), data, 'light');
-    expect(svg).toContain('Cards by Field');
+    expect(svg).toContain('Cards by Assignee');
     expect(svg).toContain('No assignee');
     expect(svg).toContain('In Progress');
   });
