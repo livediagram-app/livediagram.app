@@ -71,8 +71,11 @@ describe('PLAN_TOUR_STEPS', () => {
   // tab-filling body.
   it("points the board steps at the person's drawn board, its first column, card and header", () => {
     const a = api();
-    expect(step('board').selector!(a)).toBe('[data-plan-board="board1"]');
-    expect(step('add-cards').selector!(a)).toBe('[data-plan-board="board1"] [data-plan-status]');
+    // The opening step is a card with no ring: one round the whole board would light most of the screen.
+    expect(step('board').selector).toBeUndefined();
+    expect(step('add-cards').selector!(a)).toBe(
+      '[data-plan-board="board1"] [data-add-card-trigger]',
+    );
     expect(step('move-card').selector!(a)).toBe(
       '[data-plan-board="board1"] [data-plan-card="card1"]',
     );
@@ -85,7 +88,6 @@ describe('PLAN_TOUR_STEPS', () => {
 
   it('has no anchor without a board or a card', () => {
     const a = api({ boardId: () => null, firstCardId: () => null });
-    expect(step('board').selector!(a)).toBeNull();
     expect(step('add-cards').selector!(a)).toBeNull();
     expect(step('move-card').selector!(a)).toBeNull();
     expect(step('board-header').selector!(a)).toBeNull();
@@ -125,6 +127,14 @@ describe('PLAN_TOUR_STEPS', () => {
 });
 
 describe('the welcome card', () => {
+  it('names the track on offer in its title, never the mode', () => {
+    expect(planTourSteps('boards')[0]!.title).toBe('Getting started with boards?');
+    expect(planTourSteps('sheets')[0]!.title).toBe('Getting started with sheets?');
+    expect(planTourSteps('boards', { offer: 'choice' })[0]!.title).toMatch(/boards and sheets/);
+    for (const offer of ['boards', 'sheets', 'choice'] as const)
+      expect(planTourSteps('boards', { offer })[0]!.title).not.toMatch(/Plan/);
+  });
+
   it('names the one track on offer, and asks which when the tab has both', () => {
     expect(planTourSteps('boards')[0]!.body).toMatch(/your board/);
     expect(planTourSteps('sheets')[0]!.body).toMatch(/your sheet/);
@@ -153,15 +163,16 @@ describe("planTourSteps('sheets')", () => {
   it("points each step at a part of the person's sheet", () => {
     const a = api();
     const on = '[data-plan-sheet="sheet1"]';
-    expect(sheetStep('sheet').selector!(a)).toBe(on);
-    expect(sheetStep('cells').selector!(a)).toBe(`${on} [role="grid"]`);
+    // The opening step is a card with no ring, and the cells step rings A1 alone, never the whole grid.
+    expect(sheetStep('sheet').selector).toBeUndefined();
+    expect(sheetStep('cells').selector!(a)).toBe(`${on} [data-sheet-a1]`);
     expect(sheetStep('formulas').selector!(a)).toBe(`${on} [data-sheet-formula-bar]`);
     expect(sheetStep('sheet-toolbar').selector!(a)).toBe(`${on} [role="toolbar"]`);
     expect(sheetStep('sheet-settings').selector!(a)).toBe(
       `${on} button[aria-label="Sheet Settings"]`,
     );
     const none = api({ sheetElementId: () => null });
-    for (const id of ['sheet', 'cells', 'formulas', 'sheet-toolbar', 'sheet-settings'])
+    for (const id of ['cells', 'formulas', 'sheet-toolbar', 'sheet-settings'])
       expect(sheetStep(id).selector!(none), id).toBeNull();
   });
 

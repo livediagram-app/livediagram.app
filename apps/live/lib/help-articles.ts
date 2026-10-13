@@ -118,6 +118,10 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
   logoPages: 'canvas/illustrate/logo-pages',
+  // Each page kind's Show Me links its own article (docs/specs/007-editor/illustrate-tour.md).
+  slidePages: 'canvas/illustrate/slide-pages',
+  infographicLayouts: 'canvas/illustrate/infographic-layouts',
+  articlePages: 'canvas/illustrate/articles',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -430,6 +434,18 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   logoPages: {
     title: 'Learn about logo pages',
     description: 'Guides, mirror drawing, wordmarks, combining shapes and the logo kit.',
+  },
+  slidePages: {
+    title: 'Learn about slide pages',
+    description: 'Slide layouts, backgrounds, the deck and presenting.',
+  },
+  infographicLayouts: {
+    title: 'Learn about infographic layouts',
+    description: 'Starting a page from a layout, its theme, and making it your own.',
+  },
+  articlePages: {
+    title: 'Learn about articles',
+    description: 'Writing, the page toolbar, article style and how pages flow.',
   },
   livePresence: {
     title: 'Learn about live presence',

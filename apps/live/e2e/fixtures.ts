@@ -67,10 +67,16 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
     const key = 'livediagram:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (prefs.drawTourSeen !== true || prefs.illustrateTourSeen !== true)
+      // The Illustrate tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
+      if (prefs.drawTourSeen !== true || !Array.isArray(prefs.illustrateTourKinds))
         localStorage.setItem(
           key,
-          JSON.stringify({ ...prefs, drawTourSeen: true, illustrateTourSeen: true }),
+          JSON.stringify({
+            ...prefs,
+            drawTourSeen: true,
+            illustrateTourSeen: true,
+            illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+          }),
         );
     } catch {
       // No storage: nothing to mark.

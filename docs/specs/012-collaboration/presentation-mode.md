@@ -129,7 +129,7 @@ The tool and the panel are both called **Slide Deck** — the thing you are maki
 
 It joins `CanvasTool` only, **not** `SELECTION_MODES` — there is no Slide Deck Mode Button, because handing a collaborator's screen into a full-screen deck is not something one person should do to another.
 
-The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the same presenter settings the HUD's cog does, because discovering "Actual size" or "Auto-advance" mid-talk means changing it while a room watches: one state, one localStorage key, two doors. It carries:
+The **Slide Deck panel** is the seventh tool panel, on exactly the contract the other six share (`useCanvasToolPanels`): mounted only while its tool is active, joins the corner-docking stack. It is the **single home for everything about the deck** — build it, order it, check it, start it — so there is never a second place to look. Its header carries a **`?`** to the help article and a **settings gear** holding the full presenter settings (Settings > Presenting has them too), because discovering "Actual Size" or "Auto-Advance" mid-talk means changing it while a room watches: one state, in the person's preferences, several doors. It carries:
 
 - **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds — which is also what the presentation does when it runs.
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
@@ -218,8 +218,10 @@ Reorder tabs. It was asked for while a slide belonged to a tab and the deck was 
 
 A deck should feel like a deck, and the transitions are what sell it.
 
-- **Entering**: the first slide animates in as a card arriving on screen (scale up from slightly small, fading in) over the darkened editor behind it. Starting a presentation should look like something opened, not like the page swapped.
-- **Between slides**: the outgoing slide slides out to the LEFT while the incoming one slides in from the RIGHT, moving together. Going **back** mirrors it: out to the right, in from the left, so the direction always says which way you are travelling through the deck.
+- **Entering**: the first slide animates in as a card arriving on screen (scale up from slightly small, fading in) over the darkened editor behind it. Starting a presentation should look like something opened, not like the page swapped. It **waits for the screen to settle** first: going fullscreen resizes the canvas and the slide is refitted to it, and an entrance that started before that landed arrived and then jumped. Until then the slide is held hidden (`data-slide-move="pending"`); it waits for the fullscreen change (or its refusal, or a 600 ms failsafe) and two frames for the refit, and where there is no fullscreen to wait for it arrives at once (`whenScreenSettles`).
+- **Between slides**: the outgoing slide slides out to the LEFT while the incoming one slides in from the RIGHT, moving together. There is one canvas, so the outgoing slide is a **snapshot** of the surface taken the moment the move is asked for (a copy fixed where it stands, inert and hidden from readers, `snapshotOutgoing`), animated away under the HUD and removed on its own `animationend` (a failsafe removes it if that never comes). A **Fade** crosses the two; **None** takes no snapshot. The copy costs well under a millisecond for a typical slide (0.4 ms for a 217-node slide, measured), once per move.
+- **Every move animates**, however quickly they come: the move attribute is removed and set again (`restartMove`), since setting it to the value it already holds started nothing and a quick second press cut without motion.
+- The move is set in a **layout effect**, before the browser paints: set after paint, the new slide showed one frame at rest before jumping off-screen to slide in. Going **back** mirrors it: out to the right, in from the left, so the direction always says which way you are travelling through the deck.
 - **Exiting**: the reverse of entry, back to the editor.
 - Motion honours `prefers-reduced-motion`: those users get a cross-fade at the same durations, so the deck still reads as changing slides without the travel.
 - The travel is **the full width of the screen**, and the animated node is the canvas SURFACE, so the backdrop goes with it: the whole screen moves rather than what's on the canvas sliding around inside a stationary frame. A gentle nudge was tried first and read as a wobble.
@@ -236,7 +238,7 @@ The HUD does not fade while a popover is open, or the popover would be left orph
 
 **Jumping to a slide.** `→` and `←` walk the deck and `Home` / `End` reach its ends, which is everything you need while the talk goes to plan. It goes to plan until somebody asks about the part of the canvas you showed nine slides ago, and arrowing back through nine slides in front of a room is the moment a deck feels like a toy.
 
-The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked; picking one goes straight there. The list is the RUN, in deck order — hidden slides are not in it, because a slide left out of the presentation has no position to jump to. Click again, `Esc`, or picking a slide closes it, and `Esc` closes it before it leaves the deck (the popover precedence below).
+The jump button (or `G`) opens a popover listing every slide by position and name, with the current one marked. A slide's name there, in the HUD and in what a screen reader is told, is the first it has of: its own name, an item slide's card, the headline on it (as the deck panel's row reads it), the name of the page it shows, the name of its tab, and only then "Slide n" (`presentedSlideName`); picking one goes straight there. The list is the RUN, in deck order — hidden slides are not in it, because a slide left out of the presentation has no position to jump to. Click again, `Esc`, or picking a slide closes it, and `Esc` closes it before it leaves the deck (the popover precedence below).
 
 `Esc` closes an open popover before it leaves the deck. Both popovers can be open over a slide and both take `Esc`, so without an order the key that dismisses a list would end the presentation.
 
@@ -260,34 +262,38 @@ The deck **never advances itself** on a budget, and going over is marked rather 
 
 ### Presenter settings
 
-The cog opens six things. The number is not the rule — the rule is that this
-popover opens ON a projector, in front of a room, usually because something is
-not behaving the way the presenter wants right now, so every entry has to be a
-decision they can make in one glance and undo in one more. A toggle qualifies.
-Anything needing thought belongs in the panel, before you start, which is why
-per-slide budgets are authored there and only their DISPLAY is switched here.
+The presenter settings live in **Settings > Presenting** (a sub-category under Editor, with the other modes'
+settings), set before the talk, and follow the person's account. The rule is that the HUD's cog opens ON a
+projector, in front of a room, so it keeps only what is changed there: **Transition** with its **Speed**, then
+**Pacing** (**Show Elapsed Time**, **Show Slide Budget**), and a line saying the rest is in Settings, under
+Presenting. Anything needing thought belongs before you start, which is why per-slide budgets are authored in the
+panel and only their DISPLAY is switched here. The Slide Deck panel's gear keeps the full set too, as the door
+before the talk.
 
 - **Transition** — Slide, Fade or None, plus a **speed** (Quick / Normal / Slow) which disappears when the transition is None, rather than sitting there greyed out. The speed drives the animation through a `--lvd-slide-ms` custom property, so the keyframes stay one definition.
-- **Auto-advance** — Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about. The timer runs from the slide's arrival; a re-render (a collaborator's edit, the clock) never restarts it.
-- **Zoom** — Fill screen (a small slide is blown up) or Actual size (never past 100%), for authors whose slides are already the size they meant.
-- **Keep controls visible** — stop the HUD fading when the pointer rests.
-- **Hide the pointer** — a still cursor left on a projector is a distraction. Driven by the same idle signal that fades the HUD, so the two come back together; a hidden cursor you could not bring back would be a trap.
-- **Click to advance** — off for a presenter who gestures at the screen with
+- **Auto-Advance** — Off, 5s, 10s, 30s or 60s. With Loop, this is the whole "leave it running on the wall" setup. Paused while a popover is open, because something the presenter is reading must not be swept away by a timer they had forgotten about. The timer runs from the slide's arrival; a re-render (a collaborator's edit, the clock) never restarts it.
+- **Slide Size** — Fill Screen (a small slide is blown up) or Actual Size (never past 100%), for authors whose slides are already the size they meant.
+- **Keep Controls Visible** — stop the HUD fading when the pointer rests.
+- **Hide the Pointer** — a still cursor left on a projector is a distraction. Driven by the same idle signal that fades the HUD, so the two come back together; a hidden cursor you could not bring back would be a trap.
+- **Click to Advance** — off for a presenter who gestures at the screen with
   the mouse and would rather drive from the keys alone.
-- **Loop the deck** — the last slide returns to the first instead of the end
+- **Loop the Deck** — the last slide returns to the first instead of the end
   state, for a deck left running in a room.
-- **Show position** — the counter and slide name, off for a clean screen.
-- **Show elapsed time** — the clock counting from Start. Off by default: a
+- **Show Position** — the counter and slide name, off for a clean screen.
+- **Show Elapsed Time** — the clock counting from Start. Off by default: a
   timer nobody asked for is a timer reminding the room you are behind.
-- **Show slide budget** — the time on this slide against its `minutes`, for the
+- **Show Slide Budget** — the time on this slide against its `minutes`, for the
   slides that carry one. Off by default, and inert on a deck where nobody set
   any.
 
-They are grouped Transition / Playback / Display, because the list grew past the point where a flat one reads as a list.
+Settings groups them **Slides** (Transition, Speed, Slide Size), **Playback** (Auto-Advance, Click to Advance, Loop
+the Deck) and **While Presenting** (Show Position, Keep Controls Visible, Hide the Pointer, Show Elapsed Time, Show
+Slide Budget).
 
-Device-local (`lib/presentation-config.ts`), like the eraser's brush and the
-laser's pen: how YOU drive a deck on THIS machine, not a property of the
-document. Never sent to the api.
+The person's own, not a property of the document: one `presentation` object in their preferences
+(`lib/presentation-config.ts` reads and writes it, trusting it only once parsed), so the settings follow a
+signed-in account and stay in this browser for a guest. Until the first change, what this browser kept before
+(its old device-local key) is read, so nobody loses their choices in the move.
 
 ### Leaving
 
@@ -333,7 +339,7 @@ The deck itself IS shared: a teammate opening the document sees your slides and 
 
 Per the no-god-files rule: `useSlideDeck.ts` (deck state, current index, keyboard, camera targets), `SlideDeckPanel.tsx` (the sixth tool panel, built like `EraserPanel` / `FormatPanel`), and `PresentationOverlay.tsx` (the full-screen surface Start puts you into: the slide surface and its transitions, the auto-hiding HUD, the notes, the end state). The element popover reuses the existing read surfaces rather than growing a third rendering of a comment thread: the same components the canvas popover and the Collaborate panel already draw, with their composers and action buttons not passed. `CommentPanelFace` already takes its handlers optionally for exactly this reason (a surface with no comment session renders the thread readable but inert), so presenting is a caller that omits them. Deck helpers stay pure and live in `packages/document` beside the element helpers: resolving a slide to its elements, pulling in implied arrows, and computing a slide's bounds are all `(Deck, Tab[]) -> ...` functions with no React in them, so they are testable and reusable by the api and MCP worker.
 
-The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which is device-local and already carries the other four. Laser and Spotlight need nothing new at all — they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
+The additions above land on that same shape rather than growing the overlay. The jump popover and the pacing readout are HUD components fed by `useSlideDeck`; the wake lock and the elapsed clock are effects it owns, both released on exit beside the viewport restore that already happens there. The presenter settings gain two booleans in `lib/presentation-config.ts`, which keeps them in the person's preferences. Laser and Spotlight need nothing new at all — they are canvas tools the overlay stops suppressing. The deck export is a third value on the existing `exportScope` union plus a loop over slides in the export path, and the per-slide bounds it needs is the pure helper above, which is the reason it costs so little.
 
 ## Telemetry
 

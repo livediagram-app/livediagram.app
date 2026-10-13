@@ -46,7 +46,7 @@ import {
 import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
-import { MindMapMenuGroups } from './MindMapMenuGroups';
+import { MindMapMenuSections } from './MindMapMenuSections';
 import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { useCoversCanvas } from '@/hooks/plan/plan-cover-store';
@@ -497,25 +497,21 @@ export function ElementDataSections({
               onPreviewEnd={props.onPreviewStyleEnd}
             />
           ) : null}
-          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): Outline, Branching and Spacing.
+          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout of Outline, Branching and Spacing.
             Branching and Spacing set the ROOT's, so one pick re-shapes the whole map rather than half of it. */}
           {isMindNode ? (
-            <MenuAccordionSection
-              title="Mind Map"
-              icon={<DataMenuGlyph />}
-              {...sectionProps('mind-flow')}
-            >
-              <MindMapMenuGroups
-                flow={props.mindFlow}
-                spacing={props.mindSpacing}
-                onSetFlow={props.onSetMindFlow}
-                onSetSpacing={props.onSetMindSpacing}
-                onTidy={props.onTidyMindMap}
-                onEditOutline={props.onEditMindOutline}
-                onSelectBranch={props.onSelectMindBranch}
-                onSelectMap={props.onSelectMindMap}
-              />
-            </MenuAccordionSection>
+            <MindMapMenuSections
+              flow={props.mindFlow}
+              spacing={props.mindSpacing}
+              onSetFlow={props.onSetMindFlow}
+              onSetSpacing={props.onSetMindSpacing}
+              onTidy={props.onTidyMindMap}
+              onEditOutline={props.onEditMindOutline}
+              onSelectBranch={props.onSelectMindBranch}
+              onSelectMap={props.onSelectMindMap}
+              sectionProps={sectionProps}
+              flyoutProps={flyoutProps('mind-map')}
+            />
           ) : null}
           {/* Flowchart (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout of Chart (lanes and
             tidy), the step's Step Type and the chart's Direction. */}

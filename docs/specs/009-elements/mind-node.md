@@ -109,7 +109,7 @@ nobody rearranges it.
 
 The moment someone drags a node, the map is theirs. It is no longer tidy, and
 growth falls back to **free placement** (below), which never moves an existing
-node of that map. **Tidy Map** in the Mind Map menu section puts it back, and
+node of that map. **Tidy Map** in the Mind Map menu puts it back, and
 from then on it stays tidy again.
 
 Order is read from the map as drawn: siblings are ordered along the flow's
@@ -324,7 +324,7 @@ The arrangement a keyboard-driven outline wants is a child to the right,
 siblings stacked down it. That is a **tree**, and it is only one of the shapes
 people draw. There are six (`MindFlow` in
 `packages/document/src/mind-flow.ts`), picked from **Branching** in the **Mind
-Map** section of a selected node's menu (see "The Mind Map menu"):
+Map** menu of a selected node's menu (see "The Mind Map menu"):
 
 - **Tree**: branches right, siblings stacked down. The default, so every map
   already drawn keeps its shape.
@@ -395,9 +395,11 @@ free placement a new node lands the chosen gap from its parent and siblings.
 
 ## The Mind Map menu
 
-A selected mind node's menu has one **Mind Map** section (a closed
-`MenuAccordionSection` like every element-menu section). Inside it, three
-groups, each under a small heading and each one of Plan mode's option lists
+A selected mind node's menu has one **Mind Map** row, a parent category that
+opens to the side (a `MenuFlyoutSection`, the way the Sankey row does). Inside
+it, three categories, each a closed `MenuAccordionSection` like every
+element-menu section, so the menu never shows all three lists at once. Each
+holds one of Plan mode's option lists
 (`OptionRows`, docs/specs/026-plan/plan-board.md "Option lists"): a bordered,
 rounded box with one row per choice at full width, its icon at the left and its
 name after it.
@@ -423,7 +425,7 @@ Map section, as today; the outline badge on a root keeps its own rule (see
 
 ## Tidy Map
 
-**Tidy Map**, under the flow tiles in the Mind Map menu section, lays the
+**Tidy Map**, in the Outline category of the Mind Map menu, lays the
 selected node's whole map out in its flow, keeping the root where it is and the
 sibling order as drawn, and re-anchors its connectors. Other trees in the way
 slide down, as they do for growth. It is the way back to a tidy map after
@@ -443,7 +445,7 @@ as a list is how people already think about an outline.
 **Where.** A map's **root** (the node `mindRootOf` names, so a node whose parent was deleted
 counts as a root too) with at least one child carries an **Edit Outline** command among its
 [element indicators](../008-canvas/element-indicators.md), shown while the pointer is over the root (a command, not status, so hidden at rest, and not shown at all when the person turned indicators off): leading its link, note, action and comment
-indicators. One click opens the dialog. **Edit Outline** is also in a root's Mind Map menu section, under Tidy Map (the way
+indicators. One click opens the dialog. **Edit Outline** is also in a root's Mind Map menu, in the Outline category above Tidy Map (the way
 in for a root with no children yet). Beside Edit Outline, a **Tidy Map** command lays the map out tidily again, exactly as the Mind Map
 menu's Tidy Map does (one undo step, `Element` · `Changed` · `MindTidy`). Not on other nodes: the
 outline is the whole map, and the root is where a map begins. Not for a viewer, a locked node or a

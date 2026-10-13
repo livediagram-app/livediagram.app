@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@livediagram/document';
 import { linkLabelOf } from '@livediagram/plan-art';
-import { lucideGlyph } from '@livediagram/ui';
+import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import {
   lucideExternalLink,
   lucideGlobe,
@@ -139,7 +139,13 @@ export function DashboardLinksCard({
             })}
           </ul>
         ) : !adding ? (
-          <p className="px-1.5 text-[13px] text-slate-500 dark:text-slate-400">No links yet.</p>
+          <CompactEmptyState
+            icon={<LinkGlyph />}
+            title="No links yet"
+            description={
+              canEdit ? 'Add Link puts a site or a tab of this document here.' : undefined
+            }
+          />
         ) : null}
         {canEdit && adding ? (
           <AddLinkForm

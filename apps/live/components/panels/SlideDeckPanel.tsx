@@ -232,6 +232,8 @@ export function SlideDeckPanel({
     <ModePanel
       title="Slide Deck"
       helpArticle="slideDeck"
+      // The Illustrate tour's Present step rings it (docs/specs/007-editor/illustrate-tour.md).
+      dataTourId="slide-deck"
       // The SAME presenter settings the HUD's cog carries, reachable BEFORE
       // you start. Discovering "Actual size" or "Auto-advance" mid-talk means
       // changing it while a room watches; the point of a rehearsal is

@@ -50,6 +50,8 @@ function deckHook(framePage: (tabId: string, pageId: string) => void) {
   const setMultiSelectedIds = vi.fn();
   const hook = renderHook(() =>
     useSlideDeck({
+      prefs: {},
+      commitPrefs: () => {},
       tabs,
       activeTabId: 'a',
       setActiveId,

@@ -11,6 +11,9 @@ import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 
+// The tour's step card: a press on it is the tour's, never an outside press that closes the popover under it.
+const TOUR_CARD = '[data-tour-popover]';
+
 /** The title-bar controls' look: the cog's size, named beside the icon when `labelled`, tinted while on. */
 export function titleButtonClass(on: boolean | undefined, labelled: boolean): string {
   return `flex h-6 items-center justify-center rounded-md transition ${
@@ -31,6 +34,7 @@ export function TitlePopoverButton({
   width,
   padded = true,
   onOpen,
+  openRequest = 0,
   children,
 }: {
   // The control's name: its label, tooltip ("<name>: on" while on) and the popover's name.
@@ -47,11 +51,18 @@ export function TitlePopoverButton({
   padded?: boolean;
   // Called as the popover opens (its telemetry).
   onOpen?: () => void;
+  // Opens the popover from elsewhere each time it changes (an article toolbar's Style command); 0 never does.
+  openRequest?: number;
   // The popover's body, or a function of its close (a body that closes itself, Layouts).
   children: ReactNode | ((close: () => void) => ReactNode);
 }) {
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
+  const [seenRequest, setSeenRequest] = useState(openRequest);
+  if (openRequest !== seenRequest) {
+    setSeenRequest(openRequest);
+    if (openRequest) setOpen(true);
+  }
   const mobile = useIsMobileViewport();
   const close = () => setOpen(false);
   const body = typeof children === 'function' ? children(close) : children;
@@ -81,7 +92,14 @@ export function TitlePopoverButton({
           {body}
         </TitleSheet>
       ) : open && anchor ? (
-        <AnchoredPopover anchor={anchor} name={name} width={width} onClose={close}>
+        <AnchoredPopover
+          anchor={anchor}
+          name={name}
+          width={width}
+          onClose={close}
+          // A tour step opened it (docs/specs/007-editor/illustrate-tour.md): pressing the tour's card keeps it.
+          keepOpenWithin={TOUR_CARD}
+        >
           <div
             className={`rounded-lg border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900 ${
               padded ? 'p-3' : 'py-1'
@@ -108,7 +126,12 @@ function TitleSheet({
 }) {
   const sheet = useRef<HTMLDivElement>(null);
   // Its own button toggles it, so a press there is not an outside one.
-  useClickOutside(sheet, onClose, true, '[data-anchored-popover], [data-title-popover-trigger]');
+  useClickOutside(
+    sheet,
+    onClose,
+    true,
+    `[data-anchored-popover], [data-title-popover-trigger], ${TOUR_CARD}`,
+  );
   useEscape(onClose, { capture: true, stopPropagation: true });
   return (
     <BottomSheet

@@ -64,10 +64,10 @@ describe('pagePanelTabs', () => {
     ).toEqual(['page', 'background']);
   });
 
-  it('gives an article page Page, Background, Style and Text', () => {
+  it('gives an article page Page alone, its Style, Text and Background beside the cog', () => {
     expect(
       pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'article', flow: 'f' })),
-    ).toEqual(['page', 'background', 'style', 'text']);
+    ).toEqual(['page']);
   });
 
   it('drops Page from a logo page, which has no size or orientation to choose', () => {

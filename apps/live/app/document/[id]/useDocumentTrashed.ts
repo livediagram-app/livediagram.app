@@ -11,6 +11,7 @@ import type { TrashedDocument } from '@livediagram/api-schema';
 import { apiListTrash, apiRestoreDocument } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
+import { isDocumentDeleted } from '@/lib/document-tombstones';
 
 export type DocumentTrashedState = {
   trashed: boolean;
@@ -33,10 +34,19 @@ export function useDocumentTrashed(opts: {
   // Which Trash it sits in, for the telemetry `type`.
   const [from, setFrom] = useState<'Personal' | 'Team' | 'Local'>('Personal');
 
-  const setDocumentTrashed = useCallback((next: boolean) => {
-    if (next) debugLog('[trash] open document is in the Trash');
-    setTrashed(next);
-  }, []);
+  const setDocumentTrashed = useCallback(
+    (next: boolean) => {
+      // Deleted from this page (the Explorer's delete of the open document): it is already on its way to the
+      // Explorer, so the room's echo of the delete must not flash the deleted page first.
+      if (next && documentId && isDocumentDeleted(documentId)) {
+        debugLog('[trash] own delete, leaving for the Explorer');
+        return;
+      }
+      if (next) debugLog('[trash] open document is in the Trash');
+      setTrashed(next);
+    },
+    [documentId],
+  );
 
   useEffect(() => {
     if (!trashed || viaShareLink || !ownerId || !documentId) return;

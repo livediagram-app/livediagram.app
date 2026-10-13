@@ -118,11 +118,16 @@ describe('settings catalogue', () => {
 
   it('inverts the Plan tour row the same way, beside the Diagram tour in Accessibility', () => {
     // docs/specs/026-plan/plan-tour.md "Where it appears".
+    // One switch over both tracks: off answers both, on forgets them (lib/tour-tracks.ts).
     const row = SWITCHES.find((r) => r.key === 'planTourSeen')!;
-    expect(row.read({ planTourSeen: true })).toBe(false);
+    expect(row.read({ planTourTracks: ['boards', 'sheets'] })).toBe(false);
+    expect(row.read({ planTourTracks: ['boards'] })).toBe(true);
     expect(row.read({})).toBe(true);
-    expect(row.write({}, true).planTourSeen).toBe(false);
-    expect(row.write({}, false).planTourSeen).toBe(true);
+    expect(row.write({ planTourTracks: ['boards'] }, true)).toEqual({ planTourSeen: false });
+    expect(row.write({}, false)).toEqual({
+      planTourSeen: true,
+      planTourTracks: ['boards', 'sheets'],
+    });
     expect(row.event.on).toBe('PlanTourSeenOff');
     expect(row.event.off).toBe('PlanTourSeenOn');
   });
@@ -207,6 +212,11 @@ describe('settings catalogue', () => {
 
   it('writes only its own key, so one switch never moves another', () => {
     const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
+    // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
+    const own: Record<string, string[]> = {
+      planTourSeen: ['planTourSeen', 'planTourTracks'],
+      illustrateTourSeen: ['illustrateTourSeen', 'illustrateTourKinds'],
+    };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
     for (const row of TOGGLES.filter((r) => r.key !== 'powerUserMode')) {
@@ -214,8 +224,26 @@ describe('settings catalogue', () => {
       const changed = Object.keys({ ...before, ...after }).filter(
         (k) => before[k as keyof UserPreferences] !== after[k as keyof UserPreferences],
       );
-      expect(changed, row.key).toHaveLength(1);
+      // A presenter switch writes the one `presentation` object (lib/presentation-config).
+      const presenting = row.key.startsWith('presentation-') ? ['presentation'] : undefined;
+      expect(changed, row.key).toEqual(own[row.key] ?? presenting ?? [row.key]);
     }
+  });
+
+  // docs/specs/007-editor/illustrate-tour.md "Where it appears": one switch over every page kind's track.
+  it('turns the Illustrate tour back on for every page kind', () => {
+    const row = TOGGLES.find((r) => r.key === 'illustrateTourSeen')!;
+    const seen: UserPreferences = {
+      illustrateTourSeen: true,
+      illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+    };
+    expect(row.read(seen)).toBe(false);
+    expect(row.write(seen, true)).toEqual({ illustrateTourSeen: false });
+    expect(row.read(row.write(seen, true))).toBe(true);
+    expect(row.write({}, false)).toEqual({
+      illustrateTourSeen: true,
+      illustrateTourKinds: ['slide', 'infographic', 'article', 'logo'],
+    });
   });
 
   it('keeps row keys and telemetry tokens unique', () => {
@@ -377,10 +405,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor: Draw, and no Diagram yet', () => {
+  it('nests one sub-category per mode with settings of its own under Editor (Draw, Illustrate; no Diagram yet), then Presenting', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'illustrate']);
+    expect(children).toEqual(['draw', 'illustrate', 'presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

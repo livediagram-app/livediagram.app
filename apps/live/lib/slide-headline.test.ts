@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Tab } from '@livediagram/document';
-import { slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
+import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 
 // docs/specs/012-collaboration/presentation-mode.md "The Slide Deck panel": a slide nobody named
 // is called by its largest text.
@@ -46,5 +47,40 @@ describe('slideHeadline', () => {
     const h = slideHeadline(slide(['a']), tab([text('a', 0, long)]))!;
     expect(h.length).toBe(SLIDE_HEADLINE_MAX);
     expect(h.endsWith('…')).toBe(true);
+  });
+});
+
+// presentation-mode.md "Jump to a slide": the deck's list and the HUD name a slide as the talk does.
+describe('presentedSlideName', () => {
+  const t = tab([text('a', 0, 'Quarterly results', { textSize: 'xl' })]);
+  it("prefers the slide's own name", () => {
+    expect(presentedSlideName({ ...slide(['a']), name: ' Intro ' }, t, 0)).toBe('Intro');
+  });
+  it("then an item slide's card", () => {
+    expect(presentedSlideName(slide([]), t, 0, 'Fix login')).toBe('Fix login');
+  });
+  it('then the headline on it', () => {
+    expect(presentedSlideName(slide(['a']), t, 0)).toBe('Quarterly results');
+  });
+  it('then the tab it comes from', () => {
+    expect(presentedSlideName(slide([]), tab([]), 2)).toBe('T');
+  });
+  it('and only then its place', () => {
+    expect(presentedSlideName(slide([]), undefined, 2)).toBe('Slide 3');
+  });
+  it('names a 100-slide deck on a 2,000-element tab well inside a frame', () => {
+    const els = Array.from({ length: 2000 }, (_, i) => text(`e${i}`, i, `Label ${i}`));
+    const big = tab(els);
+    const slides = Array.from({ length: 100 }, (_, s) => ({
+      id: `s${s}`,
+      tabId: 't',
+      elementIds: els.slice(s * 20, s * 20 + 20).map((e) => e.id),
+    }));
+    let names: string[] = [];
+    const spent = cpuMsOf(() => {
+      names = slides.map((sl, i) => presentedSlideName(sl, big, i));
+    });
+    expect(names[3]).toBe('Label 60');
+    expect(spent).toBeLessThan(50);
   });
 });

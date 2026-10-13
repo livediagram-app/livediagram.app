@@ -196,7 +196,8 @@ describe('PresentationOverlay', () => {
     rerender(deck(STEPS.map((x) => ({ ...x }))));
     expect(say).toHaveBeenCalledTimes(1);
     rerender(deck(STEPS, 1));
-    expect(say).toHaveBeenLastCalledWith('Slide 2 of 2');
+    // Named by the tab it comes from, having no name of its own.
+    expect(say).toHaveBeenLastCalledWith('Slide 2 of 2, Tab');
   });
 
   it('leaves a pointing tool armed at Start in hand on the way out', () => {

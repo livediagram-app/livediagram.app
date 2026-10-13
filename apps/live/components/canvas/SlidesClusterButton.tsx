@@ -3,6 +3,12 @@
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import { ClusterPopoverButton } from './ClusterPopoverButton';
 
+// Whether the Slides button shows: once at least one page is a slide (illustrate-pages.md "Slides button"), since
+// until then the deck has nothing to hold.
+export function showsSlidesButton(pages: readonly { kind?: string }[]): boolean {
+  return pages.some((p) => p.kind === 'slide');
+}
+
 // The Slides button in the bottom-right cluster, in Illustrate mode (docs/specs/007-editor/
 // illustrate-pages.md "Slides"): an infographic is likely to be presented, so its deck sits one
 // press away, where Layers sits in the other modes.

@@ -347,6 +347,10 @@ link.
   optimistic update. Drag transfer uses a custom MIME type
   (`application/x-livediagram-id`) so dragging a document never
   triggers a browser navigation when dropped outside any target.
+  The editor's Explorer floats over the canvas, so the canvas's own drop
+  handling stands aside for a drag a target inside it has already
+  accepted; otherwise its "dropped back on a panel" guard would turn the
+  folder's accepted move into a no-drop (`usePaletteDrop`).
   **Resting a drag on a row with a chevron** for 800 ms
   (`DRAG_HOVER_TOGGLE_MS`) opens it, so a document reaches a subfolder in
   one gesture; resting on an open row closes it. One rest toggles once:

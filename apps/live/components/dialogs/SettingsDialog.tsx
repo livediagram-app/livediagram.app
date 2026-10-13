@@ -18,10 +18,10 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { markTourPending, requestTourRelaunch } from '@/lib/tour-pending';
-import { requestPlanTourRelaunch } from '@/lib/plan-tour';
+import { planTourOwed, requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { requestFacilitateTourRelaunch } from '@/lib/facilitate-tour';
 import { requestDrawTourRelaunch } from '@/lib/draw-tour';
-import { requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
+import { illustrateTourOwed, requestIllustrateTourRelaunch } from '@/lib/illustrate-tour';
 import { track } from '@/lib/telemetry';
 import {
   visibleCategories,
@@ -187,7 +187,8 @@ export function SettingsDialog({
   const tourSeenAtOpen = useRef(tourSeen);
   // Tours › "Plan Tour" (docs/specs/026-plan/plan-tour.md): no handoff flag to arm, as the Plan tour offers
   // itself on entering Plan; turning the row on from off reruns it in place.
-  const planTourSeen = settings.planTourSeen === true;
+  // Seen = no track still owed (lib/tour-tracks.ts), as the row's switch reads it.
+  const planTourSeen = !planTourOwed(settings);
   const planTourSeenAtOpen = useRef(planTourSeen);
   // Tours › "Facilitate Tour" (docs/specs/012-collaboration/facilitate-tour.md): as Plan Tour.
   const facilitateTourSeen = settings.facilitateTourSeen === true;
@@ -196,7 +197,7 @@ export function SettingsDialog({
   const drawTourSeen = settings.drawTourSeen === true;
   const drawTourSeenAtOpen = useRef(drawTourSeen);
   // Tours › "Illustrate Tour" (docs/specs/007-editor/illustrate-tour.md): as Plan Tour.
-  const illustrateTourSeen = settings.illustrateTourSeen === true;
+  const illustrateTourSeen = !illustrateTourOwed(settings);
   const illustrateTourSeenAtOpen = useRef(illustrateTourSeen);
   const close = () => {
     if (!tourSeen) {

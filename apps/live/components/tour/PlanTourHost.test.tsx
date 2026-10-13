@@ -21,6 +21,7 @@ const stage = vi.hoisted(() => ({
   engine: null as TourEngine<PlanTourApi> | null,
   choices: undefined as readonly Choice[] | undefined,
   helpHref: '' as string | undefined,
+  eyebrow: '' as string | undefined,
 }));
 vi.mock('./TourStage', () => ({
   TourStage: ({
@@ -30,11 +31,12 @@ vi.mock('./TourStage', () => ({
   }: {
     engine: TourEngine<PlanTourApi>;
     welcomeChoices?: readonly Choice[];
-    copy: { helpHref?: string };
+    copy: { helpHref?: string; welcomeEyebrow?: string };
   }) => {
     stage.engine = engine;
     stage.choices = welcomeChoices;
     stage.helpHref = copy.helpHref;
+    stage.eyebrow = copy.welcomeEyebrow;
     return null;
   },
 }));
@@ -85,6 +87,16 @@ const drawBoard = (cards: string[]) => {
   document.body.innerHTML = `<div data-plan-board="b0">${cards
     .map((id) => `<div data-plan-card="${id}"></div>`)
     .join('')}</div>`;
+};
+
+// Presses Next until the tour reaches `id` (anchored steps without a target skip themselves; a card waits for Next).
+const nextUntil = async (id: string) => {
+  for (let i = 0; i < 12 && stage.engine?.step?.id !== id; i++) {
+    act(() => stage.engine!.next());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000);
+    });
+  }
 };
 
 beforeEach(() => {
@@ -142,7 +154,7 @@ describe('PlanTourHost offer', () => {
   });
 
   it('a Settings rerun on an empty tab places nothing and waits for a board or Sheet', () => {
-    editor({ ...onTab(), userPreferences: { planTourSeen: true } });
+    editor({ ...onTab(), userPreferences: { planTourTracks: ['boards', 'sheets'] } });
     const { rerender } = render(<PlanTourHost />);
     editor(onTab());
     rerender(<PlanTourHost />);
@@ -159,7 +171,7 @@ describe('PlanTourHost offer', () => {
   });
 
   it.each([
-    ['seen', { userPreferences: { planTourSeen: true } }],
+    ['seen', { userPreferences: { planTourTracks: ['boards', 'sheets'] } }],
     ['read-only', { isReadOnly: true }],
     ['locked', { activeTab: { id: 'tab1', locked: true, elements: [BOARD] } }],
     ['not hydrated', { hydrated: false }],
@@ -192,7 +204,7 @@ describe('PlanTourHost offer', () => {
   });
 
   it('reruns from Settings in Plan, and not outside it', () => {
-    editor({ userPreferences: { planTourSeen: true } });
+    editor({ userPreferences: { planTourTracks: ['boards', 'sheets'] } });
     const { rerender } = render(<PlanTourHost />);
     act(() => vi.advanceTimersByTime(2000));
     expect(offered()).toBe(false);
@@ -241,10 +253,7 @@ describe('PlanTourHost tracks', () => {
       '<div data-plan-board="b0"><div data-plan-card="c1"></div></div>' +
       '<div data-canvas-cover><div data-plan-board="b1"><div data-plan-card="c9"></div></div></div>';
     start(BOARD, { ...BOARD, id: 'b1' });
-    act(() => stage.engine!.next());
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(30000);
-    });
+    await nextUntil('outro');
     expect(showItem).toHaveBeenCalledWith('c9');
     expect(showItem).not.toHaveBeenCalledWith('c1');
   });
@@ -304,11 +313,8 @@ describe('PlanTourHost tracks', () => {
   // Spec "Tour subject": nothing is placed, added, moved or selected; the card panel is the one thing opened.
   it('runs to the end without changing the document, opening only the first card', async () => {
     start(BOARD);
-    act(() => stage.engine!.next());
-    // Every anchored step finds no target in this harness and is skipped, so Next runs to the end.
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(30000);
-    });
+    // Every anchored step finds no target in this harness and is skipped; the opening card waits for Next.
+    await nextUntil('outro');
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PlanTourCompleted');
@@ -331,7 +337,7 @@ describe('PlanTourHost end', () => {
   it('declining marks it seen and sends the decline', () => {
     start();
     act(() => stage.engine!.skip());
-    expect(writeUserPreferences).toHaveBeenCalledWith({ planTourSeen: true }, 'me');
+    expect(writeUserPreferences).toHaveBeenCalledWith({ planTourTracks: ['boards'] }, 'me');
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'PlanTourOffer');
   });
 
@@ -368,5 +374,78 @@ describe('PlanTourHost end', () => {
     act(() => vi.advanceTimersByTime(800));
     act(() => stage.engine!.skip());
     expect(closeItem).toHaveBeenCalled();
+  });
+});
+
+// docs/specs/026-plan/plan-tour.md "Where it appears": each track offers itself once, so Boards answered still
+// leaves Sheets owed, and its welcome card names the track, never the mode.
+describe('PlanTourHost per track', () => {
+  it('names the track on its welcome card, and both on a choice card', () => {
+    editor(onTab(BOARD));
+    const { rerender } = render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(stage.eyebrow).toBe('Boards tour');
+    cleanup();
+    editor(onTab(SHEET));
+    render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(stage.eyebrow).toBe('Sheets tour');
+    cleanup();
+    editor(onTab(BOARD, SHEET));
+    render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(stage.eyebrow).toBe('Boards and Sheets tour');
+    void rerender;
+  });
+
+  it('offers only Sheets beside a board once Boards is answered', () => {
+    editor({ ...onTab(BOARD, SHEET), userPreferences: { planTourTracks: ['boards'] } });
+    render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+    expect(stage.choices).toBeUndefined();
+    expect(stage.engine!.step?.body).toMatch(/your sheet/);
+  });
+
+  it('offers nothing on a board once Boards is answered, then Sheets when a Sheet arrives', () => {
+    editor({ ...onTab(BOARD), userPreferences: { planTourTracks: ['boards'] } });
+    const { rerender } = render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(offered()).toBe(false);
+    editor({ ...onTab(BOARD, SHEET), userPreferences: { planTourTracks: ['boards'] } });
+    rerender(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+    expect(stage.engine!.step?.body).toMatch(/your sheet/);
+  });
+
+  it('offers both again to someone who answered the single Plan tour', () => {
+    editor({ ...onTab(BOARD), userPreferences: { planTourSeen: true } });
+    render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    expect(offered()).toBe(true);
+  });
+
+  it('declining a choice card answers both tracks', () => {
+    editor(onTab(BOARD, SHEET));
+    render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    act(() => stage.engine!.skip());
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { planTourTracks: ['boards', 'sheets'] },
+      'me',
+    );
+  });
+
+  it('a track picked on a choice card and skipped answers that track alone', async () => {
+    editor(onTab(BOARD, SHEET));
+    render(<PlanTourHost />);
+    act(() => vi.advanceTimersByTime(800));
+    act(() => stage.choices!.find((c) => c.id === 'sheets')!.onPick());
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+    });
+    act(() => stage.engine!.skip());
+    expect(writeUserPreferences).toHaveBeenCalledWith({ planTourTracks: ['sheets'] }, 'me');
   });
 });

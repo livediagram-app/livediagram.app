@@ -83,6 +83,19 @@ export function jumpBackInSet(
   return withinReach(items, n, (d) => ({ uses: d.useDays, lastUsedAt: d.lastUsedAt }));
 }
 
+/** The editor pane's Jump back in: the set as one list, most used then recent, each document once, less the
+ *  document already open (it is on screen, so offering it again is noise), cut to `n`. */
+export function paneJumpBackIn(
+  set: JumpBackInSet,
+  openDocumentId: string | null,
+  n: number,
+): JumpBackInItem[] {
+  const seen = new Set<string>(openDocumentId ? [openDocumentId] : []);
+  return [...set.mostUsed, ...set.recent]
+    .filter((d) => (seen.has(d.documentId) ? false : (seen.add(d.documentId), true)))
+    .slice(0, n);
+}
+
 /** The phone's strip: most used, recent, alternating; the rest of the longer group after. */
 export function phoneOrder(set: JumpBackInSet): { item: JumpBackInItem; group: JumpBackInGroup }[] {
   const out: { item: JumpBackInItem; group: JumpBackInGroup }[] = [];

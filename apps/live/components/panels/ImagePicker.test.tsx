@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The image picker in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface
@@ -34,6 +34,12 @@ describe('ImagePicker', () => {
     expect(screen.getByRole('button', { name: /Gallery/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Search' })).toBeTruthy();
     expect(apiListImages).toHaveBeenCalledWith('user_1');
+  });
+
+  it('shows an empty gallery as the shared empty state', async () => {
+    show();
+    fireEvent.click(screen.getByRole('button', { name: /Gallery/ }));
+    expect((await screen.findByText('No images yet')).closest('[data-empty-state]')).toBeTruthy();
   });
 
   it('offers upload only in a workbench, and never reads the gallery', () => {

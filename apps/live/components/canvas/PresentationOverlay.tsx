@@ -16,13 +16,14 @@
 // advances. A click while a popover is open dismisses it rather than
 // advancing, so reading a note never costs you a slide.
 
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
 import { isPressableControl } from '@livediagram/ui';
 import { itemTitle } from '@livediagram/items';
 import { usePlan } from '@/components/plan/PlanContext';
+import { presentedSlideName } from '@/lib/slide-headline';
 
-import { slideName, type BoxedElement, type Slide, type Tab } from '@livediagram/document';
+import { type BoxedElement, type Slide, type Tab } from '@livediagram/document';
 
 import {
   PresentationElementPopover,
@@ -64,6 +65,23 @@ export function PresentationOverlay({
 }) {
   // An item slide is named by its card (docs/specs/012-collaboration/presentation-mode.md "Item slides").
   const plan = usePlan();
+  const cardTitleOf = (slide: Slide) => {
+    const item = slide.itemId ? plan?.items.get(slide.itemId) : undefined;
+    return item ? itemTitle(item) : undefined;
+  };
+  // The jump list's names, worked out once per deck: naming a slide reads its elements, and the overlay
+  // re-renders on every clock tick.
+  const jumpSlides = useMemo(
+    () =>
+      steps.map((st, i) => {
+        const item = st.slide.itemId ? plan?.items.get(st.slide.itemId) : undefined;
+        return {
+          id: st.slide.id,
+          label: presentedSlideName(st.slide, st.tab, i, item ? itemTitle(item) : undefined),
+        };
+      }),
+    [steps, plan],
+  );
   const [notesOpen, setNotesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -189,8 +207,10 @@ export function PresentationOverlay({
       return;
     }
     if (!step) return;
-    const name = (step.slide.name ?? '').trim();
-    announce(`Slide ${at + 1} of ${steps.length}${name ? `, ${name}` : ''}`);
+    const name = presentedSlideName(step.slide, step.tab, step.index, cardTitleOf(step.slide));
+    // A slide named only by its place says its place once.
+    const named = name !== `Slide ${step.index + 1}`;
+    announce(`Slide ${at + 1} of ${steps.length}${named ? `, ${name}` : ''}`);
   });
   useEffect(() => {
     sayWhere();
@@ -406,12 +426,7 @@ export function PresentationOverlay({
         <PresentationHud
           position={at + 1}
           total={steps.length}
-          name={
-            step.slide.name ??
-            (step.slide.itemId && plan?.items.get(step.slide.itemId)
-              ? itemTitle(plan.items.get(step.slide.itemId)!)
-              : slideName(step.slide, step.index))
-          }
+          name={presentedSlideName(step.slide, step.tab, step.index, cardTitleOf(step.slide))}
           notes={step.slide.notes}
           notesOpen={notesVisible}
           onToggleNotes={() => {
@@ -430,10 +445,7 @@ export function PresentationOverlay({
             });
           }}
           showPosition={config.showPosition}
-          slides={steps.map((st, i) => ({
-            id: st.slide.id,
-            label: (st.slide.name ?? '').trim() || `Slide ${i + 1}`,
-          }))}
+          slides={jumpSlides}
           jumpOpen={jumpOpen}
           onToggleJump={() => setJumpOpen((v) => !v)}
           onJump={(i) => {

@@ -1579,9 +1579,9 @@ export const articles: Article[] = [
     slug: 'illustrate-tour',
     title: 'The Illustrate Tour',
     description:
-      "A short, optional walkthrough of Illustrate mode's pages, offered the first time you work in Illustrate and replayable from Settings.",
+      'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
     keywords:
-      'illustrate tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn illustrate mode pages page name cog page settings layout add page slides slide deck present presentation infographic replay rerun settings accessibility',
+      'illustrate tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn illustrate mode pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article logo show me replay rerun settings accessibility',
     category: 'Canvas',
     categorySlug: 'canvas/illustrate',
     parentSlug: 'illustrate',

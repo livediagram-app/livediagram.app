@@ -278,11 +278,15 @@ a flow is picked. Logs `[mind-layout] relayout`; tracks `Element·Changed·MindF
 spacing off the root) and its moves applied. Logs `[mind-layout] spacing root= spacing=`; tracks
 `Element·Changed·MindSpacing`.
 
-### The Mind Map menu (`MindMapMenuGroups`)
+### The Mind Map menu (`MindMapMenuSections`)
 
-`apps/live/components/palette/MindMapMenuGroups.tsx`, inside the Mind Map `MenuAccordionSection` of
-`ElementDataSections`; glyphs in `mind-map-menu-glyphs.tsx` (on the raw-SVG allowlist). Three
-`MenuGroup`s, each an `OptionRows` list (`className="mx-3 my-1.5"`):
+`apps/live/components/palette/MindMapMenuSections.tsx`, rendered by `ElementDataSections` with its
+`sectionProps` and `flyoutProps('mind-map')`, the shape of `SankeyMenuSections`; row glyphs in
+`mind-map-menu-glyphs.tsx` (on the raw-SVG allowlist). A `MenuFlyoutSection` titled "Mind Map"
+(`DataMenuGlyph`) holding three `MenuAccordionSection`s, closed until opened, ids `mind-outline`,
+`mind-branching` and `mind-spacing`, headed by the lucide `ListTree`, `Network` and
+`BetweenHorizontalStart` glyphs at `MENU_ICON_PX`. Each holds an `OptionRows` list
+(`className="mx-3 my-1.5"`):
 
 - **Outline** (`kind="action"`): Edit Outline (only when `onEditOutline` is given: the host passes
   it when `mindOutline.canEdit(mindRootOf(node).id)`, so it opens the root's outline from any node),
@@ -566,7 +570,7 @@ listener only reads keys while a growth it opened is pending, and lets modified 
   node: add a sibling" (Enter), "In a mind node’s label: new line" (⇧ Enter), in that order.
 - Growing to fit: the node draws taller as lines are typed (downward), and a tidy map re-lays on
   commit.
-- Menu: "Mind Map" section with `MindMapMenuGroups`: Outline, Branching and Spacing (see "The Mind Map
+- Menu: "Mind Map" flyout with `MindMapMenuSections`: Outline, Branching and Spacing (see "The Mind Map
   menu").
 - After growth the new node is selected, in label editing, and scrolled clear of the side panels.
 - Templates: `mindmap` (bubble, a round root, five branches of two or three leaves), `mindmap-tree` (tree,
@@ -651,7 +655,7 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 | Delete takes the branch; locked stays; Cut copies it  | deleting a mind node (three cases); withMindBranches (seven cases); copying a mind node (two cases)      | `apps/live/hooks/canvas/useElementSelectionActions.test.ts`; `packages/document/src/mind-map.test.ts`; `apps/live/hooks/canvas/useClipboard.mind-cut.test.tsx` |
 | Spacing scales the gaps; Comfortable is the original  | layoutMindTree: spacing (three cases); mind spacing (three cases)                                        | `packages/document/src/mind-layout.test.ts`; `packages/document/src/mind-flow.test.ts`                                                                         |
 | Spacing pick stores on the root and re-lays out       | Spacing                                                                                                  | `apps/live/hooks/canvas/useMindMapSetters.test.ts`                                                                                                             |
-| Mind Map menu: Outline, Branching, Spacing            | MindMapMenuGroups (five cases)                                                                           | `apps/live/components/palette/MindMapMenuGroups.test.tsx`                                                                                                      |
+| Mind Map menu: Outline, Branching, Spacing            | MindMapMenuSections (six cases)                                                                          | `apps/live/components/palette/MindMapMenuSections.test.tsx`                                                                                                    |
 | Sitemap is a live downward map                        | sitemap template (seven cases)                                                                           | `apps/live/lib/template-hierarchies.test.ts`                                                                                                                   |
 | Templates are tidy, live maps                         | none [GA14]                                                                                              |                                                                                                                                                                |
 

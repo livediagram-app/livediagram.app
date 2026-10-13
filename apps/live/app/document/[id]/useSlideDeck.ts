@@ -36,10 +36,11 @@ import {
 import { track } from '@/lib/telemetry';
 import { useSlideThumbnails, type ThumbnailPlan } from '@/hooks/ui/useSlideThumbnails';
 import {
-  loadPresentationConfig,
-  savePresentationConfig,
+  readPresentationConfig,
+  withPresentationConfig,
   type PresentationConfig,
 } from '@/lib/presentation-config';
+import type { UserPreferences } from '@/lib/user-preferences';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { positionAt, presentingIndex, type PresentingPosition } from '@/lib/presenting-position';
 import { loadPresentationOverlay } from '@/lib/editor-deferred-code';
@@ -85,7 +86,12 @@ export function useSlideDeck({
   loadAllTabs,
   plan,
   framePage,
+  prefs,
+  commitPrefs,
 }: {
+  // The person's preferences, where the presenter settings live, and how a change to them is written.
+  prefs: UserPreferences;
+  commitPrefs: (next: UserPreferences) => void;
   tabs: Tab[];
   activeTabId: string;
   setActiveId: (id: string) => void;
@@ -112,23 +118,22 @@ export function useSlideDeck({
   // deck or its tabs never moves the presenter to another slide.
   const [presenting, setPresenting] = useState<PresentingPosition | null>(null);
   const [startingDeck, setStartingDeck] = useState(false);
-  // Device-local presenter settings (docs/specs/012-collaboration/presentation-mode.md). Owned here rather than in the
-  // overlay because the FIT reads them too — "Actual size" is a setting about
-  // the camera, and the camera lives outside the overlay.
-  // Read from storage on first render (safe during prerender, and it only shapes a running presentation,
-  // so the first markup never depends on it).
-  const [config, setConfig] = useState<PresentationConfig>(loadPresentationConfig);
-  const updateConfig = useCallback((patch: Partial<PresentationConfig>) => {
-    // The FIELD, not the value: what we want to learn is which settings people
-    // reach for at all. Values would multiply the vocabulary for no extra
-    // signal, and the enum is deliberately closed.
-    for (const field of Object.keys(patch)) track('UI', 'Changed', `Presentation-${field}`);
-    setConfig((prev) => {
-      const next = { ...prev, ...patch };
-      savePresentationConfig(next);
-      return next;
-    });
-  }, []);
+  // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"), the person's own, following
+  // their account in the preferences. Read here rather than in the overlay because the FIT reads them too: "Actual
+  // size" is a setting about the camera, and the camera lives outside the overlay.
+  const config = useMemo(() => readPresentationConfig(prefs), [prefs]);
+  const prefsRef = useLatest(prefs);
+  const commitRef = useLatest(commitPrefs);
+  const updateConfig = useCallback(
+    (patch: Partial<PresentationConfig>) => {
+      // The FIELD, not the value: what we want to learn is which settings people
+      // reach for at all. Values would multiply the vocabulary for no extra
+      // signal, and the enum is deliberately closed.
+      for (const field of Object.keys(patch)) track('UI', 'Changed', `Presentation-${field}`);
+      commitRef.current(withPresentationConfig(prefsRef.current, patch));
+    },
+    [prefsRef, commitRef],
+  );
 
   // Hydration guard. Seeding the deck from the server must not look like an
   // edit, or opening a document would immediately PUT the deck straight back.
