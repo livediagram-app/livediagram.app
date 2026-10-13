@@ -95,7 +95,7 @@ describe('colour-on-themed', () => {
       box(id, x, 0, { shape: 'mind-node', fillColor: '#d1fae5', strokeColor: '#10b981' }) as never;
     const link = arrow('c', 'r', 'k', ['e', 'w'], { strokeColor: '#10b981' });
     expect(
-      of(lint(tabOf(node('r', 0), node('k', 300), link), { theme: 'ocean' }), 'colour-on-themed'),
+      of(lint(themed('ocean', node('r', 0), node('k', 300), link)), 'colour-on-themed'),
     ).toEqual([]);
   });
 });

@@ -2110,6 +2110,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ChangesetReplaceBody": {
     "additionalProperties": false,
     "properties": {
+      "dashboard": {
+        "additionalProperties": {},
+        "type": "object"
+      },
       "elements": {
         "items": {},
         "type": "array"
