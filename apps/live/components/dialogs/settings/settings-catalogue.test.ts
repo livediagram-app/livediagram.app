@@ -218,6 +218,19 @@ describe('settings catalogue', () => {
     }
   });
 
+  // docs/specs/007-editor/illustrate-tour.md "Where it appears": one switch over every page kind's track.
+  it('turns the Illustrate tour back on for every page kind', () => {
+    const row = TOGGLES.find((r) => r.key === 'illustrateTourSeen')!;
+    const seen: UserPreferences = {
+      illustrateTourSeen: true,
+      illustrateTourKinds: ['slide', 'logo'],
+    };
+    expect(row.read(seen)).toBe(false);
+    expect(row.write(seen, true)).toEqual({ illustrateTourSeen: false });
+    expect(row.read(row.write(seen, true))).toBe(true);
+    expect(row.write({}, false)).toEqual({ illustrateTourSeen: true });
+  });
+
   it('keeps row keys and telemetry tokens unique', () => {
     const keys = ALL_ROWS.map((r) => r.key);
     expect(new Set(keys).size).toBe(keys.length);

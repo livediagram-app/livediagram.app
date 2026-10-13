@@ -21,6 +21,7 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@livediagram/api-schema';
+import type { PageKind } from '@livediagram/document';
 import type { SkipLocationStep } from './skip-location-step';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
@@ -210,9 +211,12 @@ export type UserPreferences = {
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing / undefined === not seen.
+  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`: true counts every
+  // page kind's track as seen. Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing === not seen.
   illustrateTourSeen?: boolean;
+  // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
+  // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
+  illustrateTourKinds?: PageKind[];
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one

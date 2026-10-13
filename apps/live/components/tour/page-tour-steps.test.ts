@@ -1,0 +1,127 @@
+// @vitest-environment jsdom
+// The Illustrate tour's tracks (docs/specs/007-editor/illustrate-tour.md "The steps"): one per page kind, as Show Me
+// runs them and behind a welcome card as the tour offers them, left without a control that is not on screen.
+import { describe, expect, it } from 'vitest';
+import type { PageTourApi } from './page-tour-api';
+import {
+  illustrateTourSteps,
+  pageTourSteps,
+  shownPageTourSteps,
+  stepShown,
+} from './page-tour-steps';
+import { illustrateTourStepTelemetryType } from './IllustrateTourHost';
+
+const api: PageTourApi = { pageId: 'p1', openPanel: () => {}, closePanel: () => {} };
+const NOW = { combineShowing: false, toolbarShowing: false };
+const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
+const everything = () => true;
+
+describe('the tracks', () => {
+  it('Slides: layout, background, the deck, another slide, present', () => {
+    expect(ids(pageTourSteps('slide', NOW))).toEqual([
+      'layouts',
+      'background',
+      'deck',
+      'add-page',
+      'present',
+      'outro',
+    ]);
+  });
+
+  it('Infographic: its name, layout, background, size, another page, present', () => {
+    expect(ids(pageTourSteps('infographic', NOW))).toEqual([
+      'page-name',
+      'layouts',
+      'background',
+      'page-size',
+      'add-page',
+      'present',
+      'outro',
+    ]);
+  });
+
+  it('Article: the page, its toolbar, its style and type', () => {
+    expect(ids(pageTourSteps('article', NOW))).toEqual([
+      'write',
+      'toolbar',
+      'style',
+      'text',
+      'outro',
+    ]);
+  });
+
+  it('Logo: the logo page’s Show Me steps', () => {
+    expect(ids(pageTourSteps('logo', NOW))).toEqual([
+      'layouts',
+      'guides',
+      'mirror',
+      'combine',
+      'outro',
+    ]);
+  });
+
+  it('points at the article toolbar while it shows, and says where it appears otherwise', () => {
+    const toolbar = (showing: boolean) =>
+      pageTourSteps('article', { ...NOW, toolbarShowing: showing }).find(
+        (s) => s.id === 'toolbar',
+      )!;
+    expect(toolbar(true).selector?.(api)).toBe('[data-page-toolbar]');
+    expect(toolbar(false).selector ?? toolbar(false).target).toBeUndefined();
+    expect(toolbar(false).body).toMatch(/^While you write/);
+  });
+
+  it('holds every control to the tour page, never the first page', () => {
+    for (const kind of ['slide', 'infographic', 'article', 'logo'] as const) {
+      for (const step of pageTourSteps(kind, NOW)) {
+        const selectors = [step.requires?.(api), step.selector?.(api)].filter(Boolean) as string[];
+        for (const sel of selectors) {
+          if (sel.includes('aria-label="Layout"') || sel.includes('page-cog'))
+            expect(sel, `${kind} ${step.id}`).toContain('"p1"');
+        }
+      }
+    }
+  });
+});
+
+describe('what the tour starts with', () => {
+  it('opens the offer on the track’s own welcome card', () => {
+    const steps = illustrateTourSteps('slide', NOW, api, everything);
+    expect(steps[0]).toMatchObject({ id: 'welcome', card: 'welcome' });
+    expect(steps[0]!.title).toBe('Getting started with slides?');
+    expect(illustrateTourSteps('article', NOW, api, everything)[0]!.title).toBe(
+      'Getting started with articles?',
+    );
+  });
+
+  it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {
+    const exists = (sel: string) => !sel.includes('data-tour-id="slides"');
+    expect(ids(shownPageTourSteps('slide', NOW, api, exists))).not.toContain('present');
+    expect(ids(shownPageTourSteps('slide', NOW, api, exists))).toContain('layouts');
+  });
+
+  it('checks what a step opens by the button that opens it', () => {
+    const layouts = pageTourSteps('slide', NOW).find((s) => s.id === 'layouts')!;
+    const seen: string[] = [];
+    stepShown(layouts, api, (sel) => {
+      seen.push(sel);
+      return true;
+    });
+    expect(seen).toEqual(['[data-illustrate-page-id="p1"] button[aria-label="Layout"]']);
+  });
+
+  it('always keeps a card with nothing to point at', () => {
+    const outro = pageTourSteps('slide', NOW).find((s) => s.id === 'outro')!;
+    expect(stepShown(outro, api, () => false)).toBe(true);
+  });
+});
+
+describe('telemetry', () => {
+  it('names the track in each step view', () => {
+    expect(illustrateTourStepTelemetryType('slide', 'add-page')).toBe(
+      'IllustrateTourStepSlideAddPage',
+    );
+    expect(illustrateTourStepTelemetryType('infographic', 'page-size')).toBe(
+      'IllustrateTourStepInfographicPageSize',
+    );
+  });
+});

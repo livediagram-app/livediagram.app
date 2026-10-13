@@ -268,9 +268,12 @@ type UserPreferences = {
   // The Draw tour's seen-guard (docs/specs/023-draw-mode/draw-tour.md), as `facilitateTourSeen`.
   // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
   drawTourSeen?: boolean;
-  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`.
-  // Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing / undefined === not seen.
+  // The Illustrate tour's seen-guard (docs/specs/007-editor/illustrate-tour.md), as `drawTourSeen`: true counts every
+  // page kind's track as seen. Surfaced in Settings as Tours › "Illustrate Tour" (inverted). Missing === not seen.
   illustrateTourSeen?: boolean;
+  // The page kinds whose Illustrate tour track has been offered and answered (taken, skipped or declined), so each
+  // kind offers its own once ever. Cleared with `illustrateTourSeen` when the Settings switch is turned on.
+  illustrateTourKinds?: PageKind[];
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
@@ -764,7 +767,8 @@ and the dialog stays as the one complete, browsable index of them.
   ([Plan tour](../026-plan/plan-tour.md)). **Facilitate Tour** works the same way against
   `facilitateTourSeen` ([Facilitate tour](../012-collaboration/facilitate-tour.md)), **Draw Tour** against
   `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)), and **Illustrate Tour** against `illustrateTourSeen`
-  ([Illustrate tour](illustrate-tour.md)).
+  ([Illustrate tour](illustrate-tour.md)), which offers one track per page kind: `illustrateTourKinds` lists the kinds
+  answered, and turning the switch on clears it too.
 
   **Toggle groups.** Several related switches that share one description are
   one `toggleGroup` row: the label and description over a row of **chips**, one

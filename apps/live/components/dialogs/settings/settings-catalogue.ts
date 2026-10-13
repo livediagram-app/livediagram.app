@@ -963,13 +963,24 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you work in Draw.',
         helpArticle: 'drawTour',
       }),
-      tourSwitch('illustrateTourSeen', {
-        label: 'Illustrate Tour',
-        event: { category: 'UI', on: 'IllustrateTourSeenOff', off: 'IllustrateTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial illustrate pages slides infographic replay',
-        description: 'The first time you work in Illustrate.',
-        helpArticle: 'illustrateTour',
-      }),
+      {
+        ...tourSwitch('illustrateTourSeen', {
+          label: 'Illustrate Tour',
+          event: { category: 'UI', on: 'IllustrateTourSeenOff', off: 'IllustrateTourSeenOn' },
+          keywords:
+            'tour walkthrough onboarding tutorial illustrate pages slides infographic article logo present replay',
+          description:
+            'The first time you work on each kind of page: slides, infographics, articles and logos.',
+          helpArticle: 'illustrateTour',
+        }),
+        // One track per page kind (docs/specs/007-editor/illustrate-tour.md): on forgets the kinds answered, so every
+        // kind offers its track again; off marks them all seen.
+        write: (p: UserPreferences, v: boolean) => {
+          if (!v) return { ...p, illustrateTourSeen: true };
+          const { illustrateTourKinds: _answered, ...rest } = p;
+          return { ...rest, illustrateTourSeen: false };
+        },
+      },
     ],
   },
   {
