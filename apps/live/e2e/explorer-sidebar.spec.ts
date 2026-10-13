@@ -195,7 +195,7 @@ test.describe('editor Explorer panel', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('shows Overview, Spaces and More and opens documents in place', async ({
+  test('shows a rail of sections beside a pane, and every section in place', async ({
     page,
     pageErrors,
     baseURL,
@@ -216,26 +216,32 @@ test.describe('editor Explorer panel', () => {
     await make(crypto.randomUUID(), 'Another');
     await page.goto(`/document/${id}`);
     await page.getByRole('button', { name: 'Explorer', exact: true }).click();
-    const panel = page.getByRole('navigation', { name: 'Explorer' });
-    await expect(panel.getByRole('treeitem', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
-    await expect(panel.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    // Compact on open; the keyboard opens My documents and walks into its documents.
-    const myDocuments = panel.getByRole('treeitem', { name: 'My documents' });
-    await expect(myDocuments).toHaveAttribute('aria-expanded', 'false');
-    await myDocuments.focus();
-    await page.keyboard.press('Enter');
-    await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
-    await page.keyboard.press('ArrowDown');
-    // The root lists its documents directly: no Unsorted or Generated bucket.
-    const rootRows = myDocuments.locator(':scope > [role="group"] > [role="treeitem"]');
-    await expect(rootRows).toHaveCount(2);
-    await expect(rootRows.first()).toBeFocused();
-    await expect(panel.getByRole('treeitem', { name: 'Another' })).toBeVisible();
-    await expect(panel.getByRole('treeitem', { name: 'Open one' })).toHaveAttribute(
+    const rail = page.getByRole('navigation', { name: 'Explorer sections' });
+    await expect(rail.getByRole('button', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
+    await expect(rail.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
+    // Opens on the space holding the open document: My documents, its documents in the pane.
+    await expect(rail.getByRole('button', { name: 'My documents' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    const pane = page.getByRole('navigation', { name: 'Explorer', exact: true });
+    await expect(pane.getByRole('treeitem', { name: 'Another' })).toBeVisible();
+    await expect(pane.getByRole('treeitem', { name: 'Open one' })).toHaveAttribute(
       'aria-selected',
       'true',
     );
+    // The keyboard walks the rail; a pick shows the section in the pane, never leaving the editor.
+    await rail.getByRole('button', { name: 'Home' }).focus();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('heading', { name: 'Timeline', exact: true })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`/document/${id}`));
+    // The product's links live in the panel's footer, not the header.
+    await expect(
+      page.getByRole('navigation', { name: 'Go to' }).getByRole('link', { name: 'Help' }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Switch section/ })).toHaveCount(0);
     expectNoPageErrors(pageErrors);
   });
 });
