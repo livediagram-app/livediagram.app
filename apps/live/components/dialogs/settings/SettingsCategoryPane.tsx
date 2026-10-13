@@ -18,6 +18,8 @@ import { SettingsTrashRow } from './SettingsTrashRow';
 import { SettingsCloudSyncRow } from './SettingsCloudSyncRow';
 import { SettingsPlacementDefaultRow } from './SettingsPlacementDefaultRow';
 import { SettingsSkipLocationRow } from './SettingsSkipLocationRow';
+import { SETTINGS_CARD_SLOT, SettingsGroup, SettingsGroupChildren } from './SettingsGroup';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlacementOptions } from '@/hooks/persistence/usePlacementOptions';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -91,47 +93,61 @@ export function SettingsCategoryPane({
 
   return (
     <div className="flex flex-col gap-6">
-      {groups.map((group, groupIndex) => (
-        <section
-          key={group.section ?? groupIndex}
-          className="flex flex-col gap-5"
-          {...(group.section ? { 'data-settings-section': settingsSectionId(group.section) } : {})}
-        >
-          {group.section ? (
-            <SectionHeading
-              name={group.section}
-              focused={settingsSectionId(group.section) === focusSectionId}
-            />
-          ) : null}
-          {group.rows.map((row) => {
-            const children = childrenOf(row);
-            return (
-              <Fragment key={row.key}>
-                <FocusRing rowKey={row.key} focused={row.key === focusRowKey}>
-                  {renderRow(row)}
-                </FocusRing>
-                {children.length > 0 ? (
-                  <div
-                    role="group"
-                    aria-label={`${row.label} settings`}
-                    className="-mt-2 ml-3 flex flex-col gap-5 border-l-2 border-slate-200 pl-4 dark:border-slate-700"
-                  >
-                    {children.map((child) => (
-                      <FocusRing
-                        key={child.key}
-                        rowKey={child.key}
-                        focused={child.key === focusRowKey}
-                      >
-                        {renderRow(child)}
-                      </FocusRing>
-                    ))}
-                  </div>
+      {groups.map((group, groupIndex) => {
+        const note = group.section ? category.sectionNotes?.[group.section] : undefined;
+        return (
+          <section
+            key={group.section ?? groupIndex}
+            className="flex flex-col gap-2"
+            {...(group.section
+              ? { 'data-settings-section': settingsSectionId(group.section) }
+              : {})}
+          >
+            {group.section ? (
+              <SectionHeading
+                name={group.section}
+                focused={settingsSectionId(group.section) === focusSectionId}
+              />
+            ) : null}
+            {note ? (
+              <p className="-mt-1 px-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                {note.note}
+                {note.helpArticle ? (
+                  <>
+                    {' '}
+                    <HelpArticleLink article={note.helpArticle} variant="text" />
+                  </>
                 ) : null}
-              </Fragment>
-            );
-          })}
-        </section>
-      ))}
+              </p>
+            ) : null}
+            <SettingsGroup>
+              {group.rows.map((row) => {
+                const children = childrenOf(row);
+                return (
+                  <Fragment key={row.key}>
+                    <FocusRing rowKey={row.key} focused={row.key === focusRowKey}>
+                      {renderRow(row)}
+                    </FocusRing>
+                    {children.length > 0 ? (
+                      <SettingsGroupChildren label={`${row.label} settings`}>
+                        {children.map((child) => (
+                          <FocusRing
+                            key={child.key}
+                            rowKey={child.key}
+                            focused={child.key === focusRowKey}
+                          >
+                            {renderRow(child)}
+                          </FocusRing>
+                        ))}
+                      </SettingsGroupChildren>
+                    ) : null}
+                  </Fragment>
+                );
+              })}
+            </SettingsGroup>
+          </section>
+        );
+      })}
     </div>
   );
 
@@ -252,7 +268,7 @@ function SectionHeading({ name, focused }: { name: string; focused: boolean }) {
       ref={ref}
       id={`settings-section-${settingsSectionId(name)}`}
       tabIndex={-1}
-      className="-mb-1.5 scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
+      className="scroll-mt-2 rounded px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400"
     >
       {name}
     </h3>
@@ -282,11 +298,7 @@ function FocusRing({
     <div
       ref={ref}
       {...{ [SETTINGS_ROW_ATTRIBUTE]: rowKey }}
-      className={
-        focused
-          ? 'rounded-2xl ring-2 ring-brand-400 ring-offset-4 ring-offset-white dark:ring-offset-slate-900'
-          : undefined
-      }
+      className={`${SETTINGS_CARD_SLOT} ${focused ? 'ring-2 ring-inset ring-brand-400' : ''}`}
     >
       {children}
     </div>

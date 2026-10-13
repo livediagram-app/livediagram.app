@@ -148,7 +148,7 @@ export function TourHost() {
     return () => clearTimeout(t);
   }, [active, ready, seen, offerRef]);
 
-  // Settings relaunch (the Onboarding Tutorials › "Diagram" row, turned on + closed):
+  // Settings relaunch (the Tours › "Diagram Tour" row, turned on + closed):
   // rerun from the top: the welcome card is always step 1. Also re-marks
   // the pending flag so a reload mid-rerun re-offers, exactly like the
   // first-run path. Off a Diagram tab, or while another tour runs, it waits,

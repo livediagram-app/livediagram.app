@@ -107,7 +107,7 @@ export function DrawTourHost() {
     return () => clearTimeout(t);
   }, [armed, active, seen, inDraw, canWork, otherTour, engineRef]);
 
-  // Settings rerun (the Onboarding Tutorials › "Draw" row, turned on from off + closed): offers again in
+  // Settings rerun (the Tours › "Draw Tour" row, turned on from off + closed): offers again in
   // Draw, and otherwise the next time the person enters it (the row has cleared the preference).
   const inDrawRef = useLatest(inDraw);
   useEffect(() => {

@@ -388,20 +388,25 @@ the defaults above.
 
 ### Settings
 
-- Settings holds a **Documents** category whose section **Where New Documents Go** has one row per
-  entry, in list order, for guests and accounts alike.
-- Its first row is **Skip the Location Step** ([Skipping the Location step](#skipping-the-location-step)).
-  On, it reads "New documents are saved in **<place>**" with a **Turn Off** button, which clears
-  the preference and restores the two-step wizard. Off, it reads "Off: the New Document wizard asks
-  where each document goes.", with no button: it is turned on from the wizard, where the place is
+- Settings holds a **Documents** category with two sections, for guests and accounts alike.
+- **New Documents** holds one row, **Always Save in One Place** ([Skipping the Location
+  step](#skipping-the-location-step)), with an **On** / **Off** pill beside it. On, it reads "New
+  documents go straight to **<place>**, without the wizard asking where." with a **Turn Off**
+  button, which clears the preference and restores the two-step wizard. Off, it says the wizard asks
+  where each document goes and how to skip that (tick "Always save new documents in…" on its
+  Location step), with no button: it is turned on from the wizard, where the place is
   chosen.
+- **Default Folders** has one row per entry, in list order, under one line saying what they share
+  ("Where each kind of new document is saved when you create it without choosing a place.") and the
+  article's **Learn more**, said once rather than under every row.
 - A row names the entry, in the title case of every Settings label ("Whiteboards", "Kanban
   Boards"), and beneath it where those documents go: the folder's name (a team folder adds its
-  team: "Workshops · Design team"), or **My documents** when there is no default. Until the
+  team: "Workshops · Design team", with a small folder mark), or **My documents** when there is
+  no default. Until the
   defaults and the folders have loaded it reads "Loading…"; if either cannot be read, "Couldn't
   load your default folders", with no buttons, never a guess.
-- **Change** opens the [default folder picker](#the-default-folder-picker). **Clear** clears the
-  default; it is shown only while there is one.
+- **Clear** and **Change** sit beside it. **Change** opens the [default folder
+  picker](#the-default-folder-picker). **Clear** clears the default; it is shown only while there is one.
 - **A dangling default** reads "<folder> (deleted), using <place>", or "<folder> (no longer
   available), using <place>" for a team folder whose team is not among the reader's, where <place>
   is where those documents go instead: the next working default of the

@@ -24,6 +24,7 @@ export type SettingsIconId =
   | 'keyboard'
   | 'panels'
   | 'accessibility'
+  | 'tours'
   | 'ai'
   | 'privacy';
 
@@ -53,6 +54,7 @@ const TILE: Record<SettingsIconId, string> = {
   keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
   accessibility: 'bg-indigo-500',
+  tours: 'bg-pink-600',
   ai: 'bg-violet-500',
   privacy: 'bg-emerald-600',
 };
@@ -146,6 +148,14 @@ const AccessibilityGlyph = (
   </Svg>
 );
 
+// Tours: a compass, for being shown around.
+const ToursGlyph = (
+  <Svg>
+    <circle cx="10" cy="10" r="7" />
+    <path d="m12.8 7.2-1.6 4-4 1.6 1.6-4Z" />
+  </Svg>
+);
+
 // AI: a spark.
 const AiGlyph = (
   <Svg>
@@ -178,6 +188,7 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   keyboard: KeyboardGlyph,
   panels: PanelsGlyph,
   accessibility: AccessibilityGlyph,
+  tours: ToursGlyph,
   ai: AiGlyph,
   privacy: PrivacyGlyph,
 };

@@ -28,7 +28,7 @@ read as one product. Where this spec is silent, the Diagram tour's rules hold.
 - **Once ever per person**, through the synced `planTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)): taken, skipped mid-way or declined, it never offers
   itself again, on any device.
-- **Replayable from Settings**: the **Plan** switch in the Accessibility category's **Onboarding Tutorials** control,
+- **Replayable from Settings**: the **Plan Tour** switch in Settings' **Tours** category,
   beside **Diagram** and built the same way (on means "not seen yet"). Turning it on from off and closing
   Settings runs the tour straight away when the open tab is in Plan with a board or Sheet on it; otherwise it is
   offered the first time that is true, exactly as a first offer. Nothing is placed to give it something to show:

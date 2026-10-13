@@ -5,18 +5,23 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SettingsIllustration } from './settings-illustrations';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { Glyph } from '@livediagram/ui';
+import { SETTINGS_CARD, useInSettingsGroup } from './SettingsGroup';
 
-// Everything a settings row has in common, whatever its control is: the
-// bordered card holding the label and the control, then the grey footnote
-// under it.
+// Everything a settings row has in common, whatever its control is: one CELL holding the label
+// with a short description under it, the control beside them, and below them whatever the row
+// adds (an illustration, a list, a note).
 //
-// The footnote lives OUTSIDE the card on purpose (iOS group-footer style).
-// The old dialog packed label, a four-line description and a "Learn more"
-// link into the card, which made every setting a paragraph and the list
-// impossible to skim: the complaint that prompted this rework.
+// Inside a SettingsGroup the cell is bare and the group draws the card around a whole section, the
+// iOS grouped-list look. On its own (a panel reusing a row) the cell draws its own card.
+//
+// The description sits INSIDE the cell, under the label, rather than as a footnote below a card per
+// row: a footnote per row made every setting a card plus a paragraph, which is what made the
+// dialog hard to skim. Descriptions are written to be one or two short lines for that reason.
 export function SettingsRowShell({
   row,
   control,
+  leading,
+  children,
   // Which half of the row's illustration is in force, so the drawing rings
   // the current state. Toggle rows pass their checked state.
   illustrationActive = false,
@@ -28,16 +33,16 @@ export function SettingsRowShell({
   onIllustrationToggle,
   onIllustrationChoose,
   illustrationDisabled,
-  // A short info line between the card and the footnote, for a row whose
-  // options are limited right now (a desktop-only row on a phone). Not part of the description, which says what the setting IS.
+  // A short info line for a row whose options are limited right now (a desktop-only row on a
+  // phone). Not part of the description, which says what the setting IS.
   notice,
-  // A control that is its own interactive element (a slider, a segmented
-  // choice) sits BESIDE the label; a whole-row switch wraps the lot, and
-  // passes its own button in as `wrapper` instead.
-  wrapper,
-  // The description with inline content (a link), where the plain text of
+  // The description with inline content (a link, a live status), where the plain text of
   // `row.description` is not enough. `row.description` stays the searchable text.
   descriptionContent,
+  // The whole cell answers the pointer: a switch row, whose switch stretches over the cell.
+  interactive = false,
+  // Greyed: a desktop-only row on a phone.
+  dimmed = false,
 }: {
   // Only the presentational half is read here (label, description, help,
   // illustration), so every row kind satisfies it.
@@ -46,76 +51,90 @@ export function SettingsRowShell({
     'key' | 'label' | 'description' | 'helpArticle' | 'alsoIn' | 'illustration'
   >;
   control?: ReactNode;
+  // Before the label: an avatar, a provider's mark.
+  leading?: ReactNode;
+  // Below the label line, inside the cell.
+  children?: ReactNode;
   illustrationActive?: boolean;
   illustrationValue?: string;
   onIllustrationToggle?: (on: boolean) => void;
   onIllustrationChoose?: (value: string) => void;
   illustrationDisabled?: readonly string[];
   notice?: ReactNode;
-  wrapper?: (children: ReactNode) => ReactNode;
   descriptionContent?: ReactNode;
+  interactive?: boolean;
+  dimmed?: boolean;
 }) {
-  const label = (
-    <span className="min-w-0 text-sm font-medium text-slate-800 dark:text-slate-100">
-      {row.label}
-    </span>
-  );
-  const body = (
-    <>
-      {label}
-      {control}
-    </>
-  );
+  const inGroup = useInSettingsGroup();
+  const described = Boolean(descriptionContent ?? row.description) || !!row.helpArticle;
 
-  return (
-    <div className="flex flex-col">
-      {wrapper ? (
-        wrapper(body)
-      ) : (
-        <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-800">
-          {body}
+  const cell = (
+    <div
+      data-settings-cell={row.key}
+      className={`relative flex flex-col gap-3 rounded-[inherit] px-4 py-3 ${
+        interactive ? 'transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40' : ''
+      }`}
+    >
+      <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 ${dimmed ? 'opacity-50' : ''}`}>
+        {leading}
+        <div className="min-w-[9rem] flex-1">
+          <div
+            id={`${row.key}-label`}
+            className="text-sm font-medium text-slate-800 dark:text-slate-100"
+          >
+            {row.label}
+          </div>
+          {described ? (
+            <p
+              id={`${row.key}-description`}
+              className="mt-0.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400"
+            >
+              {descriptionContent ?? row.description}
+              {row.helpArticle ? (
+                // Above a switch row's stretched click target, so the link stays its own click.
+                <span className="relative z-[1]">
+                  {' '}
+                  <HelpArticleLink article={row.helpArticle} variant="text" />
+                </span>
+              ) : null}
+              {/* Where the same setting also has an in-context control, so the two read as one
+                  setting with two doors rather than rival controls. */}
+              {row.alsoIn ? (
+                <span className="mt-0.5 block text-slate-500 dark:text-slate-400">
+                  Also in {row.alsoIn}.
+                </span>
+              ) : null}
+            </p>
+          ) : null}
         </div>
-      )}
+        {control ? <div className="ml-auto flex shrink-0 items-center gap-2">{control}</div> : null}
+      </div>
       {row.illustration ? (
-        <SettingsIllustration
-          id={row.illustration}
-          active={illustrationActive}
-          value={illustrationValue}
-          onToggle={onIllustrationToggle}
-          onChoose={onIllustrationChoose}
-          disabledValues={illustrationDisabled}
-        />
+        <div className={`relative z-[1] ${dimmed ? 'opacity-50' : ''}`}>
+          <SettingsIllustration
+            id={row.illustration}
+            active={illustrationActive}
+            value={illustrationValue}
+            onToggle={onIllustrationToggle}
+            onChoose={onIllustrationChoose}
+            disabledValues={illustrationDisabled}
+          />
+        </div>
       ) : null}
+      {children}
       {notice ? (
         <p
           role="note"
-          className="mt-2 flex items-start gap-1.5 px-3.5 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300"
+          className="flex items-start gap-1.5 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300"
         >
           <InfoGlyph />
           <span>{notice}</span>
         </p>
       ) : null}
-      {/* A row with nothing to say under it (a pair sharing one footnote) leaves the space out. */}
-      {!descriptionContent && !row.description && !row.helpArticle && !row.alsoIn ? null : (
-        <p
-          id={`${row.key}-description`}
-          className="mt-1.5 px-3.5 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400"
-        >
-          {descriptionContent ?? row.description}
-          {row.helpArticle ? (
-            <>
-              {' '}
-              <HelpArticleLink article={row.helpArticle} variant="text" />
-            </>
-          ) : null}
-          {/* Settings now lists every preference, including the ones whose
-            day-to-day home is a panel's own gear. Saying so keeps the two
-            from reading as rival controls for the same thing. */}
-          {row.alsoIn ? <span className="block text-slate-400">Also in {row.alsoIn}.</span> : null}
-        </p>
-      )}
     </div>
   );
+
+  return inGroup ? cell : <div className={SETTINGS_CARD}>{cell}</div>;
 }
 
 function InfoGlyph() {
@@ -126,3 +145,7 @@ function InfoGlyph() {
     </Glyph>
   );
 }
+
+// The quiet bordered button a row's action uses (Change, Open Trash, Turn Off).
+export const SETTINGS_ROW_BUTTON =
+  'shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60';
