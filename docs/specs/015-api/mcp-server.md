@@ -458,7 +458,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
 - **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
   away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
-  crosses the spine. Several loops take separate tracks.
+  crosses the spine. Several loops take separate tracks. On a drawing of up to 120 boxes a loop or a detour is first
+  searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
+  budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
+  their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
 - **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
   aligned, as every template has. `key` adds a key beside it: one miniature per shape kind the graph uses, with
   what that shape means, in the diagram's own tones. `true` names them by default: in a flowchart by ISO 5807
