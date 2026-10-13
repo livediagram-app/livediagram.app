@@ -243,6 +243,14 @@ fetched content out, whatever else it carries (a dismissed Quick Start's
 empty placeholder, so the autosave saved it over the stored tab). A fetch whose
 content did not land does not make its tab loaded.
 
+Landing fetched content never clears the undo history: it goes into the present
+and into every undo and redo snapshot, under the same rule (a snapshot whose copy
+of the tab is still the empty placeholder takes the content), the way a peer's
+change does. Opening a tab for the first time, or the search and Plan sweeps
+loading the rest, once reset the history, so an undo after them had nothing to
+undo; and a snapshot left holding the placeholder would let an undo put it back
+over the loaded tab.
+
 ### Server backstop: refuse to blank a tab that has content
 
 The client guards above are necessary but live in the editor; a future

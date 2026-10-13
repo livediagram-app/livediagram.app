@@ -1309,7 +1309,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setTabLoadErrors,
     retryNonce: tabLoadRetryNonce,
     lastSavedTabsRef,
-    resetTabs,
+    applyLoaded: applyRemoteOp,
     noteChangesetSeen: realtime.changesetSeen.noteSeen,
   });
   // A Plan document's statuses are read from every tab: load the rest once (usePlanTabSweep).
