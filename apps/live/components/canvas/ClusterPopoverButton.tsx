@@ -29,6 +29,9 @@ type SegmentProps = {
   // Its name beside its icon on a wide desktop (useDockNames); narrower, the icon alone. Absent,
   // the button is its icon on every screen.
   name?: string;
+  // A count for the button (the Trash's): beside its name when named, else tucked into its corner (the
+  // strip clips anything outside it), where it would otherwise sit over the name.
+  badge?: ReactNode;
 };
 
 // The frame a cluster button (or a strip of them) sits in.
@@ -66,6 +69,7 @@ export function ClusterPopoverSegment({
   dataTourId,
   divided = false,
   name,
+  badge,
 }: SegmentProps) {
   const named = useDockNames() && !!name;
   const button = (
@@ -77,7 +81,7 @@ export function ClusterPopoverSegment({
       onClick={(e) => onTogglePopover(e.currentTarget)}
       aria-label={label}
       aria-expanded={popoverOpen}
-      className={`flex h-11 items-center justify-center transition ${
+      className={`relative flex h-11 items-center justify-center transition ${
         named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
       } ${divided ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${
         popoverOpen
@@ -87,6 +91,16 @@ export function ClusterPopoverSegment({
     >
       {icon}
       {named ? <span aria-hidden>{name}</span> : null}
+      {badge ? (
+        <span
+          aria-hidden
+          className={
+            named ? 'pointer-events-none flex' : 'pointer-events-none absolute right-0.5 top-0.5'
+          }
+        >
+          {badge}
+        </span>
+      ) : null}
     </button>
   );
   // No hover card while open: it would sit over the panel it names.

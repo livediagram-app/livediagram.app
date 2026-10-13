@@ -174,6 +174,9 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   ([Card tables](../029-sheets/sheet.md#card-tables)). On an empty tab, or one of only diagrams, stickies and plain
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
+- On a wide desktop (1440 px and up) each of its buttons is named beside its icon (**Trash**, **New Card**, **Find
+  a Card**, **Card Types**), as the cluster's other strips are ([Live app](../007-editor/live-app.md)); narrower,
+  they are icons alone.
 
 ## Trash
 
@@ -181,7 +184,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   on All Cards). A trashed item keeps the status it had under `trashedFrom`.
 - In Plan mode a **Trash** button leads the bottom-right cluster's Plan strip, on its left before **Find a
   Card** and **Card Types** (not on a phone, whose cluster has no room for it: a card's menu still sends it to
-  the Trash), its count tucked into its corner; with a grey badge of how many cards
+  the Trash), its count tucked into its corner (beside its name where the strip is named, The Plan strip); with a grey badge of how many cards
   it holds. While a card is dragged the button opens out into a dashed **Drop to Trash** target, and while the
   card is over it fills with the brand colour, tips its lid and reads **Let go to trash it** (no motion with reduced motion; the
   colours still change); a card let go there is trashed and the move is announced. That holds wherever the board is:
