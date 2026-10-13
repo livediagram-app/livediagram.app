@@ -117,6 +117,10 @@ const ALL_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
+  'launch-keynote',
+  'quarterly-review',
+  'team-welcome',
+  'workshop-kickoff',
   'paper-prototype',
   'journey-doodle',
   'pre-mortem',
@@ -186,6 +190,10 @@ const PAGED_KINDS = [
   'how-it-works',
   'versus',
   'social-carousel',
+  'launch-keynote',
+  'quarterly-review',
+  'team-welcome',
+  'workshop-kickoff',
 ] as const;
 
 // An element's centre, from its box or, for an arrow, its free endpoints' midpoint.
@@ -206,12 +214,24 @@ describe('templates on pages', () => {
   // A deck is built of slide pages, the logo exploration's lockups of logo pages; every other paged
   // template of infographic pages. Either way a chosen kind, so the first page's kind choice is
   // never offered.
+  // The decks: the Slide Deck and the decks built from slide layouts.
+  const SLIDE_DECK_KINDS = new Set<string>([
+    'slide-deck',
+    'launch-keynote',
+    'quarterly-review',
+    'team-welcome',
+    'workshop-kickoff',
+  ]);
   it.each(PAGED_KINDS)('%s: opens in Illustrate on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
     expect(o.opensIn).toBe('illustrate');
     expect(o.pages?.length).toBeGreaterThan(0);
     const want = (i: number) =>
-      kind === 'slide-deck' ? 'slide' : kind === 'logo-design' && i < 6 ? 'logo' : 'infographic';
+      SLIDE_DECK_KINDS.has(kind)
+        ? 'slide'
+        : kind === 'logo-design' && i < 6
+          ? 'logo'
+          : 'infographic';
     expect(o.pages!.every((p, i) => p.kind === want(i))).toBe(true);
     expect(new Set(o.pages!.map((p) => p.id)).size).toBe(o.pages!.length);
   });

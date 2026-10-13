@@ -204,6 +204,11 @@ export type TemplateKind =
   | 'how-it-works'
   | 'versus'
   | 'social-carousel'
+  // Slide decks built from the slide layouts (template-builders-layout-decks.ts).
+  | 'launch-keynote'
+  | 'quarterly-review'
+  | 'team-welcome'
+  | 'workshop-kickoff'
   // Facilitate mode's blank (docs/specs/012-collaboration/facilitate-mode.md "Templates").
   | 'blank-session'
   // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
@@ -994,6 +999,34 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'Five square slides for a LinkedIn or Instagram carousel: a hook, three tips and a call to action, swipe cues included.',
     extra: true,
   },
+  {
+    kind: 'launch-keynote',
+    title: 'Launch Keynote',
+    description:
+      'A six-slide launch keynote on an animated aurora: the hook, what is new, the beta in three numbers, the launch plan and the ask.',
+    extra: true,
+  },
+  {
+    kind: 'quarterly-review',
+    title: 'Quarterly Review',
+    description:
+      'A six-slide quarterly business review on a moving mesh: the agenda, the quarter in a chart, goals as progress rings and the roadmap.',
+    extra: true,
+  },
+  {
+    kind: 'team-welcome',
+    title: 'Team Welcome',
+    description:
+      'A six-slide welcome for a new joiner on floating bokeh: their manager, their first week, how the team works and who to ask.',
+    extra: true,
+  },
+  {
+    kind: 'workshop-kickoff',
+    title: 'Workshop Kickoff',
+    description:
+      'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
+    extra: true,
+  },
 ];
 
 // True when `value` names a template in the catalogue. The guard for a kind
@@ -1175,6 +1208,10 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'how-it-works': 'blank',
   versus: 'blank',
   'social-carousel': 'blank',
+  'launch-keynote': 'blank',
+  'quarterly-review': 'blank',
+  'team-welcome': 'blank',
+  'workshop-kickoff': 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',

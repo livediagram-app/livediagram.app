@@ -32,6 +32,10 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'how-it-works': 'illustrate',
   versus: 'illustrate',
   'social-carousel': 'illustrate',
+  'launch-keynote': 'illustrate',
+  'quarterly-review': 'illustrate',
+  'team-welcome': 'illustrate',
+  'workshop-kickoff': 'illustrate',
   // Plan templates (docs/specs/026-plan/plan-templates.md).
   'blank-plan': 'plan',
   'blank-spreadsheet': 'plan',

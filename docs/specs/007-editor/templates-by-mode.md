@@ -212,3 +212,24 @@ unchanged; only the mode they open in moved from Diagram.
   tab is "Flowchart", an infographic's its template's title): the template's own name for the tab where it gives one
   (a Plan template's tabs), else for a Board or Sheet template the board's title, else the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
+
+## Slide deck templates
+
+Besides the **Slide Deck** (a six-slide seed pitch), four decks are built from the slide layouts
+(`template-builders-layout-decks.ts`), six 16:9 slide pages each, every page one slide layout with
+its sample text replaced by the deck's own and its speaker note on its first text. Each opens and
+closes on an animated background in colours of its own (custom colours, so they keep through a theme
+change) and sets the slides between on a soft still gradient, so they read and print plainly:
+
+- **Launch Keynote** (Aurora): a launch for a made-up notes app, Lumen: Keynote Title, Opening
+  Question, Three Points, Three Big Numbers, Process Flow, Call to Action.
+- **Quarterly Review** (Mesh): a support team's quarter: Keynote Title, Agenda Grid, Big Chart, Goals
+  Progress, Now Next Later, Questions.
+- **Team Welcome** (Bokeh): a new joiner's first morning: Keynote Title, About the Speaker (their
+  manager), Objectives (the first week), Four Ideas (how we work), Milestones, Contact (their buddy).
+- **Workshop Kickoff** (Waves): a design workshop's opening: Keynote Title, Objectives, Agenda Grid,
+  Process Flow (how each round runs), Key Takeaway (the one rule), Call to Action.
+
+They sit in Start Illustrating's **Slides** group after the Slide Deck, and in the Presentations
+category. A test pins each slide's text to its layout one for one, so a layout change that adds or
+drops a line fails until the deck follows.

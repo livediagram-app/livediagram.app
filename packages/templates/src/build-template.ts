@@ -32,6 +32,7 @@ import { buildDataStory } from './template-builders-data-story';
 import { buildHowItWorks } from './template-builders-how-it-works';
 import { buildVersus } from './template-builders-versus';
 import { buildSocialCarousel } from './template-builders-social-carousel';
+import { buildLayoutDeck } from './template-builders-layout-decks';
 import { buildStoryboard } from './template-builders-storyboard';
 import {
   buildPrioritizationMatrix,
@@ -295,6 +296,11 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
       return buildVersus();
     case 'social-carousel':
       return buildSocialCarousel();
+    case 'launch-keynote':
+    case 'quarterly-review':
+    case 'team-welcome':
+    case 'workshop-kickoff':
+      return buildLayoutDeck(kind);
   }
 }
 

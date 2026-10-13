@@ -120,6 +120,10 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'how-it-works': null,
   versus: null,
   'social-carousel': null,
+  'launch-keynote': null,
+  'quarterly-review': null,
+  'team-welcome': null,
+  'workshop-kickoff': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */
