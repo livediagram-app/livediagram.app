@@ -10,6 +10,8 @@ import {
   parseBuildId,
   parseStoredLevel,
   isSystemOpKind,
+  ROOM_PING,
+  ROOM_PONG,
   type AccessLevel,
 } from '@livediagram/api-schema';
 import { ADDER_KEY_LENGTH, opForTheWire, stampCommentAuthor } from '@livediagram/document';
@@ -88,9 +90,11 @@ import { writeQaAction, type QaWriteRequest } from './qa-board-write';
 //   - Anything left in memory silently resets when the DO hibernates
 //     and wakes (the constructor re-runs). Only `opRates` lives there,
 //     and that reset is deliberately acceptable — see its comment.
-//   - No `setWebSocketAutoResponse` ping/pong is configured: the room's
-//     wire protocol (room-messages.ts) has no keepalive frame and the
-//     live client doesn't send one, so there's nothing to auto-answer.
+//   - The keepalive is a `setWebSocketAutoResponse` pair (ROOM_PING answered
+//     with ROOM_PONG, room-messages.ts): the runtime answers it without waking
+//     the DO, so a client can learn its socket is still alive (or find out it
+//     died silently, a laptop asleep or a NAT that dropped the connection)
+//     without costing the room a wake per ping.
 
 // Max ops a single session may broadcast per 1s window. Far above any
 // legit client (cursor / laser broadcasts are throttled to a few dozen
@@ -307,6 +311,10 @@ export class DocumentRoom implements DurableObject {
     this.poll = new RoomLivePoll(state.storage);
     this.pollAnswers = Promise.resolve();
     this.selections = new RoomSelectionStore(state.storage);
+    // The keepalive (see the hibernation notes above): answered by the runtime, never by this class. Absent from a
+    // test double of the state, and from a runtime without the hibernation API.
+    if (typeof WebSocketRequestResponsePair !== 'undefined')
+      state.setWebSocketAutoResponse?.(new WebSocketRequestResponsePair(ROOM_PING, ROOM_PONG));
     this.agents = new RoomAgentPresence(
       state.storage,
       () => Date.now(),
