@@ -32,6 +32,7 @@ import {
 } from './flowchart';
 import { laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import { orthogonalBends } from './arrow-orthogonal';
+import { spreadDecisionExits } from './flowchart-spread';
 import type {
   Anchor,
   ArrowElement,
@@ -160,6 +161,7 @@ export function layoutFlowchart(
   const faced = new Map<ElementId, ArrowElement>();
   const loopRoutes = new Map<ElementId, ReturnType<typeof loopRoute>>();
   const sideExits = new Set<ElementId>();
+  const sideOf = decisionSideExits(connectors, loops, all, centres, dir, locked);
   for (const c of connectors) {
     if (locked(c) || c.from.kind !== 'pinned' || c.to.kind !== 'pinned') continue;
     // A loop's faces come with its route, and are settled first: the fan of ends sharing a face
@@ -182,7 +184,7 @@ export function layoutFlowchart(
     if (re.from.kind !== 'pinned' || re.to.kind !== 'pinned') continue;
     // reanchorArrow straightens every arrow it touches; the style is decided below instead. A
     // Decision's side exit is chosen here too, for the same reason a loop's faces are.
-    const side = c.arrowStyle === 'curved' ? undefined : decisionSideExit(re, all, centres, dir);
+    const side = sideOf.get(c.id);
     faced.set(c.id, {
       ...c,
       from: side ? { ...re.from, anchor: side } : re.from,
@@ -422,6 +424,39 @@ function decisionSideExit(
   return across < 0 ? 'n' : 's';
 }
 
+/**
+ * Every Decision exit's side corner, with no two exits of one Decision sharing a corner
+ * (docs/specs/009-elements/flowchart.md "No two exits of a Decision share a face"): of two that would,
+ * the one whose step lies further along the flow keeps the flow's face instead.
+ */
+function decisionSideExits(
+  connectors: readonly ArrowElement[],
+  loops: ReadonlySet<ElementId>,
+  steps: readonly ShapeElement[],
+  centres: Map<ElementId, Pt>,
+  dir: FlowchartDirection,
+  locked: (el: Element) => boolean,
+): Map<ElementId, Anchor> {
+  const claims = new Map<string, { id: ElementId; along: number }[]>();
+  for (const c of connectors) {
+    if (locked(c) || loops.has(c.id) || c.arrowStyle === 'curved') continue;
+    const side = decisionSideExit(c, steps, centres, dir);
+    if (!side || c.from.kind !== 'pinned' || c.to.kind !== 'pinned') continue;
+    const to = centres.get(c.to.elementId)!;
+    const key = `${c.from.elementId} ${side}`;
+    const list = claims.get(key) ?? [];
+    list.push({ id: c.id, along: dir === 'down' ? to.y : to.x });
+    claims.set(key, list);
+  }
+  const out = new Map<ElementId, Anchor>();
+  for (const [key, list] of claims) {
+    // The nearest along the flow keeps the corner; on a tie the earlier exit (drawing order) keeps it.
+    const keep = list.reduce((best, x) => (x.along < best.along ? x : best));
+    out.set(keep.id, key.split(' ')[1] as Anchor);
+  }
+  return out;
+}
+
 const sameBends = (a: ArrowElement['curvePoints'], b: FlowchartConnectorRoute['curvePoints']) =>
   (a ?? []).length === (b ?? []).length &&
   (a ?? []).every((p, i) => p.dx === b![i]!.dx && p.dy === b![i]!.dy);
@@ -473,6 +508,7 @@ function layoutUnlaned(
     const dx = holder.x - at.x;
     const dy = holder.y - at.y;
     for (const [k, p] of pos) pos.set(k, { x: p.x + dx, y: p.y + dy });
+    spreadDecisionExits(pos, linked, arrows, dir, holder.id);
   }
 
   // The unconnected steps, bar the first step (which never moves).

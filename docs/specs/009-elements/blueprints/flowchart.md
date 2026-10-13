@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/live/components/palette/palette-tile-defs.tsx`        | `tools:flowchart` tile (component action `flowchart`)                                                                          |
 | `apps/live/components/canvas/SelectionPopover.tsx`          | Add Step, Add Branch, Step Type, Lane                                                                                          |
 | `apps/live/components/canvas/quick-connect-options.tsx`     | The ring's Add Step and Add Branch                                                                                             |
-| `apps/live/components/palette/context-menu-*.tsx`           | The Flowchart section: Step Type, Direction, Add Lane, Tidy Flowchart                                                          |
+| `apps/live/components/flowchart/FlowchartMenuSections.tsx`  | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
 | `packages/templates/src/template-builders-flowchart.ts`     | Live Flowchart template                                                                                                        |
 | `packages/templates/src/template-builders-decision-tree.ts` | Live Decision tree template                                                                                                    |
 | `packages/templates/src/template-builders-swimlane.ts`      | Live Swimlane template                                                                                                         |
@@ -89,6 +89,16 @@ connectors: ArrowElement[] }`, holding only what changes.
    - Unconnected steps other than the anchor: stacked after the block along the cross axis, starting
      `COMPONENT_GAP` past it, aligned to the block's main-axis start, gap `SIBLING_GAP`, in `(y, x)`
      order.
+   - Spread (`spreadDecisionExits`, flowchart-spread.ts), on the connected block after the translate.
+     Decisions in rank order (main-axis centre, then cross). For each `diamond` step with two or more
+     forward exits to movable steps, the targets in cross-centre order: the first must have its cross
+     centre at most `corner₁ − FLOWCHART_CORNER_CLEARANCE`, the last at least
+     `corner₂ + FLOWCHART_CORNER_CLEARANCE`, where `corner₁ / corner₂` are the Decision's cross
+     centre ∓ half its cross size. The moved set of a target: it and every step reachable from it
+     along forward edges that is not reachable from the Decision's other exits. The set shifts along
+     the cross axis by the shortfall; the shift is skipped when the set holds the reference step or
+     a step not in the layout, or when any moved step would then overlap (or come within
+     `SIBLING_GAP` of) a step outside the set. Later Decisions see earlier shifts.
 4. **Laned**:
    - Lanes ordered by their current cross position (`y` for rows, `x` for columns; a lane is a row when
      `width >= height`).
@@ -108,7 +118,11 @@ connectors: ArrowElement[] }`, holding only what changes.
      `top` / `bottom` for columns) keeps its alignment; any other is set to rows `left` / `middle`,
      columns `center` / `top`.
    - Translate steps and lanes together so the anchor keeps its top-left.
-5. Connectors: `reanchorArrow` against the final centres with the layered direction.
+5. Connectors: `reanchorArrow` against the final centres with the layered direction. A Decision's
+   exit whose step lies beyond a side corner (cross distance greater than half the Decision's cross
+   size) leaves by that corner. When two exits of one Decision would leave by the same side corner,
+   the one whose step is further along the flow (main-axis centre, ties kept by the earlier exit in drawing order) keeps the
+   flow's face and is routed as any other connector (`orthogonalBends`, or its channel).
 
 Positions are rounded to whole pixels (memory: fit lands on whole pixels).
 
@@ -204,8 +218,10 @@ each structural change, never per frame. Budget: a 200-step, 260-connector chart
 
 - Toolbar buttons (Title Case): **Add Step** (Tab), **Add Branch** (Enter), **Step Type** (menu of
   the eight types), **Lane** (menu of lane titles; only on a laned chart).
-- Flowchart menu section (closed by default): Step Type tiles, Direction (Down, Right), Add Lane,
-  Tidy Flowchart.
+- Flowchart menu: a `MenuFlyoutSection` row titled "Flowchart" (`flyoutProps('flowchart')`) holding
+  three closed `MenuAccordionSection` categories: **Chart** (`flowchart-chart`: Add Lane, Tidy
+  Flowchart), **Step Type** (`flowchart-step-type`, steps only: the eight types) and **Direction**
+  (`flowchart-direction`: Down, Right), each an `OptionRows` list.
 - Palette tile: caption "Flowchart", label "Add Flowchart", blurb "Tab adds the next step".
 
 ## Testing
@@ -222,8 +238,9 @@ Each rule above maps to a test in `flowchart.test.ts`, `flowchart-layout.test.ts
 | `FLOWCHART_LANE_MIN`                        | 200         | The lane's default height (`SHAPE_DEFAULT_SIZE.lane`) |
 | `FLOWCHART_LANE_MIN_LENGTH`                 | 600         | A lane shorter than this reads as a box (D170)        |
 | `FLOWCHART_LOOP_GAP`                        | 40          | Clear of the steps a loop passes (D174)               |
+| `FLOWCHART_CORNER_CLEARANCE`                | 32          | A corner exit's first leg stays visible (D175)        |
 | `LAYER_GAP`, `SIBLING_GAP`, `COMPONENT_GAP` | 90, 56, 120 | Shared with Auto Layout                               |
 
 ## Defaults ledger
 
-D169 to D174 in [DEFAULTS.md](DEFAULTS.md).
+D169 to D175 in [DEFAULTS.md](DEFAULTS.md).

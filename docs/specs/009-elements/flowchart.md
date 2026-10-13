@@ -18,7 +18,7 @@ typing opens the label editor with that first character, typing ahead is capture
 and Escape on the empty step a Tab made one time too many removes it).
 
 Any step's **type** is changed from its toolbar's **Step Type** menu or the context menu's
-Flowchart section, so a Process becomes a Decision in one click.
+**Flowchart** menu, so a Process becomes a Decision in one click.
 
 ## Why
 
@@ -98,6 +98,11 @@ up and otherwise bends twice: along the flow to halfway, across, and on into the
 (left or right flowing down, top or bottom flowing right), runs past the outside of every step between
 its ends and comes back into the earlier step's same side, on whichever side makes the shorter trip. A connector made curved keeps its curve.
 
+**No two exits of a Decision share a face.** On a chart without lanes the layout makes room for this
+(below). On a laned chart, where the lanes decide where steps sit, two exits that would leave by the
+same corner are split: the one whose step lies further along the flow leaves by the flow's face
+instead and bends twice into its step, as any other connector does.
+
 **Connecting existing steps** is drawing an arrow, as on any shape. An arrow pinned at both ends to
 steps of the same chart joins the chart (a merge or a loop) and the chart is laid out again.
 
@@ -112,7 +117,7 @@ It is the **layered** layout Auto Layout already uses (Flowchart down / right in
 its deepest predecessor, loops ignored for ranking (a loop is a connector back to a step already on the path from the first
 step, followed in the order connectors were drawn), order within a
 rank refined to cross fewer connectors, long connectors kept in a channel of their own, and every
-connector re-anchored on the flow's faces. Three things differ from Auto Layout:
+connector re-anchored on the flow's faces. Four things differ from Auto Layout:
 
 - **Sizes are kept.** Each step keeps its type's size (or the size someone gave it); Auto Layout's
   peer-size normalising would shrink a Decision to a Process.
@@ -122,20 +127,36 @@ connector re-anchored on the flow's faces. Three things differ from Auto Layout:
 - **Order is kept.** A new step is ranked after the step it grew from and placed after that step's
   existing exits, so a Decision's Yes exit sits before its No exit (left of it flowing down, above it
   flowing right) and the order people read stays the order they built.
+- **A Decision's steps sit beyond its corners.** On a chart without lanes, when a Decision has two or
+  more exits, the step of its first exit (left flowing down, top flowing right) lies beyond its first
+  corner and the step of its last exit beyond its other corner, so each leaves by its own corner and
+  turns once. A step is moved out there together with the steps only it leads to; a move that would
+  overlap another step, or move a locked one or the first step, is not made.
 
 Only the chart's own steps, connectors and lanes move. Other elements on the tab are left where they
 are.
 
 **Dragging a step is allowed.** The chart is laid out again at its next structural change, and the
 dragged step returns to its slot: the chart is always tidy, by design. **Tidy Flowchart** in the
-Flowchart menu section lays it out on demand. A locked step, or one on a locked layer, keeps its
+Flowchart menu's Chart category lays it out on demand. A locked step, or one on a locked layer, keeps its
 place and size, and the layout routes around it as Auto Layout does.
 
 ## Direction
 
-**Down** (top to bottom) or **Right** (left to right), from the Flowchart section of the context
-menu. A chart with no lanes flows down by default; a chart with lanes flows right by default. Choosing
+**Down** (top to bottom) or **Right** (left to right), from the Flowchart menu's Direction category. A chart with no lanes flows down by default; a chart with lanes flows right by default. Choosing
 a direction writes it to every step and lays the chart out again.
+
+## The Flowchart menu
+
+A selected step's or lane's context menu has one **Flowchart** row, a parent category that opens to the
+side (a `MenuFlyoutSection`, the way the Mind Map and Sankey rows do). Inside it, up to three categories,
+each a closed `MenuAccordionSection` like every element-menu section, so the menu never shows every list
+at once. Each holds one of Plan mode's option lists (`OptionRows`): a bordered box, one full-width row per
+choice, its icon at the left.
+
+- **Chart**: **Add Lane** and **Tidy Flowchart**.
+- **Step Type**: the eight step types, the step's own ticked. Only on a step, not a lane.
+- **Direction**: **Down** and **Right**, the chart's own ticked.
 
 ## Swimlanes
 
