@@ -37,7 +37,7 @@ import {
   type ThemeBackgroundPreset,
 } from '@/lib/illustrate-page-paint';
 import { PanelSection, tileClass } from './illustrate-page-panel-sections';
-import { CustomGradientEditor, PAGE_COLOUR_GROUPS } from './page-background-custom';
+import { CustomGradientEditor, PAGE_COLOUR_GROUPS, RAINBOW } from './page-background-custom';
 import { AnimatedBackgroundChoices } from './page-background-animated';
 import { ImageBackgroundChoices } from './page-background-image';
 import { ColourPicker } from '@/components/colour/ColourPicker';
@@ -59,7 +59,6 @@ export function pageThemeColours(theme: readonly ColourOption[]): ColourOption[]
 }
 
 // The custom choices' swatch until one is the page's fill.
-const RAINBOW = 'conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #e879f9, #f87171)';
 
 function Swatch({
   label,

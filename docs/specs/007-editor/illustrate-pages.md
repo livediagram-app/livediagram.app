@@ -390,7 +390,10 @@ rising and sinking), **Dot Wave** (a grid of dots swelling in a wave corner to c
 **Clouds** (soft clouds drifting across, the nearer faster). Under them, **Colours** offers six
 theme colourings (Theme Deep, Night, Vivid, Bright, Soft and Mist, each a pair of stops drawn from
 the theme's accent and its second colour); a press recolours the chosen motion, and the colouring
-carries to the next motion picked. Each motion starts in its own colouring. Then **Speed**, while
+carries to the next motion picked. The row ends in **Custom colours** (the rainbow swatch, shown while the slide has
+a motion): it opens the Gradient category's custom editor (From, To, Angle, Swap) on the slide's
+two colours; the motion and its speed ride along, a motion picked next keeps them, and as they are
+not the theme's they stay put when the theme changes. Each motion starts in its own colouring. Then **Speed**, while
 the slide has a motion: a slider from 25% to 300% in quarter steps (100% is each motion's own
 pace), as the canvas's animated styles take one; dragging previews on the slide, letting go sets
 it once (one undo step, `Tab · Changed · PageBackgroundAnimatedSpeed`), and the speed carries to

@@ -79,3 +79,16 @@ describe('page backgrounds follow the theme', () => {
     expect((out.elements[0] as { textColor: string }).textColor).not.toBe('#0f172a');
   });
 });
+
+describe('custom animated colours and the theme', () => {
+  it('stay as they are when the theme changes', () => {
+    const own: PageFill = {
+      kind: 'gradient',
+      from: '#ff0066',
+      to: '#330099',
+      angle: 160,
+      motion: 'lava',
+    };
+    expect(followedFill(own, ocean, forest)).toBeUndefined();
+  });
+});

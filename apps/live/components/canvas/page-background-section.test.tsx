@@ -309,3 +309,43 @@ describe('the Animated speed', () => {
     });
   });
 });
+
+describe('Animated custom colours', () => {
+  const customFill = {
+    kind: 'gradient',
+    from: '#ff0066',
+    to: '#330099',
+    angle: 160,
+    motion: 'waves',
+    speed: 2,
+  } as const;
+  const slideWith = (fill: PageFill) => {
+    const onBackground = vi.fn();
+    onPreview = vi.fn();
+    render(
+      <BackgroundSection
+        page={
+          {
+            id: 's',
+            orientation: 'landscape',
+            kind: 'slide',
+            background: { fill },
+          } as IllustratePage
+        }
+        themePresets={theme}
+        onBackground={onBackground}
+        onPreview={onPreview}
+      />,
+    );
+    return onBackground;
+  };
+
+  it('marks Custom for colours that are not the theme’s, and keeps them through a motion change', () => {
+    const onBackground = slideWith(customFill as PageFill);
+    expect(radio('Custom colours').getAttribute('aria-checked')).toBe('true');
+    fireEvent.click(radio('Aurora'));
+    expect(onBackground).toHaveBeenLastCalledWith({
+      fill: expect.objectContaining({ from: '#ff0066', to: '#330099', motion: 'aurora', speed: 2 }),
+    });
+  });
+});

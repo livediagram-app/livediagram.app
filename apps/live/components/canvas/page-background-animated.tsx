@@ -25,6 +25,7 @@ import {
   type PageMotionColouringId,
 } from '@/lib/page-motion';
 import { track } from '@/lib/telemetry';
+import { CustomGradientEditor, RAINBOW } from './page-background-custom';
 import { PageMotionLayer } from './PageMotionLayer';
 
 // A tile's preview, 16:9 like the slide it stands for, in its own px.
@@ -61,21 +62,30 @@ export function AnimatedBackgroundChoices({
   const motion = fill?.kind === 'gradient' ? fill.motion : undefined;
   // The colouring the page's motion is in; once picked, it carries to the next motion chosen.
   const [chosen, setChosen] = useState<PageMotionColouringId | null>(null);
-  const current = colouringOf(theme, fill) ?? chosen ?? undefined;
+  // Colours of the author's own (Custom): kept through a motion change, and through a theme change
+  // (they are not the theme's).
+  const [customOpen, setCustomOpen] = useState(false);
+  const custom =
+    fill?.kind === 'gradient' && !!fill.motion && colouringOf(theme, fill) === undefined
+      ? fill
+      : null;
+  const current = custom ? undefined : (colouringOf(theme, fill) ?? chosen ?? undefined);
   // The page's speed carries to whatever motion or colouring is picked next.
   const speed = fill?.kind === 'gradient' ? (fill.speed ?? 1) : 1;
   const [dragSpeed, setDragSpeed] = useState<number | null>(null);
   const withSpeed = (f: PageFill, s: number): PageFill =>
     f.kind === 'gradient' && s !== 1 ? { ...f, speed: s } : f;
-  const fillFor = (id: PageMotion, colouring?: PageMotionColouringId) =>
-    withSpeed(
-      motionFill(
-        theme,
-        id,
-        colouring ?? current ?? PAGE_MOTION_CATALOGUE.find((m) => m.id === id)!.colouring,
-      ),
-      speed,
-    );
+  const fillFor = (id: PageMotion, colouring?: PageMotionColouringId): PageFill =>
+    !colouring && custom
+      ? { ...custom, motion: id }
+      : withSpeed(
+          motionFill(
+            theme,
+            id,
+            colouring ?? current ?? PAGE_MOTION_CATALOGUE.find((m) => m.id === id)!.colouring,
+          ),
+          speed,
+        );
   const shownSpeed = dragSpeed ?? speed;
   const commitSpeed = () => {
     if (dragSpeed === null || fill?.kind !== 'gradient' || !fill.motion) return;
@@ -152,6 +162,7 @@ export function AnimatedBackgroundChoices({
                 aria-label={c.label}
                 onClick={() => {
                   setChosen(c.id);
+                  setCustomOpen(false);
                   if (target) onPick(target);
                 }}
                 onPointerEnter={() => target && onPreview(target)}
@@ -166,7 +177,41 @@ export function AnimatedBackgroundChoices({
             </Tooltip>
           );
         })}
+        {motion ? (
+          <Tooltip label="Custom colours">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!!custom}
+              aria-label="Custom colours"
+              onClick={() => setCustomOpen(true)}
+              className={`flex h-7 w-7 items-center justify-center rounded-full ring-1 ring-inset ring-slate-900/10 transition hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 motion-reduce:hover:scale-100 dark:ring-white/15 ${
+                custom ? 'outline outline-2 outline-offset-2 outline-brand-500' : ''
+              }`}
+              style={{ background: custom ? fillCss(custom) : RAINBOW }}
+            >
+              {custom ? (
+                <CheckIcon className="h-3.5 w-3.5 text-white mix-blend-difference" />
+              ) : null}
+            </button>
+          </Tooltip>
+        ) : null}
       </div>
+      {/* The two colours of the author's own, as the Gradient category's custom editor sets them;
+          the motion and its speed ride along. */}
+      {(customOpen || custom) && fill?.kind === 'gradient' && motion ? (
+        <div className="mt-2">
+          <CustomGradientEditor
+            fill={fill}
+            onPreview={onPreview}
+            onPreviewEnd={() => onPreview(fill)}
+            onCommit={(f) => {
+              track('Tab', 'Changed', 'PageBackgroundAnimated');
+              onPick(f);
+            }}
+          />
+        </div>
+      ) : null}
       {motion ? (
         <div className="mt-3 flex flex-col gap-1">
           <div className="flex items-center justify-between">
