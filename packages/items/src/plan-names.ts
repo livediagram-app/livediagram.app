@@ -130,6 +130,20 @@ export interface FieldNaming {
   items: readonly Item[];
 }
 
+// A Choice option as written: the option itself, else the one option equal case and spacing aside, else the one
+// whose letters and digits match ("in-progress" for "In Progress"). Options of symbols alone ("★", "★★") match only
+// exactly, and a key two options share names neither, so a value is never stored as the wrong option.
+export function choiceOption(options: readonly string[], value: string): string | undefined {
+  if (options.includes(value)) return value;
+  const loose = (s: string) => s.normalize('NFKC').trim().toLowerCase().replace(/\s+/g, ' ');
+  const byCase = options.filter((o) => loose(o) === loose(value));
+  if (byCase.length === 1) return byCase[0];
+  const key = statusKey(value);
+  if (!key) return undefined;
+  const byKey = options.filter((o) => statusKey(o) === key);
+  return byKey.length === 1 ? byKey[0] : undefined;
+}
+
 // Fields as an agent writes them, for an item of `type`: built-in fields by id or interface name, custom fields
 // by id or name, a status by column name, an assignee by name, a parent or Card field by item number, a priority
 // or Choice option case aside. A key the type does not have is refused.
@@ -172,7 +186,7 @@ export function resolveFields(
     }
     const field = type.custom!.find((f) => f.id === key)!;
     if (field.kind === 'choice' && typeof value === 'string') {
-      const option = field.options?.find((o) => statusKey(o) === statusKey(value));
+      const option = choiceOption(field.options ?? [], value);
       if (!option)
         return refuse(
           'choice_unknown',

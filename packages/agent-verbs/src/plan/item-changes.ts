@@ -96,13 +96,42 @@ function personNote(fields: Readonly<Record<string, unknown>>, items: readonly I
   return [`${p.name} is a new name on this document, not linked to anyone's account`];
 }
 
-const setNote = (set: Readonly<Record<string, unknown>>, clear: readonly string[]) => {
+// The most of a value a set line repeats.
+const SET_VALUE_MAX = 40;
+
+// A value as a set line reads it back: what was stored, so a value that landed other than meant shows ("Rating =
+// ★"). A card link by its number, a person by name, a list by its length.
+function storedText(value: unknown, items: readonly Item[]): string {
+  if (isItemPerson(value)) return value.name;
+  if (Array.isArray(value)) return `${value.length} entr${value.length === 1 ? 'y' : 'ies'}`;
+  if (typeof value === 'string') {
+    const linked = items.find((i) => i.id === value);
+    if (linked) return `#${linked.key}`;
+    const one = value.split('\n')[0]!;
+    return JSON.stringify(one.length > SET_VALUE_MAX ? `${one.slice(0, SET_VALUE_MAX - 1)}…` : one);
+  }
+  return typeof value === 'object' && value !== null ? 'set' : String(value);
+}
+
+function setNote(
+  set: Readonly<Record<string, unknown>>,
+  clear: readonly string[],
+  type: ItemTypeDef,
+  items: readonly Item[],
+): string[] {
+  const name = (key: string) => type.custom?.find((f) => f.id === key)?.label ?? key;
   const parts = [
-    ...(Object.keys(set).length ? [`set ${Object.keys(set).join(', ')}`] : []),
-    ...(clear.length ? [`cleared ${clear.join(', ')}`] : []),
+    ...(Object.keys(set).length
+      ? [
+          `set ${Object.entries(set)
+            .map(([k, v]) => `${name(k)} = ${storedText(v, items)}`)
+            .join(', ')}`,
+        ]
+      : []),
+    ...(clear.length ? [`cleared ${clear.map(name).join(', ')}`] : []),
   ];
   return parts.length ? [parts.join('; ')] : [];
-};
+}
 
 export async function applyItemChanges(
   api: ApiClient,
@@ -144,13 +173,16 @@ export async function applyItemChanges(
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
         const set = fieldsFor(c.fields, type);
-        const clear = (c.clear ?? []).map((k) => must(fieldKeyOf(k, type)).key);
+        // A value a removed field left on the card is cleared by its key, though the type no longer has it.
+        const clear = (c.clear ?? []).map((k) =>
+          k in target.fields && !fieldKeyOf(k, type).ok ? k : must(fieldKeyOf(k, type)).key,
+        );
         const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
           ...(Object.keys(set).length ? { set } : {}),
           ...(clear.length ? { clear } : {}),
           ...(c.type ? { type: type.id } : {}),
         });
-        const notes = [...setNote(set, clear), ...personNote(set, items)];
+        const notes = [...setNote(set, clear, type, items), ...personNote(set, items)];
         keep(item);
         applied.push(line('~', item, state, notes));
       } else if (c.op === 'move') {

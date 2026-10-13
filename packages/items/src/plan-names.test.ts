@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import {
   assignedPeople,
+  choiceOption,
   personNamed,
   resolveFields,
   resolveItem,
@@ -156,6 +157,17 @@ describe('resolveFields', () => {
     expect(new Set(people.map((p) => p.color)).size).toBe(people.length);
     // The same name, with no one else around, is the same person and colour.
     expect(personNamed('Sam', [])).toEqual(first);
+  });
+
+  it('matches a Choice option exactly before loosely, never by symbols alone', () => {
+    const stars = ['★', '★★', '★★★'];
+    expect(choiceOption(stars, '★★')).toBe('★★');
+    expect(choiceOption(stars, '★★★★')).toBeUndefined();
+    expect(choiceOption(['In Progress', 'Done'], 'in progress')).toBe('In Progress');
+    expect(choiceOption(['In Progress', 'Done'], 'in-progress')).toBe('In Progress');
+    // Two options one key apart are told apart only exactly.
+    expect(choiceOption(['A-1', 'A 1'], 'a1')).toBeUndefined();
+    expect(choiceOption(['A-1', 'A 1'], 'A 1')).toBe('A 1');
   });
 
   it('names an ambiguous item', () => {

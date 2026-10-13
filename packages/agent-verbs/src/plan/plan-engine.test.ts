@@ -543,6 +543,19 @@ describe('apiRefusalOf', () => {
 });
 
 describe('change lines', () => {
+  it('clears a value a removed field left behind, by its key', async () => {
+    const left = [item(1, 'aaa111', { title: 'Old', status: 'todo~x', 'f-browser': 'Safari' })];
+    const { api: a, seen } = api({ [`/documents/${D}/items`]: { items: left, rev: 1 } });
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', clear: ['f-browser'] }],
+      await readPlanState(a, D),
+    );
+    expect(r.refusal).toBeUndefined();
+    expect(seen.find((c) => c.method === 'POST')?.body).toMatchObject({ clear: ['f-browser'] });
+  });
+
   it('names the fields a set changed and says when an assignee is a new name', async () => {
     const { api: a } = api();
     const r = await applyItemChanges(
@@ -551,7 +564,7 @@ describe('change lines', () => {
       [{ op: 'set', item: '#1', fields: { priority: 'high', assignee: 'Robin' }, clear: ['due'] }],
       await readPlanState(a, D),
     );
-    expect(r.applied[0]).toContain('; set priority, assignee; cleared due');
+    expect(r.applied[0]).toContain('; set priority = "high", assignee = Robin; cleared due');
     expect(r.applied[0]).toContain('Robin is a new name on this document');
   });
 
