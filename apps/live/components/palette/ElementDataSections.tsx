@@ -255,11 +255,7 @@ export function ElementDataSections({
       ) : null}
       {/* A Sheet's settings: the cog's sections, as a board's Board flyout. */}
       {shapeTarget?.shape === 'plan-sheet' ? (
-        <SheetMenuSection
-          element={shapeTarget}
-          flyoutProps={flyoutProps}
-          onClose={props.onClose}
-        />
+        <SheetMenuSection element={shapeTarget} flyoutProps={flyoutProps} onClose={props.onClose} />
       ) : null}
       {shapeTarget?.shape === 'plan-card' && shapeTarget.planCard ? (
         <PlanCardMenuSection
