@@ -654,7 +654,6 @@ export {
   text as svgText,
   wrapLines as svgWrapLines,
 } from './svg-render-face-kit';
-export { svgCardFace } from './svg-render-plan';
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the

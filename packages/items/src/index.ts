@@ -2,6 +2,7 @@
 // Plan board projection (docs/specs/026-plan/). Pure: no DOM, no dependencies.
 
 export * from './item';
+export * from './card-text';
 export * from './item-types';
 export * from './glyphs';
 export * from './type-catalogue';

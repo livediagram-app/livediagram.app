@@ -117,10 +117,11 @@ describe('plan shapes in exports', () => {
     expect(svg).toContain('To Do');
     expect(svg).toContain('In Progress');
     expect(svg).toContain('Fix &lt;login&gt;');
-    expect(svg).toContain('#7 · Task');
-    expect(svg).toContain('#8 · Note');
+    // Each card from its type's Display: the type and number in the header, the assignee at the bottom right.
+    expect(svg).toContain('>Task</text>');
+    expect(svg).toContain('>#7</text>');
+    expect(svg).toContain('>Note</text>');
     expect(svg).toContain('AR');
-    expect(svg).toContain('▲ 2');
     expect(svg).toContain('2 items');
     expect(svg).not.toContain('NaN');
   });
@@ -135,11 +136,11 @@ describe('plan shapes in exports', () => {
     const thread = { comments: [{ id: 'c1' }, { id: 'c2' }] };
     const talked = new Map([['item0001', item('item0001', { title: 'Hot', comments: thread })]]);
     const tall = { ...card, height: 80 } as BoxedElement;
-    expect(svgBoxed(tall, { items: talked })).toContain('>2</text>');
+    expect(svgBoxed(tall, { items: talked })).toContain('💬 2');
     const resolved = new Map([
       ['item0001', item('item0001', { title: 'Hot', comments: { ...thread, resolved: true } })],
     ]);
-    expect(svgBoxed(tall, { items: resolved })).not.toContain('>2</text>');
+    expect(svgBoxed(tall, { items: resolved })).not.toContain('💬 2');
   });
 
   it("follows a board's card fields for the comment count", () => {
@@ -153,8 +154,8 @@ describe('plan shapes in exports', () => {
       ...board,
       planBoard: { ...setup, cardFields: setup.cardFields.filter((f) => f !== 'comments') },
     };
-    expect(svgBoxed(on as BoxedElement, { items: talked })).toContain('>3</text>');
-    expect(svgBoxed(off as BoxedElement, { items: talked })).not.toContain('>3</text>');
+    expect(svgBoxed(on as BoxedElement, { items: talked })).toContain('💬 3');
+    expect(svgBoxed(off as BoxedElement, { items: talked })).not.toContain('💬 3');
   });
 
   it('draws empty columns without items, and a card placeholder', () => {
