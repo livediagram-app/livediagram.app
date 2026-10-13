@@ -168,7 +168,10 @@ export function useTemplateFlow(opts: {
     // A template may make several tabs (docs/specs/026-plan/plan-templates.md): the first lands here.
     const [first, ...rest] = templateTabs(kind);
     const rawElements = first!.build(centre.x, centre.y);
-    const theme = themeId ? getTheme(themeId) : null;
+    // The theme the scaffold is painted in: the picker's pick, else the tab's own theme, so a template started
+    // from an empty tab's start panel (which picks no theme) still lands in the colours the tab already wears
+    // (docs/specs/007-editor/start-diagramming.md "The panel"). Only an explicit pick switches the tab's backdrop below.
+    const theme = getTheme(themeId ?? tabs.find((t) => t.id === activeId)?.theme);
     // Repaint the scaffold with the chosen theme so the Mind map circles,
     // Org chart boxes etc. land in the user's selected colours rather
     // than the hard-coded brand defaults from `buildTemplate`. Sticky
@@ -184,7 +187,7 @@ export function useTemplateFlow(opts: {
     // Graph-aware recolour (multi-colour themes tint each branch a
     // different hue — docs/specs/011-theme/multicolour-themes.md); single-colour themes fall through to the
     // per-element transform unchanged.
-    const elements = !theme ? rawElements : recolourElementsForTheme(rawElements, theme);
+    const elements = recolourElementsForTheme(rawElements, theme);
     // Apply the picker's theme choice at the same time as the
     // template scaffold so the user lands on a fully themed canvas
     // in one step instead of having to revisit the Theme accordion.
@@ -207,7 +210,7 @@ export function useTemplateFlow(opts: {
       return {
         id: ids[i + 1]!,
         name: def.name ?? '',
-        elements: theme ? recolourElementsForTheme(raw, theme) : raw,
+        elements: recolourElementsForTheme(raw, theme),
         ...(def.tab ? { fields: def.tab(ids) } : {}),
       };
     });
@@ -219,8 +222,9 @@ export function useTemplateFlow(opts: {
     const firstKind = first!.tab?.(ids).kind;
     commitTabs((ts) =>
       landTemplateOnTab(ts, activeId, (active) => {
-        const backdrop =
-          theme && themeId ? switchThemeBackdrop(active, getTheme(active.theme), theme) : null;
+        const backdrop = themeId
+          ? switchThemeBackdrop(active, getTheme(active.theme), theme)
+          : null;
         const landed: Tab = {
           ...active,
           elements,
@@ -241,7 +245,7 @@ export function useTemplateFlow(opts: {
         };
         const withMode = { ...overrides, ...(opensIn ? { opensIn } : {}) };
         // A blank infographic's page starts on the theme's default background, as an added page.
-        const themed = withBlankPageThemed(landed, kind, theme ?? getTheme(landed.theme));
+        const themed = withBlankPageThemed(landed, kind, theme);
         return { landed: themed, followers: templateFollowerTabs(themed, followers, withMode) };
       }),
     );
