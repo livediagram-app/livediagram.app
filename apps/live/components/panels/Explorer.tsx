@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ProductNavLinks } from '@livediagram/ui';
 import { DocumentRowShell } from './DocumentRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
@@ -224,6 +224,13 @@ function ExplorerImpl({
         ? { kind: 'shared' }
         : null;
   const [section, pick] = useExplorerPanelSection(groups, currentSpace);
+  // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
+  const shown = !asPopover || popoverOpen === true;
+  useEffect(() => {
+    if (!shown) return;
+    document.body.setAttribute('data-explorer-open', '');
+    return () => document.body.removeAttribute('data-explorer-open');
+  }, [shown]);
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name;
   const badges: Record<string, number | undefined> = {
     shared: shared.length || undefined,
@@ -294,7 +301,6 @@ function ExplorerImpl({
       // Wide enough on a desktop for the rail beside a pane of the Explorer page's own views.
       width={isMobile ? 'w-auto' : 'w-[38rem] max-w-[calc(100vw-2rem)]'}
       popoverWidth={isMobile ? 'w-[calc(100vw-1rem)]' : 'w-[38rem]'}
-      popoverLayer="z-[calc(var(--z-chrome)+1)]"
       onReset={onReset}
       onMoveTo={onMoveTo}
       // The ⋯ menu (docs/specs/013-workspace/folders.md): new / open, share / export, then search /

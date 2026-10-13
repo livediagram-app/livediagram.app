@@ -208,6 +208,9 @@ Top to bottom:
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in notice** for a signed-out guest, at the foot of the pane (Minimal chrome drops it).
 
+While the panel is open, the trays that hang from the palette strip (a tab's "is empty" tray, the mode banners) step
+aside: the panel reaches under the strip and they would cover its header.
+
 ### The rail
 
 The rail is the sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox, Timeline,
