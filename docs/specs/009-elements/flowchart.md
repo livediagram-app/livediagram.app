@@ -91,6 +91,12 @@ that Decision says Yes yet, else **"No"** if none says No; a third exit is unlab
 are ordinary arrow labels: edit them to anything. The rule applies however the exit was made: Tab,
 Add Step, the ring, or drawing an arrow from the Decision to another step of the chart.
 
+**A Decision's exits leave by its corners.** An exit that carries straight on along the flow leaves by
+the flow's face; any other leaves by the side corner facing its step (left or right flowing down, top
+or bottom flowing right) and turns once into it. Every other connector runs straight when its ends line
+up and otherwise bends twice: along the flow to halfway, across, and on into the step. A connector made
+curved keeps its curve.
+
 **Connecting existing steps** is drawing an arrow, as on any shape. An arrow pinned at both ends to
 steps of the same chart joins the chart (a merge or a loop) and the chart is laid out again.
 

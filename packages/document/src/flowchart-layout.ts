@@ -31,6 +31,7 @@ import {
   type FlowchartDirection,
 } from './flowchart';
 import { laneSizeOfElement } from './lane-gutter';
+import { orthogonalBends } from './arrow-orthogonal';
 import type {
   Anchor,
   ArrowElement,
@@ -57,13 +58,21 @@ export type FlowchartLaneRect = {
   textAlignY: TextAlignY;
 };
 
+export type FlowchartConnectorRoute = {
+  from: Anchor;
+  to: Anchor;
+  // Absent: the connector keeps its own (a curved one is the author's to shape).
+  arrowStyle?: 'straight' | 'angled';
+  curvePoints?: { dx: number; dy: number }[];
+};
+
 export type FlowchartLayout = {
   /** New top-lefts of the steps that move. */
   steps: Map<ElementId, Pt>;
   /** New geometry and title alignment of the chart's lanes. */
   lanes: Map<ElementId, FlowchartLaneRect>;
-  /** New faces of the chart's connectors. */
-  connectors: Map<ElementId, { from: Anchor; to: Anchor }>;
+  /** New route of the chart's connectors: faces, and for a straight or angled one its style and bends. */
+  connectors: Map<ElementId, FlowchartConnectorRoute>;
 };
 
 export type FlowchartLayoutOptions = {
@@ -134,21 +143,83 @@ export function layoutFlowchart(
       out.lanes.set(lane.id, r);
   }
 
-  // Faces from the final centres, on the flow's axis.
+  // Faces from the final centres, on the flow's axis; then the route between them. A straight or
+  // angled connector is the layout's to route ("Angled lines bend twice" in layout-cleanup.md): down
+  // to halfway, across, then down into the step, or one straight run when its ends line up (an angled
+  // style with nothing to bend draws a zero-length elbow and turns its head sideways).
   const centres = new Map<ElementId, Pt>();
   for (const s of all) {
     const p = out.steps.get(s.id) ?? { x: s.x, y: s.y };
     centres.set(s.id, centreOf({ ...s, ...p }));
   }
   const axis = dir === 'down' ? 'TB' : 'LR';
+  const faced = new Map<ElementId, ArrowElement>();
   for (const c of connectors) {
     if (locked(c) || c.from.kind !== 'pinned' || c.to.kind !== 'pinned') continue;
     const re = reanchorArrow(c, centres, axis);
     if (re.from.kind !== 'pinned' || re.to.kind !== 'pinned') continue;
-    if (re.from.anchor !== c.from.anchor || re.to.anchor !== c.to.anchor)
-      out.connectors.set(c.id, { from: re.from.anchor, to: re.to.anchor });
+    // reanchorArrow straightens every arrow it touches; the style is decided below instead.
+    faced.set(c.id, { ...c, from: re.from, to: re.to });
+  }
+  const laid = (elements as Element[]).map((el) => {
+    const p = out.steps.get(el.id);
+    if (p && el.type === 'shape') return { ...el, ...p };
+    return faced.get(el.id) ?? el;
+  });
+  for (const c of connectors) {
+    const f = faced.get(c.id);
+    if (!f || f.from.kind !== 'pinned' || f.to.kind !== 'pinned') continue;
+    const route: FlowchartConnectorRoute = { from: f.from.anchor, to: f.to.anchor };
+    const side = decisionSideExit(f, all, centres, dir);
+    if (side && c.arrowStyle !== 'curved') {
+      // Out of the Decision's side corner, across, and into the step: one bend, an L.
+      route.from = side;
+      route.arrowStyle = 'angled';
+    } else if (c.arrowStyle !== 'curved') {
+      const bends = orthogonalBends(f, laid, axis);
+      route.arrowStyle = bends ? 'angled' : 'straight';
+      if (bends)
+        route.curvePoints = bends.map((b) => ({ dx: Math.round(b.dx), dy: Math.round(b.dy) }));
+    }
+    if (!sameRoute(c, route)) out.connectors.set(c.id, route);
   }
   return out;
+}
+
+/**
+ * A Decision's exit that does not carry straight on leaves by a side corner
+ * (docs/specs/009-elements/flowchart.md "Connectors"): the corner facing its step across the flow. The
+ * exit lined up with the Decision keeps the flow's face, and a loop back up keeps the face it has.
+ */
+function decisionSideExit(
+  c: ArrowElement,
+  steps: readonly ShapeElement[],
+  centres: Map<ElementId, Pt>,
+  dir: FlowchartDirection,
+): Anchor | undefined {
+  if (c.from.kind !== 'pinned' || c.to.kind !== 'pinned') return undefined;
+  const fromId = c.from.elementId;
+  const source = steps.find((s) => s.id === fromId);
+  if (!source || source.shape !== 'diamond') return undefined;
+  const a = centres.get(fromId);
+  const b = centres.get(c.to.elementId);
+  if (!a || !b) return undefined;
+  const ahead = dir === 'down' ? b.y - a.y : b.x - a.x;
+  const across = dir === 'down' ? b.x - a.x : b.y - a.y;
+  if (ahead <= 0 || Math.abs(across) < 1) return undefined;
+  if (dir === 'down') return across < 0 ? 'w' : 'e';
+  return across < 0 ? 'n' : 's';
+}
+
+const sameBends = (a: ArrowElement['curvePoints'], b: FlowchartConnectorRoute['curvePoints']) =>
+  (a ?? []).length === (b ?? []).length &&
+  (a ?? []).every((p, i) => p.dx === b![i]!.dx && p.dy === b![i]!.dy);
+
+function sameRoute(c: ArrowElement, r: FlowchartConnectorRoute): boolean {
+  if (c.from.kind !== 'pinned' || c.to.kind !== 'pinned') return false;
+  if (c.from.anchor !== r.from || c.to.anchor !== r.to) return false;
+  if (r.arrowStyle === undefined) return true;
+  return (c.arrowStyle ?? 'straight') === r.arrowStyle && sameBends(c.curvePoints, r.curvePoints);
 }
 
 type Placed = { steps: Map<ElementId, Pt>; lanes: Map<ElementId, FlowchartLaneRect> };
@@ -301,7 +372,7 @@ function layoutLaned(
 }
 
 /**
- * Apply a layout as PATCHES: position on a step, geometry and title alignment on a lane, faces on a
+ * Apply a layout as PATCHES: position on a step, geometry and title alignment on a lane, route on a
  * connector, nothing else. Run inside the commit against the elements as they stand then, so a label
  * committed a moment earlier is never overwritten by the copy the layout was computed from.
  */
@@ -313,13 +384,19 @@ export function applyFlowchartLayout(elements: Element[], layout: FlowchartLayou
     if (p && el.type === 'shape') return { ...el, x: p.x, y: p.y };
     const lane = layout.lanes.get(el.id);
     if (lane && el.type === 'shape') return { ...el, ...lane };
-    const faces = layout.connectors.get(el.id);
-    if (faces && el.type === 'arrow' && el.from.kind === 'pinned' && el.to.kind === 'pinned')
-      return {
+    const route = layout.connectors.get(el.id);
+    if (route && el.type === 'arrow' && el.from.kind === 'pinned' && el.to.kind === 'pinned') {
+      const next: ArrowElement = {
         ...el,
-        from: { ...el.from, anchor: faces.from },
-        to: { ...el.to, anchor: faces.to },
+        from: { ...el.from, anchor: route.from },
+        to: { ...el.to, anchor: route.to },
       };
+      if (route.arrowStyle === undefined) return next;
+      next.arrowStyle = route.arrowStyle;
+      if (route.curvePoints) next.curvePoints = route.curvePoints;
+      else delete next.curvePoints;
+      return next;
+    }
     return el;
   });
 }

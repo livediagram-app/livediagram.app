@@ -152,8 +152,17 @@ const ILLUSTRATE: PaletteLayout = {
     { id: 'my-shapes' },
     // The page is the canvas here, so no Page element; and no Annotation, a diagram's marker.
     { id: 'write', tiles: tilesExcept('write', 'tools:page', 'tools:annotation') },
-    // Mind maps, lanes and frames organise a diagram, not a visual page.
-    { id: 'build', tiles: tilesExcept('build', 'tools:mind-node', 'tools:lane', 'tools:frame') },
+    // Mind maps, flowcharts, lanes and frames organise a diagram, not a visual page.
+    {
+      id: 'build',
+      tiles: tilesExcept(
+        'build',
+        'tools:mind-node',
+        'tools:flowchart',
+        'tools:lane',
+        'tools:frame',
+      ),
+    },
     // The web blocks, without the data-model Entity.
     { id: 'components', tiles: tilesExcept('components', 'tools:entity') },
     { id: 'devices' },

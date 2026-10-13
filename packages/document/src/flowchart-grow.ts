@@ -159,14 +159,17 @@ export function planFlowchartStep(
   };
 }
 
-/** Land a growth plan: the layout's patches, then the step and its connector. */
+/**
+ * Land a growth plan: the step and its connector (dressed by the caller, if it likes), then the
+ * layout over everything, so the new connector takes its route too.
+ */
 export function applyFlowchartStep(
   elements: Element[],
   plan: FlowchartStepPlan,
-  step = plan.step,
-  connector = plan.connector,
+  step: ShapeElement = plan.step,
+  connector: ArrowElement = plan.connector,
 ): Element[] {
-  return [...applyFlowchartLayout(elements, plan.layout), step, connector];
+  return applyFlowchartLayout([...elements, step, connector], plan.layout);
 }
 
 /** A step's type changed (its kind and size, about its old centre), then the chart laid out. */

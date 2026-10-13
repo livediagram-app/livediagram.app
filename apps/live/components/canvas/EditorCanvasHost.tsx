@@ -108,6 +108,7 @@ export function EditorCanvasHost() {
     addLinkCard,
     addVideo,
     addProcess,
+    addFlowchart,
     addRailPointSelected,
     addShape,
     addStatRow,
@@ -311,6 +312,7 @@ export function EditorCanvasHost() {
     appendWebRowTo,
     setHeroCaptionLine,
     growMindNode,
+    flowchartActions,
     mindOutline,
     tidyMindMap,
     abandonMindNode,
@@ -760,6 +762,7 @@ export function EditorCanvasHost() {
         onAddCallout={addCallout}
         onAddStatRow={addStatRow}
         onAddProcess={addProcess}
+        onAddFlowchart={addFlowchart}
         onAddAvatar={addAvatar}
         onAddText={addText}
         onAddSticky={addSticky}
@@ -1105,6 +1108,7 @@ export function EditorCanvasHost() {
         onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
         onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
         onGrowMindNode={growMindNode}
+        flowchartActions={isReadOnly ? undefined : flowchartActions}
         canEditMindOutline={mindOutline.canEdit}
         onEditMindOutline={mindOutline.open}
         onTidyMindMap={tidyMindMap}

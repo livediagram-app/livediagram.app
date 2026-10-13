@@ -485,6 +485,7 @@ export * from './nearest-towards';
 export * from './flowchart';
 export * from './flowchart-layout';
 export * from './flowchart-grow';
+export * from './flowchart-settle';
 export * from './mind-flow';
 export * from './mind-connector-route';
 export * from './mind-map';

@@ -28,6 +28,7 @@ import {
   setFlowchartDirection,
 } from './flowchart-grow';
 import { duplicateElements } from './duplicate';
+import { elementKindLabel } from './element-kind-label';
 import type { ArrowElement, Element, ShapeElement } from './index';
 
 // docs/specs/009-elements/flowchart.md and its blueprint.
@@ -75,6 +76,11 @@ describe('steps and charts', () => {
       expect(flowchartStepTypeOf(FLOWCHART_STEP_KIND[t])).toBe(t);
     expect(new Set(Object.values(FLOWCHART_STEP_KIND)).size).toBe(FLOWCHART_STEP_TYPES.length);
     expect(flowchartStepTypeOf('star')).toBeUndefined();
+  });
+
+  it('a step is named by its step type, a plain shape by its kind', () => {
+    expect(elementKindLabel(step('d', 'decision'))).toBe('Decision');
+    expect(elementKindLabel({ ...step('d', 'decision'), flowchartId: undefined })).toBe('Diamond');
   });
 
   it('the palette start is a Start reading "Start" whose id is its chart', () => {
@@ -341,6 +347,60 @@ describe('growth', () => {
     expect(
       planFlowchartStep([{ ...step('a'), flowchartId: undefined }], 'a', 'next', ids()),
     ).toBeNull();
+  });
+});
+
+describe('connector routes', () => {
+  it("sends a Decision's exits out of its side corners when neither carries straight on", () => {
+    const d: ShapeElement = {
+      ...createFlowchartStep('decision', 0, 0),
+      id: CHART,
+      flowchartId: CHART,
+    };
+    const first = grow([d], CHART);
+    const lone = first.els.find((e) => e.id === first.plan.connector.id) as ArrowElement;
+    expect(lone.arrowStyle).toBe('straight');
+    expect(lone.from).toMatchObject({ anchor: 's' });
+    const second = grow(first.els, CHART);
+    const yes = second.els.find((e) => e.id === first.plan.connector.id) as ArrowElement;
+    const no = second.els.find((e) => e.id === second.plan.connector.id) as ArrowElement;
+    expect(yes).toMatchObject({ arrowStyle: 'angled', from: { anchor: 'w' }, to: { anchor: 'n' } });
+    expect(no).toMatchObject({ arrowStyle: 'angled', from: { anchor: 'e' }, to: { anchor: 'n' } });
+    expect(yes.curvePoints).toBeUndefined();
+  });
+
+  it("turns a Decision's exits out of its top and bottom corners when the chart flows right", () => {
+    const els: Element[] = [
+      { ...step(CHART, 'decision'), flowDirection: 'right' },
+      step('a'),
+      step('b'),
+      link(CHART, 'a', 'Yes'),
+      link(CHART, 'b', 'No'),
+    ];
+    const laid = relayoutFlowchart(els, CHART);
+    const anchors = [`${CHART}-a`, `${CHART}-b`].map(
+      (id) => ((laid.find((e) => e.id === id) as ArrowElement).from as { anchor: string }).anchor,
+    );
+    expect(anchors.sort()).toEqual(['n', 's']);
+  });
+
+  it("bends a Process's offset branches twice", () => {
+    const start = createFlowchartStart(0, 0);
+    const a = grow([start], start.id);
+    const b = grow(a.els, a.plan.step.id, 'parallel');
+    const c = b.els.find((e) => e.id === b.plan.connector.id) as ArrowElement;
+    expect(c.arrowStyle).toBe('angled');
+    expect(c.curvePoints).toHaveLength(2);
+  });
+
+  it("leaves a curved connector's look alone", () => {
+    const els = [
+      step(CHART),
+      step('b', 'process', 400, 400),
+      { ...link(CHART, 'b'), arrowStyle: 'curved' as const },
+    ];
+    const c = relayoutFlowchart(els, CHART).find((e) => e.id === `${CHART}-b`) as ArrowElement;
+    expect(c.arrowStyle).toBe('curved');
   });
 });
 
