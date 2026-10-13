@@ -13,7 +13,6 @@ import { track } from '@/lib/telemetry';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { ShowMeButton, ShowMeStage } from './ShowMe';
 import { isOnScreen } from './tour-dom';
-import { resetPageTour, tidyPageTour } from './page-tour-dom';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
 /** The page's panel, opened on a tab or closed, through the request IllustratePages follows. */
@@ -69,11 +68,12 @@ export function usePageTour(editable: (pageId: string) => boolean): {
   useEffect(() => {
     if (!gone) return;
     stop();
-    tidyPageTour(pageId);
+    // The steps' module is in by now: the tour ran on them.
+    void import('./page-tour-steps').then((m) => m.tidyPageTour(pageId));
     PAGE_PANEL.closePanel();
   }, [gone, stop, pageId]);
   const freeze = async (pageId: string, kind: PageKind) => {
-    const { shownPageTourSteps } = await import('./page-tour-steps');
+    const { shownPageTourSteps, resetPageTour } = await import('./page-tour-steps');
     const api = { pageId, ...PAGE_PANEL };
     const next = shownPageTourSteps(
       kind,

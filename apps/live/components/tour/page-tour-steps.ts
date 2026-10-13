@@ -9,6 +9,9 @@ import type { PageTourApi, PageTourNow, PageTourStep } from './page-tour-api';
 import { SLIDE_WELCOME, slideTourSteps } from './slide-tour-steps';
 import { stepTelemetryType } from './tour-step';
 
+// The DOM tidy-up a page's tour needs, loaded with its steps so neither sits in the editor's first load.
+export { resetPageTour, tidyPageTour } from './page-tour-dom';
+
 /** A kind's steps, fixed from what is showing now. */
 export function pageTourSteps(kind: PageKind, now: PageTourNow): PageTourStep[] {
   switch (kind) {
