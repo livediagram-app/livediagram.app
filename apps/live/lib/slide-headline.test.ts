@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
 import type { Tab } from '@livediagram/document';
 import { presentedSlideName, slideHeadline, SLIDE_HEADLINE_MAX } from './slide-headline';
 
@@ -66,5 +67,20 @@ describe('presentedSlideName', () => {
   });
   it('and only then its place', () => {
     expect(presentedSlideName(slide([]), undefined, 2)).toBe('Slide 3');
+  });
+  it('names a 100-slide deck on a 2,000-element tab well inside a frame', () => {
+    const els = Array.from({ length: 2000 }, (_, i) => text(`e${i}`, i, `Label ${i}`));
+    const big = tab(els);
+    const slides = Array.from({ length: 100 }, (_, s) => ({
+      id: `s${s}`,
+      tabId: 't',
+      elementIds: els.slice(s * 20, s * 20 + 20).map((e) => e.id),
+    }));
+    let names: string[] = [];
+    const spent = cpuMsOf(() => {
+      names = slides.map((sl, i) => presentedSlideName(sl, big, i));
+    });
+    expect(names[3]).toBe('Label 60');
+    expect(spent).toBeLessThan(50);
   });
 });

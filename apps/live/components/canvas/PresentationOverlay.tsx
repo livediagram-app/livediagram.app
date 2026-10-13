@@ -16,7 +16,7 @@
 // advances. A click while a popover is open dismisses it rather than
 // advancing, so reading a note never costs you a slide.
 
-import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { announce } from '@/lib/announcer';
 import { isPressableControl } from '@livediagram/ui';
 import { itemTitle } from '@livediagram/items';
@@ -69,6 +69,19 @@ export function PresentationOverlay({
     const item = slide.itemId ? plan?.items.get(slide.itemId) : undefined;
     return item ? itemTitle(item) : undefined;
   };
+  // The jump list's names, worked out once per deck: naming a slide reads its elements, and the overlay
+  // re-renders on every clock tick.
+  const jumpSlides = useMemo(
+    () =>
+      steps.map((st, i) => {
+        const item = st.slide.itemId ? plan?.items.get(st.slide.itemId) : undefined;
+        return {
+          id: st.slide.id,
+          label: presentedSlideName(st.slide, st.tab, i, item ? itemTitle(item) : undefined),
+        };
+      }),
+    [steps, plan],
+  );
   const [notesOpen, setNotesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [jumpOpen, setJumpOpen] = useState(false);
@@ -432,10 +445,7 @@ export function PresentationOverlay({
             });
           }}
           showPosition={config.showPosition}
-          slides={steps.map((st, i) => ({
-            id: st.slide.id,
-            label: presentedSlideName(st.slide, st.tab, i, cardTitleOf(st.slide)),
-          }))}
+          slides={jumpSlides}
           jumpOpen={jumpOpen}
           onToggleJump={() => setJumpOpen((v) => !v)}
           onJump={(i) => {
