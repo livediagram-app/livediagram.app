@@ -9,6 +9,7 @@ import type { LaidOutPage } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
 import { CloseIcon, Tooltip } from '@livediagram/ui';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
+import { ChangeThemeButton } from './ChangeThemeButton';
 import { LayoutBrowser } from './infographic-page-layouts-section';
 
 // The card's width in screen px; the host shows it only on a page with room for it.
@@ -23,6 +24,7 @@ export function EmptyPageLayouts({
   onApply,
   onHide,
   onBlank,
+  onChangeTheme,
   wide = false,
 }: {
   page: LaidOutPage;
@@ -31,6 +33,8 @@ export function EmptyPageLayouts({
   onHide: () => void;
   // Start From Scratch: the page starts from nothing, and the card is not offered on it again.
   onBlank: () => void;
+  // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
+  onChangeTheme?: (() => void) | undefined;
   // The wide card (EMPTY_PAGE_LAYOUTS_WIDE_WIDTH, four across).
   wide?: boolean;
 }) {
@@ -57,16 +61,19 @@ export function EmptyPageLayouts({
           >
             Start From a Layout
           </p>
-          <Tooltip label="Hide">
-            <button
-              type="button"
-              aria-label="Hide"
-              onClick={onHide}
-              className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-            >
-              <CloseIcon />
-            </button>
-          </Tooltip>
+          <div className="flex items-center gap-1">
+            {onChangeTheme ? <ChangeThemeButton onClick={onChangeTheme} /> : null}
+            <Tooltip label="Hide">
+              <button
+                type="button"
+                aria-label="Hide"
+                onClick={onHide}
+                className="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <CloseIcon />
+              </button>
+            </Tooltip>
+          </div>
         </div>
         {/* A long category scrolls inside the card rather than running off the page. */}
         <div className="-mr-1 max-h-[380px] overflow-y-auto pr-1">

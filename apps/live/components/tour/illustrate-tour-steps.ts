@@ -25,7 +25,7 @@ export const ILLUSTRATE_TOUR_STEPS: IllustrateTourStep[] = [
   {
     id: 'page-settings',
     title: 'Page Settings',
-    body: "The cog opens this page's settings, such as its size. Beside it, Layout starts the page from a ready-made design, Tidy Up straightens it and Background paints it.",
+    body: "The cog opens this page's settings, such as its size. Beside it, Layout starts the page from a ready-made design, Tidy straightens it and Background paints it.",
     target: 'page-cog',
   },
   {

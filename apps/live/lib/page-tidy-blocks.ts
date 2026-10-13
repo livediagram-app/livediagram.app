@@ -1,4 +1,4 @@
-// The blocks an infographic page's Tidy Up moves (docs/specs/007-editor/illustrate-pages.md "Tidy Up";
+// The blocks an infographic page's Tidy Up moves (docs/specs/007-editor/illustrate-pages.md "Tidy";
 // lib/page-tidy.ts): the page's elements as a forest, each element carrying what it wholly holds,
 // and the rect arithmetic the steps share.
 import { type BoxedElement, type ElementId } from '@livediagram/document';

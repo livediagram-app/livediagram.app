@@ -94,9 +94,11 @@ export type IllustratePageEdits = {
   setLocked: (pageId: string, locked: boolean) => void;
   // Blank chosen on the page's Start From a Layout card: the card is not offered there again.
   startBlank: (pageId: string) => void;
-  // An infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy Up"): its
+  // An infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy"): its
   // elements aligned and spaced, one edit; a page already tidy says so and writes nothing.
   tidyPage?: (pageId: string) => void;
+  // Whether a Tidy would change the page: its button shows only then.
+  canTidy?: (pageId: string) => boolean;
   // The tidied page drawn in place while the button is hovered (a preview, writing nothing); null
   // puts it back.
   previewTidy?: (pageId: string | null) => void;
@@ -122,6 +124,15 @@ const KIND_ADDED_EVENT: Record<PageKind, string> = {
   slide: 'SlidePageAdded',
   logo: 'LogoPageAdded',
 };
+
+// Whether a page would change under a Tidy, by tab and page, with what the answer was for: the
+// page's own elements (as objects, so an edit elsewhere keeps it), the layers (a lock) and the page
+// list. Bounded: past TIDY_MEMO_MAX entries it starts over.
+const TIDY_MEMO = new Map<
+  string,
+  { on: readonly Tab['elements'][number][]; layers: unknown; pages: string; can: boolean }
+>();
+const TIDY_MEMO_MAX = 256;
 
 export function illustratePageEdits({
   tabId,
@@ -480,6 +491,29 @@ export function illustratePageEdits({
     track('Tab', 'Aligned', 'PageTidyUp');
     debugLog('[illustrate-page] tidied', { tabId, pageId });
   };
+  // Remembered per page while its own elements stay as they are, so a pan or a zoom (which
+  // re-renders every title bar) and an edit on another page rerun no tidy (3 to 8 ms a page).
+  const canTidy = (pageId: string): boolean => {
+    const pages = JSON.stringify(current);
+    const ids = elementIdsOnPage(elements, laidOut, pageId);
+    const on = elements.filter((el) => ids.has(el.id));
+    const key = `${tabId}|${pageId}`;
+    const hit = TIDY_MEMO.get(key);
+    if (
+      hit &&
+      hit.layers === layers &&
+      hit.pages === pages &&
+      hit.on.length === on.length &&
+      hit.on.every((el, k) => el === on[k])
+    ) {
+      return hit.can;
+    }
+    const can =
+      tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId) !== null;
+    if (TIDY_MEMO.size >= TIDY_MEMO_MAX) TIDY_MEMO.clear();
+    TIDY_MEMO.set(key, { on, layers, pages, can });
+    return can;
+  };
   const previewTidy = (pageId: string | null) => {
     const shown = pageId
       ? tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId)
@@ -494,6 +528,7 @@ export function illustratePageEdits({
   const room = current.length < MAX_ILLUSTRATE_PAGES;
   return {
     tidyPage,
+    canTidy,
     previewTidy,
     previewInk,
     setOrientation,

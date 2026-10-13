@@ -1,6 +1,6 @@
 // The Illustrate page title bar's buttons (docs/specs/007-editor/illustrate-pages.md "Beside the
 // cog"), drawn once for every scene that shows a page: Layout (PageLayoutsButton.tsx, the
-// panels-top-left glyph), Tidy Up (PageTidyUpButton.tsx, the broom), Background
+// panels-top-left glyph), Tidy (PageTidyUpButton.tsx, the broom), Background
 // (PageBackgroundButton.tsx, the paint roller) and the page's padlock (PageLockButton.tsx). Each
 // glyph is drawn about 12 units square around its centre; `TitleButton` frames one as the title
 // bar does, named beside its icon while the page has room, tinted while its popover is open.
@@ -28,7 +28,7 @@ export function LayoutGlyph({ cx, cy, on }: GlyphProps) {
   );
 }
 
-/** Tidy Up: a broom, its handle up to the right and its head fanned down to the left. */
+/** Tidy: a broom, its handle up to the right and its head fanned down to the left. */
 export function TidyUpGlyph({ cx, cy, on }: GlyphProps) {
   return (
     <g

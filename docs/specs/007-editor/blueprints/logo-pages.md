@@ -178,7 +178,7 @@ Exclude), **Wordmark**, **Logo Kit**.
 
 ### Beside the cog (`apps/live/components/canvas/LogoTitleBar.tsx`)
 
-- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy Up (`lucideWandSparkles`; a
+- Before the cog, cog-sized (`h-6 w-6`) `Tooltip` buttons: Tidy (`lucideWandSparkles`; a
   `TidyUpButton` re-rendered by `useSelectionOf`, mounted only with the editor context and a
   selection store, `useHasSelectionStore`), Mirror (`MirrorAxisGlyph` of the page's axis) and
   Guides (`lucideGrid3x3`), the last two `aria-pressed` while on. Both are `TitlePopoverButton`s
@@ -485,7 +485,7 @@ Measured (vitest on this branch):
 
 - Copy: card **Logo** "A square artboard for a logo, with guides and drawing tools."; panel tabs
   **Background**, **Layouts**; in-page card **Start From a Layout** with **Start From Scratch**;
-  title bar **Tidy Up** (tooltip "Tidy Up: straighten the selected drawing"), **Mirror**,
+  title bar **Tidy** (tooltip "Tidy: straighten the selected drawing"), **Mirror**,
   **Guides** (tooltip "<name>: on" while on); Guides popover: **Show Guides**, the six part tiles,
   **Strength**; menu item **Mirror Copy**; Mirror popover:
   **Mirror While Drawing**, **Axis** (Vertical, Horizontal, Both, Radial), **Copies**, **Merge Into

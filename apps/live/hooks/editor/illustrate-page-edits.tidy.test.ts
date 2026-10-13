@@ -5,8 +5,19 @@ import { clearLocalPreview, localPreview } from '@/lib/drag-preview';
 import { illustratePageEdits } from './illustrate-page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+const tidyRuns = vi.hoisted(() => ({ count: 0 }));
+vi.mock('@/lib/page-tidy', async (real) => {
+  const mod = await real<typeof import('@/lib/page-tidy')>();
+  return {
+    ...mod,
+    tidyPageElements: (...args: Parameters<typeof mod.tidyPageElements>) => {
+      tidyRuns.count += 1;
+      return mod.tidyPageElements(...args);
+    },
+  };
+});
 
-// docs/specs/007-editor/illustrate-pages.md "Tidy Up": an infographic page's Tidy Up, one edit.
+// docs/specs/007-editor/illustrate-pages.md "Tidy": an infographic page's Tidy, one edit.
 // Page 1 (A4 portrait) spans x -397..397; its content box starts at x -341.
 const box = (id: string, x: number, y: number, more = {}) =>
   ({ id, type: 'shape', shape: 'square', x, y, width: 100, height: 80, ...more }) as Element;
@@ -46,6 +57,46 @@ const pageTab = (elements: Element[], page: Record<string, unknown> = {}): Tab =
 beforeEach(() => {
   vi.mocked(track).mockClear();
   clearLocalPreview();
+});
+
+describe('whether Tidy shows', () => {
+  it('shows only while a press would change the page, and answers again after an edit', () => {
+    const tidy = pageTab([box('a', -341, -305.5), box('b', -341, -105.5)]);
+    expect(harness(tidy).edits().canTidy!('page-1')).toBe(false);
+    // An empty page has nothing to tidy.
+    expect(harness(tidy).edits().canTidy!('page-2')).toBe(false);
+    const messy = pageTab([box('a', -200, -300), box('b', -196, -100)]);
+    const h = harness(messy);
+    expect(h.edits().canTidy!('page-1')).toBe(true);
+    h.edits().tidyPage!('page-1');
+    expect(h.edits().canTidy!('page-1')).toBe(false);
+  });
+
+  it('remembers the answer for the same board, so a re-render reruns no tidy', () => {
+    const h = harness(pageTab([box('a', -200, -300), box('b', -196, -100)]));
+    tidyRuns.count = 0;
+    // Each render builds its edits afresh, with a fresh page list.
+    for (let i = 0; i < 100; i++) h.edits().canTidy!('page-1');
+    expect(tidyRuns.count).toBe(1);
+  });
+
+  it("keeps a page's answer through an edit on another page", () => {
+    const other = box('far', 794 + 96 + 13, 0);
+    const tab = pageTab([box('a', -200, -300), box('b', -196, -100), other]);
+    const h = harness(tab);
+    h.edits().canTidy!('page-1');
+    tidyRuns.count = 0;
+    h.commitTabs((ts) =>
+      ts.map((t) => ({
+        ...t,
+        elements: t.elements.map((e) =>
+          e.id === 'far' ? ({ ...e, x: (e as { x: number }).x + 40 } as typeof e) : e,
+        ),
+      })),
+    );
+    expect(h.edits().canTidy!('page-1')).toBe(true);
+    expect(tidyRuns.count).toBe(0);
+  });
 });
 
 describe('Tidy Up a page', () => {

@@ -818,6 +818,7 @@ function CanvasView(props: CanvasProps) {
                   // Zen, presenting and the isometric view show the sheets alone: no labels, cogs,
                   // layout invites or add button.
                   bare={props.zenMode === true || canvasTool === 'isometric'}
+                  onOpenTheme={props.onOpenCanvasTheme}
                 />
               </PageImageAccessProvider>
             ) : null}

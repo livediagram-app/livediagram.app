@@ -84,7 +84,7 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
   than the window.
 - Top to bottom: on a logo page, **Show Me** and **Help** ([Logo pages](logo-pages.md) "Show Me"); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs: **Page**
-  alone on an infographic page, with no tab switch (its Layout, Tidy Up and Background are the
+  alone on an infographic page, with no tab switch (its Layout, Tidy and Background are the
   buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its
   Layout is the button beside the cog); an article page:
   **Page**, **Background**, **Style** and **Text**, [Article pages](article-pages.md) "Article style";
@@ -421,8 +421,8 @@ Image category: a logo goes over other things, so its artboard stays a colour or
 
 ### Beside the cog
 
-**Named while there is room.** On a desktop the title bar's buttons (Layout, Tidy Up, Background,
-the lock, a logo page's Tidy Up, Mirror and Guides) name themselves beside their icons only while
+**Named while there is room.** On a desktop the title bar's buttons (Layout, Tidy, Background,
+the lock, a logo page's Tidy, Mirror and Guides) name themselves beside their icons only while
 the page is wide enough on screen to hold them named and still leave the label its least room
 (40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
@@ -439,11 +439,12 @@ no Background button (its panel says it is locked). The page label truncates bef
 and logo pages keep their background in the panel only. Opening it is tracked as
 `UI / Opened / PageBackgroundButton`.
 
-### Tidy Up
+### Tidy
 
-An infographic page's title bar holds a **Tidy Up** button left of its Background button, the
-cog's size with a tooltip ("Tidy Up: align and space what is on this page"), its glyph the
-diagram Tidy Up's broom. On a desktop it names itself beside its icon (**Tidy Up**); a phone shows
+An infographic page's title bar holds a **Tidy** button left of its Background button, shown
+only while a press would change something (a page already tidy, or empty, shows none), the
+cog's size with a tooltip ("Tidy: align and space what is on this page"), its glyph the
+diagram Tidy Up's broom. On a desktop it names itself beside its icon (**Tidy**); a phone shows
 the icon alone. It is Diagram mode's Tidy Up ([Layout cleanup](../008-canvas/layout-cleanup.md#the-tidy-up-button))
 for a page: where the diagram one lays shapes out from their arrows, a page has no graph, so this
 one keeps the author's layout and straightens it.
@@ -480,10 +481,10 @@ one keeps the author's layout and straightens it.
   which stays where it is and is kept clear of like any other block. Arrows pinned to what moves
   follow their ends; a free arrow end stays. Running it twice changes nothing the second time.
 - **Where it shows**: infographic pages only (a slide page lays out from its own layouts, a logo
-  page has its own Tidy Up for drawn lines, an article flows its writing). A locked page shows no
-  Tidy Up, like its Background.
+  page has its own Tidy for drawn lines, an article flows its writing). A locked page shows no
+  Tidy, like its Background.
 
-| Role        | Tidy Up                                                                                 |
+| Role        | Tidy                                                                                    |
 | ----------- | --------------------------------------------------------------------------------------- |
 | Editor      | Sees the button and uses it.                                                            |
 | Participant | No button: a tidy moves every element on the page, and a Participant never reshapes it. |
@@ -494,6 +495,13 @@ Pressing it is tracked as `Tab / Aligned / PageTidyUp`, beside the diagram tidie
 ## Layouts
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
+
+**Change Theme** sits at the top right of every layout picker (the title bar's Layout popover and
+the in-page Start From a Layout card), left of its X: it closes the picker and opens the Tab Style
+popover, as the dock's Theme button does, so a layout and the look it wears are chosen together.
+It shows wherever the session may restyle the tab (an Editor; never for a Participant or a Viewer,
+who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
+swipe, with no X.
 
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme. Most open with
   a title and a lead line. A **tall** page (not wider than 1.15 times its height) stacks; a
@@ -1060,7 +1068,7 @@ are diagram formats and are not offered.
 `Document · Exported · IllustratePNG / IllustrateSVG / IllustratePDF` (one page) and
 `IllustratePNGPages / IllustrateSVGPages / IllustratePDFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `Tab · Aligned · PageTidyUp` (an infographic
-page's Tidy Up); `UI · Closed · EmptyPageLayouts` (the in-page
+page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
 **Start From a Layout** card's Hide). Never a colour, name or layout content.
 A logo page's own events are in [Logo pages](logo-pages.md) "Telemetry".
 

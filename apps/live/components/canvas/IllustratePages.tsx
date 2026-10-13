@@ -88,11 +88,15 @@ export function IllustratePages({
   view,
   zoom,
   bare = false,
+  onOpenTheme,
 }: {
   view: IllustratePagesView;
   zoom: number;
   // The sheets alone, without their title bars or the add button (zen, presenting).
   bare?: boolean;
+  // Opens the Tab Style popover, from the Layout popover's Change Theme; absent where the session
+  // may not restyle the tab.
+  onOpenTheme?: (() => void) | undefined;
 }) {
   const { pages, focusPage } = view;
   const articles = view.articles ?? null;
@@ -229,8 +233,10 @@ export function IllustratePages({
           !locked &&
           !page.flow &&
           (page.kind === 'slide' || pageKindOf(page) === 'infographic');
-        // An infographic page's Tidy Up, left of its Background.
-        const tidyButton = pageButtons && pageKindOf(page) === 'infographic';
+        // An infographic page's Tidy, left of its Background, shown only while it would change
+        // something.
+        const tidyButton =
+          pageButtons && pageKindOf(page) === 'infographic' && edit.canTidy?.(page.id) === true;
         // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
         const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
@@ -361,12 +367,13 @@ export function IllustratePages({
                     page={page}
                     labelled={labelled}
                     onApply={(layout) => edit.applyLayout(page.id, layout)}
+                    onChangeTheme={onOpenTheme}
                     onPreview={(layout) =>
                       view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
                     }
                   />
                 ) : null}
-                {/* An infographic page's Tidy Up (PageTidyUpButton). */}
+                {/* An infographic page's Tidy (PageTidyUpButton), while it would change something. */}
                 {tidyButton ? (
                   <PageTidyUpButton pageId={page.id} labelled={labelled} edit={edit} />
                 ) : null}
@@ -469,6 +476,7 @@ export function IllustratePages({
                 page={page}
                 zoom={zoom}
                 onApply={(layout) => edit.applyLayout(page.id, layout)}
+                onChangeTheme={onOpenTheme}
                 onHide={() => {
                   track('UI', 'Closed', 'EmptyPageLayouts');
                   setLayoutsHidden((hidden) => new Set(hidden).add(page.id));

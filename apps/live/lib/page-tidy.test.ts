@@ -1,4 +1,4 @@
-// An infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy Up").
+// An infographic page's Tidy Up (docs/specs/007-editor/illustrate-pages.md "Tidy").
 import { describe, expect, it } from 'vitest';
 import {
   isBoxed,

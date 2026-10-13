@@ -124,8 +124,8 @@ page; "template" stays the whole-tab starting point.
 | `INVITE_WIDE`, `INVITE_ICON`                                      | 150 px, 30 px                                                   | `IllustratePages.tsx`; D28                                                                                                               |
 | `DECK_ROOM`                                                       | 28 px                                                           | `page-title-bar-room.ts`; the deck button and its gap                                                                                    |
 | `BACKGROUND_ROOM`, `BACKGROUND_LABELLED_ROOM`, `POPOVER_WIDTH`    | 28 px, 104 px, 304 px                                           | `PageBackgroundButton.tsx`; the button and its gap (icon, or named); panel `WIDTH`                                                       |
-| `TIDY_UP_ROOM`, `TIDY_UP_LABELLED_ROOM`                           | 28 px, 72 px                                                    | `PageTidyUpButton.tsx`; the button and its gap, as a logo page's Tidy Up (`LogoTitleBar` `LABELLED_ROOM`)                                |
-| `PAGE_TIDY_GRID`                                                  | 4 px                                                            | `page-tidy.ts`; spec "Tidy Up" (a fine grid); safe 2 to 10                                                                               |
+| `TIDY_UP_ROOM`, `TIDY_UP_LABELLED_ROOM`                           | 28 px, 52 px                                                    | `PageTidyUpButton.tsx`; the button and its gap, as a logo page's Tidy Up (`LogoTitleBar` `LABELLED_ROOM`)                                |
+| `PAGE_TIDY_GRID`                                                  | 4 px                                                            | `page-tidy.ts`; spec "Tidy" (a fine grid); safe 2 to 10                                                                               |
 | `PAGE_TIDY_ALIGN_FRACTION`, `PAGE_TIDY_ALIGN_MIN`                 | 0.012 of the short side, floor 4 px                             | `page-tidy.ts`; spec (about 10 px on A4); safe 0.005 to 0.02                                                                             |
 | `PAGE_TIDY_GAP_SPREAD`, `PAGE_TIDY_SIMILAR_RATIO`                 | 0.25, 1.5                                                       | `page-tidy.ts`; spec "Even gaps" (a quarter); D81 (similar)                                                                              |
 | `PAGE_TIDY_PASSES`, `PAGE_TIDY_RUNS`                              | 6 per level, 10 over the page                                   | `page-tidy.ts`; D82; measured 0 of 3312 jittered layouts unsettled at 10                                                                 |
@@ -269,7 +269,7 @@ buildPageLayout(layout, page))`, then `onLayoutPlaced` (clears the selection).
 - `startBlank(id)`: sets `startedBlank: true` (a logo page's Start From Scratch, [Logo
   pages](logo-pages.md)); the page's own lock refuses it.
 - `contentCount(id)`: `elementIdsOnPage(elements, laidOut, id).size`.
-- `tidyPage(id)` (spec "Tidy Up"): refused when `!mayEdit()` or the page's own lock (`refusedLocked(id, 'tidy', false)`);
+- `tidyPage(id)` (spec "Tidy"): refused when `!mayEdit()` or the page's own lock (`refusedLocked(id, 'tidy', false)`);
   commits `tidied(t, id)`: on an infographic page only, `tidyPageElements(t.elements, { ids: elementIdsOnPage, rect,
 margin: pageMargin, lockedIds: lockedElementIds(t.elements, t.layers) })`, the tab unchanged when the same array comes
   back. Unchanged: toast `This page is already tidy.`, no telemetry. Changed: `Tab·Aligned·PageTidyUp`. Either way a

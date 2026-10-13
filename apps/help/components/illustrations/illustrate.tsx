@@ -150,7 +150,7 @@ function SolidSegments({
 // --- Pages in a row ----------------------------------------------------------------------------
 
 /** An infographic page's title-bar buttons as icons alone (the page too small on screen to name
- *  them): Layout, Tidy Up, Background and the padlock, left of the cog at `cogX`. */
+ *  them): Layout, Tidy, Background and the padlock, left of the cog at `cogX`. */
 function PageIcons({ cogX, cy }: { cogX: number; cy: number }) {
   return (
     <g>
@@ -596,10 +596,10 @@ export function LayoutCategoriesScene() {
   const pageW = 360;
   const right = pageX + pageW;
   const barY = 32;
-  // The title bar from the right: the cog, the padlock, then Background, Tidy Up and Layout,
+  // The title bar from the right: the cog, the padlock, then Background, Tidy and Layout,
   // each named, the gaps the title bar's own.
   const bgX = right - 18 - 4 - 22 - 4 - titleButtonWidth('Background');
-  const tidyX = bgX - 4 - titleButtonWidth('Tidy Up');
+  const tidyX = bgX - 4 - titleButtonWidth('Tidy');
   const layoutX = tidyX - 4 - titleButtonWidth('Layout');
   // The popover, left-aligned under the Layout button: four cards across.
   const cols = 4;
@@ -618,7 +618,7 @@ export function LayoutCategoriesScene() {
         A4 · Landscape
       </Label>
       <TitleButton x={layoutX} cy={barY} name="Layout" on Glyph={LayoutGlyph} />
-      <TitleButton x={tidyX} cy={barY} name="Tidy Up" Glyph={TidyUpGlyph} />
+      <TitleButton x={tidyX} cy={barY} name="Tidy" Glyph={TidyUpGlyph} />
       <TitleButton x={bgX} cy={barY} name="Background" Glyph={BackgroundGlyph} />
       <PadlockGlyph cx={right - 18 - 4 - 11} cy={barY} />
       <Cog cx={right - 9} cy={barY} />

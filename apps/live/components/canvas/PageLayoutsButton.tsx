@@ -4,14 +4,16 @@
 // "Beside the cog", "Layouts"): the page's layouts by category in a popover anchored to the button
 // (a bottom sheet on a phone), as Background opens its swatches. Hovering a tile previews it on the
 // page; a press places it (over anything there, one undo step back) and closes the popover; closing it
-// takes any preview away.
+// takes any preview away. Its top right offers Change Theme (the Tab Style popover, as the dock's
+// Theme button opens it) beside an X that closes it.
 import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@livediagram/icons/lucide';
 import type { LaidOutPage } from '@livediagram/document';
 import type { PageLayoutId } from '@livediagram/templates';
-import { lucideGlyph } from '@livediagram/ui';
+import { CloseIcon, lucideGlyph, Tooltip } from '@livediagram/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
+import { ChangeThemeButton } from './ChangeThemeButton';
 import { LayoutBrowser } from './infographic-page-layouts-section';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
@@ -33,10 +35,19 @@ type BodyProps = {
   page: LaidOutPage;
   onApply: (layout: PageLayoutId) => void;
   onPreview: (layout: PageLayoutId | null) => void;
+  // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
+  onChangeTheme?: (() => void) | undefined;
 };
 
 // The popover's body; unmounting (the popover closing) takes the preview off the page.
-function Body({ page, onApply, onPreview, wide }: BodyProps & { wide: boolean }) {
+function Body({
+  page,
+  onApply,
+  onPreview,
+  onChangeTheme,
+  wide,
+  onClose,
+}: BodyProps & { wide: boolean; onClose: () => void }) {
   // Only on close: the callback is a fresh closure each render, so it is read through a ref.
   const clearPreview = useRef(onPreview);
   useEffect(() => {
@@ -45,6 +56,29 @@ function Body({ page, onApply, onPreview, wide }: BodyProps & { wide: boolean })
   useEffect(() => () => clearPreview.current(null), []);
   return (
     <div data-page-layouts-popover="" className={wide ? '' : 'px-3'}>
+      <div className="mb-2 flex items-center justify-end gap-1">
+        {onChangeTheme ? (
+          <ChangeThemeButton
+            onClick={() => {
+              onClose();
+              onChangeTheme();
+            }}
+          />
+        ) : null}
+        {/* A phone's bottom sheet closes by a swipe or an outside press: no X there. */}
+        {wide ? (
+          <Tooltip label="Close">
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={onClose}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              <CloseIcon size={12} />
+            </button>
+          </Tooltip>
+        ) : null}
+      </div>
       <LayoutBrowser page={page} onApply={onApply} onPreview={onPreview} wide={wide} />
     </div>
   );
@@ -79,6 +113,7 @@ export function PageLayoutsButton({
           <Body
             {...props}
             wide={!mobile}
+            onClose={close}
             onApply={(layout) => {
               props.onPreview(null);
               props.onApply(layout);

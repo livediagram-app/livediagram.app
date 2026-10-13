@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { PAGE_TIDY_UP_TOOLTIP, PageTidyUpButton, pageTidyUpRoom } from './PageTidyUpButton';
 
-// docs/specs/007-editor/illustrate-pages.md "Tidy Up": an infographic page's title-bar button.
+// docs/specs/007-editor/illustrate-pages.md "Tidy": an infographic page's title-bar button.
 afterEach(() => cleanup());
 
 const as = (level: 'edit' | 'participate' | 'view', ui: ReactNode) => (
@@ -17,7 +17,7 @@ describe('PageTidyUpButton', () => {
     const tidyPage = vi.fn();
     render(as('edit', <PageTidyUpButton pageId="p1" labelled edit={{ tidyPage }} />));
     const button = screen.getByRole('button', { name: PAGE_TIDY_UP_TOOLTIP });
-    expect(button.textContent).toBe('Tidy Up');
+    expect(button.textContent).toBe('Tidy');
     fireEvent.click(button);
     expect(tidyPage).toHaveBeenCalledWith('p1');
     cleanup();

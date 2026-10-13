@@ -74,8 +74,8 @@ function TidyUpButton({
   useSelectionOf((s) => s.multiSelectedIds);
   return canTidyUp() ? (
     <TitleButton
-      label="Tidy Up: straighten the selected drawing"
-      text={labelled ? 'Tidy Up' : undefined}
+      label="Tidy: straighten the selected drawing"
+      text={labelled ? 'Tidy' : undefined}
       onClick={tidyUp}
     >
       <TidyUpIcon />
