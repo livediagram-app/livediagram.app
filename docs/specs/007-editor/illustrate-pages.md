@@ -94,7 +94,9 @@ The **Article** template in /new starts a tab that opens in Illustrate mode with
 - Opens beside the page, to the right of its cog, so the sheet stays in view; where the window has
   no room there, it opens under the cog. Screen-space, one size at any zoom; it scrolls when taller
   than the window.
-- Top to bottom: on a logo page, **Show Me** and **Help** ([Logo pages](logo-pages.md) "Show Me"); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
+- Top to bottom: on every unlocked page, **Show Me** and **Help** (its kind's article), Show Me running the page kind's
+  track of the [Illustrate tour](illustrate-tour.md) on this page ([Logo pages](logo-pages.md) "Show Me" for a logo
+  page); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs: **Page**
   alone on an infographic page, with no tab switch (its Layout, Background and Tidy are the
   buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its

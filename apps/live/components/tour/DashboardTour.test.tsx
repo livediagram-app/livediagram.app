@@ -35,7 +35,13 @@ function drawPage(layout: DashboardLayout): HTMLElement {
     for (const slot of row.slots) {
       const s = document.createElement('div');
       s.dataset.dashboardSlot = slot.id;
-      if (!slot.content) s.dataset.slotEmpty = '';
+      // An empty slot's Add to Slot, a filled one's Move grip: what the steps ring, never the whole slot.
+      const control = document.createElement('button');
+      if (!slot.content) {
+        s.dataset.slotEmpty = '';
+        control.setAttribute('aria-haspopup', 'dialog');
+      } else control.setAttribute('aria-label', 'Move Slot');
+      s.append(control);
       r.append(s);
     }
     canvas.append(r);

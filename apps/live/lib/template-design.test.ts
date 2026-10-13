@@ -136,11 +136,10 @@ describe('slide deck template', () => {
       expect(shapesOf(els, kind).length, kind).toBeGreaterThan(0);
   });
 
-  it('carries the speaker notes on every slide’s headline', () => {
+  it('carries no element notes on its slides', () => {
     for (let i = 0; i < slides.length; i++) {
       const noted = onSlide(i).filter((el) => (el as { note?: string }).note);
-      expect(noted, `slide ${i + 1}`).toHaveLength(1);
-      expect(noted[0]!.type).toBe('text');
+      expect(noted, `slide ${i + 1}`).toHaveLength(0);
     }
   });
 });

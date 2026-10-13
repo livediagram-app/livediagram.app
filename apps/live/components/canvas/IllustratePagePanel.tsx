@@ -39,6 +39,7 @@ import { LayoutsSection } from './infographic-page-layouts-section';
 import { OrientationSection, SizeSection } from './illustrate-page-panel-sections';
 import { BackgroundSection } from './page-background-section';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { HelpArticleKey } from '@/lib/help-articles';
 
 const WIDTH = 304;
 const GAP = 6;
@@ -84,8 +85,9 @@ export function IllustratePagePanel({
   showMe,
 }: {
   page: LaidOutPage;
-  // A logo page's Show Me, which heads the panel beside Help (docs/specs/007-editor/logo-pages.md "Show Me").
-  showMe?: ReactNode;
+  // The page's Show Me, which heads the panel beside Help on its kind's article (docs/specs/007-editor/show-me.md,
+  // illustrate-tour.md "Where it appears").
+  showMe?: { button: ReactNode; article: HelpArticleKey } | undefined;
   count: number;
   // Another page of this page's article is locked (isArticleLocked): its shared edits are held.
   heldByLock?: boolean;
@@ -150,7 +152,8 @@ export function IllustratePagePanel({
     panel,
     () => onClose(false),
     true,
-    '[data-page-panel-trigger], [data-anchored-popover]',
+    // The tour's card too: a tour step opened the panel, and pressing Next or Back is not leaving it.
+    '[data-page-panel-trigger], [data-anchored-popover], [data-tour-popover]',
   );
   // Escape inside a colour popover closes the popover only.
   useEscape(
@@ -201,8 +204,8 @@ export function IllustratePagePanel({
       ) : null}
       {showMe ? (
         <div className="flex items-center justify-end gap-0.5 px-2 pt-1.5">
-          {showMe}
-          <HelpArticleLink article="logoPages" variant="labelled" />
+          {showMe.button}
+          <HelpArticleLink article={showMe.article} variant="labelled" />
         </div>
       ) : null}
       <div inert={selfLocked} className={selfLocked ? 'opacity-50' : undefined}>

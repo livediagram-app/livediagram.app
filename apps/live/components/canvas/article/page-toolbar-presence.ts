@@ -3,7 +3,7 @@
 // Which article the page toolbar is for (docs/specs/007-editor/article-pages.md "The page
 // toolbar"): the one being worked on, else the article page under the pointer; and a press off the
 // worked-on article's pages ending the work on it.
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { canvasGestureNow } from '@/lib/canvas-gesture';
 import { clearActiveArticle, type ActiveArticle } from '@/lib/article/article-editor-store';
 
@@ -26,7 +26,24 @@ const onSheet = (pageId: string, x: number, y: number, slack: number) => {
   );
 };
 
-// The article page under the pointer (kept a moment after it leaves), or null.
+// A page the toolbar is held on while nothing points at it: the Article tour's toolbar step pins its page so the
+// toolbar stays up through the step (docs/specs/007-editor/illustrate-tour.md "Article track"). Null = none.
+let pinnedPage: string | null = null;
+const pinListeners = new Set<() => void>();
+export function pinPageToolbar(pageId: string | null): void {
+  if (pinnedPage === pageId) return;
+  pinnedPage = pageId;
+  pinListeners.forEach((l) => l());
+}
+const subscribePin = (l: () => void) => {
+  pinListeners.add(l);
+  return () => pinListeners.delete(l);
+};
+/** The pinned page, read outside React (tests, the tour's tidy-up). */
+export const readPinnedPageToolbar = () => pinnedPage;
+const readPin = readPinnedPageToolbar;
+
+// The article page under the pointer (kept a moment after it leaves), else a pinned one, or null.
 export function useHoveredArticlePage(
   pages: readonly { id: string; flow: string }[],
 ): { flow: string; pageId: string } | null {
@@ -75,7 +92,10 @@ export function useHoveredArticlePage(
       window.clearTimeout(leave);
     };
   }, []);
-  return hovered;
+  const pinned = useSyncExternalStore(subscribePin, readPin, () => null);
+  if (hovered) return hovered;
+  const page = pinned ? pages.find((p) => p.id === pinned) : undefined;
+  return page ? { flow: page.flow, pageId: page.id } : null;
 }
 
 // A press off the active article's pages (and off its toolbar, menus and zone bar) ends working on
