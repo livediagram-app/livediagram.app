@@ -6,7 +6,7 @@
 // flyout (planViewSettingsModel), so either does.
 import { useState, type ReactNode } from 'react';
 import type { PlanViewRef } from '@livediagram/document';
-import { lucideGlyph } from '@livediagram/ui';
+import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
 import {
   lucideCalendar,
   lucideCircleDot,
@@ -103,7 +103,12 @@ export function PlanViewSettingsPanel({
               }}
             />
           ) : (
-            <InfoNote>No card has a status yet.</InfoNote>
+            <CompactEmptyState
+              size="small"
+              icon={<StatusGlyph />}
+              title="No statuses yet"
+              description="Give a card a status and it shows up here to filter by."
+            />
           )}
         </BoardSettingsSection>
       ) : null}

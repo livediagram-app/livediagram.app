@@ -8,6 +8,7 @@ import { apiDeleteImage, type ImageSummary } from '@/lib/api-client';
 import { addImageFileForDocument, ImageUploadError, type PickedImage } from '@/lib/upload-image';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
+import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
@@ -230,11 +231,7 @@ function GalleryGrid({
     return <p className="text-xs text-slate-500 dark:text-slate-400">Loading…</p>;
   }
   if (gallery.length === 0) {
-    return (
-      <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/30 dark:text-slate-400">
-        No images yet. Drop one in the Upload tab and it'll show up here.
-      </p>
-    );
+    return <GalleryEmpty description="Drop one in the Upload tab and it will show up here." />;
   }
   return (
     <ul className="grid max-h-72 grid-cols-4 gap-2 overflow-y-auto">

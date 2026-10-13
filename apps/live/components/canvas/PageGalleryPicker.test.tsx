@@ -49,6 +49,6 @@ describe('PageGalleryPicker', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: CHOOSE_FROM_MY_IMAGES }));
     });
-    expect(screen.getByText(/No images yet/)).toBeTruthy();
+    expect(screen.getByText('No images yet').closest('[data-empty-state]')).toBeTruthy();
   });
 });

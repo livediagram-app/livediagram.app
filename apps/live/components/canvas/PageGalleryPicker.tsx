@@ -10,6 +10,7 @@ import type { PickedImage } from '@/lib/upload-image';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
+import { GalleryEmpty } from '@/components/panels/GalleryEmpty';
 
 // The page panel's own width, three pictures across.
 const POPOVER_WIDTH = 304;
@@ -106,11 +107,7 @@ function GalleryChoices({
     );
   }
   if (gallery.length === 0) {
-    return (
-      <p className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-800/30 dark:text-slate-400">
-        No images yet. Upload one and it will show up here.
-      </p>
-    );
+    return <GalleryEmpty size="small" description="Upload one and it will show up here." />;
   }
   return (
     <ul className="grid max-h-80 grid-cols-3 gap-2 overflow-y-auto">
