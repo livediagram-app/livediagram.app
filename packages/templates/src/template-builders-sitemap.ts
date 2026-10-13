@@ -3,6 +3,7 @@
 
 import {
   createText,
+  MIND_CONNECTOR_LOOK,
   runsPlainText,
   type ArrowElement,
   type Element,
@@ -22,7 +23,7 @@ import { buildMindTemplate, mindHowTo, type MindSpec } from './template-builders
 // route travels with its page when the map is tidied or grown. The pages that
 // live OUTSIDE the nav hang off Home on dashed lines, the footer's company
 // pages on the far left and the sign-in utility pages on the far right.
-// Plain angled lines, no arrowheads: a sitemap shows structure, not flow.
+// Square lines with no arrowheads: a sitemap shows structure, not flow.
 type Page = { label: string; icon: string; route: string };
 type Section = {
   label: string;
@@ -77,7 +78,10 @@ const UTILITY: [string, Page[]] = [
 ];
 
 const MUTED = '#64748b';
-const LINE: Partial<ArrowElement> = { arrowEnds: 'none', arrowStyle: 'angled' };
+// The mind map's own connector look carrying the Professional finish (docs/specs/008-canvas/finish.md), so
+// the lines draw as one square bus per parent, the sitemap convention, whatever the tab's finish, and a
+// page grown later copies it (growth copies a sibling connector's finish with its look).
+const LINE: Partial<ArrowElement> = { ...MIND_CONNECTOR_LOOK, finish: 'professional' };
 const OUTSIDE: MindHue = { fill: '#f8fafc', stroke: '#94a3b8', ink: '#334155', leaf: '#cbd5e1' };
 type MindHue = Section['hue'];
 
@@ -92,7 +96,8 @@ const pageSpec = (p: Page, hue: MindHue, dashed: boolean): MindSpec => {
   return {
     label: runsPlainText(runs),
     look: {
-      width: 170,
+      // Wide enough for the longest route with its glyph (/product/integrations) on one line.
+      width: 210,
       height: 60,
       textSize: 'sm',
       iconId: p.icon,

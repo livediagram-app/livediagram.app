@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutMindTree, type Element } from '@livediagram/document';
+import { isDefaultMindConnectorLook, layoutMindTree, type Element } from '@livediagram/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the hierarchy starters redesigned together
@@ -365,8 +365,10 @@ describe('sitemap template', () => {
     expect(dashed).toHaveLength(6);
   });
 
-  it('draws plain angled lines with no arrowheads', () => {
-    expect(lines.every((a) => a.arrowEnds === 'none' && a.arrowStyle === 'angled')).toBe(true);
+  it('draws square buses with no arrowheads, whatever the tab finish', () => {
+    expect(lines.every((a) => a.arrowEnds === 'none' && a.finish === 'professional')).toBe(true);
+    // In the mind map's default look, so the Professional finish routes them as one bus per parent.
+    expect(lines.every((a) => isDefaultMindConnectorLook(a))).toBe(true);
   });
 
   it('is exactly the tidy layout, so it grows tidily', () => {
