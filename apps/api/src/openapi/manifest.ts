@@ -1241,7 +1241,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['id', 'name'],
     },
     responseSchema: wrap('folder', 'Folder'),
-    statuses: [201, 400, 401, 403, 404],
+    statuses: [201, 400, 401, 403, 404, 409],
   },
   {
     method: 'PUT',
