@@ -3,7 +3,15 @@
 // slide's height.
 import type { Element } from '@livediagram/document';
 import type { Kit } from './page-layout-kit';
-import { eyebrow, iconDisc, numberDisc, over, rule, slideHeading, slideType } from './slide-layout-kit';
+import {
+  eyebrow,
+  iconDisc,
+  numberDisc,
+  over,
+  rule,
+  slideHeading,
+  slideType,
+} from './slide-layout-kit';
 
 const CENTRE = { textAlignX: 'center' } as const;
 

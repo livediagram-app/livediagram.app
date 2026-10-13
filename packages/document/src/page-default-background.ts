@@ -19,7 +19,9 @@ const isHex = (c: string | null | undefined): c is string => !!c && /^#[0-9a-f]{
 
 /** The tab theme's accent: its element stroke, else its first palette colour, else the brand blue.
  *  What theme backgrounds and a document's accent are drawn from. */
-export function themeAccent(theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>): string {
+export function themeAccent(
+  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
+): string {
   return isHex(theme.elementStroke)
     ? theme.elementStroke
     : isHex(theme.palette?.[0]?.stroke)

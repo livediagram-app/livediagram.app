@@ -132,7 +132,9 @@ describe('finishNewArrowStyle', () => {
 describe("an element's own finish and the tab's font", () => {
   it("letters in the element's own finish over the tab's font, its own font over both", () => {
     expect(elementFontId({ finish: 'sketch' }, 'inter', 'professional')).toBe(SKETCH_FONT_ID);
-    expect(elementFontId({ finish: 'professional' }, 'lora', 'flexible')).toBe(PROFESSIONAL_FONT_ID);
+    expect(elementFontId({ finish: 'professional' }, 'lora', 'flexible')).toBe(
+      PROFESSIONAL_FONT_ID,
+    );
     expect(elementFontId({ finish: 'sketch', font: 'lora' }, 'inter', 'flexible')).toBe('lora');
   });
 
