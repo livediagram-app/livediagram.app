@@ -14,7 +14,12 @@ describe('PresentationSettings', () => {
     render(<PresentationSettings config={DEFAULT_PRESENTATION_CONFIG} onChange={vi.fn()} />);
     for (const name of ['Show Elapsed Time', 'Show Slide Budget'])
       expect(screen.getByText(name)).toBeTruthy();
-    for (const gone of ['Click to Advance', 'Loop the Deck', 'Keep Controls Visible', 'Hide the Pointer'])
+    for (const gone of [
+      'Click to Advance',
+      'Loop the Deck',
+      'Keep Controls Visible',
+      'Hide the Pointer',
+    ])
       expect(screen.queryByText(gone)).toBeNull();
     expect(screen.queryByText('Fill Screen')).toBeNull();
     expect(screen.getByText(/in Settings, under Presenting/)).toBeTruthy();
