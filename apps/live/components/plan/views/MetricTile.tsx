@@ -16,7 +16,7 @@ import {
   type MetricModel,
   type MetricTier,
   type MetricVisual,
-} from './metric-tile-model';
+} from '@livediagram/plan-art';
 
 const PEOPLE_ROWS = 5;
 

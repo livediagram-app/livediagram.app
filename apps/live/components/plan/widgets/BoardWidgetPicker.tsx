@@ -10,7 +10,7 @@ import { BOARD_WIDGET_KINDS, type BoardWidgetKind } from '@livediagram/items';
 import { CheckIcon, CompactEmptyState, NoMatches, lucideGlyph } from '@livediagram/ui';
 import { lucideSearch } from '@livediagram/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
+import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
 import { BoardWidgetArt } from '../plan-tile-art';
 import type { PlanPalette } from '../plan-palette';
 

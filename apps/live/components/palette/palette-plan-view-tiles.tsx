@@ -10,7 +10,7 @@ import {
 } from '@livediagram/items';
 import { BoardWidgetArt } from '@/components/plan/plan-tile-art';
 import { PlanViewArt } from '@/components/plan/plan-view-art';
-import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
+import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 const GLYPH_PX = 18;

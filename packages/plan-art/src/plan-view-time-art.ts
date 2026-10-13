@@ -14,7 +14,7 @@ import {
 } from '@livediagram/items';
 import { accentOn } from '@livediagram/document';
 import { xmlEscape } from '@livediagram/icons';
-import { OVERDUE_RED } from '@/components/plan/views/phase-colours';
+import { OVERDUE_RED } from './phase-colours';
 import { ART_PAD, box, dot, emptyBody, line, viewFrame, r2 } from './plan-art-kit';
 import type { ViewArtInput } from './plan-view-art';
 

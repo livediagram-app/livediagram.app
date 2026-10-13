@@ -48,7 +48,7 @@ import { boardRowTemplate } from './plan-board-rows';
 import { PlanSetupBoard } from './PlanSetupBoard';
 import { setUpBoard, setupFromBoard, setupLayoutOf, withSetupLayout } from './setup-board';
 import { pickableStatuses } from './column-status-picks';
-import { boardItems } from './widgets/widget-stats';
+import { boardItems } from '@livediagram/plan-art';
 import { trackSetup } from './track-board-setup';
 import { boardColumnTemplate } from './plan-board-columns';
 import { boardLook, shownQuick } from './phone-board';

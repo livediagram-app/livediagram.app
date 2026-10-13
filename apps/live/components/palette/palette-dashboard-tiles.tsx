@@ -9,6 +9,7 @@ import { Glyph, PlanIcon, lucideGlyph } from '@livediagram/ui';
 import { lucideCalendar, lucideHash, lucideLink, lucideWorkflow } from '@livediagram/icons/lucide';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import { SHEET_METRICS, type SheetMetricKind } from '@livediagram/document';
+import { SHEET_METRIC_NAMES } from '@livediagram/plan-art';
 import {
   DASHBOARD_CARD_KINDS,
   sheetMetricChoice,
@@ -177,11 +178,8 @@ export const DASHBOARD_CARD_TILES: PaletteTileDef[] = DASHBOARD_CARD_KINDS.map((
 
 // Add to Slot's From a Sheet (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"): a figure read live from one of
 // the document's Sheets. Not in any palette category (Plan shows none): Add to Slot reads them.
-export const SHEET_METRIC_NAMES: Record<SheetMetricKind, string> = {
-  figure: 'Sheet Figure',
-  summary: 'Column Summary',
-  trend: 'Trend',
-};
+// Each figure's name, shared with its picture in an image export.
+export { SHEET_METRIC_NAMES };
 const SHEET_METRIC_LINES: Record<SheetMetricKind, string> = {
   figure: 'One cell’s value, large, with an optional target to measure it against.',
   summary: 'A column’s total, average, lowest, highest or count.',

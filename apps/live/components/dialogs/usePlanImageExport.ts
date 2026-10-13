@@ -17,10 +17,16 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { renderTabToSvg } from '@/lib/export-tab';
-import { exportFormatsFor, type ExportFormatKey } from '@/lib/export-plan/plan-export-formats';
-import { planImageOf, type PlanImage } from '@/lib/export-plan/plan-export-tab';
-import { planViewArt, type PlanArtData } from '@/lib/export-plan/plan-view-art';
-import type { SheetMetricArt } from '@/lib/export-plan/dashboard-card-art';
+import {
+  exportFormatsFor,
+  planImageOf,
+  planViewArt,
+  type ExportFormatKey,
+  type PlanArtData,
+  type PlanImage,
+  type SheetMetricArt,
+} from '@livediagram/plan-art';
+import { getTheme } from '@/lib/themes';
 import { debugLog } from '@/lib/debug-log';
 
 type PlanImageExport = {
@@ -71,6 +77,8 @@ export function usePlanImageExport(
         ? planImageOf(tab, {
             tabs: documentTabs,
             now,
+            // The editor's themes, the person's own among them.
+            themeOf: getTheme,
             ...(metrics ? { metrics } : {}),
             ...(models ? { sheetHeads: (id: string) => !models.get(id)?.hideHeaders } : {}),
             renderDiagram: (shown) =>

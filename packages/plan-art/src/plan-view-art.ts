@@ -32,9 +32,9 @@ import {
   type PlanViewId,
   type StatusPhase,
 } from '@livediagram/items';
-import { BOARD_WIDGET_INFO } from '@/components/plan/board-widget-catalogue';
-import { metricModel } from '@/components/plan/views/metric-tile-model';
-import { PHASE_COLOURS } from '@/components/plan/views/phase-colours';
+import { BOARD_WIDGET_INFO } from './board-widget-info';
+import { metricModel } from './metric-tile-model';
+import { PHASE_COLOURS } from './phase-colours';
 import { PRIORITY_COLOURS } from '@livediagram/document';
 import { mixHex } from '@livediagram/document';
 import {

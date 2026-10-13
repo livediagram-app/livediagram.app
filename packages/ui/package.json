@@ -10,7 +10,8 @@
     ".": "./src/index.ts",
     "./site": "./src/site.ts",
     "./seo": "./src/seo.ts",
-    "./clerk-key": "./src/clerk-key.ts"
+    "./clerk-key": "./src/clerk-key.ts",
+    "./relative-time": "./src/relative-time.ts"
   },
   "scripts": {
     "lint": "eslint .",

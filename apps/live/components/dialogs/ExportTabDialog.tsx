@@ -39,7 +39,7 @@ import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { usePlanImageExport } from './usePlanImageExport';
-import type { ExportFormatKey } from '@/lib/export-plan/plan-export-formats';
+import type { ExportFormatKey } from '@livediagram/plan-art';
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.

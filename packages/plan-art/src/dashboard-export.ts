@@ -3,7 +3,9 @@
 // Sheet (its own, or a tab's) becomes that element at the slot's rect; everything else becomes a placeholder element
 // whose picture (`art`, by its id) the SVG renderer asks for through `resolvePlanArt`. Pure.
 import {
+  DASHBOARD_GAP_PX,
   DASHBOARD_SPANS,
+  getBuiltInTheme,
   canvasSurface,
   dashboardCardLook,
   isChartShape,
@@ -20,9 +22,8 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
+  type ThemeDefinition,
 } from '@livediagram/document';
-import { DASHBOARD_GAP_PX } from '@/hooks/plan/slot-fit';
-import { getTheme } from '@/lib/themes';
 import { box, inPlanFont, r2, type Rect } from './plan-art-kit';
 import { cardArt, slotMessageArt, type SheetMetricArt } from './dashboard-card-art';
 
@@ -43,6 +44,8 @@ export type DashboardExportInput = {
   metrics?: ReadonlyMap<string, SheetMetricArt>;
   // A Diagram tab's drawing as a whole SVG document (renderTabToSvg), fitted into its slot.
   renderDiagram: (tab: Tab) => string;
+  // A tab's theme by id on a surface: the editor's own (its custom themes too); the built-in ones when absent.
+  themeOf?: (id: string | undefined, surface: CanvasSurface) => ThemeDefinition;
 };
 
 type DashboardExport = {
@@ -176,7 +179,7 @@ export function dashboardExportTab(input: DashboardExportInput): DashboardExport
     const look = isDashboardStyledType(content.type)
       ? dashboardCardLook(
           (content as { style?: DashboardCardStyle }).style,
-          getTheme(tab.theme, surface),
+          (input.themeOf ?? getBuiltInTheme)(tab.theme, surface),
         )
       : {};
     const written = cardArt(content, {

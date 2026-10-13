@@ -8,6 +8,7 @@
 // scrolls when the slot is short, top-aligned.
 import { useState } from 'react';
 import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@livediagram/document';
+import { linkLabelOf } from '@livediagram/plan-art';
 import { lucideGlyph } from '@livediagram/ui';
 import {
   lucideExternalLink,
@@ -38,17 +39,9 @@ const ICON_WELL =
 const ON_HOVER =
   'opacity-0 transition group-hover/link:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100';
 
-// The label a link shows: its own, else its site's host (an email's address), else the tab's name.
-export function labelOf(link: DashboardLink, tabName: (id: string) => string | undefined): string {
-  if (link.label) return link.label;
-  if (link.tabId) return tabName(link.tabId) ?? 'Tab';
-  if (link.url?.startsWith('mailto:')) return link.url.slice(7) || link.url;
-  try {
-    return new URL(link.url!).host || link.url!;
-  } catch {
-    return link.url!;
-  }
-}
+// The label a link shows: shared with the card's picture in an image export.
+const labelOf = linkLabelOf;
+export { labelOf };
 
 function LinkText({ label, detail }: { label: string; detail: string }) {
   return (

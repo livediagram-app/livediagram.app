@@ -1,6 +1,7 @@
 // What fits a Dashboard slot (docs/specs/026-plan/plan-tabs.md "Filling a slot"): content goes only where it looks
 // good. Add to Slot offers only what fits, and a dragged or pressed tile lands only in a slot big enough for it.
 import {
+  DASHBOARD_GAP_PX,
   DASHBOARD_SPANS,
   type DashboardContent,
   type DashboardLayout,
@@ -57,8 +58,8 @@ export function fitsSlot(item: DashboardItem, size: SlotSize | null): boolean {
   return size.width >= need.width && size.height >= need.height;
 }
 
-// The gap between a row's slots, in px (DashboardRowView draws it).
-export const DASHBOARD_GAP_PX = 12;
+// The gap between a row's slots, in px: the dashboard model's (DashboardRowView draws it).
+export { DASHBOARD_GAP_PX };
 
 // What a slot's content needs, given the dashboard tab's elements: a Board or Sheet tab as a board or sheet, a plan
 // view as a metric or a chart, a board or Sheet element as itself, any other element (a chart from a Sheet) a chart.

@@ -5,11 +5,10 @@
 import { useMemo } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { ITEM_TYPES, metricBoard, type MetricKind } from '@livediagram/items';
-import { BOARD_WIDGET_INFO } from '../board-widget-catalogue';
 import { BoardWidgetView, type WidgetContext } from '../widgets/BoardWidgetView';
 import type { PlanViewProps } from './PlanViewView';
 import { MetricTile } from './MetricTile';
-import { metricModel, metricTier } from './metric-tile-model';
+import { BOARD_WIDGET_INFO, metricModel, metricTier } from '@livediagram/plan-art';
 
 const noop = () => {};
 const NO_QUICK = {};
