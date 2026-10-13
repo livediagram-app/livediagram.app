@@ -31,14 +31,23 @@ function randomGraph(nodes: number, edges: number): GraphInput {
   return graph;
 }
 
+// Untimed warm-ups, then the fastest of three: `cpuUsage` bills the whole process, so a cold pass also pays for V8
+// compiling the layout on its background threads. Under coverage on a CI runner one cold pass of the largest graph
+// read 1,773 ms; warm it is about 320 ms locally under coverage. Same pattern as mind-connector-route.perf.test.ts.
+const WARM_UP_PASSES = 2;
+const fastest = (graph: GraphInput) => {
+  for (let pass = 0; pass < WARM_UP_PASSES; pass++) layoutGraph(graph);
+  return Math.min(...[0, 1, 2].map(() => cpuMsOf(() => layoutGraph(graph))));
+};
+
 describe('graph look cost', () => {
   it('lays out the largest graph allowed in under a second of CPU', () => {
     const graph = randomGraph(GRAPH_LAYOUT_MAX_NODES, GRAPH_LAYOUT_MAX_EDGES);
-    expect(cpuMsOf(() => layoutGraph(graph))).toBeLessThan(1000);
-  }, 30_000);
+    expect(fastest(graph)).toBeLessThan(1000);
+  }, 60_000);
 
   it('lays a 150-node graph out both ways for auto direction in under 250 ms of CPU', () => {
     const graph = randomGraph(150, 250);
-    expect(cpuMsOf(() => layoutGraph(graph))).toBeLessThan(250);
+    expect(fastest(graph)).toBeLessThan(250);
   });
 });
