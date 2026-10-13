@@ -13,6 +13,7 @@ import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { usePlanTourLeftovers } from '@/hooks/plan/usePlanTourLeftovers';
 import { usePublishTabRename } from '@/hooks/editor/active-tab-name-store';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
@@ -3653,7 +3654,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onZoomReset: () => setViewportZoom(1),
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
-    onOpenSearch: () => dialogs.setSearchOpen(true),
+    onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
     onShortcutUsed: powerUserOffer.onShortcutUsed,
     enabled: keyboardEnabled,
     // A whiteboard's keys are its dock's (docs/specs/023-draw-mode/draw-mode.md "Keyboard shortcuts").

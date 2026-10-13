@@ -6,6 +6,7 @@ import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { truncateName } from '@livediagram/document';
+import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@/lib/unsaved-work';
@@ -465,14 +466,7 @@ export function EditorView() {
             setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          onOpenSearch={() => {
-            setSearchOpen(true);
-            // Element search walks local tab state; pull every
-            // not-yet-visited tab's content so matches cover the
-            // whole document (docs/specs/008-canvas/canvas-and-palette.md "Search panel"). Best-effort
-            // and fire-and-forget: results refresh as tabs land.
-            void loadAllTabs();
-          }}
+          onOpenSearch={() => openSearchWithPrefetch(setSearchOpen, loadAllTabs)}
           // Canvas right-click (desktop) + long-press (touch) open the active
           // tab's menu with the canvas sections folded in, rendered by the
           // TabBar so it reuses every tab handler. Element / multi context
