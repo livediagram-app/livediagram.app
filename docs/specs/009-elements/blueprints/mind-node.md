@@ -288,7 +288,7 @@ spacing off the root) and its moves applied. Logs `[mind-layout] spacing root= s
   it when `mindOutline.canEdit(mindRootOf(node).id)`, so it opens the root's outline from any node),
   Tidy Map, Select Branch, Select Whole Map.
 - **Branching** (`kind="single"`, `selected` = the root's flow): one row per `MIND_FLOWS` entry, label
-  `MIND_FLOW_LABEL`, detail `MIND_FLOW_HINT`.
+  `MIND_FLOW_LABEL` (no detail line).
 - **Spacing** (`kind="single"`, `selected` = `mindSpacingOf(node)`): one row per `MIND_SPACINGS` entry,
   label `MIND_SPACING_LABEL`.
 
@@ -566,8 +566,8 @@ listener only reads keys while a growth it opened is pending, and lets modified 
   node: add a sibling" (Enter), "In a mind node’s label: new line" (⇧ Enter), in that order.
 - Growing to fit: the node draws taller as lines are typed (downward), and a tidy map re-lays on
   commit.
-- Menu: "Mind Map" section with `MindFlowTiles` (Tree, Balanced, Downward, Bubble, with
-  `MIND_FLOW_HINT` hints) and Tidy Map.
+- Menu: "Mind Map" section with `MindMapMenuGroups`: Outline, Branching and Spacing (see "The Mind Map
+  menu").
 - After growth the new node is selected, in label editing, and scrolled clear of the side panels.
 - Templates: `mindmap` (bubble, a round root, five branches of two or three leaves), `mindmap-tree` (tree,
   a bold root, five branches each in its own hue with a glyph, two or three hue-edged leaves each), `mindmap-bubble` (bubble, round

@@ -35,7 +35,7 @@ export const MIND_FLOWS: readonly MindFlow[] = [
  *  keeps its shape. */
 export const DEFAULT_MIND_FLOW: MindFlow = 'tree';
 
-/** Title Case, for the menu tiles. */
+/** Title Case, for the Branching rows. */
 export const MIND_FLOW_LABEL: Record<MindFlow, string> = {
   tree: 'Tree',
   leftward: 'Leftward',
@@ -43,15 +43,6 @@ export const MIND_FLOW_LABEL: Record<MindFlow, string> = {
   downward: 'Downward',
   upward: 'Upward',
   bubble: 'Bubble',
-};
-
-export const MIND_FLOW_HINT: Record<MindFlow, string> = {
-  tree: 'Branches to the right, siblings stacked down',
-  leftward: 'Branches to the left, siblings stacked down',
-  balanced: 'Branches both ways off the root',
-  downward: 'Branches below, siblings spread across',
-  upward: 'Branches above, siblings spread across',
-  bubble: 'Branches fanned around the parent',
 };
 
 /** Whether a flow's levels run vertically (its siblings spread across a row). */

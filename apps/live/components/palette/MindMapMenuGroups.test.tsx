@@ -52,7 +52,7 @@ describe('MindMapMenuGroups', () => {
     const p = renderMenu({ flow: 'upward' });
     const group = screen.getByRole('radiogroup', { name: 'Branching' });
     const radios = [...group.querySelectorAll('[role="radio"]')];
-    expect(radios.map((r) => r.textContent?.split('Branches')[0])).toEqual([
+    expect(radios.map((r) => r.textContent)).toEqual([
       'Tree',
       'Leftward',
       'Balanced',

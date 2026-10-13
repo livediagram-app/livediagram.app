@@ -5,7 +5,6 @@
 // choice, its icon at the left). Everything acts on the selected node's whole MAP, through its root.
 import {
   MIND_FLOWS,
-  MIND_FLOW_HINT,
   MIND_FLOW_LABEL,
   MIND_SPACINGS,
   MIND_SPACING_LABEL,
@@ -72,7 +71,6 @@ export function MindMapMenuGroups({
           rows={MIND_FLOWS.map((f) => ({
             id: f,
             label: MIND_FLOW_LABEL[f],
-            detail: MIND_FLOW_HINT[f],
             icon: MIND_FLOW_ICON[f],
           }))}
           onPick={(id) => onSetFlow(id as MindFlow)}

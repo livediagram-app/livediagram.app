@@ -409,8 +409,9 @@ name after it.
   - **Select Branch**: select the node and every node under it, so a branch can
     be restyled, copied or moved as one.
   - **Select Whole Map**: select every node of the map, root included.
-- **Branching**: the six flows, one row each, the map's flow ticked; the row's
-  quiet second line is its hint ("Branches to the right, siblings stacked down").
+- **Branching**: the six flows, one row each, the map's flow ticked. A row is its
+  glyph and name only: a hint line under each was cut short in a menu column and
+  doubled the list's height, and the glyph already draws the arrangement.
 - **Spacing**: Tight, Compact, Comfortable and Wide, the map's spacing ticked.
 
 The selects take connectors too: a selected branch moves, copies and restyles
